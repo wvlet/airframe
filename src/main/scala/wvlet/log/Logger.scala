@@ -1,8 +1,25 @@
 package wvlet.log
 
 import java.io.{ByteArrayOutputStream, PrintStream}
+
+import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.joran.JoranConfigurator
 import org.slf4j.LoggerFactory
+
 import scala.language.experimental.macros
+
+
+object Logger {
+
+  def configure {
+    val context = LoggerFactory.getILoggerFactory().asInstanceOf[LoggerContext]
+    val configurator = new JoranConfigurator
+    configurator.setContext(context)
+    context.reset()
+
+    configurator.doConfigure(getClass.getResource("/wvlet/log/logback-console.xml"))
+  }
+}
 
 /**
   *
