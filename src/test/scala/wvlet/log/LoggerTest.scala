@@ -4,8 +4,6 @@ import wvlet.test.WvletSpec
 
 class Test extends Logger {
 
-  Logger.configure
-
   error("error message")
   warn("warn message")
   info("info message")
