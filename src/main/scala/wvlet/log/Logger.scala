@@ -10,7 +10,7 @@ object Logger {
 
   val rootLogger = getLogger(
     name = "",
-    handlers = Seq(new ConsoleLogHandler(ANSIColorLogFormatter)))
+    handlers = Seq(new ConsoleLogHandler(DebugLogFormatter)))
 
   /**
     * Create a new {@link java.util.logging.Logger}
