@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging._
 import java.util.{logging => jl}
 
-import wvlet.log.LogFormatter.AppLogFormatter
+import wvlet.log.LogFormatter.{AppLogFormatter, SourceCodeLogFormatter}
 
 import scala.annotation.tailrec
 
@@ -38,6 +38,12 @@ class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
 
   def setLogLevel(l: LogLevel) {
     wrapped.setLevel(l.jlLevel)
+  }
+
+  def resetHandler(h: Handler) {
+    clearHandlers
+    wrapped.addHandler(h)
+    setUseParentHandlers(false)
   }
 
   def addHandler(h: Handler) {

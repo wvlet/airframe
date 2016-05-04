@@ -74,16 +74,20 @@ object LogFormatter {
     trace.toString
   }
 
+  def withColor(prefix:String, s:String) = {
+    s"${prefix}${s}${Console.RESET}"
+  }
+
   def highlightLog(level: LogLevel, message: String): String = {
-    val prefix = level match {
+    val color = level match {
       case ERROR => Console.RED
       case WARN => Console.YELLOW
       case INFO => Console.CYAN
       case DEBUG => Console.GREEN
       case TRACE => Console.MAGENTA
-      case _ => ""
+      case _ => Console.RESET
     }
-    s"${prefix}${message}${Console.RESET}"
+    withColor(color, message)
   }
 
   object TSVLogFormatter extends LogFormatter {
@@ -113,13 +117,13 @@ object LogFormatter {
 
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"${formatTimestamp(r.getMillis)} [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
+      s"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
     }
   }
 
   object SourceCodeLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"[${highlightLog(r.level, r.leafLoggerName)}] ${r.getMessage} (${r.source.fileLoc})"
+      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} - ${r.leafLoggerName}(${withColor(Console.BLUE, r.source.fileLoc)})"
     }
   }
 

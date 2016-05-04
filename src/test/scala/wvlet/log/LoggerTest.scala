@@ -1,12 +1,14 @@
 package wvlet.log
 
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
-trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport
+trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
+  logger.resetHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
+}
 
 
-class Test extends LogSupport {
-
+class MyAppClass extends LogSupport {
   error("error message")
   warn("warn message")
   info("info message")
@@ -27,7 +29,9 @@ class LoggerTest extends Spec {
 
   "logger" should {
     "display log messages" in {
-      new Test
+      info("logging test")
+      new MyAppClass
+
     }
   }
 }
