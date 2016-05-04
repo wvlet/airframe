@@ -2,10 +2,10 @@ package wvlet.log
 
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
 
-trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with Logger
+trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport
 
 
-class Test extends Logger {
+class Test extends LogSupport {
 
   error("error message")
   warn("warn message")
@@ -18,7 +18,6 @@ class Test extends Logger {
     """multi line
       |string log""".stripMargin)
   info(Seq(1, 2, 3, 4))
-
 }
 
 /**

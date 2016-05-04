@@ -7,7 +7,6 @@ import javax.management._
 /**
   * Logger configuration API for JMX
   *
-  * @author leo
   */
 @MXBean abstract trait LoggerJMXConfig {
   def getDefaultLogLevel: String
