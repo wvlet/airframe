@@ -4,6 +4,11 @@ import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
 
 /**
+  * Scala macros for generating log output code. This class inserts a code for log level check and
+  * embeds the source code location where the logging method is called.
+  *
+  * The log message object will not be created if the log level is disabled, so logger.trace(xxx) etc. can be
+  * used without any overhead.
   *
   */
 private[log] object LogMacros {
@@ -24,7 +29,7 @@ private[log] object LogMacros {
     def logWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
-      val l = q"${level.asInstanceOf[c.universe.Select]}"
+      val l = q"${level}"
       val record = q"wvlet.log.LogRecord(${l}, wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
         pos.column
       }), formatLog(${message}), Some(${cause}))"

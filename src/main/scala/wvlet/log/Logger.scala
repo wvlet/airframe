@@ -4,7 +4,7 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util.logging._
 import java.util.{logging => jl}
 
-import wvlet.log.LogFormatter.DebugLogFormatter
+import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.language.experimental.macros
 
@@ -12,7 +12,7 @@ object Logger {
 
   val rootLogger = getLogger(
     name = "",
-    handlers = Seq(new ConsoleLogHandler(DebugLogFormatter)))
+    handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
 
   /**
     * Create a new {@link java.util.logging.Logger}
@@ -34,6 +34,25 @@ object Logger {
     handlers.foreach(h => logger.addHandler(h))
     logger.setUseParentHandlers(useParents)
     logger
+  }
+
+  def apply(loggerName:String) = {
+    jl.Logger.getLogger(loggerName)
+  }
+
+  def getDefaultLogLevel : LogLevel = {
+    rootLogger.getLevel match {
+      case null => LogLevel.INFO
+      case level => LogLevel(level)
+    }
+  }
+
+  def setDefaultLogLevel(level:LogLevel) {
+    rootLogger.setLevel(level.jlLevel)
+  }
+
+  def resetDefaultLogLevel {
+    rootLogger.resetLogLevel
   }
 
   implicit class RichLogger(logger: jl.Logger) {
@@ -76,11 +95,7 @@ trait Logger extends Serializable {
   import LogMacros._
   import Logger._
 
-  protected[this] def logger: RichLogger = {
-    val l = Logger.getLogger(this.getClass.getName)
-    l.setLogLevel(LogLevel.TRACE)
-    l
-  }
+  protected[this] lazy val logger: RichLogger = Logger.getLogger(this.getClass.getName)
 
   protected[this] def formatLog(message: Any): String = {
     def errorString(e: Throwable) = {

@@ -30,6 +30,8 @@ case class LogRecord(level: LogLevel,
                      cause: Option[Throwable] = None)
   extends jl.LogRecord(level.jlLevel, message) {
 
+  cause.foreach(setThrown(_))
+
   def leafLoggerName: String = {
     getLoggerName match {
       case null => ""
@@ -43,7 +45,5 @@ case class LogRecord(level: LogLevel,
         }
     }
   }
-
-  def date = getMillis
 }
 

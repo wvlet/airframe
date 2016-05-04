@@ -18,6 +18,7 @@ object LogLevel {
 
   val values = IndexedSeq(OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL)
   private lazy val index = values.map { l => l.name.toLowerCase -> l } toMap
+  private lazy val jlLevelIndex = values.map { l => l.jlLevel -> l } toMap
 
   def apply(name: String): LogLevel = {
     val n = name.toLowerCase(Locale.US)
@@ -29,6 +30,16 @@ object LogLevel {
     else
       lv.get
   }
+
+  def apply(jlLevel:Level) : LogLevel = jlLevelIndex.get(jlLevel) match {
+    case Some(l) => l
+    case None =>
+      jlLevel match {
+        case Level.CONFIG => INFO
+        case Level.FINEST => TRACE
+      }
+  }
+
 
   def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase(Locale.US))
 

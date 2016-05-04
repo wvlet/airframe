@@ -8,6 +8,9 @@ import java.util.{Locale, logging => jl}
 
 import wvlet.log.LogLevel.{DEBUG, ERROR, INFO, TRACE, WARN}
 
+/**
+  * To implement your own log formatter, implement this formatLog(r: LogRecord) method
+  */
 trait LogFormatter extends Formatter {
   def formatLog(r: LogRecord): String
 
@@ -21,44 +24,65 @@ trait LogFormatter extends Formatter {
 
 object LogFormatter {
 
+  import java.time.temporal.ChronoField._
+
+  val SYSTEM_ZONE         = ZoneId.systemDefault().normalized()
+  val TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
+                            .parseCaseInsensitive()
+                            .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+                            .appendLiteral('-')
+                            .appendValue(MONTH_OF_YEAR, 2)
+                            .appendLiteral('-')
+                            .appendValue(DAY_OF_MONTH, 2)
+                            .appendLiteral('T')
+                            .appendValue(HOUR_OF_DAY, 2)
+                            .appendLiteral(':')
+                            .appendValue(MINUTE_OF_HOUR, 2)
+                            .appendLiteral(':')
+                            .appendValue(SECOND_OF_MINUTE, 2)
+                            .appendLiteral('.')
+                            .appendValue(MILLI_OF_SECOND, 3)
+                            .appendOffset("+HHMM", "Z")
+                            .toFormatter(Locale.US)
+
+  def formatTimestamp(timeMillis: Long): String = {
+    val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), SYSTEM_ZONE)
+    TIMESTAMP_FORMATTER.format(timestamp)
+  }
+
+  def currentThreadName: String = Thread.currentThread().getName
+
+  def formatStacktrace(e: Throwable) = {
+    val trace = new StringWriter()
+    e.printStackTrace(new PrintWriter(trace))
+    trace.toString
+  }
+
+  def highlightLog(level: LogLevel, message: String): String = {
+    val prefix = level match {
+      case ERROR => Console.RED
+      case WARN => Console.YELLOW
+      case INFO => Console.CYAN
+      case DEBUG => Console.WHITE
+      case TRACE => Console.MAGENTA
+      case _ => ""
+    }
+    s"${prefix}${message}${Console.RESET}"
+  }
+
   object TSVLogFormatter extends LogFormatter {
-
-    import java.time.temporal.ChronoField._
-
-    private val SYSTEM_ZONE         = ZoneId.systemDefault().normalized();
-    private val TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
-                                      .parseCaseInsensitive()
-                                      .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-                                      .appendLiteral('-')
-                                      .appendValue(MONTH_OF_YEAR, 2)
-                                      .appendLiteral('-')
-                                      .appendValue(DAY_OF_MONTH, 2)
-                                      .appendLiteral('T')
-                                      .appendValue(HOUR_OF_DAY, 2)
-                                      .appendLiteral(':')
-                                      .appendValue(MINUTE_OF_HOUR, 2)
-                                      .appendLiteral(':')
-                                      .appendValue(SECOND_OF_MINUTE, 2)
-                                      .appendLiteral('.')
-                                      .appendValue(MILLI_OF_SECOND, 3)
-                                      .appendOffset("+HHMM", "Z")
-                                      .toFormatter(Locale.US)
-
     override def formatLog(record: LogRecord): String = {
-      val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(record.getMillis()), SYSTEM_ZONE)
       val s = Seq.newBuilder[String]
-      s += TIMESTAMP_FORMATTER.format(timestamp)
+      s += formatTimestamp(record.getMillis)
       s += record.level.toString
-      s += Thread.currentThread().getName
+      s += currentThreadName
       s += record.leafLoggerName
       s += record.getMessage
 
       val log = s.result().mkString("\t")
-      Option(record.getThrown) match {
+      record.cause match {
         case Some(ex) =>
-          val trace = new StringWriter()
-          ex.printStackTrace(new PrintWriter(trace))
-          s"${log}\n${trace.toString}"
+          s"${log}\n${formatStacktrace(ex)}"
         case None =>
           log
       }
@@ -66,29 +90,21 @@ object LogFormatter {
   }
 
   object ColorLogFormatter extends LogFormatter {
-
-    def colorLog(level: LogLevel, m: String): String = {
-      val prefix = level match {
-        case ERROR => Console.RED
-        case WARN => Console.YELLOW
-        case INFO => Console.CYAN
-        case DEBUG => Console.WHITE
-        case TRACE => Console.MAGENTA
-        case _ => ""
-      }
-      s"${prefix}${m}${Console.RESET}"
-    }
-
     override def formatLog(r: LogRecord): String = {
-      colorLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")
+      highlightLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")
     }
   }
 
-  object DebugLogFormatter extends LogFormatter {
+  object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"${ColorLogFormatter.colorLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")} (${r.source.fileLoc})"
+      highlightLog(r.level, s"${formatTimestamp(r.getMillis)} [${r.leafLoggerName}] ${r.getMessage}")
+    }
+  }
+
+  object SourceCodeLogFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      s"${highlightLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")} (${r.source.fileLoc})"
     }
   }
 
 }
-
