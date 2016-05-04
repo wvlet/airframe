@@ -4,6 +4,8 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util.logging._
 import java.util.{logging => jl}
 
+import wvlet.log.LogFormatter.DebugLogFormatter
+
 import scala.language.experimental.macros
 
 object Logger {
