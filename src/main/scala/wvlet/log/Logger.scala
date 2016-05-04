@@ -1,7 +1,7 @@
 package wvlet.log
 
 import java.io.{ByteArrayOutputStream, PrintStream}
-import java.util.logging.{Handler, Level}
+import java.util.logging.{LogRecord, _}
 import java.util.{Locale, logging => jl}
 
 import scala.language.experimental.macros
@@ -35,6 +35,10 @@ object LogLevel {
   }
 
   def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase(Locale.US))
+
+  implicit object LogOrdering extends Ordering[LogLevel] {
+    override def compare(x: LogLevel, y: LogLevel): Int = x.order - y.order
+  }
 }
 
 sealed abstract class LogLevel(val order: Int, val jlLevel: Level, val name: String) extends Ordered[LogLevel] with Serializable {
@@ -42,19 +46,10 @@ sealed abstract class LogLevel(val order: Int, val jlLevel: Level, val name: Str
   override def toString = name
 }
 
-trait LoggerHandler {
-
-  def handler: Handler
-
-  def addTo(logger:jl.Logger) {
-    logger.addHandler(handler)
-  }
-}
-
-
-
 
 object Logger {
+
+  val root = getLogger("", handlers = Seq(new ConsoleLogHandler(new ConsoleLogFormatter)))
 
   /**
     * Create a new {@link java.util.logging.Logger}
@@ -65,19 +60,24 @@ object Logger {
     * @return
     */
   def getLogger(name:String,
-                level:Option[LogLevel],
-                handlers:Seq[LoggerHandler] = Seq.empty,
+                level:Option[LogLevel] = None,
+                handlers:Seq[Handler] = Seq.empty,
                 useParents: Boolean = true
                ) : jl.Logger = {
     val logger = jl.Logger.getLogger(name)
     logger.clearHandlers
     level.foreach(l => logger.setLevel(l.jlLevel))
-    handlers.foreach(h => h.addTo(logger))
+    handlers.foreach(h => logger.addHandler(h))
     logger.setUseParentHandlers(useParents)
     logger
   }
 
   implicit class RichLogger(logger:jl.Logger) {
+
+    def setLogLevel(l:LogLevel) {
+      logger.setLevel(l.jlLevel)
+    }
+
     def clear {
       clearHandlers
       resetLogLevel
@@ -92,20 +92,62 @@ object Logger {
     def resetLogLevel {
       logger.setLevel(null)
     }
+
+    def isEnabled(level:LogLevel) : Boolean = {
+      logger.isLoggable(level.jlLevel)
+    }
+
+    def log(record:LogRecord) {
+      logger.log(record)
+    }
   }
+}
+
+
+case class LogRecord(level:LogLevel, source:String, line:Int, col:Int, message:String, cause:Option[Throwable] = None)
+  extends jl.LogRecord(level.jlLevel, message)
+
+
+trait LogFormatter extends Formatter {
+  def formatLog(r:LogRecord) : String
+}
+
+class ConsoleLogFormatter extends LogFormatter {
+
+  override def formatLog(r: LogRecord): String = {
+    s"[${r.getLoggerName}] ${r.source} ${r.getMessage}"
+  }
+  override def format(record: jl.LogRecord): String = {
+    record match {
+      case lr:LogRecord => formatLog(lr)
+      case _ => s"[${record.getLoggerName}] ${record.getMessage}"
+    }
+  }
+
+}
+
+
+class ConsoleLogHandler(formatter:LogFormatter) extends jl.Handler {
+  override def publish(record: jl.LogRecord): Unit = {
+    System.err.println(formatter.format(record))
+  }
+  override def flush(): Unit = Console.flush()
+  override def close(): Unit = {}
 }
 
 
 /**
   *
   */
-trait LogSupport extends Serializable {
+trait Logger extends Serializable {
 
   import LogMacros._
 
-  protected[this] def logger : jl.Logger = {
-    //Logger.configuration // initialize
-    java.util.logging.Logger.getLogger(this.getClass.getName)
+  import Logger._
+
+  protected[this] def logger : RichLogger = {
+    val l = Logger.getLogger(this.getClass.getName)
+    l
   }
 
   protected[this] def formatLog(message: Any): String = {
