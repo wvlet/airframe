@@ -15,7 +15,7 @@ private[log] object LogMacros {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
       val l = q"${level}"
-      val record = q"wvlet.log.LogRecord(${l}, LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
+      val record = q"wvlet.log.LogRecord(${l}, wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
         pos.column
       }), formatLog(${message}))"
       q"if ($logger.isEnabled($l)) $logger.log(${record})"
@@ -25,7 +25,7 @@ private[log] object LogMacros {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
       val l = q"${level.asInstanceOf[c.universe.Select]}"
-      val record = q"wvlet.log.LogRecord(${l}, LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
+      val record = q"wvlet.log.LogRecord(${l}, wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
         pos.column
       }), formatLog(${message}), Some(${cause}))"
       q"if ($logger.isEnabled($l)) $logger.log(${record})"

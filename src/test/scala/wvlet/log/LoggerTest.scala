@@ -1,6 +1,9 @@
 package wvlet.log
 
-import wvlet.test.WvletSpec
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
+
+trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with Logger
+
 
 class Test extends Logger {
 
@@ -21,7 +24,7 @@ class Test extends Logger {
 /**
   *
   */
-class LoggerTest extends WvletSpec {
+class LoggerTest extends Spec {
 
   "logger" should {
     "display log messages" in {
