@@ -20,20 +20,16 @@ private[log] object LogMacros {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
       val l = q"${level}"
-      val record = q"wvlet.log.LogRecord(${l}, wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
-        pos.column
-      }), formatLog(${message}))"
-      q"if ($logger.isEnabled($l)) $logger.log(${record})"
+      val source = q"wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+      q"if ($logger.isEnabled($l)) $logger.log(${l}, ${source}, ${message})"
     }
 
     def logWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
       val l = q"${level}"
-      val record = q"wvlet.log.LogRecord(${l}, wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${
-        pos.column
-      }), formatLog(${message}), Some(${cause}))"
-      q"if ($logger.isEnabled($l)) $logger.log(${record})"
+      val source = q"wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+      q"if ($logger.isEnabled($l)) $logger.logWithCause(${l}, ${source}, ${message}, ${cause})"
     }
 
   }

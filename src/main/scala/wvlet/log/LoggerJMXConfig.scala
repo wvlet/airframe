@@ -26,8 +26,8 @@ class LoggerJMXConfigImpl extends LoggerJMXConfig {
   def setLogLevel(loggerName: String, logLevel: String) {
     val logger = Logger.apply(loggerName)
     val level = LogLevel(logLevel)
-    logger.setLevel(level.jlLevel)
-    Logger.rootLogger.info(s"set the log level of $loggerName to $level")
+    logger.setLogLevel(level)
+    //info(s"set the log level of $loggerName to $level")
   }
 }
 
@@ -56,12 +56,12 @@ object LoggerJMXConfig {
   def setLogLevelJMX(server:MBeanServerConnection, loggerName:String, logLevel:String) {
     val lc = JMX.newMBeanProxy(server, configMBeanName, classOf[LoggerJMXConfig], true)
     lc.setLogLevel(loggerName, logLevel)
-    Logger.rootLogger.fine(s"Set the loglevel of $loggerName to $logLevel")
+    //info(s"Set the loglevel of $loggerName to $logLevel")
   }
   def setDefaultLogLevelJMX(server:MBeanServerConnection, logLevel:String) {
     val lc = JMX.newMBeanProxy(server, configMBeanName, classOf[LoggerJMXConfig], true)
     lc.setDefaultLogLevel(logLevel)
-    Logger.rootLogger.fine(s"Set the default loglevel to $logLevel")
+    //info(s"Set the default loglevel to $logLevel")
   }
 
   def getJMXServerAddress(pid:Int) : Option[String] = {
@@ -72,18 +72,18 @@ object LoggerJMXConfig {
     *
     */
   private def getJMXServer(pid:Int) : Option[MBeanServerConnection] = {
-    Logger.rootLogger.info(s"Searching for JMX server pid:$pid")
+    //info(s"Searching for JMX server pid:$pid")
     val addr = getJMXServerAddress(pid)
     val server : Option[MBeanServerConnection] = addr.map{ a =>
       JMXConnectorFactory.connect(new JMXServiceURL(a))
     } map (_.getMBeanServerConnection)
 
     if(server.isEmpty) {
-      Logger.rootLogger.warning(s"No JMX server (pid:$pid) is found")
+      //warn(s"No JMX server (pid:$pid) is found")
     }
     else {
-      Logger.rootLogger.info(s"Found a JMX server (pid:$pid)")
-      Logger.rootLogger.fine(s"Server address: ${addr.get}")
+      //info(s"Found a JMX server (pid:$pid)")
+      //debug(s"Server address: ${addr.get}")
     }
     server
   }

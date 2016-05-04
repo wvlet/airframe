@@ -31,13 +31,15 @@ object LogLevel {
       lv.get
   }
 
-  def apply(jlLevel:Level) : LogLevel = jlLevelIndex.get(jlLevel) match {
-    case Some(l) => l
-    case None =>
-      jlLevel match {
-        case Level.CONFIG => INFO
-        case Level.FINEST => TRACE
-      }
+  def apply(jlLevel:Level) : LogLevel = {
+    jlLevelIndex.get(jlLevel) match {
+      case Some(l) => l
+      case None =>
+        jlLevel match {
+          case Level.CONFIG => INFO
+          case Level.FINEST => TRACE
+        }
+    }
   }
 
 
