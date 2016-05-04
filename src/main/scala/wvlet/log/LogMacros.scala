@@ -8,86 +8,75 @@ import scala.reflect.macros.blackbox.Context
   */
 object LogMacros {
 
-  class MacroHelper(val c: Context) {
+  class MacroHelper[C <: Context](val c: C) {
     import c.universe._
 
-    def log[L, M](level:L, message:M) = {
+    def log(level:c.universe.Tree, message:c.universe.Tree) : c.universe.Tree = {
+      val logger = q"this.logger"
+      val pos = c.enclosingPosition
+      val l = q"${level}"
+      val record = q"wvlet.log.LogRecord(${l}, LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column}), formatLog(${message}))"
+      q"if ($logger.isEnabled($l)) $logger.log(${record})"
+    }
+
+    def logE(level:c.universe.Tree, message:c.universe.Tree, cause: c.universe.Tree) : c.universe.Tree = {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
       val l = q"${level.asInstanceOf[c.universe.Select]}"
-      val record = q"wvlet.log.LogRecord(${l}, LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column}), formatLog(${message.asInstanceOf[c.Expr[Any]]}))"
+      val record = q"wvlet.log.LogRecord(${l}, LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column}), formatLog(${message}), Some(${cause}))"
       q"if ($logger.isEnabled($l)) $logger.log(${record})"
     }
+
   }
 
-  def errorLog(c: Context)(message: c.Expr[Any]) = {
+  def errorLog(c: Context)(message: c.Tree) : c.Tree = {
     import c.universe._
-    new MacroHelper(c).log(q"wvlet.log.LogLevel.ERROR", message).asInstanceOf[c.Tree]
+    new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.ERROR", message)
   }
 
-  def errorLogWithCause(c: Context)(message: c.Expr[Any], cause: c.Expr[Throwable]) = {
+  def errorLogWithCause(c: Context)(message: c.Tree, cause: c.Tree) : c.Tree = {
     import c.universe._
-    val logger = q"this.logger"
-    val level = q"wvlet.log.LogLevel.ERROR"
-    val pos = c.enclosingPosition
-    val record = q"wvlet.log.LogRecord($level, ${pos.source.path}, ${pos.line}, ${pos.column}, formatLog(${message}), Some(${cause}))"
-    q"if ($logger.isEnabled($level)) $logger.log(${record})"
+    new MacroHelper[c.type](c).logE(q"wvlet.log.LogLevel.ERROR", message, cause)
   }
 
-  def warnLog(c: Context)(message: c.Expr[Any]) = {
+  def warnLog(c: Context)(message: c.Tree) : c.Tree = {
     import c.universe._
-    new MacroHelper(c).log(q"wvlet.log.LogLevel.WARN", message).asInstanceOf[c.Tree]
+    new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.WARN", message)
   }
 
-  def warnLogWithCause(c: Context)(message: c.Expr[Any], cause: c.Expr[Throwable]) = {
+  def warnLogWithCause(c: Context)(message: c.Tree, cause: c.Tree) : c.Tree = {
     import c.universe._
-    val logger = q"this.logger"
-    val level = q"wvlet.log.LogLevel.WARN"
-    val pos = c.enclosingPosition
-    val record = q"wvlet.log.LogRecord($level, ${pos.source.path}, ${pos.line}, ${pos.column}, formatLog(${message}), Some(${cause}))"
-    q"if ($logger.isEnabled($level)) $logger.log(${record})"
+    new MacroHelper[c.type](c).logE(q"wvlet.log.LogLevel.WARN", message, cause)
   }
 
-  def infoLog(c: Context)(message: c.Expr[Any]) = {
+  def infoLog(c: Context)(message: c.Tree) : c.Tree = {
     import c.universe._
-    new MacroHelper(c).log(q"wvlet.log.LogLevel.INFO", message).asInstanceOf[c.Tree]
+    new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.INFO", message)
   }
 
-  def infoLogWithCause(c: Context)(message: c.Expr[Any], cause: c.Expr[Throwable]) = {
+  def infoLogWithCause(c: Context)(message: c.Tree, cause: c.Tree) : c.Tree = {
     import c.universe._
-    val logger = q"this.logger"
-    val level = q"wvlet.log.LogLevel.INFO"
-    val pos = c.enclosingPosition
-    val record = q"wvlet.log.LogRecord($level, ${pos.source.path}, ${pos.line}, ${pos.column}, formatLog(${message}), Some(${cause}))"
-    q"if ($logger.isEnabled($level)) $logger.log(${record})"
+    new MacroHelper[c.type](c).logE(q"wvlet.log.LogLevel.INFO", message, cause)
   }
 
-  def debugLog(c: Context)(message: c.Expr[Any]) = {
+  def debugLog(c: Context)(message: c.Tree) : c.Tree = {
     import c.universe._
-    new MacroHelper(c).log(q"wvlet.log.LogLevel.DEBUG", message).asInstanceOf[c.Tree]
+    new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.DEBUG", message)
   }
 
-  def debugLogWithCause(c: Context)(message: c.Expr[Any], cause: c.Expr[Throwable]) = {
+  def debugLogWithCause(c: Context)(message: c.Tree, cause: c.Tree) : c.Tree = {
     import c.universe._
-    val logger = q"this.logger"
-    val level = q"wvlet.log.LogLevel.DEBUG"
-    val pos = c.enclosingPosition
-    val record = q"wvlet.log.LogRecord($level, ${pos.source.path}, ${pos.line}, ${pos.column}, formatLog(${message}), Some(${cause}))"
-    q"if ($logger.isEnabled($level)) $logger.log(${record})"
+    new MacroHelper[c.type](c).logE(q"wvlet.log.LogLevel.DEBUG", message, cause)
   }
 
-  def traceLog(c: Context)(message: c.Expr[Any]) = {
+  def traceLog(c: Context)(message: c.Tree) : c.Tree = {
     import c.universe._
-    new MacroHelper(c).log(q"wvlet.log.LogLevel.TRACE", message).asInstanceOf[c.Tree]
+    new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.TRACE", message)
   }
 
-  def traceLogWithCause(c: Context)(message: c.Expr[Any], cause: c.Expr[Throwable]) = {
+  def traceLogWithCause(c: Context)(message: c.Tree, cause: c.Tree) : c.Tree = {
     import c.universe._
-    val logger = q"this.logger"
-    val level = q"wvlet.log.LogLevel.TRACE"
-    val pos = c.enclosingPosition
-    val record = q"wvlet.log.LogRecord($level, ${pos.source.path}, ${pos.line}, ${pos.column}, formatLog(${message}), Some(${cause}))"
-    q"if ($logger.isEnabled($level)) $logger.log(${record})"
+    new MacroHelper[c.type](c).logE(q"wvlet.log.LogLevel.TRACE", message, cause)
   }
 
 
