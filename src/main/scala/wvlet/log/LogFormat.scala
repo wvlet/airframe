@@ -79,7 +79,7 @@ object LogFormatter {
       case ERROR => Console.RED
       case WARN => Console.YELLOW
       case INFO => Console.CYAN
-      case DEBUG => Console.WHITE
+      case DEBUG => Console.GREEN
       case TRACE => Console.MAGENTA
       case _ => ""
     }
@@ -119,7 +119,7 @@ object LogFormatter {
 
   object SourceCodeLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"${highlightLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")} (${r.source.fileLoc})"
+      s"[${highlightLog(r.level, r.leafLoggerName)}] ${r.getMessage} (${r.source.fileLoc})"
     }
   }
 

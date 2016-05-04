@@ -80,12 +80,21 @@ class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
     log(LogRecord(level, source, formatLog(message), Some(cause)))
   }
 
+  private def isMultiLine(str: String) = str.contains("\n")
+
   def formatLog(message: Any): String = {
-    message match {
+    val formatted = message match {
       case null => ""
       case e: Error => LogFormatter.formatStacktrace(e)
       case e: Exception => LogFormatter.formatStacktrace(e)
       case _ => message.toString
+    }
+
+    if(isMultiLine(formatted)) {
+      s"\n${formatted}"
+    }
+    else {
+      formatted
     }
   }
 
@@ -100,6 +109,8 @@ object Logger {
   val rootLogger = getLogger(
     name = "",
     handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
+
+
 
   /**
     * Create a new {@link java.util.logging.Logger}
