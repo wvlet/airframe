@@ -97,7 +97,7 @@ object LogFormatter {
 
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      highlightLog(r.level, s"${formatTimestamp(r.getMillis)} [${r.leafLoggerName}] ${r.getMessage}")
+      s"${formatTimestamp(r.getMillis)} [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
     }
   }
 
