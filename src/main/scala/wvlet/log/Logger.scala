@@ -4,7 +4,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging._
 import java.util.{logging => jl}
 
-import wvlet.log.LogFormatter.{AppLogFormatter, SourceCodeLogFormatter}
+import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.annotation.tailrec
 
@@ -96,7 +96,7 @@ class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
       case _ => message.toString
     }
 
-    if(isMultiLine(formatted)) {
+    if (isMultiLine(formatted)) {
       s"\n${formatted}"
     }
     else {
@@ -115,8 +115,6 @@ object Logger {
   val rootLogger = getLogger(
     name = "",
     handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
-
-
 
   /**
     * Create a new {@link java.util.logging.Logger}
@@ -151,7 +149,7 @@ object Logger {
     rootLogger.setLogLevel(level)
   }
 
-  def setDefaultFormatter(formatter:LogFormatter) {
+  def setDefaultFormatter(formatter: LogFormatter) {
     rootLogger.resetHandler(new ConsoleLogHandler(formatter))
   }
 
