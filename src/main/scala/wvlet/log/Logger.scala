@@ -43,13 +43,12 @@ object LogLevel {
 
 sealed abstract class LogLevel(val order: Int, val jlLevel: Level, val name: String) extends Ordered[LogLevel] with Serializable {
   def compare(other: LogLevel) = this.order - other.order
-  override def toString = name
 }
 
 
 object Logger {
 
-  val root = getLogger("", handlers = Seq(new ConsoleLogHandler(new ConsoleLogFormatter)))
+  val rootLogger = getLogger("", handlers = Seq(new ConsoleLogHandler(new ConsoleLogFormatter)))
 
   /**
     * Create a new {@link java.util.logging.Logger}
@@ -98,14 +97,16 @@ object Logger {
     }
 
     def log(record:LogRecord) {
+      record.setLoggerName(logger.getName)
       logger.log(record)
     }
   }
 }
 
-
-case class LogRecord(level:LogLevel, source:String, line:Int, col:Int, message:String, cause:Option[Throwable] = None)
-  extends jl.LogRecord(level.jlLevel, message)
+case class LogSource(path:String, fileName:String, line:Int, col:Int)
+case class LogRecord(level:LogLevel, source:LogSource, message:String, cause:Option[Throwable] = None)
+  extends jl.LogRecord(level.jlLevel, message) {
+}
 
 
 trait LogFormatter extends Formatter {
