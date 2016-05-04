@@ -1,12 +1,10 @@
 package wvlet.log
 
 import java.io.{ByteArrayOutputStream, PrintStream}
-import java.util.logging.{LogRecord, _}
-import java.util.{Locale, logging => jl}
+import java.util.logging._
+import java.util.{logging => jl}
 
 import scala.language.experimental.macros
-
-
 
 object Logger {
 
@@ -14,17 +12,18 @@ object Logger {
 
   /**
     * Create a new {@link java.util.logging.Logger}
+    *
     * @param name
     * @param level
     * @param handlers
     * @param useParents
     * @return
     */
-  def getLogger(name:String,
-                level:Option[LogLevel] = None,
-                handlers:Seq[Handler] = Seq.empty,
+  def getLogger(name: String,
+                level: Option[LogLevel] = None,
+                handlers: Seq[Handler] = Seq.empty,
                 useParents: Boolean = true
-               ) : jl.Logger = {
+               ): jl.Logger = {
     val logger = jl.Logger.getLogger(name)
     logger.clearHandlers
     level.foreach(l => logger.setLevel(l.jlLevel))
@@ -33,9 +32,9 @@ object Logger {
     logger
   }
 
-  implicit class RichLogger(logger:jl.Logger) {
+  implicit class RichLogger(logger: jl.Logger) {
 
-    def setLogLevel(l:LogLevel) {
+    def setLogLevel(l: LogLevel) {
       logger.setLevel(l.jlLevel)
     }
 
@@ -45,7 +44,7 @@ object Logger {
     }
 
     def clearHandlers {
-      for(lst <- Option(logger.getHandlers); h <- lst) {
+      for (lst <- Option(logger.getHandlers); h <- lst) {
         logger.removeHandler(h)
       }
     }
@@ -54,18 +53,16 @@ object Logger {
       logger.setLevel(null)
     }
 
-    def isEnabled(level:LogLevel) : Boolean = {
+    def isEnabled(level: LogLevel): Boolean = {
       logger.isLoggable(level.jlLevel)
     }
 
-    def log(record:LogRecord) {
+    def log(record: LogRecord) {
       record.setLoggerName(logger.getName)
       logger.log(record)
     }
   }
 }
-
-
 
 /**
   *
@@ -73,11 +70,11 @@ object Logger {
 trait Logger extends Serializable {
 
   import LogMacros._
-
   import Logger._
 
-  protected[this] def logger : RichLogger = {
+  protected[this] def logger: RichLogger = {
     val l = Logger.getLogger(this.getClass.getName)
+    l.setLogLevel(LogLevel.TRACE)
     l
   }
 
@@ -108,19 +105,19 @@ trait Logger extends Serializable {
   }
 
   protected def error(message: Any): Unit = macro errorLog
-  protected def error(message: Any, cause:Throwable): Unit = macro errorLogWithCause
+  protected def error(message: Any, cause: Throwable): Unit = macro errorLogWithCause
 
   protected def warn(message: Any): Unit = macro warnLog
-  protected def warn(message: Any, cause:Throwable): Unit = macro warnLogWithCause
+  protected def warn(message: Any, cause: Throwable): Unit = macro warnLogWithCause
 
   protected def info(message: Any): Unit = macro infoLog
-  protected def info(message: Any, cause:Throwable): Unit = macro infoLogWithCause
+  protected def info(message: Any, cause: Throwable): Unit = macro infoLogWithCause
 
   protected def debug(message: Any): Unit = macro debugLog
-  protected def debug(message: Any, cause:Throwable): Unit = macro debugLogWithCause
+  protected def debug(message: Any, cause: Throwable): Unit = macro debugLogWithCause
 
   protected def trace(message: Any): Unit = macro traceLog
-  protected def trace(message: Any, cause:Throwable): Unit = macro traceLogWithCause
+  protected def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
 
 }
 

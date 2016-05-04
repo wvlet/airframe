@@ -52,7 +52,7 @@ class ConsoleLogFormatter extends LogFormatter {
       case WARN => Console.YELLOW
       case INFO => Console.CYAN
       case DEBUG => Console.WHITE
-      case TRACE => "\u001b[0;37m" // GRAY
+      case TRACE => Console.MAGENTA
       case _ => ""
     }
 
