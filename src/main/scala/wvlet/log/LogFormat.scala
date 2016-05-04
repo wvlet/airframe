@@ -1,7 +1,7 @@
 package wvlet.log
 
 import java.io.{PrintWriter, StringWriter}
-import java.time.format.{DateTimeFormatterBuilder, SignStyle}
+import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.logging.Formatter
 import java.util.{Locale, logging => jl}
@@ -26,28 +26,44 @@ object LogFormatter {
 
   import java.time.temporal.ChronoField._
 
-  val SYSTEM_ZONE         = ZoneId.systemDefault().normalized()
-  val TIMESTAMP_FORMATTER = new DateTimeFormatterBuilder()
-                            .parseCaseInsensitive()
-                            .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-                            .appendLiteral('-')
-                            .appendValue(MONTH_OF_YEAR, 2)
-                            .appendLiteral('-')
-                            .appendValue(DAY_OF_MONTH, 2)
-                            .appendLiteral('T')
-                            .appendValue(HOUR_OF_DAY, 2)
-                            .appendLiteral(':')
-                            .appendValue(MINUTE_OF_HOUR, 2)
-                            .appendLiteral(':')
-                            .appendValue(SECOND_OF_MINUTE, 2)
-                            .appendLiteral('.')
-                            .appendValue(MILLI_OF_SECOND, 3)
-                            .appendOffset("+HHMM", "Z")
-                            .toFormatter(Locale.US)
+  val systemZone             = ZoneId.systemDefault().normalized()
+  val noSpaceTimestampFormat = new DateTimeFormatterBuilder()
+                               .parseCaseInsensitive()
+                               .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+                               .appendLiteral('-')
+                               .appendValue(MONTH_OF_YEAR, 2)
+                               .appendLiteral('-')
+                               .appendValue(DAY_OF_MONTH, 2)
+                               .appendLiteral('T')
+                               .appendValue(HOUR_OF_DAY, 2)
+                               .appendLiteral(':')
+                               .appendValue(MINUTE_OF_HOUR, 2)
+                               .appendLiteral(':')
+                               .appendValue(SECOND_OF_MINUTE, 2)
+                               .appendLiteral('.')
+                               .appendValue(MILLI_OF_SECOND, 3)
+                               .appendOffset("+HHMM", "Z")
+                               .toFormatter(Locale.US)
 
-  def formatTimestamp(timeMillis: Long): String = {
-    val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), SYSTEM_ZONE)
-    TIMESTAMP_FORMATTER.format(timestamp)
+  val humanReadableTimestampFormatter = new DateTimeFormatterBuilder()
+                                        .parseCaseInsensitive()
+                                        .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
+                                        .appendLiteral('-')
+                                        .appendValue(MONTH_OF_YEAR, 2)
+                                        .appendLiteral('-')
+                                        .appendValue(DAY_OF_MONTH, 2)
+                                        .appendLiteral(' ')
+                                        .appendValue(HOUR_OF_DAY, 2)
+                                        .appendLiteral(':')
+                                        .appendValue(MINUTE_OF_HOUR, 2)
+                                        .appendLiteral(':')
+                                        .appendValue(SECOND_OF_MINUTE, 2)
+                                        .appendOffset("+HHMM", "Z")
+                                        .toFormatter(Locale.US)
+
+  def formatTimestamp(timeMillis: Long, dateTimeformatter:DateTimeFormatter = humanReadableTimestampFormatter): String = {
+    val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), systemZone)
+    dateTimeformatter.format(timestamp)
   }
 
   def currentThreadName: String = Thread.currentThread().getName
@@ -73,7 +89,7 @@ object LogFormatter {
   object TSVLogFormatter extends LogFormatter {
     override def formatLog(record: LogRecord): String = {
       val s = Seq.newBuilder[String]
-      s += formatTimestamp(record.getMillis)
+      s += formatTimestamp(record.getMillis, noSpaceTimestampFormat)
       s += record.level.toString
       s += currentThreadName
       s += record.leafLoggerName
