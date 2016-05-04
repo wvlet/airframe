@@ -1,7 +1,7 @@
 package wvlet.log
 
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
+import wvlet.log.LogFormatter._
 
 trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
   logger.resetHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
@@ -17,8 +17,8 @@ class MyAppClass extends LogSupport {
 
   info(null)
   info(
-    """multi line
-      |string log""".stripMargin)
+    """This is a multi-line
+      |log message!""".stripMargin)
   info(Seq(1, 2, 3, 4))
 }
 
@@ -27,11 +27,44 @@ class MyAppClass extends LogSupport {
   */
 class LoggerTest extends Spec {
 
+  override def beforeAll {
+    Logger.setDefaultLogLevel(LogLevel.TRACE)
+  }
+
+  override def afterAll {
+    Logger.setDefaultLogLevel(LogLevel.INFO)
+  }
+
   "logger" should {
     "display log messages" in {
       info("logging test")
       new MyAppClass
-
     }
+
+    "support simple log format" in {
+      Logger.setDefaultFormatter(SimpleLogFormatter)
+      new MyAppClass
+    }
+
+    "support app log format" in {
+      Logger.setDefaultFormatter(AppLogFormatter)
+      new MyAppClass
+    }
+
+    "support source code log format" in {
+      Logger.setDefaultFormatter(SourceCodeLogFormatter)
+      new MyAppClass
+    }
+
+    "support intellij format" in {
+      Logger.setDefaultFormatter(IntelliJLogFormatter)
+      new MyAppClass
+    }
+
+    "support tsv format" in {
+      Logger.setDefaultFormatter(TSVLogFormatter)
+      new MyAppClass
+    }
+
   }
 }

@@ -151,6 +151,10 @@ object Logger {
     rootLogger.setLogLevel(level)
   }
 
+  def setDefaultFormatter(formatter:LogFormatter) {
+    rootLogger.resetHandler(new ConsoleLogHandler(formatter))
+  }
+
   def resetDefaultLogLevel {
     rootLogger.resetLogLevel
   }

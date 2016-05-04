@@ -109,21 +109,39 @@ object LogFormatter {
     }
   }
 
-  object ColorLogFormatter extends LogFormatter {
+  /**
+    * Simple log formatter that shows only logger name and message
+    */
+  object SimpleLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      highlightLog(r.level, s"[${r.leafLoggerName}] ${r.getMessage}")
+      s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
     }
   }
 
+  /**
+    * log format for command-line user client
+    */
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
       s"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
     }
   }
 
+  /**
+    * log format for debugging source code
+    */
   object SourceCodeLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
       s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} - ${r.leafLoggerName}(${withColor(Console.BLUE, r.source.fileLoc)})"
+    }
+  }
+
+  /**
+    * Enable source code links in the run/debug console of IntelliJ
+    */
+  object IntelliJLogFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} - ${r.getLoggerName}(${withColor(Console.BLUE, r.source.fileLoc)})"
     }
   }
 
