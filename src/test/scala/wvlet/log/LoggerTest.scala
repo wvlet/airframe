@@ -11,6 +11,9 @@ class Test extends Logger {
   trace("trace message")
 
   info(null)
+  info(
+    """multi line
+      |string log""".stripMargin)
   info(Seq(1, 2, 3, 4))
 
 }

@@ -24,11 +24,25 @@ case class LogSource(path:String, fileName:String, line:Int, col:Int) {
     }
   }
 
-  override def toString = s"${fileBaseName}:${line}"
+  override def toString = s"${fileName}:${line}"
 }
 
 case class LogRecord(level:LogLevel, source:LogSource, message:String, cause:Option[Throwable] = None)
   extends jl.LogRecord(level.jlLevel, message) {
+
+  def leafLoggerName : String = {
+    getLoggerName match {
+      case null => ""
+      case name =>
+        val pos = name.lastIndexOf('.')
+        if(pos == -1) {
+          name
+        }
+        else {
+          name.substring(pos + 1)
+        }
+    }
+  }
 
   def date = getMillis
 }
@@ -44,7 +58,7 @@ trait LogFormatter extends Formatter {
   }
 }
 
-class ConsoleLogFormatter extends LogFormatter {
+object ANSIColorLogFormatter extends LogFormatter {
 
   override def formatLog(r: LogRecord): String = {
     val prefix = r.level match {
@@ -56,7 +70,7 @@ class ConsoleLogFormatter extends LogFormatter {
       case _ => ""
     }
 
-    s"${prefix}[${r.source}] ${r.getMessage}${Console.RESET}"
+    s"${prefix}[${r.leafLoggerName}] ${r.getMessage} - ${r.getLoggerName}(${r.source})${Console.RESET}"
   }
 
 }

@@ -8,7 +8,9 @@ import scala.language.experimental.macros
 
 object Logger {
 
-  val rootLogger = getLogger("", handlers = Seq(new ConsoleLogHandler(new ConsoleLogFormatter)))
+  val rootLogger = getLogger(
+    name = "",
+    handlers = Seq(new ConsoleLogHandler(ANSIColorLogFormatter)))
 
   /**
     * Create a new {@link java.util.logging.Logger}
