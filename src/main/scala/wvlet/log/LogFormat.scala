@@ -24,7 +24,7 @@ case class LogSource(path:String, fileName:String, line:Int, col:Int) {
     }
   }
 
-  override def toString = s"${fileName}:${line}"
+  def fileLoc = s"${fileName}:${line}"
 }
 
 case class LogRecord(level:LogLevel, source:LogSource, message:String, cause:Option[Throwable] = None)
@@ -70,7 +70,7 @@ object ANSIColorLogFormatter extends LogFormatter {
       case _ => ""
     }
 
-    s"${prefix}[${r.leafLoggerName}] ${r.getMessage} - ${r.getLoggerName}(${r.source})${Console.RESET}"
+    f"${prefix}[${r.leafLoggerName}] ${r.getMessage}${Console.RESET} (${r.source.fileLoc})"
   }
 
 }
