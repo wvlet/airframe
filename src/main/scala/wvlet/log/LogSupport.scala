@@ -5,23 +5,29 @@ import java.io.{ByteArrayOutputStream, PrintStream}
 import scala.language.experimental.macros
 
 /**
-  * Use this if you need a local logger instance in your class
+  * Trait for adding logging methods (error, warn, info, debug and trace) to your class
+  */
+trait LogSupport extends LoggingMethods with LazyLogger
+
+/**
+  * Trait for adding logging methods and an initialized logger instance
+  */
+trait LocalLogSupport extends LoggingMethods with LocalLogger
+
+/**
+  * Trait for adding a local logger instance to your class
   */
 trait LazyLogger {
   protected[this] lazy val logger: Logger = Logger.getLogger(this.getClass.getName)
 }
 
 /**
-  * This addds logging methods (error, warn, info, debug and trace) to your class
+  * Trait for adding an initialized logger instance to your class
   */
-trait LogSupport extends LoggingMethods with LazyLogger
-
-/**
-  * If you need to initialize the logger instance upon instance initialization, use this trait
-  */
-trait StrictLogSupport extends LoggingMethods {
+trait LocalLogger {
   protected[this] val logger: Logger = Logger.getLogger(this.getClass.getName)
 }
+
 
 trait LoggingMethods extends Serializable {
   import LogMacros._
