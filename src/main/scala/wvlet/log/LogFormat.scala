@@ -123,7 +123,7 @@ object LogFormatter {
     */
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
+      s"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
     }
   }
 
@@ -134,10 +134,10 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-        .map(source => s" - ${r.leafLoggerName}(${withColor(Console.BLUE, source.fileLoc)})")
+        .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
         .getOrElse("")
 
-      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}${loc}"
+      s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}${loc}"
     }
   }
 
@@ -148,7 +148,7 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-        .map(source => s" - ${r.getLoggerName}(${withColor(Console.BLUE, source.fileLoc)})")
+        .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
         .getOrElse("")
 
       s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"

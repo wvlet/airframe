@@ -26,7 +26,9 @@ case class LogSource(path: String, fileName: String, line: Int, col: Int) {
 
 object LogRecord {
   def apply(record:jl.LogRecord) : LogRecord = {
-    LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
+    val l = LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
+    l.setLoggerName(record.getLoggerName)
+    l
   }
 
   def apply(level:LogLevel, source:LogSource, message:String) : LogRecord = {
