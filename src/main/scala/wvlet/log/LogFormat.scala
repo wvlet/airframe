@@ -17,7 +17,7 @@ trait LogFormatter extends Formatter {
   override def format(record: jl.LogRecord): String = {
     record match {
       case lr: LogRecord => formatLog(lr)
-      case _ => s"[${record.getLoggerName}] ${record.getMessage}"
+      case _ => formatLog(LogRecord(record))
     }
   }
 }
@@ -132,7 +132,12 @@ object LogFormatter {
     */
   object SourceCodeLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} - ${r.leafLoggerName}(${withColor(Console.BLUE, r.source.fileLoc)})"
+      val loc =
+        r.source
+        .map(source => s" - ${r.leafLoggerName}(${withColor(Console.BLUE, source.fileLoc)})")
+        .getOrElse("")
+
+      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}${loc}"
     }
   }
 
@@ -141,7 +146,12 @@ object LogFormatter {
     */
   object IntelliJLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} - ${r.getLoggerName}(${withColor(Console.BLUE, r.source.fileLoc)})"
+      val loc =
+        r.source
+        .map(source => s" - ${r.getLoggerName}(${withColor(Console.BLUE, source.fileLoc)})")
+        .getOrElse("")
+
+      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
     }
   }
 

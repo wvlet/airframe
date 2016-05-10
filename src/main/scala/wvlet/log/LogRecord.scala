@@ -24,10 +24,24 @@ case class LogSource(path: String, fileName: String, line: Int, col: Int) {
   def fileLoc = s"${fileName}:${line}"
 }
 
+object LogRecord {
+  def apply(record:jl.LogRecord) : LogRecord = {
+    LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
+  }
+
+  def apply(level:LogLevel, source:LogSource, message:String) : LogRecord = {
+    LogRecord(level, Some(source), message, None)
+  }
+
+  def apply(level:LogLevel, source:LogSource, message:String, cause:Throwable) : LogRecord = {
+    LogRecord(level, Some(source), message, Some(cause))
+  }
+}
+
 case class LogRecord(level: LogLevel,
-                     source: LogSource,
+                     source: Option[LogSource],
                      message: String,
-                     cause: Option[Throwable] = None)
+                     cause: Option[Throwable])
   extends jl.LogRecord(level.jlLevel, message) {
 
   cause.foreach(setThrown(_))

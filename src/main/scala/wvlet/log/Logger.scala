@@ -83,7 +83,7 @@ class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
   }
 
   def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable) {
-    log(LogRecord(level, source, formatLog(message), Some(cause)))
+    log(LogRecord(level, source, formatLog(message), cause))
   }
 
   private def isMultiLine(str: String) = str.contains("\n")
