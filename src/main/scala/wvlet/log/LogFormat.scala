@@ -123,7 +123,8 @@ object LogFormatter {
     */
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} [${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}"
+      val logTag = highlightLog(r.level, r.level.name)
+      f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
     }
   }
 
