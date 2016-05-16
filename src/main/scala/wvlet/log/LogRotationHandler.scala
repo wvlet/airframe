@@ -8,6 +8,7 @@ import java.util.{logging => jl}
 import ch.qos.logback.core.ContextBase
 import ch.qos.logback.core.encoder.EncoderBase
 import ch.qos.logback.core.rolling.{RollingFileAppender, SizeAndTimeBasedFNATP, TimeBasedRollingPolicy}
+import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.util.{Failure, Success, Try}
 
@@ -33,6 +34,7 @@ object LogRotationHandler {
 class LogRotationHandler(fileName: String,
                          maxNumberOfFiles: Int,
                          maxSizeInBytes: Long,
+                         formatter: LogFormatter = AppLogFormatter,
                          logFileExt: String = ".log",
                          tempFileExt: String = ".tmp"
                         ) extends jl.Handler {
@@ -40,6 +42,7 @@ class LogRotationHandler(fileName: String,
   import LogRotationHandler._
 
   recoverTempFiles(fileName)
+  setFormatter(formatter)
 
   private val fileAppender = {
     val context = new ContextBase
@@ -75,9 +78,12 @@ class LogRotationHandler(fileName: String,
   override def publish(record: jl.LogRecord): Unit = {
     if (isLoggable(record)) {
 
-      Try(getFormatter.format(record)) match {
+      val f = Option(getFormatter).getOrElse(formatter)
+      Try(f.format(record)) match {
         case Success(message) =>
-          Try(fileAppender.doAppend(message)) match {
+          Try(fileAppender.doAppend(s"${message}\n")) match {
+            case Success(x) =>
+              // do nothing
             case Failure(e: Exception) =>
               reportError(null, e, ErrorManager.WRITE_FAILURE)
           }
@@ -89,6 +95,8 @@ class LogRotationHandler(fileName: String,
 
   override def close(): Unit = {
     Try(fileAppender.stop) match {
+      case Success(x) =>
+        // do nothing
       case Failure(e: Exception) =>
         reportError(null, e, ErrorManager.CLOSE_FAILURE)
     }
@@ -96,8 +104,8 @@ class LogRotationHandler(fileName: String,
 
   private def recoverTempFiles(logPath: String) {
     // Recover orphaned temp files
-    val logPathFile = new File(logPath).getParentFile
     for {
+      logPathFile <- Option(new File(logPath).getParentFile)
       fileList <- Option(logPathFile.listFiles)
       tempFile <- fileList.filter(_.getName.endsWith(tempFileExt))
     } {

@@ -112,7 +112,7 @@ object Logger {
 
   private val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  val rootLogger = getLogger(
+  val rootLogger = initLogger(
     name = "",
     handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
 
@@ -125,7 +125,7 @@ object Logger {
     * @param useParents
     * @return
     */
-  def getLogger(name: String,
+  def initLogger(name: String,
                 level: Option[LogLevel] = None,
                 handlers: Seq[Handler] = Seq.empty,
                 useParents: Boolean = true

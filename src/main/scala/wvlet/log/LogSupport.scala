@@ -18,14 +18,14 @@ trait LocalLogSupport extends LoggingMethods with LocalLogger
   * Trait for adding a local logger instance to your class
   */
 trait LazyLogger {
-  protected[this] lazy val logger: Logger = Logger.getLogger(this.getClass.getName)
+  protected[this] lazy val logger: Logger = Logger(this.getClass.getName)
 }
 
 /**
   * Trait for adding an initialized logger instance to your class
   */
 trait LocalLogger {
-  protected[this] val logger: Logger = Logger.getLogger(this.getClass.getName)
+  protected[this] val logger: Logger = Logger(this.getClass.getName)
 }
 
 
