@@ -18,20 +18,20 @@ class Logger(wrapped: jl.Logger) {
 
   import LogMacros._
 
-  def error(message: Any): Unit = macro errorLog
-  def error(message: Any, cause: Throwable): Unit = macro errorLogWithCause
+  def error(message: Any): Unit = macro errorLogMethod
+  def error(message: Any, cause: Throwable): Unit = macro errorLogMethodWithCause
 
-  def warn(message: Any): Unit = macro warnLog
-  def warn(message: Any, cause: Throwable): Unit = macro warnLogWithCause
+  def warn(message: Any): Unit = macro warnLogMethod
+  def warn(message: Any, cause: Throwable): Unit = macro warnLogMethodWithCause
 
   def info(message: Any): Unit = macro infoLogMethod
-  def info(message: Any, cause: Throwable): Unit = macro infoLogWithCause
+  def info(message: Any, cause: Throwable): Unit = macro infoLogMethodWithCause
 
-  def debug(message: Any): Unit = macro debugLog
-  def debug(message: Any, cause: Throwable): Unit = macro debugLogWithCause
+  def debug(message: Any): Unit = macro debugLogMethod
+  def debug(message: Any, cause: Throwable): Unit = macro debugLogMethodWithCause
 
-  def trace(message: Any): Unit = macro traceLog
-  def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
+  def trace(message: Any): Unit = macro traceLogMethod
+  def trace(message: Any, cause: Throwable): Unit = macro traceLogMethodWithCause
 
   def getName = wrapped.getName
 
