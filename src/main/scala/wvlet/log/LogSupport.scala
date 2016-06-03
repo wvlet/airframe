@@ -50,24 +50,10 @@ trait LoggingMethods extends Serializable {
   protected def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
 }
 
-trait PublicLoggingMethods extends Serializable {
+trait PublicLoggingMethods extends Serializable { p =>
   import LogMacros._
 
   protected[this] def logger : Logger
 
-  def error(message: Any): Unit = macro errorLog
-  def error(message: Any, cause: Throwable): Unit = macro errorLogWithCause
-
-  def warn(message: Any): Unit = macro warnLog
-  def warn(message: Any, cause: Throwable): Unit = macro warnLogWithCause
-
-  def info(message: Any): Unit = macro infoLog
-  def info(message: Any, cause: Throwable): Unit = macro infoLogWithCause
-
-  def debug(message: Any): Unit = macro debugLog
-  def debug(message: Any, cause: Throwable): Unit = macro debugLogWithCause
-
-  def trace(message: Any): Unit = macro traceLog
-  def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
 }
 

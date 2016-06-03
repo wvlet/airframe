@@ -7,15 +7,33 @@ import java.util.{logging => jl}
 import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.annotation.tailrec
+import scala.language.experimental.macros
 
 /**
   * An wrapper of java.util.logging.Logger for supporting rich-format logging
   *
   * @param wrapped
   */
-class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
+class Logger(wrapped: jl.Logger) {
 
-  protected[this] def logger = this
+  import LogMacros._
+
+  def error(message: Any): Unit = macro errorLog
+  def error(message: Any, cause: Throwable): Unit = macro errorLogWithCause
+
+  def warn(message: Any): Unit = macro warnLog
+  def warn(message: Any, cause: Throwable): Unit = macro warnLogWithCause
+
+  def info(message: Any): Unit = macro infoLogMethod
+  def info(message: Any, cause: Throwable): Unit = macro infoLogWithCause
+
+  def debug(message: Any): Unit = macro debugLog
+  def debug(message: Any, cause: Throwable): Unit = macro debugLogWithCause
+
+  def trace(message: Any): Unit = macro traceLog
+  def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
+
+  def getName = wrapped.getName
 
   def getLogLevel: LogLevel = {
     @tailrec
@@ -92,7 +110,8 @@ class Logger(wrapped: jl.Logger) extends PublicLoggingMethods {
     val formatted = message match {
       case null => ""
       case e: Error => LogFormatter.formatStacktrace(e)
-      case e: Exception => LogFormatter.formatStacktrace(e)
+      case e: Exception => LogFormatter.
+                           formatStacktrace(e)
       case _ => message.toString
     }
 

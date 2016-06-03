@@ -36,6 +36,7 @@ class LoggerTest extends Spec {
   }
 
   "logger" should {
+
     "display log messages" in {
       info("logging test")
       new MyAppClass
@@ -64,6 +65,13 @@ class LoggerTest extends Spec {
     "support tsv format" in {
       Logger.setDefaultFormatter(TSVLogFormatter)
       new MyAppClass
+    }
+
+    "can create local logger" in {
+      Logger.setDefaultFormatter(SourceCodeLogFormatter)
+      val l = Logger("org.sample")
+      info(s"logger name: ${l.getName}")
+      l.info("hello logger")
     }
 
   }

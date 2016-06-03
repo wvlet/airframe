@@ -24,6 +24,13 @@ private[log] object LogMacros {
       q"if ($logger.isEnabled($l)) $logger.log(${l}, ${source}, ${message})"
     }
 
+    def logMethod(level: c.universe.Tree, message: c.universe.Tree): c.universe.Tree = {
+      val pos = c.enclosingPosition
+      val l = q"${level}"
+      val source = q"wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+      q"if (${c.prefix}.isEnabled($l)) ${c.prefix}.log(${l}, ${source}, ${message})"
+    }
+
     def logWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
       val logger = q"this.logger"
       val pos = c.enclosingPosition
@@ -57,6 +64,11 @@ private[log] object LogMacros {
   def infoLog(c: Context)(message: c.Tree): c.Tree = {
     import c.universe._
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.INFO", message)
+  }
+
+  def infoLogMethod(c: Context)(message: c.Tree): c.Tree = {
+    import c.universe._
+    new MacroHelper[c.type](c).logMethod(q"wvlet.log.LogLevel.INFO", message)
   }
 
   def infoLogWithCause(c: Context)(message: c.Tree, cause: c.Tree): c.Tree = {
