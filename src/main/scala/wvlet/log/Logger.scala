@@ -8,13 +8,14 @@ import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 
 /**
   * An wrapper of java.util.logging.Logger for supporting rich-format logging
   *
   * @param wrapped
   */
-class Logger(wrapped: jl.Logger) {
+class Logger(wrapped: jl.Logger) extends Serializable {
 
   import LogMacros._
 
@@ -156,6 +157,10 @@ object Logger {
     handlers.foreach(h => logger.addHandler(h))
     logger.setUseParentHandlers(useParents)
     logger
+  }
+
+  def of[A](implicit tag:ClassTag[A]) : Logger = {
+    apply(tag.runtimeClass.getName)
   }
 
   def apply(loggerName: String): Logger = {
