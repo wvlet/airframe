@@ -1,6 +1,6 @@
 package wvlet.log
 
-import java.io.{PrintWriter, StringWriter}
+import java.io.{ByteArrayOutputStream, PrintStream, PrintWriter, StringWriter}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.logging.Formatter
@@ -90,6 +90,15 @@ object LogFormatter {
     withColor(color, message)
   }
 
+  def appendStackTrace(m:String, r:LogRecord) : String = {
+    r.cause match {
+      case Some(ex) =>
+        s"${m}\n${formatStacktrace(ex)}"
+      case None =>
+        m
+    }
+  }
+
   object TSVLogFormatter extends LogFormatter {
     override def formatLog(record: LogRecord): String = {
       val s = Seq.newBuilder[String]
@@ -114,7 +123,8 @@ object LogFormatter {
     */
   object SimpleLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
-      s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      val log = s"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      appendStackTrace(log, r)
     }
   }
 
@@ -124,7 +134,8 @@ object LogFormatter {
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val logTag = highlightLog(r.level, r.level.name)
-      f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      appendStackTrace(log, r)
     }
   }
 
@@ -138,7 +149,8 @@ object LogFormatter {
         .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
         .getOrElse("")
 
-      s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}${loc}"
+      val log = s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}${loc}"
+      appendStackTrace(log, r)
     }
   }
 
@@ -152,7 +164,8 @@ object LogFormatter {
         .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
         .getOrElse("")
 
-      s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
+      val log = s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
+      appendStackTrace(log, r)
     }
   }
 
