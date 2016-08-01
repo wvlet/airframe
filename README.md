@@ -9,7 +9,7 @@ which is already available in JVM, so it works without adding any dependencies.
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/)
 
 ```scala
-libraryDependencies += "org.wvlet" %% "wvlet-log" % (version)
+libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
 ```
 
 ### LogSupport trait
@@ -80,15 +80,15 @@ See also other examples in <wvlet-log/src/main/scala/wvlet/log/LogFormatter.scal
 
 wvlet-log is efficient since it generate the log message object only when necessary. For example, this logging code:
 ```scala
-debug("heavy debug log generation ${obj.toString}")
+debug(s"heavy debug log generation ${obj.toString}")
 ```
 will be translated into the following efficient one by using Scala macros:
 ```scala
 if(logger.isDebugEnabled) {
-   debug("heavy debug log generation ${obj.toString}")
+   debug(s"heavy debug log generation ${obj.toString}")
 }
 ```
-Log message String generation will not occure unless debug log is effective.
+Log message String generation will not occure unless debug log is effective. Scala macro is also used for finding source code location (LogSource).
 
 
 ## Why wvlet-log uses `java.util.logging` instead of `slf4j`?
