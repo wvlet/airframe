@@ -12,20 +12,36 @@ which is already available in JVM, so it works without adding any dependencies.
 libraryDependencies += "org.wvlet" %% "wvlet-log" % (version)
 ```
 
+### LogSupport trait
+
+The most convenient way to use wvlet-log is adding `LogSupport` to your class:
 
 ```
-improt wvlet.log.LogSupport
+import wvlet.log.LogSupport
 
-object MyApp with LogSupport  {
+object MyApp extends LogSupport  {
    info("info log")
    debug("debug log")
 }
 
 ```
 
+The logger name will be determined from your class name (e.g., `MyApp`).
+
+Alternatively you can load `Logger` instance manually:
+
+```
+import wvlet.log.Logger
+
+class YourApp {
+   private val logger = Logger.of[YourApp]
+}
+```
+
+
 ## Customizing log format
 
-You can show the source code location where the log message is generated.
+You can show the source code location where the log message is generated:
 
 ```
 import wvlet.log._
@@ -33,10 +49,13 @@ import wvlet.log._
 object MyApp with LogSupport {
    Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
 
-   // This will show [MyApp$] log with source code - (MyApp.scala:7)
    info("log with source code")
 }
 
+```
+This code will show:
+```
+[MyApp$] log with source code - (MyApp.scala:6)
 ```
 
 You can also define your own LogFormatter:
@@ -54,12 +73,16 @@ Logger.setDefaultFormatter(CustomLogFormatter)
 
 ```
 
-## Scala macro based logging code generatio
+See also other examples in <wvlet-log/src/main/scala/wvlet/log/LogFormatter.scala>.
+
+
+## Internals
+
+### Scala macro based logging code generation
 
 wvlet-log is efficient since it generate the log message object only when necessary. For example, this logging code:
 ```
 debug("heavy debug log generation ${obj.toString}")
-
 ```
 will be translated into the following efficient one by using Scala macros:
 ```
@@ -67,16 +90,14 @@ if(logger.isDebugEnabled) {
    debug("heavy debug log generation ${obj.toString}")
 }
 ```
+Log message String generation will not occure unless debug log is effective.
 
 
 ## Why wvlet-log uses `java.util.logging` instead of `slf4j`?
 
 `slf4j` is just an API for logging messages, so you cannot configure log level and its messasge format *within your program*.
  And also, slf4j's logging configruation needs to be binder-specific (e.g., slf4j-simple, logback-core, etc.), and your application always need to include
-  a dependency to slf4j implementation.
+  a dependency to slf4j implementation. `java.util.logging` is a standard API and no binding library is required.
 
-`java.util.logging` is a standard API and no binding library is required.
-
-
-You can also redirect the log message to log4j, slf4j, etc.
+You can also redirect wvlet-log message to log4j, slf4j, etc.
 
