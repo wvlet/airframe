@@ -77,6 +77,7 @@ object ServiceMixinExample {
     printer.print(fortune.generate)
   }
 
+
   /**
     * Using Constructor for dependency injection (e.g., Guice)
     *
@@ -222,14 +223,12 @@ class InjectTest extends WvletSpec {
       s.initializedTime should be < current
     }
 
-    "found cyclic dependencies" in {
 
+    "found cyclic dependencies" in {
+      val c = new Inject().newContext
       trait HasCycle {
         val obj = inject[A]
       }
-
-      val c = new Inject().newContext
-
       warn(s"Running cyclic dependency test: A->B->A")
       intercept[HelixException] {
         c.build[HasCycle]
@@ -260,7 +259,7 @@ class InjectTest extends WvletSpec {
       counter.get shouldBe 2
     }
 
-    "support factory injection" in {
+    "support injection via factory" in {
       val h = new Inject
       h.bind[HelloConfig].toInstance(HelloConfig("Hello Helix!"))
       val c = h.newContext
@@ -269,10 +268,9 @@ class InjectTest extends WvletSpec {
       f.helloFromProvider shouldBe "Hello Helix!"
 
       info(f.hello2)
-
     }
 
-    "support tagging" taggedAs ("tag") in {
+    "support type tagging" taggedAs ("tag") in {
       Logger.setDefaultLogLevel(DEBUG)
 
       val h = new Inject

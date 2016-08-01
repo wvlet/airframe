@@ -114,10 +114,8 @@ trait Context {
     * @tparam A
     * @return object
     */
-  def get[A: ru.TypeTag]: A
-
-  def build[A: ClassTag]: A = macro InjectMacros.buildImpl[A]
-
+  def get[A: ru.WeakTypeTag]: A
+  def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
 }
 
 trait ContextListener {
@@ -144,7 +142,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
     *
     * @return object
     */
-  def get[A](implicit ev: ru.TypeTag[A]): A = {
+  def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     info(s"Get ${ev.tpe}")
     //ObjectType(ev)
     newInstance(ObjectType.of(ev.tpe), Set.empty).asInstanceOf[A]

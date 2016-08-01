@@ -12,8 +12,7 @@ import scala.util.Try
   */
 object InjectMacros extends LogSupport {
 
-  def getContext[A](enclosingObj: A): Option[Context] = {
-    val cl = enclosingObj.getClass
+  def findContextAccess[A](cl: Class[A]): Option[AnyRef => Context] = {
 
     def returnsContext(c: Class[_]) = {
       classOf[wvlet.inject.Context].isAssignableFrom(c)
@@ -22,34 +21,38 @@ object InjectMacros extends LogSupport {
     // find val or def that returns wvlet.inject.Context
     val schema = ObjectSchema(cl)
 
-    def findContextFromMethods: Option[Context] = {
+    def findContextFromMethods: Option[AnyRef => Context] =
       schema
       .methods
       .find(x => returnsContext(x.valueType.rawType) && x.params.isEmpty)
-      .flatMap { contextGetter =>
-        Try(contextGetter.invoke(enclosingObj.asInstanceOf[AnyRef]).asInstanceOf[Context]).toOption
+      .map { contextGetter => { obj: AnyRef => contextGetter.invoke(obj).asInstanceOf[Context] }
       }
-    }
 
-    def findContextFromParams: Option[Context] = {
+    def findContextFromParams: Option[AnyRef => Context] = {
       // Find parameters
       schema
       .parameters
       .find(p => returnsContext(p.valueType.rawType))
-      .flatMap { contextParam => Try(contextParam.get(enclosingObj).asInstanceOf[Context]).toOption }
+      .map { contextParam => { obj: AnyRef => contextParam.get(obj).asInstanceOf[Context] } }
     }
 
-    def findEmbeddedContext: Option[Context] = {
+    def findEmbeddedContext: Option[AnyRef => Context] = {
       // Find any embedded context
       val m = Try(cl.getDeclaredMethod("__inject_context")).toOption
-      m.flatMap { m =>
-        Try(m.invoke(enclosingObj).asInstanceOf[Context]).toOption
+      m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Context] }
       }
     }
 
     findContextFromMethods
     .orElse(findContextFromParams)
     .orElse(findEmbeddedContext)
+  }
+
+  def getContext[A](enclosingObj: A): Option[Context] = {
+    require(enclosingObj != null, "enclosinbObj is null")
+    findContextAccess(enclosingObj.getClass).flatMap { access =>
+      Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
+    }
   }
 
   def findContext[A](enclosingObj: A): Context = {
@@ -63,16 +66,19 @@ object InjectMacros extends LogSupport {
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
 
-    val t = ev.tpe.typeArgs(0)
+    val t = ev.tpe
     c.Expr(
-      q"""
-       wvlet.inject.InjectMacros.getContext(classOf[$t]) match {
-        case Some(c) =>
-           c.get(classOf[$t])
-        case None =>
-          new $t { protected def __inject_context = ${c.prefix} }
-       }
-      """
+//      q"""{
+//       val cl = wvlet.obj.ObjectType.mirror.runtimeClass(${ev}.tpe)
+//       wvlet.inject.InjectMacros.findContextAccess(cl) match {
+//        case Some(access) =>
+//           access(this.asInstanceOf[AnyRef]).get(cl)($t)
+//        case None =>
+//         new ${t.typeArgs(0)} { protected def __inject_context = ${c.prefix} }
+//       }
+//      }
+//      """
+      q"""new ${ev.tpe.typeArgs(0)} { protected def __inject_context = ${c.prefix} }"""
     )
   }
 
@@ -99,36 +105,30 @@ object InjectMacros extends LogSupport {
     )
   }
 
-  def inject2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)
-                                                                         (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Expr[A] = {
+  def inject2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(q"""{ val c = wvlet.inject.InjectMacros.findContext(this); $factory(c.get(${d1}), c.get(${d2})) }""")
   }
 
-  def inject3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)
-                                                                                            (a: c.Tree, d1: c.Tree, d2: c.Tree,
-                                                                                             d3: c.Tree): c.Expr[A] = {
+  def inject3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(q"""{ val c = wvlet.inject.InjectMacros.findContext(this); $factory(c.get(${d1}), c.get(${d2}), c.get(${d3})) }""")
   }
 
-  def inject4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)
-                                                                                                               (factory: c.Tree)
-                                                                                                               (a: c.Tree, d1: c.Tree,
-                                                                                                                d2: c.Tree, d3: c.Tree,
-                                                                                                                d4: c.Tree): c.Expr[A] = {
+  def inject4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(q"""{ val c = wvlet.inject.InjectMacros.findContext(this); $factory(c.get(${d1}), c.get(${d2}), c.get(${d3}), c.get(${d4})) }""")
   }
 
-  def inject5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)
-                                                                                                                                  (factory: c.Tree)
-                                                                                                                                  (a: c.Tree,
-                                                                                                                                   d1: c.Tree,
-                                                                                                                                   d2: c.Tree,
-                                                                                                                                   d3: c.Tree,
-                                                                                                                                   d4: c.Tree,
-                                                                                                                                   d5: c.Tree): c.Expr[A] = {
+  def inject5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{ val c = wvlet.inject.InjectMacros.findContext(this); $factory(c.get(${d1}), c.get(${d2}), c.get(${d3}), c.get(${d4}), c.get(${d5})) }""")
