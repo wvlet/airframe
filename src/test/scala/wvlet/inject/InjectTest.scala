@@ -230,7 +230,7 @@ class InjectTest extends WvletSpec {
         val obj = inject[A]
       }
       warn(s"Running cyclic dependency test: A->B->A")
-      intercept[HelixException] {
+      intercept[InjectionException] {
         c.build[HasCycle]
       }
     }

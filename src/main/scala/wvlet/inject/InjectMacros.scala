@@ -1,6 +1,6 @@
 package wvlet.inject
 
-import wvlet.inject.HelixException.MISSING_CONTEXT
+import wvlet.inject.InjectionException.MISSING_CONTEXT
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -59,7 +59,7 @@ object InjectMacros extends LogSupport {
     val cl = enclosingObj.getClass
     getContext(enclosingObj).getOrElse {
       error(s"No wvlet.inject.Context is found in the scope: ${ObjectType.of(cl)}")
-      throw new HelixException(MISSING_CONTEXT(ObjectType.of(cl)))
+      throw new InjectionException(MISSING_CONTEXT(ObjectType.of(cl)))
     }
   }
 

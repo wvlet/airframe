@@ -2,7 +2,7 @@ package wvlet.inject
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.inject.HelixException.CYCLIC_DEPENDENCY
+import wvlet.inject.InjectionException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -152,7 +152,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
     info(s"Search bindings for ${t}")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
-      throw new HelixException(CYCLIC_DEPENDENCY(seen))
+      throw new InjectionException(CYCLIC_DEPENDENCY(seen))
     }
     val obj = binding.find(_.from == t).map {
       case ClassBinding(from, to) =>

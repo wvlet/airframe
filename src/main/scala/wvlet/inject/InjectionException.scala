@@ -1,9 +1,9 @@
 package wvlet.inject
 
-import wvlet.inject.HelixException.ErrorType
+import wvlet.inject.InjectionException.ErrorType
 import wvlet.obj.ObjectType
 
-object HelixException {
+object InjectionException {
 
   sealed trait ErrorType {
     def errorCode: String = this.toString
@@ -15,7 +15,7 @@ object HelixException {
 /**
   *
   */
-class HelixException(errorType: ErrorType) extends Exception(errorType.toString) {
+class InjectionException(errorType: ErrorType) extends Exception(errorType.toString) {
 
 }
 
