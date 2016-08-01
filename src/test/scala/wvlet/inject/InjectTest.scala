@@ -3,11 +3,11 @@ package wvlet.inject
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 
-import wvlet.log.LogLevel.DEBUG
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.LogSupport
 import wvlet.obj.{@@, ObjectType}
 import wvlet.test.WvletSpec
 
+import scala.reflect.ClassTag
 import scala.util.Random
 
 case class ExecutorConfig(numThreads: Int)
@@ -76,7 +76,6 @@ object ServiceMixinExample {
 
     printer.print(fortune.generate)
   }
-
 
   /**
     * Using Constructor for dependency injection (e.g., Guice)
@@ -172,9 +171,18 @@ object ServiceMixinExample {
     def lemonProvider(f: Fruit @@ Lemon) = f
   }
 
+  case class ConfigA(address: String, port: Int)
+  case class ConfigB(url: String)
+
+  class ConfigProvider(mapping: Map[Class[_], Any]) {
+    def get[A](cl:Class[A]): Any = {
+      mapping(cl)
+    }
+  }
+
 }
 
-import ServiceMixinExample._
+import wvlet.inject.ServiceMixinExample._
 
 /**
   *
@@ -280,6 +288,23 @@ class InjectTest extends WvletSpec {
       tagged.apple.name shouldBe ("apple")
       tagged.banana.name shouldBe ("banana")
       tagged.lemon.name shouldBe ("lemon")
+    }
+
+    "support provider binding" in {
+      val ca = ConfigA("addr", 1001)
+      val cb = ConfigB("http://wvlet.org")
+
+      val config = new ConfigProvider(Map(classOf[ConfigA] -> ca, classOf[ConfigB] -> cb))
+      val h = new Inject
+      h.bind[ConfigA].toProvider(config.get)
+      h.bind[ConfigB].toProvider(config.get)
+
+      val c = h.newContext
+      val ca_load = c.get[ConfigA]
+      val cb_load = c.get[ConfigB]
+
+      ca_load shouldBe ca
+      cb_load shouldBe cb
     }
 
   }
