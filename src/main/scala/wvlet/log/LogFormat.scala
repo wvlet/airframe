@@ -149,7 +149,7 @@ object LogFormatter {
         .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
         .getOrElse("")
 
-      val log = s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${r.getMessage}${loc}"
+      val log = s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} ${loc}"
       appendStackTrace(log, r)
     }
   }
