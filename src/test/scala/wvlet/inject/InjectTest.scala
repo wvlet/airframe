@@ -271,8 +271,6 @@ class InjectTest extends WvletSpec {
     }
 
     "support type tagging" taggedAs ("tag") in {
-      Logger.setDefaultLogLevel(DEBUG)
-
       val h = new Inject
       h.bind[Fruit @@ Apple].toInstance(Fruit("apple"))
       h.bind[Fruit @@ Banana].toInstance(Fruit("banana"))
