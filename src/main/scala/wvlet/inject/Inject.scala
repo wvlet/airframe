@@ -115,6 +115,7 @@ trait Context {
     * @return object
     */
   def get[A: ru.WeakTypeTag]: A
+  def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
 }
 
@@ -127,7 +128,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
 
   import scala.collection.JavaConversions._
 
-  private lazy val singletonHolder: collection.mutable.Map[ObjectType, AnyRef] = new ConcurrentHashMap[ObjectType, AnyRef]()
+  private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
 
   // Initialize eager singleton
   binding.collect {
@@ -146,6 +147,15 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
     info(s"Get ${ev.tpe}")
     //ObjectType(ev)
     newInstance(ObjectType.of(ev.tpe), Set.empty).asInstanceOf[A]
+  }
+
+  def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]) : A = {
+    val t = ObjectType.of(ev.tpe)
+    val result = binding.find(_.from == t).collect {
+      case SingletonBinding(from, to, eager) =>
+        singletonHolder.getOrElseUpdate(to, obj)
+    }
+    result.getOrElse(obj).asInstanceOf[A]
   }
 
   private def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
