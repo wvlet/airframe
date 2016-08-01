@@ -6,9 +6,9 @@ which is already available in JVM, so it works without adding any dependencies.
 
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet_log_2.11/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/)
 
-```
+```scala
 libraryDependencies += "org.wvlet" %% "wvlet-log" % (version)
 ```
 
@@ -16,21 +16,20 @@ libraryDependencies += "org.wvlet" %% "wvlet-log" % (version)
 
 The most convenient way to use wvlet-log is adding `LogSupport` to your class:
 
-```
+```scala
 import wvlet.log.LogSupport
 
 object MyApp extends LogSupport  {
    info("info log")
    debug("debug log")
 }
-
 ```
 
 The logger name will be determined from your class name (e.g., `MyApp`).
 
 Alternatively you can load `Logger` instance manually:
 
-```
+```scala
 import wvlet.log.Logger
 
 class YourApp {
@@ -43,7 +42,7 @@ class YourApp {
 
 You can show the source code location where the log message is generated:
 
-```
+```scala
 import wvlet.log._
 
 object MyApp with LogSupport {
@@ -60,7 +59,7 @@ This code will show:
 
 You can also define your own LogFormatter:
 
-```
+```scala
 import wvlet.log.LogFormatter._
 object CustomLogFormatter extends LogFormatter {
   override def formatLog(r: LogRecord): String = {
@@ -70,7 +69,6 @@ object CustomLogFormatter extends LogFormatter {
 }
 
 Logger.setDefaultFormatter(CustomLogFormatter)
-
 ```
 
 See also other examples in <wvlet-log/src/main/scala/wvlet/log/LogFormatter.scala>.
@@ -81,11 +79,11 @@ See also other examples in <wvlet-log/src/main/scala/wvlet/log/LogFormatter.scal
 ### Scala macro based logging code generation
 
 wvlet-log is efficient since it generate the log message object only when necessary. For example, this logging code:
-```
+```scala
 debug("heavy debug log generation ${obj.toString}")
 ```
 will be translated into the following efficient one by using Scala macros:
-```
+```scala
 if(logger.isDebugEnabled) {
    debug("heavy debug log generation ${obj.toString}")
 }
