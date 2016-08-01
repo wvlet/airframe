@@ -4,10 +4,10 @@ import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.log.LogSupport
-import wvlet.obj.{@@, ObjectType}
+import wvlet.obj.ObjectType
+import wvlet.obj.tag.@@
 import wvlet.test.WvletSpec
 
-import scala.reflect.ClassTag
 import scala.util.Random
 
 case class ExecutorConfig(numThreads: Int)
@@ -175,7 +175,7 @@ object ServiceMixinExample {
   case class ConfigB(url: String)
 
   class ConfigProvider(mapping: Map[Class[_], Any]) {
-    def get[A](cl:Class[A]): Any = {
+    def get[A](cl: Class[A]): Any = {
       mapping(cl)
     }
   }
