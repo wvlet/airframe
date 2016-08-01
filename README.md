@@ -71,7 +71,7 @@ object CustomLogFormatter extends LogFormatter {
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
 
-See also other examples in [LogFormat.scala](wvlet-log/src/main/scala/wvlet/log/LogFormat.scala).
+See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala).
 
 
 ## Internals
