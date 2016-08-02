@@ -150,7 +150,7 @@ object Logger {
     handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
 
   /**
-    * Create a new {@link java.util.logging.Logger}
+    * Create a new java.util.logging.Logger
     *
     * @param name
     * @param level
