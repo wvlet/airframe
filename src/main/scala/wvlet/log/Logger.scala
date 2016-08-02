@@ -194,4 +194,3 @@ object Logger {
     rootLogger.resetLogLevel
   }
 }
-
