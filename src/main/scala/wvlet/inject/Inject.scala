@@ -21,8 +21,6 @@ object Inject {
   case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
 }
 
-
-
 import wvlet.inject.Inject._
 
 import scala.reflect.runtime.{universe => ru}
@@ -38,7 +36,7 @@ class Inject extends LogSupport {
   def bind[A](implicit a: ru.TypeTag[A]): Bind = {
     bind(ObjectType.of(a.tpe))
   }
-  def bind(t:ObjectType) : Bind = {
+  def bind(t: ObjectType): Bind = {
     info(s"Bind ${t.name} ${t.getClass}")
     val b = new Bind(this, t)
     b
@@ -72,7 +70,7 @@ class Bind(h: Inject, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toProvider[A:ClassTag](provider: ObjectType => A) {
+  def toProvider[A: ClassTag](provider: ObjectType => A) {
     h.addBinding(ProviderBinding(from, provider))
   }
 
@@ -126,6 +124,8 @@ trait Context {
   //def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
+  //protected def buildInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = macro InjectMacros.buildInstanceImpl
+
 }
 
 trait ContextListener {
@@ -134,6 +134,7 @@ trait ContextListener {
 }
 
 private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextListener]) extends wvlet.inject.Context with LogSupport {
+  self =>
 
   import scala.collection.JavaConversions._
 
@@ -175,7 +176,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
       case SingletonBinding(from, to, eager) =>
         info(s"Find a singleton for ${to}")
         singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
-      case b @ ProviderBinding(from, provider) =>
+      case b@ProviderBinding(from, provider) =>
         info(s"Use a provider to generate ${from}: ${b}")
         provider.apply(b.from)
     }
@@ -187,13 +188,32 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
 
   private def buildInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
     val schema = ObjectSchema(t.rawType)
-    val args = for (p <- schema.constructor.params) yield {
-      newInstance(p.valueType, seen)
+    schema.findConstructor match {
+      case Some(ctr) =>
+        val args = for (p <- schema.constructor.params) yield {
+          newInstance(p.valueType, seen)
+        }
+        info(s"Build a new instance for ${t}")
+        val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
+        reportToListener(t, obj)
+        obj
+      case None =>
+        // When there is no constructor, generate trait
+        // TODO use Scala macros to make it efficient
+        import scala.reflect.runtime.currentMirror
+        import scala.tools.reflect.ToolBox
+        val tb = currentMirror.mkToolBox()
+        val code =
+          s"""new (wvlet.inject.Context => AnyRef) {
+              |  def apply(c:wvlet.inject.Context) =
+              |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
+              |          protected def __inject_context = c
+              |     }.asInstanceOf[AnyRef]
+              |}  """.stripMargin
+        debug(s"compile code: ${code}")
+        val f = tb.eval(tb.parse(code)).asInstanceOf[Context => AnyRef]
+        f.apply(this)
     }
-    info(s"Build a new instance for ${t}")
-    val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
-    reportToListener(t, obj)
-    obj
   }
 
   private def reportToListener(t: ObjectType, obj: Any) {
@@ -205,7 +225,6 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
   }
 
 }
-
 
 
 

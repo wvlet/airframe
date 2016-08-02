@@ -101,6 +101,28 @@ object InjectMacros extends LogSupport {
     )
   }
 
+  def buildInstanceImpl(c:sm.Context)(t:c.Tree, seen:c.Tree): c.Tree = {
+    import c.universe._
+    q"""
+      val schema = wvlet.obj.ObjectSchema($t.rawType)
+      schema.findConstructor match {
+      case Some(ctr) =>
+        val args = for (p <- schema.constructor.params) yield {
+          ${c.prefix}.newInstance(p.valueType, $seen)
+        }
+        ${c.prefix}.info(s"Build a new instance for $$t")
+        val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
+        ${c.prefix}.reportToListener(t, obj)
+        obj
+      case None =>
+         // No constructor
+         new {
+            protected def __inject_context = ${c.prefix}
+         }.asInstanceOf[AnyRef]
+      }
+      """
+  }
+
   def injectImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
 

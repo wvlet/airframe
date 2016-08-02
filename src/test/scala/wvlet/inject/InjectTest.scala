@@ -152,7 +152,7 @@ object ServiceMixinExample {
     val nest = inject[Nest1]
   }
 
-  class Nest1 {
+  trait Nest1 {
     val nest2 = inject[Nest2]
   }
 
