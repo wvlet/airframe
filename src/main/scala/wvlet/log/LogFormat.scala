@@ -106,7 +106,7 @@ object LogFormatter {
   def appendStackTrace(m:String, r:LogRecord) : String = {
     r.cause match {
       case Some(ex) =>
-        s"${m}\n${formatStacktrace(ex)}"
+        s"${m}\n${highlightLog(r.level, formatStacktrace(ex))}"
       case None =>
         m
     }
