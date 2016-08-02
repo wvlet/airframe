@@ -37,7 +37,7 @@ class Inject extends LogSupport {
     bind(ObjectType.of(a.tpe))
   }
   def bind(t: ObjectType): Bind = {
-    info(s"Bind ${t.name} ${t.getClass}")
+    info(s"Bind ${t.name} [${t.rawType}]")
     val b = new Bind(this, t)
     b
   }
@@ -48,7 +48,14 @@ class Inject extends LogSupport {
   }
 
   def newContext: Context = {
-    new ContextImpl(binding.result, listener.result())
+
+    // Override preceding bindings
+    val b = binding.result()
+    val takesLastBiding = for((key, lst) <- b.groupBy(_.from)) yield {
+      lst.last
+    }
+
+    new ContextImpl(takesLastBiding.toIndexedSeq, listener.result())
   }
 
   def addBinding(b: Binding): Inject = {
