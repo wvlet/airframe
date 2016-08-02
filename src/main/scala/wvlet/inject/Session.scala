@@ -13,23 +13,34 @@
  */
 package wvlet.inject
 
-import wvlet.inject.InjectionException.ErrorType
 import wvlet.obj.ObjectType
 
-object InjectionException {
+import scala.reflect.runtime.{universe => ru}
+import scala.language.experimental.macros
 
-  sealed trait ErrorType {
-    def errorCode: String = this.toString
-  }
-  case class MISSING_SESSION(cl:ObjectType) extends ErrorType
-  case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends ErrorType
-
-}
 /**
-  *
+  * Context tracks the dependencies of objects and use them to instantiate objects
   */
-class InjectionException(errorType: ErrorType) extends Exception(errorType.toString) {
+trait Session {
 
+  /**
+'    * Creates an instance of the given type A.
+    *
+    * @tparam A
+    * @return object
+    */
+  def get[A: ru.WeakTypeTag]: A
+  def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
+  def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
 }
+
+
+trait SessionListener {
+
+  def afterInjection(t: ObjectType, injectee: Any)
+}
+
+
+
 
 

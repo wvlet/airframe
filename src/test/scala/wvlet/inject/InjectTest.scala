@@ -131,13 +131,13 @@ object ServiceMixinExample {
     val initializedTime = System.nanoTime()
   }
 
-  class ClassWithContext(val c: Context) extends FortunePrinterMixin with LogSupport {
+  class ClassWithContext(val c: Session) extends FortunePrinterMixin with LogSupport {
     //info(s"context ${c}") // we should access context since Scala will remove private field, which is never used
   }
 
   case class HelloConfig(message: String)
 
-  class FactoryExample(val c: Context) {
+  class FactoryExample(val c: Session) {
     val hello  = inject { config: HelloConfig => s"${config.message}" }
     val hello2 = inject { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
 
@@ -242,7 +242,7 @@ class InjectTest extends WvletSpec {
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
       val counter = new AtomicInteger(0)
-      h.addListner(new ContextListener {
+      h.addListner(new SessionListener {
         override def afterInjection(t: ObjectType, injectee: Any): Unit = {
           counter.incrementAndGet()
         }

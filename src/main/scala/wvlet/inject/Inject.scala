@@ -15,7 +15,7 @@ package wvlet.inject
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.inject.InjectionException.{CYCLIC_DEPENDENCY, MISSING_CONTEXT}
+import wvlet.inject.InjectionException.{CYCLIC_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -33,56 +33,56 @@ object Inject extends LogSupport {
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
   case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
 
-  def findContextAccess[A](cl: Class[A]): Option[AnyRef => Context] = {
+  def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
 
-    debug(s"Find context for ${cl}")
+    debug(s"Find session for ${cl}")
 
-    def returnsContext(c: Class[_]) = {
-      classOf[wvlet.inject.Context].isAssignableFrom(c)
+    def returnsSession(c: Class[_]) = {
+      classOf[wvlet.inject.Session].isAssignableFrom(c)
     }
 
     // find val or def that returns wvlet.inject.Context
     val schema = ObjectSchema(cl)
 
-    def findContextFromMethods: Option[AnyRef => Context] =
+    def findSessionFromMethods: Option[AnyRef => Session] =
       schema
       .methods
-      .find(x => returnsContext(x.valueType.rawType) && x.params.isEmpty)
-      .map { contextGetter => { obj: AnyRef => contextGetter.invoke(obj).asInstanceOf[Context] }
+      .find(x => returnsSession(x.valueType.rawType) && x.params.isEmpty)
+      .map { contextGetter => { obj: AnyRef => contextGetter.invoke(obj).asInstanceOf[Session] }
       }
 
-    def findContextFromParams: Option[AnyRef => Context] = {
+    def findSessionFromParams: Option[AnyRef => Session] = {
       // Find parameters
       schema
       .parameters
-      .find(p => returnsContext(p.valueType.rawType))
-      .map { contextParam => { obj: AnyRef => contextParam.get(obj).asInstanceOf[Context] } }
+      .find(p => returnsSession(p.valueType.rawType))
+      .map { contextParam => { obj: AnyRef => contextParam.get(obj).asInstanceOf[Session] } }
     }
 
-    def findEmbeddedContext: Option[AnyRef => Context] = {
+    def findEmbeddedSession: Option[AnyRef => Session] = {
       // Find any embedded context
-      val m = Try(cl.getDeclaredMethod("__inject_context")).toOption
-      m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Context] }
+      val m = Try(cl.getDeclaredMethod("__current_session")).toOption
+      m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Session] }
       }
     }
 
-    findContextFromMethods
-    .orElse(findContextFromParams)
-    .orElse(findEmbeddedContext)
+    findSessionFromMethods
+    .orElse(findSessionFromParams)
+    .orElse(findEmbeddedSession)
   }
 
-  def getContext[A](enclosingObj: A): Option[Context] = {
+  def getSession[A](enclosingObj: A): Option[Session] = {
     require(enclosingObj != null, "enclosinbObj is null")
-    findContextAccess(enclosingObj.getClass).flatMap { access =>
+    findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
     }
   }
 
-  def findContext[A](enclosingObj: A): Context = {
+  def findSession[A](enclosingObj: A): Session = {
     val cl = enclosingObj.getClass
-    getContext(enclosingObj).getOrElse {
-      error(s"No wvlet.inject.Context is found in the scope: ${ObjectType.of(cl)}")
-      throw new InjectionException(MISSING_CONTEXT(ObjectType.of(cl)))
+    getSession(enclosingObj).getOrElse {
+      error(s"No wvlet.inject.Session is found in the scope: ${ObjectType.of(cl)}")
+      throw new InjectionException(MISSING_SESSION(ObjectType.of(cl)))
     }
   }
 
@@ -98,7 +98,7 @@ import scala.reflect.runtime.{universe => ru}
 class Inject extends LogSupport {
 
   private val binding  = Seq.newBuilder[Binding]
-  private val listener = Seq.newBuilder[ContextListener]
+  private val listener = Seq.newBuilder[SessionListener]
 
   def bind[A](implicit a: ru.TypeTag[A]): Bind = {
     bind(ObjectType.of(a.tpe))
@@ -109,12 +109,12 @@ class Inject extends LogSupport {
     b
   }
 
-  def addListner[A](l: ContextListener): Inject = {
+  def addListner[A](l: SessionListener): Inject = {
     listener += l
     this
   }
 
-  def newContext: Context = {
+  def newContext: Session = {
 
     // Override preceding bindings
     val b = binding.result()
@@ -122,7 +122,7 @@ class Inject extends LogSupport {
       lst.last
     }
 
-    new ContextImpl(takesLastBiding.toIndexedSeq, listener.result())
+    new SessionImpl(takesLastBiding.toIndexedSeq, listener.result())
   }
 
   def addBinding(b: Binding): Inject = {
@@ -182,120 +182,5 @@ class Bind(h: Inject, from: ObjectType) extends LogSupport {
 }
 
 import scala.reflect.runtime.{universe => ru}
-
-/**
-  * Context tracks the dependencies of objects and use them to instantiate objects
-  */
-trait Context {
-
-  /**
-    * Creates an instance of the given type A.
-    *
-    * @tparam A
-    * @return object
-    */
-  def get[A: ru.WeakTypeTag]: A
-  def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
-  def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
-}
-
-trait ContextListener {
-
-  def afterInjection(t: ObjectType, injectee: Any)
-}
-
-private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextListener]) extends wvlet.inject.Context with LogSupport {
-  self =>
-
-  import scala.collection.JavaConversions._
-
-  private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
-
-  // Initialize eager singleton
-  binding.collect {
-    case s@SingletonBinding(from, to, eager) if eager =>
-      singletonHolder.getOrElseUpdate(to, buildInstance(to, Set(to)))
-    case InstanceBinding(from, obj) =>
-      reportToListener(from, obj)
-  }
-
-  def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    newInstance(ObjectType.of(ev.tpe), Set.empty).asInstanceOf[A]
-  }
-
-  def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    val t = ObjectType.of(ev.tpe)
-    val result = binding.find(_.from == t).collect {
-      case SingletonBinding(from, to, eager) =>
-        singletonHolder.getOrElseUpdate(to, obj)
-    }
-    result.getOrElse(obj).asInstanceOf[A]
-  }
-
-  private def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
-    debug(s"Search bindings for ${t}")
-    if (seen.contains(t)) {
-      error(s"Found cyclic dependencies: ${seen}")
-      throw new InjectionException(CYCLIC_DEPENDENCY(seen))
-    }
-    val obj = binding.find(_.from == t).map {
-      case ClassBinding(from, to) =>
-        newInstance(to, seen + from)
-      case InstanceBinding(from, obj) =>
-        debug(s"Pre-defined instance is found for ${from}")
-        obj
-      case SingletonBinding(from, to, eager) =>
-        info(s"Find a singleton for ${to}")
-        singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
-      case b@ProviderBinding(from, provider) =>
-        debug(s"Use a provider to generate ${from}: ${b}")
-        provider.apply(b.from)
-    }
-              .getOrElse {
-                buildInstance(t, seen + t)
-              }
-    obj.asInstanceOf[AnyRef]
-  }
-
-  private def buildInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
-    val schema = ObjectSchema(t.rawType)
-    schema.findConstructor match {
-      case Some(ctr) =>
-        val args = for (p <- schema.constructor.params) yield {
-          newInstance(p.valueType, seen)
-        }
-        debug(s"Build a new instance for ${t}")
-        val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
-        reportToListener(t, obj)
-        obj
-      case None =>
-        // When there is no constructor, generate trait
-        // TODO use Scala macros to make it efficient
-        import scala.reflect.runtime.currentMirror
-        import scala.tools.reflect.ToolBox
-        val tb = currentMirror.mkToolBox()
-        val code =
-          s"""new (wvlet.inject.Context => AnyRef) {
-              |  def apply(c:wvlet.inject.Context) =
-              |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
-              |          protected def __inject_context = c
-              |     }.asInstanceOf[AnyRef]
-              |}  """.stripMargin
-        debug(s"compile code: ${code}")
-        val f = tb.eval(tb.parse(code)).asInstanceOf[Context => AnyRef]
-        f.apply(this)
-    }
-  }
-
-  private def reportToListener(t: ObjectType, obj: Any) {
-    listener.map(l => Try(l.afterInjection(t, obj))).collect {
-      case Failure(e) =>
-        error(s"Error in ContextListher", e)
-        throw e
-    }
-  }
-
-}
-
 
 
