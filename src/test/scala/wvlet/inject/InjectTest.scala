@@ -281,6 +281,5 @@ class InjectTest extends WvletSpec {
       val c = h.newSession
       c.build[Nested]
     }
-
   }
 }

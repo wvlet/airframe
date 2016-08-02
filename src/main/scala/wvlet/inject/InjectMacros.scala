@@ -23,9 +23,9 @@ object InjectMacros extends LogSupport {
 
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
-    val t = ev.tpe
+    val t = ev.tpe.typeArgs(0)
     c.Expr(
-      q"""new ${ev.tpe.typeArgs(0)} { protected def __current_session = ${c.prefix} }"""
+      q"""${c.prefix}.register[$t]((new $t { protected def __current_session = ${c.prefix} }).asInstanceOf[$t])"""
     )
   }
 

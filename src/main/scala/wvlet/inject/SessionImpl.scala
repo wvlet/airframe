@@ -111,7 +111,12 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
     }
   }
 
+  def register[A](obj:A)(implicit ev:ru.WeakTypeTag[A]) : A = {
+    registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
+  }
+
   private def registerInjectee(t: ObjectType, obj: Any) : AnyRef ={
+    debug(s"Register dependency for ${t} (${t.rawType}): ${obj}")
     listener.map(l => Try(l.afterInjection(t, obj))).collect {
       case Failure(e) =>
         error(s"Error in SessionListener", e)

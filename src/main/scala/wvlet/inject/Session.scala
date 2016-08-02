@@ -32,6 +32,8 @@ trait Session {
   def get[A: ru.WeakTypeTag]: A
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
+
+  def register[A: ru.WeakTypeTag](obj:A) : A
 }
 
 
