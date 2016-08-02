@@ -33,7 +33,7 @@ object Inject extends LogSupport {
 
   def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
 
-    debug(s"Find session for ${cl}")
+    trace(s"Find session for ${cl}")
 
     def returnsSession(c: Class[_]) = {
       classOf[wvlet.inject.Session].isAssignableFrom(c)
@@ -102,7 +102,7 @@ class Inject extends LogSupport {
     bind(ObjectType.of(a.tpe))
   }
   def bind(t: ObjectType): Bind = {
-    debug(s"Bind ${t.name} [${t.rawType}]")
+    trace(s"Bind ${t.name} [${t.rawType}]")
     val b = new Bind(this, t)
     b
   }
@@ -125,7 +125,7 @@ class Inject extends LogSupport {
   }
 
   def addBinding(b: Binding): Inject = {
-    debug(s"Add binding: $b")
+    trace(s"Add binding: $b")
     binding += b
     this
   }

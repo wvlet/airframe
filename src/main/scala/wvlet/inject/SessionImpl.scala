@@ -57,7 +57,7 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
   }
 
   private def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
-    debug(s"Search bindings for ${t}")
+    trace(s"Search bindings for ${t}")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
       throw new InjectionException(CYCLIC_DEPENDENCY(seen))
@@ -66,13 +66,13 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
       case ClassBinding(from, to) =>
         newInstance(to, seen + from)
       case InstanceBinding(from, obj) =>
-        debug(s"Pre-defined instance is found for ${from}")
+        trace(s"Pre-defined instance is found for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
-        info(s"Find a singleton for ${to}")
+        trace(s"Find a singleton for ${to}")
         singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
       case b@ProviderBinding(from, provider) =>
-        debug(s"Use a provider to generate ${from}: ${b}")
+        trace(s"Use a provider to generate ${from}: ${b}")
         registerInjectee(from, provider.apply(b.from))
     }
               .getOrElse {
@@ -88,7 +88,7 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
         val args = for (p <- schema.constructor.params) yield {
           newInstance(p.valueType, seen)
         }
-        debug(s"Build a new instance for ${t}")
+        trace(s"Build a new instance for ${t}")
         val obj = schema.constructor.newInstance(args)
         registerInjectee(t, obj)
       case None =>
@@ -104,7 +104,7 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
               |          protected def __current_session = c
               |     }
               |}  """.stripMargin
-        debug(s"compile code: ${code}")
+        trace(s"Compiling a code to embed Session: ${code}")
         val f = tb.eval(tb.parse(code)).asInstanceOf[Session => Any]
         val obj = f.apply(this)
         registerInjectee(t, obj)
