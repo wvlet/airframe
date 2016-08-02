@@ -7,6 +7,7 @@ import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 import scala.util.{Failure, Try}
 
 object Inject {
@@ -17,7 +18,7 @@ object Inject {
   case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
   case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
-  case class ProviderBinding(from: ObjectType, provider: Class[_] => Any) extends Binding
+  case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
 }
 
 
@@ -35,7 +36,9 @@ class Inject extends LogSupport {
   private val listener = Seq.newBuilder[ContextListener]
 
   def bind[A](implicit a: ru.TypeTag[A]): Bind = {
-    val t = ObjectType.of(a.tpe)
+    bind(ObjectType.of(a.tpe))
+  }
+  def bind(t:ObjectType) : Bind = {
     info(s"Bind ${t.name} ${t.getClass}")
     val b = new Bind(this, t)
     b
@@ -69,8 +72,8 @@ class Bind(h: Inject, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toProvider[A](provider: Class[A] => Any) {
-    h.addBinding(ProviderBinding(from, provider.asInstanceOf[Class[_]=>Any]))
+  def toProvider[A:ClassTag](provider: ObjectType => A) {
+    h.addBinding(ProviderBinding(from, provider))
   }
 
   def toSingletonOf[B](implicit ev: ru.TypeTag[B]) {
@@ -178,10 +181,9 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
       case SingletonBinding(from, to, eager) =>
         info(s"Find a singleton for ${to}")
         singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
-      case ProviderBinding(from, provider) =>
-        info(s"Use a provider to generate ${from}")
-        val obj = provider.asInstanceOf[Class[_]=>Any].apply(from.rawType)
-        obj
+      case b @ ProviderBinding(from, provider) =>
+        info(s"Use a provider to generate ${from}: ${b}")
+        provider.apply(b.from)
     }
               .getOrElse {
                 buildInstance(t, seen + t)
