@@ -88,6 +88,8 @@ class LogRotationHandler(fileName: String,
 
   override def flush() {}
 
+  private def toException(t:Throwable) = new Exception(t.getMessage, t)
+
   override def publish(record: jl.LogRecord): Unit = {
     if (isLoggable(record)) {
 
@@ -97,11 +99,11 @@ class LogRotationHandler(fileName: String,
           Try(fileAppender.doAppend(s"${message}\n")) match {
             case Success(x) =>
               // do nothing
-            case Failure(e: Exception) =>
-              reportError(null, e, ErrorManager.WRITE_FAILURE)
+            case Failure(e) =>
+              reportError(null, toException(e), ErrorManager.WRITE_FAILURE)
           }
-        case Failure(e: Exception) =>
-          reportError(null, e, ErrorManager.FORMAT_FAILURE)
+        case Failure(e) =>
+          reportError(null, toException(e), ErrorManager.FORMAT_FAILURE)
       }
     }
   }
@@ -110,8 +112,8 @@ class LogRotationHandler(fileName: String,
     Try(fileAppender.stop) match {
       case Success(x) =>
         // do nothing
-      case Failure(e: Exception) =>
-        reportError(null, e, ErrorManager.CLOSE_FAILURE)
+      case Failure(e) =>
+        reportError(null, toException(e), ErrorManager.CLOSE_FAILURE)
     }
   }
 
