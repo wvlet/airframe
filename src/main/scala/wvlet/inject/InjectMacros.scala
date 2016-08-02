@@ -14,6 +14,8 @@ object InjectMacros extends LogSupport {
 
   def findContextAccess[A](cl: Class[A]): Option[AnyRef => Context] = {
 
+    info(s"Find context for ${cl}")
+
     def returnsContext(c: Class[_]) = {
       classOf[wvlet.inject.Context].isAssignableFrom(c)
     }
@@ -63,14 +65,31 @@ object InjectMacros extends LogSupport {
     }
   }
 
+
+//  def getImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
+//    import c.universe._
+//    val t = q"${ev.tpe.typeArgs(0)}"
+//    q"""
+//       {
+//        val tpe = wvlet.obj.ObjectType.ofTypeTag($ev)
+//        wvlet.inject.InjectMacros.findContextAccess(this.getClass) match {
+//           case Some(x) =>
+//              ${c.prefix}.newInstance(wvlet.obj.ObjectType.of($ev.tpe), Set.empty).asInstanceOf[$t]
+//           case None =>
+//              throw new IllegalStateException(s"No context is found for $$tpe")
+//        }
+//       }
+//     """
+//  }
+
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
 
     val t = ev.tpe
     c.Expr(
 //      q"""{
-//       val cl = wvlet.obj.ObjectType.mirror.runtimeClass(${ev}.tpe)
-//       wvlet.inject.InjectMacros.findContextAccess(cl) match {
+//       val t = wvlet.obj.ObjectType.of(${ev}.tpe)
+//       wvlet.inject.InjectMacros.findContextAccess(t.rawType) match {
 //        case Some(access) =>
 //           access(this.asInstanceOf[AnyRef]).get(cl)($t)
 //        case None =>
@@ -78,7 +97,7 @@ object InjectMacros extends LogSupport {
 //       }
 //      }
 //      """
-      q"""new ${ev.tpe.typeArgs(0)} { protected def __inject_context = ${c.prefix} }"""
+     q"""new ${ev.tpe.typeArgs(0)} { protected def __inject_context = ${c.prefix} }"""
     )
   }
 

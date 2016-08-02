@@ -95,35 +95,10 @@ object ServiceMixinExample {
     printer.print(fortune.generate)
   }
 
-//  import com.softwaremill.macwire._
-//
-////  /**
-////    * Using macwire
-////    */
-////  trait FortunePrinterWired {
-////    lazy val printer = wire[Printer] // macwire cannot specify dynamic binding
-////    lazy val fortune = wire[Fortune]
-////
-////    printer.print(fortune.generate)
-////  }
-//
 
   class HeavyObject() extends LogSupport {
     info(f"Heavy Process!!: ${this.hashCode()}%x")
   }
-
-//
-//  trait HeavyService {
-//    val heavy = wire[HeavyObject]
-//  }
-//
-//  trait AppA extends HeavyService {
-//
-//  }
-//
-//  trait AppB extends HeavyService {
-//
-//  }
 
   trait HeavySingletonService {
     val heavy = inject[HeavyObject]
@@ -172,6 +147,17 @@ object ServiceMixinExample {
     def lemonProvider(f: Fruit @@ Lemon) = f
   }
 
+
+  trait Nested {
+    val nest = inject[Nest1]
+  }
+
+  class Nest1 {
+    val nest2 = inject[Nest2]
+  }
+
+  class Nest2()
+
 }
 
 import wvlet.inject.ServiceMixinExample._
@@ -193,12 +179,6 @@ class InjectTest extends WvletSpec {
       val m = context.build[FortunePrinterMixin]
     }
 
-//    "test macwire example" in {
-//      //val w = new FortunePrinterWired {}
-//
-//      new AppA {}
-//      new AppB {}
-//    }
 
     "create singleton" in {
       val h = new Inject
@@ -282,6 +262,12 @@ class InjectTest extends WvletSpec {
       tagged.lemon.name shouldBe ("lemon")
     }
 
+
+    "support nested context injection" taggedAs("nested") in {
+      val h = new Inject
+      val c = h.newContext
+      c.build[Nested]
+    }
 
   }
 }

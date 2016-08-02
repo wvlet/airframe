@@ -123,6 +123,7 @@ trait Context {
     * @return object
     */
   def get[A: ru.WeakTypeTag]: A
+  //def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
 }
@@ -146,14 +147,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
       reportToListener(from, obj)
   }
 
-  /**
-    * Creates an instance of the given type A.
-    *
-    * @return object
-    */
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    info(s"Get ${ev.tpe}")
-    //ObjectType(ev)
     newInstance(ObjectType.of(ev.tpe), Set.empty).asInstanceOf[A]
   }
 
