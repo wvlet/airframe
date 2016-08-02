@@ -115,12 +115,13 @@ class Inject extends LogSupport {
   def newSession: Session = {
 
     // Override preceding bindings
-    val b = binding.result()
-    val takesLastBiding = for ((key, lst) <- b.groupBy(_.from)) yield {
+    val originalBindings = binding.result()
+    val effectiveBindings = for ((key, lst) <- originalBindings.groupBy(_.from)) yield {
       lst.last
     }
-
-    new SessionImpl(takesLastBiding.toIndexedSeq, listener.result())
+    val keyIndex : Map[ObjectType, Int] = originalBindings.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
+    new SessionImpl(sortedBindings, listener.result())
   }
 
   def addBinding(b: Binding): Inject = {
