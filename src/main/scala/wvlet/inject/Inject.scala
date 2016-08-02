@@ -15,7 +15,7 @@ package wvlet.inject
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.inject.InjectionException.CYCLIC_DEPENDENCY
+import wvlet.inject.InjectionException.{CYCLIC_DEPENDENCY, MISSING_CONTEXT}
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -23,7 +23,7 @@ import scala.language.experimental.macros
 import scala.reflect.ClassTag
 import scala.util.{Failure, Try}
 
-object Inject {
+object Inject extends LogSupport {
 
   sealed trait Binding {
     def from: ObjectType
@@ -32,6 +32,60 @@ object Inject {
   case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
   case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
+
+  def findContextAccess[A](cl: Class[A]): Option[AnyRef => Context] = {
+
+    debug(s"Find context for ${cl}")
+
+    def returnsContext(c: Class[_]) = {
+      classOf[wvlet.inject.Context].isAssignableFrom(c)
+    }
+
+    // find val or def that returns wvlet.inject.Context
+    val schema = ObjectSchema(cl)
+
+    def findContextFromMethods: Option[AnyRef => Context] =
+      schema
+      .methods
+      .find(x => returnsContext(x.valueType.rawType) && x.params.isEmpty)
+      .map { contextGetter => { obj: AnyRef => contextGetter.invoke(obj).asInstanceOf[Context] }
+      }
+
+    def findContextFromParams: Option[AnyRef => Context] = {
+      // Find parameters
+      schema
+      .parameters
+      .find(p => returnsContext(p.valueType.rawType))
+      .map { contextParam => { obj: AnyRef => contextParam.get(obj).asInstanceOf[Context] } }
+    }
+
+    def findEmbeddedContext: Option[AnyRef => Context] = {
+      // Find any embedded context
+      val m = Try(cl.getDeclaredMethod("__inject_context")).toOption
+      m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Context] }
+      }
+    }
+
+    findContextFromMethods
+    .orElse(findContextFromParams)
+    .orElse(findEmbeddedContext)
+  }
+
+  def getContext[A](enclosingObj: A): Option[Context] = {
+    require(enclosingObj != null, "enclosinbObj is null")
+    findContextAccess(enclosingObj.getClass).flatMap { access =>
+      Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
+    }
+  }
+
+  def findContext[A](enclosingObj: A): Context = {
+    val cl = enclosingObj.getClass
+    getContext(enclosingObj).getOrElse {
+      error(s"No wvlet.inject.Context is found in the scope: ${ObjectType.of(cl)}")
+      throw new InjectionException(MISSING_CONTEXT(ObjectType.of(cl)))
+    }
+  }
+
 }
 
 import wvlet.inject.Inject._
@@ -50,7 +104,7 @@ class Inject extends LogSupport {
     bind(ObjectType.of(a.tpe))
   }
   def bind(t: ObjectType): Bind = {
-    info(s"Bind ${t.name} [${t.rawType}]")
+    debug(s"Bind ${t.name} [${t.rawType}]")
     val b = new Bind(this, t)
     b
   }
@@ -64,7 +118,7 @@ class Inject extends LogSupport {
 
     // Override preceding bindings
     val b = binding.result()
-    val takesLastBiding = for((key, lst) <- b.groupBy(_.from)) yield {
+    val takesLastBiding = for ((key, lst) <- b.groupBy(_.from)) yield {
       lst.last
     }
 
@@ -141,11 +195,8 @@ trait Context {
     * @return object
     */
   def get[A: ru.WeakTypeTag]: A
-  //def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
-  //protected def buildInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = macro InjectMacros.buildInstanceImpl
-
 }
 
 trait ContextListener {
@@ -182,7 +233,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
   }
 
   private def newInstance(t: ObjectType, seen: Set[ObjectType]): AnyRef = {
-    info(s"Search bindings for ${t}")
+    debug(s"Search bindings for ${t}")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
       throw new InjectionException(CYCLIC_DEPENDENCY(seen))
@@ -191,13 +242,13 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
       case ClassBinding(from, to) =>
         newInstance(to, seen + from)
       case InstanceBinding(from, obj) =>
-        info(s"Pre-defined instance is found for ${from}")
+        debug(s"Pre-defined instance is found for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
         info(s"Find a singleton for ${to}")
         singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
       case b@ProviderBinding(from, provider) =>
-        info(s"Use a provider to generate ${from}: ${b}")
+        debug(s"Use a provider to generate ${from}: ${b}")
         provider.apply(b.from)
     }
               .getOrElse {
@@ -213,7 +264,7 @@ private[inject] class ContextImpl(binding: Seq[Binding], listener: Seq[ContextLi
         val args = for (p <- schema.constructor.params) yield {
           newInstance(p.valueType, seen)
         }
-        info(s"Build a new instance for ${t}")
+        debug(s"Build a new instance for ${t}")
         val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
         reportToListener(t, obj)
         obj
