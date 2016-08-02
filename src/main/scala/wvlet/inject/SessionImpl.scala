@@ -20,8 +20,8 @@ import wvlet.inject.InjectionException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
+import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Try}
-import scala.reflect.runtime.{universe=>ru}
 
 /**
   *

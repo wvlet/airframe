@@ -13,9 +13,7 @@
  */
 package wvlet.inject
 
-import java.util.concurrent.ConcurrentHashMap
-
-import wvlet.inject.InjectionException.{CYCLIC_DEPENDENCY, MISSING_SESSION}
+import wvlet.inject.InjectionException.{MISSING_SESSION}
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -41,14 +39,14 @@ object Inject extends LogSupport {
       classOf[wvlet.inject.Session].isAssignableFrom(c)
     }
 
-    // find val or def that returns wvlet.inject.Context
+    // find val or def that returns wvlet.inject.Session
     val schema = ObjectSchema(cl)
 
     def findSessionFromMethods: Option[AnyRef => Session] =
       schema
       .methods
       .find(x => returnsSession(x.valueType.rawType) && x.params.isEmpty)
-      .map { contextGetter => { obj: AnyRef => contextGetter.invoke(obj).asInstanceOf[Session] }
+      .map { sessionnGetter => { obj: AnyRef => sessionnGetter.invoke(obj).asInstanceOf[Session] }
       }
 
     def findSessionFromParams: Option[AnyRef => Session] = {
@@ -56,11 +54,11 @@ object Inject extends LogSupport {
       schema
       .parameters
       .find(p => returnsSession(p.valueType.rawType))
-      .map { contextParam => { obj: AnyRef => contextParam.get(obj).asInstanceOf[Session] } }
+      .map { sessionParam => { obj: AnyRef => sessionParam.get(obj).asInstanceOf[Session] } }
     }
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
-      // Find any embedded context
+      // Find any embedded session
       val m = Try(cl.getDeclaredMethod("__current_session")).toOption
       m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Session] }
       }
@@ -114,7 +112,7 @@ class Inject extends LogSupport {
     this
   }
 
-  def newContext: Session = {
+  def newSession: Session = {
 
     // Override preceding bindings
     val b = binding.result()

@@ -188,7 +188,7 @@ class InjectTest extends WvletSpec {
       h.bind[Printer].to[ConsolePrinter]
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val context = h.newContext
+      val context = h.newSession
       val m = context.build[FortunePrinterMixin]
     }
 
@@ -197,7 +197,7 @@ class InjectTest extends WvletSpec {
       val h = new Inject
       h.bind[HeavyObject].toSingleton
 
-      val c = h.newContext
+      val c = h.newSession
       val a = c.build[HelixAppA]
       val b = c.build[HelixAppB]
       a.heavy shouldEqual b.heavy
@@ -207,7 +207,7 @@ class InjectTest extends WvletSpec {
       val start = System.nanoTime()
       val h = new Inject
       h.bind[EagerSingleton].toEagerSingleton
-      val c = h.newContext
+      val c = h.newSession
       c.get[HeavyObject]
       val current = System.nanoTime()
       val s = c.get[EagerSingleton]
@@ -218,7 +218,7 @@ class InjectTest extends WvletSpec {
 
 
     "found cyclic dependencies" in {
-      val c = new Inject().newContext
+      val c = new Inject().newSession
       trait HasCycle {
         val obj = inject[A]
       }
@@ -232,7 +232,7 @@ class InjectTest extends WvletSpec {
       val h = new Inject
       h.bind[Printer].to[ConsolePrinter]
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-      val c = h.newContext
+      val c = h.newSession
       new ClassWithContext(c)
     }
 
@@ -247,7 +247,7 @@ class InjectTest extends WvletSpec {
           counter.incrementAndGet()
         }
       })
-      val c = h.newContext
+      val c = h.newSession
       c.get[ConsoleConfig]
       counter.get shouldBe 2
     }
@@ -255,7 +255,7 @@ class InjectTest extends WvletSpec {
     "support injection via factory" in {
       val h = new Inject
       h.bind[HelloConfig].toInstance(HelloConfig("Hello Helix!"))
-      val c = h.newContext
+      val c = h.newSession
       val f = new FactoryExample(c)
       f.hello shouldBe "Hello Helix!"
       f.helloFromProvider shouldBe "Hello Helix!"
@@ -268,7 +268,7 @@ class InjectTest extends WvletSpec {
       h.bind[Fruit @@ Apple].toInstance(Fruit("apple"))
       h.bind[Fruit @@ Banana].toInstance(Fruit("banana"))
       h.bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
-      val c = h.newContext
+      val c = h.newSession
       val tagged = c.build[TaggedBinding]
       tagged.apple.name shouldBe ("apple")
       tagged.banana.name shouldBe ("banana")
@@ -278,7 +278,7 @@ class InjectTest extends WvletSpec {
 
     "support nested context injection" taggedAs("nested") in {
       val h = new Inject
-      val c = h.newContext
+      val c = h.newSession
       c.build[Nested]
     }
 
