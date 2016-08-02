@@ -38,7 +38,7 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
     case s@SingletonBinding(from, to, eager) if eager =>
       singletonHolder.getOrElseUpdate(to, buildInstance(to, Set(to)))
     case InstanceBinding(from, obj) =>
-      reportToListener(from, obj)
+      registerInjectee(from, obj)
   }
 
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
@@ -49,7 +49,9 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
     val t = ObjectType.of(ev.tpe)
     val result = binding.find(_.from == t).collect {
       case SingletonBinding(from, to, eager) =>
-        singletonHolder.getOrElseUpdate(to, obj)
+        singletonHolder.getOrElseUpdate(to, {
+          registerInjectee(to, obj)
+        })
     }
     result.getOrElse(obj).asInstanceOf[A]
   }
@@ -71,7 +73,7 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
         singletonHolder.getOrElseUpdate(to, buildInstance(to, seen + t + to))
       case b@ProviderBinding(from, provider) =>
         debug(s"Use a provider to generate ${from}: ${b}")
-        provider.apply(b.from)
+        registerInjectee(from, provider.apply(b.from))
     }
               .getOrElse {
                 buildInstance(t, seen + t)
@@ -87,9 +89,8 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
           newInstance(p.valueType, seen)
         }
         debug(s"Build a new instance for ${t}")
-        val obj = schema.constructor.newInstance(args).asInstanceOf[AnyRef]
-        reportToListener(t, obj)
-        obj
+        val obj = schema.constructor.newInstance(args)
+        registerInjectee(t, obj)
       case None =>
         // When there is no constructor, generate trait
         // TODO use Scala macros to make it efficient
@@ -97,24 +98,26 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
         import scala.tools.reflect.ToolBox
         val tb = currentMirror.mkToolBox()
         val code =
-          s"""new (wvlet.inject.Session => AnyRef) {
+          s"""new (wvlet.inject.Session => Any) {
               |  def apply(c:wvlet.inject.Session) =
               |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
               |          protected def __current_session = c
-              |     }.asInstanceOf[AnyRef]
+              |     }
               |}  """.stripMargin
         debug(s"compile code: ${code}")
-        val f = tb.eval(tb.parse(code)).asInstanceOf[Session => AnyRef]
-        f.apply(this)
+        val f = tb.eval(tb.parse(code)).asInstanceOf[Session => Any]
+        val obj = f.apply(this)
+        registerInjectee(t, obj)
     }
   }
 
-  private def reportToListener(t: ObjectType, obj: Any) {
+  private def registerInjectee(t: ObjectType, obj: Any) : AnyRef ={
     listener.map(l => Try(l.afterInjection(t, obj))).collect {
       case Failure(e) =>
         error(s"Error in SessionListener", e)
         throw e
     }
+    obj.asInstanceOf[AnyRef]
   }
 
 }
