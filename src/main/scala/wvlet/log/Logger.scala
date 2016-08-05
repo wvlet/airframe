@@ -143,9 +143,9 @@ object Logger {
 
   import collection.JavaConverters._
 
-  private val loggerCache = new ConcurrentHashMap[String, Logger].asScala
+  private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  val rootLogger = initLogger(
+  lazy val rootLogger = initLogger(
     name = "",
     handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
 

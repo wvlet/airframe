@@ -93,8 +93,7 @@ class LogRotationHandler(fileName: String,
   override def publish(record: jl.LogRecord): Unit = {
     if (isLoggable(record)) {
 
-      val f = Option(getFormatter).getOrElse(formatter)
-      Try(f.format(record)) match {
+      Try(formatter.format(record)) match {
         case Success(message) =>
           Try(fileAppender.doAppend(s"${message}\n")) match {
             case Success(x) =>
