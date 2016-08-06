@@ -193,4 +193,22 @@ object Logger {
   def resetDefaultLogLevel {
     rootLogger.resetLogLevel
   }
+
+  def getSuccinctLoggerName[A](cl:Class[A]) : String = {
+    if(cl.getName.contains("$anon$")) {
+      val interfaces = cl.getInterfaces
+      if(interfaces != null && interfaces.length > 0) {
+        // Use the first interface name instead of annonimized name
+        interfaces(0).getName
+      }
+      else {
+        cl.getName
+      }
+    }
+    else {
+      cl.getName
+    }
+
+  }
+
 }
