@@ -165,7 +165,8 @@ object ServiceMixinExample {
     val nest = inject[Nest1]
   }
 
-  trait Nest1 {
+  trait Nest1 extends LogSupport {
+    info("instanciated Nest1")
     val nest2 = inject[Nest2]
   }
 
@@ -180,7 +181,7 @@ import wvlet.inject.ServiceMixinExample._
   */
 class InjectTest extends WvletSpec {
 
-  "Helix" should {
+  "Inject" should {
 
     "instantiate class" in {
 
