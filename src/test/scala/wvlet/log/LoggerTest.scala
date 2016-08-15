@@ -13,13 +13,15 @@
  */
 package wvlet.log
 
+import java.util.{logging => jul}
+
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
 import wvlet.log.LogFormatter._
+import wvlet.log.LogLevel.LogOrdering
 
 trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
   logger.resetHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
 }
-
 
 class MyAppClass extends LogSupport {
   error("error message")
@@ -35,6 +37,11 @@ class MyAppClass extends LogSupport {
   info(Seq(1, 2, 3, 4))
 }
 
+trait Sample
+object Sample extends LogSupport {
+  self =>
+  def loggerName: String = logger.getName
+}
 /**
   *
   */
@@ -49,6 +56,14 @@ class LoggerTest extends Spec {
   }
 
   "logger" should {
+
+    "support java.util.LogLevel" in {
+
+      for (l <- Seq(jul.Level.ALL, jul.Level.SEVERE, jul.Level.WARNING, jul.Level.FINE, jul.Level.CONFIG, jul.Level.FINER, jul.Level.FINEST,
+        jul.Level.OFF)) {
+        LogLevel(l)
+      }
+    }
 
     "display log messages" in {
       info("logging test")
@@ -87,5 +102,80 @@ class LoggerTest extends Spec {
       l.info("hello logger")
     }
 
+    "support logging methods" in {
+      val l = Logger("org.sample")
+      l.trace("trace")
+      l.debug("debug")
+      l.info("info")
+      l.warn("warn")
+      l.error("error")
+    }
+
+    "display exception stack traces" in {
+      val e = new Exception("exception test")
+      warn("Running stack trace tests")
+      trace("error", e)
+      debug("error", e)
+      info("error", e)
+      warn("error", e)
+      error("error", e)
+
+      val l = Logger("org.sample")
+      l.trace("error", e)
+      l.debug("error", e)
+      l.info("error", e)
+      l.warn("error", e)
+      l.error("error", e)
+    }
+
+    "support having a concrete logger" in {
+      val t = new LocalLogSupport {
+        info("hello")
+      }
+    }
+
+    "use succinct name when used with anonymous trait" in {
+      val l = new Sample with LogSupport {
+        this.logger.getName shouldBe ("wvlet.log.Sample")
+      }
+    }
+
+    "Remove $ from object name" in {
+      val o = Sample
+      o.loggerName shouldBe "wvlet.log.Sample"
+    }
+  }
+
+  "LogLevel" should {
+    "parse string log levels" in {
+      val logLevels = LogLevel.values.map(_.name.toLowerCase())
+
+      // string to LogLevel
+      for (l <- logLevels) {
+        val level = LogLevel(l)
+      }
+
+      // Use INFO when unknown log level is given
+      LogLevel("unknown-loglevel") shouldBe LogLevel.INFO
+
+      // Test unapply
+      LogLevel.unapply("info") shouldBe 'defined
+      LogLevel.unapply("unknown-loglevel") shouldNot be('defined)
+    }
+
+    "be able to sort LogLevels" in {
+      val sorted = LogLevel.values.sorted(LogOrdering)
+      sorted.sliding(2).forall(s => s(0) < s(1))
+    }
+  }
+
+
+  "ConsoleLogHandler" should {
+    "support flush and close" in {
+      val h = new ConsoleLogHandler(SourceCodeLogFormatter)
+      h.publish(LogRecord(new jul.LogRecord(jul.Level.INFO, "console log handler test")))
+      h.flush()
+      h.close()
+    }
   }
 }

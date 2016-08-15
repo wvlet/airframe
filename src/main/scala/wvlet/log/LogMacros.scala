@@ -50,7 +50,7 @@ private[log] object LogMacros {
     }
 
     def logMethodWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
-      q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.log(${level}, ${source}, ${message}, ${cause})"
+      q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
 
   }
