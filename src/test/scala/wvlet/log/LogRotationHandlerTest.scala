@@ -13,6 +13,8 @@
  */
 package wvlet.log
 
+import java.io.File
+
 /**
   *
   */
@@ -22,7 +24,7 @@ class LogRotationHandlerTest extends Spec {
 
     "rotate log files" in {
       val l = Logger("wvlet.log.rotation")
-      val h = new LogRotationHandler("target/log-rotation-test", 5, 10)
+      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
 
       l.resetHandler(h)
 
@@ -31,6 +33,20 @@ class LogRotationHandlerTest extends Spec {
       l.info("this is the end of log files")
       h.flush()
       h.close()
+
+      new File("target/log-rotation-test.log").exists() shouldBe true
+    }
+
+    "rescue orphaned log files" in {
+      val l = Logger("wvlet.log.rotation")
+      val tmp = new File("target/log-rotation-test.log.tmp")
+      if(!tmp.exists()) {
+        tmp.createNewFile()
+      }
+      tmp.exists() shouldBe true
+      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
+
+      tmp.exists() shouldBe false
     }
 
   }

@@ -20,6 +20,8 @@ import javax.management._
 /**
   * Logger configuration API for JMX
   *
+  * TODO: Move this to wvlet-log-jmx project, and use wvlet-jmx
+  *
   */
 @MXBean abstract trait LoggerJMXConfig {
   def getDefaultLogLevel: String
