@@ -13,13 +13,12 @@
  */
 package wvlet.inject
 
-import wvlet.inject.InjectionException.{MISSING_SESSION}
+import wvlet.inject.InjectionException.MISSING_SESSION
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
 import scala.language.experimental.macros
-import scala.reflect.ClassTag
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 object Inject extends LogSupport {
 
@@ -119,7 +118,7 @@ class Inject extends LogSupport {
     val effectiveBindings = for ((key, lst) <- originalBindings.groupBy(_.from)) yield {
       lst.last
     }
-    val keyIndex : Map[ObjectType, Int] = originalBindings.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val keyIndex: Map[ObjectType, Int] = originalBindings.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     new SessionImpl(sortedBindings, listener.result())
   }
@@ -131,55 +130,8 @@ class Inject extends LogSupport {
   }
 }
 
-class Bind(h: Inject, from: ObjectType) extends LogSupport {
 
-  def to[B](implicit ev: ru.TypeTag[B]) {
-    val to = ObjectType.of(ev.tpe)
-    if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-    }
-    else {
-      h.addBinding(ClassBinding(from, to))
-    }
-  }
 
-  def toProvider[A: ClassTag](provider: ObjectType => A) {
-    h.addBinding(ProviderBinding(from, provider))
-  }
 
-  def toSingletonOf[B](implicit ev: ru.TypeTag[B]) {
-    val to = ObjectType.of(ev.tpe)
-    if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-    }
-    else {
-      h.addBinding(SingletonBinding(from, to, false))
-    }
-  }
-
-  def toEagerSingletonOf[B](implicit ev: ru.TypeTag[B]) {
-    val to = ObjectType.of(ev.tpe)
-    if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-    }
-    else {
-      h.addBinding(SingletonBinding(from, to, true))
-    }
-  }
-
-  def toInstance(any: Any) {
-    h.addBinding(InstanceBinding(from, any))
-  }
-
-  def toSingleton {
-    h.addBinding(SingletonBinding(from, from, false))
-  }
-
-  def toEagerSingleton {
-    h.addBinding(SingletonBinding(from, from, true))
-  }
-}
-
-import scala.reflect.runtime.{universe => ru}
 
 
