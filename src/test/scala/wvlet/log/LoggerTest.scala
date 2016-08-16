@@ -56,18 +56,13 @@ class LoggerTest extends Spec {
   }
 
   "logger" should {
-
-    "support java.util.LogLevel" in {
-
-      for (l <- Seq(jul.Level.ALL, jul.Level.SEVERE, jul.Level.WARNING, jul.Level.FINE, jul.Level.CONFIG, jul.Level.FINER, jul.Level.FINEST,
-        jul.Level.OFF)) {
-        LogLevel(l)
-      }
-    }
-
     "display log messages" in {
       info("logging test")
       new MyAppClass
+    }
+
+    "accept java.util.logging.LogRecord" in {
+      SourceCodeLogFormatter.format(new jul.LogRecord(jul.Level.INFO, "format test"))
     }
 
     "support simple log format" in {
@@ -100,6 +95,14 @@ class LoggerTest extends Spec {
       val l = Logger("org.sample")
       info(s"logger name: ${l.getName}")
       l.info("hello logger")
+    }
+
+    "be able to change log levels" in {
+      val l = Logger("org.sample")
+      l.setLogLevel(LogLevel.TRACE)
+      l.getLogLevel shouldBe LogLevel.TRACE
+      l.resetLogLevel
+      l.clear
     }
 
     "support logging methods" in {
@@ -147,6 +150,13 @@ class LoggerTest extends Spec {
   }
 
   "LogLevel" should {
+    "support java.util.LogLevel" in {
+      for (l <- Seq(jul.Level.ALL, jul.Level.SEVERE, jul.Level.WARNING, jul.Level.FINE, jul.Level.CONFIG, jul.Level.FINER, jul.Level.FINEST,
+        jul.Level.OFF)) {
+        LogLevel(l)
+      }
+    }
+
     "parse string log levels" in {
       val logLevels = LogLevel.values.map(_.name.toLowerCase())
 
