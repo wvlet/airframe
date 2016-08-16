@@ -1,0 +1,9 @@
+*~
+build
+.bundle
+vendor/bundle
+*.iml
+.idea
+atlassian-ide-plugin.xml
+target
+result
