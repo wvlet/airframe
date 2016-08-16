@@ -158,12 +158,10 @@ object Logger {
     * @param useParents
     * @return
     */
-  def initLogger(name: String,
-                level: Option[LogLevel] = None,
-                handlers: Seq[Handler] = Seq.empty,
-                useParents: Boolean = true
-               ): Logger = {
-
+  private[log] def initLogger(name: String,
+                              level: Option[LogLevel] = None,
+                              handlers: Seq[Handler] = Seq.empty,
+                              useParents: Boolean = true): Logger = {
     val logger = Logger.apply(name)
     logger.clearHandlers
     level.foreach(l => logger.setLogLevel(l))
@@ -172,7 +170,7 @@ object Logger {
     logger
   }
 
-  def of[A](implicit tag:ClassTag[A]) : Logger = {
+  def of[A](implicit tag: ClassTag[A]): Logger = {
     apply(tag.runtimeClass.getName)
   }
 
@@ -194,11 +192,11 @@ object Logger {
     rootLogger.resetLogLevel
   }
 
-  def getSuccinctLoggerName[A](cl:Class[A]) : String = {
+  def getSuccinctLoggerName[A](cl: Class[A]): String = {
     val name =
-      if(cl.getName.contains("$anon$")) {
+      if (cl.getName.contains("$anon$")) {
         val interfaces = cl.getInterfaces
-        if(interfaces != null && interfaces.length > 0) {
+        if (interfaces != null && interfaces.length > 0) {
           // Use the first interface name instead of annonimized name
           interfaces(0).getName
         }
@@ -210,9 +208,9 @@ object Logger {
         cl.getName
       }
 
-    if(name.endsWith("$")) {
+    if (name.endsWith("$")) {
       // Remove trailing $ of Scala Object name
-      name.substring(0, name.length-1)
+      name.substring(0, name.length - 1)
     }
     else {
       name

@@ -124,7 +124,8 @@ object LogFormatter {
       val log = s.result().mkString("\t")
       record.cause match {
         case Some(ex) =>
-          s"${log}\n${formatStacktrace(ex)}"
+          // Print only the first line of the exception message
+          s"${log}\n${formatStacktrace(ex).split("\n").head}"
         case None =>
           log
       }

@@ -35,6 +35,8 @@ class MyAppClass extends LogSupport {
     """This is a multi-line
       |log message!""".stripMargin)
   info(Seq(1, 2, 3, 4))
+
+  warn("stack trace test", new Exception("stack trace test"))
 }
 
 trait Sample
@@ -56,6 +58,24 @@ class LoggerTest extends Spec {
   }
 
   "logger" should {
+    "use leaf logger name" in {
+      val l = Logger("leaf")
+      l.getName shouldBe "leaf"
+      l.info("leaf logger")
+    }
+
+    "have access to root logger" in {
+      val current = Logger.getDefaultLogLevel
+      Logger.resetDefaultLogLevel
+      Logger.rootLogger.getLogLevel shouldBe LogLevel.INFO
+      Logger.setDefaultLogLevel(current)
+    }
+
+    "create logger from class" in  {
+      val l = Logger.of[MyAppClass]
+      l.getName shouldBe "wvlet.log.MyAppClass"
+    }
+
     "display log messages" in {
       info("logging test")
       new MyAppClass
@@ -117,6 +137,8 @@ class LoggerTest extends Spec {
     "display exception stack traces" in {
       val e = new Exception("exception test")
       warn("Running stack trace tests")
+      warn(e)
+      warn(new Error("error test"))
       trace("error", e)
       debug("error", e)
       info("error", e)
@@ -124,6 +146,7 @@ class LoggerTest extends Spec {
       error("error", e)
 
       val l = Logger("org.sample")
+      l.warn(e)
       l.trace("error", e)
       l.debug("error", e)
       l.info("error", e)
@@ -178,7 +201,6 @@ class LoggerTest extends Spec {
       sorted.sliding(2).forall(s => s(0) < s(1))
     }
   }
-
 
   "ConsoleLogHandler" should {
     "support flush and close" in {
