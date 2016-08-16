@@ -2,6 +2,7 @@ package wvlet.airframe
 
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
+import wvlet.obj.tag._
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
@@ -14,6 +15,7 @@ object Binder {
   case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
   case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
+  case class FactoryBinding[A, D1](from: ObjectType, d1:ObjectType, factory: D1 => A) extends Binding
 }
 
 import wvlet.airframe.Binder._
@@ -21,9 +23,9 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder(design: Design, from: ObjectType) extends LogSupport {
+class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
-  def to[B](implicit ev: ru.TypeTag[B]): Design = {
+  def to[B <: A](implicit ev: ru.TypeTag[B]): Design = {
     val to = ObjectType.of(ev.tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")
@@ -34,11 +36,15 @@ class Binder(design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toProvider[A: ClassTag](provider: ObjectType => A): Design = {
+  def toProvider(provider: ObjectType => A): Design = {
     design.addBinding(ProviderBinding(from, provider))
   }
 
-  def toSingletonOf[B](implicit ev: ru.TypeTag[B]): Design = {
+  def toProvider[D1](factory: D1 => A)(implicit ev:ru.TypeTag[D1]): Design = {
+    design.addBinding(FactoryBinding(from, ObjectType.of(ev.tpe), factory))
+  }
+
+  def toSingletonOf[B <: A](implicit ev: ru.TypeTag[B]): Design = {
     val to = ObjectType.of(ev.tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")
@@ -49,7 +55,7 @@ class Binder(design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toEagerSingletonOf[B](implicit ev: ru.TypeTag[B]): Design = {
+  def toEagerSingletonOf[B <: A](implicit ev: ru.TypeTag[B]): Design = {
     val to = ObjectType.of(ev.tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")

@@ -16,10 +16,11 @@ class Design(val binding: Seq[Binding], val listener: Seq[SessionListener]) exte
     new Design(binding ++ other.binding, listener ++ other.listener)
   }
 
-  def bind[A](implicit a: ru.TypeTag[A]): Binder = {
-    bind(ObjectType.of(a.tpe))
+  def bind[A](implicit a: ru.TypeTag[A]): Binder[A] = {
+    bind(ObjectType.of(a.tpe)).asInstanceOf[Binder[A]]
   }
-  def bind(t: ObjectType): Binder = {
+
+  private def bind(t: ObjectType): Binder[_] = {
     trace(s"Bind ${t.name} [${t.rawType}]")
     val b = new Binder(this, t)
     b
