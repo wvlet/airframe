@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
 import wvlet.obj.tag.@@
-import wvlet.test.WvletSpec
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -179,7 +178,7 @@ import wvlet.inject.ServiceMixinExample._
 /**
   *
   */
-class InjectTest extends WvletSpec {
+class InjectTest extends AirframeSpec {
 
   "Inject" should {
 
