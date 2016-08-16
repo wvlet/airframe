@@ -13,21 +13,21 @@
  */
 package wvlet
 
-import scala.reflect.runtime.{universe=>ru}
+import wvlet.airframe.AirframeMacros._
+
+import scala.reflect.runtime.{universe => ru}
 import scala.language.experimental.macros
 
 /**
   *
   */
 package object airframe {
-
-  def bind[A:ru.TypeTag] : A = macro AirframeMacros.bindImpl[A]
-  def bind[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro AirframeMacros.bind1Impl[A, D1]
-  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag](factory:(D1, D2) => A) : A = macro AirframeMacros.bind2Impl[A, D1, D2]
-  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag](factory:(D1, D2, D3) => A) : A = macro AirframeMacros.bind3Impl[A, D1, D2, D3]
-  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag](factory:(D1, D2, D3, D4) => A) : A = macro AirframeMacros.bind4Impl[A, D1, D2, D3, D4]
-  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag, D5:ru.TypeTag](factory:(D1, D2, D3, D4, D5) => A) : A = macro AirframeMacros.bind5Impl[A, D1, D2, D3, D4, D5]
-
+  def bind[A:ru.TypeTag] : A = macro bindImpl[A]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro bind1Impl[A, D1]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag](factory:(D1, D2) => A) : A = macro bind2Impl[A, D1, D2]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag](factory:(D1, D2, D3) => A) : A = macro bind3Impl[A, D1, D2, D3]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag](factory:(D1, D2, D3, D4) => A) : A = macro bind4Impl[A, D1, D2, D3, D4]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag, D5:ru.TypeTag](factory:(D1, D2, D3, D4, D5) => A) : A = macro bind5Impl[A, D1, D2, D3, D4, D5]
 }
 
 

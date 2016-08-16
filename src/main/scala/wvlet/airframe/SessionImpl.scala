@@ -15,7 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe.Bind._
+import wvlet.airframe.Binder._
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}

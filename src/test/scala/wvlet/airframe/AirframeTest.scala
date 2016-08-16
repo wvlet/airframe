@@ -102,9 +102,9 @@ object ServiceMixinExample {
     *   - Users needs to know the order of constructor arguments
     * -
     */
-  class FortunePrinterAsClass @Airframe()(printer: Printer, fortune: Fortune) {
-    printer.print(fortune.generate)
-  }
+  //class FortunePrinterAsClass @Inject ()(printer: Printer, fortune: Fortune) {
+  //    printer.print(fortune.generate)
+  //}
 
 
   class HeavyObject() extends LogSupport {
@@ -179,37 +179,37 @@ import wvlet.airframe.ServiceMixinExample._
   */
 class AirframeTest extends AirframeSpec {
 
-  "Inject" should {
+  "Airframe" should {
 
     "instantiate class" in {
+      val d = Airframe.newDesign
+      .bind[Printer].to[ConsolePrinter]
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val h = new Airframe
-      h.bind[Printer].to[ConsolePrinter]
-      h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-
-      val context = h.newSession
-      val m = context.build[FortunePrinterMixin]
+      val m = d.build[FortunePrinterMixin]
     }
 
 
     "create singleton" in {
-      val h = new Airframe
-      h.bind[HeavyObject].toSingleton
+      val d = Airframe.newDesign
+        .bind[HeavyObject].toSingleton
 
-      val c = h.newSession
-      val a = c.build[HelixAppA]
-      val b = c.build[HelixAppB]
+      val session = d.newSession
+      val a = session.build[HelixAppA]
+      val b = session.build[HelixAppB]
       a.heavy shouldEqual b.heavy
     }
 
     "create singleton eagerly" in {
       val start = System.nanoTime()
-      val h = new Airframe
-      h.bind[EagerSingleton].toEagerSingleton
-      val c = h.newSession
-      c.get[HeavyObject]
+      val session =
+        Airframe.newDesign
+        .bind[EagerSingleton].toEagerSingleton
+        .newSession
+
+      session.get[HeavyObject]
       val current = System.nanoTime()
-      val s = c.get[EagerSingleton]
+      val s = session.get[EagerSingleton]
 
       s.initializedTime should be > start
       s.initializedTime should be < current
@@ -217,7 +217,7 @@ class AirframeTest extends AirframeSpec {
 
 
     "found cyclic dependencies" in {
-      val c = new Airframe().newSession
+      val c = Airframe.newDesign.newSession
       trait HasCycle {
         val obj = bind[A]
       }
@@ -228,57 +228,58 @@ class AirframeTest extends AirframeSpec {
     }
 
     "Find a context in parameter" in {
-      val h = new Airframe
-      h.bind[Printer].to[ConsolePrinter]
-      h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-      val c = h.newSession
-      new ClassWithContext(c)
+      val session = Airframe.newDesign
+                    .bind[Printer].to[ConsolePrinter]
+                    .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+                    .newSession
+      new ClassWithContext(session)
     }
 
-    "support injection listener" in {
-      val h = new Airframe
-      h.bind[EagerSingleton].toEagerSingleton
-      h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-
+    "support binding listener" in {
       val counter = new AtomicInteger(0)
-      h.addListner(new SessionListener {
-        override def afterInjection(t: ObjectType, injectee: Any): Unit = {
-          counter.incrementAndGet()
-        }
-      })
-      val c = h.newSession
-      c.get[ConsoleConfig]
+
+      val session =
+        Airframe.newDesign
+        .bind[EagerSingleton].toEagerSingleton
+        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+        .addListner(new SessionListener {
+          override def afterInjection(t: ObjectType, injectee: Any): Unit = {
+            counter.incrementAndGet()
+          }
+        })
+        .newSession
+      session.get[ConsoleConfig]
       counter.get shouldBe 2
     }
 
-    "support injection via factory" in {
-      val h = new Airframe
-      h.bind[HelloConfig].toInstance(HelloConfig("Hello Helix!"))
-      val c = h.newSession
-      val f = new FactoryExample(c)
-      f.hello shouldBe "Hello Helix!"
-      f.helloFromProvider shouldBe "Hello Helix!"
+    "support binding via factory" in {
+      val d = Airframe.newDesign
+        .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
+
+      val session = d.newSession
+      val f = new FactoryExample(session)
+      f.hello shouldBe "Hello Airframe!"
+      f.helloFromProvider shouldBe "Hello Airframe!"
 
       info(f.hello2)
     }
 
     "support type tagging" taggedAs ("tag") in {
-      val h = new Airframe
-      h.bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-      h.bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-      h.bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
-      val c = h.newSession
-      val tagged = c.build[TaggedBinding]
+      val d = Airframe.newDesign
+              .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
+              .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
+              .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
+
+      val session = d.newSession
+      val tagged = session.build[TaggedBinding]
       tagged.apple.name shouldBe ("apple")
       tagged.banana.name shouldBe ("banana")
       tagged.lemon.name shouldBe ("lemon")
     }
 
-
     "support nested context injection" taggedAs("nested") in {
-      val h = new Airframe
-      val c = h.newSession
-      c.build[Nested]
+      val session = Airframe.newDesign.newSession
+      session.build[Nested]
     }
   }
 }
