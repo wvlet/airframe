@@ -23,6 +23,9 @@ object AirframeException {
   }
   case class MISSING_SESSION(cl:ObjectType) extends ErrorType
   case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends ErrorType
+  case class MISSING_DEPENDENCY(stack:List[ObjectType]) extends ErrorType {
+    override def toString = s"MISSING_DEPENDENCY(${stack.mkString(" <- ")})"
+  }
 
 }
 /**
