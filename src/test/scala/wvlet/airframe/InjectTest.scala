@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.inject
+package wvlet.airframe
 
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
@@ -78,9 +78,8 @@ object ServiceMixinExample {
     *
     * Pros:
     *   - Service reference (e.g., printer, fortune) can be scoped inside the trait.
-    *   - You can save boilerplate code
+    *   - No boilerplate code is required
     * Cons:
-    *   - If you use the same service multiple location, you need to repeat the same description in the user module
     *   - To reuse it in other traits, we still need to care about the naming conflict
     */
   trait FortunePrinterEmbedded {
@@ -99,8 +98,8 @@ object ServiceMixinExample {
     * Cons:
     *   - To add/remove modules, we need to create another constructor or class.
     * -> code duplication occurs
-    *   - Enhancing the class functionality
-    *   - RememenbOrder of constructor arguments
+    *   - It's hard to enhance the class functionality
+    *   - Users needs to know the order of constructor arguments
     * -
     */
   class FortunePrinterAsClass @Inject()(printer: Printer, fortune: Fortune) {
@@ -173,7 +172,7 @@ object ServiceMixinExample {
 
 }
 
-import wvlet.inject.ServiceMixinExample._
+import wvlet.airframe.ServiceMixinExample._
 
 /**
   *

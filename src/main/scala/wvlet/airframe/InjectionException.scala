@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.inject
+package wvlet.airframe
 
-import wvlet.inject.InjectionException.ErrorType
+import wvlet.airframe.InjectionException.ErrorType
 import wvlet.obj.ObjectType
 
 object InjectionException {

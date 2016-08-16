@@ -1,6 +1,6 @@
-package wvlet.inject
+package wvlet.airframe
 
-import wvlet.inject.Inject.{ClassBinding, InstanceBinding, ProviderBinding, SingletonBinding}
+import wvlet.airframe.Inject.{ClassBinding, InstanceBinding, ProviderBinding, SingletonBinding}
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
 

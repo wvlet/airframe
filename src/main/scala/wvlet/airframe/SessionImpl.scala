@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.inject
+package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.inject.Inject.{ClassBinding, InstanceBinding, ProviderBinding, SingletonBinding, _}
-import wvlet.inject.InjectionException.CYCLIC_DEPENDENCY
+import wvlet.airframe.Inject.{ClassBinding, InstanceBinding, ProviderBinding, SingletonBinding, _}
+import wvlet.airframe.InjectionException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -26,7 +26,7 @@ import scala.util.{Failure, Try}
 /**
   *
   */
-private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionListener]) extends wvlet.inject.Session with LogSupport {
+private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionListener]) extends wvlet.airframe.Session with LogSupport {
   self =>
 
   import scala.collection.JavaConversions._
@@ -98,8 +98,8 @@ private[inject] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionLi
         import scala.tools.reflect.ToolBox
         val tb = currentMirror.mkToolBox()
         val code =
-          s"""new (wvlet.inject.Session => Any) {
-              |  def apply(c:wvlet.inject.Session) =
+          s"""new (wvlet.airframe.Session => Any) {
+              |  def apply(c:wvlet.airframe.Session) =
               |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
               |          protected def __current_session = c
               |     }

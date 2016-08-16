@@ -1,4 +1,4 @@
-package wvlet.inject
+package wvlet.airframe
 
 import org.scalatest._
 import wvlet.log.LogFormatter.SourceCodeLogFormatter

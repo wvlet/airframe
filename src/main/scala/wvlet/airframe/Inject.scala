@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.inject
+package wvlet.airframe
 
-import wvlet.inject.InjectionException.MISSING_SESSION
+import wvlet.airframe.InjectionException.MISSING_SESSION
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -35,7 +35,7 @@ object Inject extends LogSupport {
     trace(s"Find session for ${cl}")
 
     def returnsSession(c: Class[_]) = {
-      classOf[wvlet.inject.Session].isAssignableFrom(c)
+      classOf[wvlet.airframe.Session].isAssignableFrom(c)
     }
 
     // find val or def that returns wvlet.inject.Session
@@ -85,7 +85,7 @@ object Inject extends LogSupport {
 
 }
 
-import wvlet.inject.Inject._
+import wvlet.airframe.Inject._
 
 import scala.reflect.runtime.{universe => ru}
 

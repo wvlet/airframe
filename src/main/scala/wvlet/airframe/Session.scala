@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.inject
+package wvlet.airframe
 
 import wvlet.obj.ObjectType
 
@@ -31,7 +31,7 @@ trait Session {
     */
   def get[A: ru.WeakTypeTag]: A
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
-  def build[A: ru.WeakTypeTag]: A = macro InjectMacros.buildImpl[A]
+  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
   def register[A: ru.WeakTypeTag](obj:A) : A
 }
