@@ -21,12 +21,12 @@ import scala.language.experimental.macros
   */
 package object airframe {
 
-  def inject[A:ru.TypeTag] : A = macro AirframeMacros.injectImpl[A]
-  def inject[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro AirframeMacros.inject1Impl[A, D1]
-  def inject[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag](factory:(D1, D2) => A) : A = macro AirframeMacros.inject2Impl[A, D1, D2]
-  def inject[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag](factory:(D1, D2, D3) => A) : A = macro AirframeMacros.inject3Impl[A, D1, D2, D3]
-  def inject[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag](factory:(D1, D2, D3, D4) => A) : A = macro AirframeMacros.inject4Impl[A, D1, D2, D3, D4]
-  def inject[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag, D5:ru.TypeTag](factory:(D1, D2, D3, D4, D5) => A) : A = macro AirframeMacros.inject5Impl[A, D1, D2, D3, D4, D5]
+  def bind[A:ru.TypeTag] : A = macro AirframeMacros.bindImpl[A]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro AirframeMacros.bind1Impl[A, D1]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag](factory:(D1, D2) => A) : A = macro AirframeMacros.bind2Impl[A, D1, D2]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag](factory:(D1, D2, D3) => A) : A = macro AirframeMacros.bind3Impl[A, D1, D2, D3]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag](factory:(D1, D2, D3, D4) => A) : A = macro AirframeMacros.bind4Impl[A, D1, D2, D3, D4]
+  def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag, D5:ru.TypeTag](factory:(D1, D2, D3, D4, D5) => A) : A = macro AirframeMacros.bind5Impl[A, D1, D2, D3, D4, D5]
 
 }
 

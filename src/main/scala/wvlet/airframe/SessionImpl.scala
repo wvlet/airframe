@@ -15,8 +15,8 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe.Inject.{ClassBinding, InstanceBinding, ProviderBinding, SingletonBinding, _}
-import wvlet.airframe.InjectionException.CYCLIC_DEPENDENCY
+import wvlet.airframe.Bind._
+import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -60,7 +60,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[Session
     trace(s"Search bindings for ${t}")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
-      throw new InjectionException(CYCLIC_DEPENDENCY(seen))
+      throw new AirframeException(CYCLIC_DEPENDENCY(seen))
     }
     val obj = binding.find(_.from == t).map {
       case ClassBinding(from, to) =>

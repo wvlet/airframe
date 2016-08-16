@@ -13,10 +13,10 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.InjectionException.ErrorType
+import wvlet.airframe.AirframeException.ErrorType
 import wvlet.obj.ObjectType
 
-object InjectionException {
+object AirframeException {
 
   sealed trait ErrorType {
     def errorCode: String = this.toString
@@ -28,7 +28,7 @@ object InjectionException {
 /**
   *
   */
-class InjectionException(errorType: ErrorType) extends Exception(errorType.toString) {
+class AirframeException(errorType: ErrorType) extends Exception(errorType.toString) {
 
 }
 

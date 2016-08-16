@@ -51,11 +51,11 @@ object ServiceMixinExample {
   }
 
   trait PrinterService {
-    protected def printer = inject[Printer]
+    protected def printer = bind[Printer]
   }
 
   trait FortuneService {
-    protected def fortune = inject[Fortune]
+    protected def fortune = bind[Fortune]
   }
 
   /**
@@ -83,8 +83,8 @@ object ServiceMixinExample {
     *   - To reuse it in other traits, we still need to care about the naming conflict
     */
   trait FortunePrinterEmbedded {
-    protected def printer = inject[Printer]
-    protected def fortune = inject[Fortune]
+    protected def printer = bind[Printer]
+    protected def fortune = bind[Fortune]
 
     printer.print(fortune.generate)
   }
@@ -102,7 +102,7 @@ object ServiceMixinExample {
     *   - Users needs to know the order of constructor arguments
     * -
     */
-  class FortunePrinterAsClass @Inject()(printer: Printer, fortune: Fortune) {
+  class FortunePrinterAsClass @Airframe()(printer: Printer, fortune: Fortune) {
     printer.print(fortune.generate)
   }
 
@@ -112,7 +112,7 @@ object ServiceMixinExample {
   }
 
   trait HeavySingletonService {
-    val heavy = inject[HeavyObject]
+    val heavy = bind[HeavyObject]
   }
 
   trait HelixAppA extends HeavySingletonService {
@@ -136,10 +136,10 @@ object ServiceMixinExample {
   case class HelloConfig(message: String)
 
   class FactoryExample(val c: Session) {
-    val hello  = inject { config: HelloConfig => s"${config.message}" }
-    val hello2 = inject { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
+    val hello  = bind { config: HelloConfig => s"${config.message}" }
+    val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
 
-    val helloFromProvider = inject(provider _)
+    val helloFromProvider = bind(provider _)
 
     def provider(config: HelloConfig): String = config.message
   }
@@ -151,21 +151,21 @@ object ServiceMixinExample {
   trait Lemon
 
   trait TaggedBinding {
-    val apple  = inject[Fruit @@ Apple]
-    val banana = inject[Fruit @@ Banana]
-    val lemon  = inject(lemonProvider _)
+    val apple  = bind[Fruit @@ Apple]
+    val banana = bind[Fruit @@ Banana]
+    val lemon  = bind(lemonProvider _)
 
     def lemonProvider(f: Fruit @@ Lemon) = f
   }
 
 
   trait Nested {
-    val nest = inject[Nest1]
+    val nest = bind[Nest1]
   }
 
   trait Nest1 extends LogSupport {
     info("instanciated Nest1")
-    val nest2 = inject[Nest2]
+    val nest2 = bind[Nest2]
   }
 
   class Nest2()
@@ -177,13 +177,13 @@ import wvlet.airframe.ServiceMixinExample._
 /**
   *
   */
-class InjectTest extends AirframeSpec {
+class AirframeTest extends AirframeSpec {
 
   "Inject" should {
 
     "instantiate class" in {
 
-      val h = new Inject
+      val h = new Airframe
       h.bind[Printer].to[ConsolePrinter]
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
@@ -193,7 +193,7 @@ class InjectTest extends AirframeSpec {
 
 
     "create singleton" in {
-      val h = new Inject
+      val h = new Airframe
       h.bind[HeavyObject].toSingleton
 
       val c = h.newSession
@@ -204,7 +204,7 @@ class InjectTest extends AirframeSpec {
 
     "create singleton eagerly" in {
       val start = System.nanoTime()
-      val h = new Inject
+      val h = new Airframe
       h.bind[EagerSingleton].toEagerSingleton
       val c = h.newSession
       c.get[HeavyObject]
@@ -217,18 +217,18 @@ class InjectTest extends AirframeSpec {
 
 
     "found cyclic dependencies" in {
-      val c = new Inject().newSession
+      val c = new Airframe().newSession
       trait HasCycle {
-        val obj = inject[A]
+        val obj = bind[A]
       }
       warn(s"Running cyclic dependency test: A->B->A")
-      intercept[InjectionException] {
+      intercept[AirframeException] {
         c.build[HasCycle]
       }
     }
 
     "Find a context in parameter" in {
-      val h = new Inject
+      val h = new Airframe
       h.bind[Printer].to[ConsolePrinter]
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
       val c = h.newSession
@@ -236,7 +236,7 @@ class InjectTest extends AirframeSpec {
     }
 
     "support injection listener" in {
-      val h = new Inject
+      val h = new Airframe
       h.bind[EagerSingleton].toEagerSingleton
       h.bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
@@ -252,7 +252,7 @@ class InjectTest extends AirframeSpec {
     }
 
     "support injection via factory" in {
-      val h = new Inject
+      val h = new Airframe
       h.bind[HelloConfig].toInstance(HelloConfig("Hello Helix!"))
       val c = h.newSession
       val f = new FactoryExample(c)
@@ -263,7 +263,7 @@ class InjectTest extends AirframeSpec {
     }
 
     "support type tagging" taggedAs ("tag") in {
-      val h = new Inject
+      val h = new Airframe
       h.bind[Fruit @@ Apple].toInstance(Fruit("apple"))
       h.bind[Fruit @@ Banana].toInstance(Fruit("banana"))
       h.bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
@@ -276,7 +276,7 @@ class InjectTest extends AirframeSpec {
 
 
     "support nested context injection" taggedAs("nested") in {
-      val h = new Inject
+      val h = new Airframe
       val c = h.newSession
       c.build[Nested]
     }

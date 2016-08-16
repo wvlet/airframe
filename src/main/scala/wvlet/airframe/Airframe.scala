@@ -13,22 +13,14 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.InjectionException.MISSING_SESSION
+import wvlet.airframe.AirframeException.MISSING_SESSION
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
 import scala.language.experimental.macros
 import scala.util.Try
 
-object Inject extends LogSupport {
-
-  sealed trait Binding {
-    def from: ObjectType
-  }
-  case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
-  case class InstanceBinding(from: ObjectType, to: Any) extends Binding
-  case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
-  case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
+object Airframe extends LogSupport {
 
   def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
 
@@ -79,20 +71,19 @@ object Inject extends LogSupport {
     val cl = enclosingObj.getClass
     getSession(enclosingObj).getOrElse {
       error(s"No wvlet.inject.Session is found in the scope: ${ObjectType.of(cl)}")
-      throw new InjectionException(MISSING_SESSION(ObjectType.of(cl)))
+      throw new AirframeException(MISSING_SESSION(ObjectType.of(cl)))
     }
   }
 
 }
 
-import wvlet.airframe.Inject._
-
+import wvlet.airframe.Bind._
 import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   */
-class Inject extends LogSupport {
+class Airframe extends LogSupport {
 
   private val binding  = Seq.newBuilder[Binding]
   private val listener = Seq.newBuilder[SessionListener]
@@ -106,7 +97,7 @@ class Inject extends LogSupport {
     b
   }
 
-  def addListner[A](l: SessionListener): Inject = {
+  def addListner[A](l: SessionListener): Airframe = {
     listener += l
     this
   }
@@ -123,7 +114,7 @@ class Inject extends LogSupport {
     new SessionImpl(sortedBindings, listener.result())
   }
 
-  def addBinding(b: Binding): Inject = {
+  def addBinding(b: Binding): Airframe = {
     trace(s"Add binding: $b")
     binding += b
     this
