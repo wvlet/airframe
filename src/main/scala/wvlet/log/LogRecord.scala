@@ -24,16 +24,6 @@ import java.util.{logging => jl}
   * @param col
   */
 case class LogSource(path: String, fileName: String, line: Int, col: Int) {
-  def fileBaseName = {
-    val pos = fileName.lastIndexOf('.')
-    if (pos == -1) {
-      fileName
-    }
-    else {
-      fileName.substring(0, pos)
-    }
-  }
-
   def fileLoc = s"${fileName}:${line}"
 }
 
