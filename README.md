@@ -40,6 +40,7 @@ Airframe creates an `App` instance by searching the design for binding rules of 
 `Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
 
 The major advantages of Airframe are:
+- Simple to use. Just import `wvlet.airframe._` and do the above three steps. 
 - You can describe the knowledge on how to create objects within `Design`.
   - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`).
   - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. 
