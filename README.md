@@ -1,4 +1,4 @@
-# airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI][circleci-badge]][circleci-link] [![Coverage Status][coverall-badge]][coverall-link]
+# Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI][circleci-badge]][circleci-link] [![Coverage Status][coverall-badge]][coverall-link]
 Dependency injection library tailored to Scala.
 
 [circleci-badge]: https://circleci.com/gh/wvlet/airframe.svg?style=svg
@@ -40,13 +40,12 @@ Airframe creates an `App` instance by searching the design for binding rules of 
 `Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
 
 The major advantages of Airframe are:
-- Simple to use. Just import `wvlet.airframe._` and do the above three steps. 
-- You can describe the knowledge on how to create objects within `Design`.
-  - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`).
+- Simple to use. Just `import wvlet.airframe._` and do the above three steps. 
+- You can use `Design` to describe the knowledge on how to create objects.
+  - `Design` is reusable for preparing objects both in production and test codes. This avoids code duplications of creating instances with constructors. Compare writing `new App(new X, new Y, ...)` multiple times and calling `design.build[App]`. 
   - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. 
-- You can mix-in Scala traits that have multiple dependencies, instead of writing constructors that have many arguments.
-  - No longer need to remember the constructor argument orders.
-  - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
+- You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time:
+  - Mixing traits is far far easier than using a constructor, since traits can be combined in an arbitrary order.
 
 # Usage
 
@@ -136,6 +135,22 @@ trait TaggedBinding {
   val banana = bind[Fruit @@ Banana]
 }
  ```
+
+Tagged binding is also useful to inject primitive type values:
+```scala
+trait Env
+
+trait MyService {
+  lazy val threadManager = bind[String @@ Env] match {
+     case "test" => // prepare a testing thread manager
+     case "production" => // prepare a thread manager for production
+  }
+}
+
+val design = Airframe.newDesign
+val testingDesign = design.bind[String @@ Env].toInstance("test")
+val productionDesign = design.bind[String @@ Env].toInstance("production")
+```
 
 ## Object Injection
 
