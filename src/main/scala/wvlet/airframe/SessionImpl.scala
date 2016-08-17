@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.Binder._
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.log.LogSupport
-import wvlet.obj.{ObjectSchema, ObjectType}
+import wvlet.obj.{ObjectSchema, ObjectType, TypeUtil}
 
 import scala.reflect.runtime.{universe => ru}
 import scala.tools.reflect.ToolBoxError
@@ -76,7 +76,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[Session
         trace(s"Use a provider to generate ${from}: ${b}")
         registerInjectee(from, provider.apply(b.from))
       case f@FactoryBinding(from, d1, factory) =>
-        val d1Instance = newInstance(d1, List.empty)
+        val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
         registerInjectee(from, factory.asInstanceOf[Any=>Any](d1Instance))
     }
               .getOrElse {
@@ -87,38 +87,46 @@ private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[Session
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
     val schema = ObjectSchema(t.rawType)
-    schema.findConstructor match {
-      case Some(ctr) =>
-        val args = for (p <- schema.constructor.params) yield {
-          newInstance(p.valueType, stack)
-        }
-        trace(s"Build a new instance for ${t}")
-        val obj = schema.constructor.newInstance(args)
-        registerInjectee(t, obj)
-      case None =>
-        // When there is no constructor, generate trait
-        // TODO use Scala macros to make it efficient
-        try {
-          import scala.reflect.runtime.currentMirror
-          import scala.tools.reflect.ToolBox
-          val tb = currentMirror.mkToolBox()
-          val code =
-            s"""new (wvlet.airframe.Session => Any) {
-                |  def apply(c:wvlet.airframe.Session) =
-                |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
-                |          protected def __current_session = c
-                |     }
-                |}  """.stripMargin
-          trace(s"Compiling a code to embed Session: ${code}")
-          val f = tb.eval(tb.parse(code)).asInstanceOf[Session => Any]
-          val obj = f.apply(this)
+    if(t.name.endsWith("$")) {
+      // Scala objects?
+      TypeUtil.companionObject(t.rawType).map(_.asInstanceOf[AnyRef]).getOrElse {
+        throw new AirframeException(MISSING_DEPENDENCY(stack))
+      }
+    }
+    else {
+      schema.findConstructor match {
+        case Some(ctr) =>
+          val args = for (p <- schema.constructor.params) yield {
+            newInstance(p.valueType, stack)
+          }
+          trace(s"Build a new instance for ${t}")
+          val obj = schema.constructor.newInstance(args)
           registerInjectee(t, obj)
-        }
-        catch {
-          case e:ToolBoxError =>
-            error(s"Failed to create instance: ${stack.mkString(" <- ")} ${e.getMessage}")
-            throw new AirframeException(MISSING_DEPENDENCY(stack))
-        }
+        case None =>
+          // When there is no constructor, generate trait
+          // TODO use Scala macros to make it efficient
+          try {
+            import scala.reflect.runtime.currentMirror
+            import scala.tools.reflect.ToolBox
+            val tb = currentMirror.mkToolBox()
+            val code =
+              s"""new (wvlet.airframe.Session => Any) {
+                  |  def apply(c:wvlet.airframe.Session) =
+                  |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
+                  |          protected def __current_session = c
+                  |     }
+                  |}  """.stripMargin
+            trace(s"Compiling a code to embed Session: ${code}")
+            val f = tb.eval(tb.parse(code)).asInstanceOf[Session => Any]
+            val obj = f.apply(this)
+            registerInjectee(t, obj)
+          }
+          catch {
+            case e: ToolBoxError =>
+              error(s"Failed to create instance: ${stack.mkString(" <- ")} ${e.getMessage}")
+              throw new AirframeException(MISSING_DEPENDENCY(stack))
+          }
+      }
     }
   }
 

@@ -14,13 +14,35 @@ object Example {
   trait WingType
   trait Left
   trait Right
-  case class Wing(name:String)
+  case class Wing(name:String) {
+    override def toString = f"Wing($name:[${hashCode()}%x])"
+  }
 
-  class Fuel(var remaining: Int) {
+  trait Metric {
+    def report(key:String, value:Int)
+  }
+
+  object EmptyMetric extends Metric {
+    override def report(key: String, value: Int): Unit = {}
+  }
+
+  object MetricLogging extends Metric with LogSupport {
+    override def report(key: String, value: Int): Unit = {
+      warn(s"${key}:${value}")
+    }
+  }
+
+  trait Fuel {
+    lazy val plainType = bind[PlaneType]
+    var remaining: Int = plainType.tankSize * 10
+    val metric = bind[Metric]
+
     def burn(r:Int) {
+      metric.report("energy.consumption", r)
       remaining -= r
     }
   }
+
   case class PlaneType(tankSize:Int)
 
   trait Engine {
@@ -35,7 +57,7 @@ object Example {
     val rightWing = bind[Wing @@ Right]
     val engine = bind[Engine]
 
-    info(s"Built a new plane left:${leftWing}, right:${rightWing}, fuel:${engine.fuel.remaining}, engine:${engine.engineType}")
+    info(f"Built a new plane left:${leftWing}, right:${rightWing}, fuel:${engine.fuel.remaining}, engine:${engine.engineType}")
 
     def start {
       engine.run(1)
@@ -80,8 +102,8 @@ object Example {
     Airframe.newDesign
     .bind[Wing @@ Left].toInstance(new Wing("left"))
     .bind[Wing @@ Right].toInstance(new Wing("right"))
-    .bind[PlaneType].toInstance(new PlaneType(50))
-    .bind[Fuel].toProvider{ p:PlaneType => new Fuel(p.tankSize * 100) }
+    .bind[PlaneType].toInstance(PlaneType(50))
+    .bind[Metric].toInstance(EmptyMetric)
 
   val simplePlaneDesign =
     coreDesign
@@ -89,7 +111,7 @@ object Example {
 
   val hybridPlaneDesign =
     coreDesign
-    .bind[PlaneType].toInstance(new PlaneType(10)) // Use a smaller tank
+    .bind[PlaneType].toInstance(PlaneType(10)) // Use a smaller tank
     .bind[Engine].to[SolarHybridEngine]
 }
 
@@ -103,6 +125,16 @@ class Example extends AirframeSpec {
 
       val hybridPlane = hybridPlaneDesign.build[AirPlane]
       hybridPlane.start
+    }
+
+    "extends a component" in {
+      val session =
+        hybridPlaneDesign
+        .bind[Metric].toInstance(MetricLogging)
+        .newSession
+
+      val plane = session.build[AirPlane]
+      plane.start
     }
   }
 
