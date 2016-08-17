@@ -16,8 +16,9 @@ package wvlet.airframe
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 
+import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.log.LogSupport
-import wvlet.obj.ObjectType
+import wvlet.obj.{ObjectType, TextType}
 import wvlet.obj.tag.@@
 
 import scala.reflect.ClassTag
@@ -115,10 +116,10 @@ object ServiceMixinExample {
     val heavy = bind[HeavyObject]
   }
 
-  trait HelixAppA extends HeavySingletonService {
+  trait AirframeAppA extends HeavySingletonService {
   }
 
-  trait HelixAppB extends HeavySingletonService {
+  trait AirframeAppB extends HeavySingletonService {
   }
 
   case class A(b: B)
@@ -195,8 +196,8 @@ class AirframeTest extends AirframeSpec {
         .bind[HeavyObject].toSingleton
 
       val session = d.newSession
-      val a = session.build[HelixAppA]
-      val b = session.build[HelixAppB]
+      val a = session.build[AirframeAppA]
+      val b = session.build[AirframeAppB]
       a.heavy shouldEqual b.heavy
     }
 
@@ -222,12 +223,28 @@ class AirframeTest extends AirframeSpec {
         val obj = bind[A]
       }
       warn(s"Running cyclic dependency test: A->B->A")
-      intercept[AirframeException] {
+      val caught = intercept[CYCLIC_DEPENDENCY] {
         c.build[HasCycle]
       }
+      warn(s"${caught}")
+      caught.deps should contain (ObjectType.ofTypeTag[A])
+      caught.deps should contain (ObjectType.ofTypeTag[B])
     }
 
-    "Find a context in parameter" in {
+    "detect missing dependencies" in {
+      val d = Airframe.newDesign
+      trait MissingDep {
+        val obj = bind[String]
+      }
+      warn(s"Running missing dependency check")
+      val caught = intercept[MISSING_DEPENDENCY] {
+        d.build[MissingDep]
+      }
+      warn(s"${caught}")
+      caught.stack should contain (TextType.String)
+    }
+
+    "find a context in parameter" in {
       val session = Airframe.newDesign
                     .bind[Printer].to[ConsolePrinter]
                     .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))

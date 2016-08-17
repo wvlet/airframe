@@ -13,26 +13,23 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.AirframeException.ErrorType
 import wvlet.obj.ObjectType
 
+
+trait AirframeException extends Exception { self =>
+  def getCode = this.getClass.getSimpleName
+  override def toString = getMessage
+}
+
 object AirframeException {
-
-  sealed trait ErrorType {
-    def errorCode: String = this.toString
+  case class MISSING_SESSION(cl:ObjectType) extends AirframeException {
+    override def getMessage: String = s"[$getCode] ${cl}"
   }
-  case class MISSING_SESSION(cl:ObjectType) extends ErrorType
-  case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends ErrorType
-  case class MISSING_DEPENDENCY(stack:List[ObjectType]) extends ErrorType {
-    override def toString = s"MISSING_DEPENDENCY(${stack.mkString(" <- ")})"
+  case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends AirframeException {
+    override def getMessage = s"[$getCode] ${deps.mkString(", ")}"
   }
-
+  case class MISSING_DEPENDENCY(stack:List[ObjectType]) extends AirframeException {
+    override def getMessage = s"[$getCode] ${stack.mkString(" <- ")}"
+  }
 }
-/**
-  *
-  */
-class AirframeException(errorType: ErrorType) extends Exception(errorType.toString) {
-
-}
-
 

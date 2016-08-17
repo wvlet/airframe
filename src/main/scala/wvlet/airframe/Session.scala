@@ -93,7 +93,7 @@ object Session extends LogSupport {
     val cl = enclosingObj.getClass
     getSession(enclosingObj).getOrElse {
       error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, enclosing object: ${enclosingObj}")
-      throw new AirframeException(MISSING_SESSION(ObjectType.of(cl)))
+      throw new MISSING_SESSION(ObjectType.of(cl))
     }
   }
 
