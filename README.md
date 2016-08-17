@@ -37,9 +37,9 @@ val app : App = design.build[App]
 ```
 
 Airframe creates an `App` instance by searching the design for binding rules of X and Y. 
-`Design` class is *immutable*, so you can easily reuse and extend it for creating new types of objects.
+`Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
 
-The major advantages of Airframe include:
+The major advantages of Airframe are:
 - You can describe the knowledge on how to create objects within `Design`.
   - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`).
   - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. 
@@ -47,8 +47,13 @@ The major advantages of Airframe include:
   - No longer need to remember the constructor argument orders.
   - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
 
-
 # Usage
+
+**build.sbt** [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11)
+```
+libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+```
+
 
 (The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala))
 
@@ -77,7 +82,7 @@ class Fortune {
 
 ## Local variable binding
 
-Using local variables is the simplest way to bind objects:
+Using local variables is the simplest way to binding objects:
 
 ```scala
 trait FortunePrinterEmbedded {
@@ -108,25 +113,24 @@ trait FortunePrinterMixin extends PrinterService with FortuneService {
 }
 ```
 
-It is also possible to manually inject an instance implementaion:
+It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing: 
 ```scala
 trait CustomPrinterMixin extends FortunePrinterMixin {
   override protected def printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
 }
 ```
-This is useful for writing tests.
-
 
 ## Tagged binding
 
-Airframe can provide separate implementations to the same type object by using object tagging:
+Airframe can provide separate implementations to the same type object by using object tagging (@@):
 ```scala
 import wvlet.obj.tag.@@
 case class Fruit(name: String)
 
 trait Apple
 trait Banana
- trait TaggedBinding {
+
+trait TaggedBinding {
   val apple  = bind[Fruit @@ Apple]
   val banana = bind[Fruit @@ Banana]
 }
@@ -142,7 +146,7 @@ val design = Airframe.newDesign
   .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding an actual instance
 ```
 
-You can define bindings to tagged objects by using `@@`.
+You can also define bindings to the tagged objects:
 
 ```scala
 val design = Airframe.newDesign
