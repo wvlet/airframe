@@ -141,15 +141,16 @@ Tagged binding is also useful to inject primitive type values:
 trait Env
 
 trait MyService {
+  // Coditional binding
   lazy val threadManager = bind[String @@ Env] match {
-     case "test" => // prepare a testing thread manager
-     case "production" => // prepare a thread manager for production
+     case "test" => bind[TestingThreadManager] // prepare a testing thread manager
+     case "production" => bind[ThreadManager] // prepare a thread manager for production
   }
 }
 
-val design = Airframe.newDesign
-val testingDesign = design.bind[String @@ Env].toInstance("test")
-val productionDesign = design.bind[String @@ Env].toInstance("production")
+val coreDesign = Airframe.newDesign
+val testingDesign = coreDesign.bind[String @@ Env].toInstance("test")
+val productionDesign = coreDesign.bind[String @@ Env].toInstance("production")
 ```
 
 ## Object Injection
