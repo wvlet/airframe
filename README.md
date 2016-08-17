@@ -42,10 +42,10 @@ Airframe creates an `App` instance by searching the design for binding rules of 
 The major advantages of Airframe are:
 - Simple to use. Just `import wvlet.airframe._` and do the above three steps. 
 - You can use `Design` to describe the knowledge on how to create objects.
-  - `Design` is reusable for preparing objects both in production and test codes. This avoids code duplications of creating instances with constructors. Compare writing `new App(new X, new Y, ...)` multiple times and calling `design.build[App]`. 
-  - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. 
-- You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time:
-  - Mixing traits is far far easier than using a constructor, since traits can be combined in an arbitrary order.
+  - `Design` is reusable for preparing objects both in production and test codes. This avoids code duplications of creating instances with constructors. Compare writing `new App(new X, new Y, new Z, ...)` multiple times with calling `design.build[App]`.
+  - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. `Design` knows how to prepare objects.
+- You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
+  - Mixing traits is far easier than using a constructor, since traits can be combined in an arbitrary order.
 
 # Usage
 
