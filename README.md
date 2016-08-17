@@ -16,6 +16,8 @@ Airframe injects object dependencies as in [Google Guice](https://github.com/goo
 With Airframe you can build objects in three steps:
 - *Bind*: Describe instance types necessary in your class with `bind[X]`: 
 ```scala
+import wvlet.airframe._
+
 trait App {
   val x = bind[X]
   val y = bind[Y]
@@ -38,18 +40,21 @@ val app : App = design.build[App]
 
 The major advantages of Airframe include:
 - You can describe the knowledge on how to create objects within `Design`.
-  - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`). 
+  - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`).
+  - When writing application codes, you only need to care about how to **use** objects`, rather than how to **provide** them. 
 - You can mix-in Scala traits that have multiple dependencies, instead of writing constructors that have many arguments.
-  - No longer need to remember the constructor argument orders.  
+  - No longer need to remember the constructor argument orders.
+  - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
 
 
 # Usage
 
-(The whole code used in this example can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala))
+(The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala))
 
-You can inject an object with `bind` method in Airframe. Assume we want to create a service which prints a greeting at random:
+You can inject an object with `bind` method in Airframe. Assume we want to create a service that prints a greeting at random:
 
 ```scala
+import wvlet.airframe._ 
 import wvlet.log.LogSupport
 
 trait Printer {
@@ -71,7 +76,7 @@ class Fortune {
 
 ## Mix-in instances
 
-The simple way is to create a service trait which uses binding objects. Since trait can be shared multiple components and a class 
+A simple way to is to create a service trait which uses binding objects. Since trait can be shared multiple components and a class 
 can mix-in any traits, this is a simple way to use binding objects.
 
 ```scala
