@@ -36,12 +36,13 @@ val design : Design =
 val app : App = design.build[App]
 ```
 
-`Design` class is *immutable*, so you can easily reuse and extend the design for creating new types of objects.
+Airframe creates an `App` instance by searching the design for binding rules of X and Y. 
+`Design` class is *immutable*, so you can easily reuse and extend it for creating new types of objects.
 
 The major advantages of Airframe include:
 - You can describe the knowledge on how to create objects within `Design`.
   - It enables you to reuse the same design to prepare objects both in production and test code. This avoids code duplications that create instances with constructors (e.g., `new App(new X, new Y, ...)`).
-  - When writing application codes, you only need to care about how to **use** objects`, rather than how to **provide** them. 
+  - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. 
 - You can mix-in Scala traits that have multiple dependencies, instead of writing constructors that have many arguments.
   - No longer need to remember the constructor argument orders.
   - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
@@ -51,7 +52,7 @@ The major advantages of Airframe include:
 
 (The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala))
 
-You can inject an object with `bind` method in Airframe. Assume we want to create a service that prints a greeting at random:
+You can inject an object with `bind` method in Airframe. Assume that we want to create a service that prints a greeting at random:
 
 ```scala
 import wvlet.airframe._ 
@@ -70,18 +71,32 @@ class LogPrinter extends Printer with LogSupport {
 }
 
 class Fortune { 
-  def generate: String = { /** */ }
+  def generate: String = { /** generate random fortune message **/ }
 }
 ```
 
-## Mix-in instances
+## Local variable binding
 
-A simple way to is to create a service trait which uses binding objects. Since trait can be shared multiple components and a class 
-can mix-in any traits, this is a simple way to use binding objects.
+Using local variables is the simplest way to bind objects:
 
 ```scala
+trait FortunePrinterEmbedded {
+  protected val printer = bind[Printer]
+  protected val fortune = bind[Fortune]
+
+  printer.print(fortune.generate)
+}
+```
+
+## Reuse bindings with mixin
+
+To reuse bindings, we can create XXXService traits and mix-in them to build a complex object. 
+
+```scala
+import wvlet.airframe._
+
 trait PrinterService {
-  protected def printer = bind[Printer] // It's binded any Printer mix in instances.
+  protected def printer = bind[Printer] // It can bind any Printer types
 }
 
 trait FortuneService {
@@ -93,62 +108,50 @@ trait FortunePrinterMixin extends PrinterService with FortuneService {
 }
 ```
 
-## Local variable binding
-
-We can bind a object to local variable explicitly.
-
+It is also possible to manually inject an instance implementaion:
 ```scala
-trait FortunePrinterEmbedded {
-  protected def printer = bind[Printer]
-  protected def fortune = bind[Fortune]
-  
-  printer.print(fortune.generate)
+trait CustomPrinterMixin extends FortunePrinterMixin {
+  override protected def printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
 }
 ```
+This is useful for writing tests.
+
 
 ## Tagged binding
 
-Airframe enables us to bind multiple implementation to a trait by using object tagging.
- 
- 
- ```scala
- import wvlet.obj.tag.@@
- case class Fruit(name: String)
- 
- trait Apple
- trait Banana
- trait Lemon
+Airframe can provide separate implementations to the same type object by using object tagging:
+```scala
+import wvlet.obj.tag.@@
+case class Fruit(name: String)
 
+trait Apple
+trait Banana
  trait TaggedBinding {
-   val apple  = bind[Fruit @@ Apple]
-   val banana = bind[Fruit @@ Banana]
-   val lemon  = bind(lemonProvider _)
- 
-   def lemonProvider(f: Fruit @@ Lemon) = f
- }
+  val apple  = bind[Fruit @@ Apple]
+  val banana = bind[Fruit @@ Banana]
+}
  ```
 
+## Object Injection
 
-## Injecting
-
-It is necessary to define `Design` of dependency components before using binding objects. It's similar to `module` in Guice.
+Before binding objects, you need to define a `Design` of dependent components. It is similar to `modules` in Guice.
 
 ```scala
 val design = Airframe.newDesign
-  .bind[Printer].to[ConsolePrinter]  // Generated in resolved dependency components in Airframe design
-  .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding actual instance
+  .bind[Printer].to[ConsolePrinter]  // Airframe will generate an instance of ConsolePrinter by resolving its dependencies
+  .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding an actual instance
 ```
 
-Binding tagged object can be done with `@@`.
+You can define bindings to tagged objects by using `@@`.
 
 ```scala
 val design = Airframe.newDesign
-  .bind[Fruit @@ Apple].toInstance[Fruit("apple")]
-  .bind[Fruit @@ Banana].toInstance[Fruit("banana")]
-  .bind[Fruit @@ Lemon].toInstance[Fruit("lemon")]
+  .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
+  .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
+  .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
 ````
 
-If we want to bind a class as singleton, `toSingleton` cab be used.
+To bind a class to a singleton, use `toSingleton`:
 
 ```scala
 class HeavyObject extends LogSupport { /** */ }
@@ -157,7 +160,7 @@ val design = Airframe.newDesign
   .bind[HeavyOBject].toSingleton
 ````
 
-We can create a object needed with `build` keyword.
+We can create an object from a design by using `build`:
 
 ```
 design.build[FortunePrinterMixin]
