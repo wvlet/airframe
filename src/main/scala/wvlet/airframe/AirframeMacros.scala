@@ -40,13 +40,12 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
-         val c = wvlet.airframe.Session.findSession(this)
-         c.get(${ev})
+         val session = wvlet.airframe.Session.findSession(this)
+         session.get(${ev})
         }
       """
     )

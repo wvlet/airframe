@@ -24,10 +24,11 @@ import scala.reflect.runtime.{universe => ru}
 import scala.tools.reflect.ToolBoxError
 import scala.util.{Failure, Try}
 
+
 /**
   *
   */
-private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[SessionListener]) extends wvlet.airframe.Session with LogSupport {
+private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[SessionListener]) extends wvlet.airframe.Session with LogSupport {
   self =>
 
   import scala.collection.JavaConversions._
@@ -77,7 +78,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[Session
         registerInjectee(from, provider.apply(b.from))
       case f@FactoryBinding(from, d1, factory) =>
         val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
-        registerInjectee(from, factory.asInstanceOf[Any=>Any](d1Instance))
+        registerInjectee(from, factory.asInstanceOf[Any => Any](d1Instance))
     }
               .getOrElse {
                 buildInstance(t, t :: stack)
@@ -136,18 +137,17 @@ private[airframe] class SessionImpl(binding: Seq[Binding], listener: Seq[Session
     }
   }
 
-  def register[A](obj:A)(implicit ev:ru.WeakTypeTag[A]) : A = {
+  def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
     registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
   }
 
-  private def registerInjectee(t: ObjectType, obj: Any) : AnyRef ={
+  private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
     trace(s"Register ${t} (${t.rawType}): ${obj}")
-    listener.map(l => Try(l.afterInjection(t, obj))).collect {
+    sessionListener.map(l => Try(l.afterInjection(t, obj))).collect {
       case Failure(e) =>
         error(s"Error in SessionListener", e)
         throw e
     }
     obj.asInstanceOf[AnyRef]
   }
-
 }

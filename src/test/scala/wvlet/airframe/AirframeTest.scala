@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.log.LogSupport
@@ -171,6 +172,34 @@ object ServiceMixinExample {
 
   class Nest2()
 
+  class MyModule extends LogSupport {
+
+    var initialized = false
+    var closed = false
+
+    def init {
+      info("initialized")
+      initialized = true
+    }
+    def close {
+      info("closed")
+      closed = true
+    }
+  }
+
+  trait LifeCycleExample {
+    val module = bind[MyModule]
+
+    @PostConstruct
+    private def init {
+      module.init
+    }
+
+    @PreDestroy
+    private def close {
+      module.close
+    }
+  }
 }
 
 import wvlet.airframe.ServiceMixinExample._
@@ -255,16 +284,20 @@ class AirframeTest extends AirframeSpec {
     "support binding listener" in {
       val counter = new AtomicInteger(0)
 
-      val session =
+      val design =
         Airframe.newDesign
         .bind[EagerSingleton].toEagerSingleton
         .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-        .addListner(new SessionListener {
-          override def afterInjection(t: ObjectType, injectee: Any): Unit = {
-            counter.incrementAndGet()
-          }
-        })
-        .newSession
+
+      val session = design
+                    .session
+                    .withListener(new SessionListener {
+                      override def afterInjection(t: ObjectType, injectee: Any): Unit = {
+                        counter.incrementAndGet()
+                      }
+                    })
+                    .create
+
       session.get[ConsoleConfig]
       counter.get shouldBe 2
     }
@@ -297,6 +330,13 @@ class AirframeTest extends AirframeSpec {
     "support nested context injection" taggedAs("nested") in {
       val session = Airframe.newDesign.newSession
       session.build[Nested]
+    }
+
+    "support postConstruct and preDestroy" in {
+      val d = Airframe.newDesign
+      val s = d.build[LifeCycleExample]
+      s.module.initialized shouldBe true
+      s.module.closed shouldBe false
     }
   }
 }

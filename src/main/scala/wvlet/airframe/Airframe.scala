@@ -15,6 +15,6 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 
 object Airframe extends LogSupport {
-  def newDesign: Design = new Design(Seq.empty, Seq.empty)
+  def newDesign: Design = new Design(Seq.empty)
 }
 

@@ -22,7 +22,7 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 /**
-  * Context tracks the dependencies of objects and use them to instantiate objects
+  * Session manages injected objects
   */
 trait Session {
 
@@ -32,10 +32,14 @@ trait Session {
     * @tparam A
     * @return object
     */
+  // TODO what is different from build[A]?
   def get[A: ru.WeakTypeTag]: A
+
+  // TODO hide this method
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
+  // TODO hide this method
   def register[A: ru.WeakTypeTag](obj: A): A
 }
 
@@ -99,3 +103,18 @@ object Session extends LogSupport {
 
 }
 
+class SessionBuilder(design:Design, listeners:Seq[SessionListener]=Seq.empty) {
+  def withListener(listener:SessionListener) : SessionBuilder = {
+    new SessionBuilder(design, listeners :+ listener)
+  }
+
+  def create : Session = {
+    // Override preceding bindings
+    val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
+      lst.last
+    }
+    val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
+    new SessionImpl(sortedBindings, listeners)
+  }
+}
