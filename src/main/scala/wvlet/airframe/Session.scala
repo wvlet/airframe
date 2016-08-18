@@ -49,7 +49,7 @@ trait SessionListener {
 
 object Session extends LogSupport {
 
-  def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
+  private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
     trace(s"Find session for ${cl}")
 
     def returnsSession(c: Class[_]) = {
@@ -86,7 +86,7 @@ object Session extends LogSupport {
     .orElse(findEmbeddedSession)
   }
 
-  def getSession[A](enclosingObj: A): Option[Session] = {
+  private def getSession[A](enclosingObj: A): Option[Session] = {
     require(enclosingObj != null, "enclosinbObj is null")
     findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
