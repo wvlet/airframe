@@ -32,14 +32,14 @@ val design : Design =
 val app : App = design.build[App]
 ```
 
-Airframe builds an `App` instance by using the binding rules of X and Y specified in `Design` object. 
-This `Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
+Airframe builds an `App` instance by using the binding rules of X and Y specified in *Design* object. 
+This *Design* class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
 
-The major advantages of Airframe are:
+The major advantages of Airframe are as follows:
 - Simple to use. Just `import wvlet.airframe._` and do the above three steps. 
-- `Design` remember the knowledge of how to build complex objects.
-  - `Design` is reusable. For example, you can avoid code duplication in your test/production codes. Compare writing `new App(new X, new Y, new Z, ...)` every time in your code, and just calling `design.build[App]`.
-  - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. `Design` knows how to prepare objects.
+- *Design* remembers the knowledge of how to build complex objects.
+  - *Design* is reusable. For example, you can avoid code duplication in your test/production codes. Compare writing `new App(new X, new Y, new Z, ...)` every time and just calling `design.build[App]`.
+  - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. *Design* already knows how to prepare objects.
 - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
   - Mixing traits is far easier than using constructors, since traits can be combined in an arbitrary order.
 
