@@ -7,9 +7,9 @@
 [coverall-badge]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
-Airframe is a dependency injection library tailored to Scala. Airframe injects object dependencies as in [Google Guice](https://github.com/google/guice). While Guice is for Java objects (e.g., using constructors or providers to inject objects), Airframe is redesigned it for Scala traits, so that we can mix-in traits that have many object dependencies. 
+Airframe is a dependency injection library tailored to Scala. While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using constructors or providers), Airframe is redesigned it for Scala traits so that we can mix-in traits that have many object dependencies. 
 
-Airframe only requires the following three steps to build objects:
+To use Airframe, you only need the following three steps:
 - *Bind*: Describe instance types necessary in your class with `bind[X]`: 
 ```scala
 import wvlet.airframe._
@@ -32,16 +32,16 @@ val design : Design =
 val app : App = design.build[App]
 ```
 
-Airframe creates an `App` instance by searching the design for binding rules of X and Y. 
-`Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
+Airframe builds an `App` instance by using the binding rules of X and Y specified in `Design` object. 
+This `Design` class is *immutable*, so you can safely reuse and extend it for creating new types of objects.
 
 The major advantages of Airframe are:
 - Simple to use. Just `import wvlet.airframe._` and do the above three steps. 
-- You can use `Design` to describe the knowledge on how to create objects.
-  - `Design` is reusable for preparing objects both in production and test codes. This avoids code duplications of creating instances with constructors. Compare writing `new App(new X, new Y, new Z, ...)` multiple times with calling `design.build[App]`.
+- `Design` remember the knowledge of how to build complex objects.
+  - `Design` is reusable. For example, you can avoid code duplication in your test/production codes. Compare writing `new App(new X, new Y, new Z, ...)` every time in your code, and just calling `design.build[App]`.
   - When writing application codes, you only need to care about how to ***use*** objects, rather than how to ***provide*** them. `Design` knows how to prepare objects.
 - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
-  - Mixing traits is far easier than using a constructor, since traits can be combined in an arbitrary order.
+  - Mixing traits is far easier than using constructors, since traits can be combined in an arbitrary order.
 
 # Usage
 
