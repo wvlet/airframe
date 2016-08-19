@@ -10,7 +10,7 @@
 Airframe is a dependency injection library tailored to Scala. While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using constructors or providers), Airframe is redesigned it for Scala traits so that we can mix-in traits that have many object dependencies. 
 
 To use Airframe, you only need the following three steps:
-- *Bind*: Describe instance types necessary in your class with `bind[X]`: 
+- ***Bind***: Describe instance types necessary in your class with `bind[X]`: 
 ```scala
 import wvlet.airframe._
 
@@ -20,14 +20,14 @@ trait App {
   // Do something with X and Y
 }
 ```
-- *Design*: Describe how to provide object instances:
+- ***Design***: Describe how to provide object instances:
 ```scala
 val design : Design = 
    Airframe.newDesign
      .bind[X].toInstance(new X)  // Bind type X to a concrete instance
      .bind[Y].toSingleton        // Bind type Y to a singleton object
 ```
-- *Build*: Create a concrete instance:
+- ***Build***: Create a concrete instance:
 ```scala
 val app : App = design.build[App]
 ```
