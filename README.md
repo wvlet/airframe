@@ -1,5 +1,4 @@
 # Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI][circleci-badge]][circleci-link] [![Coverage Status][coverall-badge]][coverall-link]
-Dependency injection library tailored to Scala.
 
 [circleci-badge]: https://circleci.com/gh/wvlet/airframe.svg?style=svg
 [circleci-link]: https://circleci.com/gh/wvlet/airframe
@@ -8,12 +7,9 @@ Dependency injection library tailored to Scala.
 [coverall-badge]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
+Airframe is a dependency injection library tailored to Scala. Airframe injects object dependencies as in [Google Guice](https://github.com/google/guice). While Guice is for Java objects (e.g., using constructors or providers to inject objects), Airframe is redesigned it for Scala traits, so that we can mix-in traits that have many object dependencies. 
 
-# Introduction
-
-Airframe injects object dependencies as in [Google Guice](https://github.com/google/guice). 
-
-With Airframe you can build objects in three steps:
+Airframe only requires the following three steps to build objects:
 - *Bind*: Describe instance types necessary in your class with `bind[X]`: 
 ```scala
 import wvlet.airframe._
