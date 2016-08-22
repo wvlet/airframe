@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
-import wvlet.log.LogSupport
+import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.obj.{ObjectType, TextType}
 import wvlet.obj.tag.@@
 
@@ -125,6 +125,10 @@ object ServiceMixinExample {
 
   case class A(b: B)
   case class B(a: A)
+
+  trait HasCycle {
+    val obj = bind[A]
+  }
 
   class EagerSingleton extends LogSupport {
     info("initialized")
@@ -265,7 +269,6 @@ class AirframeTest extends AirframeSpec {
       val m = d.build[FortunePrinterMixin]
     }
 
-
     "create singleton" in {
       val d = Airframe.newDesign
         .bind[HeavyObject].toSingleton
@@ -292,11 +295,8 @@ class AirframeTest extends AirframeSpec {
     }
 
 
-    "found cyclic dependencies" in {
+    "found cyclic dependencies" taggedAs("cyclic") in {
       val c = Airframe.newDesign.newSession
-      trait HasCycle {
-        val obj = bind[A]
-      }
       warn(s"Running cyclic dependency test: A->B->A")
       val caught = intercept[CYCLIC_DEPENDENCY] {
         c.build[HasCycle]
@@ -402,6 +402,7 @@ class AirframeTest extends AirframeSpec {
       m.m.hello
     }
 
+
     "build a trait bound to singleton" taggedAs("singleton") in {
       val h = Airframe.newDesign
       h.bind[AbstractModule].toInstance(ConcreteSingleton)
@@ -417,21 +418,20 @@ class AirframeTest extends AirframeSpec {
     }
 
     "build a trait to singleton" taggedAs("trait-singleton") in {
-      val h = Airframe.newDesign
-      h.bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
-      val s = h.newSession
+      val d =
+        Airframe.newDesign
+        .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
 
-      val m = s.build[NonAbstractModule]
+      val m = d.build[NonAbstractModule]
       m shouldBe SingletonOfNonAbstractModules
     }
 
     "create single with inject eagerly" in {
       val start = System.nanoTime()
       val d = Airframe.newDesign
-      d.bind[EagerSingletonWithInject].toEagerSingleton
-      val c = d.newSession
+              .bind[EagerSingletonWithInject].toEagerSingleton
+      val s = d.build[EagerSingletonWithInject]
       val current = System.nanoTime()
-      val s = c.get[EagerSingletonWithInject]
       s.initializedTime should be > start
       s.initializedTime should be < current
     }

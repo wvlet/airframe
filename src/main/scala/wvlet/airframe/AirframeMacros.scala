@@ -16,22 +16,21 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 import scala.reflect.{macros => sm}
 import scala.language.experimental.macros
-/**
-  *
-  */
+
+
 object AirframeMacros extends LogSupport {
 
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
     val t = ev.tpe.typeArgs(0)
     c.Expr(
-      if(!t.typeSymbol.isAbstract) {
+      if(t.typeSymbol.isAbstract) {
+        q"""${c.prefix}.get[$t]"""
+      }
+      else {
         q"""
           ${c.prefix}.register[$t]((new $t { protected def __current_session = ${c.prefix} }).asInstanceOf[$t])
           """
-      }
-      else {
-        q"""${c.prefix}.get[$t]"""
       }
     )
   }

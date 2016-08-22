@@ -63,11 +63,13 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
   }
 
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    newInstance(ObjectType.of(ev.tpe), List.empty).asInstanceOf[A]
+    val tpe = ObjectType.of(ev.tpe)
+    trace(s"get ${ev}, ${tpe}")
+    newInstance(tpe, List.empty).asInstanceOf[A]
   }
 
   def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    val t = ObjectType.of(ev.tpe)
+    val t = ObjectType.ofTypeTag(ev)
     val result = binding.find(_.from == t).collect {
       case SingletonBinding(from, to, eager) =>
         singletonHolder.getOrElseUpdate(to, {
@@ -105,70 +107,62 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
   }
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
+    trace(s"buildInstance:${t.rawType}, ${stack}")
     val schema = ObjectSchema(t.rawType)
-    if (t.name.endsWith("$")) {
-      // Scala objects?
-      TypeUtil.companionObject(t.rawType).map(_.asInstanceOf[AnyRef]).getOrElse {
-        throw new MISSING_DEPENDENCY(stack)
-      }
+    if (t.isPrimitive || t.isTextType) {
+      // Cannot build Primitive types
+      throw MISSING_DEPENDENCY(stack)
     }
     else {
-      if (t.isPrimitive || t.isTextType) {
-        // Cannot build Primitive types
-        throw MISSING_DEPENDENCY(stack)
-      }
-      else {
-        schema.findConstructor match {
-          case Some(ctr) =>
-            val args = for (p <- schema.constructor.params) yield {
-              newInstance(p.valueType, stack)
-            }
-            trace(s"Build a new instance for ${t}")
-            val obj = schema.constructor.newInstance(args)
+      schema.findConstructor match {
+        case Some(ctr) =>
+          val args = for (p <- schema.constructor.params) yield {
+            newInstance(p.valueType, stack)
+          }
+          trace(s"Build a new instance for ${t}")
+          val obj = schema.constructor.newInstance(args)
+          registerInjectee(t, obj)
+        case None =>
+          if (!(t.rawType.isAnonymousClass || t.rawType.isInterface)) {
+            // We cannot inject Session to a class which has no default constructor
+            // No binding is found for the concrete class
+            throw new MISSING_DEPENDENCY(stack)
+          }
+          // When there is no constructor, generate trait
+          import scala.reflect.runtime.currentMirror
+          import scala.tools.reflect.ToolBox
+          val tb = currentMirror.mkToolBox()
+          val typeName = t.rawType.getName.replaceAll("\\$", ".")
+          try {
+            val code =
+              s"""new (wvlet.airframe.Session => Any) {
+                  |  def apply(session:wvlet.airframe.Session) = {
+                  |    new ${typeName} {
+                  |      protected def __current_session = session
+                  |    }
+                  |  }
+                  |}  """.stripMargin
+            trace(s"Compiling a code to embed Session:\n${code}")
+            // TODO use Scala macros or cache to make it efficient
+            val parsed = tb.parse(code)
+            trace(s"Parsed the code: ${parsed}")
+            val f = tb.eval(parsed).asInstanceOf[Session => Any]
+            trace(s"Eval: ${f}")
+            val obj = f.apply(this)
             registerInjectee(t, obj)
-          case None =>
-            if (!(t.rawType.isAnonymousClass || t.rawType.isInterface)) {
-              // We cannot inject Session to a class which has no default constructor
-              // No binding is found for the concrete class
-              throw new MISSING_DEPENDENCY(stack)
-            }       // When there is no constructor, generate trait
-            // When there is no constructor, generate trait
-            import scala.reflect.runtime.currentMirror
-            import scala.tools.reflect.ToolBox
-            val tb = currentMirror.mkToolBox()
-            val typeName = t.rawType.getName.replaceAll("\\$", ".")
-            try {
-              val code =
-                s"""new (wvlet.airframe.Session => Any) {
-                    |  def apply(session:wvlet.airframe.Session) = {
-                    |    new ${typeName} {
-                    |      protected def __current_session = session
-                    |    }
-                    |  }
-                    |}  """.stripMargin
-              trace(s"Compiling a code to embed Session:\n${code}")
-              // TODO use Scala macros or cache to make it efficient
-              val parsed = tb.parse(code)
-              trace(s"Parsed the code: ${parsed}")
-              val compiled = tb.compile(parsed)
-              trace(s"Compiled the code: ${compiled}")
-              val f = compiled().asInstanceOf[Session => Any]
-              trace(s"Eval: ${f}")
-              val obj = f.apply(this)
-              registerInjectee(t, obj)
-            }
-            catch {
-              case e: Throwable =>
-                error(s"Failed to inject Session to ${t}")
-                //trace(s"Compilation error: ${e.getMessage}", e)
-                throw e
-            }
-        }
+          }
+          catch {
+            case e: Throwable =>
+              error(s"Failed to inject Session to ${t}")
+              //trace(s"Compilation error: ${e.getMessage}", e)
+              throw e
+          }
       }
     }
   }
 
   def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
+    debug(s"register: ${obj}, ${ev}")
     registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
   }
 
