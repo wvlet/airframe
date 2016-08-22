@@ -36,11 +36,13 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
 
   // Initialize eager singleton
-  binding.collect {
-    case s@SingletonBinding(from, to, eager) if eager =>
-      singletonHolder.getOrElseUpdate(to, buildInstance(to, List(to)))
-    case InstanceBinding(from, obj) =>
-      registerInjectee(from, obj)
+  private[airframe] def init {
+    binding.collect {
+      case s@SingletonBinding(from, to, eager) if eager =>
+        singletonHolder.getOrElseUpdate(to, buildInstance(to, List(to)))
+      case InstanceBinding(from, obj) =>
+        registerInjectee(from, obj)
+    }
   }
 
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
@@ -109,28 +111,41 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
             val obj = schema.constructor.newInstance(args)
             registerInjectee(t, obj)
           case None =>
+            if (!(t.rawType.isAnonymousClass || t.rawType.isInterface)) {
+              // We cannot inject Session to a class which has no default constructor
+              // No binding is found for the concrete class
+              throw new MISSING_DEPENDENCY(stack)
+            }       // When there is no constructor, generate trait
             // When there is no constructor, generate trait
-            // TODO use Scala macros to make it efficient
+            import scala.reflect.runtime.currentMirror
+            import scala.tools.reflect.ToolBox
+            val tb = currentMirror.mkToolBox()
+            val typeName = t.rawType.getName.replaceAll("\\$", ".")
             try {
-              import scala.reflect.runtime.currentMirror
-              import scala.tools.reflect.ToolBox
-              val tb = currentMirror.mkToolBox()
               val code =
-                s"""new (wvlet.airframe.Session => Any) {
-                    |  def apply(c:wvlet.airframe.Session) =
-                    |     new ${t.rawType.getName.replaceAll("\\$", ".")} {
-                    |          protected def __current_session = c
-                    |     }
+                s"""new (wvlet.inject.Session => Any) {
+                    |  def apply(session:wvlet.inject.Session) = {
+                    |    new ${typeName} {
+                    |      protected def __current_session = session
+                    |    }
+                    |  }
                     |}  """.stripMargin
-              trace(s"Compiling a code to embed Session: ${code}")
-              val f = tb.eval(tb.parse(code)).asInstanceOf[Session => Any]
+              trace(s"Compiling a code to embed Session:\n${code}")
+              // TODO use Scala macros or cache to make it efficient
+              val parsed = tb.parse(code)
+              trace(s"Parsed the code: ${parsed}")
+              val compiled = tb.compile(parsed)
+              trace(s"Compiled the code: ${compiled}")
+              val f = compiled().asInstanceOf[Session => Any]
+              trace(s"Eval: ${f}")
               val obj = f.apply(this)
               registerInjectee(t, obj)
             }
             catch {
-              case e: ToolBoxError =>
-                error(s"Failed to create instance: ${stack.mkString(" <- ")} ${e.getMessage}")
-                throw MISSING_DEPENDENCY(stack)
+              case e:Throwable =>
+                error(s"Failed to inject Session to ${t}")
+                //trace(s"Compilation error: ${e.getMessage}", e)
+                throw e
             }
         }
       }

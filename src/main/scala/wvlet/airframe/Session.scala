@@ -115,6 +115,8 @@ class SessionBuilder(design:Design, listeners:Seq[SessionListener]=Seq.empty) {
     }
     val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    new SessionImpl(sortedBindings, listeners)
+    val session = new SessionImpl(sortedBindings, listeners)
+    session.init
+    session
   }
 }

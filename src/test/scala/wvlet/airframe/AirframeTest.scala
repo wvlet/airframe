@@ -172,6 +172,8 @@ object ServiceMixinExample {
 
   class Nest2()
 
+
+
   class MyModule extends LogSupport {
 
     var initialized = false
@@ -199,6 +201,45 @@ object ServiceMixinExample {
     private def close {
       module.close
     }
+  }
+
+
+  class ClassInjection {
+    val obj = bind[HeavyObject]
+  }
+
+  class NestedClassInjection {
+    val nest = bind[Nest1]
+  }
+
+  trait AbstractModule {
+    def hello : Unit
+  }
+
+  trait ConcreteModule extends AbstractModule with LogSupport {
+    def hello { info("hello!") }
+  }
+
+  object ConcreteSingleton extends AbstractModule with LogSupport {
+    def hello { info("hello singleton!") }
+  }
+
+  trait NonAbstractModule extends LogSupport {
+    info(s"This should be built")
+  }
+
+  object SingletonOfNonAbstractModules extends NonAbstractModule {
+    info("Hello singleton")
+  }
+
+  trait NestedAbstractModule {
+    val m = bind[AbstractModule]
+  }
+
+  trait EagerSingletonWithInject extends LogSupport {
+    info("initialized")
+    val heavy = bind[HeavyObject]
+    val initializedTime = System.nanoTime()
   }
 }
 
@@ -337,6 +378,64 @@ class AirframeTest extends AirframeSpec {
       val s = d.build[LifeCycleExample]
       s.module.initialized shouldBe true
       s.module.closed shouldBe false
+    }
+
+    "support injecting to a class" in {
+      val d = Airframe.newDesign
+      val s = d.build[ClassInjection]
+      s.obj shouldNot be (null)
+
+      d.build[NestedClassInjection]
+    }
+
+    "build abstract type that has concrete binding" taggedAs("abstract") in {
+      val d = Airframe.newDesign
+      d.bind[AbstractModule].to[ConcreteModule]
+      val s = d.newSession
+      val m = s.build[AbstractModule]
+      m.hello
+    }
+
+    "build nested abstract type that has concrete binding" taggedAs("nested-abstract") in {
+      val d = Airframe.newDesign
+      d.bind[AbstractModule].to[ConcreteModule]
+      val s = d.newSession
+      val m = s.build[NestedAbstractModule]
+      m.m.hello
+    }
+
+    "build a trait bound to singleton" taggedAs("singleton") in {
+      val h = Airframe.newDesign
+      h.bind[AbstractModule].toInstance(ConcreteSingleton)
+      val s = h.newSession
+      val m = s.build[AbstractModule]
+      m.hello
+    }
+
+    "build a trait" taggedAs("trait") in {
+      val h = Airframe.newDesign
+      val s = h.newSession
+      val m = s.build[NonAbstractModule]
+    }
+
+    "build a trait to singleton" taggedAs("trait-singleton") in {
+      val h = Airframe.newDesign
+      h.bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
+      val s = h.newSession
+
+      val m = s.build[NonAbstractModule]
+      m shouldBe SingletonOfNonAbstractModules
+    }
+
+    "create single with inject eagerly" in {
+      val start = System.nanoTime()
+      val d = Airframe.newDesign
+      d.bind[EagerSingletonWithInject].toEagerSingleton
+      val c = d.newSession
+      val current = System.nanoTime()
+      val s = c.get[EagerSingletonWithInject]
+      s.initializedTime should be > start
+      s.initializedTime should be < current
     }
   }
 }
