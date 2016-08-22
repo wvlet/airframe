@@ -56,7 +56,7 @@ object Session extends LogSupport {
       classOf[wvlet.airframe.Session].isAssignableFrom(c)
     }
 
-    // find val or def that returns wvlet.inject.Session
+    // find val or def that returns wvlet.airframe.Session
     val schema = ObjectSchema(cl)
 
     def findSessionFromMethods: Option[AnyRef => Session] =

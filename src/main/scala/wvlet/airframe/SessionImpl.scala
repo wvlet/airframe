@@ -123,8 +123,8 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
             val typeName = t.rawType.getName.replaceAll("\\$", ".")
             try {
               val code =
-                s"""new (wvlet.inject.Session => Any) {
-                    |  def apply(session:wvlet.inject.Session) = {
+                s"""new (wvlet.airframe.Session => Any) {
+                    |  def apply(session:wvlet.airframe.Session) = {
                     |    new ${typeName} {
                     |      protected def __current_session = session
                     |    }

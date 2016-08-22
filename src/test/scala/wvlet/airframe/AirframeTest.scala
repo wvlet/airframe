@@ -172,38 +172,6 @@ object ServiceMixinExample {
 
   class Nest2()
 
-
-
-  class MyModule extends LogSupport {
-
-    var initialized = false
-    var closed = false
-
-    def init {
-      info("initialized")
-      initialized = true
-    }
-    def close {
-      info("closed")
-      closed = true
-    }
-  }
-
-  trait LifeCycleExample {
-    val module = bind[MyModule]
-
-    @PostConstruct
-    private def init {
-      module.init
-    }
-
-    @PreDestroy
-    private def close {
-      module.close
-    }
-  }
-
-
   class ClassInjection {
     val obj = bind[HeavyObject]
   }
@@ -240,6 +208,35 @@ object ServiceMixinExample {
     info("initialized")
     val heavy = bind[HeavyObject]
     val initializedTime = System.nanoTime()
+  }
+
+  class MyModule extends LogSupport {
+
+    var initialized = false
+    var closed = false
+
+    def init {
+      info("initialized")
+      initialized = true
+    }
+    def close {
+      info("closed")
+      closed = true
+    }
+  }
+
+  trait LifeCycleExample {
+    val module = bind[MyModule]
+
+    @PostConstruct
+    private def init {
+      module.init
+    }
+
+    @PreDestroy
+    private def close {
+      module.close
+    }
   }
 }
 
@@ -373,13 +370,6 @@ class AirframeTest extends AirframeSpec {
       session.build[Nested]
     }
 
-    "support postConstruct and preDestroy" in {
-      val d = Airframe.newDesign
-      val s = d.build[LifeCycleExample]
-      s.module.initialized shouldBe true
-      s.module.closed shouldBe false
-    }
-
     "support injecting to a class" in {
       val d = Airframe.newDesign
       val s = d.build[ClassInjection]
@@ -436,6 +426,13 @@ class AirframeTest extends AirframeSpec {
       val s = c.get[EagerSingletonWithInject]
       s.initializedTime should be > start
       s.initializedTime should be < current
+    }
+
+    "support postConstruct and preDestroy" taggedAs("lifecycle") in {
+      val d = Airframe.newDesign
+      val s = d.build[LifeCycleExample]
+      s.module.initialized shouldBe true
+      s.module.closed shouldBe false
     }
   }
 }
