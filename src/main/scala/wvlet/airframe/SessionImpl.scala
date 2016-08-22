@@ -64,7 +64,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
 
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
-    trace(s"get ${ev}, ${tpe}")
+    trace(s"get[${ev}:${tpe}]")
     newInstance(tpe, List.empty).asInstanceOf[A]
   }
 

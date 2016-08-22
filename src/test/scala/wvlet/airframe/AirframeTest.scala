@@ -130,6 +130,10 @@ object ServiceMixinExample {
     val obj = bind[A]
   }
 
+  trait MissingDep {
+    val obj = bind[String]
+  }
+
   class EagerSingleton extends LogSupport {
     info("initialized")
     val initializedTime = System.nanoTime()
@@ -308,9 +312,6 @@ class AirframeTest extends AirframeSpec {
 
     "detect missing dependencies" in {
       val d = Airframe.newDesign
-      trait MissingDep {
-        val obj = bind[String]
-      }
       warn(s"Running missing dependency check")
       val caught = intercept[MISSING_DEPENDENCY] {
         d.build[MissingDep]
@@ -388,7 +389,7 @@ class AirframeTest extends AirframeSpec {
 
     "build abstract type that has concrete binding" taggedAs("abstract") in {
       val d = Airframe.newDesign
-      d.bind[AbstractModule].to[ConcreteModule]
+              .bind[AbstractModule].to[ConcreteModule]
       val s = d.newSession
       val m = s.build[AbstractModule]
       m.hello
@@ -396,7 +397,7 @@ class AirframeTest extends AirframeSpec {
 
     "build nested abstract type that has concrete binding" taggedAs("nested-abstract") in {
       val d = Airframe.newDesign
-      d.bind[AbstractModule].to[ConcreteModule]
+              .bind[AbstractModule].to[ConcreteModule]
       val s = d.newSession
       val m = s.build[NestedAbstractModule]
       m.m.hello
@@ -404,9 +405,9 @@ class AirframeTest extends AirframeSpec {
 
 
     "build a trait bound to singleton" taggedAs("singleton") in {
-      val h = Airframe.newDesign
-      h.bind[AbstractModule].toInstance(ConcreteSingleton)
-      val s = h.newSession
+      val d = Airframe.newDesign
+              .bind[AbstractModule].toInstance(ConcreteSingleton)
+      val s = d.newSession
       val m = s.build[AbstractModule]
       m.hello
     }
