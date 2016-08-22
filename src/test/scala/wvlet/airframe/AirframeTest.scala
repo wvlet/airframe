@@ -212,16 +212,16 @@ object ServiceMixinExample {
 
   class MyModule extends LogSupport {
 
-    var initialized = false
-    var closed = false
+    val initCount = new AtomicInteger(0)
+    var closeCount = new AtomicInteger(0)
 
     def init {
       info("initialized")
-      initialized = true
+      initCount.incrementAndGet()
     }
     def close {
       info("closed")
-      closed = true
+      closeCount.incrementAndGet()
     }
   }
 
@@ -229,15 +229,23 @@ object ServiceMixinExample {
     val module = bind[MyModule]
 
     @PostConstruct
-    private def init {
+    private[LifeCycleExample] def init {
       module.init
     }
 
     @PreDestroy
-    private def close {
+    private[LifeCycleExample] def close {
       module.close
     }
   }
+
+  trait BindLifeCycleExample {
+    val module = bind[MyModule].withLifeCycle(
+      init = _.init,
+      shutdown =  _.close
+    )
+  }
+
 }
 
 import wvlet.airframe.ServiceMixinExample._
@@ -429,10 +437,22 @@ class AirframeTest extends AirframeSpec {
     }
 
     "support postConstruct and preDestroy" taggedAs("lifecycle") in {
-      val d = Airframe.newDesign
-      val s = d.build[LifeCycleExample]
-      s.module.initialized shouldBe true
-      s.module.closed shouldBe false
+      val s = Airframe.newDesign.build[LifeCycleExample]
+      s.module.initCount.get() shouldBe 1
+
+      Airframe.getCurrentSession shouldBe 'defined
+
+      Airframe.getCurrentSession.map(_.shutdown)
+      s.module.closeCount.get() shouldBe 1
+    }
+
+    "bind lifecycle code" taggedAs("bind-init") in {
+      val session = Airframe.newDesign.newSession
+      val e = session.build[BindLifeCycleExample]
+      e.module.initCount.get() shouldBe 1
+
+      session.shutdown
+      e.module.closeCount.get() shouldBe 1
     }
   }
 }

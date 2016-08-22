@@ -5,19 +5,41 @@ import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectMethod, ObjectSchema, ObjectType}
 
-sealed trait LifeCycleEvent
-case class PostConstructEvent(obj: Any, postConstruct: ObjectMethod) extends LifeCycleEvent {
-  override def toString = s"@PostConstruct ${postConstruct}"
-}
-case class PreDestroyEvent(obj: Any, preDestory: ObjectMethod) extends LifeCycleEvent {
-  override def toString = s"@PreDestroy ${preDestory}"
+sealed trait LifeCycleHook
+
+case class InitHook[A](obj:A, hook: A => Unit) extends LifeCycleHook {
+  def run {
+    hook(obj)
+  }
 }
 
-class LifeCycleFinder extends SessionListener with LogSupport {
+case class ShutdownHook[A](obj:A, hook: A => Unit) extends LifeCycleHook {
+  def run {
+    hook(obj)
+  }
+}
+
+class LifeCycleManager extends SessionListener with LogSupport {
   self =>
 
-  private var startList   = List.empty[PostConstructEvent]
-  private var destroyList = List.empty[PreDestroyEvent]
+  protected var initHook    = List.empty[InitHook[_]]
+  protected var shutdownHook = List.empty[ShutdownHook[_]]
+
+  def addInitHook[A](hook:InitHook[A]) {
+    synchronized {
+      // Append to the front
+      trace(s"Add init hook: ${hook}")
+      initHook = hook :: initHook
+    }
+    hook.run
+  }
+
+  def addShutdownHook[A](hook:ShutdownHook[A]) {
+    synchronized {
+      trace(s"Add shutdown hook: ${hook}")
+      shutdownHook = hook :: shutdownHook
+    }
+  }
 
   override def afterInjection(t: ObjectType, injectee: Any): Unit = {
     debug(s"Injected ${t} (${t.rawType}): $injectee")
@@ -26,27 +48,31 @@ class LifeCycleFinder extends SessionListener with LogSupport {
     // Find PostConstruct annotation
     schema
     .allMethods
-    .filter {_.findAnnotationOf[PostConstruct].isDefined}
-    .map(x => PostConstructEvent(injectee, x))
-    .map { e =>
-      debug(s"Registered PostConstruct hook: ${e}")
-      synchronized {
-        // Append to the front
-        startList = e :: startList
-      }
+    .filter{_.findAnnotationOf[PostConstruct].isDefined}
+    .map{x =>
+      val h = InitHook(injectee, {obj:Any => x.invoke(obj.asInstanceOf[AnyRef])})
+      addInitHook(h)
     }
 
     // Find PreDestroy annotation
     schema
     .allMethods
     .filter {_.findAnnotationOf[PreDestroy].isDefined}
-    .map(x => PreDestroyEvent(injectee, x))
-    .map { e =>
-      debug(s"Registered PreDestroy hook: ${e}")
-      synchronized {
-        // Append to the front
-        destroyList = e :: destroyList
-      }
+    .map { x =>
+      val h = ShutdownHook(injectee, {obj:Any => x.invoke(obj.asInstanceOf[AnyRef])})
+      addShutdownHook(h)
     }
   }
+
+  def start {
+
+  }
+
+  def shutdown {
+    // TODO Configure shutdown orders using topological sort
+    for(h <- shutdownHook) {
+      h.run
+    }
+  }
+
 }

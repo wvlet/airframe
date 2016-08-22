@@ -51,7 +51,7 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
-val WVLET_VERSION="0.16"
+val WVLET_VERSION="0.20"
 
 lazy val airframe = Project(id = "airframe", base = file(".")).settings(
     buildSettings,

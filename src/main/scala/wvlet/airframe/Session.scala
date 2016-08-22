@@ -41,6 +41,14 @@ trait Session {
 
   // TODO hide this method
   def register[A: ru.WeakTypeTag](obj: A): A
+
+
+  def addInitHook[A](hook:InitHook[A]) : Unit
+  def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
+
+
+  def start : Unit
+  def shutdown : Unit
 }
 
 trait SessionListener {
@@ -100,15 +108,15 @@ object Session extends LogSupport {
       throw new MISSING_SESSION(ObjectType.of(cl))
     }
   }
-
 }
 
-class SessionBuilder(design:Design, listeners:Seq[SessionListener]=Seq.empty) {
-  def withListener(listener:SessionListener) : SessionBuilder = {
+class SessionBuilder(design: Design, listeners: Seq[SessionListener] = Seq.empty) extends LogSupport {
+
+  def withListener(listener: SessionListener): SessionBuilder = {
     new SessionBuilder(design, listeners :+ listener)
   }
 
-  def create : Session = {
+  def create: Session = {
     // Override preceding bindings
     val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
       lst.last
@@ -116,6 +124,8 @@ class SessionBuilder(design:Design, listeners:Seq[SessionListener]=Seq.empty) {
     val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     val session = new SessionImpl(sortedBindings, listeners)
+    info(f"Creating a new session[${session.hashCode()}%x]")
+    Airframe.setSession(session)
     session.init
     session
   }

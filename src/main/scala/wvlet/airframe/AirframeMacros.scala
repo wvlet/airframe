@@ -58,6 +58,27 @@ object AirframeMacros extends LogSupport {
     )
   }
 
+  def addLifeCycle(c: sm.Context): c.Tree = {
+    import c.universe._
+    q"""{
+         val session = wvlet.airframe.Session.findSession(this)
+         new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, session)
+        }
+      """
+  }
+
+
+  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Expr[A] = {
+    import c.universe._
+    c.Expr(
+      q"""{
+         val c = wvlet.airframe.Session.findSession(this)
+         c.getOrElseUpdate($factory(c.get()))
+        }
+      """
+    )
+  }
+
   def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(

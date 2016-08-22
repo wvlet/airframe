@@ -16,5 +16,11 @@ import wvlet.log.LogSupport
 
 object Airframe extends LogSupport {
   def newDesign: Design = new Design(Seq.empty)
+
+  private var _currentSession : Option[Session] = None
+  private[airframe] def setSession(session:Session) {
+    _currentSession = Some(session)
+  }
+  def getCurrentSession : Option[Session] = _currentSession
 }
 

@@ -15,23 +15,23 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe.Binder._
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
+import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType, TypeUtil}
 
 import scala.reflect.runtime.{universe => ru}
-import scala.tools.reflect.ToolBoxError
 import scala.util.{Failure, Try}
-
 
 /**
   *
   */
-private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[SessionListener]) extends wvlet.airframe.Session with LogSupport {
-  self =>
-
+private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: Seq[SessionListener], lifeCycleManager: LifeCycleManager = new LifeCycleManager)
+  extends Session with LogSupport { self =>
   import scala.collection.JavaConversions._
+
+  // Add life cycle manager to the listener
+  sessionListener = lifeCycleManager +: sessionListener
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
 
@@ -43,6 +43,23 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
     }
+  }
+
+  def start {
+    lifeCycleManager.start
+  }
+
+  def shutdown {
+    info(f"Shutting down session[${this.hashCode()}%x]")
+    lifeCycleManager.shutdown
+  }
+
+  def addInitHook[A](hook: InitHook[A]): Unit = {
+    lifeCycleManager.addInitHook(hook)
+  }
+
+  def addShutdownHook[A](hook: ShutdownHook[A]): Unit = {
+    lifeCycleManager.addShutdownHook(hook)
   }
 
   def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
@@ -82,10 +99,9 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
         val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
         registerInjectee(from, factory.asInstanceOf[Any => Any](d1Instance))
     }
-              .getOrElse {
-                buildInstance(t, t :: stack)
-              }
-    obj.asInstanceOf[AnyRef]
+
+    val result = obj.getOrElse {buildInstance(t, t :: stack)}
+    result.asInstanceOf[AnyRef]
   }
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
@@ -142,7 +158,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
               registerInjectee(t, obj)
             }
             catch {
-              case e:Throwable =>
+              case e: Throwable =>
                 error(s"Failed to inject Session to ${t}")
                 //trace(s"Compilation error: ${e.getMessage}", e)
                 throw e
@@ -165,4 +181,5 @@ private[airframe] class SessionImpl(binding: Seq[Binding], sessionListener:Seq[S
     }
     obj.asInstanceOf[AnyRef]
   }
+
 }
