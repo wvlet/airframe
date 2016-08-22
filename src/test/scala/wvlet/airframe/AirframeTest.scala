@@ -126,13 +126,6 @@ object ServiceMixinExample {
   case class A(b: B)
   case class B(a: A)
 
-  trait HasCycle {
-    val obj = bind[A]
-  }
-
-  trait MissingDep {
-    val obj = bind[String]
-  }
 
   class EagerSingleton extends LogSupport {
     info("initialized")
@@ -298,16 +291,24 @@ class AirframeTest extends AirframeSpec {
       s.initializedTime should be < current
     }
 
+    trait HasCycle {
+      val obj = bind[A]
+    }
 
     "found cyclic dependencies" taggedAs("cyclic") in {
       val c = Airframe.newDesign.newSession
       warn(s"Running cyclic dependency test: A->B->A")
+
       val caught = intercept[CYCLIC_DEPENDENCY] {
         c.build[HasCycle]
       }
       warn(s"${caught}")
       caught.deps should contain (ObjectType.ofTypeTag[A])
       caught.deps should contain (ObjectType.ofTypeTag[B])
+    }
+
+    trait MissingDep {
+      val obj = bind[String]
     }
 
     "detect missing dependencies" in {
