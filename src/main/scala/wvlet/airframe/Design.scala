@@ -10,10 +10,10 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Immutable airframe design
   */
-class Design(val binding: Seq[Binding], val listener: Seq[SessionListener]) extends LogSupport {
+class Design(val binding: Seq[Binding]) extends LogSupport {
 
-  def +(other:Design) : Design = {
-    new Design(binding ++ other.binding, listener ++ other.listener)
+  def +(other: Design): Design = {
+    new Design(binding ++ other.binding)
   }
 
   def bind[A](implicit a: ru.TypeTag[A]): Binder[A] = {
@@ -26,25 +26,18 @@ class Design(val binding: Seq[Binding], val listener: Seq[SessionListener]) exte
     b
   }
 
-  def addListner[A](l: SessionListener): Design = {
-    new Design(binding, listener :+ l)
-  }
-
-  def addBinding(b: Binding): Design = {
+  private[airframe] def addBinding(b: Binding): Design = {
     trace(s"Add binding: $b")
-    new Design(binding :+ b, listener)
+    new Design(binding :+ b)
   }
 
-  def build[A:ru.WeakTypeTag]: A = macro AirframeMacros.buildFromDesignImpl[A]
+  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildFromDesignImpl[A]
 
-  def newSession: Session = {
-    // Override preceding bindings
-    val effectiveBindings = for ((key, lst) <- binding.groupBy(_.from)) yield {
-      lst.last
-    }
-    val keyIndex: Map[ObjectType, Int] = binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
-    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    new SessionImpl(sortedBindings, listener)
+  def session: SessionBuilder = {
+    new SessionBuilder(this)
   }
 
+  def newSession : Session = {
+    new SessionBuilder(this).create
+  }
 }

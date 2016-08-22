@@ -15,9 +15,10 @@ package wvlet.airframe
 
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
-import wvlet.log.LogSupport
+import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.obj.{ObjectType, TextType}
 import wvlet.obj.tag.@@
 
@@ -125,6 +126,14 @@ object ServiceMixinExample {
   case class A(b: B)
   case class B(a: A)
 
+  trait HasCycle {
+    val obj = bind[A]
+  }
+
+  trait MissingDep {
+    val obj = bind[String]
+  }
+
   class EagerSingleton extends LogSupport {
     info("initialized")
     val initializedTime = System.nanoTime()
@@ -171,6 +180,80 @@ object ServiceMixinExample {
 
   class Nest2()
 
+  class ClassInjection {
+    val obj = bind[HeavyObject]
+  }
+
+  class NestedClassInjection {
+    val nest = bind[Nest1]
+  }
+
+  trait AbstractModule {
+    def hello : Unit
+  }
+
+  trait ConcreteModule extends AbstractModule with LogSupport {
+    def hello { info("hello!") }
+  }
+
+  object ConcreteSingleton extends AbstractModule with LogSupport {
+    def hello { info("hello singleton!") }
+  }
+
+  trait NonAbstractModule extends LogSupport {
+    info(s"This should be built")
+  }
+
+  object SingletonOfNonAbstractModules extends NonAbstractModule {
+    info("Hello singleton")
+  }
+
+  trait NestedAbstractModule {
+    val m = bind[AbstractModule]
+  }
+
+  trait EagerSingletonWithInject extends LogSupport {
+    info("initialized")
+    val heavy = bind[HeavyObject]
+    val initializedTime = System.nanoTime()
+  }
+
+  class MyModule extends LogSupport {
+
+    val initCount = new AtomicInteger(0)
+    var closeCount = new AtomicInteger(0)
+
+    def init {
+      info("initialized")
+      initCount.incrementAndGet()
+    }
+    def close {
+      info("closed")
+      closeCount.incrementAndGet()
+    }
+  }
+
+  trait LifeCycleExample {
+    val module = bind[MyModule]
+
+    @PostConstruct
+    private[LifeCycleExample] def init {
+      module.init
+    }
+
+    @PreDestroy
+    private[LifeCycleExample] def close {
+      module.close
+    }
+  }
+
+  trait BindLifeCycleExample {
+    val module = bind[MyModule].withLifeCycle(
+      init = _.init,
+      shutdown =  _.close
+    )
+  }
+
 }
 
 import wvlet.airframe.ServiceMixinExample._
@@ -189,7 +272,6 @@ class AirframeTest extends AirframeSpec {
 
       val m = d.build[FortunePrinterMixin]
     }
-
 
     "create singleton" in {
       val d = Airframe.newDesign
@@ -217,11 +299,8 @@ class AirframeTest extends AirframeSpec {
     }
 
 
-    "found cyclic dependencies" in {
+    "found cyclic dependencies" taggedAs("cyclic") in {
       val c = Airframe.newDesign.newSession
-      trait HasCycle {
-        val obj = bind[A]
-      }
       warn(s"Running cyclic dependency test: A->B->A")
       val caught = intercept[CYCLIC_DEPENDENCY] {
         c.build[HasCycle]
@@ -233,9 +312,6 @@ class AirframeTest extends AirframeSpec {
 
     "detect missing dependencies" in {
       val d = Airframe.newDesign
-      trait MissingDep {
-        val obj = bind[String]
-      }
       warn(s"Running missing dependency check")
       val caught = intercept[MISSING_DEPENDENCY] {
         d.build[MissingDep]
@@ -255,16 +331,20 @@ class AirframeTest extends AirframeSpec {
     "support binding listener" in {
       val counter = new AtomicInteger(0)
 
-      val session =
+      val design =
         Airframe.newDesign
         .bind[EagerSingleton].toEagerSingleton
         .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-        .addListner(new SessionListener {
-          override def afterInjection(t: ObjectType, injectee: Any): Unit = {
-            counter.incrementAndGet()
-          }
-        })
-        .newSession
+
+      val session = design
+                    .session
+                    .withListener(new SessionListener {
+                      override def afterInjection(t: ObjectType, injectee: Any): Unit = {
+                        counter.incrementAndGet()
+                      }
+                    })
+                    .create
+
       session.get[ConsoleConfig]
       counter.get shouldBe 2
     }
@@ -297,6 +377,83 @@ class AirframeTest extends AirframeSpec {
     "support nested context injection" taggedAs("nested") in {
       val session = Airframe.newDesign.newSession
       session.build[Nested]
+    }
+
+    "support injecting to a class" in {
+      val d = Airframe.newDesign
+      val s = d.build[ClassInjection]
+      s.obj shouldNot be (null)
+
+      d.build[NestedClassInjection]
+    }
+
+    "build abstract type that has concrete binding" taggedAs("abstract") in {
+      val d = Airframe.newDesign
+              .bind[AbstractModule].to[ConcreteModule]
+      val s = d.newSession
+      val m = s.build[AbstractModule]
+      m.hello
+    }
+
+    "build nested abstract type that has concrete binding" taggedAs("nested-abstract") in {
+      val d = Airframe.newDesign
+              .bind[AbstractModule].to[ConcreteModule]
+      val s = d.newSession
+      val m = s.build[NestedAbstractModule]
+      m.m.hello
+    }
+
+
+    "build a trait bound to singleton" taggedAs("singleton") in {
+      val d = Airframe.newDesign
+              .bind[AbstractModule].toInstance(ConcreteSingleton)
+      val s = d.newSession
+      val m = s.build[AbstractModule]
+      m.hello
+    }
+
+    "build a trait" taggedAs("trait") in {
+      val h = Airframe.newDesign
+      val s = h.newSession
+      val m = s.build[NonAbstractModule]
+    }
+
+    "build a trait to singleton" taggedAs("trait-singleton") in {
+      val d =
+        Airframe.newDesign
+        .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
+
+      val m = d.build[NonAbstractModule]
+      m shouldBe SingletonOfNonAbstractModules
+    }
+
+    "create single with inject eagerly" in {
+      val start = System.nanoTime()
+      val d = Airframe.newDesign
+              .bind[EagerSingletonWithInject].toEagerSingleton
+      val s = d.build[EagerSingletonWithInject]
+      val current = System.nanoTime()
+      s.initializedTime should be > start
+      s.initializedTime should be < current
+    }
+
+    "support postConstruct and preDestroy" taggedAs("lifecycle") in {
+      val s = Airframe.newDesign.build[LifeCycleExample]
+      s.module.initCount.get() shouldBe 1
+
+      Airframe.getCurrentSession shouldBe 'defined
+
+      Airframe.getCurrentSession.map(_.shutdown)
+      s.module.closeCount.get() shouldBe 1
+    }
+
+    "bind lifecycle code" taggedAs("bind-init") in {
+      val session = Airframe.newDesign.newSession
+      val e = session.build[BindLifeCycleExample]
+      e.module.initCount.get() shouldBe 1
+
+      session.shutdown
+      e.module.closeCount.get() shouldBe 1
     }
   }
 }

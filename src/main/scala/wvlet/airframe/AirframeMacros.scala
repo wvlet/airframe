@@ -16,16 +16,22 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 import scala.reflect.{macros => sm}
 import scala.language.experimental.macros
-/**
-  *
-  */
+
+
 object AirframeMacros extends LogSupport {
 
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
     val t = ev.tpe.typeArgs(0)
     c.Expr(
-      q"""${c.prefix}.register[$t]((new $t { protected def __current_session = ${c.prefix} }).asInstanceOf[$t])"""
+      if(t.typeSymbol.isAbstract) {
+        q"""${c.prefix}.get[$t]"""
+      }
+      else {
+        q"""
+          ${c.prefix}.register[$t]((new $t { protected def __current_session = ${c.prefix} }).asInstanceOf[$t])
+          """
+      }
     )
   }
 
@@ -40,13 +46,33 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
+         val session = wvlet.airframe.Session.findSession(this)
+         session.get(${ev})
+        }
+      """
+    )
+  }
+
+  def addLifeCycle(c: sm.Context): c.Tree = {
+    import c.universe._
+    q"""{
+         val session = wvlet.airframe.Session.findSession(this)
+         new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, session)
+        }
+      """
+  }
+
+
+  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Expr[A] = {
+    import c.universe._
+    c.Expr(
+      q"""{
          val c = wvlet.airframe.Session.findSession(this)
-         c.get(${ev})
+         c.getOrElseUpdate($factory(c.get()))
         }
       """
     )

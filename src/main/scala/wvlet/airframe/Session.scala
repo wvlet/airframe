@@ -22,7 +22,7 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 /**
-  * Context tracks the dependencies of objects and use them to instantiate objects
+  * Session manages injected objects
   */
 trait Session {
 
@@ -32,11 +32,23 @@ trait Session {
     * @tparam A
     * @return object
     */
+  // TODO what is different from build[A]?
   def get[A: ru.WeakTypeTag]: A
+
+  // TODO hide this method
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
   def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
+  // TODO hide this method
   def register[A: ru.WeakTypeTag](obj: A): A
+
+
+  def addInitHook[A](hook:InitHook[A]) : Unit
+  def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
+
+
+  def start : Unit
+  def shutdown : Unit
 }
 
 trait SessionListener {
@@ -45,14 +57,14 @@ trait SessionListener {
 
 object Session extends LogSupport {
 
-  def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
+  private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
     trace(s"Find session for ${cl}")
 
     def returnsSession(c: Class[_]) = {
       classOf[wvlet.airframe.Session].isAssignableFrom(c)
     }
 
-    // find val or def that returns wvlet.inject.Session
+    // find val or def that returns wvlet.airframe.Session
     val schema = ObjectSchema(cl)
 
     def findSessionFromMethods: Option[AnyRef => Session] =
@@ -82,7 +94,7 @@ object Session extends LogSupport {
     .orElse(findEmbeddedSession)
   }
 
-  def getSession[A](enclosingObj: A): Option[Session] = {
+  private def getSession[A](enclosingObj: A): Option[Session] = {
     require(enclosingObj != null, "enclosinbObj is null")
     findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
@@ -96,6 +108,25 @@ object Session extends LogSupport {
       throw new MISSING_SESSION(ObjectType.of(cl))
     }
   }
-
 }
 
+class SessionBuilder(design: Design, listeners: Seq[SessionListener] = Seq.empty) extends LogSupport {
+
+  def withListener(listener: SessionListener): SessionBuilder = {
+    new SessionBuilder(design, listeners :+ listener)
+  }
+
+  def create: Session = {
+    // Override preceding bindings
+    val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
+      lst.last
+    }
+    val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
+    val session = new SessionImpl(sortedBindings, listeners)
+    info(f"Creating a new session[${session.hashCode()}%x]")
+    Airframe.setSession(session)
+    session.init
+    session
+  }
+}
