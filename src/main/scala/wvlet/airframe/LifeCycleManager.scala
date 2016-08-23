@@ -13,34 +13,24 @@ case object STARTED extends LifeCycleStage
 case object STOPPING extends LifeCycleStage
 case object STOPPED extends LifeCycleStage
 
+
+object LifeCycleManager {
+  val DEFAULT_LIFECYCLE_EVENT_HANDLER =
+    ShowLifeCycleLog wraps
+      (JSR330AnnotationHandler andThen FIFOHookExecutor)
+}
+
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-trait LifeCycleManager extends LifeCycleEventHandler with LogSupport {
+class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   self =>
 
   private val state = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
-  def onInit(t: ObjectType, injectee: AnyRef): Unit = {
-    debug(s"Injected ${t} (class: ${t.rawType}): $injectee")
-    val schema = ObjectSchema(t.rawType)
-
-    // Find JSR330 PostConstruct annotation
-    schema
-    .allMethods
-    .filter{_.findAnnotationOf[PostConstruct].isDefined}
-    .map{x =>
-      addInitHook(ObjectMethodCall(injectee, x))
-    }
-
-    // Find JSR330 PreDestroy annotation
-    schema
-    .allMethods
-    .filter {_.findAnnotationOf[PreDestroy].isDefined}
-    .map { x =>
-      addShutdownHook(ObjectMethodCall(injectee, x))
-    }
+  private[airframe] def onInit(t:ObjectType, injectee:AnyRef) {
+    eventHandler.onInit(this, t, injectee)
   }
 
   def start {
@@ -53,20 +43,20 @@ trait LifeCycleManager extends LifeCycleEventHandler with LogSupport {
       self.shutdown
     }
 
-    beforeStart
+    eventHandler.beforeStart(this)
     // Run start hooks in the registration order
     startHook.reverse.foreach(_.execute)
     state.set(STARTED)
-    afterStart
+    eventHandler.afterStart(this)
   }
 
   def shutdown {
     if (state.compareAndSet(STARTED, STOPPING)) {
-      beforeShutdown
+      eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
       shutdownHook.foreach(_.execute)
       state.set(STOPPED)
-      afterShutdown
+      eventHandler.afterShutdown(this)
     }
   }
 
@@ -78,6 +68,9 @@ trait LifeCycleManager extends LifeCycleEventHandler with LogSupport {
 
   private var startHook    = List.empty[LifeCycleHook]
   private var shutdownHook = List.empty[LifeCycleHook]
+
+  def startHooks = startHook
+  def shutdownHooks = shutdownHook
 
   def addStartHook(h: LifeCycleHook) {
     trace(s"Add start hook: ${h}")
@@ -105,37 +98,6 @@ case class EventHookHolder[A](obj: A, hook: A => Unit) extends LifeCycleHook {
 case class ObjectMethodCall(obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
   def execute {
     method.invoke(obj)
-  }
-}
-
-trait LifeCycleEventListener {
-  def onInit(t: ObjectType, injectee: AnyRef)
-}
-
-trait LifeCycleEventHandler extends LifeCycleEventListener {
-  protected def beforeStart
-  protected def afterStart
-  protected def beforeShutdown
-  protected def afterShutdown
-}
-
-trait DefaultLifeCycleEventHandler extends LifeCycleEventHandler {
-  self: LifeCycleManager =>
-
-  protected def beforeStart() {
-    info(s"Life cycle is starting ...")
-  }
-
-  protected def afterStart() {
-    info(s"======= STARTED =======")
-  }
-
-  protected def beforeShutdown() {
-    info(s"Stopping life cycle ...")
-  }
-
-  protected def afterShutdown() {
-    info(s"Life cycle has stopped.")
   }
 }
 
