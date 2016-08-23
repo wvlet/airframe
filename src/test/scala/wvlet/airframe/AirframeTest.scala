@@ -505,9 +505,11 @@ class AirframeTest extends AirframeSpec {
 
     "throw MISSING_SESSION" in {
       trait Test
-      intercept[MISSING_SESSION]{
+      warn("Running MISSING_SESSION test")
+      val caught = intercept[MISSING_SESSION]{
         Session.findSession(new Test{})
       }
+      warn(caught.getMessage)
     }
   }
 }
