@@ -26,49 +26,32 @@ import scala.util.{Failure, Try}
 /**
   *
   */
-private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: Seq[SessionListener], lifeCycleManager: LifeCycleManager = new LifeCycleManager)
-  extends Session with LogSupport { self =>
+private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConversions._
-
-  // Add life cycle manager to the listener
-  sessionListener = lifeCycleManager +: sessionListener
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
 
+  def name : String = sessionName.getOrElse(f"session:${hashCode()}%x")
+
   // Initialize eager singleton
   private[airframe] def init {
+    debug(s"[${name}] Init session")
     binding.collect {
       case s@SingletonBinding(from, to, eager) if eager =>
-        singletonHolder.getOrElseUpdate(to, buildInstance(to, List(to)))
+        singletonHolder.getOrElseUpdate(from, buildInstance(to, List(to)))
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
     }
   }
 
-  def start {
-    lifeCycleManager.start
-  }
-
-  def shutdown {
-    info(f"Shutting down session[${this.hashCode()}%x]")
-    lifeCycleManager.shutdown
-  }
-
-  def addInitHook[A](hook: InitHook[A]): Unit = {
-    lifeCycleManager.addInitHook(hook)
-  }
-
-  def addShutdownHook[A](hook: ShutdownHook[A]): Unit = {
-    lifeCycleManager.addShutdownHook(hook)
-  }
-
-  def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
+  private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
-    trace(s"get[${ev}:${tpe}]")
+    debug(s"get[${ev}:${tpe}]")
     newInstance(tpe, List.empty).asInstanceOf[A]
   }
 
-  def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
+  private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
+    debug(s"getOrElseUpdate[${ev.tpe}]")
     val t = ObjectType.ofTypeTag(ev)
     binding.find(_.from == t) match {
       case Some(SingletonBinding(from, to, eager)) =>
@@ -87,8 +70,8 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
 
   private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
     trace(s"Register ${t} (${t.rawType}): ${obj}")
-    sessionListener.map(l => Try(l.afterInjection(t, obj))).collect {
-      case Failure(e) =>
+    Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
+      case e:Throwable =>
         error(s"Error in SessionListener", e)
         throw e
     }
@@ -96,7 +79,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
   }
 
   private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    trace(s"Search bindings for ${t}")
+    debug(s"Search bindings for ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
       throw new CYCLIC_DEPENDENCY(stack.toSet)
@@ -123,7 +106,7 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
   }
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    trace(s"buildInstance:${t.rawType}, ${stack}")
+    debug(s"buildInstance:${t} (class:${t.rawType}), ${stack}")
     val schema = ObjectSchema(t.rawType)
     if (t.isPrimitive || t.isTextType) {
       // Cannot build Primitive types
@@ -176,5 +159,4 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
       }
     }
   }
-
 }

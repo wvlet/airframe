@@ -1,0 +1,11 @@
+<component name="CopyrightManager">
+  <settings default="APL2">
+    <module2copyright>
+      <element module="All" copyright="APL2" />
+    </module2copyright>
+    <LanguageOptions name="Scala">
+      <option name="fileTypeOverride" value="3" />
+      <option name="addBlankAfter" value="false" />
+    </LanguageOptions>
+  </settings>
+</component>

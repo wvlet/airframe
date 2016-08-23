@@ -22,39 +22,76 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 
-trait SessionListener {
-  def afterInjection(t: ObjectType, injectee: Any)
-}
-
 /**
-  * Session manages injected objects
+  * Session manages injected objects (e.g., Sigleton)
   */
 trait Session {
 
-  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
+  /**
+    * Name of the session (default: object hash code)
+    * @return
+    */
+  def name : String
 
   /**
-    * Creates an instance of the given type A.
+    * Build an instance of A. In general this method is necessary only when creating an entry point of
+    * your application. When feasible avoid using this method so that Airframe can inject objects where bind[X] is used.
     *
     * @tparam A
     * @return object
     */
-  // TODO what is different from build[A]?
-  def get[A: ru.WeakTypeTag]: A
+  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
-  // TODO hide this method
-  def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
+  /**
+    * Internal method for building an instance of type A. This method does not inject the session to A at first hand
+    * @tparam A
+    * @return
+    */
+  private[airframe] def get[A: ru.WeakTypeTag]: A
 
-  // TODO This should be more generic, e.g., accept hook: A => Unit
-  def addInitHook[A](hook:InitHook[A]) : Unit
-  def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
+  /**
+    * Internal method for buildilng an instance of type A using a provider generated object.
+    * @param obj
+    * @tparam A
+    * @return
+    */
+  private[airframe] def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
 
+  /**
+    * Get the object LifeCycleManager of this session.
+    * @return
+    */
+  def lifeCycleManager : LifeCycleManager
 
-  def start : Unit
-  def shutdown : Unit
+  def start { lifeCycleManager.start }
+  def shutdown { lifeCycleManager.shutdown }
 }
 
 object Session extends LogSupport {
+
+  /**
+    * To provide an anccess to internal Session methods (e.g, get)
+    * @param session
+    */
+  implicit class SessionAccess(session:Session) {
+    def get[A: ru.WeakTypeTag] : A = session.get[A]
+    def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A) : A = session.getOrElseUpdate[A](obj)
+  }
+
+  def getSession[A](enclosingObj: A): Option[Session] = {
+    require(enclosingObj != null, "enclosinbObj is null")
+    findSessionAccess(enclosingObj.getClass).flatMap { access =>
+      Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
+    }
+  }
+
+  def findSession[A](enclosingObj: A): Session = {
+    val cl = enclosingObj.getClass
+    getSession(enclosingObj).getOrElse {
+      error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, enclosing object: ${enclosingObj}")
+      throw new MISSING_SESSION(ObjectType.of(cl))
+    }
+  }
 
   private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
     trace(s"Find session for ${cl}")
@@ -70,7 +107,7 @@ object Session extends LogSupport {
       schema
       .allMethods
       .find(x => isSessionType(x.valueType.rawType) && x.params.isEmpty)
-      .map { sessionnGetter => { obj: AnyRef => sessionnGetter.invoke(obj).asInstanceOf[Session] }
+      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
       }
 
     def findSessionFromParams: Option[AnyRef => Session] = {
@@ -93,20 +130,6 @@ object Session extends LogSupport {
     .orElse(findEmbeddedSession)
   }
 
-  def getSession[A](enclosingObj: A): Option[Session] = {
-    require(enclosingObj != null, "enclosinbObj is null")
-    findSessionAccess(enclosingObj.getClass).flatMap { access =>
-      Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
-    }
-  }
-
-  def findSession[A](enclosingObj: A): Session = {
-    val cl = enclosingObj.getClass
-    getSession(enclosingObj).getOrElse {
-      error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, enclosing object: ${enclosingObj}")
-      throw new MISSING_SESSION(ObjectType.of(cl))
-    }
-  }
 }
 
 
