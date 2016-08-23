@@ -16,7 +16,7 @@ case object STOPPED extends LifeCycleStage
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
+class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   self =>
 
   private val state = new AtomicReference[LifeCycleStage](INIT)
@@ -24,10 +24,6 @@ class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycl
 
   private[airframe] def onInit(t:ObjectType, injectee:AnyRef) {
     eventHandler.onInit(this, t, injectee)
-  }
-
-  def withEventHandler(e:LifeCycleEventHandler) {
-    eventHandler = eventHandler wraps e
   }
 
   def start {

@@ -344,7 +344,7 @@ class AirframeTest extends AirframeSpec {
 
       val session = design
                     .session
-                    .withEventHandler(new LifeCycleEventHandler {
+                    .addEventHandler(new LifeCycleEventHandler {
                       override def onInit(l:LifeCycleManager, t: ObjectType, injectee: AnyRef): Unit = {
                         counter.incrementAndGet()
                       }
