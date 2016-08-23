@@ -24,8 +24,11 @@ class SessionBuilderTest extends AirframeSpec {
       val session = d.session
                     .withName("MySession")
                     .create
-
       session.name shouldBe "MySession"
+
+      session.start
+
+      session.shutdown
     }
 
     "create a session with custom event handler" in {
