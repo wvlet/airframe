@@ -17,7 +17,7 @@ import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
+import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
 import wvlet.obj.tag._
 import wvlet.obj.{ObjectType, TextType}
@@ -501,6 +501,13 @@ class AirframeTest extends AirframeSpec {
 
       d.build[HeavyObject]
       d.build[ConsoleConfig]
+    }
+
+    "throw MISSING_SESSION" in {
+      trait Test
+      intercept[MISSING_SESSION]{
+        Session.findSession(new Test{})
+      }
     }
   }
 }
