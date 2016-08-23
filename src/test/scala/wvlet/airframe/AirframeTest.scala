@@ -489,5 +489,18 @@ class AirframeTest extends AirframeSpec {
       session.shutdown
       e.module.closeCount.get() shouldBe 1
     }
+
+    "extend Design" in {
+      val d1 = Airframe.newDesign
+        .bind[HeavyObject].toSingleton
+
+      val d2 = Airframe.newDesign
+        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+
+      val d = d1 + d2
+
+      d.build[HeavyObject]
+      d.build[ConsoleConfig]
+    }
   }
 }
