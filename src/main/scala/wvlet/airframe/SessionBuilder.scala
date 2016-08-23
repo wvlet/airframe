@@ -6,14 +6,18 @@ import wvlet.obj.ObjectType
 /**
   *
   */
-class SessionBuilder(design: Design, handler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
+class SessionBuilder(design:Design, name:Option[String] = None, handler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
 
   /**
     * @param e
     * @return
     */
   def addEventHandler(e:LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, handler.wraps(e))
+    new SessionBuilder(design, name, handler.wraps(e))
+  }
+
+  def withName(sessionName:String) : SessionBuilder = {
+    new SessionBuilder(design, Some(sessionName), handler)
   }
 
   def create: Session = {
@@ -23,8 +27,10 @@ class SessionBuilder(design: Design, handler:LifeCycleEventHandler = LifeCycleMa
     }
     val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    val session = new SessionImpl(sortedBindings, new LifeCycleManager(handler))
-    debug(f"Creating a new session[${session.hashCode()}%x]")
+    val l =  new LifeCycleManager(handler)
+    val session = new SessionImpl(name, sortedBindings, l)
+    debug(f"Creating a new session: ${session.name}")
+    l.setSession(session)
     Airframe.setSession(session)
     session.init
     session

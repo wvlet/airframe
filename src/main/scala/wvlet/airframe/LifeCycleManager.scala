@@ -26,6 +26,13 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
     eventHandler.onInit(this, t, injectee)
   }
 
+  private var session : Session = _
+  private[airframe] def setSession(s:Session) {
+    session = s
+  }
+
+  def sessionName : String = session.name
+
   def start {
     if (!state.compareAndSet(INIT, STARTING)) {
       throw new IllegalStateException(s"LifeCycle is already starting")
@@ -93,19 +100,19 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
   override def beforeStart(lifeCycleManager:LifeCycleManager) {
-    logger.info(s"Life cycle is starting ...")
+    logger.info(s"[${lifeCycleManager.sessionName}] Life cycle is starting ...")
   }
 
   override def afterStart(lifeCycleManager:LifeCycleManager) {
-    logger.info(s"======= STARTED =======")
+    logger.info(s"[${lifeCycleManager.sessionName}] ======= STARTED =======")
   }
 
   override def beforeShutdown(lifeCycleManager:LifeCycleManager) {
-    logger.info(s"Stopping life cycle ...")
+    logger.info(s"[${lifeCycleManager.sessionName}] Stopping life cycle ...")
   }
 
   override def afterShutdown(lifeCycleManager:LifeCycleManager) {
-    logger.info(s"Life cycle has stopped.")
+    logger.info(s"[${lifeCycleManager.sessionName}] Life cycle has stopped.")
   }
 }
 

@@ -28,6 +28,12 @@ import scala.util.Try
 trait Session {
 
   /**
+    * Name of the session (default: object hash code)
+    * @return
+    */
+  def name : String
+
+  /**
     * Build an instance of A. In general this method is necessary only when creating an entry point of
     * your application. When feasible avoid using this method so that Airframe can inject objects where bind[X] is used.
     *

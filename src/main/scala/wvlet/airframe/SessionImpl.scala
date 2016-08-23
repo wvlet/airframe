@@ -26,10 +26,12 @@ import scala.util.{Failure, Try}
 /**
   *
   */
-private[airframe] class SessionImpl(binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
+private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConversions._
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
+
+  def name : String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
   // Initialize eager singleton
   private[airframe] def init {
