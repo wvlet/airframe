@@ -33,17 +33,23 @@ package object airframe {
 
   private[airframe] val DO_NOTHING = { a: Any => }
 
+  /**
+    * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
+    */
   implicit class LifeCycleSupport[A](val dep:A) extends LogSupport {
     def withLifeCycle : LifeCycleBinder[A] = macro addLifeCycle
   }
 
   class LifeCycleBinder[A](dep:A, session:Session) {
-    def apply(init:A => Unit = DO_NOTHING, shutdown:A=>Unit=DO_NOTHING) : A = {
+    def apply(init:A => Unit = DO_NOTHING, start: A=>Unit=DO_NOTHING, shutdown:A=>Unit=DO_NOTHING) : A = {
       if(init != DO_NOTHING) {
-        session.addInitHook(InitHook(dep, init))
+        session.lifeCycleManager.addInitHook(EventHookHolder(dep, init))
+      }
+      if(start != DO_NOTHING) {
+        session.lifeCycleManager.addStartHook(EventHookHolder(dep, start))
       }
       if(shutdown != DO_NOTHING) {
-        session.addShutdownHook(ShutdownHook(dep, shutdown))
+        session.lifeCycleManager.addShutdownHook(EventHookHolder(dep, shutdown))
       }
       dep
     }

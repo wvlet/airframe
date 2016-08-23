@@ -26,12 +26,8 @@ import scala.util.{Failure, Try}
 /**
   *
   */
-private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: Seq[SessionListener], lifeCycleManager: LifeCycleManager = new LifeCycleManager)
-  extends Session with LogSupport { self =>
+private[airframe] class SessionImpl(binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConversions._
-
-  // Add life cycle manager to the listener
-  sessionListener = lifeCycleManager +: sessionListener
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any] = new ConcurrentHashMap[ObjectType, Any]()
 
@@ -43,23 +39,6 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
     }
-  }
-
-  def start {
-    lifeCycleManager.start
-  }
-
-  def shutdown {
-    info(f"Shutting down session[${this.hashCode()}%x]")
-    lifeCycleManager.shutdown
-  }
-
-  def addInitHook[A](hook: InitHook[A]): Unit = {
-    lifeCycleManager.addInitHook(hook)
-  }
-
-  def addShutdownHook[A](hook: ShutdownHook[A]): Unit = {
-    lifeCycleManager.addShutdownHook(hook)
   }
 
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
@@ -87,8 +66,8 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
 
   private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
     trace(s"Register ${t} (${t.rawType}): ${obj}")
-    sessionListener.map(l => Try(l.afterInjection(t, obj))).collect {
-      case Failure(e) =>
+    Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
+      case e:Throwable =>
         error(s"Error in SessionListener", e)
         throw e
     }
@@ -176,5 +155,4 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
       }
     }
   }
-
 }

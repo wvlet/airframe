@@ -22,10 +22,6 @@ import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 
-trait SessionListener {
-  def afterInjection(t: ObjectType, injectee: Any)
-}
-
 /**
   * Session manages injected objects (e.g., Sigleton)
   */
@@ -41,26 +37,28 @@ trait Session {
   def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
   /**
-    * Internal method for building an instance of type A.
+    * Internal method for building an instance of type A. This method does not inject the session to A at first hand
     * @tparam A
     * @return
     */
   private[airframe] def get[A: ru.WeakTypeTag]: A
 
   /**
-    * Internal method for buildilng an instance of type A using a provider generated object
+    * Internal method for buildilng an instance of type A using a provider generated object.
     * @param obj
     * @tparam A
     * @return
     */
   private[airframe] def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
 
-  // TODO This should be more generic, e.g., accept hook: A => Unit
-  def addInitHook[A](hook:InitHook[A]) : Unit
-  def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
+  /**
+    * Get the object LifeCycleManager of this session.
+    * @return
+    */
+  def lifeCycleManager : LifeCycleManager
 
-  def start : Unit
-  def shutdown : Unit
+  def start { lifeCycleManager.start }
+  def shutdown { lifeCycleManager.shutdown }
 }
 
 object Session extends LogSupport {
