@@ -47,7 +47,7 @@ class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycl
   }
 
   def shutdown {
-    if (state.compareAndSet(STARTED, STOPPING)) {
+    if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING) || state.compareAndSet(STARTING, STOPPING)) {
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
       state.set(STOPPED)
