@@ -2,7 +2,7 @@ package wvlet.airframe.example
 
 import wvlet.airframe._
 import wvlet.log.LogSupport
-import wvlet.obj.tag.@@
+import wvlet.obj.tag._
 
 import scala.util.Random
 

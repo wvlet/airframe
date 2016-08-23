@@ -20,7 +20,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.obj.{ObjectType, TextType}
-import wvlet.obj.tag.@@
+import wvlet.obj.tag._
 
 import scala.reflect.ClassTag
 import scala.util.Random

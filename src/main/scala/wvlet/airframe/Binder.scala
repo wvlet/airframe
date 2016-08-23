@@ -66,7 +66,7 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toInstance(any: Any): Design = {
+  def toInstance(any: A): Design = {
     design.addBinding(InstanceBinding(from, any))
   }
 
