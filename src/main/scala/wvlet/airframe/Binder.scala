@@ -25,8 +25,8 @@ import wvlet.airframe.Binder._
   */
 class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
-  def to[B <: A](implicit ev: ru.TypeTag[B]): Design = {
-    val to = ObjectType.of(ev.tpe)
+  def to[B <: A : ru.TypeTag]: Design = {
+    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")
       design
@@ -36,16 +36,20 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
+  def toInstance(any: A): Design = {
+    design.addBinding(InstanceBinding(from, any))
+  }
+
   def toProvider(provider: ObjectType => A): Design = {
     design.addBinding(ProviderBinding(from, provider))
   }
 
-  def toProvider[D1](factory: D1 => A)(implicit ev:ru.TypeTag[D1]): Design = {
-    design.addBinding(FactoryBinding(from, ObjectType.of(ev.tpe), factory))
+  def toProvider[D1 : ru.TypeTag](factory: D1 => A): Design = {
+    design.addBinding(FactoryBinding(from, ObjectType.of(implicitly[ru.TypeTag[D1]].tpe), factory))
   }
 
-  def toSingletonOf[B <: A](implicit ev: ru.TypeTag[B]): Design = {
-    val to = ObjectType.of(ev.tpe)
+  def toSingletonOf[B <: A : ru.TypeTag]: Design = {
+    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")
       design
@@ -55,8 +59,8 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toEagerSingletonOf[B <: A](implicit ev: ru.TypeTag[B]): Design = {
-    val to = ObjectType.of(ev.tpe)
+  def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = {
+    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
       warn(s"Binding to the same type will be ignored: ${from.name}")
       design
@@ -64,10 +68,6 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     else {
       design.addBinding(SingletonBinding(from, to, true))
     }
-  }
-
-  def toInstance(any: A): Design = {
-    design.addBinding(InstanceBinding(from, any))
   }
 
   def toSingleton: Design = {
