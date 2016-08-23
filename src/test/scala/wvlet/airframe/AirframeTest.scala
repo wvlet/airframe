@@ -214,12 +214,18 @@ object ServiceMixinExample {
   class MyModule extends LogSupport {
 
     val initCount = new AtomicInteger(0)
+    val startCount = new AtomicInteger(0)
     var closeCount = new AtomicInteger(0)
 
     def init {
       info("initialized")
       initCount.incrementAndGet()
     }
+    def start {
+      info("started")
+      startCount.incrementAndGet()
+    }
+
     def close {
       info("closed")
       closeCount.incrementAndGet()
@@ -243,6 +249,7 @@ object ServiceMixinExample {
   trait BindLifeCycleExample {
     val module = bind[MyModule].withLifeCycle(
       init = _.init,
+      start = _.start,
       shutdown =  _.close
     )
   }
@@ -450,6 +457,9 @@ class AirframeTest extends AirframeSpec {
       val session = Airframe.newDesign.newSession
       val e = session.build[BindLifeCycleExample]
       e.module.initCount.get() shouldBe 1
+
+      session.start
+      e.module.startCount.get() shouldBe 1
 
       session.shutdown
       e.module.closeCount.get() shouldBe 1

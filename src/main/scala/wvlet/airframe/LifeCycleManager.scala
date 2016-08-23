@@ -16,7 +16,7 @@ case object STOPPED extends LifeCycleStage
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycleManager.DEFAULT_LIFECYCLE_EVENT_HANDLER) extends LogSupport {
+class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
   self =>
 
   private val state = new AtomicReference[LifeCycleStage](INIT)
@@ -83,12 +83,14 @@ class LifeCycleManager(private var eventHandler:LifeCycleEventHandler = LifeCycl
 }
 
 object LifeCycleManager {
-  val DEFAULT_LIFECYCLE_EVENT_HANDLER =
-    ShowLifeCycleLog wraps (
-      JSR330AnnotationHandler
-        andThen FIFOHookExecutor
-        andThen AddShutdownHook
-      )
+  def defaultLifeCycleEventHandler =
+    ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
+
+  def defaultObjectLifeCycleHandler =
+    JSR330AnnotationHandler andThen
+    FIFOHookExecutor andThen
+    AddShutdownHook
+
 }
 
 object ShowLifeCycleLog extends LifeCycleEventHandler {
@@ -136,7 +138,6 @@ object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
 }
 
 object FIFOHookExecutor extends LifeCycleEventHandler {
-
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     lifeCycleManager.startHooks.reverse.map(_.execute)
   }
@@ -153,4 +154,3 @@ object AddShutdownHook extends LifeCycleEventHandler {
     }
   }
 }
-
