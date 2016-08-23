@@ -283,10 +283,8 @@ class AirframeTest extends AirframeSpec {
         .bind[EagerSingleton].toEagerSingleton
         .newSession
 
-      session.get[HeavyObject]
       val current = System.nanoTime()
       val s = session.get[EagerSingleton]
-
       s.initializedTime should be > start
       s.initializedTime should be < current
     }

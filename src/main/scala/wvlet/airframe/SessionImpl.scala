@@ -70,13 +70,29 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
 
   def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
     val t = ObjectType.ofTypeTag(ev)
-    val result = binding.find(_.from == t).collect {
-      case SingletonBinding(from, to, eager) =>
+    binding.find(_.from == t) match {
+      case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(to, {
           registerInjectee(to, obj)
-        })
+        }).asInstanceOf[A]
+      case other =>
+        register(obj)(ev).asInstanceOf[A]
     }
-    result.getOrElse(obj).asInstanceOf[A]
+  }
+
+  private def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
+    debug(s"register: ${obj}, ${ev}")
+    registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
+  }
+
+  private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
+    trace(s"Register ${t} (${t.rawType}): ${obj}")
+    sessionListener.map(l => Try(l.afterInjection(t, obj))).collect {
+      case Failure(e) =>
+        error(s"Error in SessionListener", e)
+        throw e
+    }
+    obj.asInstanceOf[AnyRef]
   }
 
   private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
@@ -159,21 +175,6 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
           }
       }
     }
-  }
-
-  def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    debug(s"register: ${obj}, ${ev}")
-    registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
-  }
-
-  private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
-    trace(s"Register ${t} (${t.rawType}): ${obj}")
-    sessionListener.map(l => Try(l.afterInjection(t, obj))).collect {
-      case Failure(e) =>
-        error(s"Error in SessionListener", e)
-        throw e
-    }
-    obj.asInstanceOf[AnyRef]
   }
 
 }

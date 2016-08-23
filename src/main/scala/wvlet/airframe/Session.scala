@@ -21,10 +21,17 @@ import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
+
+trait SessionListener {
+  def afterInjection(t: ObjectType, injectee: Any)
+}
+
 /**
   * Session manages injected objects
   */
 trait Session {
+
+  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
   /**
     * Creates an instance of the given type A.
@@ -37,10 +44,6 @@ trait Session {
 
   // TODO hide this method
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
-  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
-
-  // TODO hide this method
-  def register[A: ru.WeakTypeTag](obj: A): A
 
 
   def addInitHook[A](hook:InitHook[A]) : Unit
@@ -49,10 +52,6 @@ trait Session {
 
   def start : Unit
   def shutdown : Unit
-}
-
-trait SessionListener {
-  def afterInjection(t: ObjectType, injectee: Any)
 }
 
 object Session extends LogSupport {
@@ -94,7 +93,7 @@ object Session extends LogSupport {
     .orElse(findEmbeddedSession)
   }
 
-  private def getSession[A](enclosingObj: A): Option[Session] = {
+  def getSession[A](enclosingObj: A): Option[Session] = {
     require(enclosingObj != null, "enclosinbObj is null")
     findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
@@ -110,23 +109,4 @@ object Session extends LogSupport {
   }
 }
 
-class SessionBuilder(design: Design, listeners: Seq[SessionListener] = Seq.empty) extends LogSupport {
 
-  def withListener(listener: SessionListener): SessionBuilder = {
-    new SessionBuilder(design, listeners :+ listener)
-  }
-
-  def create: Session = {
-    // Override preceding bindings
-    val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
-      lst.last
-    }
-    val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
-    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    val session = new SessionImpl(sortedBindings, listeners)
-    info(f"Creating a new session[${session.hashCode()}%x]")
-    Airframe.setSession(session)
-    session.init
-    session
-  }
-}
