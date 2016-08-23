@@ -31,24 +31,21 @@ trait SessionListener {
   */
 trait Session {
 
-  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
-
   /**
-    * Creates an instance of the given type A.
+    * Creates an instance of the given type A
     *
     * @tparam A
     * @return object
     */
+  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
+
   // TODO what is different from build[A]?
   def get[A: ru.WeakTypeTag]: A
-
-  // TODO hide this method
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
 
   // TODO This should be more generic, e.g., accept hook: A => Unit
   def addInitHook[A](hook:InitHook[A]) : Unit
   def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
-
 
   def start : Unit
   def shutdown : Unit

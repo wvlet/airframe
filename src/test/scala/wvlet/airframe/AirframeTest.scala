@@ -284,7 +284,7 @@ class AirframeTest extends AirframeSpec {
         .newSession
 
       val current = System.nanoTime()
-      val s = session.get[EagerSingleton]
+      val s = session.build[EagerSingleton]
       s.initializedTime should be > start
       s.initializedTime should be < current
     }
@@ -344,7 +344,7 @@ class AirframeTest extends AirframeSpec {
                     })
                     .create
 
-      session.get[ConsoleConfig]
+      session.build[ConsoleConfig]
       counter.get shouldBe 2
     }
 

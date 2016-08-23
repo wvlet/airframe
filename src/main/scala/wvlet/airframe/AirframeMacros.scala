@@ -20,22 +20,33 @@ import scala.language.experimental.macros
 
 object AirframeMacros extends LogSupport {
 
+  /**
+    * Used when Session location is known
+    * @param c
+    * @param ev
+    * @tparam A
+    * @return
+    */
   def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
     import c.universe._
     val t = ev.tpe.typeArgs(0)
+    val a = t.typeSymbol
+
+    val hasPublicDefaultConstructor = t.members.find(_.isConstructor).map(_.asMethod).exists { m =>
+      m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+    }
     c.Expr(
-      //
       // = Abstract type
       // We cannot build abstract type X, so bind[X].to[ConcreteType] needs to be found in the design.
       //
       // = Non static type
       // If X is non static type (= local class or trait),
       // we need to instantiate it first in order to populate its $outer variables
-      if(t.typeSymbol.isAbstract && t.typeSymbol.isStatic) {
-        q"""${c.prefix}.get[$t]"""
+      if(!a.isStatic || (a.isStatic && !a.isAbstract && hasPublicDefaultConstructor)) {
+        q"""${c.prefix}.getOrElseUpdate[$t]((new $t { protected[this] def __current_session = ${c.prefix} }).asInstanceOf[$t])"""
       }
       else {
-        q"""${c.prefix}.getOrElseUpdate[$t]((new $t { protected[this] def __current_session = ${c.prefix} }).asInstanceOf[$t])"""
+        q"""${c.prefix}.get($ev)"""
       }
     )
   }
@@ -46,7 +57,7 @@ object AirframeMacros extends LogSupport {
     c.Expr(
       q"""{
           val session = ${c.prefix}.newSession
-          session.build[$t]
+          session.build($ev)
         }"""
     )
   }
@@ -56,7 +67,7 @@ object AirframeMacros extends LogSupport {
     c.Expr(
       q"""{
          val session = wvlet.airframe.Session.findSession(this)
-         session.get(${ev})
+         session.get($ev)
         }
       """
     )
@@ -71,13 +82,12 @@ object AirframeMacros extends LogSupport {
       """
   }
 
-
   def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
-         val c = wvlet.airframe.Session.findSession(this)
-         c.getOrElseUpdate($factory(c.get()))
+         val session = wvlet.airframe.Session.findSession(this)
+         session.getOrElseUpdate($factory())
         }
       """
     )
@@ -87,8 +97,8 @@ object AirframeMacros extends LogSupport {
     import c.universe._
     c.Expr(
       q"""{
-         val c = wvlet.airframe.Session.findSession(this)
-         c.getOrElseUpdate($factory(c.get(${d1})))
+         val session = wvlet.airframe.Session.findSession(this)
+         session.getOrElseUpdate($factory(session.get(${d1})))
         }
       """
     )
@@ -98,14 +108,23 @@ object AirframeMacros extends LogSupport {
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Expr[A] = {
     import c.universe._
-    c.Expr(q"""{ val c = wvlet.airframe.Session.findSession(this); c.getOrElseUpdate($factory(c.get(${d1}), c.get(${d2}))) }""")
+    c.Expr(
+      q"""{
+         val session = wvlet.airframe.Session.findSession(this);
+         c.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2})))
+         }
+        """)
   }
 
   def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Expr[A] = {
     import c.universe._
-    c.Expr(q"""{ val c = wvlet.airframe.Session.findSession(this); c.getOrElseUpdate($factory(c.get(${d1}), c.get(${d2}), c.get(${d3}))) }""")
+    c.Expr(
+      q"""{
+         val session = wvlet.airframe.Session.findSession(this);
+         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3})))
+         }""")
   }
 
   def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag]
@@ -113,7 +132,10 @@ object AirframeMacros extends LogSupport {
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
-      q"""{ val c = wvlet.airframe.Session.findSession(this); c.getOrElseUpdate($factory(c.get(${d1}), c.get(${d2}), c.get(${d3}), c.get(${d4}))) }""")
+      q"""{
+         val session = wvlet.airframe.Session.findSession(this);
+         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3}), session.get(${d4})))
+         }""")
   }
 
   def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
@@ -121,7 +143,10 @@ object AirframeMacros extends LogSupport {
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
-      q"""{ val c = wvlet.airframe.Session.findSession(this); c.getOrElseUpdate($factory(c.get(${d1}), c.get(${d2}), c.get(${d3}), c.get(${d4}), c.get(${d5}))) }""")
+      q"""{
+         val session = wvlet.airframe.Session.findSession(this);
+         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3}), session.get(${d4}), session.get(${d5})))
+         }""")
   }
 
 }
