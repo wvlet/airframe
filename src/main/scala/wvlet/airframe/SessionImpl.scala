@@ -35,9 +35,10 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   // Initialize eager singleton
   private[airframe] def init {
+    debug(s"[${name}] Init session")
     binding.collect {
       case s@SingletonBinding(from, to, eager) if eager =>
-        singletonHolder.getOrElseUpdate(to, buildInstance(to, List(to)))
+        singletonHolder.getOrElseUpdate(from, buildInstance(to, List(to)))
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
     }
@@ -45,11 +46,12 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
-    trace(s"get[${ev}:${tpe}]")
+    debug(s"get[${ev}:${tpe}]")
     newInstance(tpe, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
+    debug(s"getOrElseUpdate[${ev.tpe}]")
     val t = ObjectType.ofTypeTag(ev)
     binding.find(_.from == t) match {
       case Some(SingletonBinding(from, to, eager)) =>
@@ -77,7 +79,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    trace(s"Search bindings for ${t}")
+    debug(s"Search bindings for ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
       throw new CYCLIC_DEPENDENCY(stack.toSet)
@@ -104,7 +106,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    trace(s"buildInstance:${t.rawType}, ${stack}")
+    debug(s"buildInstance:${t} (class:${t.rawType}), ${stack}")
     val schema = ObjectSchema(t.rawType)
     if (t.isPrimitive || t.isTextType) {
       // Cannot build Primitive types

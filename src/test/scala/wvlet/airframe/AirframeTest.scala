@@ -289,11 +289,23 @@ class AirframeTest extends AirframeSpec {
         Airframe.newDesign
         .bind[EagerSingleton].toEagerSingleton
         .newSession
-
       val current = System.nanoTime()
       val s = session.build[EagerSingleton]
       s.initializedTime should be > start
       s.initializedTime should be < current
+    }
+
+    "create eager singleton type" taggedAs("to-singleton") in {
+      val d = Airframe.newDesign
+              .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+              .bind[Printer].toEagerSingletonOf[ConsolePrinter]
+
+      val p = d.build[Printer]
+      p.getClass shouldBe classOf[ConsolePrinter]
+
+      val d2 = d.bind[Printer].toSingletonOf[ConsolePrinter]
+      val ho = d2.build[Printer]
+      ho.getClass shouldBe classOf[ConsolePrinter]
     }
 
     trait HasCycle {
