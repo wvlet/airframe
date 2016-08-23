@@ -62,13 +62,13 @@ private[airframe] class SessionImpl(binding: Seq[Binding], var sessionListener: 
     lifeCycleManager.addShutdownHook(hook)
   }
 
-  def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
+  private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
     trace(s"get[${ev}:${tpe}]")
     newInstance(tpe, List.empty).asInstanceOf[A]
   }
 
-  def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
+  private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
     val t = ObjectType.ofTypeTag(ev)
     binding.find(_.from == t) match {
       case Some(SingletonBinding(from, to, eager)) =>

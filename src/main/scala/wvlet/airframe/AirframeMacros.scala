@@ -43,10 +43,14 @@ object AirframeMacros extends LogSupport {
       // If X is non static type (= local class or trait),
       // we need to instantiate it first in order to populate its $outer variables
       if(!a.isStatic || (a.isStatic && !a.isAbstract && hasPublicDefaultConstructor)) {
-        q"""${c.prefix}.getOrElseUpdate[$t]((new $t { protected[this] def __current_session = ${c.prefix} }).asInstanceOf[$t])"""
+        q"""{
+             ${c.prefix}.getOrElseUpdate[$t]((new $t { protected[this] def __current_session = ${c.prefix} }).asInstanceOf[$t])
+          }"""
       }
       else {
-        q"""${c.prefix}.get($ev)"""
+        q"""{
+           ${c.prefix}.get($ev)
+          }"""
       }
     )
   }
@@ -62,15 +66,13 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-  def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
+  def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
+    q"""{
          val session = wvlet.airframe.Session.findSession(this)
          session.get($ev)
         }
       """
-    )
   }
 
   def addLifeCycle(c: sm.Context): c.Tree = {
