@@ -24,9 +24,13 @@ object AirframeMacros extends LogSupport {
     import c.universe._
     val t = ev.tpe.typeArgs(0)
     c.Expr(
-      // We cannot build abstract type X, so bind[X] needs to be found in the design
+      //
+      // = Abstract type
+      // We cannot build abstract type X, so bind[X].to[ConcreteType] needs to be found in the design.
+      //
+      // = Non static type
       // If X is non static type (= local class or trait),
-      // we need to instantiate it first to populate its $outer variables
+      // we need to instantiate it first in order to populate its $outer variables
       if(t.typeSymbol.isAbstract && t.typeSymbol.isStatic) {
         q"""${c.prefix}.get[$t]"""
       }

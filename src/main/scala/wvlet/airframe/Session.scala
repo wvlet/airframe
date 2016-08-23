@@ -45,7 +45,7 @@ trait Session {
   // TODO hide this method
   def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
 
-
+  // TODO This should be more generic, e.g., accept hook: A => Unit
   def addInitHook[A](hook:InitHook[A]) : Unit
   def addShutdownHook[A](hook:ShutdownHook[A]) : Unit
 
@@ -59,7 +59,7 @@ object Session extends LogSupport {
   private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
     trace(s"Find session for ${cl}")
 
-    def returnsSession(c: Class[_]) = {
+    def isSessionType(c: Class[_]) = {
       classOf[wvlet.airframe.Session].isAssignableFrom(c)
     }
 
@@ -68,8 +68,8 @@ object Session extends LogSupport {
 
     def findSessionFromMethods: Option[AnyRef => Session] =
       schema
-      .methods
-      .find(x => returnsSession(x.valueType.rawType) && x.params.isEmpty)
+      .allMethods
+      .find(x => isSessionType(x.valueType.rawType) && x.params.isEmpty)
       .map { sessionnGetter => { obj: AnyRef => sessionnGetter.invoke(obj).asInstanceOf[Session] }
       }
 
@@ -77,7 +77,7 @@ object Session extends LogSupport {
       // Find parameters
       schema
       .parameters
-      .find(p => returnsSession(p.valueType.rawType))
+      .find(p => isSessionType(p.valueType.rawType))
       .map { sessionParam => { obj: AnyRef => sessionParam.get(obj).asInstanceOf[Session] } }
     }
 
