@@ -3,7 +3,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicReference
 import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 import wvlet.obj.{ObjectMethod, ObjectSchema, ObjectType}
 
 sealed trait LifeCycleStage
@@ -13,17 +13,10 @@ case object STARTED extends LifeCycleStage
 case object STOPPING extends LifeCycleStage
 case object STOPPED extends LifeCycleStage
 
-
-object LifeCycleManager {
-  val DEFAULT_LIFECYCLE_EVENT_HANDLER =
-    ShowLifeCycleLog wraps
-      (JSR330AnnotationHandler andThen FIFOHookExecutor)
-}
-
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
+class LifeCycleManager(val eventHandler:LifeCycleEventHandler) extends LogSupport {
   self =>
 
   private val state = new AtomicReference[LifeCycleStage](INIT)
@@ -45,7 +38,6 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
 
     eventHandler.beforeStart(this)
     // Run start hooks in the registration order
-    startHook.reverse.foreach(_.execute)
     state.set(STARTED)
     eventHandler.afterStart(this)
   }
@@ -54,7 +46,6 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
     if (state.compareAndSet(STARTED, STOPPING)) {
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
-      shutdownHook.foreach(_.execute)
       state.set(STOPPED)
       eventHandler.afterShutdown(this)
     }
@@ -87,17 +78,76 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   }
 }
 
-trait LifeCycleHook {
-  def execute: Unit
+
+
+object LifeCycleManager {
+  val DEFAULT_LIFECYCLE_EVENT_HANDLER =
+    ShowLifeCycleLog wraps (
+      JSR330AnnotationHandler
+        andThen FIFOHookExecutor
+        andThen AddShutdownHook
+      )
 }
-case class EventHookHolder[A](obj: A, hook: A => Unit) extends LifeCycleHook {
-  def execute {
-    hook(obj)
+
+object ShowLifeCycleLog extends LifeCycleEventHandler {
+  private val logger = Logger.of[LifeCycleManager]
+
+  override def beforeStart(lifeCycleManager:LifeCycleManager) {
+    logger.info(s"Life cycle is starting ...")
+  }
+
+  override def afterStart(lifeCycleManager:LifeCycleManager) {
+    logger.info(s"======= STARTED =======")
+  }
+
+  override def beforeShutdown(lifeCycleManager:LifeCycleManager) {
+    logger.info(s"Stopping life cycle ...")
+  }
+
+  override def afterShutdown(lifeCycleManager:LifeCycleManager) {
+    logger.info(s"Life cycle has stopped.")
   }
 }
-case class ObjectMethodCall(obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
-  def execute {
-    method.invoke(obj)
+
+
+object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
+  override def onInit(lifeCycleManager:LifeCycleManager, t: ObjectType, injectee: AnyRef) {
+    debug(s"Injected ${t} (class: ${t.rawType}): $injectee")
+    val schema = ObjectSchema(t.rawType)
+
+    // Find JSR330 @PostConstruct annotation
+    schema
+    .allMethods
+    .filter{_.findAnnotationOf[PostConstruct].isDefined}
+    .map{x =>
+      lifeCycleManager.addInitHook(ObjectMethodCall(injectee, x))
+    }
+
+    // Find JSR330 @PreDestroy annotation
+    schema
+    .allMethods
+    .filter {_.findAnnotationOf[PreDestroy].isDefined}
+    .map { x =>
+      lifeCycleManager.addShutdownHook(ObjectMethodCall(injectee, x))
+    }
+  }
+}
+
+object FIFOHookExecutor extends LifeCycleEventHandler {
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    lifeCycleManager.startHooks.reverse.map(_.execute)
+  }
+
+  override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    lifeCycleManager.shutdownHooks.map(_.execute)
+  }
+}
+
+object AddShutdownHook extends LifeCycleEventHandler {
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    sys.addShutdownHook {
+      lifeCycleManager.shutdown
+    }
   }
 }
 
