@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
 import wvlet.obj.tag._
@@ -41,8 +42,8 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   def to[B <: A : ru.TypeTag]: Design = {
     val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-      design
+      warn(s"Binding to the same type is not allowed: ${from.name}")
+      throw new CYCLIC_DEPENDENCY(Set(to))
     }
     else {
       design.addBinding(ClassBinding(from, to))
@@ -64,8 +65,8 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   def toSingletonOf[B <: A : ru.TypeTag]: Design = {
     val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-      design
+      warn(s"Binding to the same type is not allowed: ${from.name}")
+      throw new CYCLIC_DEPENDENCY(Set(to))
     }
     else {
       design.addBinding(SingletonBinding(from, to, false))
@@ -75,8 +76,8 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = {
     val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
     if (from == to) {
-      warn(s"Binding to the same type will be ignored: ${from.name}")
-      design
+      warn(s"Binding to the same type is not allowed: ${from.name}")
+      throw new CYCLIC_DEPENDENCY(Set(to))
     }
     else {
       design.addBinding(SingletonBinding(from, to, true))
