@@ -51,11 +51,6 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
       throw new IllegalStateException(s"LifeCycle is already starting")
     }
 
-    // Add shutdown hook
-    sys.addShutdownHook {
-      self.shutdown
-    }
-
     eventHandler.beforeStart(this)
     // Run start hooks in the registration order
     state.set(STARTED)
