@@ -6,10 +6,11 @@ import wvlet.obj.ObjectType
 /**
   *
   */
-class SessionBuilder(design: Design, lifeCycleManager:LifeCycleManager = new DefaultlLifeCycleManager) extends LogSupport {
+class SessionBuilder(design: Design, lifeCycleManager:LifeCycleManager = new LifeCycleManager) extends LogSupport {
 
-  def withLifeCycleManager(newLifeCycleManager: LifeCycleManager): SessionBuilder = {
-    new SessionBuilder(design, newLifeCycleManager)
+  def withEventHandler(e:LifeCycleEventHandler): SessionBuilder = {
+    lifeCycleManager.withEventHandler(e)
+    this
   }
 
   def create: Session = {
