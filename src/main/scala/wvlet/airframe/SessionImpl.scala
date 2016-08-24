@@ -57,9 +57,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val t = ObjectType.ofTypeTag(ev)
     binding.find(_.from == t) match {
       case Some(SingletonBinding(from, to, eager)) =>
-        singletonHolder.getOrElseUpdate(to, {
-          registerInjectee(to, obj)
-        }).asInstanceOf[A]
+        singletonHolder.getOrElseUpdate(from, registerInjectee(to, obj)).asInstanceOf[A]
       case other =>
         register(obj)(ev).asInstanceOf[A]
     }
@@ -93,8 +91,8 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
         trace(s"Pre-defined instance is found for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
-        trace(s"Find a singleton for ${to}")
-        singletonHolder.getOrElseUpdate(to, buildInstance(to, to :: (t :: stack)))
+        trace(s"Found a singleton for ${from}: ${to}")
+        singletonHolder.getOrElseUpdate(from, buildInstance(to, to :: (t :: stack)))
       case b@ProviderBinding(from, provider) =>
         trace(s"Use a provider to generate ${from}: ${b}")
         registerInjectee(from, provider.apply(b.from))
