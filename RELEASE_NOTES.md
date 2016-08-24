@@ -1,3 +1,6 @@
+0.3 
+ - Support bind(ObjectType).toXXX 
+
 0.2
  - Add lifecycle manageer
  - Reorganize Session, Design classes
