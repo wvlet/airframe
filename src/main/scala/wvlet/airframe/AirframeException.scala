@@ -17,8 +17,8 @@ import wvlet.obj.ObjectType
 
 
 trait AirframeException extends Exception { self =>
-  def getCode = this.getClass.getSimpleName
-  override def toString = getMessage
+  def getCode: String = this.getClass.getSimpleName
+  override def toString: String = getMessage
 }
 
 object AirframeException {
@@ -26,10 +26,10 @@ object AirframeException {
     override def getMessage: String = s"[$getCode] ${cl}"
   }
   case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends AirframeException {
-    override def getMessage = s"[$getCode] ${deps.mkString(", ")}"
+    override def getMessage: String = s"[$getCode] ${deps.mkString(", ")}"
   }
   case class MISSING_DEPENDENCY(stack:List[ObjectType]) extends AirframeException {
-    override def getMessage = s"[$getCode] ${stack.mkString(" <- ")}"
+    override def getMessage: String = s"[$getCode] ${stack.mkString(" <- ")}"
   }
 }
 

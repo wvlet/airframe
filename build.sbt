@@ -51,6 +51,12 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
+lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
+
+compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
+
+(compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
+
 val WVLET_VERSION="0.20"
 
 lazy val airframe = Project(id = "airframe", base = file(".")).settings(

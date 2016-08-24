@@ -58,7 +58,8 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   }
 
   def shutdown {
-    if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING) || state.compareAndSet(STARTING, STOPPING)) {
+    if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
+        || state.compareAndSet(STARTING, STOPPING)) {
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
       state.set(STOPPED)
@@ -75,8 +76,8 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   private var startHook    = List.empty[LifeCycleHook]
   private var shutdownHook = List.empty[LifeCycleHook]
 
-  def startHooks = startHook
-  def shutdownHooks = shutdownHook
+  def startHooks: List[LifeCycleHook] = startHook
+  def shutdownHooks: List[LifeCycleHook] = shutdownHook
 
   def addStartHook(h: LifeCycleHook) {
     trace(s"Add start hook: ${h}")
@@ -94,10 +95,10 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
 }
 
 object LifeCycleManager {
-  def defaultLifeCycleEventHandler =
+  def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
-  def defaultObjectLifeCycleHandler =
+  def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
     JSR330AnnotationHandler andThen
     FIFOHookExecutor andThen
     AddShutdownHook

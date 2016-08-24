@@ -29,7 +29,8 @@ object Binder {
   case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
   case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
-  case class FactoryBinding[A, D1](from: ObjectType, d1:ObjectType, factory: D1 => A) extends Binding
+  case class FactoryBinding[A, D1](from: ObjectType, d1:ObjectType,
+      factory: D1 => A) extends Binding
 }
 
 import wvlet.airframe.Binder._

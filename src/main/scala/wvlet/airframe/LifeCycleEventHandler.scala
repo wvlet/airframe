@@ -28,51 +28,55 @@ trait LifeCycleEventHandler {
   def beforeShutdown(lifeCycleManager:LifeCycleManager) {}
   def afterShutdown(lifeCycleManager:LifeCycleManager) {}
 
-  def andThen(next : LifeCycleEventHandler) = new LifeCycleEventHandlerChain(this, next)
-  def wraps(child : LifeCycleEventHandler) = new LifeCycleEventHandlerPair(this, child)
+  def andThen(next : LifeCycleEventHandler): LifeCycleEventHandler
+    = new LifeCycleEventHandlerChain(this, next)
+  def wraps(child : LifeCycleEventHandler): LifeCycleEventHandler
+    = new LifeCycleEventHandlerPair(this, child)
 }
 
-class LifeCycleEventHandlerChain(prev:LifeCycleEventHandler, next:LifeCycleEventHandler) extends LifeCycleEventHandler {
-  override def onInit(lifeCycleManager:LifeCycleManager,t: ObjectType, injectee: AnyRef) = {
+class LifeCycleEventHandlerChain(prev:LifeCycleEventHandler, next:LifeCycleEventHandler)
+    extends LifeCycleEventHandler {
+  override def onInit(lifeCycleManager:LifeCycleManager,t: ObjectType, injectee: AnyRef): Unit = {
     prev.onInit(lifeCycleManager, t, injectee)
     next.onInit(lifeCycleManager, t, injectee)
   }
-  override def beforeStart(lifeCycleManager:LifeCycleManager) = {
+  override def beforeStart(lifeCycleManager:LifeCycleManager): Unit = {
     prev.beforeStart(lifeCycleManager)
     next.beforeStart(lifeCycleManager)
   }
-  override def afterStart(lifeCycleManager:LifeCycleManager) = {
+  override def afterStart(lifeCycleManager:LifeCycleManager): Unit = {
     prev.afterStart(lifeCycleManager)
     next.afterStart(lifeCycleManager)
   }
-  override def beforeShutdown(lifeCycleManager:LifeCycleManager) = {
+  override def beforeShutdown(lifeCycleManager:LifeCycleManager): Unit = {
     prev.beforeShutdown(lifeCycleManager)
     next.beforeShutdown(lifeCycleManager)
   }
-  override def afterShutdown(lifeCycleManager:LifeCycleManager) = {
+  override def afterShutdown(lifeCycleManager:LifeCycleManager): Unit = {
     prev.afterShutdown(lifeCycleManager)
     next.afterShutdown(lifeCycleManager)
   }
 }
 
-class LifeCycleEventHandlerPair(parent:LifeCycleEventHandler, child:LifeCycleEventHandler) extends LifeCycleEventHandler {
-  override def onInit(lifeCycleManager:LifeCycleManager,t: ObjectType, injectee: AnyRef) = {
+class LifeCycleEventHandlerPair(parent:LifeCycleEventHandler, child:LifeCycleEventHandler)
+    extends LifeCycleEventHandler {
+  override def onInit(lifeCycleManager:LifeCycleManager,t: ObjectType, injectee: AnyRef): Unit = {
     parent.onInit(lifeCycleManager, t, injectee)
     child.onInit(lifeCycleManager, t, injectee)
   }
-  override def beforeStart(lifeCycleManager:LifeCycleManager) = {
+  override def beforeStart(lifeCycleManager:LifeCycleManager): Unit = {
     parent.beforeStart(lifeCycleManager)
     child.beforeStart(lifeCycleManager)
   }
-  override def afterStart(lifeCycleManager:LifeCycleManager) = {
+  override def afterStart(lifeCycleManager:LifeCycleManager): Unit = {
     child.afterStart(lifeCycleManager)
     parent.afterStart(lifeCycleManager)
   }
-  override def beforeShutdown(lifeCycleManager:LifeCycleManager) = {
+  override def beforeShutdown(lifeCycleManager:LifeCycleManager): Unit = {
     parent.beforeShutdown(lifeCycleManager)
     child.beforeShutdown(lifeCycleManager)
   }
-  override def afterShutdown(lifeCycleManager:LifeCycleManager) = {
+  override def afterShutdown(lifeCycleManager:LifeCycleManager): Unit = {
     child.afterShutdown(lifeCycleManager)
     parent.afterShutdown(lifeCycleManager)
   }

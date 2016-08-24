@@ -34,8 +34,9 @@ trait Session {
   def name : String
 
   /**
-    * Build an instance of A. In general this method is necessary only when creating an entry point of
-    * your application. When feasible avoid using this method so that Airframe can inject objects where bind[X] is used.
+    * Build an instance of A. In general this method is necessary only when creating an entry
+    * point of your application. When feasible avoid using this method so that Airframe can
+    * inject objects where bind[X] is used.
     *
     * @tparam A
     * @return object
@@ -43,7 +44,8 @@ trait Session {
   def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
 
   /**
-    * Internal method for building an instance of type A. This method does not inject the session to A at first hand
+    * Internal method for building an instance of type A. This method does not inject the
+    * session to A at first hand.
     * @tparam A
     * @return
     */
@@ -88,7 +90,8 @@ object Session extends LogSupport {
   def findSession[A](enclosingObj: A): Session = {
     val cl = enclosingObj.getClass
     getSession(enclosingObj).getOrElse {
-      error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, enclosing object: ${enclosingObj}")
+      error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, " +
+        s"enclosing object: ${enclosingObj}")
       throw new MISSING_SESSION(ObjectType.of(cl))
     }
   }
