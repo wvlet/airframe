@@ -133,10 +133,10 @@ import Example._
 class Example extends AirframeSpec {
   "AirframeExample" should {
     "build new planes" in {
-      val simplePlane = simplePlaneDesign.build[AirPlane]
+      val simplePlane = simplePlaneDesign.newSession.build[AirPlane]
       simplePlane.start
 
-      val hybridPlane = hybridPlaneDesign.build[AirPlane]
+      val hybridPlane = hybridPlaneDesign.newSession.build[AirPlane]
       hybridPlane.start
     }
 

@@ -272,7 +272,7 @@ class AirframeTest extends AirframeSpec {
               .bind[Printer].to[ConsolePrinter]
               .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val m = d.build[FortunePrinterMixin]
+      val m = d.newSession.build[FortunePrinterMixin]
     }
 
     "create singleton" in {
@@ -302,11 +302,11 @@ class AirframeTest extends AirframeSpec {
               .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
               .bind[Printer].toEagerSingletonOf[ConsolePrinter]
 
-      val p = d.build[Printer]
+      val p = d.newSession.build[Printer]
       p.getClass shouldBe classOf[ConsolePrinter]
 
       val d2 = d.bind[Printer].toSingletonOf[ConsolePrinter]
-      val ho = d2.build[Printer]
+      val ho = d2.newSession.build[Printer]
       ho.getClass shouldBe classOf[ConsolePrinter]
     }
 
@@ -351,7 +351,7 @@ class AirframeTest extends AirframeSpec {
       val d = newDesign
       warn(s"Running missing dependency check")
       val caught = intercept[MISSING_DEPENDENCY] {
-        d.build[MissingDep]
+        d.newSession.build[MissingDep]
       }
       warn(s"${caught}")
       caught.stack should contain(TextType.String)
@@ -418,10 +418,10 @@ class AirframeTest extends AirframeSpec {
 
     "support injecting to a class" in {
       val d = newDesign
-      val s = d.build[ClassInjection]
+      val s = d.newSession.build[ClassInjection]
       s.obj shouldNot be(null)
 
-      d.build[NestedClassInjection]
+      d.newSession.build[NestedClassInjection]
     }
 
     "build abstract type that has concrete binding" taggedAs ("abstract") in {
@@ -460,7 +460,7 @@ class AirframeTest extends AirframeSpec {
         newDesign
         .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
 
-      val m = d.build[NonAbstractModule]
+      val m = d.newSession.build[NonAbstractModule]
       m shouldBe SingletonOfNonAbstractModules
     }
 
@@ -468,14 +468,14 @@ class AirframeTest extends AirframeSpec {
       val start = System.nanoTime()
       val d = newDesign
               .bind[EagerSingletonWithInject].toEagerSingleton
-      val s = d.build[EagerSingletonWithInject]
+      val s = d.newSession.build[EagerSingletonWithInject]
       val current = System.nanoTime()
       s.initializedTime should be > start
       s.initializedTime should be < current
     }
 
     "support postConstruct and preDestroy" taggedAs ("lifecycle") in {
-      val s = newDesign.build[LifeCycleExample]
+      val s = newDesign.newSession.build[LifeCycleExample]
       s.module.initCount.get() shouldBe 1
 
       Airframe.getCurrentSession shouldBe 'defined
@@ -505,8 +505,9 @@ class AirframeTest extends AirframeSpec {
 
       val d = d1 + d2
 
-      d.build[HeavyObject]
-      d.build[ConsoleConfig]
+      val session = d.newSession
+      session.build[HeavyObject]
+      session.build[ConsoleConfig]
     }
 
     "throw MISSING_SESSION" in {

@@ -44,8 +44,6 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
     new Design(binding :+ b)
   }
 
-  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildFromDesignImpl[A]
-
   def session: SessionBuilder = {
     new SessionBuilder(this)
   }
