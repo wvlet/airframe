@@ -37,14 +37,17 @@ object AirframeMacros extends LogSupport {
     }
     c.Expr(
       // = Abstract type
-      // We cannot build abstract type X, so bind[X].to[ConcreteType] needs to be found in the design.
+      // We cannot build abstract type X, so bind[X].to[ConcreteType]
+      // needs to be found in the design.
       //
       // = Non static type
       // If X is non static type (= local class or trait),
       // we need to instantiate it first in order to populate its $outer variables
       if(!a.isStatic || (a.isStatic && !a.isAbstract && hasPublicDefaultConstructor)) {
         q"""{
-             ${c.prefix}.getOrElseUpdate[$t]((new $t { protected[this] def __current_session = ${c.prefix} }).asInstanceOf[$t])
+             ${c.prefix}.getOrElseUpdate[$t]((new $t {
+               protected[this] def __current_session = ${c.prefix}
+             }).asInstanceOf[$t])
           }"""
       }
       else {
@@ -95,7 +98,8 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
+  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)
+      (factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
@@ -125,29 +129,34 @@ object AirframeMacros extends LogSupport {
     c.Expr(
       q"""{
          val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3})))
+         session.getOrElseUpdate($factory(session.get(${d1}),
+           session.get(${d2}), session.get(${d3})))
          }""")
   }
 
-  def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag]
+  def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
+    D3: c.WeakTypeTag, D4: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
          val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3}), session.get(${d4})))
+         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}),
+           session.get(${d3}), session.get(${d4})))
          }""")
   }
 
-  def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
+  def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
+    D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
          val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}), session.get(${d3}), session.get(${d4}), session.get(${d5})))
+         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}),
+           session.get(${d3}), session.get(${d4}), session.get(${d5})))
          }""")
   }
 

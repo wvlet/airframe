@@ -19,7 +19,9 @@ import wvlet.obj.ObjectType
 /**
   *
   */
-class SessionBuilder(design:Design, name:Option[String] = None, handler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
+class SessionBuilder(design:Design, name:Option[String] = None,
+    handler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
+    extends LogSupport {
 
   /**
     * @param e
@@ -38,7 +40,8 @@ class SessionBuilder(design:Design, name:Option[String] = None, handler:LifeCycl
     val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
       lst.last
     }
-    val keyIndex: Map[ObjectType, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val keyIndex: Map[ObjectType, Int]
+      = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     val l =  new LifeCycleManager(handler)
     val session = new SessionImpl(name, sortedBindings, l)
