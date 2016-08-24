@@ -17,15 +17,17 @@ import wvlet.airframe._
 trait App {
   val x = bind[X]
   val y = bind[Y]
-  // Do something with X and Y
+  val z = bind[Z]
+  // Do something with X, Y, and Z
 }
 ```
 - ***Design***: Describe how to provide object instances:
 ```scala
 val design : Design = 
-   Airframe.newDesign
+   newDesign
      .bind[X].toInstance(new X)  // Bind type X to a concrete instance
      .bind[Y].toSingleton        // Bind type Y to a singleton object
+     .bind[Z].to[ZImpl]          // Bind type Z to an instance of ZImpl
 ```
 - ***Build***: Create a concrete instance:
 ```scala
@@ -82,8 +84,8 @@ Using local variables is the simplest way to binding objects:
 
 ```scala
 trait FortunePrinterEmbedded {
-  protected val printer = bind[Printer]
-  protected val fortune = bind[Fortune]
+  val printer = bind[Printer]
+  val fortune = bind[Fortune]
 
   printer.print(fortune.generate)
 }
@@ -97,11 +99,11 @@ To reuse bindings, we can create XXXService traits and mix-in them to build a co
 import wvlet.airframe._
 
 trait PrinterService {
-  protected def printer = bind[Printer] // It can bind any Printer types
+  val printer = bind[Printer] // It can bind any Printer types
 }
 
 trait FortuneService {
-  protected def fortune = bind[Fortune]
+  val fortune = bind[Fortune]
 }
 
 trait FortunePrinterMixin extends PrinterService with FortuneService {
@@ -112,7 +114,7 @@ trait FortunePrinterMixin extends PrinterService with FortuneService {
 It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing: 
 ```scala
 trait CustomPrinterMixin extends FortunePrinterMixin {
-  override protected def printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
+  override val printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
 }
 ```
 
@@ -144,7 +146,7 @@ trait MyService {
   }
 }
 
-val coreDesign = Airframe.newDesign
+val coreDesign = newDesign
 val testingDesign = coreDesign.bind[String @@ Env].toInstance("test")
 val productionDesign = coreDesign.bind[String @@ Env].toInstance("production")
 ```
@@ -154,7 +156,7 @@ val productionDesign = coreDesign.bind[String @@ Env].toInstance("production")
 Before binding objects, you need to define a `Design` of dependent components. It is similar to `modules` in Guice.
 
 ```scala
-val design = Airframe.newDesign
+val design = newDesign
   .bind[Printer].to[ConsolePrinter]  // Airframe will generate an instance of ConsolePrinter by resolving its dependencies
   .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding an actual instance
 ```
@@ -162,7 +164,7 @@ val design = Airframe.newDesign
 You can also define bindings to the tagged objects:
 
 ```scala
-val design = Airframe.newDesign
+val design = newDesign
   .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
   .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
   .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
@@ -173,7 +175,7 @@ To bind a class to a singleton, use `toSingleton`:
 ```scala
 class HeavyObject extends LogSupport { /** */ }
 
-val design = Airframe.newDesign
+val design = newDesign
   .bind[HeavyOBject].toSingleton
 ````
 

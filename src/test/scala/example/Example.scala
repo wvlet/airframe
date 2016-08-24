@@ -112,7 +112,7 @@ object Example {
   }
 
   val coreDesign =
-    Airframe.newDesign
+    newDesign
     .bind[Wing @@ Left].toInstance(new Wing("left"))
     .bind[Wing @@ Right].toInstance(new Wing("right"))
     .bind[PlaneType].toInstance(PlaneType(50))
