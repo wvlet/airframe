@@ -58,17 +58,6 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-  def buildFromDesignImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
-    import c.universe._
-    val t = ev.tpe.typeArgs(0)
-    c.Expr(
-      q"""{
-          val session = ${c.prefix}.newSession
-          session.build($ev)
-        }"""
-    )
-  }
-
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
     q"""{
