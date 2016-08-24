@@ -23,6 +23,16 @@ import scala.language.experimental.macros
   *
   */
 package object airframe {
+  /**
+    * The entry point to create a new design beginning from a blanc design
+    * <code>
+    * import wvlet.airframe._
+    *
+    * val d = design.bind[X]
+    * </code>
+    */
+  def newDesign : Design = Design.blanc
+
   def bind[A:ru.TypeTag] : A = macro bindImpl[A]
   def bind[A:ru.TypeTag](factory: => A) : A = macro bind0Impl[A]
   def bind[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro bind1Impl[A, D1]

@@ -54,3 +54,7 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
     new SessionBuilder(this).create
   }
 }
+
+object Design {
+  val blanc: Design = new Design(Seq.empty)
+}
