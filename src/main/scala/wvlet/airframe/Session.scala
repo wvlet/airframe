@@ -23,7 +23,7 @@ import scala.util.Try
 
 
 /**
-  * Session manages injected objects (e.g., Sigleton)
+  * Session manages injected objects (e.g., Singleton)
   */
 trait Session {
 
@@ -50,7 +50,7 @@ trait Session {
   private[airframe] def get[A: ru.WeakTypeTag]: A
 
   /**
-    * Internal method for buildilng an instance of type A using a provider generated object.
+    * Internal method for building an instance of type A using a provider generated object.
     * @param obj
     * @tparam A
     * @return
@@ -70,7 +70,7 @@ trait Session {
 object Session extends LogSupport {
 
   /**
-    * To provide an anccess to internal Session methods (e.g, get)
+    * To provide an access to internal Session methods (e.g, get)
     * @param session
     */
   implicit class SessionAccess(session:Session) {
@@ -79,7 +79,7 @@ object Session extends LogSupport {
   }
 
   def getSession[A](enclosingObj: A): Option[Session] = {
-    require(enclosingObj != null, "enclosinbObj is null")
+    require(enclosingObj != null, "enclosingObj is null")
     findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
     }

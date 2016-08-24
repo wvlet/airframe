@@ -56,7 +56,7 @@ package object airframe {
   }
 
   import wvlet.obj.tag._
-  // Automaatically add tag
+  // Automatically add tag
   implicit def toTaggedType[A, Tag](obj:A) : A @@ Tag = obj.taggedWith[Tag]
 
 }
