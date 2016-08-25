@@ -48,11 +48,11 @@ object AirframeMacros extends LogSupport {
         // we need to instantiate it first in order to populate its $outer variables
         true
       }
-      else if (a.isAbstract) {
+      else if (a.isAbstract && hasAbstractMethods) {
         // = Abstract type
         // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
-        // needs to be found in the design unless it has the default constructor
-        hasPublicDefaultConstructor && !hasAbstractMethods
+        // needs to be found in the design
+        false
       }
       else {
         // We cannot instantiate any trait or class without the default constructor
