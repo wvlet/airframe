@@ -32,14 +32,15 @@ object AirframeMacros extends LogSupport {
     val t = ev.tpe.typeArgs(0)
     val a = t.typeSymbol
 
+    // Find the pubilc default constructor without argument list
     val hasPublicDefaultConstructor = t.members
-                                      .filter(_.isConstructor)
+                                      .find(_.isConstructor)
                                       .map(_.asMethod).exists { m =>
         m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
       }
 
     val shouldInjectSession = if(a.isStatic) {
-      if(a.isAbstract && hasPublicDefaultConstructor) {
+      if(!a.isAbstract && hasPublicDefaultConstructor) {
         true
       }
       else {
