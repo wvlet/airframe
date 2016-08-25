@@ -43,7 +43,6 @@ class ConcreteClass {
   *
   */
 class AirframeMacrosTest extends AirframeSpec {
-  Logger("wvlet.airframe").setLogLevel(LogLevel.TRACE)
   "AirframeMacro" should {
     "build trait at compile time" in {
       val session = newDesign.newSession
