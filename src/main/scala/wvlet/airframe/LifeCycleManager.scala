@@ -154,7 +154,7 @@ object FIFOHookExecutor extends LifeCycleEventHandler {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.shutdownHooks.map(_.execute)
+    lifeCycleManager.shutdownHooks.reverse.map(_.execute)
   }
 }
 
