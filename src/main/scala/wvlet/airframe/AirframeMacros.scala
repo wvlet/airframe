@@ -61,28 +61,17 @@ object AirframeMacros extends LogSupport {
     }
 
     def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
-      val t = typeEv.tpe.typeArgs(0)
-      if (shouldGenerateTrait(t)) {
-        q"""{
-          val session = ${session}
-          session.getOrElseUpdate[$t]((new $t {
-               protected[this] def __current_session = session
-             }).asInstanceOf[$t])
-          }"""
-      }
-      else {
-        q"""{
+      q"""{
             val session = ${session}
-           session.get[$t]
-           }"""
-      }
+            ${newBinder(typeEv)}(session)
+          }"""
     }
 
     def findSession : c.Tree = {
       q"wvlet.airframe.Session.findSession(this)"
     }
 
-    def bindLocal(typeEv: c.Tree): c.Tree = {
+    def newBinder(typeEv: c.Tree): c.Tree = {
       val t = typeEv.tpe.typeArgs(0)
       if (shouldGenerateTrait(t)) {
         q"""{
@@ -140,7 +129,7 @@ object AirframeMacros extends LogSupport {
   (c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val dep1 = h.bindLocal(d1)
+    val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
          session.getOrElseUpdate($factory($dep1(session)))
@@ -153,8 +142,8 @@ object AirframeMacros extends LogSupport {
   (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val dep1 = h.bindLocal(d1)
-    val dep2 = h.bindLocal(d2)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
     q"""{
          val session = ${h.findSession}
          session.getOrElseUpdate($factory($dep1(session), $dep2(session)))
@@ -167,9 +156,9 @@ object AirframeMacros extends LogSupport {
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val dep1 = h.bindLocal(d1)
-    val dep2 = h.bindLocal(d2)
-    val dep3 = h.bindLocal(d3)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
     q"""{
          val session = ${h.findSession}
          session.getOrElseUpdate($factory($dep1(session),$dep2(session),$dep3(session)))
@@ -183,10 +172,10 @@ object AirframeMacros extends LogSupport {
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val dep1 = h.bindLocal(d1)
-    val dep2 = h.bindLocal(d2)
-    val dep3 = h.bindLocal(d3)
-    val dep4 = h.bindLocal(d4)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
     q"""{
          val session = ${h.findSession}
          session.getOrElseUpdate(
@@ -203,11 +192,11 @@ object AirframeMacros extends LogSupport {
     import c.universe._
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val dep1 = h.bindLocal(d1)
-    val dep2 = h.bindLocal(d2)
-    val dep3 = h.bindLocal(d3)
-    val dep4 = h.bindLocal(d4)
-    val dep5 = h.bindLocal(d5)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
+    val dep5 = h.newBinder(d5)
     q"""{
          val session = ${h.findSession}
          session.getOrElseUpdate(
