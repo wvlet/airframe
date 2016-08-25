@@ -128,7 +128,6 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
 
 object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
   override def onInit(lifeCycleManager:LifeCycleManager, t: ObjectType, injectee: AnyRef) {
-    debug(s"Injected ${t} (class: ${t.rawType}): $injectee")
     val schema = ObjectSchema(t.rawType)
 
     // Find JSR330 @PostConstruct annotation

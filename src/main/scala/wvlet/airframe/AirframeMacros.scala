@@ -32,28 +32,45 @@ object AirframeMacros extends LogSupport {
     val t = ev.tpe.typeArgs(0)
     val a = t.typeSymbol
 
-    val hasPublicDefaultConstructor = t.members.find(_.isConstructor).map(_.asMethod).exists { m =>
-      m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+    val hasPublicDefaultConstructor = t.members
+                                      .filter(_.isConstructor)
+                                      .map(_.asMethod).exists { m =>
+        m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+      }
+
+    val shouldInjectSession = if(a.isStatic) {
+      if(a.isAbstract && hasPublicDefaultConstructor) {
+        true
+      }
+      else {
+        false
+      }
     }
+    else {
+      true
+    }
+
+    // = Abstract type
+    // We cannot build abstract type X, so bind[X].to[ConcreteType]
+    // needs to be found in the design.
+    //
+    // = Non static type
+    // If X is non static type (= local class or trait),
+    // we need to instantiate it first in order to populate its $outer variables
     c.Expr(
-      // = Abstract type
-      // We cannot build abstract type X, so bind[X].to[ConcreteType]
-      // needs to be found in the design.
-      //
-      // = Non static type
-      // If X is non static type (= local class or trait),
-      // we need to instantiate it first in order to populate its $outer variables
-      if(!a.isStatic || (a.isStatic && !a.isAbstract && hasPublicDefaultConstructor)) {
+      if(shouldInjectSession) {
         q"""{
-             ${c.prefix}.getOrElseUpdate[$t]((new $t {
-               protected[this] def __current_session = ${c.prefix}
+          val session = ${c.prefix}
+          session.getOrElseUpdate[$t]((new $t {
+               protected[this] def __current_session = session
              }).asInstanceOf[$t])
           }"""
       }
       else {
         q"""{
-           ${c.prefix}.get($ev)
-          }"""
+            val session = ${c.prefix}
+           session.get($ev)
+           }"""
       }
     )
   }
@@ -61,8 +78,8 @@ object AirframeMacros extends LogSupport {
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
     q"""{
-         val session = wvlet.airframe.Session.findSession(this)
-         session.get($ev)
+          val session = wvlet.airframe.Session.findSession(this)
+          session.get($ev)
         }
       """
   }

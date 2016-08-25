@@ -21,7 +21,6 @@ import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
-
 /**
   * Session manages injected objects (e.g., Singleton)
   */
@@ -29,9 +28,10 @@ trait Session {
 
   /**
     * Name of the session (default: object hash code)
+    *
     * @return
     */
-  def name : String
+  def name: String
 
   /**
     * Build an instance of A. In general this method is necessary only when creating an entry
@@ -46,6 +46,7 @@ trait Session {
   /**
     * Internal method for building an instance of type A. This method does not inject the
     * session to A at first hand.
+    *
     * @tparam A
     * @return
     */
@@ -53,6 +54,7 @@ trait Session {
 
   /**
     * Internal method for building an instance of type A using a provider generated object.
+    *
     * @param obj
     * @tparam A
     * @return
@@ -61,23 +63,25 @@ trait Session {
 
   /**
     * Get the object LifeCycleManager of this session.
+    *
     * @return
     */
-  def lifeCycleManager : LifeCycleManager
+  def lifeCycleManager: LifeCycleManager
 
-  def start { lifeCycleManager.start }
-  def shutdown { lifeCycleManager.shutdown }
+  def start {lifeCycleManager.start}
+  def shutdown {lifeCycleManager.shutdown}
 }
 
 object Session extends LogSupport {
 
   /**
     * To provide an access to internal Session methods (e.g, get)
+    *
     * @param session
     */
-  implicit class SessionAccess(session:Session) {
-    def get[A: ru.WeakTypeTag] : A = session.get[A]
-    def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A) : A = session.getOrElseUpdate[A](obj)
+  implicit class SessionAccess(session: Session) {
+    def get[A: ru.WeakTypeTag]: A = session.get[A]
+    def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdate[A](obj)
   }
 
   def getSession[A](enclosingObj: A): Option[Session] = {
