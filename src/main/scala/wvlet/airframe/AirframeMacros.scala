@@ -131,7 +131,7 @@ object AirframeMacros extends LogSupport {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate($factory())
+         session.getOrElseUpdate($factory)
         }
       """
   }

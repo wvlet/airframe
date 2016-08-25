@@ -53,7 +53,7 @@ trait ProviderExample {
   val c = bind[App]
 
   // Provider binding
-  val p0 = bind { () => App() }
+  val p0 = bind { App() }
   val p1 = bind { d1:D1 => App(d1) }
   val p2 = bind { (d1:D1, d2:D2) => App(d1, d2) }
   val p3 = bind { (d1:D1, d2:D2, d3:D3) => App(d1, d2, d3) }
@@ -74,7 +74,7 @@ class AirframeMacrosTest extends AirframeSpec {
 
     "build abstract trait" in {
       val session = newDesign.bind[AbstractTrait].to[ConcreteTrait]
-                    .newSessiona
+                    .newSession
 
       val t = session.build[AbstractTrait]
       val app = session.build[App2]
