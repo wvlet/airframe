@@ -61,20 +61,28 @@ object AirframeMacros extends LogSupport {
     }
 
     def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
+      q"""{
+            val session = ${session}
+            ${newBinder(typeEv)}(session)
+          }"""
+    }
+
+    def findSession : c.Tree = {
+      q"wvlet.airframe.Session.findSession(this)"
+    }
+
+    def newBinder(typeEv: c.Tree): c.Tree = {
       val t = typeEv.tpe.typeArgs(0)
       if (shouldGenerateTrait(t)) {
         q"""{
-          val session = ${session}
-          session.getOrElseUpdate[$t]((new $t {
-               protected[this] def __current_session = session
-             }).asInstanceOf[$t])
-          }"""
+             session : wvlet.airframe.Session =>
+             session.getOrElseUpdate[$t](
+              (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
+             )
+            }"""
       }
       else {
-        q"""{
-            val session = ${session}
-           session.get[$t]
-           }"""
+        q"""{ session : wvlet.airframe.Session => session.get[$t] }"""
       }
     }
   }
@@ -93,8 +101,9 @@ object AirframeMacros extends LogSupport {
 
   def addLifeCycle(c: sm.Context): c.Tree = {
     import c.universe._
+    val h = new BindHelper[c.type](c)
     q"""{
-         val session = wvlet.airframe.Session.findSession(this)
+         val session = ${h.findSession}
          new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, session)
         }
       """
@@ -102,79 +111,98 @@ object AirframeMacros extends LogSupport {
 
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
-    new BindHelper[c.type](c).bind(q"wvlet.airframe.Session.findSession(this)", ev)
+    val h = new BindHelper[c.type](c)
+    h.bind(h.findSession, ev)
   }
 
-  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Expr[A] = {
+  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this)
-         session.getOrElseUpdate($factory())
+    val h = new BindHelper[c.type](c)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate($factory)
         }
       """
-    )
   }
 
   def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
+  (c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this)
-         session.getOrElseUpdate($factory(session.get(${d1})))
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate($factory($dep1(session)))
         }
       """
-    )
-  }
+    }
 
   def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
-  (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Expr[A] = {
+  (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this);
-         c.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2})))
-         }
-        """)
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate($factory($dep1(session), $dep2(session)))
+        }
+      """
   }
 
   def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
-  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Expr[A] = {
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}),
-           session.get(${d2}), session.get(${d3})))
-         }""")
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate($factory($dep1(session),$dep2(session),$dep3(session)))
+        }
+      """
   }
 
   def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
   D3: c.WeakTypeTag, D4: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
-  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Expr[A] = {
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}),
-           session.get(${d3}), session.get(${d4})))
-         }""")
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate(
+           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
+         )
+        }
+      """
   }
 
   def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
   D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
-  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Expr[A] = {
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Tree = {
     import c.universe._
-    c.Expr(
-      q"""{
-         val session = wvlet.airframe.Session.findSession(this);
-         session.getOrElseUpdate($factory(session.get(${d1}), session.get(${d2}),
-           session.get(${d3}), session.get(${d4}), session.get(${d5})))
-         }""")
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
+    val dep5 = h.newBinder(d5)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdate(
+           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
+         )
+        }
+      """
   }
 }
