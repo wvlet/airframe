@@ -21,7 +21,7 @@ import scala.reflect.{macros => sm}
 
 object AirframeMacros extends LogSupport {
 
-  class BindHelper[C <: Context](val c: C) {
+  private[airframe] class BindHelper[C <: Context](val c: C) {
 
     def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
       import c.universe._

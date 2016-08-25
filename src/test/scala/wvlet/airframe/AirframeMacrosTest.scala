@@ -66,4 +66,3 @@ class AirframeMacrosTest extends AirframeSpec {
     }
   }
 }
-
