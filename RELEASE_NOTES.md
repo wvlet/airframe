@@ -1,3 +1,8 @@
+0.4 
+ - Improved binding performance
+ - Fix FIFO lifecycle hook executor
+ - Improved injection logging
+
 0.3 
  - Support bind(ObjectType).toXXX 
 
