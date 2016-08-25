@@ -416,7 +416,7 @@ class AirframeTest extends AirframeSpec {
       session.build[Nested]
     }
 
-    "support injecting to a class" ignore {
+    "support injecting to a class" in {
       val d = newDesign
       val s = d.newSession.build[ClassInjection]
       s.obj shouldNot be(null)
