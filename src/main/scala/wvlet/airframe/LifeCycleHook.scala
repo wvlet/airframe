@@ -15,16 +15,17 @@ package wvlet.airframe
 
 import wvlet.obj.ObjectMethod
 
-
 trait LifeCycleHook {
   def execute: Unit
 }
 case class EventHookHolder[A](obj: A, hook: A => Unit) extends LifeCycleHook {
+  override def toString : String = s"$hook"
   def execute {
     hook(obj)
   }
 }
 case class ObjectMethodCall(obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
+  override def toString : String = s"$method"
   def execute {
     method.invoke(obj)
   }

@@ -39,7 +39,7 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
   }
 
   private[airframe] def addBinding(b: Binding): Design = {
-    trace(s"Add binding: $b")
+    debug(s"Add binding: $b")
     new Design(binding :+ b)
   }
 
