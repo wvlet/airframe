@@ -32,34 +32,45 @@ object AirframeMacros extends LogSupport {
     val t = ev.tpe.typeArgs(0)
     val a = t.typeSymbol
 
-    // Find the pubilc default constructor without argument list
+    // Find the pubilc default constructor that has no arguments
     val hasPublicDefaultConstructor = t.members
                                       .find(_.isConstructor)
                                       .map(_.asMethod).exists { m =>
-        m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
-      }
+      m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+    }
 
-    val shouldInjectSession = if(a.isStatic) {
-      if(!a.isAbstract && hasPublicDefaultConstructor) {
-        true
+    val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract)
+
+    val shouldInstantiateTrait = if(!a.isStatic) {
+      // = Non static type
+      // If X is non static type (= local class or trait),
+      // we need to instantiate it first in order to populate its $outer variables
+      true
+    }
+    else {
+      if(a.isAbstract) {
+        // = Abstract type
+        // We cannot build abstract type X, so bind[X].to[ConcreteType]
+        // needs to be found in the design unless it has the default constructor
+        if(hasPublicDefaultConstructor && !hasAbstractMethods) {
+          true
+        }
+        else {
+          // This type has no default constructor nor has some abstract methods
+          false
+        }
       }
       else {
+        // We cannot instantiate any trait or class that have no default constructor
+        // So binding needs to be find
         false
       }
     }
-    else {
-      true
-    }
 
-    // = Abstract type
-    // We cannot build abstract type X, so bind[X].to[ConcreteType]
-    // needs to be found in the design.
-    //
-    // = Non static type
-    // If X is non static type (= local class or trait),
-    // we need to instantiate it first in order to populate its $outer variables
+    println(s"[$t] abstract:${a.isAbstract}, hasAbstractMethod:${hasAbstractMethods}, shouldInstantiate:${shouldInstantiateTrait}, has constructor:${hasPublicDefaultConstructor}")
+
     c.Expr(
-      if(shouldInjectSession) {
+      if(shouldInstantiateTrait) {
         q"""{
           val session = ${c.prefix}
           session.getOrElseUpdate[$t]((new $t {
