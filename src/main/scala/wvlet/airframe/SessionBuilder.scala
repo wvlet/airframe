@@ -47,7 +47,6 @@ class SessionBuilder(design:Design, name:Option[String] = None,
     val session = new SessionImpl(name, sortedBindings, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
-    Airframe.setSession(session)
     session.init
     session
   }

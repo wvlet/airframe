@@ -33,9 +33,8 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
     bind(ObjectType.of(a.tpe)).asInstanceOf[Binder[A]]
   }
 
-  def bind(t: ObjectType): Binder[_] = {
-    trace(s"Bind ${t.name} [${t.rawType}]")
-    val b = new Binder(this, t)
+  def bind(t: ObjectType): Binder[Any] = {
+    val b = new Binder[Any](this, t)
     b
   }
 

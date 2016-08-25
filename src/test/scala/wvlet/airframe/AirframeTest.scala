@@ -475,13 +475,12 @@ class AirframeTest extends AirframeSpec {
     }
 
     "support postConstruct and preDestroy" taggedAs ("lifecycle") in {
-      val s = newDesign.newSession.build[LifeCycleExample]
-      s.module.initCount.get() shouldBe 1
-
-      Airframe.getCurrentSession shouldBe 'defined
-
-      Airframe.getCurrentSession.map(_.shutdown)
-      s.module.closeCount.get() shouldBe 1
+      val session = newDesign.newSession
+      val e = session.build[LifeCycleExample]
+      e.module.initCount.get() shouldBe 1
+      session.start
+      session.shutdown
+      e.module.closeCount.get() shouldBe 1
     }
 
     "bind lifecycle code" taggedAs ("bind-init") in {

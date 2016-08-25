@@ -57,9 +57,10 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val t = ObjectType.ofTypeTag(ev)
     binding.find(_.from == t) match {
       case Some(SingletonBinding(from, to, eager)) =>
-        singletonHolder.getOrElseUpdate(to, {
-          registerInjectee(to, obj)
-        }).asInstanceOf[A]
+        singletonHolder.getOrElseUpdate(from, registerInjectee(to, obj)).asInstanceOf[A]
+      case Some(InstanceBinding(form, obj)) =>
+        // Instance is already registered in init
+        obj.asInstanceOf[A]
       case other =>
         register(obj)(ev).asInstanceOf[A]
     }
@@ -71,7 +72,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
-    trace(s"Register ${t} (${t.rawType}): ${obj}")
+    trace(s"registerInjectee(${t}, injectee:${obj}")
     Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
       case e:Throwable =>
         error(s"Error in SessionListener", e)
@@ -81,7 +82,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    debug(s"Search bindings for ${t}")
+    trace(s"Search bindings for ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
       throw new CYCLIC_DEPENDENCY(stack.toSet)
@@ -93,10 +94,10 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
         trace(s"Pre-defined instance is found for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
-        trace(s"Find a singleton for ${to}")
-        singletonHolder.getOrElseUpdate(to, buildInstance(to, to :: (t :: stack)))
+        trace(s"Found a singleton for ${from}: ${to}")
+        singletonHolder.getOrElseUpdate(from, buildInstance(to, to :: (t :: stack)))
       case b@ProviderBinding(from, provider) =>
-        trace(s"Use a provider to generate ${from}: ${b}")
+        trace(s"Using a provider to generate ${from}: ${b}")
         registerInjectee(from, provider.apply(b.from))
       case f@FactoryBinding(from, d1, factory) =>
         val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
@@ -143,19 +144,16 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
                   |    }
                   |  }
                   |}  """.stripMargin
-            trace(s"Compiling a code to embed Session:\n${code}")
+            trace(s"Compiling a code for embedding Session:\n${code}")
             // TODO use Scala macros or cache to make it efficient
             val parsed = tb.parse(code)
-            trace(s"Parsed the code: ${parsed}")
             val f = tb.eval(parsed).asInstanceOf[Session => Any]
-            trace(s"Eval: ${f}")
             val obj = f.apply(this)
             registerInjectee(t, obj)
           }
           catch {
             case e: Throwable =>
               error(s"Failed to inject Session to ${t}")
-              //trace(s"Compilation error: ${e.getMessage}", e)
               throw e
           }
       }
