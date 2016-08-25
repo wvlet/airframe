@@ -101,7 +101,7 @@ object Session extends LogSupport {
   }
 
   private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
-    trace(s"Find session for ${cl}")
+    trace(s"Checking a session for ${cl}")
 
     def isSessionType(c: Class[_]) = {
       classOf[wvlet.airframe.Session].isAssignableFrom(c)

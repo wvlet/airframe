@@ -30,6 +30,8 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConversions._
 
+  private lazy val bindingTable = binding.map(b => b.from -> b).toMap[ObjectType, Binding]
+
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any]
     = new ConcurrentHashMap[ObjectType, Any]()
 
@@ -37,25 +39,26 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   // Initialize eager singleton
   private[airframe] def init {
-    debug(s"[${name}] Init session")
+    debug(s"[${name}] Initializing")
     binding.collect {
       case s@SingletonBinding(from, to, eager) if eager =>
         singletonHolder.getOrElseUpdate(from, buildInstance(to, List(to)))
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
     }
+    debug(s"[${name}] Completed the initialization")
   }
 
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
-    debug(s"get[${ev}:${tpe}]")
+    debug(s"Get dependency [${ev.tpe}]")
     newInstance(tpe, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    debug(s"getOrElseUpdate[${ev.tpe}]")
+    debug(s"Get or update dependency [${ev.tpe}]")
     val t = ObjectType.ofTypeTag(ev)
-    binding.find(_.from == t) match {
+    bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(to, obj)).asInstanceOf[A]
       case Some(InstanceBinding(form, obj)) =>
@@ -67,7 +70,6 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    debug(s"register: ${obj}, ${ev}")
     registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
   }
 
@@ -82,16 +84,17 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    trace(s"Search bindings for ${t}")
+    trace(s"Search bindings of ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
       throw new CYCLIC_DEPENDENCY(stack.toSet)
     }
-    val obj = binding.find(_.from == t).map {
+    val obj = bindingTable.get(t).map {
       case ClassBinding(from, to) =>
+        trace(s"Found a class binding from ${from} to ${to}")
         newInstance(to, from :: stack)
       case InstanceBinding(from, obj) =>
-        trace(s"Pre-defined instance is found for ${from}")
+        trace(s"Found a pre-defined instance for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
@@ -100,16 +103,20 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
         trace(s"Using a provider to generate ${from}: ${b}")
         registerInjectee(from, provider.apply(b.from))
       case f@FactoryBinding(from, d1, factory) =>
+        trace(s"Found a factory binding for ${from}")
         val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
         registerInjectee(from, factory.asInstanceOf[Any => Any](d1Instance))
     }
 
-    val result = obj.getOrElse {buildInstance(t, t :: stack)}
+    val result = obj.getOrElse {
+      trace(s"No binding is found for ${t}")
+      buildInstance(t, t :: stack)
+    }
     result.asInstanceOf[AnyRef]
   }
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
-    debug(s"buildInstance:${t} (class:${t.rawType}), ${stack}")
+    trace(s"buildInstance ${t}, stack:${stack}")
     val schema = ObjectSchema(t.rawType)
     if (t.isPrimitive || t.isTextType) {
       // Cannot build Primitive types
@@ -118,10 +125,11 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     else {
       schema.findConstructor match {
         case Some(ctr) =>
-          val args = for (p <- schema.constructor.params) yield {
+          val ctrString = s"$t(${ctr.params.map(p => s"${p.name}:${p.valueType}").mkString(", ")})"
+          trace(s"Using the default constructor for injecting ${ctrString}")
+          val args = for (p <- ctr.params) yield {
             newInstance(p.valueType, stack)
           }
-          trace(s"Build a new instance for ${t}")
           val obj = schema.constructor.newInstance(args)
           registerInjectee(t, obj)
         case None =>
@@ -144,8 +152,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
                   |    }
                   |  }
                   |}  """.stripMargin
-            trace(s"Compiling a code for embedding Session:\n${code}")
-            // TODO use Scala macros or cache to make it efficient
+            trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
             val parsed = tb.parse(code)
             val f = tb.eval(parsed).asInstanceOf[Session => Any]
             val obj = f.apply(this)

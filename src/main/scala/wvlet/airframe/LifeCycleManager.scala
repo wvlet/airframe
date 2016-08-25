@@ -68,7 +68,7 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   }
 
   def addInitHook(h: LifeCycleHook) {
-    trace(s"Add init hook: ${h}")
+    debug(s"Add init hook: ${h}")
     // Immediately execute the init hook
     h.execute
   }
@@ -80,14 +80,14 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   def shutdownHooks: List[LifeCycleHook] = shutdownHook
 
   def addStartHook(h: LifeCycleHook) {
-    trace(s"Add start hook: ${h}")
+    debug(s"Add start hook: ${h}")
     synchronized {
       startHook = h :: startHook
     }
   }
 
   def addShutdownHook(h: LifeCycleHook) {
-    trace(s"Add shutdown hook: ${h}")
+    debug(s"Add shutdown hook: ${h}")
     synchronized {
       shutdownHook = h :: shutdownHook
     }
@@ -148,13 +148,19 @@ object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
   }
 }
 
-object FIFOHookExecutor extends LifeCycleEventHandler {
+object FIFOHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.startHooks.reverse.map(_.execute)
+    lifeCycleManager.startHooks.reverse.map { h =>
+      trace(s"Calling start hook: $h")
+      h.execute
+    }
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.shutdownHooks.reverse.map(_.execute)
+    lifeCycleManager.shutdownHooks.reverse.map { h =>
+      trace(s"Calling shutdown hook: $h")
+      h.execute
+    }
   }
 }
 
