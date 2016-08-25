@@ -14,65 +14,55 @@
 package wvlet.airframe
 
 import wvlet.log.LogSupport
-import scala.reflect.{macros => sm}
-import scala.language.experimental.macros
 
+import scala.language.experimental.macros
+import scala.reflect.macros.whitebox.Context
+import scala.reflect.{macros => sm}
 
 object AirframeMacros extends LogSupport {
 
-  /**
-    * Used when Session location is known
-    * @param c
-    * @param ev
-    * @tparam A
-    * @return
-    */
-  def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Expr[A] = {
-    import c.universe._
-    val t = ev.tpe.typeArgs(0)
-    val a = t.typeSymbol
+  class BindHelper[C <: Context](val c: C) {
 
-    // Find the pubilc default constructor that has no arguments
-    val hasPublicDefaultConstructor = t.members
-                                      .find(_.isConstructor)
-                                      .map(_.asMethod).exists { m =>
-      m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
-    }
+    def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
+      import c.universe._
 
-    val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract)
+      val t = typeEv.tpe.typeArgs(0)
+      val a = t.typeSymbol
 
-    val shouldInstantiateTrait = if(!a.isStatic) {
-      // = Non static type
-      // If X is non static type (= local class or trait),
-      // we need to instantiate it first in order to populate its $outer variables
-      true
-    }
-    else {
-      if(a.isAbstract) {
+      // Find the pubilc default constructor that has no arguments
+      val hasPublicDefaultConstructor = t.members
+                                        .find(_.isConstructor)
+                                        .map(_.asMethod).exists { m =>
+        m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+      }
+
+      val hasAbstractMethods = t.members.exists(x =>
+        x.isMethod && x.isAbstract && !x.isAbstractOverride
+      )
+
+      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.obj.tag.")
+
+      val shouldInstantiateTrait = if (!a.isStatic) {
+        // = Non static type
+        // If X is non static type (= local class or trait),
+        // we need to instantiate it first in order to populate its $outer variables
+        true
+      }
+      else if (a.isAbstract) {
         // = Abstract type
-        // We cannot build abstract type X, so bind[X].to[ConcreteType]
+        // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
         // needs to be found in the design unless it has the default constructor
-        if(hasPublicDefaultConstructor && !hasAbstractMethods) {
-          true
-        }
-        else {
-          // This type has no default constructor nor has some abstract methods
-          false
-        }
+        hasPublicDefaultConstructor && !hasAbstractMethods
       }
       else {
-        // We cannot instantiate any trait or class that have no default constructor
+        // We cannot instantiate any trait or class without the default constructor
         // So binding needs to be find
-        false
+        hasPublicDefaultConstructor
       }
-    }
 
-    println(s"[$t] abstract:${a.isAbstract}, hasAbstractMethod:${hasAbstractMethods}, shouldInstantiate:${shouldInstantiateTrait}, has constructor:${hasPublicDefaultConstructor}")
-
-    c.Expr(
-      if(shouldInstantiateTrait) {
+      if (!isTaggedType && shouldInstantiateTrait) {
         q"""{
-          val session = ${c.prefix}
+          val session = ${session}
           session.getOrElseUpdate[$t]((new $t {
                protected[this] def __current_session = session
              }).asInstanceOf[$t])
@@ -80,20 +70,28 @@ object AirframeMacros extends LogSupport {
       }
       else {
         q"""{
-            val session = ${c.prefix}
-           session.get($ev)
+            val session = ${session}
+           session.get[$t]
            }"""
       }
-    )
+    }
+  }
+
+  /**
+    * Used when Session location is known
+    *
+    * @param c
+    * @param ev
+    * @tparam A
+    * @return
+    */
+  def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
+    new BindHelper[c.type](c).bind(c.prefix.tree, ev)
   }
 
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
-    q"""{
-          val session = wvlet.airframe.Session.findSession(this)
-          session.get($ev)
-        }
-      """
+    new BindHelper[c.type](c).bind(q"wvlet.airframe.Session.findSession(this)", ev)
   }
 
   def addLifeCycle(c: sm.Context): c.Tree = {
@@ -116,8 +114,8 @@ object AirframeMacros extends LogSupport {
     )
   }
 
-  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)
-      (factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
+  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Expr[A] = {
     import c.universe._
     c.Expr(
       q"""{
@@ -153,7 +151,7 @@ object AirframeMacros extends LogSupport {
   }
 
   def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
-    D3: c.WeakTypeTag, D4: c.WeakTypeTag]
+  D3: c.WeakTypeTag, D4: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Expr[A] = {
     import c.universe._
@@ -166,7 +164,7 @@ object AirframeMacros extends LogSupport {
   }
 
   def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
-    D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
+  D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Expr[A] = {
     import c.universe._
@@ -177,5 +175,4 @@ object AirframeMacros extends LogSupport {
            session.get(${d3}), session.get(${d4}), session.get(${d5})))
          }""")
   }
-
 }
