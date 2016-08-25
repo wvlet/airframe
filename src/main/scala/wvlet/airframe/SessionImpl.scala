@@ -59,6 +59,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(to, obj)).asInstanceOf[A]
       case Some(InstanceBinding(form, obj)) =>
+        // Instance is already registered in init
         obj.asInstanceOf[A]
       case other =>
         register(obj)(ev).asInstanceOf[A]
