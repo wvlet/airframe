@@ -22,11 +22,9 @@ import scala.reflect.{macros => sm}
 object AirframeMacros extends LogSupport {
 
   private[airframe] class BindHelper[C <: Context](val c: C) {
+    import c.universe._
 
-    def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
-      import c.universe._
-
-      val t = typeEv.tpe.typeArgs(0)
+    def shouldGenerateTrait(t:c.Type) : Boolean = {
       val a = t.typeSymbol
 
       // Find the pubilc default constructor that has no arguments
@@ -59,8 +57,12 @@ object AirframeMacros extends LogSupport {
         // So binding needs to be find
         hasPublicDefaultConstructor
       }
+      !isTaggedType && shouldInstantiateTrait
+    }
 
-      if (!isTaggedType && shouldInstantiateTrait) {
+    def bind(session: c.Tree, typeEv: c.Tree): c.Tree = {
+      val t = typeEv.tpe.typeArgs(0)
+      if (shouldGenerateTrait(t)) {
         q"""{
           val session = ${session}
           session.getOrElseUpdate[$t]((new $t {
@@ -89,11 +91,6 @@ object AirframeMacros extends LogSupport {
     new BindHelper[c.type](c).bind(c.prefix.tree, ev)
   }
 
-  def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
-    import c.universe._
-    new BindHelper[c.type](c).bind(q"wvlet.airframe.Session.findSession(this)", ev)
-  }
-
   def addLifeCycle(c: sm.Context): c.Tree = {
     import c.universe._
     q"""{
@@ -101,6 +98,11 @@ object AirframeMacros extends LogSupport {
          new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, session)
         }
       """
+  }
+
+  def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
+    import c.universe._
+    new BindHelper[c.type](c).bind(q"wvlet.airframe.Session.findSession(this)", ev)
   }
 
   def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Expr[A] = {
