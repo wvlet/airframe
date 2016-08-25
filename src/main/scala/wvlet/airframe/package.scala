@@ -34,7 +34,7 @@ package object airframe {
   def newDesign : Design = Design.blanc
 
   def bind[A:ru.TypeTag] : A = macro bindImpl[A]
-  def bind[A:ru.TypeTag](factory: => A) : A = macro bind0Impl[A]
+  def bind[A:ru.TypeTag](factory: () => A) : A = macro bind0Impl[A]
   def bind[A:ru.TypeTag, D1:ru.TypeTag](factory:D1 => A) : A = macro bind1Impl[A, D1]
   def bind[A:ru.TypeTag, D1:ru.TypeTag, D2:ru.TypeTag]
     (factory:(D1, D2) => A) : A = macro bind2Impl[A, D1, D2]
@@ -73,7 +73,4 @@ package object airframe {
   import wvlet.obj.tag._
   // Automatically add tag
   implicit def toTaggedType[A, Tag](obj:A) : A @@ Tag = obj.taggedWith[Tag]
-
 }
-
-
