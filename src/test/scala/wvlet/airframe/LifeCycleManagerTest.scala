@@ -86,6 +86,4 @@ class LifeCycleManagerTest extends AirframeSpec {
       u2.counter.shutdownCount shouldBe 1
     }
   }
-
-
 }
