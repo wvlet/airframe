@@ -37,14 +37,16 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   def name : String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
-  // Initialize eager singleton
+  // Initialize eager singleton, pre-defined instances, eager singleton providers
   private[airframe] def init {
     debug(s"[${name}] Initializing")
     binding.collect {
       case s@SingletonBinding(from, to, eager) if eager =>
-        singletonHolder.getOrElseUpdate(from, buildInstance(to, List(to)))
+        newInstance(from, List.empty)
       case InstanceBinding(from, obj) =>
         registerInjectee(from, obj)
+      case ProviderBinding(factory, provideSingleton, eager) if eager =>
+        newInstance(factory.from, List.empty)
     }
     debug(s"[${name}] Completed the initialization")
   }
@@ -99,7 +101,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
       case SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
         singletonHolder.getOrElseUpdate(from, buildInstance(to, to :: (t :: stack)))
-      case p@ProviderBinding(factory, provideSingleton) =>
+      case p@ProviderBinding(factory, provideSingleton, eager) =>
         trace(s"Found a provider for ${p.from}: ${p}")
         def buildWithProvider : AnyRef = {
           val dependencies = for (d <- factory.dependencyTypes) yield {

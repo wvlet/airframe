@@ -210,6 +210,53 @@ class ProviderTest extends AirframeSpec {
       p5 shouldNot be theSameInstanceAs s5.build[App]
     }
 
+    "eagerly build singleton from provider" in {
+      var p1Initialized = false
+      val s1 = providerDesign
+               .bind[App].toEagerSingletonProvider { d1: D1 => p1Initialized = true; App(d1) }
+               .newSession
+      p1Initialized shouldBe true
+      val p1 = s1.build[App]
+      p1 shouldBe App(d1, z2, z3, z4, z5)
+      p1 should be theSameInstanceAs s1.build[App]
+
+      var p2Initialized = false
+      val s2 = providerDesign
+               .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2) => p2Initialized = true; App(d1, d2) }
+               .newSession
+      p2Initialized shouldBe true
+      val p2 = s2.build[App]
+      p2 shouldBe App(d1, d2, z3, z4, z5)
+      p2 should be theSameInstanceAs s2.build[App]
+
+      var p3Initialized = false
+      val s3 = providerDesign
+               .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3) => p3Initialized = true; App(d1, d2, d3) }
+               .newSession
+      p3Initialized shouldBe true
+      val p3 = s3.build[App]
+      p3 shouldBe App(d1, d2, d3, z4, z5)
+      p3 should be theSameInstanceAs s3.build[App]
+
+      var p4Initialized = false
+      val s4 = providerDesign
+               .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3, d4: D4) => p4Initialized = true; App(d1, d2, d3, d4) }
+               .newSession
+      p4Initialized shouldBe true
+      val p4 = s4.build[App]
+      p4 shouldBe App(d1, d2, d3, d4, z5)
+      p4 should be theSameInstanceAs s4.build[App]
+
+      var p5Initialized = false
+      val s5 = providerDesign
+               .bind[App].toEagerSingletonProvider { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) => p5Initialized = true; App(d1, d2, d3, d4, d5) }
+               .newSession
+      p5Initialized shouldBe true
+      val p5 = s5.build[App]
+      p5 shouldBe App(d1, d2, d3, d4, d5)
+      p5 should be theSameInstanceAs s5.build[App]
+    }
+
     "serializable" in {
       val testBinderDesign =
         providerDesign
