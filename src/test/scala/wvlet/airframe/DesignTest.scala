@@ -21,8 +21,8 @@ import wvlet.obj.tag.@@
 trait Message
 case class Hello(message: String) extends Message
 trait Production
-
 trait Development
+
 /**
   *
   */
@@ -30,9 +30,12 @@ class DesignTest extends AirframeSpec {
 
   val d0 = Design.blanc
   val d1 =
-    d0.bind[Hello].toInstance(Hello("world"))
+    d0
+    .bind[Message].to[Hello]
+    .bind[Hello].toInstance(Hello("world"))
     .bind[Message].toSingleton
     .bind[Message].toEagerSingleton
+    .bind[Message].toEagerSingletonOf[Hello]
     .bind[Message].toSingletonOf[Hello]
     .bind[Message @@ Production].toInstance(Hello("production"))
     .bind[Message @@ Development].toInstance(Hello("development"))
