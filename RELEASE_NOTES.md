@@ -1,3 +1,8 @@
+0.5 
+ - Fix a bug in FILO order init/shutdown when objects are singleton
+ - Add toProvider/toSingletonProvider/toEagerSingletonProvider
+ - Add Design.remove[X]
+
 0.4 
  - Improved binding performance
  - Fix FIFO lifecycle hook executor
