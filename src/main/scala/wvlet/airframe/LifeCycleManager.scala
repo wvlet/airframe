@@ -166,7 +166,11 @@ object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
 }
 
 /**
-  * First in, last
+  * First In, Last Out (FILO) hook executor.
+  *
+  * If objects are injected in A -> B -> C order, init an shutdown orders will be:
+  * init => A -> B -> C
+  * shutdown order => C -> B -> A
   */
 object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
