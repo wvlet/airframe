@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 trait NonAbstractTrait extends LogSupport {
@@ -75,6 +77,7 @@ object ProviderExample {
   def provider3(d1:D1, d2:D2, D3:D3) : App = App(d1, d2, d3)
   def provider4(d1:D1,d2:D2, d3:D3, d4:D4) : App = App(d1, d2, d3, d4)
   def provider5(d1:D1,d2:D2, d3:D3, d4:D4, d5:D5) : App = App(d1, d2, d3, d4, d5)
+
 }
 
 import ProviderExample._
@@ -251,6 +254,27 @@ class AirframeMacrosTest extends AirframeSpec {
       val p5 = s5.build[App]
       p5 shouldBe App(d1, d2, d3, d4, d5)
       p5 shouldNot be theSameInstanceAs s5.build[App]
+    }
+
+    "serializable" in {
+      val testBinderDesign =
+        providerDesign
+        .bind[App].toProvider(provider1 _)
+        .bind[App].toProvider(provider2 _)
+        .bind[App].toProvider(provider3 _)
+        .bind[App].toProvider(provider4 _)
+        .bind[App].toProvider(provider5 _)
+
+      val b = new ByteArrayOutputStream()
+      val oo = new ObjectOutputStream(b)
+      oo.writeObject(testBinderDesign)
+      oo.close()
+
+      val oin = new ObjectInputStream(new ByteArrayInputStream(b.toByteArray))
+      val d = oin.readObject().asInstanceOf[Design]
+
+      val app = d.newSession.build[App]
+      app shouldBe App(d1, d2, d3, d4, d5)
     }
   }
 }
