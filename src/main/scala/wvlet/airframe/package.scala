@@ -15,6 +15,7 @@ package wvlet
 
 import wvlet.airframe.AirframeMacros._
 import wvlet.log.LogSupport
+import wvlet.obj.ObjectType
 
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
@@ -52,17 +53,18 @@ package object airframe {
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle
   }
 
-  class LifeCycleBinder[A](dep: A, session: Session) {
+  class LifeCycleBinder[A: ru.TypeTag](dep: A, session: Session) {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
               shutdown: A => Unit = DO_NOTHING): A = {
-      if (init != DO_NOTHING) {
-        session.lifeCycleManager.addInitHook(EventHookHolder(dep, init))
+      val tpe = ObjectType.of(implicitly[ru.TypeTag[A]].tpe)
+            if (!(init eq DO_NOTHING)) {
+        session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
       }
-      if (start != DO_NOTHING) {
-        session.lifeCycleManager.addStartHook(EventHookHolder(dep, start))
+      if (!(start eq DO_NOTHING)) {
+        session.lifeCycleManager.addStartHook(EventHookHolder(tpe, dep, start))
       }
-      if (shutdown != DO_NOTHING) {
-        session.lifeCycleManager.addShutdownHook(EventHookHolder(dep, shutdown))
+      if (!(shutdown eq DO_NOTHING)) {
+        session.lifeCycleManager.addShutdownHook(EventHookHolder(tpe, dep, shutdown))
       }
       dep
     }

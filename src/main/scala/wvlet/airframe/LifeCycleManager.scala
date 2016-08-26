@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicReference
 import javax.annotation.{PostConstruct, PreDestroy}
 
+import wvlet.airframe.Binder.{ProviderBinding, SingletonBinding}
 import wvlet.log.{LogSupport, Logger}
 import wvlet.obj.{ObjectMethod, ObjectSchema, ObjectType}
 
@@ -80,16 +81,32 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
   def shutdownHooks: Seq[LifeCycleHook] = shutdownHook
 
   def addStartHook(h: LifeCycleHook) {
-    debug(s"Add start hook: ${h}")
     synchronized {
-      startHook :+= h
+      val canAddHook = session.getBindingOf(h.tpe) match {
+        case Some(b) if b.forSingleton =>
+          !startHook.exists(_.tpe == h.tpe)
+        case other =>
+          true
+      }
+      if(canAddHook) {
+        debug(s"Add start hook: ${h}")
+        startHook :+= h
+      }
     }
   }
 
   def addShutdownHook(h: LifeCycleHook) {
-    debug(s"Add shutdown hook: ${h}")
     synchronized {
-      shutdownHook :+= h
+      val canAddHook = session.getBindingOf(h.tpe) match {
+        case Some(b) if b.forSingleton =>
+          !shutdownHook.exists(_.tpe == h.tpe)
+        case other =>
+          true
+      }
+      if (canAddHook) {
+        debug(s"Add shutdown hook: ${h}")
+        shutdownHook :+= h
+      }
     }
   }
 }
@@ -100,7 +117,7 @@ object LifeCycleManager {
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
     LifeCycleAnnotationFinder andThen
-    FIFOHookExecutor andThen
+      FILOLifeCycleHookExecutor andThen
     AddShutdownHook
 
 }
@@ -128,14 +145,14 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
 
 object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
   override def onInit(lifeCycleManager:LifeCycleManager, t: ObjectType, injectee: AnyRef) {
-    val schema = ObjectSchema(t.rawType)
+    val schema = ObjectSchema(injectee.getClass)
 
     // Find @PostConstruct annotation
     schema
     .allMethods
     .filter{_.findAnnotationOf[PostConstruct].isDefined}
     .map{x =>
-      lifeCycleManager.addInitHook(ObjectMethodCall(injectee, x))
+      lifeCycleManager.addInitHook(ObjectMethodCall(t, injectee, x))
     }
 
     // Find @PreDestroy annotation
@@ -143,12 +160,15 @@ object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
     .allMethods
     .filter {_.findAnnotationOf[PreDestroy].isDefined}
     .map { x =>
-      lifeCycleManager.addShutdownHook(ObjectMethodCall(injectee, x))
+      lifeCycleManager.addShutdownHook(ObjectMethodCall(t, injectee, x))
     }
   }
 }
 
-object FIFOHookExecutor extends LifeCycleEventHandler with LogSupport {
+/**
+  * First in, last
+  */
+object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     lifeCycleManager.startHooks.map { h =>
       trace(s"Calling start hook: $h")
@@ -157,7 +177,7 @@ object FIFOHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.shutdownHooks.map { h =>
+    lifeCycleManager.shutdownHooks.reverse.map { h =>
       trace(s"Calling shutdown hook: $h")
       h.execute
     }
