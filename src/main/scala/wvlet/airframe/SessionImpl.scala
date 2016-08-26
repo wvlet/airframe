@@ -77,7 +77,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     trace(s"registerInjectee(${t}, injectee:${obj}")
     Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
       case e:Throwable =>
-        error(s"Error in SessionListener", e)
+        error(s"Error occurred while executing onInit(${t}, ${obj})", e)
         throw e
     }
     obj.asInstanceOf[AnyRef]
@@ -99,13 +99,20 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
       case SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
         singletonHolder.getOrElseUpdate(from, buildInstance(to, to :: (t :: stack)))
-      case b@ProviderBinding(from, provider) =>
-        trace(s"Using a provider to generate ${from}: ${b}")
-        registerInjectee(from, provider.apply(b.from))
-      case f@FactoryBinding(from, d1, factory) =>
-        trace(s"Found a factory binding for ${from}")
-        val d1Instance = getOrElseUpdate(newInstance(d1, List.empty))
-        registerInjectee(from, factory.asInstanceOf[Any => Any](d1Instance))
+      case p@ProviderBinding(factory, provideSingleton) =>
+        trace(s"Found a provider for ${p.from}: ${p}")
+        def buildWithProvider : AnyRef = {
+          val dependencies = for (d <- factory.dependencyTypes) yield {
+            getOrElseUpdate(newInstance(d, List.empty))
+          }
+          registerInjectee(p.from, factory.create(dependencies))
+        }
+        if(provideSingleton) {
+          singletonHolder.getOrElseUpdate(p.from, buildWithProvider)
+        }
+        else {
+          buildWithProvider
+        }
     }
 
     val result = obj.getOrElse {

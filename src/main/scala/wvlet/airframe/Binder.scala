@@ -16,9 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
-import wvlet.obj.tag._
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 object Binder {
@@ -28,9 +26,35 @@ object Binder {
   case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
   case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding
-  case class ProviderBinding[A](from: ObjectType, provider: ObjectType => A) extends Binding
-  case class FactoryBinding[A, D1](from: ObjectType, d1:ObjectType,
-      factory: D1 => A) extends Binding
+  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean)
+    extends Binding {
+    def from: ObjectType = factory.from
+  }
+
+  trait DependencyFactory {
+    def from: ObjectType
+    def dependencyTypes: Seq[ObjectType]
+    def create(args: Seq[Any]): Any
+  }
+  case class DependencyFactory1[A, D1](from: ObjectType, d1: ObjectType, factory: D1 => A)
+    extends DependencyFactory {
+    override def dependencyTypes: Seq[ObjectType] = Seq(d1)
+    def create(args: Seq[Any]): Any = {
+      require(args.length == 1)
+      factory.asInstanceOf[Any => Any](args(0))
+    }
+  }
+  case class DependencyFactory2[A, D1, D2](from: ObjectType,
+                                           d1: ObjectType,
+                                           d2: ObjectType,
+                                           factory: (D1, D2) => A)
+    extends DependencyFactory {
+    override def dependencyTypes: Seq[ObjectType] = Seq(d1, d2)
+    def create(args: Seq[Any]): Any = {
+      require(args.length == 2)
+      factory.asInstanceOf[(Any, Any) => Any](args(0), args(1))
+    }
+  }
 }
 
 import wvlet.airframe.Binder._
@@ -53,14 +77,6 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
   def toInstance(any: A): Design = {
     design.addBinding(InstanceBinding(from, any))
-  }
-
-  def toProvider(provider: ObjectType => A): Design = {
-    design.addBinding(ProviderBinding(from, provider))
-  }
-
-  def toProvider[D1 : ru.TypeTag](factory: D1 => A): Design = {
-    design.addBinding(FactoryBinding(from, ObjectType.of(implicitly[ru.TypeTag[D1]].tpe), factory))
   }
 
   def toSingletonOf[B <: A : ru.TypeTag]: Design = {
@@ -91,6 +107,42 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
   def toEagerSingleton: Design = {
     design.addBinding(SingletonBinding(from, from, true))
+  }
+
+  def toProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
+    toProviderD1(factory, false)
+  }
+  def toSingletonProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
+    toProviderD1(factory, true)
+  }
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
+    toProviderD2(factory, false)
+  }
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
+    toProviderD2(factory, true)
+  }
+
+  private def toProviderD1[D1: ru.TypeTag](factory: D1 => A, singleton: Boolean): Design = {
+    design.addBinding(ProviderBinding(
+      DependencyFactory1(
+        from,
+        ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+        factory),
+      singleton
+    ))
+  }
+
+  private def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A, singleton: Boolean): Design = {
+    design.addBinding(ProviderBinding(
+      DependencyFactory2(
+        from,
+        ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+        ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
+        factory
+      ),
+      singleton
+    ))
   }
 }
 
