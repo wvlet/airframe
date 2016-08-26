@@ -31,28 +31,25 @@ object Binder {
     def from: ObjectType = factory.from
   }
 
-  trait DependencyFactory {
-    def from: ObjectType
-    def dependencyTypes: Seq[ObjectType]
-    def create(args: Seq[Any]): Any
-  }
-  case class DependencyFactory1[A, D1](from: ObjectType, d1: ObjectType, factory: D1 => A)
-    extends DependencyFactory {
-    override def dependencyTypes: Seq[ObjectType] = Seq(d1)
+  case class DependencyFactory(from: ObjectType,
+                               dependencyTypes: Seq[ObjectType],
+                               factory: Any) {
     def create(args: Seq[Any]): Any = {
-      require(args.length == 1)
-      factory.asInstanceOf[Any => Any](args(0))
-    }
-  }
-  case class DependencyFactory2[A, D1, D2](from: ObjectType,
-                                           d1: ObjectType,
-                                           d2: ObjectType,
-                                           factory: (D1, D2) => A)
-    extends DependencyFactory {
-    override def dependencyTypes: Seq[ObjectType] = Seq(d1, d2)
-    def create(args: Seq[Any]): Any = {
-      require(args.length == 2)
-      factory.asInstanceOf[(Any, Any) => Any](args(0), args(1))
+      require(args.length == dependencyTypes.length)
+      args.length match {
+        case 1 =>
+          factory.asInstanceOf[Any => Any](args(0))
+        case 2 =>
+          factory.asInstanceOf[(Any, Any) => Any](args(0), args(1))
+        case 3 =>
+          factory.asInstanceOf[(Any, Any, Any) => Any](args(0), args(1), args(2))
+        case 4 =>
+          factory.asInstanceOf[(Any, Any, Any, Any) => Any](args(0), args(1), args(2), args(3))
+        case 5 =>
+          factory.asInstanceOf[(Any, Any, Any, Any, Any) => Any](args(0), args(1), args(2), args(3), args(4))
+        case other =>
+          throw new IllegalStateException("Should never reach")
+      }
     }
   }
 }
@@ -121,26 +118,85 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
     toProviderD2(factory, true)
   }
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
+    toProviderD3(factory, false)
+  }
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
+    toProviderD3(factory, true)
+  }
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
+    toProviderD4(factory, false)
+  }
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
+    toProviderD4(factory, true)
+  }
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag](factory: (D1, D2, D3, D4, D5) => A): Design = {
+    toProviderD5(factory, false)
+  }
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag](factory: (D1, D2, D3, D4, D5) => A): Design = {
+    toProviderD5(factory, true)
+  }
 
   private def toProviderD1[D1: ru.TypeTag](factory: D1 => A, singleton: Boolean): Design = {
     design.addBinding(ProviderBinding(
-      DependencyFactory1(
+      DependencyFactory(
         from,
-        ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+        Seq(ObjectType.of(implicitly[ru.TypeTag[D1]].tpe)),
         factory),
       singleton
     ))
   }
 
-  private def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag]
-  (factory: (D1, D2) => A, singleton: Boolean): Design = {
+  private def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A, singleton: Boolean): Design = {
     design.addBinding(ProviderBinding(
-      DependencyFactory2(
+      DependencyFactory(
         from,
-        ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
-        ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
-        factory
-      ),
+        Seq(
+          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe)),
+        factory),
+      singleton
+    ))
+  }
+
+  private def toProviderD3[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A, singleton: Boolean): Design = {
+    design.addBinding(ProviderBinding(
+      DependencyFactory(
+        from,
+        Seq(
+          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe)),
+        factory),
+      singleton
+    ))
+  }
+
+  private def toProviderD4[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A, singleton: Boolean): Design = {
+    design.addBinding(ProviderBinding(
+      DependencyFactory(
+        from,
+        Seq(
+          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D4]].tpe)),
+        factory),
+      singleton
+    ))
+  }
+
+  private def toProviderD5[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag](factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean): Design = {
+    design.addBinding(ProviderBinding(
+      DependencyFactory(
+        from,
+        Seq(
+          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D4]].tpe),
+          ObjectType.of(implicitly[ru.TypeTag[D5]].tpe)),
+        factory),
       singleton
     ))
   }

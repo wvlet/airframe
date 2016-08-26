@@ -39,14 +39,39 @@ class ConcreteClass {
   val t = bind[NonAbstractTrait]
 }
 
-case class D1(id:Int)
-case class D2(id:Int)
-case class D3(id:Int)
-case class D4(id:Int)
-case class D5(id:Int)
-case class App(d1:D1=D1(0), d2:D2=D2(0), d3:D3=D3(0), d4:D4=D4(0), d5:D5=D5(0)) extends LogSupport {
-  debug(s"Created ${toString()}")
+
+object ProviderExample {
+  case class D1(id:Int)
+  case class D2(id:Int)
+  case class D3(id:Int)
+  case class D4(id:Int)
+  case class D5(id:Int)
+  case class App(d1:D1=D1(0), d2:D2=D2(0), d3:D3=D3(0), d4:D4=D4(0), d5:D5=D5(0)) extends LogSupport {
+    debug(s"Created ${toString()}")
+  }
+
+  val d1 = D1(1)
+  val d2 = D2(2)
+  val d3 = D3(3)
+  val d4 = D4(4)
+  val d5 = D5(5)
+
+  val z1 = D1(0)
+  val z2 = D2(0)
+  val z3 = D3(0)
+  val z4 = D4(0)
+  val z5 = D5(0)
+
+  val providerDesign =
+    newDesign
+    .bind[D1].toInstance(d1)
+    .bind[D2].toInstance(d2)
+    .bind[D3].toInstance(d3)
+    .bind[D4].toInstance(d4)
+    .bind[D5].toInstance(d5)
 }
+
+import ProviderExample._
 
 trait ProviderExample {
   // Constructor binding
@@ -87,25 +112,7 @@ class AirframeMacrosTest extends AirframeSpec {
     }
 
     "build object with provider" taggedAs("provider") in {
-      val d1 = D1(1)
-      val d2 = D2(2)
-      val d3 = D3(3)
-      val d4 = D4(4)
-      val d5 = D5(5)
-
-      val z1 = D1(0)
-      val z2 = D2(0)
-      val z3 = D3(0)
-      val z4 = D4(0)
-      val z5 = D5(0)
-
-      val p = newDesign
-              .bind[D1].toInstance(d1)
-              .bind[D2].toInstance(d2)
-              .bind[D3].toInstance(d3)
-              .bind[D4].toInstance(d4)
-              .bind[D5].toInstance(d5)
-              .newSession.build[ProviderExample]
+      val p = providerDesign.newSession.build[ProviderExample]
 
       p.c shouldBe App(d1, d2, d3, d4, d5)
       p.p0 shouldBe App(z1, z2, z3, z4, z5)
@@ -114,6 +121,70 @@ class AirframeMacrosTest extends AirframeSpec {
       p.p3 shouldBe App(d1, d2, d3, z4, z5)
       p.p4 shouldBe App(d1, d2, d3, d4, z5)
       p.p5 shouldBe App(d1, d2, d3, d4, d5)
+    }
+
+    "build object from provider bindings" taggedAs("provider-binding") in {
+      val p1 = providerDesign
+                .bind[App].toProvider{d1:D1 => App(d1)}
+                .newSession.build[App]
+      p1 shouldBe App(d1, z2, z3, z4, z5)
+
+      val p2 = providerDesign
+               .bind[App].toProvider{(d1:D1, d2:D2) => App(d1, d2)}
+               .newSession.build[App]
+      p2 shouldBe App(d1, d2, z3, z4, z5)
+
+      val p3 = providerDesign
+               .bind[App].toProvider{(d1:D1, d2:D2, d3:D3) => App(d1, d2, d3)}
+               .newSession.build[App]
+      p3 shouldBe App(d1, d2, d3, z4, z5)
+
+      val p4 = providerDesign
+               .bind[App].toProvider{(d1:D1, d2:D2, d3:D3, d4:D4) => App(d1, d2, d3, d4)}
+               .newSession.build[App]
+      p4 shouldBe App(d1, d2, d3, d4, z5)
+
+      val p5 = providerDesign
+               .bind[App].toProvider{(d1:D1, d2:D2, d3:D3, d4:D4, d5:D5) => App(d1, d2, d3, d4, d5)}
+               .newSession.build[App]
+      p5 shouldBe App(d1, d2, d3, d4, d5)
+    }
+
+    "build singleton from provider bindings" taggedAs("singleton-provider-binding") in {
+      val s1 = providerDesign
+               .bind[App].toSingletonProvider{d1:D1 => App(d1)}
+               .newSession
+      val p1 = s1.build[App]
+      p1 shouldBe App(d1, z2, z3, z4, z5)
+      p1 should be theSameInstanceAs s1.build[App]
+
+      val s2 = providerDesign
+               .bind[App].toSingletonProvider{(d1:D1, d2:D2) => App(d1, d2)}
+               .newSession
+      val p2 = s2.build[App]
+      p2 shouldBe App(d1, d2, z3, z4, z5)
+      p2 should be theSameInstanceAs s2.build[App]
+
+      val s3 = providerDesign
+               .bind[App].toSingletonProvider{(d1:D1, d2:D2, d3:D3) => App(d1, d2, d3)}
+               .newSession
+      val p3 = s3.build[App]
+      p3 shouldBe App(d1, d2, d3, z4, z5)
+      p3 should be theSameInstanceAs s3.build[App]
+
+      val s4 = providerDesign
+               .bind[App].toSingletonProvider{(d1:D1, d2:D2, d3:D3, d4:D4) => App(d1, d2, d3, d4)}
+               .newSession
+      val p4 = s4.build[App]
+      p4 shouldBe App(d1, d2, d3, d4, z5)
+      p4 should be theSameInstanceAs s4.build[App]
+
+      val s5 = providerDesign
+               .bind[App].toSingletonProvider{(d1:D1, d2:D2, d3:D3, d4:D4, d5:D5) => App(d1, d2, d3, d4, d5)}
+               .newSession
+      val p5 = s5.build[App]
+      p5 shouldBe App(d1, d2, d3, d4, d5)
+      p5 should be theSameInstanceAs s5.build[App]
     }
   }
 }

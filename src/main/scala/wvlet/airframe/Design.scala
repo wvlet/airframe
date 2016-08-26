@@ -23,7 +23,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Immutable airframe design
   */
-case class Design(binding: Seq[Binding]) extends LogSupport {
+case class Design(binding: Vector[Binding]) extends LogSupport {
 
   def +(other: Design): Design = {
     new Design(binding ++ other.binding)
