@@ -23,14 +23,14 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Immutable airframe design
   */
-class Design(val binding: Seq[Binding]) extends LogSupport {
+case class Design(binding: Vector[Binding]) extends LogSupport {
 
   def +(other: Design): Design = {
     new Design(binding ++ other.binding)
   }
 
-  def bind[A](implicit a: ru.TypeTag[A]): Binder[A] = {
-    bind(ObjectType.of(a.tpe)).asInstanceOf[Binder[A]]
+  def bind[A:ru.TypeTag]: Binder[A] = {
+    bind(ObjectType.of(implicitly[ru.TypeTag[A]].tpe)).asInstanceOf[Binder[A]]
   }
 
   def bind(t: ObjectType): Binder[Any] = {
@@ -43,6 +43,11 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
     new Design(binding :+ b)
   }
 
+  def remove[A:ru.TypeTag] : Design = {
+    val target = ObjectType.of(implicitly[ru.TypeTag[A]].tpe)
+    new Design(binding.filterNot(_.from == target))
+  }
+
   def session: SessionBuilder = {
     new SessionBuilder(this)
   }
@@ -53,5 +58,5 @@ class Design(val binding: Seq[Binding]) extends LogSupport {
 }
 
 object Design {
-  val blanc: Design = new Design(Seq.empty)
+  val blanc: Design = new Design(Vector.empty)
 }
