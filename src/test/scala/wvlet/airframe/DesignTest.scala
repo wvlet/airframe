@@ -75,5 +75,14 @@ class DesignTest extends AirframeSpec {
 
       obj shouldBe (d1)
     }
+
+    "bind providers" in {
+      val d = newDesign
+              .bind[Hello].toProvider{ (m : String @@ Production) => Hello(m) }
+              .bind[String@@Production].toInstance("hello production")
+
+      val h = d.newSession.build[Hello]
+      h.message shouldBe "hello production"
+    }
   }
 }
