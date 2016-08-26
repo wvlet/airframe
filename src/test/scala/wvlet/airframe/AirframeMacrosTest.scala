@@ -69,6 +69,12 @@ object ProviderExample {
     .bind[D3].toInstance(d3)
     .bind[D4].toInstance(d4)
     .bind[D5].toInstance(d5)
+
+  def provider1(d1:D1) : App = App(d1)
+  def provider2(d1:D1, d2:D2) : App = App(d1, d2)
+  def provider3(d1:D1, d2:D2, D3:D3) : App = App(d1, d2, d3)
+  def provider4(d1:D1,d2:D2, d3:D3, d4:D4) : App = App(d1, d2, d3, d4)
+  def provider5(d1:D1,d2:D2, d3:D3, d4:D4, d5:D5) : App = App(d1, d2, d3, d4, d5)
 }
 
 import ProviderExample._
@@ -84,6 +90,13 @@ trait ProviderExample {
   val p3 = bind { (d1:D1, d2:D2, d3:D3) => App(d1, d2, d3) }
   val p4 = bind { (d1:D1, d2:D2, d3:D3, d4:D4) => App(d1, d2, d3, d4) }
   val p5 = bind { (d1:D1, d2:D2, d3:D3, d4:D4, d5:D5) => App(d1, d2, d3, d4, d5) }
+
+  // Provider ref binding
+  val pp1 = bind(provider1 _)
+  val pp2 = bind(provider2 _)
+  val pp3 = bind(provider3 _)
+  val pp4 = bind(provider4 _)
+  val pp5 = bind(provider5 _)
 }
 
 /**
@@ -121,33 +134,49 @@ class AirframeMacrosTest extends AirframeSpec {
       p.p3 shouldBe App(d1, d2, d3, z4, z5)
       p.p4 shouldBe App(d1, d2, d3, d4, z5)
       p.p5 shouldBe App(d1, d2, d3, d4, d5)
+
+      p.pp1 shouldBe App(d1, z2, z3, z4, z5)
+      p.pp2 shouldBe App(d1, d2, z3, z4, z5)
+      p.pp3 shouldBe App(d1, d2, d3, z4, z5)
+      p.pp4 shouldBe App(d1, d2, d3, d4, z5)
+      p.pp5 shouldBe App(d1, d2, d3, d4, d5)
     }
 
     "build object from provider bindings" taggedAs("provider-binding") in {
-      val p1 = providerDesign
-                .bind[App].toProvider{d1:D1 => App(d1)}
-                .newSession.build[App]
+      val s1 = providerDesign
+               .bind[App].toProvider{d1:D1 => App(d1)}
+               .newSession
+      val p1 = s1.build[App]
       p1 shouldBe App(d1, z2, z3, z4, z5)
+      p1 shouldNot be theSameInstanceAs s1.build[App]
 
-      val p2 = providerDesign
+      val s2 = providerDesign
                .bind[App].toProvider{(d1:D1, d2:D2) => App(d1, d2)}
-               .newSession.build[App]
+               .newSession
+      val p2 = s2.build[App]
       p2 shouldBe App(d1, d2, z3, z4, z5)
+      p2 shouldNot be theSameInstanceAs s2.build[App]
 
-      val p3 = providerDesign
+      val s3 = providerDesign
                .bind[App].toProvider{(d1:D1, d2:D2, d3:D3) => App(d1, d2, d3)}
-               .newSession.build[App]
+               .newSession
+      val p3 = s3.build[App]
       p3 shouldBe App(d1, d2, d3, z4, z5)
+      p3 shouldNot be theSameInstanceAs s3.build[App]
 
-      val p4 = providerDesign
+      val s4 = providerDesign
                .bind[App].toProvider{(d1:D1, d2:D2, d3:D3, d4:D4) => App(d1, d2, d3, d4)}
-               .newSession.build[App]
+               .newSession
+      val p4 = s4.build[App]
       p4 shouldBe App(d1, d2, d3, d4, z5)
+      p4 shouldNot be theSameInstanceAs s4.build[App]
 
-      val p5 = providerDesign
+      val s5 = providerDesign
                .bind[App].toProvider{(d1:D1, d2:D2, d3:D3, d4:D4, d5:D5) => App(d1, d2, d3, d4, d5)}
-               .newSession.build[App]
+               .newSession
+      val p5 = s5.build[App]
       p5 shouldBe App(d1, d2, d3, d4, d5)
+      p5 shouldNot be theSameInstanceAs s5.build[App]
     }
 
     "build singleton from provider bindings" taggedAs("singleton-provider-binding") in {
@@ -185,6 +214,43 @@ class AirframeMacrosTest extends AirframeSpec {
       val p5 = s5.build[App]
       p5 shouldBe App(d1, d2, d3, d4, d5)
       p5 should be theSameInstanceAs s5.build[App]
+    }
+
+    "build object from provider ref" taggedAs("provider-ref") in {
+      val s1 = providerDesign
+               .bind[App].toProvider(provider1 _)
+               .newSession
+      val p1 = s1.build[App]
+      p1 shouldBe App(d1, z2, z3, z4, z5)
+      p1 shouldNot be theSameInstanceAs s1.build[App]
+
+      val s2 = providerDesign
+               .bind[App].toProvider(provider2 _)
+               .newSession
+      val p2 = s2.build[App]
+      p2 shouldBe App(d1, d2, z3, z4, z5)
+      p2 shouldNot be theSameInstanceAs s2.build[App]
+
+      val s3 = providerDesign
+               .bind[App].toProvider(provider3 _)
+               .newSession
+      val p3 = s3.build[App]
+      p3 shouldBe App(d1, d2, d3, z4, z5)
+      p3 shouldNot be theSameInstanceAs s3.build[App]
+
+      val s4 = providerDesign
+               .bind[App].toProvider(provider4 _)
+               .newSession
+      val p4 = s4.build[App]
+      p4 shouldBe App(d1, d2, d3, d4, z5)
+      p4 shouldNot be theSameInstanceAs s4.build[App]
+
+      val s5 = providerDesign
+               .bind[App].toProvider(provider5 _)
+               .newSession
+      val p5 = s5.build[App]
+      p5 shouldBe App(d1, d2, d3, d4, d5)
+      p5 shouldNot be theSameInstanceAs s5.build[App]
     }
   }
 }
