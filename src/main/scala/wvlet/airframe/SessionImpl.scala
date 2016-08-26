@@ -31,6 +31,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   import scala.collection.JavaConversions._
 
   private lazy val bindingTable = binding.map(b => b.from -> b).toMap[ObjectType, Binding]
+  private[airframe] def getBindingOf(t:ObjectType) = bindingTable.get(t)
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any]
     = new ConcurrentHashMap[ObjectType, Any]()
@@ -62,7 +63,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val t = ObjectType.ofTypeTag(ev)
     bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
-        singletonHolder.getOrElseUpdate(from, registerInjectee(to, obj)).asInstanceOf[A]
+        singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
       case Some(InstanceBinding(form, obj)) =>
         // Instance is already registered in init
         obj.asInstanceOf[A]
@@ -94,18 +95,25 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val obj = bindingTable.get(t).map {
       case ClassBinding(from, to) =>
         trace(s"Found a class binding from ${from} to ${to}")
-        newInstance(to, from :: stack)
+        newInstance(to, t :: stack)
       case InstanceBinding(from, obj) =>
         trace(s"Found a pre-defined instance for ${from}")
         obj
       case SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
-        singletonHolder.getOrElseUpdate(from, buildInstance(to, to :: (t :: stack)))
+        singletonHolder.getOrElseUpdate(from, {
+          if(from == to) {
+            buildInstance(to, t :: stack)
+          }
+          else {
+            newInstance(to, t :: stack)
+          }
+        })
       case p@ProviderBinding(factory, provideSingleton, eager) =>
         trace(s"Found a provider for ${p.from}: ${p}")
         def buildWithProvider : AnyRef = {
           val dependencies = for (d <- factory.dependencyTypes) yield {
-            getOrElseUpdate(newInstance(d, List.empty))
+            getOrElseUpdate(newInstance(d, t :: stack))
           }
           registerInjectee(p.from, factory.create(dependencies))
         }

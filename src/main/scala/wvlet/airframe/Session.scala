@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import wvlet.airframe.AirframeException.MISSING_SESSION
+import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType}
 
@@ -70,6 +71,8 @@ trait Session {
 
   def start {lifeCycleManager.start}
   def shutdown {lifeCycleManager.shutdown}
+
+  private[airframe] def getBindingOf(t:ObjectType) : Option[Binding]
 }
 
 object Session extends LogSupport {
