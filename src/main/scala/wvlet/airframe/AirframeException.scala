@@ -32,4 +32,3 @@ object AirframeException {
     override def getMessage: String = s"[$getCode] ${stack.mkString(" <- ")}"
   }
 }
-

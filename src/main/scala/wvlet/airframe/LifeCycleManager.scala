@@ -73,23 +73,23 @@ class LifeCycleManager(eventHandler:LifeCycleEventHandler) extends LogSupport {
     h.execute
   }
 
-  private var startHook    = List.empty[LifeCycleHook]
-  private var shutdownHook = List.empty[LifeCycleHook]
+  private var startHook    = Vector.empty[LifeCycleHook]
+  private var shutdownHook = Vector.empty[LifeCycleHook]
 
-  def startHooks: List[LifeCycleHook] = startHook
-  def shutdownHooks: List[LifeCycleHook] = shutdownHook
+  def startHooks: Seq[LifeCycleHook] = startHook
+  def shutdownHooks: Seq[LifeCycleHook] = shutdownHook
 
   def addStartHook(h: LifeCycleHook) {
     debug(s"Add start hook: ${h}")
     synchronized {
-      startHook = h :: startHook
+      startHook :+= h
     }
   }
 
   def addShutdownHook(h: LifeCycleHook) {
     debug(s"Add shutdown hook: ${h}")
     synchronized {
-      shutdownHook = h :: shutdownHook
+      shutdownHook :+= h
     }
   }
 }
@@ -99,7 +99,7 @@ object LifeCycleManager {
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
-    JSR330AnnotationHandler andThen
+    LifeCycleAnnotationFinder andThen
     FIFOHookExecutor andThen
     AddShutdownHook
 
@@ -126,11 +126,11 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
 }
 
 
-object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
+object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
   override def onInit(lifeCycleManager:LifeCycleManager, t: ObjectType, injectee: AnyRef) {
     val schema = ObjectSchema(t.rawType)
 
-    // Find JSR330 @PostConstruct annotation
+    // Find @PostConstruct annotation
     schema
     .allMethods
     .filter{_.findAnnotationOf[PostConstruct].isDefined}
@@ -138,7 +138,7 @@ object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
       lifeCycleManager.addInitHook(ObjectMethodCall(injectee, x))
     }
 
-    // Find JSR330 @PreDestroy annotation
+    // Find @PreDestroy annotation
     schema
     .allMethods
     .filter {_.findAnnotationOf[PreDestroy].isDefined}
@@ -150,14 +150,14 @@ object JSR330AnnotationHandler extends LifeCycleEventHandler with LogSupport {
 
 object FIFOHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.startHooks.reverse.map { h =>
+    lifeCycleManager.startHooks.map { h =>
       trace(s"Calling start hook: $h")
       h.execute
     }
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.shutdownHooks.reverse.map { h =>
+    lifeCycleManager.shutdownHooks.map { h =>
       trace(s"Calling shutdown hook: $h")
       h.execute
     }

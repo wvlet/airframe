@@ -23,7 +23,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Immutable airframe design
   */
-case class Design(binding: Vector[Binding]) extends LogSupport {
+case class Design(binding: Seq[Binding]) extends LogSupport {
 
   def +(other: Design): Design = {
     new Design(binding ++ other.binding)
@@ -58,5 +58,8 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
 }
 
 object Design {
-  val blanc: Design = new Design(Vector.empty)
+  /**
+    * Empty design.
+    */
+  val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
 }

@@ -19,7 +19,7 @@ import scala.language.experimental.macros
 import scala.reflect.macros.whitebox.Context
 import scala.reflect.{macros => sm}
 
-object AirframeMacros extends LogSupport {
+private[wvlet] object AirframeMacros extends LogSupport {
 
   private[airframe] class BindHelper[C <: Context](val c: C) {
     import c.universe._
