@@ -49,8 +49,8 @@ object BindSingleton {
     }
   }
 
+  // Use bindSingleton[XY] for sharing a singleton of XY between App1 and App2
   trait XYService {
-    // Sharing a singleton of XY between App1 and App2
     val service = bindSingleton[XY]
   }
 
@@ -58,9 +58,9 @@ object BindSingleton {
   trait App2 extends XYService
 
   val session = newDesign.newSession
-  val app = session.build[App1]
-  val app2 = session.build[App2]
-  session.shutdown
+  val app = session.build[App1] // shows "Hello World!"
+  val app2 = session.build[App2] // shows nothing since XY is already initialized
+  session.shutdown // shows "Good-bye World!"
 }
 
 class BindSingleton extends AirframeSpec {
