@@ -74,6 +74,14 @@ trait ProviderExample {
   val pp3 = bind(provider3 _)
   val pp4 = bind(provider4 _)
   val pp5 = bind(provider5 _)
+
+  // Bind singleton
+  val ps0 = bindSingleton(App())
+  val ps1 = bindSingleton(provider1 _)
+  val ps2 = bindSingleton(provider2 _)
+  val ps3 = bindSingleton(provider3 _)
+  val ps4 = bindSingleton(provider4 _)
+  val ps5 = bindSingleton(provider5 _)
 }
 
 /**
@@ -276,6 +284,20 @@ class ProviderTest extends AirframeSpec {
 
       val app = d.newSession.build[App]
       app shouldBe App(d1, d2, d3, d4, d5)
+    }
+
+    "bind singletons" in {
+      val session = providerDesign.newSession
+
+      val p1 = session.build[ProviderExample]
+      val p2 = session.build[ProviderExample]
+
+      p1.ps0 shouldBe theSameInstanceAs (p2.ps0)
+      p1.ps1 shouldBe theSameInstanceAs (p2.ps1)
+      p1.ps2 shouldBe theSameInstanceAs (p2.ps2)
+      p1.ps3 shouldBe theSameInstanceAs (p2.ps3)
+      p1.ps4 shouldBe theSameInstanceAs (p2.ps4)
+      p1.ps5 shouldBe theSameInstanceAs (p2.ps5)
     }
   }
 }

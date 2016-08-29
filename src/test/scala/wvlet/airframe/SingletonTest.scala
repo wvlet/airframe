@@ -25,6 +25,8 @@ object SingletonTest {
 
   // This doesn't tell about Singleton
   trait X extends LogSupport {
+    info("new X is instantiated")
+
     val counter = bind[AtomicInteger @@ TraitCounter].withLifeCycle(
       init = { c =>
         val v = c.incrementAndGet()

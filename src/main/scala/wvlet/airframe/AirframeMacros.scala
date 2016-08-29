@@ -131,12 +131,6 @@ private[wvlet] object AirframeMacros extends LogSupport {
       """
   }
 
-  def bindSingletonImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
-    import c.universe._
-    val h = new BindHelper[c.type](c)
-    h.bindSingleton(h.findSession, ev)
-  }
-
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
@@ -233,4 +227,102 @@ private[wvlet] object AirframeMacros extends LogSupport {
         }
       """
   }
+
+  def bindSingletonImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    h.bindSingleton(h.findSession, ev)
+  }
+
+  def bind0SingletonImpl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton($factory)
+        }
+      """
+  }
+
+  def bind1SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)(a: c.Tree, d1: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton($factory($dep1(session)))
+        }
+      """
+  }
+
+  def bind2SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton($factory($dep1(session), $dep2(session)))
+        }
+      """
+  }
+
+  def bind3SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton($factory($dep1(session),$dep2(session),$dep3(session)))
+        }
+      """
+  }
+
+  def bind4SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
+  D3: c.WeakTypeTag, D4: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton(
+           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
+         )
+        }
+      """
+  }
+
+  def bind5SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
+  D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
+  (c: sm.Context)(factory: c.Tree)
+  (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Tree = {
+    import c.universe._
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    val dep1 = h.newBinder(d1)
+    val dep2 = h.newBinder(d2)
+    val dep3 = h.newBinder(d3)
+    val dep4 = h.newBinder(d4)
+    val dep5 = h.newBinder(d5)
+    q"""{
+         val session = ${h.findSession}
+         session.getOrElseUpdateSingleton(
+           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
+         )
+        }
+      """
+  }
+
 }
