@@ -461,7 +461,8 @@ class AirframeTest extends AirframeSpec {
         .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
 
       val m = d.newSession.build[NonAbstractModule]
-      m shouldBe SingletonOfNonAbstractModules
+      m shouldBe theSameInstanceAs (SingletonOfNonAbstractModules)
+
     }
 
     "create single with inject eagerly" in {

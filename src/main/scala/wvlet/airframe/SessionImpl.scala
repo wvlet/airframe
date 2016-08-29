@@ -43,11 +43,9 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     debug(s"[${name}] Initializing")
     binding.collect {
       case s@SingletonBinding(from, to, eager) if eager =>
-        newInstance(from, List.empty)
-      case InstanceBinding(from, obj) =>
-        registerInjectee(from, obj)
+        getInstance(from)
       case ProviderBinding(factory, provideSingleton, eager) if eager =>
-        newInstance(factory.from, List.empty)
+        getInstance(factory.from)
     }
     debug(s"[${name}] Completed the initialization")
   }
@@ -55,7 +53,18 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
     val tpe = ObjectType.of(ev.tpe)
     debug(s"Get dependency [${ev.tpe}]")
-    newInstance(tpe, List.empty).asInstanceOf[A]
+    getInstance(tpe, List.empty).asInstanceOf[A]
+  }
+
+  private[airframe] def getSingleton[A](implicit ev: ru.WeakTypeTag[A]): A = {
+    val tpe = ObjectType.of(ev.tpe)
+    debug(s"Get dependency [${ev.tpe}] as singleton")
+    singletonHolder.getOrElseUpdate(tpe, getInstance(tpe, List.empty)).asInstanceOf[A]
+  }
+
+  private[airframe] def getOrElseUpdateSingleton[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
+    val tpe = ObjectType.of(ev.tpe)
+    singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)(ev)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
@@ -64,11 +73,10 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
-      case Some(InstanceBinding(form, obj)) =>
-        // Instance is already registered in init
-        obj.asInstanceOf[A]
+      case Some(p@ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
+        getInstance(t).asInstanceOf[A]
       case other =>
-        register(obj)(ev).asInstanceOf[A]
+        register(obj)(ev)
     }
   }
 
@@ -86,7 +94,11 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     obj.asInstanceOf[AnyRef]
   }
 
-  private def newInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
+  private def getInstance(t: ObjectType): AnyRef = {
+    getInstance(t, List.empty)
+  }
+
+  private def getInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
     trace(s"Search bindings of ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
@@ -95,10 +107,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     val obj = bindingTable.get(t).map {
       case ClassBinding(from, to) =>
         trace(s"Found a class binding from ${from} to ${to}")
-        newInstance(to, t :: stack)
-      case InstanceBinding(from, obj) =>
-        trace(s"Found a pre-defined instance for ${from}")
-        obj
+        getInstance(to, t :: stack)
       case SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
         singletonHolder.getOrElseUpdate(from, {
@@ -106,14 +115,14 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
             buildInstance(to, t :: stack)
           }
           else {
-            newInstance(to, t :: stack)
+            getInstance(to, t :: stack)
           }
         })
       case p@ProviderBinding(factory, provideSingleton, eager) =>
         trace(s"Found a provider for ${p.from}: ${p}")
         def buildWithProvider : AnyRef = {
           val dependencies = for (d <- factory.dependencyTypes) yield {
-            getOrElseUpdate(newInstance(d, t :: stack))
+            getOrElseUpdate(getInstance(d, t :: stack))
           }
           registerInjectee(p.from, factory.create(dependencies))
         }
@@ -145,7 +154,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
           val ctrString = s"$t(${ctr.params.map(p => s"${p.name}:${p.valueType}").mkString(", ")})"
           trace(s"Using the default constructor for injecting ${ctrString}")
           val args = for (p <- ctr.params) yield {
-            newInstance(p.valueType, stack)
+            getInstance(p.valueType, stack)
           }
           val obj = schema.constructor.newInstance(args)
           registerInjectee(t, obj)

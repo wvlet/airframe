@@ -16,7 +16,7 @@ package wvlet.airframe
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
 import wvlet.airframe.ProviderExample._
-import wvlet.log.LogSupport
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 object ProviderExample {
   case class D1(id: Int)
@@ -74,6 +74,36 @@ trait ProviderExample {
   val pp3 = bind(provider3 _)
   val pp4 = bind(provider4 _)
   val pp5 = bind(provider5 _)
+}
+
+trait SingletonProviderExample {
+  // Bind singleton
+  val ps = bindSingleton[App]
+}
+
+trait PS0 {
+  val p = bindSingleton(App())
+}
+
+trait PS1 {
+  // Bind singleton
+  val p = bindSingleton(provider1 _)
+}
+
+trait PS2 {
+  val p = bindSingleton(provider2 _)
+}
+
+trait PS3 {
+  val p = bindSingleton(provider3 _)
+}
+
+trait PS4 {
+  val p = bindSingleton(provider4 _)
+}
+
+trait PS5 {
+  val p = bindSingleton(provider5 _)
 }
 
 /**
@@ -276,6 +306,26 @@ class ProviderTest extends AirframeSpec {
 
       val app = d.newSession.build[App]
       app shouldBe App(d1, d2, d3, d4, d5)
+    }
+
+    "bind singletons" taggedAs("bind-singleton") in {
+      val session = providerDesign
+                    .bind[App].toProvider(provider3 _)
+                    .newSession
+
+      val p1 = session.build[SingletonProviderExample]
+      val p2 = session.build[SingletonProviderExample]
+      p1.ps shouldBe theSameInstanceAs(p2.ps)
+      p1.ps shouldBe App(d1, d2, d3, z4, z5)
+    }
+
+    "bind singleton with provider" taggedAs("bind-singleton-provider") in {
+      providerDesign.newSession.build[PS0].p shouldBe App(z1, z2, z3, z4, z5)
+      providerDesign.newSession.build[PS1].p shouldBe App(d1, z2, z3, z4, z5)
+      providerDesign.newSession.build[PS2].p shouldBe App(d1, d2, z3, z4, z5)
+      providerDesign.newSession.build[PS3].p shouldBe App(d1, d2, d3, z4, z5)
+      providerDesign.newSession.build[PS4].p shouldBe App(d1, d2, d3, d4, z5)
+      providerDesign.newSession.build[PS5].p shouldBe App(d1, d2, d3, d4, d5)
     }
   }
 }
