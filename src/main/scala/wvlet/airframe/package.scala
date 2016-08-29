@@ -44,6 +44,8 @@ package object airframe {
   def bind[A: ru.TypeTag, D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
   (factory: (D1, D2, D3, D4, D5) => A): A = macro bind5Impl[A, D1, D2, D3, D4, D5]
 
+  def bindSingleton[A: ru.TypeTag]: A = macro bindSingletonImpl[A]
+
   private[airframe] val DO_NOTHING = { a: Any => }
 
   /**

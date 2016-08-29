@@ -25,7 +25,6 @@ object Binder {
     def from: ObjectType
   }
   case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
-  case class InstanceBinding(from: ObjectType, to: Any) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding {
     override def forSingleton: Boolean = true
   }
@@ -42,6 +41,9 @@ object Binder {
     def create(args: Seq[Any]): Any = {
       require(args.length == dependencyTypes.length)
       args.length match {
+        case 0 =>
+          // We need to copy the F0 instance in order to make Design immutable
+          factory.asInstanceOf[LazyF0[_]].copy.eval
         case 1 =>
           factory.asInstanceOf[Any => Any](args(0))
         case 2 =>
@@ -77,8 +79,15 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     }
   }
 
-  def toInstance(any: A): Design = {
-    design.addBinding(InstanceBinding(from, any))
+  /**
+    * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.
+    * Note that as you create a new session, new instance will be generated.
+    *
+    * @param any
+    * @return
+    */
+  def toInstance(any: => A): Design = {
+    design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true))
   }
 
   def toSingletonOf[B <: A : ru.TypeTag]: Design = {

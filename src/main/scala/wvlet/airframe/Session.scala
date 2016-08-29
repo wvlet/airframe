@@ -62,6 +62,9 @@ trait Session {
     */
   private[airframe] def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
 
+  private[airframe] def getSingleton[A: ru.WeakTypeTag]: A
+  private[airframe] def getOrElseUpdateSingleton[A: ru.WeakTypeTag](obj: => A): A
+
   /**
     * Get the object LifeCycleManager of this session.
     *
@@ -85,6 +88,8 @@ object Session extends LogSupport {
   implicit class SessionAccess(session: Session) {
     def get[A: ru.WeakTypeTag]: A = session.get[A]
     def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdate[A](obj)
+    def getSingleton[A: ru.WeakTypeTag](obj: => A): A = session.getSingleton[A]
+    def getOrElseUpdateSingleton[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdateSingleton[A](obj)
   }
 
   def getSession[A](enclosingObj: A): Option[Session] = {

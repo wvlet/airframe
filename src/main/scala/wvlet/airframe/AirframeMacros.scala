@@ -67,6 +67,13 @@ private[wvlet] object AirframeMacros extends LogSupport {
           }"""
     }
 
+    def bindSingleton(session: c.Tree, typeEv: c.Tree): c.Tree = {
+      q"""{
+            val session = ${session}
+            ${newSingletonBinder(typeEv)}(session)
+          }"""
+    }
+
     def findSession : c.Tree = {
       q"wvlet.airframe.Session.findSession(this)"
     }
@@ -83,6 +90,21 @@ private[wvlet] object AirframeMacros extends LogSupport {
       }
       else {
         q"""{ session : wvlet.airframe.Session => session.get[$t] }"""
+      }
+    }
+
+    def newSingletonBinder(typeEv: c.Tree): c.Tree = {
+      val t = typeEv.tpe.typeArgs(0)
+      if (shouldGenerateTrait(t)) {
+        q"""{
+             session : wvlet.airframe.Session =>
+             session.getOrElseUpdateSingleton[$t](
+              (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
+             )
+            }"""
+      }
+      else {
+        q"""{ session : wvlet.airframe.Session => session.getSingleton[$t] }"""
       }
     }
   }
@@ -107,6 +129,12 @@ private[wvlet] object AirframeMacros extends LogSupport {
          new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, session)
         }
       """
+  }
+
+  def bindSingletonImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    h.bindSingleton(h.findSession, ev)
   }
 
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
