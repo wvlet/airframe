@@ -1,3 +1,6 @@
+0.6
+ - Add bindSingleton[X]
+
 0.5 
  - Fix a bug in FILO order init/shutdown when objects are singleton
  - Add toProvider/toSingletonProvider/toEagerSingletonProvider
