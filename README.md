@@ -37,6 +37,36 @@ class YourApp {
 }
 ```
 
+## Configuring log levels
+
+If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
+
+```scala
+improt wvlet.log.Logger
+
+## Scan log files 
+Logger.scheduleLogLevelScan
+```
+
+***log.properties*** example:
+```
+# You can use all, trace, debug, info, warn, error, info, all as log level
+wvlet.airframe=debug
+org.eclipse.jetty=info
+org.apache.http=info
+com.amazonaws=info
+```
+The format follows [Java Properties file format](https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)).
+
+
+In default, loglevel file will be found in this order:  
+1. `log-test.properties` in the classpath. 
+2. If 1 is not found, use `log.properties` in the classpath
+
+To configure log file path, you can use `Logger.scheduleLogLevelScan(file paths, duration)`.
+
+In debugging your application, create `src/test/resources/log-test.properties` file, and
+call `Logger.scheduleLogLevelScan` before running test cases. This is useful for quickly checking the log messages. 
 
 ## Customizing log format
 
@@ -72,6 +102,7 @@ Logger.setDefaultFormatter(CustomLogFormatter)
 ```
 
 See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala).
+
 
 
 ## Internals

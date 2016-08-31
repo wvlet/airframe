@@ -55,7 +55,6 @@ object LogLevel {
     }
   }
 
-
   def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase(Locale.US))
 
   implicit object LogOrdering extends Ordering[LogLevel] {

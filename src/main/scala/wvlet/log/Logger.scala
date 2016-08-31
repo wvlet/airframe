@@ -13,13 +13,16 @@
  */
 package wvlet.log
 
-import java.util.concurrent.ConcurrentHashMap
+import java.io.{File, FileReader}
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import java.util.logging._
-import java.util.{logging => jl}
+import java.util.{Properties, logging => jl}
 
 import wvlet.log.LogFormatter.AppLogFormatter
+import wvlet.log.io.IOUtil.withResource
 
 import scala.annotation.tailrec
+import scala.concurrent.duration.Duration
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
@@ -28,7 +31,7 @@ import scala.reflect.ClassTag
   *
   * @param wrapped
   */
-class Logger(wrapped: jl.Logger) extends Serializable {
+class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
 
   import LogMacros._
 
@@ -190,6 +193,78 @@ object Logger {
 
   def resetDefaultLogLevel {
     rootLogger.resetLogLevel
+  }
+
+  /**
+    * Set log levels using a given Properties file
+    *
+    * @param file Properties file
+    */
+  def setLogLevels(file: File) {
+    val logLevels = new Properties()
+    withResource(new FileReader(file)) { in =>
+      logLevels.load(in)
+    }
+    setLogLevels(logLevels)
+  }
+
+  /**
+    * Set log levels using Properties (key: logger name, value: log level)
+    *
+    * @param logLevels
+    */
+  def setLogLevels(logLevels: Properties) {
+    for ((loggerName, level) <- logLevels.asScala) {
+      LogLevel.unapply(level) match {
+        case Some(lv) =>
+          Logger(loggerName).setLogLevel(lv)
+        case None =>
+          Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
+      }
+    }
+  }
+
+  val DEFAULT_LOGLEVEL_FILE_CANDIDATES = {
+    Seq("log-test.properties", "log.properties")
+  }
+  private var scanner: Option[LogLevelScanner] = None
+
+  /**
+    * Run the default LogLevelScanner every 1 minute
+    */
+  def scheduleLogLevelScan {
+    scheduleLogLevelScan(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES))
+  }
+
+  /**
+    *
+    * @param loglevelFileCandidaates
+    * @param scanInterval
+    */
+  def scheduleLogLevelScan(loglevelFileCandidaates: Seq[String], scanInterval: Duration) {
+    synchronized {
+      scanner match {
+        case Some(prev)
+          if prev.loglevelFileCandidates == loglevelFileCandidaates
+            && prev.scanInterval == scanInterval =>
+          // Do nothing since it uses the same configuration
+        case other =>
+          // Stop the previously running loglevel scanner if exists
+          scanner.map(_.stop)
+
+          // Create a new scanner
+          val newScanner = new LogLevelScanner(loglevelFileCandidaates, scanInterval)
+          scanner = Some(newScanner)
+          newScanner.start()
+      }
+    }
+  }
+
+  def stopScheduledLogLevelScan {
+    synchronized {
+      scanner.map(_.stop())
+      scanner = None
+    }
   }
 
   def getSuccinctLoggerName[A](cl: Class[A]): String = {
