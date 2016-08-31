@@ -60,8 +60,9 @@ The format follows [Java Properties file format](https://docs.oracle.com/javase/
 
 
 In default, loglevel file will be found in this order:  
-1. `log-test.properties` in the classpath. 
-2. If 1 is not found, use `log.properties` in the classpath
+
+ 1. `log-test.properties` in the classpath. 
+ 1. If 1. is not found, use `log.properties` in the classpath.
 
 To configure log file path, you can use `Logger.scheduleLogLevelScan(file paths, duration)`.
 
