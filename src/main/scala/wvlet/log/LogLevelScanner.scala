@@ -21,8 +21,59 @@ import wvlet.log.io.{IOUtil, Resource}
 
 import scala.concurrent.duration.Duration
 
-private[log] class LogLevelScanner(val loglevelFileCandidates: Seq[String], val scanInterval: Duration) extends Runnable {
-  private val logger = Logger("wvlet.log")
+object LogLevelScanner {
+  private val logger = Logger("wvlet.log.LogLevelScanner")
+
+  /**
+    * @param logLevelFileCandidates
+    * @param lastScannedMillis
+    * @return updated last scanned millis
+    */
+  private[log] def scan(logLevelFileCandidates: Seq[String], lastScannedMillis: Option[Long]): Option[Long] = {
+    try {
+      val logFileURL = logLevelFileCandidates
+                       .toStream
+                       .flatMap(f => Resource.find(f))
+                       .headOption
+
+      logFileURL.map { url =>
+        url.getProtocol match {
+          case "file" =>
+            val f = new File(url.toURI)
+            val lastModified = f.lastModified()
+            if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
+              Logger.setLogLevels(f)
+              Some(System.currentTimeMillis())
+            }
+            else {
+              lastScannedMillis
+            }
+          case other if lastScannedMillis.isEmpty =>
+            // non file resources found in the class path is stable, so we only need to read it once
+            IOUtil.withResource(url.openStream()) { in =>
+              val p = new Properties
+              p.load(in)
+              Logger.setLogLevels(p)
+              Some(System.currentTimeMillis())
+            }
+          case _ =>
+            None
+        }
+      }
+      .getOrElse {
+        lastScannedMillis
+      }
+    }
+    catch {
+      case e: Throwable =>
+        // We need to use the native java.util.logging.Logger since the logger macro cannot be used within the same project
+        logger.wrapped.log(LogLevel.WARN.jlLevel, s"Error occurred while scanning log properties: ${e.getMessage}", e)
+        lastScannedMillis
+    }
+  }
+}
+
+private[log] class LogLevelScanner(val logLevelFileCandidates: Seq[String], val scanInterval: Duration) extends Runnable {
 
   private val executor = Executors.newScheduledThreadPool(1, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
@@ -43,41 +94,9 @@ private[log] class LogLevelScanner(val loglevelFileCandidates: Seq[String], val 
     executor.shutdown()
   }
 
-  private var lastScanned : Option[Long] = None
+  private var lastScannedMillis: Option[Long] = None
 
   def run {
-    try {
-      val logFileURL = loglevelFileCandidates
-                       .toStream
-                       .flatMap(f => Resource.find(f))
-                       .headOption
-
-      logFileURL.map { url =>
-        url.getProtocol match {
-          case "file" =>
-            val f = new File(url.toURI)
-            val lastModified = f.lastModified()
-            if (lastScanned.isEmpty || lastScanned.get < lastModified) {
-              Logger.setLogLevels(f)
-              lastScanned = Some(System.currentTimeMillis())
-            }
-          case other =>
-            // non file resources found in the class path is stable, so we only need to read it once
-            if (lastScanned.isEmpty) {
-              IOUtil.withResource(url.openStream()) { in =>
-                val p = new Properties
-                p.load(in)
-                lastScanned = Some(System.currentTimeMillis())
-                Logger.setLogLevels(p)
-              }
-            }
-        }
-      }
-    }
-    catch {
-      case e:Throwable =>
-        // We need to use the native java.util.logging.Logger since the logger macro cannot be used within the same project
-        logger.wrapped.log(LogLevel.WARN.jlLevel,  s"Error occurred while scanning log properties: ${e.getMessage}", e)
-    }
+    lastScannedMillis = LogLevelScanner.scan(logLevelFileCandidates, lastScannedMillis)
   }
 }

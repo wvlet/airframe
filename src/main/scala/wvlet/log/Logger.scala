@@ -227,7 +227,23 @@ object Logger {
   val DEFAULT_LOGLEVEL_FILE_CANDIDATES = {
     Seq("log-test.properties", "log.properties")
   }
+
   private var scanner: Option[LogLevelScanner] = None
+
+  /**
+    * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
+    */
+  def scanLogLevels {
+    scanLogLevels(DEFAULT_LOGLEVEL_FILE_CANDIDATES)
+  }
+
+  /**
+    * Scan the specified log level file
+    * @param loglevelFileCandidates
+    */
+  def scanLogLevels(loglevelFileCandidates:Seq[String]) {
+    LogLevelScanner.scan(loglevelFileCandidates, None)
+  }
 
   /**
     * Run the default LogLevelScanner every 1 minute
@@ -238,14 +254,14 @@ object Logger {
 
   /**
     *
-    * @param loglevelFileCandidaates
+    * @param logLevelFileCandidates
     * @param scanInterval
     */
-  def scheduleLogLevelScan(loglevelFileCandidaates: Seq[String], scanInterval: Duration) {
+  def scheduleLogLevelScan(logLevelFileCandidates: Seq[String], scanInterval: Duration) {
     synchronized {
       scanner match {
         case Some(prev)
-          if prev.loglevelFileCandidates == loglevelFileCandidaates
+          if prev.logLevelFileCandidates == logLevelFileCandidates
             && prev.scanInterval == scanInterval =>
           // Do nothing since it uses the same configuration
         case other =>
@@ -253,7 +269,7 @@ object Logger {
           scanner.map(_.stop)
 
           // Create a new scanner
-          val newScanner = new LogLevelScanner(loglevelFileCandidaates, scanInterval)
+          val newScanner = new LogLevelScanner(logLevelFileCandidates, scanInterval)
           scanner = Some(newScanner)
           newScanner.start()
       }

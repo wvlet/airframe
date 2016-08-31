@@ -27,6 +27,18 @@ class LogLevelScannerTest extends Spec {
   }
 
   "LogLevelScanner" should {
+
+    "scan log levels only once" in {
+      val l = Logger("wvlet.log.test")
+      l.setLogLevel(LogLevel.WARN)
+      // Load log-test.properties
+      Logger.scanLogLevels
+
+      // Wait the first scan
+      Thread.sleep(1000)
+      l.getLogLevel shouldBe LogLevel.DEBUG
+    }
+
     "scan loglevels" in {
       val l = Logger("wvlet.log.test")
       l.setLogLevel(LogLevel.WARN)
