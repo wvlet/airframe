@@ -47,15 +47,17 @@ class LogLevelScannerTest extends Spec {
 
       // Wait the first scan
       Thread.sleep(1000)
+      Logger.stopScheduledLogLevelScan
+
       l.getLogLevel shouldBe LogLevel.DEBUG
     }
 
     "load another loglevel file" in {
       val l = Logger("wvlet.log.test")
       l.setLogLevel(LogLevel.WARN)
-
-      Logger.scheduleLogLevelScan(Seq("wvlet/log/custom-log.properties"), Duration(15, TimeUnit.SECONDS))
+      Logger.scheduleLogLevelScan(LogLevelScannerConfig(Seq("wvlet/log/custom-log.properties"), Duration(500, TimeUnit.MILLISECONDS)))
       Thread.sleep(1000)
+      Logger.stopScheduledLogLevelScan
       l.getLogLevel shouldBe LogLevel.ERROR
     }
 
@@ -63,9 +65,9 @@ class LogLevelScannerTest extends Spec {
       val l = Logger("wvlet.log.test")
       l.setLogLevel(LogLevel.TRACE)
 
-      Logger.scheduleLogLevelScan(Seq("wvlet/log/invalid-loglevel.properties"), Duration(15, TimeUnit.SECONDS))
+      Logger.scheduleLogLevelScan(LogLevelScannerConfig(Seq("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS)))
       Thread.sleep(1000)
-
+      Logger.stopScheduledLogLevelScan
       // Should ignore unknown log level string
       l.getLogLevel shouldBe LogLevel.TRACE
     }

@@ -228,8 +228,6 @@ object Logger {
     Seq("log-test.properties", "log.properties")
   }
 
-  private var scanner: Option[LogLevelScanner] = None
-
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
     */
@@ -249,38 +247,21 @@ object Logger {
     * Run the default LogLevelScanner every 1 minute
     */
   def scheduleLogLevelScan {
-    scheduleLogLevelScan(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES))
+    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES)))
   }
+
+  private[log] lazy val logLevelScanner: LogLevelScanner = new LogLevelScanner
 
   /**
     *
-    * @param logLevelFileCandidates
-    * @param scanInterval
     */
-  def scheduleLogLevelScan(logLevelFileCandidates: Seq[String], scanInterval: Duration) {
-    synchronized {
-      scanner match {
-        case Some(prev)
-          if prev.logLevelFileCandidates == logLevelFileCandidates
-            && prev.scanInterval == scanInterval =>
-          // Do nothing since it uses the same configuration
-        case other =>
-          // Stop the previously running loglevel scanner if exists
-          scanner.map(_.stop)
-
-          // Create a new scanner
-          val newScanner = new LogLevelScanner(logLevelFileCandidates, scanInterval)
-          scanner = Some(newScanner)
-          newScanner.start()
-      }
-    }
+  def scheduleLogLevelScan(config:LogLevelScannerConfig) {
+    logLevelScanner.setConfig(config)
+    logLevelScanner.start
   }
 
   def stopScheduledLogLevelScan {
-    synchronized {
-      scanner.map(_.stop())
-      scanner = None
-    }
+    logLevelScanner.stop
   }
 
   def getSuccinctLoggerName[A](cl: Class[A]): String = {
