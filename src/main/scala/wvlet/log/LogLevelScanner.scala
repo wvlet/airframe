@@ -122,7 +122,7 @@ private[log] class LogLevelScanner extends Guard {
     state.set(STOPPING)
   }
 
-  private var lastCheckedMillis: Option[Long] = None
+  private var lastScheduledMillis: Option[Long] = None
   private var lastScannedMillis: Option[Long] = None
 
   private def run {
@@ -130,16 +130,15 @@ private[log] class LogLevelScanner extends Guard {
       // Periodically run
       val currentTimeMillis = System.currentTimeMillis()
       val scanIntervalMillis = getConfig.scanInterval.toMillis
-      if (lastCheckedMillis.isEmpty || currentTimeMillis - lastCheckedMillis.get > scanIntervalMillis) {
+      if (lastScheduledMillis.isEmpty || currentTimeMillis - lastScheduledMillis.get > scanIntervalMillis) {
         val updatedLastScannedMillis = scan(getConfig.logLevelFileCandidates, lastScannedMillis)
         guard {
           lastScannedMillis = updatedLastScannedMillis
         }
-        lastCheckedMillis = Some(currentTimeMillis)
+        lastScheduledMillis = Some(currentTimeMillis)
       }
-      // wait
-      val sleepTime = scanIntervalMillis - math.max(0, math.min(scanIntervalMillis, currentTimeMillis - lastCheckedMillis.get))
-
+      // wait until next scheduled time
+      val sleepTime = scanIntervalMillis - math.max(0, math.min(scanIntervalMillis, currentTimeMillis - lastScheduledMillis.get))
       guard {
         if (configChanged.await(sleepTime, TimeUnit.MILLISECONDS)) {
           // awaken due to config change
