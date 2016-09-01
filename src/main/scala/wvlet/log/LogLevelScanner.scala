@@ -126,7 +126,9 @@ private[log] class LogLevelScanner extends Guard {
   private var lastScannedMillis: Option[Long] = None
 
   private def run {
-    while (state.get() != STOPPING) {
+    // We need to exit here so that the thread can be automatically discarded after the scan interval has passed
+    // Otherwise, the thread remains in the classloader(s) if used for running test cases
+    while (!state.compareAndSet(STOPPING, STOPPED)) {
       // Periodically run
       val currentTimeMillis = System.currentTimeMillis()
       val scanIntervalMillis = getConfig.scanInterval.toMillis
@@ -145,10 +147,6 @@ private[log] class LogLevelScanner extends Guard {
         }
       }
     }
-
-    // We need to exit here so that the thread can be automatically discarded after the scan interval has passed
-    // Otherwise, the thread remains in the classloader(s) if used for running test cases
-    state.set(STOPPED)
   }
 
   private class LogLevelScannerThread extends Thread {
