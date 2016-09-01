@@ -108,18 +108,19 @@ private[log] class LogLevelScanner extends Guard {
   private val state = new AtomicReference[ScannerState](STOPPED)
 
   def start {
-    if (state.compareAndSet(STOPPED, RUNNING)) {
-      // Create a new thread if the previous thread is terminated
-      new LogLevelScannerThread().start
+    guard {
+      state.compareAndSet(STOPPING, RUNNING)
+      if (state.compareAndSet(STOPPED, RUNNING)) {
+        // Create a new thread if the previous thread is terminated
+        new LogLevelScannerThread().start
+      }
     }
-    else if (state.compareAndSet(STOPPING, RUNNING)) {
-      // reuse the thread
-    }
-    // Do nothing if it is already started
   }
 
   def stop {
-    state.set(STOPPING)
+    guard {
+      state.set(STOPPING)
+    }
   }
 
   private var lastScheduledMillis: Option[Long] = None
