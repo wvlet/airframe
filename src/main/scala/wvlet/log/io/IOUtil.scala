@@ -31,6 +31,16 @@ object IOUtil {
     }
   }
 
+  def withTempFile[U](name:String, dir:String="target", suffix:String = ".tmp")(body:File => U) = {
+    val f = File.createTempFile(name, suffix, new File(dir))
+    try {
+      body(f)
+    }
+    finally {
+      f.delete()
+    }
+  }
+
   def unusedPort: Int = {
     withResource(new ServerSocket(0)) { socket =>
       socket.getLocalPort
