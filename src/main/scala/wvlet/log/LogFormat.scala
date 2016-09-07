@@ -101,7 +101,7 @@ object LogFormatter {
     e.printStackTrace(new PrintWriter(trace))
     val stackTrace = trace.toString
     val filtered =
-      stackTrace.split("\n")
+      stackTrace.split("\n") // Array
       .filter(stackTraceFilter)
       .sliding(2)
       .collect { case Array(a, b) if a != b => a }
