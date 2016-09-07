@@ -17,6 +17,7 @@ import java.io.{ByteArrayOutputStream, PrintStream, PrintWriter, StringWriter}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.logging.Formatter
+import java.util.regex.Pattern
 import java.util.{Locale, logging => jl}
 
 import wvlet.log.LogLevel.{DEBUG, ERROR, INFO, TRACE, WARN}
@@ -81,10 +82,31 @@ object LogFormatter {
 
   def currentThreadName: String = Thread.currentThread().getName
 
-  def formatStacktrace(e: Throwable) = {
+  private val testFrameworkFilter = Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
+  val DEFAULT_STACKTRACE_FILTER : String => Boolean = { line:String =>
+    !testFrameworkFilter.matcher(line).matches()
+  }
+  private var stackTraceFilter : String => Boolean = DEFAULT_STACKTRACE_FILTER
+
+  /**
+    * Set stack trace line filter
+    * @param filter
+    */
+  def setStackTraceFilter(filter: String => Boolean) {
+    stackTraceFilter = filter
+  }
+
+  def formatStacktrace(e: Throwable) : String = {
     val trace = new StringWriter()
     e.printStackTrace(new PrintWriter(trace))
-    trace.toString
+    val stackTrace = trace.toString
+    val filtered =
+      stackTrace.split("\n")
+      .filter(stackTraceFilter)
+      .sliding(2)
+      .collect { case Array(a, b) if a != b => a }
+
+    filtered.mkString("\n")
   }
 
   def withColor(prefix:String, s:String) = {
