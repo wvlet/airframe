@@ -15,7 +15,7 @@ package example
 
 import wvlet.airframe._
 import wvlet.log.LogSupport
-import wvlet.obj.tag._
+import wvlet.obj.tag.@@
 
 import scala.util.Random
 
@@ -81,7 +81,7 @@ object Example {
       showRemainingFuel
     }
 
-    def showRemainingFuel = {
+    def showRemainingFuel : Unit = {
       info(s"remaining fuel: ${engine.fuel.remaining}")
     }
   }
@@ -106,7 +106,7 @@ object Example {
   }
 
   case class SolarPanel() {
-    def getEnergy = {
+    def getEnergy : Int = {
       Random.nextInt(10)
     }
   }
