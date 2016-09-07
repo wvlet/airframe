@@ -57,7 +57,7 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
 
-val WVLET_VERSION="0.20"
+val WVLET_VERSION="0.23"
 
 lazy val airframe = Project(id = "airframe", base = file(".")).settings(
     buildSettings,

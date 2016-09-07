@@ -28,8 +28,15 @@ trait AirframeSpec extends WordSpec
   with BeforeAndAfterAll
   with LogSupport {
 
-  // Add source code location to the debug logs
-  Logger.setDefaultFormatter(SourceCodeLogFormatter)
-
   implicit def toTag(s:String) = Tag(s)
+
+  override def run(testName: Option[String], args: Args): Status = {
+    // Add source code location to the debug logs
+    Logger.setDefaultFormatter(SourceCodeLogFormatter)
+    // Periodically scan log level file
+    Logger.scheduleLogLevelScan
+    val s = super.run(testName, args)
+    Logger.stopScheduledLogLevelScan
+    s
+  }
 }
