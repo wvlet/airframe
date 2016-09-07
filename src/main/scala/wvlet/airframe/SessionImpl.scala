@@ -32,6 +32,9 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   private lazy val bindingTable = binding.map(b => b.from -> b).toMap[ObjectType, Binding]
   private[airframe] def getBindingOf(t:ObjectType) = bindingTable.get(t)
+  private[airframe] def hasSingletonOf(t: ObjectType): Boolean = {
+    singletonHolder.contains(t)
+  }
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any]
     = new ConcurrentHashMap[ObjectType, Any]()

@@ -76,6 +76,7 @@ trait Session {
   def shutdown {lifeCycleManager.shutdown}
 
   private[airframe] def getBindingOf(t:ObjectType) : Option[Binding]
+  private[airframe] def hasSingletonOf(t:ObjectType) : Boolean
 }
 
 object Session extends LogSupport {
