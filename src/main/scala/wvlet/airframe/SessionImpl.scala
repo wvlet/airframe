@@ -54,25 +54,25 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     debug(s"Get dependency [${ev.tpe}]")
     getInstance(tpe, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getSingleton[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     debug(s"Get dependency [${ev.tpe}] as singleton")
     singletonHolder.getOrElseUpdate(tpe, getInstance(tpe, List.empty)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdateSingleton[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)(ev)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
     debug(s"Get or update dependency [${ev.tpe}]")
-    val t = ObjectType.ofTypeTag(ev)
+    val t = ObjectType.of[A]
     bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
@@ -84,7 +84,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
+    registerInjectee(ObjectType.of[A], obj).asInstanceOf[A]
   }
 
   private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {

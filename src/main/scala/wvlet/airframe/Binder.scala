@@ -69,7 +69,7 @@ import wvlet.airframe.Binder._
 class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
   def to[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
+    val to = ObjectType.of[B]
     if (from == to) {
       warn(s"Binding to the same type is not allowed: ${from.name}")
       throw new CYCLIC_DEPENDENCY(Set(to))
@@ -91,7 +91,7 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   }
 
   def toSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
+    val to = ObjectType.of[B]
     if (from == to) {
       warn(s"Binding to the same type is not allowed: ${from.name}")
       throw new CYCLIC_DEPENDENCY(Set(to))
@@ -102,7 +102,7 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
   }
 
   def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of(implicitly[ru.TypeTag[B]].tpe)
+    val to = ObjectType.of[B]
     if (from == to) {
       warn(s"Binding to the same type is not allowed: ${from.name}")
       throw new CYCLIC_DEPENDENCY(Set(to))
@@ -174,7 +174,7 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(ObjectType.of(implicitly[ru.TypeTag[D1]].tpe)),
+        Seq(ObjectType.of[D1]),
         factory),
       singleton,
       eager
@@ -187,8 +187,8 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
       DependencyFactory(
         from,
         Seq(
-          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe)),
+          ObjectType.of[D1],
+          ObjectType.of[D2]),
         factory),
       singleton,
       eager
@@ -201,9 +201,9 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
       DependencyFactory(
         from,
         Seq(
-          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe)),
+          ObjectType.of[D1],
+          ObjectType.of[D2],
+          ObjectType.of[D3]),
         factory),
       singleton,
       eager
@@ -216,10 +216,10 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
       DependencyFactory(
         from,
         Seq(
-          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D4]].tpe)),
+          ObjectType.of[D1],
+          ObjectType.of[D2],
+          ObjectType.of[D3],
+          ObjectType.of[D4]),
         factory),
       singleton,
       eager
@@ -232,11 +232,11 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
       DependencyFactory(
         from,
         Seq(
-          ObjectType.of(implicitly[ru.TypeTag[D1]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D2]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D3]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D4]].tpe),
-          ObjectType.of(implicitly[ru.TypeTag[D5]].tpe)),
+          ObjectType.of[D1],
+          ObjectType.of[D2],
+          ObjectType.of[D3],
+          ObjectType.of[D4],
+          ObjectType.of[D5]),
         factory),
       singleton,
       eager

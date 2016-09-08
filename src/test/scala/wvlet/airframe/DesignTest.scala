@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
+import wvlet.airframe.Alias.{HelloRef, StringHello}
 import wvlet.obj.ObjectType
 import wvlet.obj.tag.@@
 
@@ -23,6 +24,17 @@ case class Hello(message: String) extends Message
 trait Production
 trait Development
 
+object Alias {
+  trait Hello[A] {
+    def hello : A
+  }
+
+  class StringHello extends Hello[String] {
+    def hello = "hello world"
+  }
+
+  type HelloRef = Hello[String]
+}
 /**
   *
   */
@@ -52,9 +64,9 @@ class DesignTest extends AirframeSpec {
       val dd = d1.remove[Message]
 
       def hasMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == ObjectType.ofTypeTag[Message])
+        d.binding.exists(_.from == ObjectType.of[Message])
       def hasProductionMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == ObjectType.ofTypeTag[Message @@ Production])
+        d.binding.exists(_.from == ObjectType.of[Message @@ Production])
 
       hasMessage(d1) shouldBe true
       hasMessage(dd) shouldBe false
@@ -83,6 +95,14 @@ class DesignTest extends AirframeSpec {
 
       val h = d.newSession.build[Hello]
       h.message shouldBe "hello production"
+    }
+
+    "bind type aliases" taggedAs("alias") in {
+      val d = newDesign
+              .bind[HelloRef].toInstance(new StringHello)
+
+      val h = d.newSession.build[HelloRef]
+      h.hello shouldBe "hello world"
     }
   }
 }

@@ -33,6 +33,11 @@ val buildSettings = Seq[Setting[_]](
       </developer>
     </developers>
   },
+  // Use sonatype resolvers
+  resolvers ++= Seq(
+    Resolver.sonatypeRepo("releases"),
+    Resolver.sonatypeRepo("snapshots")
+  ),
   // Release settings
   releaseTagName := { (version in ThisBuild).value },
   releaseProcess := Seq[ReleaseStep](
@@ -57,7 +62,7 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
 
-val WVLET_VERSION="0.23"
+val WVLET_VERSION="0.24"
 
 lazy val airframe = Project(id = "airframe", base = file(".")).settings(
     buildSettings,
