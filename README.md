@@ -1,6 +1,11 @@
+
 wvlet-log
 ===
-wvlet-log helps logging your application behavior. wvlet-log uses the standard `java.util.logging` library,
+
+wvlet-log is a library for adding fancy logging to your Scala application:
+![screenshot](docs/wvlet-log.png)
+
+wvlet-log uses the standard `java.util.logging` library,
 which is already available in JVM, so it works without adding any dependencies.
 
 

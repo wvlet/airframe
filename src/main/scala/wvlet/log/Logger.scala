@@ -18,7 +18,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import java.util.logging._
 import java.util.{Properties, logging => jl}
 
-import wvlet.log.LogFormatter.AppLogFormatter
+import wvlet.log.LogFormatter.{AppLogFormatter, SourceCodeLogFormatter}
 import wvlet.log.io.IOUtil.withResource
 
 import scala.annotation.tailrec
@@ -73,6 +73,10 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
 
   def setLogLevel(l: LogLevel) {
     wrapped.setLevel(l.jlLevel)
+  }
+
+  def setFormatter(formatter: LogFormatter) {
+    resetHandler(new ConsoleLogHandler(formatter))
   }
 
   def resetHandler(h: Handler) {
@@ -150,7 +154,7 @@ object Logger {
 
   lazy val rootLogger = initLogger(
     name = "",
-    handlers = Seq(new ConsoleLogHandler(AppLogFormatter)))
+    handlers = Seq(new ConsoleLogHandler(SourceCodeLogFormatter)))
 
   /**
     * Create a new java.util.logging.Logger

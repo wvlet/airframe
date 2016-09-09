@@ -165,7 +165,7 @@ object LogFormatter {
   }
 
   /**
-    * log format for command-line user client
+    * log format for command-line user client (without source code location)
     */
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
@@ -185,7 +185,8 @@ object LogFormatter {
         .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
         .getOrElse("")
 
-      val log = s"[${withColor(Console.BLUE, r.leafLoggerName)}] [${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+      val logTag = highlightLog(r.level, r.level.name)
+      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)} ${loc}"
       appendStackTrace(log, r)
     }
   }
