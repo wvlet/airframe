@@ -65,7 +65,7 @@ class LogRotationHandler(fileName: String,
     val triggeringPolicy = new SizeAndTimeBasedFNATP[String]
 
     rollingPolicy.setContext(context)
-    rollingPolicy.setFileNamePattern(s"${fileName}-%d{yyyy-MM-dd}.%i.log.gz")
+    rollingPolicy.setFileNamePattern(s"${fileName}-%d{yyyy-MM-dd}.%i${logFileExt}.gz")
     rollingPolicy.setMaxHistory(maxNumberOfFiles)
     rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy)
     rollingPolicy.setParent(fileAppender)
