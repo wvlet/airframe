@@ -15,13 +15,8 @@ package wvlet.log
 
 import java.util.{logging => jul}
 
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, _}
 import wvlet.log.LogFormatter._
 import wvlet.log.LogLevel.LogOrdering
-
-trait Spec extends WordSpec with ShouldMatchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
-  logger.resetHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
-}
 
 class MyAppClass extends LogSupport {
   error("error message")
@@ -71,7 +66,7 @@ class LoggerTest extends Spec {
       Logger.setDefaultLogLevel(current)
     }
 
-    "create logger from class" in  {
+    "create logger from class" in {
       val l = Logger.of[MyAppClass]
       l.getName shouldBe "wvlet.log.MyAppClass"
     }

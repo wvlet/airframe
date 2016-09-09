@@ -173,8 +173,13 @@ object Logger {
     logger
   }
 
-  def of[A](implicit tag: ClassTag[A]): Logger = {
-    apply(tag.runtimeClass.getName)
+  /**
+    * Create a logger corresponding to a class
+    * @tparam A
+    * @return
+    */
+  def of[A : ClassTag]: Logger = {
+    apply(implicitly[ClassTag[A]].runtimeClass.getName)
   }
 
   def apply(loggerName: String): Logger = {
@@ -253,13 +258,18 @@ object Logger {
   private[log] lazy val logLevelScanner: LogLevelScanner = new LogLevelScanner
 
   /**
-    *
+    * Schedule the log level scanner with the given configuration.
     */
   def scheduleLogLevelScan(config:LogLevelScannerConfig) {
     logLevelScanner.setConfig(config)
     logLevelScanner.start
   }
 
+  /**
+    * Terminate the log-level scanner thread. The thread will remain in the system until
+    * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
+    * reduce the overhead of creating a new thread.
+    */
   def stopScheduledLogLevelScan {
     logLevelScanner.stop
   }
