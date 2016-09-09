@@ -56,7 +56,7 @@ val buildSettings = Seq[Setting[_]](
 )
 
 lazy val wvletLog =
-  Project(id = "log", base = file(".")).settings(
+  Project(id = "wvlet-log", base = file(".")).settings(
     buildSettings,
     description := "Add fancy logging to your Scala",
     libraryDependencies ++= Seq(
