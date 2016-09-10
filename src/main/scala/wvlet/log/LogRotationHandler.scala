@@ -45,8 +45,8 @@ object LogRotationHandler {
   * Log rotation handler
   */
 class LogRotationHandler(fileName: String,
-                         maxNumberOfFiles: Int,
-                         maxSizeInBytes: Long,
+                         maxNumberOfFiles: Int = 100, // Rotate up to 100 files
+                         maxSizeInBytes: Long = 104857600, // 100 MB
                          formatter: LogFormatter = AppLogFormatter,
                          logFileExt: String = ".log",
                          tempFileExt: String = ".tmp"
