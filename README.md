@@ -162,13 +162,13 @@ Scala macro is also used for finding source code location (LogSource).
 
 ## Why it uses java.util.logging instead of slf4j?
 
-*slf4j* is just an API for logging string messages, so there is no way to configure the log levels and log format *within your program*. To use slf4j, you need to include an slf4j 
-binding library, such as *logback-classic*, so slf4j's logging configruation needs to be binder-specific (e.g., slf4j-simple, logback-classic, etc.), 
-and your application always need to include a dependency to one of the slf4j implementations. There is nothing wrong in it if these slf4j binding libraries are used properly, but 
-third-party libraries often include some slf4j bindings as dependencies, and cause unexpected logging behaviour.  
+*slf4j* is just an API for logging string messages, so there is no way to configure the log levels and log format *within your program*. To use slf4j, you always need to include an slf4j 
+binding library, such as *logback-classic*. slf4j's logging configuration is binder-specific (e.g., slf4j-simple, logback-classic, etc.), 
+and your application always need to include a dependency to one of the slf4j implementations. There is nothing wrong in it if these slf4j bindings are used properly, but 
+third-party libraries often include slf4j bindings as dependencies, and cause unexpected logging behaviour.  
 
-`java.util.logging` is a standard API of Java and no binding library is required, but configuring `java.util.logging` was still difficult and error prone. 
- *wvlet-log* makes easier to use it for Scala.
+`java.util.logging` is a standard API of Java and no binding library is required, but configuring `java.util.logging` was still difficult and error prone (See an example in [Stack Overflow](http://stackoverflow.com/questions/960099/how-to-set-up-java-logging-using-a-properties-file-java-util-logging)) 
+ *wvlet-log* makes thinkgs easier for Scala developers.
 
 
 ## Related Projects
