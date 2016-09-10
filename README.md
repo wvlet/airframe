@@ -57,7 +57,7 @@ class YourApp {
 }
 ```
 
-## Configuring log levels
+### Configuring log levels
 
 If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
 
@@ -89,7 +89,7 @@ To change the log file path, you can use `Logger.scheduleLogLevelScan(file paths
 In debugging your application, create `src/test/resources/log-test.properties` file, and
 call `Logger.scheduleLogLevelScan` before running test cases. This is useful for quickly checking the log messages. 
 
-## Customizing log format
+### Customizing log format
 
 You can show the source code location where the log message is generated:
 
@@ -122,14 +122,14 @@ Logger.setDefaultFormatter(CustomLogFormatter)
 
 See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala).
 
-## Using with slf4j
+### Using with slf4j
 
 If you are using slf4j, jsut add `slf4j-jdk14` to your dependency. The log message from slf4j will be sent to wvlet-log:
 ```
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 ```
 
-## Writing and rotating logs with files 
+### Writing and rotating logs with files 
 
 To write and rotate your logs, use `LogRotationHandler`:
 ```
