@@ -124,7 +124,7 @@ See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.
 
 ### Using with slf4j
 
-If you are using slf4j, jsut add `slf4j-jdk14` to your dependency. The log message from slf4j will be sent to wvlet-log:
+If you are using slf4j, just add `slf4j-jdk14` to your dependency. The log messages from slf4j will be sent to wvlet-log:
 ```
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 ```
