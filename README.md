@@ -11,7 +11,7 @@ wvlet-log is a library for adding fancy logging to your Scala application:
 - Based on JVM's built-in `java.util.logging` library. No need to add custom binding jars (e.g., logback-classic in slf4j)
 - Developer friendly: 
   - Simple to use: Just add `wvlet.log.LogSupport` trait to your code.
-  - You can see the source code locations of log messages .
+  - You can see the **source code locations** (line number and pos) of log messages.
   - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
   - log levels can be changed at ease with the periodic log-level scanner.
 - Production ready
@@ -156,21 +156,21 @@ Log message String generation will not happen unless the debug log is effective.
 Scala macro is also used for finding source code location (LogSource).
 
 
-## Why it uses `java.util.logging` instead of `slf4j`?
+## Why it uses java.util.logging instead of slf4j?
 
-`slf4j` is just an API for logging string messages, so there is no way to configure the log levels and log format *within your program*. To use slf4j, you need to include an slf4j 
-binding library, such as `logback-classic`, so slf4j's logging configruation needs to be binder-specific (e.g., slf4j-simple, logback-classic, etc.), 
+*slf4j* is just an API for logging string messages, so there is no way to configure the log levels and log format *within your program*. To use slf4j, you need to include an slf4j 
+binding library, such as *logback-classic*, so slf4j's logging configruation needs to be binder-specific (e.g., slf4j-simple, logback-classic, etc.), 
 and your application always need to include a dependency to one of the slf4j implementations. There is nothing wrong in it if these slf4j binding libraries are used properly, but 
 third-party libraries often include some slf4j bindings as dependencies, and cause unexpected logging behaviour.  
 
 `java.util.logging` is a standard API of Java and no binding library is required, but configuring `java.util.logging` was still difficult and error prone. 
- `wvlet-log` makes easier to use it for Scala.
+ *wvlet-log* makes easier to use it for Scala.
 
 
 ## Related Projects
  
 - [scala-logging](https://github.com/typesafehub/scala-logging): 
-An wrapper of `slf4j` for Scala. This also uses Scala macros to make logging efficient. No built-in source code location format, and you still need some slf4j bindings and its configuration. 
+An wrapper of *slf4j* for Scala. This also uses Scala macros to make logging efficient. No built-in source code location format, and you still need some slf4j bindings and its configuration. 
 
 - [twitter/util-logging](https://github.com/twitter/util#logging): This is also an wrapper of `java.util.logging` for Scala, but it doesn't use Scala macros, so you need to use an old sprintf style log generation, or `ifDebug(log)` 
 method to avoid expensive log message generation. 
