@@ -66,7 +66,7 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder[A](design: Design, from: ObjectType) extends LogSupport {
+class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport {
 
   def to[B <: A : ru.TypeTag]: Design = {
     val to = ObjectType.of[B]
