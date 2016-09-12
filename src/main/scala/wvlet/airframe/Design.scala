@@ -30,7 +30,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
   }
 
   def bind[A:ru.TypeTag]: Binder[A] = {
-    bind(ObjectType.of(implicitly[ru.TypeTag[A]].tpe)).asInstanceOf[Binder[A]]
+    bind(ObjectType.of[A]).asInstanceOf[Binder[A]]
   }
 
   def bind(t: ObjectType): Binder[Any] = {
@@ -44,7 +44,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
   }
 
   def remove[A:ru.TypeTag] : Design = {
-    val target = ObjectType.of(implicitly[ru.TypeTag[A]].tpe)
+    val target = ObjectType.of[A]
     new Design(binding.filterNot(_.from == target))
   }
 

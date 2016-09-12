@@ -66,7 +66,7 @@ package object airframe {
   class LifeCycleBinder[A: ru.TypeTag](dep: A, session: Session) {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
               shutdown: A => Unit = DO_NOTHING): A = {
-      val tpe = ObjectType.of(implicitly[ru.TypeTag[A]].tpe)
+      val tpe = ObjectType.of[A]
             if (!(init eq DO_NOTHING)) {
         session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
       }

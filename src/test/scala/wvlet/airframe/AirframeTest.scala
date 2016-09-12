@@ -314,17 +314,17 @@ class AirframeTest extends AirframeSpec {
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].to[Printer]
-      }.deps should contain(ObjectType.ofTypeTag[Printer])
+      }.deps should contain(ObjectType.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toSingletonOf[Printer]
-      }.deps should contain(ObjectType.ofTypeTag[Printer])
+      }.deps should contain(ObjectType.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toEagerSingletonOf[Printer]
-      }.deps should contain(ObjectType.ofTypeTag[Printer])
+      }.deps should contain(ObjectType.of[Printer])
     }
 
     trait HasCycle {
@@ -339,8 +339,8 @@ class AirframeTest extends AirframeSpec {
         c.build[HasCycle]
       }
       warn(s"${caught}")
-      caught.deps should contain(ObjectType.ofTypeTag[A])
-      caught.deps should contain(ObjectType.ofTypeTag[B])
+      caught.deps should contain(ObjectType.of[A])
+      caught.deps should contain(ObjectType.of[B])
     }
 
     trait MissingDep {

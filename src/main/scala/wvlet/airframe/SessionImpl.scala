@@ -13,13 +13,15 @@
  */
 package wvlet.airframe
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
 import wvlet.obj.{ObjectSchema, ObjectType, TypeUtil}
 
+import scala.concurrent.duration
+import scala.concurrent.duration.Duration
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Try}
 
@@ -54,25 +56,25 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     debug(s"Get dependency [${ev.tpe}]")
     getInstance(tpe, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getSingleton[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     debug(s"Get dependency [${ev.tpe}] as singleton")
     singletonHolder.getOrElseUpdate(tpe, getInstance(tpe, List.empty)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdateSingleton[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of(ev.tpe)
+    val tpe = ObjectType.of[A]
     singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)(ev)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
     debug(s"Get or update dependency [${ev.tpe}]")
-    val t = ObjectType.ofTypeTag(ev)
+    val t = ObjectType.of[A]
     bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
@@ -83,8 +85,23 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
     }
   }
 
+  private[airframe] def getOrElseUpdate[A](t:ObjectType, obj: => A): A = {
+    debug(s"Get or update dependency [${t}]")
+    bindingTable.get(t) match {
+      case Some(SingletonBinding(from, to, eager)) =>
+        singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
+      case Some(p@ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
+        getInstance(t).asInstanceOf[A]
+      case other =>
+        register(t, obj)
+    }
+  }
+
   private def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    registerInjectee(ObjectType.ofTypeTag(ev), obj).asInstanceOf[A]
+    register(ObjectType.of[A], obj)
+  }
+  private def register[A](t:ObjectType, obj: A): A = {
+    registerInjectee(t, obj).asInstanceOf[A]
   }
 
   private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
@@ -125,7 +142,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
         trace(s"Found a provider for ${p.from}: ${p}")
         def buildWithProvider : AnyRef = {
           val dependencies = for (d <- factory.dependencyTypes) yield {
-            getOrElseUpdate(getInstance(d, t :: stack))
+            getOrElseUpdate(d, getInstance(d, t :: stack))
           }
           registerInjectee(p.from, factory.create(dependencies))
         }
@@ -146,7 +163,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
 
   private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
     trace(s"buildInstance ${t}, stack:${stack}")
-    val schema = ObjectSchema(t.rawType)
+    val schema = ObjectSchema.of(t)
     if (t.isPrimitive || t.isTextType) {
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(stack)
@@ -182,8 +199,12 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
                   |  }
                   |}  """.stripMargin
             trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
+            val compileStart = System.currentTimeMillis()
             val parsed = tb.parse(code)
             val f = tb.eval(parsed).asInstanceOf[Session => Any]
+            val compileFinished = System.currentTimeMillis()
+            val compileDuration = Duration(compileFinished-compileStart, duration.MILLISECONDS)
+            trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
             val obj = f.apply(this)
             registerInjectee(t, obj)
           }
