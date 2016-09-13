@@ -26,7 +26,7 @@ private[wvlet] object AirframeMacros {
     def shouldGenerateTrait(t: c.Type): Boolean = {
       val a = t.typeSymbol
 
-      // Find the pubilc default constructor that has no arguments
+      // Find the public default constructor that has no arguments
       val hasPublicDefaultConstructor = t.members
                                         .find(_.isConstructor)
                                         .map(_.asMethod).exists { m =>
@@ -45,17 +45,21 @@ private[wvlet] object AirframeMacros {
         // we need to instantiate it first in order to populate its $outer variables
         true
       }
-      else if (a.isAbstract && hasAbstractMethods) {
+      else if (a.isAbstract) {
         // = Abstract type
         // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
         // needs to be found in the design
-        false
+
+        // If there is no abstract methods, it might be a trait without any method
+        !hasAbstractMethods
       }
       else {
         // We cannot instantiate any trait or class without the default constructor
-        // So binding needs to be find
+        // So binding needs to be found in the Design.
         hasPublicDefaultConstructor
       }
+
+      // Tagged type binding should be found in Design
       !isTaggedType && shouldInstantiateTrait
     }
 
