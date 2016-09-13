@@ -10,10 +10,11 @@ dependencies:
   pre:
     - ./sbt sbt-version
   override:
-    - ./sbt compile
+    - ./sbt "+ test:compile"
 
 test:
   override:
-    - ./sbt coverage test coverageReport && ./sbt coverageAggregate
-  post:
-    - ./sbt coveralls
+    - ./sbt "+ test"
+#   - ./sbt coverage test coverageReport && ./sbt coverageAggregate
+#  post:
+#    - ./sbt coveralls

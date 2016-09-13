@@ -1,7 +1,12 @@
 import ReleaseTransformations._
+import sbt._
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := "2.11.8",
+  crossScalaVersions := Seq(
+    "2.11.8",
+    "2.12.0-M5"
+  ),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
@@ -62,6 +67,6 @@ lazy val wvletLog =
     libraryDependencies ++= Seq(
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "ch.qos.logback" % "logback-core" % "1.1.7",
-      "org.scalatest" %% "scalatest" % "2.2.+" % "test"
+      "org.scalatest" %% "scalatest" % "3.0.0" % "test"
     )
   )
