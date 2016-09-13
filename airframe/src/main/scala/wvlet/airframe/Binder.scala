@@ -16,7 +16,6 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
-
 import scala.reflect.runtime.{universe => ru}
 
 object Binder {

@@ -128,7 +128,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
       case ClassBinding(from, to) =>
         trace(s"Found a class binding from ${from} to ${to}")
         getInstance(to, t :: stack)
-      case SingletonBinding(from, to, eager) =>
+      case sb@SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
         singletonHolder.getOrElseUpdate(from, {
           if(from == to) {
