@@ -3,7 +3,7 @@ import ReleaseTransformations._
 val buildSettings = Seq[Setting[_]](
   scalaVersion := "2.11.8",
   organization := "org.wvlet",
-  description := "Dependency injection library tailored to Scala",
+
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
@@ -64,12 +64,28 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 val WVLET_VERSION="0.26"
 
-lazy val airframe = Project(id = "airframe", base = file(".")).settings(
-    buildSettings,
-    libraryDependencies ++= Seq(
-      "org.wvlet" %% "wvlet-obj" % WVLET_VERSION,
-      "org.wvlet" %% "wvlet-log" % "1.0",
-      "org.scalatest" %% "scalatest" % "2.2.+" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
-    )
+lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
+  buildSettings,
+  publishArtifact := false,
+  publish := {},
+  publishLocal := {}
+) aggregate(airframe, airframeMacros)
+
+lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
+  buildSettings,
+  description := "Dependency injection library tailored to Scala",
+  libraryDependencies ++= Seq(
+    "org.wvlet" %% "wvlet-obj" % WVLET_VERSION,
+    "org.wvlet" %% "wvlet-log" % "1.0",
+    "org.scalatest" %% "scalatest" % "2.2.+" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
   )
+) dependsOn(airframeMacros)
+
+lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(
+  buildSettings,
+  description := "Macros for Airframe",
+  libraryDependencies ++= Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value
+  )
+)

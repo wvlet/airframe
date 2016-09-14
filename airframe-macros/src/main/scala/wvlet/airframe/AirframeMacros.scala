@@ -13,18 +13,17 @@
  */
 package wvlet.airframe
 
-import wvlet.log.LogSupport
-
 import scala.language.experimental.macros
 import scala.reflect.macros.whitebox.Context
 import scala.reflect.{macros => sm}
 
-private[wvlet] object AirframeMacros extends LogSupport {
+private[wvlet] object AirframeMacros {
 
   private[airframe] class BindHelper[C <: Context](val c: C) {
+
     import c.universe._
 
-    def shouldGenerateTrait(t:c.Type) : Boolean = {
+    def shouldGenerateTrait(t: c.Type): Boolean = {
       val a = t.typeSymbol
 
       // Find the pubilc default constructor that has no arguments
@@ -74,7 +73,7 @@ private[wvlet] object AirframeMacros extends LogSupport {
           }"""
     }
 
-    def findSession : c.Tree = {
+    def findSession: c.Tree = {
       q"wvlet.airframe.Session.findSession(this)"
     }
 
@@ -132,7 +131,6 @@ private[wvlet] object AirframeMacros extends LogSupport {
   }
 
   def bindImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
-    import c.universe._
     val h = new BindHelper[c.type](c)
     h.bind(h.findSession, ev)
   }
@@ -157,7 +155,7 @@ private[wvlet] object AirframeMacros extends LogSupport {
          session.getOrElseUpdate($factory($dep1(session)))
         }
       """
-    }
+  }
 
   def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
@@ -212,7 +210,6 @@ private[wvlet] object AirframeMacros extends LogSupport {
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Tree = {
     import c.universe._
-    import c.universe._
     val h = new BindHelper[c.type](c)
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
@@ -229,7 +226,6 @@ private[wvlet] object AirframeMacros extends LogSupport {
   }
 
   def bindSingletonImpl[A: c.WeakTypeTag](c: sm.Context)(ev: c.Tree): c.Tree = {
-    import c.universe._
     val h = new BindHelper[c.type](c)
     h.bindSingleton(h.findSession, ev)
   }
@@ -308,7 +304,6 @@ private[wvlet] object AirframeMacros extends LogSupport {
   D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
   (c: sm.Context)(factory: c.Tree)
   (a: c.Tree, d1: c.Tree, d2: c.Tree, d3: c.Tree, d4: c.Tree, d5: c.Tree): c.Tree = {
-    import c.universe._
     import c.universe._
     val h = new BindHelper[c.type](c)
     val dep1 = h.newBinder(d1)
