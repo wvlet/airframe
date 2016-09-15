@@ -1,5 +1,6 @@
 package wvlet.log
 
+import java.io.Flushable
 import java.util
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.{Executors, ThreadFactory}
@@ -11,9 +12,10 @@ import java.util.{logging => jl}
 class AsyncHandler(parent: jl.Handler)
   extends jl.Handler
     with Guard
-    with AutoCloseable {
+    with AutoCloseable
+    with Flushable {
 
-  private[this] val executor = {
+  private val executor = {
     Executors.newCachedThreadPool(
       new ThreadFactory {
         override def newThread(r: Runnable): Thread = {
