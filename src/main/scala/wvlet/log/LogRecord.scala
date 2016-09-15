@@ -15,6 +15,8 @@ package wvlet.log
 
 import java.util.{logging => jl}
 
+import scala.collection.mutable
+
 /**
   * Source code location where the log is
   *
@@ -28,20 +30,25 @@ case class LogSource(path: String, fileName: String, line: Int, col: Int) {
 }
 
 object LogRecord {
-  def apply(record:jl.LogRecord) : LogRecord = {
+  def apply(record: jl.LogRecord): LogRecord = {
     val l = LogRecord(LogLevel(record.getLevel), None, record.getMessage, Option(record.getThrown))
     l.setLoggerName(record.getLoggerName)
     l
   }
 
-  def apply(level:LogLevel, source:LogSource, message:String) : LogRecord = {
+  def apply(level: LogLevel, source: LogSource, message: String): LogRecord = {
     LogRecord(level, Some(source), message, None)
   }
 
-  def apply(level:LogLevel, source:LogSource, message:String, cause:Throwable) : LogRecord = {
+  def apply(level: LogLevel, source: LogSource, message: String, cause: Throwable): LogRecord = {
     LogRecord(level, Some(source), message, Some(cause))
   }
+
+  private[log] val leafLoggerNameCache = new mutable.WeakHashMap[String, String]
+
 }
+
+import wvlet.log.LogRecord._
 
 case class LogRecord(level: LogLevel,
                      source: Option[LogSource],
@@ -52,17 +59,20 @@ case class LogRecord(level: LogLevel,
   cause.foreach(setThrown(_))
 
   def leafLoggerName: String = {
-    getLoggerName match {
-      case null => ""
-      case name =>
-        val pos = name.lastIndexOf('.')
-        if (pos == -1) {
-          name
-        }
-        else {
-          name.substring(pos + 1)
-        }
+    val name = getLoggerName
+    leafLoggerNameCache.getOrElseUpdate(name, {
+      name match {
+        case null => ""
+        case name =>
+          val pos = name.lastIndexOf('.')
+          if (pos == -1) {
+            name
+          }
+          else {
+            name.substring(pos + 1)
+          }
+      }
     }
+    )
   }
 }
-

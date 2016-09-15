@@ -206,4 +206,19 @@ object LogFormatter {
     }
   }
 
+  /**
+    * For formatting log as is.
+    */
+  object BareFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      val m = r.getMessage
+      r.cause match {
+        case Some(ex) =>
+          s"${m}\n${formatStacktrace(ex)}"
+        case None =>
+          m
+      }
+    }
+  }
+
 }
