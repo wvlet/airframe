@@ -62,7 +62,7 @@ class YourApp {
 If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
 
 ```scala
-improt wvlet.log.Logger
+import wvlet.log.Logger
 
 ## Scan log files 
 Logger.scheduleLogLevelScan
@@ -168,7 +168,7 @@ and your application always need to include a dependency to one of the slf4j imp
 third-party libraries often include slf4j bindings as dependencies, and cause unexpected logging behaviour.  
 
 `java.util.logging` is a standard API of Java and no binding library is required, but configuring `java.util.logging` was still difficult and error prone (See an example in [Stack Overflow](http://stackoverflow.com/questions/960099/how-to-set-up-java-logging-using-a-properties-file-java-util-logging)) 
- *wvlet-log* makes thinkgs easier for Scala developers.
+ *wvlet-log* makes things easier for Scala developers.
 
 
 ## Related Projects
