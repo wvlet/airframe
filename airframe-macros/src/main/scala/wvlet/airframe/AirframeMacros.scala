@@ -111,13 +111,26 @@ private[wvlet] object AirframeMacros {
       }
     }
 
+    def registorFactory(typeEv:c.Tree) : c.Tree = {
+      val t = typeEv.tpe.typeArgs(0)
+      if(shouldGenerateTrait(t)) {
+        q""" {
+           wvlet.airframe.factoryCache.getOrElseUpdate(classOf[$t],
+             { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
+           )
+         }
+        """
+      }
+      else {
+        q"""{}"""
+      }
+    }
+
     def withFactoryRegistration(typeEv: c.Tree, body: c.Tree) : c.Tree = {
       val t = typeEv.tpe.typeArgs(0)
-      if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
+      if(shouldGenerateTrait(t)) {
         q"""
-         wvlet.airframe.factoryCache.getOrElseUpdate(classOf[$t],
-           { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
-         )
+         ${registorFactory(typeEv)}
          ${body}
        """
       }
@@ -125,7 +138,6 @@ private[wvlet] object AirframeMacros {
         body
       }
     }
-
   }
 
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
@@ -154,6 +166,7 @@ private[wvlet] object AirframeMacros {
       val self = ${c.prefix.tree}
       val to = wvlet.obj.ObjectType.of[$t]
       if(self.from == to) {
+         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
@@ -169,11 +182,77 @@ private[wvlet] object AirframeMacros {
       val self = ${c.prefix.tree}
       val to = wvlet.obj.ObjectType.of[$t]
       if(self.from == to) {
+         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
     }"""
     new BindHelper[c.type](c).withFactoryRegistration(ev, core)
+  }
+
+  def bindToEagerSingletonProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree)(ev1:c.Tree) : c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+           val self = ${c.prefix.tree}
+           ${h.registorFactory(ev1)}
+           self.toProviderD1(${factory}, true, true)
+        }
+    """
+  }
+
+  def bindToEagerSingletonProvider2[D1:c.WeakTypeTag, D2:c.WeakTypeTag](c:sm.Context)(factory:c.Tree)(ev1:c.Tree, ev2:c.Tree) : c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+           val self = ${c.prefix.tree}
+           ${h.registorFactory(ev1)}
+           ${h.registorFactory(ev2)}
+           self.toProviderD2(${factory}, true, true)
+        }
+    """
+  }
+
+  def bindToEagerSingletonProvider3[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag](c:sm.Context)(factory:c.Tree)(ev1:c.Tree, ev2:c.Tree, ev3:c.Tree) : c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+           val self = ${c.prefix.tree}
+           ${h.registorFactory(ev1)}
+           ${h.registorFactory(ev2)}
+           ${h.registorFactory(ev3)}
+           self.toProviderD3(${factory}, true, true)
+        }
+    """
+  }
+
+  def bindToEagerSingletonProvider4[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag](c:sm.Context)(factory:c.Tree)(ev1:c.Tree, ev2:c.Tree, ev3:c.Tree, ev4:c.Tree) : c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+           val self = ${c.prefix.tree}
+           ${h.registorFactory(ev1)}
+           ${h.registorFactory(ev2)}
+           ${h.registorFactory(ev3)}
+           ${h.registorFactory(ev4)}
+           self.toProviderD4(${factory}, true, true)
+        }
+    """
+  }
+
+  def bindToEagerSingletonProvider5[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](c:sm.Context)(factory:c.Tree)(ev1:c.Tree, ev2:c.Tree, ev3:c.Tree, ev4:c.Tree, ev5:c.Tree) : c.Tree = {
+    import c.universe._
+    val h = new BindHelper[c.type](c)
+    q"""{
+           val self = ${c.prefix.tree}
+           ${h.registorFactory(ev1)}
+           ${h.registorFactory(ev2)}
+           ${h.registorFactory(ev3)}
+           ${h.registorFactory(ev4)}
+           ${h.registorFactory(ev5)}
+           self.toProviderD5(${factory}, true, true)
+        }
+    """
   }
 
   /**

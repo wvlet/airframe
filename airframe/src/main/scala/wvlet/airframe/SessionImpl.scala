@@ -73,16 +73,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    debug(s"Get or update dependency [${ev.tpe}]")
-    val t = ObjectType.of[A]
-    bindingTable.get(t) match {
-      case Some(SingletonBinding(from, to, eager)) =>
-        singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
-      case Some(p@ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
-        getInstance(t).asInstanceOf[A]
-      case other =>
-        register(obj)(ev)
-    }
+    getOrElseUpdate(ObjectType.of[A], obj)
   }
 
   private[airframe] def getOrElseUpdate[A](t:ObjectType, obj: => A): A = {
@@ -91,7 +82,12 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
       case Some(p@ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
-        getInstance(t).asInstanceOf[A]
+        singletonHolder.get(t) match {
+          case Some(x) =>
+            x.asInstanceOf[A]
+          case None =>
+            getInstance(t).asInstanceOf[A]
+        }
       case other =>
         register(t, obj)
     }
