@@ -1,6 +1,6 @@
 package wvlet.log
 
-import wvlet.log.LogFormatter.{BareFormatter, SourceCodeLogFormatter}
+import wvlet.log.LogFormatter.BareFormatter
 import wvlet.log.io.IOUtil._
 
 /**
@@ -9,7 +9,6 @@ import wvlet.log.io.IOUtil._
 class AsyncHandlerTest extends Spec {
 
   "AsynHandler" should {
-
     "start background thread" in {
       val buf = new BufferedLogHandler(BareFormatter)
       withResource(new AsyncHandler(buf)) { h =>
@@ -37,16 +36,15 @@ class AsyncHandlerTest extends Spec {
         logger.resetHandler(h)
         logger.setLogLevel(LogLevel.INFO)
 
-        for(i <- (0 until 10000).par) {
+        for (i <- (0 until 10000).par) {
           logger.info(s"hello world: ${i}")
         }
         val s = buf.logs.size
-        s shouldBe < (10000)
+        s shouldBe <(10000)
 
         h.flush()
         buf.logs.size shouldBe 10000
       }
     }
-
   }
 }

@@ -32,6 +32,7 @@ object NullHandler extends jl.Handler {
 
 /**
   * Handlers for storing log messages as a sequence. This is useful for debugging.
+  *
   * @param formatter
   */
 class BufferedLogHandler(formatter: LogFormatter) extends jl.Handler {

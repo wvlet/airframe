@@ -13,7 +13,7 @@
  */
 package wvlet.log
 
-import java.io.{ByteArrayOutputStream, PrintStream, PrintWriter, StringWriter}
+import java.io.{PrintWriter, StringWriter}
 import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
 import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.logging.Formatter
@@ -75,7 +75,7 @@ object LogFormatter {
                                         .appendOffset("+HHMM", "Z")
                                         .toFormatter(Locale.US)
 
-  def formatTimestamp(timeMillis: Long, dateTimeformatter:DateTimeFormatter = humanReadableTimestampFormatter): String = {
+  def formatTimestamp(timeMillis: Long, dateTimeformatter: DateTimeFormatter = humanReadableTimestampFormatter): String = {
     val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), systemZone)
     dateTimeformatter.format(timestamp)
   }
@@ -83,20 +83,21 @@ object LogFormatter {
   def currentThreadName: String = Thread.currentThread().getName
 
   private val testFrameworkFilter = Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
-  val DEFAULT_STACKTRACE_FILTER : String => Boolean = { line:String =>
+  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String =>
     !testFrameworkFilter.matcher(line).matches()
   }
-  private var stackTraceFilter : String => Boolean = DEFAULT_STACKTRACE_FILTER
+  private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
 
   /**
     * Set stack trace line filter
+    *
     * @param filter
     */
   def setStackTraceFilter(filter: String => Boolean) {
     stackTraceFilter = filter
   }
 
-  def formatStacktrace(e: Throwable) : String = {
+  def formatStacktrace(e: Throwable): String = {
     val trace = new StringWriter()
     e.printStackTrace(new PrintWriter(trace))
     val stackTrace = trace.toString
@@ -109,7 +110,7 @@ object LogFormatter {
     filtered.mkString("\n")
   }
 
-  def withColor(prefix:String, s:String) = {
+  def withColor(prefix: String, s: String) = {
     s"${prefix}${s}${Console.RESET}"
   }
 
@@ -125,7 +126,7 @@ object LogFormatter {
     withColor(color, message)
   }
 
-  def appendStackTrace(m:String, r:LogRecord) : String = {
+  def appendStackTrace(m: String, r: LogRecord): String = {
     r.cause match {
       case Some(ex) =>
         s"${m}\n${highlightLog(r.level, formatStacktrace(ex))}"
