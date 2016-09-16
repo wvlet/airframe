@@ -69,6 +69,7 @@ class AsyncHandler(parent: jl.Handler)
 
   override def close(): Unit = {
     if (closed.compareAndSet(false, true)) {
+      flush()
       // Wake up the poller thread
       guard {
         isNotEmpty.signalAll()
