@@ -110,42 +110,70 @@ private[wvlet] object AirframeMacros {
         q"""{ session : wvlet.airframe.Session => session.getSingleton[$t] }"""
       }
     }
-  }
 
-  def singletonFactory[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
-    import c.universe._
-    val t = ev.tpe.typeArgs(0)
-    //println(showRaw(tt))
-    //println(showRaw(ttt))
-
-    if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
-      val tree = q"""
-         Some(
+    def withFactoryRegistration(typeEv: c.Tree, body: c.Tree) : c.Tree = {
+      val t = typeEv.tpe.typeArgs(0)
+      if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
+        q"""
+         wvlet.airframe.factoryCache.getOrElseUpdate(classOf[$t],
            { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
          )
+         ${body}
        """
-      println(show(tree))
-      tree
+      }
+      else {
+        body
+      }
     }
-    else {
-      q"""None"""
-    }
+
   }
 
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
     import c.universe._
     val t = ev.tpe.typeArgs(0)
-    if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
-      q"""
-         wvlet.airframe.Design.factoryCache.getOrElseUpdate(classOf[$t],
-           { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
-         )
-         ${c.prefix}.bind(wvlet.obj.ObjectType.of[$t]).asInstanceOf[Binder[$t]]
-       """
-    }
-    else {
-      q"${c.prefix}.bind(wvlet.obj.ObjectType.of[$t]).asInstanceOf[Binder[$t]]"
-    }
+    new BindHelper[c.type](c).withFactoryRegistration(ev, q"${c.prefix}.bind(wvlet.obj.ObjectType.of[$t]).asInstanceOf[wvlet.airframe.Binder[$t]]")
+  }
+
+  def binderToImpl[B: c.WeakTypeTag](c: sm.Context)(ev: c.Tree) : c.Tree = {
+    import c.universe._
+
+    val t = ev.tpe.typeArgs(0)
+    val core = q""" {
+      val self = ${c.prefix.tree}
+      val to = wvlet.obj.ObjectType.of[$t]
+      self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to))
+    }"""
+    new BindHelper[c.type](c).withFactoryRegistration(ev, core)
+  }
+
+  def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context)(ev: c.Tree) : c.Tree = {
+    import c.universe._
+
+    val t = ev.tpe.typeArgs(0)
+    val core = q""" {
+      val self = ${c.prefix.tree}
+      val to = wvlet.obj.ObjectType.of[$t]
+      if(self.from == to) {
+         throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
+      }
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
+    }"""
+    new BindHelper[c.type](c).withFactoryRegistration(ev, core)
+  }
+
+  def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context)(ev: c.Tree) : c.Tree = {
+    import c.universe._
+
+    val t = ev.tpe.typeArgs(0)
+    val core = q""" {
+      val self = ${c.prefix.tree}
+      val to = wvlet.obj.ObjectType.of[$t]
+      if(self.from == to) {
+         throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
+      }
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
+    }"""
+    new BindHelper[c.type](c).withFactoryRegistration(ev, core)
   }
 
   /**

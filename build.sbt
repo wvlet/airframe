@@ -80,7 +80,11 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
     "org.wvlet" %% "wvlet-log" % "1.0",
     "org.scalatest" %% "scalatest" % "2.2.+" % "test",
     "org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
-  )
+  ),
+  // include the macro classes and resources in the main jar
+  mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
+  // include the macro sources in the main source jar
+  mappings in (Compile, packageSrc) ++= mappings.in(airframeMacros, Compile, packageSrc).value
 ) dependsOn(airframeMacros)
 
 lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(

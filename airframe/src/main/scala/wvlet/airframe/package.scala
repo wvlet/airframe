@@ -81,6 +81,9 @@ package object airframe {
     }
   }
 
+  // For internal use to pre-compile objects
+  val factoryCache = collection.mutable.Map.empty[Class[_], Session => Any]
+
   import wvlet.obj.tag._
 
   // Automatically add tag

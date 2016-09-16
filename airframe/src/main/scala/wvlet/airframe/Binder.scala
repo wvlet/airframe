@@ -25,7 +25,11 @@ object Binder {
     def forSingleton: Boolean = false
     def from: ObjectType
   }
-  case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
+  case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding {
+    if(from == to) {
+      throw new CYCLIC_DEPENDENCY(Set(to))
+    }
+  }
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding {
     override def forSingleton: Boolean = true
   }
@@ -67,18 +71,19 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder[A](design: Design, from: ObjectType) extends LogSupport {
+class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
 
-  def to[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(ClassBinding(from, to))
-    }
-  }
+  def to[B <: A : ru.TypeTag]: Design = macro AirframeMacros.binderToImpl[B]
+//  {
+//    val to = ObjectType.of[B]
+//    if (from == to) {
+//      warn(s"Binding to the same type is not allowed: ${from.name}")
+//      throw new CYCLIC_DEPENDENCY(Set(to))
+//    }
+//    else {
+//      design.addBinding(ClassBinding(from, to))
+//    }
+//  }
 
   /**
     * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.
@@ -91,27 +96,28 @@ class Binder[A](design: Design, from: ObjectType) extends LogSupport {
     design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true))
   }
 
-  def toSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(SingletonBinding(from, to, false))
-    }
-  }
+  def toSingletonOf[B <: A : ru.TypeTag]: Design = macro AirframeMacros.binderToSingletonOfImpl[B]
+//    val to = ObjectType.of[B]
+//    if (from == to) {
+//      warn(s"Binding to the same type is not allowed: ${from.name}")
+//      throw new CYCLIC_DEPENDENCY(Set(to))
+//    }
+//    else {
+//      design.addBinding(SingletonBinding(from, to, false))
+//    }
+//  }
 
-  def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(SingletonBinding(from, to, true))
-    }
-  }
+  def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = macro AirframeMacros.binderToEagerSingletonOfImpl[B]
+//    val to = ObjectType.of[B]
+//    if (from == to) {
+//      warn(s"Binding to the same type is not allowed: ${from.name}")
+//      throw new CYCLIC_DEPENDENCY(Set(to))
+//    }
+//    else {
+//      design.addBinding(SingletonBinding(from, to, true))
+//    }
+//  }
+
   def toSingleton: Design = {
     design.addBinding(SingletonBinding(from, from, false))
   }

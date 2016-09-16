@@ -184,7 +184,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
             // No binding is found for the concrete class
             throw new MISSING_DEPENDENCY(stack)
           }
-          val obj = Design.factoryCache.get(t.rawType) match {
+          val obj = factoryCache.get(t.rawType) match {
             case Some(factory) =>
               trace(s"Using pre-compiled factory for ${t}")
               factory.asInstanceOf[Session => Any](this)

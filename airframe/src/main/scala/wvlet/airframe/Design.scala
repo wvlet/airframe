@@ -62,5 +62,7 @@ object Design {
     */
   val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
 
-  private[airframe] val factoryCache = collection.mutable.Map.empty[Class[_], Session => Any]
+  implicit class DesignAccess(design: Design) {
+    def addBinding(b:Binding) = design.addBinding(b)
+  }
 }
