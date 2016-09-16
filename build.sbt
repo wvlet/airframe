@@ -85,7 +85,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
   // include the macro sources in the main source jar
   mappings in (Compile, packageSrc) ++= mappings.in(airframeMacros, Compile, packageSrc).value
-) dependsOn(airframeMacros)
+) dependsOn(airframeMacros % "provided")
 
 lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(
   buildSettings,

@@ -89,7 +89,7 @@ object Session extends LogSupport {
   implicit class SessionAccess(session: Session) {
     def get[A: ru.WeakTypeTag]: A = session.get[A]
     def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdate[A](obj)
-    def getSingleton[A: ru.WeakTypeTag](obj: => A): A = session.getSingleton[A]
+    def getSingleton[A: ru.WeakTypeTag]: A = session.getSingleton[A]
     def getOrElseUpdateSingleton[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdateSingleton[A](obj)
   }
 
