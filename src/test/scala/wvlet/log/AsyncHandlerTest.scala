@@ -94,7 +94,7 @@ class AsyncHandlerTest extends Spec {
 //          }
         }
       }
-      t("async") should be < t("sync")
+      t("async").averageWithoutMinMax should be < t("sync").averageWithoutMinMax
     }
   }
 }
