@@ -184,36 +184,48 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
             // No binding is found for the concrete class
             throw new MISSING_DEPENDENCY(stack)
           }
-          // When there is no constructor, generate trait
-          import scala.reflect.runtime.currentMirror
-          import scala.tools.reflect.ToolBox
-          val tb = currentMirror.mkToolBox()
-          val typeName = t.rawType.getName.replaceAll("\\$", ".")
-          try {
-            val code =
-              s"""new (wvlet.airframe.Session => Any) {
-                  |  def apply(session:wvlet.airframe.Session) = {
-                  |    new ${typeName} {
-                  |      protected def __current_session = session
-                  |    }
-                  |  }
-                  |}  """.stripMargin
-            trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
-            val compileStart = System.currentTimeMillis()
-            val parsed = tb.parse(code)
-            val f = tb.eval(parsed).asInstanceOf[Session => Any]
-            val compileFinished = System.currentTimeMillis()
-            val compileDuration = Duration(compileFinished-compileStart, duration.MILLISECONDS)
-            trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
-            val obj = f.apply(this)
-            registerInjectee(t, obj)
+          val obj = Design.factoryCache.get(t.rawType) match {
+            case Some(factory) =>
+              trace(s"Using pre-compiled factory for ${t}")
+              factory.asInstanceOf[Session => Any](this)
+            case None =>
+              buildWithReflection(t)
           }
-          catch {
-            case e: Throwable =>
-              error(s"Failed to inject Session to ${t}")
-              throw e
-          }
+          registerInjectee(t, obj)
       }
     }
   }
+
+  private def buildWithReflection(t:ObjectType) : AnyRef ={
+    // When there is no constructor, generate trait
+    import scala.reflect.runtime.currentMirror
+    import scala.tools.reflect.ToolBox
+    val tb = currentMirror.mkToolBox()
+    val typeName = t.rawType.getName.replaceAll("\\$", ".")
+    try {
+      val code =
+        s"""new (wvlet.airframe.Session => Any) {
+            |  def apply(session:wvlet.airframe.Session) = {
+            |    new ${typeName} {
+            |      protected def __current_session = session
+            |    }
+            |  }
+            |}  """.stripMargin
+      trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
+      val compileStart = System.currentTimeMillis()
+      val parsed = tb.parse(code)
+      val f = tb.eval(parsed).asInstanceOf[Session => Any]
+      val compileFinished = System.currentTimeMillis()
+      val compileDuration = Duration(compileFinished - compileStart, duration.MILLISECONDS)
+      trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
+      val obj = f.apply(this)
+      registerInjectee(t, obj)
+    }
+    catch {
+      case e: Throwable =>
+        error(s"Failed to inject Session to ${t}")
+        throw e
+    }
+  }
+
 }

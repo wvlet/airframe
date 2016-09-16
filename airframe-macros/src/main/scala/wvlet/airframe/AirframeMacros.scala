@@ -112,6 +112,42 @@ private[wvlet] object AirframeMacros {
     }
   }
 
+  def singletonFactory[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
+    import c.universe._
+    val t = ev.tpe.typeArgs(0)
+    //println(showRaw(tt))
+    //println(showRaw(ttt))
+
+    if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
+      val tree = q"""
+         Some(
+           { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
+         )
+       """
+      println(show(tree))
+      tree
+    }
+    else {
+      q"""None"""
+    }
+  }
+
+  def designBindImpl[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
+    import c.universe._
+    val t = ev.tpe.typeArgs(0)
+    if(new BindHelper[c.type](c).shouldGenerateTrait(t)) {
+      q"""
+         wvlet.airframe.Design.factoryCache.getOrElseUpdate(classOf[$t],
+           { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
+         )
+         ${c.prefix}.bind(wvlet.obj.ObjectType.of[$t]).asInstanceOf[Binder[$t]]
+       """
+    }
+    else {
+      q"${c.prefix}.bind(wvlet.obj.ObjectType.of[$t]).asInstanceOf[Binder[$t]]"
+    }
+  }
+
   /**
     * Used when Session location is known
     *

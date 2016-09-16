@@ -16,18 +16,20 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
+
+import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
 
 object Binder {
   sealed trait Binding {
-    def forSingleton : Boolean = false
+    def forSingleton: Boolean = false
     def from: ObjectType
   }
   case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding {
     override def forSingleton: Boolean = true
   }
-  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager:Boolean)
+  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager: Boolean)
     extends Binding {
     assert(!eager || (eager && provideSingleton))
     def from: ObjectType = factory.from
@@ -65,7 +67,7 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport {
+class Binder[A](design: Design, from: ObjectType) extends LogSupport {
 
   def to[B <: A : ru.TypeTag]: Design = {
     val to = ObjectType.of[B]
@@ -110,7 +112,6 @@ class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport
       design.addBinding(SingletonBinding(from, to, true))
     }
   }
-
   def toSingleton: Design = {
     design.addBinding(SingletonBinding(from, from, false))
   }

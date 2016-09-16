@@ -32,6 +32,7 @@ class SessionTest extends AirframeSpec {
     }
 
     "pre-compile singleton binding" taggedAs("singleton-inject") in {
+      // HelloBind should be instantiated without using runtime-eval
       val session = newDesign
                     .bind[HelloBind].toEagerSingleton
                     .newSession

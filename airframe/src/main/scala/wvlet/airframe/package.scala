@@ -19,6 +19,7 @@ import wvlet.obj.ObjectType
 
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
+import scala.language.implicitConversions
 
 /**
   *
