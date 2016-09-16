@@ -162,7 +162,7 @@ finally {
 ```
 Note that however AsyncHandler has usually higher overhead than the default handler since the asynchronous process involves locking and signal calls. 
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
-LogRotationHandler already optimizes logging to files, so you don't needd to use AsyncHandler with LogRotationHandler. 
+LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler. 
 
 ## Internals
 

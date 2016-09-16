@@ -68,6 +68,5 @@ lazy val wvletLog =
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "ch.qos.logback" % "logback-core" % "1.1.7",
       "org.scalatest" %% "scalatest" % "3.0.0" % "test"
-//      "com.twitter" %% "util-logging" % "6.37.0"
     )
   )

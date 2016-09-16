@@ -1,6 +1,5 @@
 package wvlet.log
 
-//import com.twitter.{logging => tw}
 import wvlet.log.LogFormatter.BareFormatter
 import wvlet.log.io.IOUtil._
 
@@ -43,57 +42,29 @@ class AsyncHandlerTest extends Spec {
       al.setLogLevel(LogLevel.INFO)
       sl.setLogLevel(LogLevel.INFO)
 
-//      val tal = tw.Logger("wvlet.log.twasync")
-//      val tsl = tw.Logger("wvlet.log.twsync")
-//      tal.setLevel(tw.Level.INFO)
-//      tsl.setLevel(tw.Level.INFO)
+      val result = for ((handlerName, handler) <- Seq(("log-with-heavy-handler", HeavyHandler), ("log-with-fast-handler", NullHandler))) yield {
+        time(s"${handlerName}", repeat = R0, blockRepeat = R1) {
+          withResource(new AsyncHandler(handler)) { asyncHandler =>
+            // async
+            al.resetHandler(asyncHandler)
+            // sync
+            sl.resetHandler(handler)
 
-      val t = time("logger", repeat = R0, blockRepeat = R1) {
-        val b1 = HeavyHandler
-        val b2 = HeavyHandler
+            block("async") {
+              for (i <- (0 until N).par) {
+                al.info(s"hello world: ${i}")
+              }
+            }
 
-        withResource(new AsyncHandler(b1)) { h =>
-          // async
-          al.resetHandler(h)
-          // sync
-          sl.resetHandler(b2)
-
-//          // com.twitter.logging async
-//          tal.clearHandlers()
-//          tal.addHandler(tw.QueueingHandler(handler = () => TwitterHeavyHandler)())
-//          tal.setUseParentHandlers(false)
-//
-//          // com.twitte.logging sync
-//          tsl.clearHandlers()
-//          tsl.setUseParentHandlers(false)
-//          tsl.addHandler(TwitterHeavyHandler)
-
-          block("async") {
-            for (i <- (0 until N).par) {
-              al.info(s"hello world: ${i}")
+            block("sync") {
+              for (i <- (0 until N).par) {
+                sl.info(s"hello world: ${i}")
+              }
             }
           }
-
-          block("sync") {
-            for (i <- (0 until N).par) {
-              sl.info(s"hello world: ${i}")
-            }
-          }
-
-          // com.twitter.util does not support Scala 2.12
-//          block("twitter-async") {
-//            for (i <- (0 until N).par) {
-//              tal.info(s"hello world: ${i}")
-//            }
-//          }
-//
-//          block("twitter-sync") {
-//            for (i <- (0 until N).par) {
-//              tsl.info(s"hello world: ${i}")
-//            }
-//          }
         }
       }
+      val t = result(0) // heavy handler result
       t("async").averageWithoutMinMax should be < t("sync").averageWithoutMinMax
     }
   }
@@ -106,14 +77,3 @@ object HeavyHandler extends java.util.logging.Handler {
   }
   override def close(): Unit = {}
 }
-
-//object TwitterHeavyHandler extends tw.Handler(tw.BareFormatter, None) {
-//  def publish(record: java.util.logging.LogRecord) {
-//    Thread.sleep(1)
-//  }
-//  def close() {}
-//  def flush() {}
-//
-//  // for java compatibility
-//  def get(): this.type = this
-//}
