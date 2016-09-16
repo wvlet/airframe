@@ -102,14 +102,14 @@ class AsyncHandlerTest extends Spec {
 object HeavyHandler extends java.util.logging.Handler {
   override def flush(): Unit = {}
   override def publish(record: java.util.logging.LogRecord): Unit = {
-    Thread.sleep(0, 1)
+    Thread.sleep(1)
   }
   override def close(): Unit = {}
 }
 
 //object TwitterHeavyHandler extends tw.Handler(tw.BareFormatter, None) {
 //  def publish(record: java.util.logging.LogRecord) {
-//    Thread.sleep(0, 1)
+//    Thread.sleep(1)
 //  }
 //  def close() {}
 //  def flush() {}
