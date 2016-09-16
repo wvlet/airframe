@@ -35,13 +35,15 @@ class AsyncHandler(parent: jl.Handler)
   executor.submit(new Runnable {
     override def run(): Unit = {
       while (!closed.get()) {
-        val record: Option[jl.LogRecord] = guard {
+        val record: jl.LogRecord = guard {
           if (queue.isEmpty) {
             isNotEmpty.await()
           }
-          Option(queue.pollFirst())
+          queue.pollFirst()
         }
-        record.map(parent.publish _)
+        if(record != null) {
+          parent.publish(record)
+        }
       }
     }
   })
@@ -61,7 +63,7 @@ class AsyncHandler(parent: jl.Handler)
   override def publish(record: jl.LogRecord): Unit = {
     guard {
       queue.addLast(record)
-      isNotEmpty.signalAll()
+      isNotEmpty.signal()
     }
   }
 

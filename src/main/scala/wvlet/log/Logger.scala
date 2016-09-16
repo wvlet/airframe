@@ -142,7 +142,6 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
       formatted
     }
   }
-
 }
 
 object Logger {
@@ -303,5 +302,4 @@ object Logger {
       name
     }
   }
-
 }
