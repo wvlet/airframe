@@ -35,7 +35,7 @@ class AsyncHandlerTest extends Spec {
     "not block at the logging code" in {
       // We cannot use large N since Twitter's QueueingHandler drops the log requests upon high concurrent logging
       val N = 100
-      val R0 = 100
+      val R0 = 10
       val R1 = 1
 
       val al = Logger("wvlet.log.asynchronous")
