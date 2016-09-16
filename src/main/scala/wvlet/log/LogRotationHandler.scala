@@ -13,7 +13,7 @@
  */
 package wvlet.log
 
-import java.io.File
+import java.io.{File, Flushable}
 import java.nio.charset.StandardCharsets
 import java.util.logging.ErrorManager
 import java.util.{logging => jl}
@@ -50,7 +50,11 @@ class LogRotationHandler(fileName: String,
                          formatter: LogFormatter = AppLogFormatter,
                          logFileExt: String = ".log",
                          tempFileExt: String = ".tmp"
-                        ) extends jl.Handler {
+                        )
+  extends jl.Handler
+    with AutoCloseable
+    with Flushable
+{
 
   import LogRotationHandler._
 
