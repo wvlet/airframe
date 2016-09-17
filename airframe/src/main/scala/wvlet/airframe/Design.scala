@@ -20,6 +20,7 @@ import wvlet.obj.ObjectType
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
 
+
 /**
   * Immutable airframe design
   */
@@ -29,9 +30,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding ++ other.binding)
   }
 
-  def bind[A:ru.TypeTag]: Binder[A] = {
-    bind(ObjectType.of[A]).asInstanceOf[Binder[A]]
-  }
+  def bind[A:ru.TypeTag]: Binder[A] = macro AirframeMacros.designBindImpl[A]
 
   def bind(t: ObjectType): Binder[Any] = {
     val b = new Binder[Any](this, t)
@@ -62,4 +61,8 @@ object Design {
     * Empty design.
     */
   val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
+
+  implicit class DesignAccess(design: Design) {
+    def addBinding(b:Binding) = design.addBinding(b)
+  }
 }

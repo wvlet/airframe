@@ -16,19 +16,25 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
+import wvlet.airframe.AirframeMacros._
 
+import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
 
 object Binder {
   sealed trait Binding {
-    def forSingleton : Boolean = false
+    def forSingleton: Boolean = false
     def from: ObjectType
   }
-  case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding
+  case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding {
+    if(from == to) {
+      throw new CYCLIC_DEPENDENCY(Set(to))
+    }
+  }
   case class SingletonBinding(from: ObjectType, to: ObjectType, isEager: Boolean) extends Binding {
     override def forSingleton: Boolean = true
   }
-  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager:Boolean)
+  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager: Boolean)
     extends Binding {
     assert(!eager || (eager && provideSingleton))
     def from: ObjectType = factory.from
@@ -59,6 +65,29 @@ object Binder {
       }
     }
   }
+
+  /**
+    * To provide an access to internal Binder methods
+    */
+  implicit class BinderAccess[A](binder:Binder[A]) {
+    def toProviderD1[D1: ru.TypeTag](factory: (D1) => A, singleton: Boolean, eager: Boolean) : Design =
+      binder.toProviderD1[D1](factory, singleton, eager)
+
+    def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A, singleton: Boolean, eager: Boolean) : Design =
+      binder.toProviderD2[D1, D2](factory, singleton, eager)
+
+    def toProviderD3[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+    (factory: (D1, D2, D3) => A, singleton: Boolean, eager: Boolean): Design =
+      binder.toProviderD3[D1, D2, D3](factory, singleton, eager)
+
+    def toProviderD4[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+    (factory: (D1, D2, D3, D4) => A, singleton: Boolean, eager: Boolean): Design =
+      binder.toProviderD4[D1, D2, D3, D4](factory, singleton, eager)
+
+    def toProviderD5[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
+    (factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean, eager: Boolean): Design =
+      binder.toProviderD5[D1, D2, D3, D4, D5](factory, singleton, eager)
+  }
 }
 
 import wvlet.airframe.Binder._
@@ -66,18 +95,9 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport {
+class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
 
-  def to[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(ClassBinding(from, to))
-    }
-  }
+  def to[B <: A : ru.TypeTag]: Design = macro binderToImpl[B]
 
   /**
     * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.
@@ -90,27 +110,9 @@ class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport
     design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true))
   }
 
-  def toSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(SingletonBinding(from, to, false))
-    }
-  }
+  def toSingletonOf[B <: A : ru.TypeTag]: Design = macro binderToSingletonOfImpl[B]
 
-  def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = {
-    val to = ObjectType.of[B]
-    if (from == to) {
-      warn(s"Binding to the same type is not allowed: ${from.name}")
-      throw new CYCLIC_DEPENDENCY(Set(to))
-    }
-    else {
-      design.addBinding(SingletonBinding(from, to, true))
-    }
-  }
+  def toEagerSingletonOf[B <: A : ru.TypeTag]: Design = macro binderToEagerSingletonOfImpl[B]
 
   def toSingleton: Design = {
     design.addBinding(SingletonBinding(from, from, false))
@@ -120,54 +122,39 @@ class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport
     design.addBinding(SingletonBinding(from, from, true))
   }
 
-  def toProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
-    toProviderD1(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
-    toProviderD1(factory, true, false)
-  }
-  def toEagerSingletonProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
-    toProviderD1(factory, true, true)
-  }
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
-    toProviderD2(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
-    toProviderD2(factory, true, false)
-  }
-  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
-    toProviderD2(factory, true, true)
-  }
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
-    toProviderD3(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
-    toProviderD3(factory, true, false)
-  }
-  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
-    toProviderD3(factory, true, true)
-  }
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
-    toProviderD4(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
-    toProviderD4(factory, true, false)
-  }
-  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
-    toProviderD4(factory, true, true)
-  }
+  def toProvider[D1: ru.TypeTag]
+  (factory: D1 => A): Design = macro bindToProvider1[D1]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A): Design = macro bindToProvider2[D1, D2]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  (factory: (D1, D2, D3) => A): Design = macro bindToProvider3[D1, D2, D3]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  (factory: (D1, D2, D3, D4) => A): Design = macro bindToProvider4[D1, D2, D3, D4]
   def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-  (factory: (D1, D2, D3, D4, D5) => A): Design = {
-    toProviderD5(factory, false, false)
-  }
+  (factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToProvider5[D1, D2, D3, D4, D5]
+
+  def toSingletonProvider[D1: ru.TypeTag]
+  (factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  (factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  (factory: (D1, D2, D3, D4) => A): Design = macro bindToSingletonProvider4[D1, D2, D3, D4]
   def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-  (factory: (D1, D2, D3, D4, D5) => A): Design = {
-    toProviderD5(factory, true, false)
-  }
+  (factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
+
+  def toEagerSingletonProvider[D1: ru.TypeTag]
+  (factory: D1 => A): Design = macro bindToEagerSingletonProvider1[D1]
+  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A): Design = macro bindToEagerSingletonProvider2[D1, D2]
+  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  (factory: (D1, D2, D3) => A): Design = macro bindToEagerSingletonProvider3[D1, D2, D3]
+  def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  (factory: (D1, D2, D3, D4) => A): Design = macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
   def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-  (factory: (D1, D2, D3, D4, D5) => A): Design = {
-    toProviderD5(factory, true, true)
-  }
+  (factory: (D1, D2, D3, D4, D5) => A) : Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
+
 
   private def toProviderD1[D1: ru.TypeTag]
   (factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
@@ -181,7 +168,7 @@ class Binder[A: ru.TypeTag](design: Design, from: ObjectType) extends LogSupport
     ))
   }
 
-  private def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag]
+  private[airframe] def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag]
   (factory: (D1, D2) => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(

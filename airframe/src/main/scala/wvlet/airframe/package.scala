@@ -13,12 +13,15 @@
  */
 package wvlet
 
+import java.util.concurrent.ConcurrentHashMap
+
 import wvlet.airframe.AirframeMacros._
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
 
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
+import scala.language.implicitConversions
 
 /**
   *
@@ -79,6 +82,10 @@ package object airframe {
       dep
     }
   }
+
+  // For internal use to pre-compile objects
+  import scala.collection.JavaConverters._
+  val factoryCache = new ConcurrentHashMap[Class[_], Session => Any].asScala
 
   import wvlet.obj.tag._
 
