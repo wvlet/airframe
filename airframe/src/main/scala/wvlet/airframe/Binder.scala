@@ -67,7 +67,7 @@ object Binder {
   }
 
   /**
-    * To provide an access to internal Binder method
+    * To provide an access to internal Binder methods
     */
   implicit class BinderAccess[A](binder:Binder[A]) {
     def toProviderD1[D1: ru.TypeTag](factory: (D1) => A, singleton: Boolean, eager: Boolean) : Design =
@@ -122,20 +122,27 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
     design.addBinding(SingletonBinding(from, from, true))
   }
 
-  def toProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
-    toProviderD1(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag](factory: D1 => A): Design = {
-    toProviderD1(factory, true, false)
-  }
+  def toProvider[D1: ru.TypeTag]
+  (factory: D1 => A): Design = macro bindToProvider1[D1]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A): Design = macro bindToProvider2[D1, D2]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  (factory: (D1, D2, D3) => A): Design = macro bindToProvider3[D1, D2, D3]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  (factory: (D1, D2, D3, D4) => A): Design = macro bindToProvider4[D1, D2, D3, D4]
+  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
+  (factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToProvider5[D1, D2, D3, D4, D5]
 
-
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
-    toProviderD2(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A): Design = {
-    toProviderD2(factory, true, false)
-  }
+  def toSingletonProvider[D1: ru.TypeTag]
+  (factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag]
+  (factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  (factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  (factory: (D1, D2, D3, D4) => A): Design = macro bindToSingletonProvider4[D1, D2, D3, D4]
+  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
+  (factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
 
   def toEagerSingletonProvider[D1: ru.TypeTag]
   (factory: D1 => A): Design = macro bindToEagerSingletonProvider1[D1]
@@ -148,27 +155,6 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
   def toEagerSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
   (factory: (D1, D2, D3, D4, D5) => A) : Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
 
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
-    toProviderD3(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag](factory: (D1, D2, D3) => A): Design = {
-    toProviderD3(factory, true, false)
-  }
-
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
-    toProviderD4(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag](factory: (D1, D2, D3, D4) => A): Design = {
-    toProviderD4(factory, true, false)
-  }
-  def toProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-  (factory: (D1, D2, D3, D4, D5) => A): Design = {
-    toProviderD5(factory, false, false)
-  }
-  def toSingletonProvider[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-  (factory: (D1, D2, D3, D4, D5) => A): Design = {
-    toProviderD5(factory, true, false)
-  }
 
   private def toProviderD1[D1: ru.TypeTag]
   (factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
