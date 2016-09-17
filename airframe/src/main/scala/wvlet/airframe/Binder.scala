@@ -156,7 +156,7 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
   (factory: (D1, D2, D3, D4, D5) => A) : Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
 
 
-  private def toProviderD1[D1: ru.TypeTag]
+  private[airframe] def toProviderD1[D1: ru.TypeTag]
   (factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(
@@ -182,7 +182,7 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
     ))
   }
 
-  private def toProviderD3[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
+  private[airframe] def toProviderD3[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
   (factory: (D1, D2, D3) => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(
@@ -197,7 +197,7 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
     ))
   }
 
-  private def toProviderD4[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
+  private[airframe] def toProviderD4[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
   (factory: (D1, D2, D3, D4) => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(
@@ -213,7 +213,7 @@ class Binder[A](val design: Design, val from: ObjectType) extends LogSupport {
     ))
   }
 
-  private def toProviderD5[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
+  private[airframe] def toProviderD5[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
   (factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(
