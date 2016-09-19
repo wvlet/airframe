@@ -11,7 +11,7 @@ val buildSettings = Seq[Setting[_]](
   incOptions := incOptions.value.withNameHashing(true),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
-  scalacOptions ++= Seq("-feature"),
+  scalacOptions ++= Seq("-feature", "-deprecation"),
   sonatypeProfileName := "org.wvlet",
   pomExtra := {
   <url>https://github.com/wvlet/airframe</url>

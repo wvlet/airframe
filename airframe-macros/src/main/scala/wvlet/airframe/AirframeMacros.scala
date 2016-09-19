@@ -14,8 +14,8 @@
 package wvlet.airframe
 
 import scala.language.experimental.macros
-import scala.reflect.macros.whitebox.Context
-import scala.reflect.{macros => sm}
+import scala.reflect.macros.blackbox.Context
+import scala.reflect.macros.{blackbox => sm}
 
 private[wvlet] object AirframeMacros {
 
