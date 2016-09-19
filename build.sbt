@@ -12,6 +12,7 @@ val buildSettings = Seq[Setting[_]](
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
   concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
+  scalacOptions ++= Seq("-feature", "-deprecation"),
   incOptions := incOptions.value.withNameHashing(true),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
