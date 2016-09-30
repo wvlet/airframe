@@ -15,6 +15,9 @@ package wvlet.log
 
 import java.io.File
 
+import wvlet.log.io.IOUtil
+import wvlet.log.io.IOUtil._
+
 /**
   *
   */
@@ -24,30 +27,50 @@ class LogRotationHandlerTest extends Spec {
 
     "rotate log files" in {
       val l = Logger("wvlet.log.rotation")
-      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
+      withTempFile("log-rotation-test.log", "target") { f =>
+        val h = new LogRotationHandler(f.getPath, 5, 10)
+        l.resetHandler(h)
 
-      l.resetHandler(h)
+        l.info("test message")
+        l.info("this logger handler rotates logs and compressed the log archives in .gz format")
+        l.info("this is the end of log files")
+        h.flush()
+        h.close()
 
-      l.info("test message")
-      l.info("this logger handler rotates logs and compressed the log archives in .gz format")
-      l.info("this is the end of log files")
-      h.flush()
-      h.close()
-
-      new File("target/log-rotation-test.log").exists() shouldBe true
+        f.exists() shouldBe true
+        f.length > 0 shouldBe true
+      }
     }
 
     "rescue orphaned log files" in {
       val l = Logger("wvlet.log.rotation")
       val tmp = new File("target/log-rotation-test.log.tmp")
-      if(!tmp.exists()) {
-        tmp.createNewFile()
-      }
-      tmp.exists() shouldBe true
-      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
+        if (!tmp.exists()) {
+          tmp.createNewFile()
+        }
+        tmp.exists() shouldBe true
+        val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
 
-      tmp.exists() shouldBe false
+        tmp.exists() shouldBe false
     }
+  }
 
+  "FileHandler" should {
+    "output log to a file" in {
+      val l = Logger("wvlet.log.filehandler")
+      withTempFile("log-file-test.log", "target") { f =>
+        val h = new FileHandler(f.getPath)
+        l.resetHandler(h)
+
+        l.info("test message")
+        l.info("this logger handler rotates logs and compressed the log archives in .gz format")
+        l.info("this is the end of log files")
+        h.flush()
+        h.close()
+
+        f.exists() shouldBe true
+        f.length > 0 shouldBe true
+      }
+    }
   }
 }

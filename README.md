@@ -139,10 +139,18 @@ libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 To write and rotate your logs, use `LogRotationHandler`:
 ```
 logger.resetHandler(new LogRotationHandler(
-    fileName = "your.log",
+    fileName = "your-app.log",
     maxNumberOfFiles = 100, // rotate up to 100 log files
     maxSizeInBytes = 100 * 1024 * 1024 // 100MB
     AppLogFormatter // Any log formatter you like
+))
+```
+
+If you simply need to output logs to a single file without any rotation, use `FileHandler`:
+```scala
+logger.resetHandler(new FileHandler(
+    fileName = "your-app.log", // Log file name
+    formatter = AppLogFormatter // Any log formatter you like
 ))
 ```
 
