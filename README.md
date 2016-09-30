@@ -154,7 +154,7 @@ If you know your LogHandler is a heavy process (e.g., writing to network or slow
 ```scala
 val asyncHandler = new AsyncHandler(a heavy parent log handler)
 try {
-  logger.resetHandler(async)
+  logger.resetHandler(asyncHandler)
 }   
 finally {
   asyncHandler.close // To flush unwritten log messages

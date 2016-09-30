@@ -276,7 +276,7 @@ class StopWatch {
   private var elapsedTimeAccumulated: Double = 0L
   private var state                          = State.RUNNING
 
-  private val NANO_UNIT: Double = 1000000000L
+  private val NANO_UNIT: Double = 1000000000d
 
   /**
     * Gets the elapsed time since this instance is created in seconds.
@@ -296,7 +296,7 @@ class StopWatch {
 
   /**
     * Reset the stop watch. The subsequent calls to
-    * getElapsedTime or getIntervalTiem will measure the time interval
+    * getElapsedTime or getIntervalTime will measure the time interval
     * beginning from this method call.
     */
   def reset = {
@@ -318,9 +318,9 @@ class StopWatch {
     val now = System.nanoTime()
     val diff = now - lastSystemTime
     elapsedTimeAccumulated += diff
-    lastSystemTime = now;
+    lastSystemTime = now
 
-    state = State.STOPPED;
+    state = State.STOPPED
     diff / NANO_UNIT
   }
 
@@ -332,8 +332,8 @@ class StopWatch {
       return
     }
 
-    lastSystemTime = System.nanoTime();
-    state = State.RUNNING;
+    lastSystemTime = System.nanoTime()
+    state = State.RUNNING
   }
 
   def reportElapsedTime: String = {
