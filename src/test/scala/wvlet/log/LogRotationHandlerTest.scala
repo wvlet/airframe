@@ -15,7 +15,6 @@ package wvlet.log
 
 import java.io.File
 
-import wvlet.log.io.IOUtil
 import wvlet.log.io.IOUtil._
 
 /**
@@ -45,13 +44,13 @@ class LogRotationHandlerTest extends Spec {
     "rescue orphaned log files" in {
       val l = Logger("wvlet.log.rotation")
       val tmp = new File("target/log-rotation-test.log.tmp")
-        if (!tmp.exists()) {
-          tmp.createNewFile()
-        }
-        tmp.exists() shouldBe true
-        val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
+      if (!tmp.exists()) {
+        tmp.createNewFile()
+      }
+      tmp.exists() shouldBe true
+      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
 
-        tmp.exists() shouldBe false
+      tmp.exists() shouldBe false
     }
   }
 
