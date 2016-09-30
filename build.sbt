@@ -5,7 +5,8 @@ val buildSettings = Seq[Setting[_]](
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq(
     "2.11.8",
-    "2.12.0-M5"
+    "2.12.0-M5",
+    "2.12.0-RC1"
   ),
   organization := "org.wvlet",
   crossPaths := true,
@@ -53,10 +54,10 @@ val buildSettings = Seq[Setting[_]](
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    ReleaseStep(action = Command.process("publishSigned", _)),
+    ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
     pushChanges
   )
 )

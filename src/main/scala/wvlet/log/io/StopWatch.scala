@@ -16,6 +16,8 @@
 
 package wvlet.log.io
 
+import java.util
+
 import wvlet.log.{LogLevel, LogRecord, Logger}
 
 import scala.collection.mutable.{LinkedHashMap, Stack}
@@ -88,8 +90,9 @@ import scala.collection.mutable.{LinkedHashMap, Stack}
   * @author leo
   */
 trait Timer extends Serializable {
-  @transient private[this] val holder = new ThreadLocal[Stack[TimeReport]] {
-    override def initialValue() = new Stack[TimeReport]
+  import collection.JavaConverters._
+  @transient private[this] val holder = new ThreadLocal[util.ArrayDeque[TimeReport]] {
+    override def initialValue() = new util.ArrayDeque[TimeReport]()
   }
 
   private def contextStack = holder.get()
@@ -129,7 +132,7 @@ trait Timer extends Serializable {
   }
 
   protected def block[A](name: String)(f: => A): TimeReport = {
-    val m = contextStack.lastOption match {
+    val m = contextStack.asScala.lastOption match {
       case None => throw new IllegalStateException("block {} should be enclosed inside time {}")
       case Some(context) => {
         context.getOrElseUpdate(name, createNewBlock(name, context.blockRepeat, context.blockRepeat, f))

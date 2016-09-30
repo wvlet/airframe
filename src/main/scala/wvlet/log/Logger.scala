@@ -278,7 +278,7 @@ object Logger {
     logLevelScanner.stop
   }
 
-  def getSuccinctLoggerName[A](cl: Class[A]): String = {
+  def getSuccinctLoggerName(cl: Class[_]): String = {
     val name =
       if (cl.getName.contains("$anon$")) {
         val interfaces = cl.getInterfaces
