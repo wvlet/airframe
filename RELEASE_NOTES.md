@@ -1,5 +1,7 @@
 Release Notes
 ====
+## 1.1
+- Add AsyncHandler for logging heavy log writing process in a background thread
 
 ## 1.0
 - The first major release.
