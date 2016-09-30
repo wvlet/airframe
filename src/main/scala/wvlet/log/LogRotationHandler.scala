@@ -42,6 +42,15 @@ object LogRotationHandler {
 }
 
 /**
+  * Writing logs to a file without rotation. This is just an wrapper of LogRotationHandler
+  * @param fileName
+  * @param formatter
+  * @param logFileExt
+  */
+class FileHandler(fileName:String, formatter: LogFormatter = AppLogFormatter, logFileExt: String = ".log")
+   extends LogRotationHandler(fileName, maxNumberOfFiles = Integer.MAX_VALUE, maxSizeInBytes = Long.MaxValue, formatter = formatter, logFileExt = logFileExt)
+
+/**
   * Log rotation handler
   */
 class LogRotationHandler(fileName: String,
