@@ -120,7 +120,12 @@ object CustomLogFormatter extends LogFormatter {
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
 
-See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala).
+See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
+ - SourceCodeLogFormatter (with source code location) 
+ - AppLogFormatter (without source code location)
+ - IntelliJLogFormatter (for debugging using IntelliJ console)
+ - SimpleLogFormatter (just logger name and log message)
+ - BareFormatter (shows only log message)
 
 ### Using with slf4j
 
@@ -140,6 +145,24 @@ logger.resetHandler(new LogRotationHandler(
     AppLogFormatter // Any log formatter you like
 ))
 ```
+
+### Asynchronous logging
+
+If you know your LogHandler is a heavy process (e.g., writing to network or slow disks), you can use 
+`AsyncHandler` to do the logging in a background thread:
+
+```scala
+val asyncHandler = new AsyncHandler(a heavy parent log handler)
+try {
+  logger.resetHandler(asyncHandler)
+}   
+finally {
+  asyncHandler.close // To flush unwritten log messages
+}
+```
+Note that however AsyncHandler has usually higher overhead than the default handler since the asynchronous process involves locking and signal calls. 
+We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
+LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler. 
 
 ## Internals
 

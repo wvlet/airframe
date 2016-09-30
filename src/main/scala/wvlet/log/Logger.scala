@@ -18,7 +18,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import java.util.logging._
 import java.util.{Properties, logging => jl}
 
-import wvlet.log.LogFormatter.{AppLogFormatter, SourceCodeLogFormatter}
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.io.IOUtil.withResource
 
 import scala.annotation.tailrec
@@ -125,14 +125,13 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
     log(LogRecord(level, source, formatLog(message), cause))
   }
 
-  private def isMultiLine(str: String) = str.contains("\n")
+  protected def isMultiLine(str: String) = str.contains("\n")
 
-  def formatLog(message: Any): String = {
+  protected def formatLog(message: Any): String = {
     val formatted = message match {
       case null => ""
       case e: Error => LogFormatter.formatStacktrace(e)
-      case e: Exception => LogFormatter.
-                           formatStacktrace(e)
+      case e: Exception => LogFormatter.formatStacktrace(e)
       case _ => message.toString
     }
 
@@ -143,7 +142,6 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
       formatted
     }
   }
-
 }
 
 object Logger {
@@ -179,10 +177,11 @@ object Logger {
 
   /**
     * Create a logger corresponding to a class
+    *
     * @tparam A
     * @return
     */
-  def of[A : ClassTag]: Logger = {
+  def of[A: ClassTag]: Logger = {
     apply(implicitly[ClassTag[A]].runtimeClass.getName)
   }
 
@@ -246,9 +245,10 @@ object Logger {
 
   /**
     * Scan the specified log level file
+    *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates:Seq[String]) {
+  def scanLogLevels(loglevelFileCandidates: Seq[String]) {
     LogLevelScanner.scan(loglevelFileCandidates, None)
   }
 
@@ -264,7 +264,7 @@ object Logger {
   /**
     * Schedule the log level scanner with the given configuration.
     */
-  def scheduleLogLevelScan(config:LogLevelScannerConfig) {
+  def scheduleLogLevelScan(config: LogLevelScannerConfig) {
     logLevelScanner.setConfig(config)
     logLevelScanner.start
   }
@@ -302,5 +302,4 @@ object Logger {
       name
     }
   }
-
 }
