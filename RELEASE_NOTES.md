@@ -2,6 +2,8 @@ Release Notes
 ====
 ## 1.1
 - Add AsyncHandler for logging heavy log writing process in a background thread
+- Add FileHandler 
+- Support Scala 2.12.0-RC1
 
 ## 1.0
 - The first major release.
