@@ -5,8 +5,7 @@ val buildSettings = Seq[Setting[_]](
   scalaVersion := "2.11.8",
   crossScalaVersions := Seq(
     "2.11.8",
-    "2.12.0-M5",
-    "2.12.0-RC1"
+    "2.12.0"
   ),
   organization := "org.wvlet",
   crossPaths := true,
