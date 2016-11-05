@@ -22,8 +22,7 @@ import scala.language.implicitConversions
   *
   */
 trait AirframeSpec extends WordSpec
-  with ShouldMatchers
-  with GivenWhenThen
+  with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
   with LogSupport {

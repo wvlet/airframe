@@ -2,8 +2,8 @@ import ReleaseTransformations._
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.11.8", "2.12.0"),
   organization := "org.wvlet",
-
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
@@ -49,12 +49,13 @@ val buildSettings = Seq[Setting[_]](
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    ReleaseStep(action = Command.process("publishSigned", _)),
+    ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
+    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
     pushChanges
-  )
+  ),
+  releaseCrossBuild := true
 )
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
@@ -63,7 +64,7 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
 
-val WVLET_VERSION="0.26"
+val WVLET_VERSION="0.27"
 
 lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
   buildSettings,
@@ -77,9 +78,9 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
     "org.wvlet" %% "wvlet-obj" % WVLET_VERSION,
-    "org.wvlet" %% "wvlet-log" % "1.0",
-    "org.scalatest" %% "scalatest" % "2.2.+" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.11.4" % "test"
+    "org.wvlet" %% "wvlet-log" % "1.1",
+    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
   ),
   // include the macro classes and resources in the main jar
   mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
