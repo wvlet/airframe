@@ -28,7 +28,7 @@ object LazyF0 {
   */
 class LazyF0[+R](f: => R) extends Serializable with Cloneable {
 
-  def copy : LazyF0[R] = clone().asInstanceOf[this.type]
+  def copy: LazyF0[R] = clone().asInstanceOf[this.type]
 
   /**
     * Obtain the function class
@@ -47,19 +47,22 @@ class LazyF0[+R](f: => R) extends Serializable with Cloneable {
   /**
     * This definition is necessary to let compiler generate the private field 'f' that
     * holds a reference to the call-by-name function.
+    *
     * @return
     */
-  def eval : R = f
+  def eval: R = f
 
   override def hashCode(): Int = functionClass.hashCode()
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[LazyF0[_]]
 
-  override def equals(other: Any): Boolean = other match {
-    case that: LazyF0[_] =>
-      (that canEqual this) &&
-        functionClass == that.functionClass &&
-        eval == that.eval
-    case _ => false
+  override def equals(other: Any): Boolean = {
+    other match {
+      case that: LazyF0[_] =>
+        // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
+        // comparing functionClasses doesn't work
+        (that canEqual this) && eval == that.eval
+      case _ => false
+    }
   }
 }

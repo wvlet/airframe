@@ -15,8 +15,7 @@ package wvlet.airframe
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import wvlet.airframe.ProviderExample._
-import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.log.LogSupport
 
 object ProviderExample {
   case class D1(id: Int)
@@ -55,6 +54,8 @@ object ProviderExample {
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 
 }
+
+import wvlet.airframe.ProviderExample._
 
 trait ProviderExample {
   // Constructor binding
@@ -287,7 +288,7 @@ class ProviderTest extends AirframeSpec {
       p5 should be theSameInstanceAs s5.build[App]
     }
 
-    "serializable" in {
+    "serializable" taggedAs("ser") in {
       val testBinderDesign =
         providerDesign
         .bind[App].toProvider(provider1 _)
@@ -296,13 +297,8 @@ class ProviderTest extends AirframeSpec {
         .bind[App].toProvider(provider4 _)
         .bind[App].toProvider(provider5 _)
 
-      val b = new ByteArrayOutputStream()
-      val oo = new ObjectOutputStream(b)
-      oo.writeObject(testBinderDesign)
-      oo.close()
-
-      val oin = new ObjectInputStream(new ByteArrayInputStream(b.toByteArray))
-      val d = oin.readObject().asInstanceOf[Design]
+      val b = testBinderDesign.serialize
+      val d = Design.deserialize(b)
 
       val app = d.newSession.build[App]
       app shouldBe App(d1, d2, d3, d4, d5)

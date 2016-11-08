@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
+
 import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
@@ -54,6 +56,19 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
   def newSession : Session = {
     new SessionBuilder(this).create
   }
+
+  override def toString : String = {
+    s"Design:\n ${binding.mkString("\n ")}"
+  }
+
+  private[airframe] def serialize : Array[Byte] = {
+    val b = new ByteArrayOutputStream()
+    val oo = new ObjectOutputStream(b)
+    oo.writeObject(this)
+    oo.close()
+    b.toByteArray
+  }
+
 }
 
 object Design {
@@ -64,5 +79,12 @@ object Design {
 
   implicit class DesignAccess(design: Design) {
     def addBinding(b:Binding) = design.addBinding(b)
+  }
+
+  private[airframe] def deserialize(b: Array[Byte]) : Design = {
+    val in = new ByteArrayInputStream(b)
+    val oi = new ObjectInputStream(in)
+    val obj = oi.readObject().asInstanceOf[Design]
+    obj.asInstanceOf[Design]
   }
 }
