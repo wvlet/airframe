@@ -5,28 +5,30 @@
 [coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/log/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/log?branch=master
 
-
-wvlet-log is a library for adding fancy logging to your Scala application:
-
+wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations.
 
 ![screenshot](docs/wvlet-log.png)
 
 **Features**:
-- Based on JVM's built-in `java.util.logging` library. No need to add custom binding jars (e.g., logback-classic in slf4j)
-- Developer friendly: 
-  - Simple to use: Just add `wvlet.log.LogSupport` trait to your code.
-  - You can see the **source code locations** (line number and pos) of log messages.
-  - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
+- **Simple to use**
+  - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
+- **Fast and light-weight**
+  - wvlet-lot uses Scala macro based logging code generation. So log messages will be instantiated only when necessary.  
+  - wvlet-log is an extension of JVM's built-in `java.util.logging`. No need to add custom binding jars, such as logback-classic as in slf4j.
+- **Informative**
+  - ANSI colored logging support.
+  - You can also show the **source code locations** (line number and pos) of log messages.
+- **Fully customizable** 
   - log levels can be changed at ease with the periodic log-level scanner.
-- Production ready
-  - Scala macro based logging code generation to instantiate log message only when necessary.  
-  - Built-in log file rotation handler.
   - You can also change the log level through the standard JMX interface for `java.util.logging`.  
-
-
+  - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
+- **Production ready**
+  - wvlet-log has built-in handlers for log file rotations, asynchronous logging.
+  - Scala 2.11, 2.12 support
+ 
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.11/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/)
 
 ```scala
 libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
