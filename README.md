@@ -109,7 +109,7 @@ This code will show:
 ```
 ### Pre-defined log formatters:
 Here is the list of pre-defined log formatters. 
- - **SourceCodeLogFormatter (with source code location) 
+ - **SourceCodeLogFormatter** (with source code location) 
  - **AppLogFormatter** (without source code location)
  - **TSVLogFormatter** (logging in TSV format)
  - **IntelliJLogFormatter** (for debugging using IntelliJ console)
