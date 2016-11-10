@@ -13,7 +13,7 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
 - **Fast and light-weight**
-  - wvlet-log uses Scala macros for efficiency; log messsgages will be instanciated only when the log level is effective. 
+  - wvlet-log uses Scala macros for efficiency; log messages will be instanciated only when the log level is effective. 
   - wvlet-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
 - **Informative**
   - ANSI colored logging support.
