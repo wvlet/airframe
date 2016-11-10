@@ -13,8 +13,8 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
 - **Fast and light-weight**
-  - wvlet-lot uses Scala macro based logging code generation. So log messages will be instantiated only when necessary.  
-  - wvlet-log is an extension of JVM's built-in `java.util.logging`. No need to add custom binding jars, such as logback-classic as in slf4j.
+  - wvlet-log uses Scala macros for efficiency; log messsgages will be instanciated only when the log level is effective. 
+  - wvlet-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
 - **Informative**
   - ANSI colored logging support.
   - You can also show the **source code locations** (line number and pos) of log messages.
@@ -107,7 +107,16 @@ This code will show:
 ```
 [MyApp$] log with source code - (MyApp.scala:6)
 ```
+### Pre-defined log formatters:
+Here is the list of pre-defined log formatters. 
+ - **SourceCodeLogFormatter (with source code location) 
+ - **AppLogFormatter** (without source code location)
+ - **TSVLogFormatter** (logging in TSV format)
+ - **IntelliJLogFormatter** (for debugging using IntelliJ console)
+ - **SimpleLogFormatter** (just logger name and log message)
+ - **BareFormatter** (shows only log message)
 
+### Customising LogFormatter
 You can also define your own LogFormatter:
 
 ```scala
@@ -121,13 +130,7 @@ object CustomLogFormatter extends LogFormatter {
 
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
-
-See also other examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
- - SourceCodeLogFormatter (with source code location) 
- - AppLogFormatter (without source code location)
- - IntelliJLogFormatter (for debugging using IntelliJ console)
- - SimpleLogFormatter (just logger name and log message)
- - BareFormatter (shows only log message)
+See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
 
 ### Using with slf4j
 
