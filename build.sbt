@@ -64,8 +64,6 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
 
-val WVLET_VERSION="0.27"
-
 lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
   buildSettings,
   publishArtifact := false,
@@ -77,7 +75,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
-    "org.wvlet" %% "wvlet-obj" % WVLET_VERSION,
+    "org.wvlet" %% "object-schema" % "1.0",
     "org.wvlet" %% "wvlet-log" % "1.1",
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
