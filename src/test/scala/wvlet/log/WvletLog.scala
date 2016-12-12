@@ -13,12 +13,24 @@
  */
 package wvlet.log
 
-import wvlet.log.LogFormatter.{AppLogFormatter, IntelliJLogFormatter, SimpleLogFormatter, SourceCodeLogFormatter}
+import wvlet.log.LogFormatter._
 
 /**
   *
   */
-class FancyLogging extends Spec with LogSupport{
+class WvletLog extends Spec with LogSupport {
+
+  def log(formatter:LogFormatter) {
+    println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$","")}]:")
+    logger.setFormatter(formatter)
+    logger.info("info log")
+    logger.debug("debug log")
+    logger.trace("trace log")
+    logger.warn("warn log")
+    logger.error("error log")
+    println
+  }
+
 
   "FancyLogging" should {
 
@@ -39,7 +51,24 @@ class FancyLogging extends Spec with LogSupport{
       error("And also it can show the stack trace", new Exception("Test message"))
       info(s"Usage is simple")
       warn(s"Just add wvlet.log.LogSupport trait to your application")
-
     }
+
+    "show log format examples" in {
+
+      try {
+        println
+        log(SourceCodeLogFormatter)
+        log(SimpleLogFormatter)
+        log(AppLogFormatter)
+        log(IntelliJLogFormatter)
+        log(TSVLogFormatter)
+        log(BareFormatter)
+      }
+      finally {
+        logger.resetLogLevel
+        logger.setFormatter(SourceCodeLogFormatter)
+      }
+    }
+
   }
 }
