@@ -55,6 +55,8 @@ class WvletLog extends Spec with LogSupport {
 
     "show log format examples" in {
 
+      val name = Thread.currentThread().getName
+      Thread.currentThread().setName("thread-1")
       try {
         println
         log(SourceCodeLogFormatter)
@@ -67,6 +69,7 @@ class WvletLog extends Spec with LogSupport {
       finally {
         logger.resetLogLevel
         logger.setFormatter(SourceCodeLogFormatter)
+        Thread.currentThread().setName(name)
       }
     }
 
