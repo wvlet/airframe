@@ -5,9 +5,9 @@
 [coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/log/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/log?branch=master
 
-wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations.
+wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in wvlet-log:
 
-![screenshot](docs/images/formatters.png)
+<p align="center"><img src="/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 
 **Features**:
 - **Simple to use**
