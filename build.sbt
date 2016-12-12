@@ -75,8 +75,6 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   libraryDependencies ++= Seq(
     "org.wvlet" %% "object-schema" % "1.0",
     "org.wvlet" %% "wvlet-log" % "1.1",
-    // closure cleaner
-    "org.ow2.asm" % "asm-all" % "4.1",
     // scalatest
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
