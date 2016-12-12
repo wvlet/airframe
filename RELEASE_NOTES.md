@@ -1,3 +1,6 @@
+0.9
+ - Add Scala 2.12 support
+
 0.8
  - Split the project into two sub projects: airframe and airframe-macro. However, you only need airframe.jar for using Airframe.
  - Improved the performance by replacing run-time code generation to compile-time code generation #25
