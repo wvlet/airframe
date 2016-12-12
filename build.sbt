@@ -59,7 +59,7 @@ lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
 
 compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).toTask("").value
 
-(compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
+(compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 
 lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
