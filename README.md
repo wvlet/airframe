@@ -139,6 +139,9 @@ If you are using slf4j, just add `slf4j-jdk14` to your dependency. The log messa
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 ```
 
+- See also the article, [How to start using wvlet-log with slf4j projects](http://blog.seratch.net/post/150202874933/how-to-start-using-wvlet-log-with-slf4j-projects), written by [@seratch](https://github.com/seratch) (author of skinny-framework, scalikejdbc, etc.)
+
+
 ### Writing and rotating logs with files 
 
 To write and rotate your logs, use `LogRotationHandler`:
