@@ -7,7 +7,7 @@
 
 wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations.
 
-![screenshot](docs/wvlet-log.png)
+![screenshot](docs/images/formatters.png)
 
 **Features**:
 - **Simple to use**
