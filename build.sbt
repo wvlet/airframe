@@ -1,8 +1,10 @@
 import ReleaseTransformations._
 
+scalaVersion := "2.12.1"
+
 val buildSettings = Seq[Setting[_]](
-  scalaVersion := "2.11.8",
-  crossScalaVersions := Seq("2.11.8", "2.12.0"),
+  scalaVersion := "2.12.1",
+  crossScalaVersions := Seq("2.12.1", "2.11.8"),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
