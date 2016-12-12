@@ -13,20 +13,27 @@
  */
 package wvlet.airframe
 
+import wvlet.log.LogSupport
 
-object SerializationTest {
+object SerializationTest extends LogSupport {
 
-  case class A1(v:Int = 0)
-  case class App(a1:A1)
+  case class A1(v: Int = 0)
+  case class App(a1: A1) extends LogSupport {
 
-  def provider1(a1:A1) : App = App(a1)
+  }
+
+  def provider1(a1: A1): App = {
+    val app = App(a1)
+    info(s"Created ${app} from ${a1}")
+    app
+  }
 
   val d = Design.blanc
           .bind[A1].toInstance(A1(1))
           .bind[App].toProvider(provider1 _)
 }
 
-import SerializationTest._
+import wvlet.airframe.SerializationTest._
 
 class SerializationTest extends AirframeSpec {
 

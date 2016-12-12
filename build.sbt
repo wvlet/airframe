@@ -15,14 +15,9 @@ val buildSettings = Seq[Setting[_]](
   updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),
   sonatypeProfileName := "org.wvlet",
+  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   pomExtra := {
   <url>https://github.com/wvlet/airframe</url>
-    <licenses>
-      <license>
-        <name>Apache 2</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      </license>
-    </licenses>
     <scm>
       <connection>scm:git:github.com/wvlet/airframe.git</connection>
       <developerConnection>scm:git:git@github.com:wvlet/airframe.git</developerConnection>
@@ -66,6 +61,7 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) <<= (compile in Compile) dependsOn compileScalastyle
 
+
 lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
   buildSettings,
   publishArtifact := false,
@@ -79,6 +75,9 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   libraryDependencies ++= Seq(
     "org.wvlet" %% "object-schema" % "1.0",
     "org.wvlet" %% "wvlet-log" % "1.1",
+    // closure cleaner
+    "org.ow2.asm" % "asm-all" % "4.1",
+    // scalatest
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
   ),
