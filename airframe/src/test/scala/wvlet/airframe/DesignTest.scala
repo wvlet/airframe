@@ -41,7 +41,7 @@ object Alias {
 class DesignTest extends AirframeSpec {
 
   val d0 = Design.blanc
-  val d1 =
+  lazy val d1 =
     d0
     .bind[Message].to[Hello]
     .bind[Hello].toInstance(Hello("world"))
@@ -75,17 +75,18 @@ class DesignTest extends AirframeSpec {
       hasProductionMessage(dd) shouldBe true
     }
 
-    "be serializable" in {
-      val b = new ByteArrayOutputStream()
-      val oo = new ObjectOutputStream(b)
-      oo.writeObject(d1)
-      oo.close()
 
-      val in = new ByteArrayInputStream(b.toByteArray)
-      val oi = new ObjectInputStream(in)
-      val obj = oi.readObject().asInstanceOf[Design]
+    "be serializable" taggedAs("ser") in {
+      val b = d1.serialize
+      val d1s = Design.deserialize(b)
+      d1s shouldBe (d1)
+    }
 
-      obj shouldBe (d1)
+    "serialize instance binding" taggedAs("ser1") in {
+      val d = Design.blanc.bind[Message].toInstance(Hello("world"))
+      val b = d.serialize
+      val ds = Design.deserialize(b)
+      ds shouldBe (d)
     }
 
     "bind providers" in {

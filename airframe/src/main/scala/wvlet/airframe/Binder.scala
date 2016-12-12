@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import java.util.UUID
+
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.log.LogSupport
 import wvlet.obj.ObjectType
@@ -25,6 +27,7 @@ object Binder {
   sealed trait Binding {
     def forSingleton: Boolean = false
     def from: ObjectType
+
   }
   case class ClassBinding(from: ObjectType, to: ObjectType) extends Binding {
     if(from == to) {
@@ -39,6 +42,19 @@ object Binder {
     assert(!eager || (eager && provideSingleton))
     def from: ObjectType = factory.from
     override def forSingleton: Boolean = provideSingleton
+
+    private val uuid : UUID = UUID.randomUUID()
+
+    override def hashCode(): Int = { uuid.hashCode()  }
+    override def equals(other: Any): Boolean = {
+      other match {
+        case that: ProviderBinding =>
+          // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
+            // comparing functionClasses doesn't work
+            (that canEqual this) && this.uuid == that.uuid
+        case _ => false
+      }
+    }
   }
 
   case class DependencyFactory(from: ObjectType,

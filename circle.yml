@@ -7,13 +7,12 @@ dependencies:
   cache_directories:
     - "~/.sbt"
     - "~/.ivy2"
-  pre:
-    - ./sbt sbt-version
   override:
-    - ./sbt compile
+    - ./sbt "+ compile"
 
 test:
   override:
-    - ./sbt coverage test coverageReport && ./sbt coverageAggregate
-  post:
-    - ./sbt coveralls
+     - ./sbt "+ test"
+#    - ./sbt coverage test coverageReport && ./sbt coverageAggregate
+#  post:
+#    - ./sbt coveralls
