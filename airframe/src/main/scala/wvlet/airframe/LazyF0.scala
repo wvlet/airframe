@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 
+import java.util.UUID
 
 object LazyF0 {
   def apply[R](f: => R) : LazyF0[R] = new LazyF0(f)
@@ -27,6 +28,9 @@ object LazyF0 {
   * @tparam R
   */
 class LazyF0[+R](f: => R) extends Serializable with Cloneable {
+
+  // Generates uuid to make sure the identity after serde
+  private val uuid = UUID.randomUUID()
 
   def copy: LazyF0[R] = clone().asInstanceOf[this.type]
 
@@ -52,7 +56,9 @@ class LazyF0[+R](f: => R) extends Serializable with Cloneable {
     */
   def eval: R = f
 
-  override def hashCode(): Int = functionClass.hashCode()
+  override def hashCode(): Int = {
+    uuid.hashCode()
+  }
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[LazyF0[_]]
 
@@ -61,7 +67,7 @@ class LazyF0[+R](f: => R) extends Serializable with Cloneable {
       case that: LazyF0[_] =>
         // Scala 2.12 generates Lambda for Function0, and the class might be generated every time, so
         // comparing functionClasses doesn't work
-        (that canEqual this) && eval == that.eval
+        (that canEqual this) && this.uuid == that.uuid
       case _ => false
     }
   }

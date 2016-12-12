@@ -42,6 +42,10 @@ class SerializationTest extends AirframeSpec {
       val b = d.serialize
       val ds = Design.deserialize(b)
       ds shouldEqual d
+
+      val s = ds.newSession
+      s.build[A1] shouldBe A1(1)
+      s.build[App] shouldBe App(A1(1))
     }
   }
 }
