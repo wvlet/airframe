@@ -16,8 +16,8 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
+  homepage := Some(url("https://github.com/wvlet/airframe")),
   pomExtra := {
-  <url>https://github.com/wvlet/airframe</url>
     <scm>
       <connection>scm:git:github.com/wvlet/airframe.git</connection>
       <developerConnection>scm:git:git@github.com:wvlet/airframe.git</developerConnection>
