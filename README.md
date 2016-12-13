@@ -91,6 +91,40 @@ To change the log file path, you can use `Logger.scheduleLogLevelScan(file paths
 In debugging your application, create `src/test/resources/log-test.properties` file, and
 call `Logger.scheduleLogLevelScan` before running test cases. This is useful for quickly checking the log messages. 
 
+### Using LoglevelScanner with ScalaTest
+
+To scan log level properties periodically with [ScalaTest](http://www.scalatest.org/), define the base trait as follows:
+
+**[Spec.scala](https://github.com/wvlet/log/blob/master/src/test/scala/wvlet/log/Spec.scala)**
+```scala
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpec, _}
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
+
+trait Spec extends WordSpec with Matchers with BeforeAndAfterAll with LogSupport {
+  // Set the default log formatter
+  Logger.setDefaultFormatter(SourceCodeLogFormatter)
+
+  override protected def beforeAll(): Unit = {
+    // Run LogLevel scanner (log-test.properties or log.properties in classpath) every 1 minute
+    Logger.scheduleLogLevelScan
+    super.beforeAll()
+  }
+
+  override protected def afterAll(): Unit = {
+    Logger.stopScheduledLogLevelScan
+    super.afterAll()
+  }
+}
+
+class YourSpec extends Spec {
+   "my application" should {
+      "run correctly" in {
+         // ....
+      }
+   }
+}
+```
+
 ### Customizing log format
 
 You can show the source code location where the log message is generated:
