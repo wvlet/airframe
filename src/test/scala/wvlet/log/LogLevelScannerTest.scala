@@ -15,12 +15,14 @@ package wvlet.log
 
 import java.util.concurrent.TimeUnit
 
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+
 import scala.concurrent.duration.Duration
 
 /**
   *
   */
-class LogLevelScannerTest extends Spec {
+class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     Logger.stopScheduledLogLevelScan
