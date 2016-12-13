@@ -74,8 +74,6 @@ object LogLevelScanner {
     }
   }
 
-
-
   private[log] sealed trait ScannerState
   private[log] object RUNNING extends ScannerState
   private[log] object STOPPING extends ScannerState

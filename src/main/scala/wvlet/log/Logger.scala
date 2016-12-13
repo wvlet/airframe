@@ -270,6 +270,13 @@ object Logger {
   }
 
   /**
+    * Schedule the log level scanner with the given interval
+    */
+  def scheduleLogLevelScan(duration: Duration) {
+    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, duration))
+  }
+
+  /**
     * Terminate the log-level scanner thread. The thread will remain in the system until
     * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
     * reduce the overhead of creating a new thread.
