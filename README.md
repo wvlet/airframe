@@ -58,7 +58,7 @@ The major advantages of Airframe are as follows:
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 ```
 
-(The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala))
+(The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/airframe/src/test/scala/wvlet/airframe/AirframeTest.scala))
 
 You can inject an object with `bind` method in Airframe. Assume that we want to create a service that prints a greeting at random:
 
@@ -190,7 +190,7 @@ We can create an object from a design by using `newSession.build[X]`:
 design.newSession.build[FortunePrinterMixin]
 ```
 
-See more detail in [AirframeTest](https://github.com/wvlet/airframe/blob/master/src/test/scala/wvlet/airframe/AirframeTest.scala).
+See more detail in [AirframeTest](https://github.com/wvlet/airframe/blob/master/airframe/src/test/scala/wvlet/airframe/AirframeTest.scala).
 
 # LICENSE
 
