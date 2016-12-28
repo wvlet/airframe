@@ -115,7 +115,7 @@ try {
   val p = session.build[P]
 }
 finally {
-   session.close
+   session.shutdown
 }
 ```
 
