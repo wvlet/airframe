@@ -77,7 +77,7 @@ trait BindingExample {
   val p2 = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
   val p3 = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
 
-  val pd = bind { provider _ } // Inject D1, D2 and D3 to call the provider function
+  val pd = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
   val ps = bindSingleton { provider _ } // Create a singleton using a provider 
 }
 
@@ -89,7 +89,7 @@ object BindingExample {
 
 ## Design Examples
 
-To configure actual bindings, you need to configure object bindings using **design**:
+To configure actual bindings, define object bindings using **design**:
 
 ```scala
 // If you define multiple bindings to the same type, the last one will be used.
@@ -132,7 +132,7 @@ trait Server {
   def stop() {}
 }
 
-// When binding an object, you can define the life cycle hooks to the injected object
+// When binding an object, you can define life cycle hooks to the injected object:
 trait MyServerService {
   val service = bind[Server].withLifeCycle(
     init = { _.init },    // Called when the object is injected
