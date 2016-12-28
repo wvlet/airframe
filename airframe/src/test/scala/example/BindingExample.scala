@@ -18,27 +18,19 @@ import wvlet.log.LogSupport
 
 
 
-object BindingExample extends LogSupport {
+object BindingExample {
   trait A
   class AImpl extends A
   case class B(id:Int)
 
-  class S {
-    info(s"S is created")
-  }
-  class ES {
-    info(s"ES is created")
-  }
+  class S
+  class ES
 
   case class D1(v:Int = 0)
   case class D2(v:Int = 0)
   case class D3(v:Int = 0)
-  case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3()) {
-    info(s"Instantiated: ${toString}")
-  }
-
+  case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
   def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
-
 }
 
 import BindingExample._
