@@ -58,9 +58,96 @@ The major advantages of Airframe are as follows:
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 ```
 
-(The whole code used in this section can be found here [AirframeTest](https://github.com/wvlet/airframe/blob/master/airframe/src/test/scala/wvlet/airframe/AirframeTest.scala))
+## Binding Examples
 
-You can inject an object with `bind` method in Airframe. Assume that we want to create a service that prints a greeting at random:
+This example shows all binding types available in Airframe:
+
+```scala
+import wvlet.airframe._
+import BindingExample._
+
+trait BindingExample {
+  val a = bind[A]  // Inject A
+  val b = bind[B]  // Inject B
+
+  val s = bindSingleton[S] // Inject S as a singleton
+
+  val p0 = bind { P() } // Inject P using the provider function (closure)
+  val p1 = bind { d1:D1 => P(d1) } // Inject D1 to create P
+  val p2 = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
+  val p3 = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
+
+  val pd = bind { provider _ } // Inject D1, D2 and D3 to call the provider function
+  val ps = bindSingleton { provider _ } // Create a singleton using a provider 
+}
+
+object BindingExample {
+  case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
+  def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
+}
+```
+
+## Design Examples
+
+To configure actual bindings, you need to configure object bindings using **design**:
+
+```scala
+// If you define multiple bindings to the same type, the last one will be used.
+val design : Design =
+  newDesign                      // Create an empty design
+  .bind[A].to[AImpl]             // Bind a concrete class AImpl to A
+  .bind[B].toInstance(new B(1))  // Bind a concrete instance to B (This instance will be a singleton)
+  .bind[S].toSingleton           // S will be a singleton within the session
+  .bind[ES].toEagerSingleton     // ES will be initialized as a singleton at session start time
+  .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
+  .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
+  .bind[D3].toInstance(D3(3))    // Bind D3 to a cocreete instance D3(3)
+  .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolveing D1 from the design to create P
+  .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) } // Resolve D1 and D2
+  .bind[P].toProvider{ provider _ }  // Use a function as a provider. D1, D2 and D3 will be resolved from the design
+  .bind[P].toSingletonProvider{ d1:D1 => P(d1) } // Create a singleton using the provider function
+  .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
+
+// Start a session
+val session = desing.newSession
+try {
+  session.start
+  val p = session.build[P]
+}
+finally {
+   session.close
+}
+```
+
+## Life Cycle Management
+
+Server-side applications often require object initializtaion, server start, and shut down hooks. 
+Airframe has a built-in object life cycle manager to implement these hooks:
+
+```scala
+// Your server application
+trait Server {
+  def init() {}
+  def start() {}
+  def stop() {}
+}
+
+// When binding an object, you can define the life cycle hooks to the injected object
+trait MyServerService {
+  val service = bind[Server].withLifeCycle(
+    init = { _.init },    // Called when the object is injected
+    start = { _.start },  // Called when sesion.start is called
+    shutdown = { _.stop } // Called when session.shutdown is called
+  )
+}
+```
+
+# More Illustrative Examples
+
+Here is a more illustrative usage example of Airframe.
+You can find the whole code used here from [AirframeTest](https://github.com/wvlet/airframe/blob/master/airframe/src/test/scala/wvlet/airframe/AirframeTest.scala).
+
+In this example, we will create a service that prints a greeting at random:
 
 ```scala
 import wvlet.airframe._ 
