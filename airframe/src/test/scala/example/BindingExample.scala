@@ -63,7 +63,7 @@ object DesignExample {
     .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
     .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
     .bind[D3].toInstance(D3(3))    // Bind D3 to a cocreete instance D3(3)
-    .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolveing D1 from the design to create P
+    .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolving D1 from the design
     .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) } // Resolve D1 and D2
     .bind[P].toProvider{ provider _ }  // Use a function as a provider. D1, D2 and D3 will be resolved from the design
     .bind[P].toSingletonProvider{ d1:D1 => P(d1) } // Create a singleton using the provider function
