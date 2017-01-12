@@ -344,7 +344,7 @@ There are two types of dependency injection approaches; runtime and compile-time
 
 - [Dagger2](https://github.com/google/dagger) is also a compile-time dependency injection library for Java and Android. Google needed binding hundreds of modules, but Guice only resolves these dependencies at runtime, so binding failures can be found later when the application is running. To resolve this, Dagger2 tries to generate dependency injection code at compile time. [This document](https://google.github.io/dagger/users-guide) is a good read to understand the background of why compile-time DI was necessary.
 
-Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; One of the usage example I found is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala); Because of the requirement of compile-time DI, we need to enumerate all of the dependencies within the scope and the code size becomes quite huge. In runtime DI, we don't need to list all dependencies in the scope since these can be found at runtime.
+Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala), which lists 30 dependencies, including transitive dependenceis, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.
 
 ## Summary
 
@@ -356,6 +356,7 @@ Both of MacWire and Dagger2 requires all of the dependencies should be found in 
 
 - Run-time dependency injection
   - [pros] Allows dynamic type binding.
+  - [pros] Simpler code. Only need to bind direct dependencies.
   - [cons] Missed binding founds as a runtime error
 
 Airframe belongs to a runtime dependency injection library, and resolves several short-comings of Google Guice (lack of lifecycle manager, difficulty of binding third-party objects, etc.). We also have implemented Scala-friendly DI syntax in Airframe. For the performance reason, Airframe uses Scala macros to generate binding code as much as possible (except dynamic type binding, which cannot be found at compile-time). To use Airframe, you don't need to understand the whole concept of DI and features in the existing DI frameworks. Just `bind`-`design`-`build` objects. That is all you need to know!
