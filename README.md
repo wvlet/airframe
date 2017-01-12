@@ -28,8 +28,9 @@ val design : Design =
      .bind[X].toInstance(new X)  // Bind type X to a concrete instance
      .bind[Y].toSingleton        // Bind type Y to a singleton object
      .bind[Z].to[ZImpl]          // Bind type Z to an instance of ZImpl
+
+// Note that *Design* is *immutable*, so you can safely reuse and extend it by adding more bindings.     
 ```
-Note that *Design* is *immutable*, so you can safely reuse and extend it.
 
 - ***Build***: Create a concrete instance:
 ```scala
@@ -323,17 +324,17 @@ See more detail in [AirframeTest](https://github.com/wvlet/airframe/blob/master/
 
 # Comparison with the other DI frameworks
 
-There are two types of dependency injection approaches; runtime and compile-time (static).
+There are two types of dependency injection approaches; runtime and compile-time (static) DIs.
 
 ## Run-time Dependency Injection
 
-- [Google Guice](https://github.com/google/guice) is one of the popular run-time dependency injection libraries in Java, which is also used in [Presto](https://github.com/prestodb/presto) to construct a distributed SQL engine consisting of hundreds of classes. Guice itself does not manage the lifecycle of objects and binding configurations, so Presto team at Facebook has developed [airlift-bootstrap](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap) and [airlift- configuration](https://github.com/airlift/airlift/tree/master/configuration/src/main/java/io/airlift/configuration) libraries to extend Guice's functionality.
-   - One of the disadvantages of Guice is it requires annotating the constructor with `@Inject`. This is less convenient if you are using third-party library, which cannot add such annotaions. So you often need to write a provider binding modules to use third-party classes.
-   - Airframe has provider bindings in `bind { d1: D1 => new X(d1) }` syntax. It's easy to use third-party classes in a single trait. No need to implement object binding modules.
+- [Google Guice](https://github.com/google/guice) is a popular run-time dependency injection libraries in Java, which is also used in [Presto](https://github.com/prestodb/presto) to construct a distributed SQL engine consisting of hundreds of classes. Guice itself does not manage the lifecycle of objects and binding configurations, so Presto team at Facebook has developed [airlift-bootstrap](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap) and [airlift- configuration](https://github.com/airlift/airlift/tree/master/configuration/src/main/java/io/airlift/configuration) libraries to extend Guice's functionality.
+   - One of the disadvantages of Guice is it requires constructor annotation like `@Inject`. This is less convenient if you are using third-party libraries, which cannot add such annotations. So you often need to write a provider binding modules to use third-party classes.
+   - Airframe has provider bindings in `bind { d1: D1 => new X(d1) }` syntax so that you can directly call the constructor of third-party classes. No need to implement object binding modules.
 
 - [Scaldi](https://github.com/scaldi/scaldi) is an early adaptor of Guice like DI for Scala and has implemented all of the major functionalities of Guice. However it requires extending your class with Scaldi `Module`. Airframe is simplifying it so that you only need to use `bind[X]` without extending any trait.
 
-- [Spring IoC container](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html) Spring framework popularized the notion of [Inversion of Control](https://martinfowler.com/articles/injection.html), which is now simply called as DI. Spring uses XML based configuration, which is less programmer-friendly, but it has been useful to resolve a problem of ordering of object initializations.
+- [Spring IoC container](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html) Spring framework popularized the notion of [Inversion of Control](https://martinfowler.com/articles/injection.html), which is now simply called DI. Spring uses XML based configuration, which is less programmer-friendly, but it has been useful to manage ordering of object initializations outside the program.
 
 - [Weld](http://weld.cdi-spec.org/) is a reference implementation of [Contexts & Dependency Injection for Java (CDP)](http://cdi-spec.org/) specifications for managing object life cycle and DI for Java EE applications. Weld, for example, has HTTP request scoped object life cycle, annotations for describing how to inject dependencies, etc.
 
@@ -341,9 +342,9 @@ There are two types of dependency injection approaches; runtime and compile-time
 
 - [MacWire](https://github.com/adamw/macwire) is a compile-time dependency injection library for Scala using `wire[A]` syntax. MacWire ensures all binding types are available at compile time, so if some dependency is missing, it will be shown as a compile error. That is a major advantage of MacWire. On the other hand it sacrifices dynamic binding; For example, we cannot switch the implementation of `wire[A]` to `class AImpl(d1:D1, d2:D2, d3:D3) extends A`, because we cannot statically resolve dependencies to AImpl, D1, D2, and D3 at compile time.
 
-- [Dagger2](https://github.com/google/dagger) is also a compile-time dependency injection library for Java and Android. Google needed binding hundreds of modules, but Guice only resolves these dependencies at runtime, so binding failures can be found later when the application is running. To resolve this, Dagger2 tries to generate dependency injection code at compile time. [This document](https://google.github.io/dagger/users-guide) describes the background.
+- [Dagger2](https://github.com/google/dagger) is also a compile-time dependency injection library for Java and Android. Google needed binding hundreds of modules, but Guice only resolves these dependencies at runtime, so binding failures can be found later when the application is running. To resolve this, Dagger2 tries to generate dependency injection code at compile time. [This document](https://google.github.io/dagger/users-guide) is a good read to understand the background of why compile-time DI was necessary.
 
-Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; One of the usage example I found is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala); Because of the requirement of compile-time DI, we need to enumerate all of the dependencies within the scope and the code size becomes quite huge. In runtime DI, we don't need to list all dependencies in the scope since these can be found in DI module or a design in Airframe.
+Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; One of the usage example I found is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala); Because of the requirement of compile-time DI, we need to enumerate all of the dependencies within the scope and the code size becomes quite huge. In runtime DI, we don't need to list all dependencies in the scope since these can be found at runtime.
 
 ## Summary
 
