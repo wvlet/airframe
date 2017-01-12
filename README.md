@@ -323,15 +323,19 @@ See more detail in [AirframeTest](https://github.com/wvlet/airframe/blob/master/
 
 # Comparison with the other DI frameworks
 
-
+There are two types of dependency injection approaches; runtime and compile-time (static).
 
 ## Run-time Dependency Injection
 
-- [Google Guice](https://github.com/google/guice) is one of the popular dependency injection libraries in Java, which is also used in [Presto](https://github.com/prestodb/presto) to construct a distributed SQL engine consisting of hundreds of classes. Guice itself does not manage life cycle of objects and binding configurations etc., so Presto team at Facebook has developed [airlift-bootstrap](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap) and [airlift- configuration](https://github.com/airlift/airlift/tree/master/configuration/src/main/java/io/airlift/configuration) libraries to extend Guice's functionality.
-
-   - One of the disadvantages of Guice is it requires annotating the constructor with `@Inject`. This is less convenient if you are using third-party library, which cannot add such annotaions. So you often need to write a provider binding to use third-party classes.
+- [Google Guice](https://github.com/google/guice) is one of the popular run-time dependency injection libraries in Java, which is also used in [Presto](https://github.com/prestodb/presto) to construct a distributed SQL engine consisting of hundreds of classes. Guice itself does not manage the lifecycle of objects and binding configurations, so Presto team at Facebook has developed [airlift-bootstrap](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap) and [airlift- configuration](https://github.com/airlift/airlift/tree/master/configuration/src/main/java/io/airlift/configuration) libraries to extend Guice's functionality.
+   - One of the disadvantages of Guice is it requires annotating the constructor with `@Inject`. This is less convenient if you are using third-party library, which cannot add such annotaions. So you often need to write a provider binding modules to use third-party classes.
+   - Airframe has provider bindings in `bind { d1: D1 => new X(d1) }` syntax. It's easy to use third-party classes in a single trait. No need to implement object binding modules.
 
 - [Scaldi](https://github.com/scaldi/scaldi) is an early adaptor of Guice like DI for Scala and has implemented all of the major functionalities of Guice. However it requires extending your class with Scaldi `Module`. Airframe is simplifying it so that you only need to use `bind[X]` without extending any trait.
+
+- [Spring IoC container](https://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html) Spring framework popularized the notion of [Inversion of Control](https://martinfowler.com/articles/injection.html), which is now simply called as DI. Spring uses XML based configuration, which is less programmer-friendly, but it has been useful to resolve a problem of ordering of object initializations.
+
+- [Weld](http://weld.cdi-spec.org/) is a reference implementation of [Contexts & Dependency Injection for Java (CDP)](http://cdi-spec.org/) specifications for managing object life cycle and DI for Java EE applications. Weld, for example, has HTTP request scoped object life cycle, annotations for describing how to inject dependencies, etc.
 
 ## Compile-time Dependency Injection
 
@@ -347,13 +351,13 @@ Both of MacWire and Dagger2 requires all of the dependencies should be found in 
   - [pros] Can validate the presence of dependencies at compile time.
   - [pros] Fast since all binding codes are generated at compile time.
   - [cons] Less flexible (e.g., No dynamic type binding)
-  - [cons] Need to enumerate all dependencies in the same scope (long code).
+  - [cons] Need to enumerate all dependencies in the same scope (lengthy code).
 
 - Run-time dependency injection
   - [pros] Allows dynamic type binding.
   - [cons] Missed binding founds as a runtime error
 
-
+Airframe belongs to a runtime dependency injection library, and resolves several short-comings of Google Guice (lack of lifecycle manager, difficulty of binding third-party objects, etc.). We also have implemented Scala-friendly DI syntax in Airframe. For the performance reason, Airframe uses Scala macros to generate binding code as much as possible (except dynamic type binding, which cannot be found at compile-time). To use Airframe, you don't need to understand the whole concept of DI and features in the existing DI frameworks. Just `bind`-`design`-`build` objects. That is all you need to know!
 
 
 # LICENSE
