@@ -44,7 +44,7 @@ class SessionBuilder(design:Design, name:Option[String] = None,
       = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     val l =  new LifeCycleManager(handler)
-    val session = new SessionImpl(name, sortedBindings, l)
+    val session = new AirframeSession(name, sortedBindings, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

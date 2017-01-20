@@ -25,7 +25,7 @@ import scala.util.Try
 /**
   * Session manages injected objects (e.g., Singleton)
   */
-trait Session {
+trait Session extends AutoCloseable {
 
   /**
     * Name of the session (default: object hash code)
@@ -72,8 +72,9 @@ trait Session {
     */
   def lifeCycleManager: LifeCycleManager
 
-  def start {lifeCycleManager.start}
-  def shutdown {lifeCycleManager.shutdown}
+  def start { lifeCycleManager.start }
+  def shutdown { lifeCycleManager.shutdown }
+  override def close() { shutdown }
 
   private[airframe] def getBindingOf(t:ObjectType) : Option[Binding]
   private[airframe] def hasSingletonOf(t:ObjectType) : Boolean

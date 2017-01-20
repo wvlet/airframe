@@ -28,9 +28,9 @@ import scala.util.{Failure, Try}
 /**
   *
   */
-private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Binding],
+private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq[Binding],
     val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
-  import scala.collection.JavaConversions._
+  import scala.collection.JavaConverters._
 
   private lazy val bindingTable = binding.map(b => b.from -> b).toMap[ObjectType, Binding]
   private[airframe] def getBindingOf(t:ObjectType) = bindingTable.get(t)
@@ -39,7 +39,7 @@ private[airframe] class SessionImpl(sessionName:Option[String], binding: Seq[Bin
   }
 
   private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any]
-    = new ConcurrentHashMap[ObjectType, Any]()
+    = new ConcurrentHashMap[ObjectType, Any]().asScala
 
   def name : String = sessionName.getOrElse(f"session:${hashCode()}%x")
 

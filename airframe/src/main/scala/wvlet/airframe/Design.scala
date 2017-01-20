@@ -57,6 +57,17 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new SessionBuilder(this).create
   }
 
+  def withSession[U](body:Session => U) : U = {
+    val session = newSession
+    try {
+      session.start
+      body(session)
+    }
+    finally {
+      session.shutdown
+    }
+  }
+
   override def toString : String = {
     s"Design:\n ${binding.mkString("\n ")}"
   }
