@@ -1,4 +1,9 @@
 # Release Notes
+
+## 0.10
+ - Session now implements AutoClosable
+ - Add Design.withSession{ session => ... } to close Session at ease 
+
 ## 0.9
  - Add Scala 2.12 support
 
