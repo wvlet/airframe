@@ -28,6 +28,9 @@ object Examples {
   )
 
   case class B(a:A)
+
+  type MyA = A
+
 }
 
 import Examples._
@@ -43,6 +46,11 @@ class FrameTest extends FrameSpec {
 
       val b = Frame.of[B]
       info(b)
+    }
+
+    "resolve alias" in {
+      val alias = Frame.of[MyA]
+      info(alias)
     }
   }
 }

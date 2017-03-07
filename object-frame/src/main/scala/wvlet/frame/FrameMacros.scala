@@ -38,6 +38,10 @@ object FrameMacros {
       else {
         seen += t
         val frame = t match {
+          case alias @ TypeRef(prefix, symbol, args) if symbol.isType && symbol.asType.isAliasType =>
+            val inner = toFrame(alias.dealias)
+            val name = symbol.asType.name.decodedName.toString
+            q"FrameAlias(${name}, $inner)"
           case tr @ TypeRef(prefix, symbol, args) =>
             val symbolname = tr.typeSymbol.fullName
             //println(s"symbol name: ${symbolname}")
@@ -86,7 +90,7 @@ object FrameMacros {
 
     def genFrame(typeEv:c.Tree) : c.Tree = {
       val t = typeEv.tpe.typeArgs(0)
-
+      println(s"genFrame: ${showRaw(t)}")
       val frameGen = t match {
         case TypeRef(_, cls, args) =>
           toFrame(t)
@@ -94,7 +98,8 @@ object FrameMacros {
         case other =>
           q"""new wvlet.frame.Frame { def cl : Class[$t] = classOf[$t] }"""
       }
-      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen)"
+      frameGen
+      //q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen)"
     }
   }
 
