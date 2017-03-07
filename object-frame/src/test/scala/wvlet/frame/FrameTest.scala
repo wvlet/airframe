@@ -31,6 +31,8 @@ object Examples {
 
   type MyA = A
 
+  trait C
+
 }
 
 import Examples._
@@ -52,5 +54,11 @@ class FrameTest extends FrameSpec {
       val alias = Frame.of[MyA]
       info(alias)
     }
+
+    "resolve trait" in {
+      val t = Frame.of[C]
+      info(t)
+    }
+
   }
 }
