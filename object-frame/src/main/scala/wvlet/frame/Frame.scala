@@ -35,6 +35,16 @@ object Frame {
 
 }
 
+
+trait Frame {
+  def name = cl.getSimpleName
+  def fullName : FullName = cl.getName
+  def cl:Class[_]
+  def params:Seq[Param] =Seq.empty
+
+  override def toString = s"Frame[${name}](${params.mkString(",")})"
+}
+
 case class Param(name:String, frame:Frame) {
   override def toString = s"${name}:${frame.name}"
 }
@@ -66,15 +76,16 @@ case object StringFrame extends Frame {
 case class ObjectFrame(cl:Class[_]) extends Frame
 
 case class FrameAlias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
+  override def toString = s"AliasFrame[${name}](${params.mkString(",")})"
   override def cl = frame.cl
   override def params = frame.params
 }
 
-trait Frame {
-  def name = cl.getSimpleName
-  def fullName : FullName = cl.getName
-  def cl:Class[_]
-  def params:Seq[Param] =Seq.empty
-
-  override def toString = s"Frame[${name}](${params.mkString(",")})"
+case class SeqFrame(cl:Class[_], elementFrame:Frame) extends Frame {
+  override def toString = s"Frame[Seq[${elementFrame.name}]]"
 }
+
+case class MapFrame(cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends Frame {
+  override def toString = s"Frame[Map[${keyFrame.name}, ${valueFrame.name}]]"
+}
+

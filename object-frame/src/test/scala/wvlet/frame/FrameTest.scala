@@ -60,5 +60,15 @@ class FrameTest extends FrameSpec {
       info(t)
     }
 
+    "resolve Seq[A]" in {
+      val t = Frame.of[Seq[A]]
+      info(t)
+    }
+
+    "resolve Map[String, A]" in {
+      val t = Frame.of[Map[String, A]]
+      info(t)
+    }
+
   }
 }

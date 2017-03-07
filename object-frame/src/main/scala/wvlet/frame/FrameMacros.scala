@@ -38,13 +38,19 @@ object FrameMacros {
       else {
         seen += t
         val frame = t match {
-          case alias @ TypeRef(prefix, symbol, args) if symbol.isType && symbol.asType.isAliasType =>
+          case alias @ TypeRef(prefix, symbol, args)
+            if symbol.isType
+              && symbol.asType.isAliasType
+              // Exclue default aliases (scala.predef, etc.)
+              && !prefix.typeSymbol.fullName.startsWith("scala.") =>
+            // Resolve dealised type
             val inner = toFrame(alias.dealias)
             val name = symbol.asType.name.decodedName.toString
             val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+            //println(s"prefix: ${prefix}")
             q"FrameAlias(${name}, ${fullName}, $inner)"
           case tr @ TypeRef(prefix, symbol, args) =>
-            val symbolname = tr.typeSymbol.fullName
+            val symbolname = tr.dealias.typeSymbol.fullName
             //println(s"symbol name: ${symbolname}")
             symbolname match {
               case "scala.Int" => q"wvlet.frame.IntFrame"
@@ -55,6 +61,12 @@ object FrameMacros {
               case "scala.Double" => q"wvlet.frame.DoubleFrame"
               case "scala.Boolean" => q"wvlet.frame.BooleanFrame"
               case "java.lang.String" => q"wvlet.frame.StringFrame"
+              case "scala.collection.Seq" =>
+                val elementType = args.map(x => toFrame(x)).head
+                q"SeqFrame(classOf[$t], ${elementType})"
+              case "scala.collection.immutable.Map" =>
+                val paramType = args.map(x => toFrame(x))
+                q"MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
               case _ =>
                 t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor) match {
                   case None =>
@@ -107,7 +119,7 @@ object FrameMacros {
           q"""new wvlet.frame.Frame { def cl : Class[$typeEv] = classOf[$typeEv] }"""
       }
       val fullName = extractFullName(typeEv)
-      //println(s"fullName:${fullName}")
+      //println(s"frameGen: ${show(frameGen)}")
       q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frameGen})"
     }
   }
