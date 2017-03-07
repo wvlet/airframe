@@ -120,3 +120,6 @@ case class MapFrame(cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends Frame
   override def toString = s"Frame[Map[${keyFrame.name}, ${valueFrame.name}]]"
 }
 
+case class GenericFrame(cl:Class[_], typeArgs:Seq[Frame]) extends Frame {
+  override def toString = s"Frame[${cl.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]]"
+}

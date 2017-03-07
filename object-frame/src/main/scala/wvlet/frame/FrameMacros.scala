@@ -88,39 +88,42 @@ object FrameMacros {
         q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
     }
 
+    private def findPrimaryConstructor(t:c.Type) = {
+      t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor)
+    }
+
+    def hasAbstractMethods(t:c.Type) : Boolean = t.members.exists(x =>
+      x.isMethod && x.isAbstract && !x.isAbstractOverride
+    )
+
+    private def isAbstract(t:c.Type) : Boolean = {
+      t.typeSymbol.isAbstract && hasAbstractMethods(t)
+    }
+
     private val toGeneric : TypeMatcher = {
-      case t @ TypeRef(prefix, symbol, args) =>
-        val symbolname = t.dealias.typeSymbol.fullName
-        //println(s"symbol name: ${symbolname}")
-        symbolname match {
-          case _ =>
-            t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor) match {
-              case None =>
-                println(s"No primary constructor is found for ${t}")
-                q"new wvlet.frame.ObjectFrame(classOf[$t])"
-              case Some(primaryConstructor) =>
-                val classTypeParams = t.typeSymbol.asClass.typeParams
-                val params = primaryConstructor.asMethod.paramLists.flatten
-                val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, args))
-                val frameParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
-                  val name = Literal(Constant(p.name.decodedName.toString))
-                  val frame = toFrame(t)
-                  val expr = q"wvlet.frame.Param($name, ${frame})"
-                  //println(s"p: ${showRaw(expr)}")
-                  //println(s"t: ${showRaw(t)}")
-                  expr
-                }
-                q"""new wvlet.frame.Frame {
+      case t @ TypeRef(prefix, symbol, args) if !isAbstract(t) && findPrimaryConstructor(t).isDefined =>
+        val primaryConstructor = findPrimaryConstructor(t).get
+        val classTypeParams = t.typeSymbol.asClass.typeParams
+        val params = primaryConstructor.asMethod.paramLists.flatten
+        val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, args))
+        val frameParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
+          val name = Literal(Constant(p.name.decodedName.toString))
+          val frame = toFrame(t)
+          val expr = q"wvlet.frame.Param($name, ${frame})"
+          //println(s"p: ${showRaw(expr)}")
+          //println(s"t: ${showRaw(t)}")
+          expr
+        }
+        q"""new wvlet.frame.Frame {
                        def cl : Class[$t] = classOf[$t]
                        override def params = Seq(..$frameParams)
                     }"""
-            }
-          // TODO Array types
-          // TODO complex types
-        }
     }
 
     private val toGenericFrame : TypeMatcher = {
+      case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
+        val typeArgs = typeArgsOf(t).map(toFrame(_))
+        q"new wvlet.frame.GenericFrame(classOf[$t], Seq(..$typeArgs))"
       case t =>
         q"new wvlet.frame.ObjectFrame(classOf[$t])"
     }
