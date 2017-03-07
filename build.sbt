@@ -70,7 +70,7 @@ lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframe, airframeMacros)
+) aggregate(airframe, airframeMacros, surface)
 
 lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
@@ -96,9 +96,9 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
   )
 )
 
-lazy val frame = Project(id = "object-frame", base = file("object-frame")).settings(
+lazy val surface = Project(id = "surface", base = file("surface")).settings(
   buildSettings,
-  description := "Object Frame",
+  description := "Object Surface is a library for extracting object structure",
   libraryDependencies ++= Seq(
     "org.wvlet" %% "wvlet-log" % "1.1",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",

@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.frame
+package wvlet.surface
 
 import org.scalatest._
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{LogSupport, Logger}
 import scala.language.implicitConversions
 
-trait FrameSpec extends WordSpec
+trait SurfaceSpec extends WordSpec
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll

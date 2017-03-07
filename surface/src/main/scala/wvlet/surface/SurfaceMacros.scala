@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.frame
+package wvlet.surface
 
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
@@ -19,7 +19,7 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   *
   */
-object FrameMacros {
+object SurfaceMacros {
 
   class Helper[C <: sm.Context](val c: C) {
 
@@ -42,7 +42,7 @@ object FrameMacros {
     }
 
     private def elementTypeOf(t: c.Type): c.Tree = {
-      typeArgsOf(t).map(toFrame(_)).head
+      typeArgsOf(t).map(toSurface(_)).head
     }
 
     private val toAlias: TypeMatcher = {
@@ -51,39 +51,39 @@ object FrameMacros {
           symbol.asType.isAliasType &&
           !belongsToScalaDefault(alias)
       =>
-        val inner = toFrame(alias.dealias)
+        val inner = toSurface(alias.dealias)
         val name = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
+        q"wvlet.surface.Alias(${name}, ${fullName}, $inner)"
     }
 
     private val toPrimitive: TypeMatcher = {
-      case t if t =:= typeOf[Short] => q"wvlet.frame.Primitive.Short"
-      case t if t =:= typeOf[Boolean] => q"wvlet.frame.Primitive.Boolean"
-      case t if t =:= typeOf[Byte] => q"wvlet.frame.Primitive.Byte"
-      case t if t =:= typeOf[Char] => q"wvlet.frame.Primitive.Char"
-      case t if t =:= typeOf[Int] => q"wvlet.frame.Primitive.Int"
-      case t if t =:= typeOf[Float] => q"wvlet.frame.Primitive.Float"
-      case t if t =:= typeOf[Long] => q"wvlet.frame.Primitive.Long"
-      case t if t =:= typeOf[Double] => q"wvlet.frame.Primitive.Double"
-      case t if t =:= typeOf[String] => q"wvlet.frame.Primitive.String"
+      case t if t =:= typeOf[Short] => q"wvlet.surface.Primitive.Short"
+      case t if t =:= typeOf[Boolean] => q"wvlet.surface.Primitive.Boolean"
+      case t if t =:= typeOf[Byte] => q"wvlet.surface.Primitive.Byte"
+      case t if t =:= typeOf[Char] => q"wvlet.surface.Primitive.Char"
+      case t if t =:= typeOf[Int] => q"wvlet.surface.Primitive.Int"
+      case t if t =:= typeOf[Float] => q"wvlet.surface.Primitive.Float"
+      case t if t =:= typeOf[Long] => q"wvlet.surface.Primitive.Long"
+      case t if t =:= typeOf[Double] => q"wvlet.surface.Primitive.Double"
+      case t if t =:= typeOf[String] => q"wvlet.surface.Primitive.String"
     }
 
     private val toArray: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Array" =>
-        q"wvlet.frame.ArrayFrame(classOf[$t], ${elementTypeOf(t)})"
+        q"wvlet.surface.ArraySurface(classOf[$t], ${elementTypeOf(t)})"
     }
 
 
     private val toOption: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Option" =>
-        q"wvlet.frame.OptionFrame(classOf[$t], ${elementTypeOf(t)})"
+        q"wvlet.surface.OptionSurface(classOf[$t], ${elementTypeOf(t)})"
     }
 
     private val toTuple : TypeMatcher = {
       case t if t <:< typeOf[Product] && t.typeSymbol.fullName.startsWith("scala.Tuple") =>
-        val paramType = typeArgsOf(t).map(x => toFrame(x))
-        q"new wvlet.frame.TupleFrame(classOf[$t], Seq(..$paramType))"
+        val paramType = typeArgsOf(t).map(x => toSurface(x))
+        q"new wvlet.surface.TupleSurface(classOf[$t], Seq(..$paramType))"
     }
 
     private val toJavaUtil : TypeMatcher = {
@@ -92,12 +92,12 @@ object FrameMacros {
         t =:= typeOf[java.util.Date] ||
         t =:= typeOf[java.time.temporal.Temporal]
       =>
-        q"wvlet.frame.ClassFrame(classOf[$t])"
+        q"wvlet.surface.ClassSurface(classOf[$t])"
     }
 
     private val toEnum : TypeMatcher = {
       case t if t.typeSymbol.isJavaEnum =>
-        q"wvlet.frame.EnumFrame(classOf[$t])"
+        q"wvlet.surface.EnumSurface(classOf[$t])"
     }
 
     private val scalaDefaultPackages = Seq("scala.", "scala.Predef.", "scala.util.")
@@ -122,42 +122,42 @@ object FrameMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
-    private val toFrameWithParams: TypeMatcher = {
+    private val toSurfaceWithParams: TypeMatcher = {
       case t@TypeRef(prefix, symbol, args) if !isAbstract(t) && findPrimaryConstructor(t).exists(!_.asMethod.paramLists.isEmpty) =>
         val primaryConstructor = findPrimaryConstructor(t).get
         val classTypeParams = t.typeSymbol.asClass.typeParams
         val params = primaryConstructor.asMethod.paramLists.flatten
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, args))
-        val frameParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
+        val surfaceParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
           val name = Literal(Constant(p.name.decodedName.toString))
-          val frame = toFrame(t)
-          val expr = q"wvlet.frame.Param($name, ${frame})"
+          val surface = toSurface(t)
+          val expr = q"wvlet.surface.Param($name, ${surface})"
           //println(s"p: ${showRaw(expr)}")
           //println(s"t: ${showRaw(t)}")
           expr
         }
-        val typeArgs = typeArgsOf(t).map(toFrame(_))
-        q"""new wvlet.frame.Frame {
+        val typeArgs = typeArgsOf(t).map(toSurface(_))
+        q"""new wvlet.surface.Surface {
              def rawType : Class[$t] = classOf[$t]
              override def typeArgs = Seq(..$typeArgs)
-             override def params = Seq(..$frameParams)
+             override def params = Seq(..$surfaceParams)
             }"""
     }
 
     private val toExistentialType : TypeMatcher = {
       case t@ExistentialType(quantified, underlying) =>
-        toFrame(underlying)
+        toSurface(underlying)
     }
 
-    private val toGenericFrame: TypeMatcher = {
+    private val toGenericSurface: TypeMatcher = {
       case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
-        val typeArgs = typeArgsOf(t).map(toFrame(_))
-        q"new wvlet.frame.GenericFrame(classOf[$t], Seq(..$typeArgs))"
+        val typeArgs = typeArgsOf(t).map(toSurface(_))
+        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs))"
       case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         //println(s"${showRaw(t)}")
-        q"wvlet.frame.ExistentialType"
+        q"wvlet.surface.ExistentialType"
       case t =>
-        q"wvlet.frame.ClassFrame(classOf[$t])"
+        q"wvlet.surface.ClassSurface(classOf[$t])"
     }
 
     private val matchers: TypeMatcher =
@@ -168,11 +168,11 @@ object FrameMacros {
         toTuple orElse
         toJavaUtil orElse
         toEnum orElse
-        toFrameWithParams orElse
+        toSurfaceWithParams orElse
         toExistentialType orElse
-        toGenericFrame
+        toGenericSurface
 
-    def toFrame(t: c.Type): c.Tree = {
+    def toSurface(t: c.Type): c.Tree = {
       if (seen.contains(t)) {
         if (memo.contains(t)) {
           memo(t)
@@ -184,10 +184,10 @@ object FrameMacros {
       else {
         seen += t
         //println(s"fullName: ${t.dealias.typeSymbol.fullName}")
-        val frame = matchers(t)
-        memo += (t -> frame)
+        val surface = matchers(t)
+        memo += (t -> surface)
         val fullName = extractFullName(t)
-        q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frame})"
+        q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${fullName}, ${surface})"
       }
     }
 
@@ -206,13 +206,13 @@ object FrameMacros {
       }
     }
 
-    def createFrame(typeEv: c.Type): c.Tree = {
-      toFrame(typeEv)
+    def createSurface(typeEv: c.Type): c.Tree = {
+      toSurface(typeEv)
     }
   }
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe
-    new Helper[c.type](c).createFrame(typeEv)
+    new Helper[c.type](c).createSurface(typeEv)
   }
 }
