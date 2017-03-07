@@ -107,14 +107,22 @@ lazy val surface =
     name := "surface",
     description := "Object Surface is a library for extracting object structure",
     libraryDependencies ++= Seq(
-      "org.wvlet" %% "wvlet-log" % "1.1" % "test",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       // scalatest
-      "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
+      "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
     )
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "org.wvlet" %% "wvlet-log" % "1.1" % "test"
+    )
+  )
+  .jsSettings(
+    logBuffered in Test := false
   )
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS = surface.js
+
