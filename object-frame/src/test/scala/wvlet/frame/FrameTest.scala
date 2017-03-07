@@ -13,21 +13,29 @@
  */
 package wvlet.frame
 
+import java.io.File
+import java.time.temporal.ChronoUnit
+
+
+
+import scala.collection.parallel.ParSeq
+import scala.concurrent.Future
+import scala.util.Try
 
 object Examples {
 
   case class A(
-    b:Boolean,
-    bt:Byte,
-    st:Short,
-    i:Int,
-    l:Long,
-    f:Float,
-    d:Double,
-    str:String
+    b: Boolean,
+    bt: Byte,
+    st: Short,
+    i: Int,
+    l: Long,
+    f: Float,
+    d: Double,
+    str: String
   )
 
-  case class B(a:A)
+  case class B(a: A)
 
   type MyA = A
 
@@ -37,23 +45,18 @@ object Examples {
 
   type MyInt = Int
 
-  case class D[V](id:Int, v:V)
+  case class D[V](id: Int, v: V)
 
+  trait Service[-Req, +Rep] extends (Req => Future[Rep])
 }
 
-import java.io.File
-import java.time.temporal.ChronoUnit
-
-import Examples._
-
-import scala.collection.parallel.ParSeq
-import scala.util.Try
+import wvlet.frame.Examples._
 /**
   *
   */
 class FrameTest extends FrameSpec {
 
-  def check(body: => Frame) : Frame = {
+  def check(body: => Frame): Frame = {
     val frame = body
     info(s"[${frame.getClass.getSimpleName}] $frame, ${frame.fullName}")
     frame
@@ -144,7 +147,16 @@ class FrameTest extends FrameSpec {
     "resolve generic type" in {
       val d1 = check(Frame.of[D[String]])
       val d2 = check(Frame.of[D[A]])
-      d1 shouldNot be theSameInstanceAs(d2)
+      d1 shouldNot be theSameInstanceAs (d2)
+    }
+
+    "resolve recursive type" in {
+      check(Frame.of[Service[Int, String]])
+    }
+
+    "resolve generic abstract type" in {
+      check(Frame.of[D[_]])
+      check(Frame.of[Map[_, _]])
     }
 
   }

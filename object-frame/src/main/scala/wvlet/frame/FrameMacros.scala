@@ -158,10 +158,18 @@ object FrameMacros {
             }"""
     }
 
+    private val toExistentialType : TypeMatcher = {
+      case t@ExistentialType(quantified, underlying) =>
+        toFrame(underlying)
+    }
+
     private val toGenericFrame: TypeMatcher = {
       case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(toFrame(_))
         q"new wvlet.frame.GenericFrame(classOf[$t], Seq(..$typeArgs))"
+      case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
+        //println(s"${showRaw(t)}")
+        q"wvlet.frame.ExistentialType"
       case t =>
         q"wvlet.frame.ClassFrame(classOf[$t])"
     }
@@ -176,6 +184,7 @@ object FrameMacros {
         toJavaUtil orElse
         toEnum orElse
         toFrameWithParams orElse
+        toExistentialType orElse
         toGenericFrame
 
     def toFrame(t: c.Type): c.Tree = {

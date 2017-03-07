@@ -112,6 +112,12 @@ class GenericFrame(val rawType: Class[_], override val typeArgs: Seq[Frame]) ext
   override def fullName = s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
 }
 
+case object ExistentialType extends Frame {
+  override def name = "_"
+  override def fullName = "_"
+  override def rawType = classOf[Any]
+}
+
 case class ClassFrame(val rawType: Class[_]) extends Frame
 
 case class ArrayFrame(override val rawType: Class[_], elementFrame: Frame) extends GenericFrame(rawType, Seq(elementFrame)) {
