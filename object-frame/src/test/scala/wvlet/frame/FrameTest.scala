@@ -43,7 +43,7 @@ class FrameTest extends FrameSpec {
 
   def check(body: => Frame) {
     val frame = body
-    info(s"[${frame.getClass.getSimpleName}] $frame")
+    info(s"[${frame.getClass.getSimpleName}] $frame, ${frame.fullName}")
   }
 
   "Frame" should {
