@@ -14,7 +14,6 @@
 package wvlet.frame
 
 import scala.language.experimental.macros
-import scala.reflect.macros.blackbox.Context
 import scala.reflect.macros.{blackbox => sm}
 
 /**
@@ -22,41 +21,88 @@ import scala.reflect.macros.{blackbox => sm}
   */
 object FrameMacros {
 
-
-  case class ConstructorType[S](
-    typeParams:List[S],
-    params:List[S]
-  )
-
-  def of[A:c.WeakTypeTag](c: sm.Context)(typeEv: c.Tree) : c.Tree = {
+  class Helper[C <: sm.Context](val c: C) {
     import c.universe._
+    val seen = scala.collection.mutable.Set[Type]()
+    val memo = scala.collection.mutable.Map[Type, c.Tree]()
 
-    val t = typeEv.tpe.typeArgs(0)
-    println(s"${showRaw(t)}")
+    def toFrame(t:Type) : c.Tree = {
+      if(seen.contains(t)) {
+        if(memo.contains(t)) {
+          memo(t)
+        }
+        else {
+          c.abort(c.enclosingPosition, s"recursive type: ${t.typeSymbol.fullName}")
+        }
+      }
+      else {
+        seen += t
+        val frame = t match {
+          case tr @ TypeRef(prefix, symbol, args) =>
+            val symbolname = tr.typeSymbol.fullName
+            println(s"symbol name: ${symbolname}")
+            symbolname match {
+              case "scala.Int" => q"wvlet.frame.IntFrame"
+              case "scala.Short" => q"wvlet.frame.ShortFrame"
+              case "scala.Byte" => q"wvlet.frame.ByteFrame"
+              case "scala.Long" => q"wvlet.frame.LongFrame"
+              case "scala.Float" => q"wvlet.frame.FloatFrame"
+              case "scala.Double" => q"wvlet.frame.DoubleFrame"
+              case "scala.Boolean" => q"wvlet.frame.BooleanFrame"
+              case "java.lang.String" => q"wvlet.frame.StringFrame"
+              case _ =>
+                // TODO Array types
+                // TODO complex types
+                q"new wvlet.frame.ObjectFrame(classOf[$t])"
+            }
+          case other =>
+            q"new wvlet.frame.ObjectFrame(classOf[$t])"
+        }
+        memo += (t -> frame)
+        frame
+      }
+    }
 
-    t match {
-      case TypeRef(_, cls, args) =>
-        // TODO Use t.dealias for aliased type
-        val ct: ConstructorType[Symbol] =
+    def genFrame(typeEv:c.Tree) : c.Tree = {
+      val t = typeEv.tpe.typeArgs(0)
+      println(s"${showRaw(t)}")
+
+      val frameGen = t match {
+        case TypeRef(_, cls, args) =>
+          // TODO Use t.dealias for aliased type
           t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor) match {
             case None =>
               println(s"No primary constructor is found for ${t}")
-              ConstructorType(List.empty, List.empty)
+              q"""new wvlet.frame.Frame[$t] {
+                 def cl : Class[$t] = classOf[$t]
+              }"""
             case Some(primaryConstructor) =>
-              ConstructorType(
-                t.typeSymbol.asClass.typeParams,
-                primaryConstructor.asMethod.paramLists.flatten
-              )
+              val classTypeParams = t.typeSymbol.asClass.typeParams
+              val params = primaryConstructor.asMethod.paramLists.flatten
+              val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, args))
+              val frameParams = for((p, t) <- params.zip(concreteArgTypes)) yield {
+                val name = Literal(Constant(p.name.decodedName.toString))
+                val frame = toFrame(t)
+                val expr = q"wvlet.frame.Param($name, ${frame})"
+                println(s"p: ${showRaw(expr)}")
+                println(s"t: ${showRaw(t)}")
+                expr
+              }
+              q"""new wvlet.frame.Frame[$t] {
+                  def cl : Class[$t] = classOf[$t]
+                  override def params = Seq(..$frameParams)
+              }"""
           }
-        val resolvedArgs = for (p <- ct.params) yield {
-          p.typeSignature.substituteTypes(ct.typeParams, args)
-        }
-        println(s"params:\n${ct.params.map(showRaw(_)).mkString("\n")}")
-        println(s"resolved:\n${resolvedArgs.map(showRaw(_)).mkString("\n")}")
-      case other =>
-        println(s"${showRaw(other)}")
+        case other =>
+          println(s"${showRaw(other)}")
+          q"""new wvlet.frame.Frame[$t] { def cl : Class[$t] = classOf[$t] }"""
+      }
+      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen).asInstanceOf[wvlet.frame.Frame[$t]]"
     }
+  }
 
-    q"wvlet.frame.Frame(classOf[$t])"
+  def of[A:c.WeakTypeTag](c: sm.Context)(typeEv: c.Tree) : c.Tree = {
+    import c.universe._
+    new Helper[c.type](c).genFrame(typeEv)
   }
 }

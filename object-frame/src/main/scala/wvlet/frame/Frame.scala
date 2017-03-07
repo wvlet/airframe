@@ -13,6 +13,8 @@
  */
 package wvlet.frame
 
+import java.util.concurrent.ConcurrentHashMap
+
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.{universe => ru}
 import scala.language.experimental.macros
@@ -21,11 +23,45 @@ import scala.language.experimental.macros
   *
   */
 object Frame {
+  import scala.collection.JavaConverters._
+
+  private[frame] val frameCache = new ConcurrentHashMap[Class[_], Frame[_]]().asScala
+
   def of[A:ru.TypeTag] : Frame[A] = macro FrameMacros.of[A]
+
 }
 
-case class Parameter(name:String, frame:Frame[_])
+case class Param(name:String, frame:Frame[_])
 
-case class Frame[A](cl:Class[A], params:Seq[Parameter]=Seq.empty) {
-  override def toString = s"Frame[${cl.getName}](${params.mkString(",")})"
+case object IntFrame extends Frame[Int] {
+  def cl : Class[Int] = classOf[Int]
+}
+case object ByteFrame extends Frame[Byte] {
+  def cl : Class[Byte] = classOf[Byte]
+}
+case object LongFrame extends Frame[Long] {
+  def cl : Class[Long] = classOf[Long]
+}
+case object ShortFrame extends Frame[Short] {
+  def cl : Class[Short] = classOf[Short]
+}
+case object BooleanFrame extends Frame[Boolean]{
+  def cl : Class[Boolean] = classOf[Boolean]
+}
+case object FloatFrame extends Frame[Float]{
+  def cl : Class[Float] = classOf[Float]
+}
+case object DoubleFrame extends Frame[Float]{
+  def cl : Class[Float] = classOf[Float]
+}
+case object StringFrame extends Frame[String]{
+  def cl : Class[String] = classOf[String]
+}
+case class ObjectFrame(cl:Class[AnyRef]) extends Frame[AnyRef]
+
+trait Frame[A] {
+  def cl:Class[A]
+  def params:Seq[Param] =Seq.empty
+
+  override def toString = s"Frame[${cl.getSimpleName}](${params.mkString(",")})"
 }

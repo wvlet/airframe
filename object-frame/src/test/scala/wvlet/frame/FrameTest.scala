@@ -17,10 +17,14 @@ package wvlet.frame
 object Examples {
 
   case class A(
-    i:Int,
     b:Boolean,
+    bt:Byte,
+    st:Short,
+    i:Int,
+    l:Long,
     f:Float,
-    d:Double
+    d:Double,
+    str:String
   )
 }
 
