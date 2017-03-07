@@ -83,6 +83,7 @@ object FrameMacros {
       }
     }
 
+
     def genFrame(typeEv:c.Tree) : c.Tree = {
       val t = typeEv.tpe.typeArgs(0)
 

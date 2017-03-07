@@ -30,7 +30,6 @@ object Examples {
   case class B(a:A)
 }
 
-
 import Examples._
 /**
   *
