@@ -44,6 +44,14 @@ trait Frame {
       s"${name}(${params.mkString(",")})"
     }
   }
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case f:Frame =>
+        this.fullName.equals(f.fullName)
+      case _ => false
+    }
+  }
+  override def hashCode(): Int = fullName.hashCode
 }
 
 case class Param(name: String, frame: Frame) {
@@ -83,10 +91,6 @@ object Primitive {
   case object String extends Frame {
     def rawType: Class[String] = classOf[String]
   }
-
-}
-
-object StandardType {
 
 }
 

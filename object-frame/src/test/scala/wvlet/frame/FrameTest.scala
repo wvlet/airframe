@@ -92,6 +92,8 @@ class FrameTest extends FrameSpec {
       check(Frame.of[ParSeq[A]])
       check(Frame.of[List[A]])
       check(Frame.of[Map[String, A]])
+      check(Frame.of[Map[String, Long]])
+      check(Frame.of[Map[Long, B]])
       check(Frame.of[Set[String]])
       check(Frame.of[IndexedSeq[A]])
     }
