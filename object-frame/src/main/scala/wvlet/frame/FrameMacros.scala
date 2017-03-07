@@ -54,10 +54,10 @@ object FrameMacros {
     private val toCollection : TypeMatcher = {
       case t if typeNameOf(t) == "scala.collection.Seq" =>
         val elementType = typeArgsOf(t).map(x => toFrame(x)).head
-        q"SeqFrame(classOf[$t], ${elementType})"
+        q"wvlet.frame.SeqFrame(classOf[$t], ${elementType})"
       case t if typeNameOf(t) == "scala.collection.immutable.Map" =>
         val paramType = typeArgsOf(t).map(x => toFrame(x))
-        q"MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
+        q"wvlet.frame.MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
     }
 
     private val toAlias : TypeMatcher = {
@@ -66,7 +66,7 @@ object FrameMacros {
         val inner = toFrame(alias.dealias)
         val name = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        q"FrameAlias(${name}, ${fullName}, $inner)"
+        q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
     }
 
     private val toGeneric : TypeMatcher = {
@@ -124,7 +124,7 @@ object FrameMacros {
       }
       else {
         seen += t
-        println(s"fullName: ${t.dealias.typeSymbol.fullName}")
+        //println(s"fullName: ${t.dealias.typeSymbol.fullName}")
         val frame = matchers(t)
         memo += (t -> frame)
         frame
@@ -140,17 +140,9 @@ object FrameMacros {
       }
     }
 
-    def genFrame(typeEv:c.Type) : c.Tree = {
-      //println(s"genFrame: ${showRaw(typeEv)}")
-      val frameGen = typeEv match {
-        case TypeRef(prefix, typeSymbol, args) =>
-          toFrame(typeEv)
-          // TODO Use t.dealias for aliased type
-        case other =>
-          q"""new wvlet.frame.Frame { def cl : Class[$typeEv] = classOf[$typeEv] }"""
-      }
+    def createFrame(typeEv:c.Type) : c.Tree = {
+      val frameGen = toFrame(typeEv)
       val fullName = extractFullName(typeEv)
-      //println(s"frameGen: ${show(frameGen)}")
       q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frameGen})"
     }
   }
@@ -158,6 +150,6 @@ object FrameMacros {
   def of[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe
-    new Helper[c.type](c).genFrame(typeEv)
+    new Helper[c.type](c).createFrame(typeEv)
   }
 }

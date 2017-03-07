@@ -52,24 +52,31 @@ case class Param(name:String, frame:Frame) {
 object Primitive {
 
   case object Int extends Frame {
+    override def name = "Int"
     def cl: Class[Int] = classOf[Int]
   }
   case object Byte extends Frame {
+    override def name = "Byte"
     def cl: Class[Byte] = classOf[Byte]
   }
   case object Long extends Frame {
+    override def name = "Long"
     def cl: Class[Long] = classOf[Long]
   }
   case object Short extends Frame {
+    override def name = "Short"
     def cl: Class[Short] = classOf[Short]
   }
   case object Boolean extends Frame {
+    override def name = "Boolean"
     def cl: Class[Boolean] = classOf[Boolean]
   }
   case object Float extends Frame {
+    override def name = "Float"
     def cl: Class[Float] = classOf[Float]
   }
   case object Double extends Frame {
+    override def name = "Double"
     def cl: Class[Double] = classOf[Double]
   }
   case object String extends Frame {
@@ -85,8 +92,8 @@ object StandardType {
 
 case class ObjectFrame(cl:Class[_]) extends Frame
 
-case class FrameAlias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
-  override def toString = s"AliasFrame[${name}](${params.mkString(",")})"
+case class Alias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
+  override def toString = s"Alias[${name}=${frame.name}](${params.mkString(",")})"
   override def cl = frame.cl
   override def params = frame.params
 }
