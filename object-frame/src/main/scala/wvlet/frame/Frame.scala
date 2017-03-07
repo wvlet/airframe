@@ -27,7 +27,7 @@ object Frame {
 
   private[frame] val frameCache = new ConcurrentHashMap[Class[_], Frame]().asScala
 
-  def of[A:ru.TypeTag] : Frame = macro FrameMacros.of[A]
+  def of[A] : Frame = macro FrameMacros.of[A]
 
 }
 

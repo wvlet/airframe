@@ -26,7 +26,7 @@ object FrameMacros {
     val seen = scala.collection.mutable.Set[Type]()
     val memo = scala.collection.mutable.Map[Type, c.Tree]()
 
-    def toFrame(t:Type) : c.Tree = {
+    def toFrame(t:c.Type) : c.Tree = {
       if(seen.contains(t)) {
         if(memo.contains(t)) {
           memo(t)
@@ -88,23 +88,23 @@ object FrameMacros {
     }
 
 
-    def genFrame(typeEv:c.Tree) : c.Tree = {
-      val t = typeEv.tpe.typeArgs(0)
-      println(s"genFrame: ${showRaw(t)}")
-      val frameGen = t match {
+    def genFrame(typeEv:c.Type) : c.Tree = {
+      println(s"genFrame: ${showRaw(typeEv)}")
+      val frameGen = typeEv match {
         case TypeRef(_, cls, args) =>
-          toFrame(t)
+          toFrame(typeEv)
           // TODO Use t.dealias for aliased type
         case other =>
-          q"""new wvlet.frame.Frame { def cl : Class[$t] = classOf[$t] }"""
+          q"""new wvlet.frame.Frame { def cl : Class[$typeEv] = classOf[$typeEv] }"""
       }
       frameGen
       //q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen)"
     }
   }
 
-  def of[A:c.WeakTypeTag](c: sm.Context)(typeEv: c.Tree) : c.Tree = {
+  def of[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
+    val typeEv = implicitly[c.WeakTypeTag[A]].tpe
     new Helper[c.type](c).genFrame(typeEv)
   }
 }
