@@ -42,7 +42,7 @@ trait Frame {
   def cl:Class[_]
   def params:Seq[Param] =Seq.empty
 
-  override def toString = s"Frame[${name}](${params.mkString(",")})"
+  override def toString = s"${name}(${params.mkString(",")})"
 }
 
 case class Param(name:String, frame:Frame) {
@@ -93,33 +93,20 @@ object StandardType {
 case class ObjectFrame(cl:Class[_]) extends Frame
 
 case class Alias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
-  override def toString = s"Alias[${name}=${frame.name}](${params.mkString(",")})"
+  override def toString = s"${name}:=${frame.toString}"
   override def cl = frame.cl
   override def params = frame.params
 }
 
-case class ArrayFrame(cl:Class[_], elementFrame:Frame) extends Frame {
-  override def toString = s"Frame[Array[${elementFrame.name}]]"
+class GenericFrame(val cl:Class[_], typeArgs:Seq[Frame]) extends Frame {
+  override def toString = s"${name}[${typeArgs.map(_.name).mkString(",")}]"
 }
 
-case class SeqFrame(cl:Class[_], elementFrame:Frame) extends Frame {
-  override def toString = s"Frame[Seq[${elementFrame.name}]]"
+case class ArrayFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame)) {
+  override def toString = s"Array[${elementFrame.name}]"
 }
-case class SetFrame(cl:Class[_], elementFrame:Frame) extends Frame {
-  override def toString = s"Frame[Set[${elementFrame.name}]]"
-}
-case class ListFrame(cl:Class[_], elementFrame:Frame) extends Frame {
-  override def toString = s"Frame[List[${elementFrame.name}]]"
-}
-
-case class OptionFrame(cl:Class[_], elementFrame:Frame) extends Frame {
-  override def toString = s"Frame[Option[${elementFrame.name}]]"
-}
-
-case class MapFrame(cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends Frame {
-  override def toString = s"Frame[Map[${keyFrame.name}, ${valueFrame.name}]]"
-}
-
-case class GenericFrame(cl:Class[_], typeArgs:Seq[Frame]) extends Frame {
-  override def toString = s"Frame[${cl.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]]"
-}
+case class SeqFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
+case class SetFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
+case class ListFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
+case class OptionFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
+case class MapFrame(override val cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends GenericFrame(cl, Seq(keyFrame, valueFrame))

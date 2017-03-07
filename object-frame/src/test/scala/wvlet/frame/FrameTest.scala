@@ -80,6 +80,8 @@ class FrameTest extends FrameSpec {
 
     "resolve mutable Collection types" in {
       check(Frame.of[collection.mutable.Seq[String]])
+      check(Frame.of[collection.mutable.Map[Int, String]])
+      check(Frame.of[collection.mutable.Set[A]])
     }
 
   }
