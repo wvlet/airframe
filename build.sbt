@@ -71,7 +71,7 @@ lazy val airframeRoot =
     publishArtifact := false,
     publish := {},
     publishLocal := {}
-  ) aggregate(airframe, airframeMacros)
+  ) aggregate(airframe, airframeMacros, surfaceJVM, surfaceJS)
 
 lazy val airframe =
   Project(id = "airframe", base = file("airframe")).settings(
