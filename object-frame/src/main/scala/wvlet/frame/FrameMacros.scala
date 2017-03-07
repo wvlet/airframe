@@ -67,7 +67,7 @@ object FrameMacros {
                       //println(s"t: ${showRaw(t)}")
                       expr
                     }
-                    q"""new wvlet.frame.Frame[$t] {
+                    q"""new wvlet.frame.Frame {
                        def cl : Class[$t] = classOf[$t]
                        override def params = Seq(..$frameParams)
                     }"""
@@ -92,9 +92,9 @@ object FrameMacros {
           toFrame(t)
           // TODO Use t.dealias for aliased type
         case other =>
-          q"""new wvlet.frame.Frame[$t] { def cl : Class[$t] = classOf[$t] }"""
+          q"""new wvlet.frame.Frame { def cl : Class[$t] = classOf[$t] }"""
       }
-      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen).asInstanceOf[wvlet.frame.Frame[$t]]"
+      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen)"
     }
   }
 

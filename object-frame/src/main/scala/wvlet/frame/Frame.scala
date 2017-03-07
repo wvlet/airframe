@@ -25,46 +25,51 @@ import scala.language.experimental.macros
 object Frame {
   import scala.collection.JavaConverters._
 
-  private[frame] val frameCache = new ConcurrentHashMap[Class[_], Frame[_]]().asScala
+  private[frame] val frameCache = new ConcurrentHashMap[Class[_], Frame]().asScala
 
-  def of[A:ru.TypeTag] : Frame[A] = macro FrameMacros.of[A]
+  def of[A:ru.TypeTag] : Frame = macro FrameMacros.of[A]
 
 }
 
-case class Param(name:String, frame:Frame[_]) {
+case class Param(name:String, frame:Frame) {
   override def toString = s"${name}:${frame.name}"
 }
 
-case object IntFrame extends Frame[Int] {
+case object IntFrame extends Frame {
   def cl : Class[Int] = classOf[Int]
 }
-case object ByteFrame extends Frame[Byte] {
+case object ByteFrame extends Frame {
   def cl : Class[Byte] = classOf[Byte]
 }
-case object LongFrame extends Frame[Long] {
+case object LongFrame extends Frame {
   def cl : Class[Long] = classOf[Long]
 }
-case object ShortFrame extends Frame[Short] {
+case object ShortFrame extends Frame {
   def cl : Class[Short] = classOf[Short]
 }
-case object BooleanFrame extends Frame[Boolean]{
+case object BooleanFrame extends Frame {
   def cl : Class[Boolean] = classOf[Boolean]
 }
-case object FloatFrame extends Frame[Float]{
+case object FloatFrame extends Frame {
   def cl : Class[Float] = classOf[Float]
 }
-case object DoubleFrame extends Frame[Double]{
+case object DoubleFrame extends Frame {
   def cl : Class[Double] = classOf[Double]
 }
-case object StringFrame extends Frame[String]{
+case object StringFrame extends Frame {
   def cl : Class[String] = classOf[String]
 }
-case class ObjectFrame(cl:Class[_]) extends Frame[Any]
+case class ObjectFrame(cl:Class[_]) extends Frame
 
-trait Frame[A] {
+case class FrameAlias(override val name:String, frame:Frame) extends Frame {
+  override def cl = frame.cl
+  override def params = frame.params
+}
+
+trait Frame {
   def name = cl.getSimpleName
   def cl:Class[_]
   def params:Seq[Param] =Seq.empty
 
-  override def toString = s"Frame[${cl.getSimpleName}](${params.mkString(",")})"
+  override def toString = s"Frame[${name}](${params.mkString(",")})"
 }
