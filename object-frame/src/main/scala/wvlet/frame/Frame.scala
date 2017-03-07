@@ -37,9 +37,9 @@ object Frame {
 
 
 trait Frame {
-  def name = cl.getSimpleName
-  def fullName : FullName = cl.getName
-  def cl:Class[_]
+  def name = rawType.getSimpleName
+  def fullName : FullName = rawType.getName
+  def rawType:Class[_]
   def params:Seq[Param] =Seq.empty
 
   override def toString = s"${name}(${params.mkString(",")})"
@@ -53,60 +53,59 @@ object Primitive {
 
   case object Int extends Frame {
     override def name = "Int"
-    def cl: Class[Int] = classOf[Int]
+    def rawType: Class[Int] = classOf[Int]
   }
   case object Byte extends Frame {
     override def name = "Byte"
-    def cl: Class[Byte] = classOf[Byte]
+    def rawType: Class[Byte] = classOf[Byte]
   }
   case object Long extends Frame {
     override def name = "Long"
-    def cl: Class[Long] = classOf[Long]
+    def rawType: Class[Long] = classOf[Long]
   }
   case object Short extends Frame {
     override def name = "Short"
-    def cl: Class[Short] = classOf[Short]
+    def rawType: Class[Short] = classOf[Short]
   }
   case object Boolean extends Frame {
     override def name = "Boolean"
-    def cl: Class[Boolean] = classOf[Boolean]
+    def rawType: Class[Boolean] = classOf[Boolean]
   }
   case object Float extends Frame {
     override def name = "Float"
-    def cl: Class[Float] = classOf[Float]
+    def rawType: Class[Float] = classOf[Float]
   }
   case object Double extends Frame {
     override def name = "Double"
-    def cl: Class[Double] = classOf[Double]
+    def rawType: Class[Double] = classOf[Double]
   }
   case object String extends Frame {
-    def cl: Class[String] = classOf[String]
+    def rawType: Class[String] = classOf[String]
   }
 
 }
 
 object StandardType {
 
-
 }
 
-case class ObjectFrame(cl:Class[_]) extends Frame
+case class ObjectFrame(rawType:Class[_]) extends Frame
 
 case class Alias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
   override def toString = s"${name}:=${frame.toString}"
-  override def cl = frame.cl
+  override def rawType = frame.rawType
   override def params = frame.params
 }
 
-class GenericFrame(val cl:Class[_], typeArgs:Seq[Frame]) extends Frame {
+class GenericFrame(val rawType:Class[_], typeArgs:Seq[Frame]) extends Frame {
   override def toString = s"${name}[${typeArgs.map(_.name).mkString(",")}]"
 }
 
-case class ArrayFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame)) {
+case class ArrayFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame)) {
   override def toString = s"Array[${elementFrame.name}]"
 }
-case class SeqFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
-case class SetFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
-case class ListFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
-case class OptionFrame(override val cl:Class[_], elementFrame:Frame) extends GenericFrame(cl, Seq(elementFrame))
-case class MapFrame(override val cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends GenericFrame(cl, Seq(keyFrame, valueFrame))
+case class SeqFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
+case class SetFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
+case class ListFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
+case class OptionFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
+case class MapFrame(override val rawType:Class[_], keyFrame:Frame, valueFrame:Frame) extends GenericFrame(rawType, Seq(keyFrame, valueFrame))

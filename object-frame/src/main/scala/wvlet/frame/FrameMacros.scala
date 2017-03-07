@@ -115,7 +115,7 @@ object FrameMacros {
           expr
         }
         q"""new wvlet.frame.Frame {
-                       def cl : Class[$t] = classOf[$t]
+                       def rawType : Class[$t] = classOf[$t]
                        override def params = Seq(..$frameParams)
                     }"""
     }
