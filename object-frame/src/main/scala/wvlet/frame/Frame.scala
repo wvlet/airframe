@@ -15,10 +15,6 @@ package wvlet.frame
 
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.frame.Frame.FullName
-
-import scala.reflect.runtime.universe._
-import scala.reflect.runtime.{universe => ru}
 import scala.language.experimental.macros
 
 /**
@@ -26,26 +22,31 @@ import scala.language.experimental.macros
   */
 object Frame {
   import scala.collection.JavaConverters._
-
   type FullName = String
 
   private[frame] val frameCache = new ConcurrentHashMap[FullName, Frame]().asScala
 
-  def of[A] : Frame = macro FrameMacros.of[A]
+  def of[A]: Frame = macro FrameMacros.of[A]
 
 }
-
 
 trait Frame {
   def name = rawType.getSimpleName
-  def fullName : FullName = rawType.getName
-  def rawType:Class[_]
-  def params:Seq[Param] =Seq.empty
+  def fullName: String = rawType.getName
+  def rawType: Class[_]
+  def params: Seq[Param] = Seq.empty
 
-  override def toString = s"${name}(${params.mkString(",")})"
+  override def toString = {
+    if(params.isEmpty) {
+      name
+    }
+    else {
+      s"${name}(${params.mkString(",")})"
+    }
+  }
 }
 
-case class Param(name:String, frame:Frame) {
+case class Param(name: String, frame: Frame) {
   override def toString = s"${name}:${frame.name}"
 }
 
@@ -89,25 +90,24 @@ object StandardType {
 
 }
 
-case class ObjectFrame(rawType:Class[_]) extends Frame
-
-case class Alias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
+case class Alias(override val name: String, override val fullName: String, frame: Frame) extends Frame {
   override def toString = s"${name}:=${frame.toString}"
   override def rawType = frame.rawType
   override def params = frame.params
 }
 
-class GenericFrame(val rawType:Class[_], typeArgs:Seq[Frame]) extends Frame {
+class GenericFrame(val rawType: Class[_], typeArgs: Seq[Frame]) extends Frame {
   override def toString = s"${name}[${typeArgs.map(_.name).mkString(",")}]"
   override def fullName = s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
 }
 
-case class ArrayFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame)) {
+case class ClassFrame(val rawType: Class[_]) extends Frame
+
+case class ArrayFrame(override val rawType: Class[_], elementFrame: Frame) extends GenericFrame(rawType, Seq(elementFrame)) {
   override def toString = s"Array[${elementFrame.name}]"
   override def fullName = s"Array[${elementFrame.fullName}]"
 }
-case class SeqFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
-case class SetFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
-case class ListFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
-case class OptionFrame(override val rawType:Class[_], elementFrame:Frame) extends GenericFrame(rawType, Seq(elementFrame))
-case class MapFrame(override val rawType:Class[_], keyFrame:Frame, valueFrame:Frame) extends GenericFrame(rawType, Seq(keyFrame, valueFrame))
+case class OptionFrame(override val rawType: Class[_], elementFrame: Frame) extends GenericFrame(rawType, Seq(elementFrame))
+
+case class EnumFrame(override val rawType: Class[_]) extends Frame
+

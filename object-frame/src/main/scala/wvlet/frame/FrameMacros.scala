@@ -22,28 +22,30 @@ import scala.reflect.macros.{blackbox => sm}
 object FrameMacros {
 
   class Helper[C <: sm.Context](val c: C) {
+
     import c.universe._
+
     val seen = scala.collection.mutable.Set[Type]()
     val memo = scala.collection.mutable.Map[Type, c.Tree]()
 
     type TypeMatcher = PartialFunction[c.Type, c.Tree]
 
-    private def typeArgsOf(t:c.Type) : List[c.Type] = t match {
+    private def typeArgsOf(t: c.Type): List[c.Type] = t match {
       case TypeRef(prefix, symbol, args) =>
         args
       case other =>
         List.empty
     }
 
-    private def typeNameOf(t:c.Type) : String = {
+    private def typeNameOf(t: c.Type): String = {
       t.dealias.typeSymbol.fullName
     }
 
-    private def elementTypeOf(t:c.Type) : c.Tree = {
+    private def elementTypeOf(t: c.Type): c.Tree = {
       typeArgsOf(t).map(toFrame(_)).head
     }
 
-    private val toPrimitive : TypeMatcher = {
+    private val toPrimitive: TypeMatcher = {
       case t if t =:= typeOf[Short] => q"wvlet.frame.Primitive.Short"
       case t if t =:= typeOf[Boolean] => q"wvlet.frame.Primitive.Boolean"
       case t if t =:= typeOf[Byte] => q"wvlet.frame.Primitive.Byte"
@@ -55,17 +57,17 @@ object FrameMacros {
       case t if t =:= typeOf[String] => q"wvlet.frame.Primitive.String"
     }
 
-    private val toArray : TypeMatcher = {
+    private val toArray: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Array" =>
         q"wvlet.frame.ArrayFrame(classOf[$t], ${elementTypeOf(t)})"
     }
 
-    private val toOption : TypeMatcher = {
+    private val toOption: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Option" =>
         q"wvlet.frame.OptionFrame(classOf[$t], ${elementTypeOf(t)})"
     }
 
-    private val toCollection : TypeMatcher = {
+    private val toCollection: TypeMatcher = {
       case t if typeNameOf(t) == "scala.collection.Seq"
         || typeNameOf(t) == "scala.collection.IndexedSeq"
         || typeNameOf(t) == "scala.collection.parallel.Seq" =>
@@ -76,32 +78,58 @@ object FrameMacros {
         q"wvlet.frame.ListFrame(classOf[$t], ${elementTypeOf(t)})"
       case t if typeNameOf(t) == "scala.collection.immutable.Map" =>
         val paramType = typeArgsOf(t).map(x => toFrame(x))
-        q"wvlet.frame.MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
+        q"wvlet.frame.MapFrame(classOf[$t], ..$paramType)"
     }
 
-    private val toAlias : TypeMatcher = {
-      case alias @ TypeRef(prefix, symbol, args)
-        if symbol.isType && symbol.asType.isAliasType =>
+    private val toJavaUtil : TypeMatcher = {
+      case t if
+      t =:= typeOf[java.io.File] ||
+        t =:= typeOf[java.util.Date] ||
+        t =:= typeOf[java.time.temporal.Temporal]
+      =>
+        q"wvlet.frame.ClassFrame(classOf[$t])"
+    }
+
+    private val toEnum : TypeMatcher = {
+      case t if t.typeSymbol.isJavaEnum =>
+        q"wvlet.frame.EnumFrame(classOf[$t])"
+    }
+
+    private val scalaDefaultPackages = Seq("scala.", "scala.Predef.", "scala.util.")
+    private def belongsToScalaDefault(t: c.Type) = {
+      t match {
+        case TypeRef(prefix, _, _) =>
+          scalaDefaultPackages.exists(p => prefix.dealias.typeSymbol.fullName.startsWith(p))
+        case _ => false
+      }
+    }
+
+    private val toAlias: TypeMatcher = {
+      case alias@TypeRef(prefix, symbol, args)
+        if symbol.isType &&
+          symbol.asType.isAliasType &&
+          !belongsToScalaDefault(alias)
+      =>
         val inner = toFrame(alias.dealias)
         val name = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
     }
 
-    private def findPrimaryConstructor(t:c.Type) = {
+    private def findPrimaryConstructor(t: c.Type) = {
       t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor)
     }
 
-    def hasAbstractMethods(t:c.Type) : Boolean = t.members.exists(x =>
+    def hasAbstractMethods(t: c.Type): Boolean = t.members.exists(x =>
       x.isMethod && x.isAbstract && !x.isAbstractOverride
     )
 
-    private def isAbstract(t:c.Type) : Boolean = {
+    private def isAbstract(t: c.Type): Boolean = {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
-    private val toGeneric : TypeMatcher = {
-      case t @ TypeRef(prefix, symbol, args) if !isAbstract(t) && findPrimaryConstructor(t).isDefined =>
+    private val toFrameWithParams: TypeMatcher = {
+      case t@TypeRef(prefix, symbol, args) if !isAbstract(t) && findPrimaryConstructor(t).exists(!_.asMethod.paramLists.isEmpty) =>
         val primaryConstructor = findPrimaryConstructor(t).get
         val classTypeParams = t.typeSymbol.asClass.typeParams
         val params = primaryConstructor.asMethod.paramLists.flatten
@@ -115,31 +143,33 @@ object FrameMacros {
           expr
         }
         q"""new wvlet.frame.Frame {
-                       def rawType : Class[$t] = classOf[$t]
-                       override def params = Seq(..$frameParams)
-                    }"""
+             def rawType : Class[$t] = classOf[$t]
+             override def params = Seq(..$frameParams)
+            }"""
     }
 
-    private val toGenericFrame : TypeMatcher = {
-      case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
+    private val toGenericFrame: TypeMatcher = {
+      case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(toFrame(_))
         q"new wvlet.frame.GenericFrame(classOf[$t], Seq(..$typeArgs))"
       case t =>
-        q"new wvlet.frame.ObjectFrame(classOf[$t])"
+        q"wvlet.frame.ClassFrame(classOf[$t])"
     }
 
-    private val matchers : TypeMatcher =
+    private val matchers: TypeMatcher =
       toPrimitive orElse
         toArray orElse
         toOption orElse
-        toCollection orElse
+//        toCollection orElse
         toAlias orElse
-        toGeneric orElse
+        toJavaUtil orElse
+        toEnum orElse
+        toFrameWithParams orElse
         toGenericFrame
 
-    def toFrame(t:c.Type) : c.Tree = {
-      if(seen.contains(t)) {
-        if(memo.contains(t)) {
+    def toFrame(t: c.Type): c.Tree = {
+      if (seen.contains(t)) {
+        if (memo.contains(t)) {
           memo(t)
         }
         else {
@@ -156,10 +186,10 @@ object FrameMacros {
       }
     }
 
-    def extractFullName(typeEv:c.Type) : String = {
+    def extractFullName(typeEv: c.Type): String = {
       typeEv match {
         case TypeRef(prefix, typeSymbol, args) =>
-          if(args.isEmpty) {
+          if (args.isEmpty) {
             typeSymbol.fullName
           }
           else {
@@ -171,13 +201,12 @@ object FrameMacros {
       }
     }
 
-    def createFrame(typeEv:c.Type) : c.Tree = {
+    def createFrame(typeEv: c.Type): c.Tree = {
       toFrame(typeEv)
     }
   }
 
-  def of[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
-    import c.universe._
+  def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe
     new Helper[c.type](c).createFrame(typeEv)
   }

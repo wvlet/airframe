@@ -33,9 +33,16 @@ object Examples {
 
   trait C
 
+  type MyChrono = java.time.temporal.ChronoUnit
 }
 
+import java.io.File
+import java.time.temporal.ChronoUnit
+
 import Examples._
+
+import scala.collection.parallel.ParSeq
+import scala.util.Try
 /**
   *
   */
@@ -82,10 +89,29 @@ class FrameTest extends FrameSpec {
 
     "resolve Collection types" in {
       check(Frame.of[Seq[A]])
+      check(Frame.of[ParSeq[A]])
       check(Frame.of[List[A]])
       check(Frame.of[Map[String, A]])
       check(Frame.of[Set[String]])
       check(Frame.of[IndexedSeq[A]])
+    }
+
+    "resolve scala util types" in {
+      check(Frame.of[Either[String, Throwable]])
+      check(Frame.of[Try[A]])
+    }
+
+    "resolve java util type" in {
+      check(Frame.of[File])
+      check(Frame.of[java.util.Date])
+      check(Frame.of[java.time.LocalDate])
+      check(Frame.of[java.time.LocalDateTime])
+      check(Frame.of[java.time.Instant])
+    }
+
+    "resolve java enum type" in {
+      check(Frame.of[ChronoUnit])
+      check(Frame.of[MyChrono])
     }
 
     "resolve mutable Collection types" in {
