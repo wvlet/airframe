@@ -52,6 +52,16 @@ class FrameTest extends FrameSpec {
       check(Frame.of[B])
     }
 
+    "be equal" in {
+      val a1 = Frame.of[A]
+      val a2 = Frame.of[A]
+      a1 shouldBe theSameInstanceAs(a2)
+
+      val b = Frame.of[B]
+      val a3 = b.params.head.frame
+      a1 shouldBe theSameInstanceAs(a3)
+    }
+
     "resolve alias" in {
       check(Frame.of[MyA])
     }

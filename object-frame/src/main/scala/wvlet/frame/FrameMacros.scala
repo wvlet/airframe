@@ -151,7 +151,8 @@ object FrameMacros {
         //println(s"fullName: ${t.dealias.typeSymbol.fullName}")
         val frame = matchers(t)
         memo += (t -> frame)
-        frame
+        val fullName = extractFullName(t)
+        q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frame})"
       }
     }
 
@@ -171,9 +172,7 @@ object FrameMacros {
     }
 
     def createFrame(typeEv:c.Type) : c.Tree = {
-      val frameGen = toFrame(typeEv)
-      val fullName = extractFullName(typeEv)
-      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frameGen})"
+      toFrame(typeEv)
     }
   }
 
