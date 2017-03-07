@@ -34,6 +34,8 @@ object Examples {
   trait C
 
   type MyChrono = java.time.temporal.ChronoUnit
+
+  type MyInt = Int
 }
 
 import java.io.File
@@ -71,6 +73,7 @@ class FrameTest extends FrameSpec {
 
     "resolve alias" in {
       check(Frame.of[MyA])
+      check(Frame.of[MyInt])
     }
 
     "resolve trait" in {
@@ -120,6 +123,10 @@ class FrameTest extends FrameSpec {
       check(Frame.of[collection.mutable.Seq[String]])
       check(Frame.of[collection.mutable.Map[Int, String]])
       check(Frame.of[collection.mutable.Set[A]])
+    }
+
+    "resolve tuples" in {
+      check(Frame.of[(Int, String)])
     }
 
   }

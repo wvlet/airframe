@@ -100,7 +100,7 @@ case class Alias(override val name: String, override val fullName: String, frame
   override def params = frame.params
 }
 
-class GenericFrame(val rawType: Class[_], typeArgs: Seq[Frame]) extends Frame {
+class GenericFrame(val rawType: Class[_], val typeArgs: Seq[Frame]) extends Frame {
   override def toString = s"${name}[${typeArgs.map(_.name).mkString(",")}]"
   override def fullName = s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
 }
@@ -114,4 +114,4 @@ case class ArrayFrame(override val rawType: Class[_], elementFrame: Frame) exten
 case class OptionFrame(override val rawType: Class[_], elementFrame: Frame) extends GenericFrame(rawType, Seq(elementFrame))
 
 case class EnumFrame(override val rawType: Class[_]) extends Frame
-
+case class TupleFrame(override val rawType: Class[_], override val typeArgs:Seq[Frame]) extends GenericFrame(rawType, typeArgs)

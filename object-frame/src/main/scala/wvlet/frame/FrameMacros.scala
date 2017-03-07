@@ -45,6 +45,18 @@ object FrameMacros {
       typeArgsOf(t).map(toFrame(_)).head
     }
 
+    private val toAlias: TypeMatcher = {
+      case alias@TypeRef(prefix, symbol, args)
+        if symbol.isType &&
+          symbol.asType.isAliasType &&
+          !belongsToScalaDefault(alias)
+      =>
+        val inner = toFrame(alias.dealias)
+        val name = symbol.asType.name.decodedName.toString
+        val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+        q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
+    }
+
     private val toPrimitive: TypeMatcher = {
       case t if t =:= typeOf[Short] => q"wvlet.frame.Primitive.Short"
       case t if t =:= typeOf[Boolean] => q"wvlet.frame.Primitive.Boolean"
@@ -62,9 +74,16 @@ object FrameMacros {
         q"wvlet.frame.ArrayFrame(classOf[$t], ${elementTypeOf(t)})"
     }
 
+
     private val toOption: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Option" =>
         q"wvlet.frame.OptionFrame(classOf[$t], ${elementTypeOf(t)})"
+    }
+
+    private val toTuple : TypeMatcher = {
+      case t if t <:< typeOf[Product] && t.typeSymbol.fullName.startsWith("scala.Tuple") =>
+        val paramType = typeArgsOf(t).map(x => toFrame(x))
+        q"new wvlet.frame.TupleFrame(classOf[$t], Seq(..$paramType))"
     }
 
     private val toCollection: TypeMatcher = {
@@ -104,17 +123,6 @@ object FrameMacros {
       }
     }
 
-    private val toAlias: TypeMatcher = {
-      case alias@TypeRef(prefix, symbol, args)
-        if symbol.isType &&
-          symbol.asType.isAliasType &&
-          !belongsToScalaDefault(alias)
-      =>
-        val inner = toFrame(alias.dealias)
-        val name = symbol.asType.name.decodedName.toString
-        val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        q"wvlet.frame.Alias(${name}, ${fullName}, $inner)"
-    }
 
     private def findPrimaryConstructor(t: c.Type) = {
       t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor)
@@ -157,11 +165,12 @@ object FrameMacros {
     }
 
     private val matchers: TypeMatcher =
-      toPrimitive orElse
+      toAlias orElse
+        toPrimitive orElse
         toArray orElse
         toOption orElse
+        toTuple orElse
 //        toCollection orElse
-        toAlias orElse
         toJavaUtil orElse
         toEnum orElse
         toFrameWithParams orElse
