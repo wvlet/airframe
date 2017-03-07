@@ -150,8 +150,10 @@ object FrameMacros {
           //println(s"t: ${showRaw(t)}")
           expr
         }
+        val typeArgs = typeArgsOf(t).map(toFrame(_))
         q"""new wvlet.frame.Frame {
              def rawType : Class[$t] = classOf[$t]
+             override def typeArgs = Seq(..$typeArgs)
              override def params = Seq(..$frameParams)
             }"""
     }

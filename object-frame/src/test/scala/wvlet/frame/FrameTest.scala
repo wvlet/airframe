@@ -36,6 +36,9 @@ object Examples {
   type MyChrono = java.time.temporal.ChronoUnit
 
   type MyInt = Int
+
+  case class D[V](id:Int, v:V)
+
 }
 
 import java.io.File
@@ -50,9 +53,10 @@ import scala.util.Try
   */
 class FrameTest extends FrameSpec {
 
-  def check(body: => Frame) {
+  def check(body: => Frame) : Frame = {
     val frame = body
     info(s"[${frame.getClass.getSimpleName}] $frame, ${frame.fullName}")
+    frame
   }
 
   "Frame" should {
@@ -135,6 +139,12 @@ class FrameTest extends FrameSpec {
       check(Frame.of[java.util.List[String]])
       check(Frame.of[java.util.Map[Long, String]])
       check(Frame.of[java.util.Set[A]])
+    }
+
+    "resolve generic type" in {
+      val d1 = check(Frame.of[D[String]])
+      val d2 = check(Frame.of[D[A]])
+      d1 shouldNot be theSameInstanceAs(d2)
     }
 
   }

@@ -32,8 +32,15 @@ object Frame {
 
 trait Frame {
   def name = rawType.getSimpleName
-  def fullName: String = rawType.getName
+  def fullName: String = {
+    if(typeArgs.isEmpty)
+      rawType.getName
+    else {
+      s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
+    }
+  }
   def rawType: Class[_]
+  def typeArgs : Seq[Frame] = Seq.empty
   def params: Seq[Param] = Seq.empty
 
   override def toString = {
@@ -100,7 +107,7 @@ case class Alias(override val name: String, override val fullName: String, frame
   override def params = frame.params
 }
 
-class GenericFrame(val rawType: Class[_], val typeArgs: Seq[Frame]) extends Frame {
+class GenericFrame(val rawType: Class[_], override val typeArgs: Seq[Frame]) extends Frame {
   override def toString = s"${name}[${typeArgs.map(_.name).mkString(",")}]"
   override def fullName = s"${rawType.getName}[${typeArgs.map(_.fullName).mkString(",")}]"
 }
