@@ -49,30 +49,40 @@ case class Param(name:String, frame:Frame) {
   override def toString = s"${name}:${frame.name}"
 }
 
-case object IntFrame extends Frame {
-  def cl : Class[Int] = classOf[Int]
+object Primitive {
+
+  case object Int extends Frame {
+    def cl: Class[Int] = classOf[Int]
+  }
+  case object Byte extends Frame {
+    def cl: Class[Byte] = classOf[Byte]
+  }
+  case object Long extends Frame {
+    def cl: Class[Long] = classOf[Long]
+  }
+  case object Short extends Frame {
+    def cl: Class[Short] = classOf[Short]
+  }
+  case object Boolean extends Frame {
+    def cl: Class[Boolean] = classOf[Boolean]
+  }
+  case object Float extends Frame {
+    def cl: Class[Float] = classOf[Float]
+  }
+  case object Double extends Frame {
+    def cl: Class[Double] = classOf[Double]
+  }
+  case object String extends Frame {
+    def cl: Class[String] = classOf[String]
+  }
+
 }
-case object ByteFrame extends Frame {
-  def cl : Class[Byte] = classOf[Byte]
+
+object StandardType {
+
+
 }
-case object LongFrame extends Frame {
-  def cl : Class[Long] = classOf[Long]
-}
-case object ShortFrame extends Frame {
-  def cl : Class[Short] = classOf[Short]
-}
-case object BooleanFrame extends Frame {
-  def cl : Class[Boolean] = classOf[Boolean]
-}
-case object FloatFrame extends Frame {
-  def cl : Class[Float] = classOf[Float]
-}
-case object DoubleFrame extends Frame {
-  def cl : Class[Double] = classOf[Double]
-}
-case object StringFrame extends Frame {
-  def cl : Class[String] = classOf[String]
-}
+
 case class ObjectFrame(cl:Class[_]) extends Frame
 
 case class FrameAlias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
