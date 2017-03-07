@@ -39,7 +39,7 @@ object FrameMacros {
       t.dealias.typeSymbol.fullName
     }
 
-    val toPrimitive : TypeMatcher = {
+    private val toPrimitive : TypeMatcher = {
       case t if t =:= typeOf[Short] => q"wvlet.frame.Primitive.Short"
       case t if t =:= typeOf[Boolean] => q"wvlet.frame.Primitive.Boolean"
       case t if t =:= typeOf[Byte] => q"wvlet.frame.Primitive.Byte"
@@ -51,10 +51,24 @@ object FrameMacros {
       case t if t =:= typeOf[String] => q"wvlet.frame.Primitive.String"
     }
 
+    private val toArray : TypeMatcher = {
+      case t if typeNameOf(t) == "scala.Array" =>
+        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
+        q"wvlet.frame.ArrayFrame(classOf[$t], ${elementType})"
+    }
+
     private val toCollection : TypeMatcher = {
-      case t if typeNameOf(t) == "scala.collection.Seq" =>
+      case t if typeNameOf(t) == "scala.collection.Seq"
+        || typeNameOf(t) == "scala.collection.IndexedSeq"
+        || typeNameOf(t) == "scala.collection.parallel.Seq" =>
         val elementType = typeArgsOf(t).map(x => toFrame(x)).head
         q"wvlet.frame.SeqFrame(classOf[$t], ${elementType})"
+      case t if typeNameOf(t) == "scala.collection.immutable.Set" =>
+        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
+        q"wvlet.frame.SetFrame(classOf[$t], ${elementType})"
+      case t if typeNameOf(t) == "scala.collection.immutable.List" =>
+        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
+        q"wvlet.frame.ListFrame(classOf[$t], ${elementType})"
       case t if typeNameOf(t) == "scala.collection.immutable.Map" =>
         val paramType = typeArgsOf(t).map(x => toFrame(x))
         q"wvlet.frame.MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
@@ -108,6 +122,7 @@ object FrameMacros {
 
     private val matchers : TypeMatcher =
       toPrimitive orElse
+        toArray orElse
         toCollection orElse
         toAlias orElse
         toGeneric orElse
@@ -134,7 +149,13 @@ object FrameMacros {
     def extractFullName(typeEv:c.Type) : String = {
       typeEv match {
         case TypeRef(prefix, typeSymbol, args) =>
-          typeSymbol.fullName
+          if(args.isEmpty) {
+            typeSymbol.fullName
+          }
+          else {
+            val typeArgs = args.map(extractFullName(_)).mkString(",")
+            s"${typeSymbol.fullName}[${typeArgs}]"
+          }
         case other =>
           typeEv.typeSymbol.fullName
       }

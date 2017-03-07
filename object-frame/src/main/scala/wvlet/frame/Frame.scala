@@ -98,8 +98,18 @@ case class Alias(override val name:String, override val fullName:FullName, frame
   override def params = frame.params
 }
 
+case class ArrayFrame(cl:Class[_], elementFrame:Frame) extends Frame {
+  override def toString = s"Frame[Array[${elementFrame.name}]]"
+}
+
 case class SeqFrame(cl:Class[_], elementFrame:Frame) extends Frame {
   override def toString = s"Frame[Seq[${elementFrame.name}]]"
+}
+case class SetFrame(cl:Class[_], elementFrame:Frame) extends Frame {
+  override def toString = s"Frame[Set[${elementFrame.name}]]"
+}
+case class ListFrame(cl:Class[_], elementFrame:Frame) extends Frame {
+  override def toString = s"Frame[List[${elementFrame.name}]]"
 }
 
 case class MapFrame(cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends Frame {

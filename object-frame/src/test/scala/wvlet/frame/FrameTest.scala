@@ -60,15 +60,33 @@ class FrameTest extends FrameSpec {
       info(t)
     }
 
-    "resolve Seq[A]" in {
-      val t = Frame.of[Seq[A]]
-      info(t)
+    "resolve array types" in {
+      val a = Frame.of[Array[Int]]
+      info(a)
+      val b = Frame.of[Array[Byte]]
+      info(b)
+      val g = Frame.of[Array[A]]
+      info(g)
     }
 
-    "resolve Map[String, A]" in {
-      val t = Frame.of[Map[String, A]]
-      info(t)
+    "resolve Collection types" in {
+      val s = Frame.of[Seq[A]]
+      info(s)
+
+      val l = Frame.of[List[A]]
+      info(l)
+
+      val m = Frame.of[Map[String, A]]
+      info(m)
+
+      val set = Frame.of[Set[String]]
+      info(set)
+
+      val is = Frame.of[IndexedSeq[A]]
+      info(is)
     }
+
+
 
   }
 }
