@@ -92,3 +92,17 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
     "org.scala-lang" % "scala-reflect" % scalaVersion.value
   )
 )
+
+lazy val frame = Project(id = "object-frame", base = file("object-frame")).settings(
+  buildSettings,
+  description := "Object Frame",
+  libraryDependencies ++= Seq(
+    "org.wvlet" %% "wvlet-log" % "1.1",
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+    "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+    // scalatest
+    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+    "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
+  )
+)
+
