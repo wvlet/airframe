@@ -15,6 +15,8 @@ package wvlet.frame
 
 import java.util.concurrent.ConcurrentHashMap
 
+import wvlet.frame.Frame.FullName
+
 import scala.reflect.runtime.universe._
 import scala.reflect.runtime.{universe => ru}
 import scala.language.experimental.macros
@@ -25,7 +27,9 @@ import scala.language.experimental.macros
 object Frame {
   import scala.collection.JavaConverters._
 
-  private[frame] val frameCache = new ConcurrentHashMap[Class[_], Frame]().asScala
+  type FullName = String
+
+  private[frame] val frameCache = new ConcurrentHashMap[FullName, Frame]().asScala
 
   def of[A] : Frame = macro FrameMacros.of[A]
 
@@ -61,14 +65,14 @@ case object StringFrame extends Frame {
 }
 case class ObjectFrame(cl:Class[_]) extends Frame
 
-case class FrameAlias(override val name:String, override val fullName:String, frame:Frame) extends Frame {
+case class FrameAlias(override val name:String, override val fullName:FullName, frame:Frame) extends Frame {
   override def cl = frame.cl
   override def params = frame.params
 }
 
 trait Frame {
   def name = cl.getSimpleName
-  def fullName = cl.getName
+  def fullName : FullName = cl.getName
   def cl:Class[_]
   def params:Seq[Param] =Seq.empty
 

@@ -88,18 +88,27 @@ object FrameMacros {
       }
     }
 
+    def extractFullName(typeEv:c.Type) : String = {
+      typeEv match {
+        case TypeRef(prefix, typeSymbol, args) =>
+          typeSymbol.fullName
+        case other =>
+          typeEv.typeSymbol.fullName
+      }
+    }
 
     def genFrame(typeEv:c.Type) : c.Tree = {
-      println(s"genFrame: ${showRaw(typeEv)}")
+      //println(s"genFrame: ${showRaw(typeEv)}")
       val frameGen = typeEv match {
-        case TypeRef(_, cls, args) =>
+        case TypeRef(prefix, typeSymbol, args) =>
           toFrame(typeEv)
           // TODO Use t.dealias for aliased type
         case other =>
           q"""new wvlet.frame.Frame { def cl : Class[$typeEv] = classOf[$typeEv] }"""
       }
-      frameGen
-      //q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$typeEv], $frameGen)"
+      val fullName = extractFullName(typeEv)
+      //println(s"fullName:${fullName}")
+      q"wvlet.frame.Frame.frameCache.getOrElseUpdate(${fullName}, ${frameGen})"
     }
   }
 
