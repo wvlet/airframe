@@ -69,6 +69,11 @@ class FrameTest extends FrameSpec {
       info(g)
     }
 
+    "resolve option types" in {
+      val o = Frame.of[Option[A]]
+      info(o)
+    }
+
     "resolve Collection types" in {
       val s = Frame.of[Seq[A]]
       info(s)

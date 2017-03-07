@@ -39,6 +39,10 @@ object FrameMacros {
       t.dealias.typeSymbol.fullName
     }
 
+    private def elementTypeOf(t:c.Type) : c.Tree = {
+      typeArgsOf(t).map(toFrame(_)).head
+    }
+
     private val toPrimitive : TypeMatcher = {
       case t if t =:= typeOf[Short] => q"wvlet.frame.Primitive.Short"
       case t if t =:= typeOf[Boolean] => q"wvlet.frame.Primitive.Boolean"
@@ -53,22 +57,23 @@ object FrameMacros {
 
     private val toArray : TypeMatcher = {
       case t if typeNameOf(t) == "scala.Array" =>
-        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
-        q"wvlet.frame.ArrayFrame(classOf[$t], ${elementType})"
+        q"wvlet.frame.ArrayFrame(classOf[$t], ${elementTypeOf(t)})"
+    }
+
+    private val toOption : TypeMatcher = {
+      case t if typeNameOf(t) == "scala.Option" =>
+        q"wvlet.frame.OptionFrame(classOf[$t], ${elementTypeOf(t)})"
     }
 
     private val toCollection : TypeMatcher = {
       case t if typeNameOf(t) == "scala.collection.Seq"
         || typeNameOf(t) == "scala.collection.IndexedSeq"
         || typeNameOf(t) == "scala.collection.parallel.Seq" =>
-        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
-        q"wvlet.frame.SeqFrame(classOf[$t], ${elementType})"
+        q"wvlet.frame.SeqFrame(classOf[$t], ${elementTypeOf(t)})"
       case t if typeNameOf(t) == "scala.collection.immutable.Set" =>
-        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
-        q"wvlet.frame.SetFrame(classOf[$t], ${elementType})"
+        q"wvlet.frame.SetFrame(classOf[$t], ${elementTypeOf(t)})"
       case t if typeNameOf(t) == "scala.collection.immutable.List" =>
-        val elementType = typeArgsOf(t).map(x => toFrame(x)).head
-        q"wvlet.frame.ListFrame(classOf[$t], ${elementType})"
+        q"wvlet.frame.ListFrame(classOf[$t], ${elementTypeOf(t)})"
       case t if typeNameOf(t) == "scala.collection.immutable.Map" =>
         val paramType = typeArgsOf(t).map(x => toFrame(x))
         q"wvlet.frame.MapFrame(classOf[$t], ${paramType(0)}, ${paramType(1)})"
@@ -123,6 +128,7 @@ object FrameMacros {
     private val matchers : TypeMatcher =
       toPrimitive orElse
         toArray orElse
+        toOption orElse
         toCollection orElse
         toAlias orElse
         toGeneric orElse

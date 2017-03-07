@@ -112,6 +112,10 @@ case class ListFrame(cl:Class[_], elementFrame:Frame) extends Frame {
   override def toString = s"Frame[List[${elementFrame.name}]]"
 }
 
+case class OptionFrame(cl:Class[_], elementFrame:Frame) extends Frame {
+  override def toString = s"Frame[Option[${elementFrame.name}]]"
+}
+
 case class MapFrame(cl:Class[_], keyFrame:Frame, valueFrame:Frame) extends Frame {
   override def toString = s"Frame[Map[${keyFrame.name}, ${valueFrame.name}]]"
 }
