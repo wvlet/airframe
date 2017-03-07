@@ -31,7 +31,9 @@ object Frame {
 
 }
 
-case class Param(name:String, frame:Frame[_])
+case class Param(name:String, frame:Frame[_]) {
+  override def toString = s"${name}:${frame.name}"
+}
 
 case object IntFrame extends Frame[Int] {
   def cl : Class[Int] = classOf[Int]
@@ -51,16 +53,17 @@ case object BooleanFrame extends Frame[Boolean]{
 case object FloatFrame extends Frame[Float]{
   def cl : Class[Float] = classOf[Float]
 }
-case object DoubleFrame extends Frame[Float]{
-  def cl : Class[Float] = classOf[Float]
+case object DoubleFrame extends Frame[Double]{
+  def cl : Class[Double] = classOf[Double]
 }
 case object StringFrame extends Frame[String]{
   def cl : Class[String] = classOf[String]
 }
-case class ObjectFrame(cl:Class[AnyRef]) extends Frame[AnyRef]
+case class ObjectFrame(cl:Class[_]) extends Frame[Any]
 
 trait Frame[A] {
-  def cl:Class[A]
+  def name = cl.getSimpleName
+  def cl:Class[_]
   def params:Seq[Param] =Seq.empty
 
   override def toString = s"Frame[${cl.getSimpleName}](${params.mkString(",")})"

@@ -26,6 +26,8 @@ object Examples {
     d:Double,
     str:String
   )
+
+  case class B(a:A)
 }
 
 
@@ -37,8 +39,11 @@ class FrameTest extends FrameSpec {
 
   "Frame" should {
     "resolve types" in {
-      val f = Frame.of[A]
-      info(f)
+      val a = Frame.of[A]
+      info(a)
+
+      val b = Frame.of[B]
+      info(b)
     }
   }
 }
