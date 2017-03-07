@@ -41,7 +41,8 @@ object FrameMacros {
           case alias @ TypeRef(prefix, symbol, args) if symbol.isType && symbol.asType.isAliasType =>
             val inner = toFrame(alias.dealias)
             val name = symbol.asType.name.decodedName.toString
-            q"FrameAlias(${name}, $inner)"
+            val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+            q"FrameAlias(${name}, ${fullName}, $inner)"
           case tr @ TypeRef(prefix, symbol, args) =>
             val symbolname = tr.typeSymbol.fullName
             //println(s"symbol name: ${symbolname}")
@@ -98,7 +99,7 @@ object FrameMacros {
           q"""new wvlet.frame.Frame { def cl : Class[$typeEv] = classOf[$typeEv] }"""
       }
       frameGen
-      //q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$t], $frameGen)"
+      //q"wvlet.frame.Frame.frameCache.getOrElseUpdate(classOf[$typeEv], $frameGen)"
     }
   }
 

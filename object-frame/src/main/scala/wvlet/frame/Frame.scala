@@ -61,13 +61,14 @@ case object StringFrame extends Frame {
 }
 case class ObjectFrame(cl:Class[_]) extends Frame
 
-case class FrameAlias(override val name:String, frame:Frame) extends Frame {
+case class FrameAlias(override val name:String, override val fullName:String, frame:Frame) extends Frame {
   override def cl = frame.cl
   override def params = frame.params
 }
 
 trait Frame {
   def name = cl.getSimpleName
+  def fullName = cl.getName
   def cl:Class[_]
   def params:Seq[Param] =Seq.empty
 
