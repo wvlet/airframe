@@ -86,20 +86,6 @@ object FrameMacros {
         q"new wvlet.frame.TupleFrame(classOf[$t], Seq(..$paramType))"
     }
 
-    private val toCollection: TypeMatcher = {
-      case t if typeNameOf(t) == "scala.collection.Seq"
-        || typeNameOf(t) == "scala.collection.IndexedSeq"
-        || typeNameOf(t) == "scala.collection.parallel.Seq" =>
-        q"wvlet.frame.SeqFrame(classOf[$t], ${elementTypeOf(t)})"
-      case t if typeNameOf(t) == "scala.collection.immutable.Set" =>
-        q"wvlet.frame.SetFrame(classOf[$t], ${elementTypeOf(t)})"
-      case t if typeNameOf(t) == "scala.collection.immutable.List" =>
-        q"wvlet.frame.ListFrame(classOf[$t], ${elementTypeOf(t)})"
-      case t if typeNameOf(t) == "scala.collection.immutable.Map" =>
-        val paramType = typeArgsOf(t).map(x => toFrame(x))
-        q"wvlet.frame.MapFrame(classOf[$t], ..$paramType)"
-    }
-
     private val toJavaUtil : TypeMatcher = {
       case t if
       t =:= typeOf[java.io.File] ||
@@ -180,7 +166,6 @@ object FrameMacros {
         toArray orElse
         toOption orElse
         toTuple orElse
-//        toCollection orElse
         toJavaUtil orElse
         toEnum orElse
         toFrameWithParams orElse
