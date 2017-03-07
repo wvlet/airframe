@@ -133,7 +133,7 @@ class SurfaceTest extends SurfaceSpec {
     }
 
     "resolve tuples" in {
-      check(Surface.of[(Int)])
+      check(Surface.of[Tuple1[Int]])
       check(Surface.of[(Int, String)])
       check(Surface.of[(Int, String, A, Double)])
     }

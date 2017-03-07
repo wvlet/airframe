@@ -92,7 +92,7 @@ object SurfaceMacros {
         t =:= typeOf[java.util.Date] ||
         t =:= typeOf[java.time.temporal.Temporal]
       =>
-        q"wvlet.surface.ClassSurface(classOf[$t])"
+        q"new wvlet.surface.GenericSurface(classOf[$t])"
     }
 
     private val toEnum : TypeMatcher = {
@@ -137,11 +137,7 @@ object SurfaceMacros {
           expr
         }
         val typeArgs = typeArgsOf(t).map(toSurface(_))
-        q"""new wvlet.surface.Surface {
-             def rawType : Class[$t] = classOf[$t]
-             override def typeArgs = Seq(..$typeArgs)
-             override def params = Seq(..$surfaceParams)
-            }"""
+        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), Seq(..$surfaceParams))"
     }
 
     private val toExistentialType : TypeMatcher = {
@@ -157,7 +153,7 @@ object SurfaceMacros {
         //println(s"${showRaw(t)}")
         q"wvlet.surface.ExistentialType"
       case t =>
-        q"wvlet.surface.ClassSurface(classOf[$t])"
+        q"new wvlet.surface.GenericSurface(classOf[$t])"
     }
 
     private val matchers: TypeMatcher =
