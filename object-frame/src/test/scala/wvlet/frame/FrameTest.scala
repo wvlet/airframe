@@ -126,7 +126,15 @@ class FrameTest extends FrameSpec {
     }
 
     "resolve tuples" in {
+      check(Frame.of[(Int)])
       check(Frame.of[(Int, String)])
+      check(Frame.of[(Int, String, A, Double)])
+    }
+
+    "resolve java colletion type" in {
+      check(Frame.of[java.util.List[String]])
+      check(Frame.of[java.util.Map[Long, String]])
+      check(Frame.of[java.util.Set[A]])
     }
 
   }
