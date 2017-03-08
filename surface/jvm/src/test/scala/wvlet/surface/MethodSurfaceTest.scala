@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.surface
-
+import javax.annotation.{PreDestroy, Resource}
 
 object MethodExamples {
 
@@ -22,10 +22,17 @@ object MethodExamples {
     def abst[X](v:X) : X = v
     protected def helloProtected = "hello"
     private def helloPrivate = "hello"
+
+    @PreDestroy
+    def hasAnnotation : Unit = {}
+
+    @Resource(name="my resource")
+    def resource : Unit = {}
   }
 
   type MyA = A
 }
+
 
 import MethodExamples._
 

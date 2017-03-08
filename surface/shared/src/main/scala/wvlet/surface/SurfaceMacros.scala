@@ -253,6 +253,13 @@ object SurfaceMacros {
       mod
     }
 
+    def annotationsOf(m:MethodSymbol) : c.Tree = {
+      val annots = for(a <- m.annotations) yield {
+        a.tree
+      }
+      q"Seq[java.lang.annotation.Annotation](..$annots)"
+    }
+
     def createMethodSurface(typeEv: c.Type): c.Tree = {
       val result = typeEv match {
         case t@TypeRef(prefix, typeSymbol, typeArgs) =>
@@ -269,6 +276,9 @@ object SurfaceMacros {
             val ret = toSurface(m.returnType)
             val args = getArgList(m.owner.typeSignature, typeArgs, m)
             val mod = getModifier(m)
+            // TODO how to pass annotation info to runtime
+            //val annot = annotationsOf(m)
+            //println(s"annot: ${show(annot)}")
             val expr = q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
             //println(s"expr: ${show(expr)}")
             expr
