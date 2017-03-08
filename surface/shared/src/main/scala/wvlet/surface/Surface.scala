@@ -151,12 +151,15 @@ case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(ra
 case class TupleSurface(override val rawType: Class[_], override val typeArgs:Seq[Surface]) extends GenericSurface(rawType, typeArgs)
 
 
+
+
 trait MethodSurface {
   def mod : Int
   def owner: Surface
   def name : String
   def args : Seq[Param]
   def returnType : Surface
+  def annotations :Seq[Annotation]
 
   def isPublic : Boolean = (mod & 0x1) != 0
   def isPrivate: Boolean  = (mod & 0x2) != 0
@@ -166,8 +169,10 @@ trait MethodSurface {
   def isAbstract : Boolean = (mod & 0x400) != 0
 }
 
+case class Annotation(tpe:Surface, params:Map[_, _])
 
-case class ClassMethodSurface(mod:Int, owner:Surface, name:String, returnType:Surface, args:Seq[Param]) extends MethodSurface {
+
+case class ClassMethodSurface(mod:Int, owner:Surface, name:String, returnType:Surface, args:Seq[Param], annotations:Seq[Annotation]) extends MethodSurface {
 }
 
 //case class CompanionMethodSurface(owner:)

@@ -253,11 +253,30 @@ object SurfaceMacros {
       mod
     }
 
+    def extractAnnotationParam(lst:List[c.Tree]) : List[c.Tree] = {
+      lst match {
+        case Nil => Nil
+        case AssignOrNamedArg(Ident(TermName(key)), value) :: tail =>
+          q"(${key}, ${value})" :: extractAnnotationParam(tail)
+        case head :: tail =>
+          extractAnnotationParam(tail)
+      }
+    }
+
     def annotationsOf(m:MethodSymbol) : c.Tree = {
       val annots = for(a <- m.annotations) yield {
-        a.tree
+        val t = a.tree
+        t.children match {
+          case Select(New(tpe), tt) :: Nil =>
+            val annotType = toSurface(tpe.tpe)
+            q"wvlet.surface.Annotation($annotType, Map.empty)"
+          case Select(New(tpe), tt) :: tail =>
+            val annotType = toSurface(tpe.tpe)
+            val args = extractAnnotationParam(tail)
+            q"wvlet.surface.Annotation($annotType, Map(..$args))"
+        }
       }
-      q"Seq[java.lang.annotation.Annotation](..$annots)"
+      q"Seq(..$annots)"
     }
 
     def createMethodSurface(typeEv: c.Type): c.Tree = {
@@ -277,9 +296,9 @@ object SurfaceMacros {
             val args = getArgList(m.owner.typeSignature, typeArgs, m)
             val mod = getModifier(m)
             // TODO how to pass annotation info to runtime
-            //val annot = annotationsOf(m)
+            val annot = annotationsOf(m)
             //println(s"annot: ${show(annot)}")
-            val expr = q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
+            val expr = q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${annot})"
             //println(s"expr: ${show(expr)}")
             expr
           }
