@@ -46,6 +46,13 @@ object Examples {
   case class D[V](id: Int, v: V)
 
   trait Service[-Req, +Rep] extends (Req => Future[Rep])
+
+
+  class Simple(id:Int, name:String) {
+    override def toString: String = s"Simple($id, $name)"
+  }
+
+
 }
 import Examples._
 /**
@@ -155,6 +162,14 @@ class SurfaceJsTest extends SurfaceJsSpec {
     "resolve generic abstract type" in {
       check(Surface.of[D[_]])
       check(Surface.of[Map[_, _]])
+    }
+
+    "instantiate an object" in {
+      val cl = classOf[Simple]
+      //val i = cl.newInstance()
+      //val constructor = cl.getConstructors.head
+      //val i = constructor.newInstance(java.lang.Integer.valueOf(1), "leo")
+      //println(i)
     }
   }
 }
