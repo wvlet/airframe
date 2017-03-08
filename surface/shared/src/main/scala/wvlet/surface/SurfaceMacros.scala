@@ -25,8 +25,8 @@ object SurfaceMacros {
 
     import c.universe._
 
-    val seen = scala.collection.mutable.Set[Type]()
-    val memo = scala.collection.mutable.Map[Type, c.Tree]()
+    private val seen = scala.collection.mutable.Set[Type]()
+    private val memo = scala.collection.mutable.Map[Type, c.Tree]()
 
     type TypeMatcher = PartialFunction[c.Type, c.Tree]
 
@@ -187,12 +187,10 @@ object SurfaceMacros {
       }
       else {
         seen += t
-        //println(s"fullName: ${t.dealias.typeSymbol.fullName}")
         val surface = matchers(t)
         memo += (t -> surface)
-        val fullName = extractFullName(t)
-        //surface
-        q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${fullName}, ${surface})"
+        // TODO Do not check cache for primitive types
+        q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${extractFullName(t)}, ${surface})"
       }
     }
 
