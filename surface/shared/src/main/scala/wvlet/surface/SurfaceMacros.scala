@@ -30,7 +30,7 @@ object SurfaceMacros {
 
     type TypeMatcher = PartialFunction[c.Type, c.Tree]
 
-    private def isEnum(t: c.Type) : Boolean = {
+    private def isEnum(t: c.Type): Boolean = {
       t.baseClasses.exists(x =>
         x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum")
       )
@@ -80,19 +80,18 @@ object SurfaceMacros {
         q"wvlet.surface.ArraySurface(classOf[$t], ${elementTypeOf(t)})"
     }
 
-
     private val toOption: TypeMatcher = {
       case t if typeNameOf(t) == "scala.Option" =>
         q"wvlet.surface.OptionSurface(classOf[$t], ${elementTypeOf(t)})"
     }
 
-    private val toTuple : TypeMatcher = {
+    private val toTuple: TypeMatcher = {
       case t if t <:< typeOf[Product] && t.typeSymbol.fullName.startsWith("scala.Tuple") =>
         val paramType = typeArgsOf(t).map(x => toSurface(x))
         q"new wvlet.surface.TupleSurface(classOf[$t], Seq(..$paramType))"
     }
 
-    private val toJavaUtil : TypeMatcher = {
+    private val toJavaUtil: TypeMatcher = {
       case t if
       t =:= typeOf[java.io.File] ||
         t =:= typeOf[java.util.Date] ||
@@ -101,7 +100,7 @@ object SurfaceMacros {
         q"new wvlet.surface.GenericSurface(classOf[$t])"
     }
 
-    private val toEnum : TypeMatcher = {
+    private val toEnum: TypeMatcher = {
       case t if isEnum(t) =>
         q"wvlet.surface.EnumSurface(classOf[$t])"
     }
@@ -115,7 +114,6 @@ object SurfaceMacros {
       }
     }
 
-
     private def findPrimaryConstructor(t: c.Type) = {
       t.members.find(x => x.isMethod && x.asMethod.isPrimaryConstructor)
     }
@@ -128,7 +126,7 @@ object SurfaceMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
-    private def getArgList(owner:c.Type, typeArgs: List[c.Type], m:MethodSymbol) : c.Tree = {
+    private def getArgList(owner: c.Type, typeArgs: List[c.Type], m: MethodSymbol): c.Tree = {
       val classTypeParams = owner.typeSymbol.asClass.typeParams
       val params = m.paramLists.flatten
       val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, typeArgs))
@@ -149,7 +147,7 @@ object SurfaceMacros {
         q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), $surfaceParams)"
     }
 
-    private val toExistentialType : TypeMatcher = {
+    private val toExistentialType: TypeMatcher = {
       case t@ExistentialType(quantified, underlying) =>
         toSurface(underlying)
     }
@@ -216,11 +214,11 @@ object SurfaceMacros {
       toSurface(typeEv)
     }
 
-    def isOwnedByTargetClass(m: MethodSymbol, t:c.Type) : Boolean = {
+    def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
       m.owner == t.typeSymbol
     }
 
-    def isTargetMethod(m: MethodSymbol, t:c.Type): Boolean = {
+    def isTargetMethod(m: MethodSymbol, target: c.Type): Boolean = {
       // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
       val methodName = m.name.decodedName.toString
       m.isMethod &&
@@ -229,12 +227,12 @@ object SurfaceMacros {
         !m.isAccessor &&
         !methodName.startsWith("$") &&
         methodName != "<init>" &&
-        isOwnedByTargetClass(m, t)
+        isOwnedByTargetClass(m, target)
     }
 
-    def createMethodSurface(typeEv: c.Type) : c.Tree = {
+    def createMethodSurface(typeEv: c.Type): c.Tree = {
       val result = typeEv match {
-        case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
+        case t@TypeRef(prefix, typeSymbol, typeArgs) =>
           val list = for {
             m <- typeEv
                  .members
@@ -247,7 +245,7 @@ object SurfaceMacros {
             val owner = toSurface(t)
             val ret = toSurface(m.returnType)
             val args = getArgList(m.owner.typeSignature, typeArgs, m)
-            val expr = q"wvlet.surface.ClassMethodSurface(${owner}, ${name}, ${ret}, ${args})"
+            val expr = q"wvlet.surface.ClassMethodSurface(${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
             //println(s"expr: ${show(expr)}")
             expr
           }
@@ -255,7 +253,8 @@ object SurfaceMacros {
         case _ =>
           q"Seq()"
       }
-      result
+      val fullName = extractFullName(typeEv)
+      q"wvlet.surface.Surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
     }
   }
 
@@ -264,7 +263,7 @@ object SurfaceMacros {
     new Helper[c.type](c).createSurface(typeEv)
   }
 
-  def methodsOf[A: c.WeakTypeTag](c: sm.Context) : c.Tree = {
+  def methodsOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe
     new Helper[c.type](c).createMethodSurface(typeEv)
   }

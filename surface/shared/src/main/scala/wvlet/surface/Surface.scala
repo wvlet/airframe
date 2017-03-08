@@ -26,6 +26,7 @@ object Surface {
   type FullName = String
 
   private[surface] val surfaceCache = new ConcurrentHashMap[FullName, Surface]().asScala
+  private[surface] val methodSurfaceCache = new ConcurrentHashMap[FullName, Seq[MethodSurface]]().asScala
 
   def of[A]: Surface = macro SurfaceMacros.of[A]
   def methodsOf[A] : Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
