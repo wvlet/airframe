@@ -28,7 +28,7 @@ object Surface {
   private[surface] val surfaceCache = new ConcurrentHashMap[FullName, Surface]().asScala
 
   def of[A]: Surface = macro SurfaceMacros.of[A]
-
+  def methodsOf[A] : Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }
 
 trait Surface {
@@ -148,3 +148,17 @@ case class OptionSurface(override val rawType: Class[_], elementSurface: Surface
 
 case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType)
 case class TupleSurface(override val rawType: Class[_], override val typeArgs:Seq[Surface]) extends GenericSurface(rawType, typeArgs)
+
+
+trait MethodSurface {
+  def owner: Surface
+  def name : String
+  def args : Seq[Param]
+  def returnType : Surface
+}
+
+
+case class ClassMethodSurface(owner:Surface, name:String, returnType:Surface, args:Seq[Param]) extends MethodSurface {
+}
+
+//case class CompanionMethodSurface(owner:)

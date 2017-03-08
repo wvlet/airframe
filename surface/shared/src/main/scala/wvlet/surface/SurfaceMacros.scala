@@ -128,22 +128,25 @@ object SurfaceMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
+    private def getArgList(owner:c.Type, typeArgs: List[c.Type], m:MethodSymbol) : c.Tree = {
+      val classTypeParams = owner.typeSymbol.asClass.typeParams
+      val params = m.paramLists.flatten
+      val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, typeArgs))
+      val surfaceParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
+        val name = Literal(Constant(p.name.decodedName.toString))
+        val surface = toSurface(t)
+        val expr = q"wvlet.surface.Param($name, ${surface})"
+        expr
+      }
+      q"Seq(..${surfaceParams})"
+    }
+
     private val toSurfaceWithParams: TypeMatcher = {
       case t@TypeRef(prefix, symbol, args) if !isAbstract(t) && findPrimaryConstructor(t).exists(!_.asMethod.paramLists.isEmpty) =>
         val primaryConstructor = findPrimaryConstructor(t).get
-        val classTypeParams = t.typeSymbol.asClass.typeParams
-        val params = primaryConstructor.asMethod.paramLists.flatten
-        val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, args))
-        val surfaceParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
-          val name = Literal(Constant(p.name.decodedName.toString))
-          val surface = toSurface(t)
-          val expr = q"wvlet.surface.Param($name, ${surface})"
-          //println(s"p: ${showRaw(expr)}")
-          //println(s"t: ${showRaw(t)}")
-          expr
-        }
+        val surfaceParams = getArgList(t, args, primaryConstructor.asMethod)
         val typeArgs = typeArgsOf(t).map(toSurface(_))
-        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), Seq(..$surfaceParams))"
+        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), $surfaceParams)"
     }
 
     private val toExistentialType : TypeMatcher = {
@@ -189,6 +192,7 @@ object SurfaceMacros {
         val surface = matchers(t)
         memo += (t -> surface)
         val fullName = extractFullName(t)
+        //surface
         q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${fullName}, ${surface})"
       }
     }
@@ -211,10 +215,57 @@ object SurfaceMacros {
     def createSurface(typeEv: c.Type): c.Tree = {
       toSurface(typeEv)
     }
+
+    def isOwnedByTargetClass(m: MethodSymbol, t:c.Type) : Boolean = {
+      m.owner == t.typeSymbol
+    }
+
+    def isTargetMethod(m: MethodSymbol, t:c.Type): Boolean = {
+      // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+      val methodName = m.name.decodedName.toString
+      m.isMethod &&
+        !m.isImplicit &&
+        !m.isSynthetic &&
+        !m.isAccessor &&
+        !methodName.startsWith("$") &&
+        methodName != "<init>" &&
+        isOwnedByTargetClass(m, t)
+    }
+
+    def createMethodSurface(typeEv: c.Type) : c.Tree = {
+      val result = typeEv match {
+        case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
+          val list = for {
+            m <- typeEv
+                 .members
+                 .filter(x => x.isMethod)
+                 .map(_.asMethod)
+                 .filterNot(_.isConstructor)
+                 .filter(x => isTargetMethod(x, typeEv))
+          } yield {
+            val name = m.name.decodedName.toString
+            val owner = toSurface(t)
+            val ret = toSurface(m.returnType)
+            val args = getArgList(m.owner.typeSignature, typeArgs, m)
+            val expr = q"wvlet.surface.ClassMethodSurface(${owner}, ${name}, ${ret}, ${args})"
+            //println(s"expr: ${show(expr)}")
+            expr
+          }
+          q"Seq(..$list)"
+        case _ =>
+          q"Seq()"
+      }
+      result
+    }
   }
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe
     new Helper[c.type](c).createSurface(typeEv)
+  }
+
+  def methodsOf[A: c.WeakTypeTag](c: sm.Context) : c.Tree = {
+    val typeEv = implicitly[c.WeakTypeTag[A]].tpe
+    new Helper[c.type](c).createMethodSurface(typeEv)
   }
 }
