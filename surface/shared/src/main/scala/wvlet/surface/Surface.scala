@@ -152,14 +152,37 @@ case class TupleSurface(override val rawType: Class[_], override val typeArgs:Se
 
 
 trait MethodSurface {
+  def mod : Int
   def owner: Surface
   def name : String
   def args : Seq[Param]
   def returnType : Surface
+
+  def isPublic : Boolean = (mod & 0x1) != 0
+  def isPrivate: Boolean  = (mod & 0x2) != 0
+  def isProtected : Boolean = (mod & 0x04) != 0
+  def isStatic : Boolean = (mod & 0x08) != 0
+  def isFinal : Boolean = (mod & 0x10) != 0
+  def isAbstract : Boolean = (mod & 0x400) != 0
 }
 
 
-case class ClassMethodSurface(owner:Surface, name:String, returnType:Surface, args:Seq[Param]) extends MethodSurface {
+case class ClassMethodSurface(mod:Int, owner:Surface, name:String, returnType:Surface, args:Seq[Param]) extends MethodSurface {
 }
 
 //case class CompanionMethodSurface(owner:)
+
+object MethodModifier {
+  val PUBLIC       = 0x00000001
+  val PRIVATE      = 0x00000002
+  val PROTECTED    = 0x00000004
+  val STATIC       = 0x00000008
+  val FINAL        = 0x00000010
+  val SYNCHRONIZED = 0x00000020
+  val VOLATILE     = 0x00000040
+  val TRANSIENT    = 0x00000080
+  val NATIVE    = 0x00000100
+  val INTERFACE = 0x00000200
+  val ABSTRACT  = 0x00000400
+  val STRICT    = 0x00000800
+}

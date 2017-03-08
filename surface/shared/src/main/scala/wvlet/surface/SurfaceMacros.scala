@@ -230,6 +230,29 @@ object SurfaceMacros {
         isOwnedByTargetClass(m, target)
     }
 
+    def getModifier(m:MethodSymbol) : Int = {
+      var mod = 0
+      if(m.isPublic) {
+        mod |= 0x1
+      }
+      if(m.isPrivate) {
+        mod |= 0x2
+      }
+      if(m.isProtected) {
+        mod |= 0x4
+      }
+      if(m.isStatic) {
+        mod != 0x8
+      }
+      if(m.isFinal) {
+        mod != 0x10
+      }
+      if(m.isAbstract) {
+        mod != 0x400
+      }
+      mod
+    }
+
     def createMethodSurface(typeEv: c.Type): c.Tree = {
       val result = typeEv match {
         case t@TypeRef(prefix, typeSymbol, typeArgs) =>
@@ -245,7 +268,8 @@ object SurfaceMacros {
             val owner = toSurface(t)
             val ret = toSurface(m.returnType)
             val args = getArgList(m.owner.typeSignature, typeArgs, m)
-            val expr = q"wvlet.surface.ClassMethodSurface(${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
+            val mod = getModifier(m)
+            val expr = q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
             //println(s"expr: ${show(expr)}")
             expr
           }
@@ -257,6 +281,8 @@ object SurfaceMacros {
       q"wvlet.surface.Surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
     }
   }
+
+
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val typeEv = implicitly[c.WeakTypeTag[A]].tpe

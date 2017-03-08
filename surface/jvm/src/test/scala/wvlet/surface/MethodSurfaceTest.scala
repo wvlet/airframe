@@ -19,8 +19,12 @@ object MethodExamples {
   class A {
     def hello : String = "hello"
     def arg2(i:Int, b:Boolean) : String = "arg2"
+    def abst[X](v:X) : X = v
+    protected def helloProtected = "hello"
+    private def helloPrivate = "hello"
   }
 
+  type MyA = A
 }
 
 import MethodExamples._
@@ -35,6 +39,9 @@ class MethodSurfaceTest extends SurfaceSpec {
     "list methods" in {
       val m = Surface.methodsOf[A]
       info(m.mkString("\n"))
+
+      val m2 = Surface.methodsOf[MyA]
+      info(m2)
     }
 
   }
