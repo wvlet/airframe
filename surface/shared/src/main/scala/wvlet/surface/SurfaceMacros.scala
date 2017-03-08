@@ -267,9 +267,6 @@ object SurfaceMacros {
       val annots = for(a <- m.annotations) yield {
         val t = a.tree
         t.children match {
-          case Select(New(tpe), tt) :: Nil =>
-            val annotType = toSurface(tpe.tpe)
-            q"wvlet.surface.Annotation($annotType, Map.empty)"
           case Select(New(tpe), tt) :: tail =>
             val annotType = toSurface(tpe.tpe)
             val args = extractAnnotationParam(tail)
