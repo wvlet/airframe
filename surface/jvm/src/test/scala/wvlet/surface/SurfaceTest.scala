@@ -62,7 +62,7 @@ class SurfaceTest extends SurfaceSpec {
     surface
   }
 
-  "Frame" should {
+  "Surface" should {
     "resolve types" in {
       check(Surface.of[A])
       check(Surface.of[B])
