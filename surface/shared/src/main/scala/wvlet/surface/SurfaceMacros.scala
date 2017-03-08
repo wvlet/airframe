@@ -30,6 +30,12 @@ object SurfaceMacros {
 
     type TypeMatcher = PartialFunction[c.Type, c.Tree]
 
+    private def isEnum(t: c.Type) : Boolean = {
+      t.baseClasses.exists(x =>
+        x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum")
+      )
+    }
+
     private def typeArgsOf(t: c.Type): List[c.Type] = t match {
       case TypeRef(prefix, symbol, args) =>
         args
@@ -96,7 +102,7 @@ object SurfaceMacros {
     }
 
     private val toEnum : TypeMatcher = {
-      case t if t.typeSymbol.isJavaEnum =>
+      case t if isEnum(t) =>
         q"wvlet.surface.EnumSurface(classOf[$t])"
     }
 

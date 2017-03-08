@@ -16,6 +16,7 @@ package wvlet.surface
 import java.util.concurrent.ConcurrentHashMap
 
 import scala.language.experimental.macros
+import scala.language.existentials
 
 /**
   *
