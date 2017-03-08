@@ -133,7 +133,8 @@ object SurfaceMacros {
       val surfaceParams = for ((p, t) <- params.zip(concreteArgTypes)) yield {
         val name = Literal(Constant(p.name.decodedName.toString))
         val surface = toSurface(t)
-        val expr = q"wvlet.surface.Param($name, ${surface})"
+        val annots = toAnnotation(p.annotations)
+        val expr = q"wvlet.surface.Param($name, ${surface}, ${annots})"
         expr
       }
       q"Seq(..${surfaceParams})"
@@ -144,7 +145,7 @@ object SurfaceMacros {
         val primaryConstructor = findPrimaryConstructor(t).get
         val surfaceParams = getArgList(t, args, primaryConstructor.asMethod)
         val typeArgs = typeArgsOf(t).map(toSurface(_))
-        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), $surfaceParams)"
+        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), $surfaceParams, annotations=${annotationsOf(t)})"
     }
 
     private val toExistentialType: TypeMatcher = {
@@ -155,12 +156,12 @@ object SurfaceMacros {
     private val toGenericSurface: TypeMatcher = {
       case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(toSurface(_))
-        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs))"
+        q"new wvlet.surface.GenericSurface(classOf[$t], Seq(..$typeArgs), annotations=${annotationsOf(t)})"
       case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         //println(s"${showRaw(t)}")
         q"wvlet.surface.ExistentialType"
       case t =>
-        q"new wvlet.surface.GenericSurface(classOf[$t])"
+        q"new wvlet.surface.GenericSurface(classOf[$t], annotations=${annotationsOf(t)})"
     }
 
     private val matchers: TypeMatcher =
@@ -263,17 +264,29 @@ object SurfaceMacros {
       }
     }
 
-    def annotationsOf(m:MethodSymbol) : c.Tree = {
-      val annots = for(a <- m.annotations) yield {
+    def annotationsOf(m:MethodSymbol) : c.Tree = toAnnotation(m.annotations)
+    def annotationsOf(t:c.Type) : c.Tree = toAnnotation(t.typeSymbol.annotations)
+
+    def toAnnotation(annotations:List[c.universe.Annotation]) : c.Tree = {
+      val annots = for(a <- annotations) yield {
         val t = a.tree
         t.children match {
           case Select(New(tpe), tt) :: tail =>
-            val annotType = toSurface(tpe.tpe)
-            val args = extractAnnotationParam(tail)
-            q"wvlet.surface.Annotation($annotType, Map(..$args))"
+            if(tpe.tpe.dealias.typeSymbol.fullName.startsWith("java.lang.annotation.")) {
+              // Skip java.lang.annotaion.Target, etc.
+              None
+            }
+            else {
+              val annotType = toSurface(tpe.tpe)
+              val args = extractAnnotationParam(tail)
+              Some(q"wvlet.surface.Annotation($annotType, Map(..$args))")
+            }
+          case other =>
+            c.warning(t.pos, s"unknown annotation type: ${other}")
+            None
         }
       }
-      q"Seq(..$annots)"
+      q"Seq(..${annots.flatten})"
     }
 
     def createMethodSurface(typeEv: c.Type): c.Tree = {
@@ -295,7 +308,7 @@ object SurfaceMacros {
             // TODO how to pass annotation info to runtime
             val annot = annotationsOf(m)
             //println(s"annot: ${show(annot)}")
-            val expr = q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${annot})"
+            val expr = q"wvlet.surface.ClassMethod(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${annot})"
             //println(s"expr: ${show(expr)}")
             expr
           }

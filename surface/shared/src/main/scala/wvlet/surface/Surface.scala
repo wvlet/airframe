@@ -15,38 +15,48 @@ package wvlet.surface
 
 import java.util.concurrent.ConcurrentHashMap
 
-import scala.language.experimental.macros
 import scala.language.existentials
+import scala.language.experimental.macros
 
 /**
   *
   */
 object Surface {
+
   import scala.collection.JavaConverters._
+
   type FullName = String
 
-  private[surface] val surfaceCache = new ConcurrentHashMap[FullName, Surface]().asScala
+  private[surface] val surfaceCache       = new ConcurrentHashMap[FullName, Surface]().asScala
   private[surface] val methodSurfaceCache = new ConcurrentHashMap[FullName, Seq[MethodSurface]]().asScala
 
   def of[A]: Surface = macro SurfaceMacros.of[A]
-  def methodsOf[A] : Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
+  def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }
+
+case class Annotation(tpe: Surface, params: Map[_, _])
 
 trait Surface {
   def rawType: Class[_]
   def typeArgs: Seq[Surface]
   def params: Seq[Param]
-  def name : String
-  def fullName : String
+  def name: String
+  def fullName: String
+  def annotations: Seq[Annotation]
 
-  def isOption : Boolean
-  def isAlias : Boolean
+  def isOption: Boolean
+  def isAlias: Boolean
   def isPrimitive: Boolean
 }
 
-class GenericSurface(val rawType:Class[_], val typeArgs:Seq[Surface]=Seq.empty, val params:Seq[Param] = Seq.empty) extends Surface {
-  def name : String = {
-    if(typeArgs.isEmpty) {
+class GenericSurface(
+  val rawType: Class[_],
+  val typeArgs: Seq[Surface] = Seq.empty,
+  val params: Seq[Param] = Seq.empty,
+  val annotations: Seq[Annotation] = Seq.empty) extends Surface {
+
+  def name: String = {
+    if (typeArgs.isEmpty) {
       rawType.getSimpleName
     }
     else {
@@ -55,7 +65,7 @@ class GenericSurface(val rawType:Class[_], val typeArgs:Seq[Surface]=Seq.empty, 
   }
 
   def fullName: String = {
-    if(typeArgs.isEmpty) {
+    if (typeArgs.isEmpty) {
       rawType.getName
     }
     else {
@@ -63,12 +73,12 @@ class GenericSurface(val rawType:Class[_], val typeArgs:Seq[Surface]=Seq.empty, 
     }
   }
 
-  def isOption : Boolean = false
-  def isAlias : Boolean = false
+  def isOption: Boolean = false
+  def isAlias: Boolean = false
   def isPrimitive: Boolean = false
 
-  override def toString : String = {
-    if(params.isEmpty) {
+  override def toString: String = {
+    if (params.isEmpty) {
       name
     }
     else {
@@ -77,7 +87,7 @@ class GenericSurface(val rawType:Class[_], val typeArgs:Seq[Surface]=Seq.empty, 
   }
   override def equals(obj: Any): Boolean = {
     obj match {
-      case f:Surface =>
+      case f: Surface =>
         this.fullName.equals(f.fullName)
       case _ => false
     }
@@ -86,61 +96,61 @@ class GenericSurface(val rawType:Class[_], val typeArgs:Seq[Surface]=Seq.empty, 
   override def hashCode(): Int = fullName.hashCode
 }
 
-case class Param(name: String, surface: Surface) {
+case class Param(name: String, surface: Surface, annotations:Seq[Annotation]=Seq.empty) {
   override def toString = s"${name}:${surface.name}"
 }
 
 object Primitive {
 
-  sealed abstract class PrimitiveSurface(rawType:Class[_]) extends GenericSurface(rawType) {
+  sealed abstract class PrimitiveSurface(rawType: Class[_]) extends GenericSurface(rawType) {
     override def isPrimitive: Boolean = true
   }
 
   case object Int extends PrimitiveSurface(classOf[Int]) {
-    override def name : String = "Int"
-    override def fullName : String = "Int"
+    override def name: String = "Int"
+    override def fullName: String = "Int"
   }
   case object Byte extends PrimitiveSurface(classOf[Byte]) {
-    override def name : String = "Byte"
-    override def fullName : String = "Byte"
+    override def name: String = "Byte"
+    override def fullName: String = "Byte"
   }
   case object Long extends PrimitiveSurface(classOf[Long]) {
-    override def name : String = "Long"
-    override def fullName : String = "Long"
+    override def name: String = "Long"
+    override def fullName: String = "Long"
   }
   case object Short extends PrimitiveSurface(classOf[Short]) {
-    override def name : String = "Short"
-    override def fullName : String = "Short"
+    override def name: String = "Short"
+    override def fullName: String = "Short"
   }
   case object Boolean extends PrimitiveSurface(classOf[Boolean]) {
-    override def name : String = "Boolean"
-    override def fullName : String = "Boolean"
+    override def name: String = "Boolean"
+    override def fullName: String = "Boolean"
   }
   case object Float extends PrimitiveSurface(classOf[Float]) {
-    override def name : String = "Float"
-    override def fullName : String = "Float"
+    override def name: String = "Float"
+    override def fullName: String = "Float"
   }
   case object Double extends PrimitiveSurface(classOf[Double]) {
-    override def name : String = "Double"
-    override def fullName : String = "Double"
+    override def name: String = "Double"
+    override def fullName: String = "Double"
   }
   case object String extends PrimitiveSurface(classOf[String])
 }
 
 case class Alias(override val name: String, override val fullName: String, ref: Surface) extends GenericSurface(ref.rawType, ref.typeArgs, ref.params) {
-  override def toString : String = s"${name}:=${ref.name}"
+  override def toString: String = s"${name}:=${ref.name}"
   override def isAlias: Boolean = true
 }
 
 case object ExistentialType extends GenericSurface(classOf[Any]) {
-  override def name : String = "_"
-  override def fullName : String = "_"
+  override def name: String = "_"
+  override def fullName: String = "_"
 }
 
 case class ArraySurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
-  override def name : String = s"Array[${elementSurface.name}]"
-  override def fullName : String = s"Array[${elementSurface.fullName}]"
-  override def toString : String = name
+  override def name: String = s"Array[${elementSurface.name}]"
+  override def fullName: String = s"Array[${elementSurface.fullName}]"
+  override def toString: String = name
 }
 
 case class OptionSurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
@@ -148,31 +158,25 @@ case class OptionSurface(override val rawType: Class[_], elementSurface: Surface
 }
 
 case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType)
-case class TupleSurface(override val rawType: Class[_], override val typeArgs:Seq[Surface]) extends GenericSurface(rawType, typeArgs)
-
-
-
+case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface]) extends GenericSurface(rawType, typeArgs)
 
 trait MethodSurface {
-  def mod : Int
+  def mod: Int
   def owner: Surface
-  def name : String
-  def args : Seq[Param]
-  def returnType : Surface
-  def annotations :Seq[Annotation]
+  def name: String
+  def args: Seq[Param]
+  def returnType: Surface
+  def annotations: Seq[Annotation]
 
-  def isPublic : Boolean = (mod & 0x1) != 0
-  def isPrivate: Boolean  = (mod & 0x2) != 0
-  def isProtected : Boolean = (mod & 0x04) != 0
-  def isStatic : Boolean = (mod & 0x08) != 0
-  def isFinal : Boolean = (mod & 0x10) != 0
-  def isAbstract : Boolean = (mod & 0x400) != 0
+  def isPublic: Boolean = (mod & MethodModifier.PUBLIC) != 0
+  def isPrivate: Boolean = (mod & MethodModifier.PRIVATE) != 0
+  def isProtected: Boolean = (mod & MethodModifier.PROTECTED) != 0
+  def isStatic: Boolean = (mod & MethodModifier.STATIC) != 0
+  def isFinal: Boolean = (mod & MethodModifier.FINAL) != 0
+  def isAbstract: Boolean = (mod & MethodModifier.ABSTRACT) != 0
 }
 
-case class Annotation(tpe:Surface, params:Map[_, _])
-
-
-case class ClassMethodSurface(mod:Int, owner:Surface, name:String, returnType:Surface, args:Seq[Param], annotations:Seq[Annotation]) extends MethodSurface {
+case class ClassMethod(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[Param], annotations: Seq[Annotation]) extends MethodSurface {
 }
 
 //case class CompanionMethodSurface(owner:)
@@ -186,8 +190,8 @@ object MethodModifier {
   val SYNCHRONIZED = 0x00000020
   val VOLATILE     = 0x00000040
   val TRANSIENT    = 0x00000080
-  val NATIVE    = 0x00000100
-  val INTERFACE = 0x00000200
-  val ABSTRACT  = 0x00000400
-  val STRICT    = 0x00000800
+  val NATIVE       = 0x00000100
+  val INTERFACE    = 0x00000200
+  val ABSTRACT     = 0x00000400
+  val STRICT       = 0x00000800
 }
