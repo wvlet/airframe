@@ -159,5 +159,10 @@ class SurfaceTest extends SurfaceSpec {
       check(Surface.of[Map[_, _]])
     }
 
+    "return constructor" in {
+      val a = check(Surface.of[A])
+      a.getConstructor shouldBe defined
+    }
+
   }
 }

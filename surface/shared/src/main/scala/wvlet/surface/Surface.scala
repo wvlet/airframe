@@ -36,10 +36,14 @@ object Surface {
 
 case class Annotation(tpe: Surface, params: Map[_, _])
 
+trait Constructor {
+  def newInstance(args:Seq[Any]) : Any
+}
+
 trait Surface {
   def rawType: Class[_]
   def typeArgs: Seq[Surface]
-  def params: Seq[Param]
+  def params: Seq[Parameter]
   def name: String
   def fullName: String
   def annotations: Seq[Annotation]
@@ -47,12 +51,14 @@ trait Surface {
   def isOption: Boolean
   def isAlias: Boolean
   def isPrimitive: Boolean
+
+  def getConstructor: Option[Constructor] = None
 }
 
 class GenericSurface(
   val rawType: Class[_],
   val typeArgs: Seq[Surface] = Seq.empty,
-  val params: Seq[Param] = Seq.empty,
+  val params: Seq[Parameter] = Seq.empty,
   val annotations: Seq[Annotation] = Seq.empty) extends Surface {
 
   def name: String = {
@@ -96,7 +102,7 @@ class GenericSurface(
   override def hashCode(): Int = fullName.hashCode
 }
 
-case class Param(name: String, surface: Surface, annotations:Seq[Annotation]=Seq.empty) {
+case class Parameter(name: String, surface: Surface, annotations:Seq[Annotation]= Seq.empty) {
   override def toString = s"${name}:${surface.name}"
 }
 
@@ -140,6 +146,7 @@ object Primitive {
 case class Alias(override val name: String, override val fullName: String, ref: Surface) extends GenericSurface(ref.rawType, ref.typeArgs, ref.params) {
   override def toString: String = s"${name}:=${ref.name}"
   override def isAlias: Boolean = true
+  override def getConstructor: Option[Constructor] = ref.getConstructor
 }
 
 case object ExistentialType extends GenericSurface(classOf[Any]) {
@@ -156,15 +163,16 @@ case class ArraySurface(override val rawType: Class[_], elementSurface: Surface)
 case class OptionSurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
   override def isOption: Boolean = true
 }
-
-case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType)
-case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface]) extends GenericSurface(rawType, typeArgs)
+case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType) {
+}
+case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface]) extends GenericSurface(rawType, typeArgs) {
+}
 
 trait MethodSurface {
   def mod: Int
   def owner: Surface
   def name: String
-  def args: Seq[Param]
+  def args: Seq[Parameter]
   def returnType: Surface
   def annotations: Seq[Annotation]
 
@@ -176,7 +184,7 @@ trait MethodSurface {
   def isAbstract: Boolean = (mod & MethodModifier.ABSTRACT) != 0
 }
 
-case class ClassMethod(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[Param], annotations: Seq[Annotation]) extends MethodSurface {
+case class ClassMethod(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[Parameter], annotations: Seq[Annotation]) extends MethodSurface {
 }
 
 //case class CompanionMethodSurface(owner:)

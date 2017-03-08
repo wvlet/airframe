@@ -19,7 +19,7 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   *
   */
-object SurfaceMacros {
+private[surface] object SurfaceMacros {
 
   class Helper[C <: sm.Context](val c: C) {
 
@@ -134,7 +134,7 @@ object SurfaceMacros {
         val name = Literal(Constant(p.name.decodedName.toString))
         val surface = toSurface(t)
         val annots = toAnnotation(p.annotations)
-        val expr = q"wvlet.surface.Param($name, ${surface}, ${annots})"
+        val expr = q"wvlet.surface.Parameter($name, ${surface}, ${annots})"
         expr
       }
       q"Seq(..${surfaceParams})"
