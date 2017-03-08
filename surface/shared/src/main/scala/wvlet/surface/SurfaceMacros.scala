@@ -242,13 +242,13 @@ object SurfaceMacros {
         mod |= 0x4
       }
       if(m.isStatic) {
-        mod != 0x8
+        mod |= 0x8
       }
       if(m.isFinal) {
-        mod != 0x10
+        mod |= 0x10
       }
       if(m.isAbstract) {
-        mod != 0x400
+        mod |= 0x400
       }
       mod
     }
