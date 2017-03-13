@@ -76,7 +76,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
-    "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
+//    "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
     "org.wvlet" %% "wvlet-log" % "1.1",
     // scalatest
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -86,7 +86,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
   // include the macro sources in the main source jar
   mappings in (Compile, packageSrc) ++= mappings.in(airframeMacros, Compile, packageSrc).value
-) dependsOn(airframeMacros % "provided")
+) dependsOn(airframeMacros % "provided", surface)
 
 lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(
   buildSettings,
@@ -95,3 +95,6 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
     "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
   )
 )
+
+
+lazy val surface = ProjectRef(file("../surface"), id = "surfaceJVM")
