@@ -449,7 +449,7 @@ private[wvlet] object AirframeMacros {
     h.bind(h.findSession, t)
   }
 
-  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree)(a: c.Tree): c.Tree = {
+  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
     q"""{
