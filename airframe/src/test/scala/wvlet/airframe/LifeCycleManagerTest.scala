@@ -42,6 +42,12 @@ trait CounterUser {
   val counter2 = bind[Counter]
 }
 
+trait CounterService {
+  val counter = bind[Counter]
+}
+trait User1 extends CounterService
+trait User2 extends CounterService
+
 /**
   *
   */
@@ -63,13 +69,6 @@ class LifeCycleManagerTest extends AirframeSpec {
       multiCounter.counter2.current shouldBe 1
       multiCounter.counter1.hashCode shouldBe multiCounter.counter2.hashCode
     }
-
-    trait CounterService {
-      val counter = bind[Counter]
-    }
-
-    trait User1 extends CounterService
-    trait User2 extends CounterService
 
     "start and shutdown only once for singleton referenced multiple times" in {
       val session = newDesign

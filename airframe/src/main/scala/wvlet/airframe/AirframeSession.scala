@@ -55,25 +55,18 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A]: A = {
-    val tpe = Surface.of[A]
-    debug(s"Get dependency [${tpe}]")
-    getInstance(tpe, List.empty).asInstanceOf[A]
+  private[airframe] def get[A](surface:Surface): A = {
+    debug(s"Get dependency [${surface}]")
+    getInstance(surface, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getSingleton[A]: A = {
-    val tpe = Surface.of[A]
-    debug(s"Get dependency [${tpe}] as singleton")
-    singletonHolder.getOrElseUpdate(tpe, getInstance(tpe, List.empty)).asInstanceOf[A]
+  private[airframe] def getSingleton[A](surface:Surface): A = {
+    debug(s"Get dependency [${surface}] as singleton")
+    singletonHolder.getOrElseUpdate(surface, getInstance(surface, List.empty)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdateSingleton[A](obj: => A): A = {
-    val tpe = Surface.of[A]
-    singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)).asInstanceOf[A]
-  }
-
-  private[airframe] def getOrElseUpdate[A](obj: => A): A = {
-    getOrElseUpdate(Surface.of[A], obj)
+  private[airframe] def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = {
+    singletonHolder.getOrElseUpdate(surface, getOrElseUpdate(surface, obj)).asInstanceOf[A]
   }
 
   private[airframe] def getOrElseUpdate[A](t:Surface, obj: => A): A = {
@@ -178,7 +171,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
             // No binding is found for the concrete class
             throw new MISSING_DEPENDENCY(stack)
           }
-          val obj = factoryCache.get(surface.rawType) match {
+          val obj = factoryCache.get(surface) match {
             case Some(factory) =>
               trace(s"Using pre-compiled factory for ${surface}")
               factory.asInstanceOf[Session => Any](this)

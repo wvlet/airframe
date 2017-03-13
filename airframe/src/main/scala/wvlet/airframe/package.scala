@@ -80,7 +80,7 @@ package object airframe {
 
   // For internal use to pre-compile objects
   import scala.collection.JavaConverters._
-  val factoryCache = new ConcurrentHashMap[Class[_], Session => Any].asScala
+  val factoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
 
   //import wvlet.obj.tag._
   // Automatically add tag
