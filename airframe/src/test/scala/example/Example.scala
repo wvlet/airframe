@@ -15,7 +15,6 @@ package example
 
 import wvlet.airframe._
 import wvlet.log.LogSupport
-import wvlet.obj.tag.@@
 
 import scala.util.Random
 
@@ -25,8 +24,8 @@ import scala.util.Random
 object Example {
 
   trait WingType
-  trait Left
-  trait Right
+  type LeftWing = Wing
+  type RightWing = Wing
   case class Wing(name:String) {
     override def toString = f"Wing($name:[${hashCode()}%x])"
   }
@@ -66,8 +65,8 @@ object Example {
   }
 
   trait AirPlane extends LogSupport {
-    val leftWing  = bind[Wing @@ Left]
-    val rightWing = bind[Wing @@ Right]
+    val leftWing  = bind[LeftWing]
+    val rightWing = bind[RightWing]
     val engine = bind[Engine]
 
     info(f"Built a new plane left:${leftWing}, right:${rightWing}, fuel:${engine.fuel.remaining}, engine:${engine.engineType}")
@@ -113,8 +112,8 @@ object Example {
 
   val coreDesign =
     newDesign
-    .bind[Wing @@ Left].toInstance(new Wing("left"))
-    .bind[Wing @@ Right].toInstance(new Wing("right"))
+    .bind[LeftWing].toInstance(new Wing("left"))
+    .bind[RightWing].toInstance(new Wing("right"))
     .bind[PlaneType].toInstance(PlaneType(50))
     .bind[Metric].toInstance(EmptyMetric)
 

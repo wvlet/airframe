@@ -17,17 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.SingletonTest._
 import wvlet.log.{LogLevel, LogSupport, Logger}
-import wvlet.obj.tag.@@
 
 object SingletonTest {
 
-  trait TraitCounter
+  type TraitCounter = AtomicInteger
 
   // This doesn't tell about Singleton
   trait X extends LogSupport {
     info("new X is instantiated")
 
-    val counter = bind[AtomicInteger @@ TraitCounter].withLifeCycle(
+    val counter = bind[TraitCounter].withLifeCycle(
       init = { c =>
         val v = c.incrementAndGet()
         info(s"Counter is initialized: ${v}")
@@ -58,7 +57,7 @@ class SingletonTest extends AirframeSpec {
 
   val design =
     newDesign
-    .bind[AtomicInteger @@ TraitCounter].toInstance(new AtomicInteger(0))
+    .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
   "Singleton" should {
     "support bindSingleton[X]" in {
@@ -68,7 +67,7 @@ class SingletonTest extends AirframeSpec {
       val b = session.build[B]
 
       a.t.counter should be theSameInstanceAs b.t.counter
-      session.build[AtomicInteger @@ TraitCounter].get() shouldBe 1
+      session.build[TraitCounter].get() shouldBe 1
     }
 
     "support using bindSingleton[X] as a service" in {

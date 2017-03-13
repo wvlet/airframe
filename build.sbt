@@ -10,7 +10,10 @@ val buildSettings = Seq[Setting[_]](
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
   concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
-  incOptions := incOptions.value.withNameHashing(true),
+  incOptions := incOptions.value
+                .withNameHashing(true)
+                // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
+                .withLogRecompileOnMacro(false),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),

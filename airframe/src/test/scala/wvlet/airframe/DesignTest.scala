@@ -12,17 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe
-
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-
 import wvlet.airframe.Alias.{HelloRef, StringHello}
-import wvlet.obj.ObjectType
-import wvlet.obj.tag.@@
+import wvlet.surface.Surface
 
 trait Message
 case class Hello(message: String) extends Message
-trait Production
-trait Development
+
 
 object Alias {
   trait Hello[A] {
@@ -35,10 +30,18 @@ object Alias {
 
   type HelloRef = Hello[String]
 }
+
+object DesignTest {
+  type ProductionMessage = Message
+  type DevelopmentMessage = Message
+  type ProductionString = String
+}
+
 /**
   *
   */
 class DesignTest extends AirframeSpec {
+  import DesignTest._
 
   val d0 = Design.blanc
   lazy val d1 =
@@ -49,8 +52,8 @@ class DesignTest extends AirframeSpec {
     .bind[Message].toEagerSingleton
     .bind[Message].toEagerSingletonOf[Hello]
     .bind[Message].toSingletonOf[Hello]
-    .bind[Message @@ Production].toInstance(Hello("production"))
-    .bind[Message @@ Development].toInstance(Hello("development"))
+    .bind[ProductionMessage].toInstance(Hello("production"))
+    .bind[DevelopmentMessage].toInstance(Hello("development"))
 
   "Design" should {
     "be immutable" in {
@@ -64,9 +67,9 @@ class DesignTest extends AirframeSpec {
       val dd = d1.remove[Message]
 
       def hasMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == ObjectType.of[Message])
+        d.binding.exists(_.from == Surface.of[Message])
       def hasProductionMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == ObjectType.of[Message @@ Production])
+        d.binding.exists(_.from == Surface.of[ProductionMessage])
 
       hasMessage(d1) shouldBe true
       hasMessage(dd) shouldBe false
@@ -91,8 +94,8 @@ class DesignTest extends AirframeSpec {
 
     "bind providers" in {
       val d = newDesign
-              .bind[Hello].toProvider{ (m : String @@ Production) => Hello(m) }
-              .bind[String@@Production].toInstance("hello production")
+              .bind[Hello].toProvider{ (m : ProductionString) => Hello(m) }
+              .bind[ProductionString].toInstance("hello production")
 
       val h = d.newSession.build[Hello]
       h.message shouldBe "hello production"

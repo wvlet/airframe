@@ -19,8 +19,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
-import wvlet.obj.tag._
-import wvlet.obj.{ObjectType, TextType}
+import wvlet.surface.{Primitive, Surface}
 
 import scala.util.Random
 
@@ -146,16 +145,16 @@ object ServiceMixinExample {
 
   case class Fruit(name: String)
 
-  trait Apple
-  trait Banana
-  trait Lemon
+  type Apple = Fruit
+  type Banana = Fruit
+  type Lemon = Fruit
 
   trait TaggedBinding {
-    val apple  = bind[Fruit @@ Apple]
-    val banana = bind[Fruit @@ Banana]
+    val apple  = bind[Apple]
+    val banana = bind[Banana]
     val lemon  = bind(lemonProvider _)
 
-    def lemonProvider(f: Fruit @@ Lemon) = f
+    def lemonProvider(f: Lemon) = f
   }
 
   trait Nested {
@@ -314,17 +313,17 @@ class AirframeTest extends AirframeSpec {
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].to[Printer]
-      }.deps should contain(ObjectType.of[Printer])
+      }.deps should contain(Surface.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toSingletonOf[Printer]
-      }.deps should contain(ObjectType.of[Printer])
+      }.deps should contain(Surface.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toEagerSingletonOf[Printer]
-      }.deps should contain(ObjectType.of[Printer])
+      }.deps should contain(Surface.of[Printer])
     }
 
     trait HasCycle {
@@ -332,15 +331,17 @@ class AirframeTest extends AirframeSpec {
     }
 
     "found cyclic dependencies" taggedAs ("cyclic") in {
-      val c = newDesign.newSession
-      warn(s"Running cyclic dependency test: A->B->A")
-
-      val caught = intercept[CYCLIC_DEPENDENCY] {
-        c.build[HasCycle]
-      }
-      warn(s"${caught}")
-      caught.deps should contain(ObjectType.of[A])
-      caught.deps should contain(ObjectType.of[B])
+      // This will be shown as compilation error in Surface
+      pending
+//      val c = newDesign.newSession
+//      warn(s"Running cyclic dependency test: A->B->A")
+//
+//      val caught = intercept[CYCLIC_DEPENDENCY] {
+//        c.build[HasCycle]
+//      }
+//      warn(s"${caught}")
+//      caught.deps should contain(Surface.of[A])
+//      caught.deps should contain(Surface.of[B])
     }
 
     trait MissingDep {
@@ -354,7 +355,7 @@ class AirframeTest extends AirframeSpec {
         d.newSession.build[MissingDep]
       }
       warn(s"${caught}")
-      caught.stack should contain(TextType.String)
+      caught.stack should contain(Primitive.String)
     }
 
     "find a context in parameter" in {
@@ -376,7 +377,7 @@ class AirframeTest extends AirframeSpec {
       val session = design
                     .session
                     .addEventHandler(new LifeCycleEventHandler {
-                      override def onInit(l: LifeCycleManager, t: ObjectType, injectee: AnyRef): Unit = {
+                      override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
                         counter.incrementAndGet()
                       }
                     })
@@ -400,9 +401,9 @@ class AirframeTest extends AirframeSpec {
 
     "support type tagging" taggedAs ("tag") in {
       val d = newDesign
-              .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-              .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-              .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
+              .bind[Apple].toInstance(Fruit("apple"))
+              .bind[Banana].toInstance(Fruit("banana"))
+              .bind[Lemon].toInstance(Fruit("lemon"))
 
       val session = d.newSession
       val tagged = session.build[TaggedBinding]
