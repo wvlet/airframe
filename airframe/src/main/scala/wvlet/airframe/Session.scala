@@ -16,7 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.MISSING_SESSION
 import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
-import wvlet.obj.{ObjectSchema, ObjectType}
+import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
@@ -42,7 +42,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return object
     */
-  def build[A: ru.WeakTypeTag]: A = macro AirframeMacros.buildImpl[A]
+  def build[A]: A = macro AirframeMacros.buildImpl[A]
 
   /**
     * Internal method for building an instance of type A. This method does not inject the
@@ -51,7 +51,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def get[A: ru.WeakTypeTag]: A
+  private[airframe] def get[A]: A
 
   /**
     * Internal method for building an instance of type A using a provider generated object.
@@ -60,10 +60,10 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A
+  private[airframe] def getOrElseUpdate[A](obj: => A): A
 
-  private[airframe] def getSingleton[A: ru.WeakTypeTag]: A
-  private[airframe] def getOrElseUpdateSingleton[A: ru.WeakTypeTag](obj: => A): A
+  private[airframe] def getSingleton[A]: A
+  private[airframe] def getOrElseUpdateSingleton[A](obj: => A): A
 
   /**
     * Get the object LifeCycleManager of this session.
@@ -76,8 +76,8 @@ trait Session extends AutoCloseable {
   def shutdown { lifeCycleManager.shutdown }
   override def close() { shutdown }
 
-  private[airframe] def getBindingOf(t:ObjectType) : Option[Binding]
-  private[airframe] def hasSingletonOf(t:ObjectType) : Boolean
+  private[airframe] def getBindingOf(t:Surface) : Option[Binding]
+  private[airframe] def hasSingletonOf(t:Surface) : Boolean
 }
 
 object Session extends LogSupport {
@@ -88,10 +88,10 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A: ru.WeakTypeTag]: A = session.get[A]
-    def getOrElseUpdate[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdate[A](obj)
-    def getSingleton[A: ru.WeakTypeTag]: A = session.getSingleton[A]
-    def getOrElseUpdateSingleton[A: ru.WeakTypeTag](obj: => A): A = session.getOrElseUpdateSingleton[A](obj)
+    def get[A]: A = session.get[A]
+    def getOrElseUpdate[A](obj: => A): A = session.getOrElseUpdate[A](obj)
+    def getSingleton[A]: A = session.getSingleton[A]
+    def getOrElseUpdateSingleton[A](obj: => A): A = session.getOrElseUpdateSingleton[A](obj)
   }
 
   def getSession[A](enclosingObj: A): Option[Session] = {
@@ -102,11 +102,12 @@ object Session extends LogSupport {
   }
 
   def findSession[A](enclosingObj: A): Session = {
+    val t = implicitly[ru.WeakTypeTag[A]].tpe
     val cl = enclosingObj.getClass
     getSession(enclosingObj).getOrElse {
-      error(s"No wvlet.airframe.Session is found in the scope: ${ObjectType.of(cl)}, " +
+      error(s"No wvlet.airframe.Session is found in the scope: ${Surface.of[A]}, " +
         s"enclosing object: ${enclosingObj}")
-      throw new MISSING_SESSION(ObjectType.of(cl))
+      throw new MISSING_SESSION(Surface.of[A])
     }
   }
 
@@ -118,22 +119,24 @@ object Session extends LogSupport {
     }
 
     // find val or def that returns wvlet.airframe.Session
-    val schema = ObjectSchema(cl)
+    val surface = Surface.of[A]
+    val methods = Surface.methodsOf[A]
 
-    def findSessionFromMethods: Option[AnyRef => Session] =
-      schema
-      .allMethods
-      .find(x => isSessionType(x.valueType.rawType) && x.params.isEmpty)
-      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
-      }
+    // TODO use macros to create the method caller
+//    def findSessionFromMethods: Option[AnyRef => Session] =
+//      methods
+//      .find(x => isSessionType(x.returnType.rawType) && x.args.isEmpty)
+//      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
+//      }
 
-    def findSessionFromParams: Option[AnyRef => Session] = {
-      // Find parameters
-      schema
-      .parameters
-      .find(p => isSessionType(p.valueType.rawType))
-      .map { sessionParam => { obj: AnyRef => sessionParam.get(obj).asInstanceOf[Session] } }
-    }
+    // TODO use macros to create the parameter extractor
+//    def findSessionFromParams: Option[AnyRef => Session] = {
+//      // Find parameters
+//      surface
+//      .params
+//      .find(p => isSessionType(p.surface.rawType))
+//      .map { sessionParam => { obj: AnyRef => sessionParam.get(obj).asInstanceOf[Session] } }
+//    }
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       // Find any embedded session
@@ -142,9 +145,10 @@ object Session extends LogSupport {
       }
     }
 
-    findSessionFromMethods
-    .orElse(findSessionFromParams)
-    .orElse(findEmbeddedSession)
+//    findSessionFromMethods
+//    .orElse(findSessionFromParams)
+//    .orElse(findEmbeddedSession)
+    findEmbeddedSession
   }
 
 }

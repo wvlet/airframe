@@ -73,7 +73,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
-    "org.wvlet" %% "object-schema" % "1.0",
+    "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
     "org.wvlet" %% "wvlet-log" % "1.1",
     // scalatest
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -89,6 +89,6 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
   buildSettings,
   description := "Macros for Airframe",
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
   )
 )

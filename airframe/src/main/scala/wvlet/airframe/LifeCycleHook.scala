@@ -14,20 +14,20 @@
 package wvlet.airframe
 
 import wvlet.log.LogSupport
-import wvlet.obj.{ObjectMethod, ObjectType}
+import wvlet.surface.Surface
 
 trait LifeCycleHook {
-  def tpe : ObjectType
+  def tpe : Surface
   def execute: Unit
 }
 
-case class EventHookHolder[A](tpe: ObjectType, obj: A, hook: A => Any) extends LifeCycleHook with LogSupport {
+case class EventHookHolder[A](tpe: Surface, obj: A, hook: A => Any) extends LifeCycleHook with LogSupport {
   override def toString : String = s"hook for [$tpe]: $hook"
   def execute {
     hook(obj)
   }
 }
-case class ObjectMethodCall(tpe: ObjectType, obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
+case class ObjectMethodCall(tpe: Surface, obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
   override def toString : String = s"method call hook for [$tpe]: $obj, $method"
   def execute {
     method.invoke(obj)

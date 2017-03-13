@@ -18,7 +18,7 @@ import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
-import wvlet.obj.{ObjectSchema, ObjectType, TypeUtil}
+import wvlet.surface.Surface
 
 import scala.concurrent.duration
 import scala.concurrent.duration.Duration
@@ -32,14 +32,14 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConverters._
 
-  private lazy val bindingTable = binding.map(b => b.from -> b).toMap[ObjectType, Binding]
-  private[airframe] def getBindingOf(t:ObjectType) = bindingTable.get(t)
-  private[airframe] def hasSingletonOf(t: ObjectType): Boolean = {
+  private lazy val bindingTable = binding.map(b => b.from -> b).toMap[Surface, Binding]
+  private[airframe] def getBindingOf(t:Surface) = bindingTable.get(t)
+  private[airframe] def hasSingletonOf(t: Surface): Boolean = {
     singletonHolder.contains(t)
   }
 
-  private lazy val singletonHolder: collection.mutable.Map[ObjectType, Any]
-    = new ConcurrentHashMap[ObjectType, Any]().asScala
+  private lazy val singletonHolder: collection.mutable.Map[Surface, Any]
+    = new ConcurrentHashMap[Surface, Any]().asScala
 
   def name : String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
@@ -55,28 +55,28 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of[A]
-    debug(s"Get dependency [${ev.tpe}]")
+  private[airframe] def get[A]: A = {
+    val tpe = Surface.of[A]
+    debug(s"Get dependency [${tpe}]")
     getInstance(tpe, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getSingleton[A](implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of[A]
-    debug(s"Get dependency [${ev.tpe}] as singleton")
+  private[airframe] def getSingleton[A]: A = {
+    val tpe = Surface.of[A]
+    debug(s"Get dependency [${tpe}] as singleton")
     singletonHolder.getOrElseUpdate(tpe, getInstance(tpe, List.empty)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdateSingleton[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    val tpe = ObjectType.of[A]
-    singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)(ev)).asInstanceOf[A]
+  private[airframe] def getOrElseUpdateSingleton[A](obj: => A): A = {
+    val tpe = Surface.of[A]
+    singletonHolder.getOrElseUpdate(tpe, getOrElseUpdate(obj)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdate[A](obj: => A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    getOrElseUpdate(ObjectType.of[A], obj)
+  private[airframe] def getOrElseUpdate[A](obj: => A): A = {
+    getOrElseUpdate(Surface.of[A], obj)
   }
 
-  private[airframe] def getOrElseUpdate[A](t:ObjectType, obj: => A): A = {
+  private[airframe] def getOrElseUpdate[A](t:Surface, obj: => A): A = {
     debug(s"Get or update dependency [${t}]")
     bindingTable.get(t) match {
       case Some(SingletonBinding(from, to, eager)) =>
@@ -93,14 +93,14 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     }
   }
 
-  private def register[A](obj: A)(implicit ev: ru.WeakTypeTag[A]): A = {
-    register(ObjectType.of[A], obj)
+  private def register[A](obj: A): A = {
+    register(Surface.of[A], obj)
   }
-  private def register[A](t:ObjectType, obj: A): A = {
+  private def register[A](t:Surface, obj: A): A = {
     registerInjectee(t, obj).asInstanceOf[A]
   }
 
-  private def registerInjectee(t: ObjectType, obj: Any): AnyRef = {
+  private def registerInjectee(t: Surface, obj: Any): AnyRef = {
     trace(s"registerInjectee(${t}, injectee:${obj}")
     Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
       case e:Throwable =>
@@ -110,11 +110,11 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     obj.asInstanceOf[AnyRef]
   }
 
-  private def getInstance(t: ObjectType): AnyRef = {
+  private def getInstance(t: Surface): AnyRef = {
     getInstance(t, List.empty)
   }
 
-  private def getInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
+  private def getInstance(t: Surface, stack: List[Surface]): AnyRef = {
     trace(s"Search bindings of ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
@@ -157,22 +157,22 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     result.asInstanceOf[AnyRef]
   }
 
-  private def buildInstance(t: ObjectType, stack: List[ObjectType]): AnyRef = {
+  private def buildInstance(t: Surface, stack: List[Surface]): AnyRef = {
     trace(s"buildInstance ${t}, stack:${stack}")
-    val schema = ObjectSchema.of(t)
-    if (t.isPrimitive || t.isTextType) {
+    val surface : Surface = Surface.of(t)
+    if (t.isPrimitive) {
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(stack)
     }
     else {
-      schema.findConstructor match {
-        case Some(ctr) =>
-          val ctrString = s"$t(${ctr.params.map(p => s"${p.name}:${p.valueType}").mkString(", ")})"
+      surface.objectFactory match {
+        case Some(factory) =>
+          val ctrString = s"$t(${surface.params.map(p => s"${p.name}:${p.surface}").mkString(", ")})"
           trace(s"Using the default constructor for injecting ${ctrString}")
-          val args = for (p <- ctr.params) yield {
-            getInstance(p.valueType, stack)
+          val args = for (p <- surface.params) yield {
+            getInstance(p.surface, stack)
           }
-          val obj = schema.constructor.newInstance(args)
+          val obj = factory.newInstance(args)
           registerInjectee(t, obj)
         case None =>
           if (!(t.rawType.isAnonymousClass || t.rawType.isInterface)) {
@@ -185,43 +185,44 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
               trace(s"Using pre-compiled factory for ${t}")
               factory.asInstanceOf[Session => Any](this)
             case None =>
-              buildWithReflection(t)
+              //buildWithReflection(t)
+              throw MISSING_DEPENDENCY(List(t))
           }
           registerInjectee(t, obj)
       }
     }
   }
-
-  private def buildWithReflection(t:ObjectType) : AnyRef ={
-    // When there is no constructor, generate trait
-    import scala.reflect.runtime.currentMirror
-    import scala.tools.reflect.ToolBox
-    val tb = currentMirror.mkToolBox()
-    val typeName = t.rawType.getName.replaceAll("\\$", ".")
-    try {
-      val code =
-        s"""new (wvlet.airframe.Session => Any) {
-            |  def apply(session:wvlet.airframe.Session) = {
-            |    new ${typeName} {
-            |      protected def __current_session = session
-            |    }
-            |  }
-            |}  """.stripMargin
-      trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
-      val compileStart = System.currentTimeMillis()
-      val parsed = tb.parse(code)
-      val f = tb.eval(parsed).asInstanceOf[Session => Any]
-      val compileFinished = System.currentTimeMillis()
-      val compileDuration = Duration(compileFinished - compileStart, duration.MILLISECONDS)
-      trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
-      val obj = f.apply(this)
-      registerInjectee(t, obj)
-    }
-    catch {
-      case e: Throwable =>
-        error(s"Failed to inject Session to ${t}")
-        throw e
-    }
-  }
+//
+//  private def buildWithReflection(t:Surface) : AnyRef ={
+//    // When there is no constructor, generate trait
+//    import scala.reflect.runtime.currentMirror
+//    import scala.tools.reflect.ToolBox
+//    val tb = currentMirror.mkToolBox()
+//    val typeName = t.rawType.getName.replaceAll("\\$", ".")
+//    try {
+//      val code =
+//        s"""new (wvlet.airframe.Session => Any) {
+//            |  def apply(session:wvlet.airframe.Session) = {
+//            |    new ${typeName} {
+//            |      protected def __current_session = session
+//            |    }
+//            |  }
+//            |}  """.stripMargin
+//      trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
+//      val compileStart = System.currentTimeMillis()
+//      val parsed = tb.parse(code)
+//      val f = tb.eval(parsed).asInstanceOf[Session => Any]
+//      val compileFinished = System.currentTimeMillis()
+//      val compileDuration = Duration(compileFinished - compileStart, duration.MILLISECONDS)
+//      trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
+//      val obj = f.apply(this)
+//      registerInjectee(t, obj)
+//    }
+//    catch {
+//      case e: Throwable =>
+//        error(s"Failed to inject Session to ${t}")
+//        throw e
+//    }
+//  }
 
 }
