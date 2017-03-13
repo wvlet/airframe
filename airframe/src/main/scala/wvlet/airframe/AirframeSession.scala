@@ -157,38 +157,36 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     result.asInstanceOf[AnyRef]
   }
 
-  private def buildInstance(t: Surface, stack: List[Surface]): AnyRef = {
-    trace(s"buildInstance ${t}, stack:${stack}")
-    val surface : Surface = Surface.of(t)
-    if (t.isPrimitive) {
+  private def buildInstance(surface: Surface, stack: List[Surface]): AnyRef = {
+    trace(s"buildInstance ${surface}, stack:${stack}")
+    if (surface.isPrimitive) {
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(stack)
     }
     else {
       surface.objectFactory match {
         case Some(factory) =>
-          val ctrString = s"$t(${surface.params.map(p => s"${p.name}:${p.surface}").mkString(", ")})"
-          trace(s"Using the default constructor for injecting ${ctrString}")
+          trace(s"Using the default constructor for injecting ${surface}")
           val args = for (p <- surface.params) yield {
             getInstance(p.surface, stack)
           }
           val obj = factory.newInstance(args)
-          registerInjectee(t, obj)
+          registerInjectee(surface, obj)
         case None =>
-          if (!(t.rawType.isAnonymousClass || t.rawType.isInterface)) {
+          if (!(surface.rawType.isAnonymousClass || surface.rawType.isInterface)) {
             // We cannot inject Session to a class which has no default constructor
             // No binding is found for the concrete class
             throw new MISSING_DEPENDENCY(stack)
           }
-          val obj = factoryCache.get(t.rawType) match {
+          val obj = factoryCache.get(surface.rawType) match {
             case Some(factory) =>
-              trace(s"Using pre-compiled factory for ${t}")
+              trace(s"Using pre-compiled factory for ${surface}")
               factory.asInstanceOf[Session => Any](this)
             case None =>
               //buildWithReflection(t)
-              throw MISSING_DEPENDENCY(List(t))
+              throw MISSING_DEPENDENCY(List(surface))
           }
-          registerInjectee(t, obj)
+          registerInjectee(surface, obj)
       }
     }
   }
