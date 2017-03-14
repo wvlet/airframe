@@ -46,6 +46,10 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
 
   def remove[A] : Design = macro AirframeMacros.designRemoveImpl[A]
 
+  def remove(t: Surface) : Design = {
+    new Design(binding.filterNot(_.from == t))
+  }
+
   def session: SessionBuilder = {
     new SessionBuilder(this)
   }

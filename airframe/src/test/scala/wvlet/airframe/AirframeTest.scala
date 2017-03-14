@@ -360,7 +360,7 @@ class AirframeTest extends AirframeSpec {
       caught.stack should contain(Primitive.String)
     }
 
-    "find a context in parameter" in {
+    "find a session in parameter" in {
       val session = newDesign
                     .bind[Printer].to[ConsolePrinter]
                     .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
