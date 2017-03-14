@@ -249,6 +249,14 @@ object ServiceMixinExample {
     )
   }
 
+  trait BindLifeCycleExample2 {
+    val module = bind[MyModule]
+                 .onInit(_.init)
+                 .onStart(_.start)
+                 .onShutdown(_.close)
+  }
+
+
   trait MissingDep {
     val obj = bind[String]
   }
@@ -495,6 +503,18 @@ class AirframeTest extends AirframeSpec {
     "bind lifecycle code" taggedAs ("bind-init") in {
       val session = newDesign.newSession
       val e = session.build[BindLifeCycleExample]
+      e.module.initCount.get() shouldBe 1
+
+      session.start
+      e.module.startCount.get() shouldBe 1
+
+      session.shutdown
+      e.module.closeCount.get() shouldBe 1
+    }
+
+    "bind lifecycle" taggedAs ("bind-lifecycle") in {
+      val session = newDesign.newSession
+      val e = session.build[BindLifeCycleExample2]
       e.module.initCount.get() shouldBe 1
 
       session.start

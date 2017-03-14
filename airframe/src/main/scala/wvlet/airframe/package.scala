@@ -59,6 +59,9 @@ package object airframe {
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
+    def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
+    def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
+    def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
   }
 
   class LifeCycleBinder[A](dep: A, surface:Surface, session: Session) {
