@@ -229,16 +229,8 @@ object ServiceMixinExample {
 
   trait LifeCycleExample {
     val module = bind[MyModule]
-
-    @PostConstruct
-    private[LifeCycleExample] def init {
-      module.init
-    }
-
-    @PreDestroy
-    private[LifeCycleExample] def close {
-      module.close
-    }
+                 .onInit(_.init)
+                 .onShutdown(_.close)
   }
 
   trait BindLifeCycleExample {
@@ -491,7 +483,7 @@ class AirframeTest extends AirframeSpec {
       s.initializedTime should be < current
     }
 
-    "support postConstruct and preDestroy" taggedAs ("lifecycle") in {
+    "support onInit and onShutdown" taggedAs ("lifecycle") in {
       val session = newDesign.newSession
       val e = session.build[LifeCycleExample]
       e.module.initCount.get() shouldBe 1
