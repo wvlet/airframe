@@ -147,8 +147,7 @@ object Session extends LogSupport {
 //      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
 //      }
 
-    findEmbeddedSession orElse
-    findSessionFromParams
+    findEmbeddedSession.orElse(findSessionFromParams)
   }
 }
 

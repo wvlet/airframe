@@ -78,25 +78,9 @@ private[wvlet] object AirframeMacros {
     }
 
     def findSession: c.Tree = {
-
-
       q"""wvlet.airframe.Session.findSession(this)"""
     }
 
-    private def fullTypeNameOf(typeEv: c.Type): String = {
-      typeEv match {
-        case TypeRef(prefix, typeSymbol, args) =>
-          if (args.isEmpty) {
-            typeSymbol.fullName
-          }
-          else {
-            val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
-            s"${typeSymbol.fullName}[${typeArgs}]"
-          }
-        case other =>
-          typeEv.typeSymbol.fullName
-      }
-    }
 
     def newBinder(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
@@ -227,12 +211,32 @@ private[wvlet] object AirframeMacros {
         }
         """
     }
+
+    def fullTypeNameOf(typeEv: c.Type): String = {
+      typeEv match {
+        case TypeRef(prefix, typeSymbol, args) =>
+          if (args.isEmpty) {
+            typeSymbol.fullName
+          }
+          else {
+            val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
+            s"${typeSymbol.fullName}[${typeArgs}]"
+          }
+        case other =>
+          typeEv.typeSymbol.fullName
+      }
+    }
   }
 
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    new BindHelper[c.type](c).withFactoryRegistration(t, q"${c.prefix}.bind(wvlet.surface.Surface.of[$t]).asInstanceOf[wvlet.airframe.Binder[$t]]")
+    val h = new BindHelper[c.type](c)
+    h.withFactoryRegistration(t,
+      q"""${c.prefix}
+         .bind(wvlet.surface.Surface.of[$t])
+         .asInstanceOf[wvlet.airframe.Binder[$t]]"""
+    )
   }
 
   def designRemoveImpl[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {

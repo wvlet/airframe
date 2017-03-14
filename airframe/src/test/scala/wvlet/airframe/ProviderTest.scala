@@ -295,7 +295,7 @@ class ProviderTest extends AirframeSpec {
 class ProviderSerializationTest extends AirframeSpec {
 
   "Airframe" should {
-    "serialize design with provider" taggedAs("ser") in {
+    "serialize design with provider" taggedAs ("ser") in {
       val testBinderDesign =
         providerDesign
         .bind[App].toProvider(provider1 _)
@@ -310,7 +310,11 @@ class ProviderSerializationTest extends AirframeSpec {
       val app = d.newSession.build[App]
       app shouldBe App(d1, d2, d3, d4, d5)
     }
+  }
+}
 
+class ProviderSerialization2Test extends AirframeSpec {
+  "Airframe" should {
     "serialize design with provider1" taggedAs("ser-p1") in {
       val testBinderDesign =
         providerDesign
@@ -343,5 +347,4 @@ class ProviderSerializationTest extends AirframeSpec {
       providerDesign.newSession.build[PS5].p shouldBe App(d1, d2, d3, d4, d5)
     }
   }
-
 }

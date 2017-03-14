@@ -134,7 +134,7 @@ object ServiceMixinExample {
 
   case class HelloConfig(message: String)
 
-  class FactoryExample(val c: Session) {
+  trait FactoryExample {
     val hello  = bind { config: HelloConfig => s"${config.message}" }
     val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
 
@@ -394,14 +394,18 @@ class AirframeTest extends AirframeSpec {
               .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
 
       val session = d.newSession
-      val f = new FactoryExample(session)
+      val f = session.build[FactoryExample]
       f.hello shouldBe "Hello Airframe!"
       f.helloFromProvider shouldBe "Hello Airframe!"
 
       info(f.hello2)
     }
 
-    "support type tagging" taggedAs ("tag") in {
+
+    "support type alias" taggedAs ("alias") in {
+      val apple = Surface.of[Apple]
+      warn(s"apple: ${apple}, alias:${apple.isAlias}")
+
       val d = newDesign
               .bind[Apple].toInstance(Fruit("apple"))
               .bind[Banana].toInstance(Fruit("banana"))

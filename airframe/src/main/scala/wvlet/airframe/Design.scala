@@ -35,6 +35,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
   def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
 
   def bind(t: Surface): Binder[Any] = {
+    trace(s"bind($t) ${t.isAlias}")
     val b = new Binder[Any](this, t)
     b
   }

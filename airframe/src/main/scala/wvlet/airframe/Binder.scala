@@ -112,6 +112,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     * @return
     */
   def toInstance(any: => A): Design = {
+    trace(s"binder toInstance: ${from}")
     design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true))
   }
 

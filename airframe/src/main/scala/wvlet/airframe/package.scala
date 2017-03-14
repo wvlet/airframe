@@ -64,7 +64,7 @@ package object airframe {
   class LifeCycleBinder[A](dep: A, session: Session) {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
               shutdown: A => Unit = DO_NOTHING): A = {
-      Surface.of(dep.getClass).map { tpe =>
+      Surface.of(dep.getClass).map {tpe =>
         if (!(init eq DO_NOTHING)) {
           session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
         }
