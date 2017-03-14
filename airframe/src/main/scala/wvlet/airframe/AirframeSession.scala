@@ -55,38 +55,42 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A](surface:Surface): A = {
+  private[airframe] def get[A:ru.TypeTag]: A = {
+    val surface = Surface.of[A]
     debug(s"Get dependency [${surface}]")
     getInstance(surface, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getSingleton[A](surface:Surface): A = {
+  private[airframe] def getSingleton[A:ru.TypeTag]: A = {
+    val surface = Surface.of[A]
     debug(s"Get dependency [${surface}] as singleton")
     singletonHolder.getOrElseUpdate(surface, getInstance(surface, List.empty)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = {
+  private[airframe] def getOrElseUpdateSingleton[A:ru.TypeTag](obj: => A): A = {
+    val surface = Surface.of[A]
     singletonHolder.getOrElseUpdate(surface, getOrElseUpdate(surface, obj)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdate[A](t:Surface, obj: => A): A = {
-    debug(s"Get or update dependency [${t}]")
-    bindingTable.get(t) match {
+  private[airframe] def getOrElseUpdate[A:ru.TypeTag](obj: => A): A = {
+    val surface = Surface.of[A]
+    debug(s"Get or update dependency [${surface}]")
+    bindingTable.get(surface) match {
       case Some(SingletonBinding(from, to, eager)) =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
       case Some(p@ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
-        singletonHolder.get(t) match {
+        singletonHolder.get(surface) match {
           case Some(x) =>
             x.asInstanceOf[A]
           case None =>
-            getInstance(t).asInstanceOf[A]
+            getInstance(surface).asInstanceOf[A]
         }
       case other =>
-        register(t, obj)
+        register(surface, obj)
     }
   }
 
-  private def register[A](obj: A): A = {
+  private def register[A:ru.TypeTag](obj: A): A = {
     register(Surface.of[A], obj)
   }
   private def register[A](t:Surface, obj: A): A = {

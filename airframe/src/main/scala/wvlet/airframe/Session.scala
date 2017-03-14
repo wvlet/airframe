@@ -51,7 +51,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def get[A](surface:Surface): A
+  private[airframe] def get[A:ru.TypeTag]: A
 
   /**
     * Internal method for building an instance of type A using a provider generated object.
@@ -60,10 +60,10 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElseUpdate[A](surface:Surface, obj: => A): A
+  private[airframe] def getOrElseUpdate[A:ru.TypeTag](obj: => A): A
 
-  private[airframe] def getSingleton[A](surface:Surface): A
-  private[airframe] def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A
+  private[airframe] def getSingleton[A:ru.TypeTag]: A
+  private[airframe] def getOrElseUpdateSingleton[A:ru.TypeTag](obj: => A): A
 
   /**
     * Get the object LifeCycleManager of this session.
@@ -88,21 +88,20 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface:Surface): A = session.get[A](surface)
-    def getOrElseUpdate[A](surface:Surface, obj: => A): A = session.getOrElseUpdate[A](surface, obj)
-    def getSingleton[A](surface:Surface): A = session.getSingleton[A](surface)
-    def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
+    def get[A:ru.TypeTag]: A = session.get[A]
+    def getOrElseUpdate[A:ru.TypeTag](obj: => A): A = session.getOrElseUpdate[A](obj)
+    def getSingleton[A:ru.TypeTag]: A = session.getSingleton[A]
+    def getOrElseUpdateSingleton[A:ru.TypeTag](obj: => A): A = session.getOrElseUpdateSingleton[A](obj)
   }
 
-  def getSession[A](enclosingObj: A): Option[Session] = {
+  def getSession[A:ru.TypeTag](enclosingObj: A): Option[Session] = {
     require(enclosingObj != null, "enclosingObj is null")
     findSessionAccess(enclosingObj.getClass).flatMap { access =>
       Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
     }
   }
 
-  def findSession[A](enclosingObj: A): Session = {
-    val t = implicitly[ru.WeakTypeTag[A]].tpe
+  def findSession[A:ru.TypeTag](enclosingObj: A): Session = {
     val cl = enclosingObj.getClass
     getSession(enclosingObj).getOrElse {
       error(s"No wvlet.airframe.Session is found in the scope: ${Surface.of[A]}, " +
@@ -111,7 +110,7 @@ object Session extends LogSupport {
     }
   }
 
-  private def findSessionAccess[A](cl: Class[A]): Option[AnyRef => Session] = {
+  private def findSessionAccess[A:ru.TypeTag](cl: Class[A]): Option[AnyRef => Session] = {
     trace(s"Checking a session for ${cl}")
 
     def isSessionType(c: Class[_]) = {

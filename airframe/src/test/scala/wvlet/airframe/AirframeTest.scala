@@ -249,6 +249,11 @@ object ServiceMixinExample {
     )
   }
 
+  trait MissingDep {
+    val obj = bind[String]
+  }
+
+  trait Test
 }
 
 import wvlet.airframe.ServiceMixinExample._
@@ -344,9 +349,6 @@ class AirframeTest extends AirframeSpec {
 //      caught.deps should contain(Surface.of[B])
     }
 
-    trait MissingDep {
-      val obj = bind[String]
-    }
 
     "detect missing dependencies" in {
       val d = newDesign
@@ -512,7 +514,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "throw MISSING_SESSION" in {
-      trait Test
+
       warn("Running MISSING_SESSION test")
       val caught = intercept[MISSING_SESSION]{
         Session.findSession(new Test{})

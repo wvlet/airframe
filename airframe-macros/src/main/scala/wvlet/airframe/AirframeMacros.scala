@@ -87,13 +87,13 @@ private[wvlet] object AirframeMacros {
       if (shouldGenerateTrait(t)) {
         q"""{
              session : wvlet.airframe.Session =>
-             session.getOrElseUpdate[$t](wvlet.surface.Surface.of[$t],
+             session.getOrElseUpdate[$t](
               (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
       else {
-        q"""{ session : wvlet.airframe.Session => session.get[$t](wvlet.surface.Surface.of[$t]) }"""
+        q"""{ session : wvlet.airframe.Session => session.get[$t] }"""
       }
     }
 
@@ -101,13 +101,13 @@ private[wvlet] object AirframeMacros {
       if (shouldGenerateTrait(t)) {
         q"""{
              session : wvlet.airframe.Session =>
-             session.getOrElseUpdateSingleton[$t](wvlet.surface.Surface.of[$t],
+             session.getOrElseUpdateSingleton[$t](
               (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
       else {
-        q"""{ session : wvlet.airframe.Session => session.getSingleton[$t](wvlet.surface.Surface.of[$t]) }"""
+        q"""{ session : wvlet.airframe.Session => session.getSingleton[$t] }"""
       }
     }
 
@@ -191,7 +191,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1(${factory}, false, false)
+           self.toProviderD1[$ev1](${factory}, false, false)
         }
     """
   }
@@ -205,7 +205,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2(${factory}, false, false)
+           self.toProviderD2[$ev1, $ev2](${factory}, false, false)
         }
     """
   }
@@ -221,7 +221,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3(${factory}, false, false)
+           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, false, false)
         }
     """
   }
@@ -239,7 +239,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4(${factory}, false, false)
+           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, false, false)
         }
     """
   }
@@ -259,7 +259,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5(${factory}, false, false)
+           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, false, false)
         }
     """
   }
@@ -271,7 +271,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1(${factory}, true, false)
+           self.toProviderD1[$ev1](${factory}, true, false)
         }
     """
   }
@@ -285,7 +285,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2(${factory}, true, false)
+           self.toProviderD2[$ev1, $ev2](${factory}, true, false)
         }
     """
   }
@@ -301,7 +301,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3(${factory}, true, false)
+           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, true, false)
         }
     """
   }
@@ -319,7 +319,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4(${factory}, true, false)
+           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, true, false)
         }
     """
   }
@@ -339,7 +339,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5(${factory}, true, false)
+           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, true, false)
         }
     """
   }
@@ -351,7 +351,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1(${factory}, true, true)
+           self.toProviderD1[$ev1](${factory}, true, true)
         }
     """
   }
@@ -365,7 +365,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2(${factory}, true, true)
+           self.toProviderD2[$ev1, $ev2](${factory}, true, true)
         }
     """
   }
@@ -381,7 +381,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3(${factory}, true, true)
+           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, true, true)
         }
     """
   }
@@ -399,7 +399,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4(${factory}, true, true)
+           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, true, true)
         }
     """
   }
@@ -419,7 +419,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5(${factory}, true, true)
+           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, true, true)
         }
     """
   }
@@ -458,7 +458,7 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t], $factory)
+         session.getOrElseUpdate($factory)
         }
       """
   }
@@ -471,7 +471,7 @@ private[wvlet] object AirframeMacros {
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t], $factory($dep1(session)))
+         session.getOrElseUpdate($factory($dep1(session)))
         }
       """
   }
@@ -487,7 +487,7 @@ private[wvlet] object AirframeMacros {
     val dep2 = h.newBinder(d2)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t], $factory($dep1(session), $dep2(session)))
+         session.getOrElseUpdate($factory($dep1(session), $dep2(session)))
         }
       """
   }
@@ -505,7 +505,7 @@ private[wvlet] object AirframeMacros {
     val dep3 = h.newBinder(d3)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t], $factory($dep1(session),$dep2(session),$dep3(session)))
+         session.getOrElseUpdate($factory($dep1(session),$dep2(session),$dep3(session)))
         }
       """
   }
@@ -525,7 +525,7 @@ private[wvlet] object AirframeMacros {
     val dep4 = h.newBinder(d4)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t],
+         session.getOrElseUpdate(
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
          )
         }
@@ -549,7 +549,7 @@ private[wvlet] object AirframeMacros {
     val dep5 = h.newBinder(d5)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(wvlet.surface.Surface.of[$t],
+         session.getOrElseUpdate(
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
         }
@@ -568,7 +568,7 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t], $factory)
+         session.getOrElseUpdateSingleton($factory)
         }
       """
   }
@@ -582,7 +582,7 @@ private[wvlet] object AirframeMacros {
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t], $factory($dep1(session)))
+         session.getOrElseUpdateSingleton($factory($dep1(session)))
         }
       """
   }
@@ -598,7 +598,7 @@ private[wvlet] object AirframeMacros {
     val dep2 = h.newBinder(d2)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t], $factory($dep1(session), $dep2(session)))
+         session.getOrElseUpdateSingleton($factory($dep1(session), $dep2(session)))
         }
       """
   }
@@ -616,7 +616,7 @@ private[wvlet] object AirframeMacros {
     val dep3 = h.newBinder(d3)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t], $factory($dep1(session),$dep2(session),$dep3(session)))
+         session.getOrElseUpdateSingleton($factory($dep1(session),$dep2(session),$dep3(session)))
         }
       """
   }
@@ -637,7 +637,7 @@ private[wvlet] object AirframeMacros {
     val dep4 = h.newBinder(d4)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t],
+         session.getOrElseUpdateSingleton(
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
          )
         }
@@ -662,7 +662,7 @@ private[wvlet] object AirframeMacros {
     val dep5 = h.newBinder(d5)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(wvlet.surface.Surface.of[$t],
+         session.getOrElseUpdateSingleton(
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
         }

@@ -44,7 +44,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding :+ b)
   }
 
-  def remove[A] : Design = {
+  def remove[A:ru.TypeTag] : Design = {
     val target = Surface.of[A]
     new Design(binding.filterNot(_.from == target))
   }

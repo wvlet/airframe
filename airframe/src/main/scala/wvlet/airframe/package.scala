@@ -21,7 +21,7 @@ import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions
-
+import scala.reflect.runtime.{universe=>ru}
 /**
   *
   */
@@ -61,7 +61,7 @@ package object airframe {
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle
   }
 
-  class LifeCycleBinder[A](dep: A, session: Session) {
+  class LifeCycleBinder[A:ru.TypeTag](dep: A, session: Session) {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
               shutdown: A => Unit = DO_NOTHING): A = {
       val tpe = Surface.of[A]
