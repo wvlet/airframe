@@ -61,6 +61,9 @@ object Binder {
     from: Surface,
     dependencyTypes: Seq[Surface],
     factory: Any) {
+
+    override def toString : String = s"DependencyFactory(${from}->[${dependencyTypes.mkString(",")}],${factory})"
+
     def create(args: Seq[Any]): Any = {
       require(args.length == dependencyTypes.length)
       args.length match {

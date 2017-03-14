@@ -29,7 +29,7 @@ object LazyF0 {
   */
 class LazyF0[+R](f: => R) extends Serializable with Cloneable {
 
-  // Generates uuid to make sure the identity after serde
+  // Generates uuid to make sure the identity of this LazyF0 instance after serde
   private val uuid = UUID.randomUUID()
 
   def copy: LazyF0[R] = clone().asInstanceOf[this.type]
