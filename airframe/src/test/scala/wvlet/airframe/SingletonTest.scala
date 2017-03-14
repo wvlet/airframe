@@ -27,7 +27,7 @@ object SingletonTest {
     info("new X is instantiated")
 
     val counter = bind[TraitCounter].withLifeCycle(
-      init = { c =>
+      injection = { c =>
         val v = c.incrementAndGet()
         info(s"Counter is initialized: ${v}")
       }

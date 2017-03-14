@@ -35,7 +35,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   def currentState: LifeCycleStage = state.get()
 
   private[airframe] def onInit(t: Surface, injectee: AnyRef) {
-    eventHandler.onInit(this, t, injectee)
+    eventHandler.onInject(this, t, injectee)
   }
 
   private var session: Session = _
@@ -66,7 +66,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addInitHook(h: LifeCycleHook) {
+  def addInjectHook(h: LifeCycleHook) {
     debug(s"Add init hook: ${h}")
     // Immediately execute the init hook
     h.execute

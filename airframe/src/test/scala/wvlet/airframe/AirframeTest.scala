@@ -212,8 +212,8 @@ object ServiceMixinExample {
     val startCount = new AtomicInteger(0)
     var closeCount = new AtomicInteger(0)
 
-    def init {
-      info("initialized")
+    def injection {
+      info("injected")
       initCount.incrementAndGet()
     }
     def start {
@@ -229,13 +229,13 @@ object ServiceMixinExample {
 
   trait LifeCycleExample {
     val module = bind[MyModule]
-                 .onInit(_.init)
+                 .onInjection(_.injection)
                  .onShutdown(_.close)
   }
 
   trait BindLifeCycleExample {
     val module = bind[MyModule].withLifeCycle(
-      init = _.init,
+      injection = _.injection,
       start = _.start,
       shutdown = _.close
     )
@@ -243,7 +243,7 @@ object ServiceMixinExample {
 
   trait BindLifeCycleExample2 {
     val module = bind[MyModule]
-                 .onInit(_.init)
+                 .onInjection(_.injection)
                  .onStart(_.start)
                  .onShutdown(_.close)
   }
@@ -380,7 +380,7 @@ class AirframeTest extends AirframeSpec {
       val session = design
                     .session
                     .addEventHandler(new LifeCycleEventHandler {
-                      override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+                      override def onInject(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
                         counter.incrementAndGet()
                       }
                     })
