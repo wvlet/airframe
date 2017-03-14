@@ -64,12 +64,10 @@ private[wvlet] object AirframeMacros {
     }
 
     def bind(session: c.Tree, t: c.Type): c.Tree = {
-      val expr = q"""{
+      q"""{
             val session = ${session}
             ${newBinder(t)}(session)
           }"""
-      //println(s"bind:${expr}")
-      expr
     }
 
     def bindSingleton(session: c.Tree, t: c.Type): c.Tree = {
@@ -84,16 +82,16 @@ private[wvlet] object AirframeMacros {
     }
 
     def newBinder(t: c.Type): c.Tree = {
-      if (shouldGenerateTrait(t)) {
+          if (shouldGenerateTrait(t)) {
         q"""{
              session : wvlet.airframe.Session =>
-             session.getOrElseUpdate[$t](
+             session.getOrElseUpdate(${surfaceOf(t)},
               (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
       else {
-        q"""{ session : wvlet.airframe.Session => session.get[$t] }"""
+        q"""{ session : wvlet.airframe.Session => session.get[$t](${surfaceOf(t)}) }"""
       }
     }
 
@@ -101,20 +99,20 @@ private[wvlet] object AirframeMacros {
       if (shouldGenerateTrait(t)) {
         q"""{
              session : wvlet.airframe.Session =>
-             session.getOrElseUpdateSingleton[$t](
+             session.getOrElseUpdateSingleton[$t](${surfaceOf(t)},
               (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
       else {
-        q"""{ session : wvlet.airframe.Session => session.getSingleton[$t] }"""
+        q"""{ session : wvlet.airframe.Session => session.getSingleton[$t](${surfaceOf(t)}) }"""
       }
     }
 
     def registorFactory(t:c.Type) : c.Tree = {
       if(shouldGenerateTrait(t)) {
         q""" {
-           wvlet.airframe.factoryCache.getOrElseUpdate(wvlet.surface.Surface.of[$t],
+           wvlet.airframe.factoryCache.getOrElseUpdate(${surfaceOf(t)},
              { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
            )
          }
@@ -131,7 +129,12 @@ private[wvlet] object AirframeMacros {
         ${body}
         """
     }
+
+    def surfaceOf(t: c.Type): c.Tree = {
+      q"wvlet.surface.Surface.of[$t]"
+    }
   }
+
 
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
@@ -186,12 +189,13 @@ private[wvlet] object AirframeMacros {
 
   def bindToProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
     import c.universe._
-    val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
     val h = new BindHelper[c.type](c)
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    println(s"bindToProvider: ${d1}")
     q"""{
            val self = ${c.prefix.tree}
-           ${h.registorFactory(ev1)}
-           self.toProviderD1[$ev1](${factory}, false, false)
+           ${h.registorFactory(d1)}
+           self.toProviderD1(wvlet.surface.Surface.of[$d1], ${factory}, false, false)
         }
     """
   }
@@ -246,6 +250,7 @@ private[wvlet] object AirframeMacros {
 
   def bindToProvider5[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
     import c.universe._
+
     val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
     val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
     val ev3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -271,7 +276,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1[$ev1](${factory}, true, false)
+           self.toProviderD1(wvlet.surface.Surface.of[$ev1], ${factory}, true, false)
         }
     """
   }
@@ -351,7 +356,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1[$ev1](${factory}, true, true)
+           self.toProviderD1[$ev1](wvlet.surface.Surface.of[$ev1], ${factory}, true, true)
         }
     """
   }
@@ -431,7 +436,8 @@ private[wvlet] object AirframeMacros {
     * @tparam A
     * @return
     */
-  def buildImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+  def buildImpl[A: c.WeakTypeTag](c: sm.Context)(ev:c.Tree): c.Tree = {
+    import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     new BindHelper[c.type](c).bind(c.prefix.tree, t)
   }
@@ -458,7 +464,7 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate($factory)
+         session.getOrElseUpdate(${h.surfaceOf(t)}, $factory)
         }
       """
   }
@@ -471,7 +477,7 @@ private[wvlet] object AirframeMacros {
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate($factory($dep1(session)))
+         session.getOrElseUpdate(${h.surfaceOf(t)}, $factory($dep1(session)))
         }
       """
   }
@@ -487,7 +493,7 @@ private[wvlet] object AirframeMacros {
     val dep2 = h.newBinder(d2)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate($factory($dep1(session), $dep2(session)))
+         session.getOrElseUpdate(${h.surfaceOf(t)}, $factory($dep1(session), $dep2(session)))
         }
       """
   }
@@ -505,7 +511,7 @@ private[wvlet] object AirframeMacros {
     val dep3 = h.newBinder(d3)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate($factory($dep1(session),$dep2(session),$dep3(session)))
+         session.getOrElseUpdate(${h.surfaceOf(t)}, $factory($dep1(session),$dep2(session),$dep3(session)))
         }
       """
   }
@@ -525,7 +531,7 @@ private[wvlet] object AirframeMacros {
     val dep4 = h.newBinder(d4)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(
+         session.getOrElseUpdate(${h.surfaceOf(t)},
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
          )
         }
@@ -549,7 +555,7 @@ private[wvlet] object AirframeMacros {
     val dep5 = h.newBinder(d5)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdate(
+         session.getOrElseUpdate(${h.surfaceOf(t)},
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
         }
@@ -568,7 +574,7 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton($factory)
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)}, $factory)
         }
       """
   }
@@ -582,7 +588,7 @@ private[wvlet] object AirframeMacros {
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton($factory($dep1(session)))
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)}, $factory($dep1(session)))
         }
       """
   }
@@ -598,7 +604,7 @@ private[wvlet] object AirframeMacros {
     val dep2 = h.newBinder(d2)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton($factory($dep1(session), $dep2(session)))
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)}, $factory($dep1(session), $dep2(session)))
         }
       """
   }
@@ -616,7 +622,7 @@ private[wvlet] object AirframeMacros {
     val dep3 = h.newBinder(d3)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton($factory($dep1(session),$dep2(session),$dep3(session)))
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)}, $factory($dep1(session),$dep2(session),$dep3(session)))
         }
       """
   }
@@ -637,7 +643,7 @@ private[wvlet] object AirframeMacros {
     val dep4 = h.newBinder(d4)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)},
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
          )
         }
@@ -662,7 +668,7 @@ private[wvlet] object AirframeMacros {
     val dep5 = h.newBinder(d5)
     q"""{
          val session = ${h.findSession}
-         session.getOrElseUpdateSingleton(
+         session.getOrElseUpdateSingleton(${h.surfaceOf(t)},
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
         }

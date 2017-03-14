@@ -57,7 +57,8 @@ object Binder {
     }
   }
 
-  case class DependencyFactory(from: Surface,
+  case class DependencyFactory(
+    from: Surface,
     dependencyTypes: Seq[Surface],
     factory: Any) {
     def create(args: Seq[Any]): Any = {
@@ -87,7 +88,7 @@ object Binder {
     */
   implicit class BinderAccess[A](binder: Binder[A]) {
     def toProviderD1[D1: ru.TypeTag](factory: (D1) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD1[D1](factory, singleton, eager)
+      binder.toProviderD1[D1](Surface.of[D1], factory, singleton, eager)
 
     def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A, singleton: Boolean, eager: Boolean): Design =
       binder.toProviderD2[D1, D2](factory, singleton, eager)
@@ -157,11 +158,11 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
   def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
 
   private[airframe] def toProviderD1[D1:ru.TypeTag]
-  (factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
+  (d1:Surface, factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(Surface.of[D1]),
+        Seq(d1),
         factory),
       singleton,
       eager
@@ -216,6 +217,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
 
   private[airframe] def toProviderD5[D1:ru.TypeTag, D2:ru.TypeTag, D3:ru.TypeTag, D4:ru.TypeTag, D5:ru.TypeTag]
   (factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean, eager: Boolean): Design = {
+    warn(s"toProviderD5: ${from}")
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,

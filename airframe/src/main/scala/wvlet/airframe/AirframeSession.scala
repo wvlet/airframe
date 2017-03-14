@@ -55,25 +55,21 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A:ru.TypeTag]: A = {
-    val surface = Surface.of[A]
+  private[airframe] def get[A](surface:Surface): A = {
     debug(s"Get dependency [${surface}]")
     getInstance(surface, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getSingleton[A:ru.TypeTag]: A = {
-    val surface = Surface.of[A]
+  private[airframe] def getSingleton[A](surface:Surface): A = {
     debug(s"Get dependency [${surface}] as singleton")
     singletonHolder.getOrElseUpdate(surface, getInstance(surface, List.empty)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdateSingleton[A:ru.TypeTag](obj: => A): A = {
-    val surface = Surface.of[A]
+  private[airframe] def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = {
     singletonHolder.getOrElseUpdate(surface, getOrElseUpdate(surface, obj)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseUpdate[A:ru.TypeTag](obj: => A): A = {
-    val surface = Surface.of[A]
+  private[airframe] def getOrElseUpdate[A](surface:Surface, obj: => A): A = {
     debug(s"Get or update dependency [${surface}]")
     bindingTable.get(surface) match {
       case Some(SingletonBinding(from, to, eager)) =>
@@ -90,9 +86,6 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     }
   }
 
-  private def register[A:ru.TypeTag](obj: A): A = {
-    register(Surface.of[A], obj)
-  }
   private def register[A](t:Surface, obj: A): A = {
     registerInjectee(t, obj).asInstanceOf[A]
   }
