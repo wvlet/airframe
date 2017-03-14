@@ -288,6 +288,13 @@ class ProviderTest extends AirframeSpec {
       p5 should be theSameInstanceAs s5.build[App]
     }
 
+  }
+}
+
+
+class ProviderSerializationTest extends AirframeSpec {
+
+  "Airframe" should {
     "serialize design with provider" taggedAs("ser") in {
       val testBinderDesign =
         providerDesign
@@ -336,5 +343,5 @@ class ProviderTest extends AirframeSpec {
       providerDesign.newSession.build[PS5].p shouldBe App(d1, d2, d3, d4, d5)
     }
   }
-}
 
+}
