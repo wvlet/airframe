@@ -190,12 +190,11 @@ private[wvlet] object AirframeMacros {
   def bindToProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
     import c.universe._
     val h = new BindHelper[c.type](c)
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    println(s"bindToProvider: ${d1}")
+    val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
     q"""{
            val self = ${c.prefix.tree}
-           ${h.registorFactory(d1)}
-           self.toProviderD1(wvlet.surface.Surface.of[$d1], ${factory}, false, false)
+           ${h.registorFactory(ev1)}
+           self.toProviderD1(${h.surfaceOf(ev1)}, ${factory}, false, false)
         }
     """
   }
@@ -209,7 +208,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2[$ev1, $ev2](${factory}, false, false)
+           self.toProviderD2(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${factory}, false, false)
         }
     """
   }
@@ -225,7 +224,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, false, false)
+           self.toProviderD3(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${factory}, false, false)
         }
     """
   }
@@ -243,7 +242,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, false, false)
+           self.toProviderD4(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${factory}, false, false)
         }
     """
   }
@@ -264,7 +263,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, false, false)
+           self.toProviderD5(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${h.surfaceOf(ev5)},${factory}, false, false)
         }
     """
   }
@@ -276,7 +275,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1(wvlet.surface.Surface.of[$ev1], ${factory}, true, false)
+           self.toProviderD1(${h.surfaceOf(ev1)}, ${factory}, true, false)
         }
     """
   }
@@ -290,7 +289,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2[$ev1, $ev2](${factory}, true, false)
+           self.toProviderD2(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${factory}, true, false)
         }
     """
   }
@@ -306,7 +305,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, true, false)
+           self.toProviderD3(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${factory}, true, false)
         }
     """
   }
@@ -324,7 +323,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, true, false)
+           self.toProviderD4(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${factory}, true, false)
         }
     """
   }
@@ -344,7 +343,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, true, false)
+           self.toProviderD5(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${h.surfaceOf(ev5)}, ${factory}, true, false)
         }
     """
   }
@@ -356,7 +355,7 @@ private[wvlet] object AirframeMacros {
     q"""{
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
-           self.toProviderD1[$ev1](wvlet.surface.Surface.of[$ev1], ${factory}, true, true)
+           self.toProviderD1(${h.surfaceOf(ev1)}, ${factory}, true, true)
         }
     """
   }
@@ -370,7 +369,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
-           self.toProviderD2[$ev1, $ev2](${factory}, true, true)
+           self.toProviderD2(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${factory}, true, true)
         }
     """
   }
@@ -386,7 +385,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev1)}
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
-           self.toProviderD3[$ev1, $ev2, $ev3](${factory}, true, true)
+           self.toProviderD3(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${factory}, true, true)
         }
     """
   }
@@ -404,7 +403,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev2)}
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
-           self.toProviderD4[$ev1, $ev2, $ev3, $ev4](${factory}, true, true)
+           self.toProviderD4(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${factory}, true, true)
         }
     """
   }
@@ -424,7 +423,7 @@ private[wvlet] object AirframeMacros {
            ${h.registorFactory(ev3)}
            ${h.registorFactory(ev4)}
            ${h.registorFactory(ev5)}
-           self.toProviderD5[$ev1, $ev2, $ev3, $ev4, $ev5](${factory}, true, true)
+           self.toProviderD5(${h.surfaceOf(ev1)}, ${h.surfaceOf(ev2)}, ${h.surfaceOf(ev3)}, ${h.surfaceOf(ev4)}, ${h.surfaceOf(ev5)}, ${factory}, true, true)
         }
     """
   }
