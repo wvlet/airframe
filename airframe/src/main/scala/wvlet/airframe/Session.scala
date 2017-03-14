@@ -94,6 +94,14 @@ object Session extends LogSupport {
     def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
+//  /**
+//    * Adaptor for accessing private[airframe] methods in SessionHolder
+//    * @param holder
+//    */
+//  implicit class SessionHolderAccess(holder:SessionHolder) {
+//    def getSession : Session = holder.__current_session
+//  }
+
   def getSession(obj:Any): Option[Session] = {
     require(obj != null, "object is null")
     findSessionAccess(obj.getClass).flatMap { access =>
@@ -114,14 +122,24 @@ object Session extends LogSupport {
   }
 
   private def findSessionAccess(cl:Class[_]): Option[AnyRef => Session] = {
-    trace(s"Checking a session for class ${cl}")
-    Surface.of(cl) match {
-      case None =>
-        None
-      case Some(surface) =>
-        // find val or def that returns wvlet.airframe.Session
-        //val methods = Surface.methodsOf[A]
+    trace(s"Checking a session for ${cl}, ${cl.getGenericInterfaces.mkString(",")}")
 
+    def findEmbeddedSession: Option[AnyRef => Session] = {
+      if (classOf[SessionHolder] isAssignableFrom (cl)) {
+        Some({obj: AnyRef => obj.asInstanceOf[SessionHolder].__current_session})
+      }
+      else {
+        None
+      }
+    }
+
+    def findSessionFromParams: Option[AnyRef => Session] = Surface.of(cl).flatMap { surface =>
+      // Find parameters
+      surface
+      .params
+      .find(p => isSessionType(p.surface.rawType))
+      .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
+    }
         // TODO use macros to create the method caller
 //    def findSessionFromMethods: Option[AnyRef => Session] =
 //      methods
@@ -129,29 +147,8 @@ object Session extends LogSupport {
 //      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
 //      }
 
-        warn(s"surface params: ${surface.params.mkString(", ")}")
-
-        // TODO use macros to create the parameter extractor
-        def findSessionFromParams: Option[AnyRef => Session] = {
-          // Find parameters
-          surface
-          .params
-          .find(p => isSessionType(p.surface.rawType))
-          .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
-        }
-
-        def findEmbeddedSession: Option[AnyRef => Session] = {
-          // Find any embedded session
-          surface
-          .params // TODO this should be methods
-          .find(_.name == "__current_session")
-          .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
-        }
-
-//    findSessionFromMethods
-        findSessionFromParams
-        .orElse(findEmbeddedSession)
-    }
+    findEmbeddedSession orElse
+    findSessionFromParams
   }
 }
 

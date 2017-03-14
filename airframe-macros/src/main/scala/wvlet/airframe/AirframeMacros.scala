@@ -78,6 +78,8 @@ private[wvlet] object AirframeMacros {
     }
 
     def findSession: c.Tree = {
+
+
       q"""wvlet.airframe.Session.findSession(this)"""
     }
 
@@ -101,7 +103,7 @@ private[wvlet] object AirframeMacros {
         q"""{
              session : wvlet.airframe.Session =>
              session.getOrElseUpdate(${surfaceOf(t)},
-              (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
+              (new $t with wvlet.airframe.SessionHolder { def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
@@ -115,7 +117,7 @@ private[wvlet] object AirframeMacros {
         q"""{
              session : wvlet.airframe.Session =>
              session.getOrElseUpdateSingleton[$t](${surfaceOf(t)},
-              (new $t { protected[this] def __current_session = session}).asInstanceOf[$t]
+              (new $t with wvlet.airframe.SessionHolder { def __current_session = session}).asInstanceOf[$t]
              )
             }"""
       }
@@ -129,7 +131,7 @@ private[wvlet] object AirframeMacros {
         q""" {
            val s = ${surfaceOf(t)}
            wvlet.airframe.factoryCache.getOrElseUpdate(s,
-             { session: wvlet.airframe.Session => (new $t { protected def __current_session = session }).asInstanceOf[Any] }
+             { session: wvlet.airframe.Session => (new $t with wvlet.airframe.SessionHolder { def __current_session = session }).asInstanceOf[Any] }
            )
            s
          }
