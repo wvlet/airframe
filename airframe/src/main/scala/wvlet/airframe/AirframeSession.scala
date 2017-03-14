@@ -92,9 +92,9 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
 
   private def registerInjectee(t: Surface, obj: Any): AnyRef = {
     trace(s"registerInjectee(${t}, injectee:${obj}")
-    Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
+    Try(lifeCycleManager.onInject(t, obj.asInstanceOf[AnyRef])).recover {
       case e:Throwable =>
-        error(s"Error occurred while executing onInit(${t}, ${obj})", e)
+        error(s"Error occurred while executing onInject(${t}, ${obj})", e)
         throw e
     }
     obj.asInstanceOf[AnyRef]

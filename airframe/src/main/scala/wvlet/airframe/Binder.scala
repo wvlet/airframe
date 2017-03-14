@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 import scala.language.experimental.macros
-import scala.reflect.runtime.{universe => ru}
 
 object Binder {
   sealed trait Binding {

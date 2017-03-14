@@ -34,7 +34,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   private val state = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
-  private[airframe] def onInit(t: Surface, injectee: AnyRef) {
+  private[airframe] def onInject(t: Surface, injectee: AnyRef) {
     eventHandler.onInject(this, t, injectee)
   }
 
@@ -66,9 +66,18 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
+  def addInitHook(h: LifeCycleHook) {
+    session.hasSingletonOf(h.surface)
+
+    debug(s"Execute init hook: ${h}")
+
+
+    h.execute
+  }
+
   def addInjectHook(h: LifeCycleHook) {
-    debug(s"Add init hook: ${h}")
-    // Immediately execute the init hook
+    debug(s"Add inject hook: ${h}")
+    // Immediately execute the inject hook
     h.execute
   }
 
@@ -84,7 +93,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addStartHook(h: LifeCycleHook) {
     synchronized {
-      val canAddHook = !(isSingletonType(h.tpe) && startHook.exists(_.tpe == h.tpe))
+      val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add start hook: ${h}")
         startHook :+= h
@@ -94,7 +103,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addShutdownHook(h: LifeCycleHook) {
     synchronized {
-      val canAddHook = !(isSingletonType(h.tpe) && shutdownHook.exists(_.tpe == h.tpe))
+      val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add shutdown hook: ${h}")
         shutdownHook :+= h

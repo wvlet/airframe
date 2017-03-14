@@ -270,7 +270,7 @@ private[wvlet] object AirframeMacros {
       val self = ${c.prefix.tree}
       val to = wvlet.surface.Surface.of[$t]
       if(self.from == to) {
-         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
+         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
@@ -286,7 +286,7 @@ private[wvlet] object AirframeMacros {
       val self = ${c.prefix.tree}
       val to = wvlet.surface.Surface.of[$t]
       if(self.from == to) {
-         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
+         wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
