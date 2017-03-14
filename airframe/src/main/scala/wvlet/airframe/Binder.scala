@@ -169,7 +169,6 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     ))
   }
 
-
   private[airframe] def toProviderD2[D1, D2]
   (d1:Surface, d2:Surface, factory: (D1, D2) => A, singleton: Boolean, eager: Boolean): Design = {
     design.addBinding(ProviderBinding(

@@ -135,11 +135,20 @@ private[wvlet] object AirframeMacros {
     }
   }
 
-
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     new BindHelper[c.type](c).withFactoryRegistration(t, q"${c.prefix}.bind(wvlet.surface.Surface.of[$t]).asInstanceOf[wvlet.airframe.Binder[$t]]")
+  }
+
+  def designRemoveImpl[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+         val target = wvlet.surface.Surface.of[$t]
+         new wvlet.airframe.Design(${c.prefix}.binding.filterNot(_.from == target))
+        }
+     """
   }
 
   def binderToImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
