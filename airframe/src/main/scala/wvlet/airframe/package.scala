@@ -61,18 +61,19 @@ package object airframe {
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle
   }
 
-  class LifeCycleBinder[A:ru.TypeTag](dep: A, session: Session) {
+  class LifeCycleBinder[A](dep: A, session: Session) {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
               shutdown: A => Unit = DO_NOTHING): A = {
-      val tpe = Surface.of[A]
-            if (!(init eq DO_NOTHING)) {
-        session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
-      }
-      if (!(start eq DO_NOTHING)) {
-        session.lifeCycleManager.addStartHook(EventHookHolder(tpe, dep, start))
-      }
-      if (!(shutdown eq DO_NOTHING)) {
-        session.lifeCycleManager.addShutdownHook(EventHookHolder(tpe, dep, shutdown))
+      Surface.of(dep.getClass).map { tpe =>
+        if (!(init eq DO_NOTHING)) {
+          session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
+        }
+        if (!(start eq DO_NOTHING)) {
+          session.lifeCycleManager.addStartHook(EventHookHolder(tpe, dep, start))
+        }
+        if (!(shutdown eq DO_NOTHING)) {
+          session.lifeCycleManager.addShutdownHook(EventHookHolder(tpe, dep, shutdown))
+        }
       }
       dep
     }

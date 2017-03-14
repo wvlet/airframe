@@ -93,29 +93,6 @@ object Binder {
       }
     }
   }
-
-  /**
-    * To provide an access to internal Binder methods
-    */
-  implicit class BinderAccess[A](binder: Binder[A]) {
-    def toProviderD1[D1: ru.TypeTag](factory: (D1) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD1[D1](Surface.of[D1], factory, singleton, eager)
-
-    def toProviderD2[D1: ru.TypeTag, D2: ru.TypeTag](factory: (D1, D2) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD2[D1, D2](Surface.of[D1], Surface.of[D2], factory, singleton, eager)
-
-    def toProviderD3[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag]
-    (factory: (D1, D2, D3) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD3[D1, D2, D3](Surface.of[D1], Surface.of[D2], Surface.of[D3], factory, singleton, eager)
-
-    def toProviderD4[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag]
-    (factory: (D1, D2, D3, D4) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD4[D1, D2, D3, D4](Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], factory, singleton, eager)
-
-    def toProviderD5[D1: ru.TypeTag, D2: ru.TypeTag, D3: ru.TypeTag, D4: ru.TypeTag, D5: ru.TypeTag]
-    (factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean, eager: Boolean): Design =
-      binder.toProviderD5[D1, D2, D3, D4, D5](Surface.of[D1], Surface.of[D2], Surface.of[D3], Surface.of[D4], Surface.of[D5], factory, singleton, eager)
-  }
 }
 
 import wvlet.airframe.Binder._
@@ -167,65 +144,5 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
   def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToEagerSingletonProvider3[D1, D2, D3]
   def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
   def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
-
-  private[airframe] def toProviderD1[D1]
-  (d1:Surface, factory: D1 => A, singleton: Boolean, eager: Boolean): Design = {
-    design.addBinding(ProviderBinding(
-      DependencyFactory(
-        from,
-        IndexedSeq(d1),
-        factory),
-      singleton,
-      eager
-    ))
-  }
-
-  private[airframe] def toProviderD2[D1, D2]
-  (d1:Surface, d2:Surface, factory: (D1, D2) => A, singleton: Boolean, eager: Boolean): Design = {
-    design.addBinding(ProviderBinding(
-      DependencyFactory(
-        from,
-        IndexedSeq(d1, d2),
-        factory),
-      singleton,
-      eager
-    ))
-  }
-
-  private[airframe] def toProviderD3[D1, D2, D3]
-  (d1:Surface, d2:Surface, d3:Surface, factory: (D1, D2, D3) => A, singleton: Boolean, eager: Boolean): Design = {
-    design.addBinding(ProviderBinding(
-      DependencyFactory(
-        from,
-        IndexedSeq(d1, d2, d3),
-        factory),
-      singleton,
-      eager
-    ))
-  }
-
-  private[airframe] def toProviderD4[D1, D2, D3, D4]
-  (d1:Surface, d2:Surface, d3:Surface, d4:Surface, factory: (D1, D2, D3, D4) => A, singleton: Boolean, eager: Boolean): Design = {
-    design.addBinding(ProviderBinding(
-      DependencyFactory(
-        from,
-        IndexedSeq(d1, d2, d3, d4),
-        factory),
-      singleton,
-      eager
-    ))
-  }
-
-  private[airframe] def toProviderD5[D1, D2, D3, D4, D5]
-  (d1:Surface, d2:Surface, d3:Surface, d4:Surface, d5:Surface, factory: (D1, D2, D3, D4, D5) => A, singleton: Boolean, eager: Boolean): Design = {
-    design.addBinding(ProviderBinding(
-      DependencyFactory(
-        from,
-        IndexedSeq(d1, d2, d3, d4, d5),
-        factory),
-      singleton,
-      eager
-    ))
-  }
 }
 

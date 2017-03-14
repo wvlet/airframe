@@ -42,7 +42,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return object
     */
-  def build[A:ru.TypeTag]: A = macro AirframeMacros.buildImpl[A]
+  def build[A]: A = macro AirframeMacros.buildImpl[A]
 
   /**
     * Internal method for building an instance of type A. This method does not inject the
@@ -94,62 +94,65 @@ object Session extends LogSupport {
     def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
-  def getSession[A:ru.TypeTag](enclosingObj: A): Option[Session] = {
-    require(enclosingObj != null, "enclosingObj is null")
-    findSessionAccess(enclosingObj.getClass).flatMap { access =>
-      Try(access.apply(enclosingObj.asInstanceOf[AnyRef])).toOption
+  def getSession(obj:Any): Option[Session] = {
+    require(obj != null, "object is null")
+    findSessionAccess(obj.getClass).flatMap { access =>
+      Try(access.apply(obj.asInstanceOf[AnyRef])).toOption
     }
   }
 
-  def findSession[A:ru.TypeTag](enclosingObj: A): Session = {
-    val cl = enclosingObj.getClass
+  def findSession[A](enclosingObj: A): Session = {
     getSession(enclosingObj).getOrElse {
-      error(s"No wvlet.airframe.Session is found in the scope: ${Surface.of[A]}, " +
+      error(s"No wvlet.airframe.Session is found in the scope: ${enclosingObj.getClass}, " +
         s"enclosing object: ${enclosingObj}")
-      throw new MISSING_SESSION(Surface.of[A])
+      throw new MISSING_SESSION(enclosingObj.getClass)
     }
   }
 
-  private def findSessionAccess[A:ru.TypeTag](cl: Class[A]): Option[AnyRef => Session] = {
-    trace(s"Checking a session for ${cl}")
+  private def isSessionType(c: Class[_]) = {
+    classOf[wvlet.airframe.Session].isAssignableFrom(c)
+  }
 
-    def isSessionType(c: Class[_]) = {
-      classOf[wvlet.airframe.Session].isAssignableFrom(c)
-    }
+  private def findSessionAccess(cl:Class[_]): Option[AnyRef => Session] = {
+    trace(s"Checking a session for class ${cl}")
+    Surface.of(cl) match {
+      case None =>
+        None
+      case Some(surface) =>
+        // find val or def that returns wvlet.airframe.Session
+        //val methods = Surface.methodsOf[A]
 
-    // find val or def that returns wvlet.airframe.Session
-    val surface = Surface.of[A]
-    val methods = Surface.methodsOf[A]
-
-    // TODO use macros to create the method caller
+        // TODO use macros to create the method caller
 //    def findSessionFromMethods: Option[AnyRef => Session] =
 //      methods
 //      .find(x => isSessionType(x.returnType.rawType) && x.args.isEmpty)
 //      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
 //      }
 
-    // TODO use macros to create the parameter extractor
-//    def findSessionFromParams: Option[AnyRef => Session] = {
-//      // Find parameters
-//      surface
-//      .params
-//      .find(p => isSessionType(p.surface.rawType))
-//      .map { sessionParam => { obj: AnyRef => sessionParam.get(obj).asInstanceOf[Session] } }
-//    }
+        warn(s"surface params: ${surface.params.mkString(", ")}")
 
-    def findEmbeddedSession: Option[AnyRef => Session] = {
-      // Find any embedded session
-      val m = Try(cl.getDeclaredMethod("__current_session")).toOption
-      m.map { m => { obj: AnyRef => m.invoke(obj).asInstanceOf[Session] }
-      }
-    }
+        // TODO use macros to create the parameter extractor
+        def findSessionFromParams: Option[AnyRef => Session] = {
+          // Find parameters
+          surface
+          .params
+          .find(p => isSessionType(p.surface.rawType))
+          .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
+        }
+
+        def findEmbeddedSession: Option[AnyRef => Session] = {
+          // Find any embedded session
+          surface
+          .params // TODO this should be methods
+          .find(_.name == "__current_session")
+          .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
+        }
 
 //    findSessionFromMethods
-//    .orElse(findSessionFromParams)
-//    .orElse(findEmbeddedSession)
-    findEmbeddedSession
+        findSessionFromParams
+        .orElse(findEmbeddedSession)
+    }
   }
-
 }
 
 

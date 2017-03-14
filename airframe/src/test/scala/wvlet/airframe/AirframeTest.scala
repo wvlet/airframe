@@ -389,7 +389,7 @@ class AirframeTest extends AirframeSpec {
       counter.get shouldBe 2
     }
 
-    "support binding via factory" in {
+    "support binding via factory" taggedAs("factory-binding") in {
       val d = newDesign
               .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
 
@@ -517,7 +517,7 @@ class AirframeTest extends AirframeSpec {
 
       warn("Running MISSING_SESSION test")
       val caught = intercept[MISSING_SESSION]{
-        Session.findSession(new Test{})
+        Session.findSession(Surface.of[Test], new Test{})
       }
       warn(caught.getMessage)
     }

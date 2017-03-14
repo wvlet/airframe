@@ -22,7 +22,7 @@ trait AirframeException extends Exception { self =>
 }
 
 object AirframeException {
-  case class MISSING_SESSION(cl:Surface) extends AirframeException {
+  case class MISSING_SESSION(cl:Class[_]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${cl}"
   }
   case class CYCLIC_DEPENDENCY(deps: Set[Surface]) extends AirframeException {
