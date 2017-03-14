@@ -62,7 +62,15 @@ object Binder {
     dependencyTypes: Seq[Surface],
     factory: Any) {
 
-    override def toString : String = s"DependencyFactory(${from}->[${dependencyTypes.mkString(",")}],${factory})"
+    override def toString : String = {
+      val deps = if(dependencyTypes.isEmpty) {
+        "()"
+      }
+      else {
+        s"(${dependencyTypes.mkString(",")})"
+      }
+      s"${deps}=>${from} [${factory}]"
+    }
 
     def create(args: Seq[Any]): Any = {
       require(args.length == dependencyTypes.length)
@@ -165,7 +173,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(d1),
+        IndexedSeq(d1),
         factory),
       singleton,
       eager
@@ -177,7 +185,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(d1, d2),
+        IndexedSeq(d1, d2),
         factory),
       singleton,
       eager
@@ -189,7 +197,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(d1, d2, d3),
+        IndexedSeq(d1, d2, d3),
         factory),
       singleton,
       eager
@@ -201,7 +209,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(d1, d2, d3, d4),
+        IndexedSeq(d1, d2, d3, d4),
         factory),
       singleton,
       eager
@@ -213,7 +221,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     design.addBinding(ProviderBinding(
       DependencyFactory(
         from,
-        Seq(d1, d2, d3, d4, d5),
+        IndexedSeq(d1, d2, d3, d4, d5),
         factory),
       singleton,
       eager
