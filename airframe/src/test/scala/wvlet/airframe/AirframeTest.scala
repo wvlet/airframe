@@ -361,6 +361,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "find a session in parameter" in {
+      pending
       val session = newDesign
                     .bind[Printer].to[ConsolePrinter]
                     .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))

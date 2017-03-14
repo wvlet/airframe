@@ -58,22 +58,23 @@ package object airframe {
     * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-    def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle
+    def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
   }
 
-  class LifeCycleBinder[A](dep: A, session: Session) {
-    def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING,
-              shutdown: A => Unit = DO_NOTHING): A = {
-      Surface.of(dep.getClass).map {tpe =>
-        if (!(init eq DO_NOTHING)) {
-          session.lifeCycleManager.addInitHook(EventHookHolder(tpe, dep, init))
-        }
-        if (!(start eq DO_NOTHING)) {
-          session.lifeCycleManager.addStartHook(EventHookHolder(tpe, dep, start))
-        }
-        if (!(shutdown eq DO_NOTHING)) {
-          session.lifeCycleManager.addShutdownHook(EventHookHolder(tpe, dep, shutdown))
-        }
+  class LifeCycleBinder[A](dep: A, surface:Surface, session: Session) {
+    def apply(
+      init: A => Unit = DO_NOTHING,
+      start: A => Unit = DO_NOTHING,
+      shutdown: A => Unit = DO_NOTHING): A = {
+
+      if (!(init eq DO_NOTHING)) {
+        session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init))
+      }
+      if (!(start eq DO_NOTHING)) {
+        session.lifeCycleManager.addStartHook(EventHookHolder(surface, dep, start))
+      }
+      if (!(shutdown eq DO_NOTHING)) {
+        session.lifeCycleManager.addShutdownHook(EventHookHolder(surface, dep, shutdown))
       }
       dep
     }
