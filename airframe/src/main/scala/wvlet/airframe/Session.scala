@@ -72,6 +72,16 @@ trait Session extends AutoCloseable {
     */
   def lifeCycleManager: LifeCycleManager
 
+  def start[U](body: => U) : U = {
+    try {
+      start
+      body
+    }
+    finally {
+      shutdown
+    }
+  }
+
   def start { lifeCycleManager.start }
   def shutdown { lifeCycleManager.shutdown }
   override def close() { shutdown }
@@ -93,14 +103,6 @@ object Session extends LogSupport {
     def getSingleton[A](surface:Surface): A = session.getSingleton[A](surface)
     def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
-
-//  /**
-//    * Adaptor for accessing private[airframe] methods in SessionHolder
-//    * @param holder
-//    */
-//  implicit class SessionHolderAccess(holder:SessionHolder) {
-//    def getSession : Session = holder.__current_session
-//  }
 
   def getSession(obj:Any): Option[Session] = {
     require(obj != null, "object is null")
