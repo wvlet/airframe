@@ -14,11 +14,9 @@
 package wvlet.log
 
 import java.io.{PrintWriter, StringWriter}
-import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder, SignStyle}
-import java.time.{Instant, ZoneId, ZonedDateTime}
 import java.util.logging.Formatter
 import java.util.regex.Pattern
-import java.util.{Locale, logging => jl}
+import java.util.{logging => jl}
 
 import wvlet.log.LogLevel.{DEBUG, ERROR, INFO, TRACE, WARN}
 
@@ -38,52 +36,12 @@ trait LogFormatter extends Formatter {
 
 object LogFormatter {
 
-  import java.time.temporal.ChronoField._
-
-  val systemZone             = ZoneId.systemDefault().normalized()
-  val noSpaceTimestampFormat = new DateTimeFormatterBuilder()
-                               .parseCaseInsensitive()
-                               .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-                               .appendLiteral('-')
-                               .appendValue(MONTH_OF_YEAR, 2)
-                               .appendLiteral('-')
-                               .appendValue(DAY_OF_MONTH, 2)
-                               .appendLiteral('T')
-                               .appendValue(HOUR_OF_DAY, 2)
-                               .appendLiteral(':')
-                               .appendValue(MINUTE_OF_HOUR, 2)
-                               .appendLiteral(':')
-                               .appendValue(SECOND_OF_MINUTE, 2)
-                               .appendLiteral('.')
-                               .appendValue(MILLI_OF_SECOND, 3)
-                               .appendOffset("+HHMM", "Z")
-                               .toFormatter(Locale.US)
-
-  val humanReadableTimestampFormatter = new DateTimeFormatterBuilder()
-                                        .parseCaseInsensitive()
-                                        .appendValue(YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-                                        .appendLiteral('-')
-                                        .appendValue(MONTH_OF_YEAR, 2)
-                                        .appendLiteral('-')
-                                        .appendValue(DAY_OF_MONTH, 2)
-                                        .appendLiteral(' ')
-                                        .appendValue(HOUR_OF_DAY, 2)
-                                        .appendLiteral(':')
-                                        .appendValue(MINUTE_OF_HOUR, 2)
-                                        .appendLiteral(':')
-                                        .appendValue(SECOND_OF_MINUTE, 2)
-                                        .appendOffset("+HHMM", "Z")
-                                        .toFormatter(Locale.US)
-
-  def formatTimestamp(timeMillis: Long, dateTimeformatter: DateTimeFormatter = humanReadableTimestampFormatter): String = {
-    val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), systemZone)
-    dateTimeformatter.format(timestamp)
-  }
+  import LogTimestampFormatter._
 
   def currentThreadName: String = Thread.currentThread().getName
 
   private val testFrameworkFilter = Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
-  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String =>
+  val DEFAULT_STACKTRACE_FILTER: String => Boolean = {line: String =>
     !testFrameworkFilter.matcher(line).matches()
   }
   private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
@@ -105,7 +63,7 @@ object LogFormatter {
       stackTrace.split("\n") // Array
       .filter(stackTraceFilter)
       .sliding(2)
-      .collect { case Array(a, b) if a != b => a }
+      .collect {case Array(a, b) if a != b => a}
 
     filtered.mkString("\n")
   }
@@ -138,7 +96,7 @@ object LogFormatter {
   object TSVLogFormatter extends LogFormatter {
     override def formatLog(record: LogRecord): String = {
       val s = Seq.newBuilder[String]
-      s += formatTimestamp(record.getMillis, noSpaceTimestampFormat)
+      s += formatTimestampWithNoSpaace(record.getMillis)
       s += record.level.toString
       s += currentThreadName
       s += record.leafLoggerName
@@ -187,7 +145,9 @@ object LogFormatter {
         .getOrElse("")
 
       val logTag = highlightLog(r.level, r.level.name)
-      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)} ${loc}"
+      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${
+        highlightLog(r.level, r.getMessage)
+      } ${loc}"
       appendStackTrace(log, r)
     }
   }

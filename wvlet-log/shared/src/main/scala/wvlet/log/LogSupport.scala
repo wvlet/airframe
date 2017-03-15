@@ -13,8 +13,6 @@
  */
 package wvlet.log
 
-import java.io.{ByteArrayOutputStream, PrintStream}
-
 import scala.language.experimental.macros
 
 /**
@@ -31,14 +29,14 @@ trait LocalLogSupport extends LoggingMethods with LocalLogger
   * Trait for adding a local logger instance to your class
   */
 trait LazyLogger {
-  @transient protected[this] lazy val logger: Logger = Logger(Logger.getSuccinctLoggerName(this.getClass))
+  @transient protected[this] lazy val logger: Logger = Logger(LogUtil.getSuccinctLoggerName(this.getClass))
 }
 
 /**
   * Trait for adding an initialized logger instance to your class
   */
 trait LocalLogger {
-  @transient protected[this] val logger: Logger = Logger(Logger.getSuccinctLoggerName(this.getClass))
+  @transient protected[this] val logger: Logger = Logger(LogUtil.getSuccinctLoggerName(this.getClass))
 }
 
 
@@ -65,8 +63,5 @@ trait LoggingMethods extends Serializable {
 
 trait PublicLoggingMethods extends Serializable { p =>
   import LogMacros._
-
   protected[this] def logger : Logger
-
 }
-

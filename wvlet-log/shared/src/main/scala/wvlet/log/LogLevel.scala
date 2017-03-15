@@ -13,7 +13,6 @@
  */
 package wvlet.log
 
-import java.util.Locale
 import java.util.logging.Level
 
 /**
@@ -34,7 +33,7 @@ object LogLevel {
   private lazy val jlLevelIndex = values.map { l => l.jlLevel -> l }.toMap
 
   def apply(name: String): LogLevel = {
-    val n = name.toLowerCase(Locale.US)
+    val n = name.toLowerCase()
     val lv = values.find(n == _.name)
     if (lv.isEmpty) {
       Console.err.println(s"Unknown log level [${name}] Use info log level instead.")
@@ -55,7 +54,7 @@ object LogLevel {
     }
   }
 
-  def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase(Locale.US))
+  def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase())
 
   implicit object LogOrdering extends Ordering[LogLevel] {
     override def compare(x: LogLevel, y: LogLevel): Int = x.order - y.order

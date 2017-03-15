@@ -15,8 +15,6 @@ package wvlet.log
 
 import java.util.{logging => jl}
 
-import scala.collection.mutable
-
 /**
   * Source code location where the log is
   *
@@ -44,7 +42,7 @@ object LogRecord {
     LogRecord(level, Some(source), message, Some(cause))
   }
 
-  private[log] val leafLoggerNameCache = new mutable.WeakHashMap[String, String]
+  private[log] val leafLoggerNameCache = collection.mutable.Map[String, String]()
 
 }
 
