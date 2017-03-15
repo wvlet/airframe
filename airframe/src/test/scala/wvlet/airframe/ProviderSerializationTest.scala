@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 
-import wvlet.airframe.ProviderModel._
+import wvlet.airframe.ProviderVal._
 import wvlet.log.LogSupport
 
 case class D1(id: Int)
@@ -26,7 +26,7 @@ case class App(d1: D1 = D1(0), d2: D2 = D2(0), d3: D3 = D3(0), d4: D4 = D4(0), d
   debug(s"Created ${toString()}")
 }
 
-object ProviderModel {
+object ProviderVal {
   val z1 = D1(0)
   val z2 = D2(0)
   val z3 = D3(0)
@@ -35,7 +35,7 @@ object ProviderModel {
 }
 
 object ProviderSerializationExample extends Serializable {
-  import wvlet.airframe.ProviderModel._
+  import wvlet.airframe.ProviderVal._
 
   val d1 = D1(1)
   val d2 = D2(2)
@@ -59,7 +59,7 @@ object ProviderSerializationExample extends Serializable {
 }
 
 import ProviderSerializationExample._
-import ProviderModel._
+import ProviderVal._
 /**
   *
   */

@@ -50,7 +50,7 @@ class SerializationTest extends AirframeSpec {
 
     "serialize provider that involves toInstance of local var" in {
       import ProviderSerializationExample._
-      import ProviderModel._
+      import ProviderVal._
 
       val d = newDesign
         .bind[D1].toInstance(d1)
