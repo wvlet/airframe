@@ -26,21 +26,37 @@ trait LogSupport extends LoggingMethods with LazyLogger
 trait LocalLogSupport extends LoggingMethods with LocalLogger
 
 
-trait LoggerInstance
+trait LoggerInstance {
+  import LogMacros._
+  protected[this] def findLoggerName(cl:Class[_], default:String) : String = {
+    val name = cl.getName
+    if(name.endsWith("$")) {
+      // Remove trailing $ of Scala Object name
+      name.substring(0, name.length-1)
+    }
+    else {
+      if(name.contains("$"))
+        default
+      else
+        name
+    }
+  }
+
+  protected[this] def findLogger[A] : Logger = macro LogMacros.createNewLogger[A]
+}
 
 /**
   * Trait for adding a local logger instance to your class
   */
 trait LazyLogger extends LoggerInstance {
-  import LogMacros._
-  protected[this] lazy val logger: Logger = wvlet.log.Logger(wvlet.log.LogUtil.getSuccinctLoggerName(this.getClass))
+  protected[this] lazy val logger: Logger = findLogger[this.type]
 }
 
 /**
   * Trait for adding an initialized logger instance to your class
   */
 trait LocalLogger extends LoggerInstance {
-  protected[this] val logger: Logger = wvlet.log.Logger(wvlet.log.LogUtil.getSuccinctLoggerName(this.getClass))
+  protected[this] val logger: Logger = findLogger[this.type]
 }
 
 

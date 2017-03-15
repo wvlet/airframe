@@ -15,6 +15,7 @@ package wvlet.log
 
 import java.util.{logging => jul}
 
+import org.scalatest.Tag
 import wvlet.log.LogFormatter._
 import wvlet.log.LogLevel.LogOrdering
 
@@ -66,12 +67,12 @@ class LoggerTest extends Spec {
       Logger.setDefaultLogLevel(current)
     }
 
-    "create logger from class" in {
+    "create logger from class" taggedAs(Tag("app")) in {
       val l = Logger.of[MyAppClass]
       l.getName shouldBe "wvlet.log.MyAppClass"
     }
 
-    "display log messages" in {
+    "display log messages" taggedAs(Tag("app")) in {
       info("logging test")
       new MyAppClass
     }
@@ -161,7 +162,7 @@ class LoggerTest extends Spec {
       }
     }
 
-    "Remove $ from object name" in {
+    "Remove $ from object name" taggedAs(Tag("app")) in {
       val o = Sample
       o.loggerName shouldBe "wvlet.log.Sample"
     }
