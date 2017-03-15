@@ -20,7 +20,7 @@ import java.util
 
 import wvlet.log.{LogLevel, LogRecord, Logger}
 
-import scala.collection.mutable.{LinkedHashMap, Stack}
+import scala.collection.mutable.LinkedHashMap
 
 //--------------------------------------
 //

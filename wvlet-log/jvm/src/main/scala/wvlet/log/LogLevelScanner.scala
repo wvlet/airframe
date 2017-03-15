@@ -13,18 +13,85 @@
  */
 package wvlet.log
 
-import java.io.File
+import java.io.{File, FileReader}
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.log.LogLevelScanner.ScannerState
 import wvlet.log.io.{IOUtil, Resource}
-
+import wvlet.log.io.IOUtil._
 import scala.concurrent.duration.Duration
 
 object LogLevelScanner {
   private val logger = Logger("wvlet.log.LogLevelScanner")
+
+  /**
+    * Set log levels using a given Properties file
+    *
+    * @param file Properties file
+    */
+  def setLogLevels(file: File) {
+    val logLevels = new Properties()
+    withResource(new FileReader(file)) { in =>
+      logLevels.load(in)
+    }
+    Logger.setLogLevels(logLevels)
+  }
+
+  val DEFAULT_LOGLEVEL_FILE_CANDIDATES = {
+    Seq("log-test.properties", "log.properties")
+  }
+
+  /**
+    * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
+    */
+  def scanLogLevels {
+    scanLogLevels(DEFAULT_LOGLEVEL_FILE_CANDIDATES)
+  }
+
+  /**
+    * Scan the specified log level file
+    *
+    * @param loglevelFileCandidates
+    */
+  def scanLogLevels(loglevelFileCandidates: Seq[String]) {
+    LogLevelScanner.scan(loglevelFileCandidates, None)
+  }
+
+  /**
+    * Run the default LogLevelScanner every 1 minute
+    */
+  def scheduleLogLevelScan {
+    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES)))
+  }
+
+  private[log] lazy val logLevelScanner: LogLevelScanner = new LogLevelScanner
+
+  /**
+    * Schedule the log level scanner with the given configuration.
+    */
+  def scheduleLogLevelScan(config: LogLevelScannerConfig) {
+    logLevelScanner.setConfig(config)
+    logLevelScanner.start
+  }
+
+  /**
+    * Schedule the log level scanner with the given interval
+    */
+  def scheduleLogLevelScan(duration: Duration) {
+    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, duration))
+  }
+
+  /**
+    * Terminate the log-level scanner thread. The thread will remain in the system until
+    * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
+    * reduce the overhead of creating a new thread.
+    */
+  def stopScheduledLogLevelScan {
+    logLevelScanner.stop
+  }
+
 
   /**
     * @param logLevelFileCandidates
@@ -44,7 +111,7 @@ object LogLevelScanner {
             val f = new File(url.toURI)
             val lastModified = f.lastModified()
             if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
-              Logger.setLogLevels(f)
+              LogLevelScanner.setLogLevels(f)
               Some(System.currentTimeMillis())
             }
             else {

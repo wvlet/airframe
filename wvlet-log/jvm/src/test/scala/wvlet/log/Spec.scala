@@ -4,7 +4,7 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, WordSpec, _}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.io.Timer
 
-trait Spec extends WordSpec
+trait JVMSpec extends WordSpec
   with Matchers
   with BeforeAndAfter
   with BeforeAndAfterAll
@@ -15,12 +15,12 @@ trait Spec extends WordSpec
 
   override protected def beforeAll(): Unit = {
     // Run LogLevel scanner (log-test.properties or log.properties in classpath) every 1 minute
-    Logger.scheduleLogLevelScan
+    LogLevelScanner.scheduleLogLevelScan
     super.beforeAll()
   }
 
   override protected def afterAll(): Unit = {
-    Logger.stopScheduledLogLevelScan
+    LogLevelScanner.stopScheduledLogLevelScan
     super.afterAll()
   }
 }

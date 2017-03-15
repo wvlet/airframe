@@ -20,7 +20,7 @@ import wvlet.log.io.IOUtil._
 /**
   *
   */
-class LogRotationHandlerTest extends Spec {
+class LogRotationHandlerTest extends JVMSpec {
 
   "LogRotationHandler" should {
 

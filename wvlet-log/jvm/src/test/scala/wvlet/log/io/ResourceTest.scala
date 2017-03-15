@@ -13,7 +13,7 @@
  */
 package wvlet.log.io
 
-import wvlet.log.Spec
+import wvlet.log.JVMSpec
 
 //--------------------------------------
 //
@@ -22,7 +22,7 @@ import wvlet.log.Spec
 //
 //--------------------------------------
 
-class ResourceTest extends Spec {
+class ResourceTest extends JVMSpec {
   "Resource" should {
     "find files from the current class loader" in {
       debug("find files from package")
@@ -58,7 +58,7 @@ class ResourceTest extends Spec {
   "ResourceReader trait" should {
     "find files using the context class" in {
       new ResourceReader {
-        open("hello.txt") { f =>
+        open("hello.txt") {f =>
           val lines = IOUtil.readAsString(f).split("\n")
           lines.length shouldBe 1
           lines(0).toString shouldBe "Hello World!"

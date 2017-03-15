@@ -15,12 +15,13 @@ package wvlet.log.io
 
 import java.io.FileNotFoundException
 
-import wvlet.log.Spec
+import wvlet.log.JVMSpec
+
 
 /**
   *
   */
-class IOUtilTest extends Spec {
+class IOUtilTest extends JVMSpec {
 
   "IOUtil" should {
     "find unused port" in {

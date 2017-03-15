@@ -26,11 +26,11 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
 
    before {
     // Ensure stopping log level scanner
-    Logger.stopScheduledLogLevelScan
+    LogLevelScanner.stopScheduledLogLevelScan
   }
 
   after {
-    Logger.stopScheduledLogLevelScan
+    LogLevelScanner.stopScheduledLogLevelScan
   }
 
   def withScanner[U](config:LogLevelScannerConfig)(f: => U) : U = {
@@ -54,7 +54,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.setLogLevel(LogLevel.WARN)
       l.getLogLevel shouldBe LogLevel.WARN
       // Load log-test.properties
-      Logger.scanLogLevels
+      LogLevelScanner.scanLogLevels
 
       // Wait the first scan
       Thread.sleep(1000)
@@ -67,7 +67,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.getLogLevel shouldBe LogLevel.WARN
 
       // Load log-test.properties
-      withScanner(LogLevelScannerConfig(Logger.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
+      withScanner(LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
         l.getLogLevel shouldBe LogLevel.DEBUG
       }
     }

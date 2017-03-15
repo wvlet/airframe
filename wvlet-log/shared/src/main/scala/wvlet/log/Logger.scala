@@ -13,16 +13,13 @@
  */
 package wvlet.log
 
-import java.io.{File, FileReader}
-import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging._
 import java.util.{Properties, logging => jl}
 
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.io.IOUtil.withResource
 
 import scala.annotation.tailrec
-import scala.concurrent.duration.Duration
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
 
@@ -204,19 +201,6 @@ object Logger {
   }
 
   /**
-    * Set log levels using a given Properties file
-    *
-    * @param file Properties file
-    */
-  def setLogLevels(file: File) {
-    val logLevels = new Properties()
-    withResource(new FileReader(file)) { in =>
-      logLevels.load(in)
-    }
-    setLogLevels(logLevels)
-  }
-
-  /**
     * Set log levels using Properties (key: logger name, value: log level)
     *
     * @param logLevels
@@ -230,59 +214,6 @@ object Logger {
           Console.err.println(s"Unknown loglevel ${level} is specified for ${loggerName}")
       }
     }
-  }
-
-  val DEFAULT_LOGLEVEL_FILE_CANDIDATES = {
-    Seq("log-test.properties", "log.properties")
-  }
-
-  /**
-    * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
-    */
-  def scanLogLevels {
-    scanLogLevels(DEFAULT_LOGLEVEL_FILE_CANDIDATES)
-  }
-
-  /**
-    * Scan the specified log level file
-    *
-    * @param loglevelFileCandidates
-    */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]) {
-    LogLevelScanner.scan(loglevelFileCandidates, None)
-  }
-
-  /**
-    * Run the default LogLevelScanner every 1 minute
-    */
-  def scheduleLogLevelScan {
-    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES)))
-  }
-
-  private[log] lazy val logLevelScanner: LogLevelScanner = new LogLevelScanner
-
-  /**
-    * Schedule the log level scanner with the given configuration.
-    */
-  def scheduleLogLevelScan(config: LogLevelScannerConfig) {
-    logLevelScanner.setConfig(config)
-    logLevelScanner.start
-  }
-
-  /**
-    * Schedule the log level scanner with the given interval
-    */
-  def scheduleLogLevelScan(duration: Duration) {
-    scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, duration))
-  }
-
-  /**
-    * Terminate the log-level scanner thread. The thread will remain in the system until
-    * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
-    * reduce the overhead of creating a new thread.
-    */
-  def stopScheduledLogLevelScan {
-    logLevelScanner.stop
   }
 
   def getSuccinctLoggerName(cl: Class[_]): String = {

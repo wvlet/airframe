@@ -6,7 +6,7 @@ import wvlet.log.io.IOUtil._
 /**
   *
   */
-class AsyncHandlerTest extends Spec {
+class AsyncHandlerTest extends JVMSpec {
 
   "AsynHandler" should {
     "start background thread" in {
