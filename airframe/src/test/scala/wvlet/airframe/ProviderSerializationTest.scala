@@ -13,29 +13,35 @@
  */
 package wvlet.airframe
 
+
+import wvlet.airframe.ProviderModel._
 import wvlet.log.LogSupport
 
+case class D1(id: Int)
+case class D2(id: Int)
+case class D3(id: Int)
+case class D4(id: Int)
+case class D5(id: Int)
+case class App(d1: D1 = D1(0), d2: D2 = D2(0), d3: D3 = D3(0), d4: D4 = D4(0), d5: D5 = D5(0)) extends LogSupport {
+  debug(s"Created ${toString()}")
+}
+
+object ProviderModel {
+  val z1 = D1(0)
+  val z2 = D2(0)
+  val z3 = D3(0)
+  val z4 = D4(0)
+  val z5 = D5(0)
+}
+
 object ProviderSerializationExample extends Serializable {
-  case class D1(id: Int)
-  case class D2(id: Int)
-  case class D3(id: Int)
-  case class D4(id: Int)
-  case class D5(id: Int)
-  case class App(d1: D1 = D1(0), d2: D2 = D2(0), d3: D3 = D3(0), d4: D4 = D4(0), d5: D5 = D5(0)) extends LogSupport {
-    debug(s"Created ${toString()}")
-  }
+  import wvlet.airframe.ProviderModel._
 
   val d1 = D1(1)
   val d2 = D2(2)
   val d3 = D3(3)
   val d4 = D4(4)
   val d5 = D5(5)
-
-  val z1 = D1(0)
-  val z2 = D2(0)
-  val z3 = D3(0)
-  val z4 = D4(0)
-  val z5 = D5(0)
 
   val providerDesign =
     newDesign
@@ -53,12 +59,13 @@ object ProviderSerializationExample extends Serializable {
 }
 
 import ProviderSerializationExample._
+import ProviderModel._
 /**
   *
   */
 class ProviderSerializationTest extends AirframeSpec {
 
-  "Airframe" should {
+  "Design" should {
     "serialize design with provider" taggedAs ("ser") in {
       val testBinderDesign =
         providerDesign

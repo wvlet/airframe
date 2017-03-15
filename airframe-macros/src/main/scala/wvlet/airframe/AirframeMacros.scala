@@ -143,7 +143,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            val d1 = ${registorFactory(ev1)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, IndexedSeq(d1), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}))
         }
         """
     }
@@ -156,7 +156,7 @@ private[wvlet] object AirframeMacros {
            val d1 = ${registorFactory(ev1)}
            val d2 = ${registorFactory(ev2)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, IndexedSeq(d1, d2), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}))
         }
         """
     }
@@ -171,7 +171,7 @@ private[wvlet] object AirframeMacros {
            val d2 = ${registorFactory(ev2)}
            val d3 = ${registorFactory(ev3)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, IndexedSeq(d1, d2, d3), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}))
         }
         """
     }
@@ -188,7 +188,7 @@ private[wvlet] object AirframeMacros {
            val d3 = ${registorFactory(ev3)}
            val d4 = ${registorFactory(ev4)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, IndexedSeq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}))
         }
         """
     }
@@ -207,7 +207,7 @@ private[wvlet] object AirframeMacros {
            val d4 = ${registorFactory(ev4)}
            val d5 = ${registorFactory(ev5)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, IndexedSeq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}))
         }
         """
     }
@@ -234,7 +234,7 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     h.withFactoryRegistration(t,
       q"""${c.prefix}
-         .bind(wvlet.surface.Surface.of[$t])
+         .bind(${h.surfaceOf(t)})
          .asInstanceOf[wvlet.airframe.Binder[$t]]"""
     )
   }
@@ -242,8 +242,9 @@ private[wvlet] object AirframeMacros {
   def designRemoveImpl[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
+    val h = new BindHelper[c.type](c)
     q"""{
-         val target = wvlet.surface.Surface.of[$t]
+         val target = ${h.surfaceOf(t)}
          new wvlet.airframe.Design(${c.prefix}.binding.filterNot(_.from == target))
         }
      """
@@ -251,47 +252,46 @@ private[wvlet] object AirframeMacros {
 
   def binderToImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
-
     val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
-      val to = wvlet.surface.Surface.of[${t}]
+      val to = ${h.surfaceOf(t)}
       self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to))
     }"""
-    //println(s"binder:\n${show(core)}")
-    new BindHelper[c.type](c).withFactoryRegistration(t, core)
+    h.withFactoryRegistration(t, core)
   }
 
   def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
-
     val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
-      val to = wvlet.surface.Surface.of[$t]
+      val to = ${h.surfaceOf(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
     }"""
-    new BindHelper[c.type](c).withFactoryRegistration(t, core)
+    h.withFactoryRegistration(t, core)
   }
 
   def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
     import c.universe._
-
     val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
-      val to = wvlet.surface.Surface.of[$t]
+      val to = ${h.surfaceOf(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: $${to}")
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
     }"""
-    new BindHelper[c.type](c).withFactoryRegistration(t, core)
+    h.withFactoryRegistration(t, core)
   }
 
   def bindToProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
