@@ -1,15 +1,17 @@
 import ReleaseTransformations._
 
-scalaVersion := "2.12.1"
+val SCALA_2_12 = "2.12.1"
+val SCALA_2_11 = "2.11.8"
+scalaVersion in ThisBuild := SCALA_2_12
 
 val buildSettings = Seq[Setting[_]](
-  scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.12.1", "2.11.8"),
+  scalaVersion := SCALA_2_12,
+  crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
-  concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
+  //concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
   incOptions := incOptions.value
                 .withNameHashing(true)
                 // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
@@ -76,7 +78,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
-//    "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
+    "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
     "org.wvlet" %% "wvlet-log" % "1.1",
     // scalatest
     "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -86,7 +88,7 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
   // include the macro sources in the main source jar
   mappings in (Compile, packageSrc) ++= mappings.in(airframeMacros, Compile, packageSrc).value
-) dependsOn(airframeMacros % "provided", surface)
+) dependsOn(airframeMacros % "provided")
 
 lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(
   buildSettings,
@@ -96,5 +98,3 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
   )
 )
 
-
-lazy val surface = ProjectRef(file("../surface"), id = "surfaceJVM")

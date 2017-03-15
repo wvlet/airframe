@@ -41,8 +41,9 @@ class SessionBuilderTest extends AirframeSpec {
                     })
                     .create
 
-      session.start
-      counter shouldBe 1
+      session.start {
+        counter shouldBe 1
+      }
     }
   }
 }
