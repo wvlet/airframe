@@ -54,7 +54,7 @@ object LogLevel {
     }
   }
 
-  def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase())
+  def unapply(name:String) : Option[LogLevel] = index.get(name.toLowerCase)
 
   implicit object LogOrdering extends Ordering[LogLevel] {
     override def compare(x: LogLevel, y: LogLevel): Int = x.order - y.order

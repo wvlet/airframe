@@ -55,6 +55,11 @@ private[log] object LogMacros {
 
   }
 
+  def createNewLogger[A:c.WeakTypeTag](c: Context) : c.Tree = {
+    import c.universe._
+    q"wvlet.log.Logger(wvlet.log.LogUtil.getSuccinctLoggerName(this.getClass))"
+  }
+
   def errorLog(c: Context)(message: c.Tree): c.Tree = {
     import c.universe._
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.ERROR", message)

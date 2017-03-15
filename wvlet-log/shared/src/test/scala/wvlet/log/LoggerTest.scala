@@ -187,8 +187,10 @@ class LoggerTest extends Spec {
       LogLevel("unknown-loglevel") shouldBe LogLevel.INFO
 
       // Test unapply
-      LogLevel.unapply("info") shouldBe 'defined
-      LogLevel.unapply("unknown-loglevel") shouldNot be('defined)
+      val l1 = LogLevel.unapply("info")
+      l1.isDefined shouldBe true
+      val l2 = LogLevel.unapply("unknown-loglevel")
+      l2.isDefined shouldNot be (true)
     }
 
     "be able to sort LogLevels" in {

@@ -25,25 +25,27 @@ trait LogSupport extends LoggingMethods with LazyLogger
   */
 trait LocalLogSupport extends LoggingMethods with LocalLogger
 
+
+trait LoggerInstance
+
 /**
   * Trait for adding a local logger instance to your class
   */
-trait LazyLogger {
-  @transient protected[this] lazy val logger: Logger = Logger(LogUtil.getSuccinctLoggerName(this.getClass))
+trait LazyLogger extends LoggerInstance {
+  import LogMacros._
+  protected[this] lazy val logger: Logger = wvlet.log.Logger(wvlet.log.LogUtil.getSuccinctLoggerName(this.getClass))
 }
 
 /**
   * Trait for adding an initialized logger instance to your class
   */
-trait LocalLogger {
-  @transient protected[this] val logger: Logger = Logger(LogUtil.getSuccinctLoggerName(this.getClass))
+trait LocalLogger extends LoggerInstance {
+  protected[this] val logger: Logger = wvlet.log.Logger(wvlet.log.LogUtil.getSuccinctLoggerName(this.getClass))
 }
 
 
-trait LoggingMethods extends Serializable {
+trait LoggingMethods extends Serializable { self: LoggerInstance =>
   import LogMacros._
-
-  protected[this] def logger : Logger
 
   protected def error(message: Any): Unit = macro errorLog
   protected def error(message: Any, cause: Throwable): Unit = macro errorLogWithCause
