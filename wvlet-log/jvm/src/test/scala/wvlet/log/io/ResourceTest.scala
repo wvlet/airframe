@@ -13,7 +13,7 @@
  */
 package wvlet.log.io
 
-import wvlet.log.JVMSpec
+import wvlet.log.Spec
 
 //--------------------------------------
 //
@@ -22,7 +22,7 @@ import wvlet.log.JVMSpec
 //
 //--------------------------------------
 
-class ResourceTest extends JVMSpec {
+class ResourceTest extends Spec {
   "Resource" should {
     "find files from the current class loader" in {
       debug("find files from package")

@@ -216,4 +216,19 @@ object Logger {
     }
   }
 
+  def scheduleLogLevelScan : Unit = { LogEnv.scheduleLogLevelScan }
+  def stopScheduledLogLevelScan : Unit = { LogEnv.stopScheduledLogLevelScan }
+
+  /**
+    * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
+    */
+  def scanLogLevels : Unit = { LogEnv.scanLogLevels }
+
+  /**
+    * Scan the specified log level file
+    *
+    * @param loglevelFileCandidates
+    */
+  def scanLogLevels(loglevelFileCandidates: Seq[String]) : Unit = { LogEnv.scanLogLevels }
+
 }

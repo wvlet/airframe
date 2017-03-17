@@ -2,11 +2,12 @@ package wvlet.log
 
 import wvlet.log.LogFormatter.BareFormatter
 import wvlet.log.io.IOUtil._
+import wvlet.log.io.Timer
 
 /**
   *
   */
-class AsyncHandlerTest extends JVMSpec {
+class AsyncHandlerTest extends Spec with Timer {
 
   "AsynHandler" should {
     "start background thread" in {

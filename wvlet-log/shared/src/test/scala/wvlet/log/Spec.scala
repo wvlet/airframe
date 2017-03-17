@@ -13,4 +13,16 @@ trait Spec extends WordSpec
   with LogSupport {
 
   Logger.setDefaultFormatter(SourceCodeLogFormatter)
+
+  override protected def beforeAll(): Unit = {
+    // Run LogLevel scanner (log-test.properties or log.properties in classpath) every 1 minute
+    Logger.scheduleLogLevelScan
+    super.beforeAll()
+  }
+
+  override protected def afterAll(): Unit = {
+    Logger.stopScheduledLogLevelScan
+    super.afterAll()
+  }
+
 }

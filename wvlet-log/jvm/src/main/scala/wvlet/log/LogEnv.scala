@@ -33,5 +33,16 @@ object LogEnv extends LogEnvBase {
     }
     name
   }
-
+  override def scheduleLogLevelScan: Unit = {
+    LogLevelScanner.scheduleLogLevelScan
+  }
+  override def stopScheduledLogLevelScan: Unit = {
+    LogLevelScanner.stopScheduledLogLevelScan
+  }
+  override def scanLogLevels: Unit = {
+    LogLevelScanner.scanLogLevels
+  }
+  override def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
+    LogLevelScanner.scanLogLevels(loglevelFileCandidates)
+  }
 }
