@@ -27,7 +27,6 @@ import scala.reflect.macros.blackbox.Context
 private[log] object LogMacros {
 
   private class MacroHelper[C <: Context](val c: C) {
-
     import c.universe._
 
     def source = {
@@ -52,29 +51,6 @@ private[log] object LogMacros {
     def logMethodWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
       q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
-
-  }
-
-  def createNewLogger[A:c.WeakTypeTag](c: Context) : c.Tree = {
-    import c.universe._
-    //val tpe = implicitly[c.WeakTypeTag[A]].tpe
-    val tpe = c.prefix.actualType
-
-    val typeName = tpe.typeSymbol.fullName
-    val loggerName : String = {
-        val interfaces = tpe.typeSymbol.asType.alternatives
-        interfaces
-        .find {i =>
-          val name = i.fullName
-          name != "wvlet.log.LazyLogger" &&
-            name != "wvlet.log.LocalLogger" &&
-            !name.contains("$")
-        }
-        .map(_.fullName)
-        .getOrElse(typeName)
-      }
-    println(s"tpe: ${tpe}, loggerName: ${loggerName}")
-    q"wvlet.log.Logger(findLoggerName(this.getClass, ${loggerName}))"
   }
 
   def errorLog(c: Context)(message: c.Tree): c.Tree = {

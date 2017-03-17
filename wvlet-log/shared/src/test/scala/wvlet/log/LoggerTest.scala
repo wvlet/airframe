@@ -36,6 +36,7 @@ class MyAppClass extends LogSupport {
 }
 
 trait Sample
+
 object Sample extends LogSupport {
   self =>
   def loggerName: String = logger.getName
@@ -157,8 +158,8 @@ class LoggerTest extends Spec {
     }
 
     "use succinct name when used with anonymous trait" in {
-      val l = new Sample with LogSupport {
-        this.logger.getName shouldBe ("wvlet.log.Sample")
+      val l = new Sample with LogSupport { self =>
+        self.logger.getName shouldBe ("wvlet.log.Sample")
       }
     }
 

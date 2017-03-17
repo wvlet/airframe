@@ -2,12 +2,14 @@ import ReleaseTransformations._
 import sbt.Keys.mappings
 import sbt._
 
+val SCALA_2_12 = "2.12.1"
+val SCALA_2_11 = "2.11.8"
+
+scalaVersion in Global := SCALA_2_12
+
 val buildSettings = Seq[Setting[_]](
-  scalaVersion := "2.11.8",
-  crossScalaVersions := Seq(
-    "2.11.8",
-    "2.12.0"
-  ),
+  scalaVersion := SCALA_2_12,
+  crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
@@ -71,22 +73,7 @@ lazy val root = Project(id = "root", base = file("."))
     publishArtifact := false,
     publish := {},
     publishLocal := {}
-) aggregate(logJVM, logJS, logMacrosJVM, logMacrosJS)
-
-lazy val logMacros =
-  crossProject
-  .in(file("wvlet-log-macros"))
-  .settings(buildSettings)
-  .settings(
-    name := "wvlet-log-macros",
-    description := "Macros for wvlet-log",
-    libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
-    )
-  )
-
-lazy val logMacrosJVM = logMacros.jvm
-lazy val logMacrosJS = logMacros.js
+) aggregate(logJVM, logJS)
 
 lazy val log =
   crossProject
@@ -100,24 +87,15 @@ lazy val log =
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
     )
   )
-  .dependsOn(logMacros)
   .jvmSettings(
     libraryDependencies ++= Seq(
       "ch.qos.logback" % "logback-core" % "1.1.7"
-    ),
-    // include the macro classes and resources in the main jar
-    mappings in (Compile, packageBin) ++= mappings.in(logMacrosJVM, Compile, packageBin).value,
-    // include the macro sources in the main source jar
-    mappings in (Compile, packageSrc) ++= mappings.in(logMacrosJVM, Compile, packageSrc).value
+    )
   )
   .jsSettings(
     libraryDependencies ++= Seq(
       "org.scala-js" %%% "scalajs-java-logging" % "0.1.0"
-    ),
-    // include the macro classes and resources in the main jar
-    mappings in (Compile, packageBin) ++= mappings.in(logMacrosJS, Compile, packageBin).value,
-    // include the macro sources in the main source jar
-    mappings in (Compile, packageSrc) ++= mappings.in(logMacrosJS, Compile, packageSrc).value
+    )
   )
 
 lazy val logJVM = log.jvm

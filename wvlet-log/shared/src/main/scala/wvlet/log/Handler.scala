@@ -9,7 +9,7 @@ import java.util.{logging => jl}
   */
 class ConsoleLogHandler(formatter: LogFormatter) extends jl.Handler {
   override def publish(record: jl.LogRecord): Unit = {
-    System.err.println(formatter.format(record))
+    LogEnv.defaultConsoleOutput.println(formatter.format(record))
   }
   override def flush(): Unit = System.err.flush()
   override def close(): Unit = {}
