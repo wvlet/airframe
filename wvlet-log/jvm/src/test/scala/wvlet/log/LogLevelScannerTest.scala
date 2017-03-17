@@ -41,7 +41,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       scanner.start
       // Wait the first scan
       while(LogLevelScanner.scanCount.get == lastScanCount) {
-        Thread.sleep(100)
+        Thread.sleep(1000)
       }
       f
     }
@@ -61,7 +61,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       LogLevelScanner.scanLogLevels
       // Wait the first scan
       while(LogLevelScanner.scanCount.get == lastScanCount) {
-        Thread.sleep(100)
+        Thread.sleep(1000)
       }
       l.getLogLevel shouldBe LogLevel.DEBUG
     }

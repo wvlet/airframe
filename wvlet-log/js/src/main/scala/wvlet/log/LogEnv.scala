@@ -28,9 +28,7 @@ private[log] object LogEnv extends LogEnvBase {
   override def stopScheduledLogLevelScan: Unit = {
     // no-op
   }
-  /**
-    * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
-    */
+
   override def scanLogLevels: Unit = {
     // no-op
   }
