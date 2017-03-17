@@ -6,6 +6,8 @@ import java.io.PrintStream
   *
   */
 object LogEnv extends LogEnvBase{
+  override def isScalaJS: Boolean = true
+
   override def defaultConsoleOutput: PrintStream = Console.out
 
   override def getLoggerName(cl: Class[_]): String = {
@@ -19,5 +21,4 @@ object LogEnv extends LogEnvBase{
     }
     name
   }
-
 }

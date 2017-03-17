@@ -158,8 +158,14 @@ class LoggerTest extends Spec {
     }
 
     "use succinct name when used with anonymous trait" in {
-      val l = new Sample with LogSupport { self =>
-        self.logger.getName shouldBe ("wvlet.log.Sample")
+      if(LogEnv.isScalaJS) {
+        pending
+      }
+      else {
+        val l = new Sample with LogSupport {
+          self =>
+          self.logger.getName shouldBe ("wvlet.log.Sample")
+        }
       }
     }
 

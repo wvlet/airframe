@@ -5,6 +5,8 @@ import java.io.PrintStream
   *
   */
 object LogEnv extends LogEnvBase {
+  override def isScalaJS: Boolean = false
+
   override def defaultConsoleOutput: PrintStream = Console.err
   /**
     *

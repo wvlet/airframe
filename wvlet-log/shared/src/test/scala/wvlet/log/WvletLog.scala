@@ -21,14 +21,14 @@ import wvlet.log.LogFormatter._
 class WvletLog extends Spec with LogSupport {
 
   def log(formatter:LogFormatter) {
-    Console.err.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$","")}]:")
+    LogEnv.defaultConsoleOutput.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$","")}]:")
     logger.setFormatter(formatter)
     logger.info("info log")
     logger.debug("debug log")
     logger.trace("trace log")
     logger.warn("warn log")
     logger.error("error log")
-    Console.err.println
+    LogEnv.defaultConsoleOutput.println
   }
 
 
@@ -58,7 +58,7 @@ class WvletLog extends Spec with LogSupport {
       val name = Thread.currentThread().getName
       Thread.currentThread().setName("thread-1")
       try {
-        Console.err.println
+        LogEnv.defaultConsoleOutput.println
         log(SourceCodeLogFormatter)
         log(SimpleLogFormatter)
         log(AppLogFormatter)
