@@ -4,7 +4,7 @@ import java.io.PrintStream
 /**
   *
   */
-object LogEnv extends LogEnvBase {
+private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 

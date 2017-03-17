@@ -5,7 +5,7 @@ import java.io.PrintStream
 /**
   *
   */
-trait LogEnvBase {
+private[log] trait LogEnvBase {
   def isScalaJS : Boolean
   def defaultLogLevel : LogLevel
 

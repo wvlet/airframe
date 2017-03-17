@@ -5,7 +5,7 @@ import java.io.PrintStream
 /**
   *
   */
-object LogEnv extends LogEnvBase with LogSupport {
+private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean = true
   override def defaultLogLevel: LogLevel = LogLevel.ALL
 
@@ -23,19 +23,19 @@ object LogEnv extends LogEnvBase with LogSupport {
     name
   }
   override def scheduleLogLevelScan: Unit = {
-    warn(s"scheduleLogLevelScan is not supported in Scala.js")
+    // no-op
   }
   override def stopScheduledLogLevelScan: Unit = {
-    warn(s"scheduleLogLevelScan is not supported in Scala.js")
+    // no-op
   }
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
     */
   override def scanLogLevels: Unit = {
-    warn(s"scheduleLogLevelScan is not supported in Scala.js")
+    // no-op
   }
 
   override def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
-    warn(s"scheduleLogLevelScan is not supported in Scala.js")
+    // no-op
   }
 }
