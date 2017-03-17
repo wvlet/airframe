@@ -24,7 +24,7 @@ import scala.concurrent.duration.Duration
   */
 class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
 
-   before {
+  before {
     // Ensure stopping log level scanner
     LogLevelScanner.stopScheduledLogLevelScan
   }
@@ -37,9 +37,12 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
     val scanner = new LogLevelScanner
     try {
       scanner.setConfig(config)
+      val lastScanCount = LogLevelScanner.scanCount.get
       scanner.start
       // Wait the first scan
-      Thread.sleep(1000)
+      while(LogLevelScanner.scanCount.get == lastScanCount) {
+        Thread.sleep(100)
+      }
       f
     }
     finally {
@@ -54,10 +57,12 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.setLogLevel(LogLevel.WARN)
       l.getLogLevel shouldBe LogLevel.WARN
       // Load log-test.properties
+      val lastScanCount = LogLevelScanner.scanCount.get()
       LogLevelScanner.scanLogLevels
-
       // Wait the first scan
-      Thread.sleep(1000)
+      while(LogLevelScanner.scanCount.get == lastScanCount) {
+        Thread.sleep(100)
+      }
       l.getLogLevel shouldBe LogLevel.DEBUG
     }
 
