@@ -46,6 +46,8 @@ object Sample extends LogSupport {
   */
 class LoggerTest extends Spec {
 
+
+
   override def beforeAll {
     Logger.setDefaultLogLevel(LogLevel.TRACE)
   }
@@ -63,8 +65,9 @@ class LoggerTest extends Spec {
 
     "have access to root logger" in {
       val current = Logger.getDefaultLogLevel
+      println(s"current log level: ${current}")
       Logger.resetDefaultLogLevel
-      Logger.rootLogger.getLogLevel shouldBe LogLevel.INFO
+      Logger.rootLogger.getLogLevel shouldBe LogEnv.defaultLogLevel
       Logger.setDefaultLogLevel(current)
     }
 

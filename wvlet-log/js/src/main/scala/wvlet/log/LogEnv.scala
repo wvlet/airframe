@@ -7,6 +7,7 @@ import java.io.PrintStream
   */
 object LogEnv extends LogEnvBase{
   override def isScalaJS: Boolean = true
+  override def defaultLogLevel: LogLevel = LogLevel.ALL
 
   override def defaultConsoleOutput: PrintStream = Console.out
 
