@@ -27,7 +27,7 @@ class WvletLog extends Spec with LogSupport {
     logger.debug("debug log")
     logger.trace("trace log")
     logger.warn("warn log")
-    logger.error("error log")
+    logger.error("error log", new Throwable("exception test"))
     LogEnv.defaultConsoleOutput.println
   }
 
