@@ -40,7 +40,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       val lastScanCount = LogLevelScanner.scanCount.get
       scanner.start
       // Wait the first scan
-      while(LogLevelScanner.scanCount.get == lastScanCount) {
+      while(LogLevelScanner.scanCount.get <= lastScanCount + 1) {
         Thread.sleep(1000)
       }
       f
@@ -60,7 +60,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       val lastScanCount = LogLevelScanner.scanCount.get()
       LogLevelScanner.scanLogLevels
       // Wait the first scan
-      while(LogLevelScanner.scanCount.get == lastScanCount) {
+      while(LogLevelScanner.scanCount.get <= lastScanCount) {
         Thread.sleep(1000)
       }
       l.getLogLevel shouldBe LogLevel.DEBUG
