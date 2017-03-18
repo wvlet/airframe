@@ -27,8 +27,6 @@ import scala.concurrent.duration.Duration
 object LogLevelScanner {
   private val logger = Logger("wvlet.log.LogLevelScanner")
 
-  private[log] val scanCount = new AtomicLong(0)
-
   /**
     * Set log levels using a given Properties file
     *
@@ -95,7 +93,6 @@ object LogLevelScanner {
     logLevelScanner.stop
   }
 
-
   /**
     * @param logLevelFileCandidates
     * @param lastScannedMillis
@@ -107,38 +104,32 @@ object LogLevelScanner {
                        .toStream
                        .flatMap(f => Resource.find(f))
                        .headOption
-
-      try {
-        logFileURL.map {url =>
-          url.getProtocol match {
-            case "file" =>
-              val f = new File(url.toURI)
-              val lastModified = f.lastModified()
-              if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
-                LogLevelScanner.setLogLevels(f)
-                Some(System.currentTimeMillis())
-              }
-              else {
-                lastScannedMillis
-              }
-            case other if lastScannedMillis.isEmpty =>
-              // non file resources found in the class path is stable, so we only need to read it once
-              IOUtil.withResource(url.openStream()) {in =>
-                val p = new Properties
-                p.load(in)
-                Logger.setLogLevels(p)
-                Some(System.currentTimeMillis())
-              }
-            case _ =>
-              None
-          }
-        }
-        .getOrElse {
-          lastScannedMillis
+      logFileURL.map {url =>
+        url.getProtocol match {
+          case "file" =>
+            val f = new File(url.toURI)
+            val lastModified = f.lastModified()
+            if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
+              LogLevelScanner.setLogLevels(f)
+              Some(System.currentTimeMillis())
+            }
+            else {
+              lastScannedMillis
+            }
+          case other if lastScannedMillis.isEmpty =>
+            // non file resources found in the class path is stable, so we only need to read it once
+            IOUtil.withResource(url.openStream()) {in =>
+              val p = new Properties
+              p.load(in)
+              Logger.setLogLevels(p)
+              Some(System.currentTimeMillis())
+            }
+          case _ =>
+            None
         }
       }
-      finally {
-        scanCount.incrementAndGet()
+      .getOrElse {
+        lastScannedMillis
       }
     }
     catch {
@@ -165,6 +156,7 @@ private[log] class LogLevelScanner extends Guard {
   scanner =>
   private val config: AtomicReference[LogLevelScannerConfig] = new AtomicReference(LogLevelScannerConfig(Seq.empty))
   private val configChanged                                  = newCondition
+  private[log] val scanCount = new AtomicLong(0)
 
   def getConfig: LogLevelScannerConfig = config.get()
   def setConfig(config: LogLevelScannerConfig) {
@@ -208,10 +200,10 @@ private[log] class LogLevelScanner extends Guard {
       val scanIntervalMillis = getConfig.scanInterval.toMillis
       if (lastScheduledMillis.isEmpty || currentTimeMillis - lastScheduledMillis.get > scanIntervalMillis) {
         val updatedLastScannedMillis = scan(getConfig.logLevelFileCandidates, lastScannedMillis)
+        scanCount.incrementAndGet()
         guard {
           lastScannedMillis = updatedLastScannedMillis
         }
-
         lastScheduledMillis = Some(currentTimeMillis)
       }
       // wait until next scheduled time
