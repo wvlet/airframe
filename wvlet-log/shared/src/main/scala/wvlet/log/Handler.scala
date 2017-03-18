@@ -1,5 +1,6 @@
 package wvlet.log
 
+import java.io.{PrintStream, PrintWriter}
 import java.util.{logging => jl}
 
 /**
@@ -8,8 +9,10 @@ import java.util.{logging => jl}
   * @param formatter
   */
 class ConsoleLogHandler(formatter: LogFormatter) extends jl.Handler {
+  private lazy val out : PrintStream = LogEnv.defaultConsoleOutput
+
   override def publish(record: jl.LogRecord): Unit = {
-    LogEnv.defaultConsoleOutput.println(formatter.format(record))
+    out.println(formatter.format(record))
   }
   override def flush(): Unit = System.err.flush()
   override def close(): Unit = {}

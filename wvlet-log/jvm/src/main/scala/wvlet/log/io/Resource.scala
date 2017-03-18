@@ -121,7 +121,7 @@ object Resource {
     * @return
     */
   def find(absoluteResourcePath: String): Option[URL] =
-  find("", if (absoluteResourcePath.startsWith("/")) absoluteResourcePath.substring(1) else absoluteResourcePath)
+    find("", if (absoluteResourcePath.startsWith("/")) absoluteResourcePath.substring(1) else absoluteResourcePath)
 
   /**
     * Finds the java.net.URL of the resource
