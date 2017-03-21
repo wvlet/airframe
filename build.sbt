@@ -50,6 +50,7 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("snapshots")
   ),
   // Release settings
+  releaseCrossBuild := true,
   releaseTagName := { (version in ThisBuild).value },
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
