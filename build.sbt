@@ -1,20 +1,26 @@
 import ReleaseTransformations._
+import sbt.Keys.mappings
 import sbt._
 
+val SCALA_2_12 = "2.12.1"
+val SCALA_2_11 = "2.11.8"
+
+scalaVersion in Global := SCALA_2_12
+
 val buildSettings = Seq[Setting[_]](
-  scalaVersion := "2.11.8",
-  crossScalaVersions := Seq(
-    "2.11.8",
-    "2.12.0"
-  ),
+  scalaVersion := SCALA_2_12,
+  crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
   concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
   scalacOptions ++= Seq("-feature", "-deprecation"),
-  incOptions := incOptions.value.withNameHashing(true),
   logBuffered in Test := false,
+  incOptions := incOptions.value
+                .withNameHashing(true)
+                // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
+                .withLogRecompileOnMacro(false),
   updateOptions := updateOptions.value.withCachedResolution(true),
   sonatypeProfileName := "org.wvlet",
   pomExtra := {
@@ -61,13 +67,36 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
-lazy val wvletLog =
-  Project(id = "wvlet-log", base = file(".")).settings(
+lazy val root = Project(id = "root", base = file("."))
+  .settings(
     buildSettings,
-    description := "Add fancy logging to your Scala",
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {}
+) aggregate(logJVM, logJS)
+
+lazy val log =
+  crossProject
+  .in(file("wvlet-log"))
+  .settings(buildSettings)
+  .settings(
+    name := "wvlet-log",
+    description := "Fancy logger for Scala",    
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-      "ch.qos.logback" % "logback-core" % "1.1.7",
-      "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
     )
   )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "ch.qos.logback" % "logback-core" % "1.1.7"
+    )
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.xerial.thirdparty.org_scala-js" %%% "scalajs-java-logging" % "0.1.1-pre1"
+    )
+  )
+
+lazy val logJVM = log.jvm
+lazy val logJS = log.js

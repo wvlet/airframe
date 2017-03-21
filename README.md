@@ -61,6 +61,8 @@ class YourApp {
 
 ### Configuring log levels
 
+(This feature is not available in Scala.js)
+
 If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
 
 ```scala
