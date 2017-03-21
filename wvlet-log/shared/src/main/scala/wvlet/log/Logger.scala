@@ -196,6 +196,10 @@ object Logger {
     rootLogger.resetHandler(new ConsoleLogHandler(formatter))
   }
 
+  def setDefaultHandler(handler: jl.Handler) {
+    rootLogger.resetHandler(handler)
+  }
+
   def resetDefaultLogLevel {
     rootLogger.resetLogLevel
   }
