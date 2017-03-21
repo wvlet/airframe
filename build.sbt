@@ -94,7 +94,7 @@ lazy val log =
   )
   .jsSettings(
     libraryDependencies ++= Seq(
-      "org.xerial.thirdparty.org_scala-js" %%% "scalajs-java-logging" % "0.1.1-SNAPSHOT"
+      "org.xerial.thirdparty.org_scala-js" %%% "scalajs-java-logging" % "0.1.1-pre1"
     )
   )
 
