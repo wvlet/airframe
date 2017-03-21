@@ -1,4 +1,4 @@
-# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI](https://circleci.com/gh/wvlet/log.svg?style=svg)](https://circleci.com/gh/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
+# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI](https://circleci.com/gh/wvlet/log.svg?style=svg)](https://circleci.com/gh/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/log/wvlet-log/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/log) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
