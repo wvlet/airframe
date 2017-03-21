@@ -24,7 +24,7 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
   - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
 - **Production ready**
   - wvlet-log has built-in handlers for log file rotations, asynchronous logging.
-  - Scala 2.11, 2.12 support
+  - Scala 2.11, 2.12, Scala.js support
  
 ## Usage
 
@@ -32,6 +32,9 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 
 ```scala
 libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
+
+// For Scala.js (Since 1.2)
+libraryDependencies += "org.wvlet" %%% "wvlet-log" % "(version)"
 ```
 
 ### Using LogSupport trait
@@ -68,7 +71,7 @@ If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-lev
 ```scala
 import wvlet.log.Logger
 
-## Scan log files 
+## Scan log files (not available for Scala.js)
 Logger.scheduleLogLevelScan
 ```
 
