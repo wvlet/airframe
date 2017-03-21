@@ -1,10 +1,9 @@
-# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI](https://circleci.com/gh/wvlet/log.svg?style=svg)](https://circleci.com/gh/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link]
+# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![CircleCI](https://circleci.com/gh/wvlet/log.svg?style=svg)](https://circleci.com/gh/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/log/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/log?branch=master
-[![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
 
 wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in wvlet-log:
 
