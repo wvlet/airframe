@@ -40,7 +40,11 @@ class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandl
 }
 
 object JSConsoleLogHandler {
+
   val DEFAULT_COLOR_PALETTE : JSLogColorPalette = new JSLogColorPalette()
+
+  def apply() : JSConsoleLogHandler = new JSConsoleLogHandler(DEFAULT_COLOR_PALETTE)
+  def apply(colorPalette:JSLogColorPalette) = new JSConsoleLogHandler(colorPalette)
 
   case class JSLogColorPalette(
     error:String = "#D32F2F",

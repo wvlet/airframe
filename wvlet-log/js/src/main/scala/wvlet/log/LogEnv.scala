@@ -5,6 +5,7 @@ import java.io.PrintStream
 /**
   *
   */
+
 private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean = true
   override def defaultLogLevel: LogLevel = LogLevel.INFO
@@ -16,7 +17,7 @@ private[log] object LogEnv extends LogEnvBase {
 
     // In Scala.js we cannot use cl.getInterfaces to find the actual type
     val pos = name.indexOf("$")
-    if(pos > 0) {
+    if (pos > 0) {
       // Remove trailing $xxx
       name = name.substring(0, pos)
     }

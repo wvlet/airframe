@@ -7,7 +7,7 @@ class JSConsoleLogHandlerTest extends Spec {
 
   "JSConsoleLogHandler" should {
 
-    Logger.setDefaultHandler(new JSConsoleLogHandler)
+    Logger.setDefaultHandler(JSConsoleLogHandler())
 
     error("error message")
     warn("warn message")
