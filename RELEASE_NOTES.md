@@ -3,7 +3,7 @@ Release Notes
 
 ## 1.2.1 
 - This is an upgrade only for Scala.js
-- Add JSConsoleLogHandler for coluful loggin in browser console.
+- Add JSConsoleLogHandler for coluful logging in browser console.
 - Add wvlet.log.setDefaultLogLevel(level) for setting a log level in js console.
 - Using a custom build of scala-js-java-logging for fixing a problem: https://github.com/scala-js/scala-js-java-logging/pull/12
 
