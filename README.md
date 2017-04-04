@@ -33,7 +33,7 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 ```scala
 libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
 
-// For Scala.js (Since 1.2)
+// For Scala.js (Since wvlet-log 1.2)
 libraryDependencies += "org.wvlet" %%% "wvlet-log" % "(version)"
 ```
 
@@ -170,6 +170,29 @@ object CustomLogFormatter extends LogFormatter {
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
 See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
+
+### Using wvlet-log in Scala.js
+
+
+```scala
+import wvlet.log._
+
+Logger.setDefaultHandler(JSConsoleLogHandler())
+
+class YourAppClass extends LogSupport {
+
+  info("hello")
+}
+```
+
+The log message will be showin in your browser's developer console.
+
+To configure the log level, use `wvlet.log.setDefaultLogLevel` or `wvlet.log.setLogLevel`: 
+```javascript
+> wvlet.log.setDefaultLogLevel("debug")
+
+> wvlet.log.setLogLevel("your.logger.name", "trace")
+```
 
 ### Using with slf4j
 
