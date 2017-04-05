@@ -1,6 +1,9 @@
 Release Notes
 ====
 
+## 1.2.2
+- wvlet.log.Logger is now serializable. You can also serialize classes extending LogSupport.
+
 ## 1.2.1 
 - This is an upgrade only for Scala.js
 - Add JSConsoleLogHandler for coluful logging in browser console.
