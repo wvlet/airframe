@@ -80,9 +80,9 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   libraryDependencies ++= Seq(
     "org.wvlet" %% "surface" % "0.1-SNAPSHOT",
     "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.wvlet" %% "wvlet-log" % "1.2.1",
+    "org.wvlet" %% "wvlet-log" % "1.2.2",
     // scalatest
-    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
   ),
   // include the macro classes and resources in the main jar
