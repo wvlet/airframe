@@ -380,7 +380,7 @@ class AirframeTest extends AirframeSpec {
       val session = design
                     .session
                     .addEventHandler(new LifeCycleEventHandler {
-                      override def onInject(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+                      override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
                         counter.incrementAndGet()
                       }
                     })

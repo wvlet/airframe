@@ -34,8 +34,8 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   private val state = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
-  private[airframe] def onInject(t: Surface, injectee: AnyRef) {
-    eventHandler.onInject(this, t, injectee)
+  private[airframe] def onInit(t: Surface, injectee: AnyRef) {
+    eventHandler.onInit(this, t, injectee)
   }
 
   private var session: Session = _
@@ -108,7 +108,6 @@ object LifeCycleManager {
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
-//    LifeCycleAnnotationFinder andThen
     FILOLifeCycleHookExecutor andThen
       AddShutdownHook
 
@@ -133,28 +132,6 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
     logger.info(s"[${lifeCycleManager.sessionName}] Life cycle has stopped.")
   }
 }
-
-//object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
-//  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef) {
-//    val schema = ObjectSchema(injectee.getClass)
-//
-//    // Find @PostConstruct annotation
-//    schema
-//    .allMethods
-//    .filter {_.findAnnotationOf[PostConstruct].isDefined}
-//    .map { x =>
-//      lifeCycleManager.addInitHook(ObjectMethodCall(t, injectee, x))
-//    }
-//
-//    // Find @PreDestroy annotation
-//    schema
-//    .allMethods
-//    .filter {_.findAnnotationOf[PreDestroy].isDefined}
-//    .map { x =>
-//      lifeCycleManager.addShutdownHook(ObjectMethodCall(t, injectee, x))
-//    }
-//  }
-//}
 
 /**
   * First In, Last Out (FILO) hook executor.

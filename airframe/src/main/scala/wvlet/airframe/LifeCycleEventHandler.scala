@@ -19,7 +19,7 @@ import wvlet.surface.Surface
   *
   */
 trait LifeCycleEventHandler {
-  def onInject(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef) {}
+  def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef) {}
   def beforeStart(lifeCycleManager: LifeCycleManager) {}
   def afterStart(lifeCycleManager: LifeCycleManager) {}
   def beforeShutdown(lifeCycleManager: LifeCycleManager) {}
@@ -33,9 +33,9 @@ trait LifeCycleEventHandler {
 
 class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEventHandler)
   extends LifeCycleEventHandler {
-  override def onInject(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-    prev.onInject(lifeCycleManager, t, injectee)
-    next.onInject(lifeCycleManager, t, injectee)
+  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+    prev.onInit(lifeCycleManager, t, injectee)
+    next.onInit(lifeCycleManager, t, injectee)
   }
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     prev.beforeStart(lifeCycleManager)
@@ -57,9 +57,9 @@ class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEve
 
 class LifeCycleEventHandlerPair(parent: LifeCycleEventHandler, child: LifeCycleEventHandler)
   extends LifeCycleEventHandler {
-  override def onInject(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-    parent.onInject(lifeCycleManager, t, injectee)
-    child.onInject(lifeCycleManager, t, injectee)
+  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+    parent.onInit(lifeCycleManager, t, injectee)
+    child.onInit(lifeCycleManager, t, injectee)
   }
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     parent.beforeStart(lifeCycleManager)
