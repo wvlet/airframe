@@ -28,9 +28,23 @@ import scala.reflect.ClassTag
   *
   * @param wrapped
   */
-class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
+class Logger(
+  private val name:String,
+  /**
+    * Since java.util.logging.Logger is non-serializable, we need to find the logger instance after deserialization.
+    * If wrapped is null, _log method will find or create the logger instance.
+    */
+  @transient private[log] var wrapped: jl.Logger)
+  extends Serializable {
 
   import LogMacros._
+
+  private def _log = {
+    if(wrapped == null) {
+      wrapped = jl.Logger.getLogger(name)
+    }
+    wrapped
+  }
 
   def error(message: Any): Unit = macro errorLogMethod
   def error(message: Any, cause: Throwable): Unit = macro errorLogMethodWithCause
@@ -47,7 +61,7 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
   def trace(message: Any): Unit = macro traceLogMethod
   def trace(message: Any, cause: Throwable): Unit = macro traceLogMethodWithCause
 
-  def getName = wrapped.getName
+  def getName = name
 
   def getLogLevel: LogLevel = {
     @tailrec
@@ -65,11 +79,11 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
         }
       }
     }
-    getLogLevelOf(wrapped)
+    getLogLevelOf(_log)
   }
 
   def setLogLevel(l: LogLevel) {
-    wrapped.setLevel(l.jlLevel)
+    _log.setLevel(l.jlLevel)
   }
 
   def setFormatter(formatter: LogFormatter) {
@@ -78,16 +92,16 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
 
   def resetHandler(h: Handler) {
     clearHandlers
-    wrapped.addHandler(h)
+    _log.addHandler(h)
     setUseParentHandlers(false)
   }
 
   def addHandler(h: Handler) {
-    wrapped.addHandler(h)
+    _log.addHandler(h)
   }
 
   def setUseParentHandlers(use: Boolean) {
-    wrapped.setUseParentHandlers(use)
+    _log.setUseParentHandlers(use)
   }
 
   def clear {
@@ -96,22 +110,22 @@ class Logger(private[log] val wrapped: jl.Logger) extends Serializable {
   }
 
   def clearHandlers {
-    for (lst <- Option(wrapped.getHandlers); h <- lst) {
-      wrapped.removeHandler(h)
+    for (lst <- Option(_log.getHandlers); h <- lst) {
+      _log.removeHandler(h)
     }
   }
 
   def resetLogLevel {
-    wrapped.setLevel(null)
+    _log.setLevel(null)
   }
 
   def isEnabled(level: LogLevel): Boolean = {
-    wrapped.isLoggable(level.jlLevel)
+    _log.isLoggable(level.jlLevel)
   }
 
   def log(record: LogRecord) {
-    record.setLoggerName(wrapped.getName)
-    wrapped.log(record)
+    record.setLoggerName(name)
+    _log.log(record)
   }
 
   def log(level: LogLevel, source: LogSource, message: Any) {
@@ -183,7 +197,7 @@ object Logger {
   }
 
   def apply(loggerName: String): Logger = {
-    loggerCache.getOrElseUpdate(loggerName, new Logger(jl.Logger.getLogger(loggerName)))
+    loggerCache.getOrElseUpdate(loggerName, new Logger(loggerName, jl.Logger.getLogger(loggerName)))
   }
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
