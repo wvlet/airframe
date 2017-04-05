@@ -212,8 +212,8 @@ object ServiceMixinExample {
     val startCount = new AtomicInteger(0)
     var closeCount = new AtomicInteger(0)
 
-    def injection {
-      info("injected")
+    def init {
+      info("initialized")
       initCount.incrementAndGet()
     }
     def start {
@@ -229,13 +229,13 @@ object ServiceMixinExample {
 
   trait LifeCycleExample {
     val module = bind[MyModule]
-                 .onInjection(_.injection)
+                 .onInit(_.init)
                  .onShutdown(_.close)
   }
 
   trait BindLifeCycleExample {
     val module = bind[MyModule].withLifeCycle(
-      injection = _.injection,
+      init = _.init,
       start = _.start,
       shutdown = _.close
     )
@@ -243,7 +243,7 @@ object ServiceMixinExample {
 
   trait BindLifeCycleExample2 {
     val module = bind[MyModule]
-                 .onInjection(_.injection)
+                 .onInit(_.init)
                  .onStart(_.start)
                  .onShutdown(_.close)
   }

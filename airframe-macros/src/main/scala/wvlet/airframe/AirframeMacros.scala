@@ -404,17 +404,6 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addInjectionLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
-    import c.universe._
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val h = new BindHelper[c.type](c)
-    q"""{
-         val session = ${h.findSession}
-         new wvlet.airframe.LifeCycleBinder(${c.prefix}.dep, ${h.surfaceOf(t)}, session)(injection=${body})
-        }
-      """
-  }
-
   def addStartLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
