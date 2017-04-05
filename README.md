@@ -9,6 +9,10 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 
 <p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 
+[Scala.js](https://www.scala-js.org/) is also supported:
+
+<p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/scalajs-formatters.png" alt="screenshot" style="max-width:100%;"></p>
+
 ## Features
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.

@@ -8,3 +8,4 @@ atlassian-ide-plugin.xml
 target
 result
 log-test.properties
+.DS_Store
