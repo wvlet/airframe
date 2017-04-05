@@ -21,7 +21,7 @@ import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions
-import scala.reflect.runtime.{universe=>ru}
+
 /**
   *
   */
@@ -59,6 +59,7 @@ package object airframe {
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
+    def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
     def onInjection(body: A => Unit): A = macro addInjectionLifeCycle[A]
     def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
@@ -66,10 +67,14 @@ package object airframe {
 
   class LifeCycleBinder[A](dep: A, surface:Surface, session: Session) {
     def apply(
+      init: A => Unit = DO_NOTHING,
       injection: A => Unit = DO_NOTHING,
       start: A => Unit = DO_NOTHING,
       shutdown: A => Unit = DO_NOTHING): A = {
 
+      if (!(init eq DO_NOTHING)) {
+        session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init))
+      }
       if (!(injection eq DO_NOTHING)) {
         session.lifeCycleManager.addInjectHook(EventHookHolder(surface, dep, injection))
       }

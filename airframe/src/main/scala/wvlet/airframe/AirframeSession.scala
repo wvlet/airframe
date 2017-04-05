@@ -22,7 +22,6 @@ import wvlet.surface.Surface
 
 import scala.concurrent.duration
 import scala.concurrent.duration.Duration
-import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Try}
 
 /**

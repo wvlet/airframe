@@ -68,10 +68,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addInitHook(h: LifeCycleHook) {
     session.hasSingletonOf(h.surface)
-
     debug(s"Execute init hook: ${h}")
-
-
     h.execute
   }
 
