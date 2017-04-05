@@ -12,7 +12,7 @@ dependencies:
 
 test:
   override:
-    - ./sbt "+ test"
+    - ./sbt ++2.11.8 test
     - ./sbt coverage test coverageReport
   post:
     - ./sbt coverageAggregate coveralls
