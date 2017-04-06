@@ -156,10 +156,4 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 }
 
-object AddShutdownHook extends LifeCycleEventHandler {
-  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    sys.addShutdownHook {
-      lifeCycleManager.shutdown
-    }
-  }
-}
+
