@@ -253,37 +253,36 @@ trait CustomPrinterMixin extends FortunePrinterMixin {
 }
 ```
 
-## Tagged binding
+## Type alias binding
 
-Airframe can provide separate implementations to the same type object by using object tagging (@@):
+Airframe can provide separate implementations to the same type object by using type alias:
 ```scala
-import wvlet.obj.tag.@@
 case class Fruit(name: String)
 
-trait Apple
-trait Banana
+type Apple = Fruit
+type Banana = Fruit
 
 trait TaggedBinding {
-  val apple  = bind[Fruit @@ Apple]
-  val banana = bind[Fruit @@ Banana]
+  val apple  = bind[Apple]
+  val banana = bind[Banana]
 }
  ```
 
-Tagged binding is also useful to inject primitive type values:
+Alias binding is also useful to inject primitive type values:
 ```scala
-trait Env
+type Env = String
 
 trait MyService {
   // Coditional binding
-  lazy val threadManager = bind[String @@ Env] match {
+  lazy val threadManager = bind[Env] match {
      case "test" => bind[TestingThreadManager] // prepare a testing thread manager
      case "production" => bind[ThreadManager] // prepare a thread manager for production
   }
 }
 
 val coreDesign = newDesign
-val testingDesign = coreDesign.bind[String @@ Env].toInstance("test")
-val productionDesign = coreDesign.bind[String @@ Env].toInstance("production")
+val testingDesign = coreDesign.bind[Env].toInstance("test")
+val productionDesign = coreDesign.bind[Env].toInstance("production")
 ```
 
 ## Object Injection
@@ -295,15 +294,6 @@ val design = newDesign
   .bind[Printer].to[ConsolePrinter]  // Airframe will generate an instance of ConsolePrinter by resolving its dependencies
   .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding an actual instance
 ```
-
-You can also define bindings to the tagged objects:
-
-```scala
-val design = newDesign
-  .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-  .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-  .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
-````
 
 To bind a class to a singleton, use `toSingleton`:
 
