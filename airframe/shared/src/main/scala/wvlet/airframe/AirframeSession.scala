@@ -162,6 +162,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
           val obj = factory.newInstance(args)
           registerInjectee(surface, obj)
         case None =>
+          // TODO check anonymous class and interface in Surface
 //          if (!(surface.rawType.isAnonymousClass || surface.rawType.isInterface)) {
 //            // We cannot inject Session to a class which has no default constructor
 //            // No binding is found for the concrete class
