@@ -162,11 +162,11 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
           val obj = factory.newInstance(args)
           registerInjectee(surface, obj)
         case None =>
-          if (!(surface.rawType.isAnonymousClass || surface.rawType.isInterface)) {
-            // We cannot inject Session to a class which has no default constructor
-            // No binding is found for the concrete class
-            throw new MISSING_DEPENDENCY(stack)
-          }
+//          if (!(surface.rawType.isAnonymousClass || surface.rawType.isInterface)) {
+//            // We cannot inject Session to a class which has no default constructor
+//            // No binding is found for the concrete class
+//            throw new MISSING_DEPENDENCY(stack)
+//          }
           val obj = factoryCache.get(surface) match {
             case Some(factory) =>
               trace(s"Using pre-compiled factory for ${surface}")

@@ -32,7 +32,7 @@ object SerializationTest extends LogSupport {
           .bind[App].toProvider(provider1 _)
 }
 
-
+import DesignSerializationTest._
 
 class SerializationTest extends AirframeSpec {
 
@@ -40,7 +40,7 @@ class SerializationTest extends AirframeSpec {
     "serialize provider" in {
       import wvlet.airframe.SerializationTest._
       val b = d.serialize
-      val ds = Design.deserialize(b)
+      val ds = deserialize(b)
       ds shouldEqual d
 
       val s = ds.newSession
@@ -61,7 +61,7 @@ class SerializationTest extends AirframeSpec {
         .bind[App].toProvider(provider5 _)
 
       val b = d.serialize
-      val ds = Design.deserialize(b)
+      val ds = deserialize(b)
       ds shouldEqual d
     }
 

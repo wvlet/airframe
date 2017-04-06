@@ -35,13 +35,6 @@ object DesignTest {
   type ProductionMessage = Message
   type DevelopmentMessage = Message
   type ProductionString = String
-}
-
-/**
-  *
-  */
-class DesignTest extends AirframeSpec {
-  import DesignTest._
 
   val d0 = Design.blanc
   lazy val d1 =
@@ -54,6 +47,13 @@ class DesignTest extends AirframeSpec {
     .bind[Message].toSingletonOf[Hello]
     .bind[ProductionMessage].toInstance(Hello("production"))
     .bind[DevelopmentMessage].toInstance(Hello("development"))
+}
+
+/**
+  *
+  */
+class DesignTest extends AirframeSpec {
+  import DesignTest._
 
   "Design" should {
     "be immutable" in {
@@ -80,20 +80,6 @@ class DesignTest extends AirframeSpec {
 
       hasProductionMessage(d1) shouldBe true
       hasProductionMessage(dd) shouldBe true
-    }
-
-
-    "be serializable" taggedAs("ser") in {
-      val b = d1.serialize
-      val d1s = Design.deserialize(b)
-      d1s shouldBe (d1)
-    }
-
-    "serialize instance binding" taggedAs("ser1") in {
-      val d = Design.blanc.bind[Message].toInstance(Hello("world"))
-      val b = d.serialize
-      val ds = Design.deserialize(b)
-      ds shouldBe (d)
     }
 
     "bind providers" in {
