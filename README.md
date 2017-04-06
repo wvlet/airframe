@@ -142,11 +142,19 @@ trait Server {
 // When binding an object, you can define life cycle hooks to the injected object:
 trait MyServerService {
   val service = bind[Server].withLifeCycle(
-    init = { _.init },    // Called when the object is injected
+    init = { _.init },    // Called when the object is initialized (called only once for singleton)
     start = { _.start },  // Called when sesion.start is called
     shutdown = { _.stop } // Called when session.shutdown is called
   )
 }
+```
+
+You can also use onInit/onStart/onShutdown methods:
+```
+bind[X]
+  .onInit { x => ... }
+  .onStart { x => ... }
+  .onShutdown { x => ... }
 ```
 
 ## Debugging Airframe Binding and Injection
@@ -169,8 +177,6 @@ See [wvlet-log configuration](https://github.com/wvlet/log#configuring-log-level
 
 Then you will see the log messages that show the object bindings and injection activities:
 ```
-2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Wing@@Left,List(),wvlet.airframe.LazyF0@e9c510cf),true,true)  - (Design.scala:43)
-2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Wing@@Right,List(),wvlet.airframe.LazyF0@4678272f),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0@442b0f),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Metric,List(),wvlet.airframe.LazyF0@1595a8db),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ClassBinding(Engine,GasolineEngine)  - (Design.scala:43)
