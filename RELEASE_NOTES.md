@@ -1,5 +1,17 @@
 # Release Notes
 
+## 0.11
+ - Airframe is now refrection-free.
+   - Using a reflection free [Surface](https://github.com/wvlet/surface) instaed of [ObjectSchema](https://github.com/wvlet/object-schema)
+   - Cyclic dependencies now can be found at compile-time thanks to Surface
+ - Initial Scala.js support
+ - Split Travis build process for the matrix of Scala 2.12/2.11, ScalaJVM/JS
+ - Add shortcut for life cycle events: bind[X].onInit/onStart/onShutdown
+ - Deprecated tagged type binding. Instead you can use type alias bind[(type alias)].
+ - Deprecated @PreDestroy, @PostConstruct lifecycle binding because it complicates the order of life cycle hooks when mixed in
+ - Deprecated passing Session as a class parameter or method return value. 
+ - Simplified Scala macro codes
+
 ## 0.10
  - Session now implements AutoClosable
  - Add Design.withSession{ session => ... } to close Session at ease 
