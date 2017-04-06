@@ -60,7 +60,7 @@ The major advantages of Airframe include:
 ```
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 
-# For Scala.js (supported since airframe 0.11)
+# For Scala.js (supported since airframe 0.12)
 libraryDependencies += "org.wvlet" %%% "airframe" % "(version)"
 ```
 

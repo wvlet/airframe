@@ -1,6 +1,6 @@
 # Release Notes
 
-## 0.11
+## 0.12
  - Airframe is now refrection-free.
    - Using a reflection free [Surface](https://github.com/wvlet/surface) instaed of [ObjectSchema](https://github.com/wvlet/object-schema)
    - Cyclic dependencies now can be found at compile-time thanks to Surface
