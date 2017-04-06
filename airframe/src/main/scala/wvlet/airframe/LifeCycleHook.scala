@@ -27,11 +27,5 @@ case class EventHookHolder[A](surface: Surface, obj: A, hook: A => Any) extends 
     hook(obj)
   }
 }
-//case class ObjectMethodCall(tpe: Surface, obj: AnyRef, method: ObjectMethod) extends LifeCycleHook {
-//  override def toString : String = s"method call hook for [$tpe]: $obj, $method"
-//  def execute {
-//    method.invoke(obj)
-//  }
-//}
-//
+
 

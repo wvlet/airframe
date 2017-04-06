@@ -20,8 +20,6 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 import scala.language.experimental.macros
-import scala.reflect.runtime.{universe => ru}
-
 
 /**
   * Immutable airframe design
@@ -89,10 +87,6 @@ object Design {
     * Empty design.
     */
   val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
-
-  implicit class DesignAccess(design: Design) {
-    def addBinding(b:Binding) = design.addBinding(b)
-  }
 
   private[airframe] def deserialize(b: Array[Byte]) : Design = {
     val in = new ByteArrayInputStream(b)
