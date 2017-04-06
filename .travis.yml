@@ -11,10 +11,10 @@ jdk:
 
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.1" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; project airframeJS; test";
+      sbt ++$TRAVIS_SCALA_VERSION airframeJS/test;
       sbt ++$TRAVIS_SCALA_VERSION "; project airframeJVM; coverage; test; coverageReport";
       sbt coverageAggregate coveralls;
     else
-      sbt ++$TRAVIS_SCALA_VERSION "; project airframeJS; test";
-      sbt ++$TRAVIS_SCALA_VRRSION "; project airframeJVM; test";
+      sbt ++$TRAVIS_SCALA_VERSION airframeJS/test;
+      sbt ++$TRAVIS_SCALA_VRRSION airframeJVM/test;
     fi
