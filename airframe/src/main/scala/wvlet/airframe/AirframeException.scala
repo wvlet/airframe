@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import wvlet.obj.ObjectType
+import wvlet.surface.Surface
 
 
 trait AirframeException extends Exception { self =>
@@ -22,13 +22,13 @@ trait AirframeException extends Exception { self =>
 }
 
 object AirframeException {
-  case class MISSING_SESSION(cl:ObjectType) extends AirframeException {
+  case class MISSING_SESSION(cl:Class[_]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${cl}"
   }
-  case class CYCLIC_DEPENDENCY(deps: Set[ObjectType]) extends AirframeException {
+  case class CYCLIC_DEPENDENCY(deps: Set[Surface]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${deps.mkString(", ")}"
   }
-  case class MISSING_DEPENDENCY(stack:List[ObjectType]) extends AirframeException {
+  case class MISSING_DEPENDENCY(stack:List[Surface]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${stack.mkString(" <- ")}"
   }
 }

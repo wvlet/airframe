@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
 import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.surface.Surface
 
 trait NonAbstractTrait extends LogSupport {
   info("hello trait")
@@ -48,13 +49,15 @@ class ConcreteClass {
 class AirframeMacrosTest extends AirframeSpec {
   "AirframeMacro" should {
     "build trait at compile time" in {
+
       val session = newDesign.newSession
       session.build[NonAbstractTrait]
       session.build[App1]
     }
 
     "build abstract trait" in {
-      val session = newDesign.bind[AbstractTrait].to[ConcreteTrait]
+      val session = newDesign
+                    .bind[AbstractTrait].to[ConcreteTrait]
                     .newSession
 
       val t = session.build[AbstractTrait]

@@ -17,28 +17,28 @@ import wvlet.log.LogSupport
 
 object SerializationTest extends LogSupport {
 
-  case class A1(v: Int = 0)
-  case class App(a1: A1) extends LogSupport {
+  case class A1(v:Int = 0)
+  case class App(a1: A1) extends LogSupport
 
-  }
+  val a1 = A1(1)
 
   def provider1(a1: A1): App = {
     val app = App(a1)
     info(s"Created ${app} from ${a1}")
     app
   }
-
   val d = Design.blanc
           .bind[A1].toInstance(A1(1))
           .bind[App].toProvider(provider1 _)
 }
 
-import wvlet.airframe.SerializationTest._
+
 
 class SerializationTest extends AirframeSpec {
 
   "Airframe" should {
     "serialize provider" in {
+      import wvlet.airframe.SerializationTest._
       val b = d.serialize
       val ds = Design.deserialize(b)
       ds shouldEqual d
@@ -47,5 +47,23 @@ class SerializationTest extends AirframeSpec {
       s.build[A1] shouldBe A1(1)
       s.build[App] shouldBe App(A1(1))
     }
+
+    "serialize provider that involves toInstance of local var" in {
+      import ProviderSerializationExample._
+      import ProviderVal._
+
+      val d = newDesign
+        .bind[D1].toInstance(d1)
+        .bind[D2].toInstance(d2)
+        .bind[D3].toInstance(d3)
+        .bind[D4].toInstance(d4)
+        .bind[D5].toInstance(d5)
+        .bind[App].toProvider(provider5 _)
+
+      val b = d.serialize
+      val ds = Design.deserialize(b)
+      ds shouldEqual d
+    }
+
   }
 }

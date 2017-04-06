@@ -1,16 +1,21 @@
 import ReleaseTransformations._
 
-scalaVersion := "2.12.1"
+val SCALA_2_12 = "2.12.1"
+val SCALA_2_11 = "2.11.8"
+scalaVersion in ThisBuild := SCALA_2_12
 
 val buildSettings = Seq[Setting[_]](
-  scalaVersion := "2.12.1",
-  crossScalaVersions := Seq("2.12.1", "2.11.8"),
+  scalaVersion := SCALA_2_12,
+  crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
-  concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
-  incOptions := incOptions.value.withNameHashing(true),
+  //concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
+  incOptions := incOptions.value
+                .withNameHashing(true)
+                // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
+                .withLogRecompileOnMacro(false),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),
@@ -73,10 +78,11 @@ lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
   buildSettings,
   description := "Dependency injection library tailored to Scala",
   libraryDependencies ++= Seq(
-    "org.wvlet" %% "object-schema" % "1.0",
-    "org.wvlet" %% "wvlet-log" % "1.1",
+    "org.wvlet" %% "surface" % "0.1",
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+    "org.wvlet" %% "wvlet-log" % "1.2.2",
     // scalatest
-    "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
   ),
   // include the macro classes and resources in the main jar
@@ -89,6 +95,7 @@ lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-
   buildSettings,
   description := "Macros for Airframe",
   libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
   )
 )
+

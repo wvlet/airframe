@@ -14,64 +14,79 @@
 package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.log.LogSupport
 
 class Counter extends LogSupport {
-  private val counter = new AtomicInteger(0)
-  private val shutdown = new AtomicInteger(0)
-  def current: Int = counter.get()
-  def shutdownCount : Int = shutdown.get
-
-  @PostConstruct
-  def init {
-    info(s"init: ${counter.get}")
-    counter.incrementAndGet()
-  }
-
-  @PreDestroy
-  def stop {
-    info(s"stop: ${shutdown.get}")
-    shutdown.incrementAndGet()
-  }
+  val initialized = new AtomicInteger(0)
+  val shutdowned  = new AtomicInteger(0)
+  val started     = new AtomicInteger(0)
 }
 
 trait CounterUser {
-  val counter1 = bind[Counter]
-  val counter2 = bind[Counter]
+  val counter1 = bind[CounterService]
+  val counter2 = bind[CounterService]
 }
+
+trait CounterService extends LogSupport {
+  val counterService = bind[Counter]
+                       .onInit{ c =>
+                         info(s"init: ${c.initialized.get()}")
+                         c.initialized.incrementAndGet()
+                       }
+                       .onStart { c =>
+                         info(s"start: ${c.started.get()}")
+                         c.started.incrementAndGet()
+                       }
+                       .onShutdown{ c =>
+                         info(s"shutdown: ${c.shutdowned.get()}")
+                         c.shutdowned.incrementAndGet()
+                       }
+
+  def initCount = counterService.initialized.get()
+  def startCount = counterService.started.get()
+  def shutdownCount = counterService.shutdowned.get()
+}
+
+trait User1 extends CounterService
+trait User2 extends CounterService
 
 /**
   *
   */
 class LifeCycleManagerTest extends AirframeSpec {
   "LifeCycleManager" should {
-    "call init hook only once for singleton" in {
+    "call init hook" taggedAs("init") in {
       val c = newDesign
-              .bind[Counter].toSingleton
+              .bind[CounterService].toSingleton
               .newSession
-              .build[Counter]
-      c.current shouldBe 1
-
-      val multiCounter = newDesign
-                         .bind[Counter].toSingleton
-                         .newSession
-                         .build[CounterUser]
-
-      multiCounter.counter1.current shouldBe 1
-      multiCounter.counter2.current shouldBe 1
-      multiCounter.counter1.hashCode shouldBe multiCounter.counter2.hashCode
+              .build[CounterService]
+      c.initCount shouldBe 1
     }
 
-    trait CounterService {
-      val counter = bind[Counter]
+    "call lifecycle hooks properly for singleton" taggedAs("start") in {
+      val session = newDesign
+                    .bind[CounterService].toSingleton
+                    .newSession
+      val multiCounter = session.build[CounterUser]
+      multiCounter.counter1 shouldBe theSameInstanceAs (multiCounter.counter2)
+
+      multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.startCount shouldBe 0
+      multiCounter.counter1.shutdownCount shouldBe 0
+
+      session.start
+      multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.startCount shouldBe 1
+      multiCounter.counter1.shutdownCount shouldBe 0
+      session.shutdown
+
+      multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.startCount shouldBe 1
+      multiCounter.counter1.shutdownCount shouldBe 1
     }
 
-    trait User1 extends CounterService
-    trait User2 extends CounterService
-
-    "start and shutdown only once for singleton referenced multiple times" in {
+    "start and shutdown only once for singleton referenced multiple times" taggedAs("multi") in {
       val session = newDesign
                     .bind[Counter].toSingleton
                     .newSession
@@ -79,11 +94,24 @@ class LifeCycleManagerTest extends AirframeSpec {
       val u1 = session.build[User1]
       val u2 = session.build[User2]
 
-      u1.counter.hashCode shouldBe u2.counter.hashCode()
+      // Shoud have the same service instance
+      u1.counterService shouldBe theSameInstanceAs (u2.counterService)
+
+      session.start
 
       session.shutdown
-      u1.counter.shutdownCount shouldBe 1
-      u2.counter.shutdownCount shouldBe 1
+
+      // Counter is initialized only once
+      u1.startCount shouldBe 1
+      u2.startCount shouldBe 1
+
+      // Counter should be injected twice
+      u1.initCount shouldBe 2
+      u2.initCount shouldBe 2
+
+      // But only single shutdown should be called
+      u1.shutdownCount shouldBe 1
+      u2.shutdownCount shouldBe 1
     }
   }
 }

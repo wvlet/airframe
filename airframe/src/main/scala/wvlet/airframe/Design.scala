@@ -17,7 +17,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 
 import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
-import wvlet.obj.ObjectType
+import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 import scala.reflect.runtime.{universe => ru}
@@ -32,9 +32,10 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding ++ other.binding)
   }
 
-  def bind[A:ru.TypeTag]: Binder[A] = macro AirframeMacros.designBindImpl[A]
+  def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
 
-  def bind(t: ObjectType): Binder[Any] = {
+  def bind(t: Surface): Binder[Any] = {
+    trace(s"bind($t) ${t.isAlias}")
     val b = new Binder[Any](this, t)
     b
   }
@@ -44,9 +45,10 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding :+ b)
   }
 
-  def remove[A:ru.TypeTag] : Design = {
-    val target = ObjectType.of[A]
-    new Design(binding.filterNot(_.from == target))
+  def remove[A] : Design = macro AirframeMacros.designRemoveImpl[A]
+
+  def remove(t: Surface) : Design = {
+    new Design(binding.filterNot(_.from == t))
   }
 
   def session: SessionBuilder = {

@@ -14,10 +14,9 @@
 package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicReference
-import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.log.{LogSupport, Logger}
-import wvlet.obj.{ObjectSchema, ObjectType}
+import wvlet.surface.Surface
 
 sealed trait LifeCycleStage
 case object INIT extends LifeCycleStage
@@ -35,7 +34,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   private val state = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
-  private[airframe] def onInit(t: ObjectType, injectee: AnyRef) {
+  private[airframe] def onInit(t: Surface, injectee: AnyRef) {
     eventHandler.onInit(this, t, injectee)
   }
 
@@ -79,13 +78,13 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   def startHooks: Seq[LifeCycleHook] = startHook
   def shutdownHooks: Seq[LifeCycleHook] = shutdownHook
 
-  private def isSingletonType(t: ObjectType): Boolean = {
+  private def isSingletonType(t: Surface): Boolean = {
     session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
   }
 
   def addStartHook(h: LifeCycleHook) {
     synchronized {
-      val canAddHook = !(isSingletonType(h.tpe) && startHook.exists(_.tpe == h.tpe))
+      val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add start hook: ${h}")
         startHook :+= h
@@ -95,7 +94,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addShutdownHook(h: LifeCycleHook) {
     synchronized {
-      val canAddHook = !(isSingletonType(h.tpe) && shutdownHook.exists(_.tpe == h.tpe))
+      val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add shutdown hook: ${h}")
         shutdownHook :+= h
@@ -109,8 +108,7 @@ object LifeCycleManager {
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
-    LifeCycleAnnotationFinder andThen
-      FILOLifeCycleHookExecutor andThen
+    FILOLifeCycleHookExecutor andThen
       AddShutdownHook
 
 }
@@ -135,28 +133,6 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   }
 }
 
-object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
-  override def onInit(lifeCycleManager: LifeCycleManager, t: ObjectType, injectee: AnyRef) {
-    val schema = ObjectSchema(injectee.getClass)
-
-    // Find @PostConstruct annotation
-    schema
-    .allMethods
-    .filter {_.findAnnotationOf[PostConstruct].isDefined}
-    .map { x =>
-      lifeCycleManager.addInitHook(ObjectMethodCall(t, injectee, x))
-    }
-
-    // Find @PreDestroy annotation
-    schema
-    .allMethods
-    .filter {_.findAnnotationOf[PreDestroy].isDefined}
-    .map { x =>
-      lifeCycleManager.addShutdownHook(ObjectMethodCall(t, injectee, x))
-    }
-  }
-}
-
 /**
   * First In, Last Out (FILO) hook executor.
   *
@@ -166,7 +142,7 @@ object LifeCycleAnnotationFinder extends LifeCycleEventHandler with LogSupport {
   */
 object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.startHooks.map { h =>
+    lifeCycleManager.startHooks.map {h =>
       trace(s"Calling start hook: $h")
       h.execute
     }
@@ -175,7 +151,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
     debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
-    shutdownOrder.map { h =>
+    shutdownOrder.map {h =>
       trace(s"Calling shutdown hook: $h")
       h.execute
     }

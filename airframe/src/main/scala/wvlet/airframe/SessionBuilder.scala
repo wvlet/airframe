@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 import wvlet.log.LogSupport
-import wvlet.obj.ObjectType
+import wvlet.surface.Surface
 
 /**
   *
@@ -40,7 +40,7 @@ class SessionBuilder(design:Design, name:Option[String] = None,
     val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
       lst.last
     }
-    val keyIndex: Map[ObjectType, Int]
+    val keyIndex: Map[Surface, Int]
       = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     val l =  new LifeCycleManager(handler)
