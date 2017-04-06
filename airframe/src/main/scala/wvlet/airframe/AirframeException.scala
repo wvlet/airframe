@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 import wvlet.surface.Surface
-
+import scala.language.existentials
 
 trait AirframeException extends Exception { self =>
   def getCode: String = this.getClass.getSimpleName
