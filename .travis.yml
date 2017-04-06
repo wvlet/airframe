@@ -11,7 +11,7 @@ jdk:
 
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.1" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; project surfaceJVM; coverage; test; coverageReport";
+      sbt ++$TRAVIS_SCALA_VERSION "; coverage; test; coverageReport";
       sbt coverageAggregate coveralls;
     else
       sbt ++$TRAVIS_SCALA_VERSION test;
