@@ -108,9 +108,7 @@ object LifeCycleManager {
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
-    FILOLifeCycleHookExecutor andThen
-      AddShutdownHook
-
+    FILOLifeCycleHookExecutor andThen AddShutdownHook
 }
 
 object ShowLifeCycleLog extends LifeCycleEventHandler {
