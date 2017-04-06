@@ -39,7 +39,7 @@ class SerializationTest extends AirframeSpec {
   "Airframe" should {
     "serialize provider" in {
       import wvlet.airframe.SerializationTest._
-      val b = d.serialize
+      val b = serialize(d)
       val ds = deserialize(b)
       ds shouldEqual d
 
@@ -60,7 +60,7 @@ class SerializationTest extends AirframeSpec {
         .bind[D5].toInstance(d5)
         .bind[App].toProvider(provider5 _)
 
-      val b = d.serialize
+      val b = serialize(d)
       val ds = deserialize(b)
       ds shouldEqual d
     }

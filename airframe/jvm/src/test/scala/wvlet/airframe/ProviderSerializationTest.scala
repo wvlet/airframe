@@ -27,7 +27,7 @@ class ProviderSerializationTest extends AirframeSpec {
         providerDesign
         .bind[App].toProvider(provider5 _)
 
-      val b = testBinderDesign.serialize
+      val b = serialize(testBinderDesign)
       val d = deserialize(b)
 
       val app = d.newSession.build[App]
@@ -39,7 +39,7 @@ class ProviderSerializationTest extends AirframeSpec {
         providerDesign
         .bind[App].toProvider(provider1 _)
 
-      val b = testBinderDesign.serialize
+      val b = serialize(testBinderDesign)
       val d = deserialize(b)
 
       val app = d.newSession.build[App]

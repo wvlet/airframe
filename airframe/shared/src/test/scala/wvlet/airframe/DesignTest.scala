@@ -37,7 +37,8 @@ object DesignTest {
   type ProductionString = String
 
   val d0 = Design.blanc
-  lazy val d1 =
+
+  val d1 =
     d0
     .bind[Message].to[Hello]
     .bind[Hello].toInstance(Hello("world"))
