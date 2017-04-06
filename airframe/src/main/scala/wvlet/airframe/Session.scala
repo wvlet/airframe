@@ -19,7 +19,6 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 import scala.language.experimental.macros
-import scala.reflect.runtime.{universe => ru}
 import scala.util.Try
 
 /**
@@ -51,7 +50,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def get[A](surface:Surface): A
+  private[airframe] def get[A](surface: Surface): A
 
   /**
     * Internal method for building an instance of type A using a provider generated object.
@@ -60,10 +59,10 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElseUpdate[A](surface:Surface, obj: => A): A
+  private[airframe] def getOrElseUpdate[A](surface: Surface, obj: => A): A
 
-  private[airframe] def getSingleton[A](surface:Surface): A
-  private[airframe] def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A
+  private[airframe] def getSingleton[A](surface: Surface): A
+  private[airframe] def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A
 
   /**
     * Get the object LifeCycleManager of this session.
@@ -72,7 +71,7 @@ trait Session extends AutoCloseable {
     */
   def lifeCycleManager: LifeCycleManager
 
-  def start[U](body: => U) : U = {
+  def start[U](body: => U): U = {
     try {
       start
       body
@@ -82,12 +81,12 @@ trait Session extends AutoCloseable {
     }
   }
 
-  def start { lifeCycleManager.start }
-  def shutdown { lifeCycleManager.shutdown }
-  override def close() { shutdown }
+  def start {lifeCycleManager.start}
+  def shutdown {lifeCycleManager.shutdown}
+  override def close() {shutdown}
 
-  private[airframe] def getBindingOf(t:Surface) : Option[Binding]
-  private[airframe] def hasSingletonOf(t:Surface) : Boolean
+  private[airframe] def getBindingOf(t: Surface): Option[Binding]
+  private[airframe] def hasSingletonOf(t: Surface): Boolean
 }
 
 object Session extends LogSupport {
@@ -98,15 +97,15 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface:Surface): A = session.get[A](surface)
-    def getOrElseUpdate[A](surface:Surface, obj: => A): A = session.getOrElseUpdate[A](surface, obj)
-    def getSingleton[A](surface:Surface): A = session.getSingleton[A](surface)
-    def getOrElseUpdateSingleton[A](surface:Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
+    def get[A](surface: Surface): A = session.get[A](surface)
+    def getOrElseUpdate[A](surface: Surface, obj: => A): A = session.getOrElseUpdate[A](surface, obj)
+    def getSingleton[A](surface: Surface): A = session.getSingleton[A](surface)
+    def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
-  def getSession(obj:Any): Option[Session] = {
+  def getSession(obj: Any): Option[Session] = {
     require(obj != null, "object is null")
-    findSessionAccess(obj.getClass).flatMap { access =>
+    findSessionAccess(obj.getClass).flatMap {access =>
       Try(access.apply(obj.asInstanceOf[AnyRef])).toOption
     }
   }
@@ -123,7 +122,7 @@ object Session extends LogSupport {
     classOf[wvlet.airframe.Session].isAssignableFrom(c)
   }
 
-  private def findSessionAccess(cl:Class[_]): Option[AnyRef => Session] = {
+  private def findSessionAccess(cl: Class[_]): Option[AnyRef => Session] = {
     trace(s"Checking a session for ${cl}, ${cl.getGenericInterfaces.mkString(",")}")
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
@@ -135,21 +134,7 @@ object Session extends LogSupport {
       }
     }
 
-    def findSessionFromParams: Option[AnyRef => Session] = Surface.of(cl).flatMap { surface =>
-      // Find parameters
-      surface
-      .params
-      .find(p => isSessionType(p.surface.rawType))
-      .map(p => {obj: AnyRef => p.get(obj).asInstanceOf[Session]})
-    }
-        // TODO use macros to create the method caller
-//    def findSessionFromMethods: Option[AnyRef => Session] =
-//      methods
-//      .find(x => isSessionType(x.returnType.rawType) && x.args.isEmpty)
-//      .map { sessionGetter => { obj: AnyRef => sessionGetter.invoke(obj).asInstanceOf[Session] }
-//      }
-
-    findEmbeddedSession.orElse(findSessionFromParams)
+    findEmbeddedSession
   }
 }
 
