@@ -1,4 +1,4 @@
-# Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Coverage Status][coverall-badge]][coverall-link]
+# Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Coverage Status][coverall-badge]][coverall-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.15.svg)](https://www.scala-js.org)
 
 [circleci-badge]: https://circleci.com/gh/wvlet/airframe.svg?style=svg
 [circleci-link]: https://circleci.com/gh/wvlet/airframe
@@ -49,7 +49,7 @@ The major advantages of Airframe include:
 - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
   - Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 - Scala macro based binding generation.
-- Scala 2.11, 2.12 support.
+- Scala 2.11, 2.12, Scala.js support.
 
 # Usage
 
@@ -59,6 +59,9 @@ The major advantages of Airframe include:
 **build.sbt**
 ```
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+
+# For Scala.js (supported since airframe 0.12)
+libraryDependencies += "org.wvlet" %%% "airframe" % "(version)"
 ```
 
 ## Binding Examples
@@ -139,11 +142,19 @@ trait Server {
 // When binding an object, you can define life cycle hooks to the injected object:
 trait MyServerService {
   val service = bind[Server].withLifeCycle(
-    init = { _.init },    // Called when the object is injected
+    init = { _.init },    // Called when the object is initialized (called only once for singleton)
     start = { _.start },  // Called when sesion.start is called
     shutdown = { _.stop } // Called when session.shutdown is called
   )
 }
+```
+
+You can also use onInit/onStart/onShutdown methods:
+```
+bind[X]
+  .onInit { x => ... }
+  .onStart { x => ... }
+  .onShutdown { x => ... }
 ```
 
 ## Debugging Airframe Binding and Injection
@@ -166,8 +177,6 @@ See [wvlet-log configuration](https://github.com/wvlet/log#configuring-log-level
 
 Then you will see the log messages that show the object bindings and injection activities:
 ```
-2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Wing@@Left,List(),wvlet.airframe.LazyF0@e9c510cf),true,true)  - (Design.scala:43)
-2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Wing@@Right,List(),wvlet.airframe.LazyF0@4678272f),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0@442b0f),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Metric,List(),wvlet.airframe.LazyF0@1595a8db),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ClassBinding(Engine,GasolineEngine)  - (Design.scala:43)
@@ -253,37 +262,36 @@ trait CustomPrinterMixin extends FortunePrinterMixin {
 }
 ```
 
-## Tagged binding
+## Type alias binding
 
-Airframe can provide separate implementations to the same type object by using object tagging (@@):
+Airframe can provide separate implementations to the same type object by using type alias:
 ```scala
-import wvlet.obj.tag.@@
 case class Fruit(name: String)
 
-trait Apple
-trait Banana
+type Apple = Fruit
+type Banana = Fruit
 
 trait TaggedBinding {
-  val apple  = bind[Fruit @@ Apple]
-  val banana = bind[Fruit @@ Banana]
+  val apple  = bind[Apple]
+  val banana = bind[Banana]
 }
  ```
 
-Tagged binding is also useful to inject primitive type values:
+Alias binding is also useful to inject primitive type values:
 ```scala
-trait Env
+type Env = String
 
 trait MyService {
   // Coditional binding
-  lazy val threadManager = bind[String @@ Env] match {
+  lazy val threadManager = bind[Env] match {
      case "test" => bind[TestingThreadManager] // prepare a testing thread manager
      case "production" => bind[ThreadManager] // prepare a thread manager for production
   }
 }
 
 val coreDesign = newDesign
-val testingDesign = coreDesign.bind[String @@ Env].toInstance("test")
-val productionDesign = coreDesign.bind[String @@ Env].toInstance("production")
+val testingDesign = coreDesign.bind[Env].toInstance("test")
+val productionDesign = coreDesign.bind[Env].toInstance("production")
 ```
 
 ## Object Injection
@@ -295,15 +303,6 @@ val design = newDesign
   .bind[Printer].to[ConsolePrinter]  // Airframe will generate an instance of ConsolePrinter by resolving its dependencies
   .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err)) // Binding an actual instance
 ```
-
-You can also define bindings to the tagged objects:
-
-```scala
-val design = newDesign
-  .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-  .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-  .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
-````
 
 To bind a class to a singleton, use `toSingleton`:
 

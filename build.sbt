@@ -79,11 +79,12 @@ lazy val airframe =
   .in(file("airframe"))
   .settings(buildSettings)
   .settings (
+    name := "airframe",
     description := "Dependency injection library tailored to Scala",
     libraryDependencies ++= Seq(
       "org.wvlet" %%% "surface" % "0.1",
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.wvlet" %%% "wvlet-log" % "1.2.2",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       // scalatest
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
     )
@@ -95,12 +96,11 @@ lazy val airframe =
     mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
   )
   .jsSettings(
-    // include the macro classes and resources in the main jar
-    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value,
+    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
     // include the macro sources in the main source jar
     mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
   )
-  .dependsOn(airframeMacros % "provided")
+  .dependsOn(airframeMacros % "compile-internal, test-internal")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS = airframe.js
@@ -111,10 +111,13 @@ lazy val airframeMacros =
   .settings(buildSettings)
   .settings (
     buildSettings,
+    name := "airframe-macros",
     description := "Macros for Airframe",
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
-    )
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    ),
+    publish := {},
+    publishLocal := {}
   )
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
