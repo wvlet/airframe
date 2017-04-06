@@ -1,4 +1,4 @@
-# Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Coverage Status][coverall-badge]][coverall-link]
+# Airframe  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Coverage Status][coverall-badge]][coverall-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.15.svg)](https://www.scala-js.org)
 
 [circleci-badge]: https://circleci.com/gh/wvlet/airframe.svg?style=svg
 [circleci-link]: https://circleci.com/gh/wvlet/airframe
@@ -49,7 +49,7 @@ The major advantages of Airframe include:
 - You can enjoy the flexibility of Scala traits and dependency injection (DI) at the same time.
   - Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 - Scala macro based binding generation.
-- Scala 2.11, 2.12 support.
+- Scala 2.11, 2.12, Scala.js support.
 
 # Usage
 
@@ -59,6 +59,9 @@ The major advantages of Airframe include:
 **build.sbt**
 ```
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+
+# For Scala.js (supported since airframe 0.11)
+libraryDependencies += "org.wvlet" %%% "airframe" % "(version)"
 ```
 
 ## Binding Examples
