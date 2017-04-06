@@ -15,11 +15,11 @@ jdk:
 
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.1" -a "$PROJECT" == "airframeJVM" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport";
-      sbt coverageAggregate coveralls;
-    elsif [ "$PROJECT" == "airframeJS" ]; then 
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/fastOptJS;
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test;
+      sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport"
+      sbt coverageAggregate coveralls
+    elif [ "$PROJECT" == "airframeJS" ]; then
+      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/fastOptJS
+      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test
     else
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test;
+      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test
     fi
