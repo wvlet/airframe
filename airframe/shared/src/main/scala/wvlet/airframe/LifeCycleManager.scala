@@ -108,9 +108,7 @@ object LifeCycleManager {
     ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
 
   def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
-    FILOLifeCycleHookExecutor andThen
-      AddShutdownHook
-
+    FILOLifeCycleHookExecutor andThen AddShutdownHook
 }
 
 object ShowLifeCycleLog extends LifeCycleEventHandler {
@@ -158,10 +156,4 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 }
 
-object AddShutdownHook extends LifeCycleEventHandler {
-  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    sys.addShutdownHook {
-      lifeCycleManager.shutdown
-    }
-  }
-}
+

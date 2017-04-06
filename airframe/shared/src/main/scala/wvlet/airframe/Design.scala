@@ -72,14 +72,6 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     s"Design:\n ${binding.mkString("\n ")}"
   }
 
-  private[airframe] def serialize : Array[Byte] = {
-    val b = new ByteArrayOutputStream()
-    val oo = new ObjectOutputStream(b)
-    oo.writeObject(this)
-    oo.close()
-    b.toByteArray
-  }
-
 }
 
 object Design {
@@ -88,10 +80,4 @@ object Design {
     */
   val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
 
-  private[airframe] def deserialize(b: Array[Byte]) : Design = {
-    val in = new ByteArrayInputStream(b)
-    val oi = new ObjectInputStream(in)
-    val obj = oi.readObject().asInstanceOf[Design]
-    obj.asInstanceOf[Design]
-  }
 }

@@ -72,30 +72,51 @@ lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframe, airframeMacros)
+) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS)
 
-lazy val airframe = Project(id = "airframe", base = file("airframe")).settings(
-  buildSettings,
-  description := "Dependency injection library tailored to Scala",
-  libraryDependencies ++= Seq(
-    "org.wvlet" %% "surface" % "0.1",
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-    "org.wvlet" %% "wvlet-log" % "1.2.2",
-    // scalatest
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.12.6" % "test"
-  ),
-  // include the macro classes and resources in the main jar
-  mappings in (Compile, packageBin) ++= mappings.in(airframeMacros, Compile, packageBin).value,
-  // include the macro sources in the main source jar
-  mappings in (Compile, packageSrc) ++= mappings.in(airframeMacros, Compile, packageSrc).value
-) dependsOn(airframeMacros % "provided")
-
-lazy val airframeMacros = Project(id = "airframe-macros", base = file("airframe-macros")).settings(
-  buildSettings,
-  description := "Macros for Airframe",
-  libraryDependencies ++= Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+lazy val airframe =
+  crossProject
+  .in(file("airframe"))
+  .settings(buildSettings)
+  .settings (
+    description := "Dependency injection library tailored to Scala",
+    libraryDependencies ++= Seq(
+      "org.wvlet" %%% "surface" % "0.1",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.wvlet" %%% "wvlet-log" % "1.2.2",
+      // scalatest
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
+    )
   )
-)
+  .jvmSettings(
+    // include the macro classes and resources in the main jar
+    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
+    // include the macro sources in the main source jar
+    mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
+  )
+  .jsSettings(
+    // include the macro classes and resources in the main jar
+    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value,
+    // include the macro sources in the main source jar
+    mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
+  )
+  .dependsOn(airframeMacros % "provided")
+
+lazy val airframeJVM = airframe.jvm
+lazy val airframeJS = airframe.js
+
+lazy val airframeMacros =
+  crossProject
+  .in(file("airframe-macros"))
+  .settings(buildSettings)
+  .settings (
+    buildSettings,
+    description := "Macros for Airframe",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+    )
+  )
+
+lazy val airframeMacrosJVM = airframeMacros.jvm
+lazy val airframeMacrosJS = airframeMacros.js
 

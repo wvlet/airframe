@@ -15,6 +15,9 @@ package wvlet.airframe
 
 import wvlet.log.LogSupport
 
+/**
+  *
+  */
 object ProviderVal {
   case class D1(id: Int)
   case class D2(id: Int)
@@ -56,37 +59,3 @@ object ProviderSerializationExample extends Serializable {
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 }
 
-import ProviderSerializationExample._
-import ProviderVal._
-/**
-  *
-  */
-class ProviderSerializationTest extends AirframeSpec {
-
-  "Design" should {
-    "serialize design with provider" taggedAs ("ser") in {
-      val testBinderDesign =
-        providerDesign
-        .bind[App].toProvider(provider5 _)
-
-      val b = testBinderDesign.serialize
-      val d = Design.deserialize(b)
-
-      val app = d.newSession.build[App]
-      app shouldBe App(d1, d2, d3, d4, d5)
-    }
-
-    "serialize design with provider1" taggedAs ("ser-p1") in {
-      val testBinderDesign =
-        providerDesign
-        .bind[App].toProvider(provider1 _)
-
-      val b = testBinderDesign.serialize
-      val d = Design.deserialize(b)
-
-      val app = d.newSession.build[App]
-      app shouldBe App(d1, z2, z3, z4, z5)
-    }
-
-  }
-}

@@ -297,8 +297,8 @@ class AirframeTest extends AirframeSpec {
         .newSession
       val current = System.nanoTime()
       val s = session.build[EagerSingleton]
-      s.initializedTime should be > start
-      s.initializedTime should be < current
+      s.initializedTime should be >= start
+      s.initializedTime should be <= current
     }
 
     "create eager singleton type" taggedAs ("to-singleton") in {
@@ -481,8 +481,8 @@ class AirframeTest extends AirframeSpec {
               .bind[EagerSingletonWithInject].toEagerSingleton
       val s = d.newSession.build[EagerSingletonWithInject]
       val current = System.nanoTime()
-      s.initializedTime should be > start
-      s.initializedTime should be < current
+      s.initializedTime should be >= start
+      s.initializedTime should be <= current
     }
 
     "support onInit and onShutdown" taggedAs ("lifecycle") in {

@@ -123,7 +123,7 @@ object Session extends LogSupport {
   }
 
   private def findSessionAccess(cl: Class[_]): Option[AnyRef => Session] = {
-    trace(s"Checking a session for ${cl}, ${cl.getGenericInterfaces.mkString(",")}")
+    trace(s"Checking a session for ${cl}")
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       if (classOf[SessionHolder] isAssignableFrom (cl)) {
