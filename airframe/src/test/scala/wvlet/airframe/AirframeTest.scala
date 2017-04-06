@@ -315,10 +315,12 @@ class AirframeTest extends AirframeSpec {
     }
 
     "forbid binding to the same type" in {
-      intercept[CYCLIC_DEPENDENCY] {
+      val ex = intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].to[Printer]
-      }.deps should contain(Surface.of[Printer])
+      }
+      ex.deps should contain(Surface.of[Printer])
+      ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign

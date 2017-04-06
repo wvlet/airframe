@@ -63,6 +63,10 @@ class DesignTest extends AirframeSpec {
       d2 should not equal(d1)
     }
 
+    "display design" in {
+      info(d1.toString)
+    }
+
     "remove binding" in {
       val dd = d1.remove[Message]
 
@@ -107,6 +111,12 @@ class DesignTest extends AirframeSpec {
 
       val h = d.newSession.build[HelloRef]
       h.hello shouldBe "hello world"
+    }
+
+    "start and stop session" in {
+      // Sanity test
+      newDesign.withSession { session =>
+      }
     }
   }
 }
