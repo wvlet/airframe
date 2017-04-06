@@ -85,8 +85,7 @@ lazy val airframe =
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.wvlet" %%% "wvlet-log" % "1.2.2",
       // scalatest
-      "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
-      "org.scalacheck" %%% "scalacheck" % "1.12.6" % "test"
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
     )
   )
   .jvmSettings(
