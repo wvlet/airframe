@@ -1,5 +1,8 @@
 # Release Notes
 
+## 0.13
+ - Add tagged binding support
+
 ## 0.12
  - Airframe is now refrection-free.
    - Using a reflection free [Surface](https://github.com/wvlet/surface) instaed of [ObjectSchema](https://github.com/wvlet/object-schema)
