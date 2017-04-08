@@ -82,7 +82,7 @@ lazy val airframe =
     name := "airframe",
     description := "Dependency injection library tailored to Scala",
     libraryDependencies ++= Seq(
-      "org.wvlet" %%% "surface" % "0.1",
+      "org.wvlet" %%% "surface" % "0.3",
       "org.wvlet" %%% "wvlet-log" % "1.2.2",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       // scalatest
