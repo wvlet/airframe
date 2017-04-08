@@ -294,6 +294,23 @@ val testingDesign = coreDesign.bind[Env].toInstance("test")
 val productionDesign = coreDesign.bind[Env].toInstance("production")
 ```
 
+## Tagged type binding
+
+Taggged binding `@@` is also useful to annotate type names:
+
+```scala
+// This import statement is necessary to use tagged type (@@)
+import wvlet.surface.tag._
+
+trait Name
+trait Id
+
+trait A {
+  val name = bind[String @@ Name] 
+  val id = bind[Int @@ Id] 
+}
+```
+
 ## Object Injection
 
 Before binding objects, you need to define a `Design` of dependent components. It is similar to `modules` in Guice.
