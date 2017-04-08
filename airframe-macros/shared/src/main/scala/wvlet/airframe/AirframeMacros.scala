@@ -37,7 +37,7 @@ private[wvlet] object AirframeMacros {
         x.isMethod && x.isAbstract && !x.isAbstractOverride
       )
 
-      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.obj.tag.")
+      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.surface.tag.")
 
       val shouldInstantiateTrait = if (!a.isStatic) {
         // = Non static type
