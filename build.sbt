@@ -68,7 +68,7 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
-lazy val root = Project(id = "root", base = file("."))
+lazy val root = Project(id = "wvlet-log-root", base = file("."))
   .settings(
     buildSettings,
     publishArtifact := false,
@@ -95,7 +95,7 @@ lazy val log =
   )
   .jsSettings(
     libraryDependencies ++= Seq(
-      "org.xerial.thirdparty.org_scala-js" %%% "scalajs-java-logging" % "0.1.1-pre3"
+      "org.scala-js" %%% "scalajs-java-logging" % "0.1.1"
     )
   )
 

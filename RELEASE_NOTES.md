@@ -1,6 +1,10 @@
 Release Notes
 ====
 
+## 1.2.3
+ - Upgrade to scala-js-java-logging 0.1.1
+ - No API change
+
 ## 1.2.2
 - wvlet.log.Logger is now serializable. You can also serialize classes extending LogSupport.
 
