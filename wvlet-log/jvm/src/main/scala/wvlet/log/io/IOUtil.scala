@@ -32,7 +32,9 @@ object IOUtil {
   }
 
   def withTempFile[U](name:String, dir:String="target", suffix:String = ".tmp")(body:File => U) = {
-    val f = File.createTempFile(name, suffix, new File(dir))
+    val d = new File(dir)
+    d.mkdirs()
+    val f = File.createTempFile(name, suffix, d)
     try {
       body(f)
     }
