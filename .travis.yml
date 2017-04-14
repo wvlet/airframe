@@ -2,12 +2,23 @@ sudo: false
 
 language: scala
 
+jdk:
+  - oraclejdk8
+
 scala:
   - 2.12.1
   - 2.11.8
 
-jdk:
-  - oraclejdk8
+env:
+  - PROJECT=logJVM
+  - PROJECT=logJS
 
-script:
-  - sbt ++$TRAVIS_SCALA_VERSION "test"
+script: sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test
+
+matrix:
+  include:
+    - scala: 2.12.1
+      env: PROJECT=logJVM COVERAGE_REPORT=true
+      script:
+      - sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport"
+      - sbt coverageAggregate coveralls
