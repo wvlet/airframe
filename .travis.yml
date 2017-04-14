@@ -5,6 +5,16 @@ language: scala
 jdk:
   - oraclejdk8
 
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+
+before_cache:
+  # Cleanup the cached directories to avoid unnecessary cache updates
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
 scala:
   - 2.12.1
   - 2.11.8
@@ -22,3 +32,4 @@ matrix:
       script:
       - sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport"
       - sbt coverageAggregate coveralls
+
