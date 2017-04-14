@@ -29,8 +29,8 @@ script: sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test
 matrix:
   include:
     - scala: 2.12.1
+      jdk: oraclejdk8
       env: PROJECT=logJVM COVERAGE_REPORT=true
       script:
       - sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport"
       - sbt coverageAggregate coveralls
-
