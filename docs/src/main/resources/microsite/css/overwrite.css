@@ -1,6 +1,13 @@
+p {
+  margin: 12.5px 0 5px; }
+
 pre .hljs {
     padding: 10px;
 }
+
+#page-content-wrapper section pre .hljs {
+    padding: 10px;
+}     
 
 .jumbotron {
     padding-top: 80px;
@@ -10,3 +17,8 @@ pre .hljs {
 .jumbotron h1 {
     font-size: 32px;
 }
+
+code, kbd,pre,samp {
+    font-family: Monaco, Consolas, "Courier New", monospace;
+}
+

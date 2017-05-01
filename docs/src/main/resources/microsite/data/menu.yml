@@ -1,10 +1,13 @@
 options:
-  - title: Getting Started
+  - title: Basic Usage
     url: docs/index.html
-    section: intro
-  - title: Binding Objects
-    url: docs/binding.html
-    section: intro
-  - title: Designing Object Bindings
-    url: docs/design.html
-    section: intro
+    menu_section: intro
+    nested_options:
+     - title: Binding Examples
+       url: docs/index.html#binding-examples
+     - title: Design Examples
+       url: docs/index.html#design-examples
+  - title: Life Cycle Management
+    url: docs/lifecycle.html
+  - title: Other DI Frameworks
+    url: docs/comparison.html
