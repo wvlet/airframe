@@ -1,0 +1,12 @@
+pre .hljs {
+    padding: 10px;
+}
+
+.jumbotron {
+    padding-top: 80px;
+    padding-bottom: 20px;
+}
+
+.jumbotron h1 {
+    font-size: 32px;
+}

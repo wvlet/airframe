@@ -89,14 +89,15 @@ lazy val docs = project
     micrositeHighlightTheme := "ocean",
     micrositeGithubOwner := "wvlet",
     micrositeGithubRepo := "airframe",
-    micrositeDocumentationUrl := "/docs",
+    micrositeBaseUrl := "airframe",
+    micrositeDocumentationUrl := "docs",
     micrositePalette ++= Map(
         "brand-primary"     -> "#4592AA",
         "brand-secondary"   -> "#143F56",
         "brand-tertiary"    -> "#042F46",
         "gray-dark"         -> "#453E46",
         "gray"              -> "#534F54"
-	)    
+	)
   )
   
 lazy val airframe =

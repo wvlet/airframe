@@ -2,3 +2,9 @@ options:
   - title: Getting Started
     url: docs/index.html
     section: intro
+  - title: Binding Objects
+    url: docs/binding.html
+    section: intro
+  - title: Designing Object Bindings
+    url: docs/design.html
+    section: intro
