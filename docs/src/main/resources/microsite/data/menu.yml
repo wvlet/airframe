@@ -1,0 +1,4 @@
+options:
+  - title: Getting Started
+    url: docs/index.html
+    section: intro

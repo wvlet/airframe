@@ -67,13 +67,38 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
 
-lazy val airframeRoot = Project(id="airframe-root", base = file(".")).settings(
+lazy val airframeRoot = Project(id="airframe-root", base = file("."))
+ .settings(
   buildSettings,
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS)
+) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, docs)
 
+lazy val docs = project
+  .enablePlugins(MicrositesPlugin)
+  .settings(moduleName := "airframe-docs")
+  .settings(
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {},
+    micrositeName := "Airframe",
+    micrositeDescription := "Dependency Injection Library for Scala",
+    micrositeAuthor := "Taro L. Saito",
+    micrositeOrganizationHomepage := "https://github.com/wvlet",
+    micrositeHighlightTheme := "ocean",
+    micrositeGithubOwner := "wvlet",
+    micrositeGithubRepo := "airframe",
+    micrositeDocumentationUrl := "/docs",
+    micrositePalette ++= Map(
+        "brand-primary"     -> "#4592AA",
+        "brand-secondary"   -> "#143F56",
+        "brand-tertiary"    -> "#042F46",
+        "gray-dark"         -> "#453E46",
+        "gray"              -> "#534F54"
+	)    
+  )
+  
 lazy val airframe =
   crossProject
   .in(file("airframe"))
