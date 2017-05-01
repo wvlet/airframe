@@ -1,14 +1,21 @@
 ---
 layout: docs
-title: Usage
+title: Basic Usage
 ---
 
 # Basic Usage
 
-**build.sbt** [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-la\
+**build.sbt** [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-la
 ng.org/wvlet/airframe)
-```
+
+To use Airframe, add the following to your **build.sbt**:
+```scala
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+```
+
+And import `wvlet.airframe._` in your Scala code:
+```scala
+import `wvlet.airframe._
 ```
 
 ## Binding Examples

@@ -11,3 +11,5 @@ options:
     url: docs/lifecycle.html
   - title: Other DI Frameworks
     url: docs/comparison.html
+  - title: Release Notes
+    url: docs/release-notes.html
