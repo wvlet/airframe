@@ -14,10 +14,12 @@ Airframe is a [dependency injection (DI)](https://en.wikipedia.org/wiki/Dependen
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Getting Started
+ [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
 
 Airframe is available for Scala 2.12, 2.11, and [Scala.js](https://www.scala-js.org/):
 
-**build.sbt** [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
+**build.sbt**
+
 ```
 libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 ```
