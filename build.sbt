@@ -75,13 +75,18 @@ lazy val airframeRoot = Project(id="airframe-root", base = file("."))
   publishLocal := {}
 ) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, docs)
 
+
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
+  .enablePlugins(GhpagesPlugin)
   .settings(moduleName := "airframe-docs")
   .settings(
     publishArtifact := false,
     publish := {},
     publishLocal := {},
+    // Necessary for publishMicrosite
+    git.remoteRepo := "git@github.com:wvlet/airframe.git",
+    ghpagesNoJekyll := false,
     micrositeName := "Airframe",
     micrositeDescription := "Dependency Injection Library for Scala",
     micrositeAuthor := "Taro L. Saito",
@@ -90,6 +95,7 @@ lazy val docs = project
     micrositeGithubOwner := "wvlet",
     micrositeGithubRepo := "airframe",
     micrositeBaseUrl := "airframe",
+    micrositeAnalyticsToken := "UA-98364158-1",
     micrositeDocumentationUrl := "docs",
     micrositePalette ++= Map(
         "brand-primary"     -> "#4592AA",
