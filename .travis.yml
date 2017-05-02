@@ -25,7 +25,7 @@ jdk:
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.1" -a "$PROJECT" == "airframeJVM" ]; then
       sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport";
-      sbt coverageAggregate coveralls;
+      sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
     elif [ "$PROJECT" == "airframeJS" ]; then
       sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test:fastOptJS;
       sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test;
