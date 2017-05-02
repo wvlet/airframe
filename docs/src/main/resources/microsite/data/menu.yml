@@ -7,8 +7,12 @@ options:
        url: docs/index.html#binding-examples
      - title: Design Examples
        url: docs/index.html#design-examples
+  - title: Bindins Types
+    url: docs/bindings.html
   - title: Life Cycle Management
     url: docs/lifecycle.html
+  - title: Debugging DI
+    url: docs/debug.html
   - title: Other DI Frameworks
     url: docs/comparison.html
   - title: Release Notes
