@@ -73,8 +73,7 @@ lazy val airframeRoot = Project(id="airframe-root", base = file("."))
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, docs)
-
+) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS)
 
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
