@@ -1,3 +1,8 @@
+---
+layout: docs
+title: Release Notes
+---
+
 # Release Notes
 
 ## 0.13
