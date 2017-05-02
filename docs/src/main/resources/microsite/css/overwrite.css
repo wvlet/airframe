@@ -2,15 +2,31 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
 p {
-  margin: 12.5px 0 5px; }
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+strong {
+  color: #333333;
+  font-weight: 800;
+}
+
+pre {
+  margin-top: 0px;
+}
 
 pre .hljs {
     padding: 10px;
 }
 
+#page-content-wrapper section pre {
+  margin-top: 0px;
+}
+
 #page-content-wrapper section pre .hljs {
-    padding: 10px;
-}     
+  margin-top: 0px;
+  padding: 10px;
+}
 
 .jumbotron {
     padding-top: 80px;
@@ -27,6 +43,4 @@ body {
 
 code, kbd,pre,samp {
     font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
-
 }
-

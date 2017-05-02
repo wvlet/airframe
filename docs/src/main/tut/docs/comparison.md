@@ -5,7 +5,7 @@ title: Other DI Frameworks
 
 # Comparison with the other DI frameworks
 
-There are two types of dependency injection approaches; runtime and compile-time (static) DIs.
+There are two types of dependency injection approaches; **runtime** and **compile-time** (static) DIs.
 
 ## Run-time Dependency Injection
 
@@ -21,7 +21,7 @@ There are two types of dependency injection approaches; runtime and compile-time
 
 ## Compile-time Dependency Injection
 
-- [MacWire](https://github.com/adamw/macwire) is a compile-time dependency injection library for Scala using `wire[A]` syntax. MacWire ensures all binding types are available at compile time, so if some dependency is missing, it will be shown as a compile error. That is a major advantage of MacWire. On the other hand it sacrifices dynamic binding; For example, we cannot switch the implementation of `wire[A]` to `class AImpl(d1:D1, d2:D2, d3:D3) extends A`, because we cannot statically resolve dependencies to AImpl, D1, D2, and D3 at compile time.
+- [MacWire](https://github.com/adamw/macwire) is a compile-time dependency injection library for Scala using `wire[A]` syntax. MacWire ensures all binding types are available at compile time, so if some dependency is missing, it will be shown as a compile error. That is a major advantage of MacWire. On the other hand it sacrifices dynamic binding; For example, we cannot switch the implementation of `wire[A]` to `class AImpl(d1:D1, d2:D2, d3:D3) extends A`, because we cannot statically resolve dependencies from AImpl to D1, D2, and D3 at compile time.
 
 - [Dagger2](https://github.com/google/dagger) is also a compile-time dependency injection library for Java and Android. Google needed binding hundreds of modules, but Guice only resolves these dependencies at runtime, so binding failures can be found later when the application is running. To resolve this, Dagger2 tries to generate dependency injection code at compile time. [This document](https://google.github.io/dagger/users-guide) is a good read to understand the background of why compile-time DI was necessary.
 

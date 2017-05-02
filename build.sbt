@@ -86,6 +86,7 @@ lazy val docs = project
     // Necessary for publishMicrosite
     git.remoteRepo := "git@github.com:wvlet/airframe.git",
     ghpagesNoJekyll := false,
+    watchSources := (sourceDirectory.value ** "*").filter(!_.isDirectory).get,
     micrositeName := "Airframe",
     micrositeDescription := "Dependency Injection Library for Scala",
     micrositeAuthor := "Taro L. Saito",
@@ -97,14 +98,14 @@ lazy val docs = project
     micrositeAnalyticsToken := "UA-98364158-1",
     micrositeDocumentationUrl := "docs",
     micrositePalette ++= Map(
-        "brand-primary"     -> "#4592AA",
+        "brand-primary"     -> "#2582AA",
         "brand-secondary"   -> "#143F56",
         "brand-tertiary"    -> "#042F46",
         "gray-dark"         -> "#453E46",
         "gray"              -> "#534F54"
 	)
   )
-  
+
 lazy val airframe =
   crossProject
   .in(file("airframe"))
@@ -153,4 +154,3 @@ lazy val airframeMacros =
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS = airframeMacros.js
-
