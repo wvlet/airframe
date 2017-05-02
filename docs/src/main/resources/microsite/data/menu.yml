@@ -1,12 +1,16 @@
 options:
-  - title: Basic Usage
+  - title: Quick Start
     url: docs/index.html
     menu_section: intro
     nested_options:
-     - title: Binding Examples
-       url: docs/index.html#binding-examples
-     - title: Design Examples
-       url: docs/index.html#design-examples
+     - title: Bind
+       url: docs/index.html#bind
+     - title: Design
+       url: docs/index.html#design
+     - title: Session
+       url: docs/index.html#session
+     - title: Life Cycle
+       url: docs/index.html#life-cycle
   - title: Bindins Types
     url: docs/bindings.html
   - title: Life Cycle Management

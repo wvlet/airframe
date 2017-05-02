@@ -1,12 +1,15 @@
 ---
 layout: docs
-title: Basic Usage
+title: Quick Start
 ---
 
-# Basic Usage
+# Quick Start
 
-**build.sbt** [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-la
-ng.org/wvlet/airframe)
+[![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
+
+This page describes all you need to know to start using Airframe.
+
+## sbt
 
 To use Airframe, add the following to your **build.sbt**:
 ```scala
@@ -18,20 +21,26 @@ And import `wvlet.airframe._` in your Scala code:
 import `wvlet.airframe._
 ```
 
-## Binding Examples
+## Bind
 
 This example shows all binding types available in Airframe:
 
 ```
 import wvlet.airframe._
-import BindingExample._
 
 trait BindingExample {
   val a = bind[A]  // Inject A
   val b = bind[B]  // Inject B
 
-  val s = bindSingleton[S] // Inject S as a singleton
+  // Inject S as a singleton  
+  val s = bindSingleton[S]
 
+  import BindingExample._
+
+  // Constructor binding
+  val pc: P = bind[P] // Inject P using constructor (Inject D1, D2 and D3)
+
+  // Provider bindings
   val p0: P = bind { P() } // Inject P using the provider function (closure)
   val p1: P = bind { d1:D1 => P(d1) } // Inject D1 to create P
   val p2: P = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
@@ -47,12 +56,13 @@ object BindingExample {
 }
 ```
 
-## Design Examples
+## Design
 
 To configure actual bindings, define object bindings using design:
 
 ```scala
 import wvlet.airframe._
+
 // If you define multiple bindings to the same type, the last one will be used.
 val design : Design =
   newDesign                      // Create an empty design
@@ -70,7 +80,15 @@ val design : Design =
   .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
 ```
 
-## Starting a Session
+## Session
+
+To create instances, you need to create a `Session` from you Design:
+
+```scala
+val session = design.newSession
+val a = session.build[A]
+// do something with a
+```
 
 Session holds instances of singletons. These instances will be discarded after `session.shutdown` is called:
 
@@ -80,6 +98,7 @@ val session = design.newSession
 try {
   session.start
   val p = session.build[P]
+  // do something with P
 }
 finally {
    session.shutdown
@@ -89,6 +108,21 @@ finally {
 You can also use `Design.withSession` to start and shutdown a session automatically:
 ```scala
 design.withSesssion { session =>
-   valp = session.build[P]
+   // session.start will be called here
+   val p = session.build[P]
+}
+// session.shutdown will be called here
+```
+
+## Life Cycle
+
+To release resources (e.g., network connection, threads, etc.), add shutdown hooks:
+
+```scala
+trait Service {
+  val a = bind[A].onShutdown { a =>
+    // Executed when session.shutdown is called
+    a.close()
+  }
 }
 ```
