@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
 p {
   margin: 12.5px 0 5px; }
 
@@ -18,7 +21,12 @@ pre .hljs {
     font-size: 32px;
 }
 
+body {
+    font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
 code, kbd,pre,samp {
-    font-family: Monaco, Consolas, "Courier New", monospace;
+    font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
+
 }
 
