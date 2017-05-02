@@ -6,10 +6,13 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 
 ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
-      </script><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/kazari-style.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class=" active ">Basic Usage</a> <ul class="sub_section"> <li><a href="/airframe/docs/index.html#binding-examples" class="">Binding Examples</a></li> <li><a href="/airframe/docs/index.html#design-examples" class="">Design Examples</a></li></ul></li> <li><a href="/airframe/docs/bindings.html" class="">Bindins Types</a></li> <li><a href="/airframe/docs/lifecycle.html" class="">Life Cycle Management</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">Other DI Frameworks</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Dependency Injection Library for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Dependency Injection Library for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="basic-usage">Basic Usage</h1>
+      </script><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/kazari-style.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class=" active ">Quick Start</a> <ul class="sub_section"> <li><a href="/airframe/docs/index.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/index.html#design" class="">Design</a></li> <li><a href="/airframe/docs/index.html#session" class="">Session</a></li> <li><a href="/airframe/docs/index.html#life-cycle" class="">Life Cycle</a></li></ul></li> <li><a href="/airframe/docs/bindings.html" class="">Bindins Types</a></li> <li><a href="/airframe/docs/lifecycle.html" class="">Life Cycle Management</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">Other DI Frameworks</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Dependency Injection Library for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Dependency Injection Library for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="quick-start">Quick Start</h1>
 
-<p><strong>build.sbt</strong> <a href="https://index.scala-la
-ng.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="Latest version" /></a></p>
+<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="Latest version" /></a></p>
+
+<p>This page describes all you need to know to start using Airframe.</p>
+
+<h2 id="sbt">sbt</h2>
 
 <p>To use Airframe, add the following to your <strong>build.sbt</strong>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet"</span> <span class="o">%%</span> <span class="s">"airframe"</span> <span class="o">%</span> <span class="s">"(version)"</span>
@@ -21,19 +24,25 @@ ng.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/air
 </code></pre>
 </div>
 
-<h2 id="binding-examples">Binding Examples</h2>
+<h2 id="bind">Bind</h2>
 
 <p>This example shows all binding types available in Airframe:</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>import wvlet.airframe._
-import BindingExample._
 
 trait BindingExample {
   val a = bind[A]  // Inject A
   val b = bind[B]  // Inject B
 
-  val s = bindSingleton[S] // Inject S as a singleton
+  // Inject S as a singleton  
+  val s = bindSingleton[S]
 
+  import BindingExample._
+
+  // Constructor binding
+  val pc: P = bind[P] // Inject P using constructor (Inject D1, D2 and D3)
+
+  // Provider bindings
   val p0: P = bind { P() } // Inject P using the provider function (closure)
   val p1: P = bind { d1:D1 =&gt; P(d1) } // Inject D1 to create P
   val p2: P = bind { (d1:D1, d2:D2) =&gt; P(d1, d2) } // Inject D1 and D2 to create P
@@ -50,11 +59,12 @@ object BindingExample {
 </code></pre>
 </div>
 
-<h2 id="design-examples">Design Examples</h2>
+<h2 id="design">Design</h2>
 
 <p>To configure actual bindings, define object bindings using design:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
 <span class="c1">// If you define multiple bindings to the same type, the last one will be used.
 </span><span class="k">val</span> <span class="n">design</span> <span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
   <span class="n">newDesign</span>                      <span class="c1">// Create an empty design
@@ -73,7 +83,15 @@ object BindingExample {
 </span></code></pre>
 </div>
 
-<h2 id="starting-a-session">Starting a Session</h2>
+<h2 id="session">Session</h2>
+
+<p>To create instances, you need to create a <code class="highlighter-rouge">Session</code> from you Design:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
+<span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+<span class="c1">// do something with a
+</span></code></pre>
+</div>
 
 <p>Session holds instances of singletons. These instances will be discarded after <code class="highlighter-rouge">session.shutdown</code> is called:</p>
 
@@ -82,7 +100,8 @@ object BindingExample {
 <span class="k">try</span> <span class="o">{</span>
   <span class="n">session</span><span class="o">.</span><span class="n">start</span>
   <span class="k">val</span> <span class="n">p</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span>
-<span class="o">}</span>
+  <span class="c1">// do something with P
+</span><span class="o">}</span>
 <span class="k">finally</span> <span class="o">{</span>
    <span class="n">session</span><span class="o">.</span><span class="n">shutdown</span>
 <span class="o">}</span>
@@ -91,7 +110,22 @@ object BindingExample {
 
 <p>You can also use <code class="highlighter-rouge">Design.withSession</code> to start and shutdown a session automatically:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">withSesssion</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
-   <span class="n">valp</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span>
+   <span class="c1">// session.start will be called here
+</span>   <span class="k">val</span> <span class="n">p</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span>
+<span class="o">}</span>
+<span class="c1">// session.shutdown will be called here
+</span></code></pre>
+</div>
+
+<h2 id="life-cycle">Life Cycle</h2>
+
+<p>To release resources (e.g., network connection, threads, etc.), add shutdown hooks:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">Service</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">].</span><span class="n">onShutdown</span> <span class="o">{</span> <span class="n">a</span> <span class="k">=&gt;</span>
+    <span class="c1">// Executed when session.shutdown is called
+</span>    <span class="n">a</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
+  <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
 </div>

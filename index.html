@@ -8,7 +8,7 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/kazari-style.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /></head><body><header id="site-header"><div class="navbar-wrapper"><div class="container"><div class="row"><div class="col-xs-6"><a href="/airframe/" class="brand"><div class="icon-wrapper"><span>Airframe</span></div></a></div><div class="col-xs-6"><nav class="text-right"><ul class=""><li><a href="https://github.com/wvlet/airframe"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="docs"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div></div></div><div class="jumbotron"><div class="container"><h1 class="text-center">Dependency Injection Library for Scala</h1><h2></h2><p class="text-center"><a href="https://github.com/wvlet/airframe" class="btn btn-outline-inverse">View on GitHub</a></p></div></div><div><ul class="horizontalNav">                  </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="airframe">Airframe</h1>
 
-<p>Airframe is a <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injection (DI)</a> library tailored to <a href="https://www.scala-lang.org/">Scala</a>. Dependency injection is a design pattern for simplifying object instantiation; Instead of enumerating necessary object instances (dependencies) to constructor arguments, DI framework builds objects on user’s behalf. While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers), Airframe redesigned it for Scala so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
+<p>Airframe is a <a href="https://en.wikipedia.org/wiki/Dependency_injection">dependency injection (DI)</a> library tailored to <a href="https://www.scala-lang.org/">Scala</a>. Dependency injection is a design pattern for simplifying object instantiation; Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on user’s behalf. While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers), Airframe redesigned it for Scala so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
 
 <ul>
   <li><a href="docs">Documentation</a></li>
@@ -25,9 +25,9 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
-<h3 id="bind-design-then-build">Bind, Design, then Build!</h3>
+<h3 id="usage">Usage</h3>
 
-<p>With Airframe, your Scala programming can be greatly simplified:</p>
+<p>With Airframe, your Scala programming can be greatly simplified in the following three steps:</p>
 
 <p>First, <strong>bind</strong> objects to your code with <code class="highlighter-rouge">bind[X]</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
@@ -58,33 +58,28 @@ ga('send', 'pageview');
 
 <p>Airframe builds an instance of <code class="highlighter-rouge">App</code> based on the binding rules specified in the <strong>design</strong> object. That means when writing applications, you only need to care about how to use objects (<strong>bind</strong>), rather than how to build them. <strong>Design</strong> objects already knows how to provide necessary objects to build your classes.</p>
 
+<h2 id="separation-of-object-bindings-and-design">Separation of object bindings and design</h2>
+
+<p>This separation of object bindings and their design (assembly) is useful for reducing code duplications between production and test codes. For example, compare writing <code class="highlighter-rouge">new App(new X, new Y(...), new Z(...), ...)</code> in both of your main and test codes, and just calling <code class="highlighter-rouge">session.build[App]</code>.</p>
+
+<p>Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.</p>
+
 <h2 id="features">Features</h2>
 
-<p>The major features of Airframe include:</p>
+<p>Major features of Airframe are as follows:</p>
 
 <ul>
   <li>Simple usage
     <ul>
-      <li>Just <code class="highlighter-rouge">import wvlet.airframe._</code> and do the above three steps to enjoy DI in Scala.</li>
+      <li>Just <code class="highlighter-rouge">import wvlet.airframe._</code> and do the above three steps to start DI in Scala.</li>
     </ul>
   </li>
-  <li>Useful for reducing code duplications between production and test codes.
-    <ul>
-      <li>Compare writing <code class="highlighter-rouge">new App(new X, new Y(...), new Z(...), ...)</code> and just calling <code class="highlighter-rouge">session.build[App]</code>.</li>
-    </ul>
-  </li>
-  <li>Airframe can integrate the flexibility of Scala traits and dependency injection (DI) at the same time.
-    <ul>
-      <li>Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.</li>
-    </ul>
-  </li>
+  <li>Airframe can create objects from Scala traits.</li>
+  <li>Design objects are immutable. You can create a new design safely based on an existing design.</li>
+  <li>Supports all possible binding types: constructor, instance, provider, singleton bindings.</li>
   <li>Built-in life cycle management of objects (init, shutdown, etc.) through sessions.</li>
-  <li>Scala macro based binding generation.</li>
-  <li>Scala 2.11, 2.12, <a href="https://www.scala-js.org/">Scala.js</a> support.
-    <ul>
-      <li>No reflection is used.</li>
-    </ul>
-  </li>
+  <li>Scala macro based binding generation (reflection-free)</li>
+  <li>Scala 2.11, 2.12, <a href="https://www.scala-js.org/">Scala.js</a> support.</li>
 </ul>
 
 <h2 id="whats-next">What’s Next?</h2>
