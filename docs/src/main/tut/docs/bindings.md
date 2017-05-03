@@ -3,26 +3,27 @@ layout: docs
 title: Bindings
 ---
 
-# Advanced Bindings
+# Binding Types
 
-Here are examples of bindings using type parameters. In Airframe,
+## Generic Type Binding
+
+Airframe can bind objects to generics types. Traditional DI libraries for Java (e.g., [Guice](https://github.com/google/guice), etc.) cannot
+distinguish generic classes that have different type parameters (e.g., `Seq[Int]`, `Seq[String]`) because Java compiler applies [type erasure](https://docs.oracle.com/javase/tutorial/java/generics/erasure.html), and converts them to the same `Seq[Object]` type. In Airframe, generic types with different type parameters will be treated differently. For example, all of the following bindings can be assigned to different objects:
 
 ```scala
 bind[Seq[_]]
 bind[Seq[Int]]
 bind[Seq[String]]
 
-
 bind[Map[Int,String]]
 bind[Map[_,_]]
 ```
 
-Behind the scene, Airframe uses [Surface](https://github.com/wvlet/surface/) as identifier of class types.
+Behind the scene, Airframe uses [Surface](https://github.com/wvlet/surface/) as identifier of types so that we can extract these types identifiers at compile time.
 
-## Type alias binding
+## Type Alias Binding
 
-If you need to bind the same type objects in a different manner, you can use type alias of Scala.
-For example,
+If you need to bind different objects to the same data type, use type aliases of Scala. For example,
 ```scala
 case class Fruit(name: String)
 
@@ -35,12 +36,14 @@ trait TaggedBinding {
 }
  ```
 
-Alias binding is also useful to inject primitive type values:
+Alias binding is useful to inject primitive type values:
 ```scala
+import wvlet.airframe._
+
 type Env = String
 
 trait MyService {
-  // Coditional binding
+  // Conditional binding
   lazy val threadManager = bind[Env] match {
      case "test" => bind[TestingThreadManager] // prepare a testing thread manager
      case "production" => bind[ThreadManager] // prepare a thread manager for production
@@ -48,13 +51,19 @@ trait MyService {
 }
 
 val coreDesign = newDesign
-val testingDesign = coreDesign.bind[Env].toInstance("test")
-val productionDesign = coreDesign.bind[Env].toInstance("production")
+
+val testingDesign =
+  coreDesign.
+    bind[Env].toInstance("test")
+
+val productionDesign =
+  coreDesign
+    .bind[Env].toInstance("production")
 ```
 
-## Tagged type binding
+## Tagged Type Binding
 
-Taggged binding `@@` is also useful to annotate type names:
+Tagged binding `@@` is also useful to annotate type names:
 
 ```scala
 // This import statement is necessary to use tagged type (@@)
@@ -66,34 +75,5 @@ trait Id
 trait A {
   val name = bind[String @@ Name]
   val id = bind[Int @@ Id]
-}
-```
-
-## Reuse bindings with mixin
-
-To reuse bindings, we can create XXXService traits and mix-in them to build a complex object.
-
-```scala
-import wvlet.airframe._
-
-trait PrinterService {
-  val printer = bind[Printer] // It can bind any Printer types
-}
-
-trait FortuneService {
-  val fortune = bind[Fortune]
-}
-
-trait FortunePrinterMixin extends PrinterService with FortuneService {
-  printer.print(fortune.generate)
-}
-```
-
-### Override bindings
-
-It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
-```scala
-trait CustomPrinterMixin extends FortunePrinterMixin {
-  override val printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
 }
 ```

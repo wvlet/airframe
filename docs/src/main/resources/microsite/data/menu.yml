@@ -11,10 +11,12 @@ options:
        url: docs/index.html#session
      - title: Life Cycle
        url: docs/index.html#life-cycle
-  - title: Bindings
+  - title: Binding Types
     url: docs/bindings.html
   - title: Life Cycle Management
     url: docs/lifecycle.html
+  - title: Use Cases
+    url: docs/use-cases.html
   - title: Debugging DI
     url: docs/debug.html
   - title: Other DI Frameworks
