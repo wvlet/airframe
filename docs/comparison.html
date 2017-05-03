@@ -47,18 +47,18 @@ ga('send', 'pageview');
   <li>Compile-time dependency injection:
     <ul>
       <li>Macwire, Dagger2, etc.</li>
-      <li><strong>pros</strong> Can validate the presence of dependencies at compile time.</li>
-      <li><strong>pros</strong> Fast since all binding codes are generated at compile time.</li>
-      <li><strong>cons</strong> Less flexible (e.g., No dynamic type binding)</li>
-      <li><strong>cons</strong> Need to enumerate all dependencies in the same scope (lengthy code).</li>
+      <li><strong>pros</strong>: Can validate the presence of dependencies at compile time.</li>
+      <li><strong>pros</strong>: Fast since all binding codes are generated at compile time.</li>
+      <li><strong>cons</strong>: Less flexible (e.g., No dynamic type binding)</li>
+      <li><strong>cons</strong>: Need to enumerate all dependencies in the same scope (lengthy code).</li>
     </ul>
   </li>
   <li>Run-time dependency injection
     <ul>
       <li>Airframe, Google Guice, etc.</li>
-      <li><em>pros</em> Allows dynamic type binding.</li>
-      <li><em>pros</em> Simpler code. Only need to bind direct dependencies.</li>
-      <li><em>cons</em> Missed binding founds as a runtime error</li>
+      <li><strong>pros</strong>: Allows dynamic type binding.</li>
+      <li><strong>pros</strong>: Simpler code. Only need to bind direct dependencies.</li>
+      <li><strong>cons</strong>: Missed binding founds as a runtime error</li>
     </ul>
   </li>
 </ul>
