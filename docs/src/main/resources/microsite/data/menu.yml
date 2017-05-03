@@ -11,7 +11,7 @@ options:
        url: docs/index.html#session
      - title: Life Cycle
        url: docs/index.html#life-cycle
-  - title: Bindins Types
+  - title: Bindings
     url: docs/bindings.html
   - title: Life Cycle Management
     url: docs/lifecycle.html

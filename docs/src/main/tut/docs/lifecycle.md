@@ -11,25 +11,27 @@ Airframe has a built-in object life cycle manager to implement these hooks:
 ```scala
 // Your server application
 trait Server {
-  def init() {}
-  def start() {}
-  def stop() {}
+  def init() { /* initialize */ }
+  def start() { /* start */ }
+  def stop() { /* shutdown */ }
 }
 
 // When binding an object, you can define life cycle hooks to the injected object:
 trait MyServerService {
   val service = bind[Server].withLifeCycle(
     init = { _.init },    // Called when the object is initialized (called only once for singleton)
-    start = { _.start },  // Called when sesion.start is called
+    start = { _.start },  // Called when session.start is called
     shutdown = { _.stop } // Called when session.shutdown is called
   )
 }
 ```
 
-You can also use onInit/onStart/onShutdown methods:
-```
-bind[X]
-  .onInit { x => ... }
-  .onStart { x => ... }
-  .onShutdown { x => ... }
+You can also use onInit/onStart/onShutdown methods to add hooks to the object life cycle:
+```scala
+trait A {
+  val a = bind[X]
+    .onInit { x => ... }
+    .onStart { x => ... }
+    .onShutdown { x => ... }
+}  
 ```

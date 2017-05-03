@@ -1,51 +1,28 @@
 ---
 layout: docs
-title: Binding types
+title: Bindings
 ---
 
-## Local variable binding
+# Advanced Bindings
 
-Using local variables is the simplest way to binding objects:
-
-```scala
-trait FortunePrinterEmbedded {
-  val printer = bind[Printer]
-  val fortune = bind[Fortune]
-
-  printer.print(fortune.generate)
-}
-```
-
-## Reuse bindings with mixin
-
-To reuse bindings, we can create XXXService traits and mix-in them to build a complex object.
+Here are examples of bindings using type parameters. In Airframe,
 
 ```scala
-import wvlet.airframe._
+bind[Seq[_]]
+bind[Seq[Int]]
+bind[Seq[String]]
 
-trait PrinterService {
-  val printer = bind[Printer] // It can bind any Printer types
-}
 
-trait FortuneService {
-  val fortune = bind[Fortune]
-}
-
-trait FortunePrinterMixin extends PrinterService with FortuneService {
-  printer.print(fortune.generate)
-}
+bind[Map[Int,String]]
+bind[Map[_,_]]
 ```
 
-It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
-```scala
-trait CustomPrinterMixin extends FortunePrinterMixin {
-  override val printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
-}
-```
+Behind the scene, Airframe uses [Surface](https://github.com/wvlet/surface/) as identifier of class types.
 
 ## Type alias binding
 
-Airframe can provide separate implementations to the same type object by using type alias:
+If you need to bind the same type objects in a different manner, you can use type alias of Scala.
+For example,
 ```scala
 case class Fruit(name: String)
 
@@ -89,5 +66,34 @@ trait Id
 trait A {
   val name = bind[String @@ Name]
   val id = bind[Int @@ Id]
+}
+```
+
+## Reuse bindings with mixin
+
+To reuse bindings, we can create XXXService traits and mix-in them to build a complex object.
+
+```scala
+import wvlet.airframe._
+
+trait PrinterService {
+  val printer = bind[Printer] // It can bind any Printer types
+}
+
+trait FortuneService {
+  val fortune = bind[Fortune]
+}
+
+trait FortunePrinterMixin extends PrinterService with FortuneService {
+  printer.print(fortune.generate)
+}
+```
+
+### Override bindings
+
+It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
+```scala
+trait CustomPrinterMixin extends FortunePrinterMixin {
+  override val printer = new Printer { def print(s:String) = { Console.err.println(s) } } // Manually inject an instance
 }
 ```
