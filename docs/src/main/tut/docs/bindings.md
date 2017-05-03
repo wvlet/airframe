@@ -1,9 +1,9 @@
 ---
 layout: docs
-title: Bindings
+title: Advanced Binding Types
 ---
 
-# Binding Types
+# Advanced Binding Types
 
 ## Generic Type Binding
 

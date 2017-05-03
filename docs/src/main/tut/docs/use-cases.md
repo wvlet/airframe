@@ -7,9 +7,13 @@ title: Use Cases
 
 This page illustrates typical use cases of Airframe.
 
-## Binding Configurations
+- [Configuring Applications](#configuring-applications)
+- [Managing Resources](#managing-resources)
+- [Composing Services](#composing-services)
 
-Configuring applications is cumbersome because you need to think about how to pass configurations to your classes. With Airframe this process is simple; Just bind configuration objects to your classes:
+## Configuring Applications
+
+Configuring applications is cumbersome because you need to think about how to pass configurations to your classes. With Airframe this process becomes much simpler; Just binding configuration objects to your class:
 
 ```scala
 import wvlet.airframe._
@@ -89,10 +93,25 @@ d.withSession { session =>
 ```
 
 
-## Reusing Bindings with Trait Mix-in
+## Composing Services
 
-To reuse bindings, we can create XXXService traits and mix-in them to build a complex object:
+A traditional way of building applications is passing necessary servies to a main class:
+```scala
+class YourService(threadPool:ThreadPool, s1:Service1, s2:Service2, ...) {
+  ...
+}
 
+val t = new ThreadPool
+val s1 = new Service1(...)
+val s2 = new Service2(...)
+...
+val service = new YourService(t, s1, s2, ...)
+```
+
+However, this approach is not scalable if you need to use more services in your class, or if you need to implement applications that require different subsets of services.
+
+
+If you implement such services as [traits](http://docs.scala-lang.org/tutorials/tour/traits.html) in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:
 ```scala
 import wvlet.airframe._
 
@@ -108,19 +127,26 @@ trait ThreadPool {
   }
 }
 
+// Instead of using constructor arguments,
+// create a service trait that binds necessary service objects
 trait ThreadPoolService {
   val threadPool = bindSingleton[ThreadPool]
 }
 
-trait App1 extends ThreadPoolService {
+// Another service
+trait UserAuthService {
+  val userAuth = bind[UserAuth]
+}
+
+// Mix-in services
+trait App1 extends ThreadPoolService with UserAuthService {
   threadPool.submit( ... )
 }
 
-// Reuse singleton ThreadPool here
-trait App2 extends ThreadPoolService {}
+// Reuse singleton ThreadPool and UserAuth here
+trait App2 extends ThreadPoolService with UserAuthService {
   threadPool.submit( ... )
 }
-
 ```
 
 Using Scala traits is powerful to compose applications that depend on many services:
@@ -128,24 +154,18 @@ Using Scala traits is powerful to compose applications that depend on many servi
 ```
 trait App
   extends ThreadPoolService
-  with UserAuthenticationService
-  with ...
-{
+  with UserAuthService
+  with ... {
    // Use threadPool, userAuthentication, ...
-
 }
-
 ```
 
 ### Override Bindings
 
 It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
 ```scala
-trait CustomPrinterMixin extends FortunePrinterMixin {
+trait CustomApp extends App {
   // Manually inject an instance
-  override val printer =
-    new Printer {
-      def print(s:String) = { Console.err.println(s) }  
-    }
+  override val userAuth = new MockUserAuth { ... }
 }
 ```

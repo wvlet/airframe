@@ -3,10 +3,9 @@ layout: docs
 title: Debugging DI
 ---
 
-## Debugging Airframe Binding and Injection
+## Debugging DI
 
-To check the runtime behaviour of Airframe object injection, set the log level of `wvlet.airframe`
-to `debug` or `trace`:
+To check the runtime behavior of Airframe's dependency injection, set the log level of `wvlet.airframe` to `debug` or `trace`:
 
 **src/main/resources/log.properties**
 ```

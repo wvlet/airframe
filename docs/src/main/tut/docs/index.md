@@ -116,13 +116,20 @@ design.withSesssion { session =>
 
 ## Life Cycle
 
-To release resources (e.g., network connection, threads, etc.), add shutdown hooks:
+
+Server side application often requires resource managemeng (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
 
 ```scala
-trait Service {
-  val a = bind[A].onShutdown { a =>
-    // Executed when session.shutdown is called
-    a.close()
-  }
+trait MyServerService {
+  val service = bind[Server]
+    .onInit { _.init },    // Called when the object is initialized
+                           // (Called only once for singleton)
+    .onStart = { _.start },  // Called when session.start is called
+    .onShutdown = { _.stop } // Called when session.shutdown is called
+  )
 }
 ```
+
+## What's Next
+
+- See typical [Use Cases](use-cases.html) of Airframe
