@@ -56,7 +56,8 @@ The major advantages of Airframe include:
 # Usage
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11)
-- [Release Notes](https://github.com/wvlet/airframe/blob/master/RELEASE_NOTES.md)
+
+- [Release Notes](http://wvlet.org/airframe/docs/release-notes.html)
 
 **build.sbt**
 ```
