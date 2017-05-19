@@ -80,6 +80,8 @@ val design : Design =
   .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
 ```
 
+If you define multiple bindings to the same type (e.g., P), the last binding will be used. 
+
 ## Session
 
 To create instances, you need to create a `Session` from you Design:

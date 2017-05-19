@@ -9,7 +9,8 @@ This page illustrates typical use cases of Airframe.
 
 - [Configuring Applications](#configuring-applications)
 - [Managing Resources](#managing-resources)
-- [Composing Services](#composing-services)
+- [Service Mix-In](#service-mix-in)
+- [Override Bindings](#override-bindings)
 
 ## Configuring Applications
 
@@ -93,7 +94,7 @@ d.withSession { session =>
 ```
 
 
-## Composing Services (Service Mix-in)
+## Service Mix-In
 
 A traditional way of building applications is passing necessary servies to a main class:
 ```scala
