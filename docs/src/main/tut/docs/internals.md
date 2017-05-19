@@ -39,19 +39,18 @@ trait A {
 val session =
   newDesign
   .bind[B].toInstance(new B(...))
-  .newSesion // Session holds the avove instance of B
+  .newSesion // Session holds the above instance of B
  
 val app = session.build[App]
 ```
+This code builds an instance of `App` using a concrete instance of `B` stored in Session.
 
 ### Injecting Session
 
-To create an instance of A and B, we need to pass the instance of Session while building objects because the session has an instance of B.
+To create an instance of `A` and `B` inside `App`, we need to pass the instance of Session while building objects because the session holds an instance of B.
 But trait `App` nor `A` doesn't know anything about the session.
 
-How do we pass a reference to the Session?
-
-A trick is inside `build[App]`, `bind[A]`, and `bind[B]`.
+How do we pass a reference to the Session? A trick is inside `build` and `bind`.
 
 Let's look at how `session.build[App]` will work when creating an instance of `App`.
 Airframe expands this code as follows at compile-time:
@@ -104,8 +103,45 @@ new A extends SessionHolder {
     binder(session)
   }
 }
+```
+
+### Comparsion with a naive approach
+
+At first look, the above macro expantion looks quite scarly, however, when calling constructor of `App` you are actually doing similar things:
+```
+{ 
+  val myB = new B {}
+  val myA = new A(b = myB) {}
+  new App(a = myA)
+}
+// How can we find myA and myB after exiting the scope?
+// What if a and b hold resources (e.g., network connection, database connection, etc.), that need to be released later?
+```
+
+To manage life cycle of A and B, you eventually needs to store the object references somewhere:
+```
+// Assume storing objects in a Map
+val session = Map[Class[_], AnyRef]()
+
+session += classOf[B] -> new B {}
+session += classOf[A] -> new A(b=session.get(classOf[B])) {}
+
+val app = new App(a = session.get(classOf[A])) {}
+session += classOf[App] -> app
+
+// At shutdown phase
+session.objects.foreach { x=> 
+  x match {
+    case a:A => // release A
+    case b:B => // release B ...
+    case _ => ...
+  }
+}
 
 ```
+As we have seen in the example of [Service Mix-in](use-cases.html#service-mix-in), if we need to manage hundreds of services,
+manually writing such object management codes will be cumbersome tasks. 
+
 
 ## Instantiation Methods
 
