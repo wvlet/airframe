@@ -19,5 +19,7 @@ options:
     url: docs/debug.html
   - title: Other DI Frameworks
     url: docs/comparison.html
+  - title: Airframe Internals
+    url: docs/internals.html
   - title: Release Notes
     url: docs/release-notes.html
