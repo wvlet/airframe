@@ -182,11 +182,28 @@ trait CDService {
 
 It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:
 ```scala
-trait CustomApp extends App {
+trait CustomApp extends App1 {
   // Manually inject an instance
-  override val userAuth = new MockUserAuth { ... }
+  override val monitor = new MockMonitor { ... }
 }
 ```
 
+If you are using [ScalaMock](http://scalamock.org/) or [Mockito](http://site.mockito.org/), you may overwrite a service with a mock (empty) implementation:
 
+```scala
+trait MockApp extends App1 {
+  override val monitor = mock[Monitor]
+}
+```
 
+Or you can use mock instance binding by extending the design:
+
+```scala
+val coreDesign =
+  newDesign
+  .bind[Monitor].to[MonitorImpl]
+
+val testDesign =
+  coreDesign
+  .bind[Monitor].toInstance(mock[Monitor])
+```
