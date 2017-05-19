@@ -146,7 +146,7 @@ ga('send', 'pageview');
   <span class="n">threadPool</span><span class="o">.</span><span class="n">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
 <span class="o">}</span>
 
-<span class="c1">// Reuse singleton ThreadPool in another service
+<span class="c1">// Reuse singleton ThreadPool in another application
 </span><span class="k">trait</span> <span class="nc">App2</span> <span class="k">extends</span> <span class="nc">ThreadPoolService</span> <span class="o">{</span>
   <span class="n">threadPool</span><span class="o">.</span><span class="n">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
 <span class="o">}</span>
@@ -158,8 +158,11 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">YourApp</span>
  <span class="k">extends</span> <span class="nc">AService</span>
     <span class="k">with</span> <span class="nc">BService</span>
-    <span class="k">with</span> <span class="nc">CDService</span> <span class="o">{</span>
-  <span class="c1">// use a, b, c, and d here
+    <span class="k">with</span> <span class="nc">CDService</span>
+    <span class="o">...</span>
+    <span class="k">with</span> <span class="nc">ZService</span>
+<span class="o">{</span>
+  <span class="c1">// use a, b, c, d, .., z here
 </span><span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">AService</span> <span class="o">{</span>
@@ -174,6 +177,7 @@ ga('send', 'pageview');
   <span class="k">val</span> <span class="n">c</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">C</span><span class="o">]</span>
   <span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">D</span><span class="o">]</span>
 <span class="o">}</span>
+<span class="o">...</span>
 
 </code></pre>
 </div>
@@ -187,6 +191,7 @@ ga('send', 'pageview');
 <span class="o">}</span>
 </code></pre>
 </div>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
