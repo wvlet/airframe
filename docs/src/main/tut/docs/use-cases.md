@@ -93,7 +93,7 @@ d.withSession { session =>
 ```
 
 
-## Composing Services
+## Composing Services (Service Mix-in)
 
 A traditional way of building applications is passing necessary servies to a main class:
 ```scala
@@ -108,10 +108,9 @@ val s2 = new Service2(...)
 val service = new YourService(t, s1, s2, ...)
 ```
 
-However, this approach is not scalable if you need to use more services in your class, or if you need to implement applications that require different subsets of services.
+However, this approach is not scalable if you need to use more services in your class or if you need to implement applications that require different subsets of services.
 
-
-If you implement such services as [traits](http://docs.scala-lang.org/tutorials/tour/traits.html) in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:
+If you write such services as [traits](http://docs.scala-lang.org/tutorials/tour/traits.html) in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:
 ```scala
 import wvlet.airframe._
 
@@ -134,30 +133,49 @@ trait ThreadPoolService {
 }
 
 // Another service
-trait UserAuthService {
-  val userAuth = bind[UserAuth]
+trait MonitorService {
+  val monitor = bind[Monitor]
 }
 
 // Mix-in services
-trait App1 extends ThreadPoolService with UserAuthService {
+trait App1 extends ThreadPoolService with MonitorService {
+  monitor.log("starting app")
   threadPool.submit( ... )
 }
 
-// Reuse singleton ThreadPool and UserAuth here
-trait App2 extends ThreadPoolService with UserAuthService {
+// Reuse singleton ThreadPool in another application
+trait App2 extends ThreadPoolService {
   threadPool.submit( ... )
 }
 ```
 
-Using Scala traits is powerful to compose applications that depend on many services:
+In general, you can create your application with Service mix-ins as below:
 
-```
-trait App
-  extends ThreadPoolService
-  with UserAuthService
-  with ... {
-   // Use threadPool, userAuthentication, ...
+```scala
+trait YourApp
+ extends AService
+    with BService
+    with CDService
+    ...
+    with ZService
+{
+  // use a, b, c, d, .., z here
 }
+
+trait AService {
+  val a = bind[A]
+}
+
+trait BService {
+  val b = bind[B]
+}
+
+trait CDService {
+  val c = bind[C]
+  val d = bind[D]
+}
+...
+
 ```
 
 ### Override Bindings
@@ -169,3 +187,6 @@ trait CustomApp extends App {
   override val userAuth = new MockUserAuth { ... }
 }
 ```
+
+
+

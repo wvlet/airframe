@@ -90,7 +90,7 @@ val a = session.build[A]
 // do something with a
 ```
 
-Session holds instances of singletons. These instances will be discarded after `session.shutdown` is called:
+Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after `session.shutdown` is called:
 
 ```scala
 // Start a session
@@ -115,7 +115,6 @@ design.withSesssion { session =>
 ```
 
 ## Life Cycle
-
 
 Server side application often requires resource managemeng (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
 
