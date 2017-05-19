@@ -30,16 +30,15 @@ Both of MacWire and Dagger2 requires all of the dependencies should be found in 
 ## Summary
 
 - Compile-time dependency injection:
-  - Macwire, Dagger2, etc.
+  - libraries: Macwire, Dagger2, etc.
   - **pros**: Can validate the presence of dependencies at compile time.
-  - **pros**: Fast since all binding codes are generated at compile time.
   - **cons**: Less flexible (e.g., No dynamic type binding)
   - **cons**: Need to enumerate all dependencies in the same scope (lengthy code).
 
 - Run-time dependency injection
-  - Airframe, Google Guice, etc.
+  - libraries: Airframe, Google Guice, etc.
   - **pros**: Allows dynamic type binding.
-  - **pros**: Simpler code. Only need to bind direct dependencies.
+  - **pros**: Simpler binding codes. Only need to bind direct dependencies.
   - **cons**: Missed binding founds as a runtime error
 
 Airframe belongs to a runtime dependency injection library, and resolves several short-comings of Google Guice (lack of lifecycle manager, difficulty of binding third-party objects, etc.). We also have implemented Scala-friendly DI syntax in Airframe. For the performance reason, Airframe uses Scala macros to generate binding code as much as possible (except dynamic type binding, which cannot be found at compile-time). To use Airframe, you don't need to understand the whole concept of DI and features in the existing DI frameworks. Just `bind`-`design`-`build` objects. That is all you need to know!

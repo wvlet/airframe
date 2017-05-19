@@ -26,7 +26,7 @@ libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 
 ### Usage
 
-With Airframe, your Scala programming can be greatly simplified in the following three steps:
+With Airframe, your Scala programming can be greatly simplified:
 
 First, **bind** objects to your code with `bind[X]`:
 ```scala
@@ -55,7 +55,7 @@ val session = design.newSession
 val app: App = session.build[App]
 ```
 
-Airframe builds an instance of `App` based on the binding rules specified in the **design** object. That means when writing applications, you only need to care about how to use objects (**bind**), rather than how to build them. **Design** objects already knows how to provide necessary objects to build your classes.
+Airframe builds an instance of `App` based on the binding rules specified in the **design** object. That means when writing applications, you only need to care about how to use objects (**bind**), rather than how to build them, because **Design** objects already knows how to provide necessary objects to build your classes.
 
 ## Separation of object bindings and design
 
