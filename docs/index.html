@@ -93,7 +93,7 @@ object BindingExample {
 </span></code></pre>
 </div>
 
-<p>Session holds instances of singletons. These instances will be discarded after <code class="highlighter-rouge">session.shutdown</code> is called:</p>
+<p>Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after <code class="highlighter-rouge">session.shutdown</code> is called:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// Start a session
 </span><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
