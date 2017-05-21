@@ -50,12 +50,11 @@ pre .hljs {
 .icon-wrapper, .text-center, .hidden-xs, #sidebar li {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
-								       
+
 body {
-	font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
+    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Mincho Pro', serif;
     font-size: 17px;
 }
-
 
 code, kbd,pre,samp {
     font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
