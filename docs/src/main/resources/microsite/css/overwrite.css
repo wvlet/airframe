@@ -16,7 +16,7 @@ pre {
 }
 
 pre .hljs {
-    padding: 10px;
+  padding: 10px;
 }
 
 #page-content-wrapper section pre {
@@ -37,10 +37,26 @@ pre .hljs {
     font-size: 32px;
 }
 
-body {
+#wrapper {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#sidebar-wrapper {
+    left: initial;
+}
+
+.icon-wrapper, .text-center, .hidden-xs, #sidebar li {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+body {
+    font-family: 'goudy old style', 'minion pro', 'bell mt', Georgia, 'Hiragino Mincho Pro', serif;
+    font-size: 17px;
 }
 
 code, kbd,pre,samp {
     font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
 }
+
