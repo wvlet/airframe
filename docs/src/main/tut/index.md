@@ -13,6 +13,7 @@ Airframe is a [dependency injection (DI)](https://en.wikipedia.org/wiki/Dependen
 Airframe provides the best practices of building service objecst using DI and Scala.
 
 - [Documentation](docs)
+- [Use Cases](docs/use-cases.html)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Getting Started
