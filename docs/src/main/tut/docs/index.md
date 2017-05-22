@@ -64,7 +64,7 @@ To configure actual bindings, define object bindings using design:
 import wvlet.airframe._
 
 // If you define multiple bindings to the same type, the last one will be used.
-val design : Design =
+val design: Design =
   newDesign                      // Create an empty design
   .bind[A].to[AImpl]             // Bind a concrete class AImpl to A
   .bind[B].toInstance(new B(1))  // Bind a concrete instance to B (This instance will be a singleton)
@@ -81,6 +81,18 @@ val design : Design =
 ```
 
 If you define multiple bindings to the same type (e.g., P), the last binding will be used. 
+
+Design objects are immutable, so you can safely override bindings without modifying the original design:
+```
+val design: Design =
+  newDesign.bind[A].to[B] // bind A to B
+
+val newDesign: Design =
+  design.bind[A].to[C] // Override binding for A
+
+// design.newSession.build[A] -> produces B
+// newDesign.newSession.build[A] -> produes C
+```
 
 ## Session
 
