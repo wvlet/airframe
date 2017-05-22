@@ -23,5 +23,3 @@ options:
     url: docs/internals.html
   - title: Release Notes
     url: docs/release-notes.html
-  - title: Source Code
-    url: https://github.com/wvlet/airframe
