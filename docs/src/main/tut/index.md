@@ -76,7 +76,7 @@ Major features of Airframe are as follows:
 - Supports all possible binding types: constructor, instance, provider, singleton bindings.
 - Built-in life cycle management of objects (init, shutdown, etc.) through sessions.
 - Scala macro based binding generation (reflection-free)
-- Scala 2.11, 2.12, [Scala.js](https://www.scala-js.org/) support.
+- Scala 2.11, 2.12, and [Scala.js](https://www.scala-js.org/) support.
 
 ## What's Next?
 
