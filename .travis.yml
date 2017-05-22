@@ -12,8 +12,8 @@ install:
 language: scala
 
 scala:
-  - 2.12.1
-  - 2.11.8
+  - 2.12.2
+  - 2.11.11
 
 env:
   - PROJECT=airframeJS
@@ -23,7 +23,7 @@ jdk:
   - oraclejdk8
 
 script:
-  - if [ "$TRAVIS_SCALA_VERSION" == "2.12.1" -a "$PROJECT" == "airframeJVM" ]; then
+  - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PROJECT" == "airframeJVM" ]; then
       sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport";
       sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
     elif [ "$PROJECT" == "airframeJS" ]; then
