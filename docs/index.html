@@ -86,10 +86,10 @@ object BindingExample {
 <p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.</p>
 
 <p>Design objects are immutable, so you can safely override bindings without modifying the original design:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>val design: Design = 
+<div class="highlighter-rouge"><pre class="highlight"><code>val design: Design =
   newDesign.bind[A].to[B] // bind A to B
 
-val newDesign: Design = 
+val newDesign: Design =
   design.bind[A].to[C] // Override binding for A
 
 // design.newSession.build[A] -&gt; produces B
