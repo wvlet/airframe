@@ -53,6 +53,7 @@ pre .hljs {
 
 body {
     font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Mincho Pro', serif;
+    line-height: 1.4;
 }
 
 code, kbd,pre,samp {
