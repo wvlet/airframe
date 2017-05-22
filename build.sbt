@@ -73,7 +73,7 @@ lazy val airframeRoot = Project(id="airframe-root", base = file("."))
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS)
+) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS)
 
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
@@ -114,8 +114,7 @@ lazy val airframe =
     name := "airframe",
     description := "Dependency injection library tailored to Scala",
     libraryDependencies ++= Seq(
-      "org.wvlet" %%% "surface" % "0.3",
-      "org.wvlet" %%% "wvlet-log" % "1.2.2",
+      "org.wvlet" %%% "wvlet-log" % "1.2.3",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       // scalatest
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
@@ -132,7 +131,7 @@ lazy val airframe =
     // include the macro sources in the main source jar
     mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
   )
-  .dependsOn(airframeMacros % "compile-internal, test-internal")
+  .dependsOn(surface, airframeMacros % "compile-internal,test-internal")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS = airframe.js
@@ -154,3 +153,22 @@ lazy val airframeMacros =
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS = airframeMacros.js
+
+lazy val surface =
+  crossProject
+  .in(file("surface"))
+  .settings(buildSettings)
+  .settings (
+    name := "surface",
+    description := "A library for extracting object structure surface",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
+      // scalatest
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
+      "org.wvlet" %%% "wvlet-log" % "1.2.3" % "test"
+    )
+  )
+
+lazy val surfaceJVM = surface.jvm
+lazy val surfaceJS = surface.js
