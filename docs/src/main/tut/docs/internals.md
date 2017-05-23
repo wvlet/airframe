@@ -170,7 +170,7 @@ session.get(Surface[X])
 
 ## Suface
 
-Airframe uses `Surface[X]` as identifiers of object types. [Surface](https://github.com/wvlet/surface) is a reflection-free object type inspection library. 
+Airframe uses `Surface[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/surface) is a reflection-free object type inspection library.
 
 Here are some exmaples of Surface.
 ```scala
@@ -199,7 +199,7 @@ by reading ScalaSig at runtime we can resolve actual generic types, aliases, etc
 However runtime-reflection is slow and not always available. For example [Scala.js](https://www.scala-js.org/) doesn't support runtime reflections.
 So we cannot use ScalaSig for resolving type information.
 
-That is why we are using [Surface](https://github.com/wvlet/surface), a macro-based type information extractor, which works both in Scala and Scala.js.
+That is why we are using [Surface](https://github.com/wvlet/airframe/surface), a macro-based type information extractor, which works both in Scala and Scala.js.
 
 
 ### Surface Parameters

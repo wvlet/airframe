@@ -19,7 +19,7 @@ bind[Map[Int,String]]
 bind[Map[_,_]]
 ```
 
-Behind the scene, Airframe uses [Surface](https://github.com/wvlet/surface/) as identifier of types so that we can extract these types identifiers at compile time.
+Behind the scene, Airframe uses [Surface](https://github.com/wvlet/airframe/surface/) as identifier of types so that we can extract these types identifiers at compile time.
 
 ## Type Alias Binding
 
