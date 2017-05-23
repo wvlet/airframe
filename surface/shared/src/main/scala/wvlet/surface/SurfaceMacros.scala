@@ -285,7 +285,7 @@ private[surface] object SurfaceMacros {
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (isAbstract(targetType) || hasAbstractMethods(targetType)) {
+      if (isAbstract(targetType)) {
         None
       }
       else {
