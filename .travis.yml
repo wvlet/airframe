@@ -9,6 +9,17 @@ install:
   - gem install sass
   - gem install jekyll -v 3.2.1
 
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+    - $HOME/.coursier
+
+before_cache:
+  # Cleanup the cached directories to avoid unnecessary cache updates
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
 language: scala
 
 scala:
@@ -29,6 +40,6 @@ script:
     elif [ "$PLATFORM" == "JS" ]; then
       sbt ++$TRAVIS_SCALA_VERSION surfaceJS/test;
       sbt ++$TRAVIS_SCALA_VERSION airframeJS/test;
-    else  
+    else
       sbt ++$TRAVIS_SCALA_VERSION project$PLATFORM/test;
     fi
