@@ -1,4 +1,5 @@
 import ReleaseTransformations._
+import org.scalajs.sbtplugin.ScalaJSPluginInternal._
 
 val SCALA_2_12 = "2.12.2"
 val SCALA_2_11 = "2.11.11"
@@ -146,6 +147,7 @@ lazy val airframe =
     mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
   )
   .jsSettings(
+    scalaJSRequestsDOM := true,
     mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
     // include the macro sources in the main source jar
     mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
@@ -188,6 +190,9 @@ lazy val surface =
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
       "org.wvlet" %%% "wvlet-log" % "1.2.3" % "test"
     )
+  )
+  .jsSettings(
+    scalaJSRequestsDOM := true
   )
 
 lazy val surfaceJVM = surface.jvm

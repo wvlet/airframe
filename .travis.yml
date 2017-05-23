@@ -27,8 +27,7 @@ scala:
 
 env:
   - PROJECT=projectJVM
-  - PROJECT=surfaceJS
-  - PROJECT=airframeJS
+  - PROJECT=projectJS
 
 jdk:
   - oraclejdk8
