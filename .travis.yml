@@ -27,8 +27,9 @@ scala:
   - 2.11.11
 
 env:
-  - PLATFORM=JVM
-  - PLATFORM=JS
+  - PLATFORM=JVM PROJECT=project
+  - PLATFORM=JS PROJECT=surface
+  - PLATFORM=JS PROJECT=airframe
 
 jdk:
   - oraclejdk8
@@ -38,10 +39,12 @@ script:
       sbt ++$TRAVIS_SCALA_VERSION "; coverage; project${PLATFORM}/test; coverageReport";
       sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
     else
-      sbt ++$TRAVIS_SCALA_VERSION project${PLATFORM}/test;
+      sbt ++$TRAVIS_SCALA_VERSION ${project}${PLATFORM}/test;
     fi
 
 matrix:
   exclude:
   - scala: 2.11.11
-    env: PLATFORM=JS
+    env: PLATFORM=JS PROJECT=surface
+  - scala: 2.11.11
+    env: PLATFORM=JS PROJECT=surface
