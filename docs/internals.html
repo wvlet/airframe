@@ -173,7 +173,7 @@ manually writing such object management codes will be cumbersome tasks.</p>
 
 <h2 id="suface">Suface</h2>
 
-<p>Airframe uses <code class="highlighter-rouge">Surface[X]</code> as identifiers of object types. <a href="https://github.com/wvlet/surface">Surface</a> is a reflection-free object type inspection library.</p>
+<p>Airframe uses <code class="highlighter-rouge">Surface[X]</code> as identifiers of object types. <a href="https://github.com/wvlet/airframe/surface">Surface</a> is a reflection-free object type inspection library.</p>
 
 <p>Here are some exmaples of Surface.</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="c1">// A
@@ -202,7 +202,7 @@ by reading ScalaSig at runtime we can resolve actual generic types, aliases, etc
 <p>However runtime-reflection is slow and not always available. For example <a href="https://www.scala-js.org/">Scala.js</a> doesn’t support runtime reflections.
 So we cannot use ScalaSig for resolving type information.</p>
 
-<p>That is why we are using <a href="https://github.com/wvlet/surface">Surface</a>, a macro-based type information extractor, which works both in Scala and Scala.js.</p>
+<p>That is why we are using <a href="https://github.com/wvlet/airframe/surface">Surface</a>, a macro-based type information extractor, which works both in Scala and Scala.js.</p>
 
 <h3 id="surface-parameters">Surface Parameters</h3>
 
