@@ -66,14 +66,27 @@ compileScalastyle := org.scalastyle.sbt.ScalastylePlugin.scalastyle.in(Compile).
 
 (compile in Compile) := ((compile in Compile) dependsOn compileScalastyle).value
 
-
-lazy val airframeRoot = Project(id="airframe-root", base = file("."))
- .settings(
-  buildSettings,
+val noPublish = Seq(
   publishArtifact := false,
   publish := {},
   publishLocal := {}
-) aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS)
+)
+
+lazy val airframeRoot =
+  Project(id="airframe-root", base = file("."))
+  .settings(buildSettings)
+  .settings(noPublish)
+  .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS)
+
+lazy val projectJVM =
+  project
+  .settings(noPublish)
+  .aggregate(airframeJVM, surfaceJVM)
+
+lazy val projectJS =
+  project
+  .settings(noPublish)
+  .aggregate(airframeJS, surfaceJS)
 
 lazy val docs = project
   .enablePlugins(MicrositesPlugin)
@@ -136,6 +149,7 @@ lazy val airframe =
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS = airframe.js
 
+// Airframe depends on Airframe Macros, so we needed to split the project
 lazy val airframeMacros =
   crossProject
   .in(file("airframe-macros"))
