@@ -30,11 +30,10 @@ script:
       sbt ++$TRAVIS_SCALA_VERSION project$PLATFORM/test;      
     fi
 
-jobs:
+matrix:
   include:
-    - stage: after_script
-      script:
-        -  sbt ++$TRAVIS_SCALA_VERSION "; coverage; project$PLATFORM/test; coverageReport";
-           sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
-      scala: 2.12.2	   
+    - scala: 2.12.2
       env: PLATFORM=JVM
+      script:
+        - sbt ++$TRAVIS_SCALA_VERSION "; coverage; project$PLATFORM/test; coverageReport";
+          sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
