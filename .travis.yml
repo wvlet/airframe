@@ -9,26 +9,40 @@ install:
   - gem install sass
   - gem install jekyll -v 3.2.1
 
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt
+    - $HOME/.coursier
+
+before_cache:
+  # Cleanup the cached directories to avoid unnecessary cache updates
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
+
 language: scala
 
 scala:
   - 2.12.2
-  - 2.11.11
 
 env:
+  - PROJECT=projectJVM
+  - PROJECT=surfaceJS
   - PROJECT=airframeJS
-  - PROJECT=airframeJVM
 
 jdk:
   - oraclejdk8
 
 script:
-  - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PROJECT" == "airframeJVM" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; coverage; $PROJECT/test; coverageReport";
+  - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PROJECT" == "*JVM" ]; then
+      sbt ++$TRAVIS_SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport";
       sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
-    elif [ "$PROJECT" == "airframeJS" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test:fastOptJS;
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test;
     else
-      sbt ++$TRAVIS_SCALA_VERSION $PROJECT/test;
+      sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
     fi
+
+matrix:
+  include:
+  - scala: 2.11.11
+    env: PROJECT=projectJVM
+    jdk: oraclejdk8
