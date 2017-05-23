@@ -28,18 +28,16 @@ scala:
 
 env:
   - PLATFORM=JVM
-  - PLATFORM=JS
+  - PLATFORM=JS PROJECT=airframe
+  - PLATFORM=JS PROJECT=surface
 
 jdk:
   - oraclejdk8
 
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PLATFORM" == "JVM" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; coverage; project$PLATFORM/test; coverageReport";
+      sbt ++$TRAVIS_SCALA_VERSION "; coverage; projectJVM/test; coverageReport";
       sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
-    elif [ "$PLATFORM" == "JS" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION surfaceJS/test;
-      sbt ++$TRAVIS_SCALA_VERSION airframeJS/test;
     else
-      sbt ++$TRAVIS_SCALA_VERSION project$PLATFORM/test;
+      sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}${PLATFORM}/test;
     fi
