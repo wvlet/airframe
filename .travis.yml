@@ -45,3 +45,4 @@ matrix:
   include:
   - scala: 2.11.11
     env: PROJECT=projectJVM
+    jdk: oraclejdk8
