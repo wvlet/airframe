@@ -57,7 +57,13 @@ val buildSettings = Seq[Setting[_]](
     ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
     pushChanges
   ),
-  releaseCrossBuild := true
+  releaseCrossBuild := true,
+  publishTo := Some(
+    if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+    else
+      Opts.resolver.sonatypeStaging
+  )  
 )
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
