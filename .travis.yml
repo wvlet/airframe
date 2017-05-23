@@ -24,10 +24,9 @@ language: scala
 
 scala:
   - 2.12.2
-  - 2.11.11
 
 env:
-  - PLATFORM=JVM PROJECT=project
+  - PLATFORM=JVM
   - PLATFORM=JS PROJECT=surface
   - PLATFORM=JS PROJECT=airframe
 
@@ -43,8 +42,6 @@ script:
     fi
 
 matrix:
-  exclude:
+  include:
   - scala: 2.11.11
-    env: PLATFORM=JS PROJECT=surface
-  - scala: 2.11.11
-    env: PLATFORM=JS PROJECT=surface
+    env: PLATFORM=JVM
