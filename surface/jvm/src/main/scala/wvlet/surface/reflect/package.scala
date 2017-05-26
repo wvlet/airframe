@@ -22,9 +22,9 @@ import scala.util.Try
 /**
   *
   */
-package object runtime {
+package object reflect {
 
-  private[runtime] def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
+  private[reflect] def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
     val c = implicitly[ClassTag[T]]
     annot.collectFirst {
       case x if (c.runtimeClass isAssignableFrom x.annotationType) => x

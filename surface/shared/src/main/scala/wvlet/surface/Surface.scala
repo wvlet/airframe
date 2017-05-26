@@ -132,6 +132,10 @@ object Primitive {
     override def name: String = "Double"
     override def fullName: String = "Double"
   }
+  case object Char extends PrimitiveSurface(classOf[Byte]) {
+    override def name: String = "Char"
+    override def fullName: String = "Char"
+  }
   case object String extends PrimitiveSurface(classOf[String])
 
   case object Unit extends PrimitiveSurface(classOf[Unit])

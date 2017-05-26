@@ -85,6 +85,7 @@ class SurfaceTest extends SurfaceSpec {
       checkPrimitive(Surface.of[Float], "Float")
       checkPrimitive(Surface.of[Double], "Double")
       checkPrimitive(Surface.of[String], "String")
+      checkPrimitive(Surface.of[Char], "Char")
       checkPrimitive(Surface.of[java.lang.String], "String")
     }
 
