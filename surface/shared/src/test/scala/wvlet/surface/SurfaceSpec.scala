@@ -45,4 +45,14 @@ trait SurfaceSpec extends WordSpec
     surface.toString shouldBe expectedName
     surface
   }
+
+  def checkPrimitive(body: => Surface, expectedName:String) : Surface = {
+    val s = check(body, expectedName)
+    s.isAlias shouldBe false
+    s.isOption shouldBe false
+    s.isPrimitive shouldBe true
+    s.objectFactory.isEmpty shouldBe true
+    s
+  }
+
 }

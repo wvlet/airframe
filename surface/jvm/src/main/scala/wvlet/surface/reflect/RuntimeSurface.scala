@@ -29,6 +29,7 @@ import scala.collection.JavaConverters._
 object RuntimeSurface extends LogSupport {
 
   private val cache = new ConcurrentHashMap[ru.Type, Surface]().asScala
+  private val seen = scala.collection.mutable.Set[ru.Type]()
 
   private[reflect] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
 
@@ -43,12 +44,16 @@ object RuntimeSurface extends LogSupport {
 
   type SurfaceFactory = PartialFunction[ru.Type, Surface]
 
-  def surfaceOf(tpe: ru.Type): Surface = apply(tpe)
+  def surfaceOf(tpe: ru.Type): Surface = {
+    cache.getOrElseUpdate(tpe,
+      apply(tpe)
+    )
+  }
 
   private val surfaceFactories: SurfaceFactory =
-    primitiveTypeFactory orElse
+    aliasFactory orElse
+      primitiveTypeFactory orElse
       taggedTypeFactory orElse
-      aliasFactory orElse
       arrayFactory orElse
       optionFactory orElse
       tupleFactory orElse
@@ -59,14 +64,18 @@ object RuntimeSurface extends LogSupport {
       genericSurfaceFactory
 
   def apply(tpe: ru.Type): Surface = {
-    cache.getOrElseUpdate(tpe, {
+    if(seen.contains(tpe)) {
+      throw new IllegalStateException(s"Cyclic reference for ${tpe}")
+    }
+    else {
+      seen += tpe
       val m = surfaceFactories.orElse[ru.Type, Surface] {
         case _ =>
           trace(f"Resolving the unknown type $tpe into AnyRef")
           new GenericSurface(resolveClass(tpe))
       }
       m(tpe)
-    })
+    }
   }
 
   private def primitiveTypeFactory: SurfaceFactory = {
@@ -88,7 +97,7 @@ object RuntimeSurface extends LogSupport {
   private def typeArgsOf(t: ru.Type): List[ru.Type] = t match {
     case TypeRef(prefix, symbol, args) =>
       args
-    case ExistentialType(quantified, underlying) =>
+    case ru.ExistentialType(quantified, underlying) =>
       typeArgsOf(underlying)
     case other =>
       List.empty
@@ -105,7 +114,7 @@ object RuntimeSurface extends LogSupport {
 
   private def belongsToScalaDefault(t: ru.Type) = {
     t match {
-      case TypeRef(prefix, _, _) =>
+      case ru.TypeRef(prefix, _, _) =>
         val scalaDefaultPackages = Seq("scala.", "scala.Predef.", "scala.util.")
         scalaDefaultPackages.exists(p => prefix.dealias.typeSymbol.fullName.startsWith(p))
       case _ => false
@@ -143,7 +152,10 @@ object RuntimeSurface extends LogSupport {
     case t if
     t =:= typeOf[java.io.File] ||
       t =:= typeOf[java.util.Date] ||
-      t =:= typeOf[java.time.temporal.Temporal]
+      t =:= typeOf[java.time.temporal.Temporal] ||
+      t =:= typeOf[Throwable] ||
+      t =:= typeOf[Exception] ||
+      t =:= typeOf[Error]
     =>
       new GenericSurface(resolveClass(t))
   }
@@ -246,7 +258,7 @@ object RuntimeSurface extends LogSupport {
     surfaceParams.toIndexedSeq
   }
 
-  private def genericSurfaceWithConstructorFactory: SurfaceFactory = new SurfaceFactory {
+  private def genericSurfaceWithConstructorFactory: SurfaceFactory = new SurfaceFactory with LogSupport {
     override def isDefinedAt(t: ru.Type): Boolean = {
       !isAbstract(t) && findPrimaryConstructorOf(t).exists(!_.paramLists.isEmpty)
     }
@@ -261,12 +273,12 @@ object RuntimeSurface extends LogSupport {
     }
   }
 
-  private val existentialTypeFactory: SurfaceFactory = {
-    case t@ExistentialType(quantified, underlying) =>
+  private def existentialTypeFactory: SurfaceFactory = {
+    case t@ru.ExistentialType(quantified, underlying) =>
       surfaceOf(underlying)
   }
 
-  private val genericSurfaceFactory: SurfaceFactory = {
+  private def genericSurfaceFactory: SurfaceFactory = {
     case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
       val typeArgs = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
       new GenericSurface(resolveClass(t), typeArgs = typeArgs)
@@ -289,7 +301,8 @@ object RuntimeSurface extends LogSupport {
             cc.newInstance()
           }
           else {
-            cc.newInstance(args: _*)
+            val a = args.map(_.asInstanceOf[AnyRef])
+            cc.newInstance(a: _*)
           }
           obj.asInstanceOf[Any]
         }
