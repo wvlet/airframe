@@ -28,13 +28,20 @@ import scala.collection.JavaConverters._
   */
 object RuntimeSurface extends LogSupport {
 
+  private type SurfaceFactory = PartialFunction[ru.Type, Surface]
+
   private val cache = new ConcurrentHashMap[ru.Type, Surface]().asScala
   private val seen = scala.collection.mutable.Set[ru.Type]()
-
   private[reflect] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
 
-  private def resolveClass(tpe: ru.Type): Class[_] =
-    Try(mirror.runtimeClass(tpe)).getOrElse(classOf[Any])
+  private def resolveClass(tpe: ru.Type): Class[_] = {
+    try {
+      mirror.runtimeClass(tpe)
+    }
+    catch {
+      case e: Throwable => classOf[Any]
+    }
+  }
 
   def of[A: ru.WeakTypeTag]: Surface = {
     val tag = implicitly[ru.WeakTypeTag[A]]
@@ -42,18 +49,29 @@ object RuntimeSurface extends LogSupport {
     cache.getOrElseUpdate(tpe, apply(tpe))
   }
 
-  type SurfaceFactory = PartialFunction[ru.Type, Surface]
+  private def surfaceOf(tpe: ru.Type): Surface = apply(tpe)
 
-  def surfaceOf(tpe: ru.Type): Surface = {
-    cache.getOrElseUpdate(tpe,
-      apply(tpe)
-    )
+  def apply(tpe: ru.Type): Surface = {
+    cache.getOrElseUpdate(tpe, {
+      if(seen.contains(tpe)) {
+        throw new IllegalStateException(s"Cyclic reference for ${tpe}")
+      }
+      else {
+        seen += tpe
+        val m = surfaceFactories.orElse[ru.Type, Surface] {
+          case _ =>
+            trace(f"Resolving the unknown type $tpe into AnyRef")
+            new GenericSurface(resolveClass(tpe))
+        }
+        m(tpe)
+      }
+    })
   }
 
   private val surfaceFactories: SurfaceFactory =
-    aliasFactory orElse
+    taggedTypeFactory orElse
+      aliasFactory orElse
       primitiveTypeFactory orElse
-      taggedTypeFactory orElse
       arrayFactory orElse
       optionFactory orElse
       tupleFactory orElse
@@ -63,20 +81,6 @@ object RuntimeSurface extends LogSupport {
       existentialTypeFactory orElse
       genericSurfaceFactory
 
-  def apply(tpe: ru.Type): Surface = {
-    if(seen.contains(tpe)) {
-      throw new IllegalStateException(s"Cyclic reference for ${tpe}")
-    }
-    else {
-      seen += tpe
-      val m = surfaceFactories.orElse[ru.Type, Surface] {
-        case _ =>
-          trace(f"Resolving the unknown type $tpe into AnyRef")
-          new GenericSurface(resolveClass(tpe))
-      }
-      m(tpe)
-    }
-  }
 
   private def primitiveTypeFactory: SurfaceFactory = {
     case t if t =:= typeOf[String] => Primitive.String
