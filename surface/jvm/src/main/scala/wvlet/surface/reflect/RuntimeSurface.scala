@@ -201,14 +201,14 @@ object RuntimeSurface extends LogSupport {
       publicConstructorsOf(t).find(x => x.isPrimaryConstructor)
     }
 
-    case class MethodArg(paramName: Symbol, tpe: ru.Type, defaultValue: Option[ru.Tree]) {
+    case class MethodArg(paramName: Symbol, tpe: ru.Type) {
       def name: String = paramName.name.decodedName.toString
       def typeSurface: Surface = surfaceOf(tpe)
     }
 
-    private def findMethod(m: Type, name: String): Option[MethodSymbol] = {
-      m.member(TermName(name)) match {
-        case NoSymbol => None
+    private def findMethod(m: ru.Type, name: String): Option[MethodSymbol] = {
+      m.member(ru.TermName(name)) match {
+        case ru.NoSymbol => None
         case other => Some(other.asMethod)
       }
     }
@@ -225,25 +225,13 @@ object RuntimeSurface extends LogSupport {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
-
-          // Find the default argument of the method parameter
-          val defaultValue =
-            companion
-            .flatMap {x =>
-              // Find default value getter from the companion class
-              val defaultValueGetter =
-                findMethod(x, "apply$default$" + index)
-                .orElse(findMethod(x, "$lessinit$greater$default" + index))
-              defaultValueGetter.map {g => q"${g}"}
-            }
-
           index += 1
-          MethodArg(p, t, defaultValue)
+          MethodArg(p, t)
         }
       }
     }
 
-    def methodParmetersOf(targetType: ru.Type, method: MethodSymbol): Seq[MethodParameter] = {
+    def methodParmetersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
       val args = methodArgsOf(targetType, method).flatten
       val argTypes = args.map {x: MethodArg => resolveClass(x.tpe)}.toSeq
       val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
@@ -252,12 +240,11 @@ object RuntimeSurface extends LogSupport {
       val surfaceParams = args.map {arg =>
         val t = arg.name
         //accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
-        val expr = MethodParameter(
+        val expr = RuntimeMethodParameter(
           method = ref,
           index = index,
           name = arg.name,
-          surface = arg.typeSurface,
-          defaultValue = arg.defaultValue
+          surface = arg.typeSurface
         )
         index += 1
         expr

@@ -40,6 +40,8 @@ object RuntimeExamples {
   trait Service[-Req, +Rep] extends (Req => Future[Rep])
 
   case class E(a:A)
+
+  case class F(p0:Int=10)
 }
 
 /**
@@ -179,6 +181,13 @@ class RuntimeSurfaceTest extends SurfaceSpec {
       }.get
       info(d0)
       d0 shouldBe D(1, "leo")
+    }
+
+    "find default parameter" taggedAs("dp") in {
+      val f = check(RuntimeSurface.of[F], "F")
+      val p = f.params(0)
+      p.defaultValue shouldBe defined
+      p.defaultValue.get shouldBe 10
     }
 
     "access parameters" in {
