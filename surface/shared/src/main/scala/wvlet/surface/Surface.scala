@@ -212,6 +212,8 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def isAlias: Boolean = base.isAlias
   override def isPrimitive: Boolean = base.isPrimitive
   override def dealias: Surface = base.dealias
+
+  override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
 
 /**
