@@ -194,7 +194,8 @@ class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardB
 
   protected def findParameter(name: String) = {
     assert(surface != null)
-    surface.params.find(_.name == name)
+    val cname = name.canonicalName
+    surface.params.find(_.name.canonicalName == cname)
   }
 
   protected def defaultValues = {
