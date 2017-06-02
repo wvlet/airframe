@@ -14,29 +14,58 @@
 package wvlet.surface.reflect
 
 import wvlet.log.LogSupport
+import java.lang.{reflect => jr}
 
 /**
   *
   */
 object ReflectTypeUtil extends LogSupport {
 
-  @inline def cls[A](obj:A) : Class[_] = obj.asInstanceOf[AnyRef].getClass
+  @inline def cls[A](obj: A): Class[_] = obj.asInstanceOf[AnyRef].getClass
 
   def companionObject[A](cl: Class[A]): Option[Any] = {
     try {
       import scala.language.existentials
 
       val clName = cl.getName
-      val companionCls = if(clName.endsWith("$")) cl else Class.forName(clName + "$")
+      val companionCls = if (clName.endsWith("$")) {
+        cl
+      }
+      else {
+        Class.forName(clName + "$")
+      }
       val module = companionCls.getField("MODULE$")
       val companionObj = module.get(null)
       Some(companionObj)
     }
     catch {
-      case e : Throwable => {
+      case e: Throwable => {
         trace(e)
         None
       }
+    }
+  }
+
+  private[reflect] def access[A <: jr.AccessibleObject, B](f: A)(body: => B): B = {
+    synchronized {
+      val accessible = f.isAccessible
+      try {
+        if (!accessible) {
+          f.setAccessible(true)
+        }
+        body
+      }
+      finally {
+        if (!accessible) {
+          f.setAccessible(false)
+        }
+      }
+    }
+  }
+
+  def readField(obj: Any, f: jr.Field): Any = {
+    access(f) {
+      f.get(obj)
     }
   }
 }

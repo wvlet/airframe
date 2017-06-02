@@ -14,7 +14,9 @@
 package wvlet.surface.reflect
 
 import wvlet.surface.{MethodRef, Parameter, Surface}
+import java.{lang => jl}
 
+import wvlet.log.LogSupport
 /**
   *
   */
@@ -22,12 +24,25 @@ case class RuntimeMethodParameter(
   method:MethodRef,
   index:Int,
   name: String,
-  surface: Surface,
-  accessor: Any => Any = {x => null}
+  surface: Surface
 )
-  extends Parameter {
+  extends Parameter with LogSupport {
   override def toString: String = s"${name}:${surface.name}"
-  def get(x: Any): Any = accessor(x)
+
+  private lazy val field : jl.reflect.Field = method.owner.getDeclaredField(name)
+
+  def get(x:Any): Any = accessor(x)
+
+  def accessor: Any => Any = { x: Any =>
+    try {
+      ReflectTypeUtil.readField(x, field)
+    }
+    catch {
+      case e:IllegalAccessException =>
+        error(s"read field: class ${surface.rawType}, field:${field.getName}", e)
+        throw e
+    }
+  }
 
   def defaultValue: Option[Any] = {
     ReflectTypeUtil.companionObject(method.owner).flatMap {companion =>

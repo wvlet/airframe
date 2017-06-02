@@ -191,9 +191,11 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     }
 
     "access parameters" in {
-      pending
       val a = RuntimeSurface.of[A]
       a.params(0).get(a0) shouldBe true
+      a.params(3).get(a0) shouldBe 10
+      a.params(4).get(a0) shouldBe 20L
+      a.params(7).get(a0) shouldBe "hello"
     }
   }
 }
