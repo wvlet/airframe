@@ -16,6 +16,11 @@ package wvlet.surface.reflect
 import wvlet.log.LogSupport
 import java.lang.{reflect => jr}
 
+import wvlet.surface.{ArraySurface, Surface}
+
+import scala.collection.mutable
+import scala.collection.parallel.ParSeq
+
 /**
   *
   */
@@ -68,4 +73,115 @@ object ReflectTypeUtil extends LogSupport {
       f.get(obj)
     }
   }
+
+  def canBuildFromBuffer(s: Surface): Boolean = isArray(s) || isSeq(s.rawType) || isMap(s.rawType) || isSet(s.rawType)
+  def canBuildFromString(s: Surface): Boolean = isPrimitive(s) || hasStringUnapplyConstructor(s)
+
+  def isPrimitive(s: Surface): Boolean = s.isPrimitive
+  def isArray(s: Surface): Boolean = s.isInstanceOf[ArraySurface]
+  def isArray[T](cl: Class[T]): Boolean = {
+    cl.isArray || cl.getSimpleName == "Array"
+  }
+
+  /**
+    * If the class has unapply(s:String) : T method in the companion object for instantiating class T, returns true.
+    *
+    * @param s
+    * @return
+    */
+  def hasStringUnapplyConstructor(s: Surface): Boolean = {
+    hasStringUnapplyConstructor(s.rawType)
+  }
+
+  def hasStringUnapplyConstructor(cl: Class[_]): Boolean = {
+    companionObject(cl).map {co =>
+      cls(co).getDeclaredMethods.find {p =>
+        def acceptString = {
+          val t = p.getParameterTypes
+          t.length == 1 && t(0) == classOf[String]
+        }
+        def returnOptionOfT = {
+          val rt = p.getGenericReturnType
+          val t = getTypeParameters(rt)
+          isOption(p.getReturnType) && t.length == 1 && t(0) == cl
+        }
+        p.getName == "unapply" && acceptString && returnOptionOfT
+      }.isDefined
+    }.getOrElse(false)
+  }
+
+  def isOption(s: Surface): Boolean = s.isOption
+  def isOption[T](cl: Class[T]): Boolean = {
+    val name = cl.getSimpleName
+    // Option None is an object ($)
+    name == "Option" || name == "Some" || name == "None$"
+  }
+
+  def isBuffer[T](cl: Class[T]): Boolean = {
+    classOf[mutable.Buffer[_]].isAssignableFrom(cl)
+  }
+
+  def isSeq[T](cl: Class[T]): Boolean = {
+    classOf[Seq[_]].isAssignableFrom(cl)
+  }
+
+  def isParSeq[T](cl: Class[T]): Boolean = {
+    classOf[ParSeq[_]].isAssignableFrom(cl)
+  }
+
+  def isIndexedSeq[T](cl: Class[T]): Boolean = {
+    classOf[IndexedSeq[_]].isAssignableFrom(cl) || isArray(cl)
+  }
+
+  def isMap[T](cl: Class[T]): Boolean = {
+    classOf[Map[_, _]].isAssignableFrom(cl)
+  }
+
+  def isSet[T](cl: Class[T]): Boolean = {
+    classOf[Set[_]].isAssignableFrom(cl)
+  }
+
+  def isTuple[T](cl: Class[T]): Boolean = {
+    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("Tuple")
+  }
+
+  def isList[T](cl: Class[T]): Boolean = {
+    classOf[List[_]].isAssignableFrom(cl)
+  }
+
+  def isEither[T](cl: Class[T]): Boolean = {
+    classOf[Either[_, _]].isAssignableFrom(cl)
+  }
+
+  /**
+    * Get type parameters of the field
+    *
+    * @param f
+    * @return
+    */
+  def getTypeParameters(f: jr.Field): Array[Class[_]] = {
+    getTypeParameters(f.getGenericType)
+  }
+
+  /**
+    *
+    * @param gt
+    * @return
+    */
+  def getTypeParameters(gt: jr.Type): Array[Class[_]] = {
+    gt match {
+      case p: jr.ParameterizedType => {
+        p.getActualTypeArguments.map(resolveClassType(_)).toArray
+      }
+    }
+  }
+
+  def resolveClassType(t: jr.Type): Class[_] = {
+    t match {
+      case p: jr.ParameterizedType => p.getRawType.asInstanceOf[Class[_]]
+      case c: Class[_] => c
+      case _ => classOf[Any]
+    }
+  }
+
 }

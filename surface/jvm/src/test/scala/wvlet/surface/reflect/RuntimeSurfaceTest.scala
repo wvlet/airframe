@@ -186,8 +186,8 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     "find default parameter" taggedAs("dp") in {
       val f = check(RuntimeSurface.of[F], "F")
       val p = f.params(0)
-      p.defaultValue shouldBe defined
-      p.defaultValue.get shouldBe 10
+      p.getDefaultValue shouldBe defined
+      p.getDefaultValue.get shouldBe 10
     }
 
     "access parameters" in {

@@ -17,34 +17,33 @@ import wvlet.surface.{MethodRef, Parameter, Surface}
 import java.{lang => jl}
 
 import wvlet.log.LogSupport
+
 /**
   *
   */
 case class RuntimeMethodParameter(
-  method:MethodRef,
-  index:Int,
+  method: MethodRef,
+  index: Int,
   name: String,
   surface: Surface
 )
   extends Parameter with LogSupport {
   override def toString: String = s"${name}:${surface.name}"
 
-  private lazy val field : jl.reflect.Field = method.owner.getDeclaredField(name)
+  private lazy val field: jl.reflect.Field = method.owner.getDeclaredField(name)
 
-  def get(x:Any): Any = accessor(x)
-
-  def accessor: Any => Any = { x: Any =>
+  def get(x: Any): Any = {
     try {
       ReflectTypeUtil.readField(x, field)
     }
     catch {
-      case e:IllegalAccessException =>
+      case e: IllegalAccessException =>
         error(s"read field: class ${surface.rawType}, field:${field.getName}", e)
         throw e
     }
   }
 
-  def defaultValue: Option[Any] = {
+  def getDefaultValue: Option[Any] = {
     ReflectTypeUtil.companionObject(method.owner).flatMap {companion =>
       def findMethod(name: String) = {
         try {
@@ -55,15 +54,16 @@ case class RuntimeMethodParameter(
         }
       }
       // Find Scala methods for retrieving default values. Since Scala 2.10 appply or $lessinit$greater$ can be the prefix
-      val m = findMethod("apply$default$%d".format(index + 1)) orElse (findMethod("$lessinit$greater$default$%d".format(index + 1)))
-      try
+      val m =
+        findMethod("apply$default$%d".format(index + 1))
+        .orElse(findMethod("$lessinit$greater$default$%d".format(index + 1)))
+      try {
         m.map(_.invoke(companion))
+      }
       catch {
         case e: Throwable =>
           None
       }
     }
   }
-
 }
-
