@@ -14,13 +14,15 @@
 
 package wvlet.surface
 
+import wvlet.log.LogSupport
+
 import scala.reflect.ClassTag
 import scala.util.Try
 
 /**
   * Create a default instance (zero) from Surface
   */
-object Zero {
+object Zero extends LogSupport {
 
   type ZeroValueFactory = PartialFunction[Surface, Any]
   type SurfaceFilter = PartialFunction[Surface, Surface]
@@ -67,21 +69,22 @@ object Zero {
   }
 
   private def zeroOfTuple: ZeroValueFactory = {
-    case t: TupleSurface =>
-      t.objectFactory.map {
-        val args = t.typeArgs.map(s => zeroOf(s))
-        _.newInstance(args)
-      }.getOrElse(null)
+    case t: TupleSurface if t.objectFactory.isDefined =>
+      val factory = t.objectFactory.get
+      val args = t.typeArgs.map(s => zeroOf(s))
+      factory.newInstance(args)
   }
 
   private def zeroOfInstantiatable: ZeroValueFactory = {
     case t if t.objectFactory.isDefined =>
+      val factory = t.objectFactory.get
       val args = t.params.map(x => zeroOf(x.surface))
-      Try(t.objectFactory.get.newInstance(args)).getOrElse(null)
+      factory.newInstance(args)
   }
 
   private def fallBack: ZeroValueFactory = {
-    case _ => null
+    case other =>
+      null
   }
 
   private val factory: ZeroValueFactory =
