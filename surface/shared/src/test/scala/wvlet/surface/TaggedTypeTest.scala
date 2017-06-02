@@ -41,7 +41,7 @@ class TaggedTypeTest extends SurfaceSpec {
       t.isPrimitive shouldBe false
       t.isAlias shouldBe false
       t.isOption shouldBe false
-      t.objectFactory shouldBe empty
+      t.objectFactory shouldBe defined
       t.rawType shouldBe classOf[Person]
       t.typeArgs shouldBe empty
       t.params.mkString(",") shouldBe "id:Int,name:String"

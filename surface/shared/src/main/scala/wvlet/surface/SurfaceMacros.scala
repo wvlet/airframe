@@ -232,27 +232,7 @@ private[surface] object SurfaceMacros {
       }
     }
 
-    def toClassOf(t: c.Type): c.Tree = {
-      val typeExpr =
-        if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
-          q"classOf[AnyRef]"
-        }
-        else {
-          t.typeArgs.size match {
-            case 0 => q"classOf[${t.typeSymbol}]"
-            case 1 => q"classOf[${t.typeSymbol}[_]]"
-            case 2 => q"classOf[${t.typeSymbol}[_,_]]"
-            case 3 => q"classOf[${t.typeSymbol}[_,_,_]]"
-            case 4 => q"classOf[${t.typeSymbol}[_,_,_,_]]"
-            case 5 => q"classOf[${t.typeSymbol}[_,_,_,_,_]]"
-            case 6 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_]]"
-            case 7 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_]]"
-            case 8 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_,_]]"
-            case other => q"classOf[AnyRef]"
-          }
-        }
-      typeExpr
-    }
+    def toClassOf(t: c.Type): c.Tree = q"classOf[${t.erasure}]"
 
     def methodParmetersOf(targetType: c.Type, method: MethodSymbol): c.Tree = {
       val args = methodArgsOf(targetType, method).flatten
@@ -262,7 +242,7 @@ private[surface] object SurfaceMacros {
       var index = 0
       val surfaceParams = args.map {arg =>
         val t = arg.name
-        //accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
+        //val accessor = q"{ x : Any => x.asInstanceOf[${targetType.erasure}].${arg.paramName} }"
         val defaultValue = arg.defaultValue match {
           case Some(x) => q"Some(${x})"
           case other => q"None"
