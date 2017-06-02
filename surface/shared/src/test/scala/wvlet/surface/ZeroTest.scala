@@ -50,7 +50,6 @@ class ZeroTest extends SurfaceSpec {
     }
 
     "support Tuple" in {
-      pending
       zeroCheck(Surface.of[(Int, String)], (0, ""))
       zeroCheck(Surface.of[(Int, String, Seq[Int])], (0, "", Seq.empty))
     }

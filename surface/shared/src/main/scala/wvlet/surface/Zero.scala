@@ -59,7 +59,7 @@ object Zero extends LogSupport {
     => null
   }
 
-  private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen {
+  private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen  {
     case g if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
       Seq.empty
     case g if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
@@ -69,10 +69,19 @@ object Zero extends LogSupport {
   }
 
   private def zeroOfTuple: ZeroValueFactory = {
-    case t: TupleSurface if t.objectFactory.isDefined =>
-      val factory = t.objectFactory.get
-      val args = t.typeArgs.map(s => zeroOf(s))
-      factory.newInstance(args)
+    case t: TupleSurface =>
+      val args = t.typeArgs.map(s => zeroOf(s)).toIndexedSeq
+      t.typeArgs.size match {
+        case 1 => ()
+        case 2 => (args(0), args(1))
+        case 3 => (args(0), args(1), args(2))
+        case 4 => (args(0), args(1), args(2), args(3))
+        case 5 => (args(0), args(1), args(2), args(3), args(4))
+        case 6 => (args(0), args(1), args(2), args(3), args(4), args(5))
+        case 7 => (args(0), args(1), args(2), args(3), args(4), args(5), args(6))
+        case other =>
+          new UnsupportedOperationException(s"Zero.of[Tuple${other}] is not supported")
+      }
   }
 
   private def zeroOfInstantiatable: ZeroValueFactory = {
