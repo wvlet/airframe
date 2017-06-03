@@ -11,21 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.surface.reflect
-
-import java.util.concurrent.ConcurrentHashMap
-
-import wvlet.log.LogSupport
-import wvlet.surface._
-
-import scala.reflect.runtime.universe._
-import scala.reflect.runtime.{universe => ru}
-import scala.util.Try
-import scala.collection.JavaConverters._
+package wvlet.surface
 
 /**
   *
   */
-object RuntimeSurface extends LogSupport {
-  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
+class SurfaceFactoryTest extends SurfaceSpec {
+  "SurfaceFactory" should {
+
+    "work in JVM and JS" in {
+      val s = SurfaceFactory.of[Int]
+    }
+  }
 }
