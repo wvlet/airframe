@@ -11,11 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package wvlet.surface.reflect
 
-package wvlet.surface
+import wvlet.surface.{Surface, SurfaceSpec}
+
 import wvlet.surface.tag._
 
-object TaggedTypeTest {
+object RuntimeTaggedTypeTest {
   case class Person(id:Int, name:String)
 
   trait Employee
@@ -25,17 +27,19 @@ object TaggedTypeTest {
   type Name = String
 }
 
-import TaggedTypeTest._
-class TaggedTypeTest extends SurfaceSpec {
-
-  "TaggedType" should {
+/**
+  *
+  */
+import RuntimeTaggedTypeTest._
+class RuntimeTaggedTypeTest extends SurfaceSpec {
+  "RuntimeTaggedType" should {
     "pass sanity check" in {
       val e : Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
       val e2 : Person @@ Guest = new Person(2, "yui")
     }
 
     "be a reference" in {
-      val t = check(Surface.of[Person @@ Employee], "Person@@Employee")
+      val t = check(RuntimeSurface.of[Person @@ Employee], "Person@@Employee")
       val p = t.dealias
       p.name shouldBe "Person"
       t.isPrimitive shouldBe false
@@ -46,7 +50,7 @@ class TaggedTypeTest extends SurfaceSpec {
       t.typeArgs shouldBe empty
       t.params.mkString(",") shouldBe "id:Int,name:String"
 
-      val n = check(Surface.of[Name @@ Employee], "Name@@Employee")
+      val n = check(RuntimeSurface.of[Name @@ Employee], "Name@@Employee")
       val name = n.dealias
       name.name shouldBe "String"
       n.isPrimitive shouldBe true
@@ -56,27 +60,28 @@ class TaggedTypeTest extends SurfaceSpec {
     }
 
     "tag tagged type" in {
-      check(Surface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
+      check(RuntimeSurface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
     }
 
     "be comparable" in {
-      val t1 = check(Surface.of[Person @@ Employee], "Person@@Employee")
-      val t2 = check(Surface.of[Person @@ Customer], "Person@@Customer")
-      val t3 = check(Surface.of[Person @@ Guest], "Person@@Guest")
+      val t1 = check(RuntimeSurface.of[Person @@ Employee], "Person@@Employee")
+      val t2 = check(RuntimeSurface.of[Person @@ Customer], "Person@@Customer")
+      val t3 = check(RuntimeSurface.of[Person @@ Guest], "Person@@Guest")
 
       val set = Set(t1, t2)
-      set should contain (Surface.of[Person @@ Employee])
-      set should contain (Surface.of[Person @@ Customer])
-      set should not contain (Surface.of[Person @@ Guest])
+      set should contain (RuntimeSurface.of[Person @@ Employee])
+      set should contain (RuntimeSurface.of[Person @@ Customer])
+      set should not contain (RuntimeSurface.of[Person @@ Guest])
 
       set should contain (t1)
       set should contain (t2)
       set should not contain (t3)
 
-      val c = check(Surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
+      val c = check(RuntimeSurface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
       val s = Set(c)
-      s should contain (Surface.of[Seq[String] @@ Employee])
+      s should contain (RuntimeSurface.of[Seq[String] @@ Employee])
       s should contain (c)
     }
   }
+
 }

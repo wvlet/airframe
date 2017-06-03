@@ -62,34 +62,44 @@ trait Surface extends Serializable {
 trait Parameter {
   def index: Int
   def name: String
+
+  /**
+    * Surface for representing this parameter type
+    */
   def surface: Surface
-  def accessor: Any => Any
 
   /**
     * Get this parameter value from a given object x
     */
-  def get(x:Any): Any
+  def get(x: Any): Any
 
-  def defaultValue: Option[Any]
+  /**
+    * Get the default value of this parameter.
+    * For example the default value of x in class A(x:Int = 10) is 10
+    *
+    * @return
+    */
+  def getDefaultValue: Option[Any]
 }
 
-
-case class MethodRef(owner:Class[_], name:String, paramTypes:Seq[Class[_]], isConstructor:Boolean)
+case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
 
 /**
   * Parameters of a Surface
   */
 case class MethodParameter(
-  method:MethodRef,
-  index:Int,
+  method: MethodRef,
+  index: Int,
   name: String,
   surface: Surface,
-  defaultValue: Option[Any] = None,
-  accessor: Any => Any = {x => null}
+  private val defaultValue: Option[Any] = None,
+  accessor: Option[Any => Any] = None
 )
   extends Parameter {
+
   override def toString: String = s"${name}:${surface.name}"
-  def get(x: Any): Any = accessor(x)
+  def get(x: Any): Any = accessor.map(a => a(x)).getOrElse(null)
+  override def getDefaultValue: Option[Any] = defaultValue
 }
 
 /**
@@ -100,6 +110,32 @@ trait ObjectFactory extends Serializable {
 }
 
 object Primitive {
+
+  import java.{lang => jl}
+
+  private val primitiveTable = {
+    val b = Map.newBuilder[Class[_], PrimitiveSurface]
+    b += classOf[jl.Boolean] -> Boolean
+    b += classOf[Boolean] -> Boolean
+    b += classOf[jl.Short] -> Short
+    b += classOf[Short] -> Short
+    b += classOf[jl.Byte] -> Byte
+    b += classOf[Byte] -> Byte
+    b += classOf[jl.Character] -> Char
+    b += classOf[Char] -> Char
+    b += classOf[jl.Integer] -> Int
+    b += classOf[Int] -> Int
+    b += classOf[jl.Float] -> Float
+    b += classOf[Float] -> Float
+    b += classOf[jl.Long] -> Long
+    b += classOf[Long] -> Long
+    b += classOf[jl.Double] -> Double
+    b += classOf[Double] -> Double
+    b.result
+  }
+
+  def apply(cl: Class[_]): PrimitiveSurface = primitiveTable(cl)
+
   sealed abstract class PrimitiveSurface(rawType: Class[_]) extends GenericSurface(rawType) {
     override def isPrimitive: Boolean = true
   }
@@ -131,6 +167,10 @@ object Primitive {
   case object Double extends PrimitiveSurface(classOf[Double]) {
     override def name: String = "Double"
     override def fullName: String = "Double"
+  }
+  case object Char extends PrimitiveSurface(classOf[Byte]) {
+    override def name: String = "Char"
+    override def fullName: String = "Char"
   }
   case object String extends PrimitiveSurface(classOf[String])
 
@@ -176,10 +216,13 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def isAlias: Boolean = base.isAlias
   override def isPrimitive: Boolean = base.isPrimitive
   override def dealias: Surface = base.dealias
+
+  override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
 
 /**
   * Base class for generic surfaces with type args
+  *
   * @param rawType
   * @param typeArgs
   * @param params

@@ -54,15 +54,6 @@ import wvlet.surface.Examples._
   */
 class SurfaceTest extends SurfaceSpec {
 
-  def checkPrimitive(body: => Surface, expectedName:String) : Surface = {
-    val s = check(body, expectedName)
-    s.isAlias shouldBe false
-    s.isOption shouldBe false
-    s.isPrimitive shouldBe true
-    s.objectFactory.isEmpty shouldBe true
-    s
-  }
-
   "Surface" should {
     "resolve types" in {
       val a = check(Surface.of[A], "A")
@@ -85,6 +76,7 @@ class SurfaceTest extends SurfaceSpec {
       checkPrimitive(Surface.of[Float], "Float")
       checkPrimitive(Surface.of[Double], "Double")
       checkPrimitive(Surface.of[String], "String")
+      checkPrimitive(Surface.of[Char], "Char")
       checkPrimitive(Surface.of[java.lang.String], "String")
     }
 
@@ -223,11 +215,13 @@ class SurfaceTest extends SurfaceSpec {
       d0 shouldBe D(1, "leo")
     }
 
-    "access parameters" in {
+    "access parameters" taggedAs("accessor") in {
       pending
       val a = Surface.of[A]
       a.params(0).get(a0) shouldBe true
-
+      a.params(3).get(a0) shouldBe 10
+      a.params(4).get(a0) shouldBe 20L
+      a.params(7).get(a0) shouldBe "hello"
     }
   }
 }

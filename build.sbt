@@ -186,7 +186,7 @@ lazy val surface =
       "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       // scalatest
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
-      "org.wvlet" %%% "wvlet-log" % "1.2.3" % "test"
+      "org.wvlet" %%% "wvlet-log" % "1.2.3"
     )
   )
 

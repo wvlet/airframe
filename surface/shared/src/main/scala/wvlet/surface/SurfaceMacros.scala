@@ -38,6 +38,8 @@ private[surface] object SurfaceMacros {
 
     private val seen = scala.collection.mutable.Set[Type]()
     private val memo = scala.collection.mutable.Map[Type, c.Tree]()
+    private val methodSeen = scala.collection.mutable.Set[Type]()
+    private val methodMemo = scala.collection.mutable.Map[Type, c.Tree]()
 
     type SurfaceFactory = PartialFunction[c.Type, c.Tree]
 
@@ -46,29 +48,42 @@ private[surface] object SurfaceMacros {
     }
 
     def localMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members
-      .filter(x => x.isMethod && !x.isConstructor)
+      t
+      .members
+      .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact)
       .map(_.asMethod)
       .filter(isTargetMethod(_, t))
     }
 
     def createMethodSurfaceOf(targetType: c.Type): c.Tree = {
-      val result = targetType match {
-        case t@TypeRef(prefix, typeSymbol, typeArgs) =>
-          val list = for (m <- localMethodsOf(targetType)) yield {
-            val mod = modifierBitMaskOf(m)
-            val owner = surfaceOf(t)
-            val name = m.name.decodedName.toString
-            val ret = surfaceOf(m.returnType)
-            val args = methodParmetersOf(m.owner.typeSignature, m)
-            q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
-          }
-          q"IndexedSeq(..$list)"
-        case _ =>
-          q"Seq.empty"
+      if (methodMemo.contains(targetType)) {
+        methodMemo(targetType)
       }
-      val fullName = fullTypeNameOf(targetType)
-      q"wvlet.surface.Surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
+      else {
+        if (methodSeen.contains(targetType)) {
+          c.abort(c.enclosingPosition, s"recursive type in method: ${targetType.typeSymbol.fullName}")
+        }
+        methodSeen += targetType
+        val result = targetType match {
+          case t@TypeRef(prefix, typeSymbol, typeArgs) =>
+            val list = for (m <- localMethodsOf(t.dealias)) yield {
+              val mod = modifierBitMaskOf(m)
+              val owner = surfaceOf(t)
+              val name = m.name.decodedName.toString
+              val ret = surfaceOf(m.returnType)
+              val args = methodParmetersOf(m.owner.typeSignature, m)
+              q"wvlet.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
+            }
+            q"IndexedSeq(..$list)"
+          case _ =>
+            q"Seq.empty"
+        }
+
+        val fullName = fullTypeNameOf(targetType.dealias)
+        val expr = q"wvlet.surface.Surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
+        methodMemo += targetType -> expr
+        expr
+      }
     }
 
     private def isEnum(t: c.Type): Boolean = {
@@ -187,9 +202,27 @@ private[surface] object SurfaceMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
+
     case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
       def name: Literal = Literal(Constant(paramName.name.decodedName.toString))
       def typeSurface: c.Tree = surfaceOf(tpe)
+
+      def accessor(t:c.Type) : c.Tree = {
+        if(t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
+          q"None"
+        }
+        else {
+          t.typeArgs.size match {
+            // TODO We need to expand Select(Ident(x.y.z....), TermName("a")) =>
+            // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
+            case 0 => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramName}})"
+            case 1 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramName}})"
+            case 2 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramName}})"
+            case 3 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramName}})"
+            case other =>  q"None"
+          }
+        }
+      }
     }
 
     private def findMethod(m: Type, name: String): Option[MethodSymbol] = {
@@ -210,7 +243,7 @@ private[surface] object SurfaceMacros {
         case comp => Some(comp)
       }
 
-      for (params <- constructor.paramLists) yield {
+      val ret = for (params <- constructor.paramLists) yield {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
@@ -230,28 +263,27 @@ private[surface] object SurfaceMacros {
           MethodArg(p, t, defaultValue)
         }
       }
+      ret
     }
 
     def toClassOf(t: c.Type): c.Tree = {
-      val typeExpr =
-        if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
-          q"classOf[AnyRef]"
+      if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
+        q"classOf[AnyRef]"
+      }
+      else {
+        t.typeArgs.size match {
+          case 0 => q"classOf[${t.typeSymbol}]"
+          case 1 => q"classOf[${t.typeSymbol}[_]]"
+          case 2 => q"classOf[${t.typeSymbol}[_,_]]"
+          case 3 => q"classOf[${t.typeSymbol}[_,_,_]]"
+          case 4 => q"classOf[${t.typeSymbol}[_,_,_,_]]"
+          case 5 => q"classOf[${t.typeSymbol}[_,_,_,_,_]]"
+          case 6 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_]]"
+          case 7 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_]]"
+          case 8 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_,_]]"
+          case other => q"classOf[AnyRef]"
         }
-        else {
-          t.typeArgs.size match {
-            case 0 => q"classOf[${t.typeSymbol}]"
-            case 1 => q"classOf[${t.typeSymbol}[_]]"
-            case 2 => q"classOf[${t.typeSymbol}[_,_]]"
-            case 3 => q"classOf[${t.typeSymbol}[_,_,_]]"
-            case 4 => q"classOf[${t.typeSymbol}[_,_,_,_]]"
-            case 5 => q"classOf[${t.typeSymbol}[_,_,_,_,_]]"
-            case 6 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_]]"
-            case 7 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_]]"
-            case 8 => q"classOf[${t.typeSymbol}[_,_,_,_,_,_,_,_]]"
-            case other => q"classOf[AnyRef]"
-          }
-        }
-      typeExpr
+      }
     }
 
     def methodParmetersOf(targetType: c.Type, method: MethodSymbol): c.Tree = {
@@ -262,30 +294,29 @@ private[surface] object SurfaceMacros {
       var index = 0
       val surfaceParams = args.map {arg =>
         val t = arg.name
-        //accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
         val defaultValue = arg.defaultValue match {
           case Some(x) => q"Some(${x})"
           case other => q"None"
         }
+
         val expr =
           q"""wvlet.surface.MethodParameter(
             method = ${ref},
             index = ${index},
             name=${arg.name},
-            surface=${arg.typeSurface},
+            surface = ${arg.typeSurface},
             defaultValue = ${defaultValue}
           )
           """
         index += 1
         expr
       }
-
       // Using IndexedSeq is necessary for Serialization
       q"IndexedSeq(..${surfaceParams})"
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (isAbstract(targetType) || hasAbstractMethods(targetType)) {
+      if (isAbstract(targetType)) {
         None
       }
       else {
@@ -393,6 +424,7 @@ private[surface] object SurfaceMacros {
 
     /**
       * Get a string representation of the type identifier
+      *
       * @param typeEv
       * @return
       */

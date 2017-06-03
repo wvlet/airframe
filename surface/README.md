@@ -83,10 +83,10 @@ Surface.of[Fruit @@ Banana]
 
 ### Runtime Annotation
 
-Reading runtime-annotation is supported for JVM projects. Import `wvlet.surface.runtime._` to use this feature.
+Reading runtime-annotation is supported for JVM projects. Import `wvlet.surface.reflect._` to use this feature.
 
 ```scala
-import wvlet.surface.runtime._
+import wvlet.surface.reflect._
 import javax.annotation.Resource
  
 @Resource(name="my resource")

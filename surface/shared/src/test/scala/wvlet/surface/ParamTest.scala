@@ -29,9 +29,9 @@ class ParamTest extends SurfaceSpec {
     "have default value" in {
       val s = Surface.of[ParamTest.A]
       val p = s.params.head
-      p.defaultValue shouldBe Option(-1)
+      p.getDefaultValue shouldBe Option(-1)
       val p1 = s.params(1)
-      p1.defaultValue shouldBe Option(20)
+      p1.getDefaultValue shouldBe Option(20)
     }
   }
 }

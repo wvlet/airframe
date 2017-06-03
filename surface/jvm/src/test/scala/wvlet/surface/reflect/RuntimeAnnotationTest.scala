@@ -12,9 +12,11 @@
  * limitations under the License.
  */
 
-package wvlet.surface
+package wvlet.surface.reflect
 
 import javax.annotation.{PreDestroy, Resource}
+
+import wvlet.surface.{Surface, SurfaceSpec}
 
 @Resource(name = "annot-test")
 class RuntimeAnnot(@Resource(name = "param A") a:String, c:Int) {
@@ -24,13 +26,10 @@ class RuntimeAnnot(@Resource(name = "param A") a:String, c:Int) {
 
   def noAnnot : Int = 1
 }
-
-
-import wvlet.surface.runtime._
 /**
   *
   */
-class RuntimeSurfaceTest extends SurfaceSpec {
+class RuntimeAnnotationTest extends SurfaceSpec {
   "RuntimeSurface" should {
     "find class annotations" in {
       val r = Surface.of[RuntimeAnnot]

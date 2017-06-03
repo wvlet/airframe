@@ -22,23 +22,23 @@ import scala.util.Try
 /**
   *
   */
-package object runtime {
+package object reflect {
 
-  private[runtime] def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
+  private[reflect] def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
     val c = implicitly[ClassTag[T]]
     annot.collectFirst {
       case x if (c.runtimeClass isAssignableFrom x.annotationType) => x
     }.asInstanceOf[Option[T]]
   }
 
-  implicit class RuntimeSurface(s: Surface) {
+  implicit class ToRuntimeSurface(s: Surface) {
     def findAnnotationOf[T <: jl.annotation.Annotation : ClassTag]: Option[T] = {
       val annot = s.rawType.getDeclaredAnnotations
       findAnnotation[T](annot)
     }
   }
 
-  implicit class RuntimeSurfaceParameter(p: Parameter) {
+  implicit class ToRuntimeSurfaceParameter(p: Parameter) {
     def annotations : Array[Array[jl.annotation.Annotation]] = {
       p match {
         case mp: MethodParameter =>
@@ -68,7 +68,7 @@ package object runtime {
     }
   }
 
-  implicit class RuntimeMethodSurface(m:MethodSurface) {
+  implicit class ToRuntimeMethodSurface(m:MethodSurface) {
     def annotations : Array[jl.annotation.Annotation] = {
       Try {
         val cl = m.owner.rawType

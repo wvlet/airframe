@@ -29,6 +29,7 @@ object MethodExamples {
 }
 
 import MethodExamples._
+
 /**
   *
   */
