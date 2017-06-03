@@ -62,7 +62,7 @@ private[surface] object SurfaceMacros {
         methodSeen += targetType
         val result = targetType match {
           case t@TypeRef(prefix, typeSymbol, typeArgs) =>
-            val list = for (m <- localMethodsOf(t)) yield {
+            val list = for (m <- localMethodsOf(t.dealias)) yield {
               val mod = modifierBitMaskOf(m)
               val owner = surfaceOf(t)
               val name = m.name.decodedName.toString
@@ -388,9 +388,9 @@ private[surface] object SurfaceMacros {
     }
 
     private val surfaceFactories: SurfaceFactory =
-      taggedTypeFactory orElse
+      primitiveFactory orElse
+        taggedTypeFactory orElse
         aliasFactory orElse
-        primitiveFactory orElse
         arrayFactory orElse
         optionFactory orElse
         tupleFactory orElse

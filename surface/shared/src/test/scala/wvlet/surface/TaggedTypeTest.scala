@@ -34,6 +34,7 @@ class TaggedTypeTest extends SurfaceSpec {
       val e2 : Person @@ Guest = new Person(2, "yui")
     }
 
+
     "be a reference" in {
       val t = check(Surface.of[Person @@ Employee], "Person@@Employee")
       val p = t.dealias
