@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 0.14
+ - [Surface](https://github.com/wvlet/airframe/tree/master/surface) is now a part of Airframe
+ - Added RuntimeSurface for the convenience of creating Surface from runtime-type information (reflect.universe.Type)
+ - Added ObjectBuilder to build objects from Surface information
+
 ## 0.13
  - Add tagged binding support
 
