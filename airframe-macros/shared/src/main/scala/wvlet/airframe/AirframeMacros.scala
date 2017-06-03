@@ -399,7 +399,9 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.lifeCycleManager.addInitHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, ${c.prefix}.dep, ${body}))
+         val dep = ${c.prefix}.dep
+         session.lifeCycleManager.addInitHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         dep
         }
       """
   }
@@ -410,7 +412,9 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, ${c.prefix}.dep, ${body}))
+         val dep = ${c.prefix}.dep
+         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         dep
         }
       """
   }
@@ -422,7 +426,9 @@ private[wvlet] object AirframeMacros {
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.lifeCycleManager.addShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, ${c.prefix}.dep, ${body}))
+         val dep = ${c.prefix}.dep
+         session.lifeCycleManager.addShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         dep
         }
       """
   }
