@@ -202,6 +202,7 @@ private[surface] object SurfaceMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
+
     case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
       def name: Literal = Literal(Constant(paramName.name.decodedName.toString))
       def typeSurface: c.Tree = surfaceOf(tpe)
@@ -212,7 +213,9 @@ private[surface] object SurfaceMacros {
         }
         else {
           t.typeArgs.size match {
-            case 0 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramName}})"
+            // TODO We need to expand Select(Ident(x.y.z....), TermName("a")) =>
+            // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
+            case 0 => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramName}})"
             case 1 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramName}})"
             case 2 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramName}})"
             case 3 =>  q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramName}})"
@@ -302,8 +305,7 @@ private[surface] object SurfaceMacros {
             index = ${index},
             name=${arg.name},
             surface = ${arg.typeSurface},
-            defaultValue = ${defaultValue},
-            accessor = ${arg.accessor(targetType.dealias)}
+            defaultValue = ${defaultValue}
           )
           """
         index += 1

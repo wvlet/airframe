@@ -62,30 +62,34 @@ trait Surface extends Serializable {
 trait Parameter {
   def index: Int
   def name: String
+
+  /**
+    * Surface for representing this parameter type
+    */
   def surface: Surface
 
   /**
     * Get this parameter value from a given object x
     */
-  def get(x:Any): Any
+  def get(x: Any): Any
 
   /**
     * Get the default value of this parameter.
     * For example the default value of x in class A(x:Int = 10) is 10
+    *
     * @return
     */
   def getDefaultValue: Option[Any]
 }
 
-
-case class MethodRef(owner:Class[_], name:String, paramTypes:Seq[Class[_]], isConstructor:Boolean)
+case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
 
 /**
   * Parameters of a Surface
   */
 case class MethodParameter(
-  method:MethodRef,
-  index:Int,
+  method: MethodRef,
+  index: Int,
   name: String,
   surface: Surface,
   private val defaultValue: Option[Any] = None,
@@ -107,7 +111,7 @@ trait ObjectFactory extends Serializable {
 
 object Primitive {
 
-  import java.{lang=>jl}
+  import java.{lang => jl}
 
   private val primitiveTable = {
     val b = Map.newBuilder[Class[_], PrimitiveSurface]
@@ -218,6 +222,7 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
 
 /**
   * Base class for generic surfaces with type args
+  *
   * @param rawType
   * @param typeArgs
   * @param params
