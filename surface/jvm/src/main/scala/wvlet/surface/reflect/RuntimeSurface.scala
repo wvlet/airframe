@@ -81,6 +81,7 @@ object RuntimeSurface extends LogSupport {
     private val surfaceFactories: SurfaceFactory =
       taggedTypeFactory orElse
         aliasFactory orElse
+        primitiveTypeFactory orElse
         arrayFactory orElse
         optionFactory orElse
         tupleFactory orElse

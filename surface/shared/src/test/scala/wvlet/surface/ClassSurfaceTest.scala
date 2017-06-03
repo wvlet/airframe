@@ -13,6 +13,7 @@
  */
 
 package wvlet.surface
+import wvlet.surface.tag._
 
 object ClassSurfaceTest {
 
@@ -20,10 +21,8 @@ object ClassSurfaceTest {
 
   trait MyTag
 
-  import tag._
-
-  case class C(id:Int)
-  class B(c:C @@ MyTag)
+  //case class C(id:Int)
+  case class B(v:Int @@ MyTag)
 
 }
 
@@ -32,30 +31,32 @@ class ClassSurfaceTest extends SurfaceSpec {
 
   "Surface for Class" should {
 
-    "support multiple param blocks" in {
-      val a = check(Surface.of[A], "A")
-      info(a.params.mkString(", "))
-
-      a.params.length shouldBe 2
-
-      val p0 = a.params(0)
-      val p1 = a.params(1)
-      p0.name shouldBe "id"
-      p1.name shouldBe "context"
-
-      val a0 = a.objectFactory.map { x =>
-        x.newInstance(Seq(1, "c"))
-      }.get.asInstanceOf[A]
-
-      a0.id shouldBe 1
-      a0.context shouldBe "c"
-    }
+//    "support multiple param blocks" in {
+//      val a = check(Surface.of[A], "A")
+//      info(a.params.mkString(", "))
+//
+//      a.params.length shouldBe 2
+//
+//      val p0 = a.params(0)
+//      val p1 = a.params(1)
+//      p0.name shouldBe "id"
+//      p1.name shouldBe "context"
+//
+//      val a0 = a.objectFactory.map { x =>
+//        x.newInstance(Seq(1, "c"))
+//      }.get.asInstanceOf[A]
+//
+//      a0.id shouldBe 1
+//      a0.context shouldBe "c"
+//    }
 
     "support tags in constructor args" in {
+
+      check(Surface.of[Int @@ MyTag], "Int@@myTag")
       val b = check(Surface.of[B], "B")
       b.params.length shouldBe 1
       val p = b.params(0)
-      check(p.surface, "C@@MyTag")
+      check(p.surface, "Int@@MyTag")
     }
   }
 }
