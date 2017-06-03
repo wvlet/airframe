@@ -38,7 +38,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     b
   }
 
-  private[airframe] def addBinding(b: Binding): Design = {
+  def addBinding(b: Binding): Design = {
     debug(s"Add binding: $b")
     new Design(binding :+ b)
   }
