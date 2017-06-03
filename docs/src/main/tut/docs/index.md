@@ -18,7 +18,7 @@ libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
 
 And import `wvlet.airframe._` in your Scala code:
 ```scala
-import `wvlet.airframe._
+import wvlet.airframe._
 ```
 
 ## Bind

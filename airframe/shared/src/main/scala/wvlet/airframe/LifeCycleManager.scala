@@ -67,7 +67,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   }
 
   def addInitHook(h: LifeCycleHook) {
-    debug(s"Add init hook: ${h}")
+    debug(s"Add init hook: ${h.surface}")
     // Immediately execute the init hook
     h.execute
   }
@@ -86,7 +86,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
-        debug(s"Add start hook: ${h}")
+        debug(s"Add start hook for ${h.surface}")
         startHook :+= h
       }
     }
@@ -96,7 +96,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
-        debug(s"Add shutdown hook: ${h}")
+        debug(s"Add shutdown hook for ${h.surface}")
         shutdownHook :+= h
       }
     }
