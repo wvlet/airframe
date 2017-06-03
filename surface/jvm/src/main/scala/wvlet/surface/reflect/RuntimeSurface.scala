@@ -59,24 +59,28 @@ object RuntimeSurface extends LogSupport {
     private def surfaceOf(tpe: ru.Type): Surface = apply(tpe)
 
     def find(tpe: ru.Type): Surface = {
-      if (seen.contains(tpe)) {
-        throw new IllegalStateException(s"Cyclic reference for ${tpe}")
+      if(primitiveTypeFactory.isDefinedAt(tpe)) {
+        primitiveTypeFactory(tpe)
       }
       else {
-        seen += tpe
-        val m = surfaceFactories.orElse[ru.Type, Surface] {
-          case _ =>
-            trace(f"Resolving the unknown type $tpe into AnyRef")
-            new GenericSurface(resolveClass(tpe))
+        if (seen.contains(tpe)) {
+          throw new IllegalStateException(s"Cyclic reference for ${tpe}")
         }
-        m(tpe)
+        else {
+          seen += tpe
+          val m = surfaceFactories.orElse[ru.Type, Surface] {
+            case _ =>
+              trace(f"Resolving the unknown type $tpe into AnyRef")
+              new GenericSurface(resolveClass(tpe))
+          }
+          m(tpe)
+        }
       }
     }
 
     private val surfaceFactories: SurfaceFactory =
       taggedTypeFactory orElse
         aliasFactory orElse
-        primitiveTypeFactory orElse
         arrayFactory orElse
         optionFactory orElse
         tupleFactory orElse
@@ -88,6 +92,8 @@ object RuntimeSurface extends LogSupport {
 
     private def primitiveTypeFactory: SurfaceFactory = {
       case t if t =:= typeOf[String] => Primitive.String
+      case t if t =:= typeOf[java.lang.String] => Primitive.String
+      case t if t =:= typeOf[Unit] => Primitive.Unit
       case t if t =:= typeOf[Boolean] => Primitive.Boolean
       case t if t =:= typeOf[Int] => Primitive.Int
       case t if t =:= typeOf[Long] => Primitive.Long

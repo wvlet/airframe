@@ -18,6 +18,13 @@ object ClassSurfaceTest {
 
   class A(val id:Int)(implicit val context:String)
 
+  trait MyTag
+
+  import tag._
+
+  case class C(id:Int)
+  class B(c:C @@ MyTag)
+
 }
 
 import ClassSurfaceTest._
@@ -42,6 +49,13 @@ class ClassSurfaceTest extends SurfaceSpec {
 
       a0.id shouldBe 1
       a0.context shouldBe "c"
+    }
+
+    "support tags in constructor args" in {
+      val b = check(Surface.of[B], "B")
+      b.params.length shouldBe 1
+      val p = b.params(0)
+      check(p.surface, "C@@MyTag")
     }
   }
 }

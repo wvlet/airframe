@@ -24,7 +24,7 @@ private[surface] object SurfaceMacros {
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
-    new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)
+    new SurfaceGenerator[c.type](c).surfaceOf(targetType)
   }
 
   def methodsOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -42,10 +42,6 @@ private[surface] object SurfaceMacros {
     private val methodMemo = scala.collection.mutable.Map[Type, c.Tree]()
 
     type SurfaceFactory = PartialFunction[c.Type, c.Tree]
-
-    def createSurfaceOf(targetType: c.Type): c.Tree = {
-      surfaceOf(targetType)
-    }
 
     def localMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
       t
@@ -111,6 +107,7 @@ private[surface] object SurfaceMacros {
 
     private val taggedTypeFactory: SurfaceFactory = {
       case t if t.typeArgs.length == 2 && typeNameOf(t).startsWith("wvlet.surface.tag.") =>
+        println(s"tagged type: $t")
         val typeArgs = t.typeArgs
         q"wvlet.surface.TaggedSurface(${surfaceOf(typeArgs(0))}, ${surfaceOf(typeArgs(1))})"
     }
@@ -244,10 +241,10 @@ private[surface] object SurfaceMacros {
       }
 
       val ret = for (params <- constructor.paramLists) yield {
+
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
-
           // Find the default argument of the method parameter
           val defaultValue =
             companion
@@ -266,7 +263,8 @@ private[surface] object SurfaceMacros {
       ret
     }
 
-    def toClassOf(t: c.Type): c.Tree = {
+    def classOf(t: c.Type): c.Tree = {
+      println(s"classOf($t)")
       if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
         q"classOf[AnyRef]"
       }
@@ -288,8 +286,8 @@ private[surface] object SurfaceMacros {
 
     def methodParmetersOf(targetType: c.Type, method: MethodSymbol): c.Tree = {
       val args = methodArgsOf(targetType, method).flatten
-      val argTypes = args.map {x: MethodArg => toClassOf(x.tpe)}
-      val ref = q"wvlet.surface.MethodRef(${toClassOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
+      val argTypes = args.map {x: MethodArg => classOf(x.tpe)}
+      val ref = q"wvlet.surface.MethodRef(${classOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
 
       var index = 0
       val surfaceParams = args.map {arg =>
@@ -329,7 +327,7 @@ private[surface] object SurfaceMacros {
                 val param = Apply(Ident(TermName("args")), List(Literal(Constant(index))))
                 index += 1
                 // TODO natural type conversion (e.g., Int -> Long, etc.)
-                q"${param}.asInstanceOf[${a.tpe}]"
+                q"${param}.asInstanceOf[${a.tpe.erasure}]"
               }
             }
 
@@ -378,17 +376,16 @@ private[surface] object SurfaceMacros {
     private val genericSurfaceFactory: SurfaceFactory = {
       case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_))
-        q"new wvlet.surface.GenericSurface(classOf[$t], typeArgs = IndexedSeq(..$typeArgs))"
+        q"new wvlet.surface.GenericSurface(${classOf(t)}, typeArgs = IndexedSeq(..$typeArgs))"
       case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         q"wvlet.surface.ExistentialType"
       case t =>
-        val expr = q"new wvlet.surface.GenericSurface(classOf[$t])"
+        val expr = q"new wvlet.surface.GenericSurface(${classOf(t)})"
         expr
     }
 
     private val surfaceFactories: SurfaceFactory =
-      primitiveFactory orElse
-        taggedTypeFactory orElse
+      taggedTypeFactory orElse
         aliasFactory orElse
         arrayFactory orElse
         optionFactory orElse
@@ -400,25 +397,32 @@ private[surface] object SurfaceMacros {
         genericSurfaceFactory
 
     def surfaceOf(t: c.Type): c.Tree = {
-      if (seen.contains(t)) {
-        if (memo.contains(t)) {
-          memo(t)
-        }
-        else {
-          c.abort(c.enclosingPosition, s"recursive type: ${t.typeSymbol.fullName}")
-        }
+      if(primitiveFactory.isDefinedAt(t)) {
+        primitiveFactory(t)
       }
       else {
-        seen += t
-        // We don't need to cache primitive types
-        val surfaceGenerator =
-          surfaceFactories andThen {tree =>
-            // cache the generated Surface instance
-            q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${fullTypeNameOf(t)}, ${tree})"
+        if (seen.contains(t)) {
+          if (memo.contains(t)) {
+            memo(t)
           }
-        val surface = surfaceGenerator(t)
-        memo += (t -> surface)
-        surface
+          else {
+            c.abort(c.enclosingPosition, s"recursive type: ${t.typeSymbol.fullName}")
+          }
+        }
+        else {
+          println(s"surfaceOf($t)")
+          seen += t
+          // We don't need to cache primitive types
+          val surfaceGenerator =
+            surfaceFactories andThen {tree =>
+              // cache the generated Surface instance
+              q"wvlet.surface.Surface.surfaceCache.getOrElseUpdate(${fullTypeNameOf(t)}, ${tree})"
+            }
+          val surface = surfaceGenerator(t)
+          println(s"== end sufaceOf($t): ${surface}")
+          memo += (t -> surface)
+          surface
+        }
       }
     }
 
