@@ -11,23 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wvlet.surface
+package wvlet.surface.reflect
+import wvlet.surface.SurfaceSpec
 import wvlet.surface.tag._
 
-object ClassSurfaceTest {
+object RuntimeClassSurfaceTest {
 
   class A(val id:Int)(implicit val context:String)
 
   trait MyTag
-
-  //case class C(id:Int)
-  case class B(v:Int @@ MyTag)
+  class B(a:A @@ MyTag)
 
 }
 
-import ClassSurfaceTest._
-class ClassSurfaceTest extends SurfaceSpec {
+import RuntimeClassSurfaceTest._
+class RuntimeClassSurfaceTest extends SurfaceSpec {
 
   "Surface for Class" should {
 
@@ -49,14 +47,12 @@ class ClassSurfaceTest extends SurfaceSpec {
 //      a0.id shouldBe 1
 //      a0.context shouldBe "c"
 //    }
-
+//
     "support tags in constructor args" in {
-
-      check(Surface.of[Int @@ MyTag], "Int@@myTag")
-      val b = check(Surface.of[B], "B")
+      val b = check(RuntimeSurface.of[B], "B")
       b.params.length shouldBe 1
       val p = b.params(0)
-      check(p.surface, "Int@@MyTag")
+      check(p.surface, "A@@MyTag")
     }
   }
 }
