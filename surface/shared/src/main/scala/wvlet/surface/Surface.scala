@@ -89,12 +89,12 @@ case class MethodParameter(
   name: String,
   surface: Surface,
   private val defaultValue: Option[Any] = None,
-  accessor: Any => Any = {x => null}
+  accessor: Option[Any => Any] = None
 )
   extends Parameter {
 
   override def toString: String = s"${name}:${surface.name}"
-  def get(x: Any): Any = accessor(x)
+  def get(x: Any): Any = accessor.map(a => a(x)).getOrElse(null)
   override def getDefaultValue: Option[Any] = defaultValue
 }
 
