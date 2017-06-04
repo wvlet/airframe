@@ -11,7 +11,7 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   // For performance testing, ensure each test run one-by-one
-  //concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
+  concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
   incOptions := incOptions.value
                 .withNameHashing(true)
                 // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
