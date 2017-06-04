@@ -37,7 +37,7 @@ object Primitive {
 
   import java.{lang => jl}
 
-  private val primitiveTable = {
+  private[surface] val primitiveTable = {
     val b = Map.newBuilder[Class[_], PrimitiveSurface]
     b += classOf[jl.Boolean] -> Boolean
     b += classOf[Boolean] -> Boolean
@@ -55,6 +55,8 @@ object Primitive {
     b += classOf[Long] -> Long
     b += classOf[jl.Double] -> Double
     b += classOf[Double] -> Double
+    b += classOf[String] -> String
+    b += classOf[jl.String] -> String
     b.result
   }
 
