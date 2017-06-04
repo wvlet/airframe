@@ -13,6 +13,8 @@
  */
 package wvlet
 
+import wvlet.surface.reflect.SurfaceFactory
+
 /**
   *
   */

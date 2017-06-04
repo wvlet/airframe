@@ -80,7 +80,7 @@ private[surface] object SurfaceMacros {
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
-        val expr = q"wvlet.surface.SurfaceFactory.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
+        val expr = q"wvlet.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
         methodMemo += targetType -> expr
         expr
       }
@@ -414,7 +414,7 @@ private[surface] object SurfaceMacros {
         val surfaceGenerator =
           surfaceFactories andThen {tree =>
             // cache the generated Surface instance
-            q"wvlet.surface.SurfaceFactory.surfaceCache.getOrElseUpdate(${fullTypeNameOf(t)}, ${tree})"
+            q"wvlet.surface.surfaceCache.getOrElseUpdate(${fullTypeNameOf(t)}, ${tree})"
           }
         val surface = surfaceGenerator(t)
         memo += (t -> surface)

@@ -11,16 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.surface
+package wvlet.surface.reflect
 
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.{RuntimeMethodParameter, RuntimeSurface}
-
-import scala.reflect.runtime.{universe => ru}
+import wvlet.surface._
 
 import scala.collection.JavaConverters._
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *

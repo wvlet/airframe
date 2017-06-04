@@ -14,11 +14,16 @@
 package wvlet
 
 import scala.language.experimental.macros
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters._
 
 /**
   *
   */
 package object surface {
+  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
+  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
+
   def of[A]: Surface = macro SurfaceMacros.of[A]
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }
