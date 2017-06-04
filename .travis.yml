@@ -35,10 +35,10 @@ jdk:
 
 script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PROJECT" == "*JVM" ]; then
-      sbt ++$TRAVIS_SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport";
-      sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
+      ./sbt ++$TRAVIS_SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport";
+      ./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
     else
-      travis_wait sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
+      ./sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
     fi
 
 matrix:
