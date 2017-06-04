@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.surface
-
+import scala.language.existentials
 
 /**
   * Parameters of a Surface
