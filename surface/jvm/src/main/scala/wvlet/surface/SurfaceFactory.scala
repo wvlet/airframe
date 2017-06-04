@@ -28,21 +28,33 @@ import scala.collection.JavaConverters._
 object SurfaceFactory extends LogSupport {
   import ru._
 
-  private[surface] val surfaceCache = new ConcurrentHashMap[ru.Type, Surface].asScala
-  private[surface] val methodSurfaceCache = new ConcurrentHashMap[ru.Type, Seq[MethodSurface]].asScala
+  private type TypeName = String
+
+  private[surface] val surfaceCache = new ConcurrentHashMap[TypeName, Surface].asScala
+  private[surface] val methodSurfaceCache = new ConcurrentHashMap[TypeName, Seq[MethodSurface]].asScala
 
   def of[A: ru.WeakTypeTag]: Surface = {
     val tpe = implicitly[ru.WeakTypeTag[A]].tpe
     apply(tpe)
   }
 
+  private def fullTypeNameOf(tpe: ru.Type): TypeName = {
+    tpe match {
+      case TypeRef(prefix, typeSymbol, args) if args.isEmpty => typeSymbol.fullName
+      case TypeRef(prefix, typeSymbol, args) if !args.isEmpty =>
+        val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
+        s"${typeSymbol.fullName}[${typeArgs}]"
+      case _ => tpe.typeSymbol.fullName
+    }
+  }
+
   def apply(tpe: ru.Type): Surface = {
-    surfaceCache.getOrElseUpdate(tpe, new SurfaceFinder().find(tpe))
+    surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().find(tpe))
   }
 
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = {
     val tpe = implicitly[ru.WeakTypeTag[A]].tpe
-    methodSurfaceCache.getOrElseUpdate(tpe, {
+    methodSurfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), {
       new SurfaceFinder().createMethodSurfaceOf(tpe)
     })
   }
@@ -57,8 +69,6 @@ object SurfaceFactory extends LogSupport {
       case e: Throwable => classOf[Any]
     }
   }
-
-  private def fullNameOf(t: ru.Type): String = t.typeSymbol.fullName
 
   def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x =>
     x.isMethod && x.isAbstract && !x.isAbstractOverride
@@ -141,7 +151,6 @@ object SurfaceFactory extends LogSupport {
       }
       mod
     }
-
 
     private def surfaceOf(tpe: ru.Type): Surface = apply(tpe)
 

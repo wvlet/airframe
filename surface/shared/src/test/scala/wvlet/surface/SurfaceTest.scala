@@ -86,7 +86,7 @@ class SurfaceTest extends SurfaceSpec {
       //check(Surface.get(classOf[A]).get, a.toString)
     }
 
-    "be equal" in {
+    "be equal" taggedAs("eq") in {
       val a1 = Surface.of[A]
       val a2 = Surface.of[A]
       a1 shouldBe theSameInstanceAs(a2)
