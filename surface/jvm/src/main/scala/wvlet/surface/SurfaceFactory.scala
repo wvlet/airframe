@@ -104,7 +104,7 @@ object SurfaceFactory extends LogSupport {
             val owner = surfaceOf(t)
             val name = m.name.decodedName.toString
             val ret = surfaceOf(m.returnType)
-            val args = methodParmetersOf(m.owner.typeSignature, m)
+            val args = methodParmetersOf(t, m)
             ClassMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
           }
           list.toIndexedSeq
