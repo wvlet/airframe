@@ -38,7 +38,7 @@ script:
       sbt ++$TRAVIS_SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport";
       sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
     else
-      sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
+      travis_wait sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
     fi
 
 matrix:
