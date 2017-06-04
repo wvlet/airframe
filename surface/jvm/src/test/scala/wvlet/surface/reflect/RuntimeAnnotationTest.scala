@@ -16,7 +16,8 @@ package wvlet.surface.reflect
 
 import javax.annotation.{PreDestroy, Resource}
 
-import wvlet.surface.{Surface, SurfaceSpec}
+import wvlet.surface
+import wvlet.surface.SurfaceSpec
 
 @Resource(name = "annot-test")
 class RuntimeAnnot(@Resource(name = "param A") a:String, c:Int) {
@@ -32,14 +33,14 @@ class RuntimeAnnot(@Resource(name = "param A") a:String, c:Int) {
 class RuntimeAnnotationTest extends SurfaceSpec {
   "RuntimeSurface" should {
     "find class annotations" in {
-      val r = Surface.of[RuntimeAnnot]
+      val r = surface.of[RuntimeAnnot]
       val a = r.findAnnotationOf[Resource]
       a shouldBe defined
       a.get.name() shouldBe "annot-test"
     }
 
     "find parameter annotations" in {
-      val s = Surface.of[RuntimeAnnot]
+      val s = surface.of[RuntimeAnnot]
       val p = s.params.find(_.name == "a").get
       val a = p.findAnnotationOf[Resource]
       a shouldBe defined
@@ -50,7 +51,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     }
 
     "find method annotations" in {
-      val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
+      val m = surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
       val a = m.findAnnotationOf[PreDestroy]
       a shouldBe defined
       m.findAnnotationOf[Resource] shouldNot be (defined)
@@ -62,7 +63,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     }
 
     "pass sanity check" in {
-      val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
+      val m = surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
       m.annotations shouldBe empty
     }
   }

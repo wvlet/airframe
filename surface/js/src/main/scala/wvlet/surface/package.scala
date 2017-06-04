@@ -11,16 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.surface
+package wvlet
 
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.JavaConverters._
 import scala.language.experimental.macros
 
 /**
   *
   */
-object SurfaceFactory {
-  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
-  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
+package object surface {
+  def of[A]: Surface = macro SurfaceMacros.of[A]
+  def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }

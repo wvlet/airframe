@@ -29,7 +29,7 @@ object MethodExamples {
 }
 
 import MethodExamples._
-
+import wvlet.surface
 /**
   *
   */
@@ -37,7 +37,7 @@ class MethodSurfaceTest extends SurfaceSpec {
   "MethodSurface" should {
 
     "list methods" in {
-      val m = Surface.methodsOf[A]
+      val m = surface.methodsOf[A]
       info(m.mkString("\n"))
 
       val hello = m.find(_.name == "hello").get
@@ -80,7 +80,7 @@ class MethodSurfaceTest extends SurfaceSpec {
       f.isFinal shouldBe true
       f.isStatic shouldBe false
 
-      val m2 = Surface.methodsOf[MyA]
+      val m2 = surface.methodsOf[MyA]
       info(m2)
     }
 

@@ -17,7 +17,6 @@ package wvlet.surface
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
 /**
   * Create a default instance (zero) from Surface

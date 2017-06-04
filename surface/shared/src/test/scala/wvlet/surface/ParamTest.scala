@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.surface
+import wvlet.surface
 
 object ParamTest {
   object A {
@@ -27,7 +28,7 @@ object ParamTest {
 class ParamTest extends SurfaceSpec {
   "Parameter" should {
     "have default value" in {
-      val s = Surface.of[ParamTest.A]
+      val s = surface.of[ParamTest.A]
       val p = s.params.head
       p.getDefaultValue shouldBe Option(-1)
       val p1 = s.params(1)

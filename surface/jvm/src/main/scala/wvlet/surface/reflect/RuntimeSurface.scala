@@ -13,15 +13,10 @@
  */
 package wvlet.surface.reflect
 
-import java.util.concurrent.ConcurrentHashMap
-
 import wvlet.log.LogSupport
 import wvlet.surface._
 
-import scala.reflect.runtime.universe._
 import scala.reflect.runtime.{universe => ru}
-import scala.util.Try
-import scala.collection.JavaConverters._
 
 /**
   *

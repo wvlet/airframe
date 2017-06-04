@@ -21,12 +21,14 @@ object ClassSurfaceTest {
 }
 
 import ClassSurfaceTest._
+import wvlet.surface
+
 class ClassSurfaceTest extends SurfaceSpec {
 
   "Surface for Class" should {
 
     "support multiple param blocks" in {
-      val a = check(Surface.of[A], "A")
+      val a = check(surface.of[A], "A")
       info(a.params.mkString(", "))
 
       a.params.length shouldBe 2
