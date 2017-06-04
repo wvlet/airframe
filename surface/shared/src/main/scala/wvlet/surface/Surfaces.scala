@@ -123,7 +123,7 @@ object Primitive {
     override def name: String = "Double"
     override def fullName: String = "Double"
   }
-  case object Char extends PrimitiveSurface(classOf[Byte]) {
+  case object Char extends PrimitiveSurface(classOf[Char]) {
     override def name: String = "Char"
     override def fullName: String = "Char"
   }

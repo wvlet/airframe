@@ -34,6 +34,7 @@ class ZeroTest extends SurfaceSpec {
     "support primitives" in {
       zeroCheck(Surface.of[Int], 0)
       zeroCheck(Surface.of[Long], 0L)
+      zeroCheck(Surface.of[Char], 0.toChar)
       zeroCheck(Surface.of[Boolean], false)
       zeroCheck(Surface.of[Short], 0.toShort)
       zeroCheck(Surface.of[Byte], 0.toByte)

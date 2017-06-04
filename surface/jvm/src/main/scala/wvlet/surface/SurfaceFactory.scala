@@ -183,6 +183,7 @@ object SurfaceFactory extends LogSupport {
       case t if t =:= typeOf[Short] => Primitive.Short
       case t if t =:= typeOf[Byte] => Primitive.Byte
       case t if t =:= typeOf[Char] => Primitive.Char
+      case t if t =:= typeOf[Unit] => Primitive.Unit
     }
 
     private def typeNameOf(t: ru.Type): String = {

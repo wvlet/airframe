@@ -37,6 +37,8 @@ trait Surface extends Serializable {
 object Surface {
   import scala.reflect.runtime.{universe => ru}
 
+  // SurfaceFactory provides platform-specific Surface generator (e.g., ScalaJVM, JS)
+
   def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
 }
