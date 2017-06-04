@@ -26,20 +26,27 @@ import scala.collection.JavaConverters._
   *
   */
 object SurfaceFactory extends LogSupport {
-
   import ru._
 
   private[surface] val surfaceCache = new ConcurrentHashMap[ru.Type, Surface].asScala
+  private[surface] val methodSurfaceCache = new ConcurrentHashMap[ru.Type, Seq[MethodSurface]].asScala
 
   def of[A: ru.WeakTypeTag]: Surface = {
-    val tag = implicitly[ru.WeakTypeTag[A]]
-    val tpe = tag.tpe
+    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
     apply(tpe)
   }
 
   def apply(tpe: ru.Type): Surface = {
     surfaceCache.getOrElseUpdate(tpe, new SurfaceFinder().find(tpe))
   }
+
+  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = {
+    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+    methodSurfaceCache.getOrElseUpdate(tpe, {
+      new SurfaceFinder().createMethodSurfaceOf(tpe)
+    })
+  }
+
 
   private[surface] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
   private def resolveClass(tpe: ru.Type): Class[_] = {
@@ -65,6 +72,76 @@ object SurfaceFactory extends LogSupport {
 
   private class SurfaceFinder extends LogSupport {
     private val seen = scala.collection.mutable.Set[ru.Type]()
+    private val methodSeen = scala.collection.mutable.Set[ru.Type]()
+
+    def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
+      t
+      .members
+      .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact)
+      .map(_.asMethod)
+      .filter(isTargetMethod(_, t))
+    }
+
+    def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
+      if (methodSeen.contains(targetType)) {
+        throw new IllegalArgumentException(s"recursive type in method: ${targetType.typeSymbol.fullName}")
+      }
+      methodSeen += targetType
+      val methodSurfaces = targetType match {
+        case t@TypeRef(prefix, typeSymbol, typeArgs) =>
+          val list = for (m <- localMethodsOf(t.dealias)) yield {
+            val mod = modifierBitMaskOf(m)
+            val owner = surfaceOf(t)
+            val name = m.name.decodedName.toString
+            val ret = surfaceOf(m.returnType)
+            val args = methodParmetersOf(m.owner.typeSignature, m)
+            ClassMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
+          }
+          list.toIndexedSeq
+        case _ =>
+          Seq.empty
+      }
+      methodSurfaces
+    }
+
+    private def isTargetMethod(m: MethodSymbol, target: ru.Type): Boolean = {
+      // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+      val methodName = m.name.decodedName.toString
+      m.isMethod &&
+        !m.isImplicit &&
+        !m.isSynthetic &&
+        !m.isAccessor &&
+        !methodName.startsWith("$") &&
+        methodName != "<init>" &&
+        isOwnedByTargetClass(m, target)
+    }
+    private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
+      m.owner == t.typeSymbol
+    }
+
+    def modifierBitMaskOf(m: MethodSymbol): Int = {
+      var mod = 0
+      if (m.isPublic) {
+        mod |= MethodModifier.PUBLIC
+      }
+      if (m.isPrivate) {
+        mod |= MethodModifier.PRIVATE
+      }
+      if (m.isProtected) {
+        mod |= MethodModifier.PROTECTED
+      }
+      if (m.isStatic) {
+        mod |= MethodModifier.STATIC
+      }
+      if (m.isFinal) {
+        mod |= MethodModifier.FINAL
+      }
+      if (m.isAbstract) {
+        mod |= MethodModifier.ABSTRACT
+      }
+      mod
+    }
+
 
     private def surfaceOf(tpe: ru.Type): Surface = apply(tpe)
 

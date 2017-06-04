@@ -83,7 +83,7 @@ class SurfaceTest extends SurfaceSpec {
     "resolve surface from class" in {
       pending
       val a = Surface.of[A]
-      check(Surface.get(classOf[A]).get, a.toString)
+      //check(Surface.get(classOf[A]).get, a.toString)
     }
 
     "be equal" in {

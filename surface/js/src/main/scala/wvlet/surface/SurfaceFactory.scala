@@ -11,34 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package wvlet.surface
 
-trait Surface extends Serializable {
-  def rawType: Class[_]
-  def typeArgs: Seq[Surface]
-  def params: Seq[Parameter]
-  def name: String
-  def fullName: String
-
-  def dealias: Surface = this
-
-  def isOption: Boolean
-  def isAlias: Boolean
-  def isPrimitive: Boolean
-
-  def objectFactory: Option[ObjectFactory] = None
-}
-
+import java.util.concurrent.ConcurrentHashMap
+import scala.collection.JavaConverters._
+import scala.reflect.macros.{blackbox => sm}
 
 /**
   *
   */
-object Surface {
-  import scala.reflect.runtime.{universe => ru}
+object SurfaceFactory {
+  val surfaceCache       = new ConcurrentHashMap[String, Surface]().asScala
+  val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
 
-  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
-  def apply(tpe: ru.Type): Surface = SurfaceFactory(tpe)
-
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
+  def of[A]: Surface = macro SurfaceMacros.of[A]
+  def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }
