@@ -300,7 +300,7 @@ private[surface] object SurfaceMacros {
         }
 
         val expr =
-          q"""wvlet.surface.MethodParameter(
+          q"""wvlet.surface.StdMethodParameter(
             method = ${ref},
             index = ${index},
             name=${arg.name},

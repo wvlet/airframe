@@ -29,3 +29,40 @@ trait Surface extends Serializable {
 
   def objectFactory: Option[ObjectFactory] = None
 }
+
+trait Parameter {
+  def index: Int
+  def name: String
+
+  /**
+    * Surface for representing this parameter type
+    */
+  def surface: Surface
+
+  /**
+    * Get this parameter value from a given object x
+    */
+  def get(x: Any): Any
+
+  /**
+    * Get the default value of this parameter.
+    * For example the default value of x in class A(x:Int = 10) is 10
+    *
+    * @return
+    */
+  def getDefaultValue: Option[Any]
+}
+
+
+/**
+  *
+  */
+trait ObjectFactory extends Serializable {
+  def newInstance(args: Seq[Any]): Any
+}
+
+case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
+
+trait MethodParameter extends Parameter {
+  def method: MethodRef
+}

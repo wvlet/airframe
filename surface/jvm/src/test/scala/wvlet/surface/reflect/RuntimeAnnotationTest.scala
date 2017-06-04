@@ -57,6 +57,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
       m.findAnnotationOf[Resource] shouldNot be (defined)
 
       val p = m.args.find(_.name == "arg").get
+      info(s"p: ${p}, ${p.index}")
       val r = p.findAnnotationOf[Resource]
       r shouldBe defined
       r.get.name() shouldBe "b arg"

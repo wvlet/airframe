@@ -14,35 +14,10 @@
 package wvlet.surface
 
 
-trait Parameter {
-  def index: Int
-  def name: String
-
-  /**
-    * Surface for representing this parameter type
-    */
-  def surface: Surface
-
-  /**
-    * Get this parameter value from a given object x
-    */
-  def get(x: Any): Any
-
-  /**
-    * Get the default value of this parameter.
-    * For example the default value of x in class A(x:Int = 10) is 10
-    *
-    * @return
-    */
-  def getDefaultValue: Option[Any]
-}
-
-case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], isConstructor: Boolean)
-
 /**
   * Parameters of a Surface
   */
-case class MethodParameter(
+case class StdMethodParameter(
   method: MethodRef,
   index: Int,
   name: String,
@@ -50,19 +25,13 @@ case class MethodParameter(
   private val defaultValue: Option[Any] = None,
   accessor: Option[Any => Any] = None
 )
-  extends Parameter {
+  extends MethodParameter {
 
   override def toString: String = s"${name}:${surface.name}"
   def get(x: Any): Any = accessor.map(a => a(x)).getOrElse(null)
   override def getDefaultValue: Option[Any] = defaultValue
 }
 
-/**
-  *
-  */
-trait ObjectFactory extends Serializable {
-  def newInstance(args: Seq[Any]): Any
-}
 
 object Primitive {
 

@@ -16,6 +16,8 @@ package wvlet.surface
 
 import java.{lang => jl}
 
+import wvlet.log.LogSupport
+
 import scala.reflect.ClassTag
 import scala.util.Try
 
@@ -39,7 +41,7 @@ package object reflect {
   }
 
   implicit class ToRuntimeSurfaceParameter(p: Parameter) {
-    def annotations : Array[Array[jl.annotation.Annotation]] = {
+    def annotations: Array[Array[jl.annotation.Annotation]] = {
       p match {
         case mp: MethodParameter =>
           Try {
@@ -59,7 +61,7 @@ package object reflect {
 
     def findAnnotationOf[T <: jl.annotation.Annotation : ClassTag]: Option[T] = {
       val annots = annotations
-      if(p.index < annots.length) {
+      if (p.index < annots.length) {
         findAnnotation[T](annots(p.index))
       }
       else {
@@ -68,8 +70,8 @@ package object reflect {
     }
   }
 
-  implicit class ToRuntimeMethodSurface(m:MethodSurface) {
-    def annotations : Array[jl.annotation.Annotation] = {
+  implicit class ToRuntimeMethodSurface(m: MethodSurface) {
+    def annotations: Array[jl.annotation.Annotation] = {
       Try {
         val cl = m.owner.rawType
         val mt = cl.getDeclaredMethod(m.name, m.args.map(_.surface.rawType): _*)
