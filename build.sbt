@@ -189,6 +189,36 @@ lazy val surface =
       "org.wvlet" %%% "wvlet-log" % "1.2.3"
     )
   )
+  .jvmSettings(
+    // include the macro classes and resources in the main jar
+    mappings in (Compile, packageBin) ++= mappings.in(surfaceMacrosJVM, Compile, packageBin).value,
+    // include the macro sources in the main source jar
+    mappings in (Compile, packageSrc) ++= mappings.in(surfaceMacrosJVM, Compile, packageSrc).value
+  )
+  .jsSettings(
+    mappings in (Compile, packageBin) ++= mappings.in(surfaceMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+    // include the macro sources in the main source jar
+    mappings in (Compile, packageSrc) ++= mappings.in(surfaceMacrosJS, Compile, packageSrc).value
+  )
+  .dependsOn(surfaceMacros % "compile-internal,test-internal")
+
+lazy val surfaceMacros =
+  crossProject
+  .in(file("surface-macros"))
+  .settings(buildSettings)
+  .settings (
+    buildSettings,
+    name := "surface-macros",
+    description := "Macros for Surface",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value
+    ),
+    publish := {},
+    publishLocal := {}
+  )
+
+lazy val surfaceMacrosJVM = surfaceMacros.jvm
+lazy val surfaceMacrosJS = surfaceMacros.js
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS = surface.js

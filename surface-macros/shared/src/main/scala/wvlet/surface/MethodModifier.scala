@@ -11,32 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package wvlet.surface
-
-trait Surface extends Serializable {
-  def rawType: Class[_]
-  def typeArgs: Seq[Surface]
-  def params: Seq[Parameter]
-  def name: String
-  def fullName: String
-
-  def dealias: Surface = this
-
-  def isOption: Boolean
-  def isAlias: Boolean
-  def isPrimitive: Boolean
-
-  def objectFactory: Option[ObjectFactory] = None
-}
-
 
 /**
   *
   */
-object Surface {
-  import scala.reflect.runtime.{universe => ru}
-
-  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
+object MethodModifier {
+  val PUBLIC       = 0x00000001
+  val PRIVATE      = 0x00000002
+  val PROTECTED    = 0x00000004
+  val STATIC       = 0x00000008
+  val FINAL        = 0x00000010
+  val SYNCHRONIZED = 0x00000020
+  val VOLATILE     = 0x00000040
+  val TRANSIENT    = 0x00000080
+  val NATIVE       = 0x00000100
+  val INTERFACE    = 0x00000200
+  val ABSTRACT     = 0x00000400
+  val STRICT       = 0x00000800
 }

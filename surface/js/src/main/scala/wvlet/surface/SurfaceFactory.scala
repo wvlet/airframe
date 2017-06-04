@@ -15,7 +15,7 @@ package wvlet.surface
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConverters._
-import scala.reflect.macros.{blackbox => sm}
+import scala.language.experimental.macros
 
 /**
   *
