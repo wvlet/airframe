@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 import wvlet.airframe.Alias.{HelloRef, StringHello}
-import wvlet.surface.Surface
+import wvlet.surface
 
 trait Message
 case class Hello(message: String) extends Message
@@ -72,9 +72,9 @@ class DesignTest extends AirframeSpec {
       val dd = d1.remove[Message]
 
       def hasMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == Surface.of[Message])
+        d.binding.exists(_.from == surface.of[Message])
       def hasProductionMessage(d:Design) : Boolean =
-        d.binding.exists(_.from == Surface.of[ProductionMessage])
+        d.binding.exists(_.from == surface.of[ProductionMessage])
 
       hasMessage(d1) shouldBe true
       hasMessage(dd) shouldBe false

@@ -20,6 +20,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
 import wvlet.surface.{Primitive, Surface}
+import wvlet.surface
 
 import scala.util.Random
 
@@ -319,18 +320,18 @@ class AirframeTest extends AirframeSpec {
         val d = newDesign
                 .bind[Printer].to[Printer]
       }
-      ex.deps should contain(Surface.of[Printer])
+      ex.deps should contain(surface.of[Printer])
       ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toSingletonOf[Printer]
-      }.deps should contain(Surface.of[Printer])
+      }.deps should contain(surface.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
                 .bind[Printer].toEagerSingletonOf[Printer]
-      }.deps should contain(Surface.of[Printer])
+      }.deps should contain(surface.of[Printer])
     }
 
 //    trait HasCycle {
@@ -347,8 +348,8 @@ class AirframeTest extends AirframeSpec {
 //        c.build[HasCycle]
 //      }
 //      warn(s"${caught}")
-//      caught.deps should contain(Surface.of[A])
-//      caught.deps should contain(Surface.of[B])
+//      caught.deps should contain(surface.of[A])
+//      caught.deps should contain(surface.of[B])
     }
 
 
@@ -406,7 +407,7 @@ class AirframeTest extends AirframeSpec {
 
 
     "support type alias" taggedAs ("alias") in {
-      val apple = Surface.of[Apple]
+      val apple = surface.of[Apple]
       warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
       val d = newDesign
@@ -536,7 +537,7 @@ class AirframeTest extends AirframeSpec {
 
       warn("Running MISSING_SESSION test")
       val caught = intercept[MISSING_SESSION]{
-        Session.findSession(Surface.of[Test], new Test{})
+        Session.findSession(surface.of[Test], new Test{})
       }
       warn(caught.getMessage)
     }
