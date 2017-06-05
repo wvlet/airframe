@@ -14,6 +14,7 @@ Airframe provides the best practices of building service objecst using DI and Sc
 
 - [Documentation](docs)
 - [Use Cases](docs/use-cases.html)
+- [Release Notes](docs/release-notes.html)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Getting Started
@@ -75,7 +76,7 @@ Major features of Airframe are as follows:
 - Design objects are immutable. You can create a new design safely based on an existing design.
 - Supports all possible binding types: constructor, instance, provider, singleton bindings.
 - Built-in life cycle management of objects (init, shutdown, etc.) through sessions.
-- Scala macro based binding generation (reflection-free)
+- Scala macro based binding generation
 - Scala 2.11, 2.12, and [Scala.js](https://www.scala-js.org/) support.
 
 ## What's Next?

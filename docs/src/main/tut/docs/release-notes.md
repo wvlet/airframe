@@ -5,6 +5,15 @@ title: Release Notes
 
 # Release Notes
 
+## 0.15
+ - Surface will be gererated by using runtime-type information. This improves the compilation speed in Scala JVM projects.
+   - Scala.js version still uses compile-time surface generation
+ - Interface change: `Surface.of[X]` to `surface.of[X]`.
+   - This is for providing different implementations of Surface for ScalaJVM and Scala.js.
+ - Fixed an issue when tagged type is used inside constructor parameters.
+ - Fixed an issue that lifecycle hooks are wrongly called when debug level logging is used.
+ - Merged wvlet-config as airframe-config. This module is useful for creating configuration objects from YAML file.
+
 ## 0.14
  - [Surface](https://github.com/wvlet/airframe/tree/master/surface) is now a part of Airframe
  - Added RuntimeSurface for the convenience of creating Surface from runtime-type information (reflect.universe.Type)
