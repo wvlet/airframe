@@ -55,8 +55,8 @@ object Primitive {
     b += classOf[Long] -> Long
     b += classOf[jl.Double] -> Double
     b += classOf[Double] -> Double
-    b += classOf[String] -> String
     b += classOf[jl.String] -> String
+    b += classOf[String] -> String
     b.result
   }
 
@@ -145,6 +145,8 @@ case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
 
   override def objectFactory: Option[ObjectFactory] = base.objectFactory
 }
+
+case object AnyRefSurface extends GenericSurface(classOf[AnyRef])
 
 /**
   * Base class for generic surfaces with type args

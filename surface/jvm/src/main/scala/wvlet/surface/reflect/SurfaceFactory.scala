@@ -181,10 +181,8 @@ object SurfaceFactory extends LogSupport {
     }
 
     def surfaceOf(tpe: ru.Type): Surface = {
-      info(s"surfaceOf ${tpe}")
       val name = fullTypeNameOf(tpe)
       if (surfaceCache.contains(name)) {
-        info(s"Found a cache for ${tpe}: ${name}")
         surfaceCache(name)
       }
       else if (seen.contains(tpe)) {
@@ -198,7 +196,6 @@ object SurfaceFactory extends LogSupport {
             new GenericSurface(resolveClass(tpe))
         }
         val surface = m(tpe)
-        info(s"Add a new surface of ${tpe}")
         surfaceCache += name -> surface
         surface
       }
@@ -398,6 +395,11 @@ object SurfaceFactory extends LogSupport {
         new GenericSurface(resolveClass(t), typeArgs = typeArgs)
       case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         wvlet.surface.ExistentialType
+      case t@TypeRef(prefix, symbol, args)
+        if resolveClass(t) == classOf[AnyRef] && t.dealias.typeSymbol.fullName != "java.lang.Object" =>
+        val name = t.typeSymbol.name.decodedName.toString
+        val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+        new Alias(name, fullName, AnyRefSurface)
       case t =>
         new GenericSurface(resolveClass(t))
     }
