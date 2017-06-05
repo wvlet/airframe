@@ -193,8 +193,8 @@ lazy val surface =
     )
   )
   .jsSettings(
-    // Workaround for ' JSCom has been closed' issue
-    parallelExecution in ThisBuild := false,
+    // Workaround for 'JSCom has been closed' issue
+    parallelExecution in ThisBuild := false
   )
 
 lazy val surfaceJVM = surface.jvm
