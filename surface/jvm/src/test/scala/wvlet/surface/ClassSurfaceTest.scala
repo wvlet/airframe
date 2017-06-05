@@ -20,7 +20,7 @@ object ClassSurfaceTest {
 
   class A(val id:Int)(implicit val context:String)
 
-  type MyTag
+  trait MyTag
   case class B(v:Int @@ MyTag)
 }
 
