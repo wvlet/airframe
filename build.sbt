@@ -82,12 +82,12 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
   .settings(buildSettings)
   .settings(noPublish)
-  .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, wvletConfig)
+  .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig)
 
 lazy val projectJVM =
   project
   .settings(noPublish)
-  .aggregate(airframeJVM, surfaceJVM)
+  .aggregate(airframeJVM, surfaceJVM, airframeConfig)
 
 lazy val projectJS =
   project
@@ -203,14 +203,12 @@ lazy val surfaceJS = surface.js
 
 val wvletTest = "org.wvlet" %% "wvlet-test" % "0.27" % "test"
 
-lazy val wvletConfig =
-  Project(id = "config", base = file("config"))
+lazy val airframeConfig =
+  Project(id = "airframe-config", base = file("airframe-config"))
   .settings(buildSettings)
   .settings(
-    description := "wvlet configuration module",
+    description := "airframe configuration module",
     libraryDependencies ++= Seq(
-      "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       "org.yaml" % "snakeyaml" % "1.14",
       "org.wvlet" %% "wvlet-log" % "1.2.3",
       wvletTest
