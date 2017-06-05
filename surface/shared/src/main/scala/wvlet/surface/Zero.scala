@@ -17,7 +17,6 @@ package wvlet.surface
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
 /**
   * Create a default instance (zero) from Surface
@@ -37,13 +36,14 @@ object Zero extends LogSupport {
   private def zeroOfPrimitives: ZeroValueFactory = isPrimitive andThen {
     case Primitive.String => ""
     case Primitive.Boolean => false
-    case Primitive.Short => 0.toShort
     case Primitive.Int => 0
     case Primitive.Long => 0L
     case Primitive.Float => 0f
     case Primitive.Double => 0.0
-    case Primitive.Byte => 0.toByte
     case Primitive.Unit => null
+    case Primitive.Byte => 0.toByte
+    case Primitive.Short => 0.toShort
+    case Primitive.Char => 0.toChar
   }
 
   private def zeroOfArray: ZeroValueFactory = {

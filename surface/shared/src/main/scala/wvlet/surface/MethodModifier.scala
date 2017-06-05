@@ -12,27 +12,21 @@
  * limitations under the License.
  */
 package wvlet.surface
-import wvlet.surface
 
-object ParamTest {
-  object A {
-    def hello: String = "hello"
-    def apply(s: String): A = A(s.toInt)
-  }
-
-  def getter(x: Int):Int = x * 2
-  case class A(id: Int = -1, p1: Int = getter(10))
-}
-
-
-class ParamTest extends SurfaceSpec {
-  "Parameter" should {
-    "have default value" in {
-      val s = surface.of[ParamTest.A]
-      val p = s.params.head
-      p.getDefaultValue shouldBe Option(-1)
-      val p1 = s.params(1)
-      p1.getDefaultValue shouldBe Option(20)
-    }
-  }
+/**
+  *
+  */
+object MethodModifier {
+  val PUBLIC       = 0x00000001
+  val PRIVATE      = 0x00000002
+  val PROTECTED    = 0x00000004
+  val STATIC       = 0x00000008
+  val FINAL        = 0x00000010
+  val SYNCHRONIZED = 0x00000020
+  val VOLATILE     = 0x00000040
+  val TRANSIENT    = 0x00000080
+  val NATIVE       = 0x00000100
+  val INTERFACE    = 0x00000200
+  val ABSTRACT     = 0x00000400
+  val STRICT       = 0x00000800
 }

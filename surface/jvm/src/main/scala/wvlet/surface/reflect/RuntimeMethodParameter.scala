@@ -13,7 +13,7 @@
  */
 package wvlet.surface.reflect
 
-import wvlet.surface.{MethodRef, Parameter, Surface}
+import wvlet.surface.{MethodParameter, MethodRef, Parameter, Surface}
 import java.{lang => jl}
 
 import wvlet.log.LogSupport
@@ -27,7 +27,7 @@ case class RuntimeMethodParameter(
   name: String,
   surface: Surface
 )
-  extends Parameter with LogSupport {
+  extends MethodParameter with LogSupport {
   override def toString: String = s"${name}:${surface.name}"
 
   private lazy val field: jl.reflect.Field = method.owner.getDeclaredField(name)

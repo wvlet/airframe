@@ -18,7 +18,7 @@ trait MethodSurface {
   def mod: Int
   def owner: Surface
   def name: String
-  def args: Seq[Parameter]
+  def args: Seq[MethodParameter]
   def returnType: Surface
 
   def isPublic: Boolean = (mod & MethodModifier.PUBLIC) != 0
@@ -29,19 +29,6 @@ trait MethodSurface {
   def isAbstract: Boolean = (mod & MethodModifier.ABSTRACT) != 0
 }
 
-case class ClassMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[Parameter]) extends MethodSurface
+case class ClassMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface
 
-object MethodModifier {
-  val PUBLIC       = 0x00000001
-  val PRIVATE      = 0x00000002
-  val PROTECTED    = 0x00000004
-  val STATIC       = 0x00000008
-  val FINAL        = 0x00000010
-  val SYNCHRONIZED = 0x00000020
-  val VOLATILE     = 0x00000040
-  val TRANSIENT    = 0x00000080
-  val NATIVE       = 0x00000100
-  val INTERFACE    = 0x00000200
-  val ABSTRACT     = 0x00000400
-  val STRICT       = 0x00000800
-}
+

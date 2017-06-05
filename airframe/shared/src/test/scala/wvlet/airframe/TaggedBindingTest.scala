@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.surface.Surface
+import wvlet.surface
 import wvlet.surface.tag._
 
 object TaggedBindingTest {
@@ -39,7 +39,7 @@ class TaggedBindingTest extends AirframeSpec {
 
   "Airframe" should {
     "support tagged binding" in {
-        val apple = Surface.of[Fruit @@ Apple]
+        val apple = surface.of[Fruit @@ Apple]
         warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
         val d = newDesign

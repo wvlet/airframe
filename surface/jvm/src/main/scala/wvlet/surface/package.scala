@@ -11,28 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.surface
-import wvlet.surface
+package wvlet
 
-object ParamTest {
-  object A {
-    def hello: String = "hello"
-    def apply(s: String): A = A(s.toInt)
-  }
+import wvlet.surface.reflect.SurfaceFactory
 
-  def getter(x: Int):Int = x * 2
-  case class A(id: Int = -1, p1: Int = getter(10))
-}
+/**
+  *
+  */
+package object surface {
+  import scala.reflect.runtime.{universe => ru}
 
-
-class ParamTest extends SurfaceSpec {
-  "Parameter" should {
-    "have default value" in {
-      val s = surface.of[ParamTest.A]
-      val p = s.params.head
-      p.getDefaultValue shouldBe Option(-1)
-      val p1 = s.params(1)
-      p1.getDefaultValue shouldBe Option(20)
-    }
-  }
+  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
+  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
 }
