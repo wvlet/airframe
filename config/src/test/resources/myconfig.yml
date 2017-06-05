@@ -1,0 +1,7 @@
+default:
+  id: 1
+  full name: default-config
+
+staging:
+  id: 2
+  fullName: staging-config
