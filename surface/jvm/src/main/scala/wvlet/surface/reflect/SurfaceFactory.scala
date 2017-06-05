@@ -396,7 +396,8 @@ object SurfaceFactory extends LogSupport {
       case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         wvlet.surface.ExistentialType
       case t@TypeRef(prefix, symbol, args)
-        if resolveClass(t) == classOf[AnyRef] && t.dealias.typeSymbol.fullName != "java.lang.Object" =>
+        if resolveClass(t) == classOf[AnyRef] && !(t =:= typeOf[AnyRef]) =>
+        // For example, trait MyTag, which has no implementation will be just an java.lang.Object
         val name = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         new Alias(name, fullName, AnyRefSurface)
