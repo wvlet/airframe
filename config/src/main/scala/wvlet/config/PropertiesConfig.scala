@@ -15,19 +15,19 @@ package wvlet.config
 
 import java.util.Properties
 
-import wvlet.config.Config.CanonicalNameFormatter
 import wvlet.log.LogSupport
 import wvlet.surface.{Surface, TaggedSurface}
 import wvlet.surface.reflect.ObjectBuilder
 
 import scala.util.{Failure, Success, Try}
+import wvlet.surface.CanonicalNameFormatter._
 
 /**
   * Helper class to overwrite config objects using Java Properties
   */
 object PropertiesConfig extends LogSupport {
 
-  case class Prefix(prefix:String, tag: Option[String]) {
+  case class Prefix(prefix: String, tag: Option[String]) {
     override def toString = tag match {
       case Some(t) => s"${prefix}@${t}"
       case None => prefix
@@ -39,15 +39,15 @@ object PropertiesConfig extends LogSupport {
   case class ConfigProperty(key: ConfigKey, v: Any)
 
   private[config] def extractPrefix(t: Surface): Prefix = {
-    def canonicalize(s: String): String = {
-      val name = s.replaceAll("Config$", "")
-      CanonicalNameFormatter.format(name)
+    def removeConfigSuffix(s:String):String = {
+      s.replaceAll("Config$", "")
     }
+
     t match {
       case TaggedSurface(base, tag) =>
-        Prefix(canonicalize(base.name), Some(CanonicalNameFormatter.format(tag.name)))
+        Prefix(removeConfigSuffix(base.name).canonicalName, Some(tag.name.canonicalName))
       case _ =>
-        Prefix(canonicalize(t.name), None)
+        Prefix(removeConfigSuffix(t.name).canonicalName, None)
     }
   }
 
@@ -56,13 +56,13 @@ object PropertiesConfig extends LogSupport {
     c.length match {
       case l if l >= 2 =>
         val prefixSplit = c(0).split("@+")
-        if(prefixSplit.length > 1) {
-          val param = CanonicalNameFormatter.format(c(1).mkString)
+        if (prefixSplit.length > 1) {
+          val param = c(1).mkString.canonicalName
           ConfigKey(Prefix(prefixSplit(0), Some(prefixSplit(1))), param)
         }
         else {
           val prefix = c(0)
-          val param = CanonicalNameFormatter.format(c(1))
+          val param = c(1).canonicalName
           ConfigKey(Prefix(prefix, None), param)
         }
       case other =>
@@ -70,11 +70,11 @@ object PropertiesConfig extends LogSupport {
     }
   }
 
-  private[config] def toConfigProperties(tpe:Surface, config: Any): Seq[ConfigProperty] = {
+  private[config] def toConfigProperties(tpe: Surface, config: Any): Seq[ConfigProperty] = {
     val prefix = extractPrefix(tpe)
     val b = Seq.newBuilder[ConfigProperty]
     for (p <- tpe.params) {
-      val key = ConfigKey(prefix, CanonicalNameFormatter.format(p.name))
+      val key = ConfigKey(prefix, p.name.canonicalName)
       Try(p.get(config)) match {
         case Success(v) =>
           b += ConfigProperty(key, v)
@@ -85,8 +85,8 @@ object PropertiesConfig extends LogSupport {
     b.result()
   }
 
-  def overrideWithProperties(config:Config, props: Properties, onUnusedProperties: Properties => Unit): Config = {
-    val overrides : Seq[ConfigProperty] = {
+  def overrideWithProperties(config: Config, props: Properties, onUnusedProperties: Properties => Unit): Config = {
+    val overrides: Seq[ConfigProperty] = {
       import scala.collection.JavaConverters._
       val b = Seq.newBuilder[ConfigProperty]
       for ((k, v) <- props.asScala) yield {
@@ -96,6 +96,7 @@ object PropertiesConfig extends LogSupport {
       }
       b.result
     }
+
     val unusedProperties = Seq.newBuilder[ConfigProperty]
 
     // Check properties for unknown config objects
@@ -106,12 +107,13 @@ object PropertiesConfig extends LogSupport {
     val newConfigs = for (ConfigHolder(tpe, value) <- config) yield {
       val configBuilder = ObjectBuilder.fromObject(tpe, value)
       val prefix = extractPrefix(tpe)
-      val schema = tpe
 
       val (overrideParams, unused) =
         overrides
         .filter(_.key.prefix == prefix)
-        .partition(p => schema.params.exists(_.name == p.key.param))
+        .partition{p =>
+          tpe.params.exists(_.name.canonicalName == p.key.param)
+        }
 
       unusedProperties ++= unused
       for (p <- overrideParams) {
@@ -122,7 +124,7 @@ object PropertiesConfig extends LogSupport {
     }
 
     val unused = unusedProperties.result
-    if(unused.size > 0) {
+    if (unused.size > 0) {
       val unusedProps = new Properties
       unused.map(p => unusedProps.put(p.key.toString, p.v.asInstanceOf[AnyRef]))
       onUnusedProperties(unusedProps)

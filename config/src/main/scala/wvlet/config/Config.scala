@@ -37,12 +37,6 @@ case class ConfigPaths(configPaths: Seq[String]) extends LogSupport {
 
 object Config extends LogSupport {
 
-  trait ParameterNameFormatter
-  case object CanonicalNameFormatter extends ParameterNameFormatter {
-    def format(name:String) : String = {
-      name.toLowerCase(Locale.US).replaceAll("[ _\\.-]", "")
-    }
-  }
   private def defaultConfigPath = cleanupConfigPaths(
     Seq(
       ".", // current directory
@@ -200,6 +194,16 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
     val tpe = surface.of[ConfigType]
     val config = loadFromYaml[ConfigType](yamlFile, onMissingFile = Some(defaultValue))
     this + ConfigHolder(tpe, config.get)
+  }
+
+  def overrideWith(props: Map[String, Any], onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
+    val p = new Properties
+    for((k, v) <- props) {
+      Option(v).map { x =>
+        p.setProperty(k, x.toString)
+      }
+    }
+    PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
   }
 
   def overrideWithProperties(props: Properties, onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
