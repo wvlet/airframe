@@ -21,7 +21,7 @@ import wvlet.surface.{OptionSurface, Parameter, Surface, Zero}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-
+import wvlet.surface.CanonicalNameFormatter._
 //--------------------------------------
 //
 // ObjectBuilder.scala
@@ -51,20 +51,6 @@ object ObjectBuilder extends LogSupport {
   case class Holder(holder: ObjectBuilder) extends BuilderElement
   case class Value(value: Any) extends BuilderElement
   case class ArrayHolder(holder: mutable.ArrayBuffer[Any]) extends BuilderElement
-
-  trait ParameterNameFormatter
-  case object CanonicalNameFormatter extends ParameterNameFormatter {
-    def format(name: String): String = {
-      name.toLowerCase(Locale.US).replaceAll("[ _\\.-]", "")
-    }
-  }
-
-  implicit class ToCanonicalNameFormatter(name: String) {
-    def canonicalName: String = {
-      CanonicalNameFormatter.format(name)
-    }
-  }
-
 }
 
 trait GenericBuilder {
@@ -126,7 +112,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
 
   def set(path: Path, value: Any) {
     if (!path.isEmpty) {
-      val name = CanonicalNameFormatter.format(path.head)
+      val name = path.head.canonicalName
       val p = findParameter(name)
       if (p.isEmpty) {
         error(s"no parameter is found for path $path")
@@ -161,7 +147,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
       }
       else {
         // nested object
-        val paramName = CanonicalNameFormatter.format(path.head)
+        val paramName = path.head.canonicalName
         val h = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
         h match {
           case Holder(b) => b.set(path.tailPath, value)
