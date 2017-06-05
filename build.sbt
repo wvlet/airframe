@@ -10,8 +10,6 @@ val buildSettings = Seq[Setting[_]](
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
-  // For performance testing, ensure each test run one-by-one
-  concurrentRestrictions in Global := Seq(Tags.limit(Tags.Test, 1)),
   incOptions := incOptions.value
                 .withNameHashing(true)
                 // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
@@ -28,13 +26,13 @@ val buildSettings = Seq[Setting[_]](
       <developerConnection>scm:git:git@github.com:wvlet/airframe.git</developerConnection>
       <url>github.com/wvlet/airframe.git</url>
     </scm>
-    <developers>
-      <developer>
-        <id>leo</id>
-        <name>Taro L. Saito</name>
-        <url>http://xerial.org/leo</url>
-      </developer>
-    </developers>
+      <developers>
+        <developer>
+          <id>leo</id>
+          <name>Taro L. Saito</name>
+          <url>http://xerial.org/leo</url>
+        </developer>
+      </developers>
   },
   // Use sonatype resolvers
   resolvers ++= Seq(
@@ -42,7 +40,7 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("snapshots")
   ),
   // Release settings
-  releaseTagName := { (version in ThisBuild).value },
+  releaseTagName := {(version in ThisBuild).value},
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -59,11 +57,13 @@ val buildSettings = Seq[Setting[_]](
   ),
   releaseCrossBuild := true,
   publishTo := Some(
-    if (isSnapshot.value)
+    if (isSnapshot.value) {
       Opts.resolver.sonatypeSnapshots
-    else
+    }
+    else {
       Opts.resolver.sonatypeStaging
-  )  
+    }
+  )
 )
 
 lazy val compileScalastyle = taskKey[Unit]("compileScalastyle")
@@ -79,7 +79,7 @@ val noPublish = Seq(
 )
 
 lazy val airframeRoot =
-  Project(id="airframe-root", base = file("."))
+  Project(id = "airframe-root", base = file("."))
   .settings(buildSettings)
   .settings(noPublish)
   .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS)
@@ -94,7 +94,8 @@ lazy val projectJS =
   .settings(noPublish)
   .aggregate(airframeJS, surfaceJS)
 
-lazy val docs = project
+lazy val docs =
+  project
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(GhpagesPlugin)
   .settings(moduleName := "airframe-docs")
@@ -117,19 +118,19 @@ lazy val docs = project
     micrositeAnalyticsToken := "UA-98364158-1",
     micrositeDocumentationUrl := "docs",
     micrositePalette ++= Map(
-        "brand-primary"     -> "#2582AA",
-        "brand-secondary"   -> "#143F56",
-        "brand-tertiary"    -> "#042F46",
-        "gray-dark"         -> "#453E46",
-        "gray"              -> "#534F54"
-	)
+      "brand-primary" -> "#2582AA",
+      "brand-secondary" -> "#143F56",
+      "brand-tertiary" -> "#042F46",
+      "gray-dark" -> "#453E46",
+      "gray" -> "#534F54"
+    )
   )
 
 lazy val airframe =
   crossProject
   .in(file("airframe"))
   .settings(buildSettings)
-  .settings (
+  .settings(
     name := "airframe",
     description := "Dependency injection library tailored to Scala",
     libraryDependencies ++= Seq(
@@ -141,14 +142,16 @@ lazy val airframe =
   )
   .jvmSettings(
     // include the macro classes and resources in the main jar
-    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
+    mappings in(Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
     // include the macro sources in the main source jar
-    mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
+    mappings in(Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
   )
   .jsSettings(
-    mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+    // Workaround for ' JSCom has been closed' issue
+    parallelExecution in ThisBuild := false,
+    mappings in(Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
     // include the macro sources in the main source jar
-    mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
+    mappings in(Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
   )
   .dependsOn(surface, airframeMacros % "compile-internal,test-internal")
 
@@ -160,7 +163,7 @@ lazy val airframeMacros =
   crossProject
   .in(file("airframe-macros"))
   .settings(buildSettings)
-  .settings (
+  .settings(
     buildSettings,
     name := "airframe-macros",
     description := "Macros for Airframe",
@@ -178,7 +181,7 @@ lazy val surface =
   crossProject
   .in(file("surface"))
   .settings(buildSettings)
-  .settings (
+  .settings(
     name := "surface",
     description := "A library for extracting object structure surface",
     libraryDependencies ++= Seq(
@@ -188,6 +191,10 @@ lazy val surface =
       "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
       "org.wvlet" %%% "wvlet-log" % "1.2.3"
     )
+  )
+  .jsSettings(
+    // Workaround for ' JSCom has been closed' issue
+    parallelExecution in ThisBuild := false,
   )
 
 lazy val surfaceJVM = surface.jvm
