@@ -8,7 +8,7 @@ airframe-config enables configure your Scala applications in a simple flow:
 1. (optional) Override the configuration with Properties.
 1. Use it!
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/)
 
 ```scala
 libraryDependencies += "org.wvlet" %% "airframe-config" % "(version)"
@@ -70,7 +70,7 @@ server.password=xxxxxyyyyyy
 **Sacla code**:
 ```scala
 import wvlet.config.Config
-import wvlet.obj.tag.@@
+import wvlet.surface.tag.@@
 
 // Configuration classes can have default values
 // Configuration class name convention: xxxxConfig (xxxx will be the prefix for properties file)
