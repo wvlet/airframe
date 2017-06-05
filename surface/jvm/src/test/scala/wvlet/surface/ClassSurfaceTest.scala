@@ -13,6 +13,7 @@
  */
 
 package wvlet.surface
+
 import wvlet.surface.tag._
 
 object ClassSurfaceTest {
@@ -23,8 +24,8 @@ object ClassSurfaceTest {
   case class B(v:Int @@ MyTag)
 }
 
-import ClassSurfaceTest._
 import wvlet.surface
+import wvlet.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
 
@@ -49,6 +50,7 @@ class ClassSurfaceTest extends SurfaceSpec {
     }
 
     "support tags in constructor args" in {
+      // TODO support this in Scala.js
       check(surface.of[Int @@ MyTag], "Int@@MyTag")
       val b = check(surface.of[B], "B")
       b.params.length shouldBe 1
