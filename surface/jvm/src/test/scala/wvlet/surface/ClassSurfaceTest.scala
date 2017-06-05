@@ -14,19 +14,22 @@
 
 package wvlet.surface
 
+import wvlet.surface.tag._
+
 object ClassSurfaceTest {
 
   class A(val id:Int)(implicit val context:String)
 
+  type MyTag
+  case class B(v:Int @@ MyTag)
 }
 
-import ClassSurfaceTest._
 import wvlet.surface
+import wvlet.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
 
   "Surface for Class" should {
-
     "support multiple param blocks" in {
       val a = check(surface.of[A], "A")
       info(a.params.mkString(", "))
@@ -44,6 +47,15 @@ class ClassSurfaceTest extends SurfaceSpec {
 
       a0.id shouldBe 1
       a0.context shouldBe "c"
+    }
+
+    "support tags in constructor args" in {
+      // TODO support this in Scala.js
+      check(surface.of[Int @@ MyTag], "Int@@MyTag")
+      val b = check(surface.of[B], "B")
+      b.params.length shouldBe 1
+      val p = b.params(0)
+      check(p.surface, "Int@@MyTag")
     }
   }
 }
