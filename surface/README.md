@@ -1,4 +1,4 @@
-Surface: A Reflection-Free Object Shape Inspector
+Surface: An Object Shape Inspector
 ===
 [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/surface.svg?branch=master)](https://travis-ci.org/wvlet/surface) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/surface/surface/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/surface) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet/surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet/surface_2.12)
