@@ -153,7 +153,7 @@ When `bind[X]` is used, according to the type of `X` different codes will be gen
 ```scala
 // case class X(a:A, b:B, ..)
 
-val surface = Surface.of[X]
+val surface = surface.of[X]
 // build instances of a, b, ...
 val args = surface.params.map(p -> session.getInstance(p.surface))
 surface.objectFactory.newInstance(p)
@@ -162,45 +162,43 @@ surface.objectFactory.newInstance(p)
 - If `X` is an abstract class or trait, `X` needs to be found in X because `X` cannot be instantiated automatically:
 
 ```scala
-session.get(Surface[X])
+session.get(surface.of[X])
 ```
-
-
 
 
 ## Suface
 
-Airframe uses `Surface[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/surface) is a reflection-free object type inspection library.
+Airframe uses `Surface[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
 
-Here are some exmaples of Surface.
+Here are some examples of Surface:
 ```scala
-Surface.of[A] // A
-Surface.of[Seq[Int]] // Seq[Int]
-Surface.of[Seq[_]] // Seq[_]
+import wvlet.surface
+
+surface.of[A] // A
+surface.of[Seq[Int]] // Seq[Int]
+surface.of[Seq[_]] // Seq[_]
 // Seq[Int] and Seq[_] are different types as Surface
 
 // Type alias
 type MyInt = Int
-Surface.of[MyInt] // MyInt:=Int
+surface.of[MyInt] // MyInt:=Int
 ```
 
-Scala is a JVM language, and at the byte-code level all of generics type parameters will be removed (type erasure).
-That means, we cannot distinguish between `Seq[Int]` and `Seq[_]` within the byte code because these types will be the same type `Seq[AnyRef]`:
+Scala is a JVM language so at the byte-code level all of generics type parameters will be removed (type erasure).
+That means, we cannot distinguish between `Seq[Int]` and `Seq[_]` within the byte code; These types are the same type `Seq[AnyRef]` in the byte code:
 ```
 Seq[Int] => Seq[AnyRef]
 Seq[_] => Seq[AnyRef]
 ```
 
-Similarly, type alias `MyInt` and `Int` will be the same at the byte-code level.
+Similarly the above type alias `MyInt` and `Int` will be the same types.
 
-Scala has runtime-reflection, which can read ScalaSig, detailed type information embedded in class files (byte codes), so
-by reading ScalaSig at runtime we can resolve actual generic types, aliases, etc.
+To provide detailed type information only avaiable at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
+ function argument names, generic types, etc., to the runtime environment. Surface extensively uses `scala.reflect.runtime.universe.Type` 
+information so that bindings using type names can be convenient for the users.  
 
-However runtime-reflection is slow and not always available. For example [Scala.js](https://www.scala-js.org/) doesn't support runtime reflections.
-So we cannot use ScalaSig for resolving type information.
-
-That is why we are using [Surface](https://github.com/wvlet/airframe/surface), a macro-based type information extractor, which works both in Scala and Scala.js.
-
+For compatibility with [Scala.js](https://www.scala-js.org/), which doesn't support any runtime reflection,
+Surface uses Scala macros to embed compile-time type information into the runtime objects.
 
 ### Surface Parameters
 
@@ -209,5 +207,5 @@ Surface also holds object parmeters, so that we can find objects necessary for b
 case class A(b:B, c:C)
 
 // B and C will be necessary to build A
-Surface.of[A] => Surface("A", params:Seq("b" -> Surface.of[B], "c" -> Surface.of[C]))
+surface.of[A] => Surface("A", params:Seq("b" -> surface.of[B], "c" -> surface.of[C]))
 ```
