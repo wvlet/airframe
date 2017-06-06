@@ -51,6 +51,9 @@ val testDesign =
   d.bind[Config].toInstance(new Config("localhost", randomPort))
 ```
 
+Airframe has a submodule called [airframe-config](config.html), which is useful for 
+configuring your applications with YAML files.
+
 ## Managing Resources
 
 Airframe makes easier managing resources (e.g., network or database connections, thread managers, etc.) For example, if you are writing an application that requires an access to a database service. You need to establish a connection, and also need to properly close the connection after the application terminates. Airframe support such resource management using [Life Cycle](lifecicle.html) triggers (onInit, onStart, onShutdown):
