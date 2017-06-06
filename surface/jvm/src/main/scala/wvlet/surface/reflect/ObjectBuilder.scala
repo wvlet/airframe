@@ -125,8 +125,11 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         val valueType = p.get.surface
         trace(s"update value holder name:$name, valueType:$valueType (isArray:${isArray(valueType)}) with value:$value")
         if (canBuildFromBuffer(valueType)) {
-          val gt = valueType.typeArgs(0)
-
+          val gt = if (ReflectTypeUtil.isMap(valueType.rawType)) {
+            RuntimeSurface.of[Tuple2[Any, Any]]
+          } else {
+            valueType.typeArgs(0)
+          }
           holder.get(name) match {
             case Some(Value(v)) =>
               // remove the default value
