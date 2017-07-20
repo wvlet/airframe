@@ -18,6 +18,7 @@ import wvlet.test.WvletSpec
 
 case class MyConfig(id: Int, fullName: String)
 case class DB(accountId:Int, database:String, table:Seq[String])
+
 /**
   *
   */
@@ -28,6 +29,10 @@ class YamlReaderTest extends WvletSpec {
   }
   val listYml = Resource.find("list.yml").map(_.getPath).getOrElse {
     fail("list.yml is not found")
+  }
+
+  val classesYml = Resource.find("classes.yml").map(_.getPath).getOrElse {
+    fail("classes.yml is not found")
   }
 
   "YamlReader" should {
@@ -69,6 +74,17 @@ class YamlReaderTest extends WvletSpec {
       val s = m.map(p => YamlReader.bind[DB](p))
       s(0) shouldBe DB(1, "mydb", Seq("A"))
       s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
+    }
+
+    "parse map in yaml" taggedAs("map") in {
+      val m = YamlReader.loadMapOf[ClassConfig](classesYml)
+      m should have size(2)
+      m("development").classes shouldBe Seq("class1", "class2", "class3")
+      m("development").classAssignments shouldBe Map(
+        "nobita" -> "class1",
+        "takeshi" -> "class2",
+        "suneo" -> "class3"
+      )
     }
   }
 }

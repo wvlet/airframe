@@ -1,0 +1,12 @@
+default: &default
+  classes:
+    - class1
+    - class2
+    - class3
+
+development:
+  <<: *default
+  class_assignments:
+    nobita: class1
+    takeshi: class2
+    suneo: class3

@@ -203,11 +203,11 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
         p.setProperty(k, x.toString)
       }
     }
-    PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
+    if (p.isEmpty) this else PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
   }
 
   def overrideWithProperties(props: Properties, onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
-    PropertiesConfig.overrideWithProperties(this, props, onUnusedProperties)
+    if (props.isEmpty) this else PropertiesConfig.overrideWithProperties(this, props, onUnusedProperties)
   }
 
   def overrideWithPropertiesFile(propertiesFile: String, onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {

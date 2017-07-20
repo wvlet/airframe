@@ -26,6 +26,7 @@ trait SessionScope
 
 case class SampleConfig(id: Int, fullName: String)
 case class DefaultConfig(id: Int = 1, a:String = "hello")
+case class ClassConfig(classes: Seq[String], classAssignments: Map[String, String])
 
 /**
   *
@@ -37,6 +38,23 @@ class ConfigTest extends WvletSpec {
   def loadConfig(env: String) =
     Config(env = env, configPaths = configPaths)
     .registerFromYaml[SampleConfig]("myconfig.yml")
+    .registerFromYaml[ClassConfig]("classes.yml")
+
+  "MapConfig" should {
+    "read map type configuration items" in {
+      val config = loadConfig("development")
+      val classConfig = config.of[ClassConfig]
+      classConfig.classes.size shouldBe 3
+      classConfig.classes(0) shouldBe "class1"
+      classConfig.classes(1) shouldBe "class2"
+      classConfig.classes(2) shouldBe "class3"
+
+      classConfig.classAssignments.size shouldBe 3
+      classConfig.classAssignments("nobita") shouldBe "class1"
+      classConfig.classAssignments("takeshi") shouldBe "class2"
+      classConfig.classAssignments("suneo") shouldBe "class3"
+    }
+  }
 
   "ConfigEnv" should {
     "set config paths" in {

@@ -18,9 +18,9 @@ import java.{util => ju}
 import org.yaml.snakeyaml.Yaml
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.surface.reflect.ObjectBuilder
 import wvlet.surface
 import wvlet.surface.Surface
+import wvlet.surface.reflect.ObjectBuilder
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
@@ -72,14 +72,7 @@ object YamlReader extends LogSupport {
     val builder = ObjectBuilder(surface)
     if (prop != null) {
       for ((k, v) <- prop.asScala) {
-        v match {
-          case al: java.util.ArrayList[_] =>
-            for (a <- al.asScala) {
-              builder.set(k.toString, a)
-            }
-          case _ =>
-            builder.set(k.toString, v)
-        }
+        builder.set(k.toString, v)
       }
     }
     builder.build.asInstanceOf[A]

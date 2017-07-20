@@ -16,12 +16,15 @@ package wvlet.surface.reflect
 import java.util.Locale
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.ReflectTypeUtil.{canBuildFromBuffer, canBuildFromString, isArray}
-import wvlet.surface.{OptionSurface, Parameter, Surface, Zero}
+import wvlet.surface.reflect.ReflectTypeUtil._
+import wvlet.surface._
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import wvlet.surface.CanonicalNameFormatter._
+import scala.language.existentials
+
 //--------------------------------------
 //
 // ObjectBuilder.scala
@@ -39,7 +42,7 @@ object ObjectBuilder extends LogSupport {
     new SimpleObjectBuilder(s)
   }
 
-  def fromObject[A](surface: Surface, obj:A): ObjectBuilder = {
+  def fromObject[A](surface: Surface, obj: A): ObjectBuilder = {
     val b = new SimpleObjectBuilder(surface)
     for (p <- surface.params) {
       b.set(p.name, p.get(obj))
@@ -110,50 +113,85 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     }
   }
 
+  private def getArrayHolder(name: String): ArrayHolder = {
+    // Clear the default value holder if exists
+    holder.get(name) match {
+      case Some(Value(v)) =>
+        // remove the default value
+        holder.remove(name)
+      case _ => // do nothing
+    }
+    holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
+  }
+
   def set(path: Path, value: Any) {
-    if (!path.isEmpty) {
+    if (path.isEmpty) {
+      // do nothing
+    }
+    else {
       val name = path.head.canonicalName
       val p = findParameter(name)
       if (p.isEmpty) {
         error(s"no parameter is found for path $path")
-        return
       }
-
-      trace(s"set path $path : $value")
-
-      if (path.isLeaf) {
-        val valueType = p.get.surface
-        trace(s"update value holder name:$name, valueType:$valueType (isArray:${isArray(valueType)}) with value:$value")
-        if (canBuildFromBuffer(valueType)) {
-          val gt = valueType.typeArgs(0)
-
-          holder.get(name) match {
-            case Some(Value(v)) =>
-              // remove the default value
-              holder.remove(name)
-            case _ => // do nothing
+      else {
+        trace(s"set path $path : $value")
+        if (path.isLeaf) {
+          val targetType = p.get.surface
+          trace(s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})")
+          if (canBuildFromBuffer(targetType)) {
+            val arr = getArrayHolder(name)
+            targetType.typeArgs.length match {
+              case 1 =>
+                // Append array elements to the buffer
+                val elementType = targetType.typeArgs(0)
+                val lst = value match {
+                  case a if isArray(value.getClass) => a.asInstanceOf[Array[_]].toIndexedSeq
+                  case a if isJavaColleciton(value.getClass) =>
+                    a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
+                  case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
+                  case other =>
+                    Seq(other)
+                }
+                lst
+                .flatMap {x => TypeConverter.convert(x, elementType)}
+                .foreach {arr.holder += _}
+              case 2 =>
+                // Append map elements to the buffer
+                val lst = value match {
+                  case m if isJavaMap(value.getClass) => m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
+                  case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
+                  case other => Seq(other)
+                }
+                val keyType = targetType.typeArgs(0)
+                val valueType = targetType.typeArgs(1)
+                val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
+                lst
+                .flatMap {x => TypeConverter.convert(x, tupleSurface)}
+                .foreach {arr.holder += _}
+              case other =>
+                error(s"Cannot convert ${value} to ${targetType}")
+            }
           }
-          val arr = holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
-          TypeConverter.convert(value, gt) map {arr.holder += _}
-        }
-        else if (canBuildFromStringValue(valueType)) {
-          TypeConverter.convert(value, valueType).map {v =>
-            holder += name -> Value(v)
+          else if (canBuildFromStringValue(targetType)) {
+            TypeConverter.convert(value, targetType).map {v =>
+              holder += name -> Value(v)
+            }
+          }
+          else {
+            error(s"failed to set $value to path $path")
           }
         }
         else {
-          error(s"failed to set $value to path $path")
-        }
-      }
-      else {
-        // nested object
-        val paramName = path.head.canonicalName
-        val h = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
-        h match {
-          case Holder(b) => b.set(path.tailPath, value)
-          case other =>
-            // overwrite the existing holder
-            throw new IllegalStateException("invalid path:%s, value:%s, holder:%s".format(path, value, other))
+          // nested object
+          val paramName = path.head.canonicalName
+          val h = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
+          h match {
+            case Holder(b) => b.set(path.tailPath, value)
+            case other =>
+              // overwrite the existing holder
+              throw new IllegalStateException("invalid path:%s, value:%s, holder:%s".format(path, value, other))
+          }
         }
       }
     }

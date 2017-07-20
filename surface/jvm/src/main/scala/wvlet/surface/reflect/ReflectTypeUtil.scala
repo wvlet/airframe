@@ -20,6 +20,7 @@ import wvlet.surface.{ArraySurface, Surface}
 
 import scala.collection.mutable
 import scala.collection.parallel.ParSeq
+import scala.language.existentials
 
 /**
   *
@@ -83,6 +84,10 @@ object ReflectTypeUtil extends LogSupport {
     cl.isArray || cl.getSimpleName == "Array"
   }
 
+  def isJavaColleciton[T](cl: Class[T]): Boolean = {
+    classOf[java.util.Collection[_]].isAssignableFrom(cl)
+  }
+
   /**
     * If the class has unapply(s:String) : T method in the companion object for instantiating class T, returns true.
     *
@@ -135,6 +140,10 @@ object ReflectTypeUtil extends LogSupport {
 
   def isMap[T](cl: Class[T]): Boolean = {
     classOf[Map[_, _]].isAssignableFrom(cl)
+  }
+
+  def isJavaMap[T](cl: Class[T]): Boolean = {
+    classOf[java.util.Map[_, _]].isAssignableFrom(cl)
   }
 
   def isSet[T](cl: Class[T]): Boolean = {
