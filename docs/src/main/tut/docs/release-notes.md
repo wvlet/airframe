@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.16
+ - Support reading Map type values in YamlReader (airframe config)
+
 ## 0.15
  - Surface will be gererated by using runtime-type information. This improves the compilation speed in Scala JVM projects.
    - Scala.js version still uses compile-time surface generation
