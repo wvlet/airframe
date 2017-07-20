@@ -76,7 +76,7 @@ class YamlReaderTest extends WvletSpec {
       s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
     }
 
-    "parse map in yaml" in {
+    "parse map in yaml" taggedAs("map") in {
       val m = YamlReader.loadMapOf[ClassConfig](classesYml)
       m should have size(2)
       m("development").classes shouldBe Seq("class1", "class2", "class3")

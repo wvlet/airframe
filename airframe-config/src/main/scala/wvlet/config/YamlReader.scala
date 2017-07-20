@@ -72,18 +72,19 @@ object YamlReader extends LogSupport {
     val builder = ObjectBuilder(surface)
     if (prop != null) {
       for ((k, v) <- prop.asScala) {
-        v match {
-          case al: java.util.ArrayList[_] =>
-            for (a <- al.asScala) {
-              builder.set(k.toString, a)
-            }
-          case map: java.util.Map[_, _] =>
-            for ((mk, mv) <- map.asScala) {
-              builder.set(k.toString, mk -> mv)
-            }
-          case _ =>
-            builder.set(k.toString, v)
-        }
+        builder.set(k.toString, v)
+//        v match {
+//          case al: java.util.ArrayList[_] =>
+//            for (a <- al.asScala) {
+//              builder.set(k.toString, a)
+//            }
+//          case map: java.util.Map[_, _] =>
+//            for ((mk, mv) <- map.asScala) {
+//              builder.set(k.toString, mk -> mv)
+//            }
+//          case _ =>
+//            builder.set(k.toString, v)
+//        }
       }
     }
     builder.build.asInstanceOf[A]
