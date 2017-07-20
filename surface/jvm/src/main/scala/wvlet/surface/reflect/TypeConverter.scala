@@ -34,7 +34,7 @@ object TypeConverter extends LogSupport {
   import ReflectTypeUtil._
 
   def convert[T](value: T, targetType: Surface): Option[Any] = {
-    debug(s"convert ${value} (${value.getClass}) to ${targetType}")
+    trace(s"convert ${value} (${value.getClass}) to ${targetType}")
     if (targetType.isOption) {
       if (isOption(cls(value))) {
         Option(value)
@@ -53,7 +53,7 @@ object TypeConverter extends LogSupport {
         Some(value)
       }
       else if (isBuffer(s)) {
-        debug(s"convert buffer $value into $targetType")
+        trace(s"convert buffer $value into $targetType")
         val buf = value.asInstanceOf[mutable.Buffer[_]]
         val gt: Seq[Surface] = targetType.typeArgs
         val e = gt(0).rawType
