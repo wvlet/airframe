@@ -7,6 +7,6 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.16")
 
-addSbtPlugin("com.47deg"  % "sbt-microsites" % "0.5.7")
+addSbtPlugin("com.47deg"  % "sbt-microsites" % "0.6.1")
 
 scalacOptions ++= Seq("-deprecation", "-feature")

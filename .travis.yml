@@ -37,6 +37,9 @@ script:
   - if [ "$TRAVIS_SCALA_VERSION" == "2.12.2" -a "$PROJECT" == "*JVM" ]; then
       ./sbt ++$TRAVIS_SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport";
       ./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash);
+      if [ "$TRAVIS_BRANCH" == "master" ]; then
+         ./sbt docs/publishMicrosite;
+      fi
     else
       ./sbt ++$TRAVIS_SCALA_VERSION ${PROJECT}/test;
     fi
