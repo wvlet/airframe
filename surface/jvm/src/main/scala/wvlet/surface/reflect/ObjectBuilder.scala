@@ -24,7 +24,6 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import wvlet.surface.CanonicalNameFormatter._
 
-
 //--------------------------------------
 //
 // ObjectBuilder.scala
@@ -42,7 +41,7 @@ object ObjectBuilder extends LogSupport {
     new SimpleObjectBuilder(s)
   }
 
-  def fromObject[A](surface: Surface, obj:A): ObjectBuilder = {
+  def fromObject[A](surface: Surface, obj: A): ObjectBuilder = {
     val b = new SimpleObjectBuilder(surface)
     for (p <- surface.params) {
       b.set(p.name, p.get(obj))
@@ -113,7 +112,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     }
   }
 
-  private def getArrayHolder(name:String): ArrayHolder = {
+  private def getArrayHolder(name: String): ArrayHolder = {
     // Clear the default value holder if exists
     holder.get(name) match {
       case Some(Value(v)) =>
@@ -123,7 +122,6 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     }
     holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
   }
-
 
   def set(path: Path, value: Any) {
     if (path.isEmpty) {
@@ -151,12 +149,12 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                   case a if isJavaColleciton(value.getClass) =>
                     a.asInstanceOf[java.util.Collection[_]].asScala.toIndexedSeq
                   case s if isSeq(value.getClass) => s.asInstanceOf[Seq[_]]
-                  case other=>
+                  case other =>
                     Seq(other)
                 }
                 lst
-                .flatMap{x =>  TypeConverter.convert(x, elementType) }
-                .map{ x => arr.holder += x }
+                .flatMap {x => TypeConverter.convert(x, elementType)}
+                .foreach {arr.holder += _}
               case 2 =>
                 // Append map elements to the buffer
                 val lst = value match {
@@ -166,8 +164,10 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                 }
                 val keyType = targetType.typeArgs(0)
                 val valueType = targetType.typeArgs(1)
-                val tupleSurface = TupleSurface(classOf[Tuple2[_,_]], Seq(keyType, valueType))
-                lst.map{x => TypeConverter.convert(x, tupleSurface) map {arr.holder += _}}
+                val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
+                lst
+                .flatMap {x => TypeConverter.convert(x, tupleSurface)}
+                .foreach {arr.holder += _}
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }

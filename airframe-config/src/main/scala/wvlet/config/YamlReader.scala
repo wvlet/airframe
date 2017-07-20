@@ -73,18 +73,6 @@ object YamlReader extends LogSupport {
     if (prop != null) {
       for ((k, v) <- prop.asScala) {
         builder.set(k.toString, v)
-//        v match {
-//          case al: java.util.ArrayList[_] =>
-//            for (a <- al.asScala) {
-//              builder.set(k.toString, a)
-//            }
-//          case map: java.util.Map[_, _] =>
-//            for ((mk, mv) <- map.asScala) {
-//              builder.set(k.toString, mk -> mv)
-//            }
-//          case _ =>
-//            builder.set(k.toString, v)
-//        }
       }
     }
     builder.build.asInstanceOf[A]
