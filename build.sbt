@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-val SCALA_2_12 = "2.12.2"
+val SCALA_2_12 = "2.12.3"
 val SCALA_2_11 = "2.11.11"
 scalaVersion in ThisBuild := SCALA_2_12
 
@@ -49,10 +49,10 @@ val buildSettings = Seq[Setting[_]](
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+    publishArtifacts,
     setNextVersion,
     commitNextVersion,
-    ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+    releaseStepCommand("sonatypeReleaseAll"),
     pushChanges
   ),
   releaseCrossBuild := true,
