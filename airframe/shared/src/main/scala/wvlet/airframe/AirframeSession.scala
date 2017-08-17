@@ -192,7 +192,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
 //        s"""new (wvlet.airframe.Session => Any) {
 //            |  def apply(session:wvlet.airframe.Session) = {
 //            |    new ${typeName} {
-//            |      protected def __current_session = session
+//            |      protected def airframeSession = session
 //            |    }
 //            |  }
 //            |}  """.stripMargin

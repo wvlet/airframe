@@ -17,5 +17,5 @@ package wvlet.airframe
   * Trait for embedding Session to a user trait
   */
 trait SessionHolder {
-  def __current_session: Session
+  def airframeSession: Session
 }

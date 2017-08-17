@@ -127,7 +127,7 @@ object Session extends LogSupport {
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       if (classOf[SessionHolder] isAssignableFrom (cl)) {
-        Some({obj: AnyRef => obj.asInstanceOf[SessionHolder].__current_session})
+        Some({obj: AnyRef => obj.asInstanceOf[SessionHolder].airframeSession})
       }
       else {
         None

@@ -61,7 +61,7 @@ val app: App = {
   // Extends SessionHolder to pass Session object
   new App extends SessionHolder {
     // Inject a reference to the current session
-    def __current_session = session
+    def airframeSession = session
 
     // val a = bind[A] (original code)
     // If type A is instantiatable trait (non abstract type)
@@ -72,7 +72,7 @@ val app: App = {
       val binder: Session => A = (sesssion: Session =>
         // Register a code for instantiating A 
         session.getOrElseUpdate(Surface[A],
-	  (new A with SessionHolder { def __current_session = session }).asInstanceOf[A]
+	  (new A with SessionHolder { def airframeSession = session }).asInstanceOf[A]
         )
       )
       // Create an instance of A by injecting the current session
@@ -91,7 +91,7 @@ val a1 = new A // MISSING_SESSION error will be thrown at run-time
 val a2 = session.build[A] // This is OK
 ```
 
-In the above macro-expanded code, `A` will be instantiated with SessionHolder trait, which has `__current_session` definition.
+In the above macro-expanded code, `A` will be instantiated with SessionHolder trait, which has `airframeSession` definition.
 
 So `bind[B]` inside trait `A` will be expanded similarry:
 ```scala
