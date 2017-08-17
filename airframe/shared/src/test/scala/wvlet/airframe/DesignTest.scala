@@ -55,6 +55,7 @@ object DesignTest {
   */
 class DesignTest extends AirframeSpec {
   import DesignTest._
+  import wvlet.surface._
 
   "Design" should {
     "be immutable" in {
@@ -62,6 +63,23 @@ class DesignTest extends AirframeSpec {
 
       val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
       d2 should not equal(d1)
+    }
+
+    "be appendable" in {
+      val o = Hello("override")
+      val d2 = d1.bind[Hello].toInstance(o)
+
+      val d3 = d1 + d2
+      val d4 = d1.add(d2)
+
+      d3.withSession { session =>
+        val h = session.build[Hello]
+        h should be theSameInstanceAs o
+      }
+      d4.withSession { session =>
+        val h = session.build[Hello]
+        h should be theSameInstanceAs o
+      }
     }
 
     "display design" in {
