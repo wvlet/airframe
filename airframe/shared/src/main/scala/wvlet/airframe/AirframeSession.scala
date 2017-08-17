@@ -103,7 +103,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
     getInstance(t, List.empty)
   }
 
-  private def getInstance(t: Surface, stack: List[Surface]): AnyRef = {
+  private def getInstance(t: Surface, stack: List[Surface], defaultValue:Option[Any] = None): AnyRef = {
     trace(s"Search bindings of ${t}")
     if (stack.contains(t)) {
       error(s"Found cyclic dependencies: ${stack}")
@@ -139,7 +139,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
         }
     }
 
-    val result = obj.getOrElse {
+    val result = obj.orElse(defaultValue).getOrElse {
       trace(s"No binding is found for ${t}")
       buildInstance(t, t :: stack)
     }
@@ -157,7 +157,7 @@ private[airframe] class AirframeSession(sessionName:Option[String], binding: Seq
         case Some(factory) =>
           trace(s"Using the default constructor for injecting ${surface}")
           val args = for (p <- surface.params) yield {
-            getInstance(p.surface, stack)
+            getInstance(p.surface, stack, p.getDefaultValue)
           }
           val obj = factory.newInstance(args)
           registerInjectee(surface, obj)
