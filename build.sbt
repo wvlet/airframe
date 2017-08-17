@@ -207,3 +207,15 @@ lazy val airframeConfig =
       )
     )
     .dependsOn(surfaceJVM)
+
+
+lazy val jmx =
+  Project(id = "airframe-jmx", base = file("jmx"))
+  .settings(buildSettings)
+  .settings(
+    description := "A library for exposing Scala object data through JMX",
+    libraryDependencies ++= Seq(
+      wvletTest
+    )
+  )
+  .dependsOn(surfaceJVM)
