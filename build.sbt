@@ -49,7 +49,7 @@ val buildSettings = Seq[Setting[_]](
     setReleaseVersion,
     commitReleaseVersion,
     tagRelease,
-    releaseStepCommand("publishSigned"),
+    publishArtifacts,
     setNextVersion,
     commitNextVersion,
     releaseStepCommand("sonatypeReleaseAll"),
