@@ -1,9 +1,5 @@
 sudo: false
 
-before_install:
- - export PATH=${PATH}:./vendor/bundle
-
-
 cache:
   directories:
     - $HOME/.ivy2/cache
@@ -35,6 +31,8 @@ matrix:
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.12.3 PROJECT=docs
     jdk: oraclejdk8
+    before_install:
+      - export PATH=${PATH}:./vendor/bundle
     install:
       - rvm use 2.2.3 --install --fuzzy
       - gem update --system
@@ -42,5 +40,5 @@ matrix:
       - gem install jekyll -v 3.2.1
     script:
       - if [ "$TRAVIS_BRANCH" == "master" ]; then
-         ./sbt ${PROJECT}/publishMicrosite;
+         ./sbt ++$SCALA_VERSION "; project ${PROJECT}; publishMicrosite;";
         fi

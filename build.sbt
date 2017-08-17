@@ -99,7 +99,7 @@ lazy val docs =
   project
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(GhpagesPlugin)
-  .settings(moduleName := "airframe-docs")
+  .settings(moduleName := "docs")
   .settings(
     publishArtifact := false,
     publish := {},
