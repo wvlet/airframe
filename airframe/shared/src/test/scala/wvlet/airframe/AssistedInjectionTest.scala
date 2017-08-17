@@ -37,6 +37,11 @@ class AssistedInjectionTest extends AirframeSpec {
 
         a1.service shouldBe "hello"
         a2.service shouldBe "hello"
+
+
+        val a3 = assistedInjector("A3", session)
+        a3.name shouldBe "A3"
+        a3.service shouldBe "hello"
       }
     }
   }
@@ -57,5 +62,10 @@ object AssistedInjectionTest extends LogSupport {
       override def airframeSession: Session = session
       val name: String = givenName
     }
+  }
+
+  def assistedInjector(serviceName:String, session:Session): NamedService = new NamedService with SessionHolder {
+    override def airframeSession: Session = session
+    val name: String = serviceName
   }
 }
