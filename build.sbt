@@ -40,6 +40,8 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("snapshots")
   ),
   // Release settings
+  releaseCrossBuild := true,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   releaseTagName := {(version in ThisBuild).value},
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
@@ -55,7 +57,6 @@ val buildSettings = Seq[Setting[_]](
     releaseStepCommand("sonatypeReleaseAll"),
     pushChanges
   ),
-  releaseCrossBuild := true,
   publishTo := Some(
     if (isSnapshot.value) {
       Opts.resolver.sonatypeSnapshots

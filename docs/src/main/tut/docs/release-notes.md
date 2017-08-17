@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 0.17
+ - Upgrade to Scala 2.12.3, Scala.js 0.6.19
+ - Add Design.add
+ - Fix onStart lifecycle hook is not called when a session is already started
+ - Fix to use default constructor argument values for constructor bindings
+   - Note: Scala.js does not support default parameter binding yet
+ 
 ## 0.16
  - Support reading Map type values in YamlReader (airframe config)
 
