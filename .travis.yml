@@ -39,6 +39,6 @@ matrix:
       - gem install sass
       - gem install jekyll -v 3.2.1
     script:
-      - if [ "$TRAVIS_BRANCH" == "master" ]; then
+      - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
          ./sbt ++$SCALA_VERSION "; project ${PROJECT}; publishMicrosite";
         fi
