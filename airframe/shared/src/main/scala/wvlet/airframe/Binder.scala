@@ -26,7 +26,6 @@ object Binder {
   sealed trait Binding {
     def forSingleton: Boolean = false
     def from: Surface
-
   }
   case class ClassBinding(from: Surface, to: Surface) extends Binding {
     if (from == to) {

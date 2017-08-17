@@ -26,9 +26,11 @@ import scala.language.experimental.macros
   */
 case class Design(binding: Vector[Binding]) extends LogSupport {
 
-  def +(other: Design): Design = {
+  def add(other: Design): Design = {
     new Design(binding ++ other.binding)
   }
+
+  def +(other: Design): Design = add(other)
 
   def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
 
