@@ -51,6 +51,8 @@ trait CounterService extends LogSupport {
 trait User1 extends CounterService
 trait User2 extends CounterService
 
+
+
 /**
   *
   */
@@ -112,6 +114,22 @@ class LifeCycleManagerTest extends AirframeSpec {
       // But only single shutdown should be called
       u1.shutdownCount shouldBe 1
       u2.shutdownCount shouldBe 1
+    }
+
+    "run start hook when the seesion is already strarted" in {
+      val session = newDesign
+                    .newSession
+
+      var cs: CounterService = null
+      session.start {
+        cs = session.build[CounterService]
+        cs.initCount shouldBe 1
+        cs.startCount shouldBe 1
+        cs.shutdownCount shouldBe 0
+      }
+      cs.initCount shouldBe 1
+      cs.startCount shouldBe 1
+      cs.shutdownCount shouldBe 1
     }
   }
 }

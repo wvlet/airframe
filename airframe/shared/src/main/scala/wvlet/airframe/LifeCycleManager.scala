@@ -87,7 +87,14 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
       val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add start hook for ${h.surface}")
-        startHook :+= h
+        val s = state.get
+        if(s == STARTED) {
+          // If a session is already started, run the start hook immediately
+          h.execute
+        }
+        else {
+          startHook :+= h
+        }
       }
     }
   }
