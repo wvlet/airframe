@@ -40,5 +40,5 @@ matrix:
       - gem install jekyll -v 3.2.1
     script:
       - if [ "$TRAVIS_BRANCH" == "master" ]; then
-         ./sbt ++$SCALA_VERSION "; project ${PROJECT}; publishMicrosite;";
+         ./sbt ++$SCALA_VERSION "; project ${PROJECT}; publishMicrosite";
         fi
