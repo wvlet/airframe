@@ -145,6 +145,27 @@ trait MyServerService {
 ```
 These life cycle hooks will be called only once when the binding type is singleton.
 
+### Annotation-based life cycle hooks
+
+Airframe also supports [JSR-250](https://en.wikipedia.org/wiki/JSR_250) style shutdown hooks `@PostConstruct` and `@PreDestroy`:
+
+```scala
+import javax.annotation.{PostConstruct, PreDestroy}
+
+trait MyService {
+  @PostConstruct
+  def init {
+    // Called when the object is initialized. The same behavior with onInit
+  }
+  
+  @PreDestroy 
+  def stop {
+    // Called when session.shutdown is called. The same with onShutdown. 
+  }
+}
+```
+
+These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class. 
 
 ## What's Next
 
