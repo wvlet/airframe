@@ -35,6 +35,7 @@ package object airframe {
     * </code>
     */
   def newDesign: Design = Design.blanc
+  def blancSession: Session = Design.blanc.newSession
 
   def bind[A]: A = macro bindImpl[A]
   def bind[A](factory: => A): A = macro bind0Impl[A]

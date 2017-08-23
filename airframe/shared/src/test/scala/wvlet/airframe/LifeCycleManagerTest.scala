@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.log.LogSupport
 
