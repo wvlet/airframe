@@ -65,6 +65,7 @@ package object airframe {
       */
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
+    def onInject(body: A => Unit): A = macro addInjectLifeCycle[A]
     def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
     def beforeShutdown(body: A => Unit): A = macro addPreShutdownLifeCycle[A]
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
