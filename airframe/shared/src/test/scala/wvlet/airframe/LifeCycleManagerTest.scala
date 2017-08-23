@@ -103,15 +103,15 @@ class LifeCycleManagerTest extends AirframeSpec {
 
       session.shutdown
 
-      // Counter is initialized only once
+     // Counter should be initialized only once
+      u1.initCount shouldBe 1
+      u2.initCount shouldBe 1
+
+      // Counter also should be started only once
       u1.startCount shouldBe 1
       u2.startCount shouldBe 1
 
-      // Counter should be injected twice
-      u1.initCount shouldBe 2
-      u2.initCount shouldBe 2
-
-      // But only single shutdown should be called
+      // Shutdown should be called only once
       u1.shutdownCount shouldBe 1
       u2.shutdownCount shouldBe 1
     }
@@ -130,6 +130,31 @@ class LifeCycleManagerTest extends AirframeSpec {
       cs.initCount shouldBe 1
       cs.startCount shouldBe 1
       cs.shutdownCount shouldBe 1
+    }
+
+    "run start hook only once for singleton after session is started" in {
+      val session = newDesign
+                    .bind[Counter].toSingleton
+                    .newSession
+
+      var cs: CounterService = null
+      var cs2: CounterService = null
+      session.start {
+        cs = session.build[CounterService]
+        cs.initCount shouldBe 1
+        cs.startCount shouldBe 1
+        cs.shutdownCount shouldBe 0
+
+        cs2 = session.build[CounterService]
+        cs2.initCount shouldBe 1
+        cs2.startCount shouldBe 1
+        cs2.shutdownCount shouldBe 0
+      }
+      cs.initCount shouldBe 1
+      cs.startCount shouldBe 1
+      cs.shutdownCount shouldBe 1
+
+      cs.counterService shouldBe theSameInstanceAs (cs2.counterService)
     }
   }
 }

@@ -66,12 +66,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addInitHook(h: LifeCycleHook) {
-    debug(s"Add init hook: ${h.surface}")
-    // Immediately execute the init hook
-    h.execute
-  }
-
+  private var initializedSingleton = Set.empty[Surface]
   private var startHook    = Vector.empty[LifeCycleHook]
   private var shutdownHook = Vector.empty[LifeCycleHook]
 
@@ -82,18 +77,26 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
   }
 
+  def addInitHook(h: LifeCycleHook) {
+    debug(s"Add init hook: ${h.surface}")
+    // Immediately execute the init hook
+    val canRunHook = !(isSingletonType(h.surface) && initializedSingleton.contains(h.surface))
+    if(canRunHook) {
+      initializedSingleton += h.surface
+      h.execute
+    }
+  }
+
   def addStartHook(h: LifeCycleHook) {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
         debug(s"Add start hook for ${h.surface}")
         val s = state.get
+        startHook :+= h
         if(s == STARTED) {
           // If a session is already started, run the start hook immediately
           h.execute
-        }
-        else {
-          startHook :+= h
         }
       }
     }
