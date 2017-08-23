@@ -135,13 +135,14 @@ Server side application often requires resource managemeng (e.g., network connec
 ```scala
 trait MyServerService {
   val service = bind[Server]
-    .onInit { _.init },    // Called when the object is initialized
-                           // (Called only once for singleton)
-    .onStart = { _.start },  // Called when session.start is called
+    .onInit { _.init }    // Called when the object is initialized
+    .onStart = { _.start }  // Called when session.start is called
     .onShutdown = { _.stop } // Called when session.shutdown is called
   )
 }
 ```
+These life cycle hooks will be called only once when the binding type is singleton.
+
 
 ## What's Next
 
