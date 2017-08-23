@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 0.18
+ - Add beforeShutdown, onInject lifecycle hooks
+ - Support '@PostConstruct`, `@PreDestroy` JSR-250 annotations (Scala.js is not supported)
+ - Fix to call onInit, onStart only once for singletons
+
 ## 0.17
  - Upgrade to Scala 2.12.3, Scala.js 0.6.19
  - Add Design.add
