@@ -137,6 +137,8 @@ trait MyServerService {
   val service = bind[Server]
     .onInit { _.init }    // Called when the object is initialized
     .onStart = { _.start }  // Called when session.start is called
+    .beforeShutdown = { _.notify } // Called right before all shutdown hook is callsed
+                                   // Useful for adding pre-shutdown step 
     .onShutdown = { _.stop } // Called when session.shutdown is called
   )
 }

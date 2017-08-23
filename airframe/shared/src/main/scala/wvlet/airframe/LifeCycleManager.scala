@@ -68,9 +68,11 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   private var initializedSingleton = Set.empty[Surface]
   private var startHook    = Vector.empty[LifeCycleHook]
+  private var preShutdownHook = Vector.empty[LifeCycleHook]
   private var shutdownHook = Vector.empty[LifeCycleHook]
 
   def startHooks: Seq[LifeCycleHook] = startHook
+  def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHook
   def shutdownHooks: Seq[LifeCycleHook] = shutdownHook
 
   private def isSingletonType(t: Surface): Boolean = {
@@ -98,6 +100,16 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
           // If a session is already started, run the start hook immediately
           h.execute
         }
+      }
+    }
+  }
+
+  def addPreShutdownHook(h: LifeCycleHook) {
+    synchronized {
+      val canAddHook = !(isSingletonType(h.surface) && preShutdownHook.exists(_.surface == h.surface))
+      if (canAddHook) {
+        debug(s"Add pre-shutdown hook for ${h.surface}")
+        preShutdownHook :+= h
       }
     }
   }
@@ -157,6 +169,13 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    // beforeShutdown
+    for(h <- lifeCycleManager.preShutdownHooks.reverse) {
+      debug(s"Calling pre-shutdown hoook: $h")
+      h.execute
+    }
+
+    // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
     debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
     shutdownOrder.map {h =>
