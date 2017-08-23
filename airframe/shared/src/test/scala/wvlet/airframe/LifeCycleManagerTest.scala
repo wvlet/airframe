@@ -20,6 +20,7 @@ import wvlet.log.LogSupport
 
 class Counter extends LogSupport {
   val initialized = new AtomicInteger(0)
+  val injected = new AtomicInteger(0)
   val shutdowned  = new AtomicInteger(0)
   val started     = new AtomicInteger(0)
 }
@@ -35,6 +36,10 @@ trait CounterService extends LogSupport {
                          info(s"init: ${c.initialized.get()}")
                          c.initialized.incrementAndGet()
                        }
+                       .onInject { c =>
+                         info(s"injected: ${c.initialized.get()}")
+                         c.injected.incrementAndGet()
+                       }
                        .onStart { c =>
                          info(s"start: ${c.started.get()}")
                          c.started.incrementAndGet()
@@ -45,6 +50,7 @@ trait CounterService extends LogSupport {
                        }
 
   def initCount = counterService.initialized.get()
+  def injectCount = counterService.injected.get()
   def startCount = counterService.started.get()
   def shutdownCount = counterService.shutdowned.get()
 }
@@ -88,16 +94,19 @@ class LifeCycleManagerTest extends AirframeSpec {
       multiCounter.counter1 shouldBe theSameInstanceAs (multiCounter.counter2)
 
       multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.injectCount shouldBe 1
       multiCounter.counter1.startCount shouldBe 0
       multiCounter.counter1.shutdownCount shouldBe 0
 
       session.start
       multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.injectCount shouldBe 1
       multiCounter.counter1.startCount shouldBe 1
       multiCounter.counter1.shutdownCount shouldBe 0
       session.shutdown
 
       multiCounter.counter1.initCount shouldBe 1
+      multiCounter.counter1.injectCount shouldBe 1
       multiCounter.counter1.startCount shouldBe 1
       multiCounter.counter1.shutdownCount shouldBe 1
     }
@@ -120,6 +129,9 @@ class LifeCycleManagerTest extends AirframeSpec {
      // Counter should be initialized only once
       u1.initCount shouldBe 1
       u2.initCount shouldBe 1
+
+      u1.injectCount shouldBe 2
+      u2.injectCount shouldBe 2
 
       // Counter also should be started only once
       u1.startCount shouldBe 1
@@ -156,15 +168,18 @@ class LifeCycleManagerTest extends AirframeSpec {
       session.start {
         cs = session.build[CounterService]
         cs.initCount shouldBe 1
+        cs.injectCount shouldBe 1
         cs.startCount shouldBe 1
         cs.shutdownCount shouldBe 0
 
         cs2 = session.build[CounterService]
         cs2.initCount shouldBe 1
+        cs2.injectCount shouldBe 2
         cs2.startCount shouldBe 1
         cs2.shutdownCount shouldBe 0
       }
       cs.initCount shouldBe 1
+      cs.injectCount shouldBe 2
       cs.startCount shouldBe 1
       cs.shutdownCount shouldBe 1
 

@@ -406,6 +406,19 @@ private[wvlet] object AirframeMacros {
       """
   }
 
+  def addInjectLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    val h = new BindHelper[c.type](c)
+    q"""{
+         val session = ${h.findSession}
+         val dep = ${c.prefix}.dep
+         session.lifeCycleManager.addInjectHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         dep
+        }
+      """
+  }
+
   def addStartLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe

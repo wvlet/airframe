@@ -135,7 +135,8 @@ Server side application often requires resource managemeng (e.g., network connec
 ```scala
 trait MyServerService {
   val service = bind[Server]
-    .onInit { _.init }    // Called when the object is initialized
+    .onInit { _.init }      // Called when the object is initialized
+    .onInject { _.inject }  // Called when the object is injected 
     .onStart = { _.start }  // Called when session.start is called
     .beforeShutdown = { _.notify } // Called right before all shutdown hook is callsed
                                    // Useful for adding pre-shutdown step 
@@ -143,7 +144,7 @@ trait MyServerService {
   )
 }
 ```
-These life cycle hooks will be called only once when the binding type is singleton.
+These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
 
 ### Annotation-based life cycle hooks
 
