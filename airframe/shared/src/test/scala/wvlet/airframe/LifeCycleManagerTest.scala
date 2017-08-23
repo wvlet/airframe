@@ -52,6 +52,19 @@ trait User1 extends CounterService
 trait User2 extends CounterService
 
 
+trait LifeCycleOrder {
+  val t = new AtomicInteger(0)
+  var init = 0
+  var start = 0
+  var preShutdown = 0
+  var shutdown = 0
+
+  val v = bind[Int]{0}
+          .onInit{ x => init = t.incrementAndGet() }
+          .onStart{ x => start = t.incrementAndGet() }
+          .beforeShutdown{ x => preShutdown = t.incrementAndGet() }
+          .onShutdown{ x => shutdown = t.incrementAndGet() }
+}
 
 /**
   *
@@ -155,6 +168,18 @@ class LifeCycleManagerTest extends AirframeSpec {
       cs.shutdownCount shouldBe 1
 
       cs.counterService shouldBe theSameInstanceAs (cs2.counterService)
+    }
+
+    "execute beforeShutdown hook" in {
+      val session = newDesign.newSession
+      val l = session.build[LifeCycleOrder]
+      session.start {
+
+      }
+      l.init shouldBe 1
+      l.start shouldBe 2
+      l.preShutdown shouldBe 3
+      l.shutdown shouldBe 4
     }
   }
 }
