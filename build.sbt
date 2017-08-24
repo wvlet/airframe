@@ -77,13 +77,13 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(airframeJS, surfaceJS)
+  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
 lazy val docs =
   project
@@ -127,7 +127,6 @@ lazy val airframe =
       name := "airframe",
       description := "Dependency injection library tailored to Scala",
       libraryDependencies ++= Seq(
-        "org.wvlet"      %%% "wvlet-log"   % "1.2.3",
         "org.scala-lang" % "scala-reflect" % scalaVersion.value,
         // scalatest
         "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
@@ -181,14 +180,14 @@ lazy val surface =
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
         // scalatest
-        "org.scalatest" %%% "scalatest" % "3.0.1" % "test",
-        "org.wvlet"     %%% "wvlet-log" % "1.2.3"
+        "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
       )
     )
     .jsSettings(
       // Workaround for 'JSCom has been closed' issue
       parallelExecution in ThisBuild := false
     )
+    .dependsOn(log)
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
@@ -201,8 +200,7 @@ lazy val airframeConfig =
     .settings(
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml"  % "snakeyaml"  % "1.14",
-        "org.wvlet" %% "wvlet-log" % "1.2.3",
+        "org.yaml" % "snakeyaml" % "1.14",
         wvletTest
       )
     )
@@ -218,3 +216,29 @@ lazy val jmx =
       )
     )
     .dependsOn(surfaceJVM)
+
+lazy val log =
+  crossProject
+    .in(file("airframe-log"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-log",
+      description := "Fancy logger for Scala",
+      libraryDependencies ++= Seq(
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+        "org.scalatest"  %%% "scalatest"   % "3.0.1"            % "test"
+      )
+    )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        "ch.qos.logback" % "logback-core" % "1.1.7"
+      )
+    )
+    .jsSettings(
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-java-logging" % "0.1.1"
+      )
+    )
+
+lazy val logJVM = log.jvm
+lazy val logJS  = log.js
