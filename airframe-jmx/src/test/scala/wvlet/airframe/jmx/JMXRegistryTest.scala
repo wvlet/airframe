@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.jmx
+package wvlet.airframe.jmx
 
 import wvlet.test.WvletSpec
 
@@ -51,31 +51,31 @@ class JMXRegistryTest extends WvletSpec {
     "register a new mbean" in {
       val b = new SampleMBean
       agent.register(b)
-      val m = agent.getMBeanInfo("wvlet.jmx:name=SampleMBean")
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
       debug(m)
 
-      val a = agent.getMBeanAttribute("wvlet.jmx:name=SampleMBean", "freeMemory")
+      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
       debug(a)
     }
 
     "support class field" taggedAs ("class-field") in {
       val f = new FieldMBean(1, "apple")
       agent.register(f)
-      val m = agent.getMBeanInfo("wvlet.jmx:name=FieldMBean")
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
       info(m)
 
-      agent.getMBeanAttribute("wvlet.jmx:name=FieldMBean", "a") shouldBe 1
-      agent.getMBeanAttribute("wvlet.jmx:name=FieldMBean", "b") shouldBe "apple"
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "a") shouldBe 1
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "b") shouldBe "apple"
     }
 
     "handle nested JMX MBean" taggedAs ("nested") in {
       val n = new NestedMBean
       agent.register(n)
-      val m = agent.getMBeanInfo("wvlet.jmx:name=NestedMBean")
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
       info(m)
 
-      agent.getMBeanAttribute("wvlet.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
-      agent.getMBeanAttribute("wvlet.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
     }
 
   }

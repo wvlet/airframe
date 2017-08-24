@@ -11,16 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package wvlet.airframe.jmx
 
-package wvlet.jmx;
+import javax.management.ObjectName
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import wvlet.test.WvletSpec
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.FIELD})
-public @interface JMX {
-    String description() default "";
+/**
+  *
+  */
+class JMXAgentTest extends WvletSpec {
+
+  "JMXAgent" should {
+    "find jmx registry" in {
+      val agent = new JMXAgent(new JMXConfig())
+      agent.withConnetor { connector =>
+        val connection = connector.getMBeanServerConnection()
+        connection.getMBeanCount.toInt shouldBe >(0)
+        val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))
+        m shouldNot be(null)
+        debug(m)
+      }
+    }
+  }
 }

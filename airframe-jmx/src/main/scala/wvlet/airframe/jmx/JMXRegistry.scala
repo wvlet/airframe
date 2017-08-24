@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.jmx
+package wvlet.airframe.jmx
 
 import javax.management._
 
 import wvlet.log.LogSupport
 
-import scala.util.{Failure, Try}
 import scala.reflect.runtime.{universe => ru}
+import scala.util.{Failure, Try}
 
 /**
   *
