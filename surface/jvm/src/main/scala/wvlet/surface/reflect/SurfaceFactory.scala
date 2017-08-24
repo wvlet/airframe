@@ -43,7 +43,7 @@ object SurfaceFactory extends LogSupport {
   }
 
   def of[A: ru.WeakTypeTag]: Surface = ofType(implicitly[ru.WeakTypeTag[A]].tpe)
-  def ofType(tpe:ru.Type): Surface = {
+  def ofType(tpe: ru.Type): Surface = {
     apply(tpe)
   }
 
@@ -81,7 +81,6 @@ object SurfaceFactory extends LogSupport {
       new SurfaceFinder().createMethodSurfaceOf(tpe)
     })
   }
-
 
   private[surface] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)
   private def resolveClass(tpe: ru.Type): Class[_] = {
