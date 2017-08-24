@@ -1,7 +1,7 @@
-wvlet-jmx
+airframe-jmx
 ====
 
-wvlet-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can
+airframe-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can
 use `jconsole` program to access JMX parameters.
 
 JMX already provides various JVM metrics (e.g., heap memory usage, GC statistics, etc.). DataDog provides a handy way to collect JMX metrics:
@@ -16,7 +16,7 @@ JMX -> fluentd -> DataDog   (For real-time monitoring)
 
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-jmx_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-jmx_2.11/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-jmx_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-jmx_2.12/)
 
 ```scala
 libraryDependencies += "org.wvlet" %% "airframe-jmx" % "(version)"
@@ -69,5 +69,5 @@ You can launch JMXRegistry (e.g., on port 7199) by setting these JVM parameters:
 For convenience, you can start JMXRegistry inside your program:
 
 ```scala
-wvlet.jmv.JMXAgent.start(registryPort=7199)
+wvlet.airframe.jmx.JMXAgent.start(registryPort=7199)
 ```
