@@ -1,4 +1,0 @@
-[0m[[0minfo[0m] [0m:: delivering :: org.wvlet#wvlet-log_2.11;1.2.3 :: 1.2.3 :: release :: Fri Apr 14 12:35:04 PDT 2017[0m
-[0m[[0mdebug[0m] [0m	options = status=release pubdate=Fri Apr 14 12:35:04 PDT 2017 validate=true resolveDynamicRevisions=true merge=true resolveId=null pubBranch=null[0m
-[0m[[0minfo[0m] [0m	delivering ivy file to /Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/ivy-1.2.3.xml[0m
-[0m[[0mdebug[0m] [0m	deliver done (7ms)[0m

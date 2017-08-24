@@ -1,6 +1,0 @@
-[0m[[0minfo[0m] [0m[32mLogLevelScannerTest:[0m[0m
-[0m[[0minfo[0m] [0m[32mLogLevelScanner[0m[0m
-[0m[[0minfo[0m] [0m[32m- should scan log levels only once[0m[0m
-[0m[[0minfo[0m] [0m[32m- should scan loglevels[0m[0m
-[0m[[0minfo[0m] [0m[32m- should load another loglevel file[0m[0m
-[0m[[0minfo[0m] [0m[32m- should load invalid loglevel file safely[0m[0m

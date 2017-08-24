@@ -1,5 +1,0 @@
-[0m[[0mdebug[0m] [0mRunning TaskDef(wvlet.log.io.IOUtilTest, org.scalatest.tools.Framework$$anon$1@38501d5f, false, [SuiteSelector])[0m
-[0m[[0mdebug[0m] [0mRunning TaskDef(wvlet.log.LogLevelScannerTest, org.scalatest.tools.Framework$$anon$1@38501d5f, false, [SuiteSelector])[0m
-[0m[[0mdebug[0m] [0mRunning TaskDef(wvlet.log.SerializationTest, org.scalatest.tools.Framework$$anon$1@38501d5f, false, [SuiteSelector])[0m
-[0m[[0mdebug[0m] [0mRunning TaskDef(wvlet.log.LogRotationHandlerTest, org.scalatest.tools.Framework$$anon$1@38501d5f, false, [SuiteSelector])[0m
-[0m[[0mdebug[0m] [0mRunning TaskDef(wvlet.log.AsyncHandlerTest, org.scalatest.tools.Framework$$anon$1@38501d5f, false, [SuiteSelector])[0m

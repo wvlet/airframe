@@ -1,6 +1,0 @@
-[0m[[0minfo[0m] [0m[32mLogRotationHandlerTest:[0m[0m
-[0m[[0minfo[0m] [0m[32mLogRotationHandler[0m[0m
-[0m[[0minfo[0m] [0m[32m- should rotate log files[0m[0m
-[0m[[0minfo[0m] [0m[32m- should rescue orphaned log files[0m[0m
-[0m[[0minfo[0m] [0m[32mFileHandler[0m[0m
-[0m[[0minfo[0m] [0m[32m- should output log to a file[0m[0m
