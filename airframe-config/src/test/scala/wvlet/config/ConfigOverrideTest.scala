@@ -17,7 +17,7 @@ import wvlet.test.WvletSpec
 
 object ConfigOverrideTest {
   case class AppConfig(
-    coordinatorAddress:String = "localhost:8080"
+      coordinatorAddress: String = "localhost:8080"
   )
 }
 
@@ -32,9 +32,7 @@ class ConfigOverrideTest extends WvletSpec {
 
       val prop = Map("app.coordinator_address" -> "mylocalhost:8081")
 
-      val config: Config = Config(env="default")
-                           .register[AppConfig](AppConfig())
-                           .overrideWith(prop)
+      val config: Config = Config(env = "default").register[AppConfig](AppConfig()).overrideWith(prop)
 
       val appConfig = config.of[AppConfig]
       appConfig.coordinatorAddress shouldBe "mylocalhost:8081"

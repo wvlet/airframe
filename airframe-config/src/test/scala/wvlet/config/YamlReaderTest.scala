@@ -17,7 +17,7 @@ import wvlet.log.io.Resource
 import wvlet.test.WvletSpec
 
 case class MyConfig(id: Int, fullName: String)
-case class DB(accountId:Int, database:String, table:Seq[String])
+case class DB(accountId: Int, database: String, table: Seq[String])
 
 /**
   *
@@ -38,15 +38,15 @@ class YamlReaderTest extends WvletSpec {
   "YamlReader" should {
     "parse yaml file" in {
       val m = YamlReader.loadYaml(yml)
-      m.keys should contain ("default")
-      m.keys should contain ("staging")
+      m.keys should contain("default")
+      m.keys should contain("staging")
       m.keys should have size (2)
     }
 
     "read yaml as objects" in {
       val m = YamlReader.loadMapOf[MyConfig](yml)
-      m.keys should contain ("default")
-      m.keys should contain ("staging")
+      m.keys should contain("default")
+      m.keys should contain("staging")
 
       m("default") shouldBe MyConfig(1, "default-config")
       m("staging") shouldBe MyConfig(2, "staging-config")
@@ -65,7 +65,7 @@ class YamlReaderTest extends WvletSpec {
 
     "parse lists in yaml" in {
       val m = YamlReader.loadYamlList(listYml)
-      m should have size(2)
+      m should have size (2)
       m(0)("database") shouldBe "mydb"
       m(0)("account_id") shouldBe 1
       m(1)("database") shouldBe "mydb2"
@@ -76,14 +76,14 @@ class YamlReaderTest extends WvletSpec {
       s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
     }
 
-    "parse map in yaml" taggedAs("map") in {
+    "parse map in yaml" taggedAs ("map") in {
       val m = YamlReader.loadMapOf[ClassConfig](classesYml)
-      m should have size(2)
+      m should have size (2)
       m("development").classes shouldBe Seq("class1", "class2", "class3")
       m("development").classAssignments shouldBe Map(
-        "nobita" -> "class1",
+        "nobita"  -> "class1",
         "takeshi" -> "class2",
-        "suneo" -> "class3"
+        "suneo"   -> "class3"
       )
     }
   }

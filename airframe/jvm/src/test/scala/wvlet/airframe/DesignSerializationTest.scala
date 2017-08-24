@@ -19,17 +19,17 @@ import DesignTest._
 
 object DesignSerializationTest {
 
-  def serialize(d:Design) : Array[Byte] = {
-    val b = new ByteArrayOutputStream()
+  def serialize(d: Design): Array[Byte] = {
+    val b  = new ByteArrayOutputStream()
     val oo = new ObjectOutputStream(b)
     oo.writeObject(d)
     oo.close()
     b.toByteArray
   }
 
-  def deserialize(b: Array[Byte]) : Design = {
-    val in = new ByteArrayInputStream(b)
-    val oi = new ObjectInputStream(in)
+  def deserialize(b: Array[Byte]): Design = {
+    val in  = new ByteArrayInputStream(b)
+    val oi  = new ObjectInputStream(in)
     val obj = oi.readObject().asInstanceOf[Design]
     obj.asInstanceOf[Design]
   }
@@ -42,15 +42,15 @@ class DesignSerializationTest extends AirframeSpec {
   import DesignSerializationTest._
 
   "Design" should {
-    "be serializable" taggedAs("ser") in {
-      val b = serialize(d1)
+    "be serializable" taggedAs ("ser") in {
+      val b   = serialize(d1)
       val d1s = deserialize(b)
       d1s shouldBe (d1)
     }
 
-    "serialize instance binding" taggedAs("ser1") in {
-      val d = Design.blanc.bind[Message].toInstance(Hello("world"))
-      val b = serialize(d)
+    "serialize instance binding" taggedAs ("ser1") in {
+      val d  = Design.blanc.bind[Message].toInstance(Hello("world"))
+      val b  = serialize(d)
       val ds = deserialize(b)
       ds shouldBe (d)
     }

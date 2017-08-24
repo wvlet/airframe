@@ -18,7 +18,7 @@ import wvlet.surface.{Surface, SurfaceSpec}
 import wvlet.surface.tag._
 
 object RuntimeTaggedTypeTest {
-  case class Person(id:Int, name:String)
+  case class Person(id: Int, name: String)
 
   trait Employee
   trait Customer
@@ -34,8 +34,8 @@ import RuntimeTaggedTypeTest._
 class RuntimeTaggedTypeTest extends SurfaceSpec {
   "RuntimeTaggedType" should {
     "pass sanity check" in {
-      val e : Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
-      val e2 : Person @@ Guest = new Person(2, "yui")
+      val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
+      val e2: Person @@ Guest   = new Person(2, "yui")
     }
 
     "be a reference" in {
@@ -50,7 +50,7 @@ class RuntimeTaggedTypeTest extends SurfaceSpec {
       t.typeArgs shouldBe empty
       t.params.mkString(",") shouldBe "id:Int,name:String"
 
-      val n = check(RuntimeSurface.of[Name @@ Employee], "Name@@Employee")
+      val n    = check(RuntimeSurface.of[Name @@ Employee], "Name@@Employee")
       val name = n.dealias
       name.name shouldBe "String"
       n.isPrimitive shouldBe true
@@ -69,18 +69,18 @@ class RuntimeTaggedTypeTest extends SurfaceSpec {
       val t3 = check(RuntimeSurface.of[Person @@ Guest], "Person@@Guest")
 
       val set = Set(t1, t2)
-      set should contain (RuntimeSurface.of[Person @@ Employee])
-      set should contain (RuntimeSurface.of[Person @@ Customer])
+      set should contain(RuntimeSurface.of[Person @@ Employee])
+      set should contain(RuntimeSurface.of[Person @@ Customer])
       set should not contain (RuntimeSurface.of[Person @@ Guest])
 
-      set should contain (t1)
-      set should contain (t2)
+      set should contain(t1)
+      set should contain(t2)
       set should not contain (t3)
 
       val c = check(RuntimeSurface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
       val s = Set(c)
-      s should contain (RuntimeSurface.of[Seq[String] @@ Employee])
-      s should contain (c)
+      s should contain(RuntimeSurface.of[Seq[String] @@ Employee])
+      s should contain(c)
     }
   }
 

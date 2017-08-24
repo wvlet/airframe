@@ -17,7 +17,7 @@ import wvlet.log.LogSupport
 
 object SerializationTest extends LogSupport {
 
-  case class A1(v:Int = 0)
+  case class A1(v: Int = 0)
   case class App(a1: A1) extends LogSupport
 
   val a1 = A1(1)
@@ -27,9 +27,7 @@ object SerializationTest extends LogSupport {
     info(s"Created ${app} from ${a1}")
     app
   }
-  val d = Design.blanc
-          .bind[A1].toInstance(A1(1))
-          .bind[App].toProvider(provider1 _)
+  val d = Design.blanc.bind[A1].toInstance(A1(1)).bind[App].toProvider(provider1 _)
 }
 
 import DesignSerializationTest._
@@ -39,7 +37,7 @@ class SerializationTest extends AirframeSpec {
   "Airframe" should {
     "serialize provider" in {
       import wvlet.airframe.SerializationTest._
-      val b = serialize(d)
+      val b  = serialize(d)
       val ds = deserialize(b)
       ds shouldEqual d
 
@@ -52,15 +50,9 @@ class SerializationTest extends AirframeSpec {
       import ProviderSerializationExample._
       import ProviderVal._
 
-      val d = newDesign
-        .bind[D1].toInstance(d1)
-        .bind[D2].toInstance(d2)
-        .bind[D3].toInstance(d3)
-        .bind[D4].toInstance(d4)
-        .bind[D5].toInstance(d5)
-        .bind[App].toProvider(provider5 _)
+      val d = newDesign.bind[D1].toInstance(d1).bind[D2].toInstance(d2).bind[D3].toInstance(d3).bind[D4].toInstance(d4).bind[D5].toInstance(d5).bind[App].toProvider(provider5 _)
 
-      val b = serialize(d)
+      val b  = serialize(d)
       val ds = deserialize(b)
       ds shouldEqual d
     }

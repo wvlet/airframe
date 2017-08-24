@@ -18,10 +18,10 @@ import wvlet.surface.tag._
 
 object ClassSurfaceTest {
 
-  class A(val id:Int)(implicit val context:String)
+  class A(val id: Int)(implicit val context: String)
 
   trait MyTag
-  case class B(v:Int @@ MyTag)
+  case class B(v: Int @@ MyTag)
 }
 
 import wvlet.surface
@@ -41,9 +41,12 @@ class ClassSurfaceTest extends SurfaceSpec {
       p0.name shouldBe "id"
       p1.name shouldBe "context"
 
-      val a0 = a.objectFactory.map { x =>
-        x.newInstance(Seq(1, "c"))
-      }.get.asInstanceOf[A]
+      val a0 = a.objectFactory
+        .map { x =>
+          x.newInstance(Seq(1, "c"))
+        }
+        .get
+        .asInstanceOf[A]
 
       a0.id shouldBe 1
       a0.context shouldBe "c"
@@ -59,4 +62,3 @@ class ClassSurfaceTest extends SurfaceSpec {
     }
   }
 }
-

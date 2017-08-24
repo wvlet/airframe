@@ -37,7 +37,7 @@ class PathTest extends SurfaceSpec {
       p.fullPath should be("/abs/path")
       val pp = p.parent
       pp should be('defined)
-      pp map {_.fullPath should be("/abs")}
+      pp map { _.fullPath should be("/abs") }
 
       val p2 = Path("/abs/path")
       p should be(p2)

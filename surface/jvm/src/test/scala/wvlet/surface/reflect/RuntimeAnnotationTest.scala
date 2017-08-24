@@ -20,13 +20,14 @@ import wvlet.surface
 import wvlet.surface.SurfaceSpec
 
 @Resource(name = "annot-test")
-class RuntimeAnnot(@Resource(name = "param A") a:String, c:Int) {
+class RuntimeAnnot(@Resource(name = "param A") a: String, c: Int) {
 
   @PreDestroy
-  def b(@Resource(name = "b arg") arg:String) : String = "hello"
+  def b(@Resource(name = "b arg") arg: String): String = "hello"
 
-  def noAnnot : Int = 1
+  def noAnnot: Int = 1
 }
+
 /**
   *
   */
@@ -54,7 +55,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
       val m = surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
       val a = m.findAnnotationOf[PreDestroy]
       a shouldBe defined
-      m.findAnnotationOf[Resource] shouldNot be (defined)
+      m.findAnnotationOf[Resource] shouldNot be(defined)
 
       val p = m.args.find(_.name == "arg").get
       info(s"p: ${p}, ${p.index}")

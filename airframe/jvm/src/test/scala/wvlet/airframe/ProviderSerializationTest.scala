@@ -16,6 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.ProviderSerializationExample._
 import wvlet.airframe.ProviderVal._
 import DesignSerializationTest._
+
 /**
   *
   */
@@ -24,8 +25,7 @@ class ProviderSerializationTest extends AirframeSpec {
   "Design" should {
     "serialize design with provider" taggedAs ("ser") in {
       val testBinderDesign =
-        providerDesign
-        .bind[App].toProvider(provider5 _)
+        providerDesign.bind[App].toProvider(provider5 _)
 
       val b = serialize(testBinderDesign)
       val d = deserialize(b)
@@ -36,8 +36,7 @@ class ProviderSerializationTest extends AirframeSpec {
 
     "serialize design with provider1" taggedAs ("ser-p1") in {
       val testBinderDesign =
-        providerDesign
-        .bind[App].toProvider(provider1 _)
+        providerDesign.bind[App].toProvider(provider1 _)
 
       val b = serialize(testBinderDesign)
       val d = deserialize(b)

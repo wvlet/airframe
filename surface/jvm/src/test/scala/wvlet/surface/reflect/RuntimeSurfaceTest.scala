@@ -20,28 +20,21 @@ import scala.util.Try
 
 object RuntimeExamples {
 
-  case class A(b: Boolean,
-               bt: Byte,
-               st: Short,
-               i: Int,
-               l: Long,
-               f: Float,
-               d: Double,
-               str: String)
+  case class A(b: Boolean, bt: Byte, st: Short, i: Int, l: Long, f: Float, d: Double, str: String)
 
   case class B(a: A)
   trait C
 
-  type MyA = A
+  type MyA   = A
   type MyInt = Int
   type MyMap = Map[Int, String]
   case class D[V](id: Int, v: V)
 
   trait Service[-Req, +Rep] extends (Req => Future[Rep])
 
-  case class E(a:A)
+  case class E(a: A)
 
-  case class F(p0:Int=10)
+  case class F(p0: Int = 10)
 }
 
 /**
@@ -117,11 +110,10 @@ class RuntimeSurfaceTest extends SurfaceSpec {
       check(RuntimeSurface.of[IndexedSeq[A]], "IndexedSeq[A]")
     }
 
-    "resolve scala util types" taggedAs("throwable")  in {
+    "resolve scala util types" taggedAs ("throwable") in {
       check(RuntimeSurface.of[Either[String, Throwable]], "Either[String,Throwable]")
       check(RuntimeSurface.of[Try[A]], "Try[A]")
     }
-
 
     "resolve mutable Collection types" in {
       check(RuntimeSurface.of[collection.mutable.Seq[String]], "Seq[String]")
@@ -136,14 +128,14 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     }
 
     "resolve java colletion type" in {
-      check(RuntimeSurface.of[java.util.List[String]],"List[String]")
+      check(RuntimeSurface.of[java.util.List[String]], "List[String]")
       check(RuntimeSurface.of[java.util.Map[Long, String]], "Map[Long,String]")
-      check(RuntimeSurface.of[java.util.Set[A]],"Set[A]")
+      check(RuntimeSurface.of[java.util.Set[A]], "Set[A]")
     }
 
     "resolve generic type" in {
-      val d1 = check(RuntimeSurface.of[D[String]],"D[String]")
-      val d2 = check(RuntimeSurface.of[D[A]],"D[A]")
+      val d1 = check(RuntimeSurface.of[D[String]], "D[String]")
+      val d2 = check(RuntimeSurface.of[D[A]], "D[A]")
       d1 shouldNot be theSameInstanceAs (d2)
     }
 
@@ -151,31 +143,31 @@ class RuntimeSurfaceTest extends SurfaceSpec {
       check(RuntimeSurface.of[Service[Int, String]], "Service[Int,String]")
     }
 
-    "resolve generic abstract type" taggedAs("abstract") in {
-      val d = check(RuntimeSurface.of[D[_]],"D[_]")
+    "resolve generic abstract type" taggedAs ("abstract") in {
+      val d = check(RuntimeSurface.of[D[_]], "D[_]")
       d.typeArgs.length shouldBe 1
-      check(RuntimeSurface.of[Map[_, _]],"Map[_,_]")
+      check(RuntimeSurface.of[Map[_, _]], "Map[_,_]")
     }
 
     val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
     "generate object factory" in {
-      val a = check(RuntimeSurface.of[A],"A")
+      val a = check(RuntimeSurface.of[A], "A")
       a.objectFactory shouldBe defined
 
       val a1 = a.objectFactory.map(_.newInstance(Seq(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")))
       info(a1)
       a1.get shouldBe a0
 
-      val e = check(RuntimeSurface.of[E],"E")
+      val e = check(RuntimeSurface.of[E], "E")
       e.objectFactory shouldBe defined
-      val e1 : E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
+      val e1: E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
       info(e1)
       e1.a shouldBe a0
     }
 
     "generate concrete object factory" in {
-      val d = check(RuntimeSurface.of[D[String]],"D[String]")
+      val d = check(RuntimeSurface.of[D[String]], "D[String]")
       val d0 = d.objectFactory.map { f =>
         f.newInstance(Seq(1, "leo"))
       }.get
@@ -183,7 +175,7 @@ class RuntimeSurfaceTest extends SurfaceSpec {
       d0 shouldBe D(1, "leo")
     }
 
-    "find default parameter" taggedAs("dp") in {
+    "find default parameter" taggedAs ("dp") in {
       val f = check(RuntimeSurface.of[F], "F")
       val p = f.params(0)
       p.getDefaultValue shouldBe defined

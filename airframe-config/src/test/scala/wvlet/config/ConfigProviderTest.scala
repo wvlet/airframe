@@ -36,8 +36,7 @@ class ConfigProviderTest extends WvletSpec {
     "provide config objects with Airframe" in {
       pending
       val config =
-        Config("staging")
-        .registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")
+        Config("staging").registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")
 
 //      var d = newDesign
 //      for(c <- config.getAll) {

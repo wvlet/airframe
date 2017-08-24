@@ -28,14 +28,14 @@ class SurfaceJVMTest extends SurfaceSpec {
 
   "SurfaceJVM" should {
     "resolve ParSeq" in {
-      check(surface.of[ParSeq[Int]],"ParSeq[Int]")
+      check(surface.of[ParSeq[Int]], "ParSeq[Int]")
     }
 
     "resolve java util type" in {
-      check(surface.of[File],"File")
-      check(surface.of[java.util.Date],"Date")
-      check(surface.of[java.time.LocalDate],"LocalDate")
-      check(surface.of[java.time.LocalDateTime],"LocalDateTime")
+      check(surface.of[File], "File")
+      check(surface.of[java.util.Date], "Date")
+      check(surface.of[java.time.LocalDate], "LocalDate")
+      check(surface.of[java.time.LocalDateTime], "LocalDateTime")
       check(surface.of[java.time.Instant], "Instant")
     }
 

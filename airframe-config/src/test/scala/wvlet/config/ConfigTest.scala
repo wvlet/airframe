@@ -25,7 +25,7 @@ trait AppScope
 trait SessionScope
 
 case class SampleConfig(id: Int, fullName: String)
-case class DefaultConfig(id: Int = 1, a:String = "hello")
+case class DefaultConfig(id: Int = 1, a: String = "hello")
 case class ClassConfig(classes: Seq[String], classAssignments: Map[String, String])
 
 /**
@@ -36,13 +36,11 @@ class ConfigTest extends WvletSpec {
   val configPaths = Seq("airframe-config/src/test/resources")
 
   def loadConfig(env: String) =
-    Config(env = env, configPaths = configPaths)
-    .registerFromYaml[SampleConfig]("myconfig.yml")
-    .registerFromYaml[ClassConfig]("classes.yml")
+    Config(env = env, configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml").registerFromYaml[ClassConfig]("classes.yml")
 
   "MapConfig" should {
     "read map type configuration items" in {
-      val config = loadConfig("development")
+      val config      = loadConfig("development")
       val classConfig = config.of[ClassConfig]
       classConfig.classes.size shouldBe 3
       classConfig.classes(0) shouldBe "class1"
@@ -58,34 +56,34 @@ class ConfigTest extends WvletSpec {
 
   "ConfigEnv" should {
     "set config paths" in {
-      val env = ConfigEnv("debug", "default", Seq.empty)
+      val env    = ConfigEnv("debug", "default", Seq.empty)
       val newEnv = env.withConfigPaths(Seq("."))
-      newEnv.configPaths should contain (".")
+      newEnv.configPaths should contain(".")
     }
   }
 
   "Config" should {
     "cleanup config paths" in {
       Config.cleanupConfigPaths(Seq("")) should not contain ("")
-      Config.cleanupConfigPaths(Seq("")) should contain (".")
+      Config.cleanupConfigPaths(Seq("")) should contain(".")
     }
 
     "use current directory for search path" in {
       val c = Config(env = "debug")
-      c.env.configPaths should contain (".")
+      c.env.configPaths should contain(".")
     }
 
     "customize env" in {
-      val config = Config(env = "staging", defaultEnv = "default")
+      val config    = Config(env = "staging", defaultEnv = "default")
       val devConfig = config.withEnv("development", "test")
       devConfig.env.env shouldBe "development"
       devConfig.env.defaultEnv shouldBe "test"
     }
 
     "customize config paths" in {
-      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
+      val config    = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
       val newConfig = config.withConfigPaths(Seq("."))
-      newConfig.env.configPaths should contain (".")
+      newConfig.env.configPaths should contain(".")
     }
 
     "throw error on unknown config type" in {
@@ -96,18 +94,16 @@ class ConfigTest extends WvletSpec {
     }
 
     "support getOrElse" in {
-      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
-        .register[Int](10)
-      val s = config.getOrElse[String]("hello world")
+      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty).register[Int](10)
+      val s      = config.getOrElse[String]("hello world")
       s shouldBe "hello world"
 
       config.getOrElse[Int](20) shouldBe 10
     }
 
     "support registerFromYamlOrElse" in {
-      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
-        .registerFromYamlOrElse[String]("unknown-yaml-file.yml", "hello world")
-      val s = config.of[String]
+      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty).registerFromYamlOrElse[String]("unknown-yaml-file.yml", "hello world")
+      val s      = config.of[String]
       s shouldBe "hello world"
     }
 
@@ -128,9 +124,7 @@ class ConfigTest extends WvletSpec {
     }
 
     "allow override" in {
-      val config = Config(env = "staging", configPaths = configPaths)
-                   .registerFromYaml[SampleConfig]("myconfig.yml")
-                   .register[SampleConfig](SampleConfig(10, "hello"))
+      val config = Config(env = "staging", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml").register[SampleConfig](SampleConfig(10, "hello"))
 
       val c = config.of[SampleConfig]
       c.id shouldBe 10
@@ -138,8 +132,7 @@ class ConfigTest extends WvletSpec {
     }
 
     "create a new config based on existing one" in {
-      val config = Config(env = "default", configPaths = configPaths)
-                   .registerFromYaml[SampleConfig]("myconfig.yml")
+      val config = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
 
       val config2 = Config(env = "production", configPaths = configPaths) ++ config
 
@@ -150,8 +143,8 @@ class ConfigTest extends WvletSpec {
 
     "read tagged type" taggedAs ("tag") in {
       val config = Config(env = "default", configPaths = configPaths)
-                   .registerFromYaml[SampleConfig @@ AppScope]("myconfig.yml")
-                   .register[SampleConfig @@ SessionScope](SampleConfig(2, "session").asInstanceOf[SampleConfig @@ SessionScope])
+        .registerFromYaml[SampleConfig @@ AppScope]("myconfig.yml")
+        .register[SampleConfig @@ SessionScope](SampleConfig(2, "session").asInstanceOf[SampleConfig @@ SessionScope])
 
       val c = config.of[SampleConfig @@ AppScope]
       c shouldBe SampleConfig(1, "default-config")
@@ -162,15 +155,12 @@ class ConfigTest extends WvletSpec {
 
     "throw exception on missing environment" in {
       intercept[IllegalArgumentException] {
-        val config = Config(env = "weird-env", defaultEnv = "unknown", configPaths = configPaths)
-                     .registerFromYaml[SampleConfig]("myconfig.yml")
+        val config = Config(env = "weird-env", defaultEnv = "unknown", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
       }
     }
 
     "register the default objects" in {
-      val config = Config(env = "default")
-        .registerDefault[DefaultConfig]
-        .registerDefault[SampleConfig]
+      val config = Config(env = "default").registerDefault[DefaultConfig].registerDefault[SampleConfig]
 
       config.of[DefaultConfig] shouldBe DefaultConfig()
       // Sanity test
@@ -183,9 +173,8 @@ class ConfigTest extends WvletSpec {
       c2 shouldBe DefaultConfig(1, "world")
     }
 
-    "show the default configuration" taggedAs("show-default") in {
-      val config = Config(env = "default", configPaths = configPaths)
-                   .registerFromYaml[SampleConfig]("myconfig.yml")
+    "show the default configuration" taggedAs ("show-default") in {
+      val config = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
 
       val default = config.defaultValueOf[SampleConfig]
       val current = config.of[SampleConfig]
@@ -195,9 +184,9 @@ class ConfigTest extends WvletSpec {
       val changes = config.getConfigChanges
       changes.size shouldBe 2
       info(s"changes:\n${changes.mkString("\n")}")
-      val keys : Seq[String] = changes.map(_.key.toString)
-      keys should contain ("sample.id")
-      keys should contain ("sample.fullname")
+      val keys: Seq[String] = changes.map(_.key.toString)
+      keys should contain("sample.id")
+      keys should contain("sample.fullname")
 
       val id = changes.find(_.key.toString == "sample.id").get
       id.default shouldBe 0
@@ -215,9 +204,9 @@ class ConfigTest extends WvletSpec {
       p.setProperty("sample@appscope.full_name", "hellohello")
 
       val c1 = Config(env = "default", configPaths = configPaths)
-               .register[SampleConfig](SampleConfig(1, "hello"))
-               .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
-               .overrideWithProperties(p)
+        .register[SampleConfig](SampleConfig(1, "hello"))
+        .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
+        .overrideWithProperties(p)
 
       class ConfigSpec(config: Config) {
         val c = config.of[SampleConfig]
@@ -236,9 +225,9 @@ class ConfigTest extends WvletSpec {
         f.close()
 
         val c2 = Config(env = "default", configPaths = Seq("target"))
-                 .register[SampleConfig](SampleConfig(1, "hello"))
-                 .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello"))
-                 .overrideWithPropertiesFile(file.getName)
+          .register[SampleConfig](SampleConfig(1, "hello"))
+          .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello"))
+          .overrideWithPropertiesFile(file.getName)
 
         new ConfigSpec(c2)
       }
@@ -258,25 +247,24 @@ class ConfigTest extends WvletSpec {
       val p = new Properties
       p.setProperty("sample.id", "10")
       p.setProperty("sample@appscope.id", "2")
-      p.setProperty("sample@appscope.message", "hellohello")  // should be unused
+      p.setProperty("sample@appscope.message", "hellohello") // should be unused
 
-      var unused : Option[Properties] = None
+      var unused: Option[Properties] = None
       val c = Config(env = "default", configPaths = configPaths)
-              .register[SampleConfig](SampleConfig(1, "hello"))
-              .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
-              .overrideWithProperties(p, onUnusedProperties = { p: Properties =>
-                unused = Some(p)
-              })
+        .register[SampleConfig](SampleConfig(1, "hello"))
+        .register[SampleConfig @@ AppScope](SampleConfig(1, "hellohello").asInstanceOf[SampleConfig @@ AppScope])
+        .overrideWithProperties(p, onUnusedProperties = { p: Properties =>
+          unused = Some(p)
+        })
 
       unused shouldBe 'defined
       unused.get.size shouldBe 1
-      unused.get.keySet should contain ("sample@appscope.message")
+      unused.get.keySet should contain("sample@appscope.message")
     }
 
     "report missing Properties file error" in {
       intercept[FileNotFoundException] {
-        val c = Config(env = "default", configPaths = configPaths)
-                .overrideWithPropertiesFile("unknown-propertiles-file-path.propertiles")
+        val c = Config(env = "default", configPaths = configPaths).overrideWithPropertiesFile("unknown-propertiles-file-path.propertiles")
       }
     }
 
@@ -284,22 +272,19 @@ class ConfigTest extends WvletSpec {
       intercept[IllegalArgumentException] {
         val p = new Properties()
         p.setProperty("sample.idid", "10")
-        val c = Config(env = "default", configPaths = configPaths)
-                .overrideWithProperties(p, onUnusedProperties = Config.REPORT_ERROR_FOR_UNUSED_PROPERTIES)
+        val c = Config(env = "default", configPaths = configPaths).overrideWithProperties(p, onUnusedProperties = Config.REPORT_ERROR_FOR_UNUSED_PROPERTIES)
       }
     }
 
     "report missing YAML file error" in {
       intercept[FileNotFoundException] {
-        val c = Config(env = "default", configPaths = configPaths)
-                .registerFromYaml[SampleConfig]("myconfig-missing.yml")
+        val c = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig-missing.yml")
       }
     }
 
     "report missing value error" in {
       intercept[Exception] {
-        val c = Config(env = "unknown-env", defaultEnv = "unknown-default", configPaths = configPaths)
-                .registerFromYaml[SampleConfig]("myconfig.yml")
+        val c = Config(env = "unknown-env", defaultEnv = "unknown-default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
       }
     }
   }

@@ -42,6 +42,6 @@ class ConstructorBindingTest extends AirframeSpec {
 
 object ConstructorBindingTest {
   type MyValue = String
-  case class CbTest(id:Int = -1, name:String = "leo")
-  case class CbTest1(id:Int = -1, value:MyValue = "ppp")
+  case class CbTest(id: Int = -1, name: String = "leo")
+  case class CbTest1(id: Int = -1, value: MyValue = "ppp")
 }

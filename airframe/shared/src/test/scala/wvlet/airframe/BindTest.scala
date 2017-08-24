@@ -13,36 +13,30 @@
  */
 package wvlet.airframe
 
-import javax.annotation.{PostConstruct, PreDestroy}
-
-trait JSR250Test {
-  var initialized = false
-  var stopped     = false
-
-  @PostConstruct
-  def init {
-    initialized = true
+object BindTest {
+  class X {
+    def close() {}
   }
 
-  @PreDestroy
-  def stop {
-    stopped = true
+  trait Bind {
+    val x = bind[X] { new X }.onShutdown { _.close }
   }
 }
 
 /**
   *
   */
-class JSR250LifeCycleExecutorTest extends AirframeSpec {
-  "Airframe" should {
-    "support JSR250 event" in {
+class BindTest extends AirframeSpec {
+
+  import wvlet.airframe.BindTest._
+
+  "Bind" should {
+    "allow provider based initialization" in {
       val s = blancSession
-      val t = s.build[JSR250Test]
-      t.initialized shouldBe true
-      t.stopped shouldBe false
-      s.start {}
-      t.initialized shouldBe true
-      t.stopped shouldBe true
+      s.start {
+        s.build[Bind]
+      }
     }
   }
+
 }
