@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.19
+ - Add [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx) to expose object parameters through JMX
+
 ## 0.18
  - Add beforeShutdown, onInject lifecycle hooks
  - Support `@PostConstruct` and `@PreDestroy` JSR-250 annotations (Scala.js is not supported)
