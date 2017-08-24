@@ -37,9 +37,9 @@ object YamlReader extends LogSupport {
   }
 
   def loadMapOf[A: ru.TypeTag](resourcePath: String): Map[String, A] = {
-    val yaml = loadYaml(resourcePath)
+    val yaml             = loadYaml(resourcePath)
     val surface: Surface = wvlet.surface.of[A]
-    val map = ListMap.newBuilder[String, A]
+    val map              = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
       map += k.toString -> bind[A](surface, v.asInstanceOf[java.util.Map[AnyRef, AnyRef]])
     }
@@ -47,20 +47,11 @@ object YamlReader extends LogSupport {
   }
 
   def loadYaml(resourcePath: String): Map[AnyRef, AnyRef] = {
-    new Yaml()
-    .load(readAsString(resourcePath))
-    .asInstanceOf[ju.Map[AnyRef, AnyRef]]
-    .asScala
-    .toMap
+    new Yaml().load(readAsString(resourcePath)).asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap
   }
 
   def loadYamlList(resourcePath: String): Seq[Map[AnyRef, AnyRef]] = {
-    new Yaml()
-    .load(readAsString(resourcePath))
-    .asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]]
-    .asScala
-    .map(_.asScala.toMap)
-    .toSeq
+    new Yaml().load(readAsString(resourcePath)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
@@ -78,4 +69,3 @@ object YamlReader extends LogSupport {
     builder.build.asInstanceOf[A]
   }
 }
-

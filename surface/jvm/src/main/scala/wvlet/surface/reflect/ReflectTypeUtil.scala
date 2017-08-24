@@ -36,15 +36,13 @@ object ReflectTypeUtil extends LogSupport {
       val clName = cl.getName
       val companionCls = if (clName.endsWith("$")) {
         cl
-      }
-      else {
+      } else {
         Class.forName(clName + "$")
       }
-      val module = companionCls.getField("MODULE$")
+      val module       = companionCls.getField("MODULE$")
       val companionObj = module.get(null)
       Some(companionObj)
-    }
-    catch {
+    } catch {
       case e: Throwable => {
         trace(e)
         None
@@ -60,8 +58,7 @@ object ReflectTypeUtil extends LogSupport {
           f.setAccessible(true)
         }
         body
-      }
-      finally {
+      } finally {
         if (!accessible) {
           f.setAccessible(false)
         }
@@ -79,7 +76,7 @@ object ReflectTypeUtil extends LogSupport {
   def canBuildFromString(s: Surface): Boolean = isPrimitive(s) || hasStringUnapplyConstructor(s)
 
   def isPrimitive(s: Surface): Boolean = s.isPrimitive
-  def isArray(s: Surface): Boolean = s.isInstanceOf[ArraySurface]
+  def isArray(s: Surface): Boolean     = s.isInstanceOf[ArraySurface]
   def isArray[T](cl: Class[T]): Boolean = {
     cl.isArray || cl.getSimpleName == "Array"
   }
@@ -99,20 +96,22 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def hasStringUnapplyConstructor(cl: Class[_]): Boolean = {
-    companionObject(cl).map {co =>
-      cls(co).getDeclaredMethods.find {p =>
-        def acceptString = {
-          val t = p.getParameterTypes
-          t.length == 1 && t(0) == classOf[String]
-        }
-        def returnOptionOfT = {
-          val rt = p.getGenericReturnType
-          val t = getTypeParameters(rt)
-          isOption(p.getReturnType) && t.length == 1 && t(0) == cl
-        }
-        p.getName == "unapply" && acceptString && returnOptionOfT
-      }.isDefined
-    }.getOrElse(false)
+    companionObject(cl)
+      .map { co =>
+        cls(co).getDeclaredMethods.find { p =>
+          def acceptString = {
+            val t = p.getParameterTypes
+            t.length == 1 && t(0) == classOf[String]
+          }
+          def returnOptionOfT = {
+            val rt = p.getGenericReturnType
+            val t  = getTypeParameters(rt)
+            isOption(p.getReturnType) && t.length == 1 && t(0) == cl
+          }
+          p.getName == "unapply" && acceptString && returnOptionOfT
+        }.isDefined
+      }
+      .getOrElse(false)
   }
 
   def isOption(s: Surface): Boolean = s.isOption
@@ -188,8 +187,8 @@ object ReflectTypeUtil extends LogSupport {
   def resolveClassType(t: jr.Type): Class[_] = {
     t match {
       case p: jr.ParameterizedType => p.getRawType.asInstanceOf[Class[_]]
-      case c: Class[_] => c
-      case _ => classOf[Any]
+      case c: Class[_]             => c
+      case _                       => classOf[Any]
     }
   }
 

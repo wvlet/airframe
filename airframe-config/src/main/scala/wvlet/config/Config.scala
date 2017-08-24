@@ -28,7 +28,6 @@ import wvlet.surface.reflect.RuntimeSurface
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
-
 case class ConfigHolder(tpe: Surface, value: Any)
 
 case class ConfigPaths(configPaths: Seq[String]) extends LogSupport {
@@ -37,14 +36,15 @@ case class ConfigPaths(configPaths: Seq[String]) extends LogSupport {
 
 object Config extends LogSupport {
 
-  private def defaultConfigPath = cleanupConfigPaths(
-    Seq(
-      ".", // current directory
-      sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
-    ))
+  private def defaultConfigPath =
+    cleanupConfigPaths(
+      Seq(
+        ".", // current directory
+        sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
+      ))
 
-  def apply(env: String, defaultEnv: String = "default", configPaths: Seq[String] = defaultConfigPath): Config = Config(ConfigEnv(env, defaultEnv, configPaths),
-    Map.empty[Surface, ConfigHolder])
+  def apply(env: String, defaultEnv: String = "default", configPaths: Seq[String] = defaultConfigPath): Config =
+    Config(ConfigEnv(env, defaultEnv, configPaths), Map.empty[Surface, ConfigHolder])
 
   def cleanupConfigPaths(paths: Seq[String]) = {
     val b = Seq.newBuilder[String]
@@ -56,13 +56,12 @@ object Config extends LogSupport {
     val result = b.result()
     if (result.isEmpty) {
       Seq(".") // current directory
-    }
-    else {
+    } else {
       result
     }
   }
 
-  def REPORT_UNUSED_PROPERTIES : Properties => Unit = { unused:Properties =>
+  def REPORT_UNUSED_PROPERTIES: Properties => Unit = { unused: Properties =>
     warn(s"There are unused properties: ${unused}")
   }
   def REPORT_ERROR_FOR_UNUSED_PROPERTIES: Properties => Unit = { unused: Properties =>
@@ -74,13 +73,13 @@ case class ConfigEnv(env: String, defaultEnv: String, configPaths: Seq[String]) 
   def withConfigPaths(paths: Seq[String]): ConfigEnv = ConfigEnv(env, defaultEnv, paths)
 }
 
-case class ConfigChange(tpe:Surface, key:ConfigKey, default:Any, current:Any) {
+case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any) {
   override def toString = s"[${tpe}] ${key} = ${current} (default = ${default})"
 }
 
 import Config._
 
-case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHolder]) extends Iterable[ConfigHolder] with LogSupport {
+case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder]) extends Iterable[ConfigHolder] with LogSupport {
 
   // Customization
   def withEnv(newEnv: String, defaultEnv: String = "default"): Config = {
@@ -92,16 +91,16 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
   }
 
   // Accessors to configurations
-  def getAll: Seq[ConfigHolder] = holder.values.toSeq
+  def getAll: Seq[ConfigHolder]                 = holder.values.toSeq
   override def iterator: Iterator[ConfigHolder] = holder.values.iterator
 
-  def getConfigChanges : Seq[ConfigChange] = {
+  def getConfigChanges: Seq[ConfigChange] = {
     val b = Seq.newBuilder[ConfigChange]
-    for(c <- getAll) {
+    for (c <- getAll) {
       val defaultProps = PropertiesConfig.toConfigProperties(c.tpe, getDefaultValueOf(c.tpe))
       val currentProps = PropertiesConfig.toConfigProperties(c.tpe, c.value)
 
-      for((k, props) <- defaultProps.groupBy(_.key); defaultValue <- props; current <- currentProps.filter(x => x.key == k)) {
+      for ((k, props) <- defaultProps.groupBy(_.key); defaultValue <- props; current <- currentProps.filter(x => x.key == k)) {
         b += ConfigChange(c.tpe, k, defaultValue.v, current.v)
       }
     }
@@ -118,11 +117,11 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
       case Some(x) =>
         x.asInstanceOf[ConfigType]
       case None =>
-       throw new IllegalArgumentException(s"No config value for ${t} is found")
+        throw new IllegalArgumentException(s"No config value for ${t} is found")
     }
   }
 
-  def getOrElse[ConfigType: ru.TypeTag](default: => ConfigType) : ConfigType = {
+  def getOrElse[ConfigType: ru.TypeTag](default: => ConfigType): ConfigType = {
     val t = surface.of[ConfigType]
     find(t) match {
       case Some(x) =>
@@ -131,7 +130,7 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
         default
     }
   }
-  def defaultValueOf[ConfigType: ru.TypeTag] : ConfigType = {
+  def defaultValueOf[ConfigType: ru.TypeTag]: ConfigType = {
     val tpe = surface.of[ConfigType]
     getDefaultValueOf(tpe).asInstanceOf[ConfigType]
   }
@@ -151,9 +150,10 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
     * @tparam ConfigType
     * @return
     */
-  def registerDefault[ConfigType: ru.TypeTag] : Config = {
+  def registerDefault[ConfigType: ru.TypeTag]: Config = {
     val tpe = surface.of[ConfigType]
-    this + ConfigHolder(tpe, defaultValueOf[ConfigType])  }
+    this + ConfigHolder(tpe, defaultValueOf[ConfigType])
+  }
 
   def registerFromYaml[ConfigType: ru.TypeTag](yamlFile: String): Config = {
     val tpe = surface.of[ConfigType]
@@ -182,7 +182,7 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
           case None =>
             // Load default
             debug(s"Configuration for ${env.env} is not found in ${realPath}. Load ${env.defaultEnv} configuration instead")
-            m.get(env.defaultEnv).map{ x =>
+            m.get(env.defaultEnv).map { x =>
               info(s"Loading ${tpe} from ${realPath}, default env:${env.defaultEnv}")
               x
             }
@@ -190,15 +190,15 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
     }
   }
 
-  def registerFromYamlOrElse[ConfigType: ru.TypeTag : ClassTag](yamlFile: String, defaultValue: => ConfigType): Config = {
-    val tpe = surface.of[ConfigType]
+  def registerFromYamlOrElse[ConfigType: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => ConfigType): Config = {
+    val tpe    = surface.of[ConfigType]
     val config = loadFromYaml[ConfigType](yamlFile, onMissingFile = Some(defaultValue))
     this + ConfigHolder(tpe, config.get)
   }
 
   def overrideWith(props: Map[String, Any], onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
     val p = new Properties
-    for((k, v) <- props) {
+    for ((k, v) <- props) {
       Option(v).map { x =>
         p.setProperty(k, x.toString)
       }
@@ -224,27 +224,24 @@ case class Config private[config](env: ConfigEnv, holder: Map[Surface, ConfigHol
     }
   }
 
-  private def getDefaultValueOf(tpe:Surface) : Any = {
+  private def getDefaultValueOf(tpe: Surface): Any = {
     val v =
       tpe.objectFactory
-      .map{ x =>
-        // Prepare the constructor arguments
-        val args = for(p <- tpe.params) yield {
-          p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+        .map { x =>
+          // Prepare the constructor arguments
+          val args = for (p <- tpe.params) yield {
+            p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+          }
+          // Create the default object of this ConfigType
+          x.newInstance(args)
         }
-        // Create the default object of this ConfigType
-        x.newInstance(args)
-      }
-      .getOrElse(Zero.zeroOf(tpe))
+        .getOrElse(Zero.zeroOf(tpe))
 
     trace(s"get default value of ${tpe} = ${v}")
     v
   }
 
   private def findConfigFile(name: String): Option[String] = {
-    env.configPaths
-    .map(p => new File(p, name))
-    .find(_.exists())
-    .map(_.getPath)
+    env.configPaths.map(p => new File(p, name)).find(_.exists()).map(_.getPath)
   }
 }

@@ -21,34 +21,34 @@ import wvlet.surface.Surface
 
 import scala.reflect.ClassTag
 
-
-class MethodCallHook[A](val surface:Surface, obj:A, method: jl.reflect.Method) extends LifeCycleHook {
+class MethodCallHook[A](val surface: Surface, obj: A, method: jl.reflect.Method) extends LifeCycleHook {
   override def toString: String = s"MethodCallHook for [${surface}]"
   def execute {
-     method.invoke(obj)
+    method.invoke(obj)
   }
 }
-
 
 /**
   * Support @PreDestroy and @PostConstruct
   */
 object JSR250LifeCycleExecutor extends LifeCycleEventHandler with LogSupport {
 
-  private def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
+  private def findAnnotation[T <: jl.annotation.Annotation: ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
     val c = implicitly[ClassTag[T]]
-    annot.collectFirst {
-      case x if (c.runtimeClass isAssignableFrom x.annotationType) => x
-    }.asInstanceOf[Option[T]]
+    annot
+      .collectFirst {
+        case x if (c.runtimeClass isAssignableFrom x.annotationType) => x
+      }
+      .asInstanceOf[Option[T]]
   }
 
-    override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-      for(m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PostConstruct](m.getDeclaredAnnotations)) {
-        lifeCycleManager.addInitHook(new MethodCallHook(t, injectee, m))
-      }
+  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+    for (m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PostConstruct](m.getDeclaredAnnotations)) {
+      lifeCycleManager.addInitHook(new MethodCallHook(t, injectee, m))
+    }
 
-      for(m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PreDestroy](m.getDeclaredAnnotations)) {
-        lifeCycleManager.addShutdownHook(new MethodCallHook(t, injectee, m))
-      }
+    for (m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PreDestroy](m.getDeclaredAnnotations)) {
+      lifeCycleManager.addShutdownHook(new MethodCallHook(t, injectee, m))
+    }
   }
 }

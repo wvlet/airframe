@@ -26,15 +26,17 @@ import scala.util.Try
   */
 package object reflect {
 
-  private[reflect] def findAnnotation[T <: jl.annotation.Annotation : ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
+  private[reflect] def findAnnotation[T <: jl.annotation.Annotation: ClassTag](annot: Array[jl.annotation.Annotation]): Option[T] = {
     val c = implicitly[ClassTag[T]]
-    annot.collectFirst {
-      case x if (c.runtimeClass isAssignableFrom x.annotationType) => x
-    }.asInstanceOf[Option[T]]
+    annot
+      .collectFirst {
+        case x if (c.runtimeClass isAssignableFrom x.annotationType) => x
+      }
+      .asInstanceOf[Option[T]]
   }
 
   implicit class ToRuntimeSurface(s: Surface) {
-    def findAnnotationOf[T <: jl.annotation.Annotation : ClassTag]: Option[T] = {
+    def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       val annot = s.rawType.getDeclaredAnnotations
       findAnnotation[T](annot)
     }
@@ -48,23 +50,20 @@ package object reflect {
             if (mp.method.name == "<init>") {
               // constructor
               mp.method.owner.getDeclaredConstructor(mp.method.paramTypes: _*).getParameterAnnotations
-            }
-            else {
+            } else {
               mp.method.owner.getDeclaredMethod(mp.method.name, mp.method.paramTypes: _*).getParameterAnnotations
             }
-          }
-          .getOrElse(Array.empty)
+          }.getOrElse(Array.empty)
         case other =>
           Array.empty
       }
     }
 
-    def findAnnotationOf[T <: jl.annotation.Annotation : ClassTag]: Option[T] = {
+    def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       val annots = annotations
       if (p.index < annots.length) {
         findAnnotation[T](annots(p.index))
-      }
-      else {
+      } else {
         None
       }
     }
@@ -76,11 +75,10 @@ package object reflect {
         val cl = m.owner.rawType
         val mt = cl.getDeclaredMethod(m.name, m.args.map(_.surface.rawType): _*)
         mt.getDeclaredAnnotations
-      }
-      .getOrElse(Array.empty)
+      }.getOrElse(Array.empty)
     }
 
-    def findAnnotationOf[T <: jl.annotation.Annotation : ClassTag]: Option[T] = {
+    def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {
       findAnnotation[T](annotations)
     }
   }
