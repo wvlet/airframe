@@ -1,6 +1,9 @@
 Release Notes
 ====
 
+## 0.20
+ - Moved as a sub-project of airframe
+
 ## 1.2.3
  - Upgrade to scala-js-java-logging 0.1.1
  - No API change

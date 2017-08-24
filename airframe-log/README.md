@@ -1,9 +1,9 @@
-# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/log.svg?branch=master)](https://travis-ci.org/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/log/wvlet-log/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/log) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
+# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/log.svg?branch=master)](https://travis-ci.org/wvlet/log) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/airframe-log/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/log/badge.svg?branch=master
-[coverall-link]: https://coveralls.io/github/wvlet/log?branch=master
+[coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
+[coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
 wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in wvlet-log:
 
@@ -32,13 +32,13 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
  
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-log_2.12/)
 
 ```scala
-libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
+libraryDependencies += "org.wvlet" %% "airframe-log" % "(version)"
 
 // For Scala.js (Since wvlet-log 1.2)
-libraryDependencies += "org.wvlet" %%% "wvlet-log" % "(version)"
+libraryDependencies += "org.wvlet" %%% "airframe-log" % "(version)"
 ```
 
 ### Using LogSupport trait
