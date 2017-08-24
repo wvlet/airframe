@@ -73,7 +73,7 @@ val design: Design =
   .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
   .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
   .bind[D3].toInstance(D3(3))    // Bind D3 to a cocreete instance D3(3)
-  .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolveing D1 from the design to create P
+  .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolveing D1 from the design
   .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) } // Resolve D1 and D2
   .bind[P].toProvider{ provider _ }  // Use a function as a provider. D1, D2 and D3 will be resolved from the design
   .bind[P].toSingletonProvider{ d1:D1 => P(d1) } // Create a singleton using the provider function
@@ -138,17 +138,25 @@ trait MyServerService {
     .onInit { _.init }      // Called when the object is initialized
     .onInject { _.inject }  // Called when the object is injected 
     .onStart = { _.start }  // Called when session.start is called
-    .beforeShutdown = { _.notify } // Called right before all shutdown hook is callsed
+    .beforeShutdown = { _.notify } // Called right before all shutdown hook is called
                                    // Useful for adding pre-shutdown step 
     .onShutdown = { _.stop } // Called when session.shutdown is called
   )
+}
+
+trait Server {
+  def init = ...
+  def inject = ... 
+  def start = ...
+  def notify = ...
+  def stop = ...
 }
 ```
 These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
 
 ### Annotation-based life cycle hooks
 
-Airframe also supports [JSR-250](https://en.wikipedia.org/wiki/JSR_250) style shutdown hooks `@PostConstruct` and `@PreDestroy`:
+Airframe also supports [JSR-250](https://en.wikipedia.org/wiki/JSR_250) style shutdown hooks via `@PostConstruct` and `@PreDestroy` annotations:
 
 ```scala
 import javax.annotation.{PostConstruct, PreDestroy}
