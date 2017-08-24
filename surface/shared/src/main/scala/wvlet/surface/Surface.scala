@@ -13,6 +13,7 @@
  */
 
 package wvlet.surface
+import scala.language.existentials
 
 trait Surface extends Serializable {
   def rawType: Class[_]
