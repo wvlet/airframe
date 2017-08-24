@@ -1,0 +1,16 @@
+[0m[[0minfo[0m] [0mFast optimizing /Users/leo/work/git/log/wvlet-log/js/target/scala-2.11/wvlet-log-test-fastopt.js[0m
+[0m[[0mdebug[0m] [0mLinker: Compute reachability: 409964 us[0m
+[0m[[0mdebug[0m] [0mLinker: Assemble LinkedClasses: 962694 us[0m
+[0m[[0mdebug[0m] [0mBasic Linking: 1380774 us[0m
+[0m[[0mdebug[0m] [0mInc. optimizer: Batch mode: true[0m
+[0m[[0mdebug[0m] [0mInc. optimizer: Incremental part: 90852 us[0m
+[0m[[0mdebug[0m] [0mInc. optimizer: Optimizing 9287 methods.[0m
+[0m[[0mdebug[0m] [0mInc. optimizer: Optimizer part: 1773764 us[0m
+[0m[[0mdebug[0m] [0mInc. optimizer: 1869837 us[0m
+[0m[[0mdebug[0m] [0mRefiner: Compute reachability: 121081 us[0m
+[0m[[0mdebug[0m] [0mRefiner: Assemble LinkedClasses: 11016 us[0m
+[0m[[0mdebug[0m] [0mRefiner: 132224 us[0m
+[0m[[0mdebug[0m] [0mEmitter: Class tree cache stats: reused: 1002 -- invalidated: 1004[0m
+[0m[[0mdebug[0m] [0mEmitter: Method tree cache stats: resued: 0 -- invalidated: 5452[0m
+[0m[[0mdebug[0m] [0mEmitter (write output): 583029 us[0m
+[0m[[0mdebug[0m] [0mGlobal IR cache stats: reused: 0 -- invalidated: 83 -- trees read: 1216[0m

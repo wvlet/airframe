@@ -1,0 +1,29 @@
+[0m[[0minfo[0m] [0mPackaging /Users/leo/work/git/log/wvlet-log/js/target/scala-2.11/wvlet-log_sjs0.6_2.11-1.2.3-sources.jar ...[0m
+[0m[[0mdebug[0m] [0mInput file mappings:[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogTimestampFormatter.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/js/src/main/scala/wvlet/log/LogTimestampFormatter.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogEnvBase.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogEnvBase.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogSupport.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogSupport.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogRecord.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogRecord.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/JSLogger.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/js/src/main/scala/wvlet/log/JSLogger.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/Logger.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/Logger.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogFormat.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogFormat.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogEnv.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/js/src/main/scala/wvlet/log/LogEnv.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/Handler.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/Handler.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/io/StopWatch.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/io/StopWatch.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/JSConsoleLogHandler.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/js/src/main/scala/wvlet/log/JSConsoleLogHandler.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogMacros.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogMacros.scala[0m
+[0m[[0mdebug[0m] [0m	wvlet/log/LogLevel.scala[0m
+[0m[[0mdebug[0m] [0m	  /Users/leo/work/git/log/wvlet-log/shared/src/main/scala/wvlet/log/LogLevel.scala[0m
+[0m[[0minfo[0m] [0mDone packaging.[0m

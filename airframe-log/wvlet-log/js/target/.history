@@ -1,0 +1,20 @@
+test
+test-only *LoggerTest -n app
+clean
+~test-only *LoggerTest -n app
+~; clean; test-only *LoggerTest -n app
+project logJVM
+~; clean; test-only *LoggerTest -n app
+~; clean; test
+exit
+test
+project logJVM
+test
+~; clean; test
+test
+project logJVM
+test
+exit
+test
+~test-only *JSConsoleLogHandlerTest
+exit

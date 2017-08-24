@@ -1,0 +1,35 @@
+test
+exit
+test
+~test
+clean
+~test
+~test *WvletLog
+~test-only *WvletLog
+~test-only *LoggerTest
+~; clean; test-only *LoggerTest
+~; clean; test-only *LoggerTest -- -n app
+~; clean; test-only *
+project logJS
+~; clean; test-only *LoggerTest -- -n app
+project logJS
+test
+project logJS
+test
+exot
+exit
+test
+exit
+test
+project logJS
+test
+exit
+test
+project logJVM
++test
+; ++ 2.11.8; test
+test
+project root
+; ++ 2.11.8; test
+test
+project logJS
