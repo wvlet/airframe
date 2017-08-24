@@ -30,7 +30,7 @@ object PropertiesConfig extends LogSupport {
   case class Prefix(prefix: String, tag: Option[String]) {
     override def toString = tag match {
       case Some(t) => s"${prefix}@${t}"
-      case None => prefix
+      case None    => prefix
     }
   }
   case class ConfigKey(prefix: Prefix, param: String) {
@@ -39,7 +39,7 @@ object PropertiesConfig extends LogSupport {
   case class ConfigProperty(key: ConfigKey, v: Any)
 
   private[config] def extractPrefix(t: Surface): Prefix = {
-    def removeConfigSuffix(s:String):String = {
+    def removeConfigSuffix(s: String): String = {
       s.replaceAll("Config$", "")
     }
 
@@ -59,10 +59,9 @@ object PropertiesConfig extends LogSupport {
         if (prefixSplit.length > 1) {
           val param = c(1).mkString.canonicalName
           ConfigKey(Prefix(prefixSplit(0), Some(prefixSplit(1))), param)
-        }
-        else {
+        } else {
           val prefix = c(0)
-          val param = c(1).canonicalName
+          val param  = c(1).canonicalName
           ConfigKey(Prefix(prefix, None), param)
         }
       case other =>
@@ -72,7 +71,7 @@ object PropertiesConfig extends LogSupport {
 
   private[config] def toConfigProperties(tpe: Surface, config: Any): Seq[ConfigProperty] = {
     val prefix = extractPrefix(tpe)
-    val b = Seq.newBuilder[ConfigProperty]
+    val b      = Seq.newBuilder[ConfigProperty]
     for (p <- tpe.params) {
       val key = ConfigKey(prefix, p.name.canonicalName)
       Try(p.get(config)) match {
@@ -91,7 +90,7 @@ object PropertiesConfig extends LogSupport {
       val b = Seq.newBuilder[ConfigProperty]
       for ((k, v) <- props.asScala) yield {
         val key = configKeyOf(k)
-        val p = ConfigProperty(key, v)
+        val p   = ConfigProperty(key, v)
         b += p
       }
       b.result
@@ -106,12 +105,10 @@ object PropertiesConfig extends LogSupport {
 
     val newConfigs = for (ConfigHolder(tpe, value) <- config) yield {
       val configBuilder = ObjectBuilder.fromObject(tpe, value)
-      val prefix = extractPrefix(tpe)
+      val prefix        = extractPrefix(tpe)
 
       val (overrideParams, unused) =
-        overrides
-        .filter(_.key.prefix == prefix)
-        .partition{p =>
+        overrides.filter(_.key.prefix == prefix).partition { p =>
           tpe.params.exists(_.name.canonicalName == p.key.param)
         }
 

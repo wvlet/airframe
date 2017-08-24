@@ -55,11 +55,11 @@ object SurfaceFactory extends LogSupport {
     tpe match {
       case t if t.typeArgs.length == 2 && typeNameOf(t).startsWith("wvlet.surface.tag.") =>
         s"${fullTypeNameOf(t.typeArgs(0))}@@${fullTypeNameOf(t.typeArgs(1))}"
-      case alias@TypeRef(prefix, symbol, args)
-        if symbol.isType &&
-          symbol.asType.isAliasType &&
-          !belongsToScalaDefault(alias) =>
-        val name = symbol.asType.name.decodedName.toString
+      case alias @ TypeRef(prefix, symbol, args)
+          if symbol.isType &&
+            symbol.asType.isAliasType &&
+            !belongsToScalaDefault(alias) =>
+        val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         fullName
       case TypeRef(prefix, typeSymbol, args) if args.isEmpty => typeSymbol.fullName
@@ -85,15 +85,12 @@ object SurfaceFactory extends LogSupport {
   private def resolveClass(tpe: ru.Type): Class[_] = {
     try {
       mirror.runtimeClass(tpe)
-    }
-    catch {
+    } catch {
       case e: Throwable => classOf[Any]
     }
   }
 
-  def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x =>
-    x.isMethod && x.isAbstract && !x.isAbstractOverride
-  )
+  def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
   private def isAbstract(t: ru.Type): Boolean = {
     t.typeSymbol.isAbstract && hasAbstractMethods(t)
@@ -106,31 +103,25 @@ object SurfaceFactory extends LogSupport {
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t
-      .members
-      .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact)
-      .map(_.asMethod)
-      .filter(isTargetMethod(_, t))
+      t.members.filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(isTargetMethod(_, t))
     }
 
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
       val name = fullTypeNameOf(targetType)
       if (methodSurfaceCache.contains(name)) {
         methodSurfaceCache(name)
-      }
-      else if (methodSeen.contains(targetType)) {
+      } else if (methodSeen.contains(targetType)) {
         throw new IllegalArgumentException(s"recursive type in method: ${targetType.typeSymbol.fullName}")
-      }
-      else {
+      } else {
         methodSeen += targetType
         val methodSurfaces = targetType match {
-          case t@TypeRef(prefix, typeSymbol, typeArgs) =>
+          case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
             val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod = modifierBitMaskOf(m)
+              val mod   = modifierBitMaskOf(m)
               val owner = surfaceOf(t)
-              val name = m.name.decodedName.toString
-              val ret = surfaceOf(m.returnType)
-              val args = methodParmetersOf(t, m)
+              val name  = m.name.decodedName.toString
+              val ret   = surfaceOf(m.returnType)
+              val args  = methodParmetersOf(t, m)
               ClassMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
             }
             list.toIndexedSeq
@@ -146,12 +137,12 @@ object SurfaceFactory extends LogSupport {
       // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
       val methodName = m.name.decodedName.toString
       m.isMethod &&
-        !m.isImplicit &&
-        !m.isSynthetic &&
-        !m.isAccessor &&
-        !methodName.startsWith("$") &&
-        methodName != "<init>" &&
-        isOwnedByTargetClass(m, target)
+      !m.isImplicit &&
+      !m.isSynthetic &&
+      !m.isAccessor &&
+      !methodName.startsWith("$") &&
+      methodName != "<init>" &&
+      isOwnedByTargetClass(m, target)
     }
     private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
       m.owner == t.typeSymbol
@@ -184,11 +175,9 @@ object SurfaceFactory extends LogSupport {
       val name = fullTypeNameOf(tpe)
       if (surfaceCache.contains(name)) {
         surfaceCache(name)
-      }
-      else if (seen.contains(tpe)) {
+      } else if (seen.contains(tpe)) {
         throw new IllegalStateException(s"Cyclic reference for ${tpe}: ${seen.mkString(", ")}")
-      }
-      else {
+      } else {
         seen += tpe
         val m = surfaceFactories.orElse[ru.Type, Surface] {
           case _ =>
@@ -215,16 +204,16 @@ object SurfaceFactory extends LogSupport {
         genericSurfaceFactory
 
     private def primitiveTypeFactory: SurfaceMatcher = {
-      case t if t =:= typeOf[String] => Primitive.String
+      case t if t =:= typeOf[String]  => Primitive.String
       case t if t =:= typeOf[Boolean] => Primitive.Boolean
-      case t if t =:= typeOf[Int] => Primitive.Int
-      case t if t =:= typeOf[Long] => Primitive.Long
-      case t if t =:= typeOf[Float] => Primitive.Float
-      case t if t =:= typeOf[Double] => Primitive.Double
-      case t if t =:= typeOf[Short] => Primitive.Short
-      case t if t =:= typeOf[Byte] => Primitive.Byte
-      case t if t =:= typeOf[Char] => Primitive.Char
-      case t if t =:= typeOf[Unit] => Primitive.Unit
+      case t if t =:= typeOf[Int]     => Primitive.Int
+      case t if t =:= typeOf[Long]    => Primitive.Long
+      case t if t =:= typeOf[Float]   => Primitive.Float
+      case t if t =:= typeOf[Double]  => Primitive.Double
+      case t if t =:= typeOf[Short]   => Primitive.Short
+      case t if t =:= typeOf[Byte]    => Primitive.Byte
+      case t if t =:= typeOf[Char]    => Primitive.Char
+      case t if t =:= typeOf[Unit]    => Primitive.Unit
     }
 
     private def typeArgsOf(t: ru.Type): List[ru.Type] = t match {
@@ -246,12 +235,12 @@ object SurfaceFactory extends LogSupport {
     }
 
     private def aliasFactory: SurfaceMatcher = {
-      case alias@TypeRef(prefix, symbol, args)
-        if symbol.isType &&
-          symbol.asType.isAliasType &&
-          !belongsToScalaDefault(alias) =>
-        val inner = surfaceOf(alias.dealias)
-        val name = symbol.asType.name.decodedName.toString
+      case alias @ TypeRef(prefix, symbol, args)
+          if symbol.isType &&
+            symbol.asType.isAliasType &&
+            !belongsToScalaDefault(alias) =>
+        val inner    = surfaceOf(alias.dealias)
+        val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         Alias(name, fullName, inner)
     }
@@ -273,21 +262,18 @@ object SurfaceFactory extends LogSupport {
     }
 
     private def javaUtilFactory: SurfaceMatcher = {
-      case t if
-      t =:= typeOf[java.io.File] ||
-        t =:= typeOf[java.util.Date] ||
-        t =:= typeOf[java.time.temporal.Temporal] ||
-        t =:= typeOf[Throwable] ||
-        t =:= typeOf[Exception] ||
-        t =:= typeOf[Error]
-      =>
+      case t
+          if t =:= typeOf[java.io.File] ||
+            t =:= typeOf[java.util.Date] ||
+            t =:= typeOf[java.time.temporal.Temporal] ||
+            t =:= typeOf[Throwable] ||
+            t =:= typeOf[Exception] ||
+            t =:= typeOf[Error] =>
         new GenericSurface(resolveClass(t))
     }
 
     private def isEnum(t: ru.Type): Boolean = {
-      t.baseClasses.exists(x =>
-        x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum")
-      )
+      t.baseClasses.exists(x => x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum"))
     }
 
     private def enumFactory: SurfaceMatcher = {
@@ -295,9 +281,7 @@ object SurfaceFactory extends LogSupport {
         EnumSurface(resolveClass(t))
     }
 
-    def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x =>
-      x.isMethod && x.isAbstract && !x.isAbstractOverride
-    )
+    def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
     private def isAbstract(t: ru.Type): Boolean = {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
@@ -307,10 +291,7 @@ object SurfaceFactory extends LogSupport {
       constructor.asMethod.fullName.endsWith("$init$")
 
     def publicConstructorsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members
-      .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic)
-      .filterNot(isPhantomConstructor)
-      .map(_.asMethod)
+      t.members.filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(_.asMethod)
     }
 
     def findPrimaryConstructorOf(t: ru.Type): Option[MethodSymbol] = {
@@ -318,14 +299,14 @@ object SurfaceFactory extends LogSupport {
     }
 
     case class MethodArg(paramName: Symbol, tpe: ru.Type) {
-      def name: String = paramName.name.decodedName.toString
+      def name: String         = paramName.name.decodedName.toString
       def typeSurface: Surface = surfaceOf(tpe)
     }
 
     private def findMethod(m: ru.Type, name: String): Option[MethodSymbol] = {
       m.member(ru.TermName(name)) match {
         case ru.NoSymbol => None
-        case other => Some(other.asMethod)
+        case other       => Some(other.asMethod)
       }
     }
 
@@ -334,12 +315,12 @@ object SurfaceFactory extends LogSupport {
 
       val companion = targetType.companion match {
         case NoType => None
-        case comp => Some(comp)
+        case comp   => Some(comp)
       }
 
       for (params <- constructor.paramLists) yield {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
-        var index = 1
+        var index            = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
           index += 1
           MethodArg(p, t)
@@ -349,11 +330,13 @@ object SurfaceFactory extends LogSupport {
 
     def methodParmetersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
       val args = methodArgsOf(targetType, method).flatten
-      val argTypes = args.map {x: MethodArg => resolveClass(x.tpe)}.toSeq
+      val argTypes = args.map { x: MethodArg =>
+        resolveClass(x.tpe)
+      }.toSeq
       val ref = MethodRef(resolveClass(targetType), method.name.decodedName.toString, argTypes, method.isConstructor)
 
       var index = 0
-      val surfaceParams = args.map {arg =>
+      val surfaceParams = args.map { arg =>
         val t = arg.name
         //accessor = { x : Any => x.asInstanceOf[${target.tpe}].${arg.paramName} }
         val expr = RuntimeMethodParameter(
@@ -375,7 +358,7 @@ object SurfaceFactory extends LogSupport {
       }
       override def apply(t: ru.Type): Surface = {
         val primaryConstructor = findPrimaryConstructorOf(t).get
-        val typeArgs = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
+        val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
         new RuntimeGenericSurface(
           resolveClass(t),
           typeArgs,
@@ -385,20 +368,19 @@ object SurfaceFactory extends LogSupport {
     }
 
     private def existentialTypeFactory: SurfaceMatcher = {
-      case t@ru.ExistentialType(quantified, underlying) =>
+      case t @ ru.ExistentialType(quantified, underlying) =>
         surfaceOf(underlying)
     }
 
     private def genericSurfaceFactory: SurfaceMatcher = {
-      case t@TypeRef(prefix, symbol, args) if !args.isEmpty =>
+      case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
         new GenericSurface(resolveClass(t), typeArgs = typeArgs)
-      case t@TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
+      case t @ TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         wvlet.surface.ExistentialType
-      case t@TypeRef(prefix, symbol, args)
-        if resolveClass(t) == classOf[AnyRef] && !(t =:= typeOf[AnyRef]) =>
+      case t @ TypeRef(prefix, symbol, args) if resolveClass(t) == classOf[AnyRef] && !(t =:= typeOf[AnyRef]) =>
         // For example, trait MyTag, which has no implementation will be just an java.lang.Object
-        val name = t.typeSymbol.name.decodedName.toString
+        val name     = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         new Alias(name, fullName, AnyRefSurface)
       case t =>
@@ -406,25 +388,21 @@ object SurfaceFactory extends LogSupport {
     }
   }
 
-  class RuntimeGenericSurface(override val rawType: Class[_],
-    override val typeArgs: Seq[Surface] = Seq.empty,
-    override val params: Seq[Parameter] = Seq.empty)
-    extends GenericSurface(rawType, typeArgs, params, None) {
-    override val objectFactory: Option[ObjectFactory] = Some(
-      new ObjectFactory {
-        // Create instance with Reflection
-        override def newInstance(args: Seq[Any]): Any = {
-          val cc = rawType.getConstructors()(0)
-          val obj = if (args.isEmpty) {
-            cc.newInstance()
-          }
-          else {
-            val a = args.map(_.asInstanceOf[AnyRef])
-            cc.newInstance(a: _*)
-          }
-          obj.asInstanceOf[Any]
+  class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
+      extends GenericSurface(rawType, typeArgs, params, None) {
+    override val objectFactory: Option[ObjectFactory] = Some(new ObjectFactory {
+      // Create instance with Reflection
+      override def newInstance(args: Seq[Any]): Any = {
+        val cc = rawType.getConstructors()(0)
+        val obj = if (args.isEmpty) {
+          cc.newInstance()
+        } else {
+          val a = args.map(_.asInstanceOf[AnyRef])
+          cc.newInstance(a: _*)
         }
-      })
+        obj.asInstanceOf[Any]
+      }
+    })
   }
 
 }

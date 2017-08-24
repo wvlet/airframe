@@ -13,7 +13,6 @@
  */
 package wvlet.airframe
 
-
 object AddShutdownHook extends LifeCycleEventHandler {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     // no-op for Scala.js since there is no shutdown hook

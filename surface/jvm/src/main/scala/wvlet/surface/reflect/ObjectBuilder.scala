@@ -51,8 +51,8 @@ object ObjectBuilder extends LogSupport {
   }
 
   sealed trait BuilderElement
-  case class Holder(holder: ObjectBuilder) extends BuilderElement
-  case class Value(value: Any) extends BuilderElement
+  case class Holder(holder: ObjectBuilder)                 extends BuilderElement
+  case class Value(value: Any)                             extends BuilderElement
   case class ArrayHolder(holder: mutable.ArrayBuffer[Any]) extends BuilderElement
 }
 
@@ -89,7 +89,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   // set the default values of the object
   for ((name, value) <- defaultValues) {
     val v: BuilderElement = findParameter(name).map {
-      case p if canBuildFromBuffer(p.surface) => Value(value)
+      case p if canBuildFromBuffer(p.surface)      => Value(value)
       case p if canBuildFromStringValue(p.surface) => Value(value)
       case p => {
         // nested object
@@ -108,8 +108,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   private def canBuildFromStringValue(t: Surface): Boolean = {
     t match {
       case t if canBuildFromString(t) => true
-      case o: OptionSurface => canBuildFromStringValue(o.elementSurface)
-      case _ => false
+      case o: OptionSurface           => canBuildFromStringValue(o.elementSurface)
+      case _                          => false
     }
   }
 
@@ -127,14 +127,12 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
   def set(path: Path, value: Any) {
     if (path.isEmpty) {
       // do nothing
-    }
-    else {
+    } else {
       val name = path.head.canonicalName
-      val p = findParameter(name)
+      val p    = findParameter(name)
       if (p.isEmpty) {
         error(s"no parameter is found for path $path")
-      }
-      else {
+      } else {
         trace(s"set path $path : $value")
         if (path.isLeaf) {
           val targetType = p.get.surface
@@ -154,41 +152,42 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
                     Seq(other)
                 }
                 lst
-                .flatMap {x => TypeConverter.convert(x, elementType)}
-                .foreach {arr.holder += _}
+                  .flatMap { x =>
+                    TypeConverter.convert(x, elementType)
+                  }
+                  .foreach { arr.holder += _ }
               case 2 =>
                 // Append map elements to the buffer
                 val lst = value match {
                   case m if isJavaMap(value.getClass) => m.asInstanceOf[java.util.Map[_, _]].asScala.toMap
-                  case m if isMap(m.getClass) => m.asInstanceOf[Map[_, _]]
-                  case other => Seq(other)
+                  case m if isMap(m.getClass)         => m.asInstanceOf[Map[_, _]]
+                  case other                          => Seq(other)
                 }
-                val keyType = targetType.typeArgs(0)
-                val valueType = targetType.typeArgs(1)
+                val keyType      = targetType.typeArgs(0)
+                val valueType    = targetType.typeArgs(1)
                 val tupleSurface = TupleSurface(classOf[Tuple2[_, _]], Seq(keyType, valueType))
                 lst
-                .flatMap {x => TypeConverter.convert(x, tupleSurface)}
-                .foreach {arr.holder += _}
+                  .flatMap { x =>
+                    TypeConverter.convert(x, tupleSurface)
+                  }
+                  .foreach { arr.holder += _ }
               case other =>
                 error(s"Cannot convert ${value} to ${targetType}")
             }
-          }
-          else if (canBuildFromStringValue(targetType)) {
-            TypeConverter.convert(value, targetType).map {v =>
+          } else if (canBuildFromStringValue(targetType)) {
+            TypeConverter.convert(value, targetType).map { v =>
               holder += name -> Value(v)
             }
-          }
-          else {
+          } else {
             error(s"failed to set $value to path $path")
           }
-        }
-        else {
+        } else {
           // nested object
           val paramName = path.head.canonicalName
-          val h = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
+          val h         = holder.getOrElseUpdate(paramName, Holder(ObjectBuilder(p.get.surface)))
           h match {
             case Holder(b) => b.set(path.tailPath, value)
-            case other =>
+            case other     =>
               // overwrite the existing holder
               throw new IllegalStateException("invalid path:%s, value:%s, holder:%s".format(path, value, other))
           }
@@ -201,7 +200,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     val paramName = name.canonicalName
     holder.get(paramName) flatMap {
       case Holder(h) => Some(h.build)
-      case Value(v) => Some(v)
+      case Value(v)  => Some(v)
       case ArrayHolder(h) => {
         val p = getParameterTypeOf(paramName)
         debug(s"convert array holder:$h into $p")

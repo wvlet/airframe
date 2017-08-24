@@ -21,6 +21,6 @@ import wvlet.surface.reflect.SurfaceFactory
 package object surface {
   import scala.reflect.runtime.{universe => ru}
 
-  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
+  def of[A: ru.WeakTypeTag]: Surface                   = SurfaceFactory.of[A]
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
 }
