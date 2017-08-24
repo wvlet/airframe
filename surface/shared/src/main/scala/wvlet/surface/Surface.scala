@@ -30,7 +30,14 @@ trait Surface extends Serializable {
   def objectFactory: Option[ObjectFactory] = None
 }
 
-trait Parameter {
+sealed trait ParameterBase extends Serializable {
+  def name: String
+  def surface: Surface
+
+  def call(obj: Any, x: Any*): Any
+}
+
+trait Parameter extends ParameterBase {
   def index: Int
   def name: String
 
@@ -44,6 +51,8 @@ trait Parameter {
     */
   def get(x: Any): Any
 
+  override def call(obj: Any, x: Any*): Any = get(obj)
+
   /**
     * Get the default value of this parameter.
     * For example the default value of x in class A(x:Int = 10) is 10
@@ -52,7 +61,6 @@ trait Parameter {
     */
   def getDefaultValue: Option[Any]
 }
-
 
 /**
   *
@@ -65,4 +73,20 @@ case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], i
 
 trait MethodParameter extends Parameter {
   def method: MethodRef
+}
+
+trait MethodSurface extends ParameterBase {
+  def mod: Int
+  def owner: Surface
+  def name: String
+  def args: Seq[MethodParameter]
+  def surface: Surface = returnType
+  def returnType: Surface
+
+  def isPublic: Boolean    = (mod & MethodModifier.PUBLIC) != 0
+  def isPrivate: Boolean   = (mod & MethodModifier.PRIVATE) != 0
+  def isProtected: Boolean = (mod & MethodModifier.PROTECTED) != 0
+  def isStatic: Boolean    = (mod & MethodModifier.STATIC) != 0
+  def isFinal: Boolean     = (mod & MethodModifier.FINAL) != 0
+  def isAbstract: Boolean  = (mod & MethodModifier.ABSTRACT) != 0
 }

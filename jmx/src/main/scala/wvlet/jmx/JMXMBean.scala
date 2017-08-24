@@ -17,9 +17,9 @@ import java.lang.annotation.Annotation
 import java.lang.reflect.Method
 import javax.management._
 
-import JMXMBean._
+import wvlet.log.LogSupport
 import wvlet.surface.reflect._
-import wvlet.surface.{MethodSurface, Parameter, Surface}
+import wvlet.surface.{MethodSurface, Parameter, ParameterBase, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -48,8 +48,8 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 
   override def setAttributes(attributes: AttributeList): AttributeList = {
     val l = new AttributeList(attributes.size())
-    import scala.collection.JavaConversions._
-    for (a <- attributes.asList().toSeq) {
+    import scala.collection.JavaConverters._
+    for (a <- attributes.asList().asScala) {
       l.add(setAttribute(a))
     }
     l
@@ -67,42 +67,24 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
   }
 }
 
-object JMXMBean {
-
-  sealed trait MBeanParameter {
-    def name : String
-    def description : String
-    def get(obj:AnyRef) : AnyRef
-    def valueType : Surface
-  }
-
-  case class MBeanObjectParameter(name:String, description:String, param:Parameter) extends MBeanParameter  {
-    def valueType = param.surface
-    override def get(obj: AnyRef): AnyRef = {
-      param.get(obj).asInstanceOf[AnyRef]
-    }
-  }
-
-  case class NestedMBeanParameter(name:String, description:String, parentParam:Parameter, nestedParam:Parameter) extends MBeanParameter {
-    def valueType = nestedParam.surface
-    override def get(obj: AnyRef): AnyRef = {
-      nestedParam.get(parentParam.get(obj)).asInstanceOf[AnyRef]
-    }
-  }
+object JMXMBean extends LogSupport {
 
   private case class JMXMethod(m: MethodSurface, jmxAnnotation: JMX)
 
-  def of[A:ru.WeakTypeTag](obj: A): JMXMBean = {
+  def of[A: ru.WeakTypeTag](obj: A): JMXMBean = {
 
     // Find JMX description
     val cl = obj.getClass
+
     val description = cl.getAnnotation(classOf[JMX]) match {
       case a if a != null => a.description()
-      case _ => ""
+      case _              => ""
     }
+    debug(s"Find JMX methods in ${cl}, description:${description}")
 
     // Collect JMX parameters from the class
     val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+
     val mbeanParams = collectMBeanParameters(None, tpe)
     val attrInfo = mbeanParams.map { x =>
       val desc = new ImmutableDescriptor()
@@ -128,32 +110,28 @@ object JMXMBean {
     new JMXMBean(obj.asInstanceOf[AnyRef], mbeanInfo, mbeanParams)
   }
 
-  private def isNestedMBean(tpe:ru.Type) : Boolean = {
-    import wvlet.surface.reflect._
-
-    val surface = SurfaceFactory.ofType(tpe)
-    val methods = SurfaceFactory.methodsOfType(tpe)
-
-    surface.params.find(x => x.surface.findAnnotationOf[JMX].isDefined).isDefined ||
-      methods.find(m => m.findAnnotationOf[JMX].isDefined).isDefined
+  private def getDescription(h: ParameterBase): String = {
+    h match {
+      case p: Parameter     => p.findAnnotationOf[JMX].map(_.description()).getOrElse("")
+      case m: MethodSurface => m.findAnnotationOf[JMX].map(_.description()).getOrElse("")
+    }
   }
 
-  private def collectMBeanParameters(parent:Option[Parameter], tpe:ru.Type) : Seq[MBeanParameter] = {
-
+  private def collectMBeanParameters(parent: Option[ParameterBase], tpe: ru.Type): Seq[MBeanParameter] = {
     val surface = SurfaceFactory.ofType(tpe)
     val methods = SurfaceFactory.methodsOfType(tpe)
-    val jmxParams = surface.params.find(_.surface.findAnnotationOf[JMX].isDefined)
-    val jmxMethods = methods.find(_.findAnnotationOf[JMX].isDefined)
 
+    val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[JMX].isDefined) ++ methods.find(_.findAnnotationOf[JMX].isDefined)
 
-    jmxParams
-    .flatMap{ p =>
-      val description = p.findAnnotationOf[JMX].map(_.description()).getOrElse("")
+    jmxParams.flatMap { p =>
       val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)
-      if(isNestedMBean(p)) {
-        collectMBeanParameters(Some(p), p)
-      }
-      else {
+      if (isNestedMBean(p)) {
+        SurfaceFactory.findTypeOf(p.surface) match {
+          case Some(tpe) => collectMBeanParameters(Some(p), tpe)
+          case None      => Seq.empty
+        }
+      } else {
+        val description = getDescription(p)
         Seq(
           parent match {
             case Some(pt) =>
@@ -164,15 +142,32 @@ object JMXMBean {
         )
       }
     }
+
   }
 
+  private def isNestedMBean(p: ParameterBase): Boolean = {
+    import wvlet.surface.reflect._
+
+    val jmxParams = p.surface.params.find(x => x.findAnnotationOf[JMX].isDefined)
+    if (jmxParams.isDefined) {
+      true
+    } else {
+      SurfaceFactory.findTypeOf(p.surface) match {
+        case None => false
+        case Some(tpe) =>
+          val methods    = SurfaceFactory.methodsOfType(tpe)
+          val jmxMethods = methods.find(m => m.findAnnotationOf[JMX].isDefined)
+          jmxMethods.isDefined
+      }
+    }
+  }
 
   def collectUniqueAnnotations(m: Method): Seq[Annotation] = {
     collectUniqueAnnotations(m.getAnnotations)
   }
 
   def collectUniqueAnnotations(lst: Array[Annotation]): Seq[Annotation] = {
-    var seen = Set.empty[Annotation]
+    var seen   = Set.empty[Annotation]
     val result = Seq.newBuilder[Annotation]
 
     def loop(lst: Array[Annotation]) {
@@ -204,4 +199,3 @@ object JMXMBean {
 //
 
 }
-

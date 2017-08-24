@@ -18,6 +18,7 @@ import javax.management._
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Try}
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -26,18 +27,18 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
 
   private var registeredMBean = Set.empty[ObjectName]
 
-  def register[A](obj: A) {
-    val cl = obj.getClass
+  def register[A: ru.WeakTypeTag](obj: A) {
+    val cl          = obj.getClass
     val packageName = cl.getPackage.getName
-    val name = s"${packageName}:name=${cl.getSimpleName}"
+    val name        = s"${packageName}:name=${cl.getSimpleName}"
     register(name, obj)
   }
 
-  def register[A](name: String, obj: A) {
+  def register[A: ru.WeakTypeTag](name: String, obj: A) {
     register(new ObjectName(name), obj)
   }
 
-  def register[A](objectName: ObjectName, obj: A) {
+  def register[A: ru.WeakTypeTag](objectName: ObjectName, obj: A) {
     val mbean = JMXMBean.of(obj)
     mbeanServer.registerMBean(mbean, objectName)
     synchronized {

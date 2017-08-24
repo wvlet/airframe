@@ -58,7 +58,7 @@ class JMXRegistryTest extends WvletSpec {
       debug(a)
     }
 
-    "support class field" in {
+    "support class field" taggedAs ("class-field") in {
       val f = new FieldMBean(1, "apple")
       agent.register(f)
       val m = agent.getMBeanInfo("wvlet.jmx:name=FieldMBean")
@@ -68,7 +68,7 @@ class JMXRegistryTest extends WvletSpec {
       agent.getMBeanAttribute("wvlet.jmx:name=FieldMBean", "b") shouldBe "apple"
     }
 
-    "handle nested JMX MBean" in {
+    "handle nested JMX MBean" taggedAs ("nested") in {
       val n = new NestedMBean
       agent.register(n)
       val m = agent.getMBeanInfo("wvlet.jmx:name=NestedMBean")

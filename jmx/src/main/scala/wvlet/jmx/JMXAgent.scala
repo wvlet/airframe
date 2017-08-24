@@ -39,8 +39,7 @@ object JMXAgent extends LogSupport {
   def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
     try {
       body(resource)
-    }
-    finally {
+    } finally {
       resource.close
     }
   }
@@ -53,15 +52,12 @@ object JMXAgent extends LogSupport {
 
   implicit class WithReflection[A <: AnyRef](cl: Class[A]) {
     def getStaticField[R](name: String)(implicit ev: ClassTag[R]): Option[R] = {
-      cl.getDeclaredFields
-      .find(_.getName == name)
-      .flatMap { field =>
+      cl.getDeclaredFields.find(_.getName == name).flatMap { field =>
         val isAccessible = field.isAccessible
         try {
           field.setAccessible(true)
           Option(field.get(null).asInstanceOf[R])
-        }
-        finally {
+        } finally {
           field.setAccessible(isAccessible)
         }
       }
@@ -70,7 +66,7 @@ object JMXAgent extends LogSupport {
 
   private def currentJMXRegistry: Option[HostAndPort] = {
     val jmxServer = classOf[Agent].getStaticField[JMXConnectorServer]("jmxServer")
-    val registry = classOf[ConnectorBootstrap].getStaticField[RemoteObject]("registry")
+    val registry  = classOf[ConnectorBootstrap].getStaticField[RemoteObject]("registry")
 
     (jmxServer, registry) match {
       case (Some(jmx), Some(reg)) =>
@@ -80,7 +76,7 @@ object JMXAgent extends LogSupport {
     }
   }
 
-  def start(registryPort:Int) = new JMXAgent(JMXConfig(registryPort=Some(registryPort)))
+  def start(registryPort: Int) = new JMXAgent(JMXConfig(registryPort = Some(registryPort)))
 
 }
 
@@ -99,14 +95,13 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
         if (config.registryPort.isDefined) {
           val expectedPort = config.registryPort.get
           if (expectedPort != jmxReg.port) {
-            throw new IllegalStateException(
-              s"JMX registry is already running using an unexpected port: ${jmxReg.port}. Expected port = ${expectedPort}")
+            throw new IllegalStateException(s"JMX registry is already running using an unexpected port: ${jmxReg.port}. Expected port = ${expectedPort}")
           }
         }
         s"service:jmx:rmi:///jndi/rmi://${jmxReg.host}:${jmxReg.port}/jmxrmi"
       case None =>
         val registryPort = config.registryPort.getOrElse(unusedPort)
-        val rmiPort = config.rmiPort.getOrElse(unusedPort)
+        val rmiPort      = config.rmiPort.getOrElse(unusedPort)
         System.setProperty("com.sun.management.jmxremote", "true")
         System.setProperty("com.sun.management.jmxremote.port", registryPort.toString)
         System.setProperty("com.sun.management.jmxremote.rmi.port", rmiPort.toString)
