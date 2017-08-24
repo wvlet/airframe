@@ -1,0 +1,71 @@
+[0m[[0mdebug[0m] [0m[naha] [0m
+[0m[[0mdebug[0m] [0m[naha] Initial source changes: [0m
+[0m[[0mdebug[0m] [0m[naha] 	removed:Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	added: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] 	modified: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated products: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] External API changes: API Changes: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Modified binary dependencies: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Initial directly invalidated sources: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] [0m
+[0m[[0mdebug[0m] [0m[naha] Sources indirectly invalidated by:[0m
+[0m[[0mdebug[0m] [0m[naha] 	product: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	binary dep: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] 	external source: Set()[0m
+[0m[[0mdebug[0m] [0mAll initially invalidated sources: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Recompiling all 4 sources: invalidated sources (4) exceeded 50.0% of all sources[0m
+[0m[[0minfo[0m] [0mCompiling 4 Scala sources to /Users/leo/work/git/log/wvlet-log/js/target/scala-2.11/test-classes...[0m
+[0m[[0mdebug[0m] [0mGetting org.scala-sbt:compiler-interface:0.13.13:component from component compiler for Scala 2.11.8[0m
+[0m[[0mdebug[0m] [0mGetting org.scala-sbt:compiler-interface:0.13.13:component from component compiler for Scala 2.11.8[0m
+[0m[[0mdebug[0m] [0mRunning cached compiler 1e6897b, interfacing (CompilerInterface) with Scala compiler version 2.11.8[0m
+[0m[[0mdebug[0m] [0mCalling Scala compiler with arguments  (CompilerInterface):[0m
+[0m[[0mdebug[0m] [0m	-feature[0m
+[0m[[0mdebug[0m] [0m	-deprecation[0m
+[0m[[0mdebug[0m] [0m	-Xplugin:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-js/scalajs-compiler_2.11.8/0.6.15/scalajs-compiler_2.11.8-0.6.15.jar[0m
+[0m[[0mdebug[0m] [0m	-bootclasspath[0m
+[0m[[0mdebug[0m] [0m	/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home/jre/classes:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.11.8/scala-library-2.11.8.jar[0m
+[0m[[0mdebug[0m] [0m	-classpath[0m
+[0m[[0mdebug[0m] [0m	/Users/leo/work/git/log/wvlet-log/js/target/scala-2.11/test-classes:/Users/leo/work/git/log/wvlet-log/js/target/scala-2.11/classes:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-js/scalajs-library_2.11/0.6.15/scalajs-library_2.11-0.6.15.jar:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-js/scalajs-java-logging_sjs0.6_2.11/0.1.1/scalajs-java-logging_sjs0.6_2.11-0.1.1.jar:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_sjs0.6_2.11/3.0.1/scalactic_sjs0.6_2.11-3.0.1.jar:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.11.8/scala-reflect-2.11.8.jar:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scala-js/scalajs-test-interface_2.11/0.6.15/scalajs-test-interface_2.11-0.6.15.jar:/Users/leo/.coursier/cache/v1/https/repo1.maven.org/maven2/org/scalatest/scalatest_sjs0.6_2.11/3.0.1/scalatest_sjs0.6_2.11-3.0.1.jar[0m
+[0m[[0mdebug[0m] [0mScala compilation took 3.838936212 s[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating /Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating (transitively) by inheritance from /Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated by transitive inheritance dependency: Set(/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] The /Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala source file has the following implicit definitions changed:[0m
+[0m[[0mdebug[0m] [0m[naha] 	convertToStringShouldWrapperForVerb, convertToStringCanWrapper, convertToWordSpecStringWrapper, convertToAnyShouldWrapper, convertNumericToPlusOrMinusWrapper, convertToEqualizer, subjectWithAfterWordRegistrationFunction, convertToRegexWrapper, unconstrainedEquality, convertToStringMustWrapperForVerb, convertToStringShouldWrapper, subjectRegistrationFunction.[0m
+[0m[[0mdebug[0m] [0m[naha] All member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating (transitively) by inheritance from /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated by transitive inheritance dependency: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] The /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala source file has the following implicit definitions changed:[0m
+[0m[[0mdebug[0m] [0m[naha] 	convertToStringShouldWrapperForVerb, convertToStringCanWrapper, convertToWordSpecStringWrapper, convertToAnyShouldWrapper, convertNumericToPlusOrMinusWrapper, convertToEqualizer, subjectWithAfterWordRegistrationFunction, convertToRegexWrapper, unconstrainedEquality, convertToStringMustWrapperForVerb, convertToStringShouldWrapper, subjectRegistrationFunction.[0m
+[0m[[0mdebug[0m] [0m[naha] All member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating (transitively) by inheritance from /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Including /Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala by /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala[0m
+[0m[[0mdebug[0m] [0m[naha] Including /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala by /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala[0m
+[0m[[0mdebug[0m] [0m[naha] Including /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala by /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated by transitive inheritance dependency: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala, /Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala, /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] The /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala source file has the following implicit definitions changed:[0m
+[0m[[0mdebug[0m] [0m[naha] 	convertToStringShouldWrapperForVerb, convertToStringCanWrapper, convertToWordSpecStringWrapper, convertToAnyShouldWrapper, convertNumericToPlusOrMinusWrapper, convertToEqualizer, subjectWithAfterWordRegistrationFunction, convertToRegexWrapper, unconstrainedEquality, convertToStringMustWrapperForVerb, convertToStringShouldWrapper, subjectRegistrationFunction.[0m
+[0m[[0mdebug[0m] [0m[naha] All member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0m[naha] The following member ref dependencies of /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/Spec.scala are invalidated:[0m
+[0m[[0mdebug[0m] [0m[naha] 	/Users/leo/work/git/log/wvlet-log/js/src/test/scala/wvlet/log/JSConsoleLogHandlerTest.scala[0m
+[0m[[0mdebug[0m] [0m[naha] 	/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/LoggerTest.scala[0m
+[0m[[0mdebug[0m] [0m[naha] 	/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidating (transitively) by inheritance from /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala...[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] Invalidated by transitive inheritance dependency: Set(/Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala)[0m
+[0m[[0mdebug[0m] [0m[naha] The /Users/leo/work/git/log/wvlet-log/shared/src/test/scala/wvlet/log/WvletLog.scala source file has the following implicit definitions changed:[0m
+[0m[[0mdebug[0m] [0m[naha] 	convertToStringShouldWrapperForVerb, convertToStringCanWrapper, convertToWordSpecStringWrapper, convertToAnyShouldWrapper, convertNumericToPlusOrMinusWrapper, convertToEqualizer, subjectWithAfterWordRegistrationFunction, convertToRegexWrapper, unconstrainedEquality, convertToStringMustWrapperForVerb, convertToStringShouldWrapper, subjectRegistrationFunction.[0m
+[0m[[0mdebug[0m] [0m[naha] All member reference dependencies will be considered within this context.[0m
+[0m[[0mdebug[0m] [0m[naha] New invalidations:[0m
+[0m[[0mdebug[0m] [0m[naha] 	Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Initial set of included nodes: Set()[0m
+[0m[[0mdebug[0m] [0m[naha] Previously invalidated, but (transitively) depend on new invalidations:[0m
+[0m[[0mdebug[0m] [0m[naha] 	Set()[0m
+[0m[[0mdebug[0m] [0m[naha] All newly invalidated sources after taking into account (previously) recompiled sources:Set()[0m

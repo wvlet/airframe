@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:e="http://ant.apache.org/ivy/extra">
+  <info organisation="org.wvlet" module="wvlet-log_sjs0.6_2.12" revision="1.2.3">
+    <description></description>
+  </info>
+  <configurations>
+    <conf name="plugin" visibility="public" description=""/>
+    <conf name="pom" visibility="public" description=""/>
+    <conf extends="runtime" name="test" visibility="public" description=""/>
+    <conf name="provided" visibility="public" description=""/>
+    <conf 
+    extends="compile,optional,provided" name="compile-internal" visibility="public" description="">
+</conf>
+    <conf name="phantom-js-jetty" visibility="public" description=""/>
+    <conf name="docs" visibility="public" description=""/>
+    <conf name="scoveragePlugin" visibility="public" description=""/>
+    <conf name="optional" visibility="public" description=""/>
+    <conf name="compile" visibility="public" description=""/>
+    <conf 
+    extends="test,optional,provided" name="test-internal" visibility="public" description="">
+</conf>
+    <conf name="scala-tool" visibility="public" description=""/>
+    <conf name="sources" visibility="public" description=""/>
+    <conf extends="compile" name="runtime" visibility="public" description=""/>
+    <conf 
+    extends="runtime,optional" name="runtime-internal" visibility="public" description="">
+</conf>
+  </configurations>
+  <publications>
+    <artifact 
+    e:classifier="javadoc" name="wvlet-log_sjs0.6_2.12" type="doc" ext="jar" conf="compile">
+</artifact>
+    <artifact name="wvlet-log_sjs0.6_2.12" type="jar" ext="jar" conf="compile"/>
+    <artifact name="wvlet-log_sjs0.6_2.12" type="pom" ext="pom" conf="pom"/>
+    <artifact 
+    e:classifier="sources" name="wvlet-log_sjs0.6_2.12" type="src" ext="jar" conf="compile">
+</artifact>
+  </publications>
+  <dependencies>
+    <dependency 
+    org="org.scala-lang" name="scala-compiler" rev="2.12.1" conf="scala-tool-&gt;default">
+</dependency>
+    <dependency 
+    org="org.scala-lang" name="scala-compiler" rev="2.12.1" conf="scala-tool-&gt;optional(default)">
+</dependency>
+    <dependency 
+    org="org.scala-lang" name="scala-library" rev="2.12.1" conf="scala-tool-&gt;default">
+</dependency>
+    <dependency 
+    org="org.scala-lang" name="scala-library" rev="2.12.1" conf="scala-tool-&gt;optional(default)">
+</dependency>
+    <dependency 
+    org="org.scala-lang" name="scala-library" rev="2.12.1" conf="compile-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.eclipse.jetty" name="jetty-websocket" rev="8.1.16.v20140903" conf="phantom-js-jetty-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.eclipse.jetty" name="jetty-server" rev="8.1.16.v20140903" conf="phantom-js-jetty-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scala-js" name="scalajs-compiler_2.12.1" rev="0.6.15" conf="plugin-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scala-js" name="scalajs-library_2.12" rev="0.6.15" conf="compile-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scala-js" name="scalajs-test-interface_2.12" rev="0.6.15" conf="test-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scala-lang" name="scala-reflect" rev="2.12.1" conf="provided-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scalatest" name="scalatest_sjs0.6_2.12" rev="3.0.1" conf="test-&gt;default(compile)">
+</dependency>
+    <dependency 
+    org="org.scala-js" name="scalajs-java-logging_sjs0.6_2.12" rev="0.1.1" conf="compile-&gt;default(compile)">
+</dependency>
+  </dependencies>
+</ivy-module>

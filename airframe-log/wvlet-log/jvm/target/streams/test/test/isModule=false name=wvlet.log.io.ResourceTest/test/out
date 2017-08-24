@@ -1,0 +1,7 @@
+[0m[[0minfo[0m] [0m[32mResourceTest:[0m[0m
+[0m[[0minfo[0m] [0m[32mResource[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find files from the current class loader[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find resources from jar files[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find classes of specific types[0m[0m
+[0m[[0minfo[0m] [0m[32mResourceReader trait[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find files using the context class[0m[0m

@@ -1,0 +1,6 @@
+[0m[[0minfo[0m] [0m[32mIOUtilTest:[0m[0m
+[0m[[0minfo[0m] [0m[32mIOUtil[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find unused port[0m[0m
+[0m[[0minfo[0m] [0m[32m- should find a file[0m[0m
+[0m[[0minfo[0m] [0m[32m- should read file as a String[0m[0m
+[0m[[0minfo[0m] [0m[32m- should throw FileNotFoundException if file is not found[0m[0m
