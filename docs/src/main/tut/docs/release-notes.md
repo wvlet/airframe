@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.20
+ - Migrated [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log) from [wvlet-log](https://github.com/wvlet/log) because 
+these are often commonly used.
+
 ## 0.19
  - Add [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx) to expose object parameters through JMX
 
