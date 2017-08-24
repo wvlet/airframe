@@ -32,6 +32,7 @@ object SurfaceFactory extends LogSupport {
 
   private[surface] val surfaceCache       = new ConcurrentHashMap[TypeName, Surface].asScala
   private[surface] val methodSurfaceCache = new ConcurrentHashMap[TypeName, Seq[MethodSurface]].asScala
+  private[surface] val typeMap            = new ConcurrentHashMap[Surface, ru.Type].asScala
 
   private def belongsToScalaDefault(t: ru.Type) = {
     t match {
@@ -42,10 +43,11 @@ object SurfaceFactory extends LogSupport {
     }
   }
 
-  def of[A: ru.WeakTypeTag]: Surface = {
-    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+  def of[A: ru.WeakTypeTag]: Surface = ofType(implicitly[ru.WeakTypeTag[A]].tpe)
+  def ofType(tpe: ru.Type): Surface = {
     apply(tpe)
   }
+  def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
   private def typeNameOf(t: ru.Type): String = {
     t.dealias.typeSymbol.fullName
@@ -74,8 +76,9 @@ object SurfaceFactory extends LogSupport {
     surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().surfaceOf(tpe))
   }
 
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = {
-    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
+
+  def methodsOfType(tpe: ru.Type): Seq[MethodSurface] = {
     methodSurfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), {
       new SurfaceFinder().createMethodSurfaceOf(tpe)
     })
@@ -122,7 +125,7 @@ object SurfaceFactory extends LogSupport {
               val name  = m.name.decodedName.toString
               val ret   = surfaceOf(m.returnType)
               val args  = methodParmetersOf(t, m)
-              ClassMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
+              ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
             }
             list.toIndexedSeq
           case _ =>
@@ -186,6 +189,7 @@ object SurfaceFactory extends LogSupport {
         }
         val surface = m(tpe)
         surfaceCache += name -> surface
+        typeMap += surface   -> tpe
         surface
       }
     }

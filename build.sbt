@@ -77,10 +77,10 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS)
@@ -203,6 +203,17 @@ lazy val airframeConfig =
       libraryDependencies ++= Seq(
         "org.yaml"  % "snakeyaml"  % "1.14",
         "org.wvlet" %% "wvlet-log" % "1.2.3",
+        wvletTest
+      )
+    )
+    .dependsOn(surfaceJVM)
+
+lazy val jmx =
+  Project(id = "airframe-jmx", base = file("airframe-jmx"))
+    .settings(buildSettings)
+    .settings(
+      description := "A library for exposing Scala object data through JMX",
+      libraryDependencies ++= Seq(
         wvletTest
       )
     )
