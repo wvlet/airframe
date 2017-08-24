@@ -9,11 +9,7 @@ import java.util.{logging => jl}
 /**
   * Logging using background thread
   */
-class AsyncHandler(parent: jl.Handler)
-  extends jl.Handler
-    with Guard
-    with AutoCloseable
-    with Flushable {
+class AsyncHandler(parent: jl.Handler) extends jl.Handler with Guard with AutoCloseable with Flushable {
 
   private val executor = {
     Executors.newCachedThreadPool(
@@ -41,7 +37,7 @@ class AsyncHandler(parent: jl.Handler)
           }
           queue.pollFirst()
         }
-        if(record != null) {
+        if (record != null) {
           parent.publish(record)
         }
       }

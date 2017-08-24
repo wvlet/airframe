@@ -33,19 +33,18 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
     Logger.stopScheduledLogLevelScan
   }
 
-  def withScanner[U](config:LogLevelScannerConfig)(f: => U) : U = {
+  def withScanner[U](config: LogLevelScannerConfig)(f: => U): U = {
     val scanner = new LogLevelScanner
     try {
       val lastScanCount = scanner.scanCount.get
       scanner.setConfig(config)
       scanner.start
       // Wait the first scan
-      while(scanner.scanCount.get == lastScanCount) {
+      while (scanner.scanCount.get == lastScanCount) {
         Thread.sleep(1000)
       }
       f
-    }
-    finally {
+    } finally {
       scanner.stop
     }
   }

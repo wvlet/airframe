@@ -25,20 +25,18 @@ object IOUtil {
   def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
     try {
       body(resource)
-    }
-    finally {
+    } finally {
       resource.close
     }
   }
 
-  def withTempFile[U](name:String, dir:String="target", suffix:String = ".tmp")(body:File => U) = {
+  def withTempFile[U](name: String, dir: String = "target", suffix: String = ".tmp")(body: File => U) = {
     val d = new File(dir)
     d.mkdirs()
     val f = File.createTempFile(name, suffix, d)
     try {
       body(f)
-    }
-    finally {
+    } finally {
       f.delete()
     }
   }
@@ -54,48 +52,44 @@ object IOUtil {
   def findPath(path: File): Option[File] = {
     if (path.exists()) {
       Some(path)
-    }
-    else {
+    } else {
       val defaultPath = new File(new File(System.getProperty("prog.home", "")), path.getPath)
       if (defaultPath.exists()) {
         Some(defaultPath)
-      }
-      else {
+      } else {
         None
       }
     }
   }
 
-  def readAsString(resourcePath: String) : String = {
+  def readAsString(resourcePath: String): String = {
     require(resourcePath != null, s"resourcePath is null")
     val file = findPath(new File(resourcePath))
-    if(file.isEmpty) {
+    if (file.isEmpty) {
       throw new FileNotFoundException(s"Not found ${resourcePath}")
     }
     readAsString(new FileInputStream(file.get))
   }
 
-  def readAsString(in:InputStream) : String = {
-    readFully(in) {
-      data => new String(data, StandardCharsets.UTF_8)
+  def readAsString(in: InputStream): String = {
+    readFully(in) { data =>
+      new String(data, StandardCharsets.UTF_8)
     }
   }
 
   def readFully[U](in: InputStream)(f: Array[Byte] => U): U = {
-    val byteArray = withResource(new ByteArrayOutputStream) {
-      b =>
-        val buf = new Array[Byte](8192)
-        withResource(in) {
-          src =>
-            var readBytes = 0
-            while ( {
-              readBytes = src.read(buf);
-              readBytes != -1
-            }) {
-              b.write(buf, 0, readBytes)
-            }
+    val byteArray = withResource(new ByteArrayOutputStream) { b =>
+      val buf = new Array[Byte](8192)
+      withResource(in) { src =>
+        var readBytes = 0
+        while ({
+          readBytes = src.read(buf);
+          readBytes != -1
+        }) {
+          b.write(buf, 0, readBytes)
         }
-        b.toByteArray
+      }
+      b.toByteArray
     }
     f(byteArray)
   }

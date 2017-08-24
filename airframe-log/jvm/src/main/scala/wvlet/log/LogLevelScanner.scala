@@ -100,39 +100,35 @@ object LogLevelScanner {
     */
   private[log] def scan(logLevelFileCandidates: Seq[String], lastScannedMillis: Option[Long]): Option[Long] = {
     try {
-      val logFileURL = logLevelFileCandidates
-                       .toStream
-                       .flatMap(f => Resource.find(f))
-                       .headOption
-      logFileURL.map {url =>
-        url.getProtocol match {
-          case "file" =>
-            val f = new File(url.toURI)
-            val lastModified = f.lastModified()
-            if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
-              LogLevelScanner.setLogLevels(f)
-              Some(System.currentTimeMillis())
-            }
-            else {
-              lastScannedMillis
-            }
-          case other if lastScannedMillis.isEmpty =>
-            // non file resources found in the class path is stable, so we only need to read it once
-            IOUtil.withResource(url.openStream()) {in =>
-              val p = new Properties
-              p.load(in)
-              Logger.setLogLevels(p)
-              Some(System.currentTimeMillis())
-            }
-          case _ =>
-            None
+      val logFileURL = logLevelFileCandidates.toStream.flatMap(f => Resource.find(f)).headOption
+      logFileURL
+        .map { url =>
+          url.getProtocol match {
+            case "file" =>
+              val f            = new File(url.toURI)
+              val lastModified = f.lastModified()
+              if (lastScannedMillis.isEmpty || lastScannedMillis.get < lastModified) {
+                LogLevelScanner.setLogLevels(f)
+                Some(System.currentTimeMillis())
+              } else {
+                lastScannedMillis
+              }
+            case other if lastScannedMillis.isEmpty =>
+              // non file resources found in the class path is stable, so we only need to read it once
+              IOUtil.withResource(url.openStream()) { in =>
+                val p = new Properties
+                p.load(in)
+                Logger.setLogLevels(p)
+                Some(System.currentTimeMillis())
+              }
+            case _ =>
+              None
+          }
         }
-      }
-      .getOrElse {
-        lastScannedMillis
-      }
-    }
-    catch {
+        .getOrElse {
+          lastScannedMillis
+        }
+    } catch {
       case e: Throwable =>
         // We need to use the native java.util.logging.Logger since the logger macro cannot be used within the same project
         logger.wrapped.log(LogLevel.WARN.jlLevel, s"Error occurred while scanning log properties: ${e.getMessage}", e)
@@ -141,22 +137,20 @@ object LogLevelScanner {
   }
 
   private[log] sealed trait ScannerState
-  private[log] object RUNNING extends ScannerState
+  private[log] object RUNNING  extends ScannerState
   private[log] object STOPPING extends ScannerState
-  private[log] object STOPPED extends ScannerState
+  private[log] object STOPPED  extends ScannerState
 
 }
 
-case class LogLevelScannerConfig(logLevelFileCandidates: Seq[String],
-                                 scanInterval: Duration = Duration(1, TimeUnit.MINUTES))
+case class LogLevelScannerConfig(logLevelFileCandidates: Seq[String], scanInterval: Duration = Duration(1, TimeUnit.MINUTES))
 
 import wvlet.log.LogLevelScanner._
 
-private[log] class LogLevelScanner extends Guard {
-  scanner =>
+private[log] class LogLevelScanner extends Guard { scanner =>
   private val config: AtomicReference[LogLevelScannerConfig] = new AtomicReference(LogLevelScannerConfig(Seq.empty))
   private val configChanged                                  = newCondition
-  private[log] val scanCount = new AtomicLong(0)
+  private[log] val scanCount                                 = new AtomicLong(0)
 
   def getConfig: LogLevelScannerConfig = config.get()
   def setConfig(config: LogLevelScannerConfig) {
@@ -189,14 +183,14 @@ private[log] class LogLevelScanner extends Guard {
   }
 
   private var lastScheduledMillis: Option[Long] = None
-  private var lastScannedMillis: Option[Long] = None
+  private var lastScannedMillis: Option[Long]   = None
 
   private def run {
     // We need to exit here so that the thread can be automatically discarded after the scan interval has passed
     // Otherwise, the thread remains in the classloader(s) if used for running test cases
     while (!state.compareAndSet(STOPPING, STOPPED)) {
       // Periodically run
-      val currentTimeMillis = System.currentTimeMillis()
+      val currentTimeMillis  = System.currentTimeMillis()
       val scanIntervalMillis = getConfig.scanInterval.toMillis
       if (lastScheduledMillis.isEmpty || currentTimeMillis - lastScheduledMillis.get > scanIntervalMillis) {
         val updatedLastScannedMillis = scan(getConfig.logLevelFileCandidates, lastScannedMillis)
@@ -226,4 +220,3 @@ private[log] class LogLevelScanner extends Guard {
     }
   }
 }
-

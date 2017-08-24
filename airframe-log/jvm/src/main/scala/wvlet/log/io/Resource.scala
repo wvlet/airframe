@@ -57,10 +57,8 @@ object Resource {
     }
 
     val s = new BufferedInputStream(u.get.openStream())
-    try
-      body(s)
-    finally
-      s.close
+    try body(s)
+    finally s.close
   }
 
   private def packagePath(referenceClass: Class[_]): String = {
@@ -83,9 +81,9 @@ object Resource {
   private def classLoaders(cl: ClassLoader): Stream[URLClassLoader] = {
     def stream(c: ClassLoader): Stream[URLClassLoader] = {
       c match {
-        case null => Stream.empty
+        case null              => Stream.empty
         case u: URLClassLoader => u #:: stream(c.getParent)
-        case _ => stream(c.getParent)
+        case _                 => stream(c.getParent)
       }
     }
     stream(cl)
@@ -104,8 +102,7 @@ object Resource {
   private def prependSlash(name: String): String = {
     if (name.startsWith("/")) {
       name
-    }
-    else {
+    } else {
       "/" + name
     }
   }
@@ -134,10 +131,9 @@ object Resource {
     */
   def find(packageName: String, resourceFileName: String): Option[URL] = {
     val resourcePath = resolveResourcePath(packageName, resourceFileName)
-    val r = classLoaders.map(_.getResource(resourcePath)).
-            collectFirst {
-              case path: URL => path
-            }
+    val r = classLoaders.map(_.getResource(resourcePath)).collectFirst {
+      case path: URL => path
+    }
 
     r orElse Option(this.getClass.getResource(resourcePath))
   }
@@ -154,6 +150,7 @@ object Resource {
     *
     */
   abstract trait VirtualFile {
+
     /**
       * Gets the logical path of the file.
       * For example, if this VirtualFile' URL is "file:/somewhere/org/xerial/util/FileResource.java",
@@ -206,7 +203,7 @@ object Resource {
   }
 
   private def extractLogicalName(packagePath: String, resourcePath: String): String = {
-    val p = if (!packagePath.endsWith("/")) packagePath + "/" else packagePath
+    val p        = if (!packagePath.endsWith("/")) packagePath + "/" else packagePath
     val pos: Int = resourcePath.indexOf(p)
     if (pos < 0) return null
     val logicalName: String = resourcePath.substring(pos + p.length)
@@ -219,7 +216,7 @@ object Resource {
       throw new IllegalArgumentException("packagePath=" + packagePath + ", resourceURL=" + resourceURLString)
     }
 
-    val b = Seq.newBuilder[VirtualFile]
+    val b          = Seq.newBuilder[VirtualFile]
     val file: File = new File(new URL(resourceURLString).toURI)
     if (resourceFilter(file.getPath)) {
       b += SystemFile(file, logicalName)
@@ -245,7 +242,7 @@ object Resource {
     * @return the list of resources matching the given resource filter
     */
   private def listResources(resourceURL: URL, packageName: String, resourceFilter: String => Boolean): Seq[VirtualFile] = {
-    val pkgPath = packagePath(packageName)
+    val pkgPath  = packagePath(packageName)
     val fileList = Seq.newBuilder[VirtualFile]
     if (resourceURL == null) {
       return Seq.empty
@@ -255,30 +252,28 @@ object Resource {
     if (protocol == "file") {
       val resourceURLString = resourceURL.toString
       fileList ++= collectFileResources(resourceURLString, pkgPath, resourceFilter)
-    }
-    else if (protocol == "jar") {
+    } else if (protocol == "jar") {
       val path: String = resourceURL.getPath
-      val pos: Int = path.indexOf("!")
+      val pos: Int     = path.indexOf("!")
       if (pos < 0) {
         throw new IllegalArgumentException("invalid resource URL: " + resourceURL)
       }
 
-      val jarPath = path.substring(0, pos) replaceAll("%20", " ")
-      val filePath = path.substring(0, pos) replaceAll("%20", " ") replace("file:", "")
+      val jarPath      = path.substring(0, pos) replaceAll ("%20", " ")
+      val filePath     = path.substring(0, pos) replaceAll ("%20", " ") replace ("file:", "")
       val jarURLString = "jar:" + jarPath
-      val jf: JarFile = new JarFile(filePath)
-      val entryEnum = jf.entries
+      val jf: JarFile  = new JarFile(filePath)
+      val entryEnum    = jf.entries
       while (entryEnum.hasMoreElements) {
-        val jarEntry = entryEnum.nextElement
+        val jarEntry    = entryEnum.nextElement
         val physicalURL = jarURLString + "!/" + jarEntry.getName
-        val jarFileURL = new URL(physicalURL)
+        val jarFileURL  = new URL(physicalURL)
         val logicalName = extractLogicalName(pkgPath, jarEntry.getName)
         if (logicalName != null && resourceFilter(logicalName)) {
           fileList += FileInJar(jarFileURL, logicalName, jarEntry.isDirectory)
         }
       }
-    }
-    else {
+    } else {
       throw new UnsupportedOperationException("resources other than file or jar are not supported: " + resourceURL)
     }
 
@@ -292,9 +287,9 @@ object Resource {
     * @return
     */
   def listResources(packageName: String): Seq[VirtualFile] =
-  listResources(packageName, {
-    f: String => true
-  })
+    listResources(packageName, { f: String =>
+      true
+    })
 
   /**
     * Collect resources under the given package
@@ -321,7 +316,7 @@ object Resource {
     */
   def findResourceURLs(cl: ClassLoader, name: String): Seq[URL] = {
     val path = packagePath(name)
-    val b = Seq.newBuilder[URL]
+    val b    = Seq.newBuilder[URL]
     for (c: URLClassLoader <- classLoaders(cl)) {
       val e = c.findResources(path)
       while (e.hasMoreElements) {
@@ -332,22 +327,20 @@ object Resource {
   }
 
   def findClasses[A](packageName: String, toSearch: Class[A], classLoader: ClassLoader = Thread.currentThread.getContextClassLoader): Seq[Class[A]] = {
-    val classFileList = listResources(packageName, {
-      f: String => f.endsWith(".class")
+    val classFileList = listResources(packageName, { f: String =>
+      f.endsWith(".class")
     }, classLoader)
 
     def componentName(path: String): Option[String] = {
       val dot: Int = path.lastIndexOf(".")
       if (dot <= 0) {
         None
-      }
-      else {
+      } else {
         Some(path.substring(0, dot).replaceAll("/", "."))
       }
     }
     def findClass(name: String): Option[Class[_]] = {
-      try
-        Some(Class.forName(name, false, classLoader))
+      try Some(Class.forName(name, false, classLoader))
       catch {
         case e: ClassNotFoundException => None
       }

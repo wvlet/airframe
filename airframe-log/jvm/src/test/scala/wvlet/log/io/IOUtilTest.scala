@@ -25,7 +25,7 @@ class IOUtilTest extends Spec {
   "IOUtil" should {
     "find unused port" in {
       val port = IOUtil.unusedPort
-      port shouldBe > (0)
+      port shouldBe >(0)
     }
 
     "find a file" in {
@@ -39,7 +39,7 @@ class IOUtilTest extends Spec {
 
     "read file as a String" in {
       val str = IOUtil.readAsString("build.sbt")
-      str.length shouldBe > (0)
+      str.length shouldBe >(0)
     }
 
     "throw FileNotFoundException if file is not found" in {

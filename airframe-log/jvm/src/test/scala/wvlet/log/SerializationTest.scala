@@ -23,7 +23,7 @@ class SerializationTest extends Spec {
     "serializable" in {
       val a = new A {}
       val b = new ByteArrayOutputStream()
-      IOUtil.withResource(new ObjectOutputStream(b)) {out =>
+      IOUtil.withResource(new ObjectOutputStream(b)) { out =>
         out.writeObject(a)
       }
       val ser = b.toByteArray

@@ -26,8 +26,8 @@ class ResourceTest extends Spec {
   "Resource" should {
     "find files from the current class loader" in {
       debug("find files from package")
-      val l = Resource.listResources("wvlet.log.io", {
-        s: String => s.endsWith(".class")
+      val l = Resource.listResources("wvlet.log.io", { s: String =>
+        s.endsWith(".class")
       })
       l.size should be > 0
     }
@@ -35,8 +35,8 @@ class ResourceTest extends Spec {
     "find resources from jar files" in {
       debug("find files from a jar file")
 
-      val l = Resource.listResources("scala.io", {
-        s: String => s.endsWith(".class")
+      val l = Resource.listResources("scala.io", { s: String =>
+        s.endsWith(".class")
       })
       l.size should be > 0
       for (each <- l) {
@@ -58,7 +58,7 @@ class ResourceTest extends Spec {
   "ResourceReader trait" should {
     "find files using the context class" in {
       new ResourceReader {
-        open("hello.txt") {f =>
+        open("hello.txt") { f =>
           val lines = IOUtil.readAsString(f).split("\n")
           lines.length shouldBe 1
           lines(0).toString shouldBe "Hello World!"

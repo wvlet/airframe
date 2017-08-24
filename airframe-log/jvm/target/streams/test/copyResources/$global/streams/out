@@ -1,8 +1,8 @@
 [0m[[0mdebug[0m] [0mCopy resource mappings: [0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/log-test.properties,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/log-test.properties)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet/log,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet/log)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet/log/custom-log.properties,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet/log/custom-log.properties)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet/log/invalid-loglevel.properties,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet/log/invalid-loglevel.properties)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet/log/io,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet/log/io)[0m
-[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/log/wvlet-log/jvm/src/test/resources/wvlet/log/io/hello.txt,/Users/leo/work/git/log/wvlet-log/jvm/target/scala-2.11/test-classes/wvlet/log/io/hello.txt)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/log-test.properties,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/log-test.properties)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet/log,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet/log)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet/log/custom-log.properties,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet/log/custom-log.properties)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet/log/invalid-loglevel.properties,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet/log/invalid-loglevel.properties)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet/log/io,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet/log/io)[0m
+[0m[[0mdebug[0m] [0m	(/Users/leo/work/git/airframe/airframe-log/jvm/src/test/resources/wvlet/log/io/hello.txt,/Users/leo/work/git/airframe/airframe-log/jvm/target/scala-2.12/test-classes/wvlet/log/io/hello.txt)[0m

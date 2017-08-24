@@ -42,7 +42,7 @@ class LogRotationHandlerTest extends Spec {
     }
 
     "rescue orphaned log files" in {
-      val l = Logger("wvlet.log.rotation")
+      val l   = Logger("wvlet.log.rotation")
       val tmp = new File("target/log-rotation-test.log.tmp")
       if (!tmp.exists()) {
         tmp.createNewFile()
