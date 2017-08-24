@@ -77,13 +77,13 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(airframeJS, surfaceJS)
+  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
 lazy val docs =
   project
@@ -218,3 +218,29 @@ lazy val jmx =
       )
     )
     .dependsOn(surfaceJVM)
+
+lazy val log =
+  crossProject
+  .in(file("airframe-log"))
+  .settings(buildSettings)
+  .settings(
+    name := "airframe-log",
+    description := "Fancy logger for Scala",
+    libraryDependencies ++= Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
+      "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
+    )
+  )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "ch.qos.logback" % "logback-core" % "1.1.7"
+    )
+  )
+  .jsSettings(
+    libraryDependencies ++= Seq(
+      "org.scala-js" %%% "scalajs-java-logging" % "0.1.1"
+    )
+  )
+
+lazy val logJVM = log.jvm
+lazy val logJS = log.js
