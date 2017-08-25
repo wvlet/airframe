@@ -58,11 +58,6 @@ class MethodCallBuilder(m: MethodSurface, owner: AnyRef) extends StandardBuilder
     val args = for (p <- m.args) yield {
       get(p.name).getOrElse(Zero.zeroOf(p.surface))
     }
-    trace { "args: " + args.mkString(", ") }
-    if (args.isEmpty) {
-      m.call(owner, Array.empty)
-    } else {
-      m.call(owner, args: _*)
-    }
+    m.call(owner, args: _*)
   }
 }

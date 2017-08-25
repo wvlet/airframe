@@ -16,12 +16,14 @@ package wvlet.surface.reflect
 import wvlet.surface.{MethodParameter, MethodSurface, Surface}
 import java.{lang => jl}
 
+import wvlet.log.LogSupport
+
 import scala.util.Try
 
 /**
   * MethodSurface for JVM. This can call method through Java reflection
   */
-case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface {
+case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface with LogSupport {
 
   private lazy val method: Option[jl.reflect.Method] = {
     Try(owner.rawType.getDeclaredMethod(name, args.map(_.surface.rawType): _*)).toOption
