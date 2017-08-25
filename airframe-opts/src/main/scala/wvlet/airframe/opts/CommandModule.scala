@@ -21,6 +21,11 @@
 
 package wvlet.airframe.opts
 
+import wvlet.surface.Surface
+import wvlet.surface.reflect.SurfaceFactory
+
+import scala.reflect.runtime.{universe => ru}
+
 /**
   *
   * {{{
@@ -36,13 +41,12 @@ package wvlet.airframe.opts
   * // Integrate the above command set as a module with a given name.
   * // Command can be invoked as "sample hello" and "sample world".
   * class MyModule extends CommandModule {
-  *   def modules = Seq(ModuleDef("sample", classOf[MyCommandSet], description="my command set"))
+  *   def modules = Seq(ModuleDef[MyCommandSet]("sample", description="my command set"))
   * }
   *
   * Launcher[MyModule].execute("sample hello") // prints hello
   *
   * }}}
-  *
   *
   * @author leo
   */
@@ -56,7 +60,12 @@ trait CommandModule {
 
 }
 
-case class ModuleDef[A](name: String, moduleClass: Class[A], description: String = "")
+case class ModuleDef[A: ru.TypeTag](name: String, description: String = "") {
+  lazy val moduleSurface = {
+    val tpe = implicitly[ru.TypeTag[A]].tpe
+    SurfaceFactory.ofType(tpe)
+  }
+}
 
 object CommandModule {
   def isModuleClass[A](cl: Class[A]) = classOf[CommandModule].isAssignableFrom(cl)

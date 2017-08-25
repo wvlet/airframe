@@ -27,10 +27,12 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
     Try(owner.rawType.getDeclaredMethod(name, args.map(_.surface.rawType): _*)).toOption
   }
 
+  def getMethod: Option[jl.reflect.Method] = method
+
   override def call(obj: Any, x: Any*): Any = method match {
     case Some(m) =>
-      if (x == null) {
-        m.invoke(obj, Array.empty)
+      if (x == null || x.isEmpty) {
+        m.invoke(obj)
       } else {
         m.invoke(obj, x.map(_.asInstanceOf[AnyRef]): _*)
       }

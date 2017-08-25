@@ -22,7 +22,7 @@
 package wvlet.airframe.opts
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.SurfaceFactory
+import wvlet.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
 import wvlet.surface.{MethodSurface, Surface, Zero}
 
 import scala.reflect.runtime.{universe => ru}
@@ -37,8 +37,8 @@ object Launcher extends LogSupport {
     new Launcher(SurfaceFactory.of[A])
   }
 
-  def execute[A <: AnyRef](argLine: String)(implicit m: ClassTag[A]): A = execute(CommandLineTokenizer.tokenize(argLine))(m)
-  def execute[A <: AnyRef](args: Array[String])(implicit m: ClassTag[A]): A = {
+  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
     val l = Launcher.of[A]
     l.execute(args)
   }
@@ -74,11 +74,11 @@ object Launcher extends LogSupport {
     def name = m.name
     def printHelp = {
       debug("module help")
-      new Launcher(m.moduleClass).printHelp
+      new Launcher(m.moduleSurface).printHelp
     }
     def execute[A <: AnyRef](mainObj: A, args: Array[String], showHelp: Boolean): A = {
-      trace(s"execute module: ${m.moduleClass}")
-      val result = new Launcher(m.moduleClass).execute[A](args, showHelp)
+      trace(s"execute module: ${m.moduleSurface.name}")
+      val result = new Launcher(m.moduleSurface).execute[A](args, showHelp)
       mainObj.asInstanceOf[CommandModule].executedModule = Some((name, result.asInstanceOf[AnyRef]))
       mainObj
     }
@@ -132,7 +132,7 @@ class Launcher(surface: Surface) extends LogSupport {
     val p = new OptionParser(schema)
     val r = p.parse(args)
     trace(s"parse tree: ${r.parseTree}")
-    val mainObj: A         = r.buildObjectWithFilter(cl, _ != commandNameParam).asInstanceOf[A]
+    val mainObj: A         = r.buildObjectWithFilter(surface, _ != commandNameParam).asInstanceOf[A]
     val cn: Option[String] = (for ((path, value) <- r.parseTree.dfs if path.fullPath == commandNameParam) yield value).toSeq.headOption
     val helpIsOn           = r.showHelp || showHelp
     val result             = for (commandName <- cn; c <- findCommand(commandName, mainObj)) yield c.execute(mainObj, r.unusedArgument, helpIsOn)
@@ -140,7 +140,7 @@ class Launcher(surface: Surface) extends LogSupport {
     if (result.isEmpty) {
       if (helpIsOn) {
         printHelp(p, mainObj)
-      } else if (classOf[DefaultCommand].isAssignableFrom(cl)) {
+      } else if (classOf[DefaultCommand].isAssignableFrom(surface.rawType)) {
         // has a default command
         mainObj.asInstanceOf[DefaultCommand].default
       }
@@ -168,8 +168,10 @@ class Launcher(surface: Surface) extends LogSupport {
   }
 
   private lazy val commandList: Seq[Command] = {
-    trace(s"command class:${cl.getName}")
-    val lst = for (m <- ObjectSchema(cl).methods; c <- m.findAnnotationOf[command]) yield new CommandDef(m, c)
+    import wvlet.surface.reflect._
+    trace(s"command class:${surface.name}")
+    val methods = SurfaceFactory.methodsOf(surface)
+    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandDef(m, c)
     lst
   }
 

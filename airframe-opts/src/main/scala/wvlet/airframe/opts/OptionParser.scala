@@ -21,7 +21,7 @@ package wvlet.airframe.opts
 //--------------------------------------
 
 import wvlet.log.{LogSupport, Logger}
-import wvlet.surface.{MethodSurface, Parameter, Primitive, Surface}
+import wvlet.surface._
 import wvlet.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
 
 import scala.collection.mutable.ArrayBuffer
@@ -152,8 +152,8 @@ case class CommandNameArgument(path: Path) extends CLArgItem {
   */
 trait OptionSchema extends LogSupport {
 
-  val options: Array[CLOption]
-  val args: Array[CLArgItem] // must be sorted by arg.index in ascending order
+  val options: Seq[CLOption]
+  val args: Seq[CLArgItem] // must be sorted by arg.index in ascending order
 
   protected lazy val symbolTable = {
     var h = Map[String, CLOption]()
@@ -248,7 +248,7 @@ object ClassOptionSchema extends LogSupport {
   *
   * @param surface
   */
-class ClassOptionSchema(val surface: Surface, val options: Array[CLOption], val args: Array[CLArgItem]) extends OptionSchema {
+class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val args: Seq[CLArgItem]) extends OptionSchema {
 
   def description = {
     surface.rawType.getDeclaredAnnotations
@@ -287,22 +287,28 @@ class MethodOptionSchema(method: MethodSurface) extends OptionSchema {
   }
 
   def description = {
-
-    method.jMethod.getDeclaredAnnotations
-      .collectFirst {
-        case c: command => c.description
-      }
-      .getOrElse("")
+    method match {
+      case m: ReflectMethodSurface if m.getMethod.isDefined =>
+        m.getMethod.get.getDeclaredAnnotations
+          .collectFirst {
+            case c: command => c.description
+          }
+          .getOrElse("")
+      case _ => ""
+    }
   }
 
   override def usage = {
     val argLine =
-      method.jMethod.getDeclaredAnnotations
-        .collectFirst {
-          case c: command if !c.usage.isEmpty => c.usage
-        }
-        .getOrElse(defaultUsage)
-
+      method match {
+        case m: ReflectMethodSurface if m.getMethod.isDefined =>
+          m.getMethod.get.getDeclaredAnnotations
+            .collectFirst {
+              case c: command if !c.usage.isEmpty => c.usage
+            }
+            .getOrElse(defaultUsage)
+        case _ => defaultUsage
+      }
     "%s %s".format(method.name, argLine)
   }
 
@@ -483,7 +489,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
   }
 
   def createOptionHelpMessage = {
-    val optDscr: Array[(CLOption, String)] = for (o <- schema.options)
+    val optDscr: Seq[(CLOption, String)] = for (o <- schema.options)
       yield {
         val opt: option = o.annot
         val hasShort    = o.prefixes.exists(_.length == 2)
@@ -512,8 +518,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     val defaultInstance: Option[_] = {
       try schema match {
         case c: ClassOptionSchema =>
-          c.surface.objectFactory
-          Some(TypeUtil.newInstance(c.cl))
+          Some(Zero.zeroOf(c.surface))
         case _ => None
       } catch {
         case _: Throwable => None

@@ -39,6 +39,7 @@ class LauncherTest extends WvletSpec {
 
     /**
       * Captures the output stream and returns the printed messages as a String
+      *
       * @param body
       * @tparam U
       * @return
@@ -234,10 +235,8 @@ class LauncherTest extends WvletSpec {
 
 object LauncherTest {
 
-  case class GlobalOption(@option(prefix = "-h,--help", description = "display help messages", isHelp = true)
-                          help: Boolean = false,
-                          @option(prefix = "-l,--loglevel", description = "log level")
-                          loglevel: Option[LogLevel] = None,
+  case class GlobalOption(@option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
+                          @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
                           var started: Boolean = false)
       extends LogSupport {
 
@@ -269,25 +268,18 @@ object LauncherTest {
   }
 
   class MyCommandModule(val g: GlobalOption) extends CommandModule with LogSupport {
-    def modules = Seq(ModuleDef("box", classOf[SimpleCommandSet], description = "command set"))
+    def modules = Seq(ModuleDef[SimpleCommandSet]("box", description = "command set"))
 
     trace(s"global option: $g")
   }
 
-  class CommandWithPrivateField(@option(prefix = "-h,--help", description = "display help", isHelp = true)
-                                help: Boolean,
-                                var started: Boolean = false) {
+  class CommandWithPrivateField(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean, var started: Boolean = false) {
     started = true
   }
 
-  class MyCommand(
-      @option(prefix = "-h,--help", description = "display help", isHelp = true)
-      help: Boolean) {
+  class MyCommand(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean) {
     @command(description = "say hello")
-    def hello(@option(prefix = "-r", description = "repeat times")
-              repeat: Int = 1,
-              @argument
-              message: String = "hello!") {
+    def hello(@option(prefix = "-r", description = "repeat times") repeat: Int = 1, @argument message: String = "hello!") {
       for (i <- 0 until repeat) print(message)
     }
   }
