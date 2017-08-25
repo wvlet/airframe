@@ -77,10 +77,10 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS, opts)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM, opts)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
@@ -212,6 +212,18 @@ lazy val jmx =
     .settings(
       description := "A library for exposing Scala object data through JMX",
       libraryDependencies ++= Seq(
+        wvletTest
+      )
+    )
+    .dependsOn(surfaceJVM)
+
+lazy val opts =
+  Project(id = "airframe-opts", base = file("airframe-opts"))
+    .settings(buildSettings)
+    .settings(
+      description := "Command-line option parser",
+      libraryDependencies ++= Seq(
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
         wvletTest
       )
     )

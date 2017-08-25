@@ -76,6 +76,14 @@ object SurfaceFactory extends LogSupport {
     surfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), new SurfaceFinder().surfaceOf(tpe))
   }
 
+  def methodsOf(s: Surface): Seq[MethodSurface] = {
+    findTypeOf(s)
+      .map { tpe =>
+        methodsOfType(tpe)
+      }
+      .getOrElse(Seq.empty)
+  }
+
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = methodsOfType(implicitly[ru.WeakTypeTag[A]].tpe)
 
   def methodsOfType(tpe: ru.Type): Seq[MethodSurface] = {
