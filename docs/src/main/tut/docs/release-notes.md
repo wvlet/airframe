@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.21
+ - Add [airframe-opts](https://github.com/wvlet/airframe/tree/master/airframe-opts) command line parser.
+
 ## 0.20
  - Migrated [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log) from [wvlet-log](https://github.com/wvlet/log) because 
 these are often commonly used.
