@@ -61,6 +61,43 @@ val productionDesign =
     .bind[Env].toInstance("production")
 ```
 
+## Multi-Binding
+
+If you want to switch a service to be called depending on the user input, you can just use Scala's functionality + Airframe binding. 
+
+To illustrate this, consider building an web application that receives a request and returns a string message.
+`Dispatcher` class receives an URL path and choose an appropriate `Handler` to use:
+
+```scala
+import wvlet.airframe._
+
+trait Handler {
+  def handle(request:Request): String
+}
+
+trait DefaultHandler extends Handler {
+  def handle(request:Request): String = "hello"
+}
+
+trait InfoHandler extends Handler {
+  def handle(rquest:Request): String = "info"
+}
+
+trait Dispatcher {
+  private val dispatcher: String => Handler = {
+    case "info" => bind[InfoHandler]
+    case _ => bind[DefaultHandler]
+  }
+  
+  def dispatch(path:String, request:Request): String =  {
+     dispatcher(path).handle(request)
+  }
+}
+```
+
+In Google Guice, we need to use a special binder like [Multibinder](https://github.com/google/guice/wiki/Multibindings). 
+In Airframe, we just need to write a Scala code that uses `bind[X]`. 
+
 ## Tagged Type Binding
 
 Tagged binding `@@` is also useful to annotate type names:
