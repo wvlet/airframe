@@ -27,8 +27,7 @@ class MyAppClass extends LogSupport {
   trace("trace message")
 
   info(null)
-  info(
-    """This is a multi-line
+  info("""This is a multi-line
       |log message!""".stripMargin)
   info(Seq(1, 2, 3, 4))
 
@@ -41,12 +40,11 @@ object Sample extends LogSupport {
   self =>
   def loggerName: String = logger.getName
 }
+
 /**
   *
   */
 class LoggerTest extends Spec {
-
-
 
   override def beforeAll {
     Logger.setDefaultLogLevel(LogLevel.TRACE)
@@ -71,12 +69,12 @@ class LoggerTest extends Spec {
       Logger.setDefaultLogLevel(current)
     }
 
-    "create logger from class" taggedAs(Tag("app")) in {
+    "create logger from class" taggedAs (Tag("app")) in {
       val l = Logger.of[MyAppClass]
       l.getName shouldBe "wvlet.log.MyAppClass"
     }
 
-    "display log messages" taggedAs(Tag("app")) in {
+    "display log messages" taggedAs (Tag("app")) in {
       info("logging test")
       new MyAppClass
     }
@@ -161,10 +159,9 @@ class LoggerTest extends Spec {
     }
 
     "use succinct name when used with anonymous trait" in {
-      if(LogEnv.isScalaJS) {
+      if (LogEnv.isScalaJS) {
         pending
-      }
-      else {
+      } else {
         val l = new Sample with LogSupport {
           self =>
           self.logger.getName shouldBe ("wvlet.log.Sample")
@@ -172,16 +169,42 @@ class LoggerTest extends Spec {
       }
     }
 
-    "Remove $ from object name" taggedAs(Tag("app")) in {
+    "Remove $ from object name" taggedAs (Tag("app")) in {
       val o = Sample
       o.loggerName shouldBe "wvlet.log.Sample"
+    }
+
+    "clear parent handlers" in {
+      try {
+        val myHandler = new ConsoleLogHandler(LogFormatter.TSVLogFormatter)
+
+        val l = Logger("wvlet.log.Sample")
+        val p = Logger("wvlet")
+        p.clearHandlers
+        p.addHandler(myHandler)
+        val r = Logger.rootLogger
+        r.clearHandlers
+        r.addHandler(myHandler)
+
+        p.getHandlers shouldBe Seq(myHandler)
+        r.getHandlers shouldBe Seq(myHandler)
+
+        // Clean up handlers
+        l.clearAllHandlers
+        l.getHandlers shouldBe Seq.empty
+        p.getHandlers shouldBe Seq.empty
+        r.getHandlers shouldBe Seq.empty
+
+      } finally {
+        logger.clearAllHandlers
+        Logger.setDefaultFormatter(SourceCodeLogFormatter)
+      }
     }
   }
 
   "LogLevel" should {
     "support java.util.LogLevel" in {
-      for (l <- Seq(jul.Level.ALL, jul.Level.SEVERE, jul.Level.WARNING, jul.Level.FINE, jul.Level.CONFIG, jul.Level.FINER, jul.Level.FINEST,
-        jul.Level.OFF)) {
+      for (l <- Seq(jul.Level.ALL, jul.Level.SEVERE, jul.Level.WARNING, jul.Level.FINE, jul.Level.CONFIG, jul.Level.FINER, jul.Level.FINEST, jul.Level.OFF)) {
         LogLevel(l)
       }
     }
@@ -201,7 +224,7 @@ class LoggerTest extends Spec {
       val l1 = LogLevel.unapply("info")
       l1.isDefined shouldBe true
       val l2 = LogLevel.unapply("unknown-loglevel")
-      l2.isDefined shouldNot be (true)
+      l2.isDefined shouldNot be(true)
     }
 
     "be able to sort LogLevels" in {

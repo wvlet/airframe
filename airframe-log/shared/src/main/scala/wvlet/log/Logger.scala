@@ -28,19 +28,18 @@ import scala.reflect.ClassTag
   *
   * @param wrapped
   */
-class Logger(
-  private val name:String,
-  /**
-    * Since java.util.logging.Logger is non-serializable, we need to find the logger instance after deserialization.
-    * If wrapped is null, _log method will find or create the logger instance.
-    */
-  @transient private[log] var wrapped: jl.Logger)
-  extends Serializable {
+class Logger(private val name: String,
+             /**
+               * Since java.util.logging.Logger is non-serializable, we need to find the logger instance after deserialization.
+               * If wrapped is null, _log method will find or create the logger instance.
+               */
+             @transient private[log] var wrapped: jl.Logger)
+    extends Serializable {
 
   import LogMacros._
 
   private def _log = {
-    if(wrapped == null) {
+    if (wrapped == null) {
       wrapped = jl.Logger.getLogger(name)
     }
     wrapped
@@ -68,13 +67,11 @@ class Logger(
     def getLogLevelOf(l: jl.Logger): LogLevel = {
       if (l == null) {
         LogLevel.INFO
-      }
-      else {
+      } else {
         val jlLevel = l.getLevel
         if (jlLevel != null) {
           LogLevel(jlLevel)
-        }
-        else {
+        } else {
           getLogLevelOf(l.getParent)
         }
       }
@@ -96,6 +93,10 @@ class Logger(
     setUseParentHandlers(false)
   }
 
+  def getParent: Option[Logger] = {
+    Option(wrapped.getParent).map(x => Logger(x.getName))
+  }
+
   def addHandler(h: Handler) {
     _log.addHandler(h)
   }
@@ -113,6 +114,23 @@ class Logger(
     for (lst <- Option(_log.getHandlers); h <- lst) {
       _log.removeHandler(h)
     }
+  }
+
+  /**
+    * Clean up all handlers including this and parent, ancestor loggers
+    */
+  def clearAllHandlers {
+    var l: Option[Logger] = Some(this)
+    while (l.isDefined) {
+      l.map { x =>
+        x.clearHandlers
+        l = x.getParent
+      }
+    }
+  }
+
+  def getHandlers: Seq[Handler] = {
+    wrapped.getHandlers.toSeq
   }
 
   def resetLogLevel {
@@ -140,16 +158,15 @@ class Logger(
 
   protected def formatLog(message: Any): String = {
     val formatted = message match {
-      case null => ""
-      case e: Error => LogFormatter.formatStacktrace(e)
+      case null         => ""
+      case e: Error     => LogFormatter.formatStacktrace(e)
       case e: Exception => LogFormatter.formatStacktrace(e)
-      case _ => message.toString
+      case _            => message.toString
     }
 
     if (isMultiLine(formatted)) {
       s"\n${formatted}"
-    }
-    else {
+    } else {
       formatted
     }
   }
@@ -161,9 +178,7 @@ object Logger {
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  lazy val rootLogger = initLogger(
-    name = "",
-    handlers = Seq(new ConsoleLogHandler(SourceCodeLogFormatter)))
+  lazy val rootLogger = initLogger(name = "", handlers = Seq(new ConsoleLogHandler(SourceCodeLogFormatter)))
 
   /**
     * Create a new java.util.logging.Logger
@@ -174,10 +189,7 @@ object Logger {
     * @param useParents
     * @return
     */
-  private[log] def initLogger(name: String,
-                              level: Option[LogLevel] = None,
-                              handlers: Seq[Handler] = Seq.empty,
-                              useParents: Boolean = true): Logger = {
+  private[log] def initLogger(name: String, level: Option[LogLevel] = None, handlers: Seq[Handler] = Seq.empty, useParents: Boolean = true): Logger = {
     val logger = Logger.apply(name)
     logger.clearHandlers
     level.foreach(l => logger.setLogLevel(l))
@@ -234,19 +246,19 @@ object Logger {
     }
   }
 
-  def scheduleLogLevelScan : Unit = { LogEnv.scheduleLogLevelScan }
-  def stopScheduledLogLevelScan : Unit = { LogEnv.stopScheduledLogLevelScan }
+  def scheduleLogLevelScan: Unit      = { LogEnv.scheduleLogLevelScan }
+  def stopScheduledLogLevelScan: Unit = { LogEnv.stopScheduledLogLevelScan }
 
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
     */
-  def scanLogLevels : Unit = { LogEnv.scanLogLevels }
+  def scanLogLevels: Unit = { LogEnv.scanLogLevels }
 
   /**
     * Scan the specified log level file
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]) : Unit = { LogEnv.scanLogLevels }
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels }
 
 }
