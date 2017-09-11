@@ -10,10 +10,6 @@ val buildSettings = Seq[Setting[_]](
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
-  incOptions := incOptions.value
-    .withNameHashing(true)
-    // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
-    .withLogRecompileOnMacro(false),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),
@@ -63,8 +59,8 @@ val buildSettings = Seq[Setting[_]](
     } else {
       Opts.resolver.sonatypeStaging
     }
-  ),
-  scalafmtOnCompile in ThisBuild := true
+  )
+//  scalafmtOnCompile in ThisBuild := true
 )
 
 val noPublish = Seq(
@@ -85,6 +81,7 @@ lazy val projectJVM =
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
+/*
 lazy val docs =
   project
     .enablePlugins(MicrositesPlugin)
@@ -118,6 +115,7 @@ lazy val docs =
         "gray"            -> "#534F54"
       )
     )
+ */
 
 lazy val airframe =
   crossProject

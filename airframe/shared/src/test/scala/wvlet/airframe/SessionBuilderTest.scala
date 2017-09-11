@@ -22,8 +22,8 @@ class SessionBuilderTest extends AirframeSpec {
   "SessionBuilder" should {
     "create a named session" in {
       val session = d.session
-                    .withName("MySession")
-                    .create
+        .withName("MySession")
+        .create
       session.name shouldBe "MySession"
 
       session.start
@@ -34,12 +34,12 @@ class SessionBuilderTest extends AirframeSpec {
     "create a session with custom event handler" in {
       var counter = 0
       val session = d.session
-                    .addEventHandler(new LifeCycleEventHandler {
-                      override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-                        counter += 1
-                      }
-                    })
-                    .create
+        .addEventHandler(new LifeCycleEventHandler {
+          override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+            counter += 1
+          }
+        })
+        .create
 
       session.start {
         counter shouldBe 1

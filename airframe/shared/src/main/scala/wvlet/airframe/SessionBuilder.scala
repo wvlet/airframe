@@ -19,19 +19,17 @@ import wvlet.surface.Surface
 /**
   *
   */
-class SessionBuilder(design:Design, name:Option[String] = None,
-    handler:LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
-    extends LogSupport {
+class SessionBuilder(design: Design, name: Option[String] = None, handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
 
   /**
     * @param e
     * @return
     */
-  def addEventHandler(e:LifeCycleEventHandler): SessionBuilder = {
+  def addEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
     new SessionBuilder(design, name, handler.wraps(e))
   }
 
-  def withName(sessionName:String) : SessionBuilder = {
+  def withName(sessionName: String): SessionBuilder = {
     new SessionBuilder(design, Some(sessionName), handler)
   }
 
@@ -40,11 +38,10 @@ class SessionBuilder(design:Design, name:Option[String] = None,
     val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
       lst.last
     }
-    val keyIndex: Map[Surface, Int]
-      = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
-    val sortedBindings = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    val l =  new LifeCycleManager(handler)
-    val session = new AirframeSession(name, sortedBindings, l)
+    val keyIndex: Map[Surface, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
+    val sortedBindings              = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
+    val l                           = new LifeCycleManager(handler)
+    val session                     = new AirframeSession(name, sortedBindings, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

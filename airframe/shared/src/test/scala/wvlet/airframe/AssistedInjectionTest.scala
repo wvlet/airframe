@@ -26,23 +26,22 @@ class AssistedInjectionTest extends AirframeSpec {
 
     "support assistd injection" in {
       newDesign
-      .bind[MyService].toInstance("hello")
-      .withSession {session =>
-        val p = session.build[NamedServiceProvider]
-        val a1 = p.provider("A1", session)
-        val a2 = p.provider("A2", session)
+        .bind[MyService].toInstance("hello")
+        .withSession { session =>
+          val p  = session.build[NamedServiceProvider]
+          val a1 = p.provider("A1", session)
+          val a2 = p.provider("A2", session)
 
-        a1.name shouldBe "A1"
-        a2.name shouldBe "A2"
+          a1.name shouldBe "A1"
+          a2.name shouldBe "A2"
 
-        a1.service shouldBe "hello"
-        a2.service shouldBe "hello"
+          a1.service shouldBe "hello"
+          a2.service shouldBe "hello"
 
-
-        val a3 = assistedInjector("A3", session)
-        a3.name shouldBe "A3"
-        a3.service shouldBe "hello"
-      }
+          val a3 = assistedInjector("A3", session)
+          a3.name shouldBe "A3"
+          a3.service shouldBe "hello"
+        }
     }
   }
 
@@ -58,14 +57,15 @@ object AssistedInjectionTest extends LogSupport {
   }
 
   trait NamedServiceProvider {
-    val provider =  (givenName: String, session:Session) => new NamedService with SessionHolder {
-      override def airframeSession: Session = session
-      val name: String = givenName
+    val provider = (givenName: String, session: Session) =>
+      new NamedService with SessionHolder {
+        override def airframeSession: Session = session
+        val name: String                      = givenName
     }
   }
 
-  def assistedInjector(serviceName:String, session:Session): NamedService = new NamedService with SessionHolder {
+  def assistedInjector(serviceName: String, session: Session): NamedService = new NamedService with SessionHolder {
     override def airframeSession: Session = session
-    val name: String = serviceName
+    val name: String                      = serviceName
   }
 }

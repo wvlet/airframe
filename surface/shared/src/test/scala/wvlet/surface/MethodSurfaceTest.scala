@@ -17,12 +17,12 @@ package wvlet.surface
 object MethodExamples {
 
   class A {
-    def hello : String = "hello"
-    def arg2(i:Int, b:Boolean) : String = "arg2"
-    def abst[X](v:X) : X = v
-    protected def helloProtected = "hello"
-    private def helloPrivate = "hello"
-    final def helloFinal : String = "hello"
+    def hello: String                    = "hello"
+    def arg2(i: Int, b: Boolean): String = "arg2"
+    def abst[X](v: X): X                 = v
+    protected def helloProtected         = "hello"
+    private def helloPrivate             = "hello"
+    final def helloFinal: String         = "hello"
   }
 
   type MyA = A
@@ -30,6 +30,7 @@ object MethodExamples {
 
 import MethodExamples._
 import wvlet.surface
+
 /**
   *
   */

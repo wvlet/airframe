@@ -20,8 +20,8 @@ import wvlet.log.LogFormatter._
   */
 class WvletLog extends Spec with LogSupport {
 
-  def log(formatter:LogFormatter) {
-    LogEnv.defaultConsoleOutput.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$","")}]:")
+  def log(formatter: LogFormatter) {
+    LogEnv.defaultConsoleOutput.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$", "")}]:")
     logger.setFormatter(formatter)
     logger.info("info log")
     logger.debug("debug log")
@@ -30,7 +30,6 @@ class WvletLog extends Spec with LogSupport {
     logger.error("error log", new Throwable("exception test"))
     LogEnv.defaultConsoleOutput.println
   }
-
 
   "FancyLogging" should {
 
@@ -65,8 +64,7 @@ class WvletLog extends Spec with LogSupport {
         log(IntelliJLogFormatter)
         log(TSVLogFormatter)
         log(BareFormatter)
-      }
-      finally {
+      } finally {
         logger.resetLogLevel
         logger.setFormatter(SourceCodeLogFormatter)
         Thread.currentThread().setName(name)

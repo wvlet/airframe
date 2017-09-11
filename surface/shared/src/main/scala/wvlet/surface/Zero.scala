@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 object Zero extends LogSupport {
 
   type ZeroValueFactory = PartialFunction[Surface, Any]
-  type SurfaceFilter = PartialFunction[Surface, Surface]
+  type SurfaceFilter    = PartialFunction[Surface, Surface]
 
   private def isPrimitive: SurfaceFilter = {
     case p if p.isPrimitive => p
@@ -34,16 +34,16 @@ object Zero extends LogSupport {
   }
 
   private def zeroOfPrimitives: ZeroValueFactory = isPrimitive andThen {
-    case Primitive.String => ""
+    case Primitive.String  => ""
     case Primitive.Boolean => false
-    case Primitive.Int => 0
-    case Primitive.Long => 0L
-    case Primitive.Float => 0f
-    case Primitive.Double => 0.0
-    case Primitive.Unit => null
-    case Primitive.Byte => 0.toByte
-    case Primitive.Short => 0.toShort
-    case Primitive.Char => 0.toChar
+    case Primitive.Int     => 0
+    case Primitive.Long    => 0L
+    case Primitive.Float   => 0f
+    case Primitive.Double  => 0.0
+    case Primitive.Unit    => null
+    case Primitive.Byte    => 0.toByte
+    case Primitive.Short   => 0.toShort
+    case Primitive.Char    => 0.toChar
   }
 
   private def zeroOfArray: ZeroValueFactory = {
@@ -53,13 +53,14 @@ object Zero extends LogSupport {
 
   private def zeroOfSpecialType: ZeroValueFactory = {
     case s if s.isOption => None
-    case s if s.rawType == classOf[Nothing] ||
-      s.rawType == classOf[AnyRef] ||
-      s.rawType == classOf[Any]
-    => null
+    case s
+        if s.rawType == classOf[Nothing] ||
+          s.rawType == classOf[AnyRef] ||
+          s.rawType == classOf[Any] =>
+      null
   }
 
-  private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen  {
+  private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen {
     case g if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
       Seq.empty
     case g if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
@@ -87,7 +88,7 @@ object Zero extends LogSupport {
   private def zeroOfInstantiatable: ZeroValueFactory = {
     case t if t.objectFactory.isDefined =>
       val factory = t.objectFactory.get
-      val args = t.params.map(x => zeroOf(x.surface))
+      val args    = t.params.map(x => zeroOf(x.surface))
       factory.newInstance(args)
   }
 

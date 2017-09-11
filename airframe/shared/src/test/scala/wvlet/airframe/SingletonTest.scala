@@ -57,7 +57,7 @@ class SingletonTest extends AirframeSpec {
 
   val design =
     newDesign
-    .bind[TraitCounter].toInstance(new AtomicInteger(0))
+      .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
   "Singleton" should {
     "support bindSingleton[X]" in {

@@ -37,11 +37,11 @@ object ServiceMixinExample {
   class ConsolePrinter(config: ConsoleConfig) extends Printer with LogSupport {
     info(s"using config: ${config}")
 
-    def print(s: String) {config.out.println(s)}
+    def print(s: String) { config.out.println(s) }
   }
 
   class LogPrinter extends Printer with LogSupport {
-    def print(s: String) {info(s)}
+    def print(s: String) { info(s) }
   }
 
   class Fortune {
@@ -115,11 +115,9 @@ object ServiceMixinExample {
     val heavy = bind[HeavyObject]
   }
 
-  trait AirframeAppA extends HeavySingletonService {
-  }
+  trait AirframeAppA extends HeavySingletonService {}
 
-  trait AirframeAppB extends HeavySingletonService {
-  }
+  trait AirframeAppB extends HeavySingletonService {}
 
   case class A(b: B)
   case class B(a: A)
@@ -136,8 +134,12 @@ object ServiceMixinExample {
   case class HelloConfig(message: String)
 
   trait FactoryExample {
-    val hello  = bind { config: HelloConfig => s"${config.message}" }
-    val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) => s"${c1.message}:${c2.getClass.getSimpleName}" }
+    val hello = bind { config: HelloConfig =>
+      s"${config.message}"
+    }
+    val hello2 = bind { (c1: HelloConfig, c2: EagerSingleton) =>
+      s"${c1.message}:${c2.getClass.getSimpleName}"
+    }
 
     val helloFromProvider = bind(provider _)
 
@@ -146,9 +148,9 @@ object ServiceMixinExample {
 
   case class Fruit(name: String)
 
-  type Apple = Fruit
+  type Apple  = Fruit
   type Banana = Fruit
-  type Lemon = Fruit
+  type Lemon  = Fruit
 
   trait TaggedBinding {
     val apple  = bind[Apple]
@@ -182,11 +184,11 @@ object ServiceMixinExample {
   }
 
   trait ConcreteModule extends AbstractModule with LogSupport {
-    def hello {info("hello!")}
+    def hello { info("hello!") }
   }
 
   object ConcreteSingleton extends AbstractModule with LogSupport {
-    def hello {info("hello singleton!")}
+    def hello { info("hello singleton!") }
   }
 
   trait NonAbstractModule extends LogSupport {
@@ -230,8 +232,8 @@ object ServiceMixinExample {
 
   trait LifeCycleExample {
     val module = bind[MyModule]
-                 .onInit(_.init)
-                 .onShutdown(_.close)
+      .onInit(_.init)
+      .onShutdown(_.close)
   }
 
   trait BindLifeCycleExample {
@@ -244,11 +246,10 @@ object ServiceMixinExample {
 
   trait BindLifeCycleExample2 {
     val module = bind[MyModule]
-                 .onInit(_.init)
-                 .onStart(_.start)
-                 .onShutdown(_.close)
+      .onInit(_.init)
+      .onStart(_.start)
+      .onShutdown(_.close)
   }
-
 
   trait MissingDep {
     val obj = bind[String]
@@ -268,25 +269,25 @@ class AirframeTest extends AirframeSpec {
 
     "create a design" in {
       // Both should work
-      val d = Airframe.newDesign.bind[Printer].to[ConsolePrinter]
+      val d  = Airframe.newDesign.bind[Printer].to[ConsolePrinter]
       val d1 = newDesign.bind[Printer].to[ConsolePrinter]
     }
 
     "instantiate class" in {
       val d = newDesign
-              .bind[Printer].to[ConsolePrinter]
-              .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+        .bind[Printer].to[ConsolePrinter]
+        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
       val m = d.newSession.build[FortunePrinterMixin]
     }
 
     "create singleton" in {
       val d = newDesign
-              .bind[HeavyObject].toSingleton
+        .bind[HeavyObject].toSingleton
 
       val session = d.newSession
-      val a = session.build[AirframeAppA]
-      val b = session.build[AirframeAppB]
+      val a       = session.build[AirframeAppA]
+      val b       = session.build[AirframeAppB]
       a.heavy shouldEqual b.heavy
     }
 
@@ -294,18 +295,18 @@ class AirframeTest extends AirframeSpec {
       val start = System.nanoTime()
       val session =
         newDesign
-        .bind[EagerSingleton].toEagerSingleton
-        .newSession
+          .bind[EagerSingleton].toEagerSingleton
+          .newSession
       val current = System.nanoTime()
-      val s = session.build[EagerSingleton]
+      val s       = session.build[EagerSingleton]
       s.initializedTime should be >= start
       s.initializedTime should be <= current
     }
 
     "create eager singleton type" taggedAs ("to-singleton") in {
       val d = newDesign
-              .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-              .bind[Printer].toEagerSingletonOf[ConsolePrinter]
+        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+        .bind[Printer].toEagerSingletonOf[ConsolePrinter]
 
       val p = d.newSession.build[Printer]
       p.getClass shouldBe classOf[ConsolePrinter]
@@ -318,19 +319,19 @@ class AirframeTest extends AirframeSpec {
     "forbid binding to the same type" in {
       val ex = intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
-                .bind[Printer].to[Printer]
+          .bind[Printer].to[Printer]
       }
       ex.deps should contain(surface.of[Printer])
       ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
-                .bind[Printer].toSingletonOf[Printer]
+          .bind[Printer].toSingletonOf[Printer]
       }.deps should contain(surface.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
-                .bind[Printer].toEagerSingletonOf[Printer]
+          .bind[Printer].toEagerSingletonOf[Printer]
       }.deps should contain(surface.of[Printer])
     }
 
@@ -352,7 +353,6 @@ class AirframeTest extends AirframeSpec {
 //      caught.deps should contain(surface.of[B])
     }
 
-
     "detect missing dependencies" in {
       val d = newDesign
       warn(s"Running missing dependency check")
@@ -366,9 +366,9 @@ class AirframeTest extends AirframeSpec {
     "find a session in parameter" in {
       pending
       val session = newDesign
-                    .bind[Printer].to[ConsolePrinter]
-                    .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-                    .newSession
+        .bind[Printer].to[ConsolePrinter]
+        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+        .newSession
       new ClassWithContext(session)
     }
 
@@ -377,46 +377,44 @@ class AirframeTest extends AirframeSpec {
 
       val design =
         newDesign
-        .bind[EagerSingleton].toEagerSingleton
-        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+          .bind[EagerSingleton].toEagerSingleton
+          .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val session = design
-                    .session
-                    .addEventHandler(new LifeCycleEventHandler {
-                      override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-                        counter.incrementAndGet()
-                      }
-                    })
-                    .create
+      val session = design.session
+        .addEventHandler(new LifeCycleEventHandler {
+          override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+            counter.incrementAndGet()
+          }
+        })
+        .create
 
       session.build[ConsoleConfig]
       counter.get shouldBe 2
     }
 
-    "support binding via factory" taggedAs("factory-binding") in {
+    "support binding via factory" taggedAs ("factory-binding") in {
       val d = newDesign
-              .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
+        .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
 
       val session = d.newSession
-      val f = session.build[FactoryExample]
+      val f       = session.build[FactoryExample]
       f.hello shouldBe "Hello Airframe!"
       f.helloFromProvider shouldBe "Hello Airframe!"
 
       info(f.hello2)
     }
 
-
     "support type alias" taggedAs ("alias") in {
       val apple = surface.of[Apple]
       warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
       val d = newDesign
-              .bind[Apple].toInstance(Fruit("apple"))
-              .bind[Banana].toInstance(Fruit("banana"))
-              .bind[Lemon].toInstance(Fruit("lemon"))
+        .bind[Apple].toInstance(Fruit("apple"))
+        .bind[Banana].toInstance(Fruit("banana"))
+        .bind[Lemon].toInstance(Fruit("lemon"))
 
       val session = d.newSession
-      val tagged = session.build[TaggedBinding]
+      val tagged  = session.build[TaggedBinding]
       tagged.apple.name shouldBe ("apple")
       tagged.banana.name shouldBe ("banana")
       tagged.lemon.name shouldBe ("lemon")
@@ -437,7 +435,7 @@ class AirframeTest extends AirframeSpec {
 
     "build abstract type that has concrete binding" taggedAs ("abstract") in {
       val d = newDesign
-              .bind[AbstractModule].to[ConcreteModule]
+        .bind[AbstractModule].to[ConcreteModule]
       val s = d.newSession
       val m = s.build[AbstractModule]
       m.hello
@@ -445,16 +443,15 @@ class AirframeTest extends AirframeSpec {
 
     "build nested abstract type that has concrete binding" taggedAs ("nested-abstract") in {
       val d = newDesign
-              .bind[AbstractModule].to[ConcreteModule]
+        .bind[AbstractModule].to[ConcreteModule]
       val s = d.newSession
       val m = s.build[NestedAbstractModule]
       m.m.hello
     }
 
-
     "build a trait bound to singleton" taggedAs ("singleton") in {
       val d = newDesign
-              .bind[AbstractModule].toInstance(ConcreteSingleton)
+        .bind[AbstractModule].toInstance(ConcreteSingleton)
       val s = d.newSession
       val m = s.build[AbstractModule]
       m.hello
@@ -469,18 +466,18 @@ class AirframeTest extends AirframeSpec {
     "build a trait to singleton" taggedAs ("trait-singleton") in {
       val d =
         newDesign
-        .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
+          .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
 
       val m = d.newSession.build[NonAbstractModule]
-      m shouldBe theSameInstanceAs (SingletonOfNonAbstractModules)
+      m shouldBe theSameInstanceAs(SingletonOfNonAbstractModules)
 
     }
 
     "create single with inject eagerly" in {
       val start = System.nanoTime()
       val d = newDesign
-              .bind[EagerSingletonWithInject].toEagerSingleton
-      val s = d.newSession.build[EagerSingletonWithInject]
+        .bind[EagerSingletonWithInject].toEagerSingleton
+      val s       = d.newSession.build[EagerSingletonWithInject]
       val current = System.nanoTime()
       s.initializedTime should be >= start
       s.initializedTime should be <= current
@@ -488,7 +485,7 @@ class AirframeTest extends AirframeSpec {
 
     "support onInit and onShutdown" taggedAs ("lifecycle") in {
       val session = newDesign.newSession
-      val e = session.build[LifeCycleExample]
+      val e       = session.build[LifeCycleExample]
       e.module.initCount.get() shouldBe 1
       session.start
       session.shutdown
@@ -497,7 +494,7 @@ class AirframeTest extends AirframeSpec {
 
     "bind lifecycle code" taggedAs ("bind-init") in {
       val session = newDesign.newSession
-      val e = session.build[BindLifeCycleExample]
+      val e       = session.build[BindLifeCycleExample]
       e.module.initCount.get() shouldBe 1
 
       session.start
@@ -509,7 +506,7 @@ class AirframeTest extends AirframeSpec {
 
     "bind lifecycle" taggedAs ("bind-lifecycle") in {
       val session = newDesign.newSession
-      val e = session.build[BindLifeCycleExample2]
+      val e       = session.build[BindLifeCycleExample2]
       e.module.initCount.get() shouldBe 1
 
       session.start
@@ -536,8 +533,8 @@ class AirframeTest extends AirframeSpec {
     "throw MISSING_SESSION" in {
 
       warn("Running MISSING_SESSION test")
-      val caught = intercept[MISSING_SESSION]{
-        Session.findSession(surface.of[Test], new Test{})
+      val caught = intercept[MISSING_SESSION] {
+        Session.findSession(surface.of[Test], new Test {})
       }
       warn(caught.getMessage)
     }

@@ -23,7 +23,7 @@ trait NonAbstractTrait extends LogSupport {
 }
 
 trait AbstractTrait extends LogSupport {
-  def abstractMethod : Unit
+  def abstractMethod: Unit
 }
 
 trait ConcreteTrait extends AbstractTrait {
@@ -42,7 +42,6 @@ class ConcreteClass {
   val t = bind[NonAbstractTrait]
 }
 
-
 /**
   *
   */
@@ -57,10 +56,10 @@ class AirframeMacrosTest extends AirframeSpec {
 
     "build abstract trait" in {
       val session = newDesign
-                    .bind[AbstractTrait].to[ConcreteTrait]
-                    .newSession
+        .bind[AbstractTrait].to[ConcreteTrait]
+        .newSession
 
-      val t = session.build[AbstractTrait]
+      val t   = session.build[AbstractTrait]
       val app = session.build[App2]
       t.abstractMethod
       app.t.abstractMethod
