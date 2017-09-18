@@ -81,7 +81,6 @@ lazy val projectJVM =
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
-/*
 lazy val docs =
   project
     .enablePlugins(MicrositesPlugin)
@@ -94,7 +93,13 @@ lazy val docs =
       // Necessary for publishMicrosite
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
-      watchSources := (sourceDirectory.value ** "*").filter(!_.isDirectory).get,
+      watchSources += new sbt.internal.io.Source(
+        sourceDirectory.value,
+        new FileFilter{
+          def accept(f:File) = !f.isDirectory
+        },
+        NothingFilter
+      ),
       micrositeName := "Airframe",
       micrositeDescription := "Best Practice of Building Service Objects in Scala",
       micrositeAuthor := "Taro L. Saito",
@@ -115,7 +120,6 @@ lazy val docs =
         "gray"            -> "#534F54"
       )
     )
- */
 
 lazy val airframe =
   crossProject
