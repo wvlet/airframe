@@ -15,6 +15,10 @@ language: scala
 
 matrix:
   include:
+  # Code format test
+  - env: SCALA_VERSION=2.12.3 PROJECT=code-format
+    jdk: oraclejdk8
+    script: ./scalafmt --test
   - env: SCALA_VERSION=2.12.3 PROJECT=projectJVM
     jdk: oraclejdk8
     script:
