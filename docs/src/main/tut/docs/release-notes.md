@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.22
+ - Add Logger.clearAllHandlers to clean-up existing log handlers set by third-party libraries
+ - Apply scalafmt code style 
+
 ## 0.21
  - Add [airframe-opts](https://github.com/wvlet/airframe/tree/master/airframe-opts) command line parser.
 
