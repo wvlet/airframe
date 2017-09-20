@@ -39,7 +39,6 @@ trait LocalLogger {
   protected[this] val logger: Logger = Logger(LogEnv.getLoggerName(this.getClass))
 }
 
-
 trait LoggingMethods extends Serializable {
   import LogMacros._
 
@@ -61,5 +60,5 @@ trait LoggingMethods extends Serializable {
 
 trait PublicLoggingMethods extends Serializable { p =>
   import LogMacros._
-  protected[this] def logger : Logger
+  protected[this] def logger: Logger
 }

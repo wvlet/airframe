@@ -16,7 +16,7 @@ package wvlet.airframe
 import java.util.UUID
 
 object LazyF0 {
-  def apply[R](f: => R) : LazyF0[R] = new LazyF0(f)
+  def apply[R](f: => R): LazyF0[R] = new LazyF0(f)
 }
 
 /**

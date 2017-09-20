@@ -18,10 +18,9 @@ import wvlet.surface
 trait Message
 case class Hello(message: String) extends Message
 
-
 object Alias {
   trait Hello[A] {
-    def hello : A
+    def hello: A
   }
 
   class StringHello extends Hello[String] {
@@ -32,22 +31,21 @@ object Alias {
 }
 
 object DesignTest {
-  type ProductionMessage = Message
+  type ProductionMessage  = Message
   type DevelopmentMessage = Message
-  type ProductionString = String
+  type ProductionString   = String
 
   val d0 = Design.blanc
 
   val d1 =
-    d0
-    .bind[Message].to[Hello]
-    .bind[Hello].toInstance(Hello("world"))
-    .bind[Message].toSingleton
-    .bind[Message].toEagerSingleton
-    .bind[Message].toEagerSingletonOf[Hello]
-    .bind[Message].toSingletonOf[Hello]
-    .bind[ProductionMessage].toInstance(Hello("production"))
-    .bind[DevelopmentMessage].toInstance(Hello("development"))
+    d0.bind[Message].to[Hello]
+      .bind[Hello].toInstance(Hello("world"))
+      .bind[Message].toSingleton
+      .bind[Message].toEagerSingleton
+      .bind[Message].toEagerSingletonOf[Hello]
+      .bind[Message].toSingletonOf[Hello]
+      .bind[ProductionMessage].toInstance(Hello("production"))
+      .bind[DevelopmentMessage].toInstance(Hello("development"))
 }
 
 /**
@@ -62,11 +60,11 @@ class DesignTest extends AirframeSpec {
       d0 shouldEqual Design.blanc
 
       val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
-      d2 should not equal(d1)
+      d2 should not equal (d1)
     }
 
     "be appendable" in {
-      val o = Hello("override")
+      val o  = Hello("override")
       val d2 = d1.bind[Hello].toInstance(o)
 
       val d3 = d1 + d2
@@ -89,9 +87,9 @@ class DesignTest extends AirframeSpec {
     "remove binding" in {
       val dd = d1.remove[Message]
 
-      def hasMessage(d:Design) : Boolean =
+      def hasMessage(d: Design): Boolean =
         d.binding.exists(_.from == surface.of[Message])
-      def hasProductionMessage(d:Design) : Boolean =
+      def hasProductionMessage(d: Design): Boolean =
         d.binding.exists(_.from == surface.of[ProductionMessage])
 
       hasMessage(d1) shouldBe true
@@ -103,16 +101,18 @@ class DesignTest extends AirframeSpec {
 
     "bind providers" in {
       val d = newDesign
-              .bind[Hello].toProvider{ (m : ProductionString) => Hello(m) }
-              .bind[ProductionString].toInstance("hello production")
+        .bind[Hello].toProvider { (m: ProductionString) =>
+          Hello(m)
+        }
+        .bind[ProductionString].toInstance("hello production")
 
       val h = d.newSession.build[Hello]
       h.message shouldBe "hello production"
     }
 
-    "bind type aliases" taggedAs("alias") in {
+    "bind type aliases" taggedAs ("alias") in {
       val d = newDesign
-              .bind[HelloRef].toInstance(new StringHello)
+        .bind[HelloRef].toInstance(new StringHello)
 
       val h = d.newSession.build[HelloRef]
       h.hello shouldBe "hello world"
@@ -121,7 +121,7 @@ class DesignTest extends AirframeSpec {
     "start and stop session" in {
       // Sanity test
       newDesign.withSession { session =>
-      }
+        }
     }
   }
 }

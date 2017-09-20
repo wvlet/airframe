@@ -45,9 +45,9 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding :+ b)
   }
 
-  def remove[A] : Design = macro AirframeMacros.designRemoveImpl[A]
+  def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
 
-  def remove(t: Surface) : Design = {
+  def remove(t: Surface): Design = {
     new Design(binding.filterNot(_.from == t))
   }
 
@@ -55,28 +55,28 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new SessionBuilder(this)
   }
 
-  def newSession : Session = {
+  def newSession: Session = {
     new SessionBuilder(this).create
   }
 
-  def withSession[U](body:Session => U) : U = {
+  def withSession[U](body: Session => U): U = {
     val session = newSession
     try {
       session.start
       body(session)
-    }
-    finally {
+    } finally {
       session.shutdown
     }
   }
 
-  override def toString : String = {
+  override def toString: String = {
     s"Design:\n ${binding.mkString("\n ")}"
   }
 
 }
 
 object Design {
+
   /**
     * Empty design.
     */

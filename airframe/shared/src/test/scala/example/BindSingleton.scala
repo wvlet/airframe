@@ -25,8 +25,8 @@ object BindSingleton {
   import wvlet.airframe._
 
   trait X {
-    def hello: String = "Hello"
-    def goodbye : String = "Good-bye"
+    def hello: String   = "Hello"
+    def goodbye: String = "Good-bye"
   }
   trait Y {
     def world: String = "World"
@@ -58,8 +58,8 @@ object BindSingleton {
   trait App2 extends XYService
 
   val session = newDesign.newSession
-  val app = session.build[App1] // shows "Hello World!"
-  val app2 = session.build[App2] // shows nothing since XY is already initialized
+  val app     = session.build[App1] // shows "Hello World!"
+  val app2    = session.build[App2] // shows nothing since XY is already initialized
   session.shutdown // shows "Good-bye World!"
 }
 

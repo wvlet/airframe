@@ -13,8 +13,7 @@
  */
 package wvlet.airframe
 
-trait HelloBind {
-}
+trait HelloBind {}
 
 trait BindExample {
   val a = bind[HelloBind]
@@ -25,20 +24,20 @@ trait BindExample {
   */
 class SessionTest extends AirframeSpec {
   "Session" should {
-    "pre-compile session injection template" taggedAs("session-inject") in {
+    "pre-compile session injection template" taggedAs ("session-inject") in {
       val session = newDesign.newSession
-      val b = session.build[BindExample]
-      b shouldBe a [BindExample]
+      val b       = session.build[BindExample]
+      b shouldBe a[BindExample]
     }
 
-    "pre-compile singleton binding" taggedAs("singleton-inject") in {
+    "pre-compile singleton binding" taggedAs ("singleton-inject") in {
       // HelloBind should be instantiated without using runtime-eval
       val session = newDesign
-                    .bind[HelloBind].toEagerSingleton
-                    .newSession
+        .bind[HelloBind].toEagerSingleton
+        .newSession
 
       val b = session.build[BindExample]
-      b shouldBe a [BindExample]
+      b shouldBe a[BindExample]
     }
 
   }

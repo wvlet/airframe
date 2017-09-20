@@ -17,4 +17,3 @@ import wvlet.log.LogSupport
 object Airframe extends LogSupport {
   def newDesign: Design = Design.blanc
 }
-

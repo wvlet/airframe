@@ -17,7 +17,7 @@ import wvlet.surface.tag._
 import wvlet.surface
 
 object TaggedTypeTest {
-  case class Person(id:Int, name:String)
+  case class Person(id: Int, name: String)
 
   trait Employee
   trait Customer
@@ -31,8 +31,8 @@ class TaggedTypeTest extends SurfaceSpec {
 
   "TaggedType" should {
     "pass sanity check" in {
-      val e : Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
-      val e2 : Person @@ Guest = new Person(2, "yui")
+      val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
+      val e2: Person @@ Guest   = new Person(2, "yui")
     }
 
     "be a reference" in {
@@ -47,7 +47,7 @@ class TaggedTypeTest extends SurfaceSpec {
       t.typeArgs shouldBe empty
       t.params.mkString(",") shouldBe "id:Int,name:String"
 
-      val n = check(surface.of[Name @@ Employee], "Name@@Employee")
+      val n    = check(surface.of[Name @@ Employee], "Name@@Employee")
       val name = n.dealias
       name.name shouldBe "String"
       n.isPrimitive shouldBe true
@@ -66,18 +66,18 @@ class TaggedTypeTest extends SurfaceSpec {
       val t3 = check(surface.of[Person @@ Guest], "Person@@Guest")
 
       val set = Set(t1, t2)
-      set should contain (surface.of[Person @@ Employee])
-      set should contain (surface.of[Person @@ Customer])
+      set should contain(surface.of[Person @@ Employee])
+      set should contain(surface.of[Person @@ Customer])
       set should not contain (surface.of[Person @@ Guest])
 
-      set should contain (t1)
-      set should contain (t2)
+      set should contain(t1)
+      set should contain(t2)
       set should not contain (t3)
 
       val c = check(surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
       val s = Set(c)
-      s should contain (surface.of[Seq[String] @@ Employee])
-      s should contain (c)
+      s should contain(surface.of[Seq[String] @@ Employee])
+      s should contain(c)
     }
   }
 }

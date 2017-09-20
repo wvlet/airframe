@@ -26,6 +26,7 @@ import scala.language.implicitConversions
   *
   */
 package object airframe {
+
   /**
     * The entry point to create a new design beginning from a blanc design
     * <code>
@@ -34,7 +35,7 @@ package object airframe {
     * val d = design.bind[X]
     * </code>
     */
-  def newDesign: Design = Design.blanc
+  def newDesign: Design     = Design.blanc
   def blancSession: Session = Design.blanc.newSession
 
   def bind[A]: A = macro bindImpl[A]
@@ -53,12 +54,14 @@ package object airframe {
   def bindSingleton[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4SingletonImpl[A, D1, D2, D3, D4]
   def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A = macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
-  private[airframe] val DO_NOTHING = { a: Any => }
+  private[airframe] val DO_NOTHING = { a: Any =>
+    }
 
   /**
     * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
+
     /**
       * @deprecated use onInit, onStart, anShutdown, etc.
       * @return
@@ -71,11 +74,8 @@ package object airframe {
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
   }
 
-  class LifeCycleBinder[A](dep: A, surface:Surface, session: Session) {
-    def apply(
-      init: A => Unit = DO_NOTHING,
-      start: A => Unit = DO_NOTHING,
-      shutdown: A => Unit = DO_NOTHING): A = {
+  class LifeCycleBinder[A](dep: A, surface: Surface, session: Session) {
+    def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING, shutdown: A => Unit = DO_NOTHING): A = {
 
       if (!(init eq DO_NOTHING)) {
         session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init))

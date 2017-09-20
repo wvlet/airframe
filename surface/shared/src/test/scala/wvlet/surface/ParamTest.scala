@@ -16,14 +16,13 @@ import wvlet.surface
 
 object ParamTest {
   object A {
-    def hello: String = "hello"
+    def hello: String       = "hello"
     def apply(s: String): A = A(s.toInt)
   }
 
-  def getter(x: Int):Int = x * 2
+  def getter(x: Int): Int = x * 2
   case class A(id: Int = -1, p1: Int = getter(10))
 }
-
 
 class ParamTest extends SurfaceSpec {
   "Parameter" should {

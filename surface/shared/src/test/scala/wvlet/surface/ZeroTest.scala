@@ -72,7 +72,7 @@ class ZeroTest extends SurfaceSpec {
     "support Scala collections" in {
       zeroCheck(surface.of[Seq[Int]], Seq.empty[Int])
       zeroCheck(surface.of[IndexedSeq[Int]], IndexedSeq.empty[Int])
-      zeroCheck(surface.of[Map[Int,String]], Map.empty[Int, String])
+      zeroCheck(surface.of[Map[Int, String]], Map.empty[Int, String])
       zeroCheck(surface.of[Set[Int]], Set.empty[Int])
       zeroCheck(surface.of[List[Int]], List.empty[Int])
     }
@@ -84,6 +84,6 @@ object ZeroTest {
   trait MyTag
   type MyA = String
 
-  case class A(i:Int, s:String, b:B)
-  case class B(f:Float, d:Double)
+  case class A(i: Int, s: String, b: B)
+  case class B(f: Float, d: Double)
 }

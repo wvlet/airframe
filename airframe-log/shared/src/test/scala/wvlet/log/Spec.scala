@@ -6,11 +6,7 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 /**
   *
   */
-trait Spec extends WordSpec
-  with Matchers
-  with BeforeAndAfter
-  with BeforeAndAfterAll
-  with LogSupport {
+trait Spec extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
 
   Logger.setDefaultFormatter(SourceCodeLogFormatter)
 

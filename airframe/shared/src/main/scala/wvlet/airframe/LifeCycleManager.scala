@@ -19,11 +19,11 @@ import wvlet.log.{LogSupport, Logger}
 import wvlet.surface.Surface
 
 sealed trait LifeCycleStage
-case object INIT extends LifeCycleStage
+case object INIT     extends LifeCycleStage
 case object STARTING extends LifeCycleStage
-case object STARTED extends LifeCycleStage
+case object STARTED  extends LifeCycleStage
 case object STOPPING extends LifeCycleStage
-case object STOPPED extends LifeCycleStage
+case object STOPPED  extends LifeCycleStage
 
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
@@ -31,7 +31,7 @@ case object STOPPED extends LifeCycleStage
 class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   self =>
 
-  private val state = new AtomicReference[LifeCycleStage](INIT)
+  private val state                = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
   private[airframe] def onInit(t: Surface, injectee: AnyRef) {
@@ -58,7 +58,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def shutdown {
     if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
-      || state.compareAndSet(STARTING, STOPPING)) {
+        || state.compareAndSet(STARTING, STOPPING)) {
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
       state.set(STOPPED)
@@ -67,13 +67,13 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   }
 
   private var initializedSingleton = Set.empty[Surface]
-  private var startHook    = Vector.empty[LifeCycleHook]
-  private var preShutdownHook = Vector.empty[LifeCycleHook]
-  private var shutdownHook = Vector.empty[LifeCycleHook]
+  private var startHook            = Vector.empty[LifeCycleHook]
+  private var preShutdownHook      = Vector.empty[LifeCycleHook]
+  private var shutdownHook         = Vector.empty[LifeCycleHook]
 
-  def startHooks: Seq[LifeCycleHook] = startHook
+  def startHooks: Seq[LifeCycleHook]       = startHook
   def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHook
-  def shutdownHooks: Seq[LifeCycleHook] = shutdownHook
+  def shutdownHooks: Seq[LifeCycleHook]    = shutdownHook
 
   private def isSingletonType(t: Surface): Boolean = {
     session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
@@ -82,7 +82,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   def addInitHook(h: LifeCycleHook) {
     debug(s"Add init hook: ${h.surface}")
     val canRunHook = !(isSingletonType(h.surface) && initializedSingleton.contains(h.surface))
-    if(canRunHook) {
+    if (canRunHook) {
       initializedSingleton += h.surface
       h.execute
     }
@@ -101,7 +101,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
         debug(s"Add start hook for ${h.surface}")
         val s = state.get
         startHook :+= h
-        if(s == STARTED) {
+        if (s == STARTED) {
           // If a session is already started, run the start hook immediately
           h.execute
         }
@@ -167,7 +167,7 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   */
 object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    lifeCycleManager.startHooks.map {h =>
+    lifeCycleManager.startHooks.map { h =>
       trace(s"Calling start hook: $h")
       h.execute
     }
@@ -175,7 +175,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     // beforeShutdown
-    for(h <- lifeCycleManager.preShutdownHooks.reverse) {
+    for (h <- lifeCycleManager.preShutdownHooks.reverse) {
       debug(s"Calling pre-shutdown hoook: $h")
       h.execute
     }
@@ -183,11 +183,9 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
     debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
-    shutdownOrder.map {h =>
+    shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
       h.execute
     }
   }
 }
-
-

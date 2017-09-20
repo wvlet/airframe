@@ -91,17 +91,18 @@ import scala.collection.mutable.LinkedHashMap
   */
 trait Timer extends Serializable {
   import collection.JavaConverters._
-  @transient private[this] val holder = new ThreadLocal[util.ArrayDeque[TimeReport]] {
-    override def initialValue() = new util.ArrayDeque[TimeReport]()
-  }
+  @transient private[this] val holder =
+    new ThreadLocal[util.ArrayDeque[TimeReport]] {
+      override def initialValue() = new util.ArrayDeque[TimeReport]()
+    }
 
   private def contextStack = holder.get()
 
-  private def createNewBlock[A](blockName: String, globalRepeat:Int = 1, individualBlockRepeat:Int = 1, f: => A): TimeReport = new TimeReport {
-    val name: String = blockName
-    val repeat : Int = globalRepeat
-    val blockRepeat : Int = individualBlockRepeat
-    def body() = f
+  private def createNewBlock[A](blockName: String, globalRepeat: Int = 1, individualBlockRepeat: Int = 1, f: => A): TimeReport = new TimeReport {
+    val name: String     = blockName
+    val repeat: Int      = globalRepeat
+    val blockRepeat: Int = individualBlockRepeat
+    def body()           = f
   }
 
   import wvlet.log.LogLevel._
@@ -116,16 +117,15 @@ trait Timer extends Serializable {
     * @tparam A
     * @return
     */
-  protected def time[A](blockName: String, logLevel: LogLevel = INFO, repeat: Int = 1, blockRepeat:Int = 1)(f: => A): TimeReport = {
+  protected def time[A](blockName: String, logLevel: LogLevel = INFO, repeat: Int = 1, blockRepeat: Int = 1)(f: => A): TimeReport = {
     def pushContext(t: TimeReport): Unit = contextStack.push(t)
-    def popContext: Unit = contextStack.pop
+    def popContext: Unit                 = contextStack.pop
 
     val m = createNewBlock(blockName, repeat, blockRepeat, f)
     try {
       pushContext(m)
       m.measure
-    }
-    finally {
+    } finally {
       popContext
       reportLog(m, logLevel)
     }
@@ -133,7 +133,8 @@ trait Timer extends Serializable {
 
   protected def block[A](name: String)(f: => A): TimeReport = {
     val m = contextStack.asScala.lastOption match {
-      case None => throw new IllegalStateException("block {} should be enclosed inside time {}")
+      case None =>
+        throw new IllegalStateException("block {} should be enclosed inside time {}")
       case Some(context) => {
         context.getOrElseUpdate(name, createNewBlock(name, context.blockRepeat, context.blockRepeat, f))
       }
@@ -144,9 +145,9 @@ trait Timer extends Serializable {
   protected def reportLog(m: TimeReport, logLevel: LogLevel): Unit = {
     val l = if (classOf[Logger].isAssignableFrom(this.getClass)) {
       this.asInstanceOf[Logger].log(LogRecord(logLevel, None, m.report, None))
-    }
-    else {
-      Logger(this.getClass.getName).log(LogRecord(logLevel, None, m.report, None))
+    } else {
+      Logger(this.getClass.getName)
+        .log(LogRecord(logLevel, None, m.report, None))
     }
   }
 }
@@ -158,11 +159,11 @@ trait TimeReport extends Ordered[TimeReport] {
   val name: String
   def body(): Unit
 
-  private[TimeReport] val s               = new StopWatch
-  private lazy        val subMeasure      = new LinkedHashMap[String, TimeReport]
-  private             var _executionCount = 0
-  val repeat : Int
-  val blockRepeat : Int
+  private[TimeReport] val s   = new StopWatch
+  private lazy val subMeasure = new LinkedHashMap[String, TimeReport]
+  private var _executionCount = 0
+  val repeat: Int
+  val blockRepeat: Int
 
   private var maxInterval: Double = 0.0
   private var minInterval: Double = Double.MaxValue
@@ -191,8 +192,7 @@ trait TimeReport extends Ordered[TimeReport] {
       s.resume
       try {
         body
-      }
-      finally {
+      } finally {
         val intervalTime = s.stop
         _executionCount += 1
 
@@ -212,8 +212,7 @@ trait TimeReport extends Ordered[TimeReport] {
   def averageWithoutMinMax = {
     if (executionCount > 2) {
       (s.getElapsedTime - min - max) / (_executionCount - 2)
-    }
-    else {
+    } else {
       average
     }
   }
@@ -234,22 +233,20 @@ trait TimeReport extends Ordered[TimeReport] {
     val unitIndex = {
       if (digits.isNaN || digits.isInfinity || digits >= -2.0) {
         0
-      }
-      else {
+      } else {
         val u = -((digits - 1) / 3.0).toInt
         if (u >= symbol.length) symbol.length - 1 else u
       }
     }
     require(unitIndex >= 0 && (unitIndex < symbol.length), s"unitIndex must be between 0 to 2: $unitIndex, digits:$digits")
-    val v = time * math.pow(10, unitIndex * 3)
+    val v   = time * math.pow(10, unitIndex * 3)
     val str = f"$v%.3f ${symbol(unitIndex)}sec."
     f"$str%-11s"
   }
 
   def genReportLine: String = {
-    f"-$name%-15s\ttotal:${toHumanReadableFormat(s.getElapsedTime)}, count:${executionCount}%,5d, avg:${toHumanReadableFormat(average)}, core avg:${
-      toHumanReadableFormat(averageWithoutMinMax)
-    }, min:${toHumanReadableFormat(minInterval)}, max:${toHumanReadableFormat(maxInterval)}"
+    f"-$name%-15s\ttotal:${toHumanReadableFormat(s.getElapsedTime)}, count:${executionCount}%,5d, avg:${toHumanReadableFormat(average)}, core avg:${toHumanReadableFormat(
+      averageWithoutMinMax)}, min:${toHumanReadableFormat(minInterval)}, max:${toHumanReadableFormat(maxInterval)}"
   }
 
   def report: String = {
@@ -271,11 +268,11 @@ trait TimeReport extends Ordered[TimeReport] {
 
 class StopWatch {
 
-  private[StopWatch] object State extends Enumeration {
+  object State extends Enumeration {
     val RUNNING, STOPPED = Value
   }
 
-  private var lastSystemTime        : Double = System.nanoTime
+  private var lastSystemTime: Double         = System.nanoTime
   private var elapsedTimeAccumulated: Double = 0L
   private var state                          = State.RUNNING
 
@@ -288,11 +285,10 @@ class StopWatch {
     */
   def getElapsedTime: Double = {
     if (state == State.RUNNING) {
-      val now = System.nanoTime()
+      val now  = System.nanoTime()
       val diff = now - lastSystemTime
       (elapsedTimeAccumulated + diff) / NANO_UNIT
-    }
-    else {
+    } else {
       elapsedTimeAccumulated / NANO_UNIT
     }
   }
@@ -318,7 +314,7 @@ class StopWatch {
     }
 
     // elapsed time
-    val now = System.nanoTime()
+    val now  = System.nanoTime()
     val diff = now - lastSystemTime
     elapsedTimeAccumulated += diff
     lastSystemTime = now

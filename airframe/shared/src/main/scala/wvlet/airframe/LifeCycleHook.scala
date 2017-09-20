@@ -17,15 +17,13 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 trait LifeCycleHook {
-  def surface : Surface
+  def surface: Surface
   def execute: Unit
 }
 
 case class EventHookHolder[A](surface: Surface, obj: A, hook: A => Any) extends LifeCycleHook with LogSupport {
-  override def toString : String = s"hook for [$surface]"
+  override def toString: String = s"hook for [$surface]"
   def execute {
     hook(obj)
   }
 }
-
-

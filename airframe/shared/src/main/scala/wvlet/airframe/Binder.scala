@@ -35,15 +35,14 @@ object Binder {
   case class SingletonBinding(from: Surface, to: Surface, isEager: Boolean) extends Binding {
     override def forSingleton: Boolean = true
   }
-  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager: Boolean)
-    extends Binding {
+  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager: Boolean) extends Binding {
     assert(!eager || (eager && provideSingleton))
-    def from: Surface = factory.from
+    def from: Surface                  = factory.from
     override def forSingleton: Boolean = provideSingleton
 
     private val uuid: UUID = UUID.randomUUID()
 
-    override def hashCode(): Int = {uuid.hashCode()}
+    override def hashCode(): Int = { uuid.hashCode() }
     override def equals(other: Any): Boolean = {
       other match {
         case that: ProviderBinding =>
@@ -55,16 +54,12 @@ object Binder {
     }
   }
 
-  case class DependencyFactory(
-    from: Surface,
-    dependencyTypes: Seq[Surface],
-    factory: Any) {
+  case class DependencyFactory(from: Surface, dependencyTypes: Seq[Surface], factory: Any) {
 
-    override def toString : String = {
-      val deps = if(dependencyTypes.isEmpty) {
+    override def toString: String = {
+      val deps = if (dependencyTypes.isEmpty) {
         "()"
-      }
-      else {
+      } else {
         s"(${dependencyTypes.mkString(",")})"
       }
       s"${deps}=>${from} [${factory}]"
@@ -144,4 +139,3 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
   def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
   def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
 }
-

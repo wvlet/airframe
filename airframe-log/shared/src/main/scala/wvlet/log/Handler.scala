@@ -9,7 +9,7 @@ import java.util.{logging => jl}
   * @param formatter
   */
 class ConsoleLogHandler(formatter: LogFormatter) extends jl.Handler {
-  private lazy val out : PrintStream = LogEnv.defaultConsoleOutput
+  private lazy val out: PrintStream = LogEnv.defaultConsoleOutput
 
   override def publish(record: jl.LogRecord): Unit = {
     out.println(formatter.format(record))
@@ -41,8 +41,7 @@ object NullHandler extends jl.Handler {
 class BufferedLogHandler(formatter: LogFormatter) extends jl.Handler {
   private val buf = Seq.newBuilder[String]
 
-  override def flush(): Unit = {
-  }
+  override def flush(): Unit = {}
   override def publish(record: jl.LogRecord): Unit = synchronized {
     buf += formatter.format(record)
   }

@@ -28,14 +28,12 @@ private[wvlet] object AirframeMacros {
 
       // Find the public default constructor that has no arguments
       val hasPublicDefaultConstructor = t.members
-                                        .find(_.isConstructor)
-                                        .map(_.asMethod).exists { m =>
-        m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
-      }
+        .find(_.isConstructor)
+        .map(_.asMethod).exists { m =>
+          m.isPublic && m.paramLists.size == 1 && m.paramLists(0).size == 0
+        }
 
-      val hasAbstractMethods = t.members.exists(x =>
-        x.isMethod && x.isAbstract && !x.isAbstractOverride
-      )
+      val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
       val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.surface.tag.")
 
@@ -44,16 +42,14 @@ private[wvlet] object AirframeMacros {
         // If X is non static type (= local class or trait),
         // we need to instantiate it first in order to populate its $outer variables
         true
-      }
-      else if (a.isAbstract) {
+      } else if (a.isAbstract) {
         // = Abstract type
         // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
         // needs to be found in the design
 
         // If there is no abstract methods, it might be a trait without any method
         !hasAbstractMethods
-      }
-      else {
+      } else {
         // We cannot instantiate any trait or class without the default constructor
         // So binding needs to be found in the Design.
         hasPublicDefaultConstructor
@@ -81,7 +77,6 @@ private[wvlet] object AirframeMacros {
       q"""wvlet.airframe.Session.findSession(this)"""
     }
 
-
     def newBinder(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q"""{
@@ -90,8 +85,7 @@ private[wvlet] object AirframeMacros {
               (new $t with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$t]
              )
             }"""
-      }
-      else {
+      } else {
         q"""{ session : wvlet.airframe.Session => session.get[$t](${surfaceOf(t)}) }"""
       }
     }
@@ -104,14 +98,13 @@ private[wvlet] object AirframeMacros {
               (new $t with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$t]
              )
             }"""
-      }
-      else {
+      } else {
         q"""{ session : wvlet.airframe.Session => session.getSingleton[$t](${surfaceOf(t)}) }"""
       }
     }
 
-    def registorFactory(t:c.Type) : c.Tree = {
-      if(shouldGenerateTrait(t)) {
+    def registorFactory(t: c.Type): c.Tree = {
+      if (shouldGenerateTrait(t)) {
         q""" {
            val s = ${surfaceOf(t)}
            wvlet.airframe.factoryCache.getOrElseUpdate(s,
@@ -120,13 +113,12 @@ private[wvlet] object AirframeMacros {
            s
          }
         """
-      }
-      else {
+      } else {
         q"""{${surfaceOf(t)}}"""
       }
     }
 
-    def withFactoryRegistration(t: c.Type, body: c.Tree) : c.Tree = {
+    def withFactoryRegistration(t: c.Type, body: c.Tree): c.Tree = {
       q"""
         ${registorFactory(t)}
         ${body}
@@ -137,7 +129,7 @@ private[wvlet] object AirframeMacros {
       q"wvlet.surface.of[$t]"
     }
 
-    def provider1Binding[D1:c.WeakTypeTag](factory:c.Tree, singleton:Boolean, eager:Boolean) : c.Tree = {
+    def provider1Binding[D1: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       q"""{
            val self = ${c.prefix.tree}
@@ -148,7 +140,7 @@ private[wvlet] object AirframeMacros {
         """
     }
 
-    def provider2Binding[D1:c.WeakTypeTag, D2:c.WeakTypeTag](factory:c.Tree, singleton:Boolean, eager:Boolean) : c.Tree = {
+    def provider2Binding[D1: c.WeakTypeTag, D2: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
       q"""{
@@ -161,7 +153,7 @@ private[wvlet] object AirframeMacros {
         """
     }
 
-    def provider3Binding[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag](factory:c.Tree, singleton:Boolean, eager:Boolean) : c.Tree = {
+    def provider3Binding[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
       val ev3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -176,7 +168,7 @@ private[wvlet] object AirframeMacros {
         """
     }
 
-    def provider4Binding[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag](factory:c.Tree, singleton:Boolean, eager:Boolean) : c.Tree = {
+    def provider4Binding[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
       val ev3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -193,7 +185,9 @@ private[wvlet] object AirframeMacros {
         """
     }
 
-    def provider5Binding[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](factory:c.Tree, singleton:Boolean, eager:Boolean) : c.Tree = {
+    def provider5Binding[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](factory: c.Tree,
+                                                                                                                        singleton: Boolean,
+                                                                                                                        eager: Boolean): c.Tree = {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
       val ev3 = implicitly[c.WeakTypeTag[D3]].tpe
@@ -217,8 +211,7 @@ private[wvlet] object AirframeMacros {
         case TypeRef(prefix, typeSymbol, args) =>
           if (args.isEmpty) {
             typeSymbol.fullName
-          }
-          else {
+          } else {
             val typeArgs = args.map(fullTypeNameOf(_)).mkString(",")
             s"${typeSymbol.fullName}[${typeArgs}]"
           }
@@ -233,13 +226,12 @@ private[wvlet] object AirframeMacros {
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     h.withFactoryRegistration(t,
-      q"""${c.prefix}
+                              q"""${c.prefix}
          .bind(${h.surfaceOf(t)})
-         .asInstanceOf[wvlet.airframe.Binder[$t]]"""
-    )
+         .asInstanceOf[wvlet.airframe.Binder[$t]]""")
   }
 
-  def designRemoveImpl[A:c.WeakTypeTag](c: sm.Context) : c.Tree = {
+  def designRemoveImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -250,10 +242,10 @@ private[wvlet] object AirframeMacros {
      """
   }
 
-  def binderToImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
+  def binderToImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t = implicitly[c.WeakTypeTag[B]].tpe
-    val h = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[B]].tpe
+    val h    = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
       val to = ${h.surfaceOf(t)}
@@ -262,10 +254,10 @@ private[wvlet] object AirframeMacros {
     h.withFactoryRegistration(t, core)
   }
 
-  def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
+  def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t = implicitly[c.WeakTypeTag[B]].tpe
-    val h = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[B]].tpe
+    val h    = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
       val to = ${h.surfaceOf(t)}
@@ -278,10 +270,10 @@ private[wvlet] object AirframeMacros {
     h.withFactoryRegistration(t, core)
   }
 
-  def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context) : c.Tree = {
+  def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t = implicitly[c.WeakTypeTag[B]].tpe
-    val h = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[B]].tpe
+    val h    = new BindHelper[c.type](c)
     val core = q""" {
       val self = ${c.prefix.tree}
       val to = ${h.surfaceOf(t)}
@@ -294,79 +286,79 @@ private[wvlet] object AirframeMacros {
     h.withFactoryRegistration(t, core)
   }
 
-  def bindToProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToProvider1[D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
     h.provider1Binding[D1](factory, false, false)
   }
 
-  def bindToProvider2[D1:c.WeakTypeTag, D2:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToProvider2[D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider2Binding[D1,D2](factory, false, false)
+    h.provider2Binding[D1, D2](factory, false, false)
   }
 
-  def bindToProvider3[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToProvider3[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider3Binding[D1,D2,D3](factory, false, false)
+    h.provider3Binding[D1, D2, D3](factory, false, false)
   }
 
-  def bindToProvider4[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToProvider4[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider4Binding[D1,D2,D3,D4](factory, false, false)
+    h.provider4Binding[D1, D2, D3, D4](factory, false, false)
   }
 
-  def bindToProvider5[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToProvider5[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider5Binding[D1,D2,D3,D4,D5](factory, false, false)
+    h.provider5Binding[D1, D2, D3, D4, D5](factory, false, false)
   }
 
-  def bindToSingletonProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToSingletonProvider1[D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
     h.provider1Binding[D1](factory, true, false)
   }
 
-  def bindToSingletonProvider2[D1:c.WeakTypeTag, D2:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToSingletonProvider2[D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider2Binding[D1,D2](factory, true, false)
+    h.provider2Binding[D1, D2](factory, true, false)
   }
 
-  def bindToSingletonProvider3[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToSingletonProvider3[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider3Binding[D1,D2,D3](factory, true, false)
+    h.provider3Binding[D1, D2, D3](factory, true, false)
   }
 
-  def bindToSingletonProvider4[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToSingletonProvider4[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider4Binding[D1,D2,D3,D4](factory, true, false)
+    h.provider4Binding[D1, D2, D3, D4](factory, true, false)
   }
 
-  def bindToSingletonProvider5[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToSingletonProvider5[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider5Binding[D1,D2,D3,D4,D5](factory, true, false)
+    h.provider5Binding[D1, D2, D3, D4, D5](factory, true, false)
   }
 
-  def bindToEagerSingletonProvider1[D1:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToEagerSingletonProvider1[D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
     h.provider1Binding[D1](factory, true, true)
   }
 
-  def bindToEagerSingletonProvider2[D1:c.WeakTypeTag, D2:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToEagerSingletonProvider2[D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider2Binding[D1,D2](factory, true, true)
+    h.provider2Binding[D1, D2](factory, true, true)
   }
 
-  def bindToEagerSingletonProvider3[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag](c:sm.Context)(factory:c.Tree): c.Tree = {
+  def bindToEagerSingletonProvider3[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider3Binding[D1,D2,D3](factory, true, true)
+    h.provider3Binding[D1, D2, D3](factory, true, true)
   }
 
-  def bindToEagerSingletonProvider4[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToEagerSingletonProvider4[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider4Binding[D1,D2,D3,D4](factory, true, true)
+    h.provider4Binding[D1, D2, D3, D4](factory, true, true)
   }
 
-  def bindToEagerSingletonProvider5[D1:c.WeakTypeTag, D2:c.WeakTypeTag, D3:c.WeakTypeTag, D4:c.WeakTypeTag, D5:c.WeakTypeTag](c:sm.Context)(factory:c.Tree) : c.Tree = {
+  def bindToEagerSingletonProvider5[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     val h = new BindHelper[c.type](c)
-    h.provider5Binding[D1,D2,D3,D4,D5](factory, true, true)
+    h.provider5Binding[D1, D2, D3, D4, D5](factory, true, true)
   }
 
   /**
@@ -382,7 +374,7 @@ private[wvlet] object AirframeMacros {
     new BindHelper[c.type](c).bind(c.prefix.tree, t)
   }
 
-  def addLifeCycle[A:c.WeakTypeTag](c: sm.Context): c.Tree = {
+  def addLifeCycle[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -393,7 +385,7 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addInitLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+  def addInitLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -406,7 +398,7 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addInjectLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+  def addInjectLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -419,7 +411,7 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addStartLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+  def addStartLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -432,7 +424,7 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addPreShutdownLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+  def addPreShutdownLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -445,7 +437,7 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def addShutdownLifeCycle[A:c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+  def addShutdownLifeCycle[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -477,9 +469,9 @@ private[wvlet] object AirframeMacros {
 
   def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
@@ -488,13 +480,12 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     q"""{
@@ -504,14 +495,13 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)
@@ -522,15 +512,14 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree) : c.Tree = {
+  def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
-    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4   = implicitly[c.WeakTypeTag[D4]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)
@@ -544,16 +533,15 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
-    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
-    val d5 = implicitly[c.WeakTypeTag[D5]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4   = implicitly[c.WeakTypeTag[D4]].tpe
+    val d5   = implicitly[c.WeakTypeTag[D5]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)
@@ -585,12 +573,11 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind1SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind1SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
     val dep1 = h.newBinder(d1)
     q"""{
          val session = ${h.findSession}
@@ -599,13 +586,12 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind2SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind2SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     q"""{
@@ -615,14 +601,13 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind3SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind3SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)
@@ -633,16 +618,14 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind4SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
-  D3: c.WeakTypeTag, D4: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind4SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
-    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4   = implicitly[c.WeakTypeTag[D4]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)
@@ -656,17 +639,16 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bind5SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag,
-  D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag]
-  (c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind5SingletonImpl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](c: sm.Context)(
+      factory: c.Tree): c.Tree = {
     import c.universe._
-    val h = new BindHelper[c.type](c)
-    val t = implicitly[c.WeakTypeTag[A]].tpe
-    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
-    val d2 = implicitly[c.WeakTypeTag[D2]].tpe
-    val d3 = implicitly[c.WeakTypeTag[D3]].tpe
-    val d4 = implicitly[c.WeakTypeTag[D4]].tpe
-    val d5 = implicitly[c.WeakTypeTag[D5]].tpe
+    val h    = new BindHelper[c.type](c)
+    val t    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4   = implicitly[c.WeakTypeTag[D4]].tpe
+    val d5   = implicitly[c.WeakTypeTag[D5]].tpe
     val dep1 = h.newBinder(d1)
     val dep2 = h.newBinder(d2)
     val dep3 = h.newBinder(d3)

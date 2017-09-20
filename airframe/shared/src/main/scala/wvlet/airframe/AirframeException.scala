@@ -17,18 +17,18 @@ import wvlet.surface.Surface
 import scala.language.existentials
 
 trait AirframeException extends Exception { self =>
-  def getCode: String = this.getClass.getSimpleName
+  def getCode: String           = this.getClass.getSimpleName
   override def toString: String = getMessage
 }
 
 object AirframeException {
-  case class MISSING_SESSION(cl:Class[_]) extends AirframeException {
+  case class MISSING_SESSION(cl: Class[_]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${cl}"
   }
   case class CYCLIC_DEPENDENCY(deps: Set[Surface]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${deps.mkString(", ")}"
   }
-  case class MISSING_DEPENDENCY(stack:List[Surface]) extends AirframeException {
+  case class MISSING_DEPENDENCY(stack: List[Surface]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${stack.mkString(" <- ")}"
   }
 }

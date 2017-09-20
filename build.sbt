@@ -10,10 +10,6 @@ val buildSettings = Seq[Setting[_]](
   organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
-  incOptions := incOptions.value
-    .withNameHashing(true)
-    // Suppress macro recompile warning: https://github.com/sbt/sbt/issues/2654
-    .withLogRecompileOnMacro(false),
   logBuffered in Test := false,
   updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),
@@ -63,8 +59,10 @@ val buildSettings = Seq[Setting[_]](
     } else {
       Opts.resolver.sonatypeStaging
     }
-  ),
-  scalafmtOnCompile in ThisBuild := true
+  )
+// Uncomment this after scalafmt-1.3.0 is released
+// scalafmtOnCompile in ThisBuild := true,
+// scalafmtVersion := "1.3.0"
 )
 
 val noPublish = Seq(
@@ -97,7 +95,13 @@ lazy val docs =
       // Necessary for publishMicrosite
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
-      watchSources := (sourceDirectory.value ** "*").filter(!_.isDirectory).get,
+      watchSources += new sbt.internal.io.Source(
+        sourceDirectory.value,
+        new FileFilter {
+          def accept(f: File) = !f.isDirectory
+        },
+        NothingFilter
+      ),
       micrositeName := "Airframe",
       micrositeDescription := "Best Practice of Building Service Objects in Scala",
       micrositeAuthor := "Taro L. Saito",

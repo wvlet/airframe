@@ -29,7 +29,7 @@ trait LogFormatter extends Formatter {
   override def format(record: jl.LogRecord): String = {
     record match {
       case lr: LogRecord => formatLog(lr)
-      case _ => formatLog(LogRecord(record))
+      case _             => formatLog(LogRecord(record))
     }
   }
 }
@@ -41,7 +41,7 @@ object LogFormatter {
   def currentThreadName: String = Thread.currentThread().getName
 
   private val testFrameworkFilter = Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
-  val DEFAULT_STACKTRACE_FILTER: String => Boolean = {line: String =>
+  val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String =>
     !testFrameworkFilter.matcher(line).matches()
   }
   private var stackTraceFilter: String => Boolean = DEFAULT_STACKTRACE_FILTER
@@ -60,10 +60,11 @@ object LogFormatter {
     e.printStackTrace(new PrintWriter(trace))
     val stackTrace = trace.toString
     val filtered =
-      stackTrace.split("\n") // Array
-      .filter(stackTraceFilter)
-      .sliding(2)
-      .collect {case Array(a, b) if a != b => a}
+      stackTrace
+        .split("\n") // Array
+        .filter(stackTraceFilter)
+        .sliding(2)
+        .collect { case Array(a, b) if a != b => a }
 
     filtered.mkString("\n")
   }
@@ -75,11 +76,11 @@ object LogFormatter {
   def highlightLog(level: LogLevel, message: String): String = {
     val color = level match {
       case ERROR => Console.RED
-      case WARN => Console.YELLOW
-      case INFO => Console.CYAN
+      case WARN  => Console.YELLOW
+      case INFO  => Console.CYAN
       case DEBUG => Console.GREEN
       case TRACE => Console.MAGENTA
-      case _ => Console.RESET
+      case _     => Console.RESET
     }
     withColor(color, message)
   }
@@ -129,7 +130,7 @@ object LogFormatter {
   object AppLogFormatter extends LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val logTag = highlightLog(r.level, r.level.name)
-      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
+      val log    = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"
       appendStackTrace(log, r)
     }
   }
@@ -141,13 +142,12 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-        .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
-        .getOrElse("")
+          .map(source => s" ${withColor(Console.BLUE, s"- (${source.fileLoc})")}")
+          .getOrElse("")
 
       val logTag = highlightLog(r.level, r.level.name)
-      val log = f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${
-        highlightLog(r.level, r.getMessage)
-      } ${loc}"
+      val log =
+        f"${withColor(Console.BLUE, formatTimestamp(r.getMillis))} ${logTag}%14s [${withColor(Console.WHITE, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)} ${loc}"
       appendStackTrace(log, r)
     }
   }
@@ -159,8 +159,8 @@ object LogFormatter {
     override def formatLog(r: LogRecord): String = {
       val loc =
         r.source
-        .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
-        .getOrElse("")
+          .map(source => s" ${withColor(Console.BLUE, s"- ${r.getLoggerName}(${source.fileLoc})")}")
+          .getOrElse("")
 
       val log = s"[${highlightLog(r.level, r.level.name)}] ${highlightLog(r.level, r.getMessage)}$loc"
       appendStackTrace(log, r)

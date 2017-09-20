@@ -32,6 +32,7 @@ object TaggedBindingTest {
 }
 
 import TaggedBindingTest._
+
 /**
   *
   */
@@ -39,19 +40,19 @@ class TaggedBindingTest extends AirframeSpec {
 
   "Airframe" should {
     "support tagged binding" in {
-        val apple = surface.of[Fruit @@ Apple]
-        warn(s"apple: ${apple}, alias:${apple.isAlias}")
+      val apple = surface.of[Fruit @@ Apple]
+      warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
-        val d = newDesign
-                .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-                .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-                .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
+      val d = newDesign
+        .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
+        .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
+        .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
 
-        val session = d.newSession
-        val tagged = session.build[TaggedBinding]
-        tagged.apple.name shouldBe ("apple")
-        tagged.banana.name shouldBe ("banana")
-        tagged.lemon.name shouldBe ("lemon")
+      val session = d.newSession
+      val tagged  = session.build[TaggedBinding]
+      tagged.apple.name shouldBe ("apple")
+      tagged.banana.name shouldBe ("banana")
+      tagged.lemon.name shouldBe ("lemon")
     }
   }
 }

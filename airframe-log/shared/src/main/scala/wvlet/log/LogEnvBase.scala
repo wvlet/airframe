@@ -6,19 +6,19 @@ import java.io.PrintStream
   *
   */
 private[log] trait LogEnvBase {
-  def isScalaJS : Boolean
-  def defaultLogLevel : LogLevel
+  def isScalaJS: Boolean
+  def defaultLogLevel: LogLevel
 
-  def defaultConsoleOutput : PrintStream
+  def defaultConsoleOutput: PrintStream
 
   /**
     *
     * @param cl
     * @return
     */
-  def getLoggerName(cl:Class[_]) : String
+  def getLoggerName(cl: Class[_]): String
 
-  def scheduleLogLevelScan : Unit
+  def scheduleLogLevelScan: Unit
   def stopScheduledLogLevelScan: Unit
 
   /**
@@ -32,6 +32,5 @@ private[log] trait LogEnvBase {
     * @param loglevelFileCandidates
     */
   def scanLogLevels(loglevelFileCandidates: Seq[String])
-
 
 }

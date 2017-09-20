@@ -20,16 +20,12 @@ import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends WordSpec
-  with Matchers
-  with BeforeAndAfter
-  with BeforeAndAfterAll
-  with LogSupport {
+trait SurfaceSpec extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
 
   // Add source code location to the debug logs
   Logger.setDefaultFormatter(SourceCodeLogFormatter)
 
-  implicit def toTag(s:String) = Tag(s)
+  implicit def toTag(s: String) = Tag(s)
 
   override def run(testName: Option[String], args: Args): Status = {
     // Periodically scan log level file
@@ -39,14 +35,14 @@ trait SurfaceSpec extends WordSpec
     s
   }
 
-  def check(body: => Surface, expectedName:String): Surface = {
+  def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     info(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
     surface.toString shouldBe expectedName
     surface
   }
 
-  def checkPrimitive(body: => Surface, expectedName:String) : Surface = {
+  def checkPrimitive(body: => Surface, expectedName: String): Surface = {
     val s = check(body, expectedName)
     s.isAlias shouldBe false
     s.isOption shouldBe false

@@ -21,14 +21,14 @@ import wvlet.surface
 object Examples {
 
   case class A(
-    b: Boolean,
-    bt: Byte,
-    st: Short,
-    i: Int,
-    l: Long,
-    f: Float,
-    d: Double,
-    str: String
+      b: Boolean,
+      bt: Byte,
+      st: Short,
+      i: Int,
+      l: Long,
+      f: Float,
+      d: Double,
+      str: String
   )
 
   case class B(a: A)
@@ -44,12 +44,12 @@ object Examples {
 
   trait Service[-Req, +Rep] extends (Req => Future[Rep])
 
-  case class E(a:A)
-
+  case class E(a: A)
 
 }
 
 import wvlet.surface.Examples._
+
 /**
   *
   */
@@ -68,7 +68,7 @@ class SurfaceTest extends SurfaceSpec {
       b.isPrimitive shouldBe false
     }
 
-    "resolve primitive types" taggedAs("primitive") in {
+    "resolve primitive types" taggedAs ("primitive") in {
       checkPrimitive(surface.of[Boolean], "Boolean")
       checkPrimitive(surface.of[Byte], "Byte")
       checkPrimitive(surface.of[Short], "Short")
@@ -87,7 +87,7 @@ class SurfaceTest extends SurfaceSpec {
       //check(Surface.get(classOf[A]).get, a.toString)
     }
 
-    "be equal" taggedAs("eq") in {
+    "be equal" taggedAs ("eq") in {
       val a1 = surface.of[A]
       val a2 = surface.of[A]
       a1 shouldBe theSameInstanceAs(a2)
@@ -95,7 +95,7 @@ class SurfaceTest extends SurfaceSpec {
       a1 shouldBe a2
       a1.hashCode() shouldBe a2.hashCode()
 
-      val b = surface.of[B]
+      val b  = surface.of[B]
       val a3 = b.params.head.surface
       a1 shouldBe theSameInstanceAs(a3)
 
@@ -106,7 +106,7 @@ class SurfaceTest extends SurfaceSpec {
       c1 shouldBe theSameInstanceAs(c2)
       c1.hashCode() shouldBe c2.hashCode()
 
-      c1 shouldNot be (a1)
+      c1 shouldNot be(a1)
       c1.equals(a1) shouldBe false
       c1.equals("hello") shouldBe false
     }
@@ -155,7 +155,6 @@ class SurfaceTest extends SurfaceSpec {
       check(surface.of[Try[A]], "Try[A]")
     }
 
-
     "resolve mutable Collection types" in {
       check(surface.of[collection.mutable.Seq[String]], "Seq[String]")
       check(surface.of[collection.mutable.Map[Int, String]], "Map[Int,String]")
@@ -169,14 +168,14 @@ class SurfaceTest extends SurfaceSpec {
     }
 
     "resolve java colletion type" in {
-      check(surface.of[java.util.List[String]],"List[String]")
+      check(surface.of[java.util.List[String]], "List[String]")
       check(surface.of[java.util.Map[Long, String]], "Map[Long,String]")
-      check(surface.of[java.util.Set[A]],"Set[A]")
+      check(surface.of[java.util.Set[A]], "Set[A]")
     }
 
     "resolve generic type" in {
-      val d1 = check(surface.of[D[String]],"D[String]")
-      val d2 = check(surface.of[D[A]],"D[A]")
+      val d1 = check(surface.of[D[String]], "D[String]")
+      val d2 = check(surface.of[D[A]], "D[A]")
       d1 shouldNot be theSameInstanceAs (d2)
     }
 
@@ -184,31 +183,31 @@ class SurfaceTest extends SurfaceSpec {
       check(surface.of[Service[Int, String]], "Service[Int,String]")
     }
 
-    "resolve generic abstract type" taggedAs("abstract") in {
-      val d = check(surface.of[D[_]],"D[_]")
+    "resolve generic abstract type" taggedAs ("abstract") in {
+      val d = check(surface.of[D[_]], "D[_]")
       d.typeArgs.length shouldBe 1
-      check(surface.of[Map[_, _]],"Map[_,_]")
+      check(surface.of[Map[_, _]], "Map[_,_]")
     }
 
     val a0 = A(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")
 
     "generate object factory" in {
-      val a = check(surface.of[A],"A")
+      val a = check(surface.of[A], "A")
       a.objectFactory shouldBe defined
 
       val a1 = a.objectFactory.map(_.newInstance(Seq(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")))
       info(a1)
       a1.get shouldBe a0
 
-      val e = check(surface.of[E],"E")
+      val e = check(surface.of[E], "E")
       e.objectFactory shouldBe defined
-      val e1 : E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
+      val e1: E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
       info(e1)
       e1.a shouldBe a0
     }
 
     "generate concrete object factory" in {
-      val d = check(surface.of[D[String]],"D[String]")
+      val d = check(surface.of[D[String]], "D[String]")
       val d0 = d.objectFactory.map { f =>
         f.newInstance(Seq(1, "leo"))
       }.get
@@ -216,7 +215,7 @@ class SurfaceTest extends SurfaceSpec {
       d0 shouldBe D(1, "leo")
     }
 
-    "access parameters" taggedAs("accessor") in {
+    "access parameters" taggedAs ("accessor") in {
       pending
       val a = surface.of[A]
       a.params(0).get(a0) shouldBe true

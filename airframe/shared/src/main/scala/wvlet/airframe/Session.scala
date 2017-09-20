@@ -75,15 +75,14 @@ trait Session extends AutoCloseable {
     try {
       start
       body
-    }
-    finally {
+    } finally {
       shutdown
     }
   }
 
-  def start {lifeCycleManager.start}
-  def shutdown {lifeCycleManager.shutdown}
-  override def close() {shutdown}
+  def start { lifeCycleManager.start }
+  def shutdown { lifeCycleManager.shutdown }
+  override def close() { shutdown }
 
   private[airframe] def getBindingOf(t: Surface): Option[Binding]
   private[airframe] def hasSingletonOf(t: Surface): Boolean
@@ -97,23 +96,24 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface: Surface): A = session.get[A](surface)
-    def getOrElseUpdate[A](surface: Surface, obj: => A): A = session.getOrElseUpdate[A](surface, obj)
-    def getSingleton[A](surface: Surface): A = session.getSingleton[A](surface)
+    def get[A](surface: Surface): A                                 = session.get[A](surface)
+    def getOrElseUpdate[A](surface: Surface, obj: => A): A          = session.getOrElseUpdate[A](surface, obj)
+    def getSingleton[A](surface: Surface): A                        = session.getSingleton[A](surface)
     def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
   def getSession(obj: Any): Option[Session] = {
     require(obj != null, "object is null")
-    findSessionAccess(obj.getClass).flatMap {access =>
+    findSessionAccess(obj.getClass).flatMap { access =>
       Try(access.apply(obj.asInstanceOf[AnyRef])).toOption
     }
   }
 
   def findSession[A](enclosingObj: A): Session = {
     getSession(enclosingObj).getOrElse {
-      error(s"No wvlet.airframe.Session is found in the scope: ${enclosingObj.getClass}, " +
-        s"enclosing object: ${enclosingObj}")
+      error(
+        s"No wvlet.airframe.Session is found in the scope: ${enclosingObj.getClass}, " +
+          s"enclosing object: ${enclosingObj}")
       throw new MISSING_SESSION(enclosingObj.getClass)
     }
   }
@@ -127,9 +127,10 @@ object Session extends LogSupport {
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
       if (classOf[SessionHolder] isAssignableFrom (cl)) {
-        Some({obj: AnyRef => obj.asInstanceOf[SessionHolder].airframeSession})
-      }
-      else {
+        Some({ obj: AnyRef =>
+          obj.asInstanceOf[SessionHolder].airframeSession
+        })
+      } else {
         None
       }
     }
@@ -137,5 +138,3 @@ object Session extends LogSupport {
     findEmbeddedSession
   }
 }
-
-
