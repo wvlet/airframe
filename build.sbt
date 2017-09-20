@@ -60,7 +60,9 @@ val buildSettings = Seq[Setting[_]](
       Opts.resolver.sonatypeStaging
     }
   )
-//  scalafmtOnCompile in ThisBuild := true
+// Uncomment this after scalafmt-1.3.0 is released
+// scalafmtOnCompile in ThisBuild := true,
+// scalafmtVersion := "1.3.0"
 )
 
 val noPublish = Seq(
@@ -95,8 +97,8 @@ lazy val docs =
       ghpagesNoJekyll := false,
       watchSources += new sbt.internal.io.Source(
         sourceDirectory.value,
-        new FileFilter{
-          def accept(f:File) = !f.isDirectory
+        new FileFilter {
+          def accept(f: File) = !f.isDirectory
         },
         NothingFilter
       ),
