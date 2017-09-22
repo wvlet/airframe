@@ -87,6 +87,7 @@ lazy val docs =
   project
     .enablePlugins(MicrositesPlugin)
     .enablePlugins(GhpagesPlugin)
+    .disablePlugins(CoursierPlugin)
     .settings(moduleName := "docs")
     .settings(
       publishArtifact := false,
