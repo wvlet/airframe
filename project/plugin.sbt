@@ -8,6 +8,6 @@ addSbtPlugin("org.scoverage"             % "sbt-scoverage" % "1.5.1")
 addSbtPlugin("org.xerial.sbt.thirdparty" % "sbt-scalafmt"  % "1.3.0-SNAPSHOT")
 addSbtPlugin("org.scala-js"              % "sbt-scalajs"   % "0.6.20")
 
-addSbtPlugin("com.47deg" % "sbt-microsites" % "0.7.0")
+addSbtPlugin("com.47deg" % "sbt-microsites" % "0.7.1")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
