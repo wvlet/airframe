@@ -133,7 +133,8 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   msgpackJVM,
   stream,
   http,
-  jsonJVM
+  jsonJVM,
+  fluentd
 )
 
 // JVM projects that cannot be build in Scala 2.13
@@ -592,3 +593,14 @@ lazy val jsonBenchmark =
       )
     )
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
+
+lazy val fluentd =
+  Project(id = "airframe-fluentd", base = file("airframe-fluentd"))
+  .settings(buildSettings)
+  .settings(
+    description := "Fluentd logger",
+    libraryDependencies ++= Seq(
+      "org.komamitsu" % "fluency" % "1.8.1"
+    )
+  )
+  .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal")
