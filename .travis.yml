@@ -41,6 +41,11 @@ matrix:
     jdk: oraclejdk8
     before_install:
       - export PATH=${PATH}:./vendor/bundle
+      - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false"]; then
+          openssl aes-256-cbc -K $encrypted_9cd1de9d0a00_key -iv $encrypted_9cd1de9d0a00_iv -in deploy-airframe-travis.enc -out deploy-airframe-travis -d;
+          chmod 600 deploy-airframe-travis;
+          cp deploy-airframe-travis $HOME/.ssh/id_rsa;
+        fi
     install:
       - rvm use 2.2.3 --install --fuzzy
       - gem update --system
@@ -49,7 +54,5 @@ matrix:
     script:
       # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./sbt docs/makeMicrosite;
-          find $HOME/.sbt/ghpages -name ".git" | xargs rm -rf;
-          ./sbt docs/publishMicrosite;
+          ./scripts/publishMicrosite.sh
         fi
