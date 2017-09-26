@@ -56,5 +56,5 @@ matrix:
     script:
       # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./sbt --batch docs/publishMicrosite;
+          cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite;
         fi
