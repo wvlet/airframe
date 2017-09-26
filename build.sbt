@@ -141,7 +141,7 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacros % "compile-internal,test-internal", airframeSpec)
+    .dependsOn(surface, airframeMacros % "compile-internal,test-internal", airframeSpec % "test")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -249,7 +249,7 @@ lazy val airframeSpec =
   .in(file("airframe-spec"))
   .settings(buildSettings)
   .settings(
-    description := "Airframe spec base",
+    description := "Airframe spec test base library",
     libraryDependencies ++= Seq(
       "org.scalatest" %% "scalatest" % "3.0.1",
     )

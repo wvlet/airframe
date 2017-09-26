@@ -19,7 +19,7 @@ JMX -> fluentd -> DataDog   (For real-time monitoring)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-jmx_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-jmx_2.12/)
 
 ```scala
-libraryDependencies += "org.wvlet" %% "airframe-jmx" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe-jmx" % "(version)"
 ```
 
 Usage is simple: Add `@JMX` annotation to variables or methods you want to see in JMX.

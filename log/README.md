@@ -35,10 +35,10 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/)
 
 ```scala
-libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "wvlet-log" % "(version)"
 
 // For Scala.js (Since wvlet-log 1.2)
-libraryDependencies += "org.wvlet" %%% "wvlet-log" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %%% "wvlet-log" % "(version)"
 ```
 
 ### Using LogSupport trait

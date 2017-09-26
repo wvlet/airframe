@@ -10,6 +10,7 @@
 Airframe is a dependency injection (DI) library tailored to Scala. While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using constructors or providers), Airframe redesigned it for Scala traits so that we can mix-in traits that have several object dependencies.
 
 - [Documentation](http://wvlet.org/airframe/docs/)
+- [Release Notes](http://wvlet.org/airframe/docs/release-notes.html)
 - [Use Cases](http://wvlet.org/airframe/docs/use-cases.html)
 
 Airframe can be used in three steps:
@@ -58,8 +59,6 @@ The major advantages of Airframe include:
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe_2.11)
 
-- [Release Notes](http://wvlet.org/airframe/docs/release-notes.html)
-
 **build.sbt**
 ```
 libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
@@ -69,7 +68,6 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe" % "(version)"
 ```
 
 See [Documentation](http://wvlet.org/airframe/docs/) for further details.
-
 
 # LICENSE
 

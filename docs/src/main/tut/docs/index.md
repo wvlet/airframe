@@ -13,7 +13,7 @@ This page describes all you need to know to start using Airframe.
 
 To use Airframe, add the following to your **build.sbt**:
 ```scala
-libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 ```
 
 And import `wvlet.airframe._` in your Scala code:
