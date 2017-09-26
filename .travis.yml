@@ -49,5 +49,5 @@ matrix:
     script:
       - pwd
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./sbt ++$$SCALA_VERSION docs/publishMicrosite;
+          ./sbt ++$SCALA_VERSION docs/publishMicrosite;
         fi
