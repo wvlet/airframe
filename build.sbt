@@ -150,6 +150,7 @@ lazy val airframeJS  = airframe.js
 lazy val airframeMacros =
   crossProject
     .in(file("airframe-macros"))
+    .settings(moduleName := "airframe-macros")
     .settings(buildSettings)
     .settings(
       buildSettings,
@@ -167,10 +168,10 @@ lazy val airframeMacrosJS  = airframeMacros.js
 
 lazy val surface =
   crossProject
-    .in(file("surface"))
+    .in(file("airframe-surface"))
     .settings(buildSettings)
     .settings(
-      name := "surface",
+      name := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
@@ -211,6 +212,7 @@ lazy val opts =
   Project(id = "airframe-opts", base = file("airframe-opts"))
     .settings(buildSettings)
     .settings(
+      name := "opts",
       description := "Command-line option parser",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
@@ -220,10 +222,10 @@ lazy val opts =
 
 lazy val log =
   crossProject
-    .in(file("log"))
+    .in(file("airframe-log"))
     .settings(buildSettings)
     .settings(
-      name := "wvlet-log",
+      name := "airframe-log",
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
@@ -249,6 +251,7 @@ lazy val airframeSpec =
     .in(file("airframe-spec"))
     .settings(buildSettings)
     .settings(
+      name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
         "org.scalatest" %% "scalatest" % "3.0.1",
