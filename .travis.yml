@@ -11,6 +11,8 @@ before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
   - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
   - find $HOME/.sbt        -name "*.lock"               -print -delete
+  # A workaround for https://github.com/sbt/sbt-ghpages/issues/14
+  - rm -rf $HOME/.sbt/ghpages
 
 language: scala
 
@@ -54,5 +56,5 @@ matrix:
     script:
       # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          cd $TRAVIS_BUILD_DIR && ./sbt --batch docs/publishMicrosite;
+          ./sbt --batch docs/publishMicrosite;
         fi
