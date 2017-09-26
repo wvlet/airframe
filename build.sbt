@@ -89,6 +89,8 @@ lazy val docs = (project in file("docs"))
     publishArtifact := false,
     publish := {},
     publishLocal := {},
+    git.remoteRepo := "git@github.com:wvlet/airframe.git",
+    ghpagesNoJekyll := true,
     micrositeName := "Airframe",
     micrositeDescription := "Best Practice of Building Service Objects in Scala",
     micrositeAuthor := "Taro L. Saito",
@@ -111,6 +113,7 @@ lazy val docs = (project in file("docs"))
   )
   .enablePlugins(MicrositesPlugin)
   .enablePlugins(TutPlugin)
+  .enablePlugins(GhpagesPlugin)
 
 lazy val airframe =
   crossProject

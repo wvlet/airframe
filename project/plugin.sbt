@@ -7,6 +7,7 @@ addSbtPlugin("io.get-coursier"   % "sbt-coursier"  % "1.0.0-RC11")
 addSbtPlugin("org.scoverage"     % "sbt-scoverage" % "1.5.1")
 addSbtPlugin("com.geirsson"      % "sbt-scalafmt"  % "1.3.0")
 addSbtPlugin("org.scala-js"      % "sbt-scalajs"   % "0.6.20")
+addSbtPlugin("com.typesafe.sbt"  % "sbt-ghpages"   % "0.6.2")
 
 addSbtPlugin("com.47deg" % "sbt-microsites" % "0.7.1")
 
