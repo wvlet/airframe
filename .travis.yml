@@ -5,6 +5,7 @@ cache:
     - $HOME/.ivy2/cache
     - $HOME/.sbt
     - $HOME/.coursier
+    - $HOME/nvm
 
 before_cache:
   # Cleanup the cached directories to avoid unnecessary cache updates
@@ -46,6 +47,7 @@ matrix:
       - gem install sass
       - gem install jekyll -v 3.2.1
     script:
+      - pwd
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-         ./sbt "; project docs; publishMicrosite";
+          ./sbt ++$$SCALA_VERSION docs/publishMicrosite;
         fi
