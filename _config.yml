@@ -1,0 +1,11 @@
+name: Airframe
+baseurl: /airframe
+description: Best Practice of Building Service Objects in Scala
+highlighter: rouge
+docs: true
+collections:
+  tut:
+    output: true
+version: '0.22'
+org: docs
+markdown: kramdown
