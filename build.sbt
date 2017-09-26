@@ -110,7 +110,7 @@ lazy val docs =
       micrositeAnalyticsToken := "UA-98364158-1",
       micrositeDocumentationUrl := "docs",
       micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := getEnvVar("GITHUB_REPO_TOKEN"),
+      micrositeGithubToken := sys.env("GITHUB_REPO_TOKEN"),
       micrositePalette ++= Map(
         "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",
