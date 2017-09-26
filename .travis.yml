@@ -48,5 +48,8 @@ matrix:
       - gem install jekyll -v 3.2.1
     script:
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./sbt docs/publishMicrosite;
+          ./sbt docs/makeMicrosite;
+	  # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
+	  find $HOME/.sbt/ghpages -name ".git" | xargs rm -rf;
+	  ./sbt docs/publishMicrosite;
         fi
