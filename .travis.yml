@@ -17,7 +17,7 @@ language: scala
 matrix:
   include:
   # Code format test
-  - env: SCALA_VERSION=2.12.3 PROJECT=code-format
+  - env: PROJECT=code-format
     jdk: oraclejdk8
     script: ./scalafmt --test
   - env: SCALA_VERSION=2.12.3 PROJECT=projectJVM
@@ -37,7 +37,7 @@ matrix:
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.3 PROJECT=docs
+  - env: PROJECT=docs
     jdk: oraclejdk8
     before_install:
       - export PATH=${PATH}:./vendor/bundle
@@ -48,6 +48,7 @@ matrix:
       - gem install jekyll -v 3.2.1
     script:
       - pwd
+      - ls -a
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./sbt ^^0.13.16 docs/publishMicrosite;
+          cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite;
         fi
