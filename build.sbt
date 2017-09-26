@@ -86,16 +86,12 @@ lazy val projectJS =
 lazy val docs =
   project
     .enablePlugins(MicrositesPlugin)
-    .enablePlugins(GhpagesPlugin)
     .disablePlugins(CoursierPlugin)
     .settings(moduleName := "docs")
     .settings(
       publishArtifact := false,
       publish := {},
       publishLocal := {},
-      // Necessary for publishMicrosite
-      git.remoteRepo := "git@github.com:wvlet/airframe.git",
-      ghpagesNoJekyll := false,
       watchSources += new sbt.internal.io.Source(
         sourceDirectory.value,
         new FileFilter {
