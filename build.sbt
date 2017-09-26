@@ -227,10 +227,10 @@ lazy val opts =
 
 lazy val log =
   crossProject
-    .in(file("airframe-log"))
+    .in(file("log"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-log",
+      name := "wvlet-log",
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
