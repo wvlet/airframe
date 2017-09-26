@@ -83,22 +83,12 @@ lazy val projectJVM =
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
-lazy val docs =
-  project
-    .enablePlugins(MicrositesPlugin)
-    .disablePlugins(CoursierPlugin)
+lazy val docs = (project in file("docs"))
     .settings(moduleName := "docs")
     .settings(
       publishArtifact := false,
       publish := {},
       publishLocal := {},
-      watchSources += new sbt.internal.io.Source(
-        sourceDirectory.value,
-        new FileFilter {
-          def accept(f: File) = !f.isDirectory
-        },
-        NothingFilter
-      ),
       micrositeName := "Airframe",
       micrositeDescription := "Best Practice of Building Service Objects in Scala",
       micrositeAuthor := "Taro L. Saito",
@@ -110,7 +100,7 @@ lazy val docs =
       micrositeAnalyticsToken := "UA-98364158-1",
       micrositeDocumentationUrl := "docs",
       micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := sys.env("GITHUB_REPO_TOKEN"),
+      micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
       micrositePalette ++= Map(
         "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",
@@ -119,6 +109,8 @@ lazy val docs =
         "gray"            -> "#534F54"
       )
     )
+    .enablePlugins(MicrositesPlugin)
+    .enablePlugins(TutPlugin)
 
 lazy val airframe =
   crossProject
