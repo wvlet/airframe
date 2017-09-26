@@ -49,7 +49,7 @@ matrix:
     script:
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
           ./sbt docs/makeMicrosite;
-	  # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
-	  find $HOME/.sbt/ghpages -name ".git" | xargs rm -rf;
-	  ./sbt docs/publishMicrosite;
+          # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
+          find $HOME/.sbt/ghpages -name ".git" | xargs rm -rf;
+          ./sbt docs/publishMicrosite;
         fi
