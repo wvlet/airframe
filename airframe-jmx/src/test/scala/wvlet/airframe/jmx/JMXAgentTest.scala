@@ -15,12 +15,12 @@ package wvlet.airframe.jmx
 
 import javax.management.ObjectName
 
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 /**
   *
   */
-class JMXAgentTest extends WvletSpec {
+class JMXAgentTest extends AirframeSpec {
 
   "JMXAgent" should {
     "find jmx registry" in {

@@ -62,10 +62,10 @@ The major advantages of Airframe include:
 
 **build.sbt**
 ```
-libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 
 # For Scala.js (supported since airframe 0.12)
-libraryDependencies += "org.wvlet" %%% "airframe" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %%% "airframe" % "(version)"
 ```
 
 See [Documentation](http://wvlet.org/airframe/docs/) for further details.

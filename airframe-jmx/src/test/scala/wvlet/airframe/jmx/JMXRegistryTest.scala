@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.jmx
 
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 import scala.util.Random
 
@@ -39,7 +39,7 @@ case class Stat(@JMX count: Int, @JMX state: String)
 /**
   *
   */
-class JMXRegistryTest extends WvletSpec {
+class JMXRegistryTest extends AirframeSpec {
 
   val agent = new JMXAgent(new JMXConfig())
 

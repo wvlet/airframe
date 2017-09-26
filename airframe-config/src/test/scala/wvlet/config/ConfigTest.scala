@@ -16,10 +16,10 @@ package wvlet.config
 import java.io.{FileNotFoundException, FileOutputStream}
 import java.util.Properties
 
+import wvlet.airframe.AirframeSpec
 import wvlet.config.PropertiesConfig.{ConfigKey, Prefix}
 import wvlet.log.io.IOUtil
 import wvlet.surface.tag._
-import wvlet.test.WvletSpec
 
 trait AppScope
 trait SessionScope
@@ -31,7 +31,7 @@ case class ClassConfig(classes: Seq[String], classAssignments: Map[String, Strin
 /**
   *
   */
-class ConfigTest extends WvletSpec {
+class ConfigTest extends AirframeSpec {
 
   val configPaths = Seq("airframe-config/src/test/resources")
 

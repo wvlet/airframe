@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 1.0
+ - Moved to `org.wvlet.airframe` organization because Airframe will have more modules in future.
+ - Renamed airframe-log -> wvlet-log
+
 ## 0.22
  - Add Logger.clearAllHandlers to clean-up existing log handlers set by third-party libraries
  - Apply scalafmt code style 

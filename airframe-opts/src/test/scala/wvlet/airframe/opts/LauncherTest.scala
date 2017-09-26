@@ -24,12 +24,12 @@ package wvlet.airframe.opts
 import java.io.ByteArrayOutputStream
 
 import wvlet.log.{LogLevel, LogSupport}
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 /**
   * @author leo
   */
-class LauncherTest extends WvletSpec {
+class LauncherTest extends AirframeSpec {
 
   import Launcher._
 

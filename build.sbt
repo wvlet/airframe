@@ -4,7 +4,7 @@ val SCALA_2_12 = "2.12.3"
 val SCALA_2_11 = "2.11.11"
 scalaVersion in ThisBuild := SCALA_2_12
 
-organization in ThisBuild := "org.wvlet"
+organization in ThisBuild := "org.wvlet.airframe"
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
@@ -76,13 +76,13 @@ lazy val airframeRoot =
   Project(id = "airframe-root", base = file("."))
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS, opts)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM, opts)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM, opts, airframeSpecJVM)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
+  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
 
 lazy val docs = (project in file("docs"))
   .settings(moduleName := "docs")
@@ -141,7 +141,7 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacros % "compile-internal,test-internal")
+    .dependsOn(surface, airframeMacros % "compile-internal,test-internal", airframeSpec)
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -188,30 +188,24 @@ lazy val surface =
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
 
-val wvletTest = "org.wvlet" %% "wvlet-test" % "0.27" % "test"
-
 lazy val airframeConfig =
   Project(id = "airframe-config", base = file("airframe-config"))
     .settings(buildSettings)
     .settings(
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml" % "snakeyaml" % "1.14",
-        wvletTest
+        "org.yaml" % "snakeyaml" % "1.14"
       )
     )
-    .dependsOn(surfaceJVM)
+    .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val jmx =
   Project(id = "airframe-jmx", base = file("airframe-jmx"))
     .settings(buildSettings)
     .settings(
-      description := "A library for exposing Scala object data through JMX",
-      libraryDependencies ++= Seq(
-        wvletTest
-      )
+      description := "A library for exposing Scala object data through JMX"
     )
-    .dependsOn(surfaceJVM)
+    .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val opts =
   Project(id = "airframe-opts", base = file("airframe-opts"))
@@ -219,11 +213,10 @@ lazy val opts =
     .settings(
       description := "Command-line option parser",
       libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-        wvletTest
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
       )
     )
-    .dependsOn(surfaceJVM)
+    .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val log =
   crossProject
@@ -250,3 +243,18 @@ lazy val log =
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
+
+lazy val airframeSpec =
+  crossProject
+  .in(file("airframe-spec"))
+  .settings(buildSettings)
+  .settings(
+    description := "Airframe spec base",
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.0.1",
+    )
+  )
+  .dependsOn(log)
+
+lazy val airframeSpecJVM = airframeSpec.jvm
+lazy val airframeSpecJS = airframeSpec.js

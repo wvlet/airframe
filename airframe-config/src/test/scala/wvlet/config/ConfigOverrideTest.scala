@@ -13,7 +13,7 @@
  */
 package wvlet.config
 
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 object ConfigOverrideTest {
   case class AppConfig(
@@ -24,7 +24,7 @@ object ConfigOverrideTest {
 /**
   *
   */
-class ConfigOverrideTest extends WvletSpec {
+class ConfigOverrideTest extends AirframeSpec {
   import ConfigOverrideTest._
 
   "Config" should {

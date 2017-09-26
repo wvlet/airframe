@@ -21,12 +21,12 @@
 
 package wvlet.airframe.opts
 
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 /**
   * @author leo
   */
-class ValueHolderTest extends WvletSpec {
+class ValueHolderTest extends AirframeSpec {
 
   "ValueHolder" should {
     "have nested values" in {

@@ -14,7 +14,7 @@
 package wvlet.config
 
 import wvlet.log.io.Resource
-import wvlet.test.WvletSpec
+import wvlet.airframe.AirframeSpec
 
 case class MyConfig(id: Int, fullName: String)
 case class DB(accountId: Int, database: String, table: Seq[String])
@@ -22,7 +22,7 @@ case class DB(accountId: Int, database: String, table: Seq[String])
 /**
   *
   */
-class YamlReaderTest extends WvletSpec {
+class YamlReaderTest extends AirframeSpec {
 
   val yml = Resource.find("myconfig.yml").map(_.getPath).getOrElse {
     fail("myconfig.yml is not found")
