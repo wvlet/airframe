@@ -89,8 +89,9 @@ lazy val docs = (project in file("docs"))
     publishArtifact := false,
     publish := {},
     publishLocal := {},
+    // Necessary for publishMicrosite
     git.remoteRepo := "git@github.com:wvlet/airframe.git",
-    ghpagesNoJekyll := true,
+    ghpagesNoJekyll := false,
     micrositeName := "Airframe",
     micrositeDescription := "Best Practice of Building Service Objects in Scala",
     micrositeAuthor := "Taro L. Saito",
@@ -101,6 +102,8 @@ lazy val docs = (project in file("docs"))
     micrositeBaseUrl := "airframe",
     micrositeAnalyticsToken := "UA-98364158-1",
     micrositeDocumentationUrl := "docs",
+    micrositePushSiteWith := GitHub4s,
+    micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
     micrositePalette ++= Map(
       "brand-primary"   -> "#2582AA",
       "brand-secondary" -> "#143F56",
