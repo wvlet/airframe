@@ -7,7 +7,7 @@ title: Release Notes
 
 ## 1.0
  - Moved to `org.wvlet.airframe` organization because Airframe will have more modules in future.
- - Renamed airframe-log -> wvlet-log
+ - Added airframe-spec (a common library for testing airframe modules)
 
 ## 0.22
  - Add Logger.clearAllHandlers to clean-up existing log handlers set by third-party libraries
