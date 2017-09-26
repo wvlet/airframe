@@ -84,33 +84,33 @@ lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS)
 
 lazy val docs = (project in file("docs"))
-    .settings(moduleName := "docs")
-    .settings(
-      publishArtifact := false,
-      publish := {},
-      publishLocal := {},
-      micrositeName := "Airframe",
-      micrositeDescription := "Best Practice of Building Service Objects in Scala",
-      micrositeAuthor := "Taro L. Saito",
-      micrositeOrganizationHomepage := "https://github.com/wvlet",
-      micrositeHighlightTheme := "ocean",
-      micrositeGithubOwner := "wvlet",
-      micrositeGithubRepo := "airframe",
-      micrositeBaseUrl := "airframe",
-      micrositeAnalyticsToken := "UA-98364158-1",
-      micrositeDocumentationUrl := "docs",
-      micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
-      micrositePalette ++= Map(
-        "brand-primary"   -> "#2582AA",
-        "brand-secondary" -> "#143F56",
-        "brand-tertiary"  -> "#042F46",
-        "gray-dark"       -> "#453E46",
-        "gray"            -> "#534F54"
-      )
+  .settings(moduleName := "docs")
+  .settings(
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {},
+    micrositeName := "Airframe",
+    micrositeDescription := "Best Practice of Building Service Objects in Scala",
+    micrositeAuthor := "Taro L. Saito",
+    micrositeOrganizationHomepage := "https://github.com/wvlet",
+    micrositeHighlightTheme := "ocean",
+    micrositeGithubOwner := "wvlet",
+    micrositeGithubRepo := "airframe",
+    micrositeBaseUrl := "airframe",
+    micrositeAnalyticsToken := "UA-98364158-1",
+    micrositeDocumentationUrl := "docs",
+    micrositePushSiteWith := GitHub4s,
+    micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
+    micrositePalette ++= Map(
+      "brand-primary"   -> "#2582AA",
+      "brand-secondary" -> "#143F56",
+      "brand-tertiary"  -> "#042F46",
+      "gray-dark"       -> "#453E46",
+      "gray"            -> "#534F54"
     )
-    .enablePlugins(MicrositesPlugin)
-    .enablePlugins(TutPlugin)
+  )
+  .enablePlugins(MicrositesPlugin)
+  .enablePlugins(TutPlugin)
 
 lazy val airframe =
   crossProject
