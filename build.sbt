@@ -4,10 +4,11 @@ val SCALA_2_12 = "2.12.3"
 val SCALA_2_11 = "2.11.11"
 scalaVersion in ThisBuild := SCALA_2_12
 
+organization in ThisBuild := "org.wvlet"
+
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
   crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
-  organization := "org.wvlet",
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
@@ -113,8 +114,6 @@ lazy val docs = (project in file("docs"))
     )
   )
   .enablePlugins(MicrositesPlugin)
-  .enablePlugins(TutPlugin)
-  .enablePlugins(GhpagesPlugin)
 
 lazy val airframe =
   crossProject
