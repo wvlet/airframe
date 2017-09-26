@@ -246,15 +246,15 @@ lazy val logJS  = log.js
 
 lazy val airframeSpec =
   crossProject
-  .in(file("airframe-spec"))
-  .settings(buildSettings)
-  .settings(
-    description := "Airframe spec test base library",
-    libraryDependencies ++= Seq(
-      "org.scalatest" %% "scalatest" % "3.0.1",
+    .in(file("airframe-spec"))
+    .settings(buildSettings)
+    .settings(
+      description := "Airframe spec test base library",
+      libraryDependencies ++= Seq(
+        "org.scalatest" %% "scalatest" % "3.0.1",
+      )
     )
-  )
-  .dependsOn(log)
+    .dependsOn(log)
 
 lazy val airframeSpecJVM = airframeSpec.jvm
-lazy val airframeSpecJS = airframeSpec.js
+lazy val airframeSpecJS  = airframeSpec.js
