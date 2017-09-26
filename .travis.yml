@@ -47,8 +47,6 @@ matrix:
       - gem install sass
       - gem install jekyll -v 3.2.1
     script:
-      - pwd
-      - ls -a
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite;
+          ./sbt docs/publishMicrosite;
         fi
