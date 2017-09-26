@@ -54,5 +54,5 @@ matrix:
     script:
       # Workaround for sbt-ghpages bug https://github.com/sbt/sbt-ghpages/issues/14
       - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-          ./scripts/publishMicrosite.sh
+          ./scripts/publishMicrosite.sh;
         fi
