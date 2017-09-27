@@ -16,7 +16,7 @@ package wvlet.airframe.metrics
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-case class TimeDuration(x: Long, unit: ChronoUnit, offset: Long = 0) {
+case class TimeVector(x: Long, offset: Long, unit: ChronoUnit) {
 
   def timeWindowAt(context: ZonedDateTime): TimeWindow = {
     val grid        = TimeWindow.truncateTo(context, unit)
@@ -38,35 +38,34 @@ case class TimeDuration(x: Long, unit: ChronoUnit, offset: Long = 0) {
 
 }
 
-object TimeDuration {
-  private val durationPattern = "^([+-]|last|next)?([0-9]+)(s|m|d|h|w|M|y)".r("prefix", "num", "unit", "o")
+object TimeVector {
+  private val durationPattern = "^([+-]|last|next)?([0-9]+)(s|m|d|h|w|M|y)".r("prefix", "num", "unit")
 
-  def apply(s: String): TimeDuration = {
+  def apply(s: String): TimeVector = {
     s match {
       // current
       // thisXXXX is a special time range and needs to be backward range to include the current time
-      //
-      //         now
-      //   |------x------|
-      //    <------------|  -1 x unit distance from the offset
-      // base          offset
-      case "thisHour"  => TimeDuration(-1, ChronoUnit.HOURS, 1)
-      case "today"     => TimeDuration(-1, ChronoUnit.DAYS, 1)
-      case "thisWeek"  => TimeDuration(-1, ChronoUnit.WEEKS, 1)
-      case "thisMonth" => TimeDuration(-1, ChronoUnit.MONTHS, 1)
-      case "thisYear"  => TimeDuration(-1, ChronoUnit.YEARS, 1)
+      //             now
+      //   |----------x----------|
+      //   <---------------------| x = -1, 1 unit distance from the offset
+      //  grid (offset=0)  offset = 1
+      case "thisHour"  => TimeVector(-1, 1, ChronoUnit.HOURS)
+      case "today"     => TimeVector(-1, 1, ChronoUnit.DAYS)
+      case "thisWeek"  => TimeVector(-1, 1, ChronoUnit.WEEKS)
+      case "thisMonth" => TimeVector(-1, 1, ChronoUnit.MONTHS)
+      case "thisYear"  => TimeVector(-1, 1, ChronoUnit.YEARS)
       // past
-      case "lastHour"  => TimeDuration(-1, ChronoUnit.HOURS)
-      case "yesterday" => TimeDuration(-1, ChronoUnit.DAYS)
-      case "lastWeek"  => TimeDuration(-1, ChronoUnit.WEEKS)
-      case "lastMonth" => TimeDuration(-1, ChronoUnit.MONTHS)
-      case "lastYear"  => TimeDuration(-1, ChronoUnit.YEARS)
+      case "lastHour"  => TimeVector(-1, 0, ChronoUnit.HOURS)
+      case "yesterday" => TimeVector(-1, 0, ChronoUnit.DAYS)
+      case "lastWeek"  => TimeVector(-1, 0, ChronoUnit.WEEKS)
+      case "lastMonth" => TimeVector(-1, 0, ChronoUnit.MONTHS)
+      case "lastYear"  => TimeVector(-1, 0, ChronoUnit.YEARS)
       // future
-      case "nextHour"  => TimeDuration(1, ChronoUnit.HOURS, 1)
-      case "tomorrow"  => TimeDuration(1, ChronoUnit.DAYS, 1)
-      case "nextWeek"  => TimeDuration(1, ChronoUnit.WEEKS, 1)
-      case "nextMonth" => TimeDuration(1, ChronoUnit.MONTHS, 1)
-      case "nextYear"  => TimeDuration(1, ChronoUnit.YEARS, 1)
+      case "nextHour"  => TimeVector(1, 1, ChronoUnit.HOURS)
+      case "tomorrow"  => TimeVector(1, 1, ChronoUnit.DAYS)
+      case "nextWeek"  => TimeVector(1, 1, ChronoUnit.WEEKS)
+      case "nextMonth" => TimeVector(1, 1, ChronoUnit.MONTHS)
+      case "nextYear"  => TimeVector(1, 1, ChronoUnit.YEARS)
 
       case other =>
         durationPattern.findFirstMatchIn(s) match {
@@ -77,9 +76,9 @@ object TimeDuration {
             val unit   = unitOf(m.group("unit"))
             m.group("prefix") match {
               case null | "-" | "last" =>
-                TimeDuration(-length, unit)
+                TimeVector(-length, 0, unit)
               case "+" | "next" =>
-                TimeDuration(length, unit)
+                TimeVector(length, 0, unit)
               case other =>
                 throw new IllegalArgumentException(s"Unknown duration prefix: ${other}")
             }

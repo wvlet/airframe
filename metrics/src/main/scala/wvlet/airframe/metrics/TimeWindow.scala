@@ -14,7 +14,7 @@ import scala.util.{Failure, Success, Try}
   * @param end
   */
 case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
-  assert(start.compareTo(end) <= 0)
+  require(start.compareTo(end) <= 0, s"invalid range: ${TimeStampFormatter.formatTimestamp(start)} > ${TimeStampFormatter.formatTimestamp(end)}")
 
   private def instantOfStart = start.toInstant
   private def instantOfEnd   = end.toInstant
@@ -87,6 +87,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
 }
 
 object TimeWindow {
+
   val systemZone: ZoneOffset = {
     // Need to get the current ZoneOffset to resolve PDT, etc.
     // because ZoneID of America/Los Angels (PST) is -0800 while PDT zone offset is -0700
@@ -95,7 +96,7 @@ object TimeWindow {
   }
   val UTC: ZoneOffset = ZoneOffset.UTC
 
-  def withZone(zoneName: String): TimeWindowBuilder = {
+  def withTimeZone(zoneName: String): TimeWindowBuilder = {
     import scala.collection.JavaConverters._
     // Add commonly used daylight saving times
     val idMap = ZoneId.SHORT_IDS.asScala ++
@@ -106,12 +107,12 @@ object TimeWindow {
       .getOrElse { ZoneId.of(zoneName) }
 
     val offset = ZonedDateTime.now(zoneId).getOffset
-    of(offset)
+    withTimeZone(offset)
   }
 
-  def of(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
-  def ofUTC: TimeWindowBuilder                  = of(UTC)
-  def ofSystem: TimeWindowBuilder               = of(systemZone)
+  def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
+  def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
+  def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemZone)
 
   def truncateTo(t: ZonedDateTime, unit: ChronoUnit): ZonedDateTime = {
     unit match {
@@ -169,7 +170,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
     o match {
       case "now" => now
       case other =>
-        Try(TimeDuration(o)) match {
+        Try(TimeVector(o)) match {
           case Success(x) =>
             x.timeWindowAt(now).start
           case Failure(e) =>
@@ -185,7 +186,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
     pattern.findFirstMatchIn(str) match {
       case Some(m) =>
         val d        = m.group("duration")
-        val duration = TimeDuration(d)
+        val duration = TimeVector(d)
         m.group("offset") match {
           case null =>
             // When offset is not given, use the truncated time

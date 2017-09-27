@@ -22,7 +22,7 @@ import wvlet.airframe.AirframeSpec
   */
 class TimeWindowTest extends AirframeSpec {
 
-  val t    = TimeWindow.withZone("PDT").withOffset("2016-06-26 01:23:45-0700")
+  val t    = TimeWindow.withTimeZone("PDT").withOffset("2016-06-26 01:23:45-0700")
   val zone = t.zone
   info(s"now: ${t.now}")
 
@@ -108,6 +108,7 @@ class TimeWindowTest extends AirframeSpec {
       parse("1M/0M", "[2016-05-01 00:00:00-0700,2016-06-01 00:00:00-0700)")
       // -1M:-1M  [2017-03-01, 2017-04-01) if today is 2017-05-20
       parse("1M/1M", "[2016-04-01 00:00:00-0700,2016-05-01 00:00:00-0700)")
+      parse("1M/lastMonth", "[2016-04-01 00:00:00-0700,2016-05-01 00:00:00-0700)")
 
       // -1h/2017-01-23 01:00:00 -> [2017-01-23 00:00:00,2017-01-23 01:00:00]
       // -1h/2017-01-23 01:23:45 -> [2017-01-23 00:00:00,2017-01-23 01:23:45]
@@ -159,14 +160,14 @@ class TimeWindowTest extends AirframeSpec {
 
     "parse timezone" in {
       // Sanity tests
-      TimeWindow.withZone("UTC")
-      TimeWindow.withZone("PST")
-      TimeWindow.withZone("PDT")
-      TimeWindow.withZone("JST")
-      TimeWindow.withZone("EDT")
-      TimeWindow.withZone("BST")
-      TimeWindow.withZone("CDT")
-      TimeWindow.withZone("MDT")
+      TimeWindow.withTimeZone("UTC")
+      TimeWindow.withTimeZone("PST")
+      TimeWindow.withTimeZone("PDT")
+      TimeWindow.withTimeZone("JST")
+      TimeWindow.withTimeZone("EDT")
+      TimeWindow.withTimeZone("BST")
+      TimeWindow.withTimeZone("CDT")
+      TimeWindow.withTimeZone("MDT")
     }
   }
 

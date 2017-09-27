@@ -68,7 +68,7 @@ class TimeParserTest extends AirframeSpec {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         val t = TimeParser.parse("2017-04-04", ZoneOffset.of("-07:00"))
         info(t)
-        val w = TimeWindow.withZone("PDT")
+        val w = TimeWindow.withTimeZone("PDT")
         val d = w.parse("3d/2017-04-07")
         info(d)
       } finally {

@@ -21,7 +21,14 @@ options:
     url: docs/debug.html
   - title: Other DI Frameworks
     url: docs/comparison.html
+  - title: Utilities
+     url: docs/utils.hml
+     menu_section: utilities
+     nested_options:
+      - title: airframe-metrics
+      - url: docs/airframe-metrics.html
   - title: Airframe Internals
     url: docs/internals.html
   - title: Release Notes
     url: docs/release-notes.html
+　　
