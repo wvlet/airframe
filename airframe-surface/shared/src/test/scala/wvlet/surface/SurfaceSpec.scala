@@ -15,25 +15,13 @@
 package wvlet.surface
 
 import org.scalatest._
+import wvlet.airframe.AirframeSpec
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
-
-  // Add source code location to the debug logs
-  Logger.setDefaultFormatter(SourceCodeLogFormatter)
-
-  implicit def toTag(s: String) = Tag(s)
-
-  override def run(testName: Option[String], args: Args): Status = {
-    // Periodically scan log level file
-    Logger.scheduleLogLevelScan
-    val s = super.run(testName, args)
-    Logger.stopScheduledLogLevelScan
-    s
-  }
+trait SurfaceSpec extends AirframeSpec {
 
   def check(body: => Surface, expectedName: String): Surface = {
     val surface = body

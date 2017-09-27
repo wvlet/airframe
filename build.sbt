@@ -17,20 +17,15 @@ val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/wvlet/airframe")),
-  pomExtra := {
-    <scm>
-      <connection>scm:git:github.com/wvlet/airframe.git</connection>
-      <developerConnection>scm:git:git@github.com:wvlet/airframe.git</developerConnection>
-      <url>github.com/wvlet/airframe.git</url>
-    </scm>
-      <developers>
-        <developer>
-          <id>leo</id>
-          <name>Taro L. Saito</name>
-          <url>http://xerial.org/leo</url>
-        </developer>
-      </developers>
-  },
+  scmInfo := Some(
+    ScmInfo(
+      browseUrl = url("https://github.com/wvlet/airframe"),
+      connection = "scm:git@github.com:wvlet/airframe.git"
+    )
+  ),
+  developers := List(
+    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
+  ),
   // Use sonatype resolvers
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
@@ -73,7 +68,9 @@ val noPublish = Seq(
 )
 
 lazy val airframeRoot =
-  Project(id = "airframe-root", base = file("."))
+  project
+    .in(file("."))
+    .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
     .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
@@ -84,36 +81,38 @@ lazy val projectJVM =
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
 
-lazy val docs = (project in file("docs"))
-  .settings(moduleName := "docs")
-  .settings(
-    publishArtifact := false,
-    publish := {},
-    publishLocal := {},
-    // Necessary for publishMicrosite
-    git.remoteRepo := "git@github.com:wvlet/airframe.git",
-    ghpagesNoJekyll := false,
-    micrositeName := "Airframe",
-    micrositeDescription := "Best Practice of Building Service Objects in Scala",
-    micrositeAuthor := "Taro L. Saito",
-    micrositeOrganizationHomepage := "https://github.com/wvlet",
-    micrositeHighlightTheme := "ocean",
-    micrositeGithubOwner := "wvlet",
-    micrositeGithubRepo := "airframe",
-    micrositeBaseUrl := "airframe",
-    micrositeAnalyticsToken := "UA-98364158-1",
-    micrositeDocumentationUrl := "docs",
-    micrositePushSiteWith := GitHub4s,
-    micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
-    micrositePalette ++= Map(
-      "brand-primary"   -> "#2582AA",
-      "brand-secondary" -> "#143F56",
-      "brand-tertiary"  -> "#042F46",
-      "gray-dark"       -> "#453E46",
-      "gray"            -> "#534F54"
+lazy val docs =
+  project
+    .in(file("docs"))
+    .settings(
+      name := "docs",
+      publishArtifact := false,
+      publish := {},
+      publishLocal := {},
+      // Necessary for publishMicrosite
+      git.remoteRepo := "git@github.com:wvlet/airframe.git",
+      ghpagesNoJekyll := false,
+      micrositeName := "Airframe",
+      micrositeDescription := "Best Practice of Building Service Objects in Scala",
+      micrositeAuthor := "Taro L. Saito",
+      micrositeOrganizationHomepage := "https://github.com/wvlet",
+      micrositeHighlightTheme := "ocean",
+      micrositeGithubOwner := "wvlet",
+      micrositeGithubRepo := "airframe",
+      micrositeBaseUrl := "airframe",
+      micrositeAnalyticsToken := "UA-98364158-1",
+      micrositeDocumentationUrl := "docs",
+      micrositePushSiteWith := GitHub4s,
+      micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
+      micrositePalette ++= Map(
+        "brand-primary"   -> "#2582AA",
+        "brand-secondary" -> "#143F56",
+        "brand-tertiary"  -> "#042F46",
+        "gray-dark"       -> "#453E46",
+        "gray"            -> "#534F54"
+      )
     )
-  )
-  .enablePlugins(MicrositesPlugin)
+    .enablePlugins(MicrositesPlugin)
 
 lazy val airframe =
   crossProject
@@ -150,7 +149,6 @@ lazy val airframeJS  = airframe.js
 lazy val airframeMacros =
   crossProject
     .in(file("airframe-macros"))
-    .settings(moduleName := "airframe-macros")
     .settings(buildSettings)
     .settings(
       buildSettings,
@@ -184,15 +182,17 @@ lazy val surface =
       // Workaround for 'JSCom has been closed' issue
       parallelExecution in ThisBuild := false
     )
-    .dependsOn(log)
+    .dependsOn(log, airframeSpec % "test")
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
 
 lazy val airframeConfig =
-  Project(id = "airframe-config", base = file("airframe-config"))
+  project
+    .in(file("airframe-config"))
     .settings(buildSettings)
     .settings(
+      name := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
         "org.yaml" % "snakeyaml" % "1.14"
@@ -201,18 +201,21 @@ lazy val airframeConfig =
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val jmx =
-  Project(id = "airframe-jmx", base = file("airframe-jmx"))
+  project
+    .in(file("airframe-jmx"))
     .settings(buildSettings)
     .settings(
+      name := "airframe-jmx",
       description := "A library for exposing Scala object data through JMX"
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val opts =
-  Project(id = "airframe-opts", base = file("airframe-opts"))
+  project
+    .in(file("airframe-opts"))
     .settings(buildSettings)
     .settings(
-      name := "opts",
+      name := "airframe-opts",
       description := "Command-line option parser",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
@@ -254,7 +257,7 @@ lazy val airframeSpec =
       name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "3.0.1",
+        "org.scalatest" %% "scalatest" % "3.0.1"
       )
     )
     .dependsOn(log)

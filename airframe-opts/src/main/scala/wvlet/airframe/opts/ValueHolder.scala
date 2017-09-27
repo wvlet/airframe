@@ -27,13 +27,11 @@ import wvlet.surface.reflect.Path
   *
   * val n1 = Empty.set("a", apple)  =>  Node(a -> Leaf(apple))
   * val n2 = n1.set("B.b", "book")
-  *       => Node(a -> Leaf(apple), B -> Empty.set("b", "book"))
-  *       => Node(a -> apple, B->Node(b -> Leaf(book)))
+  * => Node(a -> Leaf(apple), B -> Empty.set("b", "book"))
+  * => Node(a -> apple, B->Node(b -> Leaf(book)))
   * val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b -> Leaf(book), c->Leaf(car)))
   *
   * </pre>
-  *
-  * @author Taro L. Saito
   *
   */
 trait ValueHolder[+A] {
@@ -46,7 +44,7 @@ trait ValueHolder[+A] {
   /**
     * Set a value at the specified path
     *
-    * @param path string representation of [[Path]]
+    * @param path string representation of Path
     * @param value
     * @return updated value holder
     */
@@ -55,7 +53,7 @@ trait ValueHolder[+A] {
   /**
     * Set a value at the specified path
     *
-    * @param path path
+    * @param path  path
     * @param value String value to set
     * @return updated value holder
     */
@@ -105,6 +103,7 @@ trait ValueHolder[+A] {
 }
 
 object ValueHolder extends LogSupport {
+
   import collection.immutable.{Map => IMap}
 
   def apply[A](elems: Iterable[(Path, A)]): ValueHolder[A] = Empty.++[A](elems)
@@ -113,10 +112,11 @@ object ValueHolder extends LogSupport {
 
   private case object Empty extends ValueHolder[Nothing] {
     def set[B >: Nothing](path: Path, value: B) = {
-      if (path.isEmpty)
+      if (path.isEmpty) {
         Leaf(value)
-      else
+      } else {
         Node(IMap.empty[String, ValueHolder[B]]).set(path, value)
+      }
     }
     def get(path: Path)     = Empty
     def extract(path: Path) = Empty
@@ -126,7 +126,7 @@ object ValueHolder extends LogSupport {
   }
 
   private case class Node[A](child: IMap[String, ValueHolder[A]]) extends ValueHolder[A] {
-    override def toString =
+    override def toString: String =
       "{%s}".format(
         child
           .map { e =>
@@ -135,19 +135,20 @@ object ValueHolder extends LogSupport {
           .mkString(", "))
 
     def set[B >: A](path: Path, value: B): ValueHolder[B] = {
-      if (path.isEmpty)
+      if (path.isEmpty) {
         throw new IllegalStateException("path cannot be empty")
-      else {
+      } else {
         val p = child.getOrElse(path.head, Empty).set(path.tailPath, value)
         Node(child + (path.head -> p))
       }
     }
 
     def get(path: Path) = {
-      if (path.isEmpty)
+      if (path.isEmpty) {
         this
-      else
+      } else {
         child.get(path.head) map { _.get(path.tailPath) } getOrElse Empty
+      }
     }
 
     def dfs(path: Path) = (for ((name, h) <- child) yield h.dfs(path / name)).reduce(_ ++ _)
@@ -160,10 +161,11 @@ object ValueHolder extends LogSupport {
     }
 
     def get(path: Path) = {
-      if (path.isEmpty)
+      if (path.isEmpty) {
         this
-      else
+      } else {
         Empty
+      }
     }
 
     def dfs(path: Path) = Iterator.single(path -> value)
@@ -177,10 +179,11 @@ object ValueHolder extends LogSupport {
     }
 
     def get(path: Path) =
-      if (path.isEmpty)
+      if (path.isEmpty) {
         this
-      else
+      } else {
         Empty
+      }
 
     def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)
 
