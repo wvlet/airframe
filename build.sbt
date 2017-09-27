@@ -1,14 +1,16 @@
 import ReleaseTransformations._
 
-val SCALA_2_12 = "2.12.3"
-val SCALA_2_11 = "2.11.11"
+val SCALA_2_12       = "2.12.3"
+val SCALA_2_11       = "2.11.11"
+val targetScalaVersions = Seq(SCALA_2_12, SCALA_2_11)
+
 scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
-  crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
+  crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
@@ -257,7 +259,7 @@ lazy val airframeSpec =
       name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
-        "org.scalatest" %% "scalatest" % "3.0.1"
+        "org.scalatest" %%% "scalatest" % "3.0.1"
       )
     )
     .dependsOn(log)
