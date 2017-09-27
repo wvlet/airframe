@@ -251,6 +251,17 @@ lazy val log =
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
 
+lazy val metrics =
+  project
+    .in(file("metrics"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-metrics",
+      description := "Metrics library for representing duration, size, etc.",
+      libraryDependencies ++= Seq()
+    )
+    .dependsOn(logJVM, airframeSpecJVM % "test")
+
 lazy val airframeSpec =
   crossProject
     .in(file("spec"))
