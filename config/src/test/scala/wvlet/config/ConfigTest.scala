@@ -33,7 +33,7 @@ case class ClassConfig(classes: Seq[String], classAssignments: Map[String, Strin
   */
 class ConfigTest extends AirframeSpec {
 
-  val configPaths = Seq("airframe-config/src/test/resources")
+  val configPaths = Seq("config/src/test/resources")
 
   def loadConfig(env: String) =
     Config(env = env, configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml").registerFromYaml[ClassConfig]("classes.yml")

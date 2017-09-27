@@ -73,10 +73,10 @@ lazy val airframeRoot =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, airframeConfig, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
+    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, config, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, airframeConfig, jmx, logJVM, opts, airframeSpecJVM)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, config, jmx, logJVM, opts, airframeSpecJVM)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -187,7 +187,7 @@ lazy val surface =
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
 
-lazy val airframeConfig =
+lazy val config =
   project
     .in(file("config"))
     .settings(buildSettings)
