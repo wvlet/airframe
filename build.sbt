@@ -166,7 +166,7 @@ lazy val airframeMacrosJS  = airframeMacros.js
 
 lazy val surface =
   crossProject
-    .in(file("airframe-surface"))
+    .in(file("surface"))
     .settings(buildSettings)
     .settings(
       name := "airframe-surface",
@@ -189,7 +189,7 @@ lazy val surfaceJS  = surface.js
 
 lazy val airframeConfig =
   project
-    .in(file("airframe-config"))
+    .in(file("config"))
     .settings(buildSettings)
     .settings(
       name := "airframe-config",
@@ -202,7 +202,7 @@ lazy val airframeConfig =
 
 lazy val jmx =
   project
-    .in(file("airframe-jmx"))
+    .in(file("jmx"))
     .settings(buildSettings)
     .settings(
       name := "airframe-jmx",
@@ -212,7 +212,7 @@ lazy val jmx =
 
 lazy val opts =
   project
-    .in(file("airframe-opts"))
+    .in(file("opts"))
     .settings(buildSettings)
     .settings(
       name := "airframe-opts",
@@ -225,7 +225,7 @@ lazy val opts =
 
 lazy val log =
   crossProject
-    .in(file("airframe-log"))
+    .in(file("log"))
     .settings(buildSettings)
     .settings(
       name := "airframe-log",
@@ -251,7 +251,7 @@ lazy val logJS  = log.js
 
 lazy val airframeSpec =
   crossProject
-    .in(file("airframe-spec"))
+    .in(file("spec"))
     .settings(buildSettings)
     .settings(
       name := "airframe-spec",
