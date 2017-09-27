@@ -1,11 +1,7 @@
---- 
-layout: docs
-title: Configuring Applications
----
+airframe-config
+===
 
-# Airframe Config
-
-Airframe Config enables configuring your Scala applications in a simple flow:
+airframe-config enables configure your Scala applications in a simple flow:
 
 1. Write config classes of your application.
 1. Read YAML files to populate the config objects.
@@ -111,43 +107,4 @@ To see the effective configurations, use `Config.getConfigChanges` method:
 for(change <- config.getConfigChanges) {
   println(s"[${change.key}] default:${change.default}, current:${change.current}")
 }
-```
-
-
-## Usign with Airframe
-
-Here is an example of using `Config` with `Airframe`:
-
-```scala
-import wvlet.airframe._
-import wvlet.config.Config
-
-...
-
-val env = "prodcution"
-
-// For overriding properties, or you can load the environmental variables here
-val properties = Map(
-  "server.host" -> "xxx.xxx.xxx" 
-)
-
-// Load "production" configurations from Yaml files
-val config: Config =
-  Config(env = env, defaultEnv = "default")
-  .registerFromYaml[LogConfig]("access-log.yml")  
-  .registerFromYaml[ServerConfig]("server.yml")
-  .overrideWith(properties) // Override config with property values
-
-// Bind config to design
-val design = config.getAll.foldLeft(newDesign) {
-  (d: Design, c: ConfigHolder) => d.bind(c.tpe).toInstance(c.value)
-}
-  
-val firnalDesign = design
-  .bind[X].toInstance(...)
-  .bind[Y].toProvider{ ... }
-   
-val session = finalDesign.newSession
-...
-
 ```

@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.23
+ - Moved to `org.wvlet.airframe` organization because Airframe will have more modules in future.
+ - Added airframe-spec (a common library for testing airframe modules)
+
 ## 0.22
  - Add Logger.clearAllHandlers to clean-up existing log handlers set by third-party libraries
  - Apply scalafmt code style 

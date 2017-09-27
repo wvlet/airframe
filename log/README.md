@@ -1,11 +1,11 @@
-# wvlet-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
-wvlet-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in wvlet-log:
+airframe-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
 <p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 
@@ -17,8 +17,8 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
 - **Fast and light-weight**
-  - wvlet-log uses Scala macros for efficiency; log messages will be instanciated only when the log level is effective. 
-  - wvlet-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
+  - airframe-log uses Scala macros for efficiency; log messages will be instanciated only when the log level is effective. 
+  - airframe-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
 - **Informative**
   - ANSI colored logging support.
   - You can also show the **source code locations** (line number and pos) of log messages.
@@ -27,23 +27,23 @@ wvlet-log is a libray for enhancing your Scala application logging with colors a
   - You can also change the log level through the standard JMX interface for `java.util.logging`.  
   - Easy to customize your own log format and log levels *inside* the code. No external XML configuration is required.
 - **Production ready**
-  - wvlet-log has built-in handlers for log file rotations, asynchronous logging.
+  - airframe-log has built-in handlers for log file rotations, asynchronous logging.
   - Scala 2.11, 2.12, Scala.js support
  
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-log_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/)
 
 ```scala
-libraryDependencies += "org.wvlet" %% "wvlet-log" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe-log" % "(version)"
 
-// For Scala.js (Since wvlet-log 1.2)
-libraryDependencies += "org.wvlet" %%% "wvlet-log" % "(version)"
+// For Scala.js (Since airframe-log 1.2)
+libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % "(version)"
 ```
 
 ### Using LogSupport trait
 
-The most convenient way to use wvlet-log is adding `LogSupport` to your class:
+The most convenient way to use airframe-log is adding `LogSupport` to your class:
 
 ```scala
 import wvlet.log.LogSupport
@@ -70,7 +70,7 @@ class YourApp {
 
 (This feature is not available in Scala.js)
 
-If `Logger.scheduleLogLevelScan` is called, wvlet-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
+If `Logger.scheduleLogLevelScan` is called, airframe-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:
 
 ```scala
 import wvlet.log.Logger
@@ -175,7 +175,7 @@ Logger.setDefaultFormatter(CustomLogFormatter)
 ```
 See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
 
-### Using wvlet-log in Scala.js
+### Using airframe-log in Scala.js
 
 
 ```scala
@@ -250,7 +250,7 @@ LogRotationHandler is already optimized for writing logs to files, so you usuall
 
 ### Scala macro based logging code generation
 
-wvlet-log is efficient since it generate the log message objects only when necessary. 
+airframe-log is efficient since it generate the log message objects only when necessary. 
 For example, this logging code:
 ```scala
 debug(s"heavy debug log generation ${obj.toString}")
@@ -273,7 +273,7 @@ and your application always need to include a dependency to one of the slf4j imp
 third-party libraries often include slf4j bindings as dependencies, and cause unexpected logging behaviour.  
 
 `java.util.logging` is a standard API of Java and no binding library is required, but configuring `java.util.logging` was still difficult and error prone (See an example in [Stack Overflow](http://stackoverflow.com/questions/960099/how-to-set-up-java-logging-using-a-properties-file-java-util-logging)) 
- *wvlet-log* makes things easier for Scala developers.
+ *airframe-log* makes things easier for Scala developers.
 
 
 ## Related Projects

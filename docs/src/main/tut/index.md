@@ -24,7 +24,7 @@ Airframe is available for Scala 2.12, 2.11, and [Scala.js](https://www.scala-js.
 
 **build.sbt**
 ```
-libraryDependencies += "org.wvlet" %% "airframe" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 ```
 
 ### Usage

@@ -28,10 +28,10 @@ Surface is useful for:
 
 **build.sbt**
 ```scala
-libraryDependencies += "org.wvlet" %% "surface" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airframe-surface" % "(version)"
 
 // For Scala.js
-libraryDependencies += "org.wvlet" %%% "surface" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
 ```
 
 ## surface.of[X]

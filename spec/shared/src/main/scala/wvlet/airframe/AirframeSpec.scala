@@ -11,32 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wvlet.surface
+package wvlet.airframe
 
 import org.scalatest._
-import wvlet.airframe.AirframeSpec
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.log.{LogSupport, Logger}
 
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends AirframeSpec {
+/**
+  *
+  */
+trait AirframeSpec extends WordSpec with Matchers with GivenWhenThen with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
 
-  def check(body: => Surface, expectedName: String): Surface = {
-    val surface = body
-    info(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    surface.toString shouldBe expectedName
-    surface
-  }
+  implicit def toTag(s: String) = Tag(s)
+  override def run(testName: Option[String], args: Args): Status = {
+    // Add source code location to the debug logs
+    Logger.setDefaultFormatter(SourceCodeLogFormatter)
 
-  def checkPrimitive(body: => Surface, expectedName: String): Surface = {
-    val s = check(body, expectedName)
-    s.isAlias shouldBe false
-    s.isOption shouldBe false
-    s.isPrimitive shouldBe true
-    s.objectFactory.isEmpty shouldBe true
+    // Periodically scan log level file
+    Logger.scheduleLogLevelScan
+    val s = super.run(testName, args)
+    Logger.stopScheduledLogLevelScan
     s
   }
-
 }
