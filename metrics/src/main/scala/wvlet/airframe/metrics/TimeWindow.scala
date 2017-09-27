@@ -172,7 +172,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
       case other =>
         Try(TimeVector(o)) match {
           case Success(x) =>
-            x.timeWindowAt(now).start
+            x.timeWindowFrom(now).start
           case Failure(e) =>
             TimeParser.parse(o, zone).getOrElse {
               throw new IllegalArgumentException(s"Invalid offset string: ${o}")
@@ -191,10 +191,10 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
           case null =>
             // When offset is not given, use the truncated time
             val context = TimeWindow.truncateTo(now, duration.unit)
-            duration.timeWindowAt(context)
+            duration.timeWindowFrom(context)
           case offsetStr =>
             val offset = parseOffset(offsetStr)
-            duration.timeWindowAt(offset)
+            duration.timeWindowFrom(offset)
         }
       case None =>
         throw new IllegalArgumentException(s"TimeRange.of(${str})")

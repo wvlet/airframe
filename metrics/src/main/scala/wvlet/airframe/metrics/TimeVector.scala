@@ -18,24 +18,21 @@ import java.time.temporal.ChronoUnit
 
 case class TimeVector(x: Long, offset: Long, unit: ChronoUnit) {
 
-  def timeWindowAt(context: ZonedDateTime): TimeWindow = {
-    val grid        = TimeWindow.truncateTo(context, unit)
-    val base        = grid.plus(offset, unit)
-    val theOtherEnd = base.plus(x, unit)
+  def timeWindowFrom(context: ZonedDateTime): TimeWindow = {
+    val grid = TimeWindow.truncateTo(context, unit)
 
-    if (x <= 0) {
-      if (grid.compareTo(context) == 0)
-        TimeWindow(theOtherEnd, base)
-      else
-        TimeWindow(theOtherEnd, context)
+    val startOffset = grid.plus(offset, unit)
+    val end         = startOffset.plus(x, unit)
+
+    val onGrid = grid.compareTo(context) == 0
+    val start  = if (onGrid) startOffset else context
+
+    if (start.compareTo(end) <= 0) {
+      TimeWindow(start, end)
     } else {
-      if (grid.compareTo(context) == 0)
-        TimeWindow(base, theOtherEnd)
-      else
-        TimeWindow(context, theOtherEnd)
+      TimeWindow(end, start)
     }
   }
-
 }
 
 object TimeVector {
