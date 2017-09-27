@@ -17,7 +17,7 @@ While debugging the code in your test cases, you can also use `log-test.properti
 ```
 wvlet.airframe=debug
 ```
-See [wvlet-log configuration](https://github.com/wvlet/log#configuring-log-levels) for the details of log level configurations.
+See [airframe-log configuration](https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels) for the details of log level configurations.
 
 
 Then you will see the log messages that show the object bindings and injection activities:

@@ -12,7 +12,7 @@ Airframe Config enables configuring your Scala applications in a simple flow:
 1. (optional) Override the configuration with Properties.
 1. Use it!
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/)
 
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-config" % "(version)"
