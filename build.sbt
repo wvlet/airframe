@@ -1,7 +1,7 @@
 import ReleaseTransformations._
 
-val SCALA_2_12       = "2.12.3"
-val SCALA_2_11       = "2.11.11"
+val SCALA_2_12          = "2.12.3"
+val SCALA_2_11          = "2.11.11"
 val targetScalaVersions = Seq(SCALA_2_12, SCALA_2_11)
 
 scalaVersion in ThisBuild := SCALA_2_12
