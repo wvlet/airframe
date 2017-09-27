@@ -1,5 +1,9 @@
-airframe-jmx
-====
+---
+layout: docs
+title: airframe-jmx
+---
+
+# airframe-jmx
 
 airframe-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can
 use `jconsole` program to access JMX parameters.

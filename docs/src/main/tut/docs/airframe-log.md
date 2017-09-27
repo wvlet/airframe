@@ -1,3 +1,8 @@
+---
+layout: docs
+title: airframe-log
+---
+
 # airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg

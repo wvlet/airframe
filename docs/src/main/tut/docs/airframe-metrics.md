@@ -7,11 +7,4 @@ title: airframe-metrics
 
 
 
-```scala
-import wvlet.airframe.metrics.TimeWindow
 
-val w = TimeWindow.ofSystem
-w.
-
-
-```
