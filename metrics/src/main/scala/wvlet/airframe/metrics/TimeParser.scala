@@ -1,15 +1,14 @@
 package wvlet.airframe.metrics
 
-import java.time.format.DateTimeFormatter
 import java.time._
-import java.time.temporal.{TemporalAccessor, TemporalQueries, TemporalQuery}
+import java.time.format.DateTimeFormatter
 
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
 /**
-  *
+  * Time string to ZonedDateTime converter
   */
 object TimeParser extends LogSupport {
 

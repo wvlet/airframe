@@ -16,9 +16,7 @@ package wvlet.airframe.metrics
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
-import wvlet.log.LogSupport
-
-case class TimeDuration(x: Long, unit: ChronoUnit, offset: Long = 0) extends LogSupport {
+case class TimeDuration(x: Long, unit: ChronoUnit, offset: Long = 0) {
 
   def timeWindowAt(context: ZonedDateTime): TimeWindow = {
     val grid        = TimeWindow.truncateTo(context, unit)

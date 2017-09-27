@@ -1,7 +1,7 @@
 package wvlet.airframe.metrics
 
-import java.time.{Instant, ZoneId, ZoneOffset, ZonedDateTime}
 import java.time.format.{DateTimeFormatterBuilder, SignStyle}
+import java.time.{Instant, ZoneOffset, ZonedDateTime}
 import java.util.Locale
 
 /**
