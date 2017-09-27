@@ -16,14 +16,16 @@ package wvlet.airframe.metrics
 import wvlet.airframe.metrics.DataSize._
 
 import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 
 /**
-  * A human-readable data size representation
+  * A human-readable data size representation.
+  * This is a re-implementation of https://github.com/airlift/units/blob/master/src/main/java/io/airlift/units/DataSize.java for Scala.
   */
 case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSize] {
   require(!value.isInfinite, s"infinite size")
   require(!value.isNaN, s"size is not a number")
-  require(value >= 0, s"negative size ${value}")
+  require(value >= 0, s"negative size ${value}, ${unit}")
 
   override def toString: String = {
     // Has fcation?
@@ -46,7 +48,7 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
 
   def convertTo(unit: DataSizeUnit): DataSize = DataSize(valueOf(unit), unit)
 
-  def mostSuccinct: DataSize = {
+  def mostSuccinctDataSize: DataSize = {
     @tailrec
     def loop(unit: DataSizeUnit, remaining: List[DataSizeUnit]): DataSizeUnit = {
       if (remaining.isEmpty) {
@@ -82,6 +84,13 @@ object DataSize {
     }
   }
 
+  implicit class StrToDataSizeConverter(dataSizeStr: String) {
+    def toDataSize = DataSize.apply(dataSizeStr)
+  }
+  implicit class LongToDataSizeConverter(bytes: Long) {
+    def toDataSize = DataSize.apply(bytes)
+  }
+
   private val dataSizePattern = """^\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s*$""".r("num", "unit")
 
   sealed abstract class DataSizeUnit(val factor: Long, val unitString: String)
@@ -95,10 +104,19 @@ object DataSize {
   val units             = List(BYTE, KILOBYTE, MEGABYTE, GIGABYTE, TERABYTE, PETABYTE)
   private val unitTable = units.map(x => x.unitString -> x).toMap[String, DataSizeUnit]
 
+  def succinct(bytes: Long): DataSize = DataSize(bytes, BYTE).mostSuccinctDataSize
+
+  def apply(bytes: Long): DataSize = DataSize(bytes, BYTE)
+
   def apply(dataSizeStr: String): DataSize = {
     dataSizePattern.findFirstMatchIn(dataSizeStr) match {
       case None =>
-        throw new IllegalArgumentException(s"Invalid data size string: ${dataSizeStr}")
+        Try(dataSizeStr.toLong) match {
+          case Success(l) =>
+            DataSize(l)
+          case Failure(e) =>
+            throw new IllegalArgumentException(s"Invalid data size string: ${dataSizeStr}")
+        }
       case Some(m) =>
         val num  = m.group("num").toDouble
         val unit = m.group("unit")

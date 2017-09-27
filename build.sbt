@@ -75,10 +75,10 @@ lazy val root =
     .settings(name := "root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, config, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
+    .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, config, jmx, logJVM, opts, airframeSpecJVM)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
