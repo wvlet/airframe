@@ -1,12 +1,10 @@
 Surface: An Object Shape Inspector
 ===
-[![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/surface.svg?branch=master)](https://travis-ci.org/wvlet/surface) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/surface/surface/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/surface) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.14.svg)](https://www.scala-js.org)
-[![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet/surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet/surface_2.12)
+[![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/surface) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+[![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-surface_2.12)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/surface/badge.svg?branch=master
-[coverall-link]: https://coveralls.io/github/wvlet/surface?branch=master
 
 Surface is an object surface inspection library, which is compatible between Scala and Scala.js 
 
@@ -24,7 +22,7 @@ Surface is useful for:
 - Dependency injection based on object shapes (e.g., [Airframe](https://github.com/wvlet/airframe))
 
 # Usage
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/surface_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/surface_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-surface_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-surface_2.12/)
 
 **build.sbt**
 ```scala

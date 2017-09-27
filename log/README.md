@@ -1,9 +1,7 @@
-# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Coverage Status][coverall-badge-svg]][coverall-link] [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-[coverall-badge-svg]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
-[coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
 airframe-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 

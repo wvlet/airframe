@@ -16,7 +16,7 @@ JMX -> fluentd -> DataDog   (For real-time monitoring)
 
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet/wvlet-jmx_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet/airframe-jmx_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/)
 
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-jmx" % "(version)"
