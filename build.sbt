@@ -67,10 +67,10 @@ val noPublish = Seq(
   publishLocal := {}
 )
 
-lazy val airframeRoot =
+lazy val root =
   project
     .in(file("."))
-    .settings(name := "airframe-root")
+    .settings(name := "root")
     .settings(buildSettings)
     .settings(noPublish)
     .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, config, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
