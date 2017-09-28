@@ -41,6 +41,8 @@ See [Documentation](http://wvlet.org/airframe/docs/) for further details.
   - Light-weight handy logging library
 - [airframe-config](https://github.com/wvlet/airframe/tree/master/config) 
   - Configuration reader & provider
+- [airframe-opts](https://github.com/wvlet/airframe/tree/master/opts) 
+  - Command-line parser & launcher
 - [airframe-metrics](https://github.com/wvlet/airframe/tree/master/metrics)
   - Human-readable representation of time, time range, and data size.
 - [airframe-jmx](https://github.com/wvlet/airframe/tree/master/jmx)
