@@ -24,7 +24,7 @@ in developing complex services in Scala, including [application configuration](d
 - [Use Cases](docs/use-cases.html)
    - Configuring applications, managing resources, service mix-in, etc.
 - [DI Framework Comparison](docs/comparison.html)
-   - Comparing Airframe with Google Guice, Macwire, Dapper2, etc. 
+   - Comparing Airframe with Google Guice, Macwire, Dagger2, etc. 
 - [Airframe Utilities](docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 - [Release Notes](docs/release-notes.html)
