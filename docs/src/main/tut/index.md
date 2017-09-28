@@ -9,8 +9,8 @@ technologies:
 # Airframe
 
 Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
-As its core Airframe provides [dependency injection (DI)](https://en.wikipedia.org/wiki/Dependency_injection) library tailored to [Scala](https://www.scala-lang.org/). 
-Dependency injection is a design pattern for simplifying object instantiation; 
+As its core Airframe provides [dependency injection (DI) library](docs) tailored to [Scala](https://www.scala-lang.org/). 
+Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; 
 Instead of enumerating necessary objects (dependencies) within constructor arguments, 
 DI framework builds objects on your behalf. 
 While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers), Airframe redesigned it for Scala so that we can enjoy the flexibilities of Scala traits and DI at the same time.
