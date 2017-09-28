@@ -7,7 +7,7 @@ title: Quick Start
 
 [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
 
-This page describes all you need to know to start using Airframe.
+This page describes all you need to know to start using dependency injection with Airframe.
 
 ## sbt
 

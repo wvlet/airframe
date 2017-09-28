@@ -21,6 +21,20 @@ options:
     url: docs/debug.html
   - title: Other DI Frameworks
     url: docs/comparison.html
+  - title: Airframe Utilities
+    url: docs/utils.html
+    menu_section: utilities
+    nested_options:
+      - title: airframe-log
+        url: docs/airframe-log.html
+      - title: airframe-config
+        url: docs/config.html
+      - title: airframe-metrics
+        url: docs/airframe-metrics.html
+      - title: airframe-jmx
+        url: docs/airframe-jmx.html
+      - title: airframe-surface
+        url: docs/airframe-surface.html
   - title: Airframe Internals
     url: docs/internals.html
   - title: Release Notes

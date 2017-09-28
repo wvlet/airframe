@@ -3,9 +3,9 @@ layout: docs
 title: Configuring Applications
 ---
 
-# Airframe Config
+# airframe-config
 
-Airframe Config enables configuring your Scala applications in a simple flow:
+*airframe-config* enables configuring your Scala applications in a simple flow:
 
 1. Write config classes of your application.
 1. Read YAML files to populate the config objects.

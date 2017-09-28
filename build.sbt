@@ -75,10 +75,10 @@ lazy val root =
     .settings(name := "root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(airframeJVM, airframeMacrosJVM, airframeJS, airframeMacrosJS, surfaceJVM, surfaceJS, config, jmx, logJVM, logJS, opts, airframeSpecJVM, airframeSpecJS)
+    .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, config, jmx, logJVM, opts, airframeSpecJVM)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -95,7 +95,7 @@ lazy val docs =
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
       micrositeName := "Airframe",
-      micrositeDescription := "Best Practice of Building Service Objects in Scala",
+      micrositeDescription := "Lightweight Service Buidler for Scala",
       micrositeAuthor := "Taro L. Saito",
       micrositeOrganizationHomepage := "https://github.com/wvlet",
       micrositeHighlightTheme := "ocean",
@@ -112,6 +112,13 @@ lazy val docs =
         "brand-tertiary"  -> "#042F46",
         "gray-dark"       -> "#453E46",
         "gray"            -> "#534F54"
+      ),
+      watchSources += new sbt.internal.io.Source(
+        sourceDirectory.value,
+        new FileFilter {
+          def accept(f: File) = !f.isDirectory
+        },
+        NothingFilter
       )
     )
     .enablePlugins(MicrositesPlugin)
@@ -250,6 +257,17 @@ lazy val log =
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
+
+lazy val metrics =
+  project
+    .in(file("metrics"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-metrics",
+      description := "Metrics library for representing duration, size, etc.",
+      libraryDependencies ++= Seq()
+    )
+    .dependsOn(logJVM, airframeSpecJVM % "test")
 
 lazy val airframeSpec =
   crossProject

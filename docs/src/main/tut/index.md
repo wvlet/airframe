@@ -12,8 +12,14 @@ Airframe is a [dependency injection (DI)](https://en.wikipedia.org/wiki/Dependen
 
 Airframe provides the best practices of building service objecst using DI and Scala.
 
+## Resources
 - [Documentation](docs)
 - [Use Cases](docs/use-cases.html)
+   - Configuring applications, managing resources, service mix-in, etc.
+- [DI Framework Comparison](docs/comparison.html)
+   - Comparing Airframe with Google Guice, Macwire, Dapper2, etc. 
+- [Airframe Utilities](docs/utils.html)
+   - A collection of useful Scala libraries that can be used with Airframe.
 - [Release Notes](docs/release-notes.html)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
