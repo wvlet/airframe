@@ -35,8 +35,9 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe" % "(version)"
 
 See [Documentation](http://wvlet.org/airframe/docs/) for further details.
 
-## Airframe Libraries
-
+## Airframe Library Source Codes
+- [airframe](https://github.com/wvlet/airframe/tree/master/airframe)
+  - Dependency injection library
 - [airframe-log](https://github.com/wvlet/airframe/tree/master/log)
   - Light-weight handy logging library
 - [airframe-config](https://github.com/wvlet/airframe/tree/master/config) 
