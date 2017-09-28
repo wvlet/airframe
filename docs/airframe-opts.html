@@ -19,9 +19,7 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
-<h2 id="defining-a-command-line-interface">Defining A Command-Line Interface</h2>
-
-<h3 id="command-line-interface">Command-line interface</h3>
+<h3 id="define-a-command-line-interface">Define a command-line interface</h3>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.opts._</span>
 <span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
 
@@ -51,7 +49,7 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
-<h3 id="launcher">Launcher</h3>
+<h3 id="launche-a-program">Launche a program</h3>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">org.mydomain</span>
 
@@ -64,14 +62,19 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
-<p>If you use <a href="https://github.com/xerial/sbt-pack">sbt-pack</a> plugin, you can create a stand-alone Scala program with a command line:</p>
-<pre><code class="language-aidl">enablePlugins(PackPlugin)
+<h3 id="packaging-with-sbt-pack">Packaging with sbt-pack</h3>
+<p>If you use <a href="https://github.com/xerial/sbt-pack">sbt-pack</a> plugin, you can create a stand-alone Scala program with a command-line interface:</p>
 
-// This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) 
-packMain := Map("myapp" -&gt; "org.mydomain.MyApp")
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">enablePlugins</span><span class="o">(</span><span class="nc">PackPlugin</span><span class="o">)</span>
+
+<span class="c1">// This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) 
+</span><span class="n">packMain</span> <span class="o">:=</span> <span class="nc">Map</span><span class="o">(</span><span class="s">"myapp"</span> <span class="o">-&gt;</span> <span class="s">"org.mydomain.MyApp"</span><span class="o">)</span>
 </code></pre>
+</div>
 
+<h3 id="run-the-program">Run the program</h3>
 <div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sbt pack
+...
 
 <span class="gp">$ </span>./target/pack/bin/myapp 
 Type --help to display the list of commands
