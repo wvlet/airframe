@@ -3,7 +3,7 @@ layout: docs
 title: Configuring Applications
 ---
 
-# airframe-config
+# Airframe Config
 
 *airframe-config* enables configuring your Scala applications in a simple flow:
 
