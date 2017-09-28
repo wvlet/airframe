@@ -11,14 +11,19 @@ ga('send', 'pageview');
 <p>Airframe has several utilities that make easier your programming in Scala:</p>
 
 <ul>
-  <li><a href="airframe-log.md">airframe-log</a>
+  <li><a href="airframe-log.html">airframe-log</a>
     <ul>
       <li>Light-weight handy logging library</li>
     </ul>
   </li>
-  <li><a href="config.md">airframe-config</a>
+  <li><a href="config.html">airframe-config</a>
     <ul>
       <li>Configuration reader &amp; provider</li>
+    </ul>
+  </li>
+  <li><a href="airframe-opts.html">airframe-opts</a>
+    <ul>
+      <li>Command line parser</li>
     </ul>
   </li>
   <li><a href="airframe-metrics.html">airframe-metrics</a>
@@ -26,12 +31,12 @@ ga('send', 'pageview');
       <li>Human-readable representation of time, time range, and data size.</li>
     </ul>
   </li>
-  <li><a href="airframe-jmx.md">airframe-jmx</a>
+  <li><a href="airframe-jmx.html">airframe-jmx</a>
     <ul>
       <li>Enable application monitoring through JMX</li>
     </ul>
   </li>
-  <li><a href="airframe-surface.md">airframe-surface</a>
+  <li><a href="airframe-surface.html">airframe-surface</a>
     <ul>
       <li>Object shape inspector. What parameters are defined in an object?</li>
     </ul>
@@ -42,6 +47,25 @@ ga('send', 'pageview');
     </ul>
   </li>
 </ul>
+
+<h2 id="sbt-plugins">sbt-plugins</h2>
+
+<ul>
+  <li><a href="https://github.com/xerial/sbt-pack">sbt-pack</a>
+    <ul>
+      <li>A sbt plugin for creating distributable Scala packages.</li>
+      <li>Packaging jar dependencies into a folder</li>
+      <li>You can also <a href="https://github.com/xerial/sbt-pack#building-a-docker-image-file-with-sbt-pack">build a docker image of your program</a>.</li>
+    </ul>
+  </li>
+  <li><a href="https://github.com/xerial/sbt-sonatype">sbt-sonatype</a>
+    <ul>
+      <li>A sbt plugin for publishing Scala/Java projects to the Maven central.</li>
+      <li>Enables <a href="https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin">a single command release</a> of your project.</li>
+    </ul>
+  </li>
+</ul>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
