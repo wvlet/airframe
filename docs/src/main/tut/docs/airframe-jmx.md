@@ -3,9 +3,9 @@ layout: docs
 title: airframe-jmx
 ---
 
-# airframe-jmx
+# Airframe JMX
 
-airframe-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can
+The airframe-jmx enables exposing application information through JMX so that you can check the running state of an application outside JVM. For example, you can
 use `jconsole` program to access JMX parameters.
 
 JMX already provides various JVM metrics (e.g., heap memory usage, GC statistics, etc.). DataDog provides a handy way to collect JMX metrics:

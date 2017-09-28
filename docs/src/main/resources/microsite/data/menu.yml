@@ -21,7 +21,7 @@ options:
     url: docs/debug.html
   - title: Other DI Frameworks
     url: docs/comparison.html
-  - title: Utilities
+  - title: Airframe Utilities
     url: docs/utils.html
     menu_section: utilities
     nested_options:

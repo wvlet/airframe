@@ -3,12 +3,12 @@ layout: docs
 title: airframe-log
 ---
 
-# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+# Airframe Log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-airframe-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
+*airframe-log* is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
 <p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 

@@ -95,7 +95,7 @@ lazy val docs =
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
       micrositeName := "Airframe",
-      micrositeDescription := "Best Practice of Building Service Objects in Scala",
+      micrositeDescription := "Lightweight Service Buidler for Scala",
       micrositeAuthor := "Taro L. Saito",
       micrositeOrganizationHomepage := "https://github.com/wvlet",
       micrositeHighlightTheme := "ocean",
@@ -112,6 +112,13 @@ lazy val docs =
         "brand-tertiary"  -> "#042F46",
         "gray-dark"       -> "#453E46",
         "gray"            -> "#534F54"
+      ),
+      watchSources += new sbt.internal.io.Source(
+        sourceDirectory.value,
+        new FileFilter {
+          def accept(f: File) = !f.isDirectory
+        },
+        NothingFilter
       )
     )
     .enablePlugins(MicrositesPlugin)
