@@ -37,17 +37,17 @@ See [Documentation](http://wvlet.org/airframe/docs/) for further details.
 
 ## Airframe Libraries
 
-- [airframe-log](tree/master/log)
+- [airframe-log](https://github.com/wvlet/airframe/tree/master/log)
   - Light-weight handy logging library
-- [airframe-config](tree/master/config) 
+- [airframe-config](https://github.com/wvlet/airframe/tree/master/config) 
   - Configuration reader & provider
-- [airframe-metrics](tree/master/metrics)
+- [airframe-metrics](https://github.com/wvlet/airframe/tree/master/metrics)
   - Human-readable representation of time, time range, and data size.
-- [airframe-jmx](tree/master/jmx)
+- [airframe-jmx](https://github.com/wvlet/airframe/tree/master/jmx)
   - Enable application monitoring through JMX
-- [airframe-surface](tree/master/surface)
+- [airframe-surface](https://github.com/wvlet/airframe/tree/master/surface)
   - Object shape inspector. What parameters are defined in an object? 
-- [airframe-spec](blob/master/spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
+- [airframe-spec](https://github.com/wvlet/airframe/blob/master/spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
   - A simple base trait for using ScalaTest.
 
 ## LICENSE
