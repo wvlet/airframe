@@ -16,11 +16,7 @@ title: Airframe Opts
 libraryDependencies += "org.wvlet.airframe" %% "airframe-opts" % "(version)"
 ```
 
-
-## Defining A Command-Line Interface
-
-
-### Command-line interface 
+### Define a command-line interface 
 ```scala
 import wvlet.airframe.opts._
 import wvlet.log.LogSupport
@@ -50,7 +46,7 @@ class MyApp(g:GlobalOption) extends DefaultCommand with LogSupport {
 }
 ```
 
-### Launcher 
+### Launche a program 
 
 ```scala
 package org.mydomain
@@ -63,16 +59,21 @@ object MyApp {
 }
 ```
 
-If you use [sbt-pack](https://github.com/xerial/sbt-pack) plugin, you can create a stand-alone Scala program with a command line: 
-```aidl
+### Packaging with sbt-pack
+If you use [sbt-pack](https://github.com/xerial/sbt-pack) plugin, you can create a stand-alone Scala program with a command-line interface:
+
+```scala
 enablePlugins(PackPlugin)
 
 // This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) 
 packMain := Map("myapp" -> "org.mydomain.MyApp")
 ```
 
+
+### Run the program 
 ```sh
 $ sbt pack
+...
 
 $ ./target/pack/bin/myapp 
 Type --help to display the list of commands
