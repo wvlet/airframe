@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.24
+ - Add [airframe-metrics](airframe-metrics.html)
+
 ## 0.23
  - Moved to `org.wvlet.airframe` organization because Airframe will have more modules in future.
  - Added airframe-spec (a common library for testing airframe modules)
