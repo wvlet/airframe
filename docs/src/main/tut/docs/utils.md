@@ -8,17 +8,17 @@ title: Airframe Utilities
 Airframe has several utilities that make easier your programming in Scala:
     
 - [airframe-log](airframe-log.html) 
-  - Light-weight handy logging library
+  - Light-weight handy logging library.
 - [airframe-config](config.html) 
-  - Configuration reader & provider
+  - Configuration reader & provider.
 - [airframe-opts](airframe-opts.html) 
-  - Command line parser
+  - Command line parser.
 - [airframe-metrics](airframe-metrics.html) 
   - Human-readable representation of time, time range, and data size.
 - [airframe-jmx](airframe-jmx.html) 
-  - Enable application monitoring through JMX
+  - Enable application monitoring through JMX.
 - [airframe-surface](airframe-surface.html) 
-  - Object shape inspector. What parameters are defined in an object? 
+  - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
 - [airframe-spec](https://github.com/wvlet/airframe/blob/master/spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
   - A simple base trait for using ScalaTest.
 
