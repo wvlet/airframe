@@ -78,7 +78,7 @@ lazy val root =
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, tablet)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -277,10 +277,26 @@ lazy val airframeSpec =
       name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
-        "org.scalatest" %%% "scalatest" % "3.0.1"
+        "org.scalatest" %%% "scalatest" % "3.0.1",
+        // For JSON parser
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
       )
     )
     .dependsOn(log)
 
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
+
+lazy val tablet =
+  project
+  .in(file("tablet"))
+  .settings(buildSettings)
+  .settings(
+    name := "airframe-tablet",
+    description := "Data format conversion library",
+    libraryDependencies ++= Seq(
+      "org.msgpack" % "msgpack-core" % "0.8.13",
+      "com.github.tototoshi" %% "scala-csv" % "1.3.5"
+    )
+  )
+  .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
