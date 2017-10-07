@@ -133,7 +133,7 @@ class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageCodec[_]] = M
       }
       val a = args.result()
       trace(s"${a.map(x => s"${x.getClass.getName}:${x}").mkString("\n")}")
-      val r = objType.objectFactory.map(_.newInstance(a).asInstanceOf[AnyRef])
+      val r = objType.objectFactory.map(_.newInstance(a).asInstanceOf[AnyRef]).getOrElse(null)
       trace(r)
       r
     }

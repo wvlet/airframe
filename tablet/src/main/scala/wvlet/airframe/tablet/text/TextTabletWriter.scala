@@ -39,7 +39,7 @@ object TextTabletWriter {
     override def sanitize(s: String): String         = quote(JSONFormat.quoteString(s))
     override def sanitizeEmbedded(s: String): String = s
     override def format(record: Seq[String]): String = {
-      s"[${record.mkString(", ")}]"
+      s"[${record.mkString(",")}]"
     }
   }
 

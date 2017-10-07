@@ -33,17 +33,17 @@ class TextTabletWriterTest extends AirframeSpec {
 
     "output object in JSON array format" in {
       val w = seq.toJson
-      info(w.mkString(", "))
+      info(w.mkString("\n"))
     }
 
     "output object in CSV format" in {
       val w = seq.toCSV
-      info(w.mkString(", "))
+      info(w.mkString("\n"))
     }
 
     "output object in TSV format" in {
       val w = seq.toTSV
-      info(w.mkString(", "))
+      info(w.mkString("\n"))
     }
 
   }
