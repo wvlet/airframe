@@ -1,92 +1,17 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.{ValueType, Variable}
-import wvlet.airframe.tablet.Schema
-import wvlet.airframe.tablet.Schema.ColumnType
-import wvlet.surface.Surface
+import org.msgpack.value.ValueType
 
 import scala.util.{Failure, Success, Try}
 
-trait MessageFormatter[@specialized(Int, Long, Float, Double, Boolean) A] {
+trait MessageCodec[@specialized(Int, Long, Float, Double, Boolean) A] {
+
   def pack(p: MessagePacker, v: A)
   def unpack(u: MessageUnpacker, v: MessageHolder)
 }
 
-class MessageHolder {
-  private var b: Boolean = false
-  private var l: Long    = 0L
-  private var d: Double  = 0d
-  private var s: String  = ""
-  private var o: AnyRef  = null
-
-  private var valueType: ColumnType = Schema.NIL
-
-  def isNull: Boolean = valueType == Schema.NIL
-
-  def getLong: Long       = l
-  def getBoolean: Boolean = b
-  def getDouble: Double   = d
-  def getString: String   = s
-  def getObject: AnyRef   = o
-
-  def getLastValue: Any = {
-    if (isNull) {
-      null
-    } else {
-      valueType match {
-        case Schema.NIL =>
-          null
-        case Schema.INTEGER =>
-          this.getLong
-        case Schema.FLOAT =>
-          this.getDouble
-        case Schema.STRING =>
-          this.getString
-        case Schema.BOOLEAN =>
-          this.getBoolean
-        case _ =>
-          getObject
-      }
-    }
-  }
-
-  def setLong(v: Long): Long = {
-    l = v
-    valueType = Schema.INTEGER
-    v
-  }
-
-  def setBoolean(v: Boolean): Boolean = {
-    b = v
-    valueType = Schema.BOOLEAN
-    v
-  }
-
-  def setDouble(v: Double): Double = {
-    d = v
-    valueType = Schema.FLOAT
-    v
-  }
-
-  def setString(v: String): String = {
-    s = v
-    valueType = Schema.STRING
-    v
-  }
-
-  def setObject[A](v: A): A = {
-    o = v.asInstanceOf[AnyRef]
-    valueType = Schema.ANY
-    v
-  }
-
-  def setNull {
-    valueType = Schema.NIL
-  }
-}
-
-object LongFormatter extends MessageFormatter[Long] {
+object LongCodec$ extends MessageCodec[Long] {
   override def pack(p: MessagePacker, v: Long): Unit = {
     p.packLong(v)
   }
@@ -122,7 +47,7 @@ object LongFormatter extends MessageFormatter[Long] {
   }
 }
 
-object StringFormatter extends MessageFormatter[String] {
+object StringCodec$ extends MessageCodec[String] {
   override def pack(p: MessagePacker, v: String): Unit = {
     p.packString(v)
   }
@@ -156,7 +81,7 @@ object StringFormatter extends MessageFormatter[String] {
   }
 }
 
-object BooleanFormatter extends MessageFormatter[Boolean] {
+object BooleanCodec$ extends MessageCodec[Boolean] {
   override def pack(p: MessagePacker, v: Boolean): Unit = {
     p.packBoolean(v)
   }
@@ -181,7 +106,7 @@ object BooleanFormatter extends MessageFormatter[Boolean] {
   }
 }
 
-object DoubleFormatter extends MessageFormatter[Double] {
+object DoubleCodec$ extends MessageCodec[Double] {
   override def pack(p: MessagePacker, v: Double): Unit = {
     p.packDouble(v)
   }
@@ -207,11 +132,11 @@ object DoubleFormatter extends MessageFormatter[Double] {
   }
 }
 
-object IntArrayFormatter extends MessageFormatter[Array[Int]] {
+object IntArrayCodec$ extends MessageCodec[Array[Int]] {
   override def pack(p: MessagePacker, v: Array[Int]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      LongFormatter.pack(p, x)
+      LongCodec$.pack(p, x)
     }
   }
 
@@ -220,7 +145,7 @@ object IntArrayFormatter extends MessageFormatter[Array[Int]] {
     val b   = Array.newBuilder[Int]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      LongFormatter.unpack(u, v)
+      LongCodec$.unpack(u, v)
       if (v.isNull) {
         // TODO report error?
         b += 0
@@ -238,11 +163,11 @@ object IntArrayFormatter extends MessageFormatter[Array[Int]] {
   }
 }
 
-object LongArrayFormatter extends MessageFormatter[Array[Long]] {
+object LongArrayCodec$ extends MessageCodec[Array[Long]] {
   override def pack(p: MessagePacker, v: Array[Long]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      LongFormatter.pack(p, x)
+      LongCodec$.pack(p, x)
     }
   }
 
@@ -251,7 +176,7 @@ object LongArrayFormatter extends MessageFormatter[Array[Long]] {
     val b   = Array.newBuilder[Long]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      LongFormatter.unpack(u, v)
+      LongCodec$.unpack(u, v)
       if (v.isNull) {
         // TODO report error?
         b += 0L
@@ -264,11 +189,11 @@ object LongArrayFormatter extends MessageFormatter[Array[Long]] {
   }
 }
 
-object FlaotArrayFormatter extends MessageFormatter[Array[Float]] {
+object FlaotArrayCodec$ extends MessageCodec[Array[Float]] {
   override def pack(p: MessagePacker, v: Array[Float]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      DoubleFormatter.pack(p, x)
+      DoubleCodec$.pack(p, x)
     }
   }
 
@@ -277,7 +202,7 @@ object FlaotArrayFormatter extends MessageFormatter[Array[Float]] {
     val b   = Array.newBuilder[Float]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      val d = DoubleFormatter.unpack(u, v)
+      val d = DoubleCodec$.unpack(u, v)
       if (v.isNull) {
         // report error?
         b += 0
@@ -289,11 +214,11 @@ object FlaotArrayFormatter extends MessageFormatter[Array[Float]] {
   }
 }
 
-object DoubleArrayFormatter extends MessageFormatter[Array[Double]] {
+object DoubleArrayCodec$ extends MessageCodec[Array[Double]] {
   override def pack(p: MessagePacker, v: Array[Double]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      DoubleFormatter.pack(p, x)
+      DoubleCodec$.pack(p, x)
     }
   }
 
@@ -302,7 +227,7 @@ object DoubleArrayFormatter extends MessageFormatter[Array[Double]] {
     val b   = Array.newBuilder[Double]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      val d = DoubleFormatter.unpack(u, v)
+      val d = DoubleCodec$.unpack(u, v)
       if (v.isNull) {
         // report error?
         b += 0
@@ -314,11 +239,11 @@ object DoubleArrayFormatter extends MessageFormatter[Array[Double]] {
   }
 }
 
-object BooleanArrayFormatter extends MessageFormatter[Array[Boolean]] {
+object BooleanArrayCodec$ extends MessageCodec[Array[Boolean]] {
   override def pack(p: MessagePacker, v: Array[Boolean]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      BooleanFormatter.pack(p, x)
+      BooleanCodec$.pack(p, x)
     }
   }
 
@@ -327,7 +252,7 @@ object BooleanArrayFormatter extends MessageFormatter[Array[Boolean]] {
     val b   = Array.newBuilder[Boolean]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      BooleanFormatter.unpack(u, v)
+      BooleanCodec$.unpack(u, v)
       if (v.isNull) {
         // report error?
         b += false
@@ -339,11 +264,11 @@ object BooleanArrayFormatter extends MessageFormatter[Array[Boolean]] {
   }
 }
 
-object StringArrayFormatter extends MessageFormatter[Array[String]] {
+object StringArrayCodec$ extends MessageCodec[Array[String]] {
   override def pack(p: MessagePacker, v: Array[String]): Unit = {
     p.packArrayHeader(v.length)
     v.foreach { x =>
-      StringFormatter.pack(p, x)
+      StringCodec$.pack(p, x)
     }
   }
 
@@ -352,7 +277,7 @@ object StringArrayFormatter extends MessageFormatter[Array[String]] {
     val b   = Array.newBuilder[String]
     b.sizeHint(len)
     (0 until len).foreach { i =>
-      StringFormatter.unpack(u, v)
+      StringCodec$.unpack(u, v)
       if (v.isNull) {
         // skip
       } else {
@@ -364,4 +289,4 @@ object StringArrayFormatter extends MessageFormatter[Array[String]] {
   }
 }
 
-class ObjectFormatter[A](cl: Class[A], codecTable: Map[Class[_], MessageFormatter[_]]) {}
+class ObjectFormatter[A](cl: Class[A], codecTable: Map[Class[_], MessageCodec[_]]) {}

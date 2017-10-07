@@ -277,9 +277,7 @@ lazy val airframeSpec =
       name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
-        "org.scalatest" %%% "scalatest" % "3.0.1",
-        // For JSON parser
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+        "org.scalatest" %%% "scalatest" % "3.0.1"
       )
     )
     .dependsOn(log)
@@ -296,7 +294,9 @@ lazy val tablet =
     description := "Data format conversion library",
     libraryDependencies ++= Seq(
       "org.msgpack" % "msgpack-core" % "0.8.13",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.5"
+      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
+      // For JSON parser
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
     )
   )
   .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")

@@ -1,8 +1,9 @@
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.tablet.msgpack.MessageFormatter
+import wvlet.airframe.tablet.msgpack.MessageCodec
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.log.LogSupport
+import wvlet.surface.Surface
 import wvlet.surface.reflect.SurfaceFactory
 
 import scala.reflect.runtime.{universe => ru}
@@ -56,7 +57,7 @@ object PrettyPrint extends LogSupport {
 
 }
 
-class PrettyPrint(codec: Map[Class[_], MessageFormatter[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
+class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
   def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20) {
     pp(seq.take(limit))
   }

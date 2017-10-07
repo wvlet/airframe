@@ -13,8 +13,28 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.tablet.TabletReader
+import java.io.File
 
-trait TextTabletReader extends TabletReader {
-  def close
+import com.github.tototoshi.csv.CSVReader
+import wvlet.airframe.tablet.{Record, StringArrayRecord}
+
+/**
+  *
+  */
+class CSVTabletReader(file: String) extends TextTabletReader {
+  private val reader                       = CSVReader.open(new File(file))
+  private val lines: Iterator[Seq[String]] = reader.iterator
+
+  def close {
+    reader.close()
+  }
+
+  def read: Option[Record] = {
+    if (!lines.hasNext) {
+      None
+    } else {
+      val line: Seq[String] = lines.next()
+      Some(StringArrayRecord(line))
+    }
+  }
 }

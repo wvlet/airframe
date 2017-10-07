@@ -15,21 +15,31 @@ package wvlet.airframe.tablet.obj
 
 import org.msgpack.core.{MessagePack, MessagePacker}
 import wvlet.airframe.tablet._
-import wvlet.airframe.tablet.msgpack.MessageFormatter
+import wvlet.airframe.tablet.msgpack.MessageCodec
 import wvlet.log.LogSupport
 import wvlet.surface._
 import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
 
 import scala.reflect.runtime.{universe => ru}
 
-class ObjectInput(codec: Map[Surface, MessageFormatter[_]] = Map.empty) extends LogSupport {
+class ObjectReader(codec: Map[Surface, MessageCodec[_]] = Map.empty) extends LogSupport {
+
+  def read[A: ru.TypeTag](record: A): Record = {
+    val packer = MessagePack.newDefaultBufferPacker()
+    if (record == null) {
+      packer.packArrayHeader(0) // empty array
+    } else {
+      packObj(packer, record, SurfaceFactory.of[A])
+    }
+    MessagePackRecord(packer.toByteArray)
+  }
 
   def packValue(packer: MessagePacker, v: Any, valueType: Surface) {
     trace(s"packValue: ${v}, ${valueType}, ${valueType.getClass}")
     if (v == null) {
       packer.packNil()
     } else if (codec.contains(valueType)) {
-      codec(valueType.rawType).asInstanceOf[MessageFormatter[Any]].pack(packer, v)
+      codec(valueType).asInstanceOf[MessageCodec[Any]].pack(packer, v)
     } else {
       valueType.dealias match {
         case Primitive.Byte | Primitive.Short | Primitive.Int | Primitive.Long =>
@@ -99,7 +109,7 @@ class ObjectInput(codec: Map[Surface, MessageFormatter[_]] = Map.empty) extends 
   private def packObj(packer: MessagePacker, obj: Any, surface: Surface) {
     if (codec.contains(surface)) {
       trace(s"Using codec for ${surface}")
-      codec(surface).asInstanceOf[MessageFormatter[Any]].pack(packer, obj)
+      codec(surface).asInstanceOf[MessageCodec[Any]].pack(packer, obj)
     } else {
       if (surface.isPrimitive) {
         packValue(packer, obj, surface)
@@ -114,15 +124,5 @@ class ObjectInput(codec: Map[Surface, MessageFormatter[_]] = Map.empty) extends 
         }
       }
     }
-  }
-
-  def read[A: ru.TypeTag](record: A): Record = {
-    val packer = MessagePack.newDefaultBufferPacker()
-    if (record == null) {
-      packer.packArrayHeader(0) // empty array
-    } else {
-      packObj(packer, record, SurfaceFactory.of[A])
-    }
-    MessagePackRecord(packer.toByteArray)
   }
 }

@@ -7,8 +7,6 @@ import wvlet.log.io.IOUtil._
 import wvlet.surface.reflect.{ObjectBuilder, SurfaceFactory}
 import wvlet.surface.{Primitive, Surface}
 
-import scala.reflect.ClassTag
-
 /**
   *
   */
@@ -54,7 +52,6 @@ object SQLObjectMapper extends LogSupport {
   }
 
   def readAs[A: ru.TypeTag](rs: ResultSet): A = {
-    val cl       = implicitly[ClassTag[A]].runtimeClass
     val metadata = rs.getMetaData
     val cols     = metadata.getColumnCount
     val s        = SurfaceFactory.of[A]

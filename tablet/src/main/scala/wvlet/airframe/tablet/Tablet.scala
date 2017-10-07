@@ -3,6 +3,9 @@ package wvlet.airframe.tablet
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ArrayValue, MapValue, Value}
 import wvlet.airframe.tablet.obj.ObjectTabletReader
+import wvlet.airframe.tablet.text.{CSVTabletPrinter, JSONTabletPrinter, TSVTabletPrinter}
+
+import scala.reflect.runtime.{universe => ru}
 
 trait Record {
   def pack(packer: MessagePacker)
@@ -41,7 +44,11 @@ case class StringArrayRecord(arr: Seq[String]) extends Record {
 trait TabletReader {
   def read: Option[Record]
 
-  def |[A](out: TabletWriter[A]): Seq[A] = {
+  def pipe[Out](out: TabletWriter[Out]): Seq[Out] = {
+    Tablet.pipe(this, out)
+  }
+
+  def |[Out](out: TabletWriter[Out]): Seq[Out] = {
     Tablet.pipe(this, out)
   }
 }
@@ -68,10 +75,14 @@ object Tablet {
 
   val nullOutput = NullTabletWriter
 
-  implicit class ObjectPipe[A](seq: Seq[A]) {
+  implicit class SeqTablet[A: ru.TypeTag](seq: Seq[A]) {
     def |[B](out: TabletWriter[B]) = {
       new ObjectTabletReader(seq) | out
     }
+
+    def toJson = new ObjectTabletReader(seq).pipe(JSONTabletPrinter)
+    def toCSV  = new ObjectTabletReader(seq).pipe(CSVTabletPrinter)
+    def toTSV  = new ObjectTabletReader(seq).pipe(TSVTabletPrinter)
   }
 
 }

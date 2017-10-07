@@ -13,13 +13,14 @@
  */
 package wvlet.airframe.tablet
 
+import wvlet.airframe.AirframeSpec
+import wvlet.airframe.tablet.Tablet._
+
 object TextTabletWriterTest {
   case class Person(id: Int, name: String, phone: Seq[String])
 }
 
 import TextTabletWriterTest._
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.Tablet._
 
 /**
   *
@@ -31,18 +32,18 @@ class TextTabletWriterTest extends AirframeSpec {
     val seq = Seq(Person(1, "leo", Seq("xxx-xxxx")), Person(2, "yui", Seq("yyy-yyyy", "zzz-zzzz")))
 
     "output object in JSON array format" in {
-      val w = create(seq) | toJSON
-      w.stream(info(_))
+      val w = seq.toJson
+      info(w.mkString(", "))
     }
 
     "output object in CSV format" in {
-      val w = create(seq) | toCSV
-      w.stream(info(_))
+      val w = seq.toCSV
+      info(w.mkString(", "))
     }
 
     "output object in TSV format" in {
-      val w = create(seq) | toTSV
-      w.stream(info(_))
+      val w = seq.toTSV
+      info(w.mkString(", "))
     }
 
   }

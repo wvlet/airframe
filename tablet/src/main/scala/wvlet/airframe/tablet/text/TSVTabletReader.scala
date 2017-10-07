@@ -13,8 +13,29 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.tablet.TabletReader
+import wvlet.airframe.tablet.{Record, StringArrayRecord}
 
-trait TextTabletReader extends TabletReader {
-  def close
+import scala.io.Source
+
+/**
+  *
+  */
+class TSVTabletReader(file: String) extends TextTabletReader {
+  private val source = Source.fromFile(file)
+  private val lines  = source.getLines()
+
+  def close {
+    source.close()
+  }
+
+  def read: Option[Record] = {
+    if (!lines.hasNext) {
+      close
+      None
+    } else {
+      val line = lines.next()
+      val cols = line.split("\t")
+      Some(StringArrayRecord(if (cols == null) Array.empty[String] else cols))
+    }
+  }
 }

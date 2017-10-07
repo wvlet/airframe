@@ -2,19 +2,25 @@ package wvlet.airframe.tablet.obj
 
 import org.msgpack.core.MessageUnpacker
 import org.msgpack.value.ValueType
-import wvlet.airframe.tablet.msgpack.{MessageFormatter, MessageHolder}
+import wvlet.airframe.tablet.msgpack.{MessageCodec, MessageHolder}
 import wvlet.airframe.tablet.{Column, Record, Schema, TabletWriter}
 import wvlet.log.LogSupport
 import wvlet.surface._
 import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   */
-class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageFormatter[_]] = Map.empty) extends TabletWriter[A] with LogSupport {
+class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageCodec[_]] = Map.empty) extends TabletWriter[A] with LogSupport {
+
+  override def write(record: Record): A = {
+    val unpacker = record.unpacker
+    unpackObj(unpacker, surface).asInstanceOf[A]
+  }
+
+  override def close(): Unit = {}
 
   private def unpack(unpacker: MessageUnpacker, objType: Surface): AnyRef = {
     objType match {
@@ -33,7 +39,7 @@ class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageFormatter[_]]
         val readValue =
           if (!vt.isNilType && codec.contains(objType)) {
             val m = new MessageHolder
-            codec(objType.rawType).unpack(unpacker, m)
+            codec(objType).unpack(unpacker, m)
             m.getLastValue
           } else {
             vt match {
@@ -111,7 +117,7 @@ class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageFormatter[_]]
         null
       } else {
         val m = new MessageHolder
-        codec(objType.rawType).unpack(unpacker, m)
+        codec(objType).unpack(unpacker, m)
         m.getLastValue.asInstanceOf[AnyRef]
       }
     } else if (objType.isPrimitive) {
@@ -133,12 +139,6 @@ class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageFormatter[_]]
     }
   }
 
-  override def write(record: Record): A = {
-    val unpacker = record.unpacker
-    unpackObj(unpacker, surface).asInstanceOf[A]
-  }
-
-  override def close(): Unit = {}
 }
 
 object ObjectWriter {
