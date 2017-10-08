@@ -14,73 +14,62 @@
 package wvlet.airframe.tablet.msgpack
 
 import java.io.File
+import java.text.DateFormat
 import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZonedDateTime}
+import java.util.Date
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
 import wvlet.surface
 import wvlet.surface.{Primitive, Surface}
 
 import scala.util.{Failure, Success, Try}
 
+/**
+  * Standard codec collection
+  */
 object StandardCodec {
 
-  case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] {
-    override def pack(p: MessagePacker, v: A): Unit = {
-      val numParams = surface.params.length
-      // Use array format [p1, p2, ....]
-      p.packArrayHeader(numParams)
-      for ((param, codec) <- surface.params.zip(paramCodec)) {
-        val paramValue = param.get(v)
-        codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
-      }
-    }
+  val standardCodec: Map[Surface, MessageCodec[_]] = primitiveCodec ++ primitiveArrayCodec ++ javaTimeCodec
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val numParams = surface.params.length
-      val numElems  = u.unpackArrayHeader()
-      if (numParams != numElems) {
-        u.skipValue(numElems)
-        v.setNull
-      } else {
-        var index = 0
-        val args  = Seq.newBuilder[Any]
-        while (index < numElems && index < numParams) {
-          // TODO reuse message holders
-          val m = new MessageHolder
-          paramCodec(index).unpack(u, m)
-          // TODO handle null value?
-          args += m.getLastValue
-          index += 1
-        }
-        surface.objectFactory
-          .map(_.newInstance(args.result()))
-          .map(x => v.setObject(x))
-          .getOrElse(v.setNull)
-      }
-    }
-  }
+  val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
+    Primitive.Int     -> IntCodec,
+    Primitive.Long    -> LongCodec,
+    Primitive.Float   -> FloatCodec,
+    Primitive.Double  -> DoubleCodec,
+    Primitive.Boolean -> BooleanCodec,
+    Primitive.String  -> StringCodec,
+    Primitive.Byte    -> ByteCodec,
+    Primitive.Short   -> ShortCodec
+  )
 
-  val primitiveCodecs: Map[Surface, MessageCodec[_]] = Map(
-    Primitive.Int              -> IntCodec,
-    Primitive.Long             -> LongCodec,
-    Primitive.Float            -> FloatCodec,
-    Primitive.Double           -> DoubleCodec,
-    Primitive.Boolean          -> BooleanCodec,
-    Primitive.String           -> StringCodec,
-    Primitive.Byte             -> ByteCodec,
-    Primitive.Short            -> ShortCodec,
+  val primitiveArrayCodec = Map(
     surface.of[Array[Int]]     -> IntArrayCodec,
     surface.of[Array[Long]]    -> LongArrayCodec,
     surface.of[Array[Float]]   -> FloatArrayCodec,
     surface.of[Array[Double]]  -> DoubleArrayCodec,
     surface.of[Array[Boolean]] -> BooleanArrayCodec,
     surface.of[Array[String]]  -> StringArrayCodec,
-    surface.of[Array[Byte]]    -> ByteArrayCodec,
-    surface.of[File]           -> FileCodec,
+    surface.of[Array[Byte]]    -> ByteArrayCodec
     // TODO CharCodec, ShortArrayCodec, CharArrayCodec
   )
+
+  val javaClassCodec = Map(
+    surface.of[File] -> FileCodec
+  )
+
+  val javaTimeCodec = Map(
+    surface.of[Instant]       -> JavaInstantTimeCodec,
+    surface.of[ZonedDateTime] -> ZonedDateTimeCodec,
+    surface.of[Date]          -> JavaUtilDateCodec
+  )
+
+  private implicit class RichBoolean(b: Boolean) {
+    def toInt: Int     = if (b) 1 else 0
+    def toByte: Byte   = if (b) 1 else 0
+    def toShort: Short = if (b) 1 else 0
+  }
 
   object ByteCodec extends MessageCodec[Byte] {
     override def pack(p: MessagePacker, v: Byte): Unit = {
@@ -88,6 +77,18 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      def read(body: => Byte) {
+        try {
+          val b = body
+          v.setLong(b.toLong)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Byte value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
       val f  = u.getNextFormat
       val vt = f.getValueType
       vt match {
@@ -95,23 +96,14 @@ object StandardCodec {
           u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
-          v.setLong(u.unpackByte())
+          read(u.unpackByte)
         case ValueType.STRING =>
-          Try(u.unpackString.toByte) match {
-            case Success(l) =>
-              v.setLong(l)
-            case Failure(e) =>
-              v.setNull
-          }
+          read(u.unpackString.toByte)
         case ValueType.BOOLEAN =>
-          v.setLong(if (u.unpackBoolean()) {
-            1
-          } else {
-            0
-          })
+          read(u.unpackBoolean().toByte)
         case ValueType.FLOAT =>
-          v.setLong(u.unpackDouble().toLong)
-        case other =>
+          read(u.unpackDouble().toByte)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -124,6 +116,18 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      def read(body: => Short) {
+        try {
+          val b = body
+          v.setLong(b.toLong)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Short value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
       val f  = u.getNextFormat
       val vt = f.getValueType
       vt match {
@@ -131,23 +135,14 @@ object StandardCodec {
           u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
-          v.setLong(u.unpackShort())
+          read(u.unpackShort())
         case ValueType.STRING =>
-          Try(u.unpackString.toShort) match {
-            case Success(l) =>
-              v.setLong(l)
-            case Failure(e) =>
-              v.setNull
-          }
+          read(u.unpackString.toShort)
         case ValueType.BOOLEAN =>
-          v.setLong(if (u.unpackBoolean()) {
-            1
-          } else {
-            0
-          })
+          read(u.unpackBoolean().toShort)
         case ValueType.FLOAT =>
-          v.setLong(u.unpackDouble().toShort)
-        case other =>
+          read(u.unpackDouble().toShort)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -155,11 +150,22 @@ object StandardCodec {
   }
 
   object IntCodec extends MessageCodec[Int] {
-    def surface = Primitive.Int
     override def pack(p: MessagePacker, v: Int): Unit = {
       p.packInt(v)
     }
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => Int) {
+        try {
+          val i = body
+          v.setLong(i)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for an Int value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
       val f  = u.getNextFormat
       val vt = f.getValueType
       vt match {
@@ -167,28 +173,14 @@ object StandardCodec {
           u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
-          v.setLong(u.unpackInt)
+          read(u.unpackInt)
         case ValueType.STRING =>
-          Try(u.unpackString.toInt) match {
-            case Success(l) =>
-              v.setLong(l)
-            case Failure(e) =>
-              v.setNull
-          }
+          read(u.unpackString.toInt)
         case ValueType.BOOLEAN =>
-          v.setLong(if (u.unpackBoolean()) {
-            1
-          } else {
-            0
-          })
+          read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
-          Try(v.setLong(u.unpackDouble().toInt)) match {
-            case Success(l) =>
-              v.setLong(l)
-            case Failure(e) =>
-              v.setNull
-          }
-        case other =>
+          read(u.unpackDouble().toInt)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -203,6 +195,17 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => Long) {
+        try {
+          val l = body
+          v.setLong(l)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Long value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
       val f  = u.getNextFormat
       val vt = f.getValueType
       vt match {
@@ -210,23 +213,14 @@ object StandardCodec {
           u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
-          v.setLong(u.unpackLong())
+          read(u.unpackLong)
         case ValueType.STRING =>
-          Try(u.unpackString.toLong) match {
-            case Success(l) =>
-              v.setLong(l)
-            case Failure(e) =>
-              v.setNull
-          }
+          read(u.unpackString().toLong)
         case ValueType.BOOLEAN =>
-          v.setLong(if (u.unpackBoolean()) {
-            1
-          } else {
-            0
-          })
+          read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
-          v.setLong(u.unpackDouble().toLong)
-        case other =>
+          read(u.unpackDouble().toLong)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -234,7 +228,6 @@ object StandardCodec {
   }
 
   object StringCodec extends MessageCodec[String] {
-
     def surface = Primitive.String
 
     override def pack(p: MessagePacker, v: String): Unit = {
@@ -242,30 +235,42 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => String) {
+        try {
+          val s = body
+          v.setString(s)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            read(e.getBigInteger.toString())
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
           u.unpackNil()
           v.setNull
         case ValueType.STRING =>
-          v.setString(u.unpackString())
+          read(u.unpackString())
         case ValueType.INTEGER =>
-          v.setString(u.unpackLong().toString)
+          read(u.unpackLong().toString)
         case ValueType.BOOLEAN =>
-          v.setString(u.unpackBoolean().toString)
+          read(u.unpackBoolean().toString)
         case ValueType.FLOAT =>
-          v.setString(u.unpackDouble().toString)
+          read(u.unpackDouble().toString)
         case ValueType.MAP =>
-          val m = u.unpackValue()
-          v.setString(m.toJson)
+          read(u.unpackValue().toJson)
         case ValueType.ARRAY =>
-          val arr = v.setObject(u.unpackValue())
-          v.setString(arr.toJson)
+          read(u.unpackValue().toJson)
         case ValueType.BINARY =>
-          val len = u.unpackBinaryHeader()
-          v.setString(new String(u.readPayload(len)))
-        case ValueType.EXTENSION =>
-          val ext = u.unpackValue()
-          v.setString(ext.toJson)
+          read {
+            val len = u.unpackBinaryHeader()
+            new String(u.readPayload(len))
+          }
+        case _ =>
+          // Use JSON format for unknown types so that we can read arbitrary types as String value
+          read(u.unpackValue.toJson)
       }
     }
   }
@@ -276,19 +281,29 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => Boolean) {
+        try {
+          val b = body
+          v.setBoolean(b)
+        } catch {
+          case e: IllegalArgumentException =>
+            v.setIncompatibleFormatException(e.getMessage)
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
           u.unpackNil()
           v.setNull
         case ValueType.BOOLEAN =>
-          v.setBoolean(u.unpackBoolean())
+          read(u.unpackBoolean())
         case ValueType.STRING =>
-          val s = u.unpackString()
-          v.setBoolean(s.toBoolean)
+          read(u.unpackString().toBoolean)
         case ValueType.INTEGER =>
-          val l = u.unpackLong()
-          v.setBoolean(l != 0L)
-        case other =>
+          read(u.unpackLong() != 0L)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -301,20 +316,28 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => Double) {
+        try {
+          val f = body
+          v.setDouble(f)
+        } catch {
+          case e: IllegalArgumentException =>
+            v.setIncompatibleFormatException(e.getMessage)
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
           u.unpackNil()
           v.setNull
         case ValueType.FLOAT =>
-          v.setDouble(u.unpackDouble())
+          read(u.unpackDouble())
         case ValueType.INTEGER =>
-          v.setDouble(u.unpackLong().toFloat)
+          read(u.unpackLong().toDouble)
         case ValueType.STRING =>
-          Try(u.unpackString.toDouble) match {
-            case Success(d) => v.setDouble(d)
-            case Failure(e) => v.setNull
-          }
-        case other =>
+          read(u.unpackString().toDouble)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -327,20 +350,28 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      def read(body: => Double) {
+        try {
+          val f = body
+          v.setDouble(f)
+        } catch {
+          case e: IllegalArgumentException =>
+            v.setIncompatibleFormatException(e.getMessage)
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
           u.unpackNil()
           v.setNull
         case ValueType.FLOAT =>
-          v.setDouble(u.unpackDouble())
+          read(u.unpackDouble())
         case ValueType.INTEGER =>
-          v.setDouble(u.unpackLong().toDouble)
+          read(u.unpackLong().toDouble)
         case ValueType.STRING =>
-          Try(u.unpackString.toDouble) match {
-            case Success(d) => v.setDouble(d)
-            case Failure(e) => v.setNull
-          }
-        case other =>
+          read(u.unpackString.toDouble)
+        case _ =>
           u.skipValue()
           v.setNull
       }
@@ -351,7 +382,7 @@ object StandardCodec {
     override def pack(p: MessagePacker, v: Array[Int]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
-        LongCodec.pack(p, x)
+        IntCodec.pack(p, x)
       }
     }
 
@@ -360,7 +391,7 @@ object StandardCodec {
       val b   = Array.newBuilder[Int]
       b.sizeHint(len)
       (0 until len).foreach { i =>
-        LongCodec.unpack(u, v)
+        IntCodec.unpack(u, v)
         if (v.isNull) {
           // TODO report error?
           b += 0
@@ -551,12 +582,13 @@ object StandardCodec {
     }
   }
 
-  object InstantCodec extends MessageCodec[Instant] {
+  object JavaInstantTimeCodec extends MessageCodec[Instant] {
     override def pack(p: MessagePacker, v: Instant): Unit = {
       // Use ISO instant formatter
       val isoInstantFormat = DateTimeFormatter.ISO_INSTANT.format(v)
       p.packString(isoInstantFormat)
     }
+
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       val isoInstantFormat = u.unpackString()
       v.setObject(Instant.parse(isoInstantFormat))
@@ -571,7 +603,30 @@ object StandardCodec {
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       val zonedDateTimeStr = u.unpackString()
-      v.setObject(ZonedDateTime.parse(zonedDateTimeStr))
+      Try(ZonedDateTime.parse(zonedDateTimeStr)) match {
+        case Success(zd) =>
+          v.setObject(zd)
+        case Failure(e) =>
+          v.setIncompatibleFormatException(s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
+      }
+    }
+  }
+
+  object JavaUtilDateCodec extends MessageCodec[Date] {
+    private val format = DateFormat.getInstance()
+
+    override def pack(p: MessagePacker, v: Date): Unit = {
+      val dateStr = format.format(v)
+      p.packString(dateStr)
+    }
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      val dateStr = u.unpackString()
+      Try(format.parse(dateStr)) match {
+        case Success(d) =>
+          v.setObject(d)
+        case Failure(e) =>
+          v.setIncompatibleFormatException(s"Cannot parse ${dateStr}: ${e.getMessage}")
+      }
     }
   }
 }

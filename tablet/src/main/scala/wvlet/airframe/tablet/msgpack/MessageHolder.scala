@@ -13,8 +13,10 @@
  */
 package wvlet.airframe.tablet.msgpack
 
+import org.msgpack.value.ValueType
 import wvlet.airframe.tablet.Schema
 import wvlet.airframe.tablet.Schema.ColumnType
+import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
 
 /**
   *
@@ -59,42 +61,56 @@ class MessageHolder {
     }
   }
 
+  private def setValueType(vt: ColumnType) {
+    err = None
+    valueType = vt
+  }
+
   def setLong(v: Long): Long = {
     l = v
-    valueType = Schema.INTEGER
+    setValueType(Schema.INTEGER)
     v
   }
 
   def setBoolean(v: Boolean): Boolean = {
     b = v
-    valueType = Schema.BOOLEAN
+    setValueType(Schema.BOOLEAN)
     v
   }
 
   def setDouble(v: Double): Double = {
     d = v
-    valueType = Schema.FLOAT
+    setValueType(Schema.FLOAT)
     v
   }
 
   def setString(v: String): String = {
     s = v
-    valueType = Schema.STRING
+    setValueType(Schema.STRING)
     v
   }
 
   def setObject[A](v: A): A = {
     o = v.asInstanceOf[AnyRef]
-    valueType = Schema.ANY
+    if (v != null) {
+      setValueType(Schema.ANY)
+    } else {
+      setNull
+    }
     v
   }
 
   def setNull {
-    valueType = Schema.NIL
+    setValueType(Schema.NIL)
   }
 
   def setError(e: Throwable) {
     setNull
     err = Option(e)
   }
+
+  def setIncompatibleFormatException(message: String) {
+    setError(new MessageCodecException(INVALID_DATA, message))
+  }
+
 }
