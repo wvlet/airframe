@@ -20,15 +20,17 @@ import wvlet.airframe.tablet.Schema.ColumnType
   *
   */
 class MessageHolder {
-  private var b: Boolean = false
-  private var l: Long    = 0L
-  private var d: Double  = 0d
-  private var s: String  = ""
-  private var o: AnyRef  = null
-
   private var valueType: ColumnType = Schema.NIL
 
-  def isNull: Boolean = valueType == Schema.NIL
+  private var b: Boolean             = false
+  private var l: Long                = 0L
+  private var d: Double              = 0d
+  private var s: String              = ""
+  private var o: AnyRef              = null
+  private var err: Option[Throwable] = None
+
+  def isNull: Boolean   = valueType == Schema.NIL
+  def hasError: Boolean = err.isDefined
 
   def getLong: Long       = l
   def getBoolean: Boolean = b
@@ -89,5 +91,10 @@ class MessageHolder {
 
   def setNull {
     valueType = Schema.NIL
+  }
+
+  def setError(e: Throwable) {
+    setNull
+    err = Option(e)
   }
 }

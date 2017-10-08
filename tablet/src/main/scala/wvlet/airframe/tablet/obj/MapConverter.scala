@@ -11,21 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.msgpack.StandardCodec.LongCodec
+import wvlet.surface
+import wvlet.surface.Surface
 
-/**
-  *
-  */
-class MessageCodecTest extends AirframeSpec {
-  "MessageCodec" should {
+import scala.reflect.runtime.{universe => ru}
 
-    "have surface" in {
-      info(LongCodec.surface)
+class MapConverter[A](surface: Surface) {
+  def toMap(a: A): Map[String, Any] = {
+    val m = Map.newBuilder[String, Any]
+    for (p <- surface.params) {
+      m += (p.name -> p.get(a))
     }
-
+    m.result()
   }
+}
 
+object MapConverter {
+  def of[A: ru.TypeTag]: MapConverter[A] = new MapConverter(surface.of[A])
+
+  def toMap[A: ru.TypeTag](a: A): Map[String, Any] = {
+    MapConverter.of[A].toMap(a)
+  }
 }

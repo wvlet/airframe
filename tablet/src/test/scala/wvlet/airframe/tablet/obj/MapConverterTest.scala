@@ -11,21 +11,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.tablet.obj
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.msgpack.StandardCodec.LongCodec
+import wvlet.airframe.tablet.obj.MapConverterTest.Sample
+
+object MapConverterTest {
+  case class Sample(name: String, id: Int)
+}
 
 /**
   *
   */
-class MessageCodecTest extends AirframeSpec {
-  "MessageCodec" should {
-
-    "have surface" in {
-      info(LongCodec.surface)
+class MapConverterTest extends AirframeSpec {
+  "MapConverter" should {
+    "convert to Map" in {
+      val s  = Sample("leo", 1)
+      val mc = MapConverter.of[Sample]
+      val m  = mc.toMap(s)
+      info(m)
     }
-
   }
 
 }
