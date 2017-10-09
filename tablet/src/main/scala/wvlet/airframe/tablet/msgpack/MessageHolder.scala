@@ -40,6 +40,8 @@ class MessageHolder {
   def getString: String   = s
   def getObject: AnyRef   = o
 
+  def getValueType: ColumnType = valueType
+
   def getLastValue: Any = {
     if (isNull) {
       null
