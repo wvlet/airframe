@@ -13,9 +13,11 @@
  */
 package wvlet.airframe.tablet.msgpack
 
+import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, SeqCodec}
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
+import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.surface
-import wvlet.surface.Surface
+import wvlet.surface.{GenericSurface, Surface}
 import wvlet.surface.reflect.ReflectTypeUtil
 
 import scala.reflect.runtime.{universe => ru}
@@ -39,19 +41,33 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
     } else if (seen.contains(surface)) {
       throw new IllegalArgumentException(s"Codec for recursive types is not supported: ${surface}")
     } else {
-      val codec = if (surface.isOption) {
-        // Option type
-        val elementSurface = surface.typeArgs(0)
-        OptionCodec(ofSurface(elementSurface, seen + surface))
-      } else if (ReflectTypeUtil.isTuple(surface.rawType)) {
-        // Tuple
-        TupleCodec(surface.typeArgs.map(x => ofSurface(x)))
-      } else {
-        val codecs = for (p <- surface.params) yield {
-          ofSurface(p.surface, seen + surface)
+      val seenSet = seen + surface
+      val codec =
+        surface.dealias match {
+          case s if s.isOption =>
+            // Option type
+            val elementSurface = surface.typeArgs(0)
+            OptionCodec(ofSurface(elementSurface, seenSet))
+          case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
+            // Seq[A]
+            SeqCodec(ofSurface(g.typeArgs(0), seenSet))
+          case g: GenericSurface if ReflectTypeUtil.isJavaColleciton(g.rawType) =>
+            JavaListCodec(ofSurface(g.typeArgs(0), seenSet))
+          case g: GenericSurface if ReflectTypeUtil.isMap(g.rawType) =>
+            // Map[A,B]
+            MapCodec(ofSurface(g.typeArgs(0), seen), ofSurface(g.typeArgs(1), seenSet))
+
+          case s if ReflectTypeUtil.isTuple(s.rawType) =>
+            // Tuple
+            TupleCodec(surface.typeArgs.map(x => ofSurface(x, seenSet)))
+          case enum if surface.rawType.isInstanceOf[Enum[_]] =>
+            EnumCodec(surface.typeArgs(0).rawType)
+          case _ =>
+            val codecs = for (p <- surface.params) yield {
+              ofSurface(p.surface, seenSet)
+            }
+            ObjectCodec(surface, codecs.toIndexedSeq)
         }
-        ObjectCodec(surface, codecs.toIndexedSeq)
-      }
       cache += surface -> codec
       codec
     }

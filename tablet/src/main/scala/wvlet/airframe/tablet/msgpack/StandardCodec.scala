@@ -435,31 +435,6 @@ object StandardCodec {
     }
   }
 
-  object FlaotArrayCodec extends MessageCodec[Array[Float]] {
-    override def pack(p: MessagePacker, v: Array[Float]): Unit = {
-      p.packArrayHeader(v.length)
-      v.foreach { x =>
-        DoubleCodec.pack(p, x)
-      }
-    }
-
-    override def unpack(u: MessageUnpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader()
-      val b   = Array.newBuilder[Float]
-      b.sizeHint(len)
-      (0 until len).foreach { i =>
-        val d = DoubleCodec.unpack(u, v)
-        if (v.isNull) {
-          // report error?
-          b += 0
-        } else {
-          b += v.getDouble.toFloat
-        }
-      }
-      v.setObject(b.result())
-    }
-  }
-
   object FloatArrayCodec extends MessageCodec[Array[Float]] {
     override def pack(p: MessagePacker, v: Array[Float]): Unit = {
       p.packArrayHeader(v.length)
@@ -563,7 +538,7 @@ object StandardCodec {
       (0 until len).foreach { i =>
         StringCodec.unpack(u, v)
         if (v.isNull) {
-          // skip
+          b += "" // or report error?
         } else {
           b += v.getString
         }
@@ -629,4 +604,20 @@ object StandardCodec {
       }
     }
   }
+
+  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[Enum[A]] {
+    override def pack(p: MessagePacker, v: Enum[A]): Unit = {
+      p.packString(v.name())
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      val name = u.unpackString
+      Try(Enum.valueOf(enumType, name)) match {
+        case Success(enum) => v.setObject(enum)
+        case _ =>
+          v.setIncompatibleFormatException(s"${name} is not a value of ${enumType}")
+      }
+    }
+  }
+
 }
