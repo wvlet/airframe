@@ -123,7 +123,7 @@ case class ArraySurface(override val rawType: Class[_], elementSurface: Surface)
 case class OptionSurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
   override def isOption: Boolean = true
 }
-case class EnumSurface(override val rawType: Class[_])                                       extends GenericSurface(rawType)           {}
+case class EnumSurface[A <: Enum[A]](override val rawType: Class[_])                         extends GenericSurface(rawType)           {}
 case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface]) extends GenericSurface(rawType, typeArgs) {}
 
 case class TaggedSurface(base: Surface, tag: Surface) extends Surface {

@@ -50,7 +50,7 @@ object CollectionCodec {
     override def pack(p: MessagePacker, v: util.List[A]): Unit = {
       val len = v.size
       p.packArrayHeader(len)
-      for (e <- v) {
+      for (e <- v.asScala) {
         elementCodec.pack(p, e)
       }
     }

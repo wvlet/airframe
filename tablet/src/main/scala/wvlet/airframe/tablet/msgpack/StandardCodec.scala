@@ -21,8 +21,8 @@ import java.util.Date
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
-import wvlet.surface
 import wvlet.surface.{Primitive, Surface}
+import wvlet.surface
 
 import scala.util.{Failure, Success, Try}
 
@@ -30,8 +30,6 @@ import scala.util.{Failure, Success, Try}
   * Standard codec collection
   */
 object StandardCodec {
-
-  val standardCodec: Map[Surface, MessageCodec[_]] = primitiveCodec ++ primitiveArrayCodec ++ javaTimeCodec
 
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
     Primitive.Int     -> IntCodec,
@@ -64,6 +62,8 @@ object StandardCodec {
     surface.of[ZonedDateTime] -> ZonedDateTimeCodec,
     surface.of[Date]          -> JavaUtilDateCodec
   )
+
+  val standardCodec: Map[Surface, MessageCodec[_]] = primitiveCodec ++ primitiveArrayCodec ++ javaTimeCodec
 
   private implicit class RichBoolean(b: Boolean) {
     def toInt: Int     = if (b) 1 else 0
@@ -605,14 +605,17 @@ object StandardCodec {
     }
   }
 
-  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[Enum[A]] {
-    override def pack(p: MessagePacker, v: Enum[A]): Unit = {
-      p.packString(v.name())
+  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] {
+    private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[AnyRef], classOf[String])
+
+    override def pack(p: MessagePacker, v: A): Unit = {
+      p.packString(v.asInstanceOf[Enum[_]].name())
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       val name = u.unpackString
-      Try(Enum.valueOf(enumType, name)) match {
+
+      Try(enumValueOfMethod.invoke(null, enumType, name)) match {
         case Success(enum) => v.setObject(enum)
         case _ =>
           v.setIncompatibleFormatException(s"${name} is not a value of ${enumType}")
