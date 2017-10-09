@@ -17,27 +17,40 @@ import org.msgpack.core.{MessagePack, MessagePacker}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Schema
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
+import wvlet.airframe.tablet.Schema.ColumnType
 
 /**
   *
   */
 class MessageCodecFactoryTest extends AirframeSpec {
 
-  "MessageCodecFactory" should {
-    "generate codec" in {
-      val intCodec = MessageCodec.of[Int]
-      val v        = new MessageHolder
-      forAll { (i: Int) =>
-        val packer = MessagePack.newDefaultBufferPacker()
-        intCodec.pack(packer, i)
-        val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
-        intCodec.unpack(unpacker, v)
+  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: ColumnType): MessageHolder = {
+    val h      = new MessageHolder
+    val packer = MessagePack.newDefaultBufferPacker()
+    codec.pack(packer, v)
+    val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
+    codec.unpack(unpacker, h)
 
-        v.isNull shouldBe false
-        v.getValueType shouldBe Schema.INTEGER
+    h.isNull shouldBe false
+    h.getValueType shouldBe expectedType
+    h
+  }
+
+  "MessageCodecFactory" should {
+    "support int" in {
+      val codec = MessageCodec.of[Int]
+      forAll { (i: Int) =>
+        val v = roundtrip(codec, i, Schema.INTEGER)
         v.getLong shouldBe (i)
       }
+    }
 
+    "support float" in {
+      val codec = MessageCodec.of[Float]
+      forAll { (f: Float) =>
+        val v = roundtrip(codec, f, Schema.FLOAT)
+        v.getDouble shouldBe (f)
+      }
     }
   }
 
