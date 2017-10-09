@@ -287,17 +287,17 @@ lazy val airframeSpecJS  = airframeSpec.js
 
 lazy val tablet =
   project
-  .in(file("tablet"))
-  .settings(buildSettings)
-  .settings(
-    name := "airframe-tablet",
-    description := "Data format conversion library",
-    libraryDependencies ++= Seq(
-      "org.msgpack" % "msgpack-core" % "0.8.13",
-      "com.github.tototoshi" %% "scala-csv" % "1.3.5",
-      // For JSON parser
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-      "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+    .in(file("tablet"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-tablet",
+      description := "Data format conversion library",
+      libraryDependencies ++= Seq(
+        "org.msgpack"          % "msgpack-core" % "0.8.13",
+        "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
+        // For JSON parser
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+        "org.scalacheck"         %% "scalacheck"               % "1.13.4" % "test"
+      )
     )
-  )
-  .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
