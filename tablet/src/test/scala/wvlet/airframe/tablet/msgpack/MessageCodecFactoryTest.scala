@@ -67,6 +67,13 @@ class MessageCodecFactoryTest extends AirframeSpec {
       }
     }
 
+    "support char" in {
+      val codec = MessageCodec.of[Char]
+      forAll { (v: Char) =>
+        roundtrip(codec, v, Schema.INTEGER)
+      }
+    }
+
     "support byte" in {
       val codec = MessageCodec.of[Byte]
       forAll { (v: Byte) =>
@@ -143,6 +150,14 @@ class MessageCodecFactoryTest extends AirframeSpec {
         roundtrip(codec, v, Schema.ANY)
       }
     }
+
+    "support primitive char array" in {
+      val codec = MessageCodec.of[Array[Char]]
+      forAll { (v: Array[Char]) =>
+        roundtrip(codec, v, Schema.ANY)
+      }
+    }
+
   }
 
 }

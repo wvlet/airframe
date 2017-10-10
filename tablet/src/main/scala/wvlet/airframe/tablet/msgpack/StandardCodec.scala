@@ -39,7 +39,8 @@ object StandardCodec {
     Primitive.Boolean -> BooleanCodec,
     Primitive.String  -> StringCodec,
     Primitive.Byte    -> ByteCodec,
-    Primitive.Short   -> ShortCodec
+    Primitive.Short   -> ShortCodec,
+    Primitive.Char    -> CharCodec
   )
 
   val primitiveArrayCodec = Map(
@@ -50,8 +51,8 @@ object StandardCodec {
     surface.of[Array[Boolean]] -> BooleanArrayCodec,
     surface.of[Array[String]]  -> StringArrayCodec,
     surface.of[Array[Byte]]    -> ByteArrayCodec,
-    surface.of[Array[Short]]   -> ShortArrayCodec
-    // TODO CharCodec, CharArrayCodec
+    surface.of[Array[Short]]   -> ShortArrayCodec,
+    surface.of[Array[Char]]    -> CharArrayCodec
   )
 
   val javaClassCodec = Map(
@@ -68,6 +69,7 @@ object StandardCodec {
 
   private implicit class RichBoolean(b: Boolean) {
     def toInt: Int     = if (b) 1 else 0
+    def toChar: Char   = if (b) 1 else 0
     def toByte: Byte   = if (b) 1 else 0
     def toShort: Short = if (b) 1 else 0
   }
@@ -104,6 +106,45 @@ object StandardCodec {
           read(u.unpackBoolean().toByte)
         case ValueType.FLOAT =>
           read(u.unpackDouble().toByte)
+        case _ =>
+          u.skipValue()
+          v.setNull
+      }
+    }
+  }
+
+  object CharCodec extends MessageCodec[Char] {
+    override def pack(p: MessagePacker, v: Char): Unit = {
+      p.packInt(v)
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      def read(body: => Char) {
+        try {
+          val b = body
+          v.setLong(b.toChar)
+        } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Char value")
+          case e: NumberFormatException =>
+            v.setIncompatibleFormatException(e.getMessage)
+        }
+      }
+
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
+        case ValueType.NIL =>
+          u.unpackNil()
+          v.setNull
+        case ValueType.INTEGER =>
+          read(u.unpackInt.toChar)
+        case ValueType.STRING =>
+          read(u.unpackString.toInt.toChar)
+        case ValueType.BOOLEAN =>
+          read(u.unpackBoolean().toChar)
+        case ValueType.FLOAT =>
+          read(u.unpackDouble().toChar)
         case _ =>
           u.skipValue()
           v.setNull
@@ -431,6 +472,37 @@ object StandardCodec {
           val l = v.getLong
           if (l.isValidInt) {
             b += l.toShort
+          } else {
+            // report error?
+            b += 0
+          }
+        }
+      }
+      v.setObject(b.result())
+    }
+  }
+
+  object CharArrayCodec extends MessageCodec[Array[Char]] {
+    override def pack(p: MessagePacker, v: Array[Char]): Unit = {
+      p.packArrayHeader(v.length)
+      v.foreach { x =>
+        CharCodec.pack(p, x)
+      }
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
+      val b   = Array.newBuilder[Char]
+      b.sizeHint(len)
+      (0 until len).foreach { i =>
+        CharCodec.unpack(u, v)
+        if (v.isNull) {
+          // TODO report error?
+          b += 0
+        } else {
+          val l = v.getLong
+          if (l.isValidChar) {
+            b += l.toChar
           } else {
             // report error?
             b += 0
