@@ -49,8 +49,9 @@ object StandardCodec {
     surface.of[Array[Double]]  -> DoubleArrayCodec,
     surface.of[Array[Boolean]] -> BooleanArrayCodec,
     surface.of[Array[String]]  -> StringArrayCodec,
-    surface.of[Array[Byte]]    -> ByteArrayCodec
-    // TODO CharCodec, ShortArrayCodec, CharArrayCodec
+    surface.of[Array[Byte]]    -> ByteArrayCodec,
+    surface.of[Array[Short]]   -> ShortArrayCodec
+    // TODO CharCodec, CharArrayCodec
   )
 
   val javaClassCodec = Map(
@@ -409,6 +410,37 @@ object StandardCodec {
     }
   }
 
+  object ShortArrayCodec extends MessageCodec[Array[Short]] {
+    override def pack(p: MessagePacker, v: Array[Short]): Unit = {
+      p.packArrayHeader(v.length)
+      v.foreach { x =>
+        ShortCodec.pack(p, x)
+      }
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
+      val b   = Array.newBuilder[Short]
+      b.sizeHint(len)
+      (0 until len).foreach { i =>
+        IntCodec.unpack(u, v)
+        if (v.isNull) {
+          // TODO report error?
+          b += 0
+        } else {
+          val l = v.getLong
+          if (l.isValidInt) {
+            b += l.toShort
+          } else {
+            // report error?
+            b += 0
+          }
+        }
+      }
+      v.setObject(b.result())
+    }
+  }
+
   object LongArrayCodec extends MessageCodec[Array[Long]] {
     override def pack(p: MessagePacker, v: Array[Long]): Unit = {
       p.packArrayHeader(v.length)
@@ -504,7 +536,7 @@ object StandardCodec {
           // report error?
           b += false
         } else {
-          b += true
+          b += v.getBoolean
         }
       }
       v.setObject(b.result())
