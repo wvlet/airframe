@@ -18,6 +18,8 @@ import wvlet.airframe.tablet.Schema
 import wvlet.airframe.tablet.Schema.ColumnType
 import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
 
+import scala.util.{Failure, Success, Try}
+
 /**
   *
   */
@@ -31,8 +33,9 @@ class MessageHolder {
   private var o: AnyRef              = null
   private var err: Option[Throwable] = None
 
-  def isNull: Boolean   = valueType == Schema.NIL
-  def hasError: Boolean = err.isDefined
+  def isNull: Boolean             = valueType == Schema.NIL
+  def hasError: Boolean           = err.isDefined
+  def getError: Option[Throwable] = err
 
   def getLong: Long       = l
   def getBoolean: Boolean = b

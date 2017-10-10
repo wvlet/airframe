@@ -13,37 +13,46 @@
  */
 package wvlet.airframe.tablet
 
+import java.util.Locale
+
 object Schema {
   sealed trait ColumnType {
-    //def isPrimitive : Boolean
-    //def javaType: Class[_]
+    def name = toString
   }
 
   sealed trait PrimitiveType extends ColumnType
   sealed trait StructureType extends ColumnType
 
-  case object NIL                                            extends PrimitiveType
-  case object ANY                                            extends PrimitiveType
-  case object INTEGER                                        extends PrimitiveType
-  case object FLOAT                                          extends PrimitiveType
-  case object BOOLEAN                                        extends PrimitiveType
-  case object STRING                                         extends PrimitiveType
-  case object TIMESTAMP                                      extends PrimitiveType
-  case object BINARY                                         extends PrimitiveType
-  case object JSON                                           extends PrimitiveType
-  case class ARRAY(elemType: ColumnType)                     extends StructureType
-  case class MAP(keyType: ColumnType, valueType: ColumnType) extends StructureType
-  case class RECORD(column: Seq[Column])                     extends StructureType
+  case object NIL       extends PrimitiveType
+  case object ANY       extends PrimitiveType
+  case object INTEGER   extends PrimitiveType
+  case object FLOAT     extends PrimitiveType
+  case object BOOLEAN   extends PrimitiveType
+  case object STRING    extends PrimitiveType
+  case object TIMESTAMP extends PrimitiveType
+  case object BINARY    extends PrimitiveType
+  case object JSON      extends PrimitiveType
+  case class ARRAY(elemType: ColumnType) extends StructureType {
+    override def toString = s"ARRAY[${elemType.name}]"
+  }
+  case class MAP(keyType: ColumnType, valueType: ColumnType) extends StructureType {
+    override def toString = s"MAP[${keyType.name},${valueType.name}]"
+  }
+  case class RECORD(column: Seq[Column]) extends StructureType {
+    override def toString = s"RECORD[${column.map(_.name).mkString(",")}]"
+  }
 
   object ColumnType {
     def unapply(s: String): Option[ColumnType] = {
-      val tpe = s match {
+      val tpe = s.toUpperCase(Locale.US) match {
         case "varchar" => STRING
         case "string"  => STRING
         case "bigint"  => INTEGER
+        case "integer" => INTEGER
+        case "boolean" => BOOLEAN
         case "double"  => FLOAT
         case "float"   => FLOAT
-        case "json"    => STRING // TODO jse JSON type
+        case "json"    => STRING // TODO use JSON type
         case _         => STRING // TODO support more type
       }
       Some(tpe)

@@ -11,11 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wvlet.airframe.tablet.msgpack;
+package wvlet.airframe.tablet
 
 /**
- *
- */
-public enum JavaEnum {
-}
+  *
+  */
+case class Page[A](schema: Schema, data: Seq[A])

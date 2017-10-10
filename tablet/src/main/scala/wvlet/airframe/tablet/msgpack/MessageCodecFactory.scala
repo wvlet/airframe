@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, SeqCodec}
+import wvlet.airframe.tablet.Page
+import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, PageCodec, SeqCodec}
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.surface
@@ -48,15 +49,18 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
             // Option type
             val elementSurface = surface.typeArgs(0)
             OptionCodec(ofSurface(elementSurface, seenSet))
+          case g: GenericSurface if g.rawType == classOf[Page[_]] =>
+            // Page
+            val elemSurface = g.typeArgs(0)
+            PageCodec(elemSurface, ofSurface(elemSurface, seenSet))
           case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
             // Seq[A]
-            SeqCodec(ofSurface(g.typeArgs(0), seenSet))
+            SeqCodec(g, ofSurface(g.typeArgs(0), seenSet))
           case g: GenericSurface if ReflectTypeUtil.isJavaColleciton(g.rawType) =>
             JavaListCodec(ofSurface(g.typeArgs(0), seenSet))
           case g: GenericSurface if ReflectTypeUtil.isMap(g.rawType) =>
             // Map[A,B]
             MapCodec(ofSurface(g.typeArgs(0), seen), ofSurface(g.typeArgs(1), seenSet))
-
           case s if ReflectTypeUtil.isTuple(s.rawType) =>
             // Tuple
             TupleCodec(surface.typeArgs.map(x => ofSurface(x, seenSet)))

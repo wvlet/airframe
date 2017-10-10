@@ -14,7 +14,9 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.value.ValueFactory
 import wvlet.surface.Surface
+import scala.collection.JavaConverters._
 
 /**
   *
@@ -51,6 +53,37 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         .map(_.newInstance(args.result()))
         .map(x => v.setObject(x))
         .getOrElse(v.setNull)
+    }
+  }
+
+  def unpack(u: MessageUnpacker, v: MessageHolder, params: Seq[String]) {}
+}
+
+/**
+  * Codec for recording name of the parameters in an object
+  * @param surface
+  */
+case class SurfaceCodec(surface: Surface) extends MessageCodec[Surface] {
+  import ValueFactory._
+
+  override def pack(p: MessagePacker, v: Surface): Unit = {
+    val m = newMapBuilder()
+      .put(newString("fullName"), newString(surface.fullName))
+      .put(newString("params"), newArray(surface.params.map(_.name).map(newString(_)).asJava))
+      .build()
+    p.packValue(m)
+  }
+
+  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    val m = u.unpackValue().asMapValue().map.asScala
+    m.get(newString("params")) match {
+      case Some(arr) =>
+        val columns = for (param <- arr.asArrayValue().list().asScala) yield {
+          param.toString
+        }
+        v.setObject(columns.toIndexedSeq)
+      case None =>
+        v.setIncompatibleFormatException("")
     }
   }
 }
