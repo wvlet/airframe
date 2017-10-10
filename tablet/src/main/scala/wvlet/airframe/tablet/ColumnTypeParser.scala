@@ -13,7 +13,15 @@
  */
 package wvlet.airframe.tablet
 
+import wvlet.log.LogSupport
+
+import scala.util.parsing.combinator.RegexParsers
+
 /**
   *
   */
-object ColumnTypeParser {}
+object ColumnTypeParser extends RegexParsers with LogSupport {
+
+  def qName = ""
+
+}

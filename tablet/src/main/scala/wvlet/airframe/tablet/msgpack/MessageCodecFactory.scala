@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.msgpack
 
 import wvlet.airframe.tablet.Page
-import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, PageCodec, SeqCodec}
+import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, SeqCodec}
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.surface
