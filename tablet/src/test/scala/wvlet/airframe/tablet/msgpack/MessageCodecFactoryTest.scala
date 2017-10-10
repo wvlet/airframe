@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.tablet.msgpack
 
+import java.io.File
+
 import org.msgpack.core.{MessagePack, MessagePacker}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Schema
@@ -36,6 +38,13 @@ class MessageCodecFactoryTest extends AirframeSpec {
     h.getValueType shouldBe expectedType
     h.getLastValue shouldBe v
     h
+  }
+
+  def checkCodec[A](codec: MessageCodec[A], v: A) {
+    val b = codec.pack(v)
+    val r = codec.unpack(b)
+    r shouldBe defined
+    v shouldBe r.get
   }
 
   "MessageCodecFactory" should {
@@ -158,6 +167,16 @@ class MessageCodecFactoryTest extends AirframeSpec {
       }
     }
 
+    "support File" in {
+      val codec          = MessageCodec.of[File]
+      def check(v: File) = checkCodec(codec, v)
+      check(new File("sample.txt"))
+      check(new File("/var/log"))
+      check(new File("/etc/conf.d/myconf.conf"))
+      check(new File("c:/etc/conf.d/myconf.conf"))
+      check(new File("."))
+      check(new File(".."))
+      check(new File("relative/path.txt"))
+    }
   }
-
 }

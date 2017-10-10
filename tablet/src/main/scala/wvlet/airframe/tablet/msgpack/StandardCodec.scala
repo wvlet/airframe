@@ -21,8 +21,8 @@ import java.util.Date
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
-import wvlet.surface.{Primitive, Surface}
 import wvlet.surface
+import wvlet.surface.{Primitive, Surface}
 
 import scala.util.{Failure, Success, Try}
 
@@ -65,7 +65,7 @@ object StandardCodec {
     surface.of[Date]          -> JavaUtilDateCodec
   )
 
-  val standardCodec: Map[Surface, MessageCodec[_]] = primitiveCodec ++ primitiveArrayCodec ++ javaTimeCodec
+  val standardCodec: Map[Surface, MessageCodec[_]] = primitiveCodec ++ primitiveArrayCodec ++ javaClassCodec ++ javaTimeCodec
 
   private implicit class RichBoolean(b: Boolean) {
     def toInt: Int     = if (b) 1 else 0
