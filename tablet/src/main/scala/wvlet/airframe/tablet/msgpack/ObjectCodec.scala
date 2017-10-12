@@ -14,14 +14,18 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.ValueFactory
-import wvlet.surface.Surface
+import org.msgpack.value.{ValueFactory, ValueType, Variable}
+import wvlet.surface.{Surface, Zero}
+
 import scala.collection.JavaConverters._
 
 /**
   *
   */
 case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] {
+
+  private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => p.name -> c }.toMap[String, MessageCodec[_]]
+
   override def pack(p: MessagePacker, v: A): Unit = {
     val numParams = surface.params.length
     // Use array format [p1, p2, ....]
@@ -34,25 +38,68 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
 
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     val numParams = surface.params.length
-    val numElems  = u.unpackArrayHeader()
-    if (numParams != numElems) {
-      u.skipValue(numElems)
-      v.setNull
-    } else {
-      var index = 0
-      val args  = Seq.newBuilder[Any]
-      while (index < numElems && index < numParams) {
-        // TODO reuse message holders
-        val m = new MessageHolder
-        paramCodec(index).unpack(u, m)
-        // TODO handle null value?
-        args += m.getLastValue
-        index += 1
-      }
-      surface.objectFactory
-        .map(_.newInstance(args.result()))
-        .map(x => v.setObject(x))
-        .getOrElse(v.setNull)
+
+    u.getNextFormat.getValueType match {
+      case ValueType.ARRAY =>
+        val numElems = u.unpackArrayHeader()
+        if (numParams != numElems) {
+          u.skipValue(numElems)
+          v.setNull
+        } else {
+          var index = 0
+          val args  = Seq.newBuilder[Any]
+          while (index < numElems && index < numParams) {
+            // TODO reuse message holders
+            val m = new MessageHolder
+            paramCodec(index).unpack(u, m)
+            // TODO handle null value?
+            args += m.getLastValue
+            index += 1
+          }
+          surface.objectFactory
+            .map(_.newInstance(args.result()))
+            .map(x => v.setObject(x))
+            .getOrElse(v.setNull)
+        }
+      case ValueType.MAP =>
+        val m = Map.newBuilder[String, Any]
+
+        // { key:value, ...} -> record
+        val mapSize  = u.unpackMapHeader()
+        val keyValue = new Variable
+        for (i <- 0 until mapSize) {
+          // Read key
+          u.unpackValue(keyValue)
+          val keyString = keyValue.toString
+
+          // Read value
+          // TODO Use CName for parameter names?
+          codecTable.get(keyString) match {
+            case Some(codec) =>
+              codec.unpack(u, v)
+              m += (keyString -> v.getLastValue)
+            case None =>
+              // unknown parameter
+              u.skipValue()
+          }
+        }
+        val map = m.result()
+        val args = for (i <- 0 until numParams) yield {
+          val p         = surface.params(i)
+          val paramName = p.name
+          map.get(paramName) match {
+            case Some(x) => x
+            case None =>
+              p.getDefaultValue.getOrElse(Zero.zeroOf(surface))
+          }
+        }
+        surface.objectFactory
+          .map(_.newInstance(args))
+          .map(x => v.setObject(x))
+          .getOrElse(v.setNull)
+      case other =>
+        u.skipValue()
+        v.setIncompatibleFormatException(s"Expected ARRAY or MAP type input for ${surface}")
     }
   }
 

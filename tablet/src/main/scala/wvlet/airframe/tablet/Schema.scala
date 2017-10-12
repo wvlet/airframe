@@ -15,8 +15,9 @@ package wvlet.airframe.tablet
 
 import java.util.Locale
 
+import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.tablet.Schema.RecordType
-import wvlet.airframe.tablet.msgpack.MessageCodec
+import wvlet.airframe.tablet.msgpack.{MessageCodec, MessageHolder}
 
 object Schema {
   sealed trait DataType {
@@ -30,6 +31,8 @@ object Schema {
     def typeName                         = signature
     override def typeArgs: Seq[DataType] = Seq.empty
   }
+  sealed trait StructuredType extends DataType
+
   sealed trait NamedType extends DataType {
     def name: String
   }
@@ -51,12 +54,13 @@ object Schema {
   }
 
   // Structure types
-  case class ARRAY(elementType: DataType) extends DataType {
+  case class ARRAY(elementType: DataType) extends StructuredType {
     override def signature               = s"array[${elementType.signature}]"
     override def typeName: String        = "array"
     override def typeArgs: Seq[DataType] = Seq(elementType)
   }
-  case class MAP(keyType: DataType, valueType: DataType) extends DataType {
+
+  case class MAP(keyType: DataType, valueType: DataType) extends StructuredType {
     override def typeName: String        = "map"
     override def signature               = s"map[${keyType.signature},${valueType.signature}]"
     override def typeArgs: Seq[DataType] = Seq(keyType, valueType)
@@ -67,7 +71,7 @@ object Schema {
     * The members of a union type need to be record types.
     * @param types
     */
-  case class UNION(types: Seq[RecordType]) extends DataType {
+  case class UNION(types: Seq[RecordType]) extends StructuredType {
     override def typeName: String        = "union"
     override def signature: String       = s"union[${types.map(_.signature).mkString("|")}]"
     override def typeArgs: Seq[DataType] = types
@@ -124,8 +128,36 @@ object Schema {
     }
   }
 
-  object SchemaCodec extends MessageCodec[Schema] {}
-  o
+  object DataTypeCodec extends MessageCodec[DataType] {
+    override def pack(p: MessagePacker, v: DataType): Unit = {
+      v match {
+        case pt: PrimitiveType =>
+          p.packString(pt.typeName)
+        case r: RecordType =>
+          p.packArrayHeader(2)
+          // elem1
+          p.packString(r.typeName)
+          // elem2
+          p.packArrayHeader(r.column.size)
+          for (c <- r.column) {
+            p.packArrayHeader(2)
+            p.packString(c.name)
+            DataTypeCodec.pack(p, c.columnType)
+          }
+        case s: StructuredType =>
+          p.packArrayHeader(2)
+          // elem1
+          p.packString(s.typeName)
+          // elem2
+          p.packArrayHeader(s.typeArgs.length)
+          for (typeArg <- s.typeArgs) {
+            DataTypeCodec.pack(p, typeArg)
+          }
+      }
+    }
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {}
+  }
+
 }
 
 case class Schema(recordTypes: Seq[RecordType]) {
