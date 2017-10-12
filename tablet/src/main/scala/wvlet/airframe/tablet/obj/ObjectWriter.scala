@@ -2,8 +2,9 @@ package wvlet.airframe.tablet.obj
 
 import org.msgpack.core.MessageUnpacker
 import org.msgpack.value.ValueType
+import wvlet.airframe.tablet.Schema.{Column, RecordType}
 import wvlet.airframe.tablet.msgpack.{MessageCodec, MessageHolder}
-import wvlet.airframe.tablet.{Column, Record, Schema, TabletWriter}
+import wvlet.airframe.tablet.{Record, Schema, TabletWriter}
 import wvlet.log.LogSupport
 import wvlet.surface._
 import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
@@ -143,11 +144,11 @@ class ObjectWriter[A](surface: Surface, codec: Map[Surface, MessageCodec[_]] = M
 
 object ObjectWriter {
 
-  def createScheamOf[A: ru.TypeTag](name: String): Schema = {
+  def createRecordTypeOf[A: ru.TypeTag](name: String): RecordType = {
     val schema = wvlet.surface.reflect.SurfaceFactory.of[A]
     val tabletColumnTypes: Seq[Column] = for ((p, i) <- schema.params.zipWithIndex) yield {
       val vt = p.surface
-      val columnType: Schema.ColumnType = vt match {
+      val columnType: Schema.DataType = vt match {
         case Primitive.Byte    => Schema.INTEGER
         case Primitive.Short   => Schema.INTEGER
         case Primitive.Int     => Schema.INTEGER
@@ -161,9 +162,9 @@ object ObjectWriter {
           // TODO support Option, Array, Map, the other types etc.
           Schema.STRING
       }
-      Column(i, p.name, columnType)
+      Column(p.name, columnType)
     }
-    Schema(name, tabletColumnTypes)
+    RecordType(name, tabletColumnTypes)
   }
 
   def of[A: ru.TypeTag]: ObjectWriter[A] = new ObjectWriter(SurfaceFactory.of[A])

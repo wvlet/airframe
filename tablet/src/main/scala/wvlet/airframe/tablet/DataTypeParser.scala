@@ -20,7 +20,7 @@ import scala.util.parsing.combinator.RegexParsers
 /**
   *
   */
-object ColumnTypeParser extends RegexParsers with LogSupport {
+object DataTypeParser extends RegexParsers with LogSupport {
 
   def qName = ""
 

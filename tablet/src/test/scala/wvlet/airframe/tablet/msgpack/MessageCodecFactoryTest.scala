@@ -19,14 +19,14 @@ import org.msgpack.core.{MessagePack, MessagePacker}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Schema
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
-import wvlet.airframe.tablet.Schema.ColumnType
+import wvlet.airframe.tablet.Schema.DataType
 
 /**
   *
   */
 class MessageCodecFactoryTest extends AirframeSpec {
 
-  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: ColumnType): MessageHolder = {
+  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     debug(s"Testing roundtrip: ${v}")
     val packer = MessagePack.newDefaultBufferPacker()

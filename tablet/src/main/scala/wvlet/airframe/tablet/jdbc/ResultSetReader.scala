@@ -13,7 +13,7 @@ class ResultSetReader(rs: ResultSet) extends TabletReader {
 
   private lazy val m       = rs.getMetaData
   private lazy val columns = m.getColumnCount
-  private lazy val schema: Seq[Schema.ColumnType] =
+  private lazy val schema: Seq[Schema.DataType] =
     (1 to columns).map { i =>
       typeMap(java.sql.JDBCType.valueOf(m.getColumnType(i)))
     }.toIndexedSeq

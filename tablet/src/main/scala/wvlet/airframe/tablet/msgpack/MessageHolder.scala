@@ -15,7 +15,7 @@ package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.value.ValueType
 import wvlet.airframe.tablet.Schema
-import wvlet.airframe.tablet.Schema.ColumnType
+import wvlet.airframe.tablet.Schema.DataType
 import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
 
 import scala.util.{Failure, Success, Try}
@@ -24,7 +24,7 @@ import scala.util.{Failure, Success, Try}
   *
   */
 class MessageHolder {
-  private var valueType: ColumnType = Schema.NIL
+  private var valueType: DataType = Schema.NIL
 
   private var b: Boolean             = false
   private var l: Long                = 0L
@@ -43,7 +43,7 @@ class MessageHolder {
   def getString: String   = s
   def getObject: AnyRef   = o
 
-  def getValueType: ColumnType = valueType
+  def getValueType: DataType = valueType
 
   def getLastValue: Any = {
     if (isNull) {
@@ -66,7 +66,7 @@ class MessageHolder {
     }
   }
 
-  private def setValueType(vt: ColumnType) {
+  private def setValueType(vt: DataType) {
     err = None
     valueType = vt
   }

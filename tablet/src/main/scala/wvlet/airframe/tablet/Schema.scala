@@ -15,78 +15,119 @@ package wvlet.airframe.tablet
 
 import java.util.Locale
 
+import wvlet.airframe.tablet.Schema.RecordType
+import wvlet.airframe.tablet.msgpack.MessageCodec
+
 object Schema {
-  sealed trait ColumnType {
-    def name = toString
+  sealed trait DataType {
+    def signature: String
+    def typeName: String
+    def typeArgs: Seq[DataType]
+    override def toString: String = signature
   }
 
-  sealed trait PrimitiveType extends ColumnType
-  sealed trait StructureType extends ColumnType
-
-  case object NIL       extends PrimitiveType
-  case object ANY       extends PrimitiveType
-  case object INTEGER   extends PrimitiveType
-  case object FLOAT     extends PrimitiveType
-  case object BOOLEAN   extends PrimitiveType
-  case object STRING    extends PrimitiveType
-  case object TIMESTAMP extends PrimitiveType
-  case object BINARY    extends PrimitiveType
-  case object JSON      extends PrimitiveType
-  case class ARRAY(elemType: ColumnType) extends StructureType {
-    override def toString = s"ARRAY[${elemType.name}]"
+  sealed abstract class PrimitiveType(val signature: String) extends DataType {
+    def typeName                         = signature
+    override def typeArgs: Seq[DataType] = Seq.empty
   }
-  case class MAP(keyType: ColumnType, valueType: ColumnType) extends StructureType {
-    override def toString = s"MAP[${keyType.name},${valueType.name}]"
-  }
-  case class RECORD(column: Seq[Column]) extends StructureType {
-    override def toString = s"RECORD[${column.map(_.name).mkString(",")}]"
+  sealed trait NamedType extends DataType {
+    def name: String
   }
 
-  object ColumnType {
-    def unapply(s: String): Option[ColumnType] = {
-      val tpe = s.toUpperCase(Locale.US) match {
-        case "varchar" => STRING
-        case "string"  => STRING
-        case "bigint"  => INTEGER
-        case "integer" => INTEGER
-        case "boolean" => BOOLEAN
-        case "double"  => FLOAT
-        case "float"   => FLOAT
-        case "json"    => STRING // TODO use JSON type
-        case _         => STRING // TODO support more type
+  case object NIL       extends PrimitiveType("nil")
+  case object INTEGER   extends PrimitiveType("int")
+  case object FLOAT     extends PrimitiveType("float")
+  case object BOOLEAN   extends PrimitiveType("boolean")
+  case object STRING    extends PrimitiveType("string")
+  case object TIMESTAMP extends PrimitiveType("timestamp")
+  case object BINARY    extends PrimitiveType("binary")
+  case object JSON      extends PrimitiveType("json")
+
+  // Arbitrary types
+  case object ANY extends DataType {
+    override def signature: String       = "any"
+    override def typeName: String        = "any"
+    override def typeArgs: Seq[DataType] = Seq.empty
+  }
+
+  // Structure types
+  case class ARRAY(elementType: DataType) extends DataType {
+    override def signature               = s"array[${elementType.signature}]"
+    override def typeName: String        = "array"
+    override def typeArgs: Seq[DataType] = Seq(elementType)
+  }
+  case class MAP(keyType: DataType, valueType: DataType) extends DataType {
+    override def typeName: String        = "map"
+    override def signature               = s"map[${keyType.signature},${valueType.signature}]"
+    override def typeArgs: Seq[DataType] = Seq(keyType, valueType)
+  }
+
+  /**
+    * Union type represents a type whose data can be one of the specified types.
+    * The members of a union type need to be record types.
+    * @param types
+    */
+  case class UNION(types: Seq[RecordType]) extends DataType {
+    override def typeName: String        = "union"
+    override def signature: String       = s"union[${types.map(_.signature).mkString("|")}]"
+    override def typeArgs: Seq[DataType] = types
+  }
+
+  /**
+    *
+    *
+    *
+    * @param column
+    */
+  case class RecordType(typeName: String, column: Seq[Column]) extends DataType {
+    // Person(id:int, name:string, address:Address)
+    // Address(address:string, phone:array[string])
+    override def signature               = s"${typeName}(${column.map(_.signature).mkString(",")})"
+    override def typeArgs: Seq[DataType] = Seq.empty
+
+    def size: Int = column.length
+    // 0-origin index
+    @transient private lazy val columnIdx: Map[Column, Int] = column.zipWithIndex.toMap[Column, Int]
+
+    /**
+      * @param index 0-origin index
+      * @return
+      */
+    def columnType(index: Int) = column(index)
+
+    /**
+      * Return the column index
+      *
+      * @param column
+      * @return
+      */
+    def columnIndex(column: Column) = columnIdx(column)
+  }
+
+  case class Column(name: String, columnType: Schema.DataType) {
+    def signature = s"${name}:${columnType}"
+  }
+
+  case object DataType {
+    def unapply(s: String): Option[DataType] = {
+      val tpe = s.toLowerCase(Locale.US) match {
+        case "nil" | "null"                => NIL
+        case "varchar" | "string" | "text" => STRING
+        case "bigint" | "integer"          => INTEGER
+        case "boolean"                     => BOOLEAN
+        case "float" | "double"            => FLOAT
+        case "timestamp"                   => TIMESTAMP
+        case "json"                        => JSON // TODO use JSON type
+        case _                             => STRING // TODO support more type
       }
       Some(tpe)
     }
   }
+
+  object SchemaCodec extends MessageCodec[Schema] {}
+  o
 }
 
-case class Column(
-    // 0-origin index
-    index: Int,
-    name: String,
-    dataType: Schema.ColumnType
-) {
-  override def toString = s"${index}:${name} ${dataType}"
-}
-
-case class Schema(name: String, column: Seq[Column]) {
-  override def toString: String = s"$name(${column.mkString(", ")})"
-
-  private lazy val columnIdx: Map[Column, Int] = column.zipWithIndex.toMap[Column, Int]
-
-  def size: Int = column.size
-
-  /**
-    * @param index 0-origin index
-    * @return
-    */
-  def columnType(index: Int) = column(index)
-
-  /**
-    * Return the column index
-    *
-    * @param column
-    * @return
-    */
-  def columnIndex(column: Column) = columnIdx(column)
+case class Schema(recordTypes: Seq[RecordType]) {
+  override def toString = s"Schema(${recordTypes.mkString(", ")})"
 }

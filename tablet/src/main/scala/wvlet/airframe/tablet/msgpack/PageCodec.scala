@@ -15,7 +15,7 @@ package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import wvlet.airframe.tablet.{Page, Schema}
-import wvlet.airframe.tablet.Schema.ColumnType
+import wvlet.airframe.tablet.Schema.DataType
 import wvlet.airframe.tablet.msgpack.CollectionCodec.SeqCodec
 import wvlet.surface.Surface
 
@@ -62,13 +62,13 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
   }
 }
 
-object ColumnTypeCodec extends MessageCodec[ColumnType] {
-  override def pack(p: MessagePacker, v: ColumnType): Unit = {
-    p.packString(v.name)
+object ColumnTypeCodec extends MessageCodec[DataType] {
+  override def pack(p: MessagePacker, v: DataType): Unit = {
+    p.packString(v.signature)
   }
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     val columnType = u.unpackString()
-    ColumnType.unapply(columnType) match {
+    DataType.unapply(columnType) match {
       case Some(c) => v.setObject(c)
       case None    => v.setIncompatibleFormatException(s"Invalid ColumnType value: ${columnType}")
     }
