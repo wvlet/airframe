@@ -21,6 +21,9 @@ import wvlet.airframe.tablet.Schema
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import wvlet.airframe.tablet.Schema.DataType
 import MessageCodecFactoryTest._
+import org.scalacheck.Arbitrary
+
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -29,9 +32,23 @@ class MessageCodecFactoryTest extends AirframeSpec {
 
   def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
-    trace(s"Testing roundtrip: ${v}")
+    trace(s"Testing roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newDefaultBufferPacker()
     codec.pack(packer, v)
+    val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
+    codec.unpack(unpacker, h)
+
+    h.isNull shouldBe false
+    h.getDataType shouldBe expectedType
+    h.getLastValue shouldBe v
+    h
+  }
+
+  def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
+    val h = new MessageHolder
+    trace(s"Testing str based roundtrip of ${v} with ${codec}")
+    val packer = MessagePack.newDefaultBufferPacker()
+    packer.packString(v.toString)
     val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)
 
@@ -48,124 +65,55 @@ class MessageCodecFactoryTest extends AirframeSpec {
     v shouldBe r.get
   }
 
+  def roundTripTest[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
+    val codec = MessageCodec.of[T]
+    forAll { (v: T) =>
+      roundtrip(codec, v, dataType)
+    }
+  }
+
+  def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
+    val codec = MessageCodec.of[T]
+    forAll { (v: T) =>
+      // Test input:T -> output:T
+      roundtrip(codec, v, dataType)
+      // Test from input:String -> output:T
+      roundtripStr(codec, v, dataType)
+    }
+  }
+
   "MessageCodecFactory" should {
-    "support int" in {
-      val codec = MessageCodec.of[Int]
-      forAll { (v: Int) =>
-        roundtrip(codec, v, Schema.INTEGER)
-      }
-    }
-
-    "support long" in {
-      val codec = MessageCodec.of[Long]
-      forAll { (v: Long) =>
-        roundtrip(codec, v, Schema.INTEGER)
-      }
-    }
-
-    "support boolean" in {
-      val codec = MessageCodec.of[Boolean]
-      forAll { (v: Boolean) =>
-        roundtrip(codec, v, Schema.BOOLEAN)
-      }
-    }
-
-    "support short" in {
-      val codec = MessageCodec.of[Short]
-      forAll { (v: Short) =>
-        roundtrip(codec, v, Schema.INTEGER)
-      }
+    "support numeric" in {
+      roundTripTestWithStr[Int](Schema.INTEGER)
+      roundTripTestWithStr[Byte](Schema.INTEGER)
+      roundTripTestWithStr[Short](Schema.INTEGER)
+      roundTripTestWithStr[Long](Schema.INTEGER)
+      roundTripTestWithStr[Boolean](Schema.BOOLEAN)
     }
 
     "support char" in {
-      val codec = MessageCodec.of[Char]
-      forAll { (v: Char) =>
-        roundtrip(codec, v, Schema.INTEGER)
-      }
-    }
-
-    "support byte" in {
-      val codec = MessageCodec.of[Byte]
-      forAll { (v: Byte) =>
-        roundtrip(codec, v, Schema.INTEGER)
-      }
+      roundTripTest[Char](Schema.INTEGER)
     }
 
     "support float" in {
-      val codec = MessageCodec.of[Float]
-      forAll { (v: Float) =>
-        roundtrip(codec, v, Schema.FLOAT)
-      }
-    }
-
-    "support double" in {
-      val codec = MessageCodec.of[Double]
-      forAll { (v: Double) =>
-        roundtrip(codec, v, Schema.FLOAT)
-      }
+      roundTripTestWithStr[Float](Schema.FLOAT)
+      roundTripTestWithStr[Double](Schema.FLOAT)
     }
 
     "support string" in {
-      val codec = MessageCodec.of[String]
-      forAll { (v: String) =>
-        roundtrip(codec, v, Schema.STRING)
-      }
+      roundTripTest[String](Schema.STRING)
     }
 
-    "support primitive int array" in {
-      val codec = MessageCodec.of[Array[Int]]
-      forAll { (v: Array[Int]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive string array" in {
-      val codec = MessageCodec.of[Array[String]]
-      forAll { (v: Array[String]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive float array" in {
-      val codec = MessageCodec.of[Array[Float]]
-      forAll { (v: Array[Float]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive double array" in {
-      val codec = MessageCodec.of[Array[Double]]
-      forAll { (v: Array[Double]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive boolean array" in {
-      val codec = MessageCodec.of[Array[Boolean]]
-      forAll { (v: Array[Boolean]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive long array" in {
-      val codec = MessageCodec.of[Array[Long]]
-      forAll { (v: Array[Long]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive short array" in {
-      val codec = MessageCodec.of[Array[Short]]
-      forAll { (v: Array[Short]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
-    }
-
-    "support primitive char array" in {
-      val codec = MessageCodec.of[Array[Char]]
-      forAll { (v: Array[Char]) =>
-        roundtrip(codec, v, Schema.ANY)
-      }
+    "support primitive arrays" in {
+      roundTripTest[Array[Byte]](Schema.ANY)
+      roundTripTest[Array[Char]](Schema.ANY)
+      roundTripTest[Array[Int]](Schema.ANY)
+      roundTripTest[Array[Short]](Schema.ANY)
+      roundTripTest[Array[Long]](Schema.ANY)
+      roundTripTest[Array[String]](Schema.ANY)
+      roundTripTest[Array[Float]](Schema.ANY)
+      roundTripTest[Array[Double]](Schema.ANY)
+      roundTripTest[Array[Boolean]](Schema.ANY)
     }
 
     "support File" in {
@@ -184,6 +132,14 @@ class MessageCodecFactoryTest extends AirframeSpec {
       val codec = MessageCodec.of[A1]
       val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
       roundtrip(codec, v, Schema.ANY)
+
+      forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
+        // scalacheck supports only upto 6 elements
+        forAll { (b: Boolean, s: String) =>
+          val v = A1(i, l, f, d, c, st, b, s)
+          roundtrip[A1](codec, v, Schema.ANY)
+        }
+      }
     }
   }
 }

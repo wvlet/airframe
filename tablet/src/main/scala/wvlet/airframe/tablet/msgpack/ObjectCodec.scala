@@ -107,8 +107,6 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         v.setIncompatibleFormatException(s"Expected ARRAY or MAP type input for ${surface}")
     }
   }
-
-  def unpack(u: MessageUnpacker, v: MessageHolder, params: Seq[String]) {}
 }
 
 /**
