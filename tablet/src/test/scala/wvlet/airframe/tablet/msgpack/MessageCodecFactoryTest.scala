@@ -15,81 +15,16 @@ package wvlet.airframe.tablet.msgpack
 
 import java.io.File
 
-import org.msgpack.core.{MessagePack, MessagePacker}
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.Schema
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
-import wvlet.airframe.tablet.Schema.DataType
-import MessageCodecFactoryTest._
-import org.scalacheck.Arbitrary
+import wvlet.airframe.tablet.Schema
+import wvlet.airframe.tablet.msgpack.MessageCodecFactoryTest._
 
 import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   */
-class MessageCodecFactoryTest extends AirframeSpec {
-
-  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
-    val h = new MessageHolder
-    trace(s"Testing roundtrip of ${v} with ${codec}")
-    val packer = MessagePack.newDefaultBufferPacker()
-    codec.pack(packer, v)
-    val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
-    codec.unpack(unpacker, h)
-
-    h.isNull shouldBe false
-    h.getDataType shouldBe expectedType
-    h.getLastValue shouldBe v
-    h
-  }
-
-  def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
-    val h = new MessageHolder
-    trace(s"Testing str based roundtrip of ${v} with ${codec}")
-    val packer = MessagePack.newDefaultBufferPacker()
-    packer.packString(v.toString)
-    val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
-    codec.unpack(unpacker, h)
-
-    h.isNull shouldBe false
-    h.getDataType shouldBe expectedType
-    h.getLastValue shouldBe v
-    h
-  }
-
-  def checkCodec[A](codec: MessageCodec[A], v: A) {
-    val b = codec.pack(v)
-    val r = codec.unpack(b)
-    r shouldBe defined
-    v shouldBe r.get
-  }
-
-  def roundTripTest[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
-    val codec = MessageCodec.of[T]
-    forAll { (v: T) =>
-      roundtrip(codec, v, dataType)
-    }
-  }
-
-  def arrayRoundTripTest[T: ru.TypeTag](implicit impArb: Arbitrary[Array[T]]) {
-    val codec    = MessageCodec.of[Array[T]]
-    val seqCodec = MessageCodec.of[Seq[T]]
-    forAll { (v: Array[T]) =>
-      roundtrip(codec, v, Schema.ANY)
-      roundtrip(seqCodec, v.toSeq, Schema.ANY)
-    }
-  }
-
-  def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
-    val codec = MessageCodec.of[T]
-    forAll { (v: T) =>
-      // Test input:T -> output:T
-      roundtrip(codec, v, dataType)
-      // Test from input:String -> output:T
-      roundtripStr(codec, v, dataType)
-    }
-  }
+class MessageCodecFactoryTest extends CodecSpec {
 
   "MessageCodecFactory" should {
     "support numeric" in {

@@ -156,7 +156,7 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def isTuple[T](cl: Class[T]): Boolean = {
-    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("Tuple")
+    classOf[Product].isAssignableFrom(cl) && cl.getSimpleName.startsWith("Tuple")
   }
 
   def isList[T](cl: Class[T]): Boolean = {

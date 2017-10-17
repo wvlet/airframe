@@ -27,10 +27,6 @@ import scala.collection.JavaConverters._
   */
 object CollectionCodec {
 
-  implicit class RichString(s: String) {
-    def toValue: StringValue = newString(s)
-  }
-
   case class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
     override def pack(p: MessagePacker, v: Seq[A]): Unit = {
       // elements
@@ -51,7 +47,7 @@ object CollectionCodec {
         elementCodec.unpack(u, v)
         if (!v.isNull) {
           b += v.getLastValue
-        } else {}
+        }
       }
       v.setObject(b.result())
     }

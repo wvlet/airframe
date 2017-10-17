@@ -15,6 +15,7 @@ package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
+import wvlet.log.LogSupport
 
 /**
   *
@@ -67,7 +68,7 @@ object ScalaStandardCodec {
         assert(t.length == numElems)
 
         val tuple = numElems match {
-          case 1  => (t(0))
+          case 1  => Tuple1(t(0))
           case 2  => (t(0), t(1))
           case 3  => (t(0), t(1), t(2))
           case 4  => (t(0), t(1), t(2), t(3))
@@ -91,7 +92,7 @@ object ScalaStandardCodec {
           case _  => null
         }
         if (tuple != null) {
-          v.setObject(t)
+          v.setObject(tuple)
         } else {
           v.setIncompatibleFormatException(s"Tuples of ${numElems} elements is not supported")
         }

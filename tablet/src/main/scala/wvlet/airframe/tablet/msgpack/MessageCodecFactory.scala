@@ -14,9 +14,10 @@
 package wvlet.airframe.tablet.msgpack
 
 import wvlet.airframe.tablet.Page
-import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, MapCodec, SeqCodec}
+import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, JavaMapCodec, MapCodec, SeqCodec}
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
+import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.{EnumSurface, GenericSurface, Surface}
 import wvlet.surface.reflect.ReflectTypeUtil
@@ -26,7 +27,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
+class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends LogSupport {
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
     new MessageCodecFactory(knownCodecs ++ additionalCodecs)
@@ -45,12 +46,15 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
       throw new IllegalArgumentException(s"Codec for recursive types is not supported: ${surface}")
     } else {
       val seenSet = seen + surface
+      trace(s"Finding MessageCodec of ${surface.dealias}")
       val codec =
         surface.dealias match {
           case s if s.isOption =>
             // Option type
             val elementSurface = surface.typeArgs(0)
             OptionCodec(ofSurface(elementSurface, seenSet))
+          case s if ReflectTypeUtil.isTuple(s.rawType) =>
+            TupleCodec(s.typeArgs.map(x => ofSurface(x)))
           case g: GenericSurface if g.rawType == classOf[Page[_]] =>
             // Page
             val elemSurface = g.typeArgs(0)
@@ -63,6 +67,9 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
           case g: GenericSurface if ReflectTypeUtil.isMap(g.rawType) =>
             // Map[A,B]
             MapCodec(ofSurface(g.typeArgs(0), seen), ofSurface(g.typeArgs(1), seenSet))
+          case g: GenericSurface if ReflectTypeUtil.isJavaMap(g.rawType) =>
+            // Map[A,B]
+            JavaMapCodec(ofSurface(g.typeArgs(0), seen), ofSurface(g.typeArgs(1), seenSet))
           case s if ReflectTypeUtil.isTuple(s.rawType) =>
             // Tuple
             TupleCodec(surface.typeArgs.map(x => ofSurface(x, seenSet)))
