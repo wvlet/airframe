@@ -35,6 +35,8 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
   private var cache = Map.empty[Surface, MessageCodec[_]]
 
   private def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
+    // TODO Create a fast object codec with code generation (e.g., Scala macros)
+
     if (knownCodecs.contains(surface)) {
       knownCodecs(surface)
     } else if (cache.contains(surface)) {

@@ -10,6 +10,9 @@ trait MessageCodec[A] {
   def pack(p: MessagePacker, v: A)
   def unpack(u: MessageUnpacker, v: MessageHolder)
 
+  // TODO add specialized methods for primitive values
+  // def unpackInt(u:MessageUnpacker) : Int
+
   def pack(v: A): Array[Byte] = {
     val packer = MessagePack.newDefaultBufferPacker()
     pack(packer, v)
