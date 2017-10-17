@@ -72,6 +72,15 @@ class MessageCodecFactoryTest extends AirframeSpec {
     }
   }
 
+  def arrayRoundTripTest[T: ru.TypeTag](implicit impArb: Arbitrary[Array[T]]) {
+    val codec    = MessageCodec.of[Array[T]]
+    val seqCodec = MessageCodec.of[Seq[T]]
+    forAll { (v: Array[T]) =>
+      roundtrip(codec, v, Schema.ANY)
+      roundtrip(seqCodec, v.toSeq, Schema.ANY)
+    }
+  }
+
   def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
     val codec = MessageCodec.of[T]
     forAll { (v: T) =>
@@ -104,16 +113,16 @@ class MessageCodecFactoryTest extends AirframeSpec {
       roundTripTest[String](Schema.STRING)
     }
 
-    "support primitive arrays" in {
-      roundTripTest[Array[Byte]](Schema.ANY)
-      roundTripTest[Array[Char]](Schema.ANY)
-      roundTripTest[Array[Int]](Schema.ANY)
-      roundTripTest[Array[Short]](Schema.ANY)
-      roundTripTest[Array[Long]](Schema.ANY)
-      roundTripTest[Array[String]](Schema.ANY)
-      roundTripTest[Array[Float]](Schema.ANY)
-      roundTripTest[Array[Double]](Schema.ANY)
-      roundTripTest[Array[Boolean]](Schema.ANY)
+    "support arrays" taggedAs ("array") in {
+      arrayRoundTripTest[Byte]
+      arrayRoundTripTest[Char]
+      arrayRoundTripTest[Int]
+      arrayRoundTripTest[Short]
+      arrayRoundTripTest[Long]
+      arrayRoundTripTest[String]
+      arrayRoundTripTest[Float]
+      arrayRoundTripTest[Double]
+      arrayRoundTripTest[Boolean]
     }
 
     "support File" in {
