@@ -15,6 +15,8 @@ package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ValueFactory, ValueType, Variable}
+import wvlet.log.LogSupport
+import wvlet.surface.reflect.TypeConverter
 import wvlet.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
@@ -22,7 +24,7 @@ import scala.collection.JavaConverters._
 /**
   *
   */
-case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] {
+case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] with LogSupport {
 
   private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => p.name -> c }.toMap[String, MessageCodec[_]]
 
@@ -47,17 +49,20 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           v.setNull
         } else {
           var index = 0
-          val args  = Seq.newBuilder[Any]
+          val b     = Seq.newBuilder[Any]
           while (index < numElems && index < numParams) {
             // TODO reuse message holders
-            val m = new MessageHolder
-            paramCodec(index).unpack(u, m)
+            paramCodec(index).unpack(u, v)
             // TODO handle null value?
-            args += m.getLastValue
+            // TODO Use more efficient type conversion
+            val arg = TypeConverter.convert(v.getLastValue, surface.params(index).surface).getOrElse(null)
+            b += arg
             index += 1
           }
+          val args = b.result()
+          trace(s"Building $surface with args:[${args.map(x => s"${x}:${x.getClass.getName}")}]")
           surface.objectFactory
-            .map(_.newInstance(args.result()))
+            .map(_.newInstance(args))
             .map(x => v.setObject(x))
             .getOrElse(v.setNull)
         }

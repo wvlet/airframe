@@ -72,7 +72,7 @@ val noPublish = Seq(
 lazy val root =
   project
     .in(file("."))
-    .settings(name := "root")
+    .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
     .aggregate(projectJVM, projectJS)

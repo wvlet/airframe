@@ -13,101 +13,145 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import org.msgpack.value.ValueType
-import wvlet.airframe.tablet.Schema
-import wvlet.airframe.tablet.Schema.DataType
+import wvlet.airframe.tablet.Schema._
 import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
-
-import scala.util.{Failure, Success, Try}
+import wvlet.surface.{AnyRefSurface, Primitive, Surface}
 
 /**
   *
   */
 class MessageHolder {
-  private var valueType: DataType = Schema.NIL
-
-  private var b: Boolean             = false
-  private var l: Long                = 0L
-  private var d: Double              = 0d
-  private var s: String              = ""
-  private var o: AnyRef              = null
+  private var dataType: DataType     = NIL
+  private var value: Option[Any]     = None
   private var err: Option[Throwable] = None
 
-  def isNull: Boolean             = valueType == Schema.NIL
+  private var l: Long    = 0L
+  private var b: Boolean = false
+  private var d: Double  = 0.0
+  private var s: String  = ""
+
+  def isNull: Boolean             = value.isEmpty
   def hasError: Boolean           = err.isDefined
   def getError: Option[Throwable] = err
 
-  def getLong: Long       = l
-  def getBoolean: Boolean = b
-  def getDouble: Double   = d
-  def getString: String   = s
-  def getObject: AnyRef   = o
-
-  def getValueType: DataType = valueType
-
-  def getLastValue: Any = {
-    if (isNull) {
-      null
-    } else {
-      valueType match {
-        case Schema.NIL =>
-          null
-        case Schema.INTEGER =>
-          this.getLong
-        case Schema.FLOAT =>
-          this.getDouble
-        case Schema.STRING =>
-          this.getString
-        case Schema.BOOLEAN =>
-          this.getBoolean
-        case _ =>
-          getObject
-      }
-    }
-  }
-
-  private def setValueType(vt: DataType) {
-    err = None
-    valueType = vt
-  }
-
-  def setLong(v: Long): Long = {
-    l = v
-    setValueType(Schema.INTEGER)
-    v
-  }
-
-  def setBoolean(v: Boolean): Boolean = {
-    b = v
-    setValueType(Schema.BOOLEAN)
-    v
-  }
-
-  def setDouble(v: Double): Double = {
-    d = v
-    setValueType(Schema.FLOAT)
-    v
-  }
-
-  def setString(v: String): String = {
-    s = v
-    setValueType(Schema.STRING)
-    v
-  }
-
-  def setObject[A](v: A): A = {
-    o = v.asInstanceOf[AnyRef]
-    if (v != null) {
-      setValueType(Schema.ANY)
-    } else {
-      setNull
-    }
-    v
-  }
-
   def setNull {
-    setValueType(Schema.NIL)
+    dataType = NIL
+    value = None
   }
+
+  def setBoolean(v: Boolean) {
+    setValue(BOOLEAN, v)
+    b = v
+  }
+  def setByte(v: Byte) {
+    setValue(INTEGER, v)
+    l = v
+  }
+  def setChar(v: Char) {
+    setValue(INTEGER, v)
+    l = v
+  }
+  def setShort(v: Short) {
+    setValue(INTEGER, v)
+    l = v
+  }
+  def setInt(v: Int) {
+    setValue(INTEGER, v)
+    l = v
+  }
+  def setLong(v: Long) {
+    setValue(INTEGER, v)
+    l = v
+  }
+
+  def setFloat(v: Float) {
+    setValue(FLOAT, v)
+    d = v
+  }
+  def setDouble(v: Double) {
+    setValue(FLOAT, v)
+    d = v
+  }
+
+  def setString(v: String) {
+    setValue(STRING, v)
+    s = v
+  }
+
+  def setObject(v: Any) {
+    if (v == null) {
+      setNull
+    } else {
+      setValue(ANY, v)
+    }
+  }
+
+  protected def setValue(dataType: DataType, v: Any) {
+    this.dataType = dataType
+    if (v != null) {
+      value = Some(v)
+    } else {
+      value = None
+    }
+  }
+
+  def getInt: Int = {
+    dataType match {
+      case INTEGER if l.isValidInt => l.toInt
+      case _                       => 0
+    }
+  }
+
+  def getShort: Short = {
+    dataType match {
+      case INTEGER if l.isValidShort => l.toShort
+      case _                         => 0
+    }
+  }
+  def getChar: Char = {
+    dataType match {
+      case INTEGER if l.isValidChar => l.toChar
+      case _                        => 0
+    }
+  }
+  def getLong: Long = {
+    dataType match {
+      case INTEGER => l
+      case _       => 0
+    }
+  }
+
+  def getBoolean: Boolean = {
+    dataType match {
+      case BOOLEAN => b
+      case _       => false
+    }
+  }
+
+  def getDouble: Double = {
+    dataType match {
+      case FLOAT => d
+      case _     => 0.0
+    }
+  }
+
+  def getFloat: Float = {
+    dataType match {
+      case FLOAT => d.toFloat
+      case _     => 0.0f
+    }
+  }
+
+  def getString: String = {
+    dataType match {
+      case STRING => s
+      case _      => value.map(_.toString).getOrElse("")
+    }
+  }
+
+  def getDataType: DataType = dataType
+
+  def getLastValue: Any = value.getOrElse(null)
 
   def setError(e: Throwable) {
     setNull

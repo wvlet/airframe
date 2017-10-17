@@ -27,7 +27,13 @@ import scala.language.existentials
   */
 object ReflectTypeUtil extends LogSupport {
 
-  @inline def cls[A](obj: A): Class[_] = obj.asInstanceOf[AnyRef].getClass
+  @inline def cls[A](obj: A): Class[_] = {
+    if (obj == null) {
+      classOf[AnyRef]
+    } else {
+      obj.asInstanceOf[AnyRef].getClass
+    }
+  }
 
   def companionObject[A](cl: Class[A]): Option[Any] = {
     try {

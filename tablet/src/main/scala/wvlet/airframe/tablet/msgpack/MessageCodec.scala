@@ -1,9 +1,10 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
-import wvlet.airframe.tablet.msgpack.MessageCodec.ErrorCode
+import wvlet.airframe.tablet.msgpack.MessageCodec.{ErrorCode, INVALID_DATA}
 
 import scala.reflect.runtime.{universe => ru}
+import scala.util.{Failure, Try}
 
 trait MessageCodec[A] {
   def pack(p: MessagePacker, v: A)

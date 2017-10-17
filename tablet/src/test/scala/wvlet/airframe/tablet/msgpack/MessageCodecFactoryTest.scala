@@ -20,6 +20,7 @@ import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Schema
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import wvlet.airframe.tablet.Schema.DataType
+import MessageCodecFactoryTest._
 
 /**
   *
@@ -28,14 +29,14 @@ class MessageCodecFactoryTest extends AirframeSpec {
 
   def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
-    debug(s"Testing roundtrip: ${v}")
+    trace(s"Testing roundtrip: ${v}")
     val packer = MessagePack.newDefaultBufferPacker()
     codec.pack(packer, v)
     val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)
 
     h.isNull shouldBe false
-    h.getValueType shouldBe expectedType
+    h.getDataType shouldBe expectedType
     h.getLastValue shouldBe v
     h
   }
@@ -178,5 +179,26 @@ class MessageCodecFactoryTest extends AirframeSpec {
       check(new File(".."))
       check(new File("relative/path.txt"))
     }
+
+    "support case classes" in {
+      val codec = MessageCodec.of[A1]
+      val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
+      roundtrip(codec, v, Schema.ANY)
+    }
   }
+}
+
+object MessageCodecFactoryTest {
+
+  case class A1(
+      i: Int,
+      l: Long,
+      f: Float,
+      d: Double,
+      c: Char,
+      st: Short,
+      b: Boolean,
+      s: String
+  )
+
 }

@@ -82,8 +82,7 @@ object StandardCodec {
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Byte) {
         try {
-          val b = body
-          v.setLong(b.toLong)
+          v.setByte(body)
         } catch {
           case e: MessageIntegerOverflowException =>
             v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Byte value")
@@ -121,8 +120,7 @@ object StandardCodec {
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Char) {
         try {
-          val b = body
-          v.setLong(b.toChar)
+          v.setChar(body)
         } catch {
           case e: MessageIntegerOverflowException =>
             v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Char value")
@@ -160,8 +158,7 @@ object StandardCodec {
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Short) {
         try {
-          val b = body
-          v.setLong(b.toLong)
+          v.setShort(body)
         } catch {
           case e: MessageIntegerOverflowException =>
             v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Short value")
@@ -195,11 +192,11 @@ object StandardCodec {
     override def pack(p: MessagePacker, v: Int): Unit = {
       p.packInt(v)
     }
+
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Int) {
         try {
-          val i = body
-          v.setLong(i)
+          v.setInt(body)
         } catch {
           case e: MessageIntegerOverflowException =>
             v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for an Int value")
@@ -239,8 +236,7 @@ object StandardCodec {
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Long) {
         try {
-          val l = body
-          v.setLong(l)
+          v.setLong(body)
         } catch {
           case e: MessageIntegerOverflowException =>
             v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Long value")
@@ -358,10 +354,9 @@ object StandardCodec {
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
-      def read(body: => Double) {
+      def read(body: => Float) {
         try {
-          val f = body
-          v.setDouble(f)
+          v.setFloat(body)
         } catch {
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(e.getMessage)
@@ -374,11 +369,11 @@ object StandardCodec {
           u.unpackNil()
           v.setNull
         case ValueType.FLOAT =>
-          read(u.unpackDouble())
+          read(u.unpackFloat().toFloat)
         case ValueType.INTEGER =>
-          read(u.unpackLong().toDouble)
+          read(u.unpackLong().toFloat)
         case ValueType.STRING =>
-          read(u.unpackString().toDouble)
+          read(u.unpackString().toFloat)
         case _ =>
           u.skipValue()
           v.setNull
@@ -394,8 +389,7 @@ object StandardCodec {
     override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Double) {
         try {
-          val f = body
-          v.setDouble(f)
+          v.setDouble(body)
         } catch {
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(e.getMessage)
@@ -438,13 +432,8 @@ object StandardCodec {
           // TODO report error?
           b += 0
         } else {
-          val l = v.getLong
-          if (l.isValidInt) {
-            b += l.toInt
-          } else {
-            // report error?
-            b += 0
-          }
+          val l = v.getInt
+          b += l.toInt
         }
       }
       v.setObject(b.result())
@@ -469,7 +458,7 @@ object StandardCodec {
           // TODO report error?
           b += 0
         } else {
-          val l = v.getLong
+          val l = v.getShort
           if (l.isValidInt) {
             b += l.toShort
           } else {
