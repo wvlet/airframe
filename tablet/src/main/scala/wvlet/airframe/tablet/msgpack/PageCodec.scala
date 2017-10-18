@@ -14,12 +14,11 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
-import wvlet.airframe.tablet.{Page, Schema}
 import wvlet.airframe.tablet.Schema.DataType
 import wvlet.airframe.tablet.msgpack.CollectionCodec.SeqCodec
+import wvlet.airframe.tablet.msgpack.PageCodec._
+import wvlet.airframe.tablet.{Page, Schema}
 import wvlet.surface.Surface
-
-import PageCodec._
 
 case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Page[A]] {
   override def pack(p: MessagePacker, v: Page[A]): Unit = {
@@ -27,7 +26,7 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
     // TODO reuse buffer
     val pagePacker = MessagePack.newDefaultBufferPacker()
     schemaCodec.pack(pagePacker, v.schema)
-    SeqCodec(surface, elementCodec).pack(pagePacker, v.data)
+    SeqCodec(elementCodec).pack(pagePacker, v.data)
 
     // Encode page using ext type
     val pageContent = pagePacker.toByteArray
@@ -41,7 +40,7 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
 
     val data = u.readPayloadAsReference(extHeader.getLength)
     if (extType != PAGE_CODEC_ID) {
-      v.setIncompatibleFormatException(s"Unsuppoted ext type ${extType}. Expected = ${PAGE_CODEC_ID}")
+      v.setIncompatibleFormatException(s"Unsupported ext type ${extType}. Expected = ${PAGE_CODEC_ID}")
     } else {
       val pageUnpacker = MessagePack.newDefaultUnpacker(data.sliceAsByteBuffer())
       schemaCodec.unpack(pageUnpacker, v)
@@ -50,7 +49,7 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
       } else {
         val schema = v.getLastValue.asInstanceOf[Schema]
         // Read data
-        SeqCodec(surface, elementCodec).unpack(pageUnpacker, v)
+        SeqCodec(elementCodec).unpack(pageUnpacker, v)
 
         if (v.isNull) {
           v.setIncompatibleFormatException(s"Failed to read page content")

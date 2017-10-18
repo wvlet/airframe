@@ -16,9 +16,6 @@ package wvlet.airframe.tablet.msgpack
 import java.util
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.StringValue
-import org.msgpack.value.ValueFactory._
-import wvlet.surface.Surface
 
 import scala.collection.JavaConverters._
 
@@ -27,7 +24,7 @@ import scala.collection.JavaConverters._
   */
 object CollectionCodec {
 
-  case class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
+  case class SeqCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
     override def pack(p: MessagePacker, v: Seq[A]): Unit = {
       // elements
       // [e1, e2, ...]

@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.msgpack
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.msgpack.StandardCodec.LongCodec
+import wvlet.airframe.tablet.msgpack.PrimitiveCodec.LongCodec
 
 /**
   *

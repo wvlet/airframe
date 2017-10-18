@@ -62,8 +62,8 @@ trait CodecSpec extends AirframeSpec {
   }
 
   def checkCodec[A](codec: MessageCodec[A], v: A) {
-    val b = codec.pack(v)
-    val r = codec.unpack(b)
+    val b = codec.packToBytes(v)
+    val r = codec.unpackBytes(b)
     r shouldBe defined
     v shouldBe r.get
   }

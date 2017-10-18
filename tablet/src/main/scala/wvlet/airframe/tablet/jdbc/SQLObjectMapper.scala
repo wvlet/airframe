@@ -16,14 +16,12 @@ object SQLObjectMapper extends LogSupport {
 
   def sqlTypeOf(tpe: Surface): String = {
     tpe match {
-      case Primitive.Int     => "integer"
-      case Primitive.Long    => "integer"
-      case Primitive.Float   => "float"
-      case Primitive.Double  => "float"
-      case Primitive.Boolean => "boolean"
-      case Primitive.String  => "string"
+      case Primitive.Int | Primitive.Short | Primitive.Byte | Primitive.Char | Primitive.Long => "integer"
+      case Primitive.Float | Primitive.Double                                                 => "float"
+      case Primitive.Boolean                                                                  => "boolean"
+      case Primitive.String                                                                   => "string"
       case _ =>
-        debug(s"Unknown type ${tpe}. Use string instead for SQL")
+        debug(s"Unknown SQL type for ${tpe}. Use string instead for SQL")
         "string"
     }
   }
@@ -38,7 +36,7 @@ object SQLObjectMapper extends LogSupport {
 
   def quote(s: String) = s"'${s}'"
 
-  def insertRecord[A: ru.TypeTag](obj: A, tableName: String, conn: Connection) {
+  def insertRecordSQL[A: ru.TypeTag](obj: A, tableName: String, conn: Connection) {
     val schema  = SurfaceFactory.of[A]
     val colSize = schema.params.size
     val tuple   = ("?" * colSize).mkString(", ")

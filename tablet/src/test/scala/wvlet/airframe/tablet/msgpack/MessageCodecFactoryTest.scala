@@ -13,47 +13,12 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.tablet.Schema
-
 /**
   *
   */
 class MessageCodecFactoryTest extends CodecSpec {
 
-  "MessageCodecFactory" should {
-    "support numeric" in {
-      roundTripTestWithStr[Int](Schema.INTEGER)
-      roundTripTestWithStr[Byte](Schema.INTEGER)
-      roundTripTestWithStr[Short](Schema.INTEGER)
-      roundTripTestWithStr[Long](Schema.INTEGER)
-      roundTripTestWithStr[Boolean](Schema.BOOLEAN)
-    }
-
-    "support char" in {
-      roundTripTest[Char](Schema.INTEGER)
-    }
-
-    "support float" in {
-      roundTripTestWithStr[Float](Schema.FLOAT)
-      roundTripTestWithStr[Double](Schema.FLOAT)
-    }
-
-    "support string" in {
-      roundTripTest[String](Schema.STRING)
-    }
-
-    "support arrays" taggedAs ("array") in {
-      arrayRoundTripTest[Byte]
-      arrayRoundTripTest[Char]
-      arrayRoundTripTest[Int]
-      arrayRoundTripTest[Short]
-      arrayRoundTripTest[Long]
-      arrayRoundTripTest[String]
-      arrayRoundTripTest[Float]
-      arrayRoundTripTest[Double]
-      arrayRoundTripTest[Boolean]
-    }
-  }
+  "MessageCodecFactory" should {}
 }
 
 object MessageCodecFactoryTest {}

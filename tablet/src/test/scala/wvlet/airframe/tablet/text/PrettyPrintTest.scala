@@ -13,28 +13,25 @@
  */
 package wvlet.airframe.tablet.text
 
-import java.io.File
-
-import com.github.tototoshi.csv.CSVReader
-import wvlet.airframe.tablet.{Record, StringArrayRecord}
+import wvlet.airframe.AirframeSpec
 
 /**
   *
   */
-class CSVTabletReader(file: String) extends TextTabletReader {
-  private val reader                       = CSVReader.open(new File(file))
-  private val lines: Iterator[Seq[String]] = reader.iterator
+import wvlet.airframe.tablet.text.PrettyPrintTest._
+class PrettyPrintTest extends AirframeSpec {
+  "PrettyPrint" should {
 
-  def close {
-    reader.close()
-  }
-
-  def read: Option[Record] = {
-    if (!lines.hasNext) {
-      None
-    } else {
-      val line: Seq[String] = lines.next()
-      Some(StringArrayRecord(line))
+    "print objects" in {
+      //PrettyPrint.pp(Seq(1, 2, 3))
+      PrettyPrint.pp(Seq(AP(1, "leo"), AP(2, "yui")))
+      PrettyPrint.show(Seq(AP(1, "leo"), AP(2, "yui")))
     }
   }
+}
+
+object PrettyPrintTest {
+
+  case class AP(id: Int, name: String)
+
 }

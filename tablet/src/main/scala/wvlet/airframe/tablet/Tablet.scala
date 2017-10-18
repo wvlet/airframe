@@ -42,6 +42,8 @@ case class StringArrayRecord(arr: Seq[String]) extends Record {
   *
   */
 trait TabletReader {
+  def close: Unit = {}
+
   def read: Option[Record]
 
   def pipe[Out](out: TabletWriter[Out]): Seq[Out] = {
