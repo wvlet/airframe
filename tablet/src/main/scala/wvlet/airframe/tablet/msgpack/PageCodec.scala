@@ -26,7 +26,7 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
     // TODO reuse buffer
     val pagePacker = MessagePack.newDefaultBufferPacker()
     schemaCodec.pack(pagePacker, v.schema)
-    SeqCodec(elementCodec).pack(pagePacker, v.data)
+    SeqCodec(surface, elementCodec).pack(pagePacker, v.data)
 
     // Encode page using ext type
     val pageContent = pagePacker.toByteArray
@@ -49,7 +49,7 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
       } else {
         val schema = v.getLastValue.asInstanceOf[Schema]
         // Read data
-        SeqCodec(elementCodec).unpack(pageUnpacker, v)
+        SeqCodec(surface, elementCodec).unpack(pageUnpacker, v)
 
         if (v.isNull) {
           v.setIncompatibleFormatException(this, s"Failed to read page content")

@@ -63,7 +63,7 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
             PageCodec(elemSurface, ofSurface(elemSurface, seenSet))
           case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
             // Seq[A]
-            SeqCodec(ofSurface(g.typeArgs(0), seenSet))
+            SeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
           case g: GenericSurface if ReflectTypeUtil.isJavaColleciton(g.rawType) =>
             JavaListCodec(ofSurface(g.typeArgs(0), seenSet))
           case g: GenericSurface if ReflectTypeUtil.isMap(g.rawType) =>

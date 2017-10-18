@@ -56,7 +56,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as int" in {
-      val expected = Seq(10, 12, 13, 0, 1, 13, 12345)
+      val expected = Seq(10, 12, 13, 0, 1, 13, 12345, 0)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -67,6 +67,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBoolean(true)
       p.packFloat(13.4f)
       p.packDouble(12345.01)
+      p.packString("non-number") // will be 0
 
       val codec = MessageCodec.of[Seq[Int]]
       val seq   = codec.unpackBytes(p.toByteArray)
@@ -75,7 +76,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as short" in {
-      val expected = Seq[Short](10, 12, 13, 0, 1, 13, 1021)
+      val expected = Seq[Short](10, 12, 13, 0, 1, 13, 1021, 0)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -86,6 +87,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBoolean(true)
       p.packFloat(13.4f)
       p.packDouble(1021.1)
+      p.packString("non-number") // will be 0
 
       val codec = MessageCodec.of[Seq[Short]]
       val seq   = codec.unpackBytes(p.toByteArray)
@@ -94,7 +96,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as byte" in {
-      val expected = Seq[Byte](10, 12, 13, 0, 1, 13, 123)
+      val expected = Seq[Byte](10, 12, 13, 0, 1, 13, 123, 0)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -105,6 +107,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBoolean(true)
       p.packFloat(13.4f)
       p.packDouble(123.0)
+      p.packString("non-number") // will be 0
 
       val codec = MessageCodec.of[Seq[Byte]]
       val seq   = codec.unpackBytes(p.toByteArray)
@@ -113,7 +116,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as float" in {
-      val expected = Seq(10f, 12f, 13.2f, 0f, 1f, 13.4f, 12345.01f)
+      val expected = Seq[Float](10f, 12f, 13.2f, 0f, 1f, 13.4f, 12345.01f, 0f)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -124,6 +127,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBoolean(true)
       p.packFloat(13.4f)
       p.packDouble(12345.01)
+      p.packString("non-number") // will be 0
 
       val codec = MessageCodec.of[Seq[Float]]
       val seq   = codec.unpackBytes(p.toByteArray)
@@ -132,7 +136,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as double" in {
-      val expected = Seq(10.0, 12.0, 13.2, 0.0, 1.0, 0.1f, 12345.01)
+      val expected = Seq[Double](10.0, 12.0, 13.2, 0.0, 1.0, 0.1f, 12345.01, 0.0)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -143,6 +147,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBoolean(true)
       p.packFloat(0.1f)
       p.packDouble(12345.01)
+      p.packString("non-number") // will be 0
 
       val codec = MessageCodec.of[Seq[Double]]
       val seq   = codec.unpackBytes(p.toByteArray)
@@ -151,7 +156,7 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as boolean" in {
-      val expected = Seq(true, true, true, false, true, false, false, true, false, true, true)
+      val expected = Seq(true, true, true, false, true, false, false, true, false, true, true, false)
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)
@@ -166,6 +171,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packFloat(0.0f)
       p.packFloat(0.1f)
       p.packDouble(12345.01)
+      p.packString("non-number") // will be false (default value)
 
       val codec = MessageCodec.of[Seq[Boolean]]
       val seq   = codec.unpackBytes(p.toByteArray)
