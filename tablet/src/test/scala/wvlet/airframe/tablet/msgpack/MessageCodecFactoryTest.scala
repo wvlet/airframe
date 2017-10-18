@@ -13,11 +13,7 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import java.io.File
-
 import wvlet.airframe.tablet.Schema
-
-import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -57,19 +53,6 @@ class MessageCodecFactoryTest extends CodecSpec {
       arrayRoundTripTest[Double]
       arrayRoundTripTest[Boolean]
     }
-
-    "support File" in {
-      val codec          = MessageCodec.of[File]
-      def check(v: File) = checkCodec(codec, v)
-      check(new File("sample.txt"))
-      check(new File("/var/log"))
-      check(new File("/etc/conf.d/myconf.conf"))
-      check(new File("c:/etc/conf.d/myconf.conf"))
-      check(new File("."))
-      check(new File(".."))
-      check(new File("relative/path.txt"))
-    }
-
   }
 }
 

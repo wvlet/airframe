@@ -33,7 +33,7 @@ trait CodecSpec extends AirframeSpec {
 
   def roundtrip[A: ru.TypeTag](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
-    //trace(s"Testing roundtrip of ${v} with ${codec}")
+    trace(s"Testing roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newDefaultBufferPacker()
     codec.pack(packer, v)
     val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)

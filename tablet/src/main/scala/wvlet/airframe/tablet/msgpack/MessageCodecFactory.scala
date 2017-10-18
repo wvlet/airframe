@@ -19,8 +19,8 @@ import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.log.LogSupport
 import wvlet.surface
-import wvlet.surface.{EnumSurface, GenericSurface, Surface}
 import wvlet.surface.reflect.ReflectTypeUtil
+import wvlet.surface.{EnumSurface, GenericSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -55,6 +55,8 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
             OptionCodec(ofSurface(elementSurface, seenSet))
           case s if ReflectTypeUtil.isTuple(s.rawType) =>
             TupleCodec(s.typeArgs.map(x => ofSurface(x)))
+          case EnumSurface(cl) =>
+            EnumCodec(cl)
           case g: GenericSurface if g.rawType == classOf[Page[_]] =>
             // Page
             val elemSurface = g.typeArgs(0)
@@ -73,8 +75,6 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
           case s if ReflectTypeUtil.isTuple(s.rawType) =>
             // Tuple
             TupleCodec(surface.typeArgs.map(x => ofSurface(x, seenSet)))
-          case EnumSurface(cl) =>
-            EnumCodec(cl)
           case _ =>
             val codecs = for (p <- surface.params) yield {
               ofSurface(p.surface, seenSet)

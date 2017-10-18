@@ -285,7 +285,13 @@ object SurfaceFactory extends LogSupport {
     }
 
     private def isEnum(t: ru.Type): Boolean = {
-      t.baseClasses.exists(x => x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum"))
+      t.baseClasses.exists { x =>
+        if (x.isJava && x.isType) {
+          x.asType.fullName.toString.startsWith("java.lang.Enum")
+        } else {
+          false
+        }
+      }
     }
 
     private def enumFactory: SurfaceMatcher = {

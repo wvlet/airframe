@@ -21,6 +21,7 @@ import java.util.Date
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
+import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.{Primitive, Surface}
 
@@ -698,8 +699,8 @@ object StandardCodec {
     }
   }
 
-  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] {
-    private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[AnyRef], classOf[String])
+  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
+    private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[Class[_]], classOf[String])
 
     override def pack(p: MessagePacker, v: A): Unit = {
       p.packString(v.asInstanceOf[Enum[_]].name())
