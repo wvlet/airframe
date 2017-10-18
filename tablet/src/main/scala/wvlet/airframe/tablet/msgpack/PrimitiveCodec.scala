@@ -18,6 +18,8 @@ import org.msgpack.value.ValueType
 import wvlet.surface
 import wvlet.surface.{Primitive, Surface}
 
+import scala.util.Try
+
 /**
   *
   */
@@ -85,8 +87,13 @@ object PrimitiveCodec {
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackByte)
+        case ValueType.FLOAT =>
+          read(u.unpackDouble().toByte)
         case ValueType.STRING =>
-          read(u.unpackString.toByte)
+          read {
+            val s = u.unpackString
+            Try(s.toByte).getOrElse(s.toDouble.toByte)
+          }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toByte)
         case ValueType.FLOAT =>
@@ -129,7 +136,7 @@ object PrimitiveCodec {
           read {
             val s = u.unpackString
             if (s.length == 1) s.charAt(0)
-            else s.toInt.toChar
+            else s.toDouble.toChar
           }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toChar)
@@ -168,7 +175,10 @@ object PrimitiveCodec {
         case ValueType.INTEGER =>
           read(u.unpackShort())
         case ValueType.STRING =>
-          read(u.unpackString.toShort)
+          read {
+            val s = u.unpackString
+            Try(s.toShort).getOrElse(s.toDouble.toShort)
+          }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toShort)
         case ValueType.FLOAT =>
@@ -207,7 +217,10 @@ object PrimitiveCodec {
         case ValueType.INTEGER =>
           read(u.unpackInt)
         case ValueType.STRING =>
-          read(u.unpackString.toInt)
+          read {
+            val s = u.unpackString
+            Try(s.toInt).getOrElse(s.toDouble.toInt)
+          }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
@@ -246,7 +259,10 @@ object PrimitiveCodec {
         case ValueType.INTEGER =>
           read(u.unpackLong)
         case ValueType.STRING =>
-          read(u.unpackString().toLong)
+          read {
+            val s = u.unpackString()
+            Try(s.toLong).getOrElse(s.toDouble.toLong)
+          }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
@@ -332,9 +348,14 @@ object PrimitiveCodec {
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean())
         case ValueType.STRING =>
-          read(u.unpackString().toBoolean)
+          read {
+            val s = u.unpackString()
+            Try(s.toBoolean).getOrElse(s.toDouble != 0.0)
+          }
         case ValueType.INTEGER =>
           read(u.unpackLong() != 0L)
+        case ValueType.FLOAT =>
+          read(u.unpackDouble() != 0.0)
         case _ =>
           u.skipValue()
           v.setNull
@@ -367,6 +388,8 @@ object PrimitiveCodec {
           read(u.unpackFloat().toFloat)
         case ValueType.INTEGER =>
           read(u.unpackLong().toFloat)
+        case ValueType.BOOLEAN =>
+          read(u.unpackBoolean().toInt.toFloat)
         case ValueType.STRING =>
           read(u.unpackString().toFloat)
         case _ =>
@@ -402,6 +425,8 @@ object PrimitiveCodec {
           read(u.unpackDouble())
         case ValueType.INTEGER =>
           read(u.unpackLong().toDouble)
+        case ValueType.BOOLEAN =>
+          read(u.unpackBoolean().toInt.toDouble)
         case ValueType.STRING =>
           read(u.unpackString.toDouble)
         case _ =>
