@@ -64,9 +64,11 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           b += arg
           index += 1
         }
-        // Populate with zero values
+        // Populate args with the default or zero value
         while (index < numParams) {
-          b += Zero.zeroOf(surface.params(index).surface)
+          val p = surface.params(index)
+          b += p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+          index += 1
         }
         // Ignore additional args
         while (index < numElems) {
