@@ -96,8 +96,6 @@ object PrimitiveCodec {
           }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toByte)
-        case ValueType.FLOAT =>
-          read(u.unpackDouble().toByte)
         case _ =>
           u.skipValue()
           v.setNull
@@ -334,6 +332,8 @@ object PrimitiveCodec {
           val b = body
           v.setBoolean(b)
         } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setBoolean(e.getBigInteger.doubleValue() != 0.0)
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
@@ -374,6 +374,8 @@ object PrimitiveCodec {
         try {
           v.setFloat(body)
         } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setFloat(e.getBigInteger.floatValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
@@ -411,6 +413,8 @@ object PrimitiveCodec {
         try {
           v.setDouble(body)
         } catch {
+          case e: MessageIntegerOverflowException =>
+            v.setDouble(e.getBigInteger.doubleValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
