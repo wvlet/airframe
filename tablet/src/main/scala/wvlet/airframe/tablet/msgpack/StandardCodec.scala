@@ -15,11 +15,11 @@ package wvlet.airframe.tablet.msgpack
 
 import java.io.File
 import java.text.DateFormat
-import java.time.format.DateTimeFormatter
 import java.time.{Instant, ZonedDateTime}
 import java.util.Date
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.value.ValueType
 import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.Surface
@@ -55,14 +55,30 @@ object StandardCodec {
 
   object JavaInstantTimeCodec extends MessageCodec[Instant] {
     override def pack(p: MessagePacker, v: Instant): Unit = {
-      // Use ISO instant formatter
-      val isoInstantFormat = DateTimeFormatter.ISO_INSTANT.format(v)
-      p.packString(isoInstantFormat)
+      //val isoInstantFormat = DateTimeFormatter.ISO_INSTANT.format(v)
+      //p.packString(isoInstantFormat)
+      // Save JavaInstant as epoch millis
+      p.packLong(v.toEpochMilli)
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val isoInstantFormat = u.unpackString()
-      v.setObject(Instant.parse(isoInstantFormat))
+      Try {
+        u.getNextFormat.getValueType match {
+          case ValueType.STRING =>
+            // Use ISO instant formatter
+            val isoInstantFormat = u.unpackString()
+            Try(Instant.parse(isoInstantFormat))
+              .getOrElse(Instant.ofEpochMilli(isoInstantFormat.toLong))
+          case ValueType.INTEGER =>
+            val epochMillis = u.unpackLong()
+            Instant.ofEpochMilli(epochMillis)
+          case other =>
+            v.setIncompatibleFormatException(this, s"Cannot create Instant from ${other} type")
+        }
+      } match {
+        case Success(x) => v.setObject(x)
+        case Failure(e) => v.setError(e)
+      }
     }
   }
 

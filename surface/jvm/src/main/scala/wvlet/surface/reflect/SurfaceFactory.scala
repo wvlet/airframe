@@ -408,19 +408,26 @@ object SurfaceFactory extends LogSupport {
 
   class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None) {
-    override val objectFactory: Option[ObjectFactory] = Some(new ObjectFactory {
-      // Create instance with Reflection
-      override def newInstance(args: Seq[Any]): Any = {
-        val cc = rawType.getConstructors()(0)
-        val obj = if (args.isEmpty) {
-          cc.newInstance()
-        } else {
-          val a = args.map(_.asInstanceOf[AnyRef])
-          cc.newInstance(a: _*)
-        }
-        obj.asInstanceOf[Any]
+    override val objectFactory: Option[ObjectFactory] = {
+      val cc = rawType.getConstructors()
+      if (cc.isEmpty) {
+        None
+      } else {
+        val primaryConstructor = cc(0)
+        Some(new ObjectFactory {
+          // Create instance with Reflection
+          override def newInstance(args: Seq[Any]): Any = {
+            val obj = if (args.isEmpty) {
+              primaryConstructor.newInstance()
+            } else {
+              val a = args.map(_.asInstanceOf[AnyRef])
+              primaryConstructor.newInstance(a: _*)
+            }
+            obj.asInstanceOf[Any]
+          }
+        })
       }
-    })
+    }
   }
 
 }

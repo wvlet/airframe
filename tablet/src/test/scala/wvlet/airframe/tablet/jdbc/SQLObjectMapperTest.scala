@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.tablet.jdbc
 
-import java.sql.DriverManager
+import java.sql.{DriverManager, JDBCType}
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
@@ -26,6 +26,13 @@ import wvlet.airframe.tablet.jdbc.SQLObjectMapperTest._
 class SQLObjectMapperTest extends AirframeSpec {
 
   "SQLObjectMapper" should {
+
+    "support all JDBC type mapping" in {
+      // sanity test
+      for (v <- JDBCType.values()) {
+        SQLObjectMapper.jdbcToDataType(v)
+      }
+    }
 
     "generate SQL" in {
       val r = R(0, 1, 2, 3, 'a', 5, true, "hello")

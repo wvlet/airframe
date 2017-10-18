@@ -10,7 +10,7 @@ import wvlet.log.LogSupport
   *
   */
 class ResultSetReader(rs: ResultSet) extends TabletReader with LogSupport {
-  private val typeMap = SQLTypeMapping.default
+  private val typeMap = SQLObjectMapper.jdbcToDataType
 
   private lazy val m       = rs.getMetaData
   private lazy val columns = m.getColumnCount
