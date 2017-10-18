@@ -53,6 +53,34 @@ object TextTabletWriter {
       }.mkString
     }
 
+    def unescape(s: String): String = {
+      if (s.indexOf('\\') == -1) {
+        // fast path
+        s
+      } else {
+        var cursor = 0
+        val b      = new StringBuilder
+        while (cursor < s.length) {
+          val c: Char = s.charAt(cursor)
+          cursor += 1
+          if (c == '\\' && cursor < s.length) {
+            s.charAt(cursor) match {
+              case 'n' => b += '\n'
+              case 'r' => b += '\r'
+              case 't' => b += '\t'
+              case other =>
+                b += '\\'
+                b += other
+            }
+            cursor += 1
+          } else {
+            b += c
+          }
+        }
+        b.result()
+      }
+    }
+
     override def format(record: Seq[String]): String = {
       record.mkString("\t")
     }
@@ -70,6 +98,33 @@ object TextTabletWriter {
         case c => c
       }.mkString
       if (hasComma) quote(sanitized) else sanitized
+    }
+
+    def unescape(s: String): String = {
+      if (s.indexOf('\\') == -1) {
+        // fast path
+        s
+      } else {
+        var cursor = 0
+        val b      = new StringBuilder
+        while (cursor < s.length) {
+          val c: Char = s.charAt(cursor)
+          cursor += 1
+          if (c == '\\' && cursor < s.length) {
+            s.charAt(cursor) match {
+              case 'n' => b += '\n'
+              case 'r' => b += '\r'
+              case other =>
+                b += '\\'
+                b += other
+            }
+            cursor += 1
+          } else {
+            b += c
+          }
+        }
+        b.result()
+      }
     }
 
     override def format(record: Seq[String]): String = {

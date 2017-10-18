@@ -16,6 +16,7 @@ package wvlet.airframe.tablet.text
 import java.io.{File, InputStream}
 
 import com.github.tototoshi.csv.CSVReader
+import wvlet.airframe.tablet.text.TextTabletWriter.{CSVRecordFormatter, TSVRecordFormatter}
 import wvlet.airframe.tablet.{Record, StringArrayRecord, TabletReader}
 
 import scala.io.Source
@@ -40,15 +41,16 @@ class TSVTabletReader(source: Source) extends TextTabletReader {
       None
     } else {
       val line = lines.next()
-      val cols = line.split("\t")
+      val cols = line.split("\t").map(x => TSVRecordFormatter.unescape(x))
       Some(StringArrayRecord(if (cols == null) Seq.empty[String] else cols))
     }
   }
 }
 
 object TSVTabletReader {
-  def apply(in: InputStream): TSVTabletReader = new TSVTabletReader(Source.fromInputStream(in))
-  def apply(file: File): TSVTabletReader      = new TSVTabletReader(Source.fromFile(file))
+  def apply(source: Source): TSVTabletReader  = new TSVTabletReader(source)
+  def apply(in: InputStream): TSVTabletReader = apply(Source.fromInputStream(in))
+  def apply(file: File): TSVTabletReader      = apply(Source.fromFile(file))
 }
 
 class CSVTabletReader(source: Source) extends TextTabletReader {
@@ -64,13 +66,14 @@ class CSVTabletReader(source: Source) extends TextTabletReader {
       close
       None
     } else {
-      val cols: Seq[String] = lines.next()
+      val cols: Seq[String] = lines.next().map(x => CSVRecordFormatter.unescape(x))
       Some(StringArrayRecord(cols))
     }
   }
 }
 
 object CSVTabletReader {
-  def apply(in: InputStream): CSVTabletReader = new CSVTabletReader(Source.fromInputStream(in))
-  def apply(file: File): CSVTabletReader      = new CSVTabletReader(Source.fromFile(file))
+  def apply(source: Source)                   = new CSVTabletReader(source)
+  def apply(in: InputStream): CSVTabletReader = apply(Source.fromInputStream(in))
+  def apply(file: File): CSVTabletReader      = apply(Source.fromFile(file))
 }

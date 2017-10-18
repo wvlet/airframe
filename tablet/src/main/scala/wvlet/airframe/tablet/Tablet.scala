@@ -82,9 +82,15 @@ object Tablet {
       new ObjectTabletReader(seq) | out
     }
 
-    def toJson = new ObjectTabletReader(seq).pipe(JSONTabletPrinter)
-    def toCSV  = new ObjectTabletReader(seq).pipe(CSVTabletPrinter)
-    def toTSV  = new ObjectTabletReader(seq).pipe(TSVTabletPrinter)
+    def toJson: Seq[String] = new ObjectTabletReader(seq).pipe(JSONTabletPrinter)
+    def toCSV: Seq[String]  = new ObjectTabletReader(seq).pipe(CSVTabletPrinter)
+    def toTSV: Seq[String]  = new ObjectTabletReader(seq).pipe(TSVTabletPrinter)
+  }
+
+  implicit class RichTabletReader(in: TabletReader) {
+    def toJson: Seq[String] = in.pipe(JSONTabletPrinter)
+    def toCSV: Seq[String]  = in.pipe(CSVTabletPrinter)
+    def toTSV: Seq[String]  = in.pipe(TSVTabletPrinter)
   }
 
 }
