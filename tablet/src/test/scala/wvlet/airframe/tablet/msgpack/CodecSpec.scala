@@ -20,8 +20,8 @@ import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Schema
 import wvlet.airframe.tablet.Schema.DataType
 
-import scala.reflect.runtime.{universe => ru}
 import scala.collection.JavaConverters._
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -40,6 +40,7 @@ trait CodecSpec extends AirframeSpec {
     codec.unpack(unpacker, h)
 
     h.isNull shouldBe false
+    h.hasError shouldBe false
     h.getDataType shouldBe expectedType
     h.getLastValue shouldBe v
     h
@@ -54,6 +55,7 @@ trait CodecSpec extends AirframeSpec {
     codec.unpack(unpacker, h)
 
     h.isNull shouldBe false
+    h.hasError shouldBe false
     h.getDataType shouldBe expectedType
     h.getLastValue shouldBe v
     h

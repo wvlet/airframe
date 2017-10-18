@@ -15,9 +15,7 @@ package wvlet.airframe.tablet.msgpack
 
 import java.io.File
 
-import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import wvlet.airframe.tablet.Schema
-import wvlet.airframe.tablet.msgpack.MessageCodecFactoryTest._
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -72,33 +70,7 @@ class MessageCodecFactoryTest extends CodecSpec {
       check(new File("relative/path.txt"))
     }
 
-    "support case classes" in {
-      val codec = MessageCodec.of[A1]
-      val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
-      roundtrip(codec, v, Schema.ANY)
-
-      forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
-        // scalacheck supports only upto 6 elements
-        forAll { (b: Boolean, s: String) =>
-          val v = A1(i, l, f, d, c, st, b, s)
-          roundtrip[A1](codec, v, Schema.ANY)
-        }
-      }
-    }
   }
 }
 
-object MessageCodecFactoryTest {
-
-  case class A1(
-      i: Int,
-      l: Long,
-      f: Float,
-      d: Double,
-      c: Char,
-      st: Short,
-      b: Boolean,
-      s: String
-  )
-
-}
+object MessageCodecFactoryTest {}

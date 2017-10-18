@@ -14,12 +14,11 @@
 package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.{ValueFactory, ValueType, Variable}
+import org.msgpack.value.{ValueType, Variable}
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.TypeConverter
 import wvlet.surface.{Surface, Zero}
 
-import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   *
@@ -38,33 +37,51 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
     }
   }
 
+  def packAsMap(p: MessagePacker, v: A): Unit = {
+    val numParams = surface.params.length
+    // Use array format [p1, p2, ....]
+    p.packMapHeader(numParams)
+    for ((param, codec) <- surface.params.zip(paramCodec)) {
+      val paramValue = param.get(v)
+      p.packString(param.name)
+      codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
+    }
+  }
+
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     val numParams = surface.params.length
 
     u.getNextFormat.getValueType match {
       case ValueType.ARRAY =>
         val numElems = u.unpackArrayHeader()
-        if (numParams != numElems) {
-          u.skipValue(numElems)
-          v.setNull
-        } else {
-          var index = 0
-          val b     = Seq.newBuilder[Any]
-          while (index < numElems && index < numParams) {
-            // TODO reuse message holders
-            paramCodec(index).unpack(u, v)
-            // TODO handle null value?
-            // TODO Use more efficient type conversion
-            val arg = TypeConverter.convert(v.getLastValue, surface.params(index).surface).getOrElse(null)
-            b += arg
-            index += 1
-          }
-          val args = b.result()
-          trace(s"Building $surface with args:[${args.map(x => s"${x}:${x.getClass.getName}")}]")
-          surface.objectFactory
-            .map(_.newInstance(args))
-            .map(x => v.setObject(x))
-            .getOrElse(v.setNull)
+        var index    = 0
+        val b        = Seq.newBuilder[Any]
+        while (index < numElems && index < numParams) {
+          // TODO reuse message holders
+          paramCodec(index).unpack(u, v)
+          // TODO handle null value?
+          val arg = v.getLastValue
+          b += arg
+          index += 1
+        }
+        // Populate with zero values
+        while (index < numParams) {
+          b += Zero.zeroOf(surface.params(index).surface)
+        }
+        // Ignore additional args
+        while (index < numElems) {
+          u.skipValue()
+          index += 1
+        }
+        val args = b.result()
+        trace(s"Building $surface with args:[${args.map(x => s"${x}:${x.getClass.getName}")}]")
+        surface.objectFactory match {
+          case Some(c) =>
+            Try(c.newInstance(args))
+              .map(v.setObject(_))
+              .recover { case e: Throwable => v.setError(e) }
+          case None =>
+            v.setNull
         }
       case ValueType.MAP =>
         val m = Map.newBuilder[String, Any]

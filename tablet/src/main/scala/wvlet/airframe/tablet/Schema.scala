@@ -15,9 +15,7 @@ package wvlet.airframe.tablet
 
 import java.util.Locale
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.tablet.Schema.RecordType
-import wvlet.airframe.tablet.msgpack.{MessageCodec, MessageHolder}
 
 object Schema {
   sealed trait DataType {
@@ -128,35 +126,35 @@ object Schema {
     }
   }
 
-  object DataTypeCodec extends MessageCodec[DataType] {
-    override def pack(p: MessagePacker, v: DataType): Unit = {
-      v match {
-        case pt: PrimitiveType =>
-          p.packString(pt.typeName)
-        case r: RecordType =>
-          p.packArrayHeader(2)
-          // elem1
-          p.packString(r.typeName)
-          // elem2
-          p.packArrayHeader(r.column.size)
-          for (c <- r.column) {
-            p.packArrayHeader(2)
-            p.packString(c.name)
-            DataTypeCodec.pack(p, c.columnType)
-          }
-        case s: StructuredType =>
-          p.packArrayHeader(2)
-          // elem1
-          p.packString(s.typeName)
-          // elem2
-          p.packArrayHeader(s.typeArgs.length)
-          for (typeArg <- s.typeArgs) {
-            DataTypeCodec.pack(p, typeArg)
-          }
-      }
-    }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {}
-  }
+//  object DataTypeCodec extends MessageCodec[DataType] {
+//    override def pack(p: MessagePacker, v: DataType): Unit = {
+//      v match {
+//        case pt: PrimitiveType =>
+//          p.packString(pt.typeName)
+//        case r: RecordType =>
+//          p.packArrayHeader(2)
+//          // elem1
+//          p.packString(r.typeName)
+//          // elem2
+//          p.packArrayHeader(r.column.size)
+//          for (c <- r.column) {
+//            p.packArrayHeader(2)
+//            p.packString(c.name)
+//            DataTypeCodec.pack(p, c.columnType)
+//          }
+//        case s: StructuredType =>
+//          p.packArrayHeader(2)
+//          // elem1
+//          p.packString(s.typeName)
+//          // elem2
+//          p.packArrayHeader(s.typeArgs.length)
+//          for (typeArg <- s.typeArgs) {
+//            DataTypeCodec.pack(p, typeArg)
+//          }
+//      }
+//    }
+//    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {}
+//  }
 
 }
 
