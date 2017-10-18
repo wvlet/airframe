@@ -1,4 +1,4 @@
-import ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
@@ -299,7 +299,9 @@ lazy val tablet =
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
         // For JSON parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-        "org.scalacheck"         %% "scalacheck"               % "1.13.4" % "test"
+        "org.scalacheck"         %% "scalacheck"               % "1.13.4" % "test",
+        // For JDBC testing
+        "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
       )
     )
     .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")

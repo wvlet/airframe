@@ -18,7 +18,7 @@ import org.msgpack.value.{ValueType, Variable}
 import wvlet.log.LogSupport
 import wvlet.surface.{Surface, Zero}
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -57,10 +57,14 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         var index    = 0
         val b        = Seq.newBuilder[Any]
         while (index < numElems && index < numParams) {
-          // TODO reuse message holders
+          val p = surface.params(index)
           paramCodec(index).unpack(u, v)
-          // TODO handle null value?
-          val arg = v.getLastValue
+          val arg = if (v.isNull) {
+            warn(v.getError)
+            p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+          } else {
+            v.getLastValue
+          }
           b += arg
           index += 1
         }
@@ -76,13 +80,15 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           index += 1
         }
         val args = b.result()
-        trace(s"Building $surface with args:[${args.map(x => s"${x}:${x.getClass.getName}")}]")
+        trace(s"Building $surface with args:[${args.filter(_ != null).map(x => s"${x}:${x.getClass.getName}")}]")
         surface.objectFactory match {
           case Some(c) =>
-            Try(c.newInstance(args))
-              .map(v.setObject(_))
-              .recover { case e: Throwable => v.setError(e) }
+            Try(c.newInstance(args)) match {
+              case Success(x) => v.setObject(x)
+              case Failure(e) => v.setError(e)
+            }
           case None =>
+            warn(s"No factory is found for ${surface}")
             v.setNull
         }
       case ValueType.MAP =>
@@ -117,13 +123,16 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
               p.getDefaultValue.getOrElse(Zero.zeroOf(surface))
           }
         }
-        surface.objectFactory
-          .map(_.newInstance(args))
-          .map(x => v.setObject(x))
-          .getOrElse(v.setNull)
+        surface.objectFactory match {
+          case Some(c) =>
+            Try(c.newInstance(args)) match {
+              case Success(x) => v.setObject(x)
+              case Failure(e) => v.setError(e)
+            }
+        }
       case other =>
         u.skipValue()
-        v.setIncompatibleFormatException(s"Expected ARRAY or MAP type input for ${surface}")
+        v.setIncompatibleFormatException(this, s"Expected ARRAY or MAP type input for ${surface}")
     }
   }
 }

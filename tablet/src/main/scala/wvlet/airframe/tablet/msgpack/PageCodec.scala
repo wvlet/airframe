@@ -40,19 +40,19 @@ case class PageCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends
 
     val data = u.readPayloadAsReference(extHeader.getLength)
     if (extType != PAGE_CODEC_ID) {
-      v.setIncompatibleFormatException(s"Unsupported ext type ${extType}. Expected = ${PAGE_CODEC_ID}")
+      v.setIncompatibleFormatException(this, s"Unsupported ext type ${extType}. Expected = ${PAGE_CODEC_ID}")
     } else {
       val pageUnpacker = MessagePack.newDefaultUnpacker(data.sliceAsByteBuffer())
       schemaCodec.unpack(pageUnpacker, v)
       if (v.isNull) {
-        v.setIncompatibleFormatException(s"Failed to read schema")
+        v.setIncompatibleFormatException(this, s"Failed to read schema")
       } else {
         val schema = v.getLastValue.asInstanceOf[Schema]
         // Read data
         SeqCodec(elementCodec).unpack(pageUnpacker, v)
 
         if (v.isNull) {
-          v.setIncompatibleFormatException(s"Failed to read page content")
+          v.setIncompatibleFormatException(this, s"Failed to read page content")
         } else {
           v.setObject(Page(schema, v.getLastValue.asInstanceOf[Seq[_]]))
         }
@@ -69,7 +69,7 @@ object ColumnTypeCodec extends MessageCodec[DataType] {
     val columnType = u.unpackString()
     DataType.unapply(columnType) match {
       case Some(c) => v.setObject(c)
-      case None    => v.setIncompatibleFormatException(s"Invalid ColumnType value: ${columnType}")
+      case None    => v.setIncompatibleFormatException(this, s"Invalid ColumnType value: ${columnType}")
     }
   }
 }

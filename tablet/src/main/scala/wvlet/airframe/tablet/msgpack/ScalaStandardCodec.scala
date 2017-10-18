@@ -15,7 +15,6 @@ package wvlet.airframe.tablet.msgpack
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
-import wvlet.log.LogSupport
 
 /**
   *
@@ -56,7 +55,7 @@ object ScalaStandardCodec {
       val numElems = u.unpackArrayHeader()
       if (numElems != elementCodec.size) {
         u.skipValue(numElems)
-        v.setIncompatibleFormatException(s"tuple size mismatch: expected ${elementCodec.size}, actual:${numElems}")
+        v.setIncompatibleFormatException(this, s"tuple size mismatch: expected ${elementCodec.size}, actual:${numElems}")
       } else {
         val b = Array.newBuilder[Any]
         for (codec <- elementCodec) {
@@ -94,7 +93,7 @@ object ScalaStandardCodec {
         if (tuple != null) {
           v.setObject(tuple)
         } else {
-          v.setIncompatibleFormatException(s"Tuples of ${numElems} elements is not supported")
+          v.setIncompatibleFormatException(this, s"Tuples of ${numElems} elements is not supported")
         }
       }
     }

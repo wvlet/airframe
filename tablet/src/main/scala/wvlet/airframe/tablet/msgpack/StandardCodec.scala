@@ -78,7 +78,7 @@ object StandardCodec {
         case Success(zd) =>
           v.setObject(zd)
         case Failure(e) =>
-          v.setIncompatibleFormatException(s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
+          v.setIncompatibleFormatException(this, s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
       }
     }
   }
@@ -111,7 +111,7 @@ object StandardCodec {
       Try(enumValueOfMethod.invoke(null, enumType, name)) match {
         case Success(enum) => v.setObject(enum)
         case _ =>
-          v.setIncompatibleFormatException(s"${name} is not a value of ${enumType}")
+          v.setIncompatibleFormatException(this, s"${name} is not a value of ${enumType}")
       }
     }
   }

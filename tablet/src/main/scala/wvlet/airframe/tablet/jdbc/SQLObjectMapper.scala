@@ -1,10 +1,10 @@
 package wvlet.airframe.tablet.jdbc
 
-import java.sql.{Connection, ResultSet}
+import java.sql.Connection
 
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.surface.reflect.{ObjectBuilder, SurfaceFactory}
+import wvlet.surface.reflect.SurfaceFactory
 import wvlet.surface.{Primitive, Surface}
 
 /**
@@ -36,7 +36,7 @@ object SQLObjectMapper extends LogSupport {
 
   def quote(s: String) = s"'${s}'"
 
-  def insertRecordSQL[A: ru.TypeTag](obj: A, tableName: String, conn: Connection) {
+  def insertRecord[A: ru.TypeTag](conn: Connection, tableName: String, obj: A) {
     val schema  = SurfaceFactory.of[A]
     val colSize = schema.params.size
     val tuple   = ("?" * colSize).mkString(", ")
@@ -49,15 +49,4 @@ object SQLObjectMapper extends LogSupport {
     }
   }
 
-  def readAs[A: ru.TypeTag](rs: ResultSet): A = {
-    val metadata = rs.getMetaData
-    val cols     = metadata.getColumnCount
-    val s        = SurfaceFactory.of[A]
-    val b        = ObjectBuilder(s)
-    for (i <- 1 to cols) {
-      val colName = metadata.getColumnName(i)
-      b.set(colName, rs.getObject(i))
-    }
-    b.build.asInstanceOf[A]
-  }
 }

@@ -4,11 +4,12 @@ import java.sql.ResultSet
 
 import org.msgpack.core.MessagePack
 import wvlet.airframe.tablet.{MessagePackRecord, Record, Schema, TabletReader}
+import wvlet.log.LogSupport
 
 /**
   *
   */
-class ResultSetReader(rs: ResultSet) extends TabletReader {
+class ResultSetReader(rs: ResultSet) extends TabletReader with LogSupport {
   private val typeMap = SQLTypeMapping.default
 
   private lazy val m       = rs.getMetaData
@@ -60,6 +61,18 @@ class ResultSetReader(rs: ResultSet) extends TabletReader {
                   case a: Array[Int] =>
                     b.packArrayHeader(a.length)
                     a.foreach(b.packInt(_))
+                  case a: Array[Short] =>
+                    b.packArrayHeader(a.length)
+                    a.foreach(b.packShort(_))
+                  case a: Array[Char] =>
+                    b.packArrayHeader(a.length)
+                    a.foreach(b.packInt(_))
+                  case a: Array[Byte] =>
+                    b.packBinaryHeader(a.length)
+                    b.writePayload(a)
+                  case a: Array[Long] =>
+                    b.packArrayHeader(a.length)
+                    a.foreach(b.packLong(_))
                   case a: Array[Float] =>
                     b.packArrayHeader(a.length)
                     a.foreach(b.packFloat(_))
@@ -69,7 +82,10 @@ class ResultSetReader(rs: ResultSet) extends TabletReader {
                   case a: Array[Boolean] =>
                     b.packArrayHeader(a.length)
                     a.foreach(b.packBoolean(_))
-                  case _ =>
+                  case a: Array[AnyRef] =>
+                    b.packArrayHeader(a.length)
+                    a.foreach(x => b.packString(x.toString))
+                  case other =>
                     throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported")
                 }
               }

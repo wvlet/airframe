@@ -15,7 +15,6 @@ package wvlet.airframe.tablet.msgpack
 
 import wvlet.airframe.tablet.Schema._
 import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
-import wvlet.surface.{AnyRefSurface, Primitive, Surface}
 
 /**
   *
@@ -153,13 +152,13 @@ class MessageHolder {
 
   def getLastValue: Any = value.getOrElse(null)
 
-  def setError(e: Throwable) {
+  def setError[A](e: Throwable) {
     setNull
     err = Option(e)
   }
 
-  def setIncompatibleFormatException(message: String) {
-    setError(new MessageCodecException(INVALID_DATA, message))
+  def setIncompatibleFormatException[A](codec: MessageCodec[A], message: String) {
+    setError(new MessageCodecException(INVALID_DATA, codec, message))
   }
 
 }

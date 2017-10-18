@@ -71,9 +71,9 @@ object PrimitiveCodec {
           v.setByte(body)
         } catch {
           case e: MessageIntegerOverflowException =>
-            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Byte value")
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Byte value")
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -111,9 +111,9 @@ object PrimitiveCodec {
           v.setChar(body)
         } catch {
           case e: MessageIntegerOverflowException =>
-            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Char value")
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Char value")
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -126,7 +126,11 @@ object PrimitiveCodec {
         case ValueType.INTEGER =>
           read(u.unpackInt.toChar)
         case ValueType.STRING =>
-          read(u.unpackString.toInt.toChar)
+          read {
+            val s = u.unpackString
+            if (s.length == 1) s.charAt(0)
+            else s.toInt.toChar
+          }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean().toChar)
         case ValueType.FLOAT =>
@@ -149,9 +153,9 @@ object PrimitiveCodec {
           v.setShort(body)
         } catch {
           case e: MessageIntegerOverflowException =>
-            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Short value")
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Short value")
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -188,9 +192,9 @@ object PrimitiveCodec {
           v.setInt(body)
         } catch {
           case e: MessageIntegerOverflowException =>
-            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for an Int value")
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for an Int value")
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -228,9 +232,9 @@ object PrimitiveCodec {
           v.setLong(body)
         } catch {
           case e: MessageIntegerOverflowException =>
-            v.setIncompatibleFormatException(s"${e.getBigInteger} is too large for a Long value")
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Long value")
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
       val f  = u.getNextFormat
@@ -270,7 +274,7 @@ object PrimitiveCodec {
           case e: MessageIntegerOverflowException =>
             read(e.getBigInteger.toString())
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -315,9 +319,9 @@ object PrimitiveCodec {
           v.setBoolean(b)
         } catch {
           case e: IllegalArgumentException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
@@ -350,9 +354,9 @@ object PrimitiveCodec {
           v.setFloat(body)
         } catch {
           case e: IllegalArgumentException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
       u.getNextFormat.getValueType match {
@@ -385,9 +389,9 @@ object PrimitiveCodec {
           v.setDouble(body)
         } catch {
           case e: IllegalArgumentException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
-            v.setIncompatibleFormatException(e.getMessage)
+            v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
       u.getNextFormat.getValueType match {
