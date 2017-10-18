@@ -45,7 +45,7 @@ class StandardCodecTest extends CodecSpec {
     }
 
     "support java.util.Date" in {
-      val now = java.util.Date.from(Instant.now)
+      val now = java.util.Date.from(Instant.now())
       roundtrip(now)
     }
 

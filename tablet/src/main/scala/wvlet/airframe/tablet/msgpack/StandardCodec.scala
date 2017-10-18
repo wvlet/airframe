@@ -681,20 +681,17 @@ object StandardCodec {
     }
   }
 
-  object JavaUtilDateCodec extends MessageCodec[Date] {
+  object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
     private val format = DateFormat.getInstance()
 
     override def pack(p: MessagePacker, v: Date): Unit = {
-      val dateStr = format.format(v)
-      p.packString(dateStr)
+      // Use Instant for encoding
+      JavaInstantTimeCodec.pack(p, v.toInstant)
     }
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val dateStr = u.unpackString()
-      Try(format.parse(dateStr)) match {
-        case Success(d) =>
-          v.setObject(d)
-        case Failure(e) =>
-          v.setIncompatibleFormatException(s"Cannot parse ${dateStr}: ${e.getMessage}")
+      JavaInstantTimeCodec.unpack(u, v)
+      if (!v.isNull) {
+        v.setObject(Date.from(v.getLastValue.asInstanceOf[Instant]))
       }
     }
   }
