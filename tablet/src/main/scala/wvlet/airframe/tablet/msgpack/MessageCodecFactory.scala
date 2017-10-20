@@ -87,4 +87,5 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
   }
 
   def of[A: ru.TypeTag]: MessageCodec[A] = ofSurface(surface.of[A]).asInstanceOf[MessageCodec[A]]
+
 }

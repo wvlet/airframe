@@ -80,4 +80,5 @@ object ColumnTypeCodec extends MessageCodec[DataType] {
 object PageCodec {
   val schemaCodec         = MessageCodec.of[Schema]
   val PAGE_CODEC_ID: Byte = 0
+
 }

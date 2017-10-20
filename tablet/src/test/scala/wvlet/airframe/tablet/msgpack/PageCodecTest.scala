@@ -11,17 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet
-
-import wvlet.log.LogSupport
-
-import scala.util.parsing.combinator.RegexParsers
+package wvlet.airframe.tablet.msgpack
 
 /**
   *
   */
-object DataTypeParser extends RegexParsers with LogSupport {
+import wvlet.airframe.tablet.msgpack.PageCodecTest._
+class PageCodecTest extends CodecSpec {
+  "PageCodec" should {
 
-  def qName = ""
+    "encode Seq[A] as a Page" in {
+      val pageCodec = MessageCodec.pageCodecOf[R]
+
+      val data = Seq(R(1, "Leo"), R(1, "Aina"))
+      Page()
+
+    }
+
+  }
+}
+
+object PageCodecTest {
+
+  case class R(id: Int, name: String)
 
 }

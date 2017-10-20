@@ -147,7 +147,8 @@ object PrimitiveCodec {
     }
   }
 
-  object ShortCodec extends MessageCodec[Short] {
+  object ShortCodec extends PrimitiveCodec[Short] {
+    def surface = Primitive.Short
     override def pack(p: MessagePacker, v: Short): Unit = {
       p.packShort(v)
     }
