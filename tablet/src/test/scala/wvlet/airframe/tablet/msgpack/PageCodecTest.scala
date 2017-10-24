@@ -16,6 +16,7 @@ package wvlet.airframe.tablet.msgpack
 /**
   *
   */
+import wvlet.airframe.tablet.Page
 import wvlet.airframe.tablet.msgpack.PageCodecTest._
 class PageCodecTest extends CodecSpec {
   "PageCodec" should {
