@@ -41,10 +41,14 @@ object SQLObjectMapper extends LogSupport {
     }
   }
 
-  def createTableSQLFor[A: ru.TypeTag](tableName: String): String = {
+  def createTableSQLFor[A: ru.TypeTag](tableName: String, columnConfig: Map[String, String] = Map.empty): String = {
     val schema = SurfaceFactory.of[A]
     val params = for (p <- schema.params) yield {
-      s"${p.name} ${sqlTypeOf(p.surface)}"
+      val decl = s"${p.name} ${sqlTypeOf(p.surface)}"
+      columnConfig
+        .get(p.name).map { config =>
+          s"${decl} ${config}"
+        }.getOrElse(decl)
     }
     s"create table if not exists ${tableName} (${params.mkString(", ")})"
   }
@@ -63,5 +67,4 @@ object SQLObjectMapper extends LogSupport {
       prep.execute()
     }
   }
-
 }

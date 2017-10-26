@@ -25,7 +25,7 @@ class PageCodecTest extends CodecSpec {
       val pageCodec = MessageCodec.pageCodecOf[R]
 
       val data = Seq(R(1, "Leo"), R(1, "Aina"))
-      Page()
+      //Page()
 
     }
 
