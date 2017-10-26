@@ -19,7 +19,7 @@ import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.log.LogSupport
 import wvlet.surface
-import wvlet.surface.reflect.ReflectTypeUtil
+import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
 import wvlet.surface.{EnumSurface, GenericSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
@@ -86,6 +86,8 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
     }
   }
 
-  def of[A: ru.TypeTag]: MessageCodec[A] = ofSurface(surface.of[A]).asInstanceOf[MessageCodec[A]]
+  def of[A: ru.TypeTag]: MessageCodec[A]    = ofSurface(surface.of[A]).asInstanceOf[MessageCodec[A]]
+  def of(surface: Surface): MessageCodec[_] = ofSurface(surface)
+  def ofType(tpe: ru.Type): MessageCodec[_] = ofSurface(SurfaceFactory.ofType(tpe))
 
 }

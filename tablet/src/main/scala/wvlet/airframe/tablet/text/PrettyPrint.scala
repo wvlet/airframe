@@ -59,14 +59,26 @@ object PrettyPrint extends LogSupport {
 
 class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
   def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20) {
-    pp(seq.take(limit))
+    show(SurfaceFactory.of[A], seq, limit)
+  }
+
+  def show[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20) {
+    pp(elementSurface, seq.take(limit))
   }
 
   def pp[A: ru.TypeTag](seq: Seq[A]) {
-    println(pf(seq).mkString("\n"))
+    pp(SurfaceFactory.of[A], seq)
+  }
+
+  def pp[A](surface: Surface, seq: Seq[A]) {
+    println(pf(surface, seq).mkString("\n"))
   }
 
   def pf[A: ru.TypeTag](seq: Seq[A]): Seq[String] = {
+    pf(SurfaceFactory.of[A], seq)
+  }
+
+  def pf[A](surface: Surface, seq: Seq[A]): Seq[String] = {
     val b = Seq.newBuilder[Seq[String]]
     val paramNames = seq.headOption.map { x =>
       val schema = SurfaceFactory.of[A]
