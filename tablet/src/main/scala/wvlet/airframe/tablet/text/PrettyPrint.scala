@@ -80,8 +80,7 @@ class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth:
   def pfRaw[A](surface: Surface, seq: Seq[A]): Seq[String] = {
     val b = Seq.newBuilder[Seq[String]]
     val paramNames = seq.headOption.map { x =>
-      val schema = SurfaceFactory.of[A]
-      b += schema.params.map(_.name).toSeq
+      b += surface.params.map(_.name).toSeq
     }
 
     val reader = ObjectTabletReader.newTabletReader(seq, surface, codec)
