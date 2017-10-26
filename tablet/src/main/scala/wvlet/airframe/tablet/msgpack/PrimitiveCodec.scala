@@ -277,7 +277,11 @@ object PrimitiveCodec {
     def surface = Primitive.String
 
     override def pack(p: MessagePacker, v: String): Unit = {
-      p.packString(v)
+      if (v == null) {
+        p.packNil()
+      } else {
+        p.packString(v)
+      }
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder) {

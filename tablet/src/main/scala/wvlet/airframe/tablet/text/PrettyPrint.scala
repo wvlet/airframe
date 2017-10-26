@@ -54,38 +54,37 @@ object PrettyPrint extends LogSupport {
       str
     }
   }
-
 }
 
 class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
   def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20) {
-    show(SurfaceFactory.of[A], seq, limit)
+    showRaw(SurfaceFactory.of[A], seq, limit)
   }
 
-  def show[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20) {
-    pp(elementSurface, seq.take(limit))
+  def showRaw[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20) {
+    ppRaw(elementSurface, seq.take(limit))
   }
 
   def pp[A: ru.TypeTag](seq: Seq[A]) {
-    pp(SurfaceFactory.of[A], seq)
+    ppRaw(SurfaceFactory.of[A], seq)
   }
 
-  def pp[A](surface: Surface, seq: Seq[A]) {
-    println(pf(surface, seq).mkString("\n"))
+  def ppRaw[A](surface: Surface, seq: Seq[A]) {
+    println(pfRaw(surface, seq).mkString("\n"))
   }
 
   def pf[A: ru.TypeTag](seq: Seq[A]): Seq[String] = {
-    pf(SurfaceFactory.of[A], seq)
+    pfRaw(SurfaceFactory.of[A], seq)
   }
 
-  def pf[A](surface: Surface, seq: Seq[A]): Seq[String] = {
+  def pfRaw[A](surface: Surface, seq: Seq[A]): Seq[String] = {
     val b = Seq.newBuilder[Seq[String]]
     val paramNames = seq.headOption.map { x =>
       val schema = SurfaceFactory.of[A]
       b += schema.params.map(_.name).toSeq
     }
 
-    val reader = new ObjectTabletReader(seq, codec)
+    val reader = ObjectTabletReader.newTabletReader(seq, surface, codec)
     b ++= (reader | RecordPrinter)
     val s        = Seq.newBuilder[String]
     val rows     = b.result

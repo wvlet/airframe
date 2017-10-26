@@ -11,10 +11,9 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-class ObjectTabletReader[A: ru.TypeTag](input: Seq[A], codec: Map[Surface, MessageCodec[_]] = Map.empty) extends TabletReader with LogSupport {
+class ObjectTabletReader[A](elementCodec: MessageCodec[A], input: Seq[A]) extends TabletReader with LogSupport {
 
-  private val cursor       = input.iterator
-  private val elementCodec = MessageCodec.default.withCodecs(codec).of[A]
+  private val cursor = input.iterator
 
   def read: Option[Record] = {
     if (!cursor.hasNext) {
@@ -29,5 +28,17 @@ class ObjectTabletReader[A: ru.TypeTag](input: Seq[A], codec: Map[Surface, Messa
       }
       Some(MessagePackRecord(packer.toByteArray))
     }
+  }
+}
+
+object ObjectTabletReader {
+  def newTabletReader[A](seq: Seq[A], surface: Surface, codec: Map[Surface, MessageCodec[_]] = Map.empty) = {
+    val elementCodec = MessageCodec.default.withCodecs(codec).of(surface)
+    new ObjectTabletReader[A](elementCodec.asInstanceOf[MessageCodec[A]], seq)
+  }
+
+  def newTabletReaderOf[A: ru.TypeTag](seq: Seq[A], codec: Map[Surface, MessageCodec[_]] = Map.empty) = {
+    val elementCodec = MessageCodec.default.withCodecs(codec).of[A]
+    new ObjectTabletReader[A](elementCodec, seq)
   }
 }

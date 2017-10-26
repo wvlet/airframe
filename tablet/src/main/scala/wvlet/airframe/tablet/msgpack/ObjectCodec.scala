@@ -33,7 +33,11 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
     p.packArrayHeader(numParams)
     for ((param, codec) <- surface.params.zip(paramCodec)) {
       val paramValue = param.get(v)
-      codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
+      if (paramValue == null) {
+        p.packNil()
+      } else {
+        codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
+      }
     }
   }
 
@@ -129,6 +133,9 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
               case Success(x) => v.setObject(x)
               case Failure(e) => v.setError(e)
             }
+          case None =>
+            warn(s"No factory is found for ${surface}")
+            v.setNull
         }
       case other =>
         u.skipValue()

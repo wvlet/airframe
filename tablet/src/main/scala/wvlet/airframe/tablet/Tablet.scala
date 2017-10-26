@@ -79,12 +79,12 @@ object Tablet {
 
   implicit class SeqTablet[A: ru.TypeTag](seq: Seq[A]) {
     def |[B](out: TabletWriter[B]) = {
-      new ObjectTabletReader(seq) | out
+      ObjectTabletReader.newTabletReaderOf(seq) | out
     }
 
-    def toJson: Seq[String] = new ObjectTabletReader(seq).pipe(JSONTabletPrinter)
-    def toCSV: Seq[String]  = new ObjectTabletReader(seq).pipe(CSVTabletPrinter)
-    def toTSV: Seq[String]  = new ObjectTabletReader(seq).pipe(TSVTabletPrinter)
+    def toJson: Seq[String] = ObjectTabletReader.newTabletReaderOf(seq).pipe(JSONTabletPrinter)
+    def toCSV: Seq[String]  = ObjectTabletReader.newTabletReaderOf(seq).pipe(CSVTabletPrinter)
+    def toTSV: Seq[String]  = ObjectTabletReader.newTabletReaderOf(seq).pipe(TSVTabletPrinter)
   }
 
   implicit class RichTabletReader(in: TabletReader) {

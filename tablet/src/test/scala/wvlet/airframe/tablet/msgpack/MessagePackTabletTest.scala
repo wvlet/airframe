@@ -26,7 +26,7 @@ class MessagePackTabletTest extends AirframeSpec {
     "write/read data in msgpack.gz" in {
       IOUtil.withTempFile("sample.msgpack.gz") { file =>
         val w = MessagePackTablet.msgpackGzWriter(file.getPath)
-        new ObjectTabletReader(Seq(1, 2, 3)).pipe(w)
+        ObjectTabletReader.newTabletReaderOf(Seq(1, 2, 3)).pipe(w)
         w.close()
 
         val r  = MessagePackTablet.msgpackGzReader(file.getPath)
