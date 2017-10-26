@@ -22,7 +22,7 @@ class ObjectTabletReader[A](elementCodec: MessageCodec[A], input: Seq[A]) extend
       val elem   = cursor.next()
       val packer = MessagePack.newDefaultBufferPacker()
       if (elem == null) {
-        packer.packArrayHeader(0)
+        packer.packNil()
       } else {
         elementCodec.pack(packer, elem)
       }
