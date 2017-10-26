@@ -64,7 +64,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           val p = surface.params(index)
           paramCodec(index).unpack(u, v)
           val arg = if (v.isNull) {
-            warn(v.getError)
+            trace(v.getError)
             p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
           } else {
             v.getLastValue
