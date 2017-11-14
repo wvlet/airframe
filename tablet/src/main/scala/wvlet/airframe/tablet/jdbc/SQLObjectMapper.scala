@@ -63,8 +63,31 @@ object SQLObjectMapper extends LogSupport {
     val tuple   = ("?" * colSize).mkString(", ")
     withResource(conn.prepareStatement(s"insert into ${tableName} values(${tuple})")) { prep =>
       for ((p, i) <- schema.params.zipWithIndex) yield {
-        val v = p.get(obj)
-        prep.setObject(i + 1, v)
+        val v = p.get(obj).asInstanceOf[AnyRef]
+        if (v == null) {
+          prep.setObject(i + 1, null)
+        } else {
+          p.surface match {
+            case Primitive.String =>
+              prep.setString(i + 1, v.toString)
+            case Primitive.Int =>
+              prep.setInt(i + 1, Int.unbox(v))
+            case Primitive.Long =>
+              prep.setLong(i + 1, Long.unbox(v))
+            case Primitive.Float =>
+              prep.setFloat(i + 1, Float.unbox(v))
+            case Primitive.Double =>
+              prep.setDouble(i + 1, Double.unbox(v))
+            case Primitive.Boolean =>
+              prep.setBoolean(i + 1, Boolean.unbox(v))
+            case Primitive.Byte =>
+              prep.setByte(i + 1, Byte.unbox(v))
+            case Primitive.Short =>
+              prep.setShort(i + 1, Short.unbox(v))
+            case _ =>
+              prep.setObject(i + 1, v)
+          }
+        }
       }
       prep.execute()
     }
