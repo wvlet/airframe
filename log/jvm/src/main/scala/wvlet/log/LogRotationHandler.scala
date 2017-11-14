@@ -21,6 +21,7 @@ import java.util.{logging => jl}
 import ch.qos.logback.core.ContextBase
 import ch.qos.logback.core.encoder.EncoderBase
 import ch.qos.logback.core.rolling.{RollingFileAppender, SizeAndTimeBasedFNATP, TimeBasedRollingPolicy}
+import ch.qos.logback.core.util.FileSize
 import wvlet.log.LogFormatter.AppLogFormatter
 
 import scala.util.{Failure, Success, Try}
@@ -31,13 +32,11 @@ object LogRotationHandler {
     * Encoding log string as UTF-8
     */
   private[LogRotationHandler] class StringEncoder extends EncoderBase[String] {
-    override def close(): Unit = {
-      outputStream.flush()
+    override def encode(event: String): Array[Byte] = {
+      event.getBytes(StandardCharsets.UTF_8)
     }
-    override def doEncode(event: String): Unit = {
-      outputStream.write(event.getBytes(StandardCharsets.UTF_8))
-      outputStream.flush()
-    }
+    override def headerBytes(): Array[Byte] = Array.emptyByteArray
+    override def footerBytes(): Array[Byte] = Array.emptyByteArray
   }
 }
 
@@ -81,24 +80,26 @@ class LogRotationHandler(fileName: String,
     rollingPolicy.setMaxHistory(maxNumberOfFiles)
     rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy)
     rollingPolicy.setParent(fileAppender)
-    rollingPolicy.start()
 
     triggeringPolicy.setContext(context)
     triggeringPolicy.setTimeBasedRollingPolicy(rollingPolicy)
-    triggeringPolicy.setMaxFileSize(maxSizeInBytes.toString)
-    triggeringPolicy.start()
+    triggeringPolicy.setMaxFileSize(new FileSize(maxSizeInBytes))
 
     fileAppender.setContext(context)
     fileAppender.setFile(fileName)
     fileAppender.setAppend(true)
     fileAppender.setEncoder(new StringEncoder)
     fileAppender.setRollingPolicy(rollingPolicy)
+
+    // RollingPolicy and TriggeringPolicy must be started after configuring the FileAppender
+    rollingPolicy.start()
+    triggeringPolicy.start()
     fileAppender.start()
 
     fileAppender
   }
 
-  override def flush() {}
+  override def flush(): Unit = {}
 
   private def toException(t: Throwable) = new Exception(t.getMessage, t)
 
