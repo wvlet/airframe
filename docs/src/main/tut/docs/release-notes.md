@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.25
+ - **airframe-log** Upgrade the internal log rotation library to logback-core 1.2.3
+ - Upgrade to Scala 2.12.4 and sbt 1.0.3. 
+
 ## 0.24
  - Add [airframe-metrics](airframe-metrics.html)
 
