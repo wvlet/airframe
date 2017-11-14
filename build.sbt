@@ -246,7 +246,7 @@ lazy val log =
     )
     .jvmSettings(
       libraryDependencies ++= Seq(
-        "ch.qos.logback" % "logback-core" % "1.1.7"
+        "ch.qos.logback" % "logback-core" % "1.2.3"
       )
     )
     .jsSettings(

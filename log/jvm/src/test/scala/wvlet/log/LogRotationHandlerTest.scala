@@ -26,7 +26,7 @@ class LogRotationHandlerTest extends Spec {
 
     "rotate log files" in {
       val l = Logger("wvlet.log.rotation")
-      withTempFile("log-rotation-test.log", "target") { f =>
+      withTempFile(name = "log-rotation-test", dir = "target") { f =>
         val h = new LogRotationHandler(f.getPath, 5, 10)
         l.resetHandler(h)
 
@@ -36,7 +36,7 @@ class LogRotationHandlerTest extends Spec {
         h.flush()
         h.close()
 
-        f.exists() shouldBe true
+        f should exist
         f.length > 0 shouldBe true
       }
     }
@@ -47,17 +47,17 @@ class LogRotationHandlerTest extends Spec {
       if (!tmp.exists()) {
         tmp.createNewFile()
       }
-      tmp.exists() shouldBe true
+      tmp should exist
       val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
 
-      tmp.exists() shouldBe false
+      tmp shouldNot exist
     }
   }
 
   "FileHandler" should {
     "output log to a file" in {
       val l = Logger("wvlet.log.filehandler")
-      withTempFile("log-file-test.log", "target") { f =>
+      withTempFile(name = "log-file-test", dir = "target") { f =>
         val h = new FileHandler(f.getPath)
         l.resetHandler(h)
 
@@ -67,7 +67,7 @@ class LogRotationHandlerTest extends Spec {
         h.flush()
         h.close()
 
-        f.exists() shouldBe true
+        f should exist
         f.length > 0 shouldBe true
       }
     }
