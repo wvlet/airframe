@@ -15,7 +15,6 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
-  updateOptions := updateOptions.value.withCachedResolution(true),
   scalacOptions ++= Seq("-feature", "-deprecation"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -64,12 +63,12 @@ val buildSettings = Seq[Setting[_]](
 val jsBuildSettings = Seq[Setting[_]](
   // Skip Scala 2.11 + Scala.js build
   crossScalaVersions := Seq(SCALA_2_12),
-  // Workaround for ' JSCom has been closed' issue
-  parallelExecution in ThisBuild := false,
   // Do not run tests concurrently
   concurrentRestrictions in Global := Seq(
     Tags.limit(Tags.Test, 1)
-  )
+  ),
+  // Workaround for ' JSCom has been closed' issue
+  parallelExecution in ThisBuild := false
 )
 
 val noPublish = Seq(
