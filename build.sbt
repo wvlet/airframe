@@ -65,7 +65,11 @@ val jsBuildSettings = Seq[Setting[_]](
   // Skip Scala 2.11 + Scala.js build
   crossScalaVersions := Seq(SCALA_2_12),
   // Workaround for ' JSCom has been closed' issue
-  parallelExecution in ThisBuild := false
+  parallelExecution in ThisBuild := false,
+  // Do not run tests concurrently
+  concurrentRestrictions in Global := Seq(
+    Tags.limit(Tags.Test, 1)
+  )
 )
 
 val noPublish = Seq(
@@ -129,7 +133,7 @@ lazy val docs =
     .enablePlugins(MicrositesPlugin)
 
 lazy val airframe =
-  crossProject
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe"))
     .settings(buildSettings)
     .settings(
