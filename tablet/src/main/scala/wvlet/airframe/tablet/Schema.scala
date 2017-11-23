@@ -15,8 +15,6 @@ package wvlet.airframe.tablet
 
 import java.util.Locale
 
-import wvlet.airframe.tablet.Schema.RecordType
-
 object Schema {
   sealed trait DataType {
     def signature: String
@@ -35,8 +33,10 @@ object Schema {
     def name: String
   }
 
+  def primitiveTypes = Seq(NIL, INTEGER, FLOAT, BOOLEAN, STRING, TIMESTAMP, BINARY, JSON)
+
   case object NIL       extends PrimitiveType("nil")
-  case object INTEGER   extends PrimitiveType("int")
+  case object INTEGER   extends PrimitiveType("integer")
   case object FLOAT     extends PrimitiveType("float")
   case object BOOLEAN   extends PrimitiveType("boolean")
   case object STRING    extends PrimitiveType("string")
@@ -71,7 +71,7 @@ object Schema {
     */
   case class UNION(types: Seq[RecordType]) extends StructuredType {
     override def typeName: String        = "union"
-    override def signature: String       = s"union[${types.map(_.signature).mkString("|")}]"
+    override def signature: String       = s"union[${types.map(_.typeName).mkString("|")}]"
     override def typeArgs: Seq[DataType] = types
   }
 
@@ -82,6 +82,8 @@ object Schema {
     * @param column
     */
   case class RecordType(typeName: String, column: Seq[Column]) extends DataType {
+    require(column.map(_.name).distinct.size == column.size, s"record contains duplicate column names: ${column.mkString(",")}")
+
     // Person(id:int, name:string, address:Address)
     // Address(address:string, phone:array[string])
     override def signature               = s"${typeName}(${column.map(_.signature).mkString(",")})"
@@ -89,43 +91,45 @@ object Schema {
 
     def size: Int = column.length
     // 0-origin index
-    @transient private lazy val columnIdx: Map[Column, Int] = column.zipWithIndex.toMap[Column, Int]
+    @transient private lazy val columnIdx: Map[String, Int] = column.map(_.name).zipWithIndex.toMap[String, Int]
 
     /**
       * @param index 0-origin index
       * @return
       */
-    def columnType(index: Int) = column(index)
+    def columnType(index: Int): Column = column(index)
+
+    def columnType(name: String): Column = columnType(columnIndex(name))
 
     /**
       * Return the column index
       *
-      * @param column
+      * @param name
       * @return
       */
-    def columnIndex(column: Column) = columnIdx(column)
+    def columnIndex(name: String): Int = columnIdx(name)
   }
 
   case class Column(name: String, columnType: Schema.DataType) {
     def signature = s"${name}:${columnType}"
   }
 
-  case object DataType {
-    def unapply(s: String): Option[DataType] = {
-      val tpe = s.toLowerCase(Locale.US) match {
-        case "nil" | "null"                => NIL
-        case "varchar" | "string" | "text" => STRING
-        case "bigint" | "integer"          => INTEGER
-        case "boolean"                     => BOOLEAN
-        case "float" | "double"            => FLOAT
-        case "timestamp"                   => TIMESTAMP
-        case "json"                        => JSON // TODO use JSON type
-        case _                             => STRING // TODO support more type
-      }
-      Some(tpe)
-    }
-  }
-
+//  case object DataType {
+//    def unapply(s: String): Option[DataType] = {
+//      val tpe = s.toLowerCase(Locale.US) match {
+//        case "nil" | "null"                => NIL
+//        case "varchar" | "string" | "text" => STRING
+//        case "bigint" | "integer"          => INTEGER
+//        case "boolean"                     => BOOLEAN
+//        case "float" | "double"            => FLOAT
+//        case "timestamp"                   => TIMESTAMP
+//        case "json"                        => JSON // TODO use JSON type
+//        case _                             => STRING // TODO support more type
+//      }
+//      Some(tpe)
+//    }
+//  }
+//
 //  object DataTypeCodec extends MessageCodec[DataType] {
 //    override def pack(p: MessagePacker, v: DataType): Unit = {
 //      v match {
