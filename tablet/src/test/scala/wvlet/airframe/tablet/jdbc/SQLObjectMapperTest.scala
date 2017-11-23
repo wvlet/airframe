@@ -65,8 +65,8 @@ class SQLObjectMapperTest extends AirframeSpec {
     "allow primary key config" in {
       val sql = SQLObjectMapper.createTableSQLFor[T1]("t1", Map("id" -> "primary key"))
       info(sql)
-      sql should include("id integer primary key")
-      sql shouldNot include("name string primary key")
+      sql should include(""""id" integer primary key""")
+      sql shouldNot include(""""name" string primary key""")
     }
 
   }
