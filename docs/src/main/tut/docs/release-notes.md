@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.26
+ - Add an initial version of [airframe-tablet](https://github.com/wvlet/airframe/tree/master/airframe-tablet), a [MessagePack](https://msgpack.org) based data transcoder
+
 ## 0.25
  - **airframe-log** Upgrade the internal log rotation library to logback-core 1.2.3
  - Upgrade to Scala 2.12.4 and sbt 1.0.3. 
