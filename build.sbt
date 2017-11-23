@@ -1,4 +1,4 @@
-import ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
@@ -72,13 +72,13 @@ val noPublish = Seq(
 lazy val root =
   project
     .in(file("."))
-    .settings(name := "root")
+    .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, tablet)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -284,3 +284,24 @@ lazy val airframeSpec =
 
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
+
+lazy val tablet =
+  project
+    .in(file("tablet"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-tablet",
+      description := "Data format conversion library",
+      libraryDependencies ++= Seq(
+        "org.msgpack"          % "msgpack-core" % "0.8.13",
+        "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
+        // For ColumnType parser
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+        // For JSON parser
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+        "org.scalacheck"         %% "scalacheck"               % "1.13.4" % "test",
+        // For JDBC testing
+        "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
+      )
+    )
+    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")

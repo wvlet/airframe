@@ -27,7 +27,13 @@ import scala.language.existentials
   */
 object ReflectTypeUtil extends LogSupport {
 
-  @inline def cls[A](obj: A): Class[_] = obj.asInstanceOf[AnyRef].getClass
+  @inline def cls[A](obj: A): Class[_] = {
+    if (obj == null) {
+      classOf[AnyRef]
+    } else {
+      obj.asInstanceOf[AnyRef].getClass
+    }
+  }
 
   def companionObject[A](cl: Class[A]): Option[Any] = {
     try {
@@ -150,7 +156,7 @@ object ReflectTypeUtil extends LogSupport {
   }
 
   def isTuple[T](cl: Class[T]): Boolean = {
-    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("Tuple")
+    classOf[Product].isAssignableFrom(cl) && cl.getName.startsWith("scala.Tuple")
   }
 
   def isList[T](cl: Class[T]): Boolean = {

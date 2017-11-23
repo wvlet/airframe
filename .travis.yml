@@ -22,18 +22,18 @@ matrix:
   - env: PROJECT=code-format
     jdk: oraclejdk8
     script: ./scalafmt --test
-  - env: SCALA_VERSION=2.12.3 PROJECT=projectJVM
+  - env: SCALA_VERSION=2.12.4 PROJECT=projectJVM
     jdk: oraclejdk8
     script:
       - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
       - ./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)
-  - env: SCALA_VERSION=2.12.3 PROJECT=logJS
+  - env: SCALA_VERSION=2.12.4 PROJECT=logJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.3 PROJECT=surfaceJS
+  - env: SCALA_VERSION=2.12.4 PROJECT=surfaceJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.3 PROJECT=airframeJS
+  - env: SCALA_VERSION=2.12.4 PROJECT=airframeJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM

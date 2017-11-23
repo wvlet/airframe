@@ -285,7 +285,13 @@ object SurfaceFactory extends LogSupport {
     }
 
     private def isEnum(t: ru.Type): Boolean = {
-      t.baseClasses.exists(x => x.isJava && x.isType && x.asType.name.decodedName.toString.startsWith("java.lang.Enum"))
+      t.baseClasses.exists { x =>
+        if (x.isJava && x.isType) {
+          x.asType.fullName.toString.startsWith("java.lang.Enum")
+        } else {
+          false
+        }
+      }
     }
 
     private def enumFactory: SurfaceMatcher = {
@@ -402,19 +408,28 @@ object SurfaceFactory extends LogSupport {
 
   class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None) {
-    override val objectFactory: Option[ObjectFactory] = Some(new ObjectFactory {
-      // Create instance with Reflection
-      override def newInstance(args: Seq[Any]): Any = {
-        val cc = rawType.getConstructors()(0)
-        val obj = if (args.isEmpty) {
-          cc.newInstance()
-        } else {
-          val a = args.map(_.asInstanceOf[AnyRef])
-          cc.newInstance(a: _*)
-        }
-        obj.asInstanceOf[Any]
+    override val objectFactory: Option[ObjectFactory] = {
+      if (rawType.getConstructors.isEmpty) {
+        None
+      } else {
+        Some(new ObjectFactory {
+          // Create instance with Reflection
+          override def newInstance(args: Seq[Any]): Any = {
+            // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
+            val cc = rawType.getConstructors()
+            assert(cc.length > 0)
+            val primaryConstructor = cc(0)
+            val obj = if (args.isEmpty) {
+              primaryConstructor.newInstance()
+            } else {
+              val a = args.map(_.asInstanceOf[AnyRef])
+              primaryConstructor.newInstance(a: _*)
+            }
+            obj.asInstanceOf[Any]
+          }
+        })
       }
-    })
+    }
   }
 
 }

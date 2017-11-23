@@ -5,11 +5,11 @@
 
 set -o pipefail
 
-declare -r sbt_release_version="0.13.16"
-declare -r sbt_unreleased_version="0.13.16"
+declare -r sbt_release_version="1.0.2"
+declare -r sbt_unreleased_version="1.1.0-M1"
 
 declare -r latest_213="2.13.0-M2"
-declare -r latest_212="2.12.3"
+declare -r latest_212="2.12.4"
 declare -r latest_211="2.11.11"
 declare -r latest_210="2.10.6"
 declare -r latest_29="2.9.3"
@@ -22,7 +22,7 @@ declare -r sbt_launch_ivy_snapshot_repo="https://repo.scala-sbt.org/scalasbt/ivy
 declare -r sbt_launch_mvn_release_repo="http://repo.scala-sbt.org/scalasbt/maven-releases"
 declare -r sbt_launch_mvn_snapshot_repo="http://repo.scala-sbt.org/scalasbt/maven-snapshots"
 
-declare -r default_jvm_opts_common="-Xms512m -Xmx2560m -Xss2m"
+declare -r default_jvm_opts_common="-Xms512m -Xmx1536m -Xss2m"
 declare -r noshare_opts="-Dsbt.global.base=project/.sbtboot -Dsbt.boot.directory=project/.boot -Dsbt.ivy.home=project/.ivy"
 
 declare sbt_jar sbt_dir sbt_create sbt_version sbt_script sbt_new

@@ -18,7 +18,7 @@ import java.text.DateFormat
 import java.util.Date
 
 import wvlet.log.LogSupport
-import wvlet.surface.{Primitive, Surface}
+import wvlet.surface.{Primitive, Surface, Zero}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -34,45 +34,51 @@ object TypeConverter extends LogSupport {
   import ReflectTypeUtil._
 
   def convert[T](value: T, targetType: Surface): Option[Any] = {
-    trace(s"convert ${value} (${value.getClass}) to ${targetType}")
-    if (targetType.isOption) {
-      if (isOption(cls(value))) {
+    if (value == null) {
+      Some(Zero.zeroOf(targetType))
+    } else {
+      trace(s"convert ${value} (${value.getClass}) to ${targetType}")
+      if (targetType.isPrimitive) {
+        convertToPrimitive(value, targetType)
+      } else if (targetType.isOption) {
+        if (isOption(cls(value))) {
+          Option(value)
+        } else {
+          Option(convert(value, targetType.typeArgs(0)))
+        }
+      } else if (isArray(targetType) && isArray(cls(value))) {
         Option(value)
       } else {
-        Option(convert(value, targetType.typeArgs(0)))
-      }
-    } else if (isArray(targetType) && isArray(cls(value))) {
-      Option(value)
-    } else {
-      val t: Class[_] = targetType.rawType
-      val s: Class[_] = cls(value)
-      if (t.isAssignableFrom(s)) {
-        Some(value)
-      } else if (isBuffer(s)) {
-        trace(s"convert buffer $value into $targetType")
-        val buf              = value.asInstanceOf[mutable.Buffer[_]]
-        val gt: Seq[Surface] = targetType.typeArgs
-        val e                = gt(0).rawType
-        if (isArray(targetType)) {
-          val arr = ClassTag(e).newArray(buf.length).asInstanceOf[Array[Any]]
-          buf.copyToArray(arr)
-          Some(arr)
-        } else if (isList(t)) {
-          Some(buf.toList)
-        } else if (isIndexedSeq(t)) {
-          Some(buf.toIndexedSeq)
-        } else if (isSeq(t)) {
-          Some(buf.toSeq)
-        } else if (isSet(t)) {
-          Some(buf.toSet)
-        } else if (isMap(t)) {
-          Some(buf.asInstanceOf[mutable.Buffer[(_, _)]].toMap)
+        val t: Class[_] = targetType.rawType
+        val s: Class[_] = cls(value)
+        if (t.isAssignableFrom(s)) {
+          Some(value)
+        } else if (isBuffer(s)) {
+          trace(s"convert buffer $value into $targetType")
+          val buf              = value.asInstanceOf[mutable.Buffer[_]]
+          val gt: Seq[Surface] = targetType.typeArgs
+          val e                = gt(0).rawType
+          if (isArray(targetType)) {
+            val arr = ClassTag(e).newArray(buf.length).asInstanceOf[Array[Any]]
+            buf.copyToArray(arr)
+            Some(arr)
+          } else if (isList(t)) {
+            Some(buf.toList)
+          } else if (isIndexedSeq(t)) {
+            Some(buf.toIndexedSeq)
+          } else if (isSeq(t)) {
+            Some(buf.toSeq)
+          } else if (isSet(t)) {
+            Some(buf.toSet)
+          } else if (isMap(t)) {
+            Some(buf.asInstanceOf[mutable.Buffer[(_, _)]].toMap)
+          } else {
+            warn(s"cannot convert ${s.getSimpleName} to ${t.getSimpleName}")
+            None
+          }
         } else {
-          warn(s"cannot convert ${s.getSimpleName} to ${t.getSimpleName}")
-          None
+          convert(value, targetType.rawType)
         }
-      } else {
-        convert(value, targetType.rawType)
       }
     }
   }
@@ -108,24 +114,28 @@ object TypeConverter extends LogSupport {
     * Convert the input value into the target type
     */
   def convertToPrimitive[A](value: Any, targetType: Surface): Option[A] = {
-    val s = value.toString
-    val v: Any = targetType match {
-      case Primitive.String                  => s
-      case Primitive.Boolean                 => s.toBoolean
-      case Primitive.Int                     => s.toInt
-      case Primitive.Float                   => s.toFloat
-      case Primitive.Double                  => s.toDouble
-      case Primitive.Long                    => s.toLong
-      case Primitive.Short                   => s.toShort
-      case Primitive.Byte                    => s.toByte
-      case Primitive.Char if (s.length == 1) => s(0)
-      case t if t.rawType == classOf[File]   => new File(s)
-      case t if t.rawType == classOf[Date]   => DateFormat.getDateInstance().parse(s)
-      case _ =>
-        warn(s"""Failed to convert "$s" to ${targetType.toString}""")
-        None
+    if (value == null) {
+      None
+    } else {
+      val s = value.toString
+      val v: Any = targetType match {
+        case Primitive.String                  => s
+        case Primitive.Boolean                 => s.toBoolean
+        case Primitive.Int                     => s.toInt
+        case Primitive.Float                   => s.toFloat
+        case Primitive.Double                  => s.toDouble
+        case Primitive.Long                    => s.toLong
+        case Primitive.Short                   => s.toShort
+        case Primitive.Byte                    => s.toByte
+        case Primitive.Char if (s.length == 1) => s(0).toChar
+        case t if t.rawType == classOf[File]   => new File(s)
+        case t if t.rawType == classOf[Date]   => DateFormat.getDateInstance().parse(s)
+        case _ =>
+          warn(s"""Failed to convert "$s" to ${targetType.toString}""")
+          None
+      }
+      Some(v.asInstanceOf[A])
     }
-    Some(v.asInstanceOf[A])
   }
 
   def stringConstructor(cl: Class[_]): Option[jr.Constructor[_]] = {
