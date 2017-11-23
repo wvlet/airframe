@@ -177,7 +177,7 @@ lazy val airframeMacros =
       publish := {},
       publishLocal := {}
     )
-   .jsSettings(jsBuildSettings)
+    .jsSettings(jsBuildSettings)
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
