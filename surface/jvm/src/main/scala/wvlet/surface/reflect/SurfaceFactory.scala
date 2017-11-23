@@ -409,14 +409,16 @@ object SurfaceFactory extends LogSupport {
   class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None) {
     override val objectFactory: Option[ObjectFactory] = {
-      val cc = rawType.getConstructors()
-      if (cc.isEmpty) {
+      if (rawType.getConstructors.isEmpty) {
         None
       } else {
-        val primaryConstructor = cc(0)
         Some(new ObjectFactory {
           // Create instance with Reflection
           override def newInstance(args: Seq[Any]): Any = {
+            // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
+            val cc = rawType.getConstructors()
+            assert(cc.length > 0)
+            val primaryConstructor = cc(0)
             val obj = if (args.isEmpty) {
               primaryConstructor.newInstance()
             } else {
