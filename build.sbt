@@ -1,4 +1,5 @@
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+import sbtcrossproject.{crossProject, CrossType}
 
 val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
@@ -58,9 +59,13 @@ val buildSettings = Seq[Setting[_]](
       Opts.resolver.sonatypeStaging
     }
   )
-// Uncomment this after scalafmt-1.3.0 is released
-// scalafmtOnCompile in ThisBuild := true,
-// scalafmtVersion := "1.3.0"
+)
+
+val jsBuildSettings = Seq[Setting[_]](
+  // Skip Scala 2.11 + Scala.js build
+  crossScalaVersions := Seq(SCALA_2_12),
+  // Workaround for ' JSCom has been closed' issue
+  parallelExecution in ThisBuild := false
 )
 
 val noPublish = Seq(
@@ -143,8 +148,8 @@ lazy val airframe =
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJVM, Compile, packageSrc).value
     )
     .jsSettings(
-      // Workaround for ' JSCom has been closed' issue
-      parallelExecution in ThisBuild := false,
+      jsBuildSettings,
+      // Copy macro classes into the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
@@ -156,7 +161,7 @@ lazy val airframeJS  = airframe.js
 
 // Airframe depends on Airframe Macros, so we needed to split the project
 lazy val airframeMacros =
-  crossProject
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-macros"))
     .settings(buildSettings)
     .settings(
@@ -169,12 +174,13 @@ lazy val airframeMacros =
       publish := {},
       publishLocal := {}
     )
+   .jsSettings(jsBuildSettings)
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 lazy val surface =
-  crossProject
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("surface"))
     .settings(buildSettings)
     .settings(
@@ -187,10 +193,7 @@ lazy val surface =
         "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
       )
     )
-    .jsSettings(
-      // Workaround for 'JSCom has been closed' issue
-      parallelExecution in ThisBuild := false
-    )
+    .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")
 
 lazy val surfaceJVM = surface.jvm
@@ -233,7 +236,7 @@ lazy val opts =
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
 lazy val log =
-  crossProject
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("log"))
     .settings(buildSettings)
     .settings(
@@ -250,6 +253,7 @@ lazy val log =
       )
     )
     .jsSettings(
+      jsBuildSettings,
       libraryDependencies ++= Seq(
         "org.scala-js" %%% "scalajs-java-logging" % "0.1.1"
       )
@@ -270,7 +274,7 @@ lazy val metrics =
     .dependsOn(logJVM, airframeSpecJVM % "test")
 
 lazy val airframeSpec =
-  crossProject
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("spec"))
     .settings(buildSettings)
     .settings(
@@ -280,6 +284,7 @@ lazy val airframeSpec =
         "org.scalatest" %%% "scalatest" % "3.0.1"
       )
     )
+    .jsSettings(jsBuildSettings)
     .dependsOn(log)
 
 lazy val airframeSpecJVM = airframeSpec.jvm
