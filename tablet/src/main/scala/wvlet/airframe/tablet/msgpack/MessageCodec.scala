@@ -66,9 +66,4 @@ object MessageCodec {
 
   def default                            = new MessageCodecFactory(StandardCodec.standardCodec)
   def of[A: ru.TypeTag]: MessageCodec[A] = default.of[A]
-
-  def pageCodecOf[A: ru.TypeTag]: PageCodec[A] = {
-    val s = surface.of[A]
-    PageCodec[A](s, of[A])
-  }
 }

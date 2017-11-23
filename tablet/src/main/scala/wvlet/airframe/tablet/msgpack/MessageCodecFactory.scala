@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.tablet.Page
 import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, JavaMapCodec, MapCodec, SeqCodec}
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
@@ -57,10 +56,6 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
             TupleCodec(s.typeArgs.map(x => ofSurface(x)))
           case EnumSurface(cl) =>
             EnumCodec(cl)
-          case g: GenericSurface if g.rawType == classOf[Page[_]] =>
-            // Page
-            val elemSurface = g.typeArgs(0)
-            PageCodec(elemSurface, ofSurface(elemSurface, seenSet))
           case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
             // Seq[A]
             SeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))

@@ -157,7 +157,3 @@ object Schema {
 //  }
 
 }
-
-case class Schema(recordTypes: Seq[RecordType]) {
-  override def toString = s"Schema(${recordTypes.mkString(", ")})"
-}
