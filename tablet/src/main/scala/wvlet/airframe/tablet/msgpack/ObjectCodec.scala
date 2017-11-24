@@ -104,6 +104,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         for (i <- 0 until mapSize) {
           // Read key
           u.unpackValue(keyValue)
+
           val keyString = keyValue.toString
 
           // Read value

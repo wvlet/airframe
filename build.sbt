@@ -213,7 +213,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.18"
       )
     )
-    .dependsOn(surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
 
 lazy val jmx =
   project

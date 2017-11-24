@@ -15,16 +15,21 @@ package wvlet.config
 
 import java.{util => ju}
 
+import org.msgpack.core.{MessagePack, MessagePacker}
 import org.yaml.snakeyaml.Yaml
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
 import wvlet.surface
 import wvlet.surface.Surface
-import wvlet.surface.reflect.ObjectBuilder
+import wvlet.surface.reflect.{ObjectBuilder, ReflectTypeUtil}
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.ListMap
 import scala.reflect.runtime.{universe => ru}
+import java.{lang => jl}
+
+import wvlet.airframe.tablet.MessagePackRecord
+import wvlet.airframe.tablet.obj.{ObjectTabletReader, ObjectTabletWriter}
 
 object YamlReader extends LogSupport {
 
@@ -37,11 +42,12 @@ object YamlReader extends LogSupport {
   }
 
   def loadMapOf[A: ru.TypeTag](resourcePath: String): Map[String, A] = {
-    val yaml             = loadYaml(resourcePath)
+    val yaml = loadYaml(resourcePath)
+    trace(s"yaml data: ${yaml.mkString(", ")}")
     val surface: Surface = wvlet.surface.of[A]
     val map              = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
-      map += k.toString -> bind[A](surface, v.asInstanceOf[java.util.Map[AnyRef, AnyRef]])
+      map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
     }
     map.result
   }
@@ -55,17 +61,83 @@ object YamlReader extends LogSupport {
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
-    bind(surface.of[A], prop.asJava).asInstanceOf[A]
+    bindMap(surface.of[A], prop).asInstanceOf[A]
   }
 
-  def bind[A](surface: Surface, prop: java.util.Map[AnyRef, AnyRef]): A = {
-    trace(s"bind ${surface}, prop:${prop.asScala}")
-    val builder = ObjectBuilder(surface)
-    if (prop != null) {
-      for ((k, v) <- prop.asScala) {
-        builder.set(k.toString, v)
+  def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
+    val yamlMsgpack = toMsgPack(prop)
+    val w           = new ObjectTabletWriter[A]()
+    val result      = w.write(new MessagePackRecord(yamlMsgpack))
+    result
+  }
+
+  def toMsgPack(prop: Map[AnyRef, AnyRef]): Array[Byte] = {
+    new YamlReader(prop).toMsgpack
+  }
+
+  def pack(packer: MessagePacker, v: Any): MessagePacker = {
+    if (v == null) {
+      packer.packNil()
+    } else {
+      v match {
+        case s: String =>
+          packer.packString(s)
+        case i: jl.Integer =>
+          packer.packInt(i)
+        case l: jl.Long =>
+          packer.packLong(l)
+        case f: jl.Float =>
+          packer.packFloat(f)
+        case d: jl.Double =>
+          packer.packDouble(d)
+        case b: jl.Boolean =>
+          packer.packBoolean(b)
+        case s: jl.Short =>
+          packer.packShort(s)
+        case b: jl.Byte =>
+          packer.packByte(b)
+        case c: jl.Character =>
+          packer.packInt(c.toInt)
+        case a if ReflectTypeUtil.isArray(a.getClass) =>
+          val ar = a.asInstanceOf[Array[_]]
+          packer.packArrayHeader(ar.length)
+          for (e <- ar) {
+            pack(packer, e)
+          }
+        case m if ReflectTypeUtil.isJavaMap(m.getClass) =>
+          val mp = m.asInstanceOf[java.util.Map[AnyRef, AnyRef]].asScala
+          packer.packMapHeader(mp.size)
+          for ((k, v) <- mp) {
+            pack(packer, k)
+            pack(packer, v)
+          }
+        case c if ReflectTypeUtil.isJavaColleciton(c.getClass) =>
+          val cl = c.asInstanceOf[java.util.Collection[_]].asScala
+          packer.packArrayHeader(cl.size)
+          for (e <- cl) {
+            pack(packer, e)
+          }
+        case other =>
+          packer.packString(v.toString)
       }
     }
-    builder.build.asInstanceOf[A]
+    packer
   }
+
+}
+
+class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
+
+  import YamlReader._
+
+  def toMsgpack: Array[Byte] = {
+    val packer = MessagePack.newDefaultBufferPacker()
+    packer.packMapHeader(map.size)
+    for ((k, v) <- map) yield {
+      pack(packer, k)
+      pack(packer, v)
+    }
+    packer.toByteArray
+  }
+
 }

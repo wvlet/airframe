@@ -36,7 +36,9 @@ class ConfigTest extends AirframeSpec {
   val configPaths = Seq("config/src/test/resources")
 
   def loadConfig(env: String) =
-    Config(env = env, configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml").registerFromYaml[ClassConfig]("classes.yml")
+    Config(env = env, configPaths = configPaths)
+      .registerFromYaml[SampleConfig]("myconfig.yml")
+      .registerFromYaml[ClassConfig]("classes.yml")
 
   "MapConfig" should {
     "read map type configuration items" in {
