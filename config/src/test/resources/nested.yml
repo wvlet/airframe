@@ -1,0 +1,6 @@
+default:
+  servers:
+    - host: 10.0.0.1
+      port: 5000
+    - host: 10.0.0.2
+      port: 5000

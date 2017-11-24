@@ -27,12 +27,14 @@ import scala.reflect.runtime.{universe => ru}
 class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = Map.empty) extends TabletWriter[A] with LogSupport {
 
   private val elementCodec = MessageCodec.default.withCodecs(codec).of[A]
-  private val h            = new MessageHolder
-  private val s            = surface.of[A]
-  private val zero         = Zero.zeroOf(s)
+
+  private val h         = new MessageHolder
+  private val s         = surface.of[A]
+  private lazy val zero = Zero.zeroOf(s)
 
   def write(record: Record): A = {
     elementCodec.unpack(record.unpacker, h)
+
     val v = if (h.isNull) {
       zero
     } else {
