@@ -5,8 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 0.27
+ - aiframe-config: Fixes nested case class binding [#108](https://github.com/wvlet/airframe/issues/110)
+ - Dropped support of Scala.js + Scala 2.11 combination. Scala.js libraries will support only Scala 2.12 (or higher) in upcoming releases
+
 ## 0.26
- - Add an initial version of [airframe-tablet](https://github.com/wvlet/airframe/tree/master/airframe-tablet), a [MessagePack](https://msgpack.org) based data transcoder
+ - Add an initial version of [airframe-tablet](https://github.com/wvlet/airframe/tree/master/tablet), a [MessagePack](https://msgpack.org) based data transcoder
 
 ## 0.25
  - **airframe-log** Upgrade the internal log rotation library to logback-core 1.2.3
