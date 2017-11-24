@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.tablet.msgpack.CollectionCodec.{JavaListCodec, JavaMapCodec, MapCodec, SeqCodec}
+import wvlet.airframe.tablet.msgpack.CollectionCodec._
 import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
 import wvlet.log.LogSupport
@@ -58,7 +58,11 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
             EnumCodec(cl)
           case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
             // Seq[A]
-            SeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
+            if (ReflectTypeUtil.isIndexedSeq(g.rawType)) {
+              IndexedSeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
+            } else {
+              SeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
+            }
           case g: GenericSurface if ReflectTypeUtil.isJavaColleciton(g.rawType) =>
             JavaListCodec(ofSurface(g.typeArgs(0), seenSet))
           case g: GenericSurface if ReflectTypeUtil.isMap(g.rawType) =>

@@ -37,5 +37,5 @@ class NestedConfigTest extends AirframeSpec {
 
 object NestedConfigTest {
   case class ServerConfig(host: String, port: Int)
-  case class ServerPoolConfig(servers: Seq[ServerConfig])
+  case class ServerPoolConfig(servers: IndexedSeq[ServerConfig])
 }

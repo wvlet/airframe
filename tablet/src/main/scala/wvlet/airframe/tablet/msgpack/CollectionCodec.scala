@@ -19,14 +19,15 @@ import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   *
   */
 object CollectionCodec {
 
-  case class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
-    override def pack(p: MessagePacker, v: Seq[A]): Unit = {
+  object BaseSeqCodec {
+    def pack[A](p: MessagePacker, v: Seq[A], elementCodec: MessageCodec[A]): Unit = {
       // elements
       // [e1, e2, ...]
       val len = v.length
@@ -36,21 +37,41 @@ object CollectionCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    def unpack[A](u: MessageUnpacker, v: MessageHolder, surface: Surface, elementCodec: MessageCodec[A], newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
       // Read elements
       val len = u.unpackArrayHeader()
-      val b   = Seq.newBuilder[Any]
+      val b   = newBuilder
       b.sizeHint(len)
       for (i <- 0 until len) {
         elementCodec.unpack(u, v)
         if (v.isNull) {
           // Add default value
-          b += Zero.zeroOf(surface)
+          b += Zero.zeroOf(surface).asInstanceOf[A]
         } else {
-          b += v.getLastValue
+          b += v.getLastValue.asInstanceOf[A]
         }
       }
       v.setObject(b.result())
+    }
+  }
+
+  case class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
+    override def pack(p: MessagePacker, v: Seq[A]): Unit = {
+      BaseSeqCodec.pack(p, v, elementCodec)
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      BaseSeqCodec.unpack(u, v, surface, elementCodec, Seq.newBuilder[A])
+    }
+  }
+
+  case class IndexedSeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[IndexedSeq[A]] {
+    override def pack(p: MessagePacker, v: IndexedSeq[A]): Unit = {
+      BaseSeqCodec.pack(p, v, elementCodec)
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      BaseSeqCodec.unpack(u, v, surface, elementCodec, IndexedSeq.newBuilder[A])
     }
   }
 
