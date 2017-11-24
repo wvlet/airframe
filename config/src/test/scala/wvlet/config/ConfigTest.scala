@@ -41,7 +41,7 @@ class ConfigTest extends AirframeSpec {
       .registerFromYaml[ClassConfig]("classes.yml")
 
   "MapConfig" should {
-    "read map type configuration items" in {
+    "read map type configuration items" taggedAs ("map-config") in {
       val config      = loadConfig("development")
       val classConfig = config.of[ClassConfig]
       classConfig.classes.size shouldBe 3

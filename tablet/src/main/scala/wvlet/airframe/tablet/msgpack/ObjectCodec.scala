@@ -16,6 +16,7 @@ package wvlet.airframe.tablet.msgpack
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ValueType, Variable}
 import wvlet.log.LogSupport
+import wvlet.surface.reflect.CName
 import wvlet.surface.{Surface, Zero}
 
 import scala.util.{Failure, Success, Try}
@@ -25,7 +26,7 @@ import scala.util.{Failure, Success, Try}
   */
 case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] with LogSupport {
 
-  private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => p.name -> c }.toMap[String, MessageCodec[_]]
+  private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => CName.toCanonicalName(p.name) -> c }.toMap[String, MessageCodec[_]]
 
   override def pack(p: MessagePacker, v: A): Unit = {
     val numParams = surface.params.length
@@ -106,13 +107,13 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           u.unpackValue(keyValue)
 
           val keyString = keyValue.toString
-
+          // Use CName for parameter names
+          val cKey = CName.toCanonicalName(keyString)
           // Read value
-          // TODO Use CName for parameter names?
-          codecTable.get(keyString) match {
+          codecTable.get(cKey) match {
             case Some(codec) =>
               codec.unpack(u, v)
-              m += (keyString -> v.getLastValue)
+              m += (cKey -> v.getLastValue)
             case None =>
               // unknown parameter
               u.skipValue()
@@ -121,7 +122,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         val map = m.result()
         val args = for (i <- 0 until numParams) yield {
           val p         = surface.params(i)
-          val paramName = p.name
+          val paramName = CName.toCanonicalName(p.name)
           map.get(paramName) match {
             case Some(x) => x
             case None =>
