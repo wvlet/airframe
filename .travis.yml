@@ -27,6 +27,9 @@ matrix:
     script:
       - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
       - ./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)
+  - env: SCALA_VERSION=2.13.0-M2 PROJECT=projectJVM
+    jdk: oraclejdk8
+    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.12.4 PROJECT=logJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
