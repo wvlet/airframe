@@ -52,13 +52,13 @@ class AsyncHandlerTest extends Spec with Timer {
             sl.resetHandler(handler)
 
             block("async") {
-              for (i <- (0 until N).par) {
+              for (i <- (0 until N).toIndexedSeq.par) {
                 al.info(s"hello world: ${i}")
               }
             }
 
             block("sync") {
-              for (i <- (0 until N).par) {
+              for (i <- (0 until N).toIndexedSeq.par) {
                 sl.info(s"hello world: ${i}")
               }
             }

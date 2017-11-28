@@ -1,9 +1,10 @@
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 
+val SCALA_2_13          = "2.13.0-M2"
 val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
-val targetScalaVersions = Seq(SCALA_2_12, SCALA_2_11)
+val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
 scalaVersion in ThisBuild := SCALA_2_12
 
@@ -141,7 +142,7 @@ lazy val airframe =
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value,
         // scalatest
-        "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
+        "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
       )
     )
     .jvmSettings(
@@ -193,7 +194,7 @@ lazy val surface =
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
         // scalatest
-        "org.scalatest" %%% "scalatest" % "3.0.1" % "test"
+        "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
       )
     )
     .jsSettings(jsBuildSettings)
@@ -233,7 +234,7 @@ lazy val opts =
       name := "airframe-opts",
       description := "Command-line option parser",
       libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
       )
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
@@ -247,7 +248,7 @@ lazy val log =
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-        "org.scalatest"  %%% "scalatest"   % "3.0.1"            % "test"
+        "org.scalatest"  %%% "scalatest"   % "3.0.4"            % "test"
       )
     )
     .jvmSettings(
@@ -284,7 +285,7 @@ lazy val airframeSpec =
       name := "airframe-spec",
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
-        "org.scalatest" %%% "scalatest" % "3.0.1"
+        "org.scalatest" %%% "scalatest" % "3.0.4"
       )
     )
     .jsSettings(jsBuildSettings)
@@ -302,12 +303,11 @@ lazy val tablet =
       description := "Data format conversion library",
       libraryDependencies ++= Seq(
         "org.msgpack"          % "msgpack-core" % "0.8.13",
-        "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
-        // For ColumnType parser
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-        // For JSON parser
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
-        "org.scalacheck"         %% "scalacheck"               % "1.13.4" % "test",
+        // scala-csv doesn't support Scala 2.13 yet
+        // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
+        // For ColumnType parser and JSON parser
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
+        "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
       )

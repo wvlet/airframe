@@ -15,7 +15,6 @@ package wvlet.airframe.tablet.text
 
 import java.io.{File, InputStream}
 
-import com.github.tototoshi.csv.CSVReader
 import wvlet.airframe.tablet.text.TextTabletWriter.{CSVRecordFormatter, TSVRecordFormatter}
 import wvlet.airframe.tablet.{Record, StringArrayRecord, TabletReader}
 
@@ -54,11 +53,11 @@ object TSVTabletReader {
 }
 
 class CSVTabletReader(source: Source) extends TextTabletReader {
-  private val reader                       = CSVReader.open(source)
-  private val lines: Iterator[Seq[String]] = reader.iterator
+  // TODO handle CSV properly
+  private val lines: Iterator[Seq[String]] = source.getLines().map(line => line.split(",").toSeq)
 
   override def close {
-    reader.close()
+    source.close()
   }
 
   def read: Option[Record] = {

@@ -19,7 +19,6 @@ import java.lang.{reflect => jr}
 import wvlet.surface.{ArraySurface, Surface}
 
 import scala.collection.mutable
-import scala.collection.parallel.ParSeq
 import scala.language.existentials
 
 /**
@@ -135,9 +134,10 @@ object ReflectTypeUtil extends LogSupport {
     classOf[Seq[_]].isAssignableFrom(cl)
   }
 
-  def isParSeq[T](cl: Class[T]): Boolean = {
-    classOf[ParSeq[_]].isAssignableFrom(cl)
-  }
+//  def isParSeq[T](cl: Class[T]): Boolean = {
+//    // This doesn't work in Scala 2.13
+//    classOf[ParSeq[_]].isAssignableFrom(cl)
+//  }
 
   def isIndexedSeq[T](cl: Class[T]): Boolean = {
     classOf[IndexedSeq[_]].isAssignableFrom(cl) || isArray(cl)
