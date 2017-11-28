@@ -9,6 +9,8 @@ import wvlet.log.io.Timer
   */
 class AsyncHandlerTest extends Spec with Timer {
 
+  import CompatParColls.Converters._
+
   "AsynHandler" should {
     "start background thread" in {
       val buf = new BufferedLogHandler(BareFormatter)

@@ -35,4 +35,20 @@ trait AirframeSpec extends WordSpec with Matchers with GivenWhenThen with Before
     Logger.stopScheduledLogLevelScan
     s
   }
+
+  private[airframe] object CompatParColls {
+    val Converters = {
+      import Compat._
+
+      {
+        import scala.collection.parallel._
+
+        CollectionConverters
+      }
+    }
+
+    object Compat {
+      object CollectionConverters
+    }
+  }
 }
