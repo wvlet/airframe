@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.28
+ - Add support for Scala 2.13.0-M2
+
 ## 0.27
  - aiframe-config: Fixes nested case class binding [#108](https://github.com/wvlet/airframe/issues/110)
  - Dropped support of Scala.js + Scala 2.11 combination. Scala.js libraries will support only Scala 2.12 (or higher) in upcoming releases
