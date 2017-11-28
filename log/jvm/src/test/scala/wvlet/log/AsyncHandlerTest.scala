@@ -9,6 +9,8 @@ import wvlet.log.io.Timer
   */
 class AsyncHandlerTest extends Spec with Timer {
 
+  import CompatParColls.Converters._
+
   "AsynHandler" should {
     "start background thread" in {
       val buf = new BufferedLogHandler(BareFormatter)
@@ -52,13 +54,13 @@ class AsyncHandlerTest extends Spec with Timer {
             sl.resetHandler(handler)
 
             block("async") {
-              for (i <- (0 until N).toIndexedSeq.par) {
+              for (i <- (0 until N).par) {
                 al.info(s"hello world: ${i}")
               }
             }
 
             block("sync") {
-              for (i <- (0 until N).toIndexedSeq.par) {
+              for (i <- (0 until N).par) {
                 sl.info(s"hello world: ${i}")
               }
             }

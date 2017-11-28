@@ -252,9 +252,7 @@ lazy val log =
       )
     )
     .jvmSettings(
-      libraryDependencies ++= Seq(
-        "ch.qos.logback" % "logback-core" % "1.2.3"
-      )
+      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3") ++ (if(scalaVersion.value.startsWith("2.13.")) Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2") else Seq.empty)
     )
     .jsSettings(
       jsBuildSettings,
@@ -284,9 +282,7 @@ lazy val airframeSpec =
     .settings(
       name := "airframe-spec",
       description := "Airframe spec test base library",
-      libraryDependencies ++= Seq(
-        "org.scalatest" %%% "scalatest" % "3.0.4"
-      )
+      libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % "3.0.4") ++ (if (scalaVersion.value.startsWith("2.13.")) Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2") else Seq.empty)
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
