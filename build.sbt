@@ -252,7 +252,9 @@ lazy val log =
       )
     )
     .jvmSettings(
-      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3") ++ (if(scalaVersion.value.startsWith("2.13.")) Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2") else Seq.empty)
+      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3") ++ (if (scalaVersion.value.startsWith("2.13."))
+                                                                                     Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+                                                                                   else Seq.empty)
     )
     .jsSettings(
       jsBuildSettings,
@@ -282,7 +284,9 @@ lazy val airframeSpec =
     .settings(
       name := "airframe-spec",
       description := "Airframe spec test base library",
-      libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % "3.0.4") ++ (if (scalaVersion.value.startsWith("2.13.")) Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2") else Seq.empty)
+      libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % "3.0.4") ++ (if (scalaVersion.value.startsWith("2.13."))
+                                                                                   Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+                                                                                 else Seq.empty)
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
@@ -298,7 +302,7 @@ lazy val tablet =
       name := "airframe-tablet",
       description := "Data format conversion library",
       libraryDependencies ++= Seq(
-        "org.msgpack"          % "msgpack-core" % "0.8.13",
+        "org.msgpack" % "msgpack-core" % "0.8.13",
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
