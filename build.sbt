@@ -69,9 +69,9 @@ val jsBuildSettings = Seq[Setting[_]](
   // Do not run tests concurrently
   concurrentRestrictions in Global := Seq(
     Tags.limit(Tags.Test, 1)
-  ),
+  )
   // Workaround for ' JSCom has been closed' issue
-  parallelExecution in ThisBuild := false
+  //parallelExecution in ThisBuild := false
 )
 
 val noPublish = Seq(
