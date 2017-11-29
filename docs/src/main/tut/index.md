@@ -33,7 +33,7 @@ in developing complex services in Scala, including [application configuration](d
 ## Getting Started
  [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
 
-Airframe is available for Scala 2.12, 2.11, and [Scala.js](https://www.scala-js.org/):
+Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/):
 
 **build.sbt**
 ```
