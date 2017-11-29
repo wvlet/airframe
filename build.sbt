@@ -37,6 +37,8 @@ val buildSettings = Seq[Setting[_]](
   // Release settings
   releaseCrossBuild := true,
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  // Workaround for sbt-release 1.0.6
+  releaseVersionFile := baseDirectory.value / "version.sbt",
   releaseTagName := { (version in ThisBuild).value },
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
