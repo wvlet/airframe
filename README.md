@@ -17,7 +17,7 @@ As its core Airframe provides a dependency injection (DI) library tailored to Sc
 - [Use Cases](http://wvlet.org/airframe/docs/use-cases.html)
    - Configuring applications, managing resources, service mix-in, etc.
 - [DI Framework Comparison](http://wvlet.org/airframe/docs/comparison.html)
-   - Comparing Airframe with Google Guice, Macwire, Dapper2, etc. 
+   - Comparing Airframe with Google Guice, Macwire, Dagger2, etc. 
 - [Airframe Utilities](http://wvlet.org/airframe/docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 - [Release Notes](http://wvlet.org/airframe/docs/release-notes.html)
@@ -27,6 +27,7 @@ As its core Airframe provides a dependency injection (DI) library tailored to Sc
 
 **build.sbt**
 ```
+# For Scala 2.11, 2.12, and 2.13
 libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 
 # For Scala.js (supported since airframe 0.12)
