@@ -251,12 +251,12 @@ lazy val log =
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
         "org.scalatest"  %%% "scalatest"   % "3.0.4"            % "test"
-      )
+      ) ++ (if (scalaVersion.value.startsWith("2.13."))
+              Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+            else Seq.empty)
     )
     .jvmSettings(
-      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3") ++ (if (scalaVersion.value.startsWith("2.13."))
-                                                                                     Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-                                                                                   else Seq.empty)
+      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
     )
     .jsSettings(
       jsBuildSettings,
