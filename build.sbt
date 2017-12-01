@@ -138,14 +138,10 @@ lazy val docs =
     )
     .enablePlugins(MicrositesPlugin)
 
-
-
-
-def parallelCollection(scalaVersion:String) = {
+def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
     Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-  }
-  else {
+  } else {
     Seq.empty
   }
 }
@@ -209,7 +205,7 @@ lazy val surface =
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION % "test"
+        "org.scalatest"  %%% "scalatest"    % SCALATEST_VERSION % "test"
       )
     )
     .jsSettings(jsBuildSettings)
@@ -264,7 +260,7 @@ lazy val log =
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION % "test"
+        "org.scalatest"  %%% "scalatest"   % SCALATEST_VERSION  % "test"
       ) ++ parallelCollection(scalaVersion.value)
     )
     .jvmSettings(
@@ -316,8 +312,8 @@ lazy val msgpack =
       name := "airframe-msgpack",
       description := "Airframe MessagePack codec support",
       libraryDependencies ++= Seq(
-        "org.msgpack" % "msgpack-core" % "0.8.14",
-        "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test"
+        "org.msgpack"    % "msgpack-core" % "0.8.14",
+        "org.scalacheck" %% "scalacheck"  % "1.13.5" % "test"
       )
     )
     .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")

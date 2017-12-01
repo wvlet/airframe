@@ -17,6 +17,7 @@ import java.io.{FileInputStream, FileOutputStream}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
+import wvlet.airframe.tablet.{Record, ShallowMessagePackRecord, TabletReader, TabletWriter}
 import wvlet.log.LogSupport
 
 /**
