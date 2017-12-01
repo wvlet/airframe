@@ -11,12 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.msgpack.codec
 
 import java.math.BigInteger
 
 import org.msgpack.core.MessagePack
-import wvlet.airframe.tablet.Schema
 
 /**
   *
@@ -25,24 +24,24 @@ class PrimitiveCodecTest extends CodecSpec {
   "PrimitiveCodec" should {
 
     "support numeric" in {
-      roundTripTestWithStr[Int](Schema.INTEGER)
-      roundTripTestWithStr[Byte](Schema.INTEGER)
-      roundTripTestWithStr[Short](Schema.INTEGER)
-      roundTripTestWithStr[Long](Schema.INTEGER)
-      roundTripTestWithStr[Boolean](Schema.BOOLEAN)
+      roundTripTestWithStr[Int](DataType.INTEGER)
+      roundTripTestWithStr[Byte](DataType.INTEGER)
+      roundTripTestWithStr[Short](DataType.INTEGER)
+      roundTripTestWithStr[Long](DataType.INTEGER)
+      roundTripTestWithStr[Boolean](DataType.BOOLEAN)
     }
 
     "support char" in {
-      roundTripTest[Char](Schema.INTEGER)
+      roundTripTest[Char](DataType.INTEGER)
     }
 
     "support float" in {
-      roundTripTestWithStr[Float](Schema.FLOAT)
-      roundTripTestWithStr[Double](Schema.FLOAT)
+      roundTripTestWithStr[Float](DataType.FLOAT)
+      roundTripTestWithStr[Double](DataType.FLOAT)
     }
 
     "support string" in {
-      roundTripTest[String](Schema.STRING)
+      roundTripTest[String](DataType.STRING)
     }
 
     "support arrays" taggedAs ("array") in {

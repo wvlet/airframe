@@ -11,30 +11,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet
+package wvlet.airframe.msgpack.codec
 
 import java.util.Locale
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.Schema._
+import wvlet.airframe.msgpack.codec.DataType.Column
 
 /**
   *
   */
-class SchemaTest extends AirframeSpec {
+class DataTypeTest extends AirframeSpec {
   "DataType" should {
 
     "have primitive types" in {
-      Schema.primitiveTypes should contain(Schema.NIL)
-      Schema.primitiveTypes should contain(Schema.INTEGER)
-      Schema.primitiveTypes should contain(Schema.FLOAT)
-      Schema.primitiveTypes should contain(Schema.BOOLEAN)
-      Schema.primitiveTypes should contain(Schema.STRING)
-      Schema.primitiveTypes should contain(Schema.TIMESTAMP)
-      Schema.primitiveTypes should contain(Schema.BINARY)
-      Schema.primitiveTypes should contain(Schema.JSON)
+      DataType.primitiveTypes should contain(DataType.NIL)
+      DataType.primitiveTypes should contain(DataType.INTEGER)
+      DataType.primitiveTypes should contain(DataType.FLOAT)
+      DataType.primitiveTypes should contain(DataType.BOOLEAN)
+      DataType.primitiveTypes should contain(DataType.STRING)
+      DataType.primitiveTypes should contain(DataType.TIMESTAMP)
+      DataType.primitiveTypes should contain(DataType.BINARY)
+      DataType.primitiveTypes should contain(DataType.JSON)
 
-      for (p <- Schema.primitiveTypes) {
+      for (p <- DataType.primitiveTypes) {
         val name = p.toString.toLowerCase(Locale.ENGLISH)
         p.typeName shouldBe name
         p.signature shouldBe name
@@ -43,34 +43,34 @@ class SchemaTest extends AirframeSpec {
     }
 
     "should have any" in {
-      val a = Schema.ANY
+      val a = DataType.ANY
       a.typeName shouldBe "any"
       a.signature shouldBe "any"
       a.typeArgs shouldBe empty
     }
 
     "should have typeName" in {
-      Schema.NIL.typeName shouldBe "nil"
+      DataType.NIL.typeName shouldBe "nil"
     }
 
     "support array types" in {
-      val a = Schema.ARRAY(Schema.INTEGER)
+      val a = DataType.ARRAY(DataType.INTEGER)
       a.signature shouldBe "array[integer]"
       a.typeName shouldBe "array"
-      a.typeArgs shouldBe Seq(Schema.INTEGER)
+      a.typeArgs shouldBe Seq(DataType.INTEGER)
     }
 
     "support map types" in {
-      val m = Schema.MAP(Schema.INTEGER, Schema.STRING)
+      val m = DataType.MAP(DataType.INTEGER, DataType.STRING)
       m.signature shouldBe "map[integer,string]"
       m.typeName shouldBe "map"
-      m.typeArgs shouldBe Seq(Schema.INTEGER, Schema.STRING)
+      m.typeArgs shouldBe Seq(DataType.INTEGER, DataType.STRING)
     }
 
     "support record types" in {
-      val c1 = Column("c1", Schema.INTEGER)
-      val c2 = Column("c2", Schema.FLOAT)
-      val r  = Schema.RecordType("MyType", Seq(c1, c2))
+      val c1 = Column("c1", DataType.INTEGER)
+      val c2 = Column("c2", DataType.FLOAT)
+      val r  = DataType.RecordType("MyType", Seq(c1, c2))
       r.signature shouldBe "MyType(c1:integer,c2:float)"
       r.typeName shouldBe "MyType"
       r.typeArgs shouldBe empty
@@ -89,14 +89,14 @@ class SchemaTest extends AirframeSpec {
 
     "detect duplicate column names" in {
       intercept[IllegalArgumentException] {
-        Schema.RecordType("A", Seq(Column("c", Schema.INTEGER), Column("c", Schema.STRING)))
+        DataType.RecordType("A", Seq(Column("c", DataType.INTEGER), Column("c", DataType.STRING)))
       }
     }
 
     "support union types" in {
-      val r1 = Schema.RecordType("A", Seq(Column("c1", Schema.INTEGER), Column("c2", Schema.FLOAT)))
-      val r2 = Schema.RecordType("B", Seq(Column("c1", Schema.INTEGER), Column("c2", Schema.FLOAT), Column("c3", Schema.JSON)))
-      val u  = Schema.UNION(Seq(r1, r2))
+      val r1 = DataType.RecordType("A", Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT)))
+      val r2 = DataType.RecordType("B", Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT), Column("c3", DataType.JSON)))
+      val u  = DataType.UNION(Seq(r1, r2))
       u.signature shouldBe "union[A|B]"
       u.typeArgs shouldBe Seq(r1, r2)
       u.typeName shouldBe "union"

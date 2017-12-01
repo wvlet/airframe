@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.msgpack.codec
 
-import wvlet.airframe.tablet.Schema._
-import wvlet.airframe.tablet.msgpack.MessageCodec.INVALID_DATA
+import wvlet.airframe.msgpack.codec.DataType._
+import wvlet.airframe.msgpack.codec.MessageCodec.INVALID_DATA
 
 /**
   *

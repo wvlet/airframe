@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.tablet.msgpack.{MessageCodec, MessageHolder}
+import wvlet.airframe.msgpack.codec.{MessageCodec, MessageHolder}
+import wvlet.airframe.tablet.msgpack.MessageHolder
 import wvlet.airframe.tablet.{Record, TabletWriter}
 import wvlet.log.LogSupport
 import wvlet.surface

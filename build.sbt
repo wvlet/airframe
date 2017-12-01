@@ -6,6 +6,8 @@ val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
 val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
+val SCALATEST_VERSION = "3.0.4"
+
 scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
@@ -39,7 +41,9 @@ val buildSettings = Seq[Setting[_]](
   releasePublishArtifactsAction := PgpKeys.publishSigned.value,
   // Workaround for sbt-release 1.0.6
   releaseVersionFile := baseDirectory.value / "version.sbt",
-  releaseTagName := { (version in ThisBuild).value },
+  releaseTagName := {
+    (version in ThisBuild).value
+  },
   releaseProcess := Seq[ReleaseStep](
     checkSnapshotDependencies,
     inquireVersions,
@@ -89,7 +93,7 @@ lazy val root =
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, tablet)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, msgpack, tablet)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -134,6 +138,18 @@ lazy val docs =
     )
     .enablePlugins(MicrositesPlugin)
 
+
+
+
+def parallelCollection(scalaVersion:String) = {
+  if (scalaVersion.startsWith("2.13.")) {
+    Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+  }
+  else {
+    Seq.empty
+  }
+}
+
 lazy val airframe =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe"))
@@ -142,9 +158,7 @@ lazy val airframe =
       name := "airframe",
       description := "Dependency injection library tailored to Scala",
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value,
-        // scalatest
-        "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
+        "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
     .jvmSettings(
@@ -195,8 +209,7 @@ lazy val surface =
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-        // scalatest
-        "org.scalatest" %%% "scalatest" % "3.0.4" % "test"
+        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION % "test"
       )
     )
     .jsSettings(jsBuildSettings)
@@ -241,6 +254,7 @@ lazy val opts =
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
+// airframe-log should have minimum dependencies
 lazy val log =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("log"))
@@ -250,10 +264,8 @@ lazy val log =
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-        "org.scalatest"  %%% "scalatest"   % "3.0.4"            % "test"
-      ) ++ (if (scalaVersion.value.startsWith("2.13."))
-              Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-            else Seq.empty)
+        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION % "test"
+      ) ++ parallelCollection(scalaVersion.value)
     )
     .jvmSettings(
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
@@ -286,15 +298,29 @@ lazy val airframeSpec =
     .settings(
       name := "airframe-spec",
       description := "Airframe spec test base library",
-      libraryDependencies ++= Seq("org.scalatest" %%% "scalatest" % "3.0.4") ++ (if (scalaVersion.value.startsWith("2.13."))
-                                                                                   Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
-                                                                                 else Seq.empty)
+      libraryDependencies ++= Seq(
+        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION
+      ) ++ parallelCollection(scalaVersion.value)
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
 
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
+
+lazy val msgpack =
+  project
+    .in(file("msgpack"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-msgpack",
+      description := "Airframe MessagePack codec support",
+      libraryDependencies ++= Seq(
+        "org.msgpack" % "msgpack-core" % "0.8.14",
+        "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test"
+      )
+    )
+    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
 
 lazy val tablet =
   project
@@ -304,7 +330,6 @@ lazy val tablet =
       name := "airframe-tablet",
       description := "Data format conversion library",
       libraryDependencies ++= Seq(
-        "org.msgpack" % "msgpack-core" % "0.8.13",
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
@@ -314,4 +339,4 @@ lazy val tablet =
         "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
       )
     )
-    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(msgpack, logJVM, surfaceJVM, airframeSpecJVM % "test")

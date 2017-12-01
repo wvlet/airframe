@@ -1,7 +1,7 @@
 package wvlet.airframe.tablet.obj
 
 import org.msgpack.core.MessagePack
-import wvlet.airframe.tablet.msgpack.MessageCodec
+import wvlet.airframe.msgpack.codec.MessageCodec
 import wvlet.airframe.tablet.{MessagePackRecord, Record, TabletReader}
 import wvlet.log.LogSupport
 import wvlet.surface.Surface

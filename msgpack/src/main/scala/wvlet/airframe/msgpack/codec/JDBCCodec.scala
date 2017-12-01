@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.msgpack.codec
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import wvlet.log.LogSupport
 import java.{lang => jl}
 
-import wvlet.airframe.tablet.msgpack.PrimitiveCodec._
+import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import wvlet.airframe.msgpack.codec.PrimitiveCodec._
+import wvlet.log.LogSupport
 
 /**
   *

@@ -11,23 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.msgpack.codec
 
 import org.msgpack.core.MessagePack
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.GeneratorDrivenPropertyChecks.forAll
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.tablet.Schema
-import wvlet.airframe.tablet.Schema.DataType
 
-import scala.collection.JavaConverters._
 import scala.reflect.runtime.{universe => ru}
+import scala.collection.JavaConverters._
 
 /**
   *
   */
-trait CodecSpec extends AirframeSpec {
-  def roundtrip[A: ru.TypeTag](v: A, expectedType: DataType = Schema.ANY): MessageHolder = {
+trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
+  def roundtrip[A: ru.TypeTag](v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
     roundtrip(MessageCodec.of[A], v, expectedType)
   }
 
@@ -80,11 +78,11 @@ trait CodecSpec extends AirframeSpec {
     val javaListCodec = MessageCodec.of[java.util.List[T]]
     forAll { (v: Array[T]) =>
       // Array round trip
-      roundtrip(codec, v, Schema.ANY)
+      roundtrip(codec, v, DataType.ANY)
       // Seq -> Array
-      roundtrip(seqCodec, v.toSeq, Schema.ANY)
+      roundtrip(seqCodec, v.toSeq, DataType.ANY)
       // java.util.List[T] -> Array
-      roundtrip(javaListCodec, v.toSeq.asJava, Schema.ANY)
+      roundtrip(javaListCodec, v.toSeq.asJava, DataType.ANY)
     }
   }
 

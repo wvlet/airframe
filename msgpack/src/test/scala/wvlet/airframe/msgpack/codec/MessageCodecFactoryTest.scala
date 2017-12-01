@@ -11,15 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package wvlet.airframe.tablet.msgpack;
+package wvlet.airframe.msgpack.codec
 
 /**
- *
- */
-public enum TestEnum {
-    RUNNING,
-    FINISHED,
-    STOPPED,
-    CANCELLED;
+  *
+  */
+class MessageCodecFactoryTest extends CodecSpec {
+
+  "MessageCodecFactory" should {}
 }
+
+object MessageCodecFactoryTest {}

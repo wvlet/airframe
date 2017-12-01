@@ -11,30 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.msgpack.codec
 
 import org.msgpack.core.MessagePack
-import org.scalatest.prop.GeneratorDrivenPropertyChecks.forAll
-import wvlet.airframe.tablet.Schema
+
+import ObjectCodecTest._
 
 /**
   *
   */
-import wvlet.airframe.tablet.msgpack.ObjectCodecTest._
-
 class ObjectCodecTest extends CodecSpec {
-
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
   "support case classes" in {
     val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
-    roundtrip(codec, v, Schema.ANY)
+    roundtrip(codec, v, DataType.ANY)
 
     forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
       // scalacheck supports only upto 6 elements
       forAll { (b: Boolean, s: String) =>
         val v = A1(i, l, f, d, c, st, b, s)
-        roundtrip[A1](codec, v, Schema.ANY)
+        roundtrip[A1](codec, v, DataType.ANY)
       }
     }
   }
@@ -50,7 +47,7 @@ class ObjectCodecTest extends CodecSpec {
 
     h.isNull shouldBe false
     h.hasError shouldBe false
-    h.getDataType shouldBe Schema.ANY
+    h.getDataType shouldBe DataType.ANY
     h.getLastValue shouldBe v
   }
 }
