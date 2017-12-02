@@ -197,7 +197,7 @@ lazy val airframeMacrosJS  = airframeMacros.js
 
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
-    .in(file("surface"))
+    .in(file("airframe-surface"))
     .settings(buildSettings)
     .settings(
       name := "airframe-surface",
@@ -216,7 +216,7 @@ lazy val surfaceJS  = surface.js
 
 lazy val config =
   project
-    .in(file("config"))
+    .in(file("airframe-config"))
     .settings(buildSettings)
     .settings(
       name := "airframe-config",
@@ -229,7 +229,7 @@ lazy val config =
 
 lazy val jmx =
   project
-    .in(file("jmx"))
+    .in(file("airframe-jmx"))
     .settings(buildSettings)
     .settings(
       name := "airframe-jmx",
@@ -239,7 +239,7 @@ lazy val jmx =
 
 lazy val opts =
   project
-    .in(file("opts"))
+    .in(file("airframe-opts"))
     .settings(buildSettings)
     .settings(
       name := "airframe-opts",
@@ -253,7 +253,7 @@ lazy val opts =
 // airframe-log should have minimum dependencies
 lazy val log =
   crossProject(JVMPlatform, JSPlatform)
-    .in(file("log"))
+    .in(file("airframe-log"))
     .settings(buildSettings)
     .settings(
       name := "airframe-log",
@@ -278,7 +278,7 @@ lazy val logJS  = log.js
 
 lazy val metrics =
   project
-    .in(file("metrics"))
+    .in(file("airframe-metrics"))
     .settings(buildSettings)
     .settings(
       name := "airframe-metrics",
@@ -289,7 +289,7 @@ lazy val metrics =
 
 lazy val airframeSpec =
   crossProject(JVMPlatform, JSPlatform)
-    .in(file("spec"))
+    .in(file("airframe-spec"))
     .settings(buildSettings)
     .settings(
       name := "airframe-spec",
@@ -306,7 +306,7 @@ lazy val airframeSpecJS  = airframeSpec.js
 
 lazy val codec =
   project
-    .in(file("codec"))
+    .in(file("airframe-codec"))
     .settings(buildSettings)
     .settings(
       name := "airframe-codec",
@@ -320,7 +320,7 @@ lazy val codec =
 
 lazy val tablet =
   project
-    .in(file("tablet"))
+    .in(file("airframe-tablet"))
     .settings(buildSettings)
     .settings(
       name := "airframe-tablet",

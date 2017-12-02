@@ -23,7 +23,7 @@ class NestedConfigTest extends AirframeSpec {
 
   "Config" should {
     "support nested case classes" in {
-      val configPaths = Seq("config/src/test/resources")
+      val configPaths = Seq("airframe-config/src/test/resources")
 
       val config = Config(env = "default", configPaths = configPaths)
         .registerFromYaml[ServerPoolConfig]("nested.yml")
