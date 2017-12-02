@@ -26,33 +26,43 @@ As its core Airframe provides a dependency injection (DI) library tailored to Sc
  [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12)
 
 **build.sbt**
-```
-# For Scala 2.11, 2.12, and 2.13
-libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 
-# For Scala.js (supported since airframe 0.12)
-libraryDependencies += "org.wvlet.airframe" %%% "airframe" % "(version)"
+Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:
+```scala
+# For Scala 2.11, 2.12, and 2.13
+libraryDependencies ++= Seq(
+  // Dependency injection
+  "org.wvlet.airframe" %% "airframe" % "(version)",
+  // MessagePack-based schema-on-read transcode
+  "org.wvlet.airframe" %% "airframe-codec" % "(version)"
+  // YAML-based configuration
+  "org.wvlet.airframe" %% "airframe-config" % "(version)"
+  // JMX entry 
+  "org.wvlet.airframe" %% "airframe-jmx" % "(version)"
+  // Logging
+  "org.wvlet.airframe" %% "airframe-log" % "(version)"
+  // Metrics library
+  "org.wvlet.airframe" %% "airframe-metrics" % "(version)"
+  // Command-line option parser
+  "org.wvlet.airframe" %% "airframe-opts" % "(version)"
+  // Object surface inspector
+  "org.wvlet.airframe" %% "airframe-surface" % "(version)"
+  // Table data reader/writer
+  "org.wvlet.airframe" %% "airframe-tablet" % "(version)"
+)
+
+# For Scala.js, the following libraries can be used:
+libraryDependencies ++= Seq(
+  // Dependency injection
+  "org.wvlet.airframe" %%% "airframe" % "(version)",
+  // Logging
+  "org.wvlet.airframe" %%% "airframe-log" % "(version)",
+  // Object surface inspector
+  "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
+)
 ```
 
 See [Documentation](http://wvlet.org/airframe/docs/) for further details.
-
-## Airframe Library Source Codes
-- [airframe](https://github.com/wvlet/airframe/tree/master/airframe)
-  - Dependency injection library
-- [airframe-log](https://github.com/wvlet/airframe/tree/master/log)
-  - Light-weight handy logging library
-- [airframe-config](https://github.com/wvlet/airframe/tree/master/config) 
-  - Configuration reader & provider
-- [airframe-opts](https://github.com/wvlet/airframe/tree/master/opts) 
-  - Command-line parser & launcher
-- [airframe-metrics](https://github.com/wvlet/airframe/tree/master/metrics)
-  - Human-readable representation of time, time range, and data size.
-- [airframe-jmx](https://github.com/wvlet/airframe/tree/master/jmx)
-  - Enable application monitoring through JMX
-- [airframe-surface](https://github.com/wvlet/airframe/tree/master/surface)
-  - Object shape inspector. What parameters are defined in an object? 
-- [airframe-spec](https://github.com/wvlet/airframe/blob/master/spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
-  - A simple base trait for using ScalaTest.
 
 ## LICENSE
 
