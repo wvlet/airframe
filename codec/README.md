@@ -4,7 +4,7 @@ airframe-codec
 airframe-codec is an [MessagePack](https://msgpack.org)-based schema-on-read data transcoder.
 
 With airframe-codec you can:
-- Encode Scala objects (e.g., case classes, collection, etc.) into MessagePack format, and decode it. Object serialization/deserialization.
+- Encode Scala objects (e.g., case classes, collection, etc.) into MessagePack format, and decode it. 
 - Convert JDBC result sets into MessagePack
 - Add you custom codec (implementing pack/unpack)
 - You can use airframe-tablet for reading CSV/TSV/JSON/JDBC data etc.    
