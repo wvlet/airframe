@@ -11,11 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.codec
 
-import wvlet.airframe.tablet.msgpack.CollectionCodec._
-import wvlet.airframe.tablet.msgpack.ScalaStandardCodec.{OptionCodec, TupleCodec}
-import wvlet.airframe.tablet.msgpack.StandardCodec.EnumCodec
+import wvlet.airframe.codec.CollectionCodec._
+import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
+import wvlet.airframe.codec.StandardCodec.EnumCodec
 import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}

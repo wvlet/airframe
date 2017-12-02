@@ -1,6 +1,6 @@
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.tablet.msgpack.MessageCodec
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.log.LogSupport
 import wvlet.surface.Surface

@@ -27,6 +27,8 @@ options:
     nested_options:
       - title: airframe-log
         url: docs/airframe-log.html
+      - title: airframe-codec
+        url: docs/airframe-codec.html
       - title: airframe-config
         url: docs/config.html
       - title: airframe-opts

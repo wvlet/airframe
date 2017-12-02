@@ -11,9 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
-
-import wvlet.airframe.tablet.Schema
+package wvlet.airframe.codec
 
 import scala.collection.JavaConverters._
 
@@ -25,12 +23,12 @@ class CollectionCodecTest extends CodecSpec {
   "CollectionCodec" should {
     "support Map type" in {
       val v = Map("id" -> 1)
-      roundtrip(v, Schema.ANY)
+      roundtrip(v, DataType.ANY)
     }
 
     "support Java Map type" in {
       val v = Map("id" -> 1).asJava
-      roundtrip(v, Schema.ANY)
+      roundtrip(v, DataType.ANY)
     }
   }
 

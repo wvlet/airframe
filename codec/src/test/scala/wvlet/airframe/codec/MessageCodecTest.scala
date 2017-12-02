@@ -11,14 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.msgpack
+package wvlet.airframe.codec
+
+import wvlet.airframe.AirframeSpec
+import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 
 /**
   *
   */
-class MessageCodecFactoryTest extends CodecSpec {
+class MessageCodecTest extends AirframeSpec {
+  "MessageCodec" should {
 
-  "MessageCodecFactory" should {}
+    "have surface" in {
+      info(LongCodec.surface)
+    }
+
+  }
+
 }
-
-object MessageCodecFactoryTest {}
