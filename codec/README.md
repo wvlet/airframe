@@ -7,7 +7,7 @@ With airframe-codec you can:
 - Encode Scala objects (e.g., case classes, collection, etc.) into MessagePack format, and decode it. Object serialization/deserialization.
 - Convert JDBC result sets into MessagePack
 - Add you custom codec (implementing pack/unpack)
-- You can use airframe-tablet is for reading CSV/TSV/JSON/JDBC data etc.    
+- You can use airframe-tablet for reading CSV/TSV/JSON/JDBC data etc.    
 
 airframe-codec supports schema-on-read data conversion.
 For example, even if your data is string representation of integer values, e.g., "1", "2, "3", ..., 
