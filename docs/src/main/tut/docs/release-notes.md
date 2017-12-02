@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.29
+ - Add airframe-codec, a [MessgePack](https://msgpack.org)-based schema-on-read data transcoder.
+
 ## 0.28
  - Add support for Scala 2.13.0-M2
 
