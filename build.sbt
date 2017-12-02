@@ -93,7 +93,7 @@ lazy val root =
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, msgpack, tablet)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, codec, tablet)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
@@ -304,13 +304,13 @@ lazy val airframeSpec =
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
 
-lazy val msgpack =
+lazy val codec =
   project
-    .in(file("msgpack"))
+    .in(file("codec"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-msgpack",
-      description := "Airframe MessagePack codec support",
+      name := "airframe-codec",
+      description := "Airframe MessagePack-based codec",
       libraryDependencies ++= Seq(
         "org.msgpack"    % "msgpack-core" % "0.8.14",
         "org.scalacheck" %% "scalacheck"  % "1.13.5" % "test"
@@ -335,4 +335,4 @@ lazy val tablet =
         "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
       )
     )
-    .dependsOn(msgpack, logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
