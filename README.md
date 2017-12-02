@@ -31,34 +31,22 @@ Airframe is a collection of Scala libraries. You can include one or more of them
 ```scala
 # For Scala 2.11, 2.12, and 2.13
 libraryDependencies ++= Seq(
-  // Dependency injection
-  "org.wvlet.airframe" %% "airframe" % "(version)",
-  // MessagePack-based schema-on-read transcode
-  "org.wvlet.airframe" %% "airframe-codec" % "(version)"
-  // YAML-based configuration
-  "org.wvlet.airframe" %% "airframe-config" % "(version)"
-  // JMX entry 
-  "org.wvlet.airframe" %% "airframe-jmx" % "(version)"
-  // Logging
-  "org.wvlet.airframe" %% "airframe-log" % "(version)"
-  // Metrics library
-  "org.wvlet.airframe" %% "airframe-metrics" % "(version)"
-  // Command-line option parser
-  "org.wvlet.airframe" %% "airframe-opts" % "(version)"
-  // Object surface inspector
-  "org.wvlet.airframe" %% "airframe-surface" % "(version)"
-  // Table data reader/writer
-  "org.wvlet.airframe" %% "airframe-tablet" % "(version)"
+  "org.wvlet.airframe" %% "airframe"         % "(version)", // Dependency injection
+  "org.wvlet.airframe" %% "airframe-codec"   % "(version)", // MessagePack-based schema-on-read transcoder
+  "org.wvlet.airframe" %% "airframe-config"  % "(version)", // YAML-based configuration
+  "org.wvlet.airframe" %% "airframe-jmx"     % "(version)", // JMX entry 
+  "org.wvlet.airframe" %% "airframe-log"     % "(version)", // Logging
+  "org.wvlet.airframe" %% "airframe-metrics" % "(version)", // Metrics units
+  "org.wvlet.airframe" %% "airframe-opts"    % "(version)", // Command-line option parser
+  "org.wvlet.airframe" %% "airframe-surface" % "(version)", // Object surface inspector
+  "org.wvlet.airframe" %% "airframe-tablet"  % "(version)"  // Table data reader/writer
 )
 
 # For Scala.js, the following libraries can be used:
 libraryDependencies ++= Seq(
-  // Dependency injection
-  "org.wvlet.airframe" %%% "airframe" % "(version)",
-  // Logging
-  "org.wvlet.airframe" %%% "airframe-log" % "(version)",
-  // Object surface inspector
-  "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
+  "org.wvlet.airframe" %%% "airframe"         % "(version)", // Dependency injection
+  "org.wvlet.airframe" %%% "airframe-log"     % "(version)", // Logging
+  "org.wvlet.airframe" %%% "airframe-surface" % "(version)"  // Object surface inspector
 )
 ```
 
