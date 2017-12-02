@@ -114,7 +114,7 @@ for(change <- config.getConfigChanges) {
 ```
 
 
-## Usign with Airframe
+## Using with Airframe
 
 Here is an example of using `Config` with `Airframe`:
 
