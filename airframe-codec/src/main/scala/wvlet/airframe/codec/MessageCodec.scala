@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.MessageCodec.ErrorCode
-import wvlet.airframe.msgpack.spi.MessagePackApi.{Packer, Unpacker}
+import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}

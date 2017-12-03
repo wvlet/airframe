@@ -16,4 +16,11 @@ package wvlet.airframe.msgpack.spi
 /**
   *
   */
-class Value {}
+trait Value {
+  def toJson: String
+}
+
+class Variable extends Value {
+  // TODO impl
+  def toJson: String = ""
+}

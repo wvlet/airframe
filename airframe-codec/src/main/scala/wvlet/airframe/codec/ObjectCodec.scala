@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi.MessagePackApi._
+import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
 import wvlet.surface.reflect.CName
 import wvlet.surface.{Surface, Zero}

@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 
 import java.{lang => jl}
 
-import wvlet.airframe.msgpack.spi.MessagePackApi._
+import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.log.LogSupport
 
@@ -58,11 +58,7 @@ object JDBCCodec {
     }
 
     override def unpack(u: Unpacker, v: MessageHolder) {
-      val size = u.unpackArrayHeader
-      for (i <- 0 until size) {
-        u.unpackValue()
-      }
-
+      throw new UnsupportedOperationException(s"unpack SQLArray")
     }
   }
 

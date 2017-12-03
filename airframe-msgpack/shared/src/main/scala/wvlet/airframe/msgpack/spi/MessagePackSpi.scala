@@ -53,6 +53,8 @@ trait Packer {
   def packBinaryHeader(len: Int): Packer
   def packRawStringHeader(len: Int): Packer
 
+  def packValue(v: Value): Packer
+
   def writePayload(src: Array[Byte]): Packer
   def writePayload(src: Array[Byte], offset: Int, length: Int): Packer
   def addPayload(src: Array[Byte]): Packer
@@ -88,6 +90,9 @@ trait Unpacker {
   def unpackExtensionTypeHeader: ExtensionTypeHeader
   def unpackRawStringHeader: Int
   def unpackBinaryHeader: Int
+
+  def unpackValue: Value
+  def unpackValue(v: Variable): Variable
 
   def skipPayload(numBytes: Int)
   def readPayload(dst: Array[Byte])
