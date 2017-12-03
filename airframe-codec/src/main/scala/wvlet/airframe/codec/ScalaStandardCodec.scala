@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.codec.MessagePackApi._
+import wvlet.airframe.msgpack.spi._
 
 /**
   *

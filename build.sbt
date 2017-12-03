@@ -145,7 +145,8 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   metricsJVM,
   codec,
   tablet,
-  jdbc
+  jdbc,
+  msgpackJVM
 )
 lazy val jsProjects: Seq[ProjectReference] = List(
   airframeJS,
@@ -373,6 +374,21 @@ lazy val airframeSpec =
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
 
+lazy val msgpack =
+  crossProject(JVMPlatform, JSPlatform)
+    .in(file("airframe-msgpack"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-msgpack",
+      description := "Pure-Scala MessagePack library",
+      libraryDependencies ++= parallelCollection(scalaVersion.value)
+    )
+    .jsSettings(jsBuildSettings)
+    .dependsOn(log, airframeSpec % "test")
+
+lazy val msgpackJVM = msgpack.jvm
+lazy val msgpackJS = msgpack.js
+
 lazy val codec =
   project
     .in(file("airframe-codec"))
@@ -385,7 +401,7 @@ lazy val codec =
         "org.scalacheck" %% "scalacheck"  % SCALACHECK_VERSION % "test"
       )
     )
-    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(logJVM, surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
 
 lazy val tablet =
   project
@@ -402,7 +418,7 @@ lazy val tablet =
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",
-        "org.msgpack"    % "msgpack-core" % "0.8.14",
+        "org.msgpack"            %  "msgpack-core"             % "0.8.14",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )

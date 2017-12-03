@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 
 import java.{lang => jl}
 
-import wvlet.airframe.codec.MessagePackApi._
+import wvlet.airframe.msgpack.spi.MessagePackApi._
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.log.LogSupport
 

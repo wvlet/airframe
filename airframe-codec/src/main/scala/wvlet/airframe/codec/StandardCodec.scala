@@ -18,7 +18,7 @@ import java.text.DateFormat
 import java.time.{Instant, ZonedDateTime}
 import java.util.Date
 
-import wvlet.airframe.codec.MessagePackApi._
+import wvlet.airframe.msgpack.spi.MessagePackApi._
 import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.Surface
