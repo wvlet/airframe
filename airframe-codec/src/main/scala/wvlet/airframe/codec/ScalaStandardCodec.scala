@@ -13,25 +13,23 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.ValueType
+import wvlet.airframe.codec.MessagePackApi._
 
 /**
   *
   */
 object ScalaStandardCodec {
   case class OptionCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Option[A]] {
-    override def pack(p: MessagePacker, v: Option[A]): Unit = {
+    override def pack(p: Packer, v: Option[A]): Unit = {
       v match {
-        case None => p.packNil()
+        case None => p.packNil
         case Some(x) =>
           elementCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val f = u.getNextFormat
-      f.getValueType match {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
         case ValueType.NIL =>
           v.setObject(None)
         case _ =>
@@ -43,7 +41,7 @@ object ScalaStandardCodec {
 
   case class TupleCodec(elementCodec: Seq[MessageCodec[_]]) extends MessageCodec[Product] {
 
-    override def pack(p: MessagePacker, v: Product): Unit = {
+    override def pack(p: Packer, v: Product): Unit = {
       val arity = v.productArity
       p.packArrayHeader(arity)
       for ((e, codec) <- v.productIterator.toSeq.zip(elementCodec)) {
@@ -51,8 +49,8 @@ object ScalaStandardCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val numElems = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val numElems = u.unpackArrayHeader
       if (numElems != elementCodec.size) {
         u.skipValue(numElems)
         v.setIncompatibleFormatException(this, s"tuple size mismatch: expected ${elementCodec.size}, actual:${numElems}")
