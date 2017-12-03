@@ -13,60 +13,135 @@
  */
 package wvlet.airframe.msgpack.spi
 
+import java.nio.charset.StandardCharsets
+
 /**
   *
   */
 trait Value {
+  override def toString = toJson
   def toJson: String
   def valueType: ValueType
-  def toImmutable: Value
-
   def writeTo(packer: Packer)
-//  def isNil: Boolean
-//  def isBoolean: Boolean
-//  def isNumber: Boolean
-//  def isInteger: Boolean
-//  def isFloat: Boolean
-//  def isRaw: Boolean
-//  def isBinary: Boolean
-//  def isString: Boolean
-//  def isArray: Boolean
-//  def isMap: Boolean
 }
 
 object Value {
   case object NilValue extends Value {
-    def toJson             = "null"
-    def valueType          = ValueType.NIL
-    def toImmutable: Value = this
-    def writeTo(packer: Packer): Unit = {
+    override def toJson    = "null"
+    override def valueType = ValueType.NIL
+    override def writeTo(packer: Packer): Unit = {
       packer.packNil
     }
   }
   case class BooleanValue(v: Boolean) extends Value {
-    def toJson             = if (v) "true" else "false"
-    def valueType          = ValueType.BOOLEAN
-    def toImmutable: Value = this
-    def writeTo(packer: Packer): Unit = {
+    override def toJson    = if (v) "true" else "false"
+    override def valueType = ValueType.BOOLEAN
+    override def writeTo(packer: Packer): Unit = {
       packer.packBoolean(v)
     }
   }
 
-  case class StringValue(v: String) extends Value {
-    def toJson = {
+  case class LongValue(v: Long) extends Value {
+    override def toJson    = v.toString
+    override def valueType = ValueType.INTEGER
+    override def writeTo(packer: Packer): Unit = {
+      packer.packLong(v)
+    }
+  }
+
+  case class DoubleValue(v: Double) extends Value {
+    override def toJson               = if (v.isNaN || v.isInfinite) "null" else v.toString
+    override def valueType: ValueType = ValueType.FLOAT
+    override def writeTo(packer: Packer): Unit = {
+      packer.packDouble(v)
+    }
+  }
+
+  abstract class RawValue extends Value {
+    override def toJson = {
       val b = new StringBuilder
-      appendJsonString(b, v)
+      appendJsonString(b, toRawString)
       b.result
     }
+    protected def toRawString: String
+  }
 
-    def valueType          = ValueType.STRING
-    def toImmutable: Value = this
-    def writeTo(packer: Packer): Unit = {
+  case class StringValue(v: String) extends RawValue {
+    override protected def toRawString: String = v
+    override def valueType                     = ValueType.STRING
+    override def writeTo(packer: Packer): Unit = {
       packer.packString(v)
     }
   }
 
-  private[impl] def appendJsonString(sb: StringBuilder, string: String): Unit = {
+  case class BinaryValue(v: Array[Byte]) extends RawValue {
+    @transient private var decodedStringCache: String = null
+
+    override def valueType: ValueType = ValueType.BINARY
+    override def writeTo(packer: Packer): Unit = {
+      packer.packBinaryHeader(v.length)
+      packer.writePayload(v)
+    }
+
+    override protected def toRawString: String = {
+      synchronized {
+        if (decodedStringCache == null) {
+          decodedStringCache = new String(v, StandardCharsets.UTF_8)
+        }
+      }
+      decodedStringCache
+    }
+  }
+
+  case class ExtensionValue(extType: Byte, v: Array[Byte]) extends Value {
+    override def toJson = {
+      val sb = new StringBuilder
+      for (e <- v) {
+        // Binary to HEX
+        sb.append(Integer.toString(e.toInt, 16))
+      }
+      s"[${extType.toInt.toString},${sb.result()}]"
+    }
+    override def valueType: ValueType = ValueType.EXTENSION
+    override def writeTo(packer: Packer): Unit = {
+      packer.packExtensionTypeHeader(extType, v.length)
+      packer.writePayload(v)
+    }
+  }
+
+  case class ArrayValue(elems: IndexedSeq[Value]) extends Value {
+    def apply(i: Int): Value = elems.apply(i)
+    def size: Int            = elems.size
+
+    override def toJson: String = {
+      s"[${elems.map(_.toJson).mkString(",")}]"
+    }
+    override def valueType: ValueType = ValueType.ARRAY
+    override def writeTo(packer: Packer): Unit = {
+      packer.packArrayHeader(elems.length)
+      elems.foreach(x => x.writeTo(packer))
+    }
+  }
+
+  case class MapValue(entries: Map[Value, Value]) extends Value {
+    def apply(key: Value): Value       = entries.apply(key)
+    def get(key: Value): Option[Value] = entries.get(key)
+    def size: Int                      = entries.size
+
+    override def toJson: String = {
+      s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}"
+    }
+    override def valueType: ValueType = ValueType.MAP
+    override def writeTo(packer: Packer): Unit = {
+      packer.packMapHeader(entries.size)
+      entries.foreach { x =>
+        x._1.writeTo(packer)
+        x._2.writeTo(packer)
+      }
+    }
+  }
+
+  private def appendJsonString(sb: StringBuilder, string: String): Unit = {
     sb.append("\"")
     var i = 0
     while ({ i < string.length }) {
@@ -110,13 +185,4 @@ object Value {
     sb.append(HEX_TABLE((ch >> 4) & 0x0f))
     sb.append(HEX_TABLE(ch & 0x0f))
   }
-
-}
-
-class Variable extends Value {
-  // TODO impl
-  def toJson: String                         = ""
-  override def valueType: ValueType          = ???
-  override def toImmutable: Value            = ???
-  override def writeTo(packer: Packer): Unit = ???
 }

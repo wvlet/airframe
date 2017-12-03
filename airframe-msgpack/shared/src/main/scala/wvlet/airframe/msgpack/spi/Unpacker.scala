@@ -44,7 +44,6 @@ trait Unpacker {
   def unpackBinaryHeader: Int
 
   def unpackValue: Value
-  def unpackValue(v: Variable): Variable
 
   def skipPayload(numBytes: Int)
   def readPayload(dst: Array[Byte])
