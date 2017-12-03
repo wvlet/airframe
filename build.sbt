@@ -383,7 +383,10 @@ lazy val msgpack =
       description := "Pure-Scala MessagePack library",
       libraryDependencies ++= parallelCollection(scalaVersion.value)
     )
-    .jsSettings(jsBuildSettings)
+    .jsSettings(
+      jsBuildSettings,
+      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.3"
+    )
     .dependsOn(log, airframeSpec % "test")
 
 lazy val msgpackJVM = msgpack.jvm

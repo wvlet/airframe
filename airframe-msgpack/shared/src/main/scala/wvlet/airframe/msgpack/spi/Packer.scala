@@ -14,6 +14,7 @@
 package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
+import java.time.Instant
 
 /**
   *
@@ -32,10 +33,14 @@ trait Packer {
   def packFloat(v: Float): Packer
   def packDouble(v: Double): Packer
   def packString(v: String): Packer
+  def packTimestamp(v: Instant): Packer = packTimestamp(v.getEpochSecond, v.getNano)
+  def packTimestamp(epochSecond: Long, nanoAdjustment: Int): Packer
+
   def packArrayHeader(arraySize: Int): Packer
   def packMapHeader(mapSize: Int): Packer
 
   def packExtensionTypeHeader(extType: Byte, payloadLen: Int): Packer
+  def packExtensionTypeHeader(extensionTypeHeader: ExtensionTypeHeader): Packer = packExtensionTypeHeader(extensionTypeHeader.extType, extensionTypeHeader.byteLength)
   def packBinaryHeader(len: Int): Packer
   def packRawStringHeader(len: Int): Packer
 

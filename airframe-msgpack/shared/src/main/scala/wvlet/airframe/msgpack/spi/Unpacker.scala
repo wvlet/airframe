@@ -14,6 +14,7 @@
 package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
+import java.time.Instant
 
 /**
   * MessageUnpacker interface
@@ -37,6 +38,8 @@ trait Unpacker {
   def unpackFloat: Float
   def unpackDouble: Double
   def unpackString: String
+  def unpackTimestamp: Instant
+
   def unpackArrayHeader: Int
   def unpackMapHeader: Int
   def unpackExtensionTypeHeader: ExtensionTypeHeader

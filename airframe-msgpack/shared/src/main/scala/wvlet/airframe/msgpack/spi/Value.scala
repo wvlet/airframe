@@ -14,6 +14,9 @@
 package wvlet.airframe.msgpack.spi
 
 import java.nio.charset.StandardCharsets
+import java.time.Instant
+
+import wvlet.log.{LogFormatter, LogTimestampFormatter}
 
 /**
   *
@@ -106,6 +109,16 @@ object Value {
     override def writeTo(packer: Packer): Unit = {
       packer.packExtensionTypeHeader(extType, v.length)
       packer.writePayload(v)
+    }
+  }
+
+  case class TimestampValue(v: Instant) extends Value {
+    override def toJson: String = {
+      LogTimestampFormatter.formatTimestamp(v.toEpochMilli)
+    }
+    override def valueType: ValueType = ValueType.TIMESTAMP
+    override def writeTo(packer: Packer): Unit = {
+      packer.packTimestamp(v)
     }
   }
 

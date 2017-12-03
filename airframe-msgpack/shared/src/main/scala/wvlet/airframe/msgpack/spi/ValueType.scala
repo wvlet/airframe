@@ -22,6 +22,8 @@ object ValueType {
   case object FLOAT     extends ValueType
   case object STRING    extends ValueType
   case object BINARY    extends ValueType
+  case object TIMESTAMP extends ValueType
+
   case object ARRAY     extends ValueType
   case object MAP       extends ValueType
   case object EXTENSION extends ValueType
