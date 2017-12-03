@@ -18,9 +18,48 @@ package wvlet.airframe.msgpack.spi
   */
 trait Value {
   def toJson: String
+  def valueType: ValueType
+  def toImmutable: Value
+
+  def writeTo(packer: Packer)
+//  def isNil: Boolean
+//  def isBoolean: Boolean
+//  def isNumber: Boolean
+//  def isInteger: Boolean
+//  def isFloat: Boolean
+//  def isRaw: Boolean
+//  def isBinary: Boolean
+//  def isString: Boolean
+//  def isArray: Boolean
+//  def isMap: Boolean
+}
+
+object Value {
+  case object NilValue extends Value {
+    def toJson             = "null"
+    def valueType          = ValueType.NIL
+    def toImmutable: Value = this
+    def writeTo(packer: Packer): Unit = {
+      packer.packNil
+    }
+  }
+  case class BooleanValue(v:Boolean) extends Value {
+    def toJson             = if(v) "true" else "false"
+    def valueType          = ValueType.NIL
+    def toImmutable: Value = this
+    def writeTo(packer: Packer): Unit = {
+      packer.packBoolean(v)
+    }
+  }
+
+  case class
+
 }
 
 class Variable extends Value {
   // TODO impl
-  def toJson: String = ""
+  def toJson: String                         = ""
+  override def valueType: ValueType          = ???
+  override def toImmutable: Value            = ???
+  override def writeTo(packer: Packer): Unit = ???
 }

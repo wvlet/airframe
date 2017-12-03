@@ -13,55 +13,7 @@
  */
 package wvlet.airframe.msgpack.spi
 
-/**
-  *
-  */
 import java.math.BigInteger
-
-sealed trait ValueType
-
-object ValueType {
-  case object NIL       extends ValueType
-  case object BOOLEAN   extends ValueType
-  case object INTEGER   extends ValueType
-  case object FLOAT     extends ValueType
-  case object STRING    extends ValueType
-  case object BINARY    extends ValueType
-  case object ARRAY     extends ValueType
-  case object MAP       extends ValueType
-  case object EXTENSION extends ValueType
-}
-
-/**
-  * Message Packer interface
-  */
-trait Packer {
-  def packNil: Packer
-  def packBoolean(v: Boolean): Packer
-  def packByte(v: Byte): Packer
-  def packShort(v: Short): Packer
-  def packInt(v: Int): Packer
-  def packLong(v: Long): Packer
-  def packBigInteger(v: BigInteger): Packer
-  def packFloat(v: Float): Packer
-  def packDouble(v: Double): Packer
-  def packString(v: String): Packer
-  def packArrayHeader(arraySize: Int): Packer
-  def packMapHeader(mapSize: Int): Packer
-
-  def packExtensionTypeHeader(extType: Byte, payloadLen: Int): Packer
-  def packBinaryHeader(len: Int): Packer
-  def packRawStringHeader(len: Int): Packer
-
-  def packValue(v: Value): Packer
-
-  def writePayload(src: Array[Byte]): Packer
-  def writePayload(src: Array[Byte], offset: Int, length: Int): Packer
-  def addPayload(src: Array[Byte]): Packer
-  def addPayload(src: Array[Byte], offset: Int, length: Int): Packer
-}
-
-case class ExtensionTypeHeader(extType: Byte, byteLength: Int)
 
 /**
   * MessageUnpacker interface
@@ -99,3 +51,5 @@ trait Unpacker {
   def readPayload(dst: Array[Byte], offset: Int, length: Int)
   def readPayload(length: Int): Array[Byte]
 }
+
+case class ExtensionTypeHeader(extType: Byte, byteLength: Int)
