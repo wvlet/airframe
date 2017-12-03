@@ -16,12 +16,13 @@ package wvlet.airframe.msgpack.spi
 sealed trait ValueType
 
 object ValueType {
-  case object NIL       extends ValueType
-  case object BOOLEAN   extends ValueType
-  case object INTEGER   extends ValueType
-  case object FLOAT     extends ValueType
-  case object STRING    extends ValueType
-  case object BINARY    extends ValueType
+  case object NIL     extends ValueType
+  case object BOOLEAN extends ValueType
+  case object INTEGER extends ValueType
+  case object FLOAT   extends ValueType
+  case object STRING  extends ValueType
+  case object BINARY  extends ValueType
+  // Timestamp value will be reported as a first-class value
   case object TIMESTAMP extends ValueType
 
   case object ARRAY     extends ValueType

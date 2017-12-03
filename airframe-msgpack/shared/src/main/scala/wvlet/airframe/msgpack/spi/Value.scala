@@ -70,6 +70,7 @@ object Value {
   }
 
   case class StringValue(v: String) extends RawValue {
+    override def toString                      = v
     override protected def toRawString: String = v
     override def valueType                     = ValueType.STRING
     override def writeTo(packer: Packer): Unit = {
@@ -157,7 +158,7 @@ object Value {
   private def appendJsonString(sb: StringBuilder, string: String): Unit = {
     sb.append("\"")
     var i = 0
-    while ({ i < string.length }) {
+    while (i < string.length) {
       val ch = string.charAt(i)
       if (ch < 0x20) ch match {
         case '\n' =>
@@ -184,7 +185,7 @@ object Value {
         escapeChar(sb, ch)
       } else sb.append(ch)
 
-      { i += 1; i - 1 }
+      i += 1
     }
     sb.append("\"")
   }
