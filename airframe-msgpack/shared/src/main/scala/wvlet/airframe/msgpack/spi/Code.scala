@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package airframe.msgpack.spi
+package wvlet.airframe.msgpack.spi
 
 object Code {
   def isFixInt(b: Byte): Boolean = {
