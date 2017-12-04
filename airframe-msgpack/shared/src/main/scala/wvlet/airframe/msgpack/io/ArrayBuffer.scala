@@ -14,18 +14,18 @@
 package wvlet.airframe.msgpack.io
 
 import wvlet.airframe.msgpack.spi.ErrorCode.INSUFFICIENT_BUFFER
-import wvlet.airframe.msgpack.spi.MessageException
+import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MessageException}
 
 /**
   *
   */
-class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
+class ArrayBuffer(a: Array[Byte], offset: Int, val size: Int) extends Buffer {
   require(offset > 0, s"baseOffset ${offset} < 0")
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
   def ensureCapacity(index: Int, requestedLength: Int): Unit = {
     if (index + requestedLength < size) {
-      throw new MessageException(INSUFFICIENT_BUFFER, "")
+      throw new InsufficientBufferException(requestedLength)
     }
   }
 
@@ -45,9 +45,9 @@ class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
     ensureCapacity(index, 4)
     val pos = offset + index
     ((a(pos).toInt << 24) |
-      ((a(pos + 1).toInt & 0xFF) << 16) |
-      ((a(pos + 2).toInt & 0xFF) << 8) |
-      (a(pos + 3).toInt & 0xFF))
+      ((a(pos + 1) & 0xFF) << 16) |
+      ((a(pos + 2) & 0xFF) << 8) |
+      (a(pos + 3) & 0xFF))
   }
 
   override def readLong(index: Int): Long = {

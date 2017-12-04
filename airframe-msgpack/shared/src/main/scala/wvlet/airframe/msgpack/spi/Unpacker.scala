@@ -21,7 +21,7 @@ import java.time.Instant
   */
 trait Unpacker {
   def hasNext: Boolean
-  def getNextCode: Int
+  def getNextFormat: MessageFormat
   def getNextValueType: ValueType
 
   def skipValue: Unit

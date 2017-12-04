@@ -30,17 +30,6 @@ class BufferUnpacker {
 
   def lastReadByteLength: Int = _lastReadByteLength
 
-  private def unexpected(expectedCode: String, actual: Byte) = {
-    val f = MessageFormat.of(actual)
-    if (f == MessageFormat.NEVER_USED) {
-      throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")
-    } else {
-      val name     = f.valueType.name
-      val typeName = name.substring(0, 1) + name.substring(1).toLowerCase(Locale.ENGLISH)
-      throw new MessageException(INVALID_TYPE, f"Expected ${expectedCode}, but got ${typeName} (${actual}%02x)")
-    }
-  }
-
   def unpackNil(buf: Buffer, index: Int) {
     buf.readByte(index) match {
       case Code.NIL =>
@@ -539,4 +528,15 @@ class BufferUnpacker {
 
 object BufferUnpacker {
   val EMPTY_STRING: String = ""
+
+  private[io] def unexpected(expectedCode: String, actual: Byte) = {
+    val f = MessageFormat.of(actual)
+    if (f == MessageFormat.NEVER_USED) {
+      throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")
+    } else {
+      val name     = f.valueType.name
+      val typeName = name.substring(0, 1) + name.substring(1).toLowerCase(Locale.ENGLISH)
+      throw new MessageException(INVALID_TYPE, f"Expected ${expectedCode}, but got ${typeName} (${actual}%02x)")
+    }
+  }
 }

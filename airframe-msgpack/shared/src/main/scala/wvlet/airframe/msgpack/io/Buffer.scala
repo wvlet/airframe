@@ -13,13 +13,15 @@
  */
 package wvlet.airframe.msgpack.io
 
-import wvlet.airframe.msgpack.spi.ErrorCode.INSUFFICIENT_BUFFER
 import wvlet.airframe.msgpack.spi.MessageException
 
 /**
   * Write data a given position and return the written byte length
   */
 trait Buffer {
+
+  def size: Int
+
   @throws[MessageException]
   def ensureCapacity(index: Int, requestedLength: Int): Unit
 
