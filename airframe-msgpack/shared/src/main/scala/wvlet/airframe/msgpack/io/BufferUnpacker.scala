@@ -14,13 +14,12 @@
 package wvlet.airframe.msgpack.io
 
 import java.math.BigInteger
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-import wvlet.airframe.msgpack.spi.ErrorCode.{INSUFFICIENT_BUFFER, INVALID_TYPE, NEVER_USED_FORMAT, TOO_LARGE_MESSAGE}
+import wvlet.airframe.msgpack.io.BufferUnpacker._
+import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi._
-import BufferUnpacker._
 
 /**
   * Read a value from the buffer

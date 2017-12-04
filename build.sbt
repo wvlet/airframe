@@ -390,7 +390,7 @@ lazy val msgpack =
     .dependsOn(log, airframeSpec % "test")
 
 lazy val msgpackJVM = msgpack.jvm
-lazy val msgpackJS = msgpack.js
+lazy val msgpackJS  = msgpack.js
 
 lazy val codec =
   project
