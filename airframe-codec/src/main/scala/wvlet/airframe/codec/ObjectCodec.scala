@@ -99,11 +99,10 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         val m = Map.newBuilder[String, Any]
 
         // { key:value, ...} -> record
-        val mapSize  = u.unpackMapHeader
-        val keyValue = new Variable
+        val mapSize = u.unpackMapHeader
         for (i <- 0 until mapSize) {
           // Read key
-          u.unpackValue(keyValue)
+          val keyValue = u.unpackValue
 
           val keyString = keyValue.toString
           // Use CName for parameter names

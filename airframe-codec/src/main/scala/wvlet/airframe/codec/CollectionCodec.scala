@@ -39,7 +39,7 @@ object CollectionCodec {
 
     def unpack[A](u: Unpacker, v: MessageHolder, surface: Surface, elementCodec: MessageCodec[A], newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
       // Read elements
-      val len = u.unpackArrayHeader()
+      val len = u.unpackArrayHeader
       val b   = newBuilder
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -86,7 +86,7 @@ object CollectionCodec {
     }
 
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+      val len = u.unpackArrayHeader
       val b   = Seq.newBuilder[Any]
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -106,7 +106,7 @@ object CollectionCodec {
       }
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader()
+      val len = u.unpackMapHeader
       val b   = Map.newBuilder[Any, Any]
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -130,7 +130,7 @@ object CollectionCodec {
       }
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader()
+      val len = u.unpackMapHeader
       val b   = Map.newBuilder[Any, Any]
       b.sizeHint(len)
       for (i <- 0 until len) {

@@ -248,7 +248,7 @@ object PrimitiveCodec {
           read(u.unpackLong)
         case ValueType.STRING =>
           read {
-            val s = u.unpackString()
+            val s = u.unpackString
             Try(s.toLong).getOrElse(s.toDouble.toLong)
           }
         case ValueType.BOOLEAN =>
@@ -299,9 +299,9 @@ object PrimitiveCodec {
         case ValueType.FLOAT =>
           read(u.unpackDouble.toString)
         case ValueType.MAP =>
-          read(u.unpackValue().toJson)
+          read(u.unpackValue.toJson)
         case ValueType.ARRAY =>
-          read(u.unpackValue().toJson)
+          read(u.unpackValue.toJson)
         case ValueType.BINARY =>
           read {
             val len = u.unpackBinaryHeader
