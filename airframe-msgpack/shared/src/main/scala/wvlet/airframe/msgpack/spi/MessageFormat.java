@@ -16,6 +16,7 @@ package wvlet.airframe.msgpack.spi;
 
 /**
  * Describes the list of the message format types defined in the MessagePack specification.
+ * TODO: Convert this into Scala
  */
 public enum MessageFormat
 {

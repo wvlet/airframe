@@ -24,9 +24,50 @@ class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
   def ensureCapacity(index: Int, requestedLength: Int): Unit = {
-    if (index < size) {
+    if (index + requestedLength < size) {
       throw new MessagePackException(INSUFFICIENT_BUFFER, "")
     }
+  }
+
+  override def readByte(index: Int): Byte = {
+    ensureCapacity(index, 1)
+    val pos = offset + index
+    a(pos)
+  }
+
+  override def readShort(index: Int): Short = {
+    ensureCapacity(index, 2)
+    val pos = offset + index
+    ((a(pos) << 8) | (a(pos + 1) & 0xFF)).toShort
+  }
+
+  override def readInt(index: Int): Int = {
+    ensureCapacity(index, 4)
+    val pos = offset + index
+    ((a(pos).toInt << 24) |
+      ((a(pos + 1).toInt & 0xFF) << 16) |
+      ((a(pos + 2).toInt & 0xFF) << 8) |
+      (a(pos + 3).toInt & 0xFF))
+  }
+
+  override def readLong(index: Int): Long = {
+    ensureCapacity(index, 8)
+    val pos = offset + index
+    ((a(pos).toLong << 56) |
+      ((a(pos + 1).toLong & 0xFF) << 48) |
+      ((a(pos + 2).toLong & 0xFF) << 40) |
+      ((a(pos + 3).toLong & 0xFF) << 32) |
+      ((a(pos + 4).toLong & 0xFF) << 24) |
+      ((a(pos + 5).toLong & 0xFF) << 16) |
+      ((a(pos + 6).toLong & 0xFF) << 8) |
+      (a(pos + 7).toLong & 0xFF))
+  }
+
+  override def readBytes(index: Int, length: Int) = {
+    ensureCapacity(index, length)
+    val dest = new Array[Byte](length)
+    Array.copy(a, offset + index, dest, 0, length)
+    dest
   }
 
   def writeByte(index: Int, v: Byte): Int = {

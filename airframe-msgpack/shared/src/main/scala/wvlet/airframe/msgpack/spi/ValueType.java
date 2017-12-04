@@ -21,6 +21,7 @@ package wvlet.airframe.msgpack.spi;
  * returns true if type is Integer or Float. String and Binary are subtype of Raw. Thus {@link #isRawType()} returns
  * true if type is String or Binary.
  *
+ * TODO: Convert this into Scala
  */
 public enum ValueType
 {
