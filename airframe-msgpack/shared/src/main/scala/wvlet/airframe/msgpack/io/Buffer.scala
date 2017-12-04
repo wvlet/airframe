@@ -23,13 +23,23 @@ trait Buffer {
   @throws[MessagePackException]
   def ensureCapacity(index: Int, requestedLength: Int): Unit
 
-  def writeByte(index: Int, v: Byte): Int
-  def writeBytes(index: Int, v: Array[Byte]): Int = writeBytes(index, v, 0, v.length)
-  def writeBytes(index: Int, v: Array[Byte], vOffset: Int, length: Int): Int
+  def readByte(index: Int): Byte
+  def readShort(index: Int): Short
+  def readInt(index: Int): Int
+  def readLong(index: Int): Long
+  def readFloat(index: Int): Float   = java.lang.Float.intBitsToFloat(readInt(index))
+  def readDouble(index: Int): Double = java.lang.Double.longBitsToDouble(readLong(index))
+  def readBytes(index: Int, length: Int): Array[Byte]
 
+  def writeByte(index: Int, v: Byte): Int
   def writeShort(index: Int, v: Short): Int
   def writeInt(index: Int, v: Int): Int
   def writeLong(index: Int, v: Long): Int
+  def writeFloat(index: Int, v: Float): Int   = writeInt(index, java.lang.Float.floatToRawIntBits(v))
+  def writeDouble(index: Int, v: Double): Int = writeLong(index, java.lang.Double.doubleToRawLongBits(v))
+
+  def writeBytes(index: Int, v: Array[Byte]): Int = writeBytes(index, v, 0, v.length)
+  def writeBytes(index: Int, v: Array[Byte], vOffset: Int, length: Int): Int
 
   def writeByteAndByte(index: Int, b: Byte, v: Byte): Int = {
     ensureCapacity(index, 2)

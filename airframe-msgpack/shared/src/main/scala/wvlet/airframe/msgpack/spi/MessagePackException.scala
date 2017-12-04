@@ -60,3 +60,4 @@ case class InsufficientBufferException(expectedLength: Int) extends MessagePackE
   * that is larger than Integer.MAX_VALUE will cause this exception.
   */
 case class IntegerOverflowException(bigInteger: BigInteger) extends MessagePackException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
+case class TooLargeMessageException(size: Long)             extends MessagePackException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
