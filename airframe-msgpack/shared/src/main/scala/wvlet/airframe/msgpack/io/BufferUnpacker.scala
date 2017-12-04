@@ -87,21 +87,21 @@ class BufferUnpacker {
         _lastReadByteLength = 9
         u64.toByte
       case Code.INT8 =>
-        val i8 = buf.readByte(index)
+        val i8 = buf.readByte(index + 1)
         _lastReadByteLength = 2
         i8
       case Code.INT16 =>
-        val i16 = buf.readShort(index)
+        val i16 = buf.readShort(index + 1)
         if (!i16.isValidByte) throw overflowI16(i16)
         _lastReadByteLength = 3
         i16.toByte
       case Code.INT32 =>
-        val i32 = buf.readInt(index)
+        val i32 = buf.readInt(index + 1)
         if (!i32.isValidByte) throw overflowI32(i32)
         _lastReadByteLength = 5
         i32.toByte
       case Code.INT64 =>
-        val i64 = buf.readLong(index)
+        val i64 = buf.readLong(index + 1)
         if (!i64.isValidByte) throw overflowI64(i64)
         _lastReadByteLength = 9
         i64.toByte
@@ -136,26 +136,212 @@ class BufferUnpacker {
         _lastReadByteLength = 9
         u64.toShort
       case Code.INT8 =>
-        val i8 = buf.readByte(index)
+        val i8 = buf.readByte(index + 1)
         _lastReadByteLength = 2
         i8.toShort
       case Code.INT16 =>
-        val i16 = buf.readShort(index)
+        val i16 = buf.readShort(index + 1)
         _lastReadByteLength = 3
         i16.toShort
       case Code.INT32 =>
-        val i32 = buf.readInt(index)
+        val i32 = buf.readInt(index + 1)
         if (!i32.isValidShort) throw overflowI32(i32)
         _lastReadByteLength = 5
         i32.toShort
       case Code.INT64 =>
-        val i64 = buf.readLong(index)
+        val i64 = buf.readLong(index + 1)
         if (!i64.isValidShort) throw overflowI64(i64)
         _lastReadByteLength = 9
         i64.toShort
       case _ =>
         unexpected("Integer", b)
     }
+  }
+
+  def unpackInt(buf: Buffer, index: Int): Int = {
+    val b = buf.readByte(index)
+    b match {
+      case b if Code.isFixInt(b) =>
+        _lastReadByteLength = 1
+        b.toInt
+      case Code.UINT8 =>
+        val u8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        u8 & 0xff
+      case Code.UINT16 =>
+        val u16 = buf.readShort(index + 1)
+        if (u16 < 0) throw overflowU16(u16)
+        _lastReadByteLength = 3
+        u16 & 0xffff
+      case Code.UINT32 =>
+        val u32 = buf.readInt(index + 1)
+        if (u32 < 0) throw overflowU32(u32)
+        _lastReadByteLength = 5
+        u32
+      case Code.UINT64 =>
+        val u64 = buf.readLong(index + 1)
+        if (u64 < 0 || !u64.isValidInt) throw overflowU64(u64)
+        _lastReadByteLength = 9
+        u64.toInt
+      case Code.INT8 =>
+        val i8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        i8.toInt
+      case Code.INT16 =>
+        val i16 = buf.readShort(index + 1)
+        _lastReadByteLength = 3
+        i16.toInt
+      case Code.INT32 =>
+        val i32 = buf.readInt(index + 1)
+        _lastReadByteLength = 5
+        i32.toInt
+      case Code.INT64 =>
+        val i64 = buf.readLong(index + 1)
+        if (!i64.isValidInt) throw overflowI64(i64)
+        _lastReadByteLength = 9
+        i64.toInt
+      case _ =>
+        unexpected("Integer", b)
+    }
+  }
+
+  def unpackLong(buf: Buffer, index: Int): Long = {
+    val b = buf.readByte(index)
+    b match {
+      case b if Code.isFixInt(b) =>
+        _lastReadByteLength = 1
+        b.toLong
+      case Code.UINT8 =>
+        val u8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        (u8 & 0xff).toLong
+      case Code.UINT16 =>
+        val u16 = buf.readShort(index + 1)
+        if (u16 < 0) throw overflowU16(u16)
+        _lastReadByteLength = 3
+        (u16 & 0xffff).toLong
+      case Code.UINT32 =>
+        val u32 = buf.readInt(index + 1)
+        _lastReadByteLength = 5
+        if (u32 < 0) {
+          (u32 & 0x7fffffff).toLong + 0x80000000L
+        } else {
+          u32.toLong
+        }
+      case Code.UINT64 =>
+        val u64 = buf.readLong(index + 1)
+        if (u64 < 0) throw overflowU64(u64)
+        _lastReadByteLength = 9
+        u64.toLong
+      case Code.INT8 =>
+        val i8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        i8.toLong
+      case Code.INT16 =>
+        val i16 = buf.readShort(index + 1)
+        _lastReadByteLength = 3
+        i16.toLong
+      case Code.INT32 =>
+        val i32 = buf.readInt(index + 1)
+        _lastReadByteLength = 5
+        i32.toLong
+      case Code.INT64 =>
+        val i64 = buf.readLong(index + 1)
+        _lastReadByteLength = 9
+        i64
+      case _ =>
+        unexpected("Integer", b)
+    }
+  }
+
+  def unpackBigInteger(buf: Buffer, index: Int): BigInteger = {
+    val b = buf.readByte(index)
+    b match {
+      case b if Code.isFixInt(b) =>
+        _lastReadByteLength = 1
+        BigInteger.valueOf(b.toLong)
+      case Code.UINT8 =>
+        val u8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        BigInteger.valueOf((u8 & 0xff).toLong)
+      case Code.UINT16 =>
+        val u16 = buf.readShort(index + 1)
+        if (u16 < 0) throw overflowU16(u16)
+        _lastReadByteLength = 3
+        BigInteger.valueOf((u16 & 0xffff).toLong)
+      case Code.UINT32 =>
+        val u32 = buf.readInt(index + 1)
+        _lastReadByteLength = 5
+        if (u32 < 0) {
+          BigInteger.valueOf((u32 & 0x7fffffff).toLong + 0x80000000L)
+        } else {
+          BigInteger.valueOf(u32.toLong)
+        }
+      case Code.UINT64 =>
+        val u64 = buf.readLong(index + 1)
+        if (u64 < 0) throw overflowU64(u64)
+        _lastReadByteLength = 9
+        BigInteger.valueOf(u64.toLong)
+      case Code.INT8 =>
+        val i8 = buf.readByte(index + 1)
+        _lastReadByteLength = 2
+        BigInteger.valueOf(i8.toLong)
+      case Code.INT16 =>
+        val i16 = buf.readShort(index + 1)
+        _lastReadByteLength = 3
+        BigInteger.valueOf(i16.toLong)
+      case Code.INT32 =>
+        val i32 = buf.readInt(index + 1)
+        _lastReadByteLength = 5
+        BigInteger.valueOf(i32.toLong)
+      case Code.INT64 =>
+        val i64 = buf.readLong(index + 1)
+        _lastReadByteLength = 9
+        BigInteger.valueOf(i64)
+      case _ =>
+        unexpected("Integer", b)
+    }
+  }
+
+  def unpackFloat(buf: Buffer, index: Int): Float = {
+    buf.readByte(index) match {
+      case Code.FLOAT32 =>
+        val f = readFloat()
+        _lastReadByteLength = 5
+        f
+      case Code.FLOAT64 =>
+        val d = readDouble()
+        _lastReadByteLength = 9
+        d.toFloat
+      case other =>
+        throw unexpected("Float", other)
+    }
+  }
+
+  def unpackDouble(buf: Buffer, index: Int): Double = {
+    buf.readByte(index) match {
+      case Code.FLOAT32 =>
+        val f = buf.readFloat(index+1)
+        _lastReadByteLength = 5
+        f.toDouble
+      case Code.FLOAT64 =>
+        val d = buf.readDouble(index+1)
+        _lastReadByteLength = 9
+        d
+      case other =>
+        throw unexpected("Float", other)
+    }
+  }
+
+  def unpackRawStringHeader(buf:Buffer, index:Int): Int = {
+    val b = buf.readByte(index)
+
+
+  }
+
+  def unpackString(buf:Buffer, index:Int): String = {
+    val len =
+
   }
 
   def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xFF).toLong))
