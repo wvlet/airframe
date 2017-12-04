@@ -21,6 +21,7 @@ object ErrorCode {
   trait TypeConversionError     extends ErrorCode
   case object INTEGER_OVERFLOW  extends TypeConversionError
   case object INVALID_TYPE_CAST extends TypeConversionError
+  case object INVALID_TYPE      extends TypeConversionError
 
   // Internal errors
   trait InternalError             extends ErrorCode
@@ -31,6 +32,7 @@ object ErrorCode {
   case object NEVER_USED_FORMAT     extends InvalidFormatError
   case object INVALID_STRING_CODING extends InvalidFormatError
   case object TOO_LARGE_MESSAGE     extends InvalidFormatError
+
 }
 
 /**
@@ -50,9 +52,11 @@ class MessagePackException(val errorCode: ErrorCode, message: String = null, cau
   }
 }
 
+case class InsufficientBufferException(expectedLength: Int) extends MessagePackException(ErrorCode.INSUFFICIENT_BUFFER, s"Need at least ${expectedLength} more bytes")
+
 /**
   * This error is thrown when the user tries to read an integer value
   * using a smaller types. For example, calling MessageUnpacker.unpackInt() for an integer value
   * that is larger than Integer.MAX_VALUE will cause this exception.
   */
-class IntegerOverflowException(val bigInteger: BigInteger) extends MessagePackException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}", null)
+case class IntegerOverflowException(bigInteger: BigInteger) extends MessagePackException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
