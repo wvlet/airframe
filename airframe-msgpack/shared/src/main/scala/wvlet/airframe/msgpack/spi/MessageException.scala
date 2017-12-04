@@ -38,7 +38,7 @@ object ErrorCode {
 /**
   * Base class for message pack errors
   */
-class MessagePackException(val errorCode: ErrorCode, message: String = null, cause: Throwable = null) extends Exception(message, cause) {
+class MessageException(val errorCode: ErrorCode, message: String = null, cause: Throwable = null) extends Exception(message, cause) {
   override def getMessage: String = {
     val s = new StringBuilder
     s.append(s"[${errorCode}]")
@@ -52,12 +52,12 @@ class MessagePackException(val errorCode: ErrorCode, message: String = null, cau
   }
 }
 
-case class InsufficientBufferException(expectedLength: Int) extends MessagePackException(ErrorCode.INSUFFICIENT_BUFFER, s"Need at least ${expectedLength} more bytes")
+case class InsufficientBufferException(expectedLength: Int) extends MessageException(ErrorCode.INSUFFICIENT_BUFFER, s"Need at least ${expectedLength} more bytes")
 
 /**
   * This error is thrown when the user tries to read an integer value
   * using a smaller types. For example, calling MessageUnpacker.unpackInt() for an integer value
   * that is larger than Integer.MAX_VALUE will cause this exception.
   */
-case class IntegerOverflowException(bigInteger: BigInteger) extends MessagePackException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
-case class TooLargeMessageException(size: Long)             extends MessagePackException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
+case class IntegerOverflowException(bigInteger: BigInteger) extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
+case class TooLargeMessageException(size: Long)             extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")

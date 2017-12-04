@@ -14,7 +14,7 @@
 package wvlet.airframe.msgpack.io
 
 import wvlet.airframe.msgpack.spi.ErrorCode.INSUFFICIENT_BUFFER
-import wvlet.airframe.msgpack.spi.MessagePackException
+import wvlet.airframe.msgpack.spi.MessageException
 
 /**
   *
@@ -25,7 +25,7 @@ class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
 
   def ensureCapacity(index: Int, requestedLength: Int): Unit = {
     if (index + requestedLength < size) {
-      throw new MessagePackException(INSUFFICIENT_BUFFER, "")
+      throw new MessageException(INSUFFICIENT_BUFFER, "")
     }
   }
 
