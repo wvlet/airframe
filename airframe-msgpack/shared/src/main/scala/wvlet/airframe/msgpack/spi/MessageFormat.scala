@@ -18,7 +18,6 @@ sealed abstract class MessageFormat(val valueType: ValueType)
 
 /**
   * Describes the list of the message format types defined in the MessagePack specification.
-  * TODO: Convert this into Scala
   */
 object MessageFormat {
   // INT7

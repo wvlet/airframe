@@ -23,31 +23,31 @@ import java.time.Instant
   * Message Packer interface
   */
 trait Packer {
-  def packNil: Packer
-  def packBoolean(v: Boolean): Packer
-  def packByte(v: Byte): Packer
-  def packShort(v: Short): Packer
-  def packInt(v: Int): Packer
-  def packLong(v: Long): Packer
-  def packBigInteger(v: BigInteger): Packer
-  def packFloat(v: Float): Packer
-  def packDouble(v: Double): Packer
-  def packString(v: String): Packer
-  def packTimestamp(v: Instant): Packer = packTimestamp(v.getEpochSecond, v.getNano)
-  def packTimestamp(epochSecond: Long, nanoAdjustment: Int): Packer
+  def packNil: this.type
+  def packBoolean(v: Boolean): this.type
+  def packByte(v: Byte): this.type
+  def packShort(v: Short): this.type
+  def packInt(v: Int): this.type
+  def packLong(v: Long): this.type
+  def packBigInteger(v: BigInteger): this.type
+  def packFloat(v: Float): this.type
+  def packDouble(v: Double): this.type
+  def packString(v: String): this.type
+  def packTimestamp(v: Instant): this.type = packTimestamp(v.getEpochSecond, v.getNano)
+  def packTimestamp(epochSecond: Long, nanoAdjustment: Int): this.type
 
-  def packArrayHeader(arraySize: Int): Packer
-  def packMapHeader(mapSize: Int): Packer
+  def packArrayHeader(arraySize: Int): this.type
+  def packMapHeader(mapSize: Int): this.type
 
-  def packExtensionTypeHeader(extType: Byte, payloadLen: Int): Packer
-  def packExtensionTypeHeader(extensionTypeHeader: ExtensionTypeHeader): Packer = packExtensionTypeHeader(extensionTypeHeader.extType, extensionTypeHeader.byteLength)
-  def packBinaryHeader(len: Int): Packer
-  def packRawStringHeader(len: Int): Packer
+  def packExtensionTypeHeader(extType: Byte, payloadLen: Int): this.type
+  def packExtensionTypeHeader(extensionTypeHeader: ExtensionTypeHeader): this.type = packExtensionTypeHeader(extensionTypeHeader.extType, extensionTypeHeader.byteLength)
+  def packBinaryHeader(len: Int): this.type
+  def packRawStringHeader(len: Int): this.type
 
-  def packValue(v: Value): Packer
+  def packValue(v: Value): this.type
 
-  def writePayload(src: Array[Byte]): Packer
-  def writePayload(src: Array[Byte], offset: Int, length: Int): Packer
-  def addPayload(src: Array[Byte]): Packer
-  def addPayload(src: Array[Byte], offset: Int, length: Int): Packer
+  def writePayload(src: Array[Byte]): this.type
+  def writePayload(src: Array[Byte], offset: Int, length: Int): this.type
+  def addPayload(src: Array[Byte]): this.type
+  def addPayload(src: Array[Byte], offset: Int, length: Int): this.type
 }
