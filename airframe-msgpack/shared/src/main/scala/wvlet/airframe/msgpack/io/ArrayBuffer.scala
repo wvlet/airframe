@@ -27,11 +27,11 @@ object ArrayBuffer {
 /**
   *
   */
-case class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
+case class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends InputBuffer with OutputBuffer {
   require(offset > 0, s"baseOffset ${offset} < 0")
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
-  override def slice(position: Int, newSize: Int): Buffer = {
+  override def slice(position: Int, newSize: Int): InputBuffer = {
     require(position + newSize <= size, s"Insufficient array length (${a.length}, offset:${offset}, size:${size}) for slice(${position}, ${newSize})")
     ArrayBuffer(a, offset + position, newSize)
   }
@@ -88,7 +88,7 @@ case class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
     Array.copy(a, offset + position, dest, destOffset, length)
   }
 
-  override def readBytes(position: Int, length: Int, dest: Buffer, destIndex: Int): Unit = {
+  override def readBytes(position: Int, length: Int, dest: OutputBuffer, destIndex: Int): Unit = {
     ensureCapacity(position, length)
     dest.writeBytes(destIndex, a, offset + position, length)
   }
@@ -109,7 +109,7 @@ case class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends Buffer {
     length
   }
 
-  override def writeBytes(position: Int, src: Buffer, srcPosition: Int, length: Int): Int = {
+  override def writeBytes(position: Int, src: InputBuffer, srcPosition: Int, length: Int): Int = {
     require(src != null, "source is nul")
     ensureCapacity(position, length)
     src.readBytes(srcPosition, length, a, offset + position)

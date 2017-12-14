@@ -22,15 +22,15 @@ import wvlet.airframe.msgpack.spi.Code._
   * Write MessagePack code at a given position on the buffer and return the written byte length
   */
 object BufferPacker {
-  def packNil(buf: Buffer, position: Int): Int = {
+  def packNil(buf: InputBuffer, position: Int): Int = {
     buf.writeByte(position, NIL)
   }
 
-  def packBoolean(buf: Buffer, position: Int, v: Boolean): Int = {
+  def packBoolean(buf: InputBuffer, position: Int, v: Boolean): Int = {
     buf.writeByte(position, if (v) TRUE else FALSE)
   }
 
-  def packByte(buf: Buffer, position: Int, v: Byte): Int = {
+  def packByte(buf: InputBuffer, position: Int, v: Byte): Int = {
     if (v < -(1 << 5)) {
       buf.writeByteAndByte(position, INT8, v)
     } else {
@@ -38,7 +38,7 @@ object BufferPacker {
     }
   }
 
-  def packShort(buf: Buffer, position: Int, v: Short): Int = {
+  def packShort(buf: InputBuffer, position: Int, v: Short): Int = {
     if (v < -(1 << 5)) {
       if (v < -(1 << 7)) {
         buf.writeByteAndShort(position, INT16, v)
@@ -54,7 +54,7 @@ object BufferPacker {
     }
   }
 
-  def packInt(buf: Buffer, position: Int, r: Int): Int = {
+  def packInt(buf: InputBuffer, position: Int, r: Int): Int = {
     if (r < -(1 << 5)) {
       if (r < -(1 << 15)) {
         buf.writeByteAndInt(position, INT32, r)
@@ -74,7 +74,7 @@ object BufferPacker {
     }
   }
 
-  def packLong(buf: Buffer, position: Int, v: Long): Int = {
+  def packLong(buf: InputBuffer, position: Int, v: Long): Int = {
     if (v < -(1L << 5)) {
       if (v < -(1L << 15)) {
         if (v < -(1L << 31))
@@ -99,7 +99,7 @@ object BufferPacker {
       buf.writeByteAndLong(position, UINT64, v)
   }
 
-  def packBigInteger(buf: Buffer, position: Int, bi: BigInteger): Int = {
+  def packBigInteger(buf: InputBuffer, position: Int, bi: BigInteger): Int = {
     if (bi.bitLength <= 63) {
       packLong(buf, position, bi.longValue)
     } else if (bi.bitLength == 64 && bi.signum == 1) {
@@ -109,15 +109,15 @@ object BufferPacker {
     }
   }
 
-  def packFloat(buf: Buffer, position: Int, v: Float): Int = {
+  def packFloat(buf: InputBuffer, position: Int, v: Float): Int = {
     buf.writeByteAndFloat(position, FLOAT32, v)
   }
 
-  def packDouble(buf: Buffer, position: Int, v: Double): Int = {
+  def packDouble(buf: InputBuffer, position: Int, v: Double): Int = {
     buf.writeByteAndDouble(position, FLOAT64, v)
   }
 
-  def packString(buf: Buffer, position: Int, s: String): Int = {
+  def packString(buf: InputBuffer, position: Int, s: String): Int = {
     val bytes = s.getBytes(StandardCharsets.UTF_8)
     // Write the length and payload of small string to the buffer so that it avoids an extra flush of buffer
     val len = packRawStringHeader(buf, position, bytes.length)
@@ -125,7 +125,7 @@ object BufferPacker {
     len + bytes.length
   }
 
-  def packRawStringHeader(buf: Buffer, position: Int, len: Int): Int = {
+  def packRawStringHeader(buf: InputBuffer, position: Int, len: Int): Int = {
     if (len < (1 << 5)) {
       buf.writeByte(position, (FIXSTR_PREFIX | len).toByte)
     } else if (len < (1 << 8)) {
@@ -137,7 +137,7 @@ object BufferPacker {
     }
   }
 
-  def packArrayHeader(buf: Buffer, position: Int, arraySize: Int): Int = {
+  def packArrayHeader(buf: InputBuffer, position: Int, arraySize: Int): Int = {
     if (arraySize < 0)
       throw new IllegalArgumentException("array size must be >= 0")
 
@@ -149,7 +149,7 @@ object BufferPacker {
       buf.writeByteAndInt(position, ARRAY32, arraySize)
   }
 
-  def packMapHeader(buf: Buffer, position: Int, mapSize: Int): Int = {
+  def packMapHeader(buf: InputBuffer, position: Int, mapSize: Int): Int = {
     if (mapSize < 0)
       throw new IllegalArgumentException("map size must be >= 0")
 
@@ -162,7 +162,7 @@ object BufferPacker {
     }
   }
 
-  def packExtensionTypeHeader(buf: Buffer, position: Int, extType: Byte, payloadLen: Int): Int = {
+  def packExtensionTypeHeader(buf: InputBuffer, position: Int, extType: Byte, payloadLen: Int): Int = {
     if (payloadLen < (1 << 8)) {
       if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
         if (payloadLen == 1)
@@ -197,7 +197,7 @@ object BufferPacker {
     }
   }
 
-  def packBinaryHeader(buf: Buffer, position: Int, len: Int): Int = {
+  def packBinaryHeader(buf: InputBuffer, position: Int, len: Int): Int = {
     if (len < (1 << 8)) {
       buf.writeByteAndByte(position, BIN8, len.toByte)
     } else if (len < (1 << 16)) {
@@ -207,11 +207,11 @@ object BufferPacker {
     }
   }
 
-  def writePayload(buf: Buffer, position: Int, v: Array[Byte]): Int = {
+  def writePayload(buf: InputBuffer, position: Int, v: Array[Byte]): Int = {
     buf.writeBytes(position, v)
   }
 
-  def writePayload(buf: Buffer, position: Int, v: Array[Byte], vOffset: Int, length: Int): Int = {
+  def writePayload(buf: InputBuffer, position: Int, v: Array[Byte], vOffset: Int, length: Int): Int = {
     buf.writeBytes(position, v, vOffset, length)
   }
 

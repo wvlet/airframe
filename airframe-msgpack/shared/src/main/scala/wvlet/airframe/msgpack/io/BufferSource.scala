@@ -18,7 +18,7 @@ import java.io.IOException
 /**
   *
   */
-trait BufferInput extends AutoCloseable {
+trait BufferSource extends AutoCloseable {
 
   /**
     * Returns a next buffer to read.
@@ -30,7 +30,7 @@ trait BufferInput extends AutoCloseable {
     * @return the next MessageBuffer, or return None if no more buffer is available.
     * @throws IOException when IO error occurred when reading the data
     */
-  def next: Option[Buffer]
+  def next: Option[InputBuffer]
 
   /**
     * Closes the input.
