@@ -27,6 +27,7 @@ class ElapsedTimeTest extends AirframeSpec {
 
   val examples = Seq(
     Example("1234 ns", 1234, NANOSECONDS),
+    Example("1234 us", 1234, MICROSECONDS),
     Example("1234 ms", 1234, MILLISECONDS),
     Example("1234 s", 1234, SECONDS),
     Example("1234 m", 1234, MINUTES),
@@ -101,6 +102,37 @@ class ElapsedTimeTest extends AirframeSpec {
       }
     }
 
+    "print string" in {
+      examples.foreach { x =>
+        ElapsedTime.parse(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}"
+      }
+    }
+
+    "throw exception for invalid inputs" in {
+      val list = Seq("-1", "1.23g", "1x4")
+
+      list.foreach { x =>
+        intercept[IllegalArgumentException] {
+          parse(x)
+        }
+      }
+    }
+
+    "validate invalid input" in {
+      val in = Seq(
+        (-1d, SECONDS),
+        (Double.PositiveInfinity, SECONDS),
+        (Double.NegativeInfinity, SECONDS),
+        (Double.NaN, SECONDS)
+      )
+
+      in.foreach { x =>
+        intercept[IllegalArgumentException] {
+          ElapsedTime(x._1, x._2)
+        }
+      }
+    }
+
     "convert from nanos" in {
       succinctNanos(123).toString shouldBe ElapsedTime(123, NANOSECONDS).toString
       succinctNanos(123456).toString shouldBe ElapsedTime(123.456, MICROSECONDS).toString
@@ -129,6 +161,12 @@ class ElapsedTimeTest extends AirframeSpec {
       duration.valueIn(MILLISECONDS) shouldBe days * 24 * 60 * 60 * 1000 +- 0.001
     }
 
+    "support toMillis" in {
+      examples.map(x => parse(x.str)).foreach { x =>
+        x.toMillis shouldBe x.valueIn(MILLISECONDS)
+      }
+    }
+
     "convert units" in {
       for (c <- conversionExamples) {
         val duration = ElapsedTime(1, c.inputUnit).convertTo(c.targetUnit)
@@ -150,5 +188,11 @@ class ElapsedTimeTest extends AirframeSpec {
       }
     }
 
+    "be comparable" in {
+      parse("1d") shouldBe <=(parse("1.1d"))
+      parse("1h") shouldBe <=(parse("1d"))
+    }
+
+    "support rounding" in {}
   }
 }
