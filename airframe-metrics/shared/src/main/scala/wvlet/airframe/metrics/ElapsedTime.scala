@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 /**
   * Scala version of io.airlift.unit.Duration
   */
-case class ElapsedTime(value: Double, unit: TimeUnit) {
+case class ElapsedTime(value: Double, unit: TimeUnit) extends Comparable[ElapsedTime] {
   import ElapsedTime._
 
   require(!value.isInfinite, s"infinite size")
@@ -45,6 +45,9 @@ case class ElapsedTime(value: Double, unit: TimeUnit) {
     val magnitude            = valueIn(unit)
     val timeUnitAbbreviation = timeUnitToString(unit)
     return f"${magnitude}%.2f${timeUnitAbbreviation}"
+  }
+  override def compareTo(o: ElapsedTime) = {
+    valueIn(MILLISECONDS).compareTo(o.valueIn(MILLISECONDS))
   }
 }
 
