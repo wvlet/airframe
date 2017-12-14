@@ -25,7 +25,13 @@ trait Value {
   override def toString = toJson
   def toJson: String
   def valueType: ValueType
-  def writeTo(packer: Packer)
+
+  /**
+    * Write the value to target Packer and return the written byte length
+    * @param packer
+    * @return
+    */
+  def writeTo(packer: Packer): Int
 }
 
 object Value {

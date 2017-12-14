@@ -17,14 +17,14 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.util.Locale
 
-import wvlet.airframe.msgpack.io.BufferUnpacker._
+import wvlet.airframe.msgpack.io.Decoder._
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi._
 
 /**
   * Read a message pack data from the buffer. The last read byte length can be checked by [[lastReadByteLength]] method.
   */
-class BufferUnpacker {
+class Decoder {
 
   private var _lastReadByteLength: Int = 0
 
@@ -541,7 +541,7 @@ class BufferUnpacker {
   private def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
 }
 
-object BufferUnpacker {
+object Decoder {
   val EMPTY_STRING: String = ""
 
   private[io] def unexpected(expectedCode: String, actual: Byte) = {

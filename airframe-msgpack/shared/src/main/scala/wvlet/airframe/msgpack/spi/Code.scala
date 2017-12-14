@@ -75,4 +75,5 @@ object Code {
   val MAP32: Byte            = 0xdf.toByte
   val NEGFIXINT_PREFIX: Byte = 0xe0.toByte
 
+  val EXT_TIMESTAMP: Byte = -1.toByte
 }

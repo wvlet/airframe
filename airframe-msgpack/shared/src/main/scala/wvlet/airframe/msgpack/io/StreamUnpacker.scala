@@ -24,7 +24,7 @@ import scala.annotation.tailrec
   *
   */
 class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
-  import BufferUnpacker._
+  import Decoder._
 
   private var totalReadBytes: Long = 0L
 
