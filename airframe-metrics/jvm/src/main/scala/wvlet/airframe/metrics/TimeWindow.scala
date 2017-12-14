@@ -1,7 +1,20 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package wvlet.airframe.metrics
 
-import java.time.temporal.ChronoUnit
 import java.time._
+import java.time.temporal.ChronoUnit
 
 import wvlet.log.LogSupport
 
@@ -69,7 +82,6 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   def splitIntoWeeks: Seq[TimeWindow]  = splitInto(ChronoUnit.WEEKS)
 
   def splitAt(date: ZonedDateTime): Seq[TimeWindow] = {
-    import TimeWindow._
     if (date.compareTo(start) <= 0 || date.compareTo(end) > 0) {
       // date is out of range
       Seq(this)
@@ -88,14 +100,6 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
 
 object TimeWindow {
 
-  val systemZone: ZoneOffset = {
-    // Need to get the current ZoneOffset to resolve PDT, etc.
-    // because ZoneID of America/Los Angels (PST) is -0800 while PDT zone offset is -0700
-    val z = ZoneId.systemDefault().normalized() // This returns America/Los Angels (PST)
-    ZonedDateTime.now(z).getOffset
-  }
-  val UTC: ZoneOffset = ZoneOffset.UTC
-
   def withTimeZone(zoneName: String): TimeWindowBuilder = {
     import scala.collection.JavaConverters._
     // Add commonly used daylight saving times
@@ -112,7 +116,7 @@ object TimeWindow {
 
   def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
   def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
-  def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemZone)
+  def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
 
   def truncateTo(t: ZonedDateTime, unit: ChronoUnit): ZonedDateTime = {
     unit match {
@@ -136,14 +140,14 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
   def withOffset(t: ZonedDateTime): TimeWindowBuilder = new TimeWindowBuilder(zone, Some(t))
   def withOffset(dateTimeStr: String): TimeWindowBuilder = {
     TimeParser
-      .parse(dateTimeStr, TimeWindow.systemZone)
+      .parse(dateTimeStr, systemTimeZone)
       .map(d => withOffset(d))
       .getOrElse {
         throw new IllegalArgumentException(s"Invalid datetime: ${dateTimeStr}")
       }
   }
   def withUnixTimeOffset(unixTime: Long): TimeWindowBuilder = {
-    withOffset(ZonedDateTime.ofInstant(Instant.ofEpochSecond(unixTime), TimeWindow.UTC))
+    withOffset(ZonedDateTime.ofInstant(Instant.ofEpochSecond(unixTime), UTC))
   }
 
   def now                 = currentTime.getOrElse(ZonedDateTime.now(zone))

@@ -39,6 +39,9 @@ matrix:
   - env: SCALA_VERSION=2.12.4 PROJECT=airframeJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+  - env: SCALA_VERSION=2.12.4 PROJECT=metricsJS
+    jdk: oraclejdk8
+    script: ./sbt ++SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test

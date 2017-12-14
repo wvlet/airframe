@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.metrics
 
+import java.time.ZoneOffset
 import java.util.TimeZone
 
 import wvlet.airframe.AirframeSpec
@@ -169,6 +170,21 @@ class TimeWindowTest extends AirframeSpec {
       TimeWindow.withTimeZone("CDT")
       TimeWindow.withTimeZone("MDT")
     }
+
+    "use proper time zone" in {
+      val default = TimeZone.getDefault
+      try {
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+        val t = TimeParser.parse("2017-04-04", ZoneOffset.of("-07:00"))
+        info(t)
+        val w = TimeWindow.withTimeZone("PDT")
+        val d = w.parse("3d/2017-04-07")
+        info(d)
+      } finally {
+        TimeZone.setDefault(default)
+      }
+    }
+
   }
 
 }
