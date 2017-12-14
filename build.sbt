@@ -289,7 +289,7 @@ lazy val metrics =
     .dependsOn(log, airframeSpec % "test")
 
 lazy val metricsJVM = metrics.jvm
-lazy val metricsJS = metrics.js
+lazy val metricsJS  = metrics.js
 
 lazy val airframeSpec =
   crossProject(JVMPlatform, JSPlatform)
