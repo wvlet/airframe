@@ -22,197 +22,197 @@ import wvlet.airframe.msgpack.spi.Code._
   * Write MessagePack code at a given position on the buffer and return the written byte length
   */
 object BufferPacker {
-  def packNil(buf: Buffer, index: Int): Int = {
-    buf.writeByte(index, NIL)
+  def packNil(buf: Buffer, position: Int): Int = {
+    buf.writeByte(position, NIL)
   }
 
-  def packBoolean(buf: Buffer, index: Int, v: Boolean): Int = {
-    buf.writeByte(index, if (v) TRUE else FALSE)
+  def packBoolean(buf: Buffer, position: Int, v: Boolean): Int = {
+    buf.writeByte(position, if (v) TRUE else FALSE)
   }
 
-  def packByte(buf: Buffer, index: Int, v: Byte): Int = {
+  def packByte(buf: Buffer, position: Int, v: Byte): Int = {
     if (v < -(1 << 5)) {
-      buf.writeByteAndByte(index, INT8, v)
+      buf.writeByteAndByte(position, INT8, v)
     } else {
-      buf.writeByte(index, v)
+      buf.writeByte(position, v)
     }
   }
 
-  def packShort(buf: Buffer, index: Int, v: Short): Int = {
+  def packShort(buf: Buffer, position: Int, v: Short): Int = {
     if (v < -(1 << 5)) {
       if (v < -(1 << 7)) {
-        buf.writeByteAndShort(index, INT16, v)
+        buf.writeByteAndShort(position, INT16, v)
       } else {
-        buf.writeByteAndByte(index, INT8, v.toByte)
+        buf.writeByteAndByte(position, INT8, v.toByte)
       }
     } else if (v < (1 << 7)) {
-      buf.writeByte(index, v.toByte)
+      buf.writeByte(position, v.toByte)
     } else if (v < (1 << 8)) {
-      buf.writeByteAndByte(index, UINT8, v.toByte)
+      buf.writeByteAndByte(position, UINT8, v.toByte)
     } else {
-      buf.writeByteAndShort(index, UINT16, v)
+      buf.writeByteAndShort(position, UINT16, v)
     }
   }
 
-  def packInt(buf: Buffer, index: Int, r: Int): Int = {
+  def packInt(buf: Buffer, position: Int, r: Int): Int = {
     if (r < -(1 << 5)) {
       if (r < -(1 << 15)) {
-        buf.writeByteAndInt(index, INT32, r)
+        buf.writeByteAndInt(position, INT32, r)
       } else if (r < -(1 << 7)) {
-        buf.writeByteAndShort(index, INT16, r.toShort)
+        buf.writeByteAndShort(position, INT16, r.toShort)
       } else {
-        buf.writeByteAndByte(index, INT8, r.toByte)
+        buf.writeByteAndByte(position, INT8, r.toByte)
       }
     } else if (r < (1 << 7)) {
-      buf.writeByte(index, r.toByte)
+      buf.writeByte(position, r.toByte)
     } else if (r < (1 << 8)) {
-      buf.writeByteAndByte(index, UINT8, r.toByte)
+      buf.writeByteAndByte(position, UINT8, r.toByte)
     } else if (r < (1 << 16)) {
-      buf.writeByteAndShort(index, UINT16, r.toShort)
+      buf.writeByteAndShort(position, UINT16, r.toShort)
     } else { // unsigned 32
-      buf.writeByteAndInt(index, UINT32, r)
+      buf.writeByteAndInt(position, UINT32, r)
     }
   }
 
-  def packLong(buf: Buffer, index: Int, v: Long): Int = {
+  def packLong(buf: Buffer, position: Int, v: Long): Int = {
     if (v < -(1L << 5)) {
       if (v < -(1L << 15)) {
         if (v < -(1L << 31))
-          buf.writeByteAndLong(index, INT64, v)
+          buf.writeByteAndLong(position, INT64, v)
         else
-          buf.writeByteAndInt(index, INT32, v.toInt)
+          buf.writeByteAndInt(position, INT32, v.toInt)
       } else if (v < -(1 << 7)) {
-        buf.writeByteAndShort(index, INT16, v.toShort)
+        buf.writeByteAndShort(position, INT16, v.toShort)
       } else {
-        buf.writeByteAndByte(index, INT8, v.toByte)
+        buf.writeByteAndByte(position, INT8, v.toByte)
       }
     } else if (v < (1 << 7)) { // fixnum
-      buf.writeByte(index, v.toByte)
+      buf.writeByte(position, v.toByte)
     } else if (v < (1L << 16)) {
       if (v < (1 << 8))
-        buf.writeByteAndByte(index, UINT8, v.toByte)
+        buf.writeByteAndByte(position, UINT8, v.toByte)
       else
-        buf.writeByteAndShort(index, UINT16, v.toShort)
+        buf.writeByteAndShort(position, UINT16, v.toShort)
     } else if (v < (1L << 32))
-      buf.writeByteAndInt(index, UINT32, v.toInt)
+      buf.writeByteAndInt(position, UINT32, v.toInt)
     else
-      buf.writeByteAndLong(index, UINT64, v)
+      buf.writeByteAndLong(position, UINT64, v)
   }
 
-  def packBigInteger(buf: Buffer, index: Int, bi: BigInteger): Int = {
+  def packBigInteger(buf: Buffer, position: Int, bi: BigInteger): Int = {
     if (bi.bitLength <= 63) {
-      packLong(buf, index, bi.longValue)
+      packLong(buf, position, bi.longValue)
     } else if (bi.bitLength == 64 && bi.signum == 1) {
-      buf.writeByteAndLong(index, UINT64, bi.longValue)
+      buf.writeByteAndLong(position, UINT64, bi.longValue)
     } else {
       throw new IllegalArgumentException("MessagePack cannot serialize BigInteger larger than 2^64-1")
     }
   }
 
-  def packFloat(buf: Buffer, index: Int, v: Float): Int = {
-    buf.writeByteAndFloat(index, FLOAT32, v)
+  def packFloat(buf: Buffer, position: Int, v: Float): Int = {
+    buf.writeByteAndFloat(position, FLOAT32, v)
   }
 
-  def packDouble(buf: Buffer, index: Int, v: Double): Int = {
-    buf.writeByteAndDouble(index, FLOAT64, v)
+  def packDouble(buf: Buffer, position: Int, v: Double): Int = {
+    buf.writeByteAndDouble(position, FLOAT64, v)
   }
 
-  def packString(buf: Buffer, index: Int, s: String): Int = {
+  def packString(buf: Buffer, position: Int, s: String): Int = {
     val bytes = s.getBytes(StandardCharsets.UTF_8)
     // Write the length and payload of small string to the buffer so that it avoids an extra flush of buffer
-    val len = packRawStringHeader(buf, index, bytes.length)
-    writePayload(buf, index + len, bytes)
+    val len = packRawStringHeader(buf, position, bytes.length)
+    writePayload(buf, position + len, bytes)
     len + bytes.length
   }
 
-  def packRawStringHeader(buf: Buffer, index: Int, len: Int): Int = {
+  def packRawStringHeader(buf: Buffer, position: Int, len: Int): Int = {
     if (len < (1 << 5)) {
-      buf.writeByte(index, (FIXSTR_PREFIX | len).toByte)
+      buf.writeByte(position, (FIXSTR_PREFIX | len).toByte)
     } else if (len < (1 << 8)) {
-      buf.writeByteAndByte(index, STR8, len.toByte)
+      buf.writeByteAndByte(position, STR8, len.toByte)
     } else if (len < (1 << 16)) {
-      buf.writeByteAndShort(index, STR16, len.toShort)
+      buf.writeByteAndShort(position, STR16, len.toShort)
     } else {
-      buf.writeByteAndInt(index, STR32, len)
+      buf.writeByteAndInt(position, STR32, len)
     }
   }
 
-  def packArrayHeader(buf: Buffer, index: Int, arraySize: Int): Int = {
+  def packArrayHeader(buf: Buffer, position: Int, arraySize: Int): Int = {
     if (arraySize < 0)
       throw new IllegalArgumentException("array size must be >= 0")
 
     if (arraySize < (1 << 4))
-      buf.writeByte(index, (FIXARRAY_PREFIX | arraySize).toByte)
+      buf.writeByte(position, (FIXARRAY_PREFIX | arraySize).toByte)
     else if (arraySize < (1 << 16))
-      buf.writeByteAndShort(index, ARRAY16, arraySize.toShort)
+      buf.writeByteAndShort(position, ARRAY16, arraySize.toShort)
     else
-      buf.writeByteAndInt(index, ARRAY32, arraySize)
+      buf.writeByteAndInt(position, ARRAY32, arraySize)
   }
 
-  def packMapHeader(buf: Buffer, index: Int, mapSize: Int): Int = {
+  def packMapHeader(buf: Buffer, position: Int, mapSize: Int): Int = {
     if (mapSize < 0)
       throw new IllegalArgumentException("map size must be >= 0")
 
     if (mapSize < (1 << 4)) {
-      buf.writeByte(index, (FIXMAP_PREFIX | mapSize).toByte)
+      buf.writeByte(position, (FIXMAP_PREFIX | mapSize).toByte)
     } else if (mapSize < (1 << 16)) {
-      buf.writeByteAndShort(index, MAP16, mapSize.toShort)
+      buf.writeByteAndShort(position, MAP16, mapSize.toShort)
     } else {
-      buf.writeByteAndInt(index, MAP32, mapSize)
+      buf.writeByteAndInt(position, MAP32, mapSize)
     }
   }
 
-  def packExtensionTypeHeader(buf: Buffer, index: Int, extType: Byte, payloadLen: Int): Int = {
+  def packExtensionTypeHeader(buf: Buffer, position: Int, extType: Byte, payloadLen: Int): Int = {
     if (payloadLen < (1 << 8)) {
       if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
         if (payloadLen == 1)
-          buf.writeByteAndByte(index, FIXEXT1, extType)
+          buf.writeByteAndByte(position, FIXEXT1, extType)
         else if (payloadLen == 2)
-          buf.writeByteAndByte(index, FIXEXT2, extType)
+          buf.writeByteAndByte(position, FIXEXT2, extType)
         else if (payloadLen == 4)
-          buf.writeByteAndByte(index, FIXEXT4, extType)
+          buf.writeByteAndByte(position, FIXEXT4, extType)
         else if (payloadLen == 8)
-          buf.writeByteAndByte(index, FIXEXT8, extType)
+          buf.writeByteAndByte(position, FIXEXT8, extType)
         else if (payloadLen == 16)
-          buf.writeByteAndByte(index, FIXEXT16, extType)
+          buf.writeByteAndByte(position, FIXEXT16, extType)
         else {
-          buf.writeByteAndByte(index, EXT8, payloadLen.toByte)
-          buf.writeByte(index + 2, extType)
+          buf.writeByteAndByte(position, EXT8, payloadLen.toByte)
+          buf.writeByte(position + 2, extType)
           3
         }
       } else {
-        buf.writeByteAndByte(index, EXT8, payloadLen.toByte)
-        buf.writeByte(index + 2, extType)
+        buf.writeByteAndByte(position, EXT8, payloadLen.toByte)
+        buf.writeByte(position + 2, extType)
         3
       }
     } else if (payloadLen < (1 << 16)) {
-      buf.writeByteAndShort(index, EXT16, payloadLen.toShort)
-      buf.writeByte(index + 3, extType)
+      buf.writeByteAndShort(position, EXT16, payloadLen.toShort)
+      buf.writeByte(position + 3, extType)
       4
     } else {
-      buf.writeByteAndInt(index, EXT32, payloadLen)
-      buf.writeByte(index + 5, extType)
+      buf.writeByteAndInt(position, EXT32, payloadLen)
+      buf.writeByte(position + 5, extType)
       // TODO support dataLen > 2^31 - 1
       6
     }
   }
 
-  def packBinaryHeader(buf: Buffer, index: Int, len: Int): Int = {
+  def packBinaryHeader(buf: Buffer, position: Int, len: Int): Int = {
     if (len < (1 << 8)) {
-      buf.writeByteAndByte(index, BIN8, len.toByte)
+      buf.writeByteAndByte(position, BIN8, len.toByte)
     } else if (len < (1 << 16)) {
-      buf.writeByteAndShort(index, BIN16, len.toShort)
+      buf.writeByteAndShort(position, BIN16, len.toShort)
     } else {
-      buf.writeByteAndInt(index, BIN32, len)
+      buf.writeByteAndInt(position, BIN32, len)
     }
   }
 
-  def writePayload(buf: Buffer, index: Int, v: Array[Byte]): Int = {
-    buf.writeBytes(index, v)
+  def writePayload(buf: Buffer, position: Int, v: Array[Byte]): Int = {
+    buf.writeBytes(position, v)
   }
 
-  def writePayload(buf: Buffer, index: Int, v: Array[Byte], vOffset: Int, length: Int): Int = {
-    buf.writeBytes(index, v, vOffset, length)
+  def writePayload(buf: Buffer, position: Int, v: Array[Byte], vOffset: Int, length: Int): Int = {
+    buf.writeBytes(position, v, vOffset, length)
   }
 
 }

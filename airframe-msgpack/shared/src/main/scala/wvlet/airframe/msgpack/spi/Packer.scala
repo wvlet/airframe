@@ -17,9 +17,6 @@ import java.math.BigInteger
 import java.time.Instant
 
 /**
-  *
-  */
-/**
   * Message Packer interface
   */
 trait Packer {

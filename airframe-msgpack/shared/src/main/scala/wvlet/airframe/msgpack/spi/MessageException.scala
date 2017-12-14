@@ -52,7 +52,8 @@ class MessageException(val errorCode: ErrorCode, message: String = null, cause: 
   }
 }
 
-case class InsufficientBufferException(expectedLength: Int) extends MessageException(ErrorCode.INSUFFICIENT_BUFFER, s"Need at least ${expectedLength} more bytes")
+case class InsufficientBufferException(currentPosition: Int, expectedLength: Int)
+    extends MessageException(ErrorCode.INSUFFICIENT_BUFFER, s"Need at least ${expectedLength} more bytes")
 
 /**
   * This error is thrown when the user tries to read an integer value

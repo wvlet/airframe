@@ -13,65 +13,84 @@
  */
 package wvlet.airframe.msgpack.io
 
-import wvlet.airframe.msgpack.spi.MessageException
+import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MessageException}
 
 /**
-  * Write data a given position and return the written byte length
+  * Buffer interface, which does not have any internal cursors unlike ByteBuffer of Java library.
+  *
+  * - The read methods read the buffer data from the given position.
+  * - The write methods write data to the specified position in the buffer and return the written byte length.
+  *
+  * If the bufer capacity is insufficient, these read/write methods throw [[InsufficientBufferException]].
+  * If this exception is thrown, the user code should
+  *
+  *
   */
 trait Buffer {
 
   def size: Int
 
-  @throws[MessageException]
-  def ensureCapacity(index: Int, requestedLength: Int): Unit
+  /**
+    * Return a (shallow) copy of the buffer.
+    * @param position
+    * @param size
+    * @return
+    */
+  def slice(position: Int, size: Int): Buffer
 
-  def readByte(index: Int): Byte
-  def readShort(index: Int): Short
-  def readInt(index: Int): Int
-  def readLong(index: Int): Long
-  def readFloat(index: Int): Float   = java.lang.Float.intBitsToFloat(readInt(index))
-  def readDouble(index: Int): Double = java.lang.Double.longBitsToDouble(readLong(index))
-  def readBytes(index: Int, length: Int): Array[Byte]
+  @throws[InsufficientBufferException]
+  def ensureCapacity(position: Int, requestedLength: Int): Unit
 
-  def writeByte(index: Int, v: Byte): Int
-  def writeShort(index: Int, v: Short): Int
-  def writeInt(index: Int, v: Int): Int
-  def writeLong(index: Int, v: Long): Int
-  def writeFloat(index: Int, v: Float): Int   = writeInt(index, java.lang.Float.floatToRawIntBits(v))
-  def writeDouble(index: Int, v: Double): Int = writeLong(index, java.lang.Double.doubleToRawLongBits(v))
+  def readByte(position: Int): Byte
+  def readShort(position: Int): Short
+  def readInt(position: Int): Int
+  def readLong(position: Int): Long
+  def readFloat(position: Int): Float   = java.lang.Float.intBitsToFloat(readInt(position))
+  def readDouble(position: Int): Double = java.lang.Double.longBitsToDouble(readLong(position))
+  def readBytes(position: Int, length: Int): Array[Byte]
+  def readBytes(position: Int, length: Int, dest: Array[Byte], destOffset: Int): Unit
+  def readBytes(position: Int, length: Int, dest: Buffer, destIndex: Int): Unit
 
-  def writeBytes(index: Int, v: Array[Byte]): Int = writeBytes(index, v, 0, v.length)
-  def writeBytes(index: Int, v: Array[Byte], vOffset: Int, length: Int): Int
+  def writeByte(position: Int, v: Byte): Int
+  def writeShort(position: Int, v: Short): Int
+  def writeInt(position: Int, v: Int): Int
+  def writeLong(position: Int, v: Long): Int
+  def writeFloat(position: Int, v: Float): Int   = writeInt(position, java.lang.Float.floatToRawIntBits(v))
+  def writeDouble(position: Int, v: Double): Int = writeLong(position, java.lang.Double.doubleToRawLongBits(v))
 
-  def writeByteAndByte(index: Int, b: Byte, v: Byte): Int = {
-    ensureCapacity(index, 2)
-    writeByte(index, b)
-    1 + writeByte(index + 1, v)
+  def writeBytes(position: Int, src: Array[Byte]): Int = writeBytes(position, src, 0, src.length)
+  def writeBytes(position: Int, src: Array[Byte], srcOffset: Int, length: Int): Int
+  def writeBytes(position: Int, src: Buffer, srcPosition: Int, lenght: Int): Int
+
+  def writeByteAndByte(position: Int, b: Byte, v: Byte): Int = {
+    ensureCapacity(position, 2)
+    writeByte(position, b)
+    1 + writeByte(position + 1, v)
   }
 
-  def writeByteAndShort(index: Int, b: Byte, v: Short): Int = {
-    ensureCapacity(index, 2)
-    writeByte(index, b)
-    1 + writeShort(index + 1, v)
+  def writeByteAndShort(position: Int, b: Byte, v: Short): Int = {
+    ensureCapacity(position, 2)
+    writeByte(position, b)
+    1 + writeShort(position + 1, v)
   }
 
-  def writeByteAndInt(index: Int, b: Byte, v: Int): Int = {
-    ensureCapacity(index, 5)
-    writeByte(index, b)
-    1 + writeInt(index + 1, v)
+  def writeByteAndInt(position: Int, b: Byte, v: Int): Int = {
+    ensureCapacity(position, 5)
+    writeByte(position, b)
+    1 + writeInt(position + 1, v)
   }
 
-  def writeByteAndLong(index: Int, b: Byte, v: Long): Int = {
-    ensureCapacity(index, 9)
-    writeByte(index, b)
-    1 + writeLong(index + 1, v)
+  def writeByteAndLong(position: Int, b: Byte, v: Long): Int = {
+    ensureCapacity(position, 9)
+    writeByte(position, b)
+    1 + writeLong(position + 1, v)
   }
 
-  def writeByteAndFloat(index: Int, b: Byte, v: Float): Int = {
-    writeByteAndInt(index, b, java.lang.Float.floatToRawIntBits(v))
+  def writeByteAndFloat(position: Int, b: Byte, v: Float): Int = {
+    writeByteAndInt(position, b, java.lang.Float.floatToRawIntBits(v))
   }
 
-  def writeByteAndDouble(index: Int, b: Byte, v: Double): Int = {
-    writeByteAndLong(index, b, java.lang.Double.doubleToRawLongBits(v))
+  def writeByteAndDouble(position: Int, b: Byte, v: Double): Int = {
+    writeByteAndLong(position, b, java.lang.Double.doubleToRawLongBits(v))
   }
 }
