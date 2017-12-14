@@ -46,6 +46,7 @@ libraryDependencies ++= Seq(
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe"         % "(version)", // Dependency injection
   "org.wvlet.airframe" %%% "airframe-log"     % "(version)", // Logging
+  "org.wvlet.airframe" %%% "airframe-metrics" % "(version)", // Metrics units
   "org.wvlet.airframe" %%% "airframe-surface" % "(version)"  // Object surface inspector
 )
 ```
