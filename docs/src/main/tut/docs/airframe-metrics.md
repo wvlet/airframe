@@ -87,6 +87,6 @@ Supporse the current time is `2016-06-26 01:23:45-0700`.
 
 - DataSize 
   - Human-redable byte-size representation (e.g., 10GB, 1TB, etc.)
-- TimeDuration
+- ElapsedTime
   - Human-readable time representation (e.g., 1s, 1m, 1d, etc.)  
 

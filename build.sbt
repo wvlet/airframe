@@ -93,10 +93,10 @@ lazy val root =
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metrics, codec, tablet)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metricsJVM, codec, tablet)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, airframeSpecJS)
+  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, metricsJS, airframeSpecJS)
 
 lazy val docs =
   project
@@ -277,15 +277,19 @@ lazy val logJVM = log.jvm
 lazy val logJS  = log.js
 
 lazy val metrics =
-  project
+  crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-metrics"))
     .settings(buildSettings)
     .settings(
       name := "airframe-metrics",
-      description := "Metrics library for representing duration, size, etc.",
+      description := "Basit metric representations, including duration, size, time window, etc.",
       libraryDependencies ++= Seq()
     )
-    .dependsOn(logJVM, airframeSpecJVM % "test")
+    .jsSettings(jsBuildSettings)
+    .dependsOn(log, airframeSpec % "test")
+
+lazy val metricsJVM = metrics.jvm
+lazy val metricsJS = metrics.js
 
 lazy val airframeSpec =
   crossProject(JVMPlatform, JSPlatform)
