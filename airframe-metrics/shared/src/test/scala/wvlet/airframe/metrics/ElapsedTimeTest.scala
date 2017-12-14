@@ -163,7 +163,7 @@ class ElapsedTimeTest extends AirframeSpec {
 
     "support toMillis" in {
       examples.map(x => parse(x.str)).foreach { x =>
-        x.toMillis shouldBe x.valueIn(MILLISECONDS)
+        x.toMillis shouldBe x.roundTo(MILLISECONDS) +- 0.001
       }
     }
 
