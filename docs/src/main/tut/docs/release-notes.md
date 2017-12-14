@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.30
+ - *airframe-metric*: Add support for Scala.js (DataSize, ElapsedTime)
+ - Add ElapsedTime for succinct duration representation
+
 ## 0.29
  - Add airframe-codec, a [MessgePack](https://msgpack.org)-based schema-on-read data transcoder.
 
