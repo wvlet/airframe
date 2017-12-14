@@ -37,13 +37,13 @@ trait Buffer {
     * @param size
     * @return
     */
-  def slice(position: Int, size: Int): InputBuffer
+  def slice(position: Int, size: Int): ReadBuffer
 
   @throws[InsufficientBufferException]
   def ensureCapacity(position: Int, requestedLength: Int): Unit
 }
 
-trait InputBuffer extends Buffer {
+trait ReadBuffer extends Buffer {
   def readByte(position: Int): Byte
   def readShort(position: Int): Short
   def readInt(position: Int): Int
@@ -52,10 +52,10 @@ trait InputBuffer extends Buffer {
   def readDouble(position: Int): Double = java.lang.Double.longBitsToDouble(readLong(position))
   def readBytes(position: Int, length: Int): Array[Byte]
   def readBytes(position: Int, length: Int, dest: Array[Byte], destOffset: Int): Unit
-  def readBytes(position: Int, length: Int, dest: OutputBuffer, destIndex: Int): Unit
+  def readBytes(position: Int, length: Int, dest: WriteBuffer, destIndex: Int): Unit
 }
 
-trait OutputBuffer extends Buffer {
+trait WriteBuffer extends Buffer {
   def writeByte(position: Int, v: Byte): Int
   def writeShort(position: Int, v: Short): Int
   def writeInt(position: Int, v: Int): Int
@@ -65,7 +65,7 @@ trait OutputBuffer extends Buffer {
 
   def writeBytes(position: Int, src: Array[Byte]): Int = writeBytes(position, src, 0, src.length)
   def writeBytes(position: Int, src: Array[Byte], srcOffset: Int, length: Int): Int
-  def writeBytes(position: Int, src: InputBuffer, srcPosition: Int, lenght: Int): Int
+  def writeBytes(position: Int, src: ReadBuffer, srcPosition: Int, lenght: Int): Int
 
   def writeByteAndByte(position: Int, b: Byte, v: Byte): Int = {
     ensureCapacity(position, 2)
@@ -100,7 +100,9 @@ trait OutputBuffer extends Buffer {
   }
 }
 
+trait ReadWriteBuffer extends ReadBuffer with WriteBuffer
+
 object Buffer {
-  val emptyInputBuffer  = ArrayBuffer(Array.emptyByteArray)
-  val emptyOutputBuffer = ArrayBuffer(Array.emptyByteArray)
+  val emptyReadBuffer  = ArrayBuffer(Array.emptyByteArray)
+  val emptyWriteBuffer = ArrayBuffer(Array.emptyByteArray)
 }

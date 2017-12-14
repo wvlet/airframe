@@ -16,17 +16,17 @@ package wvlet.airframe.msgpack.io
 import java.io.{Flushable, IOException}
 
 /**
-  * Provides a buffered output stream that writes sequence of [[InputBuffer]] instances.
+  * Provides a buffered output stream that writes sequence of [[WriteBuffer]] instances.
   *
-  * A BufferSink implementation has total control of the buffer memory so that it can reuse buffer memory,
+  * A Sink implementation has total control of the buffer memory so that it can reuse buffer memory,
   * use buffer pools, or use memory-mapped files.
   */
-trait BufferSink extends AutoCloseable with Flushable {
+trait Sink extends AutoCloseable with Flushable {
 
   /**
     * Allocates the next buffer for writing MessagePack data.
     * <p>
-    * This method should return a [[InputBuffer]] instance that has specified size of capacity at least.
+    * This method returns an [[WriteBuffer]] instance that has specified size of capacity at least.
     * <p>
     * When this method is called twice, the previously returned buffer is no longer used. This method may be called
     * twice without call of [[writeBuffer(int)]] in between. In this case, the buffer should be
@@ -37,10 +37,10 @@ trait BufferSink extends AutoCloseable with Flushable {
     * @throws IOException
     */
   @throws[IOException]
-  def next(minimumSize: Int): OutputBuffer
+  def next(minimumSize: Int): WriteBuffer
 
   /**
-    * Writes the previously allocated buffer.
+    * Writes the previously allocated buffer(s).
     * <p>
     * This method should write the buffer previously returned from [[next(int)]] method until specified number of
     * bytes. Once the entire buffer contents is totally written to the sink, the buffer should not be used because

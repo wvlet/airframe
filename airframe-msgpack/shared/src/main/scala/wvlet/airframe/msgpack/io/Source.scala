@@ -18,19 +18,19 @@ import java.io.IOException
 /**
   *
   */
-trait BufferSource extends AutoCloseable {
+trait Source extends AutoCloseable {
 
   /**
     * Returns a next buffer to read.
     * <p>
-    * This method should return a MessageBuffer instance that has data filled in. When this method is called twice,
+    * This method should return a [[ReadBuffer]] instance that has data filled in. When this method is called twice,
     * the previously returned buffer is no longer used. Thus implementation of this method can safely discard it.
     * This is useful when it uses a memory pool.
     *
-    * @return the next MessageBuffer, or return None if no more buffer is available.
+    * @return the next input [[ReadBuffer]], or return None if no more buffer is available.
     * @throws IOException when IO error occurred when reading the data
     */
-  def next: Option[InputBuffer]
+  def next: Option[ReadBuffer]
 
   /**
     * Closes the input.

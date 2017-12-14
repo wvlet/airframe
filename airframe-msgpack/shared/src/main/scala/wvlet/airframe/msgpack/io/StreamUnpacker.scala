@@ -23,12 +23,12 @@ import scala.annotation.tailrec
 /**
   *
   */
-class StreamUnpacker(in: BufferSource) extends Unpacker with AutoCloseable {
+class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
   import BufferUnpacker._
 
   private var totalReadBytes: Long = 0L
 
-  private var currentBuffer: InputBuffer  = null
+  private var currentBuffer: ReadBuffer  = null
   private var cursor: Int            = 0
   private var cursorStack: List[Int] = List.empty
 
