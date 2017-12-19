@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.31
+ - Support recursive types
+
 ## 0.30
  - *airframe-metrics*: Add support for Scala.js (DataSize, ElapsedTime)
  - Add ElapsedTime for succinct duration representation
