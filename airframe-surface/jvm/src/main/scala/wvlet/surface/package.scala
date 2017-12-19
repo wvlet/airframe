@@ -15,12 +15,15 @@ package wvlet
 
 import wvlet.surface.reflect.SurfaceFactory
 
+import scala.reflect.runtime.{universe => ru}
+
 /**
   *
   */
 package object surface {
-  import scala.reflect.runtime.{universe => ru}
 
   def of[A: ru.WeakTypeTag]: Surface                   = SurfaceFactory.of[A]
   def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
+
+  def getCached(fullName: String): Surface = SurfaceFactory.get(fullName)
 }

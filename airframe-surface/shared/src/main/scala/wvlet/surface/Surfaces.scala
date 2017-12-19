@@ -13,6 +13,7 @@
  */
 package wvlet.surface
 import scala.language.existentials
+import scala.reflect.runtime.{universe => ru}
 
 /**
   * Parameters of a Surface
@@ -189,6 +190,31 @@ class GenericSurface(
   }
 
   override def hashCode(): Int = fullName.hashCode
+}
+
+/**
+  * Surface placeholder for supporting recursive types
+  * @param rawType
+  */
+case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surface]) extends Surface {
+
+  // Resolved the final type from the full surface name
+  protected def ref: Surface = wvlet.surface.getCached(fullName)
+
+  def name: String = {
+    if (typeArgs.isEmpty) {
+      rawType.getSimpleName
+    } else {
+      s"${rawType.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]"
+    }
+  }
+
+  override def toString: String                     = name
+  override def params                               = ref.params
+  override def isOption                             = ref.isOption
+  override def isAlias                              = ref.isAlias
+  override def isPrimitive                          = ref.isPrimitive
+  override def objectFactory: Option[ObjectFactory] = ref.objectFactory
 }
 
 case class ClassMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface {

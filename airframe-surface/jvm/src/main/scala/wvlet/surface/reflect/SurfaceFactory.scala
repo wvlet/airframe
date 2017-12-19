@@ -49,6 +49,10 @@ object SurfaceFactory extends LogSupport {
   }
   def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
+  def get(name: String): Surface = {
+    surfaceCache.getOrElse(name, throw new IllegalArgumentException(s"Surface ${name} is not found in cache"))
+  }
+
   private def typeNameOf(t: ru.Type): String = {
     t.dealias.typeSymbol.fullName
   }
@@ -132,7 +136,7 @@ object SurfaceFactory extends LogSupport {
               val owner = surfaceOf(t)
               val name  = m.name.decodedName.toString
               val ret   = surfaceOf(m.returnType)
-              val args  = methodParmetersOf(t, m)
+              val args  = methodParametersOf(t, m)
               ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
             }
             list.toIndexedSeq
@@ -183,11 +187,12 @@ object SurfaceFactory extends LogSupport {
     }
 
     def surfaceOf(tpe: ru.Type): Surface = {
-      val name = fullTypeNameOf(tpe)
-      if (surfaceCache.contains(name)) {
-        surfaceCache(name)
+      val fullName = fullTypeNameOf(tpe)
+      if (surfaceCache.contains(fullName)) {
+        surfaceCache(fullName)
       } else if (seen.contains(tpe)) {
-        throw new IllegalStateException(s"Cyclic reference for ${tpe}: ${seen.mkString(", ")}")
+        // Recursive type
+        LazySurface(resolveClass(tpe), fullName, typeArgsOf(tpe).map(x => surfaceOf(x)))
       } else {
         seen += tpe
         val m = surfaceFactories.orElse[ru.Type, Surface] {
@@ -196,8 +201,9 @@ object SurfaceFactory extends LogSupport {
             new GenericSurface(resolveClass(tpe))
         }
         val surface = m(tpe)
-        surfaceCache += name -> surface
-        typeMap += surface   -> tpe
+        // Cache if not yet cached
+        surfaceCache.getOrElseUpdate(fullName, surface)
+        typeMap.getOrElseUpdate(surface, tpe)
         surface
       }
     }
@@ -346,7 +352,7 @@ object SurfaceFactory extends LogSupport {
       }
     }
 
-    def methodParmetersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
+    def methodParametersOf(targetType: ru.Type, method: MethodSymbol): Seq[RuntimeMethodParameter] = {
       val args = methodArgsOf(targetType, method).flatten
       val argTypes = args.map { x: MethodArg =>
         resolveClass(x.tpe)
@@ -377,11 +383,12 @@ object SurfaceFactory extends LogSupport {
       override def apply(t: ru.Type): Surface = {
         val primaryConstructor = findPrimaryConstructorOf(t).get
         val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
-        new RuntimeGenericSurface(
+        val s = new RuntimeGenericSurface(
           resolveClass(t),
           typeArgs,
-          params = methodParmetersOf(t, primaryConstructor)
+          params = methodParametersOf(t, primaryConstructor)
         )
+        s
       }
     }
 
@@ -406,6 +413,12 @@ object SurfaceFactory extends LogSupport {
     }
   }
 
+  /**
+    * Used when we can use reflection to instantiate objects of this surface
+    * @param rawType
+    * @param typeArgs
+    * @param params
+    */
   class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None)
       with LogSupport {

@@ -19,7 +19,7 @@ import java.{lang => jl}
 import wvlet.log.LogSupport
 
 /**
-  *
+  * MethodParameter implementation using reflection for accessing parameter values
   */
 case class RuntimeMethodParameter(
     method: MethodRef,

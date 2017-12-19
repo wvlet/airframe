@@ -387,7 +387,8 @@ private[surface] object SurfaceMacros {
         if (memo.contains(t)) {
           memo(t)
         } else {
-          c.abort(c.enclosingPosition, s"recursive type: ${t.typeSymbol.fullName}")
+          val typeArgs = typeArgsOf(t).map(surfaceOf(_))
+          q"wvlet.surface.LazySurface(classOf[${t}], ${fullTypeNameOf(t)}, IndexedSeq(..$typeArgs))"
         }
       } else {
         seen += t
