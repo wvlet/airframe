@@ -32,9 +32,9 @@ class RecursiveSurfaceTest extends SurfaceSpec {
   import RecursiveSurfaceTest._
 
   "Surface" should {
-    "generate surface from runtime type" in {
+    "find surface from full type name string" in {
       val s = surface.of[Leaf]
-      surface.get("wvlet.surface.RecursiveSurfaceTest.Leaf") shouldBe s
+      surface.getCached("wvlet.surface.RecursiveSurfaceTest.Leaf") shouldBe s
     }
 
     "support recursive type" in {

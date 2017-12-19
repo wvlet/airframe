@@ -199,7 +199,7 @@ class GenericSurface(
 case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surface]) extends Surface {
 
   // Resolved the final type from the full surface name
-  protected def ref: Surface = wvlet.surface.get(fullName)
+  protected def ref: Surface = wvlet.surface.getCached(fullName)
 
   def name: String = {
     if (typeArgs.isEmpty) {
