@@ -14,10 +14,7 @@
 
 package wvlet.surface
 
-import org.scalatest._
 import wvlet.airframe.AirframeSpec
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.language.implicitConversions
 

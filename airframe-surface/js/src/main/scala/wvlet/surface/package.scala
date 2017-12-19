@@ -13,9 +13,11 @@
  */
 package wvlet
 
-import scala.language.experimental.macros
 import java.util.concurrent.ConcurrentHashMap
+
 import scala.collection.JavaConverters._
+import scala.language.experimental.macros
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -25,5 +27,6 @@ package object surface {
   val methodSurfaceCache = new ConcurrentHashMap[String, Seq[MethodSurface]]().asScala
 
   def of[A]: Surface = macro SurfaceMacros.of[A]
+  def get(fullName: String): Surface = surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }
