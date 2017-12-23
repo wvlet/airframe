@@ -126,7 +126,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
           map.get(paramName) match {
             case Some(x) => x
             case None =>
-              p.getDefaultValue.getOrElse(Zero.zeroOf(surface))
+              p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
           }
         }
         surface.objectFactory match {

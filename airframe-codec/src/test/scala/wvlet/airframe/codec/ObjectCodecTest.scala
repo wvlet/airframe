@@ -50,6 +50,24 @@ class ObjectCodecTest extends CodecSpec {
     h.getDataType shouldBe DataType.ANY
     h.getLastValue shouldBe v
   }
+
+  "populate the default value when missing" in {
+    val packer = MessagePack.newDefaultBufferPacker()
+    packer.packMapHeader(1)
+    packer.packString("i")
+    packer.packInt(10)
+    val b = packer.toByteArray
+
+    val h = new MessageHolder
+    MessageCodec.of[A2].unpack(MessagePack.newDefaultUnpacker(b), h)
+
+    h.isNull shouldBe false
+    h.hasError shouldBe false
+    h.getDataType shouldBe DataType.ANY
+    // map input, constructor default, Zero
+    h.getLastValue shouldBe A2(10, 2L, 0)
+  }
+
 }
 
 object ObjectCodecTest {
@@ -63,5 +81,7 @@ object ObjectCodecTest {
       b: Boolean,
       s: String
   )
+
+  case class A2(i: Int, l: Long = 2L, i2: Int)
 
 }

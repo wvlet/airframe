@@ -5,3 +5,4 @@ default:
 staging:
   id: 2
   fullName: staging-config
+  port: 10000
