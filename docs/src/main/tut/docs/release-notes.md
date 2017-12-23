@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.32
+ - Fix ObjectCodec for map type value [#131](https://github.com/wvlet/airframe/pull/131)
+
 ## 0.31
  - Support recursive types
 
