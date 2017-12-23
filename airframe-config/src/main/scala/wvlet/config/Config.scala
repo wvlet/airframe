@@ -43,7 +43,7 @@ object Config extends LogSupport {
         sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
       ))
 
-  def apply(env: String, defaultEnv: String = "default", configPaths: Seq[String] = defaultConfigPath): Config =
+  def apply(env: String = "default", defaultEnv: String = "default", configPaths: Seq[String] = defaultConfigPath): Config =
     Config(ConfigEnv(env, defaultEnv, configPaths), Map.empty[Surface, ConfigHolder])
 
   def cleanupConfigPaths(paths: Seq[String]) = {

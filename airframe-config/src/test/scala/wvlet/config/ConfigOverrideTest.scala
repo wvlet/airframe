@@ -17,7 +17,8 @@ import wvlet.airframe.AirframeSpec
 
 object ConfigOverrideTest {
   case class AppConfig(
-      coordinatorAddress: String = "localhost:8080"
+      coordinatorAddress: String = "localhost:8080",
+      name: String = "myapp"
   )
 }
 
@@ -35,7 +36,9 @@ class ConfigOverrideTest extends AirframeSpec {
       val config: Config = Config(env = "default").register[AppConfig](AppConfig()).overrideWith(prop)
 
       val appConfig = config.of[AppConfig]
+      info(s"AppConfig: ${appConfig}")
       appConfig.coordinatorAddress shouldBe "mylocalhost:8081"
+      appConfig.name shouldBe "myapp"
     }
   }
 }

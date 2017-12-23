@@ -16,7 +16,7 @@ package wvlet.config
 import wvlet.log.io.Resource
 import wvlet.airframe.AirframeSpec
 
-case class MyConfig(id: Int, fullName: String)
+case class MyConfig(id: Int, fullName: String, port: Int = 8989)
 case class DB(accountId: Int, database: String, table: Seq[String])
 
 /**
@@ -48,13 +48,13 @@ class YamlReaderTest extends AirframeSpec {
       m.keys should contain("default")
       m.keys should contain("staging")
 
-      m("default") shouldBe MyConfig(1, "default-config")
-      m("staging") shouldBe MyConfig(2, "staging-config")
+      m("default") shouldBe MyConfig(1, "default-config", 8989)
+      m("staging") shouldBe MyConfig(2, "staging-config", 10000)
     }
 
     "read an specific env from yaml" in {
       val m = YamlReader.load[MyConfig](yml, "staging")
-      m shouldBe MyConfig(2, "staging-config")
+      m shouldBe MyConfig(2, "staging-config", 10000)
     }
 
     "throw an exception when the target env is missing" in {
