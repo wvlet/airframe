@@ -16,6 +16,12 @@ before_cache:
 
 language: scala
 
+services:
+  - postgresql
+
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+
 matrix:
   include:
   # Code format test
