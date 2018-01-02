@@ -7,7 +7,7 @@ val SCALA_2_11          = "2.11.11"
 val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
 val SCALATEST_VERSION = "3.0.4"
-
+val SQLITE_JDBC_VERSION = "3.21.0.1"
 scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
@@ -340,3 +340,19 @@ lazy val tablet =
       )
     )
     .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
+
+
+lazy val jdbc =
+  project
+    .in(file("airframe-jdbc"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-jdbc",
+      description := "JDBC connection pool service",
+      libraryDependencies ++= Seq(
+        "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
+        "org.postgresql" % "postgresql"  % "42.1.4",
+        "com.zaxxer"     % "HikariCP"    % "2.6.2"
+      )
+    )
+    .dependsOn(airframeJVM, airframeSpecJVM % "test")
