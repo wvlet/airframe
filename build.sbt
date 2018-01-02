@@ -6,8 +6,8 @@ val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
 val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
-val SCALATEST_VERSION = "3.0.4"
-
+val SCALATEST_VERSION   = "3.0.4"
+val SQLITE_JDBC_VERSION = "3.21.0.1"
 scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
@@ -93,7 +93,7 @@ lazy val root =
     .aggregate(projectJVM, projectJS)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metricsJVM, codec, tablet)
+  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metricsJVM, codec, tablet, jdbc)
 
 lazy val projectJS =
   project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, metricsJS, airframeSpecJS)
@@ -340,3 +340,20 @@ lazy val tablet =
       )
     )
     .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
+
+lazy val jdbc =
+  project
+    .in(file("airframe-jdbc"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-jdbc",
+      description := "JDBC connection pool service",
+      libraryDependencies ++= Seq(
+        "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
+        "org.postgresql" % "postgresql"  % "42.1.4",
+        "com.zaxxer"     % "HikariCP"    % "2.6.2",
+        // For routing slf4j log to airframe-log
+        "org.slf4j" % "slf4j-jdk14" % "1.7.25"
+      )
+    )
+    .dependsOn(airframeJVM, airframeMacrosJVM % "provided", airframeSpecJVM % "test")
