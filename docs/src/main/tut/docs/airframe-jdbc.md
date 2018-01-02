@@ -7,6 +7,13 @@ title: airframe-jdbc
 
 A reusable JDBC connection pool implementation with Airframe. 
 
+Currently we are supporting these databases:
+
+- **sqlite**: SQLite
+- **postgres**: PostgreSQL (e.g., [AWS RDS](https://aws.amazon.com/rds/))
+
+Adding a new connection pool type would be easy. Your contributions are welcome.
+
 
 ## Usage
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jdbc_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-jdbc_2.12/)
@@ -24,8 +31,9 @@ import wvlet.airframe.jdbc._
 
 // Import ConnectionPoolFactoryService 
 trait MyDbTest extends ConnectionPoolFactoryService {
-  // Create a new connection pool. The pool will be closed automatically after the Airframe session is terminated.
-  val connectionPool = bind{config:DbConfig => connectionPoolFactory.newConnectionPool(config) }
+  // Create a new connection pool. The created pool will be closed automatically
+  // after the Airframe session is terminated.
+  val connectionPool = bind{ config:DbConfig => connectionPoolFactory.newConnectionPool(config) }
 
   // Create a new database
   connectionPool.executeUpdate("craete table if not exists test(id int, name text)")
@@ -46,7 +54,9 @@ trait MyDbTest extends ConnectionPoolFactoryService {
 
 ...
 
+// Configuring database
 val d = newDesign
+   // ConnectionPoolFactory should be a singleton so as not to create duplicated pools
   .bind[ConnectionPoolFactory].toSingleton
   .bind[DbConfig].toInstance(DbConfig(`type`="sqlite", database="mydb.sqlite"))
 
@@ -58,7 +68,6 @@ d.withSession { session =>
 }
 
 ```
-
 
 ## Using PostgreSQL
 
@@ -77,8 +86,7 @@ val d = newDesign
   )
 ```
 
-For accessing a local PostgreSQL without SSL support, disable SSL access: 
-
+For accessing a local PostgreSQL without SSL support, disable SSL access like this:
 ```scala
 val d = newDesign
   .bind[ConnectionPoolFactory].toSingleton
@@ -119,6 +127,3 @@ val d = newDesign
   .bind[MyDb2Config].toInstance(DbConfig(`type`="postgres", ...))
 
 ``` 
-
-
-

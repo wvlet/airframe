@@ -6,7 +6,7 @@ val SCALA_2_12          = "2.12.4"
 val SCALA_2_11          = "2.11.11"
 val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
-val SCALATEST_VERSION = "3.0.4"
+val SCALATEST_VERSION   = "3.0.4"
 val SQLITE_JDBC_VERSION = "3.21.0.1"
 scalaVersion in ThisBuild := SCALA_2_12
 
@@ -340,7 +340,6 @@ lazy val tablet =
       )
     )
     .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
-
 
 lazy val jdbc =
   project
