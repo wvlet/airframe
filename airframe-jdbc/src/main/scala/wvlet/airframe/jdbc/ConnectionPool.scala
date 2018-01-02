@@ -28,7 +28,6 @@ case class DbConfig(
     `type`: String = "sqlite",
     host: Option[String] = None,
     database: String = "log/sample.db",
-    table: String = "sample",
     port: Option[Int] = None,
     user: Option[String] = None,
     password: Option[String] = None

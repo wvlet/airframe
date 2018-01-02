@@ -35,6 +35,8 @@ options:
         url: docs/airframe-opts.html
       - title: airframe-metrics
         url: docs/airframe-metrics.html
+      - title: airframe-jdbc
+        url: docs/airframe-jdbc.html
       - title: airframe-jmx
         url: docs/airframe-jmx.html
       - title: airframe-surface

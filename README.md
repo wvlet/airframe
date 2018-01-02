@@ -35,6 +35,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-codec"   % "(version)", // MessagePack-based schema-on-read transcoder
   "org.wvlet.airframe" %% "airframe-config"  % "(version)", // YAML-based configuration
   "org.wvlet.airframe" %% "airframe-jmx"     % "(version)", // JMX entry 
+  "org.wvlet.airframe" %% "airframe-jdbc"    % "(version)", // JDBC connection pool
   "org.wvlet.airframe" %% "airframe-log"     % "(version)", // Logging
   "org.wvlet.airframe" %% "airframe-metrics" % "(version)", // Metrics units
   "org.wvlet.airframe" %% "airframe-opts"    % "(version)", // Command-line option parser

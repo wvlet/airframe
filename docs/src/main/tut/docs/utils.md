@@ -17,6 +17,8 @@ Airframe has several utilities that make easier your programming in Scala:
   - Command line parser.
 - [airframe-metrics](airframe-metrics.html) 
   - Human-readable representation of time, time range, and data size.
+- [airframe-jdbc](airframe-jdbc.html) 
+  - Reusable JDBC connection pool implementation.
 - [airframe-jmx](airframe-jmx.html) 
   - Enable application monitoring through JMX.
 - [airframe-surface](airframe-surface.html) 
