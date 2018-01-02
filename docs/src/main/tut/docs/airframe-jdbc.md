@@ -43,7 +43,8 @@ trait MyDbTest extends ConnectionPoolFactoryService {
     ps.setString(2, "name")  
   }
   // Read ResultSet
-  connectionPoo.executeQuery("select * from test") { rs =>}
+  connectionPoo.executeQuery("select * from test") { rs =>
+    // Traverse the query ResultSet here
     while (rs.next()) {
       val id   = rs.getInt("id")
       val name = rs.getString("name")
@@ -117,8 +118,8 @@ object MultipleConnection {
 import MultipleConnection._
 
 trait MultipleConnection extends ConnectionPoolFactoryService {
-  val pool1 = bind{ c:MyDB1Config => connectionPoolFactroy.newConnectionPool(c) }  
-  val pool2 = bind{ c:MyDB2Config => connectionPoolFactroy.newConnectionPool(c) }  
+  val pool1 = bind{ c:MyDB1Config => connectionPoolFactory.newConnectionPool(c) }
+  val pool2 = bind{ c:MyDB2Config => connectionPoolFactory.newConnectionPool(c) }
 }
 
 val d = newDesign
