@@ -10,7 +10,6 @@ val SQLITE_JDBC_VERSION = "3.21.0.1"
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
-
 organization in ThisBuild := "org.wvlet.airframe"
 
 val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
@@ -96,8 +95,6 @@ publishTo in ThisBuild := Some(
 )
 
 val jsBuildSettings = Seq[Setting[_]](
-  // Skip Scala 2.11 + Scala.js build
-  crossScalaVersions := Seq(SCALA_2_12),
   // Do not run tests concurrently
   concurrentRestrictions in Global := Seq(
     Tags.limit(Tags.Test, 1)
@@ -118,13 +115,34 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(projectJVM, projectJS)
+    .aggregate((jvmProjects ++ jsProjects): _*)
+
+lazy val jvmProjects: Seq[ProjectReference] = List(
+  airframeJVM,
+  surfaceJVM,
+  logJVM,
+  airframeSpecJVM,
+  config,
+  jmx,
+  opts,
+  metricsJVM,
+  codec,
+  tablet,
+  jdbc
+)
+lazy val jsProjects: Seq[ProjectReference] = List(
+  airframeJS,
+  surfaceJS,
+  logJS,
+  metricsJS,
+  airframeSpecJS
+)
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(airframeJVM, surfaceJVM, logJVM, airframeSpecJVM, config, jmx, opts, metricsJVM, codec, tablet, jdbc)
+  project.settings(noPublish).aggregate(jvmProjects: _*)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(airframeJS, surfaceJS, logJS, metricsJS, airframeSpecJS)
+  project.settings(noPublish).aggregate(jsProjects: _*)
 
 lazy val docs =
   project
@@ -384,4 +402,4 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % "1.7.25"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVM % "provided", airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
