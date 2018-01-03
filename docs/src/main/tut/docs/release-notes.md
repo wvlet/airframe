@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.35
+ - Minor fixes to project strucutres and build scripts.
+
 ## 0.34
  - No major change in terms of features, API.
  - Airframe now uses [sbt-dnyver](https://github.com/dwijnand/sbt-dynver) for auto versioning.
