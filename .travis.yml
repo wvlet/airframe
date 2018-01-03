@@ -57,7 +57,7 @@ matrix:
     - gem install jekyll -v 3.2.1
     script:
     - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite.sh; fi
+      cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
   - env: PROJECT=publish
     jdk: oraclejdk8
     script:
