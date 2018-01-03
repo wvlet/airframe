@@ -45,8 +45,9 @@ ga('send', 'pageview');
     <span class="n">ps</span><span class="o">.</span><span class="n">setString</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"name"</span><span class="o">)</span>  
   <span class="o">}</span>
   <span class="c1">// Read ResultSet
-</span>  <span class="n">connectionPoo</span><span class="o">.</span><span class="n">executeQuery</span><span class="o">(</span><span class="s">"select * from test"</span><span class="o">)</span> <span class="o">{</span> <span class="n">rs</span> <span class="o">=&gt;}</span>
-    <span class="k">while</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="n">next</span><span class="o">())</span> <span class="o">{</span>
+</span>  <span class="n">connectionPoo</span><span class="o">.</span><span class="n">executeQuery</span><span class="o">(</span><span class="s">"select * from test"</span><span class="o">)</span> <span class="o">{</span> <span class="n">rs</span> <span class="k">=&gt;</span>
+    <span class="c1">// Traverse the query ResultSet here
+</span>    <span class="k">while</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="n">next</span><span class="o">())</span> <span class="o">{</span>
       <span class="k">val</span> <span class="n">id</span>   <span class="k">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">getInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">)</span>
       <span class="k">val</span> <span class="n">name</span> <span class="k">=</span> <span class="n">rs</span><span class="o">.</span><span class="n">getString</span><span class="o">(</span><span class="s">"name"</span><span class="o">)</span>
       <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"read (${id}, ${name})"</span><span class="o">)</span>
@@ -119,8 +120,8 @@ ga('send', 'pageview');
 <span class="k">import</span> <span class="nn">MultipleConnection._</span>
 
 <span class="k">trait</span> <span class="nc">MultipleConnection</span> <span class="k">extends</span> <span class="nc">ConnectionPoolFactoryService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">pool1</span> <span class="k">=</span> <span class="n">bind</span><span class="o">{</span> <span class="n">c</span><span class="k">:</span><span class="kt">MyDB1Config</span> <span class="o">=&gt;</span> <span class="n">connectionPoolFactroy</span><span class="o">.</span><span class="n">newConnectionPool</span><span class="o">(</span><span class="n">c</span><span class="o">)</span> <span class="o">}</span>  
-  <span class="k">val</span> <span class="n">pool2</span> <span class="k">=</span> <span class="n">bind</span><span class="o">{</span> <span class="n">c</span><span class="k">:</span><span class="kt">MyDB2Config</span> <span class="o">=&gt;</span> <span class="n">connectionPoolFactroy</span><span class="o">.</span><span class="n">newConnectionPool</span><span class="o">(</span><span class="n">c</span><span class="o">)</span> <span class="o">}</span>  
+  <span class="k">val</span> <span class="n">pool1</span> <span class="k">=</span> <span class="n">bind</span><span class="o">{</span> <span class="n">c</span><span class="k">:</span><span class="kt">MyDB1Config</span> <span class="o">=&gt;</span> <span class="n">connectionPoolFactory</span><span class="o">.</span><span class="n">newConnectionPool</span><span class="o">(</span><span class="n">c</span><span class="o">)</span> <span class="o">}</span>
+  <span class="k">val</span> <span class="n">pool2</span> <span class="k">=</span> <span class="n">bind</span><span class="o">{</span> <span class="n">c</span><span class="k">:</span><span class="kt">MyDB2Config</span> <span class="o">=&gt;</span> <span class="n">connectionPoolFactory</span><span class="o">.</span><span class="n">newConnectionPool</span><span class="o">(</span><span class="n">c</span><span class="o">)</span> <span class="o">}</span>
 <span class="o">}</span>
 
 <span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
