@@ -84,13 +84,15 @@ val buildSettings = Seq[Setting[_]](
   resolvers ++= Seq(
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
-  ),
-  publishTo := Some(
-    if (isRelease)
-      Opts.resolver.sonatypeStaging
-    else
-      Opts.resolver.sonatypeSnapshots
   )
+)
+
+// Workaround for https://github.com/sbt/sbt/pull/3760
+publishTo in ThisBuild := Some(
+  if (isRelease)
+    Opts.resolver.sonatypeStaging
+  else
+    Opts.resolver.sonatypeSnapshots
 )
 
 val jsBuildSettings = Seq[Setting[_]](
