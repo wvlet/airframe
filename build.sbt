@@ -15,10 +15,15 @@ organization in ThisBuild := "org.wvlet.airframe"
 
 def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
   val prefix = out.ref.dropV.value
-  val dirty = out.dirtySuffix.value
   val rev = out.commitSuffix.mkString("+", "-", "")
-  val suffix = if(rev.isEmpty) "-SNAPSHOT" else (if(dirty.isEmpty) "" else s"${dirty}00-1")
-  prefix + rev + suffix
+  val dirty = out.dirtySuffix.value
+  (rev, dirty) match {
+    case ("", "") => prefix
+    case (_, d) if d.isEmpty =>
+      s"${prefix}${rev}-SNAPSHOT"
+    case _ =>
+      s"${prefix}${rev}${dirty}00-1"
+  }
 }
 
 def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
