@@ -12,6 +12,28 @@ scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
 
+
+def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
+  val prefix = out.ref.dropV.value
+  val suffix = out.commitSuffix.mkString("-", "-", "") + out.dirtySuffix.dropPlus.mkString("-", "")
+  if(!suffix.isEmpty) {
+    prefix + suffix + "-SNAPSHOT"
+  }
+  else {
+    prefix
+  }
+}
+
+def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
+
+inThisBuild(List(
+  version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
+  dynver := {
+    val d = new java.util.Date
+    sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
+  }
+))
+
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
   crossScalaVersions := targetScalaVersions,
@@ -37,7 +59,10 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("snapshots")
   ),
   publishTo := Some(
-    Opts.resolver.sonatypeStaging
+    if (isSnapshot.value)
+      Opts.resolver.sonatypeSnapshots
+    else
+      Opts.resolver.sonatypeStaging
   )
 )
 
