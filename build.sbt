@@ -36,28 +36,6 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
   ),
-  // Release settings
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  // Workaround for sbt-release 1.0.6
-  releaseVersionFile := baseDirectory.value / "version.sbt",
-  releaseTagName := {
-    (version in ThisBuild).value
-  },
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges
-  ),
   publishTo := Some(
     if (isSnapshot.value) {
       Opts.resolver.sonatypeSnapshots
