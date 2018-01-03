@@ -19,8 +19,8 @@ val isRelease: Boolean = sys.env.isDefinedAt("RELEASE")
 
 def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
   val prefix = out.ref.dropV.value
-  val rev = out.commitSuffix.mkString("+", "-", "")
-  val dirty = out.dirtySuffix.value
+  val rev    = out.commitSuffix.mkString("+", "-", "")
+  val dirty  = out.dirtySuffix.value
   val dynamicVersion = (rev, dirty) match {
     case ("", "") =>
       prefix
@@ -28,18 +28,19 @@ def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
       // (version)+(distance)-(rev)
       s"${prefix}${rev}"
   }
-  if(isRelease) dynamicVersion else s"${dynamicVersion}-SNAPSHOT"
+  if (isRelease) dynamicVersion else s"${dynamicVersion}-SNAPSHOT"
 }
 
 def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
 
-inThisBuild(List(
-  version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
-  dynver := {
-    val d = new java.util.Date
-    sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
-  }
-))
+inThisBuild(
+  List(
+    version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
+    dynver := {
+      val d = new java.util.Date
+      sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
+    }
+  ))
 
 // For publishing in Travis CI
 lazy val travisSettings = List(
@@ -58,7 +59,7 @@ lazy val travisSettings = List(
   )
 )
 
-inThisBuild(if(isTravisBuild) travisSettings else List.empty)
+inThisBuild(if (isTravisBuild) travisSettings else List.empty)
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
