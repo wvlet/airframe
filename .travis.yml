@@ -41,7 +41,7 @@ matrix:
     script: "./sbt ++$SCALA_VERSION ${PROJECT}/test"
   - env: SCALA_VERSION=2.12.4 PROJECT=otherJS
     jdk: oraclejdk8
-    script: "./sbt ++$SCALA_VERSION "; logJS/test; metricsJS/test; surfaceJS/test"
+    script: "./sbt ++$SCALA_VERSION \"; logJS/test; metricsJS/test; surfaceJS/test\""
   - env: PROJECT=docs
     jdk: oraclejdk8
     before_install:
