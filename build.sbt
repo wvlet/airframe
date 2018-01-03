@@ -37,11 +37,7 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("snapshots")
   ),
   publishTo := Some(
-    if (isSnapshot.value) {
-      Opts.resolver.sonatypeSnapshots
-    } else {
-      Opts.resolver.sonatypeStaging
-    }
+    Opts.resolver.sonatypeStaging
   )
 )
 
