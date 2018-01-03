@@ -1,4 +1,3 @@
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtcrossproject.{crossProject, CrossType}
 
 val SCALA_2_13          = "2.13.0-M2"
@@ -8,9 +7,59 @@ val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
 
 val SCALATEST_VERSION   = "3.0.4"
 val SQLITE_JDBC_VERSION = "3.21.0.1"
+
+// For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 
 organization in ThisBuild := "org.wvlet.airframe"
+
+val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
+// In release process, this environment variable should be set
+val isRelease: Boolean = sys.env.isDefinedAt("RELEASE")
+
+def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
+  val prefix = out.ref.dropV.value
+  val rev    = out.commitSuffix.mkString("+", "-", "")
+  val dirty  = out.dirtySuffix.value
+  val dynamicVersion = (rev, dirty) match {
+    case ("", "") =>
+      prefix
+    case (_, _) =>
+      // (version)+(distance)-(rev)
+      s"${prefix}${rev}"
+  }
+  if (isRelease) dynamicVersion else s"${dynamicVersion}-SNAPSHOT"
+}
+
+def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
+
+inThisBuild(
+  List(
+    version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
+    dynver := {
+      val d = new java.util.Date
+      sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
+    }
+  ))
+
+// For publishing in Travis CI
+lazy val travisSettings = List(
+  // For publishing on Travis CI
+  useGpg := false,
+  usePgpKeyHex("42575E0CCD6BA16A"),
+  pgpPublicRing := file("./travis/local.pubring.asc"),
+  pgpSecretRing := file("./travis/local.secring.asc"),
+  // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded in .travis.yml
+  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray),
+  credentials += Credentials(
+    "Sonatype Nexus Repository Manager",
+    "oss.sonatype.org",
+    sys.env.getOrElse("SONATYPE_USER", ""),
+    sys.env.getOrElse("SONATYPE_PASS", "")
+  )
+)
+
+inThisBuild(if (isTravisBuild) travisSettings else List.empty)
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
@@ -36,34 +85,11 @@ val buildSettings = Seq[Setting[_]](
     Resolver.sonatypeRepo("releases"),
     Resolver.sonatypeRepo("snapshots")
   ),
-  // Release settings
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-  // Workaround for sbt-release 1.0.6
-  releaseVersionFile := baseDirectory.value / "version.sbt",
-  releaseTagName := {
-    (version in ThisBuild).value
-  },
-  releaseProcess := Seq[ReleaseStep](
-    checkSnapshotDependencies,
-    inquireVersions,
-    runClean,
-    runTest,
-    setReleaseVersion,
-    commitReleaseVersion,
-    tagRelease,
-    publishArtifacts,
-    setNextVersion,
-    commitNextVersion,
-    releaseStepCommand("sonatypeReleaseAll"),
-    pushChanges
-  ),
   publishTo := Some(
-    if (isSnapshot.value) {
+    if (!isRelease && isSnapshot.value)
       Opts.resolver.sonatypeSnapshots
-    } else {
+    else
       Opts.resolver.sonatypeStaging
-    }
   )
 )
 
@@ -336,7 +362,7 @@ lazy val tablet =
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
         "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
-        "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
+        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
     )
     .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")

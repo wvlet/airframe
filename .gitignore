@@ -12,3 +12,4 @@ log-test.properties
 node_modules
 package-lock.json
 pgdata
+travis
