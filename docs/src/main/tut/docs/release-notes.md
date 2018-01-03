@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 0.34
+ - No major change in terms of features, API.
+ - Airframe now uses [sbt-dnyver](https://github.com/dwijnand/sbt-dynver) for auto versioning.
+ - For each commit in the master branch, you can find a snapshot version from https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/
+   - For example, [airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT/), means that this version is based on the version `0.33.1` and `12` commits away from the previous version tag, and using git revision `682c4e07`.
+ - The release versions will be like `0.34` as usual and available from Maven central.
+
 ## 0.33
  - Add [airframe-jdbc](airframe-jdbc.html), a reusable JDBC connection pool implementation.  
 
