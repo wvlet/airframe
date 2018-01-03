@@ -18,13 +18,15 @@ def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
   val rev = out.commitSuffix.mkString("+", "-", "")
   val dirty = out.dirtySuffix.value
   (rev, dirty) match {
-    case ("", "") => prefix
-    case (_, d) if d.isEmpty =>
+    case ("", "") =>
+      // Release version
+      prefix
+    case (_, _) =>
+      // (version)+(distance)-(rev)-SNAPSHOT
       s"${prefix}${rev}-SNAPSHOT"
-    case _ =>
-      s"${prefix}${rev}${dirty}00-1"
   }
 }
+
 
 def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
 
@@ -337,7 +339,7 @@ lazy val tablet =
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
         "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
-        "org.xerial" % "sqlite-jdbc" % "3.20.1" % "test"
+        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
     )
     .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
