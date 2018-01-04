@@ -129,7 +129,7 @@ object Encoder {
     val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, 1000000000L))
     val nsec = Math.floorMod(nanoAdjustment, 1000000000L).toInt
 
-    if (sec >>> 34 eq 0) { // sec can be serialized in 34 bits.
+    if ((sec >>> 34) == 0L) { // sec can be serialized in 34 bits.
       val data64 = (nsec << 34) | sec
       if ((data64 & 0xffffffff00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
         // use timestamp 32

@@ -157,8 +157,7 @@ class StreamPacker(sink: MessageSink) extends Packer {
     this
   }
 
-  override def writePayload(src: Array[Byte]) = {}
-
+  override def writePayload(src: Array[Byte])                           = ???
   override def writePayload(src: Array[Byte], offset: Int, length: Int) = ???
   override def addPayload(src: Array[Byte])                             = ???
   override def addPayload(src: Array[Byte], offset: Int, length: Int)   = ???

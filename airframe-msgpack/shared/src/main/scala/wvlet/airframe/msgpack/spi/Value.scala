@@ -27,11 +27,11 @@ trait Value {
   def valueType: ValueType
 
   /**
-    * Write the value to target Packer and return the written byte length
+    * Write the value to target Packer
     * @param packer
     * @return
     */
-  def writeTo(packer: Packer): Int
+  def writeTo(packer: Packer): Unit
 }
 
 object Value {

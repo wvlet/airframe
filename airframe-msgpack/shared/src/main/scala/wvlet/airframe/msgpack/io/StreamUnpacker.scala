@@ -202,16 +202,37 @@ class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
     h
   }
 
-  override def unpackValue: Value = ???
-  override def skipPayload(numBytes: Int): Unit = {
-    ensureBuffer
-    var skipLen = 0
+  override def unpackValue: Value = {}
 
+  override def skipPayload(numBytes: Int): Unit = {
+    var skippedLen = 0
+    while (skippedLen < numBytes) {
+      val remaining = numBytes - skippedLen
+      ensureBuffer
+      val available = if (cursor + remaining < currentBuffer.size) remaining else currentBuffer.size - cursor
+      cursor += available
+      skippedLen += available
+    }
   }
 
-  override def readPayload(dst: Array[Byte]): Unit                           = ???
-  override def readPayload(dst: Array[Byte], offset: Int, length: Int): Unit = ???
-  override def readPayload(length: Int): Array[Byte]                         = ???
+  override def readPayload(dst: Array[Byte]): Unit = readPayload(dst, 0, dst.length)
+
+  override def readPayload(dst: Array[Byte], offset: Int, length: Int): Unit = {
+    ensureBuffer
+    var readLen = 0
+    while (readLen < length) {
+      val remaining = dst.length - readLen
+      val available = if (cursor + remaining < currentBuffer.size) remaining else currentBuffer.size - cursor
+      currentBuffer.readBytes(cursor, available, dst, offset + readLen)
+      readLen += available
+    }
+  }
+
+  override def readPayload(length: Int): Array[Byte] = {
+    val dst = new Array[Byte](length)
+    readPayload(dst)
+    dst
+  }
 
   override def close(): Unit = in.close
 
