@@ -10,6 +10,10 @@ ga('send', 'pageview');
 
 <p>A reusable JDBC connection pool implementation with Airframe.</p>
 
+<ul>
+  <li><a href="https://github.com/wvlet/airframe/tree/master/airframe-jdbc">Source code</a></li>
+</ul>
+
 <p>Currently we are supporting these databases:</p>
 
 <ul>
@@ -69,7 +73,8 @@ ga('send', 'pageview');
    <span class="c1">// You can make queries using the connection pool
 </span>   <span class="n">t</span><span class="o">.</span><span class="n">connectionPool</span><span class="o">.</span><span class="n">executeQuery</span><span class="o">(</span><span class="s">"select ..."</span><span class="o">)</span>
 <span class="o">}</span>
-
+<span class="c1">// Connection pools will be closed here
+</span>
 </code></pre>
 </div>
 
