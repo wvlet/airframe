@@ -24,13 +24,15 @@ import scala.annotation.tailrec
   *
   */
 class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
-  import Decoder._
+  import MessageException._
 
   private var totalReadBytes: Long = 0L
 
   private var currentBuffer: ReadBuffer = null
   private var cursor: Int               = 0
   private var cursorStack: List[Int]    = List.empty
+
+  private val decoder: Decoder = new Decoder
 
   def getTotalReadBytes: Long = totalReadBytes + cursor
 
@@ -75,12 +77,8 @@ class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
   }
   override def unpackNil: Unit = {
     ensureBuffer
-    currentBuffer.readByte(cursor) match {
-      case Code.NIL => // OK
-        cursor += 1
-      case other =>
-        throw unexpected("Nil", other)
-    }
+    decoder.unpackNil(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
   }
 
   /**
@@ -91,47 +89,130 @@ class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
     *
     */
   override def tryUnpackNil: Boolean = {
-    currentBuffer.readByte(cursor) match {
-      case Code.NIL => // OK
-        cursor += 1
-        true
-      case other =>
-        false
-    }
+    ensureBuffer
+    val b = decoder.tryUnpackNil(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    b
   }
 
   override def unpackBoolean: Boolean = {
-    currentBuffer.readByte(cursor) match {
-      case Code.FALSE =>
-        cursor += 1
-        false
-      case Code.TRUE =>
-        cursor += 1
-        true
-      case other =>
-        throw unexpected("boolean", other)
-    }
+    ensureBuffer
+
+    // TODO handle InsufficientBufferException
+    val b = decoder.unpackBoolean(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    b
   }
 
-  override def unpackByte: Byte                                              = ???
-  override def unpackShort: Short                                            = ???
-  override def unpackInt: Int                                                = ???
-  override def unpackLong: Long                                              = ???
-  override def unpackBigInteger: BigInteger                                  = ???
-  override def unpackFloat: Float                                            = ???
-  override def unpackDouble: Double                                          = ???
-  override def unpackString: String                                          = ???
-  override def unpackTimestamp: Instant                                      = ???
-  override def unpackArrayHeader: Int                                        = ???
-  override def unpackMapHeader: Int                                          = ???
-  override def unpackExtTypeHeader: ExtTypeHeader                            = ???
-  override def unpackRawStringHeader: Int                                    = ???
-  override def unpackBinaryHeader: Int                                       = ???
-  override def unpackValue: Value                                            = ???
-  override def skipPayload(numBytes: Int): Unit                              = ???
+  override def unpackByte: Byte = {
+    ensureBuffer
+    val b = decoder.unpackByte(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    b
+  }
+
+  override def unpackShort: Short = {
+    ensureBuffer
+    val s = decoder.unpackShort(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    s
+  }
+
+  override def unpackInt: Int = {
+    ensureBuffer
+    val i = decoder.unpackInt(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    i
+  }
+
+  override def unpackLong: Long = {
+    ensureBuffer
+    val l = decoder.unpackLong(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    l
+  }
+
+  override def unpackBigInteger: BigInteger = {
+    ensureBuffer
+    val b = decoder.unpackBigInteger(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    b
+  }
+
+  override def unpackFloat: Float = {
+    ensureBuffer
+    val f = decoder.unpackFloat(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    f
+  }
+
+  override def unpackDouble: Double = {
+    ensureBuffer
+    val d = decoder.unpackDouble(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    d
+  }
+
+  override def unpackString: String = {
+    ensureBuffer
+    val s = decoder.unpackString(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    s
+  }
+
+  override def unpackTimestamp: Instant = {
+    ensureBuffer
+    val t = decoder.unpackTimestamp(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    t
+  }
+
+  override def unpackArrayHeader: Int = {
+    ensureBuffer
+    val arrayLen = decoder.unpackArrayHeader(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    arrayLen
+  }
+
+  override def unpackMapHeader: Int = {
+    ensureBuffer
+    val mapLen = decoder.unpackMapHeader(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    mapLen
+  }
+
+  override def unpackExtTypeHeader: ExtTypeHeader = {
+    ensureBuffer
+    val extType = decoder.unpackExtTypeHeader(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    extType
+  }
+
+  override def unpackRawStringHeader: Int = {
+    ensureBuffer
+    val h = decoder.unpackRawStringHeader(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    h
+  }
+
+  override def unpackBinaryHeader: Int = {
+    ensureBuffer
+    val h = decoder.unpackBinaryHeader(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    h
+  }
+
+  override def unpackValue: Value = ???
+  override def skipPayload(numBytes: Int): Unit = {
+    ensureBuffer
+    var skipLen = 0
+
+  }
+
   override def readPayload(dst: Array[Byte]): Unit                           = ???
   override def readPayload(dst: Array[Byte], offset: Int, length: Int): Unit = ???
   override def readPayload(length: Int): Array[Byte]                         = ???
 
   override def close(): Unit = in.close
+
 }

@@ -32,6 +32,7 @@ object ErrorCode {
   case object NEVER_USED_FORMAT     extends InvalidFormatError
   case object INVALID_STRING_CODING extends InvalidFormatError
   case object TOO_LARGE_MESSAGE     extends InvalidFormatError
+  case object INVALID_EXT_FORMAT    extends InvalidFormatError
 
 }
 
@@ -62,3 +63,16 @@ case class InsufficientBufferException(currentPosition: Int, expectedLength: Int
   */
 case class IntegerOverflowException(bigInteger: BigInteger) extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
 case class TooLargeMessageException(size: Long)             extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
+
+object MessageException {
+  def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xFF).toLong))
+  def overflowU16(u16: Short) = new IntegerOverflowException(BigInteger.valueOf((u16 & 0xFFFF).toLong))
+  def overflowU32(u32: Int)   = new IntegerOverflowException(BigInteger.valueOf((u32 & 0xFFFFFFFF).toLong))
+  def overflowU64(u64: Long)  = new IntegerOverflowException(BigInteger.valueOf(u64 + Long.MaxValue + 1L).setBit(63))
+
+  def overflowI16(i16: Short) = new IntegerOverflowException(BigInteger.valueOf(i16.toLong))
+  def overflowI32(i32: Int)   = new IntegerOverflowException(BigInteger.valueOf(i32.toLong))
+  def overflowI64(i64: Long)  = new IntegerOverflowException(BigInteger.valueOf(i64))
+
+  def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
+}

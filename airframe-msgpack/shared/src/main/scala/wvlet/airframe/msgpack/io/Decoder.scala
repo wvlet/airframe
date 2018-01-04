@@ -15,16 +15,18 @@ package wvlet.airframe.msgpack.io
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 import java.util.Locale
 
 import wvlet.airframe.msgpack.io.Decoder._
-import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_TYPE, NEVER_USED_FORMAT}
+import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi._
 
 /**
   * Read a message pack data from the buffer. The last read byte length can be checked by [[lastReadByteLength]] method.
   */
 class Decoder {
+  import MessageException._
 
   private var _lastReadByteLength: Int = 0
 
@@ -35,6 +37,17 @@ class Decoder {
       case Code.NIL =>
         _lastReadByteLength = 1
       case other => unexpected("nil", other)
+    }
+  }
+
+  def tryUnpackNil(buf: ReadBuffer, position: Int): Boolean = {
+    buf.readByte(position) match {
+      case Code.NIL =>
+        _lastReadByteLength = 1
+        true
+      case other =>
+        _lastReadByteLength = 0
+        false
     }
   }
 
@@ -507,6 +520,37 @@ class Decoder {
     }
   }
 
+  def unpackTimestamp(buf: ReadBuffer, position: Int): Instant = {
+    val extTypeHeader = unpackExtTypeHeader(buf, position)
+    var readLen       = _lastReadByteLength
+    _lastReadByteLength = 0 // Need to reset the intermediate read length
+    if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
+      throw unexpected("Timestamp", extTypeHeader.extType)
+    }
+    val instant = extTypeHeader.byteLength match {
+      case 4 =>
+        val u32 = buf.readInt(position + readLen)
+        readLen += 4
+        Instant.ofEpochSecond(u32)
+      case 8 =>
+        val d64 = buf.readLong(position + readLen)
+        readLen += 8
+        val sec  = d64 & 0x00000003ffffffffL
+        val nsec = (d64 >>> 34).toInt
+        Instant.ofEpochSecond(sec, nsec)
+      case 12 =>
+        val nsec = buf.readInt(position + readLen)
+        readLen += 4
+        val sec = buf.readLong(position + readLen)
+        readLen += 8
+        Instant.ofEpochSecond(sec, nsec)
+      case other =>
+        throw new MessageException(INVALID_EXT_FORMAT, s"Timestamp type expects 4, 8, or 12 bytes of payload but got ${other} bytes")
+    }
+    _lastReadByteLength = readLen
+    instant
+  }
+
   def readPayload(buf: ReadBuffer, position: Int, length: Int): Array[Byte] = {
     val data = buf.readBytes(position, length)
     _lastReadByteLength = length
@@ -529,16 +573,6 @@ class Decoder {
     dest.slice(destIndex, length)
   }
 
-  private def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xFF).toLong))
-  private def overflowU16(u16: Short) = new IntegerOverflowException(BigInteger.valueOf((u16 & 0xFFFF).toLong))
-  private def overflowU32(u32: Int)   = new IntegerOverflowException(BigInteger.valueOf((u32 & 0xFFFFFFFF).toLong))
-  private def overflowU64(u64: Long)  = new IntegerOverflowException(BigInteger.valueOf(u64 + Long.MaxValue + 1L).setBit(63))
-
-  private def overflowI16(i16: Short) = new IntegerOverflowException(BigInteger.valueOf(i16.toLong))
-  private def overflowI32(i32: Int)   = new IntegerOverflowException(BigInteger.valueOf(i32.toLong))
-  private def overflowI64(i64: Long)  = new IntegerOverflowException(BigInteger.valueOf(i64))
-
-  private def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
 }
 
 object Decoder {
