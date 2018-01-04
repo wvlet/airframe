@@ -7,6 +7,8 @@ title: airframe-jdbc
 
 A reusable JDBC connection pool implementation with Airframe. 
 
+- [Source code](https://github.com/wvlet/airframe/tree/master/airframe-jdbc)
+
 Currently we are supporting these databases:
 
 - **sqlite**: SQLite
@@ -67,6 +69,7 @@ d.withSession { session =>
    // You can make queries using the connection pool
    t.connectionPool.executeQuery("select ...")
 }
+// Connection pools will be closed here
 
 ```
 
