@@ -18,7 +18,7 @@ import java.io.IOException
 /**
   *
   */
-trait Source extends AutoCloseable {
+trait MessageSource extends AutoCloseable {
 
   /**
     * Returns a next buffer to read.

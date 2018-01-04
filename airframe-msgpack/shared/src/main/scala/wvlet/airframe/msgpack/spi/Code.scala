@@ -13,30 +13,10 @@
  */
 package wvlet.airframe.msgpack.spi
 
+/**
+  * MessagePack prefix codes
+  */
 object Code {
-  def isFixInt(b: Byte): Boolean = {
-    val v = b & 0xFF
-    v <= 0x7f || v >= 0xe0
-  }
-
-  def isPosFixInt(b: Byte): Boolean =
-    (b & POSFIXINT_MASK) == 0
-
-  def isNegFixInt(b: Byte): Boolean =
-    (b & NEGFIXINT_PREFIX) == NEGFIXINT_PREFIX
-
-  def isFixStr(b: Byte): Boolean =
-    (b & 0xe0.toByte) == Code.FIXSTR_PREFIX
-
-  def isFixedArray(b: Byte): Boolean =
-    (b & 0xf0.toByte) == Code.FIXARRAY_PREFIX
-
-  def isFixedMap(b: Byte): Boolean =
-    (b & 0xf0.toByte) == Code.FIXMAP_PREFIX
-
-  def isFixedRaw(b: Byte): Boolean =
-    (b & 0xe0.toByte) == Code.FIXSTR_PREFIX
-
   val POSFIXINT_MASK: Byte   = 0x80.toByte
   val FIXMAP_PREFIX: Byte    = 0x80.toByte
   val FIXARRAY_PREFIX: Byte  = 0x90.toByte
@@ -75,5 +55,28 @@ object Code {
   val MAP32: Byte            = 0xdf.toByte
   val NEGFIXINT_PREFIX: Byte = 0xe0.toByte
 
-  val EXT_TIMESTAMP: Byte = -1.toByte
+  val EXT_TIMESTAMP: Byte = -1
+
+  def isFixInt(b: Byte): Boolean = {
+    val v = b & 0xFF
+    v <= 0x7f || v >= 0xe0
+  }
+
+  def isPosFixInt(b: Byte): Boolean =
+    (b & POSFIXINT_MASK) == 0
+
+  def isNegFixInt(b: Byte): Boolean =
+    (b & NEGFIXINT_PREFIX) == NEGFIXINT_PREFIX
+
+  def isFixStr(b: Byte): Boolean =
+    (b & 0xe0.toByte) == Code.FIXSTR_PREFIX
+
+  def isFixedArray(b: Byte): Boolean =
+    (b & 0xf0.toByte) == Code.FIXARRAY_PREFIX
+
+  def isFixedMap(b: Byte): Boolean =
+    (b & 0xf0.toByte) == Code.FIXMAP_PREFIX
+
+  def isFixedRaw(b: Byte): Boolean =
+    (b & 0xe0.toByte) == Code.FIXSTR_PREFIX
 }

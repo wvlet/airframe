@@ -20,7 +20,7 @@ import wvlet.airframe.msgpack.spi.{Packer, Value}
 /**
   *
   */
-class StreamPacker(sink: Sink) extends Packer {
+class StreamPacker(sink: MessageSink) extends Packer {
 
   private var position: Int       = 0
   private var buffer: WriteBuffer = null
@@ -128,7 +128,7 @@ class StreamPacker(sink: Sink) extends Packer {
 
   override def packExtensionTypeHeader(extType: Byte, payloadLen: Int) = {
     ensureBuffer(6)
-    position += Encoder.packExtensionTypeHeader(buffer, position, extType, payloadLen)
+    position += Encoder.packExtTypeHeader(buffer, position, extType, payloadLen)
     this
   }
 

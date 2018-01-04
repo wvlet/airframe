@@ -37,7 +37,7 @@ trait Packer {
   def packMapHeader(mapSize: Int): this.type
 
   def packExtensionTypeHeader(extType: Byte, payloadLen: Int): this.type
-  def packExtensionTypeHeader(extensionTypeHeader: ExtensionTypeHeader): this.type = packExtensionTypeHeader(extensionTypeHeader.extType, extensionTypeHeader.byteLength)
+  def packExtensionTypeHeader(extensionTypeHeader: ExtTypeHeader): this.type = packExtensionTypeHeader(extensionTypeHeader.extType, extensionTypeHeader.byteLength)
   def packBinaryHeader(len: Int): this.type
   def packRawStringHeader(len: Int): this.type
 

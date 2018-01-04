@@ -462,46 +462,46 @@ class Decoder {
     }
   }
 
-  def unpackExtentionTypeHeader(buf: ReadBuffer, position: Int): ExtensionTypeHeader = {
+  def unpackExtTypeHeader(buf: ReadBuffer, position: Int): ExtTypeHeader = {
     buf.readByte(position) match {
       case Code.FIXEXT1 =>
         val tpe = buf.readByte(position + 1)
         _lastReadByteLength = 2
-        ExtensionTypeHeader(tpe, 1);
+        ExtTypeHeader(tpe, 1);
       case Code.FIXEXT2 =>
         val tpe = buf.readByte(position + 1)
         _lastReadByteLength = 2
-        ExtensionTypeHeader(tpe, 2);
+        ExtTypeHeader(tpe, 2);
       case Code.FIXEXT4 =>
         val tpe = buf.readByte(position + 1)
         _lastReadByteLength = 2
-        ExtensionTypeHeader(tpe, 4);
+        ExtTypeHeader(tpe, 4);
       case Code.FIXEXT8 =>
         val tpe = buf.readByte(position + 1)
         _lastReadByteLength = 2
-        ExtensionTypeHeader(tpe, 8);
+        ExtTypeHeader(tpe, 8);
       case Code.FIXEXT16 =>
         val tpe = buf.readByte(position + 1)
         _lastReadByteLength = 2
-        ExtensionTypeHeader(tpe, 16);
+        ExtTypeHeader(tpe, 16);
       case Code.EXT8 =>
         val u8  = buf.readByte(position + 1)
         val len = u8 & 0xff
         val tpe = buf.readByte(position + 2)
         _lastReadByteLength = 3
-        ExtensionTypeHeader(tpe, len)
+        ExtTypeHeader(tpe, len)
       case Code.EXT16 =>
         val u16 = buf.readShort(position + 1)
         val len = u16 & 0xffff
         val tpe = buf.readByte(position + 3)
         _lastReadByteLength = 4
-        ExtensionTypeHeader(tpe, len)
+        ExtTypeHeader(tpe, len)
       case Code.EXT32 =>
         val u32 = buf.readInt(position + 1)
         if (u32 < 0) throw overflowU32Size(u32)
         val tpe = buf.readByte(position + 5)
         _lastReadByteLength = 6
-        ExtensionTypeHeader(tpe, u32)
+        ExtTypeHeader(tpe, u32)
       case other =>
         throw unexpected("Extension", other)
     }

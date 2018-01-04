@@ -42,7 +42,7 @@ trait Unpacker {
 
   def unpackArrayHeader: Int
   def unpackMapHeader: Int
-  def unpackExtensionTypeHeader: ExtensionTypeHeader
+  def unpackExtTypeHeader: ExtTypeHeader
   def unpackRawStringHeader: Int
   def unpackBinaryHeader: Int
 
@@ -54,4 +54,4 @@ trait Unpacker {
   def readPayload(length: Int): Array[Byte]
 }
 
-case class ExtensionTypeHeader(extType: Byte, byteLength: Int)
+case class ExtTypeHeader(extType: Byte, byteLength: Int)

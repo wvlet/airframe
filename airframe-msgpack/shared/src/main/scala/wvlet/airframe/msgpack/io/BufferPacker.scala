@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.msgpack.io
 
-import wvlet.airframe.msgpack.spi.Packer
-
 /**
   *
   */
-class BufferPacker(sink: Sink) extends StreamPacker(sink) {
-  def toByteArray: Array[Byte] = _
-  def toBuffer: ReadBuffer     = _
+class BufferPacker(sink: MessageSink) extends StreamPacker(sink) {
+  def toByteArray: Array[Byte] = ???
+  def toBuffer: ReadBuffer     = ???
 }

@@ -21,7 +21,7 @@ import java.io.{Flushable, IOException}
   * A Sink implementation has total control of the buffer memory so that it can reuse buffer memory,
   * use buffer pools, or use memory-mapped files.
   */
-trait Sink extends AutoCloseable with Flushable {
+trait MessageSink extends AutoCloseable with Flushable {
 
   /**
     * Allocates the next buffer for writing MessagePack data.

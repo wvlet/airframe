@@ -209,7 +209,7 @@ object Encoder {
     }
   }
 
-  def packExtensionTypeHeader(buf: WriteBuffer, position: Int, extType: Byte, payloadLen: Int): Int = {
+  def packExtTypeHeader(buf: WriteBuffer, position: Int, extType: Byte, payloadLen: Int): Int = {
     if (payloadLen < (1 << 8)) {
       if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
         if (payloadLen == 1)

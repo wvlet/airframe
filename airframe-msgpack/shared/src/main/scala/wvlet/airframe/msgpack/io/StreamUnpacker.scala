@@ -23,14 +23,14 @@ import scala.annotation.tailrec
 /**
   *
   */
-class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
+class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
   import Decoder._
 
   private var totalReadBytes: Long = 0L
 
-  private var currentBuffer: ReadBuffer  = null
-  private var cursor: Int            = 0
-  private var cursorStack: List[Int] = List.empty
+  private var currentBuffer: ReadBuffer = null
+  private var cursor: Int               = 0
+  private var cursorStack: List[Int]    = List.empty
 
   def getTotalReadBytes: Long = totalReadBytes + cursor
 
@@ -57,7 +57,7 @@ class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
 
   override def getNextFormat: MessageFormat = {
     if (!ensureBuffer) {
-      throw new InsufficientBufferException(1);
+      throw new InsufficientBufferException(cursor, 1);
     }
     val b = currentBuffer.readByte(cursor)
     MessageFormat.of(b)
@@ -101,8 +101,15 @@ class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
   }
 
   override def unpackBoolean: Boolean = {
-    currentBuffer.readBytes(cursor) match {
-
+    currentBuffer.readByte(cursor) match {
+      case Code.FALSE =>
+        cursor += 1
+        false
+      case Code.TRUE =>
+        cursor += 1
+        true
+      case other =>
+        throw unexpected("boolean", other)
     }
   }
 
@@ -117,7 +124,7 @@ class StreamUnpacker(in: Source) extends Unpacker with AutoCloseable {
   override def unpackTimestamp: Instant                                      = ???
   override def unpackArrayHeader: Int                                        = ???
   override def unpackMapHeader: Int                                          = ???
-  override def unpackExtensionTypeHeader: ExtensionTypeHeader                = ???
+  override def unpackExtTypeHeader: ExtTypeHeader                            = ???
   override def unpackRawStringHeader: Int                                    = ???
   override def unpackBinaryHeader: Int                                       = ???
   override def unpackValue: Value                                            = ???
