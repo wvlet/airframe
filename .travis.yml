@@ -56,6 +56,8 @@ matrix:
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: oraclejdk8
+    services: postgresql
+    before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.12.4 PROJECT=projectJS
     jdk: oraclejdk8
