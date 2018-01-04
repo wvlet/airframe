@@ -16,7 +16,7 @@ DI framework builds objects on your behalf.
 While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers), Airframe redesigned it for Scala so that we can enjoy the flexibilities of Scala traits and DI at the same time.
 
 Airframe also provides [lightweight utilities](docs/utils.html) that embody our best practices 
-in developing complex services in Scala, including [application configuration](docs/config.html), [runtime monitoring](docs/airframe-jmx.html), [source code logging](docs/airframe-log.html), [command-line option parser](docs/airframe-opts.html) etc.
+in developing complex services in Scala, including [application configuration](docs/airframe-config.html), [runtime monitoring](docs/airframe-jmx.html), [source code logging](docs/airframe-log.html), [command-line option parser](docs/airframe-opts.html) etc.
 
 
 ## Resources

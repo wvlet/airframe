@@ -51,7 +51,7 @@ val testDesign =
   d.bind[Config].toInstance(new Config("localhost", randomPort))
 ```
 
-Airframe has a submodule called [airframe-config](config.html), which is useful for 
+Airframe has a submodule called [airframe-config](airframe-config.html), which is useful for 
 configuring your applications with YAML files.
 
 ## Managing Resources

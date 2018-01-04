@@ -11,7 +11,7 @@ Airframe has several utilities that make easier your programming in Scala:
   - Light-weight handy logging library.
 - [airframe-codec](airframe-codec.html) 
   - [MessagePack](https://msgpack.org) based Schema-on-Read data transcoder 
-- [airframe-config](config.html) 
+- [airframe-config](airframe-config.html)
   - Configuration reader & provider.
 - [airframe-opts](airframe-opts.html) 
   - Command line parser.

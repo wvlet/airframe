@@ -15,8 +15,6 @@ options:
     url: docs/use-cases.html
   - title: Advanced Binding Types
     url: docs/bindings.html
-  - title: Configuring Applications
-    url: docs/config.html
   - title: Debugging DI
     url: docs/debug.html
   - title: Other DI Frameworks
@@ -30,7 +28,7 @@ options:
       - title: airframe-codec
         url: docs/airframe-codec.html
       - title: airframe-config
-        url: docs/config.html
+        url: docs/airframe-config.html
       - title: airframe-opts
         url: docs/airframe-opts.html
       - title: airframe-metrics
