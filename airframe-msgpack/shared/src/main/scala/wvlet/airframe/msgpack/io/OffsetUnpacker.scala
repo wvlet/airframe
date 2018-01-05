@@ -18,15 +18,15 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.Locale
 
-import wvlet.airframe.msgpack.io.Decoder._
+import wvlet.airframe.msgpack.io.OffsetUnpacker._
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.Value._
 import wvlet.airframe.msgpack.spi._
 
 /**
-  * Read a message pack data from the buffer. The last read byte length can be checked by [[lastReadByteLength]] method.
+  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by [[lastReadByteLength]] method.
   */
-class Decoder {
+class OffsetUnpacker {
   import MessageException._
 
   private var _lastReadByteLength: Int = 0
@@ -664,7 +664,7 @@ class Decoder {
 
 }
 
-object Decoder {
+object OffsetUnpacker {
   val EMPTY_STRING: String = ""
 
   private[io] def unexpected(expectedCode: String, actual: Byte) = {

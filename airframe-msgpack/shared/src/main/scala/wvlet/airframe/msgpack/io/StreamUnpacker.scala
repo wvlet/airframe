@@ -32,7 +32,7 @@ class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
   private var cursor: Int               = 0
   private var cursorStack: List[Int]    = List.empty
 
-  private val decoder: Decoder = new Decoder
+  private val decoder: OffsetUnpacker = new OffsetUnpacker
 
   def getTotalReadBytes: Long = totalReadBytes + cursor
 

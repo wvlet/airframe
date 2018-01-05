@@ -21,7 +21,7 @@ import wvlet.airframe.msgpack.spi.Code._
 /**
   * Write MessagePack code at a given position on the buffer and return the written byte length
   */
-object Encoder {
+object OffsetPacker {
   def packNil(buf: WriteBuffer, position: Int): Int = {
     buf.writeByte(position, NIL)
   }

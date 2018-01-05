@@ -49,98 +49,98 @@ class StreamPacker(sink: MessageSink) extends Packer {
 
   override def packNil = {
     ensureBuffer(1)
-    position += Encoder.packNil(buffer, position)
+    position += OffsetPacker.packNil(buffer, position)
     this
   }
 
   override def packBoolean(v: Boolean) = {
     ensureBuffer(1)
-    position += Encoder.packBoolean(buffer, position, v)
+    position += OffsetPacker.packBoolean(buffer, position, v)
     this
   }
 
   override def packByte(v: Byte) = {
     ensureBuffer(2)
-    position += Encoder.packByte(buffer, position, v)
+    position += OffsetPacker.packByte(buffer, position, v)
     this
   }
 
   override def packShort(v: Short) = {
     ensureBuffer(3)
-    position += Encoder.packShort(buffer, position, v)
+    position += OffsetPacker.packShort(buffer, position, v)
     this
   }
 
   override def packInt(v: Int) = {
     ensureBuffer(5)
-    position += Encoder.packInt(buffer, position, v)
+    position += OffsetPacker.packInt(buffer, position, v)
     this
   }
 
   override def packLong(v: Long) = {
     ensureBuffer(9)
-    position += Encoder.packLong(buffer, position, v)
+    position += OffsetPacker.packLong(buffer, position, v)
     this
   }
 
   override def packBigInteger(v: BigInteger) = {
     ensureBuffer(9)
-    position += Encoder.packBigInteger(buffer, position, v)
+    position += OffsetPacker.packBigInteger(buffer, position, v)
     this
   }
 
   override def packFloat(v: Float) = {
     ensureBuffer(5)
-    position += Encoder.packFloat(buffer, position, v)
+    position += OffsetPacker.packFloat(buffer, position, v)
     this
   }
 
   override def packDouble(v: Double) = {
     ensureBuffer(9)
-    position += Encoder.packDouble(buffer, position, v)
+    position += OffsetPacker.packDouble(buffer, position, v)
     this
   }
 
   override def packString(v: String) = {
     // ensure capacity for 2-byte raw string header + the maximum string size (+ 1 byte for fallback code)
     ensureBuffer(2 + v.length * StreamPacker.UTF_8_MAX_CHAR_SIZE + 1)
-    position += Encoder.packString(buffer, position, v)
+    position += OffsetPacker.packString(buffer, position, v)
     this
   }
 
   override def packTimestamp(epochSecond: Long, nanoAdjustment: Int) = {
     ensureBuffer(15) // maximum timestamp size
-    position += Encoder.packTimestampEpochSecond(buffer, position, epochSecond, nanoAdjustment)
+    position += OffsetPacker.packTimestampEpochSecond(buffer, position, epochSecond, nanoAdjustment)
     this
   }
 
   override def packArrayHeader(arraySize: Int) = {
     ensureBuffer(5)
-    position += Encoder.packArrayHeader(buffer, position, arraySize)
+    position += OffsetPacker.packArrayHeader(buffer, position, arraySize)
     this
   }
 
   override def packMapHeader(mapSize: Int) = {
     ensureBuffer(5)
-    position += Encoder.packMapHeader(buffer, position, mapSize)
+    position += OffsetPacker.packMapHeader(buffer, position, mapSize)
     this
   }
 
   override def packExtensionTypeHeader(extType: Byte, payloadLen: Int) = {
     ensureBuffer(6)
-    position += Encoder.packExtTypeHeader(buffer, position, extType, payloadLen)
+    position += OffsetPacker.packExtTypeHeader(buffer, position, extType, payloadLen)
     this
   }
 
   override def packBinaryHeader(len: Int) = {
     ensureBuffer(5)
-    position += Encoder.packBinaryHeader(buffer, position, len)
+    position += OffsetPacker.packBinaryHeader(buffer, position, len)
     this
   }
 
   override def packRawStringHeader(len: Int) = {
     ensureBuffer(5)
-    position += Encoder.packRawStringHeader(buffer, position, len)
+    position += OffsetPacker.packRawStringHeader(buffer, position, len)
     this
   }
 
@@ -153,7 +153,7 @@ class StreamPacker(sink: MessageSink) extends Packer {
     val result = valuePacker.toByteArray
 
     // TODO output the result directly to Sink
-    position += Encoder.writePayload(buffer, position, result)
+    position += OffsetPacker.writePayload(buffer, position, result)
     this
   }
 
