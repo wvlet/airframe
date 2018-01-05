@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.msgpack.spi
 
+import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
@@ -55,6 +56,14 @@ object Value {
     override def valueType = ValueType.INTEGER
     override def writeTo(packer: Packer): Unit = {
       packer.packLong(v)
+    }
+  }
+
+  case class BigIntegerValue(val v: BigInteger) extends Value {
+    override def toJson    = v.toString
+    override def valueType = ValueType.INTEGER
+    override def writeTo(packer: Packer): Unit = {
+      packer.packBigInteger(v)
     }
   }
 
@@ -123,7 +132,7 @@ object Value {
     override def toJson: String = {
       LogTimestampFormatter.formatTimestamp(v.toEpochMilli)
     }
-    override def valueType: ValueType = ValueType.TIMESTAMP
+    override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
     }

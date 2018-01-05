@@ -20,6 +20,7 @@ import java.util.Locale
 
 import wvlet.airframe.msgpack.io.Decoder._
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
+import wvlet.airframe.msgpack.spi.Value._
 import wvlet.airframe.msgpack.spi._
 
 /**
@@ -31,6 +32,87 @@ class Decoder {
   private var _lastReadByteLength: Int = 0
 
   def lastReadByteLength: Int = _lastReadByteLength
+
+  def unpackValue(buf: ReadBuffer, position: Int): Value = {
+    val b  = buf.readByte(position)
+    val mf = MessageFormat.of(b)
+    mf.valueType match {
+      case ValueType.NIL =>
+        _lastReadByteLength = 1
+        NilValue
+      case ValueType.BOOLEAN =>
+        Value.BooleanValue(unpackBoolean(buf, position))
+      case ValueType.INTEGER =>
+        mf match {
+          case MessageFormat.UINT64 =>
+            BigIntegerValue(unpackBigInteger(buf, position))
+          case _ =>
+            LongValue(unpackLong(buf, position))
+        }
+      case ValueType.FLOAT =>
+        DoubleValue(unpackDouble(buf, position))
+      case ValueType.STRING =>
+        StringValue(unpackString(buf, position))
+      case ValueType.BINARY =>
+        var readLen      = 0
+        val binaryLength = unpackBinaryHeader(buf, position)
+        readLen += _lastReadByteLength
+        _lastReadByteLength = 0 // Reset here because readPayload may thrown an exception
+        val data = readPayload(buf, position + readLen, binaryLength)
+        readLen += _lastReadByteLength
+        _lastReadByteLength = readLen
+        BinaryValue(data)
+      case ValueType.EXTENSION =>
+        var readLen   = 0
+        val extHeader = unpackExtTypeHeader(buf, position)
+        readLen += _lastReadByteLength
+        _lastReadByteLength = 0
+        if (extHeader.extType == Code.EXT_TIMESTAMP) {
+          val instant = unpackTimestampInternal(extHeader, buf, position + readLen)
+          _lastReadByteLength += readLen
+          TimestampValue(instant)
+        } else {
+          val extData = readPayload(buf, position + readLen, extHeader.byteLength)
+          _lastReadByteLength += readLen
+          ExtensionValue(extHeader.extType, extData)
+        }
+      case ValueType.ARRAY =>
+        var readLen     = 0
+        val arrayLength = unpackArrayHeader(buf, position)
+        readLen += _lastReadByteLength
+        _lastReadByteLength = 0 // Reset here so as not to move cursor in the middle of reading
+        val arr = IndexedSeq.newBuilder[Value]
+        arr.sizeHint(arrayLength)
+        var i = 0
+        while (i < arrayLength) {
+          arr += unpackValue(buf, position + readLen)
+          readLen += _lastReadByteLength
+          _lastReadByteLength = 0
+          i += 1
+        }
+        _lastReadByteLength = readLen
+        ArrayValue(arr.result())
+      case ValueType.MAP =>
+        var readLen   = 0
+        val mapLength = unpackMapHeader(buf, position)
+        readLen += _lastReadByteLength
+        _lastReadByteLength = 0 // Reset here so as not to move cursor in the middle of reading
+        val map = Map.newBuilder[Value, Value]
+        map.sizeHint(mapLength)
+        var i = 0
+        while (i < mapLength) {
+          val key = unpackValue(buf, position + readLen)
+          readLen += _lastReadByteLength
+          _lastReadByteLength = 0
+          val value = unpackValue(buf, position + readLen)
+          readLen += _lastReadByteLength
+          map += (key -> value)
+          i += 1
+        }
+        _lastReadByteLength = readLen
+        MapValue(map.result)
+    }
+  }
 
   def unpackNil(buf: ReadBuffer, position: Int) {
     buf.readByte(position) match {
@@ -522,8 +604,15 @@ class Decoder {
 
   def unpackTimestamp(buf: ReadBuffer, position: Int): Instant = {
     val extTypeHeader = unpackExtTypeHeader(buf, position)
-    var readLen       = _lastReadByteLength
+    val readLen       = _lastReadByteLength
     _lastReadByteLength = 0 // Need to reset the intermediate read length
+    val instant = unpackTimestampInternal(extTypeHeader, buf, position + readLen)
+    _lastReadByteLength = readLen + _lastReadByteLength
+    instant
+  }
+
+  private def unpackTimestampInternal(extTypeHeader: ExtTypeHeader, buf: ReadBuffer, position: Int): Instant = {
+    var readLen = 0
     if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
       throw unexpected("Timestamp", extTypeHeader.extType)
     }

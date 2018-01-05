@@ -27,15 +27,17 @@ sealed abstract class ValueType(val isNumber: Boolean, val isRaw: Boolean) {
   * TODO: Convert this into Scala
   */
 object ValueType {
-  case object NIL     extends ValueType(false, false)
-  case object BOOLEAN extends ValueType(false, false)
-  case object INTEGER extends ValueType(true, false)
-  case object FLOAT   extends ValueType(true, false)
-  case object STRING  extends ValueType(false, true)
-  // Timestamp value will be reported as a first-class value
-  case object TIMESTAMP extends ValueType(false, false)
+  case object NIL       extends ValueType(false, false)
+  case object BOOLEAN   extends ValueType(false, false)
+  case object INTEGER   extends ValueType(true, false)
+  case object FLOAT     extends ValueType(true, false)
+  case object STRING    extends ValueType(false, true)
   case object BINARY    extends ValueType(false, true)
   case object ARRAY     extends ValueType(false, false)
   case object MAP       extends ValueType(false, false)
   case object EXTENSION extends ValueType(false, false)
+
+  // Timestamp value should be reported as a first-class value?
+  // TODO: But we cannot determin the value type without reading the second or more bytes
+  // case object TIMESTAMP extends ValueType(false, false)
 }

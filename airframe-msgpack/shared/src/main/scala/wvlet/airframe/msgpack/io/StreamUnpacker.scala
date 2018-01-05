@@ -202,7 +202,12 @@ class StreamUnpacker(in: MessageSource) extends Unpacker with AutoCloseable {
     h
   }
 
-  override def unpackValue: Value = {}
+  override def unpackValue: Value = {
+    ensureBuffer
+    val v = decoder.unpackValue(currentBuffer, cursor)
+    cursor += decoder.lastReadByteLength
+    v
+  }
 
   override def skipPayload(numBytes: Int): Unit = {
     var skippedLen = 0
