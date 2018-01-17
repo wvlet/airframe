@@ -8,21 +8,33 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script></head><body><header id="site-header"><div class="navbar-wrapper"><div class="container"><div class="row"><div class="col-xs-6"><a href="/airframe/" class="brand"><div class="icon-wrapper"><span>Airframe</span></div></a></div><div class="col-xs-6"><nav class="text-right"><ul class=""><li><a href="https://github.com/wvlet/airframe"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="docs"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div></div></div><div class="jumbotron"><div class="container"><h1 class="text-center">Lightweight Building Blocks for Scala</h1><h2></h2><p class="text-center"><a href="https://github.com/wvlet/airframe" class="btn btn-outline-inverse">View on GitHub</a></p></div></div><div><ul class="horizontalNav">                                      </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="airframe">Airframe</h1>
 
-<p>Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala, including
-logging, configuration, object serialization, metric collection, etc.</p>
+<p>Airframe is a collection of <a href="docs/util.html">lightweight libraries</a> useful for building full-fledged applications in Scala, including:</p>
 
-<p>As its core Airframe provides <a href="docs">dependency injection (DI) library</a> tailored to <a href="https://www.scala-lang.org/">Scala</a>. 
+<ul>
+  <li><a href="docs/airframe-log.html">Logging</a></li>
+  <li><a href="docs/airframe-config.html">Configuration</a></li>
+  <li><a href="docs/airframe-codec.html">Object serialization</a></li>
+  <li><a href="docs/airframe-opts.html">Option parser</a></li>
+  <li><a href="docs/airframe-jmx.html">Runtime monitoring via JMX</a></li>
+  <li><a href="docs/airframe-metrics.html">Human-readable data units</a></li>
+  <li><a href="docs/airframe-surface.md">Object shape inspector (Surface)</a></li>
+  <li>etc.</li>
+</ul>
+
+<p>For advanced users we also provide <a href="docs">dependency injection (DI) library</a> tailored to <a href="https://www.scala-lang.org/">Scala</a>. 
 Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation; 
-Instead of enumerating necessary objects (dependencies) within constructor arguments, 
-DI framework builds objects on your behalf. 
-While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers), Airframe redesigned it for Scala so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
-
-<p>Airframe also provides <a href="docs/utils.html">lightweight utilities</a> that embody our best practices 
-in developing complex services in Scala, including <a href="docs/airframe-config.html">application configuration</a>, <a href="docs/airframe-jmx.html">runtime monitoring</a>, <a href="docs/airframe-log.html">source code logging</a>, <a href="docs/airframe-opts.html">command-line option parser</a> etc.</p>
+Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
+While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers),
+Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
 
 <h2 id="resources">Resources</h2>
 <ul>
   <li><a href="docs">Documentation</a></li>
+  <li><a href="docs/utils.html">Airframe Utilities</a>
+    <ul>
+      <li>A collection of useful Scala libraries that can be used with Airframe.</li>
+    </ul>
+  </li>
   <li><a href="docs/use-cases.html">Use Cases</a>
     <ul>
       <li>Configuring applications, managing resources, service mix-in, etc.</li>
@@ -33,12 +45,6 @@ in developing complex services in Scala, including <a href="docs/airframe-config
       <li>Comparing Airframe with Google Guice, Macwire, Dagger2, etc.</li>
     </ul>
   </li>
-  <li><a href="docs/utils.html">Airframe Utilities</a>
-    <ul>
-      <li>A collection of useful Scala libraries that can be used with Airframe.</li>
-    </ul>
-  </li>
-  <li><a href="docs/release-notes.html">Release Notes</a></li>
   <li><a href="https://github.com/wvlet/airframe">Source Code (GitHub)</a></li>
 </ul>
 
@@ -47,12 +53,38 @@ in developing complex services in Scala, including <a href="docs/airframe-config
 
 <p>Airframe is available for Scala 2.13, 2.12, 2.11, and <a href="https://www.scala-js.org/">Scala.js</a>:</p>
 
+<ul>
+  <li><a href="docs/release-notes.html">Release Notes</a></li>
+</ul>
+
+<h2 id="usage">Usage</h2>
+
 <p><strong>build.sbt</strong></p>
-<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span> <span class="mf">2.11</span><span class="o">,</span> <span class="mf">2.12</span><span class="o">,</span> <span class="n">and</span> <span class="mf">2.13</span>
+<span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
+  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span>         <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Dependency injection
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span>   <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// MessagePack-based schema-on-read transcoder
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-config"</span>  <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// YAML-based configuration
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jmx"</span>     <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// JMX monitoring
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jdbc"</span>    <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// JDBC connection pool
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span>     <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Logging
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Metrics units
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-opts"</span>    <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Command-line option parser
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Object surface inspector
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-tablet"</span>  <span class="o">%</span> <span class="s">"(version)"</span>  <span class="c1">// Table data reader/writer
+</span><span class="o">)</span>
+
+<span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span><span class="o">.</span><span class="n">js</span><span class="o">,</span> <span class="n">the</span> <span class="n">following</span> <span class="n">libraries</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span><span class="k">:</span>
+<span class="kt">libraryDependencies</span> <span class="kt">++=</span> <span class="kt">Seq</span><span class="o">(</span>
+  <span class="err">"</span><span class="kt">org.wvlet.airframe</span><span class="err">"</span> <span class="kt">%%%</span> <span class="err">"</span><span class="kt">airframe</span><span class="err">"</span>         <span class="kt">%</span> <span class="err">"</span><span class="o">(</span><span class="kt">version</span><span class="o">)</span><span class="err">"</span><span class="o">,</span> <span class="c1">// Dependency injection
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span>     <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Logging
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span><span class="o">,</span> <span class="c1">// Metrics units
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="s">"(version)"</span>  <span class="c1">// Object surface inspector
+</span><span class="o">)</span>
 </code></pre>
 </div>
 
-<h3 id="usage">Usage</h3>
+<h3 id="dependency-injection-with-airframe">Dependency Injection with Airframe</h3>
 
 <p>With Airframe, your Scala programming can be greatly simplified:</p>
 
@@ -88,9 +120,9 @@ in developing complex services in Scala, including <a href="docs/airframe-config
 <p>This separation of object bindings and their design (assembly) is useful for reducing code duplications between production and test codes. For example, compare writing <code class="highlighter-rouge">new App(new X, new Y(...), new Z(...), ...)</code> in both of your main and test codes, and just calling <code class="highlighter-rouge">session.build[App]</code>.
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.</p>
 
-<h2 id="features">Features</h2>
+<h2 id="airframe-di-features">Airframe DI Features</h2>
 
-<p>Major features of Airframe are as follows:</p>
+<p>Major features of Airframe DI are as follows:</p>
 
 <ul>
   <li>Simple usage
