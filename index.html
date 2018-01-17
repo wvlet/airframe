@@ -8,7 +8,7 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script></head><body><header id="site-header"><div class="navbar-wrapper"><div class="container"><div class="row"><div class="col-xs-6"><a href="/airframe/" class="brand"><div class="icon-wrapper"><span>Airframe</span></div></a></div><div class="col-xs-6"><nav class="text-right"><ul class=""><li><a href="https://github.com/wvlet/airframe"><i class="fa fa-github"></i><span class="hidden-xs">GitHub</span></a></li><li><a href="docs"><i class="fa fa-file-text"></i><span class="hidden-xs">Documentation</span></a></li></ul></nav></div></div></div></div><div class="jumbotron"><div class="container"><h1 class="text-center">Lightweight Building Blocks for Scala</h1><h2></h2><p class="text-center"><a href="https://github.com/wvlet/airframe" class="btn btn-outline-inverse">View on GitHub</a></p></div></div><div><ul class="horizontalNav">                                      </ul></div></header><main id="site-main"><section class="use"><div class="container"><div id="content"><h1 id="airframe">Airframe</h1>
 
-<p>Airframe is a collection of <a href="docs/util.html">lightweight libraries</a> useful for building full-fledged applications in Scala, including:</p>
+<p>Airframe is a collection of <a href="docs/utils.html">lightweight libraries</a> useful for building full-fledged applications in Scala, including:</p>
 
 <ul>
   <li><a href="docs/airframe-log.html">Logging</a></li>
@@ -17,7 +17,7 @@ ga('send', 'pageview');
   <li><a href="docs/airframe-opts.html">Option parser</a></li>
   <li><a href="docs/airframe-jmx.html">Runtime monitoring via JMX</a></li>
   <li><a href="docs/airframe-metrics.html">Human-readable data units</a></li>
-  <li><a href="docs/airframe-surface.md">Object shape inspector (Surface)</a></li>
+  <li><a href="docs/airframe-surface.html">Object shape inspector (Surface)</a></li>
   <li>etc.</li>
 </ul>
 
@@ -58,6 +58,8 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
 </ul>
 
 <h2 id="usage">Usage</h2>
+
+<p>Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:</p>
 
 <p><strong>build.sbt</strong></p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span> <span class="mf">2.11</span><span class="o">,</span> <span class="mf">2.12</span><span class="o">,</span> <span class="n">and</span> <span class="mf">2.13</span>
