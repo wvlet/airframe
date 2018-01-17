@@ -11,19 +11,17 @@ ga('send', 'pageview');
 <p>To check the runtime behavior of Airframe’s dependency injection, set the log level of <code class="highlighter-rouge">wvlet.airframe</code> to <code class="highlighter-rouge">debug</code> or <code class="highlighter-rouge">trace</code>:</p>
 
 <p><strong>src/main/resources/log.properties</strong></p>
-<div class="highlighter-rouge"><pre class="highlight"><code>wvlet.airframe=debug
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wvlet.airframe=debug
+</code></pre></div></div>
 
 <p>While debugging the code in your test cases, you can also use <code class="highlighter-rouge">log-test.properties</code> file:
 <strong>src/test/resources/log-test.properties</strong></p>
-<div class="highlighter-rouge"><pre class="highlight"><code>wvlet.airframe=debug
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wvlet.airframe=debug
+</code></pre></div></div>
 <p>See <a href="https://github.com/wvlet/airframe/blob/master/log/README.md#configuring-log-levels">airframe-log configuration</a> for the details of log level configurations.</p>
 
 <p>Then you will see the log messages that show the object bindings and injection activities:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0@442b0f),true,true)  - (Design.scala:43)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0@442b0f),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(Metric,List(),wvlet.airframe.LazyF0@1595a8db),true,true)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ClassBinding(Engine,GasolineEngine)  - (Design.scala:43)
 2016-12-29 22:23:17-0800 debug [Design] Add binding: ProviderBinding(DependencyFactory(PlaneType,List(),wvlet.airframe.LazyF0@b24c12d8),true,true)  - (Design.scala:43)
@@ -38,8 +36,7 @@ ga('send', 'pageview');
 2016-12-29 22:23:17-0800 debug [SessionImpl] Get or update dependency [Fuel]  - (SessionImpl.scala:80)
 2016-12-29 22:23:17-0800 debug [SessionImpl] Get dependency [example.Example.PlaneType]  - (SessionImpl.scala:60)
 2016-12-29 22:23:17-0800 debug [SessionImpl] Get dependency [example.Example.Metric]  - (SessionImpl.scala:60)
-</code></pre>
-</div>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });

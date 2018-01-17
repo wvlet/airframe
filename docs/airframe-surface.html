@@ -35,16 +35,15 @@ ga('send', 'pageview');
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-surface_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-surface_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="s">"(version)"</span>
 
 <span class="c1">// For Scala.js
 </span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="surfaceofx">surface.of[X]</h2>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="n">id</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
@@ -60,24 +59,22 @@ ga('send', 'pageview');
 <span class="o">}</span>
 <span class="c1">// Some(A(1, "leo"))
 </span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="type-alias">Type alias</h3>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 <span class="k">type</span> <span class="kt">UserName</span> <span class="o">=</span> <span class="nc">String</span>
 
 <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">UserName</span><span class="o">]</span> <span class="c1">//  Returns UserName:=String
 </span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="tagged-type">Tagged Type</h3>
 
 <p>To have different surfaces for the same type, you can use tagged type (@@):</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface.surface</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface.surface</span>
 <span class="k">import</span> <span class="nn">wvlet.surface.tag._</span>
 
 <span class="k">class</span> <span class="nc">Fruit</span>
@@ -86,14 +83,13 @@ ga('send', 'pageview');
 
 <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Apple</span><span class="o">]</span>
 <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Banana</span><span class="o">]</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="runtime-annotation">Runtime Annotation</h3>
 
 <p>Reading runtime-annotation is supported for JVM projects. Import <code class="highlighter-rouge">wvlet.surface.reflect._</code> to use this feature.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface</span>
 <span class="k">import</span> <span class="nn">wvlet.surface.reflect._</span>
 <span class="k">import</span> <span class="nn">javax.annotation.Resource</span>
  
@@ -109,8 +105,7 @@ ga('send', 'pageview');
 </span><span class="k">val</span> <span class="n">r</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">find</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s">"a"</span><span class="o">).</span><span class="n">findAnnotationOf</span><span class="o">[</span><span class="kt">Resource</span><span class="o">]</span>
 <span class="n">r</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">name</span> <span class="c1">// "param 1"
 </span>
-</code></pre>
-</div>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });

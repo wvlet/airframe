@@ -13,21 +13,20 @@ ga('send', 'pageview');
 <p>Airframe can bind objects to generics types. Traditional DI libraries for Java (e.g., <a href="https://github.com/google/guice">Guice</a>, etc.) cannot
 distinguish generic classes that have different type parameters (e.g., <code class="highlighter-rouge">Seq[Int]</code>, <code class="highlighter-rouge">Seq[String]</code>) because Java compiler applies <a href="https://docs.oracle.com/javase/tutorial/java/generics/erasure.html">type erasure</a>, and converts them to the same <code class="highlighter-rouge">Seq[Object]</code> type. In Airframe, generic types with different type parameters will be treated differently. For example, all of the following bindings can be assigned to different objects:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">bind</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="k">_</span><span class="o">]]</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">bind</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="k">_</span><span class="o">]]</span>
 <span class="n">bind</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span>
 <span class="n">bind</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">String</span><span class="o">]]</span>
 
 <span class="n">bind</span><span class="o">[</span><span class="kt">Map</span><span class="o">[</span><span class="kt">Int</span>,<span class="kt">String</span><span class="o">]]</span>
 <span class="n">bind</span><span class="o">[</span><span class="kt">Map</span><span class="o">[</span><span class="k">_</span>,<span class="k">_</span><span class="o">]]</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Behind the scene, Airframe uses <a href="https://github.com/wvlet/airframe/surface/">Surface</a> as identifier of types so that we can extract these types identifiers at compile time.</p>
 
 <h2 id="type-alias-binding">Type Alias Binding</h2>
 
 <p>If you need to bind different objects to the same data type, use type aliases of Scala. For example,</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">Fruit</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">Fruit</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
 
 <span class="k">type</span> <span class="kt">Apple</span> <span class="o">=</span> <span class="nc">Fruit</span>
 <span class="k">type</span> <span class="kt">Banana</span> <span class="o">=</span> <span class="nc">Fruit</span>
@@ -36,11 +35,10 @@ distinguish generic classes that have different type parameters (e.g., <code cla
   <span class="k">val</span> <span class="n">apple</span>  <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Apple</span><span class="o">]</span>
   <span class="k">val</span> <span class="n">banana</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Banana</span><span class="o">]</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Alias binding is useful to inject primitive type values:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">type</span> <span class="kt">Env</span> <span class="o">=</span> <span class="nc">String</span>
 
@@ -61,8 +59,7 @@ distinguish generic classes that have different type parameters (e.g., <code cla
 <span class="k">val</span> <span class="n">productionDesign</span> <span class="k">=</span>
   <span class="n">coreDesign</span>
     <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Env</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="s">"production"</span><span class="o">)</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="multi-binding">Multi-Binding</h2>
 
@@ -71,7 +68,7 @@ distinguish generic classes that have different type parameters (e.g., <code cla
 <p>To illustrate this, consider building an web application that receives a request and returns a string message.
 <code class="highlighter-rouge">Dispatcher</code> class receives an URL path and choose an appropriate <code class="highlighter-rouge">Handler</code> to use:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">trait</span> <span class="nc">Handler</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">handle</span><span class="o">(</span><span class="n">request</span><span class="k">:</span><span class="kt">Request</span><span class="o">)</span><span class="k">:</span> <span class="kt">String</span>
@@ -95,8 +92,7 @@ distinguish generic classes that have different type parameters (e.g., <code cla
      <span class="n">dispatcher</span><span class="o">(</span><span class="n">path</span><span class="o">).</span><span class="n">handle</span><span class="o">(</span><span class="n">request</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>In Google Guice, we need to use a special binder like <a href="https://github.com/google/guice/wiki/Multibindings">Multibinder</a>. 
 In Airframe, we just need to write a Scala code that uses <code class="highlighter-rouge">bind[X]</code>.</p>
@@ -105,7 +101,7 @@ In Airframe, we just need to write a Scala code that uses <code class="highlight
 
 <p>Tagged binding <code class="highlighter-rouge">@@</code> is also useful to annotate type names:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// This import statement is necessary to use tagged type (@@)
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// This import statement is necessary to use tagged type (@@)
 </span><span class="k">import</span> <span class="nn">wvlet.surface.tag._</span>
 
 <span class="k">trait</span> <span class="nc">Name</span>
@@ -115,8 +111,7 @@ In Airframe, we just need to write a Scala code that uses <code class="highlight
   <span class="k">val</span> <span class="n">name</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">String</span> <span class="kt">@@</span> <span class="kt">Name</span><span class="o">]</span>
   <span class="k">val</span> <span class="n">id</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Int</span> <span class="kt">@@</span> <span class="kt">Id</span><span class="o">]</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });

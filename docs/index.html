@@ -15,20 +15,18 @@ ga('send', 'pageview');
 <h2 id="sbt">sbt</h2>
 
 <p>To use Airframe, add the following to your <strong>build.sbt</strong>:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <p>And import <code class="highlighter-rouge">wvlet.airframe._</code> in your Scala code:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+</code></pre></div></div>
 
 <h2 id="bind">Bind</h2>
 
 <p>This example shows all binding types available in Airframe:</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>import wvlet.airframe._
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import wvlet.airframe._
 
 trait BindingExample {
   val a = bind[A]  // Inject A
@@ -56,14 +54,13 @@ object BindingExample {
   case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
   def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
 }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="design">Design</h2>
 
 <p>To configure actual bindings, define object bindings using design:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="c1">// If you define multiple bindings to the same type, the last one will be used.
 </span><span class="k">val</span> <span class="n">design</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
@@ -80,13 +77,12 @@ object BindingExample {
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span>  <span class="c1">// Use a function as a provider. D1, D2 and D3 will be resolved from the design
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toSingletonProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create a singleton using the provider function
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toEagerSingletonProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create an eager singleton using the provider function
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.</p>
 
 <p>Design objects are immutable, so you can safely override bindings without modifying the original design:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>val design: Design =
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val design: Design =
   newDesign.bind[A].to[B] // bind A to B
 
 val newDesign: Design =
@@ -94,22 +90,20 @@ val newDesign: Design =
 
 // design.newSession.build[A] -&gt; produces B
 // newDesign.newSession.build[A] -&gt; produes C
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="session">Session</h2>
 
 <p>To create instances, you need to create a <code class="highlighter-rouge">Session</code> from you Design:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
 <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 <span class="c1">// do something with a
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <p>Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after <code class="highlighter-rouge">session.shutdown</code> is called:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// Start a session
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Start a session
 </span><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
 <span class="k">try</span> <span class="o">{</span>
   <span class="n">session</span><span class="o">.</span><span class="n">start</span>
@@ -119,23 +113,21 @@ val newDesign: Design =
 <span class="k">finally</span> <span class="o">{</span>
    <span class="n">session</span><span class="o">.</span><span class="n">shutdown</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can also use <code class="highlighter-rouge">Design.withSession</code> to start and shutdown a session automatically:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">withSesssion</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">withSesssion</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
    <span class="c1">// session.start will be called here
 </span>   <span class="k">val</span> <span class="n">p</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span>
 <span class="o">}</span>
 <span class="c1">// session.shutdown will be called here
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="life-cycle">Life Cycle</h2>
 
 <p>Server side application often requires resource managemeng (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
     <span class="o">.</span><span class="n">onInit</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">init</span> <span class="o">}</span>      <span class="c1">// Called when the object is initialized
 </span>    <span class="o">.</span><span class="n">onInject</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">inject</span> <span class="o">}</span>  <span class="c1">// Called when the object is injected 
@@ -153,15 +145,14 @@ val newDesign: Design =
   <span class="k">def</span> <span class="n">notify</span> <span class="k">=</span> <span class="o">...</span>
   <span class="k">def</span> <span class="n">stop</span> <span class="k">=</span> <span class="o">...</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 <p>These life cycle hooks except <code class="highlighter-rouge">onInject</code> will be called only once when the binding type is singleton.</p>
 
 <h3 id="annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</h3>
 
 <p>Airframe also supports <a href="https://en.wikipedia.org/wiki/JSR_250">JSR-250</a> style shutdown hooks via <code class="highlighter-rouge">@PostConstruct</code> and <code class="highlighter-rouge">@PreDestroy</code> annotations:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">javax.annotation.</span><span class="o">{</span><span class="nc">PostConstruct</span><span class="o">,</span> <span class="nc">PreDestroy</span><span class="o">}</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">javax.annotation.</span><span class="o">{</span><span class="nc">PostConstruct</span><span class="o">,</span> <span class="nc">PreDestroy</span><span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">MyService</span> <span class="o">{</span>
   <span class="nd">@PostConstruct</span>
@@ -174,8 +165,7 @@ val newDesign: Design =
     <span class="c1">// Called when session.shutdown is called. The same with onShutdown. 
 </span>  <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class.</p>
 

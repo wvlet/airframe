@@ -15,9 +15,8 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h2 id="relative-time-window">Relative Time Window</h2>
 
@@ -25,7 +24,7 @@ ga('send', 'pageview');
 <code class="highlighter-rouge">TimeWindow</code> class in airframe-metrics enables specifying such time windows using a human-friendly string format.</p>
 
 <h3 id="code-example">Code Example</h3>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
 
 <span class="k">val</span> <span class="n">w</span> <span class="k">=</span> 
   <span class="nc">TimeWindow</span>
@@ -37,8 +36,7 @@ ga('send', 'pageview');
 </span>
 <span class="c1">// last 7 days to now 
 </span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d/now"</span><span class="o">))</span> <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700) 
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="time-window-string-representation">Time Window String Representation</h2>
 
@@ -47,15 +45,14 @@ Values with (or without)<code class="highlighter-rouge">-</code> sign means the 
 
 <h3 id="format">Format</h3>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
 // seconds, minutes, hours, days, weeks, (M)onths, years
 UNIT     := s | m | h | d | w | M | y
 
 OFFSET   := DURATION | DATE_TIME
 RANGE    := (DURATION) (/ (OFFSET))?
 DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="examples">Examples</h3>
 
