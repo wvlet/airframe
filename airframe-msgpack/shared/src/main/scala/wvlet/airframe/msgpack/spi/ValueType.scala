@@ -24,7 +24,6 @@ sealed abstract class ValueType(val isNumber: Boolean, val isRaw: Boolean) {
   * returns true if type is Integer or Float. String and Binary are subtype of Raw. Thus {@link #isRawType()} returns
   * true if type is String or Binary.
   *
-  * TODO: Convert this into Scala
   */
 object ValueType {
   case object NIL       extends ValueType(false, false)
@@ -37,7 +36,8 @@ object ValueType {
   case object MAP       extends ValueType(false, false)
   case object EXTENSION extends ValueType(false, false)
 
+  abstract class ExtValueType
   // Timestamp value should be reported as a first-class value?
   // TODO: But we cannot determin the value type without reading the second or more bytes
-  // case object TIMESTAMP extends ValueType(false, false)
+  case object TIMESTAMP extends ExtValueType
 }
