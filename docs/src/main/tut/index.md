@@ -8,7 +8,7 @@ technologies:
 ---
 # Airframe
 
-Airframe is a collection of [lightweight libraries](docs/util.html) useful for building full-fledged applications in Scala, including:
+Airframe is a collection of [lightweight libraries](docs/utils.html) useful for building full-fledged applications in Scala, including:
 
 - [Logging](docs/airframe-log.html)
 - [Configuration](docs/airframe-config.html)
@@ -16,7 +16,7 @@ Airframe is a collection of [lightweight libraries](docs/util.html) useful for b
 - [Option parser](docs/airframe-opts.html)
 - [Runtime monitoring via JMX](docs/airframe-jmx.html)
 - [Human-readable data units](docs/airframe-metrics.html)
-- [Object shape inspector (Surface)](docs/airframe-surface.md)
+- [Object shape inspector (Surface)](docs/airframe-surface.html)
 - etc.
 
 For advanced users we also provide [dependency injection (DI) library](docs) tailored to [Scala](https://www.scala-lang.org/). 
@@ -45,6 +45,8 @@ Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.sca
 - [Release Notes](docs/release-notes.html)
 
 ## Usage
+
+Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:
 
 **build.sbt**
 ```scala
