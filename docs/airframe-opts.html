@@ -15,11 +15,12 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-opts"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-opts"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h3 id="define-a-command-line-interface">Define a command-line interface</h3>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.opts._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.opts._</span>
 <span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
 
 <span class="c1">// Define a global option
@@ -45,11 +46,12 @@ ga('send', 'pageview');
     <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"world ${message}"</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="launche-a-program">Launche a program</h3>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="nn">org.mydomain</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">org.mydomain</span>
 
 <span class="k">object</span> <span class="nc">MyApp</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">main</span><span class="o">(</span><span class="n">args</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span> <span class="o">{</span>
@@ -57,36 +59,39 @@ ga('send', 'pageview');
     <span class="n">l</span><span class="o">.</span><span class="n">execute</span><span class="o">(</span><span class="n">args</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="packaging-with-sbt-pack">Packaging with sbt-pack</h3>
 <p>If you use <a href="https://github.com/xerial/sbt-pack">sbt-pack</a> plugin, you can create a stand-alone Scala program with a command-line interface:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">enablePlugins</span><span class="o">(</span><span class="nc">PackPlugin</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">enablePlugins</span><span class="o">(</span><span class="nc">PackPlugin</span><span class="o">)</span>
 
 <span class="c1">// This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) 
 </span><span class="n">packMain</span> <span class="o">:=</span> <span class="nc">Map</span><span class="o">(</span><span class="s">"myapp"</span> <span class="o">-&gt;</span> <span class="s">"org.mydomain.MyApp"</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="run-the-program">Run the program</h3>
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>sbt pack
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sbt pack
 ...
 
-<span class="nv">$ </span>./target/pack/bin/myapp 
-Type <span class="nt">--help</span> to display the list of commands
-<span class="nv">$ </span>./target/pack/bin/myapp <span class="nt">--help</span>
+<span class="gp">$ </span>./target/pack/bin/myapp 
+Type --help to display the list of commands
+<span class="gp">$ </span>./target/pack/bin/myapp --help
 usage: <span class="o">[</span><span class="nb">command </span>name]
 
 <span class="o">[</span>options]
- <span class="nt">-h</span>, <span class="nt">--help</span>                 display <span class="nb">help </span>messages
- <span class="nt">-l</span>, <span class="nt">--loglevel</span><span class="o">=[</span>LOGLEVEL]  log level 
+ -h, --help                 display <span class="nb">help </span>messages
+ -l, --loglevel<span class="o">=[</span>LOGLEVEL]  log level 
 <span class="o">[</span>commands]
  hello      say hello
  world     	say world
 
-<span class="nv">$ </span>./target/pack/bin/myapp hello
+<span class="gp">$ </span>./target/pack/bin/myapp hello
 hello
-</code></pre></div></div>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
