@@ -86,13 +86,8 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
-// Workaround for https://github.com/sbt/sbt/pull/3760
-publishTo in ThisBuild := Some(
-  if (isRelease)
-    Opts.resolver.sonatypeStaging
-  else
-    Opts.resolver.sonatypeSnapshots
-)
+// We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
+publishTo in ThisBuild := sonatypePublishTo.value
 
 val jsBuildSettings = Seq[Setting[_]](
   // Do not run tests concurrently
