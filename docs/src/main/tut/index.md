@@ -34,6 +34,7 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
    - Configuring applications, managing resources, service mix-in, etc.
 - [DI Framework Comparison](docs/comparison.html)
    - Comparing Airframe with Google Guice, Macwire, Dagger2, etc. 
+- [Introdution of Airframe in Japanese (日本語)](https://medium.com/@taroleo/airframe-c5d044a97ec)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 
