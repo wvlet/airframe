@@ -23,7 +23,7 @@ Airframe has several utilities that make easier your programming in Scala:
   - Enable application monitoring through JMX.
 - [airframe-surface](airframe-surface.html) 
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
-- [airframe-spec](https://github.com/wvlet/airframe/blob/master/spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
+- [airframe-spec](https://github.com/wvlet/airframe/blob/master/airframe-spec/shared/src/main/scala/wvlet/airframe/AirframeSpec.scala) 
   - A simple base trait for using ScalaTest.
 
 ## sbt-plugins
