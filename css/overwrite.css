@@ -29,8 +29,12 @@ pre .hljs {
 }
 
 .jumbotron {
-    padding-top: 80px;
+    padding-top: 155px;
     padding-bottom: 20px;
+
+    background-attachment: scroll;
+    background: url("../img/jumbotron_pattern.png") no-repeat center;
+    background-color: #333333;
 }
 
 .jumbotron h1 {
