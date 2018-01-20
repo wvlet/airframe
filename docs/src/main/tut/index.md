@@ -8,6 +8,7 @@ technologies:
 ---
 # Airframe
 
+<img src="img/sea.png" style="width:530px; height:280px; float:right; border: 1px solid #ddd; border-radius: 5px; padding: 3px;"/>
 Airframe is a collection of [lightweight libraries](docs/utils.html) useful for building full-fledged applications in Scala, including:
 
 - [Logging](docs/airframe-log.html)
@@ -18,6 +19,8 @@ Airframe is a collection of [lightweight libraries](docs/utils.html) useful for 
 - [Human-readable data units](docs/airframe-metrics.html)
 - [Object shape inspector (Surface)](docs/airframe-surface.html)
 - etc.
+
+
 
 For advanced users we also provide [dependency injection (DI) library](docs) tailored to [Scala](https://www.scala-lang.org/). 
 Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; 
