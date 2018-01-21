@@ -1,9 +1,8 @@
 ---
 layout: docs
-title: airframe-jmx
+title: airframe-codec
 ---
-airframe-codec
-====
+# Airframe Codec
 
 airframe-codec is an [MessagePack](https://msgpack.org)-based data encoder + decoder.
 

@@ -1,6 +1,6 @@
 --- 
 layout: docs
-title: Configuring Applications
+title: airframe-config
 ---
 
 # Airframe Config
@@ -10,7 +10,7 @@ title: Configuring Applications
 1. Write config classes of your application.
 1. Read YAML files to populate the config objects.
 1. (optional) Override the configuration with Properties.
-1. Use it!
+1. Read the configuration with `config.of[X]` or bind it with Airframe DI 
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/)
 

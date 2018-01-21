@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Airframe Opts
+title: airframe-opts
 ---
 
 # Airframe Opts

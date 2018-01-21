@@ -1,6 +1,6 @@
 ---
 layout: docs
-title: Other DI Frameworks
+title: DI Framework Comparison
 ---
 
 # DI Framework Comparison

@@ -1,7 +1,7 @@
 ---
 layout: home
-title:  "Home"
 section: "home"
+title: Lightweight Building Blocks for Scala
 technologies:
  - first: ["Scala", "Airframe is completely written in Scala"]
  - second: ["SBT", "Airframe uses SBT and other sbt plugins to generate microsites easily"]
