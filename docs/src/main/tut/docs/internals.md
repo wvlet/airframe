@@ -5,7 +5,7 @@ title: Airframe Internals
 
 # Airframe Internals
 
-This page describes the internals of Airframe for developers who are interested in the internals of Airframe.
+This page describes the internals of Airframe for developers who are interested in extending Airframe.
 
 ## Session 
 
