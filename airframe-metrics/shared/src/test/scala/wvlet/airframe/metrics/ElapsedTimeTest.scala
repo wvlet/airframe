@@ -98,13 +98,13 @@ class ElapsedTimeTest extends AirframeSpec {
   "ElapsedTime" should {
     "parse time" in {
       examples.foreach { x =>
-        ElapsedTime.parse(x.str) shouldBe ElapsedTime(x.value, x.unit)
+        ElapsedTime(x.str) shouldBe ElapsedTime(x.value, x.unit)
       }
     }
 
     "print string" in {
       examples.foreach { x =>
-        ElapsedTime.parse(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}"
+        ElapsedTime(x.str).toString shouldBe f"${x.value}%.2f${timeUnitToString(x.unit)}"
       }
     }
 
@@ -113,7 +113,7 @@ class ElapsedTimeTest extends AirframeSpec {
 
       list.foreach { x =>
         intercept[IllegalArgumentException] {
-          parse(x)
+          ElapsedTime(x)
         }
       }
     }

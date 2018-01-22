@@ -62,6 +62,8 @@ object ElapsedTime {
   def succinctDuration(value: Double, unit: TimeUnit): ElapsedTime = ElapsedTime(value, unit).convertToMostSuccinctTimeUnit
   def succinctMillis(milliSeconds: Long): ElapsedTime              = ElapsedTime(milliSeconds, MILLISECONDS).convertToMostSuccinctTimeUnit
 
+  def apply(elapsedTimeStr: String): ElapsedTime = parse(elapsedTimeStr)
+
   def parse(s: String): ElapsedTime = {
     val m = PATTERN.matcher(s)
     if (!m.matches()) {

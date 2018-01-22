@@ -17,7 +17,7 @@ options:
     url: docs/bindings.html
   - title: Debugging DI
     url: docs/debug.html
-  - title: Other DI Frameworks
+  - title: DI Framework Comparison
     url: docs/comparison.html
   - title: Airframe Utilities
     url: docs/utils.html
