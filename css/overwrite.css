@@ -13,6 +13,7 @@ strong {
 
 pre {
   margin-top: 0px;
+  line-height: 1.4em;
 }
 
 pre .hljs {
@@ -42,7 +43,7 @@ pre .hljs {
 }
 
 #wrapper {
-    max-width: 1200px;
+    max-width: 1300px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -64,3 +65,10 @@ code, kbd,pre,samp {
     font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
 }
 
+td code {
+    font-size: 11px;
+}
+
+.sidebar-nav > li a.active {
+    background-color: #345F76;
+}
