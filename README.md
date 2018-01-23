@@ -29,26 +29,28 @@ As its core Airframe provides a dependency injection (DI) library tailored to Sc
 
 Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:
 ```scala
+val AIRFRAME_VERSION = "(version)"
+
 # For Scala 2.11, 2.12, and 2.13
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %% "airframe"         % "(version)", // Dependency injection
-  "org.wvlet.airframe" %% "airframe-codec"   % "(version)", // MessagePack-based schema-on-read transcoder
-  "org.wvlet.airframe" %% "airframe-config"  % "(version)", // YAML-based configuration
-  "org.wvlet.airframe" %% "airframe-jmx"     % "(version)", // JMX entry 
-  "org.wvlet.airframe" %% "airframe-jdbc"    % "(version)", // JDBC connection pool
-  "org.wvlet.airframe" %% "airframe-log"     % "(version)", // Logging
-  "org.wvlet.airframe" %% "airframe-metrics" % "(version)", // Metrics units
-  "org.wvlet.airframe" %% "airframe-opts"    % "(version)", // Command-line option parser
-  "org.wvlet.airframe" %% "airframe-surface" % "(version)", // Object surface inspector
-  "org.wvlet.airframe" %% "airframe-tablet"  % "(version)"  // Table data reader/writer
+  "org.wvlet.airframe" %% "airframe"         % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read transcoder
+  "org.wvlet.airframe" %% "airframe-config"  % AIRFRAME_VERSION, // YAML-based configuration
+  "org.wvlet.airframe" %% "airframe-jmx"     % AIRFRAME_VERSION, // JMX entry
+  "org.wvlet.airframe" %% "airframe-jdbc"    % AIRFRAME_VERSION, // JDBC connection pool
+  "org.wvlet.airframe" %% "airframe-log"     % AIRFRAME_VERSION, // Logging
+  "org.wvlet.airframe" %% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
+  "org.wvlet.airframe" %% "airframe-opts"    % AIRFRAME_VERSION, // Command-line option parser
+  "org.wvlet.airframe" %% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
+  "org.wvlet.airframe" %% "airframe-tablet"  % AIRFRAME_VERSION  // Table data reader/writer
 )
 
 # For Scala.js, the following libraries can be used:
 libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %%% "airframe"         % "(version)", // Dependency injection
-  "org.wvlet.airframe" %%% "airframe-log"     % "(version)", // Logging
-  "org.wvlet.airframe" %%% "airframe-metrics" % "(version)", // Metrics units
-  "org.wvlet.airframe" %%% "airframe-surface" % "(version)"  // Object surface inspector
+  "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
+  "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
+  "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION  // Object surface inspector
 )
 ```
 
