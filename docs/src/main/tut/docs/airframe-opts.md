@@ -53,7 +53,7 @@ package org.mydomain
 
 object MyApp {
   def main(args:Array[String]) {
-    val l = Launguer.of[MyApp]
+    val l = Launcher.of[MyApp]
     l.execute(args)
   }
 }
