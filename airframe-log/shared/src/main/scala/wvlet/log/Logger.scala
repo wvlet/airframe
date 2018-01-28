@@ -259,6 +259,6 @@ object Logger {
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels }
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels(loglevelFileCandidates) }
 
 }
