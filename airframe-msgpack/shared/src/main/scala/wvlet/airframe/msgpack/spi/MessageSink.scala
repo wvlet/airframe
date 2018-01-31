@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.msgpack.io
+package wvlet.airframe.msgpack.spi
 
 import java.io.{Flushable, IOException}
 
@@ -32,7 +32,7 @@ trait MessageSink extends AutoCloseable with Flushable {
     * twice without call of [[writeBuffer(int)]] in between. In this case, the buffer should be
     * discarded without flushing it to the output.
     *
-    * @param minimumSize the mimium required buffer size to allocate
+    * @param minimumSize the minimum required buffer size to allocate
     * @return a Buffer instance with at least minimumSize bytes of capacity
     * @throws IOException
     */

@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.msgpack.io
 
+import wvlet.airframe.msgpack.spi.{MessageSink, ReadBuffer}
+
 /**
   *
   */

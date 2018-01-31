@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.msgpack.io
 
-import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MessageException}
+import wvlet.airframe.msgpack.spi._
 
 object ArrayBuffer {
   def apply(a: Array[Byte]): ArrayBuffer = ArrayBuffer(a, 0, a.length)
@@ -22,6 +22,9 @@ object ArrayBuffer {
     require(offset + size <= a.length, s"input array is smaller than offset:${offset} + size:${size}: ${a.length}")
     ArrayBuffer(a, offset, size)
   }
+
+  val emptyReadBuffer  = ArrayBuffer(Array.emptyByteArray)
+  val emptyWriteBuffer = ArrayBuffer(Array.emptyByteArray)
 }
 
 /**

@@ -11,9 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.msgpack.io
-
-import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MessageException}
+package wvlet.airframe.msgpack.spi
 
 /**
   * Buffer interface, which does not have any internal cursors unlike ByteBuffer of Java library.
@@ -21,9 +19,8 @@ import wvlet.airframe.msgpack.spi.{InsufficientBufferException, MessageException
   * - The read methods read the buffer data from the given position.
   * - The write methods write data to the specified position in the buffer and return the written byte length.
   *
-  * If the bufer capacity is insufficient, these read/write methods throw [[InsufficientBufferException]].
-  * If this exception is thrown, the user code should
-  *
+  * If the buffer capacity is insufficient, these read/write methods throw an [[InsufficientBufferException]].
+  * If this exception is thrown, the user code should feed more data, and then resume reading.
   *
   */
 trait Buffer {
@@ -101,8 +98,3 @@ trait WriteBuffer extends Buffer {
 }
 
 trait ReadWriteBuffer extends ReadBuffer with WriteBuffer
-
-object Buffer {
-  val emptyReadBuffer  = ArrayBuffer(Array.emptyByteArray)
-  val emptyWriteBuffer = ArrayBuffer(Array.emptyByteArray)
-}

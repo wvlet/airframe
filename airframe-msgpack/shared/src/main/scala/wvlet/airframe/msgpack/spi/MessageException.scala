@@ -15,27 +15,6 @@ package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
 
-trait ErrorCode
-object ErrorCode {
-  // Type conversion errors (data is valid, but reading to the target type failed)
-  trait TypeConversionError     extends ErrorCode
-  case object INTEGER_OVERFLOW  extends TypeConversionError
-  case object INVALID_TYPE_CAST extends TypeConversionError
-  case object INVALID_TYPE      extends TypeConversionError
-
-  // Internal errors
-  trait InternalError             extends ErrorCode
-  case object INSUFFICIENT_BUFFER extends InternalError
-
-  // Format errors (incompatible MessagePack format is used)
-  trait InvalidFormatError          extends ErrorCode
-  case object NEVER_USED_FORMAT     extends InvalidFormatError
-  case object INVALID_STRING_CODING extends InvalidFormatError
-  case object TOO_LARGE_MESSAGE     extends InvalidFormatError
-  case object INVALID_EXT_FORMAT    extends InvalidFormatError
-
-}
-
 /**
   * Base class for message pack errors
   */

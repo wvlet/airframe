@@ -11,24 +11,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.msgpack.io
+package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util.Locale
 
-import wvlet.airframe.msgpack.io.OffsetUnpacker._
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.Value._
-import wvlet.airframe.msgpack.spi._
+
+import OffsetUnpacker._
+import MessageException._
 
 /**
-  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by [[lastReadByteLength]] method.
+  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[lastReadByteLength]] method.
   */
 class OffsetUnpacker {
-  import MessageException._
-
   private var _lastReadByteLength: Int = 0
 
   def lastReadByteLength: Int = _lastReadByteLength
@@ -667,7 +666,7 @@ class OffsetUnpacker {
 object OffsetUnpacker {
   val EMPTY_STRING: String = ""
 
-  private[io] def unexpected(expectedCode: String, actual: Byte) = {
+  private[spi] def unexpected(expectedCode: String, actual: Byte) = {
     val f = MessageFormat.of(actual)
     if (f == MessageFormat.NEVER_USED) {
       throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")

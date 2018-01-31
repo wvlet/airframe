@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.io
 
 import java.math.BigInteger
 
-import wvlet.airframe.msgpack.spi.{Packer, Value}
+import wvlet.airframe.msgpack.spi._
 
 /**
   *
