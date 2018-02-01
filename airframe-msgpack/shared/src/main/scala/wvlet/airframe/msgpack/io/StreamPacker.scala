@@ -17,6 +17,12 @@ import java.math.BigInteger
 
 import wvlet.airframe.msgpack.spi._
 
+object StreamPacker {
+  val UTF_8_MAX_CHAR_SIZE = 6
+
+  def withSink(sink: MessageSink) = new StreamPacker(sink)
+}
+
 /**
   *
   */
@@ -161,8 +167,4 @@ class StreamPacker(sink: MessageSink) extends Packer {
   override def writePayload(src: Array[Byte], offset: Int, length: Int) = ???
   override def addPayload(src: Array[Byte])                             = ???
   override def addPayload(src: Array[Byte], offset: Int, length: Int)   = ???
-}
-
-object StreamPacker {
-  val UTF_8_MAX_CHAR_SIZE = 6
 }
