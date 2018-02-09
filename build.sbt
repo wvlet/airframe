@@ -377,6 +377,7 @@ lazy val tablet =
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
+        "com.typesafe.play"      %% "play-json"                % "2.6.7",
         "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
