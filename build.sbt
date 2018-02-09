@@ -1,9 +1,15 @@
 import sbtcrossproject.{crossProject, CrossType}
 
-val SCALA_2_13          = "2.13.0-M2"
-val SCALA_2_12          = "2.12.4"
-val SCALA_2_11          = "2.11.11"
-val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
+val SCALA_2_13 = "2.13.0-M2"
+val SCALA_2_12 = "2.12.4"
+val SCALA_2_11 = "2.11.11"
+
+// TODO: Exclude Scala 2.13.0-M2 since play-json is not available https://github.com/playframework/play-json/issues/109
+val targetScalaVersions = Seq(
+  //SCALA_2_13,
+  SCALA_2_12,
+  SCALA_2_11
+)
 
 val SCALATEST_VERSION   = "3.0.4"
 val SQLITE_JDBC_VERSION = "3.21.0.1"
@@ -372,8 +378,6 @@ lazy val tablet =
     .settings(
       name := "airframe-tablet",
       description := "Data format conversion library",
-      // TODO: play-json is not available for Scala 2.13.0-M2 https://github.com/playframework/play-json/issues/109
-      crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
       libraryDependencies ++= Seq(
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
