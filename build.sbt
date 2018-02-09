@@ -372,6 +372,8 @@ lazy val tablet =
     .settings(
       name := "airframe-tablet",
       description := "Data format conversion library",
+      // TODO: play-json is not available for Scala 2.13.0-M2 https://github.com/playframework/play-json/issues/109
+      crossScalaVersions := Seq(SCALA_2_12, SCALA_2_11),
       libraryDependencies ++= Seq(
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
