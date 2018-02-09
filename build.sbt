@@ -1,9 +1,15 @@
 import sbtcrossproject.{crossProject, CrossType}
 
-val SCALA_2_13          = "2.13.0-M2"
-val SCALA_2_12          = "2.12.4"
-val SCALA_2_11          = "2.11.11"
-val targetScalaVersions = Seq(SCALA_2_13, SCALA_2_12, SCALA_2_11)
+val SCALA_2_13 = "2.13.0-M2"
+val SCALA_2_12 = "2.12.4"
+val SCALA_2_11 = "2.11.11"
+
+// TODO: Exclude Scala 2.13.0-M2 since play-json is not available https://github.com/playframework/play-json/issues/109
+val targetScalaVersions = Seq(
+  //SCALA_2_13,
+  SCALA_2_12,
+  SCALA_2_11
+)
 
 val SCALATEST_VERSION   = "3.0.4"
 val SQLITE_JDBC_VERSION = "3.21.0.1"
@@ -377,6 +383,7 @@ lazy val tablet =
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
+        "com.typesafe.play"      %% "play-json"                % "2.6.7",
         "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
