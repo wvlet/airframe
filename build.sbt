@@ -11,8 +11,10 @@ val targetScalaVersions = Seq(
   SCALA_2_11
 )
 
-val SCALATEST_VERSION   = "3.0.5-M1"
-val SQLITE_JDBC_VERSION = "3.21.0.1"
+val SCALATEST_VERSION               = "3.0.5-M1"
+val SCALACHECK_VERSION              = "1.13.5"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.1.0"
+val SQLITE_JDBC_VERSION             = "3.21.0.1"
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
@@ -294,7 +296,7 @@ lazy val opts =
       name := "airframe-opts",
       description := "Command-line option parser",
       libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6"
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
@@ -366,7 +368,7 @@ lazy val codec =
       description := "Airframe MessagePack-based codec",
       libraryDependencies ++= Seq(
         "org.msgpack"    % "msgpack-core" % "0.8.14",
-        "org.scalacheck" %% "scalacheck"  % "1.13.5" % "test"
+        "org.scalacheck" %% "scalacheck"  % SCALACHECK_VERSION % "test"
       )
     )
     .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
@@ -383,8 +385,8 @@ lazy val tablet =
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
 //        "com.typesafe.play"      %% "play-json"                % "2.6.7",
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
-        "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
+        "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
