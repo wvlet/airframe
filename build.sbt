@@ -11,7 +11,7 @@ val targetScalaVersions = Seq(
   SCALA_2_11
 )
 
-val SCALATEST_VERSION   = "3.0.4"
+val SCALATEST_VERSION   = "3.0.5-M1"
 val SQLITE_JDBC_VERSION = "3.21.0.1"
 
 // For using Scala 2.12 in sbt
