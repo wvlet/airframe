@@ -4,7 +4,7 @@ val SCALA_2_13 = "2.13.0-M3"
 val SCALA_2_12 = "2.12.4"
 val SCALA_2_11 = "2.11.11"
 
-// TODO: Exclude Scala 2.13.0-M2 since play-json is not available https://github.com/playframework/play-json/issues/109
+// TODO: Exclude Scala 2.13.0-M3 since play-json is not available https://github.com/playframework/play-json/issues/109
 val targetScalaVersions = Seq(
   //SCALA_2_13,
   SCALA_2_12,
