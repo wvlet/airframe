@@ -14,7 +14,8 @@
 package wvlet.airframe.tablet.text
 
 import org.msgpack.core.{MessagePack, MessagePacker}
-import play.api.libs.json.Json
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -26,7 +27,7 @@ class JSONCodecTest extends AirframeSpec {
     val b = JSONCodec.packToBytes(json)
     JSONCodec.unpackBytes(b) match {
       case Some(parsedJson) =>
-        Json.parse(parsedJson) shouldBe Json.parse(json)
+        parse(parsedJson) shouldBe parse(json)
       case None =>
         fail(s"Failed to ser/de ${json}")
     }
@@ -35,13 +36,13 @@ class JSONCodecTest extends AirframeSpec {
   "JSONCodec" should {
     "serialize json into msgpack" in {
       check("""{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}""")
-      check("1")
-      check("12342345324234234")
-      check("0.12")
-      check("\"hello world\"")
-      check("true")
-      check("false")
-      check("null")
+      check("[1]")
+      check("[12342345324234234]")
+      check("[0.12]")
+      check("[\"hello world\"]")
+      check("[true]")
+      check("[false]")
+      check("[null]")
       check("""[1, 2, 3.0, "apple", true, false]""")
       check("{}")
       check("[]")

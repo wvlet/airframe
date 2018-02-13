@@ -14,7 +14,8 @@
 package wvlet.airframe.tablet.text
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import play.api.libs.json._
+import org.json4s._
+import org.json4s.native.JsonMethods._
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 
 /**
@@ -23,34 +24,40 @@ import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 object JSONCodec extends MessageCodec[String] {
 
   override def pack(p: MessagePacker, json: String): Unit = {
-    val j = Json.parse(json)
+    val j = parse(json)
     packJsonValue(p, j)
   }
 
-  private def packJsonValue(p: MessagePacker, v: JsValue) {
+  private def packJsonValue(p: MessagePacker, v: JValue) {
     v match {
-      case obj: JsObject =>
-        val map = obj.value
+      case jo: JObject =>
+        val map = jo.obj
         p.packMapHeader(map.size)
-        for ((k, v) <- map) {
+        for ((k: String, v: JValue) <- map) {
           p.packString(k)
           packJsonValue(p, v)
         }
-      case arr: JsArray =>
-        val len = arr.value.size
+      case arr: JArray =>
+        val len = arr.arr.size
         p.packArrayHeader(len)
-        arr.value.map { packJsonValue(p, _) }
-      case s: JsString =>
-        p.packString(s.value)
-      case JsNull =>
+        arr.arr.map { packJsonValue(p, _) }
+      case s: JString =>
+        p.packString(s.values)
+      case JNull | JNothing =>
         p.packNil()
-      case b: JsBoolean =>
-        p.packBoolean(b.value)
-      case i: JsNumber =>
-        if (i.value.isValidLong) {
-          p.packLong(i.value.longValue())
+      case b: JBool =>
+        p.packBoolean(b.values)
+      case l: JLong =>
+        p.packLong(l.values)
+      case i: JInt =>
+        p.packBigInteger(i.values.bigInteger)
+      case d: JDouble =>
+        p.packDouble(d.values)
+      case d: JDecimal =>
+        if (d.values.isValidLong) {
+          p.packLong(d.values.longValue())
         } else {
-          p.packDouble(i.value.doubleValue())
+          p.packDouble(d.values.doubleValue())
         }
     }
   }
