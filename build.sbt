@@ -382,8 +382,8 @@ lazy val tablet =
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser and JSON parser
-        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
-        "com.typesafe.play"      %% "play-json"                % "2.6.7",
+//        "com.typesafe.play"      %% "play-json"                % "2.6.7",
+        "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.0",
         "org.scalacheck"         %% "scalacheck"               % "1.13.5" % "test",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
