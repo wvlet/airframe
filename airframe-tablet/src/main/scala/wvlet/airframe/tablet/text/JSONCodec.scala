@@ -24,7 +24,7 @@ import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 object JSONCodec extends MessageCodec[String] {
 
   override def pack(p: MessagePacker, json: String): Unit = {
-    val j = parse(json)
+    val j = parse(json, useBigIntForLong = false)
     packJsonValue(p, j)
   }
 
@@ -47,18 +47,26 @@ object JSONCodec extends MessageCodec[String] {
         p.packNil()
       case b: JBool =>
         p.packBoolean(b.values)
-      case l: JLong =>
-        p.packLong(l.values)
-      case i: JInt =>
-        p.packBigInteger(i.values.bigInteger)
       case d: JDouble =>
         p.packDouble(d.values)
-      case d: JDecimal =>
-        if (d.values.isValidLong) {
-          p.packLong(d.values.longValue())
-        } else {
-          p.packDouble(d.values.doubleValue())
-        }
+      case l: JLong =>
+        p.packLong(l.values)
+      case other =>
+        throw new IllegalArgumentException(s"Unexpected json type: ${other}")
+      // These two passes will not be used when
+      // parsing with useDecimalForDouble = false and useBigIntForLong = true flags
+//      case i: JInt =>
+//        if (i.values.isValidLong) {
+//          p.packLong(i.values.bigInteger.longValue())
+//        } else {
+//          p.packDouble(i.values.doubleValue())
+//        }
+//      case d: JDecimal =>
+//        if (d.values.isValidLong) {
+//          p.packLong(d.values.longValue())
+//        } else {
+//          p.packDouble(d.values.doubleValue())
+//        }
     }
   }
 
