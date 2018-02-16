@@ -118,7 +118,20 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
+    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jsProjects): _*)
+
+lazy val scaladoc =
+  project
+    .in(file("airframe-scaladoc"))
+    .enablePlugins(ScalaUnidocPlugin)
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-scaladoc",
+      // Need to exclude JS project explicitely to avoid '<type> is already defined' errors
+      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(jsProjects: _*)
+    )
+    .aggregate(jvmProjects: _*)
 
 lazy val jvmProjects: Seq[ProjectReference] = List(
   airframeJVM,
