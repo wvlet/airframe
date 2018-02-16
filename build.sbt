@@ -118,6 +118,7 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
+    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jsProjects): _*)
 
 lazy val scaladoc =
