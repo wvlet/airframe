@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.39
+ - Add a unified scaladoc for all modules
+
 ## 0.38
  - airframe-tablet: Using json4s-native instead of play-json for Scala 2.13.0-M3 support
 
