@@ -129,7 +129,8 @@ lazy val scaladoc =
     .settings(
       name := "airframe-scaladoc",
       // Need to exclude JS project explicitely to avoid '<type> is already defined' errors
-      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(jsProjects: _*)
+      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(jsProjects: _*),
+      Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
     .aggregate(jvmProjects: _*)
 
