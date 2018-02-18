@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.40
+ - airframe-opts: Fixes [#147](https://github.com/wvlet/airframe/issues/147) when reading the default values of nested options
+
 ## 0.39
  - Add a unified scaladoc for all modules
 
