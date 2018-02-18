@@ -67,6 +67,10 @@ class ZeroTest extends SurfaceSpec {
 
     "support case classes" in {
       zeroCheck(surface.of[A], A(0, "", B(0.0f, 0.0)))
+      // Read the default parameter values.
+      // Disabled the check because Scala.js doesn't support reading the default values:
+      // https://github.com/wvlet/airframe/issues/149
+      // zeroCheck(surface.of[C], C(10, "Hello", 123.4f, B(0.0f, 0.0)))
     }
 
     "support Scala collections" in {
@@ -86,4 +90,5 @@ object ZeroTest {
 
   case class A(i: Int, s: String, b: B)
   case class B(f: Float, d: Double)
+  //case class C(i: Int = 10, s: String = "Hello", f: Float = 123.4f, b: B)
 }
