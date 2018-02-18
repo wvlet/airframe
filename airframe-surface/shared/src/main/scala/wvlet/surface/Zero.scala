@@ -88,7 +88,7 @@ object Zero extends LogSupport {
   private def zeroOfInstantiatable: ZeroValueFactory = {
     case t if t.objectFactory.isDefined =>
       val factory = t.objectFactory.get
-      val args    = t.params.map(x => zeroOf(x.surface))
+      val args    = t.params.map(x => x.getDefaultValue.getOrElse(zeroOf(x.surface)))
       factory.newInstance(args)
   }
 

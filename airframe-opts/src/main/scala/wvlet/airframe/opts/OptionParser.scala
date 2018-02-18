@@ -479,7 +479,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     }
 
     val holder = ValueHolder(for (m <- mapping; (p, v) <- m) yield p -> v)
-    trace(s"parse treer: $holder")
+    trace(s"parse tree: $holder")
     val showHelp = mapping.collectFirst { case c @ OptSetFlag(o) if o.annot.isHelp => c }.isDefined
     new OptionParserResult(holder, unusedArguments.toArray, showHelp)
   }
