@@ -69,7 +69,9 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
   private[airframe] def getOrElseUpdate[A](surface: Surface, obj: => A): A = {
     debug(s"Get or update dependency [${surface}]")
     bindingTable.get(surface) match {
-      case Some(SingletonBinding(from, to, eager)) =>
+      case Some(SingletonBinding(from, to, eager)) if from != to =>
+        getSingleton(to).asInstanceOf[A]
+      case Some(SingletonBinding(from, to, eager)) if from == to =>
         singletonHolder.getOrElseUpdate(from, registerInjectee(from, obj)).asInstanceOf[A]
       case Some(p @ ProviderBinding(factory, provideSingleton, eager)) if provideSingleton =>
         singletonHolder.get(surface) match {

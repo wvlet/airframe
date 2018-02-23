@@ -48,6 +48,18 @@ object SingletonTest {
 
   trait U1 extends SingletonService
   trait U2 extends SingletonService
+
+  trait NonAbstract extends LogSupport {
+    def hello: String = "hello"
+  }
+
+  trait C extends NonAbstract {
+    override def hello = "nice"
+  }
+
+  trait E extends LogSupport {
+    val m = bind[NonAbstract]
+  }
 }
 
 /**
@@ -78,6 +90,16 @@ class SingletonTest extends AirframeSpec {
 
       u1.service.counter should be theSameInstanceAs u2.service.counter
       u1.service.counter.get() shouldBe 1
+    }
+
+    "support overriding non-abstract singleton trait" taggedAs ("override") in {
+      val d = newDesign
+        .bind[E].toSingleton
+        .bind[NonAbstract].toSingletonOf[C]
+
+      val session = d.newSession
+      val e       = session.build[E]
+      e.m.hello shouldBe "nice"
     }
   }
 }

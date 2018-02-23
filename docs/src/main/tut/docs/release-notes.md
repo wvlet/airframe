@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.41
+ - Fix a singleton binding bug: If `bind[A].toSingletonOf[B]` is used and A is non-abstract trait, A was used instead of B.
+
 ## 0.40
  - airframe-opts: Fixes [#147](https://github.com/wvlet/airframe/issues/147) when reading the default values of nested options
 
