@@ -30,7 +30,6 @@ private[log] object LogMacros {
 
     import c.universe._
 
-    wvlet.log.LogLevel.INFO
     val disabledLevels: Set[c.universe.Tree] = {
       val SettingsPrefix = "wvlet.log.disable."
 
