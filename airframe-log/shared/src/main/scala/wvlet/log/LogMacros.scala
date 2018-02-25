@@ -35,19 +35,18 @@ private[log] object LogMacros {
 
       val TRACE: c.universe.Tree = q"wvlet.log.LogLevel.TRACE"
       val DEBUG: c.universe.Tree = q"wvlet.log.LogLevel.DEBUG"
-      val INFO: c.universe.Tree = q"wvlet.log.LogLevel.INFO"
-      val WARN: c.universe.Tree = q"wvlet.log.LogLevel.WARN"
+      val INFO: c.universe.Tree  = q"wvlet.log.LogLevel.INFO"
+      val WARN: c.universe.Tree  = q"wvlet.log.LogLevel.WARN"
       val ERROR: c.universe.Tree = q"wvlet.log.LogLevel.ERROR"
 
       c.settings
         .collect { case s if s startsWith SettingsPrefix => s stripPrefix SettingsPrefix }
         .collectFirst {
-          case "ALL"
-               | "ERROR" => Set(TRACE, DEBUG, INFO, WARN, ERROR)
-          case "WARN"    => Set(TRACE, DEBUG, INFO, WARN)
-          case "INFO"    => Set(TRACE, DEBUG, INFO)
-          case "DEBUG"   => Set(TRACE, DEBUG)
-          case "TRACE"   => Set(TRACE)
+          case "ALL" | "ERROR" => Set(TRACE, DEBUG, INFO, WARN, ERROR)
+          case "WARN"          => Set(TRACE, DEBUG, INFO, WARN)
+          case "INFO"          => Set(TRACE, DEBUG, INFO)
+          case "DEBUG"         => Set(TRACE, DEBUG)
+          case "TRACE"         => Set(TRACE)
         }
         .getOrElse(Set.empty)
     }
