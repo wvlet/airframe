@@ -262,6 +262,19 @@ if(logger.isDebugEnabled) {
 Log message String generation will not happen unless the debug log is effective. 
 Scala macro is also used for finding source code location (LogSource).
 
+### To disable Logging at compile-time
+It is possible to disable the code generation of log statements at compile time.
+Add `scalacOptions += "-Xmacro-settings:wvlet.log.disable.[SUPPRESS_BELOW]"` compiler option to `build.sbt` 
+
+SUPPRESS_BELOW = {`ALL` ||`ERROR` || `WARN` || `INFO` || `DEBUG`}:
+
+e.g. `scalacOptions += "-Xmacro-settings:wvlet.log.disable.INFO"` will suppress DEBUG, TRACE and INFO level log code generation.
+
+Note that `ALL` is just an alias for `ERROR` which will disable all logging.
+
+
+
+
 
 ## Why it uses java.util.logging instead of slf4j?
 
