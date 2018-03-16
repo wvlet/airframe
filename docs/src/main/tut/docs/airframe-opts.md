@@ -46,7 +46,7 @@ class MyApp(g:GlobalOption) extends DefaultCommand with LogSupport {
 }
 ```
 
-### Launche a program 
+### Launch a program 
 
 ```scala
 package org.mydomain
