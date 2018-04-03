@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.42
+ - airframe-log: Add an option to totally disable logging code generation.
+
 ## 0.41
  - Fix a singleton binding bug: If `bind[A].toSingletonOf[B]` is used and A is non-abstract trait, A was used instead of B.
 
