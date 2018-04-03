@@ -2,8 +2,6 @@ package wvlet.log
 
 import java.io.PrintStream
 
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
-
 /**
   *
   */
