@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.43
+ - airframe-log: Set a default log handler (JSConsoleLogHandler) for Scala.js for convenience
+
 ## 0.42
  - airframe-log: Add an option to totally disable logging code generation.
 

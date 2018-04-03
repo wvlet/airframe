@@ -8,7 +8,7 @@ import java.io.PrintStream
 private[log] trait LogEnvBase {
   def isScalaJS: Boolean
   def defaultLogLevel: LogLevel
-
+  def defaultHandler: java.util.logging.Handler
   def defaultConsoleOutput: PrintStream
 
   /**

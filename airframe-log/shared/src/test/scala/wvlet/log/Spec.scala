@@ -8,7 +8,8 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
   */
 trait Spec extends WordSpec with Matchers with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
 
-  Logger.setDefaultFormatter(SourceCodeLogFormatter)
+  // Use console log output for both Scala (JVM) and Scala.js
+  Logger.setDefaultHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
 
   override protected def beforeAll(): Unit = {
     super.beforeAll()

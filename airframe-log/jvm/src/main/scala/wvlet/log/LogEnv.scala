@@ -1,6 +1,8 @@
 package wvlet.log
 import java.io.PrintStream
 
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
+
 /**
   *
   */
@@ -8,7 +10,8 @@ private[log] object LogEnv extends LogEnvBase {
   override def isScalaJS: Boolean        = false
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
-  override def defaultConsoleOutput: PrintStream = Console.err
+  override def defaultConsoleOutput: PrintStream         = Console.err
+  override def defaultHandler: java.util.logging.Handler = new ConsoleLogHandler(SourceCodeLogFormatter)
 
   /**
     *
