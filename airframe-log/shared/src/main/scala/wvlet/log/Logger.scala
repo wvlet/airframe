@@ -178,7 +178,7 @@ object Logger {
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
-  lazy val rootLogger = initLogger(name = "", handlers = Seq(new ConsoleLogHandler(SourceCodeLogFormatter)))
+  lazy val rootLogger = initLogger(name = "", handlers = Seq(LogEnv.defaultHandler))
 
   /**
     * Create a new java.util.logging.Logger

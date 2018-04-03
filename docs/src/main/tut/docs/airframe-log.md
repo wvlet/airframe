@@ -184,7 +184,8 @@ See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.sc
 ```scala
 import wvlet.log._
 
-Logger.setDefaultHandler(new JSConsoleLogHandler)
+// This configuration becomes unnecessary since 0.43
+//Logger.setDefaultHandler(new JSConsoleLogHandler)
   
 class YourAppClass extends LogSupport {
 

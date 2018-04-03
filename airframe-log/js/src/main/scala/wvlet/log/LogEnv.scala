@@ -2,6 +2,8 @@ package wvlet.log
 
 import java.io.PrintStream
 
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
+
 /**
   *
   */
@@ -10,6 +12,7 @@ private[log] object LogEnv extends LogEnvBase {
   override def defaultLogLevel: LogLevel = LogLevel.INFO
 
   override def defaultConsoleOutput: PrintStream = Console.out
+  override def defaultHandler                    = JSConsoleLogHandler()
 
   override def getLoggerName(cl: Class[_]): String = {
     var name = cl.getName
