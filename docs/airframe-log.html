@@ -202,8 +202,9 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log._</span>
 
-<span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">JSConsoleLogHandler</span><span class="o">)</span>
-  
+<span class="c1">// This configuration becomes unnecessary since 0.43
+//Logger.setDefaultHandler(new JSConsoleLogHandler)
+</span>  
 <span class="k">class</span> <span class="nc">YourAppClass</span> <span class="k">extends</span> <span class="nc">LogSupport</span> <span class="o">{</span>
 
   <span class="n">info</span><span class="o">(</span><span class="s">"hello"</span><span class="o">)</span>
