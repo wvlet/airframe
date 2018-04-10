@@ -1,7 +1,7 @@
 import sbtcrossproject.{crossProject, CrossType}
 
 val SCALA_2_13 = "2.13.0-M3"
-val SCALA_2_12 = "2.12.5"
+val SCALA_2_12 = "2.12.6"
 val SCALA_2_11 = "2.11.11"
 
 // TODO: Exclude Scala 2.13.0-M3 since play-json is not available https://github.com/playframework/play-json/issues/109
