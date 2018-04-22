@@ -24,30 +24,8 @@ val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
 // In release process, this environment variable should be set
 val isRelease: Boolean = sys.env.isDefinedAt("RELEASE")
 
-def versionFmt(out: sbtdynver.GitDescribeOutput): String = {
-  val prefix = out.ref.dropV.value
-  val rev    = out.commitSuffix.mkString("+", "-", "")
-  val dirty  = out.dirtySuffix.value
-  val dynamicVersion = (rev, dirty) match {
-    case ("", "") =>
-      prefix
-    case (_, _) =>
-      // (version)+(distance)-(rev)
-      s"${prefix}${rev}"
-  }
-  if (isRelease) dynamicVersion else s"${dynamicVersion}-SNAPSHOT"
-}
-
-def fallbackVersion(d: java.util.Date): String = s"HEAD-${sbtdynver.DynVer timestamp d}"
-
-inThisBuild(
-  List(
-    version := dynverGitDescribeOutput.value.mkVersion(versionFmt, fallbackVersion(dynverCurrentDate.value)),
-    dynver := {
-      val d = new java.util.Date
-      sbtdynver.DynVer.getGitDescribeOutput(d).mkVersion(versionFmt, fallbackVersion(d))
-    }
-  ))
+// Use dynamic snapshot version strings for non tagged versions
+dynverSonatypeSnapshots in ThisBuild := !isRelease
 
 // For publishing in Travis CI
 lazy val travisSettings = List(
