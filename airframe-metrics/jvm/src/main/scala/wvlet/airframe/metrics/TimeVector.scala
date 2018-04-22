@@ -72,9 +72,9 @@ object TimeVector {
             val length = m.group("num").toInt
             val unit   = unitOf(m.group("unit"))
             m.group("prefix") match {
-              case null | "-" | "last" =>
+              case "-" | "last" =>
                 TimeVector(-length, 0, unit)
-              case "+" | "next" =>
+              case null | "+" | "next" =>
                 TimeVector(length, 0, unit)
               case other =>
                 throw new IllegalArgumentException(s"Unknown duration prefix: ${other}")
