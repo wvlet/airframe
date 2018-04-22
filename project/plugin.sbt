@@ -11,7 +11,7 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.3.0")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"              % "0.6.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"               % "0.4.1")
 // For setting explicit versions for each commit
-addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "2.0.0")
+addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "3.0.0")
 addSbtPlugin("com.47deg"    % "sbt-microsites" % "0.7.15")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
