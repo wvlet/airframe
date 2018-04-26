@@ -13,16 +13,14 @@
  */
 package wvlet.airframe
 
-import java.util.concurrent.{ConcurrentHashMap, TimeUnit}
+import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
-import scala.concurrent.duration
-import scala.concurrent.duration.Duration
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 /**
   *
@@ -32,12 +30,13 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
 
   private lazy val bindingTable = {
     val b = Seq.newBuilder[(Surface, Binding)]
-    binding.foreach(x => b += (x.from -> x))
-
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = wvlet.surface.of[Session]
     val sessionBinding = ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
     b += sessionSurface -> sessionBinding
+
+    // Add user-defined bindings
+    binding.foreach(x => b += (x.from -> x))
     b.result.toMap[Surface, Binding]
   }
 
