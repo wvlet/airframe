@@ -19,6 +19,10 @@ trait BindExample {
   val a = bind[HelloBind]
 }
 
+trait SessionBindExample {
+  val s = bind[Session]
+}
+
 /**
   *
   */
@@ -40,5 +44,13 @@ class SessionTest extends AirframeSpec {
       b shouldBe a[BindExample]
     }
 
+    "find self session from binding" in {
+      val session = newDesign
+        .bind[HelloBind].toSingleton
+        .newSession
+
+      val e = session.build[SessionBindExample]
+      e.s shouldBe theSameInstanceAs(session)
+    }
   }
 }
