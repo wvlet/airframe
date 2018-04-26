@@ -30,7 +30,17 @@ import scala.util.{Failure, Try}
 private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
   import scala.collection.JavaConverters._
 
-  private lazy val bindingTable                  = binding.map(b => b.from -> b).toMap[Surface, Binding]
+  private lazy val bindingTable = {
+    val b = Seq.newBuilder[(Surface, Binding)]
+    binding.foreach(x => b += (x.from -> x))
+
+    // Add a reference to this session to allow bind[Session]
+    val sessionSurface = wvlet.surface.of[Session]
+    val sessionBinding = ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
+    b += sessionSurface -> sessionBinding
+    b.result.toMap[Surface, Binding]
+  }
+
   private[airframe] def getBindingOf(t: Surface) = bindingTable.get(t)
   private[airframe] def hasSingletonOf(t: Surface): Boolean = {
     singletonHolder.contains(t)
