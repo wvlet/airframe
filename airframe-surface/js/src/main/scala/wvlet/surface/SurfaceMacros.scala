@@ -237,7 +237,7 @@ private[surface] object SurfaceMacros {
             companion.flatMap { x =>
               // Find default value getter from the companion class
               val defaultValueGetter =
-                findMethod(x, "apply$default$" + index).orElse(findMethod(x, "$lessinit$greater$default" + index))
+                findMethod(x, "apply$default$" + index).orElse(findMethod(x, "$lessinit$greater$default$" + index))
               defaultValueGetter.map { g =>
                 q"${g}"
               }
