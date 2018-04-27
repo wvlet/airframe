@@ -75,6 +75,25 @@ object CollectionCodec {
     }
   }
 
+  /*
+    Note: If we use MessageCodec[List[A]] it causes StackOverflow. Need more inverstigation
+    <code>
+    [error] java.lang.StackOverflowError
+    [error] 	at scala.reflect.internal.tpe.TypeMaps$SubstMap.apply(TypeMaps.scala:764)
+    [error] 	at scala.reflect.internal.tpe.TypeMaps$SubstSymMap.apply(TypeMaps.scala:825)
+    [error] 	at scala.reflect.internal.tpe.TypeMaps$TypeMap.mapOver(TypeMaps.scala:172)
+    </code>
+   */
+  case class ListCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
+    override def pack(p: MessagePacker, v: Seq[A]): Unit = {
+      BaseSeqCodec.pack(p, v, elementCodec)
+    }
+
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      BaseSeqCodec.unpack(u, v, surface, elementCodec, List.newBuilder[A])
+    }
+  }
+
   // TODO Just use SeqCodec for Scala and adapt the result type
   case class JavaListCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[java.util.List[A]] {
     override def pack(p: MessagePacker, v: util.List[A]): Unit = {
