@@ -189,8 +189,9 @@ private[surface] object SurfaceMacros {
     }
 
     case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
-      def name: Literal       = Literal(Constant(paramName.name.decodedName.toString))
-      def typeSurface: c.Tree = surfaceOf(tpe)
+      def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
+      private def paramNameTerm = TermName(paramName.name.decodedName.toString)
+      def typeSurface: c.Tree   = surfaceOf(tpe)
 
       def accessor(t: c.Type): c.Tree = {
         if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
@@ -199,10 +200,15 @@ private[surface] object SurfaceMacros {
           t.typeArgs.size match {
             // TODO We need to expand Select(Ident(x.y.z....), TermName("a")) =>
             // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
-            case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramName}})"
-            case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramName}})"
-            case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramName}})"
-            case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramName}})"
+            case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
+            case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
+            case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
+            case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
+            case 4     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
+            case 5     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
+            case 6     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
+            case 7     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
+            case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
             case other => q"None"
           }
         }
@@ -290,7 +296,8 @@ private[surface] object SurfaceMacros {
             index = ${index},
             name=${arg.name},
             surface = ${arg.typeSurface},
-            defaultValue = ${defaultValue}
+            defaultValue = ${defaultValue},
+            accessor = ${arg.accessor(targetType)}
           )
           """
         index += 1

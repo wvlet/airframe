@@ -223,7 +223,6 @@ class SurfaceTest extends SurfaceSpec {
     }
 
     "access parameters" taggedAs ("accessor") in {
-      pending
       val a = surface.of[A]
       a.params(0).get(a0) shouldBe true
       a.params(3).get(a0) shouldBe 10
