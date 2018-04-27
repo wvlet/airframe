@@ -61,6 +61,8 @@ object Zero extends LogSupport {
   }
 
   private def zeroOfScalaCollections: ZeroValueFactory = isGenericWithTypeArgs andThen {
+    case g if classOf[List[_]].isAssignableFrom(g.rawType) =>
+      List.empty
     case g if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
       Seq.empty
     case g if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
