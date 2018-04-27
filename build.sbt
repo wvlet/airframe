@@ -128,7 +128,9 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   tablet,
   jdbc,
   msgpackJVM,
-  stream
+  stream,
+  rest,
+  restFinagle
 )
 
 lazy val jsProjects: Seq[ProjectReference] = List(
@@ -480,3 +482,34 @@ lazy val stream =
         )
     )
     .dependsOn(surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
+
+lazy val rest =
+  project
+    .in(file("airframe-rest"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rest",
+      description := "A functional REST API interface",
+      libraryDependencies ++= Seq(
+        "javax.ws.rs" % "javax.ws.rs-api" % "2.1"
+      )
+    )
+    .dependsOn(airframeJVM, surfaceJVM, codec, airframeSpecJVM % "test")
+
+val FINAGLE_VERSION = "18.4.0"
+lazy val restFinagle =
+  project
+    .in(file("airframe-rest-finagle"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rest-finagle",
+      description := "A functional REST API for Finagle",
+      libraryDependencies ++= Seq(
+        "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION
+      )
+    )
+    .dependsOn(rest, airframeSpecJVM % "test")
+
