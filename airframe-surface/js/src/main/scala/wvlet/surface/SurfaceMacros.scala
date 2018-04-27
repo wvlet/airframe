@@ -194,22 +194,29 @@ private[surface] object SurfaceMacros {
       def typeSurface: c.Tree   = surfaceOf(tpe)
 
       def accessor(t: c.Type): c.Tree = {
-        if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
+        if (paramName.isSynthetic || // x$1, etc.
+            paramName.isParameter || // Private field. Accessible fields have accessor methods in Scala
+            (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
           q"None"
         } else {
-          t.typeArgs.size match {
-            // TODO We need to expand Select(Ident(x.y.z....), TermName("a")) =>
-            // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
-            case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
-            case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
-            case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
-            case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
-            case 4     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
-            case 5     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
-            case 6     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
-            case 7     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
-            case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
-            case other => q"None"
+          try {
+            t.typeArgs.size match {
+              // TODO We may need to expand Select(Ident(x.y.z....), TermName("a")) =>
+              // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
+              case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
+              case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
+              case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
+              case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
+              case 4     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
+              case 5     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
+              case 6     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
+              case 7     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
+              case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
+              case other => q"None"
+            }
+          } catch {
+            case e: Throwable =>
+              q"None"
           }
         }
       }
