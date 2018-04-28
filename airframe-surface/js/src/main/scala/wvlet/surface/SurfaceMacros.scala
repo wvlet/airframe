@@ -193,9 +193,17 @@ private[surface] object SurfaceMacros {
       private def paramNameTerm = TermName(paramName.name.decodedName.toString)
       def typeSurface: c.Tree   = surfaceOf(tpe)
 
+      def isPrivateParam(t: c.Type): Boolean = {
+        t.member(paramName.name) match {
+          case NoSymbol => false
+          case p        => p.isPrivate
+        }
+      }
+
       def accessor(t: c.Type): c.Tree = {
         try {
           if (paramName.isSynthetic || // x$1, etc.
+              isPrivateParam(t) ||
               (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
             q"None"
           } else {
@@ -296,7 +304,11 @@ private[surface] object SurfaceMacros {
           case other   => q"None"
         }
 
-        val accessor = if (method.isConstructor) arg.accessor(targetType) else q"None"
+        val accessor = if (method.isConstructor) {
+          arg.accessor(targetType)
+        } else {
+          q"None"
+        }
 
         val expr =
           q"""wvlet.surface.StdMethodParameter(
