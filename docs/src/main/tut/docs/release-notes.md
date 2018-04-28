@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.45
+ - airframe-codec: Support `List[X]` coding
+ - airframe-surface: Support `Parameter.getDefaultValue` and `Parameter.get(obj)` in Scala.js  
+
 ## 0.44
  - airframe-metrics: Require minus sign to represent last time ranges (e.g., -7d, -1h, etc.)
  - airframe: Enable `bind[Session]` binding to retrieve the current session
