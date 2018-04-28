@@ -194,12 +194,11 @@ private[surface] object SurfaceMacros {
       def typeSurface: c.Tree   = surfaceOf(tpe)
 
       def accessor(t: c.Type): c.Tree = {
-        if (paramName.isSynthetic || // x$1, etc.
-            paramName.isParameter || // Private field. Accessible fields have accessor methods in Scala
-            (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
-          q"None"
-        } else {
-          try {
+        try {
+          if (paramName.isSynthetic || // x$1, etc.
+              (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
+            q"None"
+          } else {
             t.typeArgs.size match {
               // TODO We may need to expand Select(Ident(x.y.z....), TermName("a")) =>
               // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
@@ -214,10 +213,10 @@ private[surface] object SurfaceMacros {
               case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
               case other => q"None"
             }
-          } catch {
-            case e: Throwable =>
-              q"None"
           }
+        } catch {
+          case e: Throwable =>
+            q"None"
         }
       }
     }
@@ -297,6 +296,8 @@ private[surface] object SurfaceMacros {
           case other   => q"None"
         }
 
+        val accessor = if (method.isConstructor) arg.accessor(targetType) else q"None"
+
         val expr =
           q"""wvlet.surface.StdMethodParameter(
             method = ${ref},
@@ -304,7 +305,7 @@ private[surface] object SurfaceMacros {
             name=${arg.name},
             surface = ${arg.typeSurface},
             defaultValue = ${defaultValue},
-            accessor = ${arg.accessor(targetType)}
+            accessor = ${accessor}
           )
           """
         index += 1
