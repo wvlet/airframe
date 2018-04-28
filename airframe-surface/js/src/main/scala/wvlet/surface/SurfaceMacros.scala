@@ -189,22 +189,42 @@ private[surface] object SurfaceMacros {
     }
 
     case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
-      def name: Literal       = Literal(Constant(paramName.name.decodedName.toString))
-      def typeSurface: c.Tree = surfaceOf(tpe)
+      def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
+      private def paramNameTerm = TermName(paramName.name.decodedName.toString)
+      def typeSurface: c.Tree   = surfaceOf(tpe)
+
+      def isPrivateParam(t: c.Type): Boolean = {
+        t.member(paramName.name) match {
+          case NoSymbol => false
+          case p        => p.isPrivate
+        }
+      }
 
       def accessor(t: c.Type): c.Tree = {
-        if (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal])) {
-          q"None"
-        } else {
-          t.typeArgs.size match {
-            // TODO We need to expand Select(Ident(x.y.z....), TermName("a")) =>
-            // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
-            case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramName}})"
-            case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramName}})"
-            case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramName}})"
-            case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramName}})"
-            case other => q"None"
+        try {
+          if (paramName.isSynthetic || // x$1, etc.
+              isPrivateParam(t) ||
+              (t.typeSymbol.isAbstract && !(t <:< typeOf[AnyVal]))) {
+            q"None"
+          } else {
+            t.typeArgs.size match {
+              // TODO We may need to expand Select(Ident(x.y.z....), TermName("a")) =>
+              // Select(Select(Select(Ident(TermName("x")), TermName("y")), ....
+              case 0     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}].${paramNameTerm}})"
+              case 1     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_]].${paramNameTerm}})"
+              case 2     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _]].${paramNameTerm}})"
+              case 3     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _]].${paramNameTerm}})"
+              case 4     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _]].${paramNameTerm}})"
+              case 5     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _]].${paramNameTerm}})"
+              case 6     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _]].${paramNameTerm}})"
+              case 7     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _]].${paramNameTerm}})"
+              case 8     => q"Some({x:Any => x.asInstanceOf[${t.typeSymbol}[_, _, _, _, _, _, _, _]].${paramNameTerm}})"
+              case other => q"None"
+            }
           }
+        } catch {
+          case e: Throwable =>
+            q"None"
         }
       }
     }
@@ -237,7 +257,7 @@ private[surface] object SurfaceMacros {
             companion.flatMap { x =>
               // Find default value getter from the companion class
               val defaultValueGetter =
-                findMethod(x, "apply$default$" + index).orElse(findMethod(x, "$lessinit$greater$default" + index))
+                findMethod(x, "apply$default$" + index).orElse(findMethod(x, "$lessinit$greater$default$" + index))
               defaultValueGetter.map { g =>
                 q"${g}"
               }
@@ -284,13 +304,20 @@ private[surface] object SurfaceMacros {
           case other   => q"None"
         }
 
+        val accessor = if (method.isConstructor) {
+          arg.accessor(targetType)
+        } else {
+          q"None"
+        }
+
         val expr =
           q"""wvlet.surface.StdMethodParameter(
             method = ${ref},
             index = ${index},
             name=${arg.name},
             surface = ${arg.typeSurface},
-            defaultValue = ${defaultValue}
+            defaultValue = ${defaultValue},
+            accessor = ${accessor}
           )
           """
         index += 1
