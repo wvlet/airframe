@@ -118,6 +118,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   logJVM,
   airframeSpecJVM,
   config,
+  bootstrap,
   jmx,
   opts,
   metricsJVM,
@@ -269,6 +270,16 @@ lazy val config =
       )
     )
     .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
+
+lazy val bootstrap =
+  project
+    .in(file("airframe-bootstrap"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-bootstrap",
+      description := "Bootstrap module for Airframe"
+    )
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", config, airframeSpecJVM % "test")
 
 lazy val jmx =
   project

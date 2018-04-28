@@ -14,16 +14,14 @@
 package wvlet.config
 
 import java.io.{File, FileInputStream, FileNotFoundException}
-import java.util.{Locale, Properties}
+import java.util.Properties
 
 import wvlet.config.PropertiesConfig.ConfigKey
 import wvlet.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 import wvlet.surface
-import wvlet.surface.Surface
-import wvlet.surface.Zero
-import wvlet.surface.reflect.RuntimeSurface
+import wvlet.surface.{Surface, Zero}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
@@ -35,6 +33,8 @@ case class ConfigPaths(configPaths: Seq[String]) extends LogSupport {
 }
 
 object Config extends LogSupport {
+
+  def empty = Config()
 
   private def defaultConfigPath =
     cleanupConfigPaths(
@@ -77,7 +77,7 @@ case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any
   override def toString = s"[${tpe}] ${key} = ${current} (default = ${default})"
 }
 
-import Config._
+import wvlet.config.Config._
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder]) extends Iterable[ConfigHolder] with LogSupport {
 
