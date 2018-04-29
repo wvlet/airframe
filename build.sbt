@@ -204,9 +204,6 @@ lazy val airframe =
       )
     )
     .jvmSettings(
-      libraryDependencies ++= Seq(
-        "javax.annotation" % "javax.annotation-api" % "1.3.1"
-      ),
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar
@@ -255,6 +252,12 @@ lazy val surface =
         "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
         "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
         "org.scalatest"  %%% "scalatest"    % SCALATEST_VERSION % "test"
+      )
+    )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        // For ading PreDestroy, PostConstruct annotations to Java9
+        "javax.annotation" % "javax.annotation-api" % "1.3.1"
       )
     )
     .jsSettings(jsBuildSettings)
