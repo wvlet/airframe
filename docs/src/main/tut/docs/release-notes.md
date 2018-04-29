@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.46
+ - Add airframe-bootstrap to define application modules that can be configured with airframe-config and DI
+ - Upgrade to Scala 2.12.6
+
 ## 0.45
  - airframe-codec: Support `List[X]` coding
  - airframe-surface: Support `Parameter.getDefaultValue` and `Parameter.get(obj)` in Scala.js  
