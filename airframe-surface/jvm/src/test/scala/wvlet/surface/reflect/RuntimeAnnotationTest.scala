@@ -14,8 +14,7 @@
 
 package wvlet.surface.reflect
 
-import javax.annotation.{PreDestroy, Resource}
-
+import javax.annotation.PreDestroy
 import wvlet.surface
 import wvlet.surface.SurfaceSpec
 
