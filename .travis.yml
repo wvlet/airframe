@@ -62,6 +62,22 @@ matrix:
   - env: SCALA_VERSION=2.12.6 PROJECT=projectJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Oracle JDK 9'
+    jdk: oraclejdk9
+    before_install:
+    - wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
+    - . ./install-jdk.sh -F 9
+    services: postgresql
+    before_script: psql -c 'create database travis_ci_test;' -U postgres
+    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Oracle JDK 10'
+    jdk: oraclejdk10
+    before_install:
+    - wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
+    - . ./install-jdk.sh -F 10 -L GPL
+    services: postgresql
+    before_script: psql -c 'create database travis_ci_test;' -U postgres
+    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
 
 env:
   global:
