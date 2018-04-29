@@ -204,6 +204,9 @@ lazy val airframe =
       )
     )
     .jvmSettings(
+      libraryDependencies ++= Seq(
+        "javax.annotation" % "javax.annotation-api" % "1.3.1"
+      ),
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar
