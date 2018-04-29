@@ -14,49 +14,26 @@
 package wvlet.airframe.bootstrap
 
 import wvlet.airframe.Design
-import wvlet.config.{Config, ConfigHolder}
-import wvlet.log.LogSupport
+import wvlet.config.Config
 
+/**
+  * Airframe
+  */
 object AirframeModule {
-  // Use base path that can be set by sbt-pack generated scripts
-  def basePath           = sys.props.getOrElse("prog.home", ".")
-  def defautlConfigPaths = Seq(s"${basePath}/config")
-
-  implicit class RichDesign(d: Design) {
-    def bindConfig(config: Config): Design = {
-      config.getAll.foldLeft(d) { (d: Design, c: ConfigHolder) =>
-        d.bind(c.tpe).toInstance(c.value)
-      }
-    }
-  }
-
+  def newModule =
+    new AirframeModule(design = { d: Design =>
+      d
+    }, config = { c: Config =>
+      c
+    })
 }
 
-trait AirframeModule extends LogSupport {
-  import AirframeModule._
+case class AirframeModule(design: Design => Design, config: Config => Config) {
+  def withDesign(d: Design => Design): AirframeModule =
+    new AirframeModule(design.andThen(d), config)
+  def withConfig(c: Config => Config): AirframeModule =
+    new AirframeModule(design, config.andThen(c))
 
-  def configure(config: Config): Config = config
-  def design(d: Design): Design         = d
-
-  def bootstrap(env: String = "default",
-                defaultEnv: String = "default",
-                configPaths: Seq[String] = defautlConfigPaths,
-                overrideConfigParams: Map[String, Any] = Map.empty): AirframeBootstrap = {
-    val newConfig =
-      configure(Config(env = env, defaultEnv = defaultEnv, configPaths = configPaths))
-        .overrideWith(overrideConfigParams)
-    val newDesign = design(Design.blanc).bindConfig(newConfig)
-
-    new AirframeBootstrap {
-      override val config = newConfig
-      override val design = newDesign
-    }
-  }
-
-  def +(other: AirframeModule): AirframeModule = ModuleChain(this, other)
-}
-
-private[bootstrap] case class ModuleChain(prev: AirframeModule, next: AirframeModule) extends AirframeModule {
-  override def configure(config: Config): Config = next.configure(prev.configure(config))
-  override def design(design: Design): Design    = next.design(prev.design(design))
+  def +(other: AirframeModule): AirframeModule =
+    new AirframeModule(design.andThen(other.design), config.andThen(other.config))
 }

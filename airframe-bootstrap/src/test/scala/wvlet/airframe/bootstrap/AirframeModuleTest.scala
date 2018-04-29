@@ -13,33 +13,35 @@
  */
 package wvlet.airframe.bootstrap
 
-import wvlet.airframe.{AirframeSpec, Design}
-import wvlet.config.Config
+import wvlet.airframe.AirframeSpec
 
 case class AppConfig(name: String)
 case class App2Config(name: String)
 
-object Module1 extends AirframeModule {
-  override def configure(config: Config): Config = {
-    config.register(AppConfig("hello"))
-  }
+object AirframeModuleTest {
+  lazy val module1 =
+    AirframeModule.newModule
+      .withConfig { c =>
+        c.register(AppConfig("hello"))
+      }
+      .withDesign { d =>
+        d.bind[String].toInstance("world")
+      }
 
-  override def design(d: Design): Design = {
-    d.bind[String].toInstance("world")
-  }
+  lazy val module2 =
+    AirframeModule.newModule
+      .withDesign { d =>
+        d.bind[String].toInstance("Airframe")
+      }
+
+  lazy val module3 =
+    AirframeModule.newModule
+      .withConfig { c =>
+        c.register(App2Config("scala"))
+      }
 }
 
-object Module2 extends AirframeModule {
-  override def design(d: Design): Design = {
-    d.bind[String].toInstance("Airframe")
-  }
-}
-
-object Module3 extends AirframeModule {
-  override def configure(config: Config): Config = {
-    config.register(App2Config("scala"))
-  }
-}
+import wvlet.airframe.bootstrap.AirframeModuleTest._
 
 /**
   *
@@ -48,23 +50,26 @@ class AirframeModuleTest extends AirframeSpec {
   "AirframeModule" should {
     "start" in {
 
-      Module1.bootstrap().main { session =>
+      val b = AirframeBootstrap(module1)
+      b.bootstrap.withSession { session =>
         session.build[AppConfig] shouldBe AppConfig("hello")
         session.build[String] shouldBe "world"
       }
     }
 
     "combine modules" in {
-      val m = Module1 + Module2
-      m.bootstrap().main { session =>
+      val b = AirframeBootstrap(module1 + module2)
+      b.bootstrap.withSession { session =>
         session.build[AppConfig] shouldBe AppConfig("hello")
         session.build[String] shouldBe "Airframe"
       }
     }
 
     "override config" in {
-      val m = Module1 + Module3
-      m.bootstrap(overrideConfigParams = Map("app.name" -> "good morning")).main { session =>
+      val b = AirframeBootstrap(module1 + module3)
+        .withConfigOverrides(Map("app.name" -> "good morning"))
+
+      b.bootstrap.withSession { session =>
         session.build[AppConfig] shouldBe AppConfig("good morning")
         session.build[App2Config] shouldBe App2Config("scala")
       }

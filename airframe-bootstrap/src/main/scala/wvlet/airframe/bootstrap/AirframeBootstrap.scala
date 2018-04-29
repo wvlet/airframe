@@ -13,36 +13,74 @@
  */
 package wvlet.airframe.bootstrap
 
-import wvlet.airframe.{Design, Session}
-import wvlet.config.Config
+import wvlet.airframe.Design
+import wvlet.config.{Config, ConfigHolder}
 import wvlet.log.LogSupport
 
-/**
-  *
-  */
-trait AirframeBootstrap extends LogSupport {
-  val config: Config
-  val design: Design
+object AirframeBootstrap extends LogSupport {
+  // Use base path that can be set by sbt-pack generated scripts
+  def basePath           = sys.props.getOrElse("prog.home", ".")
+  def defautlConfigPaths = Seq(s"${basePath}/config")
 
-  def init: Unit     = {}
-  def postMain: Unit = {}
+  def apply(module: AirframeModule, env: String = "default", defaultEnv: String = "default", configPaths: Seq[String] = defautlConfigPaths): AirframeBootstrap = {
+    new AirframeBootstrap(module, env, defaultEnv, configPaths)
+  }
 
-  protected def showConfig: Unit = {
+  def toDesign(c: Config): Design = {
+    c.getAll.foldLeft(Design.blanc) { (d: Design, c: ConfigHolder) =>
+      d.bind(c.tpe).toInstance(c.value)
+    }
+  }
+
+  def showConfig(c: Config): Unit = {
     info("Configurations:")
-    for (c <- config.getAll) {
+    for (c <- c.getAll) {
       info(s"${c.tpe}: ${c.value}")
     }
   }
+}
 
-  def main[U](body: Session => U): U = {
-    showConfig
-    init
-    try {
-      design.withSession { session =>
-        body(session)
-      }
-    } finally {
-      postMain
-    }
+import wvlet.airframe.bootstrap.AirframeBootstrap._
+class AirframeBootstrap(module: AirframeModule,
+                        env: String = "default",
+                        defaultEnv: String = "default",
+                        configPaths: Seq[String] = AirframeBootstrap.defautlConfigPaths,
+                        overrideConfigParams: Map[String, Any] = Map.empty,
+                        configProcessor: Config => Unit = AirframeBootstrap.showConfig) {
+
+  def withEnv(env: String, defaultEnv: String = "default") =
+    new AirframeBootstrap(module, env, defaultEnv, configPaths, overrideConfigParams, configProcessor)
+  def withConfigPaths(configPaths: Seq[String]) =
+    new AirframeBootstrap(module, env, defaultEnv, configPaths, overrideConfigParams, configProcessor)
+  def withConfigOverrides(configParams: Map[String, Any]) =
+    new AirframeBootstrap(module, env, defaultEnv, configPaths, configParams, configProcessor)
+
+  /**
+    * Change the configuration processor. The default behavior is dumping all configurations to the logger
+    * @param p
+    */
+  def withConfigProcessor(p: Config => Unit): Unit = {
+    new AirframeBootstrap(module, env, defaultEnv, configPaths, overrideConfigParams, p)
   }
+
+  /**
+    * Perform the initialization steps.
+    * It loads the configurations and binds designs, then returns the final design object.
+    * @return the final design
+    */
+  def bootstrap: Design = {
+    // Load configurations first
+    val newConfig =
+      module
+        .config(Config(env = env, defaultEnv = defaultEnv, configPaths = configPaths))
+        .overrideWith(overrideConfigParams)
+
+    // Process config (default is showing configuration values)
+    configProcessor(newConfig)
+
+    // Then start design, then add the config as designs
+    val newDesign = module.design(Design.blanc) + toDesign(newConfig)
+    newDesign
+  }
+
 }
