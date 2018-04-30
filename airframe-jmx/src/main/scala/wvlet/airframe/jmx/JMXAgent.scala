@@ -65,6 +65,10 @@ object JMXAgent extends LogSupport {
   }
 
   private def currentJMXRegistry: Option[HostAndPort] = {
+
+    // In Java 9, sun.management.xxx is unavailable
+
+    // For Java 8
     val jmxServer = classOf[Agent].getStaticField[JMXConnectorServer]("jmxServer")
     val registry  = classOf[ConnectorBootstrap].getStaticField[RemoteObject]("registry")
 
