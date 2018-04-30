@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi._
+import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
+import org.msgpack.value.ValueType
 import wvlet.surface
 import wvlet.surface.{Primitive, Surface}
 
@@ -62,39 +63,41 @@ object PrimitiveCodec {
   object ByteCodec extends PrimitiveCodec[Byte] {
     def surface = Primitive.Byte
 
-    override def pack(p: Packer, v: Byte): Unit = {
+    override def pack(p: MessagePacker, v: Byte): Unit = {
       p.packByte(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Byte) {
         try {
           v.setByte(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setIncompatibleFormatException(this, s"${e.bigInteger} is too large for a Byte value")
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Byte value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
-      u.getNextValueType match {
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackByte)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toByte)
+          read(u.unpackDouble().toByte)
         case ValueType.STRING =>
           read {
             val s = u.unpackString
             Try(s.toByte).getOrElse(s.toDouble.toByte)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toByte)
+          read(u.unpackBoolean().toByte)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -103,25 +106,27 @@ object PrimitiveCodec {
   object CharCodec extends PrimitiveCodec[Char] {
     def surface = Primitive.Char
 
-    override def pack(p: Packer, v: Char): Unit = {
+    override def pack(p: MessagePacker, v: Char): Unit = {
       p.packInt(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Char) {
         try {
           v.setChar(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setIncompatibleFormatException(this, s"${e.bigInteger} is too large for a Char value")
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Char value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
-      u.getNextValueType match {
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackInt.toChar)
@@ -132,11 +137,11 @@ object PrimitiveCodec {
             else s.toDouble.toChar
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toChar)
+          read(u.unpackBoolean().toChar)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toChar)
+          read(u.unpackDouble().toChar)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -144,39 +149,41 @@ object PrimitiveCodec {
 
   object ShortCodec extends PrimitiveCodec[Short] {
     def surface = Primitive.Short
-    override def pack(p: Packer, v: Short): Unit = {
+    override def pack(p: MessagePacker, v: Short): Unit = {
       p.packShort(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       def read(body: => Short) {
         try {
           v.setShort(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setIncompatibleFormatException(this, s"${e.bigInteger} is too large for a Short value")
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Short value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
-      u.getNextValueType match {
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
-          read(u.unpackShort)
+          read(u.unpackShort())
         case ValueType.STRING =>
           read {
             val s = u.unpackString
             Try(s.toShort).getOrElse(s.toDouble.toShort)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toShort)
+          read(u.unpackBoolean().toShort)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toShort)
+          read(u.unpackDouble().toShort)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -184,25 +191,27 @@ object PrimitiveCodec {
 
   object IntCodec extends PrimitiveCodec[Int] {
     def surface = Primitive.Int
-    override def pack(p: Packer, v: Int): Unit = {
+    override def pack(p: MessagePacker, v: Int): Unit = {
       p.packInt(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Int) {
         try {
           v.setInt(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setIncompatibleFormatException(this, s"${e.bigInteger} is too large for an Int value")
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for an Int value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
-      u.getNextValueType match {
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackInt)
@@ -212,11 +221,11 @@ object PrimitiveCodec {
             Try(s.toInt).getOrElse(s.toDouble.toInt)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toInt)
+          read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toInt)
+          read(u.unpackDouble().toInt)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -225,38 +234,40 @@ object PrimitiveCodec {
   object LongCodec extends PrimitiveCodec[Long] {
     def surface = Primitive.Long
 
-    override def pack(p: Packer, v: Long): Unit = {
+    override def pack(p: MessagePacker, v: Long): Unit = {
       p.packLong(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Long) {
         try {
           v.setLong(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setIncompatibleFormatException(this, s"${e.bigInteger} is too large for a Long value")
+          case e: MessageIntegerOverflowException =>
+            v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Long value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
-      u.getNextValueType match {
+      val f  = u.getNextFormat
+      val vt = f.getValueType
+      vt match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackLong)
         case ValueType.STRING =>
           read {
-            val s = u.unpackString
+            val s = u.unpackString()
             Try(s.toLong).getOrElse(s.toDouble.toLong)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toInt)
+          read(u.unpackBoolean().toInt)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toLong)
+          read(u.unpackDouble().toLong)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -265,46 +276,46 @@ object PrimitiveCodec {
   object StringCodec extends PrimitiveCodec[String] {
     def surface = Primitive.String
 
-    override def pack(p: Packer, v: String): Unit = {
+    override def pack(p: MessagePacker, v: String): Unit = {
       if (v == null) {
-        p.packNil
+        p.packNil()
       } else {
         p.packString(v)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => String) {
         try {
           val s = body
           v.setString(s)
         } catch {
-          case e: IntegerOverflowException =>
-            read(e.bigInteger.toString())
+          case e: MessageIntegerOverflowException =>
+            read(e.getBigInteger.toString())
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
 
-      u.getNextValueType match {
+      u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.STRING =>
-          read(u.unpackString)
+          read(u.unpackString())
         case ValueType.INTEGER =>
-          read(u.unpackLong.toString)
+          read(u.unpackLong().toString)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toString)
+          read(u.unpackBoolean().toString)
         case ValueType.FLOAT =>
-          read(u.unpackDouble.toString)
+          read(u.unpackDouble().toString)
         case ValueType.MAP =>
-          read(u.unpackValue.toJson)
+          read(u.unpackValue().toJson)
         case ValueType.ARRAY =>
-          read(u.unpackValue.toJson)
+          read(u.unpackValue().toJson)
         case ValueType.BINARY =>
           read {
-            val len = u.unpackBinaryHeader
+            val len = u.unpackBinaryHeader()
             new String(u.readPayload(len))
           }
         case _ =>
@@ -316,18 +327,18 @@ object PrimitiveCodec {
 
   object BooleanCodec extends PrimitiveCodec[Boolean] {
     def surface = Primitive.Boolean
-    override def pack(p: Packer, v: Boolean): Unit = {
+    override def pack(p: MessagePacker, v: Boolean): Unit = {
       p.packBoolean(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Boolean) {
         try {
           val b = body
           v.setBoolean(b)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setBoolean(e.bigInteger.doubleValue() != 0.0)
+          case e: MessageIntegerOverflowException =>
+            v.setBoolean(e.getBigInteger.doubleValue() != 0.0)
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
@@ -335,23 +346,23 @@ object PrimitiveCodec {
         }
       }
 
-      u.getNextValueType match {
+      u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean)
+          read(u.unpackBoolean())
         case ValueType.STRING =>
           read {
-            val s = u.unpackString
+            val s = u.unpackString()
             Try(s.toBoolean).getOrElse(s.toDouble != 0.0)
           }
         case ValueType.INTEGER =>
-          read(u.unpackLong != 0L)
+          read(u.unpackLong() != 0L)
         case ValueType.FLOAT =>
-          read(u.unpackDouble != 0.0)
+          read(u.unpackDouble() != 0.0)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -359,37 +370,37 @@ object PrimitiveCodec {
 
   object FloatCodec extends PrimitiveCodec[Float] {
     def surface = Primitive.Float
-    override def pack(p: Packer, v: Float): Unit = {
+    override def pack(p: MessagePacker, v: Float): Unit = {
       p.packFloat(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Float) {
         try {
           v.setFloat(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setFloat(e.bigInteger.floatValue())
+          case e: MessageIntegerOverflowException =>
+            v.setFloat(e.getBigInteger.floatValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
-      u.getNextValueType match {
+      u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.FLOAT =>
-          read(u.unpackFloat.toFloat)
+          read(u.unpackFloat().toFloat)
         case ValueType.INTEGER =>
-          read(u.unpackLong.toFloat)
+          read(u.unpackLong().toFloat)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toInt.toFloat)
+          read(u.unpackBoolean().toInt.toFloat)
         case ValueType.STRING =>
-          read(u.unpackString.toFloat)
+          read(u.unpackString().toFloat)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
@@ -398,52 +409,52 @@ object PrimitiveCodec {
   object DoubleCodec extends PrimitiveCodec[Double] {
     def surface = Primitive.Double
 
-    override def pack(p: Packer, v: Double): Unit = {
+    override def pack(p: MessagePacker, v: Double): Unit = {
       p.packDouble(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
       def read(body: => Double) {
         try {
           v.setDouble(body)
         } catch {
-          case e: IntegerOverflowException =>
-            v.setDouble(e.bigInteger.doubleValue())
+          case e: MessageIntegerOverflowException =>
+            v.setDouble(e.getBigInteger.doubleValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
         }
       }
-      u.getNextValueType match {
+      u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil
+          u.unpackNil()
           v.setNull
         case ValueType.FLOAT =>
-          read(u.unpackDouble)
+          read(u.unpackDouble())
         case ValueType.INTEGER =>
-          read(u.unpackLong.toDouble)
+          read(u.unpackLong().toDouble)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean.toInt.toDouble)
+          read(u.unpackBoolean().toInt.toDouble)
         case ValueType.STRING =>
           read(u.unpackString.toDouble)
         case _ =>
-          u.skipValue
+          u.skipValue()
           v.setNull
       }
     }
   }
 
   object IntArrayCodec extends MessageCodec[Array[Int]] {
-    override def pack(p: Packer, v: Array[Int]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Int]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         IntCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Int]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -461,15 +472,15 @@ object PrimitiveCodec {
   }
 
   object ShortArrayCodec extends MessageCodec[Array[Short]] {
-    override def pack(p: Packer, v: Array[Short]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Short]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         ShortCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Short]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -492,15 +503,15 @@ object PrimitiveCodec {
   }
 
   object CharArrayCodec extends MessageCodec[Array[Char]] {
-    override def pack(p: Packer, v: Array[Char]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Char]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         CharCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Char]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -523,15 +534,15 @@ object PrimitiveCodec {
   }
 
   object LongArrayCodec extends MessageCodec[Array[Long]] {
-    override def pack(p: Packer, v: Array[Long]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Long]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         LongCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Long]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -549,15 +560,15 @@ object PrimitiveCodec {
   }
 
   object FloatArrayCodec extends MessageCodec[Array[Float]] {
-    override def pack(p: Packer, v: Array[Float]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Float]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         FloatCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Float]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -575,15 +586,15 @@ object PrimitiveCodec {
   }
 
   object DoubleArrayCodec extends MessageCodec[Array[Double]] {
-    override def pack(p: Packer, v: Array[Double]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Double]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         DoubleCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Double]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -600,15 +611,15 @@ object PrimitiveCodec {
   }
 
   object BooleanArrayCodec extends MessageCodec[Array[Boolean]] {
-    override def pack(p: Packer, v: Array[Boolean]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Boolean]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         BooleanCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[Boolean]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -625,27 +636,27 @@ object PrimitiveCodec {
   }
 
   object ByteArrayCodec extends MessageCodec[Array[Byte]] {
-    override def pack(p: Packer, v: Array[Byte]): Unit = {
+    override def pack(p: MessagePacker, v: Array[Byte]): Unit = {
       p.packBinaryHeader(v.length)
       p.addPayload(v)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackBinaryHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+      val len = u.unpackBinaryHeader()
       val b   = u.readPayload(len)
       v.setObject(b)
     }
   }
 
   object StringArrayCodec extends MessageCodec[Array[String]] {
-    override def pack(p: Packer, v: Array[String]): Unit = {
+    override def pack(p: MessagePacker, v: Array[String]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         StringCodec.pack(p, x)
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder) {
-      val len = u.unpackArrayHeader
+    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+      val len = u.unpackArrayHeader()
       val b   = Array.newBuilder[String]
       b.sizeHint(len)
       (0 until len).foreach { i =>

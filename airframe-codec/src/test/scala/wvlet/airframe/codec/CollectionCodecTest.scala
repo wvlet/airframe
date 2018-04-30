@@ -30,6 +30,11 @@ class CollectionCodecTest extends CodecSpec {
       val v = Map("id" -> 1).asJava
       roundtrip(v, DataType.ANY)
     }
+
+    "support Seq/List type" in {
+      roundtrip(Seq(1, 2, 3), DataType.ANY)
+      roundtrip(List(1, 2, 3), DataType.ANY)
+    }
   }
 
 }

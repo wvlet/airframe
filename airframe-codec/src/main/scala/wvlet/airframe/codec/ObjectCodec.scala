@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi._
+import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.value.{ValueType, Variable}
 import wvlet.log.LogSupport
 import wvlet.surface.reflect.CName
 import wvlet.surface.{Surface, Zero}
@@ -27,21 +28,21 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
 
   private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => CName.toCanonicalName(p.name) -> c }.toMap[String, MessageCodec[_]]
 
-  override def pack(p: Packer, v: A): Unit = {
+  override def pack(p: MessagePacker, v: A): Unit = {
     val numParams = surface.params.length
     // Use array format [p1, p2, ....]
     p.packArrayHeader(numParams)
     for ((param, codec) <- surface.params.zip(paramCodec)) {
       val paramValue = param.get(v)
       if (paramValue == null) {
-        p.packNil
+        p.packNil()
       } else {
         codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
       }
     }
   }
 
-  def packAsMap(p: Packer, v: A): Unit = {
+  def packAsMap(p: MessagePacker, v: A): Unit = {
     val numParams = surface.params.length
     // Use array format [p1, p2, ....]
     p.packMapHeader(numParams)
@@ -52,12 +53,12 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
     }
   }
 
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     val numParams = surface.params.length
 
-    u.getNextValueType match {
+    u.getNextFormat.getValueType match {
       case ValueType.ARRAY =>
-        val numElems = u.unpackArrayHeader
+        val numElems = u.unpackArrayHeader()
         var index    = 0
         val b        = Seq.newBuilder[Any]
         while (index < numElems && index < numParams) {
@@ -80,7 +81,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         }
         // Ignore additional args
         while (index < numElems) {
-          u.skipValue
+          u.skipValue()
           index += 1
         }
         val args = b.result()
@@ -99,10 +100,11 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
         val m = Map.newBuilder[String, Any]
 
         // { key:value, ...} -> record
-        val mapSize = u.unpackMapHeader
+        val mapSize  = u.unpackMapHeader()
+        val keyValue = new Variable
         for (i <- 0 until mapSize) {
           // Read key
-          val keyValue = u.unpackValue
+          u.unpackValue(keyValue)
 
           val keyString = keyValue.toString
           // Use CName for parameter names
@@ -114,7 +116,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
               m += (cKey -> v.getLastValue)
             case None =>
               // unknown parameter
-              u.skipValue
+              u.skipValue()
           }
         }
         val map = m.result()
@@ -138,7 +140,7 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
             v.setNull
         }
       case other =>
-        u.skipValue
+        u.skipValue()
         v.setIncompatibleFormatException(this, s"Expected ARRAY or MAP type input for ${surface}")
     }
   }

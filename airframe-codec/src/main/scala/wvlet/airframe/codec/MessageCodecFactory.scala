@@ -58,10 +58,13 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) extends Lo
             EnumCodec(cl)
           case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>
             // Seq[A]
+            val elementSurface = ofSurface(g.typeArgs(0), seenSet)
             if (ReflectTypeUtil.isIndexedSeq(g.rawType)) {
-              IndexedSeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
+              IndexedSeqCodec(g.typeArgs(0), elementSurface)
+            } else if (ReflectTypeUtil.isList(g.rawType)) {
+              ListCodec(g.typeArgs(0), elementSurface)
             } else {
-              SeqCodec(g.typeArgs(0), ofSurface(g.typeArgs(0), seenSet))
+              SeqCodec(g.typeArgs(0), elementSurface)
             }
           case g: GenericSurface if ReflectTypeUtil.isJavaColleciton(g.rawType) =>
             JavaListCodec(ofSurface(g.typeArgs(0), seenSet))
