@@ -5,6 +5,18 @@ title: Release Notes
 
 # Release Notes
 
+## 0.46
+ - Add airframe-bootstrap to define application modules that can be configured with airframe-config and DI
+ - Upgrade to Scala 2.12.6
+
+## 0.45
+ - airframe-codec: Support `List[X]` coding
+ - airframe-surface: Support `Parameter.getDefaultValue` and `Parameter.get(obj)` in Scala.js  
+
+## 0.44
+ - airframe-metrics: Require minus sign to represent last time ranges (e.g., -7d, -1h, etc.)
+ - airframe: Enable `bind[Session]` binding to retrieve the current session
+
 ## 0.43
  - airframe-log: Set a default log handler (JSConsoleLogHandler) for Scala.js for convenience
 

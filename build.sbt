@@ -1,7 +1,7 @@
 import sbtcrossproject.{crossProject, CrossType}
 
 val SCALA_2_13 = "2.13.0-M3"
-val SCALA_2_12 = "2.12.4"
+val SCALA_2_12 = "2.12.6"
 val SCALA_2_11 = "2.11.11"
 
 // TODO: Exclude Scala 2.13.0-M3 since play-json is not available https://github.com/playframework/play-json/issues/109
@@ -118,6 +118,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   logJVM,
   airframeSpecJVM,
   config,
+  bootstrap,
   jmx,
   opts,
   metricsJVM,
@@ -270,6 +271,16 @@ lazy val config =
       )
     )
     .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
+
+lazy val bootstrap =
+  project
+    .in(file("airframe-bootstrap"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-bootstrap",
+      description := "Bootstrap module for Airframe"
+    )
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", config, airframeSpecJVM % "test")
 
 lazy val jmx =
   project
