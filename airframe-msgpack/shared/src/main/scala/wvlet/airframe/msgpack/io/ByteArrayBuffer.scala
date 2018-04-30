@@ -15,28 +15,28 @@ package wvlet.airframe.msgpack.io
 
 import wvlet.airframe.msgpack.spi._
 
-object ArrayBuffer {
-  def apply(a: Array[Byte]): ArrayBuffer = ArrayBuffer(a, 0, a.length)
+object ByteArrayBuffer {
+  def apply(a: Array[Byte]): ByteArrayBuffer = ByteArrayBuffer(a, 0, a.length)
 
-  def fromArray(a: Array[Byte], offset: Int, size: Int): ArrayBuffer = {
+  def fromArray(a: Array[Byte], offset: Int, size: Int): ByteArrayBuffer = {
     require(offset + size <= a.length, s"input array is smaller than offset:${offset} + size:${size}: ${a.length}")
-    ArrayBuffer(a, offset, size)
+    ByteArrayBuffer(a, offset, size)
   }
 
-  val emptyReadBuffer  = ArrayBuffer(Array.emptyByteArray)
-  val emptyWriteBuffer = ArrayBuffer(Array.emptyByteArray)
+  val emptyReadBuffer  = ByteArrayBuffer(Array.emptyByteArray)
+  val emptyWriteBuffer = ByteArrayBuffer(Array.emptyByteArray)
 }
 
 /**
   *
   */
-case class ArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadWriteBuffer {
+case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadWriteBuffer {
   require(offset > 0, s"baseOffset ${offset} < 0")
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
   override def slice(position: Int, newSize: Int): ReadBuffer = {
     require(position + newSize <= size, s"Insufficient array length (${a.length}, offset:${offset}, size:${size}) for slice(${position}, ${newSize})")
-    ArrayBuffer(a, offset + position, newSize)
+    ByteArrayBuffer(a, offset + position, newSize)
   }
 
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {
