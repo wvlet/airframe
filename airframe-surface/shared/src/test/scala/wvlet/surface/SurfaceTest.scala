@@ -45,7 +45,7 @@ object Examples {
   trait Service[-Req, +Rep] extends (Req => Future[Rep])
 
   case class E(a: A)
-
+  case class F(p0: Int = 10)
 }
 
 import wvlet.surface.Examples._
@@ -215,8 +215,14 @@ class SurfaceTest extends SurfaceSpec {
       d0 shouldBe D(1, "leo")
     }
 
+    "find default parameter" taggedAs ("dp") in {
+      val f = check(surface.of[F], "F")
+      val p = f.params(0)
+      p.getDefaultValue shouldBe defined
+      p.getDefaultValue.get shouldBe 10
+    }
+
     "access parameters" taggedAs ("accessor") in {
-      pending
       val a = surface.of[A]
       a.params(0).get(a0) shouldBe true
       a.params(3).get(a0) shouldBe 10

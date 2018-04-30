@@ -24,7 +24,6 @@ object MethodExamples {
     private def helloPrivate             = "hello"
     final def helloFinal: String         = "hello"
   }
-
   type MyA = A
 }
 
@@ -84,6 +83,5 @@ class MethodSurfaceTest extends SurfaceSpec {
       val m2 = surface.methodsOf[MyA]
       info(m2)
     }
-
   }
 }
