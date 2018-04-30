@@ -410,7 +410,7 @@ lazy val tablet =
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",
-        "org.msgpack"            %  "msgpack-core"             % "0.8.14",
+        "org.msgpack"            % "msgpack-core"              % "0.8.14",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
