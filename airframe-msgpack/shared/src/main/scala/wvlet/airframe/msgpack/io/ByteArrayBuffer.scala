@@ -16,6 +16,9 @@ package wvlet.airframe.msgpack.io
 import wvlet.airframe.msgpack.spi._
 
 object ByteArrayBuffer {
+
+  def newBuffer(size: Int): ByteArrayBuffer = apply(new Array[Byte](size))
+
   def apply(a: Array[Byte]): ByteArrayBuffer = ByteArrayBuffer(a, 0, a.length)
 
   def fromArray(a: Array[Byte], offset: Int, size: Int): ByteArrayBuffer = {
@@ -39,8 +42,12 @@ case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadW
     ByteArrayBuffer(a, offset + position, newSize)
   }
 
+  def hasCapacity(position: Int, byteLength: Int): Boolean = {
+    position + byteLength < size
+  }
+
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {
-    if (position + requestedLength < size) {
+    if (hasCapacity(position, requestedLength)) {
       throw new InsufficientBufferException(position, requestedLength)
     }
   }

@@ -25,6 +25,14 @@ import Unpacker._
 import MessageException._
 
 /**
+  * Mutable cursor in the buffer to optimize the performance
+  * @param buf
+  * @param position
+  * @param lastReadByteLength
+  */
+case class ReadCursor(var buf: ReadBuffer, var position: Int, var lastReadByteLength: Int)
+
+/**
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[lastReadByteLength]] method.
   */
 class Unpacker {
@@ -32,7 +40,7 @@ class Unpacker {
 
   def lastReadByteLength: Int = _lastReadByteLength
 
-  def unpackValue(buf: ReadBuffer, position: Int): Value = {
+  def unpackValue(cursor: ReadCursor): Value = {
     val b  = buf.readByte(position)
     val mf = MessageFormat.of(b)
     mf.valueType match {
@@ -113,7 +121,7 @@ class Unpacker {
     }
   }
 
-  def unpackNil(buf: ReadBuffer, position: Int) {
+  def unpackNil(cursor: ReadCursor) {
     buf.readByte(position) match {
       case Code.NIL =>
         _lastReadByteLength = 1
@@ -121,7 +129,7 @@ class Unpacker {
     }
   }
 
-  def tryUnpackNil(buf: ReadBuffer, position: Int): Boolean = {
+  def tryUnpackNil(cursor: ReadCursor): Boolean = {
     buf.readByte(position) match {
       case Code.NIL =>
         _lastReadByteLength = 1
@@ -132,7 +140,7 @@ class Unpacker {
     }
   }
 
-  def unpackBoolean(buf: ReadBuffer, position: Int): Boolean = {
+  def unpackBoolean(cursor: ReadCursor): Boolean = {
     buf.readByte(position) match {
       case Code.FALSE =>
         _lastReadByteLength = 1
@@ -144,7 +152,7 @@ class Unpacker {
     }
   }
 
-  def unpackByte(buf: ReadBuffer, position: Int): Byte = {
+  def unpackByte(cursor: ReadCursor): Byte = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixInt(b) =>
@@ -194,7 +202,7 @@ class Unpacker {
     }
   }
 
-  def unpackShort(buf: ReadBuffer, position: Int): Short = {
+  def unpackShort(cursor: ReadCursor): Short = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixInt(b) =>
@@ -242,7 +250,7 @@ class Unpacker {
     }
   }
 
-  def unpackInt(buf: ReadBuffer, position: Int): Int = {
+  def unpackInt(cursor: ReadCursor): Int = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixInt(b) =>
@@ -289,7 +297,7 @@ class Unpacker {
     }
   }
 
-  def unpackLong(buf: ReadBuffer, position: Int): Long = {
+  def unpackLong(cursor: ReadCursor): Long = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixInt(b) =>
@@ -338,7 +346,7 @@ class Unpacker {
     }
   }
 
-  def unpackBigInteger(buf: ReadBuffer, position: Int): BigInteger = {
+  def unpackBigInteger(cursor: ReadCursor): BigInteger = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixInt(b) =>
@@ -387,7 +395,7 @@ class Unpacker {
     }
   }
 
-  def unpackFloat(buf: ReadBuffer, position: Int): Float = {
+  def unpackFloat(cursor: ReadCursor): Float = {
     buf.readByte(position) match {
       case Code.FLOAT32 =>
         val f = buf.readFloat(position + 1)
@@ -402,7 +410,7 @@ class Unpacker {
     }
   }
 
-  def unpackDouble(buf: ReadBuffer, position: Int): Double = {
+  def unpackDouble(cursor: ReadCursor): Double = {
     buf.readByte(position) match {
       case Code.FLOAT32 =>
         val f = buf.readFloat(position + 1)
@@ -417,26 +425,26 @@ class Unpacker {
     }
   }
 
-  private def readNextLength8(buf: ReadBuffer, position: Int): Int = {
+  private def readNextLength8(cursor: ReadCursor): Int = {
     val u8 = buf.readByte(position)
     _lastReadByteLength = 1
     u8 & 0xff
   }
 
-  private def readNextLength16(buf: ReadBuffer, position: Int): Int = {
+  private def readNextLength16(cursor: ReadCursor): Int = {
     val u16 = buf.readShort(position)
     _lastReadByteLength = 2
     u16 & 0xffff
   }
 
-  private def readNextLength32(buf: ReadBuffer, position: Int): Int = {
+  private def readNextLength32(cursor: ReadCursor): Int = {
     val u32 = buf.readInt(position)
     if (u32 < 0) throw overflowU32Size(u32)
     _lastReadByteLength = 4
     u32
   }
 
-  private def tryReadStringHeader(b: Byte, buf: ReadBuffer, position: Int) = b match {
+  private def tryReadStringHeader(b: Byte, cursor: ReadCursor) = b match {
     case Code.STR8 =>
       readNextLength8(buf, position)
     case Code.STR16 =>
@@ -447,7 +455,7 @@ class Unpacker {
       -1
   }
 
-  private def tryReadBinaryHeader(b: Byte, buf: ReadBuffer, position: Int) = b match {
+  private def tryReadBinaryHeader(b: Byte, cursor: ReadCursor) = b match {
     case Code.BIN8 => // bin 8
       readNextLength8(buf, position)
     case Code.BIN16 => // bin 16
@@ -458,7 +466,7 @@ class Unpacker {
       -1
   }
 
-  def unpackRawStringHeader(buf: ReadBuffer, position: Int): Int = {
+  def unpackRawStringHeader(cursor: ReadCursor): Int = {
     val b = buf.readByte(position)
     if (Code.isFixedRaw(b)) {
       b & 0x1f
@@ -480,7 +488,7 @@ class Unpacker {
     throw unexpected("String", b)
   }
 
-  def unpackBinaryHeader(buf: ReadBuffer, position: Int): Int = {
+  def unpackBinaryHeader(cursor: ReadCursor): Int = {
     val b = buf.readByte(position)
     if (Code.isFixedRaw(b)) {
       b & 0x1f
@@ -502,7 +510,7 @@ class Unpacker {
     throw unexpected("Binary", b)
   }
 
-  def unpackString(buf: ReadBuffer, position: Int): String = {
+  def unpackString(cursor: ReadCursor): String = {
     val len       = unpackRawStringHeader(buf, position)
     val headerLen = _lastReadByteLength
     val nextIndex = position + headerLen
@@ -518,7 +526,7 @@ class Unpacker {
     }
   }
 
-  def unpackArrayHeader(buf: ReadBuffer, position: Int): Int = {
+  def unpackArrayHeader(cursor: ReadCursor): Int = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixedArray(b) =>
@@ -537,7 +545,7 @@ class Unpacker {
     }
   }
 
-  def unpackMapHeader(buf: ReadBuffer, position: Int): Int = {
+  def unpackMapHeader(cursor: ReadCursor): Int = {
     val b = buf.readByte(position)
     b match {
       case b if Code.isFixedMap(b) =>
@@ -556,7 +564,7 @@ class Unpacker {
     }
   }
 
-  def unpackExtTypeHeader(buf: ReadBuffer, position: Int): ExtTypeHeader = {
+  def unpackExtTypeHeader(cursor: ReadCursor): ExtTypeHeader = {
     buf.readByte(position) match {
       case Code.FIXEXT1 =>
         val tpe = buf.readByte(position + 1)

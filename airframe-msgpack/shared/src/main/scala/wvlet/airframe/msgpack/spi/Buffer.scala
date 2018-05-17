@@ -36,6 +36,8 @@ trait Buffer {
     */
   def slice(position: Int, size: Int): ReadBuffer
 
+  def hasCapacity(position: Int, requestedLength: Int): Boolean
+
   @throws[InsufficientBufferException]
   def ensureCapacity(position: Int, requestedLength: Int): Unit
 }
