@@ -33,7 +33,7 @@ object ByteArrayBuffer {
 /**
   *
   */
-case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadWriteBuffer {
+case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadBuffer with WriteBuffer {
   require(offset >= 0, s"baseOffset ${offset} < 0")
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
@@ -47,7 +47,7 @@ case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadW
   }
 
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {
-    if (hasCapacity(position, requestedLength)) {
+    if (!hasCapacity(position, requestedLength)) {
       throw new InsufficientBufferException(position, requestedLength)
     }
   }

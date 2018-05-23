@@ -98,5 +98,3 @@ trait WriteBuffer extends Buffer {
     writeByteAndLong(position, b, java.lang.Double.doubleToRawLongBits(v))
   }
 }
-
-trait ReadWriteBuffer extends ReadBuffer with WriteBuffer

@@ -12,7 +12,7 @@ val targetScalaVersions = Seq(
 )
 
 val SCALATEST_VERSION               = "3.0.5-M1"
-val SCALACHECK_VERSION              = "1.13.5"
+val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.0"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 
@@ -370,7 +370,9 @@ lazy val msgpack =
     .settings(
       name := "airframe-msgpack",
       description := "Pure-Scala MessagePack library",
-      libraryDependencies ++= parallelCollection(scalaVersion.value)
+      libraryDependencies ++= parallelCollection(scalaVersion.value) ++ Seq(
+        "org.scalacheck" %%% "scalacheck"  % SCALACHECK_VERSION % "test"
+      )
     )
     .jsSettings(
       jsBuildSettings,

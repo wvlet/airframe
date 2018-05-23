@@ -15,6 +15,7 @@ package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
+import java.time.Instant
 
 import wvlet.airframe.msgpack.spi.Code._
 
@@ -124,9 +125,14 @@ object Packer {
     writePayload(cursor, bytes)
   }
 
+  def packTimestamp(cursor: WriteCursor, v: Instant): Unit = {
+    packTimestampEpochSecond(cursor, v.getEpochSecond, v.getNano)
+  }
+
+  private val NANOS_PER_SECOND = 1000000000L
   def packTimestampEpochSecond(cursor: WriteCursor, epochSecond: Long, nanoAdjustment: Int) {
-    val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, 1000000000L))
-    val nsec = Math.floorMod(nanoAdjustment, 1000000000L).toInt
+    val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, NANOS_PER_SECOND))
+    val nsec = Math.floorMod(nanoAdjustment, NANOS_PER_SECOND).toInt
 
     if ((sec >>> 34) == 0L) { // sec can be serialized in 34 bits.
       val data64 = (nsec << 34) | sec
@@ -165,7 +171,7 @@ object Packer {
     cursor.writeByte(12.toByte)
     cursor.writeByte(EXT_TIMESTAMP)
     cursor.writeInt(nsec)
-    cursor.writeLong(nsec)
+    cursor.writeLong(sec)
   }
 
   def packRawStringHeader(cursor: WriteCursor, len: Int) {
