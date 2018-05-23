@@ -21,69 +21,7 @@ import java.util.Locale
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.Value._
 
-import Unpacker._
 import MessageException._
-
-/**
-  * Mutable cursor.
-  * @param buf
-  * @param position
-  */
-case class ReadCursor(var buf: ReadBuffer, var position: Int) {
-  private var offset: Int = 0
-
-  def lastReaadByteLength: Int = offset
-
-  def resetCursor: Unit = {
-    offset = 0
-  }
-
-  def readByte: Byte = {
-    val v = buf.readByte(position + offset)
-    offset += 1
-    v
-  }
-
-  def readShort: Short = {
-    val v = buf.readShort(position + offset)
-    offset += 2
-    v
-  }
-
-  def readInt: Int = {
-    val v = buf.readInt(position + offset)
-    offset += 4
-    v
-  }
-
-  def readLong: Long = {
-    val v = buf.readLong(position + offset)
-    offset += 8
-    v
-  }
-
-  def readFloat: Float = {
-    val v = buf.readFloat(position + offset)
-    offset += 4
-    v
-  }
-
-  def readDouble: Double = {
-    val v = buf.readDouble(position + offset)
-    offset += 8
-    v
-  }
-
-  def readBytes(len: Int): Array[Byte] = {
-    val v = buf.readBytes(position + offset, len)
-    offset += len
-    v
-  }
-  def readBytes(len: Int, dest: WriteBuffer, destOffset: Int): Unit = {
-    buf.readBytes(position + offset, len, dest, destOffset)
-    offset += len
-  }
-}
 
 /**
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReaadByteLength]] method.

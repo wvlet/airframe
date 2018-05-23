@@ -20,18 +20,11 @@ import wvlet.airframe.AirframeSpec
   */
 class PackerUnpackerTest extends AirframeSpec {
 
-  case class WriteCursor(buf: WriteBuffer, pos: Int)
-
-  def roundtrip[A](v: A, pack: WriteCursor => Int, unpack: ReadCursor => A): Unit = {}
+  def roundtrip[A](v: A, pack: (WriteCursor, A) => Unit, unpack: ReadCursor => A): Unit = {}
 
   "Packer/Unpacker" should {
     "satisfy round trip" in {
-      roundtrip(1, pack = { c =>
-        Packer.packInt(c.buf, c.pos, 1)
-      }, unpack = { c =>
-        Unpacker.unpackInt(c)
-      })
-
+      roundtrip[Int](1, pack = Packer.packInt(_, _), unpack = Unpacker.unpackInt(_))
     }
   }
 
