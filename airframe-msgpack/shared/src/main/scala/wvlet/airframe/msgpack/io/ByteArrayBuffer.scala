@@ -34,7 +34,7 @@ object ByteArrayBuffer {
   *
   */
 case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadWriteBuffer {
-  require(offset > 0, s"baseOffset ${offset} < 0")
+  require(offset >= 0, s"baseOffset ${offset} < 0")
   require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
   override def slice(position: Int, newSize: Int): ReadBuffer = {
