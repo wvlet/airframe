@@ -371,7 +371,7 @@ lazy val msgpack =
       name := "airframe-msgpack",
       description := "Pure-Scala MessagePack library",
       libraryDependencies ++= parallelCollection(scalaVersion.value) ++ Seq(
-        "org.scalacheck" %%% "scalacheck"  % SCALACHECK_VERSION % "test"
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
     .jsSettings(
