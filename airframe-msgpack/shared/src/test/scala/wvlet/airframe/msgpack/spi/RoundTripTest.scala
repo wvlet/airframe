@@ -18,6 +18,8 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 
 import org.scalacheck.Gen
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalactic.anyvals.{PosInt, PosZInt}
 import org.scalatest.prop.PropertyChecks
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
@@ -43,9 +45,10 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     }
   }
 
+  implicit val config = PropertyCheckConfiguration(minSuccessful = PosInt(3), minSize = PosZInt(1), sizeRange = PosZInt(100))
+
   "Packer/Unpacker" should {
     "satisfy roundtrip" in {
-
       When("Nil")
       roundtrip(null) { (cursor, v) =>
         Packer.packNil(cursor)
@@ -81,7 +84,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         roundtrip(v) { Packer.packDouble(_, _) } { Unpacker.unpackDouble(_) }
       }
       When("String")
-      forAll { (v: String) =>
+      forAll(arbitrary[String]) { v: String => // Generate unicode strings
         roundtrip(v) { Packer.packString(_, _) } { Unpacker.unpackString(_) }
       }
       When("RawString")
