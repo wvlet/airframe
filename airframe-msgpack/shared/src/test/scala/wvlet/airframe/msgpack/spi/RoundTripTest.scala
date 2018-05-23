@@ -45,6 +45,13 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
   "Packer/Unpacker" should {
     "satisfy roundtrip" in {
+
+      When("Nil")
+      roundtrip(null) { (cursor, v) =>
+        Packer.packNil(cursor)
+      } { cursor =>
+        Unpacker.unpackNil(_); null
+      }
       When("Int")
       forAll { (v: Int) =>
         roundtrip(v) { Packer.packInt(_, _) } { Unpacker.unpackInt(_) }
