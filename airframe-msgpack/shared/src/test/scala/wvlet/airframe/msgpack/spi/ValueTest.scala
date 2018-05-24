@@ -24,6 +24,7 @@ import wvlet.airframe.msgpack.spi.Value._
   */
 class ValueTest extends AirframeSpec with PropertyChecks {
   def checkSuccinctType(pack: WriteCursor => Unit, expectedAtMost: MessageFormat) {
+
 //    val b  = createMessagePackData(pack)
 //    val v1 = MessagePack.newDefaultUnpacker(b).unpackValue()
 //    val mf = v1.asIntegerValue().mostSuccinctMessageFormat()
@@ -62,49 +63,54 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       }
     }
 
-    "produce json strings" in {
+    import ValueFactory._
 
-      import ValueFactory._
+    def check(v: Value, expectedType: ValueType, expectedStr: String, expectedJson: String): Unit = {
+      v.toString shouldBe expectedStr
+      v.toJson shouldBe expectedJson
+      v.valueType shouldBe expectedType
+    }
 
-      newNil.toJson shouldBe "null"
-      newNil.toString shouldBe "null"
+    "have nil" in {
+      check(newNil, ValueType.NIL, "null", "null")
+    }
 
-      newBoolean(true).toJson shouldBe "true"
-      newBoolean(false).toJson shouldBe "false"
-      newBoolean(true).toString shouldBe "true"
-      newBoolean(false).toString shouldBe "false"
+    "have boolean" in {
+      check(newBoolean(true), ValueType.BOOLEAN, "true", "true")
+      check(newBoolean(false), ValueType.BOOLEAN, "false", "false")
+    }
 
-      newInteger(3).toJson shouldBe "3"
-      newInteger(3).toString shouldBe "3"
-      newInteger(BigInteger.valueOf(1324134134134L)).toJson shouldBe "1324134134134"
-      newInteger(BigInteger.valueOf(1324134134134L)).toString shouldBe "1324134134134"
+    "have integer" in {
+      check(newInteger(3), ValueType.INTEGER, "3", "3")
+      check(newInteger(BigInteger.valueOf(1324134134134L)), ValueType.INTEGER, "1324134134134", "1324134134134")
+    }
 
-      newFloat(0.1).toJson shouldBe "0.1"
-      newFloat(0.1).toString shouldBe "0.1"
+    "have float" in {
+      check(newFloat(0.1), ValueType.FLOAT, "0.1", "0.1")
+    }
 
-      newArray(newInteger(0), newString("hello")).toJson shouldBe "[0,\"hello\"]"
-      newArray(newInteger(0), newString("hello")).toString shouldBe "[0,\"hello\"]"
-      newArray(newArray(newString("Apple"), newFloat(0.2)), newNil).toJson shouldBe """[["Apple",0.2],null]"""
+    "have array" in {
+      check(newArray(newInteger(0), newString("hello")), ValueType.ARRAY, "[0,\"hello\"]", "[0,\"hello\"]")
+      check(newArray(newArray(newString("Apple"), newFloat(0.2)), newNil), ValueType.ARRAY, """[["Apple",0.2],null]""", """[["Apple",0.2],null]""")
+    }
 
-//      // Map value
-//      val m = newMapBuilder()
-//        .put(newString("id"), newInteger(1001))
-//        .put(newString("name"), newString("leo"))
-//        .put(newString("address"), newArray(newString("xxx-xxxx"), newString("yyy-yyyy")))
-//        .put(newString("name"), newString("mitsu"))
-//        .build()
-//      val i1 = JSON.parseFull(m.toJson)
-//      val i2 = JSON.parseFull(m.toString) // expect json value
-//      val a1 = JSON.parseFull("""{"id":1001,"name":"mitsu","address":["xxx-xxxx","yyy-yyyy"]}""")
-//      // Equals as JSON map
-//      i1 shouldBe a1
-//      i2 shouldBe a1
-
-      // toJson should quote strings
-      newString("1").toJson shouldBe "\"1\""
+    "have string" in {
       // toString is for extracting string values
-      newString("1").toString shouldBe "1"
+      // toJson should quote strings
+      check(newString("1"), ValueType.STRING, "1", "\"1\"")
+    }
 
+    "have map" in {
+      // Map value
+      val m = newMap(
+        newString("id")      -> newInteger(1001),
+        newString("name")    -> newString("leo"),
+        newString("address") -> newArray(newString("xxx-xxxx"), newString("yyy-yyyy")),
+        newString("name")    -> newString("mitsu")
+      )
+      val json = """{"id":1001,"name":"mitsu","address":["xxx-xxxx","yyy-yyyy"]}"""
+      // TODO check the equality as json objects instead of using direct json string comparison
+      check(m, ValueType.MAP, json, json)
     }
 
     "check appropriate range for integers" in {

@@ -23,6 +23,13 @@ class ValueTypeTest extends AirframeSpec {
 
   "ValueType" should {
 
+    "have name" in {
+      val vt = Seq(ValueType.NIL, ValueType.BOOLEAN, ValueType.INTEGER, ValueType.FLOAT, ValueType.STRING, ValueType.BINARY, ValueType.ARRAY, ValueType.MAP, ValueType.EXTENSION)
+      for (v <- vt) {
+        v.name shouldBe v.getClass.getSimpleName.replaceAll("\\$", "")
+      }
+    }
+
     "lookup ValueType from a byte value" taggedAs ("code") in {
 
       def check(b: Byte, tpe: ValueType) {
@@ -41,18 +48,18 @@ class ValueTypeTest extends AirframeSpec {
         check(i.toByte, ValueType.ARRAY)
       }
 
-      check(Code.NIL, ValueType.NIL)
+      check(NIL, ValueType.NIL)
 
-      MessageFormat.of(Code.NEVER_USED).valueType shouldBe null
+      MessageFormat.of(NEVER_USED).valueType shouldBe null
 
-      check(Code.TRUE, ValueType.BOOLEAN)
-      check(Code.FALSE, ValueType.BOOLEAN)
+      check(TRUE, ValueType.BOOLEAN)
+      check(FALSE, ValueType.BOOLEAN)
 
-      for (t <- Seq(Code.BIN8, Code.BIN16, Code.BIN32)) {
+      for (t <- Seq(BIN8, BIN16, BIN32)) {
         check(t, ValueType.BINARY)
       }
 
-      for (t <- Seq(Code.FIXEXT1, Code.FIXEXT2, Code.FIXEXT4, Code.FIXEXT8, Code.FIXEXT16, Code.EXT8, Code.EXT16, Code.EXT32)) {
+      for (t <- Seq(FIXEXT1, FIXEXT2, FIXEXT4, FIXEXT8, FIXEXT16, EXT8, EXT16, EXT32)) {
         check(t, ValueType.EXTENSION)
       }
 

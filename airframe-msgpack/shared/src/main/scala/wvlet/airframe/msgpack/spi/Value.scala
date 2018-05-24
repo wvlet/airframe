@@ -164,7 +164,7 @@ object Value {
     def size: Int                      = entries.size
 
     override def toJson: String = {
-      s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}"
+      s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}}"
     }
     override def valueType: ValueType = ValueType.MAP
     override def writeTo(packer: StreamPacker): Unit = {
@@ -224,12 +224,13 @@ object Value {
 
 object ValueFactory {
   import Value._
-  def newNil                    = NilValue
-  def newBoolean(b: Boolean)    = BooleanValue(b)
-  def newInteger(i: Int)        = LongValue(i)
-  def newInteger(l: Long)       = LongValue(l)
-  def newInteger(b: BigInteger) = LongValue(b.longValue())
-  def newFloat(d: Double)       = DoubleValue(d)
-  def newString(s: String)      = StringValue(s)
-  def newArray(elem: Value*)    = ArrayValue(elem.toIndexedSeq)
+  def newNil                      = NilValue
+  def newBoolean(b: Boolean)      = BooleanValue(b)
+  def newInteger(i: Int)          = LongValue(i)
+  def newInteger(l: Long)         = LongValue(l)
+  def newInteger(b: BigInteger)   = LongValue(b.longValue())
+  def newFloat(d: Double)         = DoubleValue(d)
+  def newString(s: String)        = StringValue(s)
+  def newArray(elem: Value*)      = ArrayValue(elem.toIndexedSeq)
+  def newMap(kv: (Value, Value)*) = MapValue(Map(kv: _*))
 }

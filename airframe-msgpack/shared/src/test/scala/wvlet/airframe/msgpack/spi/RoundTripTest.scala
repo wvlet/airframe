@@ -45,7 +45,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     }
   }
 
-  implicit val config = PropertyCheckConfiguration(minSuccessful = PosInt(3), minSize = PosZInt(1), sizeRange = PosZInt(100))
+  //implicit val config = PropertyCheckConfiguration(minSuccessful = PosInt(3), minSize = PosZInt(1), sizeRange = PosZInt(100))
 
   private def testByte(v: Byte) {
     val packers = Seq[(WriteCursor, Byte) => Unit](

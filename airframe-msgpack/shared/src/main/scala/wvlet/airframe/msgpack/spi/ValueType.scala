@@ -39,9 +39,8 @@ object ValueType {
   //abstract class ExtValueType
   // Timestamp value should be reported as a first-class value?
   // TODO: But we cannot determine the value type without reading the second or more bytes
-
-  sealed trait ExtValueType
-  object Ext {
-    case object TIMESTAMP extends ExtValueType
-  }
+//  sealed trait ExtValueType
+//  object Ext {
+//    case object TIMESTAMP extends ExtValueType
+//  }
 }
