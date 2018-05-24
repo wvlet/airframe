@@ -16,7 +16,6 @@ package wvlet.airframe.msgpack.spi
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.util.Locale
 
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.Value._
@@ -576,7 +575,7 @@ object Unpacker {
       throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")
     } else {
       val name     = f.valueType.name
-      val typeName = name.substring(0, 1) + name.substring(1).toLowerCase(Locale.ENGLISH)
+      val typeName = name.substring(0, 1) + name.substring(1).toLowerCase
       throw new MessageException(INVALID_TYPE, f"Expected ${expectedCode}, but got ${typeName} (${actual}%02x)")
     }
   }

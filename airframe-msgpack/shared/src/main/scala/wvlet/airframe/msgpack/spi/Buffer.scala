@@ -42,13 +42,16 @@ trait Buffer {
   def ensureCapacity(position: Int, requestedLength: Int): Unit
 }
 
+import java.{lang => jl}
+
 trait ReadBuffer extends Buffer {
+
   def readByte(position: Int): Byte
   def readShort(position: Int): Short
   def readInt(position: Int): Int
   def readLong(position: Int): Long
-  def readFloat(position: Int): Float   = java.lang.Float.intBitsToFloat(readInt(position))
-  def readDouble(position: Int): Double = java.lang.Double.longBitsToDouble(readLong(position))
+  def readFloat(position: Int): Float   = jl.Float.intBitsToFloat(readInt(position))
+  def readDouble(position: Int): Double = jl.Double.longBitsToDouble(readLong(position))
   def readBytes(position: Int, length: Int): Array[Byte]
   def readBytes(position: Int, length: Int, dest: Array[Byte], destOffset: Int): Unit
   def readBytes(position: Int, length: Int, dest: WriteBuffer, destIndex: Int): Unit
@@ -59,8 +62,8 @@ trait WriteBuffer extends Buffer {
   def writeShort(position: Int, v: Short): Int
   def writeInt(position: Int, v: Int): Int
   def writeLong(position: Int, v: Long): Int
-  def writeFloat(position: Int, v: Float): Int   = writeInt(position, java.lang.Float.floatToRawIntBits(v))
-  def writeDouble(position: Int, v: Double): Int = writeLong(position, java.lang.Double.doubleToRawLongBits(v))
+  def writeFloat(position: Int, v: Float): Int   = writeInt(position, Compat.floatToIntBits(v))
+  def writeDouble(position: Int, v: Double): Int = writeLong(position, Compat.doubleToLongBits(v))
 
   def writeBytes(position: Int, src: Array[Byte]): Int = writeBytes(position, src, 0, src.length)
   def writeBytes(position: Int, src: Array[Byte], srcOffset: Int, length: Int): Int
@@ -91,10 +94,10 @@ trait WriteBuffer extends Buffer {
   }
 
   def writeByteAndFloat(position: Int, b: Byte, v: Float): Int = {
-    writeByteAndInt(position, b, java.lang.Float.floatToRawIntBits(v))
+    writeByteAndInt(position, b, Compat.floatToIntBits(v))
   }
 
   def writeByteAndDouble(position: Int, b: Byte, v: Double): Int = {
-    writeByteAndLong(position, b, java.lang.Double.doubleToRawLongBits(v))
+    writeByteAndLong(position, b, Compat.doubleToLongBits(v))
   }
 }

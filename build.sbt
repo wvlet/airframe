@@ -132,6 +132,7 @@ lazy val jsProjects: Seq[ProjectReference] = List(
   surfaceJS,
   logJS,
   metricsJS,
+  msgpackJS,
   airframeSpecJS
 )
 
