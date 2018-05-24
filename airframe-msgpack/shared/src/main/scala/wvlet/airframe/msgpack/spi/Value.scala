@@ -17,7 +17,9 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
+import wvlet.airframe.msgpack.spi.Value.{BooleanValue, LongValue, NilValue}
 import wvlet.log.{LogFormatter, LogTimestampFormatter}
+import MessageException._
 
 /**
   *
@@ -57,6 +59,10 @@ object Value {
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packLong(v)
     }
+
+    def asByte: Byte   = if (v.isValidByte) v.toByte else throw overflowU64(v)
+    def asShort: Short = if (v.isValidShort) v.toShort else throw overflowU64(v)
+    def asInt: Int     = if (v.isValidInt) v.toInt else throw overflowU64(v)
   }
 
   case class BigIntegerValue(val v: BigInteger) extends Value {
@@ -214,4 +220,16 @@ object Value {
     sb.append(HEX_TABLE((ch >> 4) & 0x0f))
     sb.append(HEX_TABLE(ch & 0x0f))
   }
+}
+
+object ValueFactory {
+  import Value._
+  def newNil                    = NilValue
+  def newBoolean(b: Boolean)    = BooleanValue(b)
+  def newInteger(i: Int)        = LongValue(i)
+  def newInteger(l: Long)       = LongValue(l)
+  def newInteger(b: BigInteger) = LongValue(b.longValue())
+  def newFloat(d: Double)       = DoubleValue(d)
+  def newString(s: String)      = StringValue(s)
+  def newArray(elem: Value*)    = ArrayValue(elem.toIndexedSeq)
 }
