@@ -30,7 +30,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
   val buf = ByteArrayBuffer.newBuffer(1024)
 
-  def rawRoundtrip[A](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => A): A = {
+  def rawRoundtrip[A, B](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => B): B = {
     val writeCursor = WriteCursor(buf, 0)
     pack(writeCursor, v)
     val readCursor = ReadCursor(buf, 0)
@@ -147,45 +147,48 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
     "report overflow errors" in {
 
+      val b1 = Seq(BigInteger.valueOf(Byte.MinValue.toLong - 1), BigInteger.valueOf(Byte.MaxValue.toLong + 1))
+      val b2 = Seq(BigInteger.valueOf(Short.MinValue.toLong - 1), BigInteger.valueOf(Short.MaxValue.toLong + 1))
+      val b3 = Seq(BigInteger.valueOf(Int.MinValue.toLong - 1), BigInteger.valueOf(Int.MaxValue.toLong + 1))
+      val b4 = Seq(BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(1)))
       // Byte
-      Seq(Byte.MinValue.toLong - 1, Byte.MaxValue.toLong + 1).foreach { b =>
+      (b1 ++ b2 ++ b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packLong(_, _) } { Unpacker.unpackByte(_) }
+          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackByte(_) }
         }
       }
 
       // Short
-      Seq(Short.MinValue.toLong - 1, Short.MaxValue.toLong + 1).foreach { b =>
+      (b2 ++ b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packLong(_, _) } { Unpacker.unpackShort(_) }
+          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackShort(_) }
         }
       }
 
       // Int
-      Seq(Int.MinValue.toLong - 1, Int.MaxValue.toLong + 1).foreach { b =>
+      (b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packLong(_, _) } { Unpacker.unpackInt(_) }
+          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackInt(_) }
         }
       }
 
       // Long
-      Seq(BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(1)))
-        .foreach { b =>
-          intercept[IntegerOverflowException] {
-            rawRoundtrip(b) { Packer.packBigInteger(_, _) } { x =>
-              BigInteger.valueOf(Unpacker.unpackLong(x))
-            }
+      b4.foreach { b =>
+        intercept[IntegerOverflowException] {
+          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { x =>
+            BigInteger.valueOf(Unpacker.unpackLong(x))
           }
         }
+      }
     }
 
     "support Nil" in {
-      roundtrip(null) { (cursor, v) =>
+      rawRoundtrip(null) { (cursor, v) =>
         Packer.packNil(cursor)
       } { cursor =>
         Unpacker.unpackNil(_); null
       }
-      roundtrip(null) { (cursor, v) =>
+      rawRoundtrip(null) { (cursor, v) =>
         Packer.packNil(cursor)
       } { cursor =>
         Unpacker.tryUnpackNil(_); null
@@ -253,6 +256,11 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     }
 
     "support Long" in {
+      // UINT32
+      roundtrip((1L << 31) + 1) { (c, v) =>
+        Packer.packUINT32(c, v.toInt)
+      } { Unpacker.unpackLong(_) }
+
       forAll { (v: Long) =>
         val packers = Seq[(WriteCursor, Long) => Unit](
           { Packer.packLong(_, _) },
@@ -280,6 +288,10 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     }
 
     "support BigInteger" in {
+      // UINT32
+      roundtrip((1L << 31) + 1) { (c, v) =>
+        Packer.packUINT32(c, v.toInt)
+      } { Unpacker.unpackBigInteger(_).longValue() }
       forAll { (l: Long) =>
         val v = BigInteger.valueOf(l)
         roundtrip(v) { Packer.packBigInteger(_, _) } { Unpacker.unpackBigInteger(_) }
