@@ -126,9 +126,8 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         Unpacker.unpackNil(_); null
       }
       When("Boolean")
-      forAll { (v: Boolean) =>
-        roundtrip(v) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
-      }
+      roundtrip(true) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
+      roundtrip(false) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
       When("Fixnum")
       forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte =>
         testByte(v)
@@ -144,6 +143,9 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         testShort(v)
       }
       forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short =>
+        testShort(v)
+      }
+      forAll(Gen.chooseNum[Short]((1 << 8).toShort, Short.MaxValue)) { v: Short =>
         testShort(v)
       }
 
@@ -271,6 +273,34 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       forAll(posLong, posInt) { (second: Long, nano: Int) =>
         val v = Instant.ofEpochSecond(second, nano)
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+      }
+      val secLessThan34bits = Gen.chooseNum[Long](0, 1L << 34)
+      forAll(secLessThan34bits, posInt) { (second: Long, nano: Int) =>
+        val v = Instant.ofEpochSecond(second, nano)
+        roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+      }
+      When(s"ArrayHeader")
+      val sizeGen = Gen.chooseNum[Int](0, Int.MaxValue)
+      forAll(sizeGen) { (len: Int) =>
+        roundtrip(len) { Packer.packArrayHeader(_, _) } { Unpacker.unpackArrayHeader(_) }
+      }
+      When(s"MapHeader")
+      forAll(sizeGen) { (len: Int) =>
+        roundtrip(len) { Packer.packMapHeader(_, _) } { Unpacker.unpackMapHeader(_) }
+      }
+      When(s"RawStringHeader")
+      forAll(sizeGen) { (len: Int) =>
+        roundtrip(len) { Packer.packRawStringHeader(_, _) } { Unpacker.unpackRawStringHeader(_) }
+      }
+      When(s"BinaryHeader")
+      forAll(sizeGen) { (len: Int) =>
+        roundtrip(len) { Packer.packBinaryHeader(_, _) } { Unpacker.unpackBinaryHeader(_) }
+      }
+      When(s"ExtHeader")
+      forAll(Gen.posNum[Byte], sizeGen) { (v: Byte, len: Int) =>
+        roundtrip(ExtTypeHeader(v, len)) { (cursor, v) =>
+          Packer.packExtTypeHeader(cursor, v.extType, v.byteLength)
+        } { Unpacker.unpackExtTypeHeader(_) }
       }
     }
   }
