@@ -55,32 +55,208 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       } { cursor =>
         Unpacker.unpackNil(_); null
       }
-      When("Int")
-      forAll { (v: Int) =>
-        roundtrip(v) { Packer.packInt(_, _) } { Unpacker.unpackInt(_) }
-      }
       When("Boolean")
       forAll { (v: Boolean) =>
         roundtrip(v) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
       }
+      When("Fixnum")
+      val fixNum = Gen.chooseNum[Byte](-32, 127)
+      forAll(fixNum) { v: Byte =>
+        val packers = Seq[(WriteCursor, Byte) => Unit](
+          { Packer.packByte(_, _) },
+          { Packer.packShort(_, _) },
+          { Packer.packInt(_, _) },
+          { Packer.packLong(_, _) },
+          { Packer.packINT8(_, _) },
+          { Packer.packINT16(_, _) },
+          { Packer.packINT32(_, _) },
+          { Packer.packINT64(_, _) }
+        )
+
+        val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
+          { Packer.packUINT8(_, _) },
+          { Packer.packUINT16(_, _) },
+          { Packer.packUINT32(_, _) },
+          { Packer.packUINT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Byte](
+          { Unpacker.unpackByte(_) },
+          { Unpacker.unpackShort(_).toByte },
+          { Unpacker.unpackInt(_).toByte },
+          { Unpacker.unpackLong(_).toByte },
+          { Unpacker.unpackBigInteger(_).longValue().toByte }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
+        if (v > 0) {
+          for (p <- posNumPackers; u <- unpackers) {
+            roundtrip(v)(p)(u)
+          }
+        }
+      }
       When("Byte")
       forAll { (v: Byte) =>
-        roundtrip(v) { Packer.packByte(_, _) } { Unpacker.unpackByte(_) }
+        val packers = Seq[(WriteCursor, Byte) => Unit](
+          { Packer.packByte(_, _) },
+          { Packer.packShort(_, _) },
+          { Packer.packInt(_, _) },
+          { Packer.packLong(_, _) },
+          { Packer.packINT8(_, _) },
+          { Packer.packINT16(_, _) },
+          { Packer.packINT32(_, _) },
+          { Packer.packINT64(_, _) }
+        )
+
+        val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
+          { Packer.packUINT8(_, _) },
+          { Packer.packUINT16(_, _) },
+          { Packer.packUINT32(_, _) },
+          { Packer.packUINT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Byte](
+          { Unpacker.unpackByte(_) },
+          { Unpacker.unpackShort(_).toByte },
+          { Unpacker.unpackInt(_).toByte },
+          { Unpacker.unpackLong(_).toByte },
+          { Unpacker.unpackBigInteger(_).longValue().toByte }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
+        if (v > 0) {
+          for (p <- posNumPackers; u <- unpackers) {
+            roundtrip(v)(p)(u)
+          }
+        }
       }
       When("Short")
       forAll { (v: Short) =>
-        roundtrip(v) { Packer.packShort(_, _) } { Unpacker.unpackShort(_) }
+        val packers = Seq[(WriteCursor, Short) => Unit](
+          { Packer.packShort(_, _) },
+          { Packer.packInt(_, _) },
+          { Packer.packLong(_, _) },
+          { Packer.packINT16(_, _) },
+          { Packer.packINT32(_, _) },
+          { Packer.packINT64(_, _) }
+        )
+
+        val posNumPackers = Seq[(WriteCursor, Short) => Unit](
+          { Packer.packUINT16(_, _) },
+          { Packer.packUINT32(_, _) },
+          { Packer.packUINT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Short](
+          { Unpacker.unpackShort(_) },
+          { Unpacker.unpackInt(_).toShort },
+          { Unpacker.unpackLong(_).toShort },
+          { Unpacker.unpackBigInteger(_).longValue().toShort }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
+        if (v > 0) {
+          for (p <- posNumPackers; u <- unpackers) {
+            roundtrip(v)(p)(u)
+          }
+        }
+      }
+      When("Int")
+      forAll { (v: Int) =>
+        val packers = Seq[(WriteCursor, Int) => Unit](
+          { Packer.packInt(_, _) },
+          { Packer.packLong(_, _) },
+          { Packer.packINT32(_, _) },
+          { Packer.packINT64(_, _) }
+        )
+
+        val posNumPackers = Seq[(WriteCursor, Int) => Unit](
+          { Packer.packUINT32(_, _) },
+          { Packer.packUINT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Int](
+          { Unpacker.unpackInt(_) },
+          { Unpacker.unpackLong(_).toInt },
+          { Unpacker.unpackBigInteger(_).longValue().toInt }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
+        if (v > 0) {
+          for (p <- posNumPackers; u <- unpackers) {
+            roundtrip(v)(p)(u)
+          }
+        }
       }
       When("Long")
       forAll { (v: Long) =>
-        roundtrip(v) { Packer.packLong(_, _) } { Unpacker.unpackLong(_) }
+        val packers = Seq[(WriteCursor, Long) => Unit](
+          { Packer.packLong(_, _) },
+          { Packer.packINT64(_, _) }
+        )
+
+        val posNumPackers = Seq[(WriteCursor, Long) => Unit](
+          { Packer.packUINT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Long](
+          { Unpacker.unpackLong(_) },
+          { Unpacker.unpackBigInteger(_).longValue() }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
+        if (v > 0) {
+          for (p <- posNumPackers; u <- unpackers) {
+            roundtrip(v)(p)(u)
+          }
+        }
+      }
+      When(s"BigInteger")
+      forAll { (l: Long) =>
+        val v = BigInteger.valueOf(l)
+        roundtrip(v) { Packer.packBigInteger(_, _) } { Unpacker.unpackBigInteger(_) }
       }
       When("Float")
       forAll { (v: Float) =>
-        roundtrip(v) { Packer.packFloat(_, _) } { Unpacker.unpackFloat(_) }
+        val packers = Seq[(WriteCursor, Float) => Unit](
+          { Packer.packFloat(_, _) },
+          { Packer.packFLOAT32(_, _) },
+          { Packer.packFLOAT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Float](
+          { Unpacker.unpackFloat(_) },
+          { Unpacker.unpackDouble(_).toFloat }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
       }
       When("Double")
       forAll { (v: Double) =>
+        val packers = Seq[(WriteCursor, Double) => Unit](
+          { Packer.packDouble(_, _) },
+          { Packer.packFLOAT64(_, _) }
+        )
+
+        val unpackers = Seq[ReadCursor => Double](
+          { Unpacker.unpackDouble(_) }
+        )
+
+        for (p <- packers; u <- unpackers) {
+          roundtrip(v)(p)(u)
+        }
         roundtrip(v) { Packer.packDouble(_, _) } { Unpacker.unpackDouble(_) }
       }
       When("String")
@@ -88,8 +264,9 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         roundtrip(v) { Packer.packString(_, _) } { Unpacker.unpackString(_) }
       }
       When("RawString")
-      forAll { (v: String) =>
-        val b = v.getBytes(StandardCharsets.UTF_8)
+      forAll { (s: String) =>
+        val b = s.getBytes(StandardCharsets.UTF_8)
+        val v = b.slice(0, b.length.min(1024))
         roundtrip(b) { (cursor, v) =>
           Packer.packRawStringHeader(cursor, v.length)
           Packer.writePayload(cursor, v)
@@ -108,14 +285,9 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
           Unpacker.readPayload(cursor, len)
         }
       }
-      When(s"BigInteger")
-      forAll { (l: Long) =>
-        val v = BigInteger.valueOf(l)
-        roundtrip(v) { Packer.packBigInteger(_, _) } { Unpacker.unpackBigInteger(_) }
-      }
       When(s"Timestamp")
       val posLong = Gen.chooseNum[Long](-31557014167219200L, 31556889864403199L)
-      val posInt  = Gen.chooseNum(0, 1000000000) // NANOS_PER_SECOND
+      val posInt  = Gen.chooseNum(0, 1000000000 - 1) // NANOS_PER_SECOND
       forAll(posLong, posInt) { (second: Long, nano: Int) =>
         val v = Instant.ofEpochSecond(second, nano)
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }

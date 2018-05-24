@@ -19,7 +19,7 @@ object ByteArrayBuffer {
 
   def newBuffer(size: Int): ByteArrayBuffer = apply(new Array[Byte](size))
 
-  def apply(a: Array[Byte]): ByteArrayBuffer = ByteArrayBuffer(a, 0, a.length)
+  def apply(a: Array[Byte]): ByteArrayBuffer = fromArray(a, 0, a.length)
 
   def fromArray(a: Array[Byte], offset: Int, size: Int): ByteArrayBuffer = {
     require(offset + size <= a.length, s"input array is smaller than offset:${offset} + size:${size}: ${a.length}")

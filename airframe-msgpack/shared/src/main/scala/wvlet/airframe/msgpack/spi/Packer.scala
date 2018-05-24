@@ -31,47 +31,81 @@ object Packer {
     cursor.writeByte(if (v) TRUE else FALSE)
   }
 
+  private[msgpack] def packFIXNUM(cursor: WriteCursor, v: Byte): Unit = {
+    cursor.writeByte(v)
+  }
+  private[msgpack] def packINT8(cursor: WriteCursor, v: Byte): Unit = {
+    cursor.writeByteAndByte(INT8, v)
+  }
+  private[msgpack] def packINT16(cursor: WriteCursor, v: Short): Unit = {
+    cursor.writeByteAndShort(INT16, v)
+  }
+  private[msgpack] def packINT32(cursor: WriteCursor, v: Int): Unit = {
+    cursor.writeByteAndInt(INT32, v)
+  }
+  private[msgpack] def packINT64(cursor: WriteCursor, v: Long): Unit = {
+    cursor.writeByteAndLong(INT64, v)
+  }
+  private[msgpack] def packUINT8(cursor: WriteCursor, v: Byte): Unit = {
+    cursor.writeByteAndByte(UINT8, v)
+  }
+  private[msgpack] def packUINT16(cursor: WriteCursor, v: Short): Unit = {
+    cursor.writeByteAndShort(UINT16, v)
+  }
+  private[msgpack] def packUINT32(cursor: WriteCursor, v: Int): Unit = {
+    cursor.writeByteAndInt(UINT32, v)
+  }
+  private[msgpack] def packUINT64(cursor: WriteCursor, v: Long): Unit = {
+    cursor.writeByteAndLong(UINT64, v)
+  }
+  private[msgpack] def packFLOAT32(cursor: WriteCursor, v: Float): Unit = {
+    cursor.writeByteAndFloat(FLOAT32, v)
+  }
+  private[msgpack] def packFLOAT64(cursor: WriteCursor, v: Double): Unit = {
+    cursor.writeByteAndDouble(FLOAT64, v)
+  }
+
   def packByte(cursor: WriteCursor, v: Byte) {
     if (v < -(1 << 5)) {
-      cursor.writeByteAndByte(INT8, v)
+      packINT8(cursor, v)
     } else {
-      cursor.writeByte(v)
+      packFIXNUM(cursor, v)
     }
   }
 
   def packShort(cursor: WriteCursor, v: Short) {
     if (v < -(1 << 5)) {
       if (v < -(1 << 7)) {
-        cursor.writeByteAndShort(INT16, v)
+        packINT16(cursor, v)
       } else {
-        cursor.writeByteAndByte(INT8, v.toByte)
+        packINT8(cursor, v.toByte)
       }
     } else if (v < (1 << 7)) {
       cursor.writeByte(v.toByte)
     } else if (v < (1 << 8)) {
-      cursor.writeByteAndByte(UINT8, v.toByte)
+      packUINT8(cursor, v.toByte)
     } else {
-      cursor.writeByteAndShort(UINT16, v)
+      packUINT16(cursor, v)
     }
   }
 
   def packInt(cursor: WriteCursor, r: Int) {
     if (r < -(1 << 5)) {
       if (r < -(1 << 15)) {
-        cursor.writeByteAndInt(INT32, r)
+        packINT32(cursor, r)
       } else if (r < -(1 << 7)) {
-        cursor.writeByteAndShort(INT16, r.toShort)
+        packINT16(cursor, r.toShort)
       } else {
-        cursor.writeByteAndByte(INT8, r.toByte)
+        packINT8(cursor, r.toByte)
       }
     } else if (r < (1 << 7)) {
-      cursor.writeByte(r.toByte)
+      packFIXNUM(cursor, r.toByte)
     } else if (r < (1 << 8)) {
-      cursor.writeByteAndByte(UINT8, r.toByte)
+      packUINT8(cursor, r.toByte)
     } else if (r < (1 << 16)) {
-      cursor.writeByteAndShort(UINT16, r.toShort)
+      packUINT16(cursor, r.toShort)
     } else { // unsigned 32
-      cursor.writeByteAndInt(UINT32, r)
+      packUINT32(cursor, r)
     }
   }
 
@@ -79,43 +113,43 @@ object Packer {
     if (v < -(1L << 5)) {
       if (v < -(1L << 15)) {
         if (v < -(1L << 31))
-          cursor.writeByteAndLong(INT64, v)
+          packINT64(cursor, v)
         else
-          cursor.writeByteAndInt(INT32, v.toInt)
+          packINT32(cursor, v.toInt)
       } else if (v < -(1 << 7)) {
-        cursor.writeByteAndShort(INT16, v.toShort)
+        packINT16(cursor, v.toShort)
       } else {
-        cursor.writeByteAndByte(INT8, v.toByte)
+        packINT8(cursor, v.toByte)
       }
     } else if (v < (1 << 7)) { // fixnum
-      cursor.writeByte(v.toByte)
+      packFIXNUM(cursor, v.toByte)
     } else if (v < (1L << 16)) {
       if (v < (1 << 8))
-        cursor.writeByteAndByte(UINT8, v.toByte)
+        packUINT8(cursor, v.toByte)
       else
-        cursor.writeByteAndShort(UINT16, v.toShort)
+        packUINT16(cursor, v.toShort)
     } else if (v < (1L << 32))
-      cursor.writeByteAndInt(UINT32, v.toInt)
+      packUINT32(cursor, v.toInt)
     else
-      cursor.writeByteAndLong(UINT64, v)
+      packUINT64(cursor, v)
   }
 
   def packBigInteger(cursor: WriteCursor, bi: BigInteger) {
     if (bi.bitLength <= 63) {
       packLong(cursor, bi.longValue)
     } else if (bi.bitLength == 64 && bi.signum == 1) {
-      cursor.writeByteAndLong(UINT64, bi.longValue)
+      packUINT64(cursor, bi.longValue)
     } else {
       throw new IllegalArgumentException("MessagePack cannot serialize BigInteger larger than 2^64-1")
     }
   }
 
   def packFloat(cursor: WriteCursor, v: Float) {
-    cursor.writeByteAndFloat(FLOAT32, v)
+    packFLOAT32(cursor, v)
   }
 
   def packDouble(cursor: WriteCursor, v: Double) {
-    cursor.writeByteAndDouble(FLOAT64, v)
+    packFLOAT64(cursor, v)
   }
 
   def packString(cursor: WriteCursor, s: String) {
@@ -138,17 +172,17 @@ object Packer {
       val data64 = (nsec << 34) | sec
       if ((data64 & 0xffffffff00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
         // use timestamp 32
-        writeTimestamp32(cursor, sec.asInstanceOf[Int])
+        packTimestamp32(cursor, sec.asInstanceOf[Int])
       } else { // sec exceeded 32 bits or nsec is not 0.
         // use timestamp 64
-        writeTimestamp64(cursor, data64)
+        packTimestamp64(cursor, data64)
       }
     } else { // use timestamp 96 format
-      writeTimestamp96(cursor, sec, nsec)
+      packTimestamp96(cursor, sec, nsec)
     }
   }
 
-  private def writeTimestamp32(cursor: WriteCursor, sec: Int) { // timestamp 32 in fixext 4
+  private[msgpack] def packTimestamp32(cursor: WriteCursor, sec: Int) { // timestamp 32 in fixext 4
     cursor.ensureCapacity(6)
 
     cursor.writeByte(FIXEXT4)
@@ -156,7 +190,7 @@ object Packer {
     cursor.writeInt(sec)
   }
 
-  private def writeTimestamp64(cursor: WriteCursor, data64: Long) { // timestamp 64 in fixext 8
+  private[msgpack] def packTimestamp64(cursor: WriteCursor, data64: Long) { // timestamp 64 in fixext 8
     cursor.ensureCapacity(10)
 
     cursor.writeByte(FIXEXT8)
@@ -164,7 +198,7 @@ object Packer {
     cursor.writeLong(data64)
   }
 
-  private def writeTimestamp96(cursor: WriteCursor, sec: Long, nsec: Int) { // timestamp 96 in ext 8
+  private[msgpack] def packTimestamp96(cursor: WriteCursor, sec: Long, nsec: Int) { // timestamp 96 in ext 8
     cursor.ensureCapacity(15)
 
     cursor.writeByte(EXT8)
