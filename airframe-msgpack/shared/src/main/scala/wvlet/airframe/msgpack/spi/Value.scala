@@ -120,12 +120,12 @@ object Value {
 
   case class ExtensionValue(extType: Byte, v: Array[Byte]) extends Value {
     override def toJson = {
-      val sb = new StringBuilder
+      val sb = Seq.newBuilder[String]
       for (e <- v) {
         // Binary to HEX
-        sb.append(Integer.toString(e.toInt, 16))
+        sb += Integer.toString(e.toInt, 16)
       }
-      s"[${extType.toInt.toString},${sb.result()}]"
+      s"""[${extType.toInt.toString},"${sb.result.mkString(" ")}"]"""
     }
     override def valueType: ValueType = ValueType.EXTENSION
     override def writeTo(packer: StreamPacker): Unit = {
@@ -224,13 +224,15 @@ object Value {
 
 object ValueFactory {
   import Value._
-  def newNil                      = NilValue
-  def newBoolean(b: Boolean)      = BooleanValue(b)
-  def newInteger(i: Int)          = LongValue(i)
-  def newInteger(l: Long)         = LongValue(l)
-  def newInteger(b: BigInteger)   = LongValue(b.longValue())
-  def newFloat(d: Double)         = DoubleValue(d)
-  def newString(s: String)        = StringValue(s)
-  def newArray(elem: Value*)      = ArrayValue(elem.toIndexedSeq)
-  def newMap(kv: (Value, Value)*) = MapValue(Map(kv: _*))
+  def newNil                            = NilValue
+  def newBoolean(b: Boolean)            = BooleanValue(b)
+  def newInteger(i: Int)                = LongValue(i)
+  def newInteger(l: Long)               = LongValue(l)
+  def newInteger(b: BigInteger)         = BigIntegerValue(b)
+  def newFloat(d: Double)               = DoubleValue(d)
+  def newString(s: String)              = StringValue(s)
+  def newArray(elem: Value*)            = ArrayValue(elem.toIndexedSeq)
+  def newMap(kv: (Value, Value)*)       = MapValue(Map(kv: _*))
+  def newBinary(b: Array[Byte])         = BinaryValue(b)
+  def newExt(tpe: Byte, v: Array[Byte]) = ExtensionValue(tpe, v)
 }

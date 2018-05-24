@@ -87,10 +87,17 @@ class ValueTest extends AirframeSpec with PropertyChecks {
 
     "have float" in {
       check(newFloat(0.1), ValueType.FLOAT, "0.1", "0.1")
+      check(newFloat(Double.NaN), ValueType.FLOAT, "null", "null")
+      check(newFloat(Double.PositiveInfinity), ValueType.FLOAT, "null", "null")
+      check(newFloat(Double.NegativeInfinity), ValueType.FLOAT, "null", "null")
     }
 
     "have array" in {
-      check(newArray(newInteger(0), newString("hello")), ValueType.ARRAY, "[0,\"hello\"]", "[0,\"hello\"]")
+      val a = newArray(newInteger(0), newString("hello"))
+      a.size shouldBe 2
+      a(0) shouldBe LongValue(0)
+      a(1) shouldBe StringValue("hello")
+      check(a, ValueType.ARRAY, "[0,\"hello\"]", "[0,\"hello\"]")
       check(newArray(newArray(newString("Apple"), newFloat(0.2)), newNil), ValueType.ARRAY, """[["Apple",0.2],null]""", """[["Apple",0.2],null]""")
     }
 
@@ -98,6 +105,20 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       // toString is for extracting string values
       // toJson should quote strings
       check(newString("1"), ValueType.STRING, "1", "\"1\"")
+    }
+
+    "have Binary" in {
+      val b = newBinary(Array[Byte]('a', 'b', 'c', '\n', '\b', '\r', '\t', '\f', '\\', '"', 'd', 0x01))
+      b.valueType shouldBe ValueType.BINARY
+      val json = """"abc\n\b\r\t\f\\\"d""" + "\\" + "u0001" + "\""
+      b.toJson shouldBe json
+      b.toString shouldBe json
+    }
+
+    "have ext" in {
+      val e = newExt(-1, Array[Byte]('a', 'b', 'c'))
+      e.valueType shouldBe ValueType.EXTENSION
+      e.toString shouldBe """[-1,"61 62 63"]"""
     }
 
     "have map" in {
@@ -108,6 +129,13 @@ class ValueTest extends AirframeSpec with PropertyChecks {
         newString("address") -> newArray(newString("xxx-xxxx"), newString("yyy-yyyy")),
         newString("name")    -> newString("mitsu")
       )
+      // a key ("name") should be overwritten
+      m.size shouldBe 3
+      m.get(StringValue("id")) shouldBe Some(LongValue(1001))
+      m.get(StringValue("name")) shouldBe Some(StringValue("mitsu"))
+      m(StringValue("id")) shouldBe LongValue(1001)
+      m(StringValue("name")) shouldBe StringValue("mitsu")
+
       val json = """{"id":1001,"name":"mitsu","address":["xxx-xxxx","yyy-yyyy"]}"""
       // TODO check the equality as json objects instead of using direct json string comparison
       check(m, ValueType.MAP, json, json)
