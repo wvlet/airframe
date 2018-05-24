@@ -117,6 +117,26 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
   }
 
   "Packer/Unpacker" should {
+    "pack/unpack values" in {
+      import ValueFactory._
+      val list: Seq[Value] = Seq(
+        newNil,
+        newBoolean(true),
+        newInteger(10),
+        newInteger(BigInteger.valueOf(Long.MaxValue)),
+        newFloat(0.1),
+        newString("hello"),
+        newBinary(Array[Byte](0, 1, 2)),
+        newExt(1, Array[Byte](2, 3, 4)),
+        newTimestamp(Instant.now()),
+        newArray(newInteger(20), newBoolean(false)),
+        newMap(newString("a") -> newString("apple"), newString("b") -> newString("banana"))
+      )
+      for (v <- list) {
+        roundtrip(v) { Packer.packValue(_, _) } { Unpacker.unpackValue(_) }
+      }
+    }
+
     "satisfy roundtrip" in {
       When("Nil")
       roundtrip(null) { (cursor, v) =>
@@ -284,28 +304,44 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         val v = Instant.ofEpochSecond(second, nano)
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
       }
+      val headerSizes = Seq(1, 2, 4, 8, 16, 32, 128, 256)
+
       When(s"ArrayHeader")
+      for (size <- headerSizes) {
+        roundtrip(size) { Packer.packArrayHeader(_, _) } { Unpacker.unpackArrayHeader(_) }
+      }
       val sizeGen = Gen.chooseNum[Int](0, Int.MaxValue)
       forAll(sizeGen) { (len: Int) =>
         roundtrip(len) { Packer.packArrayHeader(_, _) } { Unpacker.unpackArrayHeader(_) }
       }
       When(s"MapHeader")
+      for (size <- headerSizes) {
+        roundtrip(size) { Packer.packMapHeader(_, _) } { Unpacker.unpackMapHeader(_) }
+      }
       forAll(sizeGen) { (len: Int) =>
         roundtrip(len) { Packer.packMapHeader(_, _) } { Unpacker.unpackMapHeader(_) }
       }
       When(s"RawStringHeader")
+      for (size <- headerSizes) {
+        roundtrip(size) { Packer.packRawStringHeader(_, _) } { Unpacker.unpackRawStringHeader(_) }
+      }
       forAll(sizeGen) { (len: Int) =>
         roundtrip(len) { Packer.packRawStringHeader(_, _) } { Unpacker.unpackRawStringHeader(_) }
       }
       When(s"BinaryHeader")
+      for (size <- headerSizes) {
+        roundtrip(size) { Packer.packBinaryHeader(_, _) } { Unpacker.unpackBinaryHeader(_) }
+      }
       forAll(sizeGen) { (len: Int) =>
         roundtrip(len) { Packer.packBinaryHeader(_, _) } { Unpacker.unpackBinaryHeader(_) }
       }
       When(s"ExtHeader")
+      // For FIXEXT1, 2, 4, 8, 16, etc.
+      for (i <- headerSizes) {
+        roundtrip(ExtTypeHeader(1, i)) { Packer.packExtTypeHeader(_, _) } { Unpacker.unpackExtTypeHeader(_) }
+      }
       forAll(Gen.posNum[Byte], sizeGen) { (v: Byte, len: Int) =>
-        roundtrip(ExtTypeHeader(v, len)) { (cursor, v) =>
-          Packer.packExtTypeHeader(cursor, v.extType, v.byteLength)
-        } { Unpacker.unpackExtTypeHeader(_) }
+        roundtrip(ExtTypeHeader(v, len)) { Packer.packExtTypeHeader(_, _) } { Unpacker.unpackExtTypeHeader(_) }
       }
     }
   }

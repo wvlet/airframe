@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.msgpack.spi
 
+import java.math.BigInteger
+
 /**
   *
   */

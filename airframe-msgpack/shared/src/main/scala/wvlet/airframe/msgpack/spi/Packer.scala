@@ -23,6 +23,40 @@ import wvlet.airframe.msgpack.spi.Code._
   * Write MessagePack code at a given position on the buffer and return the written byte length
   */
 object Packer {
+  def packValue(cursor: WriteCursor, v: Value): Unit = {
+    v match {
+      case Value.NilValue =>
+        packNil(cursor)
+      case Value.BooleanValue(v) =>
+        packBoolean(cursor, v)
+      case Value.LongValue(v) =>
+        packLong(cursor, v)
+      case Value.BigIntegerValue(v) =>
+        packBigInteger(cursor, v)
+      case Value.DoubleValue(v) =>
+        packDouble(cursor, v)
+      case Value.StringValue(v) =>
+        packString(cursor, v)
+      case Value.BinaryValue(v) =>
+        packBinaryHeader(cursor, v.length)
+        writePayload(cursor, v)
+      case Value.ExtensionValue(extType, v) =>
+        packExtTypeHeader(cursor, extType, v.length)
+        writePayload(cursor, v)
+      case Value.TimestampValue(v) =>
+        packTimestamp(cursor, v)
+      case a @ Value.ArrayValue(elems) =>
+        packArrayHeader(cursor, a.size)
+        elems.foreach(packValue(cursor, _))
+      case m @ Value.MapValue(entries) =>
+        packMapHeader(cursor, m.size)
+        entries.seq.foreach { x =>
+          packValue(cursor, x._1)
+          packValue(cursor, x._2)
+        }
+    }
+  }
+
   def packNil(cursor: WriteCursor) {
     cursor.writeByte(NIL)
   }
@@ -243,6 +277,10 @@ object Packer {
     } else {
       cursor.writeByteAndInt(MAP32, mapSize)
     }
+  }
+
+  def packExtTypeHeader(cursor: WriteCursor, extTypeHeader: ExtTypeHeader): Unit = {
+    packExtTypeHeader(cursor, extTypeHeader.extType, extTypeHeader.byteLength)
   }
 
   def packExtTypeHeader(cursor: WriteCursor, extType: Byte, payloadLen: Int) {

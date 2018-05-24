@@ -17,9 +17,8 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
-import wvlet.airframe.msgpack.spi.Value.{BooleanValue, LongValue, NilValue}
-import wvlet.log.{LogFormatter, LogTimestampFormatter}
-import MessageException._
+import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.log.LogTimestampFormatter
 
 /**
   *
@@ -210,7 +209,8 @@ object Value {
     override def valueType: ValueType = ValueType.MAP
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packMapHeader(entries.size)
-      entries.foreach { x =>
+      // Ensure using non-parallel collection
+      entries.seq.foreach { x =>
         x._1.writeTo(packer)
         x._2.writeTo(packer)
       }
@@ -273,6 +273,7 @@ object ValueFactory {
   def newInteger(b: BigInteger)         = BigIntegerValue(b)
   def newFloat(d: Double)               = DoubleValue(d)
   def newString(s: String)              = StringValue(s)
+  def newTimestamp(i: Instant)          = TimestampValue(i)
   def newArray(elem: Value*)            = ArrayValue(elem.toIndexedSeq)
   def newMap(kv: (Value, Value)*)       = MapValue(Map(kv: _*))
   def newBinary(b: Array[Byte])         = BinaryValue(b)
