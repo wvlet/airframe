@@ -47,6 +47,76 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
   implicit val config = PropertyCheckConfiguration(minSuccessful = PosInt(3), minSize = PosZInt(1), sizeRange = PosZInt(100))
 
+  private def testByte(v: Byte) {
+    val packers = Seq[(WriteCursor, Byte) => Unit](
+      { Packer.packByte(_, _) },
+      { Packer.packShort(_, _) },
+      { Packer.packInt(_, _) },
+      { Packer.packLong(_, _) },
+      { Packer.packINT8(_, _) },
+      { Packer.packINT16(_, _) },
+      { Packer.packINT32(_, _) },
+      { Packer.packINT64(_, _) }
+    )
+
+    val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
+      { Packer.packUINT8(_, _) },
+      { Packer.packUINT16(_, _) },
+      { Packer.packUINT32(_, _) },
+      { Packer.packUINT64(_, _) }
+    )
+
+    val unpackers = Seq[ReadCursor => Byte](
+      { Unpacker.unpackByte(_) },
+      { Unpacker.unpackShort(_).toByte },
+      { Unpacker.unpackInt(_).toByte },
+      { Unpacker.unpackLong(_).toByte },
+      { Unpacker.unpackBigInteger(_).longValue().toByte }
+    )
+
+    for (p <- packers; u <- unpackers) {
+      roundtrip(v)(p)(u)
+    }
+    if (v > 0) {
+      for (p <- posNumPackers; u <- unpackers) {
+        roundtrip(v)(p)(u)
+      }
+    }
+  }
+
+  private def testShort(v: Short): Unit = {
+    val packers = Seq[(WriteCursor, Short) => Unit](
+      { Packer.packShort(_, _) },
+      { Packer.packInt(_, _) },
+      { Packer.packLong(_, _) },
+      { Packer.packINT16(_, _) },
+      { Packer.packINT32(_, _) },
+      { Packer.packINT64(_, _) }
+    )
+
+    val posNumPackers = Seq[(WriteCursor, Short) => Unit](
+      { Packer.packUINT16(_, _) },
+      { Packer.packUINT32(_, _) },
+      { Packer.packUINT64(_, _) }
+    )
+
+    val unpackers = Seq[ReadCursor => Short](
+      { Unpacker.unpackShort(_) },
+      { Unpacker.unpackInt(_).toShort },
+      { Unpacker.unpackLong(_).toShort },
+      { Unpacker.unpackBigInteger(_).longValue().toShort }
+    )
+
+    for (p <- packers; u <- unpackers) {
+      roundtrip(v)(p)(u)
+    }
+    if (v > 0) {
+      for (p <- posNumPackers; u <- unpackers) {
+        roundtrip(v)(p)(u)
+      }
+    }
+  }
+
   "Packer/Unpacker" should {
     "satisfy roundtrip" in {
       When("Nil")
@@ -60,113 +130,23 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         roundtrip(v) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
       }
       When("Fixnum")
-      val fixNum = Gen.chooseNum[Byte](-32, 127)
-      forAll(fixNum) { v: Byte =>
-        val packers = Seq[(WriteCursor, Byte) => Unit](
-          { Packer.packByte(_, _) },
-          { Packer.packShort(_, _) },
-          { Packer.packInt(_, _) },
-          { Packer.packLong(_, _) },
-          { Packer.packINT8(_, _) },
-          { Packer.packINT16(_, _) },
-          { Packer.packINT32(_, _) },
-          { Packer.packINT64(_, _) }
-        )
-
-        val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
-          { Packer.packUINT8(_, _) },
-          { Packer.packUINT16(_, _) },
-          { Packer.packUINT32(_, _) },
-          { Packer.packUINT64(_, _) }
-        )
-
-        val unpackers = Seq[ReadCursor => Byte](
-          { Unpacker.unpackByte(_) },
-          { Unpacker.unpackShort(_).toByte },
-          { Unpacker.unpackInt(_).toByte },
-          { Unpacker.unpackLong(_).toByte },
-          { Unpacker.unpackBigInteger(_).longValue().toByte }
-        )
-
-        for (p <- packers; u <- unpackers) {
-          roundtrip(v)(p)(u)
-        }
-        if (v > 0) {
-          for (p <- posNumPackers; u <- unpackers) {
-            roundtrip(v)(p)(u)
-          }
-        }
+      forAll(Gen.chooseNum[Byte](-32, 127)) { v: Byte =>
+        testByte(v)
       }
+
       When("Byte")
       forAll { (v: Byte) =>
-        val packers = Seq[(WriteCursor, Byte) => Unit](
-          { Packer.packByte(_, _) },
-          { Packer.packShort(_, _) },
-          { Packer.packInt(_, _) },
-          { Packer.packLong(_, _) },
-          { Packer.packINT8(_, _) },
-          { Packer.packINT16(_, _) },
-          { Packer.packINT32(_, _) },
-          { Packer.packINT64(_, _) }
-        )
-
-        val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
-          { Packer.packUINT8(_, _) },
-          { Packer.packUINT16(_, _) },
-          { Packer.packUINT32(_, _) },
-          { Packer.packUINT64(_, _) }
-        )
-
-        val unpackers = Seq[ReadCursor => Byte](
-          { Unpacker.unpackByte(_) },
-          { Unpacker.unpackShort(_).toByte },
-          { Unpacker.unpackInt(_).toByte },
-          { Unpacker.unpackLong(_).toByte },
-          { Unpacker.unpackBigInteger(_).longValue().toByte }
-        )
-
-        for (p <- packers; u <- unpackers) {
-          roundtrip(v)(p)(u)
-        }
-        if (v > 0) {
-          for (p <- posNumPackers; u <- unpackers) {
-            roundtrip(v)(p)(u)
-          }
-        }
+        testByte(v)
       }
+
       When("Short")
-      forAll { (v: Short) =>
-        val packers = Seq[(WriteCursor, Short) => Unit](
-          { Packer.packShort(_, _) },
-          { Packer.packInt(_, _) },
-          { Packer.packLong(_, _) },
-          { Packer.packINT16(_, _) },
-          { Packer.packINT32(_, _) },
-          { Packer.packINT64(_, _) }
-        )
-
-        val posNumPackers = Seq[(WriteCursor, Short) => Unit](
-          { Packer.packUINT16(_, _) },
-          { Packer.packUINT32(_, _) },
-          { Packer.packUINT64(_, _) }
-        )
-
-        val unpackers = Seq[ReadCursor => Short](
-          { Unpacker.unpackShort(_) },
-          { Unpacker.unpackInt(_).toShort },
-          { Unpacker.unpackLong(_).toShort },
-          { Unpacker.unpackBigInteger(_).longValue().toShort }
-        )
-
-        for (p <- packers; u <- unpackers) {
-          roundtrip(v)(p)(u)
-        }
-        if (v > 0) {
-          for (p <- posNumPackers; u <- unpackers) {
-            roundtrip(v)(p)(u)
-          }
-        }
+      forAll { v: Short =>
+        testShort(v)
       }
+      forAll(Gen.chooseNum[Short]((Byte.MaxValue.toShort + 1).toShort, (1 << 8).toShort)) { v: Short =>
+        testShort(v)
+      }
+
       When("Int")
       forAll { (v: Int) =>
         val packers = Seq[(WriteCursor, Int) => Unit](
