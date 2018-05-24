@@ -98,7 +98,7 @@ class MessageFormatTest extends AirframeSpec with Timer {
     }
 
     "improve the valueOf performance" in {
-      val N   = 1000
+      val N   = 10000
       val idx = (0 until N).map(x => Random.nextInt(256).toByte).toArray[Byte]
 
       // Initialize
