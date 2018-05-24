@@ -17,9 +17,8 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
-import org.scalacheck.Gen
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalactic.anyvals.{PosInt, PosZInt}
+import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
@@ -125,6 +124,12 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       } { cursor =>
         Unpacker.unpackNil(_); null
       }
+      roundtrip(null) { (cursor, v) =>
+        Packer.packNil(cursor)
+      } { cursor =>
+        Unpacker.tryUnpackNil(_); null
+      }
+
       When("Boolean")
       roundtrip(true) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
       roundtrip(false) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }

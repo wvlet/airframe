@@ -17,25 +17,35 @@ import java.math.BigInteger
 
 import org.scalatest.prop.PropertyChecks
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi.Value._
 
 /**
   *
   */
 class ValueTest extends AirframeSpec with PropertyChecks {
-  def checkSuccinctType(pack: WriteCursor => Unit, expectedAtMost: MessageFormat) {
 
-//    val b  = createMessagePackData(pack)
-//    val v1 = MessagePack.newDefaultUnpacker(b).unpackValue()
-//    val mf = v1.asIntegerValue().mostSuccinctMessageFormat()
-//    mf.getValueType shouldBe ValueType.INTEGER
-//    mf.ordinal() shouldBe <=(expectedAtMost.ordinal())
-//
-//    val v2 = new Variable
-//    MessagePack.newDefaultUnpacker(b).unpackValue(v2)
-//    val mf2 = v2.asIntegerValue().mostSuccinctMessageFormat()
-//    mf2.getValueType shouldBe ValueType.INTEGER
-//    mf2.ordinal() shouldBe <=(expectedAtMost.ordinal())
+  private def rankOf(mf: MessageFormat): Int = {
+    val order = Seq(MessageFormat.INT8, MessageFormat.INT16, MessageFormat.INT32, MessageFormat.INT64, MessageFormat.UINT64)
+    order.zipWithIndex
+      .find(x => x._1 == mf)
+      .map(x => x._2)
+      .getOrElse(10000)
+  }
+
+  def checkSuccinctType(pack: WriteCursor => Unit, expectedAtMost: MessageFormat) {
+    try {
+      val buf         = ByteArrayBuffer.newBuffer(1024)
+      val writeCursor = WriteCursor(buf, 0)
+      pack(writeCursor)
+      val v = Unpacker.unpackValue(ReadCursor(buf, 0))
+      v.valueType shouldBe ValueType.INTEGER
+      val i  = v.asInstanceOf[IntegerValue]
+      val mf = i.mostSuccinctMessageFormat
+      rankOf(mf) shouldBe <=(rankOf(expectedAtMost))
+    } catch {
+      case e: Exception => warn(e)
+    }
   }
 
   "Value" should {

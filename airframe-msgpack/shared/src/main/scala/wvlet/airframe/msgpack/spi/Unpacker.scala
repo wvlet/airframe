@@ -28,10 +28,11 @@ import MessageException._
   */
 object Unpacker {
   def unpackValue(cursor: ReadCursor): Value = {
-    val b  = cursor.readByte
+    val b  = cursor.peekByte
     val mf = MessageFormat.of(b)
     mf.valueType match {
       case ValueType.NIL =>
+        cursor.skipBytes(1)
         NilValue
       case ValueType.BOOLEAN =>
         Value.BooleanValue(unpackBoolean(cursor))

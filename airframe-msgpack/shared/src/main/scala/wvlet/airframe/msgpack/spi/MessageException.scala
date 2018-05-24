@@ -52,6 +52,7 @@ object MessageException {
   def overflowI16(i16: Short) = new IntegerOverflowException(BigInteger.valueOf(i16.toLong))
   def overflowI32(i32: Int)   = new IntegerOverflowException(BigInteger.valueOf(i32.toLong))
   def overflowI64(i64: Long)  = new IntegerOverflowException(BigInteger.valueOf(i64))
+  def overflow(b: BigInteger) = new IntegerOverflowException(b)
 
   def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
 }

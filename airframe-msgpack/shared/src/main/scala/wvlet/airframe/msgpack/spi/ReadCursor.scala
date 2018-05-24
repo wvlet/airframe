@@ -27,6 +27,14 @@ case class ReadCursor(var buf: ReadBuffer, var position: Int) {
     offset = 0
   }
 
+  def skipBytes(n: Int): Unit = {
+    offset += n
+  }
+
+  def peekByte: Byte = {
+    buf.readByte(position + offset)
+  }
+
   def readByte: Byte = {
     val v = buf.readByte(position + offset)
     offset += 1

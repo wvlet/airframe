@@ -53,21 +53,62 @@ object Value {
     }
   }
 
-  case class LongValue(v: Long) extends Value {
-    override def toJson    = v.toString
+  trait IntegerValue extends Value {
     override def valueType = ValueType.INTEGER
+    def isValidByte: Boolean
+    def isValidShort: Boolean
+    def isValidInt: Boolean
+    def isValidLong: Boolean
+    def mostSuccinctMessageFormat: MessageFormat = {
+      if (isValidByte) MessageFormat.INT8
+      else if (isValidShort) MessageFormat.INT16
+      else if (isValidInt) MessageFormat.INT32
+      else if (isValidLong) MessageFormat.INT64
+      else MessageFormat.UINT64
+    }
+  }
+
+  case class LongValue(v: Long) extends IntegerValue {
+    override def toJson = v.toString
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packLong(v)
     }
 
-    def asByte: Byte   = if (v.isValidByte) v.toByte else throw overflowU64(v)
-    def asShort: Short = if (v.isValidShort) v.toShort else throw overflowU64(v)
-    def asInt: Int     = if (v.isValidInt) v.toInt else throw overflowU64(v)
+    def isValidByte: Boolean  = v.isValidByte
+    def isValidShort: Boolean = v.isValidShort
+    def isValidInt: Boolean   = v.isValidInt
+    def isValidLong: Boolean  = v.isValidLong
+
+    def asByte: Byte             = if (isValidByte) v.toByte else throw overflowU64(v)
+    def asShort: Short           = if (isValidShort) v.toShort else throw overflowU64(v)
+    def asInt: Int               = if (isValidInt) v.toInt else throw overflowU64(v)
+    def asLong: Long             = v
+    def asBigInteger: BigInteger = BigInteger.valueOf(v)
   }
 
-  case class BigIntegerValue(val v: BigInteger) extends Value {
-    override def toJson    = v.toString
-    override def valueType = ValueType.INTEGER
+  private val BYTE_MIN  = BigInteger.valueOf(Byte.MinValue.toLong)
+  private val BYTE_MAX  = BigInteger.valueOf(Byte.MaxValue.toLong)
+  private val SHORT_MIN = BigInteger.valueOf(Short.MinValue.toLong)
+  private val SHORT_MAX = BigInteger.valueOf(Short.MaxValue.toLong)
+  private val INT_MIN   = BigInteger.valueOf(Int.MinValue.toLong)
+  private val INT_MAX   = BigInteger.valueOf(Int.MaxValue.toLong)
+  private val LONG_MIN  = BigInteger.valueOf(Long.MinValue.toLong)
+  private val LONG_MAX  = BigInteger.valueOf(Long.MaxValue.toLong)
+
+  case class BigIntegerValue(val v: BigInteger) extends IntegerValue {
+    override def toJson                                           = v.toString
+    private def within(min: BigInteger, max: BigInteger): Boolean = v.compareTo(min) >= 0 && v.compareTo(max) <= 0
+
+    def isValidByte: Boolean  = within(BYTE_MIN, BYTE_MAX)
+    def isValidShort: Boolean = within(SHORT_MIN, SHORT_MAX)
+    def isValidInt: Boolean   = within(INT_MIN, INT_MAX)
+    def isValidLong: Boolean  = within(LONG_MIN, LONG_MAX)
+
+    def asByte: Byte             = if (isValidByte) v.byteValue() else throw overflow(v)
+    def asShort: Short           = if (isValidShort) v.shortValue() else throw overflow(v)
+    def asInt: Int               = if (isValidInt) v.intValue() else throw overflow(v)
+    def asLong: Long             = if (isValidLong) v.longValue() else throw overflow(v)
+    def asBigInteger: BigInteger = v
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packBigInteger(v)
     }
@@ -220,6 +261,7 @@ object Value {
     sb.append(HEX_TABLE((ch >> 4) & 0x0f))
     sb.append(HEX_TABLE(ch & 0x0f))
   }
+
 }
 
 object ValueFactory {
