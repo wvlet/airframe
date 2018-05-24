@@ -20,6 +20,7 @@ object Compat {
   def isScalaJS = true
 
   // Javascript has no NaN in float/double values
+  // See https://github.com/scala-js/scala-js/issues/2327
   def floatToIntBits(v: Float): Int     = java.lang.Float.floatToIntBits(v)
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToLongBits(v)
 }
