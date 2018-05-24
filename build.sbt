@@ -12,7 +12,7 @@ val targetScalaVersions = Seq(
 )
 
 val SCALATEST_VERSION               = "3.0.5-M1"
-val SCALACHECK_VERSION              = "1.13.5"
+val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.0"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 
@@ -124,13 +124,15 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   metricsJVM,
   codec,
   tablet,
-  jdbc
+  jdbc,
+  msgpackJVM
 )
 lazy val jsProjects: Seq[ProjectReference] = List(
   airframeJS,
   surfaceJS,
   logJS,
   metricsJS,
+  msgpackJS,
   airframeSpecJS
 )
 
@@ -362,6 +364,26 @@ lazy val airframeSpec =
 lazy val airframeSpecJVM = airframeSpec.jvm
 lazy val airframeSpecJS  = airframeSpec.js
 
+lazy val msgpack =
+  crossProject(JVMPlatform, JSPlatform)
+    .in(file("airframe-msgpack"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-msgpack",
+      description := "Pure-Scala MessagePack library",
+      libraryDependencies ++= parallelCollection(scalaVersion.value) ++ Seq(
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
+      )
+    )
+    .jsSettings(
+      jsBuildSettings,
+      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.3"
+    )
+    .dependsOn(log, airframeSpec % "test")
+
+lazy val msgpackJVM = msgpack.jvm
+lazy val msgpackJS  = msgpack.js
+
 lazy val codec =
   project
     .in(file("airframe-codec"))
@@ -374,7 +396,7 @@ lazy val codec =
         "org.scalacheck" %% "scalacheck"  % SCALACHECK_VERSION % "test"
       )
     )
-    .dependsOn(logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(logJVM, surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
 
 lazy val tablet =
   project
@@ -391,6 +413,7 @@ lazy val tablet =
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",
+        "org.msgpack"            % "msgpack-core"              % "0.8.14",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
