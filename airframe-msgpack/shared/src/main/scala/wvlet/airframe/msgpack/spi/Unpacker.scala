@@ -300,8 +300,11 @@ object Unpacker {
         }
       case Code.UINT64 =>
         val u64 = cursor.readLong
-        if (u64 < 0) throw overflowU64(u64)
-        BigInteger.valueOf(u64.toLong)
+        if (u64 < 0) {
+          BigInteger.valueOf(u64 + Long.MaxValue + 1L).setBit(63)
+        } else {
+          BigInteger.valueOf(u64.toLong)
+        }
       case Code.INT8 =>
         val i8 = cursor.readByte
         BigInteger.valueOf(i8.toLong)
