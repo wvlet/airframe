@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.47
+ - airframe-msgpack: Add a pure Scala [MessagePack](https://msgpack.org) implementation
+
 ## 0.46
  - Add airframe-bootstrap to define application modules that can be configured with airframe-config and DI
  - Upgrade to Scala 2.12.6
