@@ -248,7 +248,6 @@ object Unpacker {
         (u8 & 0xff).toLong
       case Code.UINT16 =>
         val u16 = cursor.readShort
-        if (u16 < 0) throw overflowU16(u16)
         (u16 & 0xffff).toLong
       case Code.UINT32 =>
         val u32 = cursor.readInt

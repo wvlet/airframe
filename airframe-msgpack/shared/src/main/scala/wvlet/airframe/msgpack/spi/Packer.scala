@@ -174,7 +174,7 @@ object Packer {
     } else if (bi.bitLength == 64 && bi.signum == 1) {
       packUINT64(cursor, bi.longValue)
     } else {
-      throw new IllegalArgumentException("MessagePack cannot serialize BigInteger larger than 2^64-1")
+      throw new IllegalArgumentException(s"MessagePack cannot serialize BigInteger larger than 2^64-1: ${bi}")
     }
   }
 
