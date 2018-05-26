@@ -36,21 +36,28 @@ class StandardCodecTest extends CodecSpec {
     }
 
     "support Java Instant" in {
+      val now     = Instant.now()
+      val timeStr = "2018-05-26T21:10:29.858818Z"
+      val i       = Instant.parse(timeStr)
+      roundtrip(i)
+
       roundtrip(Instant.ofEpochMilli(0))
       roundtrip(Instant.ofEpochMilli(14000000))
-      roundtrip(Instant.now())
+      roundtrip(now)
 
       val codec = MessageCodec.of[Seq[Instant]]
       val p     = MessagePack.newDefaultBufferPacker()
-      val now   = Instant.now()
-      p.packArrayHeader(3)
-      p.packLong(now.toEpochMilli)
-      p.packString(now.toEpochMilli.toString)
+
+      val epochSecond = Instant.ofEpochMilli(now.getEpochSecond)
+      p.packArrayHeader(4)
+      p.packLong(epochSecond.toEpochMilli) // Timestamp as millisec LONG
+      p.packString(epochSecond.toString)   // Timestamp as millisec string
+      p.packString(timeStr)                // Timestamp in string format
       p.packString("invalidstr")
 
       val v = codec.unpackBytes(p.toByteArray)
       v shouldBe defined
-      v.get shouldBe Seq[Instant](now, now, null)
+      v.get shouldBe Seq[Instant](epochSecond, epochSecond, i, null)
     }
 
     "support ZonedDateTime" in {
