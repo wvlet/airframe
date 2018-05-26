@@ -20,6 +20,8 @@ import java.util.Date
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
+import wvlet.airframe.msgpack.io.ByteArrayBuffer
+import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.Surface
@@ -55,10 +57,13 @@ object StandardCodec {
 
   object JavaInstantTimeCodec extends MessageCodec[Instant] {
     override def pack(p: MessagePacker, v: Instant): Unit = {
-      //val isoInstantFormat = DateTimeFormatter.ISO_INSTANT.format(v)
-      //p.packString(isoInstantFormat)
-      // Save JavaInstant as epoch millis
-      p.packLong(v.toEpochMilli)
+      // TODO airframe-msgpack in Codec interface
+      // Use msgpack Timestamp type
+      val buf    = ByteArrayBuffer.newBuffer(15)
+      val cursor = WriteCursor(buf, 0)
+      Packer.packTimestamp(cursor, v)
+      val extData = buf.readBytes(0, cursor.lastWrittenBytes)
+      p.writePayload(extData, 0, cursor.lastWrittenBytes)
     }
 
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
@@ -72,6 +77,15 @@ object StandardCodec {
           case ValueType.INTEGER =>
             val epochMillis = u.unpackLong()
             Instant.ofEpochMilli(epochMillis)
+          case ValueType.EXTENSION =>
+            // TODO usg airframe-msgpack directly
+            val extHeader = u.unpackExtensionTypeHeader()
+            val buf       = ByteArrayBuffer.newBuffer(15)
+            val cursor    = WriteCursor(buf, 0)
+            Packer.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
+            val data = u.readPayload(extHeader.getLength)
+            cursor.writeBytes(data)
+            Unpacker.unpackTimestamp(ReadCursor(buf, 0))
           case other =>
             v.setIncompatibleFormatException(this, s"Cannot create Instant from ${other} type")
         }
