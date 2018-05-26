@@ -112,30 +112,30 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
     getInstance(t, List.empty)
   }
 
-  private def getInstance(t: Surface, stack: List[Surface], defaultValue: Option[Any] = None): AnyRef = {
-    trace(s"Search bindings of ${t}")
-    if (stack.contains(t)) {
-      error(s"Found cyclic dependencies: ${stack}")
-      throw new CYCLIC_DEPENDENCY(stack.toSet)
+  private def getInstance(t: Surface, seen: List[Surface], defaultValue: Option[Any] = None): AnyRef = {
+    trace(s"Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
+    if (seen.contains(t)) {
+      error(s"Found cyclic dependencies: ${seen}")
+      throw new CYCLIC_DEPENDENCY(seen.toSet)
     }
     val obj = bindingTable.get(t).map {
       case ClassBinding(from, to) =>
         trace(s"Found a class binding from ${from} to ${to}")
-        getInstance(to, t :: stack)
+        getInstance(to, t :: seen)
       case sb @ SingletonBinding(from, to, eager) =>
         trace(s"Found a singleton for ${from}: ${to}")
         singletonHolder.getOrElseUpdate(from, {
           if (from == to) {
-            buildInstance(to, t :: stack)
+            buildInstance(to, t :: seen)
           } else {
-            getInstance(to, t :: stack)
+            getInstance(to, t :: seen)
           }
         })
       case p @ ProviderBinding(factory, provideSingleton, eager) =>
         trace(s"Found a provider for ${p.from}: ${p}")
         def buildWithProvider: AnyRef = {
           val dependencies = for (d <- factory.dependencyTypes) yield {
-            getOrElseUpdate(d, getInstance(d, t :: stack))
+            getOrElseUpdate(d, getInstance(d, t :: seen))
           }
           registerInjectee(p.from, factory.create(dependencies))
         }
@@ -148,22 +148,22 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
 
     val result = obj.orElse(defaultValue).getOrElse {
       trace(s"No binding is found for ${t}")
-      buildInstance(t, t :: stack)
+      buildInstance(t, t :: seen)
     }
     result.asInstanceOf[AnyRef]
   }
 
-  private def buildInstance(surface: Surface, stack: List[Surface]): AnyRef = {
-    trace(s"buildInstance ${surface}, stack:${stack}")
+  private def buildInstance(surface: Surface, seen: List[Surface]): AnyRef = {
+    trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
       // Cannot build Primitive types
-      throw MISSING_DEPENDENCY(stack)
+      throw MISSING_DEPENDENCY(seen)
     } else {
       surface.objectFactory match {
         case Some(factory) =>
           trace(s"Using the default constructor for injecting ${surface}")
           val args = for (p <- surface.params) yield {
-            getInstance(p.surface, stack, p.getDefaultValue)
+            getInstance(p.surface, seen, p.getDefaultValue)
           }
           val obj = factory.newInstance(args)
           registerInjectee(surface, obj)
@@ -180,7 +180,10 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
               factory.asInstanceOf[Session => Any](this)
             case None =>
               //buildWithReflection(t)
-              throw MISSING_DEPENDENCY(List(surface))
+              warn(
+                s"No binding nor the default constructor for ${surface} is found. " +
+                  s"Add bind[${surface}].toXXX to your design. dependencies:[${seen.mkString(" <- ")}]")
+              throw MISSING_DEPENDENCY(seen)
           }
           registerInjectee(surface, obj)
       }
