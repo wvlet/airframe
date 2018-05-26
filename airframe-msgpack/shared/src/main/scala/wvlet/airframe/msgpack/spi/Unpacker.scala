@@ -523,7 +523,7 @@ object Unpacker {
     instant
   }
 
-  private def unpackTimestampInternal(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
+  private[airframe] def unpackTimestampInternal(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
     if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
       cursor.resetCursor
       throw unexpected(ValueType.EXTENSION, extTypeHeader.extType)

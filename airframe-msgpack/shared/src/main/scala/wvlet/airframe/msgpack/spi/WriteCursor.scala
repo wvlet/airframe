@@ -21,6 +21,8 @@ import java.math.BigInteger
 case class WriteCursor(var buf: WriteBuffer, var position: Int) {
   private var offset: Int = 0
 
+  def lastWrittenBytes: Int = offset
+
   def ensureCapacity(size: Int): Unit = {
     buf.ensureCapacity(position + offset, size)
   }

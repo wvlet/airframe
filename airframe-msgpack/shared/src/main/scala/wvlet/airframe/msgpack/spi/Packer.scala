@@ -200,7 +200,7 @@ object Packer {
   private val NANOS_PER_SECOND = 1000000000L
   def packTimestampEpochSecond(cursor: WriteCursor, epochSecond: Long, nanoAdjustment: Int) {
     val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, NANOS_PER_SECOND))
-    val nsec = Math.floorMod(nanoAdjustment, NANOS_PER_SECOND).toInt
+    val nsec = Math.floorMod(nanoAdjustment, NANOS_PER_SECOND)
 
     if ((sec >>> 34) == 0L) { // sec can be serialized in 34 bits.
       val data64 = (nsec << 34) | sec
@@ -212,7 +212,7 @@ object Packer {
         packTimestamp64(cursor, data64)
       }
     } else { // use timestamp 96 format
-      packTimestamp96(cursor, sec, nsec)
+      packTimestamp96(cursor, sec, nsec.toInt)
     }
   }
 
