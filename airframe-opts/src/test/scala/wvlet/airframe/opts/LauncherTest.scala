@@ -188,6 +188,22 @@ class LauncherTest extends AirframeSpec {
       help should (include("message"))
     }
 
+    "display invalid command error" in {
+      val msg = capture {
+        Launcher.execute[MyCommandModule]("unknown-command")
+      }
+      trace(msg)
+    }
+
+    "unwrap InvocationTargetException" in {
+      val msg = capture {
+        intercept[IllegalArgumentException] {
+          Launcher.execute[MyCommandModule]("errorTest")
+        }
+      }
+      trace(msg)
+    }
+
     "handle private parameters in constructors" in {
       capture {
         val l = Launcher.execute[CommandWithPrivateField]("-h")
@@ -271,6 +287,11 @@ object LauncherTest {
     def modules = Seq(ModuleDef[SimpleCommandSet]("box", description = "command set"))
 
     trace(s"global option: $g")
+
+    @command(description = "exception test")
+    def errorTest = {
+      throw new IllegalArgumentException(s"error test")
+    }
   }
 
   class CommandWithPrivateField(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean, var started: Boolean = false) {
