@@ -21,12 +21,13 @@
 
 package wvlet.airframe.opts
 
+import java.lang.reflect.InvocationTargetException
+
 import wvlet.log.LogSupport
 import wvlet.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
 import wvlet.surface.{MethodSurface, Surface, Zero}
 
 import scala.reflect.runtime.{universe => ru}
-import scala.reflect.ClassTag
 
 /**
   * Command launcher
@@ -135,7 +136,11 @@ class Launcher(surface: Surface) extends LogSupport {
     val mainObj: A         = r.buildObjectWithFilter(surface, _ != commandNameParam).asInstanceOf[A]
     val cn: Option[String] = (for ((path, value) <- r.parseTree.dfs if path.fullPath == commandNameParam) yield value).toSeq.headOption
     val helpIsOn           = r.showHelp || showHelp
-    val result             = for (commandName <- cn; c <- findCommand(commandName, mainObj)) yield c.execute(mainObj, r.unusedArgument, helpIsOn)
+    val result = try {
+      for (commandName <- cn; c <- findCommand(commandName, mainObj)) yield c.execute(mainObj, r.unusedArgument, helpIsOn)
+    } catch {
+      case e: InvocationTargetException => throw e.getTargetException
+    }
 
     if (result.isEmpty) {
       if (helpIsOn) {
