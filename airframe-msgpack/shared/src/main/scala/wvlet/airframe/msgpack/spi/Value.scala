@@ -16,6 +16,7 @@ package wvlet.airframe.msgpack.spi
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.util
 
 import wvlet.airframe.msgpack.spi.MessageException._
 import wvlet.log.LogTimestampFormatter
@@ -156,6 +157,16 @@ object Value {
       }
       decodedStringCache
     }
+    override def equals(obj: scala.Any): Boolean = {
+      obj match {
+        case other: BinaryValue =>
+          v.sameElements(other.v)
+        case _ => false
+      }
+    }
+    override def hashCode(): Int = {
+      util.Arrays.hashCode(v)
+    }
   }
 
   case class ExtensionValue(extType: Byte, v: Array[Byte]) extends Value {
@@ -171,6 +182,18 @@ object Value {
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packExtensionTypeHeader(extType, v.length)
       packer.writePayload(v)
+    }
+
+    override def equals(obj: scala.Any): Boolean = {
+      obj match {
+        case other: ExtensionValue =>
+          extType == other.extType && v.sameElements(other.v)
+        case _ => false
+      }
+    }
+    override def hashCode(): Int = {
+      val h = extType * 31 + util.Arrays.hashCode(v)
+      h
     }
   }
 
