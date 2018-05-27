@@ -380,11 +380,13 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
       }
 
+      // Corner cases for u
+      // sing uint32 nanoseq (out of int32 range)
       for (v <- Seq(
              Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
-             Instant.parse("1928-09-19T21:14:16Z"),
-             Instant.parse("1946-04-27T00:04:31Z"),
-             Instant.parse("2104-11-29T07:37:07Z")
+             Instant.ofEpochSecond(-1302749144L, 0), // 1928-09-19T21:14:16Z
+             Instant.ofEpochSecond(-747359729L, 0), // 1946-04-27T00:04:31Z
+             Instant.ofEpochSecond(4257387427L, 0) // 2104-11-29T07:37:07Z
            )) {
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
       }
