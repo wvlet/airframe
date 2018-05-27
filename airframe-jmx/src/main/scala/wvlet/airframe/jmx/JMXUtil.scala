@@ -17,7 +17,6 @@ import java.lang.management.ManagementFactory
 import java.rmi.server.RemoteObject
 import java.util.Properties
 
-import com.sun.tools.attach.VirtualMachine
 import javax.management.remote.JMXConnectorServer
 import sun.rmi.server.UnicastRef
 import wvlet.log.LogSupport
@@ -62,22 +61,23 @@ object JMXUtil extends LogSupport {
     p.setProperty("com.sun.management.jmxremote.ssl", "false")
 
     if (isAtLeastJava9) {
-      // Java9
-      import scala.collection.JavaConverters._
-      Try {
-        val processId = getProcessId.toString
-        VirtualMachine.list().asScala.find(x => x.id == processId).map { vmDesc =>
-          // This will not work because JVM doesn't allow attaching to self using the same VM.
-          // We need to create a new JVM process to run this code
-          val virtualMachine = vmDesc.provider().attachVirtualMachine(processId)
-          try {
-            virtualMachine.startLocalManagementAgent()
-            virtualMachine.startManagementAgent(p)
-          } finally {
-            virtualMachine.detach()
-          }
-        }
-      }
+      // TODO Java9 support
+//      import scala.collection.JavaConverters._
+//      Try {
+//        val processId = getProcessId.toString
+//        import com.sun.tools.attach.VirtualMachine
+//        VirtualMachine.list().asScala.find(x => x.id == processId).map { vmDesc =>
+//          // This will not work because JVM doesn't allow attaching to self using the same VM.
+//          // We need to create a new JVM process to run this code
+//          val virtualMachine = vmDesc.provider().attachVirtualMachine(processId)
+//          try {
+//            virtualMachine.startLocalManagementAgent()
+//            virtualMachine.startManagementAgent(p)
+//          } finally {
+//            virtualMachine.detach()
+//          }
+//        }
+//      }
     } else {
       // Java8
       System.setProperties(p)
