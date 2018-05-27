@@ -33,6 +33,7 @@ object JMXUtil extends LogSupport {
     def invokeStaticMethod(methodName: String): Unit = {
       Try(Class.forName(className).getDeclaredMethod(methodName))
         .map(m => m.invoke(null))
+        .recoverWith { case e: Throwable => throw e }
     }
 
     def getStaticField[R](name: String): Option[R] = {
@@ -50,7 +51,7 @@ object JMXUtil extends LogSupport {
 
   def isAtLeastJava9 = scala.util.Properties.isJavaAtLeast("9")
 
-  private def startAgent(config: JMXConfig): Unit = {
+  private def startAgent(config: JMXConfig): HostAndPort = {
     val registryPort = config.registryPort.getOrElse(IOUtil.unusedPort)
     val rmiPort      = config.rmiPort.getOrElse(IOUtil.unusedPort)
     val p            = new Properties
@@ -60,9 +61,9 @@ object JMXUtil extends LogSupport {
     p.setProperty("com.sun.management.jmxremote.authenticate", "false")
     p.setProperty("com.sun.management.jmxremote.ssl", "false")
 
+    import scala.collection.JavaConverters._
     if (isAtLeastJava9) {
       // TODO Java9 support
-//      import scala.collection.JavaConverters._
 //      Try {
 //        val processId = getProcessId.toString
 //        import com.sun.tools.attach.VirtualMachine
@@ -80,16 +81,19 @@ object JMXUtil extends LogSupport {
 //      }
     } else {
       // Java8
-      System.setProperties(p)
-      "sun.managemetn.Agent".invokeStaticMethod("startAgent")
+      for ((k, v) <- p.asScala) {
+        System.setProperty(k, v)
+      }
+      "sun.management.Agent".invokeStaticMethod("startAgent")
     }
+    HostAndPort("localhost", registryPort)
   }
 
   private[jmx] def startAndGetAgentURL(config: JMXConfig): String = {
     Try(startAgent(config)) match {
       case Success(x) =>
-        info(s"Started JMX agent at localhost:${config.registryPort.getOrElse(7199)}")
-        s"service:jmx:rmi:///jndi/rmi://localhost:${config.registryPort.getOrElse(7199)}/jmxrmi"
+        info(s"Started JMX agent at localhost:${x.port}")
+        s"service:jmx:rmi:///jndi/rmi://localhost:${x.port}/jmxrmi"
       case Failure(e) =>
         warn(e)
         throw e
