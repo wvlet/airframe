@@ -14,74 +14,21 @@
 package wvlet.airframe.jmx
 
 import java.lang.management.ManagementFactory
-import java.net.ServerSocket
-import java.rmi.server.RemoteObject
-import javax.management.remote.{JMXConnector, JMXConnectorFactory, JMXConnectorServer, JMXServiceURL}
+
+import javax.management.remote.{JMXConnector, JMXConnectorFactory, JMXServiceURL}
 import javax.management.{MBeanInfo, ObjectName}
-
-import sun.management.Agent
-import sun.management.jmxremote.ConnectorBootstrap
-import sun.rmi.server.UnicastRef
 import wvlet.log.LogSupport
-
-import scala.reflect.ClassTag
-import scala.util.{Failure, Success, Try}
+import wvlet.log.io.IOUtil.withResource
 
 case class HostAndPort(host: String, port: Int)
 
-case class JMXConfig(registryPort: Option[Int] = None, rmiPort: Option[Int] = None)
+case class JMXConfig(registryPort: Option[Int] = Some(7199), rmiPort: Option[Int] = None)
 
 /**
   *
   */
 object JMXAgent extends LogSupport {
-
-  def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
-    try {
-      body(resource)
-    } finally {
-      resource.close
-    }
-  }
-
-  def unusedPort: Int = {
-    withResource(new ServerSocket(0)) { socket =>
-      socket.getLocalPort
-    }
-  }
-
-  implicit class WithReflection[A <: AnyRef](cl: Class[A]) {
-    def getStaticField[R](name: String)(implicit ev: ClassTag[R]): Option[R] = {
-      cl.getDeclaredFields.find(_.getName == name).flatMap { field =>
-        val isAccessible = field.isAccessible
-        try {
-          field.setAccessible(true)
-          Option(field.get(null).asInstanceOf[R])
-        } finally {
-          field.setAccessible(isAccessible)
-        }
-      }
-    }
-  }
-
-  private def currentJMXRegistry: Option[HostAndPort] = {
-
-    // In Java 9, sun.management.xxx is unavailable
-
-    // For Java 8
-    val jmxServer = classOf[Agent].getStaticField[JMXConnectorServer]("jmxServer")
-    val registry  = classOf[ConnectorBootstrap].getStaticField[RemoteObject]("registry")
-
-    (jmxServer, registry) match {
-      case (Some(jmx), Some(reg)) =>
-        Some(HostAndPort(jmx.getAddress.getHost, reg.getRef.asInstanceOf[UnicastRef].getLiveRef.getPort))
-      case other =>
-        None
-    }
-  }
-
   def start(registryPort: Int) = new JMXAgent(JMXConfig(registryPort = Some(registryPort)))
-
 }
 
 trait JMXMBeanServerService {
@@ -90,10 +37,8 @@ trait JMXMBeanServerService {
 
 class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService with LogSupport {
 
-  import JMXAgent._
-
   val serviceUrl: JMXServiceURL = {
-    val url = currentJMXRegistry match {
+    val url = JMXUtil.currentJMXRegistry match {
       case Some(jmxReg) =>
         info(s"JMX registry is already running at ${jmxReg}")
         if (config.registryPort.isDefined) {
@@ -104,22 +49,7 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
         }
         s"service:jmx:rmi:///jndi/rmi://${jmxReg.host}:${jmxReg.port}/jmxrmi"
       case None =>
-        val registryPort = config.registryPort.getOrElse(unusedPort)
-        val rmiPort      = config.rmiPort.getOrElse(unusedPort)
-        System.setProperty("com.sun.management.jmxremote", "true")
-        System.setProperty("com.sun.management.jmxremote.port", registryPort.toString)
-        System.setProperty("com.sun.management.jmxremote.rmi.port", rmiPort.toString)
-        System.setProperty("com.sun.management.jmxremote.authenticate", "false")
-        System.setProperty("com.sun.management.jmxremote.ssl", "false")
-
-        Try(Agent.startAgent()) match {
-          case Success(x) =>
-            info(s"Started JMX agent at localhost:${registryPort}")
-            s"service:jmx:rmi:///jndi/rmi://localhost:${registryPort}/jmxrmi"
-          case Failure(e) =>
-            warn(e)
-            throw e
-        }
+        JMXUtil.startAndGetAgentURL(config)
     }
     new JMXServiceURL(url)
   }
