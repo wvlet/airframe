@@ -530,7 +530,7 @@ object Unpacker {
     }
     val instant = extTypeHeader.byteLength match {
       case 4 =>
-        val u32 = cursor.readInt
+        val u32 = cursor.readInt & 0xFFFFFFFFL
         Instant.ofEpochSecond(u32)
       case 8 =>
         val d64  = cursor.readLong
@@ -538,9 +538,9 @@ object Unpacker {
         val nsec = (d64 >>> 34).toInt
         Instant.ofEpochSecond(sec, nsec)
       case 12 =>
-        val nsec = cursor.readInt
-        val sec  = cursor.readLong
-        Instant.ofEpochSecond(sec, nsec)
+        val nsecU32 = cursor.readInt & 0xFFFFFFFFL
+        val sec     = cursor.readLong
+        Instant.ofEpochSecond(sec, nsecU32)
       case other =>
         cursor.resetCursor
         throw new MessageException(INVALID_EXT_FORMAT, s"Timestamp type expects 4, 8, or 12 bytes of payload but got ${other} bytes")
