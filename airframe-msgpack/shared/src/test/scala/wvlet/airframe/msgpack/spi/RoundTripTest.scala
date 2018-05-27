@@ -40,7 +40,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
   def roundtrip[A](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => A) {
     try {
       val v2 = rawRoundtrip(v)(pack)(unpack)
-      v shouldBe v2
+      v2 shouldBe v
     } catch {
       case e: Exception =>
         warn(s"Failed roundtrip test for ${v}")
@@ -380,8 +380,13 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
       }
 
-      val v = Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L)
-      roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+      for (v <- Seq(
+             Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
+             Instant.parse("1928-09-19T21:14:16Z"),
+             Instant.parse("1946-04-27T00:04:31Z")
+           )) {
+        roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+      }
     }
 
     val headerSizes = Seq(1, 2, 4, 8, 16, 32, 128, 256, 1024, 1 << 16, 1 << 20)
