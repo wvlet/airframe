@@ -49,7 +49,14 @@ object JMXUtil extends LogSupport {
     }
   }
 
-  def isAtLeastJava9 = scala.util.Properties.isJavaAtLeast("9")
+  def isAtLeastJava9 = {
+    if (scala.util.Properties.versionNumberString.startsWith("2.11.")) {
+      // Scala 2.11 doesn't support Java9
+      false
+    } else {
+      scala.util.Properties.isJavaAtLeast("9")
+    }
+  }
 
   private def startAgent(config: JMXConfig): HostAndPort = {
     val registryPort = config.registryPort.getOrElse(IOUtil.unusedPort)
