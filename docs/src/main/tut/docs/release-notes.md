@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 0.48
+ - Java 9/10 support
+ - airframe-msgpack. Fixes a bug in enocoding Timestamp (Instant) values
+ - airframe DI: Enhanced warning/error messages upon missing dependencies.
+
 ## 0.47
  - airframe-msgpack: Add a pure Scala [MessagePack](https://msgpack.org) implementation
 

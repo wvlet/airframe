@@ -41,7 +41,8 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
 ## Getting Started
  [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
 
-Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/):
+Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/).
+For Scala 2.12.6 or later, Java 9 and 10 are also supported.
 
 - [Release Notes](docs/release-notes.html)
 
