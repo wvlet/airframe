@@ -22,7 +22,7 @@ import wvlet.log.io.IOUtil.withResource
 
 case class HostAndPort(host: String, port: Int)
 
-case class JMXConfig(registryPort: Option[Int] = Some(7199), rmiPort: Option[Int] = None)
+case class JMXConfig(registryPort: Option[Int] = None, rmiPort: Option[Int] = None)
 
 /**
   *
