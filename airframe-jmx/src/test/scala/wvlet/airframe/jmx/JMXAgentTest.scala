@@ -24,13 +24,15 @@ class JMXAgentTest extends AirframeSpec {
 
   "JMXAgent" should {
     "find jmx registry" in {
-      val agent = new JMXAgent(new JMXConfig())
-      agent.withConnetor { connector =>
-        val connection = connector.getMBeanServerConnection()
-        connection.getMBeanCount.toInt shouldBe >(0)
-        val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))
-        m shouldNot be(null)
-        debug(m)
+      if (!JMXUtil.isAtLeastJava9) {
+        val agent = new JMXAgent(new JMXConfig())
+        agent.withConnetor { connector =>
+          val connection = connector.getMBeanServerConnection()
+          connection.getMBeanCount.toInt shouldBe >(0)
+          val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))
+          m shouldNot be(null)
+          debug(m)
+        }
       }
     }
   }

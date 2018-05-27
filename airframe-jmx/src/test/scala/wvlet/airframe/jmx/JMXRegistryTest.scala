@@ -51,31 +51,40 @@ class JMXRegistryTest extends AirframeSpec {
     "register a new mbean" in {
       val b = new SampleMBean
       agent.register(b)
-      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
-      debug(m)
 
-      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
-      debug(a)
+      if (!JMXUtil.isAtLeastJava9) {
+        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
+        debug(m)
+
+        val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
+        debug(a)
+      }
     }
 
     "support class field" taggedAs ("class-field") in {
       val f = new FieldMBean(1, "apple")
       agent.register(f)
-      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
-      info(m)
 
-      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "a") shouldBe 1
-      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "b") shouldBe "apple"
+      if (!JMXUtil.isAtLeastJava9) {
+        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
+        info(m)
+
+        agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "a") shouldBe 1
+        agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "b") shouldBe "apple"
+      }
     }
 
     "handle nested JMX MBean" taggedAs ("nested") in {
       val n = new NestedMBean
       agent.register(n)
-      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
-      info(m)
 
-      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
-      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
+      if (!JMXUtil.isAtLeastJava9) {
+        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
+        info(m)
+
+        agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
+        agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
+      }
     }
 
   }
