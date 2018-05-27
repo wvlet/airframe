@@ -206,7 +206,7 @@ object Packer {
       val data64: Long = (nsec << 34) | sec
       if ((data64 & 0xffffffff00000000L) == 0L) { // sec can be serialized in 32 bits and nsec is 0.
         // use timestamp 32
-        packTimestamp32(cursor, sec.asInstanceOf[Int])
+        packTimestamp32(cursor, sec.toInt)
       } else { // sec exceeded 32 bits or nsec is not 0.
         // use timestamp 64
         packTimestamp64(cursor, data64)
