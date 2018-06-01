@@ -4,7 +4,7 @@ addSbtPlugin("io.get-coursier"    % "sbt-coursier"             % "1.1.0-M4")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "1.5.1")
 addSbtPlugin("com.geirsson"       % "sbt-scalafmt"             % "1.4.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.4.0")
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.22")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.23")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"              % "0.6.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"               % "0.4.1")
 // For setting explicit versions for each commit
