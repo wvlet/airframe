@@ -23,39 +23,81 @@ import wvlet.airframe._
 
 ## Bind
 
-This example shows all binding types available in Airframe:
+In Airframe, yopu can use two types of dependency injections: __constructor injection__ or
+__in-trait injection__.
+ 
+### Constructor Injection
+Constructor injection is the most natural form of injection.
+When `session.build[A]` is called, Airframe will find the primary constructor of `A` and 
+its arguments, then creates a new instance of `A` by finding dependencies from a _Design_.
 
-```
+```scala
 import wvlet.airframe._
 
-trait BindingExample {
-  val a = bind[A]  // Inject A
-  val b = bind[B]  // Inject B
+class MyApp(val config:Config)
+case class AppConfig(appName:String)
 
-  // Inject S as a singleton  
-  val s = bindSingleton[S]
+// Define a design
+val d = newDesign
+  .bind[AppConfig].toInstance(AppConfig("Hello Airframe!"))
 
-  import BindingExample._
-
-  // Constructor binding
-  val pc: P = bind[P] // Inject a sigleton generated from P's constructor
-                      // (Inject D1, D2 and D3)
-
-  // Provider bindings
-  val p0: P = bind { P() } // Inject P using the provider function (closure)
-  val p1: P = bind { d1:D1 => P(d1) } // Inject D1 to create P
-  val p2: P = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
-  val p3: P = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
-
-  val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
-  val ps: P = bindSingleton { provider _ } // Create a singleton using a provider
+// Create a new session
+d.withSession { session=>
+  // AppConfig in the design will be used to build MyApp class
+  val app = session.build[MyApp] // new MyApp(AppConfig("Hello Airframe!"))
 }
+```
+
+### In-Trait Injection
+In-trait injection is useful to create reusable moduels. This only works inside Scala traits:
+```scala
+import wvlet.airframe._
+
+class Database(name:String, conn:Connection)
+trait DatabaseService {
+  val db = bind[Database]
+}
+
+val d = newDesign
+  .bind[Connection].to[ConnectionImpl]
+
+d.withSession { session=>
+  // Creates a new DatabaseService with ConnectionImpl
+  val service = session.build[DatabaseService]
+}
+// [DON'T DO THIS] You cannot use bind[X] inside classes:
+class A {
+  val a = bind[B] // [Error] Because class A can't find the current session
+}
+```
+The following examples show basic binding types available in Airframe:
+```scala
+val a = bind[A]          // Inject A as a singleton
+val b = bindInstance[B]  // Inject an instance of B
+
+import BindingExample._
+
+// Constructor binding
+val pc: P = bind[P] // Inject a sigleton of P
+                    // (Inject D1, D2 and D3)
+
+// Provider bindings
+val p0: P = bind { P() } // Inject P using the provider function (closure)
+val p1: P = bind { d1:D1 => P(d1) } // Inject D1 to create P
+val p2: P = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
+val p3: P = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
+val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
+val pd: P = bindInstance { provider _ } // Create a new P using the provider
 
 object BindingExample {
   case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
   def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
 }
 ```
+
+By default all injections generates singleton objects,
+which are available until the session closes.
+If you need to create a new instance for each binding, use `bindInstance[X]`.
 
 ## Design
 
@@ -75,17 +117,17 @@ val design: Design =
   .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
   .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
   .bind[D3].toInstance(D3(3))    // Bind D3 to a cocreete instance D3(3)
-  .bind[P].toProvider{ d1:D1 => P(d1) } // Create P by resolveing D1 from the design
-  .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) } // Resolve D1 and D2
-  .bind[P].toProvider{ provider _ }  // Use a function as a provider. D1, D2 and D3 will be resolved from the design
-  .bind[P].toSingletonProvider{ d1:D1 => P(d1) } // Create a singleton using the provider function
+  .bind[P].toProvider{ d1:D1 => P(d1) } // Create a singleton P by resolveing D1 from the design
+  .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) }  // Resolve D1 and D2
+  .bind[P].toProvider{ provider _ }                   // Use the given function as a provider
+  .bind[P].toInstanceProvider{ d1:D1 => P(d1) }       // Create a new instance using the provider function
   .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
 ```
 
 If you define multiple bindings to the same type (e.g., P), the last binding will be used. 
 
 Design objects are immutable, so you can safely override bindings without modifying the original design:
-```
+```scala
 val design: Design =
   newDesign.bind[A].to[B] // bind A to B
 
