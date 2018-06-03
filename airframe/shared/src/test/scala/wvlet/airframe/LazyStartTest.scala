@@ -47,6 +47,7 @@ object LazyStartTest {
   *
   */
 class LazyStartTest extends AirframeSpec {
+
   import LazyStartTest._
 
   val f1 = new AtomicBoolean(false)
@@ -54,13 +55,12 @@ class LazyStartTest extends AirframeSpec {
 
   val d = newDesign
     .bind[MyApp].toSingleton
-    .bind[MyApp].toSingleton
+    .bind[MyApp2].toSingleton
     .bind[F1].toInstance(f1)
     .bind[F2].toInstance(f2)
 
   "Airframe" should {
     "support lazy start" in {
-
       (f1.get, f2.get) shouldBe (false, false)
       d.build[MyApp] { app =>
         (f1.get, f2.get) shouldBe (true, false)
@@ -69,6 +69,19 @@ class LazyStartTest extends AirframeSpec {
 
       d.build[MyApp2] { app =>
         (f1.get, f2.get) shouldBe (false, true)
+      }
+      (f1.get, f2.get) shouldBe (false, false)
+    }
+
+    "support eager start" in {
+      (f1.get, f2.get) shouldBe (false, false)
+      d.buildProduction[MyApp] { app =>
+        (f1.get, f2.get) shouldBe (true, true)
+      }
+      (f1.get, f2.get) shouldBe (false, false)
+
+      d.buildProduction[MyApp2] { app =>
+        (f1.get, f2.get) shouldBe (true, true)
       }
       (f1.get, f2.get) shouldBe (false, false)
     }

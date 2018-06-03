@@ -25,7 +25,8 @@ import scala.util.Try
 /**
   *
   */
-private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
+private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], stage: Stage, val lifeCycleManager: LifeCycleManager) extends Session with LogSupport {
+  self =>
   import scala.collection.JavaConverters._
 
   private lazy val bindingTable = {
@@ -51,11 +52,15 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
   private[airframe] def init {
-    debug(s"[${name}] Initializing")
+    debug(s"[${name}] Initializing. Stage:${stage}")
+    val production = stage == Stage.PRODUCTION
+    if (production) {
+      debug(s"Eagerly initializing singletons in production mode")
+    }
     binding.collect {
-      case s @ SingletonBinding(from, to, eager) if eager =>
+      case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstance(from)
-      case ProviderBinding(factory, provideSingleton, eager) if eager =>
+      case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
         getInstance(factory.from)
     }
     debug(s"[${name}] Completed the initialization")

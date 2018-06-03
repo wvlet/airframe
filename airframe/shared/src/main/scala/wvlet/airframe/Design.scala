@@ -67,6 +67,16 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     }
   }
 
+  def withProductionSession[U](body: Session => U): U = {
+    val session = this.session.withProductionStage.create
+    try {
+      session.start
+      body(session)
+    } finally {
+      session.shutdown
+    }
+  }
+
   /**
     * A short hand of creating a new session, building a new instance of A, and running a code that uses A.
     * After executing the body, the sesion will be closed.
@@ -75,6 +85,7 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     * @return
     */
   def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
+  def buildProduction[A](body: A => Any): Any = macro AirframeMacros.buildWithProductionSession[A]
 
   override def toString: String = {
     s"Design:\n ${binding.mkString("\n ")}"
