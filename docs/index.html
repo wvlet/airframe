@@ -26,39 +26,81 @@ ga('send', 'pageview');
 
 <h2 id="bind">Bind</h2>
 
-<p>This example shows all binding types available in Airframe:</p>
+<p>In Airframe, yopu can use two types of dependency injections: <strong>constructor injection</strong> or
+<strong>in-trait injection</strong>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>import wvlet.airframe._
+<h3 id="constructor-injection">Constructor Injection</h3>
+<p>Constructor injection is the most natural form of injection.
+When <code class="highlighter-rouge">session.build[A]</code> is called, Airframe will find the primary constructor of <code class="highlighter-rouge">A</code> and 
+its arguments, then creates a new instance of <code class="highlighter-rouge">A</code> by finding dependencies from a <em>Design</em>.</p>
 
-trait BindingExample {
-  val a = bind[A]  // Inject A
-  val b = bind[B]  // Inject B
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
-  // Inject S as a singleton  
-  val s = bindSingleton[S]
+<span class="k">class</span> <span class="nc">MyApp</span><span class="o">(</span><span class="k">val</span> <span class="n">config</span><span class="k">:</span><span class="kt">Config</span><span class="o">)</span>
+<span class="k">case</span> <span class="k">class</span> <span class="nc">AppConfig</span><span class="o">(</span><span class="n">appName</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
-  import BindingExample._
+<span class="c1">// Define a design
+</span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">AppConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">AppConfig</span><span class="o">(</span><span class="s">"Hello Airframe!"</span><span class="o">))</span>
 
-  // Constructor binding
-  val pc: P = bind[P] // Inject a sigleton generated from P's constructor
-                      // (Inject D1, D2 and D3)
-
-  // Provider bindings
-  val p0: P = bind { P() } // Inject P using the provider function (closure)
-  val p1: P = bind { d1:D1 =&gt; P(d1) } // Inject D1 to create P
-  val p2: P = bind { (d1:D1, d2:D2) =&gt; P(d1, d2) } // Inject D1 and D2 to create P
-  val p3: P = bind { (d1:D1, d2:D2, d3:D3) =&gt; P(d1, d2, d3) } // Inject D1, D2 and D3
-
-  val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
-  val ps: P = bindSingleton { provider _ } // Create a singleton using a provider
-}
-
-object BindingExample {
-  case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
-  def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
-}
+<span class="c1">// Create a new session
+</span><span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span><span class="k">=&gt;</span>
+  <span class="c1">// AppConfig in the design will be used to build MyApp class
+</span>  <span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]</span> <span class="c1">// new MyApp(AppConfig("Hello Airframe!"))
+</span><span class="o">}</span>
 </code></pre>
 </div>
+
+<h3 id="in-trait-injection">In-Trait Injection</h3>
+<p>In-trait injection is useful to create reusable moduels. This only works inside Scala traits:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="k">class</span> <span class="nc">Database</span><span class="o">(</span><span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">conn</span><span class="k">:</span><span class="kt">Connection</span><span class="o">)</span>
+<span class="k">trait</span> <span class="nc">DatabaseService</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Database</span><span class="o">]</span>
+<span class="o">}</span>
+
+<span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Connection</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ConnectionImpl</span><span class="o">]</span>
+
+<span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span><span class="k">=&gt;</span>
+  <span class="c1">// Creates a new DatabaseService with ConnectionImpl
+</span>  <span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">DatabaseService</span><span class="o">]</span>
+<span class="o">}</span>
+<span class="c1">// [DON'T DO THIS] You cannot use bind[X] inside classes:
+</span><span class="k">class</span> <span class="nc">A</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="c1">// [Error] Because class A can't find the current session
+</span><span class="o">}</span>
+</code></pre>
+</div>
+<p>The following examples show basic binding types available in Airframe:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>          <span class="c1">// Inject A as a singleton
+</span><span class="k">val</span> <span class="n">b</span> <span class="k">=</span> <span class="n">bindInstance</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span>  <span class="c1">// Inject an instance of B
+</span>
+<span class="k">import</span> <span class="nn">BindingExample._</span>
+
+<span class="c1">// Constructor binding
+</span><span class="k">val</span> <span class="n">pc</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span> <span class="c1">// Inject a sigleton of P
+</span>                    <span class="c1">// (Inject D1, D2 and D3)
+</span>
+<span class="c1">// Provider bindings
+</span><span class="k">val</span> <span class="n">p0</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">P</span><span class="o">()</span> <span class="o">}</span> <span class="c1">// Inject P using the provider function (closure)
+</span><span class="k">val</span> <span class="n">p1</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1 to create P
+</span><span class="k">val</span> <span class="n">p2</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1 and D2 to create P
+</span><span class="k">val</span> <span class="n">p3</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">,</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">,</span> <span class="n">d3</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3
+</span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3 to call a provider function
+</span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bindInstance</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Create a new P using the provider
+</span>
+<span class="k">object</span> <span class="nc">BindingExample</span> <span class="o">{</span>
+  <span class="k">case</span> <span class="k">class</span> <span class="nc">P</span><span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=</span> <span class="n">D1</span><span class="o">(),</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span> <span class="o">=</span> <span class="n">D2</span><span class="o">(),</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span> <span class="o">=</span> <span class="n">D3</span><span class="o">())</span>
+  <span class="k">def</span> <span class="n">provider</span><span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">,</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span><span class="o">)</span> <span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">,</span> <span class="n">d3</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>By default all injections generates singleton objects,
+which are available until the session closes.
+If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindInstance[X]</code>.</p>
 
 <h2 id="design">Design</h2>
 
@@ -77,10 +119,10 @@ object BindingExample {
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D1</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D1</span><span class="o">(</span><span class="mi">1</span><span class="o">))</span>    <span class="c1">// Bind D1 to a concrete instance D1(1)
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D2</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D2</span><span class="o">(</span><span class="mi">2</span><span class="o">))</span>    <span class="c1">// Bind D2 to a concrete instance D2(2)
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D3</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D3</span><span class="o">(</span><span class="mi">3</span><span class="o">))</span>    <span class="c1">// Bind D3 to a cocreete instance D3(3)
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create P by resolveing D1 from the design
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Resolve D1 and D2
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span>  <span class="c1">// Use a function as a provider. D1, D2 and D3 will be resolved from the design
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toSingletonProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create a singleton using the provider function
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create a singleton P by resolveing D1 from the design
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span>  <span class="c1">// Resolve D1 and D2
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span>                   <span class="c1">// Use the given function as a provider
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toInstanceProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span>       <span class="c1">// Create a new instance using the provider function
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toEagerSingletonProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create an eager singleton using the provider function
 </span></code></pre>
 </div>
@@ -88,15 +130,15 @@ object BindingExample {
 <p>If you define multiple bindings to the same type (e.g., P), the last binding will be used.</p>
 
 <p>Design objects are immutable, so you can safely override bindings without modifying the original design:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>val design: Design =
-  newDesign.bind[A].to[B] // bind A to B
-
-val newDesign: Design =
-  design.bind[A].to[C] // Override binding for A
-
-// design.newSession.build[A] -&gt; produces B
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">design</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
+  <span class="n">newDesign</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="c1">// bind A to B
+</span>
+<span class="k">val</span> <span class="n">newDesign</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
+  <span class="n">design</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">C</span><span class="o">]</span> <span class="c1">// Override binding for A
+</span>
+<span class="c1">// design.newSession.build[A] -&gt; produces B
 // newDesign.newSession.build[A] -&gt; produes C
-</code></pre>
+</span></code></pre>
 </div>
 
 <h2 id="session">Session</h2>
