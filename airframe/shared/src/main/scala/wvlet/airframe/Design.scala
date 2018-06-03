@@ -13,8 +13,6 @@
  */
 package wvlet.airframe
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-
 import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
@@ -69,10 +67,18 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     }
   }
 
+  /**
+    * A short hand of creating a new session, building a new instance of A, and running a code that uses A.
+    * After executing the body, the sesion will be closed.
+    * @param body
+    * @tparam A
+    * @return
+    */
+  def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
+
   override def toString: String = {
     s"Design:\n ${binding.mkString("\n ")}"
   }
-
 }
 
 object Design {
@@ -81,5 +87,4 @@ object Design {
     * Empty design.
     */
   val blanc: Design = new Design(Vector.empty) // Use Vector for better append performance
-
 }

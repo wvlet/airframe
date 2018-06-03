@@ -374,6 +374,18 @@ private[wvlet] object AirframeMacros {
     new BindHelper[c.type](c).bind(c.prefix.tree, t)
   }
 
+  def buildWithSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+           ${c.prefix}.withSession { session =>
+              val a = session.build[${t}]
+              ${body}(a)
+           }
+        }
+     """
+  }
+
   def addLifeCycle[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
