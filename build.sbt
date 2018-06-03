@@ -372,7 +372,7 @@ lazy val airframeSpecJS  = airframeSpec.js
 
 lazy val msgpack =
   crossProject(JVMPlatform, JSPlatform)
-    .crossType(CrossType.Pure)    
+    .crossType(CrossType.Pure)
     .in(file("airframe-msgpack"))
     .settings(buildSettings)
     .settings(
