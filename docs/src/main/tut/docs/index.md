@@ -38,7 +38,8 @@ trait BindingExample {
   import BindingExample._
 
   // Constructor binding
-  val pc: P = bind[P] // Inject P using constructor (Inject D1, D2 and D3)
+  val pc: P = bind[P] // Inject a sigleton generated from P's constructor
+                      // (Inject D1, D2 and D3)
 
   // Provider bindings
   val p0: P = bind { P() } // Inject P using the provider function (closure)
@@ -66,7 +67,8 @@ import wvlet.airframe._
 // If you define multiple bindings to the same type, the last one will be used.
 val design: Design =
   newDesign                      // Create an empty design
-  .bind[A].to[AImpl]             // Bind a concrete class AImpl to A
+  .bind[A].to[AImpl]             // Bind a class AImpl to A (Singleton)
+  .bind[A].toInstanceOf[AImpl]   // Bind a class AImpl to A (Create a new instance each time)
   .bind[B].toInstance(new B(1))  // Bind a concrete instance to B (This instance will be a singleton)
   .bind[S].toSingleton           // S will be a singleton within the session
   .bind[ES].toEagerSingleton     // ES will be initialized as a singleton at session start time

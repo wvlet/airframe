@@ -58,6 +58,8 @@ import wvlet.airframe.ProviderExample._
 trait ProviderExample {
   // Constructor binding
   val c = bind[App]
+  // Instance binding
+  val ci = bindInstance[App]
 
   // Provider binding
   val p0 = bind { App() }
@@ -130,6 +132,9 @@ class ProviderTest extends AirframeSpec {
       p.p3 shouldBe App(d1, d2, d3, z4, z5)
       p.p4 shouldBe App(d1, d2, d3, d4, z5)
       p.p5 shouldBe App(d1, d2, d3, d4, d5)
+
+      // Instance binding should generate a new instance
+      p.c shouldNot be theSameInstanceAs (p.ci)
 
       p.pp1 shouldBe App(d1, z2, z3, z4, z5)
       p.pp2 shouldBe App(d1, d2, z3, z4, z5)
@@ -347,7 +352,9 @@ class ProviderRefTest extends AirframeSpec {
 
     "bind singleton with provider" taggedAs ("bind-singleton-provider") in {
       providerDesign.newSession.build[PS0].p shouldBe App(z1, z2, z3, z4, z5)
+
       providerDesign.newSession.build[PS1].p shouldBe App(d1, z2, z3, z4, z5)
+
       providerDesign.newSession.build[PS2].p shouldBe App(d1, d2, z3, z4, z5)
       providerDesign.newSession.build[PS3].p shouldBe App(d1, d2, d3, z4, z5)
       providerDesign.newSession.build[PS4].p shouldBe App(d1, d2, d3, d4, z5)
