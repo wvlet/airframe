@@ -95,7 +95,18 @@ import wvlet.airframe.Binder._
   */
 class Binder[A](val design: Design, val from: Surface) extends LogSupport {
 
-  def to[B <: A]: Design = macro binderToImpl[B]
+  /**
+    * Bind a singleton instance of B to A
+    * @tparam B
+    */
+  def to[B <: A]: Design = macro binderToSingletonOfImpl[B]
+
+  /**
+    * Bind an instance of B to A
+    * @tparam B
+    * @return
+    */
+  def toInstanceOf[B <: A]: Design = macro binderToImpl[B]
 
   /**
     * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.

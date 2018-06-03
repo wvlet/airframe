@@ -38,7 +38,13 @@ package object airframe {
   def newDesign: Design     = Design.blanc
   def blancSession: Session = Design.blanc.newSession
 
-  def bind[A]: A = macro bindImpl[A]
+  def bindInstance[A]: A = macro bindImpl[A]
+
+  /**
+    * Inject a singleton of A
+    * @tparam A
+    */
+  def bind[A]: A = macro bindSingletonImpl[A]
   def bind[A](factory: => A): A = macro bind0Impl[A]
   def bind[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]
   def bind[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
@@ -55,7 +61,8 @@ package object airframe {
   def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A = macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
   private[airframe] val DO_NOTHING = { a: Any =>
-    }
+    // no-op
+  }
 
   /**
     * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
@@ -63,7 +70,7 @@ package object airframe {
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
 
     /**
-      * @deprecated use onInit, onStart, anShutdown, etc.
+      * @deprecated Use onInit, onStart, anShutdown, etc.
       * @return
       */
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
