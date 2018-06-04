@@ -167,12 +167,13 @@ If you need to create a new instance for each binding, use <code class="highligh
 </div>
 
 <p>To simplify this session management, you can use <code class="highlighter-rouge">Design.build[A]</code> to start and shutdown a session automatically:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]{</span> <span class="n">p</span><span class="k">:</span><span class="kt">P</span> <span class="o">=&gt;</span> <span class="c1">// session.start and new instance of P will be created
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]{</span> <span class="n">p</span><span class="k">:</span><span class="kt">P</span> <span class="o">=&gt;</span> <span class="c1">// session.start will be called, and a new instance of P will be created
 </span>  <span class="c1">// do something with P
 </span><span class="o">}</span>
 <span class="c1">// session.shutdown will be called here
 </span></code></pre>
 </div>
+<p>This pattern is useful since you usually need a single entry point for starting an application.</p>
 
 <h2 id="life-cycle">Life Cycle</h2>
 
