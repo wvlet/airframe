@@ -25,7 +25,8 @@ import scala.util.Try
 /**
   *
   */
-private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], val lifeCycleManager: LifeCycleManager) extends Session with LogSupport { self =>
+private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], stage: Stage, val lifeCycleManager: LifeCycleManager) extends Session with LogSupport {
+  self =>
   import scala.collection.JavaConverters._
 
   private lazy val bindingTable = {
@@ -51,11 +52,15 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
   private[airframe] def init {
-    debug(s"[${name}] Initializing")
+    debug(s"[${name}] Initializing. Stage:${stage}")
+    val production = stage == Stage.PRODUCTION
+    if (production) {
+      debug(s"Eagerly initializing singletons in production mode")
+    }
     binding.collect {
-      case s @ SingletonBinding(from, to, eager) if eager =>
+      case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstance(from)
-      case ProviderBinding(factory, provideSingleton, eager) if eager =>
+      case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
         getInstance(factory.from)
     }
     debug(s"[${name}] Completed the initialization")
@@ -153,6 +158,9 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
     result.asInstanceOf[AnyRef]
   }
 
+  /**
+    * Create a new instance of the surface
+    */
   private def buildInstance(surface: Surface, seen: List[Surface]): AnyRef = {
     trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
@@ -168,12 +176,6 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
           val obj = factory.newInstance(args)
           registerInjectee(surface, obj)
         case None =>
-          // TODO check anonymous class and interface in Surface
-//          if (!(surface.rawType.isAnonymousClass || surface.rawType.isInterface)) {
-//            // We cannot inject Session to a class which has no default constructor
-//            // No binding is found for the concrete class
-//            throw new MISSING_DEPENDENCY(stack)
-//          }
           val obj = factoryCache.get(surface) match {
             case Some(factory) =>
               trace(s"Using pre-compiled factory for ${surface}")
@@ -189,37 +191,5 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
       }
     }
   }
-//
-//  private def buildWithReflection(t:Surface) : AnyRef ={
-//    // When there is no constructor, generate trait
-//    import scala.reflect.runtime.currentMirror
-//    import scala.tools.reflect.ToolBox
-//    val tb = currentMirror.mkToolBox()
-//    val typeName = t.rawType.getName.replaceAll("\\$", ".")
-//    try {
-//      val code =
-//        s"""new (wvlet.airframe.Session => Any) {
-//            |  def apply(session:wvlet.airframe.Session) = {
-//            |    new ${typeName} {
-//            |      protected def airframeSession = session
-//            |    }
-//            |  }
-//            |}  """.stripMargin
-//      trace(s"Compiling a code for embedding Session to ${t}:\n${code}")
-//      val compileStart = System.currentTimeMillis()
-//      val parsed = tb.parse(code)
-//      val f = tb.eval(parsed).asInstanceOf[Session => Any]
-//      val compileFinished = System.currentTimeMillis()
-//      val compileDuration = Duration(compileFinished - compileStart, duration.MILLISECONDS)
-//      trace(f"Compilation done: ${compileDuration.toMillis / 1000.0}%.2f sec.")
-//      val obj = f.apply(this)
-//      registerInjectee(t, obj)
-//    }
-//    catch {
-//      case e: Throwable =>
-//        error(s"Failed to inject Session to ${t}")
-//        throw e
-//    }
-//  }
 
 }

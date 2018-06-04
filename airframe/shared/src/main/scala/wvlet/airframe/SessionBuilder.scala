@@ -16,21 +16,40 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
+sealed trait Stage
+object Stage {
+
+  /**
+    * Initialize singletons lazily
+    */
+  case object DEVELOPMENT extends Stage
+
+  /**
+    * Initialize singletons eagerly
+    */
+  case object PRODUCTION extends Stage
+}
+
 /**
   *
   */
-class SessionBuilder(design: Design, name: Option[String] = None, handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler) extends LogSupport {
+class SessionBuilder(design: Design, name: Option[String] = None, stage: Stage = Stage.DEVELOPMENT, handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
+    extends LogSupport {
 
   /**
     * @param e
     * @return
     */
   def addEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, handler.wraps(e))
+    new SessionBuilder(design, name, stage, handler.wraps(e))
   }
 
   def withName(sessionName: String): SessionBuilder = {
-    new SessionBuilder(design, Some(sessionName), handler)
+    new SessionBuilder(design, Some(sessionName), stage, handler)
+  }
+
+  def withProductionStage: SessionBuilder = {
+    new SessionBuilder(design, name, Stage.PRODUCTION)
   }
 
   def create: Session = {
@@ -41,7 +60,7 @@ class SessionBuilder(design: Design, name: Option[String] = None, handler: LifeC
     val keyIndex: Map[Surface, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings              = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
     val l                           = new LifeCycleManager(handler)
-    val session                     = new AirframeSession(name, sortedBindings, l)
+    val session                     = new AirframeSession(name, sortedBindings, stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init
