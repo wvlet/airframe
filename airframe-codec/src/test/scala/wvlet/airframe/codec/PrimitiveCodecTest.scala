@@ -240,7 +240,17 @@ class PrimitiveCodecTest extends CodecSpec {
     }
 
     "read various types of data as string" in {
-      val expected = Seq("10", "12", "13.2", "false", "true", "10.0", "12345.01", "", LARGE_VALUE.toString, """[1,"leo"]""", """{"name":"leo"}""")
+      val expected = Seq("10",
+                         "12",
+                         "13.2",
+                         "false",
+                         "true",
+                         "10.0",
+                         "12345.01",
+                         "",
+                         LARGE_VALUE.toString,
+                         """[1,"leo"]""",
+                         """{"name":"leo"}""")
 
       val p = MessagePack.newDefaultBufferPacker()
       p.packArrayHeader(expected.size)

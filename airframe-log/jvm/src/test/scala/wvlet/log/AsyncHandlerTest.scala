@@ -45,7 +45,8 @@ class AsyncHandlerTest extends Spec with Timer {
       al.setLogLevel(LogLevel.INFO)
       sl.setLogLevel(LogLevel.INFO)
 
-      val result = for ((handlerName, handler) <- Seq(("log-with-heavy-handler", HeavyHandler), ("log-with-fast-handler", NullHandler))) yield {
+      val result = for ((handlerName, handler) <- Seq(("log-with-heavy-handler", HeavyHandler),
+                                                      ("log-with-fast-handler", NullHandler))) yield {
         time(s"${handlerName}", repeat = R0, blockRepeat = R1) {
           withResource(new AsyncHandler(handler)) { asyncHandler =>
             // async

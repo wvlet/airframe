@@ -251,9 +251,10 @@ class LauncherTest extends AirframeSpec {
 
 object LauncherTest {
 
-  case class GlobalOption(@option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
-                          @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
-                          var started: Boolean = false)
+  case class GlobalOption(
+      @option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
+      @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
+      var started: Boolean = false)
       extends LogSupport {
 
     trace("started GlobalOption command")
@@ -294,13 +295,16 @@ object LauncherTest {
     }
   }
 
-  class CommandWithPrivateField(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean, var started: Boolean = false) {
+  class CommandWithPrivateField(
+      @option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean,
+      var started: Boolean = false) {
     started = true
   }
 
   class MyCommand(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean) {
     @command(description = "say hello")
-    def hello(@option(prefix = "-r", description = "repeat times") repeat: Int = 1, @argument message: String = "hello!") {
+    def hello(@option(prefix = "-r", description = "repeat times") repeat: Int = 1,
+              @argument message: String = "hello!") {
       for (i <- 0 until repeat) print(message)
     }
   }

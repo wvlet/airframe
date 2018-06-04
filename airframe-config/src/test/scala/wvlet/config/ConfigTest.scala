@@ -104,8 +104,9 @@ class ConfigTest extends AirframeSpec {
     }
 
     "support registerFromYamlOrElse" in {
-      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty).registerFromYamlOrElse[String]("unknown-yaml-file.yml", "hello world")
-      val s      = config.of[String]
+      val config = Config(env = "staging", defaultEnv = "default", configPaths = Seq.empty)
+        .registerFromYamlOrElse[String]("unknown-yaml-file.yml", "hello world")
+      val s = config.of[String]
       s shouldBe "hello world"
     }
 
@@ -126,7 +127,8 @@ class ConfigTest extends AirframeSpec {
     }
 
     "allow override" in {
-      val config = Config(env = "staging", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml").register[SampleConfig](SampleConfig(10, "hello"))
+      val config = Config(env = "staging", configPaths = configPaths)
+        .registerFromYaml[SampleConfig]("myconfig.yml").register[SampleConfig](SampleConfig(10, "hello"))
 
       val c = config.of[SampleConfig]
       c.id shouldBe 10
@@ -157,7 +159,8 @@ class ConfigTest extends AirframeSpec {
 
     "throw exception on missing environment" in {
       intercept[IllegalArgumentException] {
-        val config = Config(env = "weird-env", defaultEnv = "unknown", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
+        val config = Config(env = "weird-env", defaultEnv = "unknown", configPaths = configPaths)
+          .registerFromYaml[SampleConfig]("myconfig.yml")
       }
     }
 
@@ -266,7 +269,8 @@ class ConfigTest extends AirframeSpec {
 
     "report missing Properties file error" in {
       intercept[FileNotFoundException] {
-        val c = Config(env = "default", configPaths = configPaths).overrideWithPropertiesFile("unknown-propertiles-file-path.propertiles")
+        val c = Config(env = "default", configPaths = configPaths)
+          .overrideWithPropertiesFile("unknown-propertiles-file-path.propertiles")
       }
     }
 
@@ -274,19 +278,22 @@ class ConfigTest extends AirframeSpec {
       intercept[IllegalArgumentException] {
         val p = new Properties()
         p.setProperty("sample.idid", "10")
-        val c = Config(env = "default", configPaths = configPaths).overrideWithProperties(p, onUnusedProperties = Config.REPORT_ERROR_FOR_UNUSED_PROPERTIES)
+        val c = Config(env = "default", configPaths = configPaths)
+          .overrideWithProperties(p, onUnusedProperties = Config.REPORT_ERROR_FOR_UNUSED_PROPERTIES)
       }
     }
 
     "report missing YAML file error" in {
       intercept[FileNotFoundException] {
-        val c = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig-missing.yml")
+        val c =
+          Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig-missing.yml")
       }
     }
 
     "report missing value error" in {
       intercept[Exception] {
-        val c = Config(env = "unknown-env", defaultEnv = "unknown-default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
+        val c = Config(env = "unknown-env", defaultEnv = "unknown-default", configPaths = configPaths)
+          .registerFromYaml[SampleConfig]("myconfig.yml")
       }
     }
   }
