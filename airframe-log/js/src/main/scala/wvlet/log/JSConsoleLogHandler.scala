@@ -5,7 +5,8 @@ import java.util.{logging => jl}
 
 import wvlet.log.JSConsoleLogHandler.JSLogColorPalette
 
-class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandler.DEFAULT_COLOR_PALETTE) extends jl.Handler {
+class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandler.DEFAULT_COLOR_PALETTE)
+    extends jl.Handler {
 
   override def publish(record: jl.LogRecord): Unit = {
     record match {

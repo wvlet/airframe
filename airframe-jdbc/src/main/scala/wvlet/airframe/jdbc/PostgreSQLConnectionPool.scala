@@ -28,7 +28,8 @@ case class PostgreSQLConfig(
 /**
   *
   */
-class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLConfig = PostgreSQLConfig()) extends ConnectionPool {
+class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLConfig = PostgreSQLConfig())
+    extends ConnectionPool {
   private val dataSource: HikariDataSource = {
     val connectionPoolConfig = new HikariConfig
 
@@ -46,7 +47,8 @@ class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLCon
     if (config.host.isEmpty) {
       throw new IllegalArgumentException(s"missing postgres jdbc host: ${config}")
     }
-    connectionPoolConfig.setJdbcUrl(s"jdbc:postgresql://${config.host.get}:${config.port.getOrElse(5432)}/${config.database}")
+    connectionPoolConfig.setJdbcUrl(
+      s"jdbc:postgresql://${config.host.get}:${config.port.getOrElse(5432)}/${config.database}")
 
     info(s"jdbc URL: ${connectionPoolConfig.getJdbcUrl}")
     new HikariDataSource(connectionPoolConfig)

@@ -98,7 +98,10 @@ trait Timer extends Serializable {
 
   private def contextStack = holder.get()
 
-  private def createNewBlock[A](blockName: String, globalRepeat: Int = 1, individualBlockRepeat: Int = 1, f: => A): TimeReport = new TimeReport {
+  private def createNewBlock[A](blockName: String,
+                                globalRepeat: Int = 1,
+                                individualBlockRepeat: Int = 1,
+                                f: => A): TimeReport = new TimeReport {
     val name: String     = blockName
     val repeat: Int      = globalRepeat
     val blockRepeat: Int = individualBlockRepeat
@@ -117,7 +120,8 @@ trait Timer extends Serializable {
     * @tparam A
     * @return
     */
-  protected def time[A](blockName: String, logLevel: LogLevel = INFO, repeat: Int = 1, blockRepeat: Int = 1)(f: => A): TimeReport = {
+  protected def time[A](blockName: String, logLevel: LogLevel = INFO, repeat: Int = 1, blockRepeat: Int = 1)(
+      f: => A): TimeReport = {
     def pushContext(t: TimeReport): Unit = contextStack.push(t)
     def popContext: Unit                 = contextStack.pop
 
@@ -238,7 +242,8 @@ trait TimeReport extends Ordered[TimeReport] {
         if (u >= symbol.length) symbol.length - 1 else u
       }
     }
-    require(unitIndex >= 0 && (unitIndex < symbol.length), s"unitIndex must be between 0 to 2: $unitIndex, digits:$digits")
+    require(unitIndex >= 0 && (unitIndex < symbol.length),
+            s"unitIndex must be between 0 to 2: $unitIndex, digits:$digits")
     val v   = time * math.pow(10, unitIndex * 3)
     val str = f"$v%.3f ${symbol(unitIndex)}sec."
     f"$str%-11s"

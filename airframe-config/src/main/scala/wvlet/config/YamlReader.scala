@@ -55,7 +55,8 @@ object YamlReader extends LogSupport {
   }
 
   def loadYamlList(resourcePath: String): Seq[Map[AnyRef, AnyRef]] = {
-    new Yaml().load(readAsString(resourcePath)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
+    new Yaml()
+      .load(readAsString(resourcePath)).asInstanceOf[ju.List[ju.Map[AnyRef, AnyRef]]].asScala.map(_.asScala.toMap).toSeq
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {

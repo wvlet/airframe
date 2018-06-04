@@ -107,7 +107,8 @@ lazy val scaladoc =
     .settings(
       name := "airframe-scaladoc",
       // Need to exclude JS project explicitely to avoid '<type> is already defined' errors
-      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(jsProjects: _*),
+      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(
+        jsProjects: _*),
       Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
     .aggregate(jvmProjects: _*)
@@ -212,7 +213,8 @@ lazy val airframe =
     .jsSettings(
       jsBuildSettings,
       // Copy macro classes into the main jar
-      mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageBin) ++= mappings
+        .in(airframeMacrosJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )

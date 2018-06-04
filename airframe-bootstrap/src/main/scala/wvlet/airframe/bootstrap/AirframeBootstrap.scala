@@ -22,7 +22,10 @@ object AirframeBootstrap extends LogSupport {
   def basePath           = sys.props.getOrElse("prog.home", ".")
   def defautlConfigPaths = Seq(s"${basePath}/config")
 
-  def apply(module: AirframeModule, env: String = "default", defaultEnv: String = "default", configPaths: Seq[String] = defautlConfigPaths): AirframeBootstrap = {
+  def apply(module: AirframeModule,
+            env: String = "default",
+            defaultEnv: String = "default",
+            configPaths: Seq[String] = defautlConfigPaths): AirframeBootstrap = {
     new AirframeBootstrap(module, env, defaultEnv, configPaths)
   }
 

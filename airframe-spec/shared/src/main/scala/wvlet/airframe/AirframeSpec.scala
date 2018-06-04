@@ -22,7 +22,13 @@ import scala.language.implicitConversions
 /**
   *
   */
-trait AirframeSpec extends WordSpec with Matchers with GivenWhenThen with BeforeAndAfter with BeforeAndAfterAll with LogSupport {
+trait AirframeSpec
+    extends WordSpec
+    with Matchers
+    with GivenWhenThen
+    with BeforeAndAfter
+    with BeforeAndAfterAll
+    with LogSupport {
 
   implicit def toTag(s: String) = Tag(s)
   override def run(testName: Option[String], args: Args): Status = {

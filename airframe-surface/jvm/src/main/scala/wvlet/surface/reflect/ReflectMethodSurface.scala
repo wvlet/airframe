@@ -23,7 +23,9 @@ import scala.util.Try
 /**
   * MethodSurface for JVM. This can call method through Java reflection
   */
-case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface with LogSupport {
+case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter])
+    extends MethodSurface
+    with LogSupport {
 
   private lazy val method: Option[jl.reflect.Method] = {
     Try(owner.rawType.getDeclaredMethod(name, args.map(_.surface.rawType): _*)).toOption

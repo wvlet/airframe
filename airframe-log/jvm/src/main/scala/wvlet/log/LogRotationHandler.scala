@@ -47,7 +47,11 @@ object LogRotationHandler {
   * @param logFileExt
   */
 class FileHandler(fileName: String, formatter: LogFormatter = AppLogFormatter, logFileExt: String = ".log")
-    extends LogRotationHandler(fileName, maxNumberOfFiles = Integer.MAX_VALUE, maxSizeInBytes = Long.MaxValue, formatter = formatter, logFileExt = logFileExt)
+    extends LogRotationHandler(fileName,
+                               maxNumberOfFiles = Integer.MAX_VALUE,
+                               maxSizeInBytes = Long.MaxValue,
+                               formatter = formatter,
+                               logFileExt = logFileExt)
 
 /**
   * Log rotation handler
@@ -75,7 +79,8 @@ class LogRotationHandler(fileName: String,
     val triggeringPolicy = new SizeAndTimeBasedFNATP[String]
 
     rollingPolicy.setContext(context)
-    val fileNameStem = if (fileName.endsWith(logFileExt)) fileName.substring(0, fileName.length - logFileExt.length) else fileName
+    val fileNameStem =
+      if (fileName.endsWith(logFileExt)) fileName.substring(0, fileName.length - logFileExt.length) else fileName
     rollingPolicy.setFileNamePattern(s"${fileNameStem}-%d{yyyy-MM-dd}.%i${logFileExt}.gz")
     rollingPolicy.setMaxHistory(maxNumberOfFiles)
     rollingPolicy.setTimeBasedFileNamingAndTriggeringPolicy(triggeringPolicy)

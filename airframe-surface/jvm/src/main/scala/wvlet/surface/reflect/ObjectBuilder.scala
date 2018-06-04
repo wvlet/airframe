@@ -136,7 +136,8 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
         trace(s"set path $path : $value")
         if (path.isLeaf) {
           val targetType = p.get.surface
-          trace(s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})")
+          trace(
+            s"update value holder name:$name, valueType:$targetType (isArray:${isArray(targetType)}) with value:$value (${value.getClass})")
           if (canBuildFromBuffer(targetType)) {
             val arr = getArrayHolder(name)
             targetType.typeArgs.length match {

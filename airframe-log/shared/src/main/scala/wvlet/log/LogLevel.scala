@@ -64,6 +64,8 @@ object LogLevel {
   }
 }
 
-sealed abstract class LogLevel(val order: Int, val jlLevel: Level, val name: String) extends Ordered[LogLevel] with Serializable {
+sealed abstract class LogLevel(val order: Int, val jlLevel: Level, val name: String)
+    extends Ordered[LogLevel]
+    with Serializable {
   def compare(other: LogLevel) = this.order - other.order
 }

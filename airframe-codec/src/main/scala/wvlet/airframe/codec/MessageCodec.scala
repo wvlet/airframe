@@ -68,7 +68,8 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
   }
 }
 
-class MessageCodecException[A](val errorCode: ErrorCode, val codec: MessageCodec[A], val message: String) extends Exception(message) {
+class MessageCodecException[A](val errorCode: ErrorCode, val codec: MessageCodec[A], val message: String)
+    extends Exception(message) {
   override def getMessage = s"[${errorCode}] coded:${codec} ${message}"
 }
 

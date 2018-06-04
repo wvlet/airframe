@@ -189,7 +189,10 @@ object Logger {
     * @param useParents
     * @return
     */
-  private[log] def initLogger(name: String, level: Option[LogLevel] = None, handlers: Seq[Handler] = Seq.empty, useParents: Boolean = true): Logger = {
+  private[log] def initLogger(name: String,
+                              level: Option[LogLevel] = None,
+                              handlers: Seq[Handler] = Seq.empty,
+                              useParents: Boolean = true): Logger = {
     val logger = Logger.apply(name)
     logger.clearHandlers
     level.foreach(l => logger.setLogLevel(l))

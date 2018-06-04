@@ -66,7 +66,8 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.getLogLevel shouldBe LogLevel.WARN
 
       // Load log-test.properties
-      withScanner(LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
+      withScanner(
+        LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
         l.getLogLevel shouldBe LogLevel.DEBUG
       }
     }
@@ -85,7 +86,8 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       val l = Logger("wvlet.log.test")
       l.setLogLevel(LogLevel.TRACE)
 
-      withScanner(LogLevelScannerConfig(Seq("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+      withScanner(
+        LogLevelScannerConfig(Seq("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
         // Should ignore unknown log level string
         l.getLogLevel shouldBe LogLevel.TRACE
       }

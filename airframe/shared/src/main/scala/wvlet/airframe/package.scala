@@ -44,7 +44,8 @@ package object airframe {
   def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
   def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
   def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
-  def bindInstance[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A = macro bind5Impl[A, D1, D2, D3, D4, D5]
+  def bindInstance[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
+    macro bind5Impl[A, D1, D2, D3, D4, D5]
 
   /**
     * Inject a singleton of A
@@ -56,7 +57,8 @@ package object airframe {
   def bind[A, D1, D2](factory: (D1, D2) => A): A = macro bind2SingletonImpl[A, D1, D2]
   def bind[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3SingletonImpl[A, D1, D2, D3]
   def bind[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4SingletonImpl[A, D1, D2, D3, D4]
-  def bind[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A = macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
+  def bind[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
+    macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
   def bindSingleton[A]: A = macro bindSingletonImpl[A]
   def bindSingleton[A](factory: => A): A = macro bind0SingletonImpl[A]
@@ -64,7 +66,8 @@ package object airframe {
   def bindSingleton[A, D1, D2](factory: (D1, D2) => A): A = macro bind2SingletonImpl[A, D1, D2]
   def bindSingleton[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3SingletonImpl[A, D1, D2, D3]
   def bindSingleton[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4SingletonImpl[A, D1, D2, D3, D4]
-  def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A = macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
+  def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
+    macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
   private[airframe] val DO_NOTHING = { a: Any =>
     // no-op

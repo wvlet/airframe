@@ -48,7 +48,9 @@ private[surface] object SurfaceMacros {
     }
 
     def localMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members.filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(isTargetMethod(_, t))
+      t.members
+        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
+          isTargetMethod(_, t))
     }
 
     def createMethodSurfaceOf(targetType: c.Type): c.Tree = {
@@ -175,14 +177,17 @@ private[surface] object SurfaceMacros {
       constructor.asMethod.fullName.endsWith("$init$")
 
     def publicConstructorsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members.filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(_.asMethod)
+      t.members
+        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
+          _.asMethod)
     }
 
     def findPrimaryConstructorOf(t: c.Type): Option[MethodSymbol] = {
       publicConstructorsOf(t).find(x => x.isPrimaryConstructor)
     }
 
-    def hasAbstractMethods(t: c.Type): Boolean = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
+    def hasAbstractMethods(t: c.Type): Boolean =
+      t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
     private def isAbstract(t: c.Type): Boolean = {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
@@ -294,7 +299,8 @@ private[surface] object SurfaceMacros {
       val argTypes = args.map { x: MethodArg =>
         toClassOf(x.tpe)
       }
-      val ref = q"wvlet.surface.MethodRef(${toClassOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
+      val ref =
+        q"wvlet.surface.MethodRef(${toClassOf(targetType)}, ${method.name.decodedName.toString}, Seq(..$argTypes), ${method.isConstructor})"
 
       var index = 0
       val surfaceParams = args.map { arg =>
@@ -346,7 +352,8 @@ private[surface] object SurfaceMacros {
 
           // Create a constructor call
           val constructor: c.Tree =
-            argExtractor.foldLeft[c.Tree](Select(New(Ident(targetType.dealias.typeSymbol)), termNames.CONSTRUCTOR))((x, arg) => Apply(x, arg))
+            argExtractor.foldLeft[c.Tree](Select(New(Ident(targetType.dealias.typeSymbol)), termNames.CONSTRUCTOR))(
+              (x, arg) => Apply(x, arg))
 
           // TODO: Support companion object call for instanciating the object
           val expr =

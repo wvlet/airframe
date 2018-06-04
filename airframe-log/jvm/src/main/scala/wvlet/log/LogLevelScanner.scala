@@ -143,7 +143,8 @@ object LogLevelScanner {
 
 }
 
-case class LogLevelScannerConfig(logLevelFileCandidates: Seq[String], scanInterval: Duration = Duration(1, TimeUnit.MINUTES))
+case class LogLevelScannerConfig(logLevelFileCandidates: Seq[String],
+                                 scanInterval: Duration = Duration(1, TimeUnit.MINUTES))
 
 import wvlet.log.LogLevelScanner._
 
@@ -201,7 +202,9 @@ private[log] class LogLevelScanner extends Guard { scanner =>
         lastScheduledMillis = Some(currentTimeMillis)
       }
       // wait until next scheduled time
-      val sleepTime = scanIntervalMillis - math.max(0, math.min(scanIntervalMillis, currentTimeMillis - lastScheduledMillis.get))
+      val sleepTime = scanIntervalMillis - math.max(
+        0,
+        math.min(scanIntervalMillis, currentTimeMillis - lastScheduledMillis.get))
       guard {
         if (configChanged.await(sleepTime, TimeUnit.MILLISECONDS)) {
           // awaken due to config change

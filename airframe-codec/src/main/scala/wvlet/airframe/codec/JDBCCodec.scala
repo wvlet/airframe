@@ -51,7 +51,8 @@ object JDBCCodec {
           BooleanArrayCodec.pack(p, a)
         case a: Array[AnyRef] =>
           debug(s"element class: ${a.head.getClass}")
-          throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
+          throw new UnsupportedOperationException(
+            s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
         case other =>
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }

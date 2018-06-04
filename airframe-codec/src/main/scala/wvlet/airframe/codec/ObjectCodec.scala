@@ -26,7 +26,8 @@ import scala.util.{Failure, Success, Try}
   */
 case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] with LogSupport {
 
-  private lazy val codecTable = surface.params.zip(paramCodec).map { case (p, c) => CName.toCanonicalName(p.name) -> c }.toMap[String, MessageCodec[_]]
+  private lazy val codecTable = surface.params
+    .zip(paramCodec).map { case (p, c) => CName.toCanonicalName(p.name) -> c }.toMap[String, MessageCodec[_]]
 
   override def pack(p: MessagePacker, v: A): Unit = {
     val numParams = surface.params.length

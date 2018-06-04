@@ -18,7 +18,8 @@ import java.math.BigInteger
 /**
   * Base class for message pack errors
   */
-class MessageException(val errorCode: ErrorCode, message: String = null, cause: Throwable = null) extends Exception(message, cause) {
+class MessageException(val errorCode: ErrorCode, message: String = null, cause: Throwable = null)
+    extends Exception(message, cause) {
   override def getMessage: String = {
     val s = new StringBuilder
     s.append(s"[${errorCode}]")
@@ -40,8 +41,10 @@ case class InsufficientBufferException(currentPosition: Int, expectedLength: Int
   * using a smaller types. For example, calling MessageUnpacker.unpackInt() for an integer value
   * that is larger than Integer.MAX_VALUE will cause this exception.
   */
-case class IntegerOverflowException(bigInteger: BigInteger) extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
-case class TooLargeMessageException(size: Long)             extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
+case class IntegerOverflowException(bigInteger: BigInteger)
+    extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
+case class TooLargeMessageException(size: Long)
+    extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
 
 object MessageException {
   def overflowU8(u8: Byte)    = new IntegerOverflowException(BigInteger.valueOf((u8 & 0xFF).toLong))

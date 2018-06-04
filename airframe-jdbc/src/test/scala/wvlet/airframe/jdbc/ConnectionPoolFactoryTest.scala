@@ -82,7 +82,8 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
     .bind[ConnectionPoolFactory].toSingleton
     .bind[MyDbConfig1].toInstance(DbConfig(database = "target/test/mydb1.sqlite"))
     .bind[MyDbConfig2].toInstance(DbConfig(database = "target/test/mydb2.sqlite"))
-    .bind[MyDbConfig3].toInstance(DbConfig(`type` = "postgresql", host = Option("localhost"), database = "travis_ci_test", user = Some("postgres")))
+    .bind[MyDbConfig3].toInstance(
+      DbConfig(`type` = "postgresql", host = Option("localhost"), database = "travis_ci_test", user = Some("postgres")))
 
   "ConnectionPoolFactory" should {
 

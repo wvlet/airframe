@@ -27,7 +27,8 @@ import scala.util.{Failure, Success, Try}
   * @param end
   */
 case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
-  require(start.compareTo(end) <= 0, s"invalid range: ${TimeStampFormatter.formatTimestamp(start)} > ${TimeStampFormatter.formatTimestamp(end)}")
+  require(start.compareTo(end) <= 0,
+          s"invalid range: ${TimeStampFormatter.formatTimestamp(start)} > ${TimeStampFormatter.formatTimestamp(end)}")
 
   private def instantOfStart = start.toInstant
   private def instantOfEnd   = end.toInstant

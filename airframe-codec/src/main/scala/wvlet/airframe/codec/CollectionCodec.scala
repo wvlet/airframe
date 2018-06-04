@@ -37,7 +37,11 @@ object CollectionCodec {
       }
     }
 
-    def unpack[A](u: MessageUnpacker, v: MessageHolder, surface: Surface, elementCodec: MessageCodec[A], newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
+    def unpack[A](u: MessageUnpacker,
+                  v: MessageHolder,
+                  surface: Surface,
+                  elementCodec: MessageCodec[A],
+                  newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
       // Read elements
       val len = u.unpackArrayHeader()
       val b   = newBuilder
@@ -140,7 +144,8 @@ object CollectionCodec {
   }
 
   // TODO Just use MapCodec for Scala and adapt the result type
-  case class JavaMapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B]) extends MessageCodec[java.util.Map[A, B]] {
+  case class JavaMapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
+      extends MessageCodec[java.util.Map[A, B]] {
     override def pack(p: MessagePacker, m: java.util.Map[A, B]): Unit = {
       p.packMapHeader(m.size)
       for ((k, v) <- m.asScala.seq) {

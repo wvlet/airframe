@@ -71,9 +71,21 @@ class DataSizeTest extends AirframeSpec {
     }
 
     "be comparable" in {
-      val input  = Seq("1GB".toDataSize, "8kB".toDataSize, "2048MB".toDataSize, "10B".toDataSize, "20MB".toDataSize, "10PB".toDataSize, "20PB".toDataSize)
+      val input = Seq("1GB".toDataSize,
+                      "8kB".toDataSize,
+                      "2048MB".toDataSize,
+                      "10B".toDataSize,
+                      "20MB".toDataSize,
+                      "10PB".toDataSize,
+                      "20PB".toDataSize)
       val sorted = input.sorted
-      sorted shouldBe Seq("10B".toDataSize, "8kB".toDataSize, "20MB".toDataSize, "1GB".toDataSize, "2048MB".toDataSize, "10PB".toDataSize, "20PB".toDataSize)
+      sorted shouldBe Seq("10B".toDataSize,
+                          "8kB".toDataSize,
+                          "20MB".toDataSize,
+                          "1GB".toDataSize,
+                          "2048MB".toDataSize,
+                          "10PB".toDataSize,
+                          "20PB".toDataSize)
     }
 
     "be reprsented as bytes" in {

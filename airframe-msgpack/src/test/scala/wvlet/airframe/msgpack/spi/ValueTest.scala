@@ -26,7 +26,8 @@ import wvlet.airframe.msgpack.spi.Value._
 class ValueTest extends AirframeSpec with PropertyChecks {
 
   private def rankOf(mf: MessageFormat): Int = {
-    val order = Seq(MessageFormat.INT8, MessageFormat.INT16, MessageFormat.INT32, MessageFormat.INT64, MessageFormat.UINT64)
+    val order =
+      Seq(MessageFormat.INT8, MessageFormat.INT16, MessageFormat.INT32, MessageFormat.INT64, MessageFormat.UINT64)
     order.zipWithIndex
       .find(x => x._1 == mf)
       .map(x => x._2)
@@ -68,7 +69,8 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       forAll { (v: Long) =>
         whenever(v > 0) {
           // Create value between 2^63-1 < v <= 2^64-1
-          checkSuccinctType(Packer.packBigInteger(_, BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))), MessageFormat.UINT64)
+          checkSuccinctType(Packer.packBigInteger(_, BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))),
+                            MessageFormat.UINT64)
         }
       }
     }
@@ -108,7 +110,10 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       a(0) shouldBe LongValue(0)
       a(1) shouldBe StringValue("hello")
       check(a, ValueType.ARRAY, "[0,\"hello\"]", "[0,\"hello\"]")
-      check(newArray(newArray(newString("Apple"), newFloat(0.2)), newNil), ValueType.ARRAY, """[["Apple",0.2],null]""", """[["Apple",0.2],null]""")
+      check(newArray(newArray(newString("Apple"), newFloat(0.2)), newNil),
+            ValueType.ARRAY,
+            """[["Apple",0.2],null]""",
+            """[["Apple",0.2],null]""")
     }
 
     "have string" in {
