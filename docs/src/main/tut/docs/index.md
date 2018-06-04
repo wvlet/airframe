@@ -41,11 +41,11 @@ case class AppConfig(appName:String)
 val d = newDesign
   .bind[AppConfig].toInstance(AppConfig("Hello Airframe!"))
 
-// Create a new session
-d.withSession { session=>
-  // AppConfig in the design will be used to build MyApp class
-  val app = session.build[MyApp] // new MyApp(AppConfig("Hello Airframe!"))
+// Create MyApp. AppConfig in the design will be used
+d.build[MyApp]{ app => // new MyApp(AppConfig("Hello Airframe!"))
+  // Do something with app
 }
+// Session will be closed here
 ```
 
 ### In-Trait Injection
@@ -163,11 +163,10 @@ finally {
 }
 ```
 
-You can also use `Design.withSession` to start and shutdown a session automatically:
+To simplify this session management, you can use `Design.build[A]` to start and shutdown a session automatically:
 ```scala
-design.withSesssion { session =>
-   // session.start will be called here
-   val p = session.build[P]
+design.build[P]{ p:P => // session.start and new instance of P will be created
+  // do something with P
 }
 // session.shutdown will be called here
 ```
@@ -197,6 +196,19 @@ trait Server {
 }
 ```
 These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
+
+### Eager Initialization of Singletons for Production
+
+In production, initializing singletons (by calling onStart) is preferred. To use production mode, 
+use `Design.buildProduction` or `Design.withProductionSession`:
+
+```scala
+// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called) 
+design.buildProduction[X]{ x =>
+  // Do something with X
+}
+```
+
 
 ### Annotation-based life cycle hooks
 

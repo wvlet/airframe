@@ -4,6 +4,12 @@ title: Release Notes
 ---
 
 # Release Notes
+## 0.49
+ - __Important__: `bind[X]`, `bind[X].to[Y]`, etc. now use singleton bindings by default. This is because most of the use cases expect binding
+ the same objects to traits. If you need to explicitly instantiate objects for each binding, use `bindInstance[X]` or `bind[X].toInstanceOf[Y]`.
+ - Add a handy method to start a session and build an object: `Design.build[A]{ a => ... }`.
+ - Support eager singleton initialization with `Design.buildProduction[A]` and `Design.withProductionSession`.
+ - (internal) Upgrade to sbt 1.1.6, Scala.js 0.6.23, scalajs-java-logging 0.1.4
 
 ## 0.48
  - Java 9/10 support

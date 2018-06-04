@@ -99,13 +99,14 @@ val design: Design =
   newDesign
     .bind[X].toInstance(new X)  // Bind type X to a concrete instance
     .bind[Y].toSingleton        // Bind type Y to a singleton object
-    .bind[Z].to[ZImpl]          // Bind type Z to ZImpl instance
+    .bind[Z].to[ZImpl]          // Bind type Z to a singletone of ZImpl instance
 ```
 
 Then **build** an instance and use it:
 ```scala
-val session = design.newSession
-val app: App = session.build[App]
+design.build[App]{ app =>
+  // Do something with App
+}
 ```
 
 Airframe builds an instance of `App` based on the binding rules specified in the *design* object. That means when writing applications, you only need to care about how to use objects (*bind*), rather than how to build them, because design objects already knows how to provide necessary objects to build your classes.
@@ -124,7 +125,8 @@ Major features of Airframe DI are as follows:
 - Supports all possible binding types: constructor, instance, provider, singleton bindings.
 - Built-in life cycle management of objects (init, shutdown, etc.) through sessions.
 - Scala macro based binding generation, which helps binding objects to your code.
-- Scala 2.11, 2.12, and [Scala.js](https://www.scala-js.org/) support.
+- Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/) support.
+- Java9/10 support.
 
 ## What's Next?
 
