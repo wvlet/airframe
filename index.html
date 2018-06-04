@@ -111,13 +111,14 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
   <span class="n">newDesign</span>
     <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="n">X</span><span class="o">)</span>  <span class="c1">// Bind type X to a concrete instance
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Y</span><span class="o">].</span><span class="n">toSingleton</span>        <span class="c1">// Bind type Y to a singleton object
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Z</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ZImpl</span><span class="o">]</span>          <span class="c1">// Bind type Z to ZImpl instance
+</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Z</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ZImpl</span><span class="o">]</span>          <span class="c1">// Bind type Z to a singletone of ZImpl instance
 </span></code></pre>
 </div>
 
 <p>Then <strong>build</strong> an instance and use it:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">design</span><span class="o">.</span><span class="n">newSession</span>
-<span class="k">val</span> <span class="n">app</span><span class="k">:</span> <span class="kt">App</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]{</span> <span class="n">app</span> <span class="k">=&gt;</span>
+  <span class="c1">// Do something with App
+</span><span class="o">}</span>
 </code></pre>
 </div>
 
@@ -141,7 +142,8 @@ Airframe can integrate the flexibility of Scala traits and dependency injection 
   <li>Supports all possible binding types: constructor, instance, provider, singleton bindings.</li>
   <li>Built-in life cycle management of objects (init, shutdown, etc.) through sessions.</li>
   <li>Scala macro based binding generation, which helps binding objects to your code.</li>
-  <li>Scala 2.11, 2.12, and <a href="https://www.scala-js.org/">Scala.js</a> support.</li>
+  <li>Scala 2.11, 2.12, 2.13, and <a href="https://www.scala-js.org/">Scala.js</a> support.</li>
+  <li>Java9/10 support.</li>
 </ul>
 
 <h2 id="whats-next">What’s Next?</h2>

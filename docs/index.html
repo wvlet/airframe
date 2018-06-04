@@ -43,12 +43,12 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">AppConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">AppConfig</span><span class="o">(</span><span class="s">"Hello Airframe!"</span><span class="o">))</span>
 
-<span class="c1">// Create a new session
-</span><span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span><span class="k">=&gt;</span>
-  <span class="c1">// AppConfig in the design will be used to build MyApp class
-</span>  <span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]</span> <span class="c1">// new MyApp(AppConfig("Hello Airframe!"))
+<span class="c1">// Create MyApp. AppConfig in the design will be used
+</span><span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]{</span> <span class="n">app</span> <span class="k">=&gt;</span> <span class="c1">// new MyApp(AppConfig("Hello Airframe!"))
+</span>  <span class="c1">// Do something with app
 </span><span class="o">}</span>
-</code></pre>
+<span class="c1">// Session will be closed here
+</span></code></pre>
 </div>
 
 <h3 id="in-trait-injection">In-Trait Injection</h3>
@@ -166,11 +166,10 @@ If you need to create a new instance for each binding, use <code class="highligh
 </code></pre>
 </div>
 
-<p>You can also use <code class="highlighter-rouge">Design.withSession</code> to start and shutdown a session automatically:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">withSesssion</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
-   <span class="c1">// session.start will be called here
-</span>   <span class="k">val</span> <span class="n">p</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span>
-<span class="o">}</span>
+<p>To simplify this session management, you can use <code class="highlighter-rouge">Design.build[A]</code> to start and shutdown a session automatically:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">P</span><span class="o">]{</span> <span class="n">p</span><span class="k">:</span><span class="kt">P</span> <span class="o">=&gt;</span> <span class="c1">// session.start and new instance of P will be created
+</span>  <span class="c1">// do something with P
+</span><span class="o">}</span>
 <span class="c1">// session.shutdown will be called here
 </span></code></pre>
 </div>
@@ -200,6 +199,18 @@ If you need to create a new instance for each binding, use <code class="highligh
 </code></pre>
 </div>
 <p>These life cycle hooks except <code class="highlighter-rouge">onInject</code> will be called only once when the binding type is singleton.</p>
+
+<h3 id="eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</h3>
+
+<p>In production, initializing singletons (by calling onStart) is preferred. To use production mode, 
+use <code class="highlighter-rouge">Design.buildProduction</code> or <code class="highlighter-rouge">Design.withProductionSession</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called) 
+</span><span class="n">design</span><span class="o">.</span><span class="n">buildProduction</span><span class="o">[</span><span class="kt">X</span><span class="o">]{</span> <span class="n">x</span> <span class="k">=&gt;</span>
+  <span class="c1">// Do something with X
+</span><span class="o">}</span>
+</code></pre>
+</div>
 
 <h3 id="annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</h3>
 
