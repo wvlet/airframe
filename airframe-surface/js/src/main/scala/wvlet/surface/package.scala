@@ -28,5 +28,6 @@ package object surface {
   def of[A]: Surface = macro SurfaceMacros.of[A]
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 
-  def getCached(fullName: String): Surface = surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))
+  def getCached(fullName: String): Surface =
+    surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))
 }

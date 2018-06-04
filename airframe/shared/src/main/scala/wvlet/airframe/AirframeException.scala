@@ -23,7 +23,8 @@ trait AirframeException extends Exception { self =>
 
 object AirframeException {
   case class MISSING_SESSION(cl: Class[_]) extends AirframeException {
-    override def getMessage: String = s"[$getCode] Session is not found inside ${cl}. You may need to define ${cl} as a trait or to use constructor injection."
+    override def getMessage: String =
+      s"[$getCode] Session is not found inside ${cl}. You may need to define ${cl} as a trait or to use constructor injection."
   }
   case class CYCLIC_DEPENDENCY(deps: Set[Surface]) extends AirframeException {
     override def getMessage: String = s"[$getCode] ${deps.mkString(" <- ")}"

@@ -33,7 +33,10 @@ object Stage {
 /**
   *
   */
-class SessionBuilder(design: Design, name: Option[String] = None, stage: Stage = Stage.DEVELOPMENT, handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
+class SessionBuilder(design: Design,
+                     name: Option[String] = None,
+                     stage: Stage = Stage.DEVELOPMENT,
+                     handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
     extends LogSupport {
 
   /**

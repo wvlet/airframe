@@ -65,15 +65,20 @@ private[log] object LogMacros {
 
     def logWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
       val logger = q"this.logger"
-      if (disabled(level)) q"()" else q"if ($logger.isEnabled($level)) $logger.logWithCause(${level}, ${source}, ${message}, ${cause})"
+      if (disabled(level)) q"()"
+      else q"if ($logger.isEnabled($level)) $logger.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
 
     def logMethod(level: c.universe.Tree, message: c.universe.Tree): c.universe.Tree = {
-      if (disabled(level)) q"()" else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.log(${level}, ${source}, ${message})"
+      if (disabled(level)) q"()"
+      else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.log(${level}, ${source}, ${message})"
     }
 
-    def logMethodWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
-      if (disabled(level)) q"()" else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.logWithCause(${level}, ${source}, ${message}, ${cause})"
+    def logMethodWithCause(level: c.universe.Tree,
+                           message: c.universe.Tree,
+                           cause: c.universe.Tree): c.universe.Tree = {
+      if (disabled(level)) q"()"
+      else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
   }
 

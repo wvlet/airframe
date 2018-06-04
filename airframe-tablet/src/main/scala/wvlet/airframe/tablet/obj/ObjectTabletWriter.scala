@@ -24,7 +24,9 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = Map.empty) extends TabletWriter[A] with LogSupport {
+class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = Map.empty)
+    extends TabletWriter[A]
+    with LogSupport {
 
   private val elementCodec = MessageCodec.default.withCodecs(codec).of[A]
 

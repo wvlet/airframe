@@ -119,7 +119,8 @@ case class CLOption(path: Path, annot: option, override val param: Parameter) ex
       if (p.startsWith("--") || p.startsWith("-")) {
         p
       } else {
-        throw new IllegalArgumentException("Invalid prefix %s (not beginning with - or --). Fix option of %s".format(p, param.name))
+        throw new IllegalArgumentException(
+          "Invalid prefix %s (not beginning with - or --). Fix option of %s".format(p, param.name))
       }
     }
 
@@ -132,7 +133,9 @@ case class CLOption(path: Path, annot: option, override val param: Parameter) ex
   * @param arg
   * @param param
   */
-case class CLArgument(path: Path, arg: argument, argIndex: Int, override val param: Parameter) extends CLOptionItemBase(param) with CLArgItem {
+case class CLArgument(path: Path, arg: argument, argIndex: Int, override val param: Parameter)
+    extends CLOptionItemBase(param)
+    with CLArgItem {
   def name: String =
     if (arg.name.isEmpty) {
       param.name
@@ -248,7 +251,8 @@ object ClassOptionSchema extends LogSupport {
   *
   * @param surface
   */
-class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val args: Seq[CLArgItem]) extends OptionSchema {
+class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val args: Seq[CLArgItem])
+    extends OptionSchema {
 
   def description = {
     surface.rawType.getDeclaredAnnotations
@@ -314,7 +318,8 @@ class MethodOptionSchema(method: MethodSurface) extends OptionSchema {
 
 }
 
-case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean) extends LogSupport {
+case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
+    extends LogSupport {
 
   def buildObject(surface: Surface): Any = {
     val b = ObjectBuilder(surface)

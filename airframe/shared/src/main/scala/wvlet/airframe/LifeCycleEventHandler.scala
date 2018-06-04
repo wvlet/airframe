@@ -29,7 +29,8 @@ trait LifeCycleEventHandler {
   def wraps(child: LifeCycleEventHandler): LifeCycleEventHandler  = new LifeCycleEventHandlerPair(this, child)
 }
 
-class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEventHandler) extends LifeCycleEventHandler {
+class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEventHandler)
+    extends LifeCycleEventHandler {
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
     prev.onInit(lifeCycleManager, t, injectee)
     next.onInit(lifeCycleManager, t, injectee)
@@ -52,7 +53,8 @@ class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEve
   }
 }
 
-class LifeCycleEventHandlerPair(parent: LifeCycleEventHandler, child: LifeCycleEventHandler) extends LifeCycleEventHandler {
+class LifeCycleEventHandlerPair(parent: LifeCycleEventHandler, child: LifeCycleEventHandler)
+    extends LifeCycleEventHandler {
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
     parent.onInit(lifeCycleManager, t, injectee)
     child.onInit(lifeCycleManager, t, injectee)

@@ -35,10 +35,13 @@ object ByteArrayBuffer {
   */
 case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadBuffer with WriteBuffer {
   require(offset >= 0, s"baseOffset ${offset} < 0")
-  require(offset + size <= a.length, s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
+  require(offset + size <= a.length,
+          s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}")
 
   override def slice(position: Int, newSize: Int): ReadBuffer = {
-    require(position + newSize <= size, s"Insufficient array length (${a.length}, offset:${offset}, size:${size}) for slice(${position}, ${newSize})")
+    require(
+      position + newSize <= size,
+      s"Insufficient array length (${a.length}, offset:${offset}, size:${size}) for slice(${position}, ${newSize})")
     ByteArrayBuffer(a, offset + position, newSize)
   }
 
@@ -112,7 +115,8 @@ case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadB
 
   def writeBytes(position: Int, source: Array[Byte], sourceOffset: Int, length: Int): Int = {
     require(source != null, "source is null")
-    require(sourceOffset + length <= source.length, s"Insufficient input buffer size ${source.length} for reading ${sourceOffset}+${length} bytes")
+    require(sourceOffset + length <= source.length,
+            s"Insufficient input buffer size ${source.length} for reading ${sourceOffset}+${length} bytes")
 
     ensureCapacity(position, length)
     Array.copy(source, sourceOffset, a, offset + position, length)

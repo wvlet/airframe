@@ -543,7 +543,8 @@ object Unpacker {
         Instant.ofEpochSecond(sec, nsecU32)
       case other =>
         cursor.resetCursor
-        throw new MessageException(INVALID_EXT_FORMAT, s"Timestamp type expects 4, 8, or 12 bytes of payload but got ${other} bytes")
+        throw new MessageException(INVALID_EXT_FORMAT,
+                                   s"Timestamp type expects 4, 8, or 12 bytes of payload but got ${other} bytes")
     }
     instant
   }

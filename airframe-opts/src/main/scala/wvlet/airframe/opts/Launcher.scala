@@ -133,11 +133,13 @@ class Launcher(surface: Surface) extends LogSupport {
     val p = new OptionParser(schema)
     val r = p.parse(args)
     trace(s"parse tree: ${r.parseTree}")
-    val mainObj: A         = r.buildObjectWithFilter(surface, _ != commandNameParam).asInstanceOf[A]
-    val cn: Option[String] = (for ((path, value) <- r.parseTree.dfs if path.fullPath == commandNameParam) yield value).toSeq.headOption
-    val helpIsOn           = r.showHelp || showHelp
+    val mainObj: A = r.buildObjectWithFilter(surface, _ != commandNameParam).asInstanceOf[A]
+    val cn: Option[String] =
+      (for ((path, value) <- r.parseTree.dfs if path.fullPath == commandNameParam) yield value).toSeq.headOption
+    val helpIsOn = r.showHelp || showHelp
     val result = try {
-      for (commandName <- cn; c <- findCommand(commandName, mainObj)) yield c.execute(mainObj, r.unusedArgument, helpIsOn)
+      for (commandName <- cn; c <- findCommand(commandName, mainObj))
+        yield c.execute(mainObj, r.unusedArgument, helpIsOn)
     } catch {
       case e: InvocationTargetException => throw e.getTargetException
     }

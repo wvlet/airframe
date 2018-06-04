@@ -105,7 +105,8 @@ object SurfaceFactory extends LogSupport {
     }
   }
 
-  def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
+  def hasAbstractMethods(t: ru.Type): Boolean =
+    t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
   private def isAbstract(t: ru.Type): Boolean = {
     t.typeSymbol.isAbstract && hasAbstractMethods(t)
@@ -118,7 +119,9 @@ object SurfaceFactory extends LogSupport {
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members.filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(isTargetMethod(_, t))
+      t.members
+        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
+          isTargetMethod(_, t))
     }
 
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
@@ -305,7 +308,8 @@ object SurfaceFactory extends LogSupport {
         EnumSurface(resolveClass(t))
     }
 
-    def hasAbstractMethods(t: ru.Type): Boolean = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
+    def hasAbstractMethods(t: ru.Type): Boolean =
+      t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
     private def isAbstract(t: ru.Type): Boolean = {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
@@ -315,7 +319,9 @@ object SurfaceFactory extends LogSupport {
       constructor.asMethod.fullName.endsWith("$init$")
 
     def publicConstructorsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members.filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(_.asMethod)
+      t.members
+        .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
+          _.asMethod)
     }
 
     def findPrimaryConstructorOf(t: ru.Type): Option[MethodSymbol] = {
@@ -419,7 +425,9 @@ object SurfaceFactory extends LogSupport {
     * @param typeArgs
     * @param params
     */
-  class RuntimeGenericSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface] = Seq.empty, override val params: Seq[Parameter] = Seq.empty)
+  class RuntimeGenericSurface(override val rawType: Class[_],
+                              override val typeArgs: Seq[Surface] = Seq.empty,
+                              override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None)
       with LogSupport {
     override val objectFactory: Option[ObjectFactory] = {

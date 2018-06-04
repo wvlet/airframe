@@ -25,7 +25,12 @@ import scala.util.Try
 /**
   *
   */
-private[airframe] class AirframeSession(sessionName: Option[String], binding: Seq[Binding], stage: Stage, val lifeCycleManager: LifeCycleManager) extends Session with LogSupport {
+private[airframe] class AirframeSession(sessionName: Option[String],
+                                        binding: Seq[Binding],
+                                        stage: Stage,
+                                        val lifeCycleManager: LifeCycleManager)
+    extends Session
+    with LogSupport {
   self =>
   import scala.collection.JavaConverters._
 
@@ -33,7 +38,8 @@ private[airframe] class AirframeSession(sessionName: Option[String], binding: Se
     val b = Seq.newBuilder[(Surface, Binding)]
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = wvlet.surface.of[Session]
-    val sessionBinding = ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
+    val sessionBinding =
+      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
     b += sessionSurface -> sessionBinding
 
     // Add user-defined bindings

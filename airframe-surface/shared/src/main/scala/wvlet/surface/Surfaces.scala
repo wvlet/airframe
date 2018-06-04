@@ -102,7 +102,8 @@ object Primitive {
   case object Unit extends PrimitiveSurface(classOf[Unit])
 }
 
-case class Alias(override val name: String, override val fullName: String, ref: Surface) extends GenericSurface(ref.rawType, ref.typeArgs, ref.params, ref.objectFactory) {
+case class Alias(override val name: String, override val fullName: String, ref: Surface)
+    extends GenericSurface(ref.rawType, ref.typeArgs, ref.params, ref.objectFactory) {
   override def toString: String     = s"${name}:=${ref.name}"
   override def isAlias: Boolean     = true
   override def isPrimitive: Boolean = ref.isPrimitive
@@ -115,17 +116,20 @@ case object ExistentialType extends GenericSurface(classOf[Any]) {
   override def fullName: String = "_"
 }
 
-case class ArraySurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
+case class ArraySurface(override val rawType: Class[_], elementSurface: Surface)
+    extends GenericSurface(rawType, Seq(elementSurface)) {
   override def name: String     = s"Array[${elementSurface.name}]"
   override def fullName: String = s"Array[${elementSurface.fullName}]"
   override def toString: String = name
 }
 
-case class OptionSurface(override val rawType: Class[_], elementSurface: Surface) extends GenericSurface(rawType, Seq(elementSurface)) {
+case class OptionSurface(override val rawType: Class[_], elementSurface: Surface)
+    extends GenericSurface(rawType, Seq(elementSurface)) {
   override def isOption: Boolean = true
 }
-case class EnumSurface(override val rawType: Class[_])                                       extends GenericSurface(rawType)           {}
-case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface]) extends GenericSurface(rawType, typeArgs) {}
+case class EnumSurface(override val rawType: Class[_]) extends GenericSurface(rawType) {}
+case class TupleSurface(override val rawType: Class[_], override val typeArgs: Seq[Surface])
+    extends GenericSurface(rawType, typeArgs) {}
 
 case class TaggedSurface(base: Surface, tag: Surface) extends Surface {
   override def toString: String       = name
@@ -217,7 +221,8 @@ case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surfac
   override def objectFactory: Option[ObjectFactory] = ref.objectFactory
 }
 
-case class ClassMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter]) extends MethodSurface {
+case class ClassMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter])
+    extends MethodSurface {
   override def call(obj: Any, x: Any*) = {
     throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
   }

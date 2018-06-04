@@ -53,7 +53,8 @@ case class RuntimeMethodParameter(
       }
       // Find Scala methods for retrieving default values. Since Scala 2.10 appply or $lessinit$greater$ can be the prefix
       val m =
-        findMethod("apply$default$%d".format(index + 1)).orElse(findMethod("$lessinit$greater$default$%d".format(index + 1)))
+        findMethod("apply$default$%d".format(index + 1))
+          .orElse(findMethod("$lessinit$greater$default$%d".format(index + 1)))
       try {
         m.map(_.invoke(companion))
       } catch {

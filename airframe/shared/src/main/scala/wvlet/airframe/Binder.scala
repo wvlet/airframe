@@ -136,23 +136,31 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
   def toInstanceProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToProvider2[D1, D2]
   def toInstanceProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToProvider3[D1, D2, D3]
   def toInstanceProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToProvider4[D1, D2, D3, D4]
-  def toInstanceProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToProvider5[D1, D2, D3, D4, D5]
+  def toInstanceProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
+    macro bindToProvider5[D1, D2, D3, D4, D5]
 
   def toProvider[D1](factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
   def toProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
   def toProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
-  def toProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToSingletonProvider4[D1, D2, D3, D4]
-  def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
+  def toProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
+    macro bindToSingletonProvider4[D1, D2, D3, D4]
+  def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
+    macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
 
   def toSingletonProvider[D1](factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
   def toSingletonProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
   def toSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
-  def toSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToSingletonProvider4[D1, D2, D3, D4]
-  def toSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
+  def toSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
+    macro bindToSingletonProvider4[D1, D2, D3, D4]
+  def toSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
+    macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
 
   def toEagerSingletonProvider[D1](factory: D1 => A): Design = macro bindToEagerSingletonProvider1[D1]
   def toEagerSingletonProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToEagerSingletonProvider2[D1, D2]
-  def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToEagerSingletonProvider3[D1, D2, D3]
-  def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
-  def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design = macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
+  def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design =
+    macro bindToEagerSingletonProvider3[D1, D2, D3]
+  def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
+    macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
+  def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
+    macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
 }

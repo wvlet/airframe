@@ -43,7 +43,8 @@ object StandardCodec {
     surface.of[Date]          -> JavaUtilDateCodec
   )
 
-  val standardCodec: Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec ++ javaTimeCodec
+  val standardCodec
+    : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec ++ javaTimeCodec
 
   object FileCodec extends MessageCodec[File] {
     override def pack(p: MessagePacker, v: File): Unit = {
@@ -108,7 +109,8 @@ object StandardCodec {
         case Success(zd) =>
           v.setObject(zd)
         case Failure(e) =>
-          v.setIncompatibleFormatException(this, s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
+          v.setIncompatibleFormatException(this,
+                                           s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
       }
     }
   }

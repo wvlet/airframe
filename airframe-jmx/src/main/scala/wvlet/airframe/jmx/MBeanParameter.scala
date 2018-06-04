@@ -29,7 +29,11 @@ case class MBeanObjectParameter(name: String, description: String, param: Parame
   }
 }
 
-case class NestedMBeanParameter(name: String, description: String, parentParam: ParameterBase, nestedParam: ParameterBase) extends MBeanParameter {
+case class NestedMBeanParameter(name: String,
+                                description: String,
+                                parentParam: ParameterBase,
+                                nestedParam: ParameterBase)
+    extends MBeanParameter {
   def valueType = nestedParam.surface
   override def get(obj: AnyRef): AnyRef = {
     nestedParam.call(parentParam.call(obj)).asInstanceOf[AnyRef]
