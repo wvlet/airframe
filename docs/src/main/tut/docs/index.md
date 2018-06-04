@@ -165,11 +165,12 @@ finally {
 
 To simplify this session management, you can use `Design.build[A]` to start and shutdown a session automatically:
 ```scala
-design.build[P]{ p:P => // session.start and new instance of P will be created
+design.build[P]{ p:P => // session.start will be called, and a new instance of P will be created
   // do something with P
 }
 // session.shutdown will be called here
 ```
+This pattern is useful since you usually need a single entry point for starting an application.
 
 ## Life Cycle
 
