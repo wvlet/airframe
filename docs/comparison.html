@@ -65,18 +65,18 @@ dependencies ambiguous.</p>
 <ul>
   <li><strong>Do you need auto-wiring</strong>?
     <ul>
-      <li>If passing dependency objects between your classes is not so cumbersome, pure-Scala approach with manual object wiring will fit. If you need to wire hundreds of objects including configuration objects and service modules, DI frameworks will reduce the amount of hand-written code.</li>
+      <li>If passing dependency objects between your classes is not so cumbersome, pure-Scala approach will fit. If you need to wire hundreds of objects including configuration objects and service modules, DI frameworks will reduce the amount of hand-written code.</li>
     </ul>
   </li>
   <li><strong>Which do you need most? Compile-time dependency check or dynamic-type binding?</strong>
     <ul>
-      <li>If you have rarely used modules and it is difficult to write test code that checks the presence of all possible dependencies, compile-time dependency check will protect you from missing dependency errors at runtime.</li>
-      <li>If you need to switch the behavior of some modules according to the environment (e.g., test, production, or specialied enviroment, etc.), runtime DI is a natural choice.</li>
+      <li>If you have rarely used modules and it is difficult to write exhaustive tests for checking the presence of all possible dependencies, compile-time dependency check will protect you from missing dependency errors at runtime.</li>
+      <li>If you need to switch the behavior of some modules according to the environment (e.g., test, production, or specialized environment, etc.), runtime DI is a natural choice.</li>
     </ul>
   </li>
   <li><strong>Do you need object life-cycle management support?</strong>
     <ul>
-      <li>If you need to laziliy initialize objects (e.g., for testing), but want to eagerly initilaize all objects for production, Airframe has a rich support for life-cycle management.</li>
+      <li>If you need to lazily initialize objects (e.g., for testing), but want to eagerly initialize all objects for production, Airframe has rich support of life-cycle management.</li>
       <li>If you have several services that need to be properly started/closed, having life cycle hooks (onStart/onShutdown, etc.) will be convenient.</li>
     </ul>
   </li>
@@ -98,7 +98,7 @@ dependencies ambiguous.</p>
       <td style="text-align: center">✓</td>
       <td style="text-align: center">✓</td>
       <td style="text-align: center">✓</td>
-      <td style="text-align: center">(Manual)</td>
+      <td style="text-align: center">(Manual wiring)</td>
     </tr>
     <tr>
       <td>Compile-time dependency check</td>
@@ -111,7 +111,7 @@ dependencies ambiguous.</p>
       <td>Dynamic-type binding</td>
       <td style="text-align: center">✓</td>
       <td style="text-align: center">✓</td>
-      <td style="text-align: center">x</td>
+      <td style="text-align: center"> </td>
       <td style="text-align: center">✓ (using <a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2">implicit classes</a>)</td>
     </tr>
     <tr>
@@ -201,7 +201,7 @@ dependencies ambiguous.</p>
       <li><strong>cons</strong>: Missed binding founds as a runtime error.</li>
     </ul>
   </li>
-  <li>Pure-Scala Approach
+  <li>Pure-Scala approach
     <ul>
       <li><strong>pros</strong>: It’s just Scala! No special extention is required.</li>
       <li><strong>pros</strong>: Since all objects are manually wired, missing dependencies will be reported as compile errors.</li>
