@@ -17,13 +17,17 @@ ga('send', 'pageview');
     <ul>
       <li>One of the disadvantages of Guice is it requires constructor annotation like <code class="highlighter-rouge">@Inject</code>. This is less convenient if you are using third-party libraries, which cannot add such annotations. So you often need to write many provider binding modules to use third-party classes.</li>
       <li>Airframe has provider bindings in <code class="highlighter-rouge">bind { d1: D1 =&gt; new X(d1) }</code> syntax so that you can directly call the constructor of third-party classes. No need to implement object binding modules.</li>
+      <li><a href="https://github.com/embulk/guice-bootstrap">Guice Bootstrap</a> is an extention of Guice to support life-cycle management using <code class="highlighter-rouge">@PostConstruct</code> and <code class="highlighter-rouge">@PreDestroy</code> annotations.</li>
     </ul>
   </li>
   <li>
     <p><a href="https://github.com/scaldi/scaldi">Scaldi</a> is an early adaptor of Guice like DI for Scala and has implemented all of the major functionalities of Guice. However it requires extending your class with Scaldi <code class="highlighter-rouge">Module</code>. Airframe is simplifying it so that you only need to use <code class="highlighter-rouge">bind[X]</code> without extending any trait.</p>
   </li>
   <li>
-    <p><a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html">Spring IoC container</a> Spring framework popularized the notion of <a href="https://martinfowler.com/articles/injection.html">Inversion of Control</a>, which is now simply called DI. Spring uses XML based configuration, which is less programmer-friendly, but it has been useful to manage ordering of object initializations outside the program.</p>
+    <p><a href="https://github.com/zalando/grafter">Grafter</a> is a DI library focusing on constructor injections for Scala.</p>
+  </li>
+  <li>
+    <p><a href="https://docs.spring.io/spring/docs/current/spring-framework-reference/html/beans.html">Spring IoC container</a> Spring framework popularized the notion of <a href="https://martinfowler.com/articles/injection.html">Inversion of Control</a>, which is now simply called DI. Spring uses XML based configuration, which is less programmer-friendly, but it has been useful to manage ordering of object initializations outside the program. Note: Spring framework has stopped supporting Scala.</p>
   </li>
   <li><a href="http://weld.cdi-spec.org/">Weld</a> is a reference implementation of <a href="http://cdi-spec.org/">Contexts &amp; Dependency Injection for Java (CDP)</a> specifications for managing object life cycle and DI for Java EE applications. Weld, for example, has HTTP request scoped object life cycle, annotations for describing how to inject dependencies, etc.</li>
 </ul>
@@ -41,6 +45,140 @@ MacWire ensures all binding types are available at compile time, so if some depe
 </ul>
 
 <p>Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is <a href="https://github.com/guardian/frontend">Guardian</a>’s <a href="https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala">frontend code</a>, which lists 30 dependencies, including transitive dependenceis, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.</p>
+
+<h2 id="pure-scala-approaches">Pure-Scala Approaches</h2>
+
+<p>There are several pure-Scala approaches for DI. <a href="https://www.cakesolutions.net/teamblogs/2011/12/19/cake-pattern-in-depth">Cake Pattern</a> was born around 2010 and introduced the notion of type abstraction and cake composition. But generally speaking cake pattern adds substantial complexity to your program and have many pitfalls as described in the following blog post:</p>
+<ul>
+  <li><a href="https://kubuszok.com/2018/cake-antipattern/">Cake antipattern</a></li>
+</ul>
+
+<p><a href="https://medium.com/@AyacheKhettar/using-cat-data-reader-monad-d70269fc451f">Reader Monad</a> is another design pattern in Scala, which cascades dependency passting using nested functions. But it has some performance overhead and it makes the scope of
+dependencies ambiguous.</p>
+
+<p><a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa">Dependency Injection in Functional Programming</a> is one of the best practices of pure-Scala DI, which doesn’t rely on any framework. To manage lifecycle of objects, this approach needs to use IO Monad library like <a href="https://typelevel.org/cats-effect/">Cats Effect</a>.</p>
+
+<h2 id="feature-matrix-of-di-frameworks">Feature Matrix of DI Frameworks</h2>
+
+<p>The chart below shows major features supported in selected DI frameworks. For comparison, pure-Scala approach is also added. Key questions in choosing a DI framework (or not using it) would be as follows:</p>
+
+<ul>
+  <li><strong>Do you need auto-wiring</strong>?
+    <ul>
+      <li>If passing dependency objects between your classes is not so cumbersome, pure-Scala approach with manual object wiring will fit. If you need to wire hundreds of objects including configuration objects and service modules, DI frameworks will reduce the amount of hand-written code.</li>
+    </ul>
+  </li>
+  <li><strong>Which do you need most? Compile-time dependency check or dynamic-type binding?</strong>
+    <ul>
+      <li>If you have rarely used modules and it is difficult to write test code that checks the presence of all possible dependencies, compile-time dependency check will protect you from missing dependency errors at runtime.</li>
+      <li>If you need to switch the behavior of some modules according to the environment (e.g., test, production, or specialied enviroment, etc.), runtime DI is a natural choice.</li>
+    </ul>
+  </li>
+  <li><strong>Do you need object life-cycle management support?</strong>
+    <ul>
+      <li>If you need to laziliy initialize objects (e.g., for testing), but want to eagerly initilaize all objects for production, Airframe has a rich support for life-cycle management.</li>
+      <li>If you have several services that need to be properly started/closed, having life cycle hooks (onStart/onShutdown, etc.) will be convenient.</li>
+    </ul>
+  </li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th style="text-align: center"><a href="https://github.com/wvlet/airframe">Airframe</a></th>
+      <th style="text-align: center"><a href="https://github.com/google/guice">Google Guice</a></th>
+      <th style="text-align: center"><a href="https://github.com/adamw/macwire">MacWire</a></th>
+      <th style="text-align: center"><a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa">Pure Scala</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Auto-wiring</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">(Manual)</td>
+    </tr>
+    <tr>
+      <td>Compile-time dependency check</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓</td>
+    </tr>
+    <tr>
+      <td>Dynamic-type binding</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">x</td>
+      <td style="text-align: center">✓ (using <a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2">implicit classes</a>)</td>
+    </tr>
+    <tr>
+      <td><a href="index.html#constructor-injection">Constructor injection</a></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (Require <code class="highlighter-rouge">@Inject</code> annotation)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (manual argument passing)</td>
+    </tr>
+    <tr>
+      <td><a href="index.html#in-trait-injection">In-trait injection</a> (mix-in support)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">(Java has no trait)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (manual override)</td>
+    </tr>
+    <tr>
+      <td><a href="index.html#life-cycle">Life-cycle management</a> (On start/inject/shutdown hooks)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">(Need an extension like <a href="https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap">airlift</a>)</td>
+      <td style="text-align: center">limited (inject interceptor using reflection)</td>
+      <td style="text-align: center">(Need to use IO Monad library like <a href="https://typelevel.org/cats-effect/">Cats Effect</a>)</td>
+    </tr>
+    <tr>
+      <td><a href="index.html#life-cycle">Lazy/eager initialization switch</a></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (with Stage)</td>
+      <td style="text-align: center">(lazy only)</td>
+      <td style="text-align: center">(lazy only)</td>
+    </tr>
+    <tr>
+      <td><a href="bindings.html#multi-binding">Multi-bindings</a></td>
+      <td style="text-align: center">✓ (Just Scala)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (Just Scala)</td>
+      <td style="text-align: center">✓ (Just Scala)</td>
+    </tr>
+    <tr>
+      <td><a href="bindings.html">Tagged type/alias bindings</a></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">limited (Need to define new annotations)</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (manual binding)</td>
+    </tr>
+    <tr>
+      <td><a href="http://wvlet.org/airframe/docs/bindings.html#generic-type-binding">Generic type bindings</a></td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">(Type erasure)</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center">✓ (manual binding)</td>
+    </tr>
+    <tr>
+      <td>Provider bindings</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center">✓ (Need to define special provider classes)</td>
+      <td style="text-align: center">✓ (wireWith)</td>
+      <td style="text-align: center">limited (Need to use <code class="highlighter-rouge">implicits</code>)</td>
+    </tr>
+    <tr>
+      <td>Scala.js support</td>
+      <td style="text-align: center">✓</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center">limited (reflection-based interceptor cannot be used)</td>
+      <td style="text-align: center">✓</td>
+    </tr>
+  </tbody>
+</table>
 
 <h2 id="summary">Summary</h2>
 
@@ -63,9 +201,16 @@ MacWire ensures all binding types are available at compile time, so if some depe
       <li><strong>cons</strong>: Missed binding founds as a runtime error.</li>
     </ul>
   </li>
+  <li>Pure-Scala Approach
+    <ul>
+      <li><strong>pros</strong>: It’s just Scala! No special extention is required.</li>
+      <li><strong>pros</strong>: Since all objects are manually wired, missing dependencies will be reported as compile errors.</li>
+      <li><strong>cons</strong>: Requires manual binding and overrides of classes.</li>
+      <li><strong>cons</strong>: Need to think about how to pass explicit/implicit parameters to classs and traits.</li>
+    </ul>
+  </li>
 </ul>
 
-<p>Airframe belongs to a runtime dependency injection library, and resolves several short-comings of Google Guice (lack of lifecycle manager, difficulty of binding third-party objects, etc.). We also have implemented Scala-friendly DI syntax in Airframe. For the performance reason, Airframe uses Scala macros to generate binding code as much as possible (except dynamic type binding, which cannot be found at compile-time). To use Airframe, you don’t need to understand the whole concept of DI and features in the existing DI frameworks. Just <code class="highlighter-rouge">bind</code>-<code class="highlighter-rouge">design</code>-<code class="highlighter-rouge">build</code> objects. That is all you need to know!</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
