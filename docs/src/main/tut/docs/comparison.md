@@ -46,19 +46,19 @@ dependencies ambiguous.
 The chart below shows major features supported in selected DI frameworks. For comparison, pure-Scala approach is also added. Key questions in choosing a DI framework (or not using it) would be as follows:
 
 - __Do you need auto-wiring__?
-  - If passing dependency objects between your classes is not so cumbersome, pure-Scala approach with manual object wiring will fit. If you need to wire hundreds of objects including configuration objects and service modules, DI frameworks will reduce the amount of hand-written code.
+  - If passing dependency objects between your classes is not so cumbersome, pure-Scala approach will fit. If you need to wire hundreds of objects including configuration objects and service modules, DI frameworks will reduce the amount of hand-written code.
 - __Which do you need most? Compile-time dependency check or dynamic-type binding?__
-  - If you have rarely used modules and it is difficult to write test code that checks the presence of all possible dependencies, compile-time dependency check will protect you from missing dependency errors at runtime.
-  - If you need to switch the behavior of some modules according to the environment (e.g., test, production, or specialied enviroment, etc.), runtime DI is a natural choice.
+  - If you have rarely used modules and it is difficult to write exhaustive tests for checking the presence of all possible dependencies, compile-time dependency check will protect you from missing dependency errors at runtime.
+  - If you need to switch the behavior of some modules according to the environment (e.g., test, production, or specialized environment, etc.), runtime DI is a natural choice.
 - __Do you need object life-cycle management support?__
-  - If you need to laziliy initialize objects (e.g., for testing), but want to eagerly initilaize all objects for production, Airframe has a rich support for life-cycle management.
+  - If you need to lazily initialize objects (e.g., for testing), but want to eagerly initialize all objects for production, Airframe has rich support of life-cycle management.
   - If you have several services that need to be properly started/closed, having life cycle hooks (onStart/onShutdown, etc.) will be convenient.
 
 | Feature    | [Airframe](https://github.com/wvlet/airframe) | [Google Guice](https://github.com/google/guice)| [MacWire](https://github.com/adamw/macwire) |  [Pure Scala](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa)   |
 |-----------------------|:---------:|:--------------------------------:|:-------:|:----------------:|
-| Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual) |
+| Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual wiring) |
 | Compile-time dependency check    |    |   |  ✓  |  ✓  |
-| Dynamic-type binding  |   ✓    | ✓   |  x   |  ✓ (using [implicit classes](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
+| Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit classes](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
 | [Constructor injection](index.html#constructor-injection) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
 | [In-trait injection](index.html#in-trait-injection) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
 | [Life-cycle management](index.html#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |
@@ -86,7 +86,7 @@ The chart below shows major features supported in selected DI frameworks. For co
   - **pros**: Can customize object life cycle events through session (Airframe)or inject event handler (Guice).
   - **cons**: Missed binding founds as a runtime error.
 
-- Pure-Scala Approach
+- Pure-Scala approach
   - **pros**: It's just Scala! No special extention is required.
   - **pros**: Since all objects are manually wired, missing dependencies will be reported as compile errors.
   - **cons**: Requires manual binding and overrides of classes.
