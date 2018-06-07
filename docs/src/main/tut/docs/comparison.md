@@ -58,11 +58,11 @@ The chart below shows major features supported in selected DI frameworks. For co
 |-----------------------|:---------:|:--------------------------------:|:-------:|:----------------:|
 | Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual wiring) |
 | Compile-time dependency check    |    |   |  ✓  |  ✓  |
-| Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit classes](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
+| Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit parmeters](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
 | [Constructor injection](index.html#constructor-injection) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
 | [In-trait injection](index.html#in-trait-injection) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
 | [Life-cycle management](index.html#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |
-| [Lazy/eager initialization switch](index.html#life-cycle)  |  ✓     |  ✓ (with Stage)     |  (lazy only) |  (lazy only)  |
+| [Lazy/eager initialization switch](index.html#life-cycle)  |  ✓     |  ✓ (with [Stage](https://github.com/google/guice/wiki/Bootstrap)     |  (lazy only) |  (lazy only)  |
 | [Multi-bindings](bindings.html#multi-binding) |✓ (Just Scala) | ✓ |✓ (Just Scala) |✓ (Just Scala)
 | [Tagged type/alias bindings](bindings.html)   |✓ | limited (Need to define new annotations) |✓|✓ (manual binding) |
 | [Generic type bindings](http://wvlet.org/airframe/docs/bindings.html#generic-type-binding) | ✓ |  (Type erasure) |  | ✓ (manual binding) |
