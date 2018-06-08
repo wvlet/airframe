@@ -38,8 +38,9 @@ class TimeWindowTest extends AirframeSpec {
   }
 
   def parse(s: String, expected: String): TimeWindow = {
-    val w = t.parse(s)
-    debug(s"str:${s}, window:${w}")
+    val w  = t.parse(s)
+    val ws = w.toString // Check toString
+    debug(s"str:${s}, window:${ws}")
     w.toStringAt(zone) shouldBe expected
     w
   }
