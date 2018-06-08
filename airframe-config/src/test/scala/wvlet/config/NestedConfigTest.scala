@@ -28,8 +28,8 @@ class NestedConfigTest extends AirframeSpec {
       val config = Config(env = "default", configPaths = configPaths)
         .registerFromYaml[ServerPoolConfig]("nested.yml")
 
-      info(config)
-
+      val s = config.toString
+      debug(s)
     }
   }
 

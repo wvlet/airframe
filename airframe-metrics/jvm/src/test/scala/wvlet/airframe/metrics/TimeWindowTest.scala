@@ -25,7 +25,7 @@ class TimeWindowTest extends AirframeSpec {
 
   val t    = TimeWindow.withTimeZone("PDT").withOffset("2016-06-26 01:23:45-0700")
   val zone = t.zone
-  info(s"now: ${t.now}")
+  debug(s"now: ${t.now}")
 
   val defaultTimeZone = TimeZone.getDefault
 
@@ -38,8 +38,9 @@ class TimeWindowTest extends AirframeSpec {
   }
 
   def parse(s: String, expected: String): TimeWindow = {
-    val w = t.parse(s)
-    info(s"str:${s}, window:${w}")
+    val w  = t.parse(s)
+    val ws = w.toString // Check toString
+    debug(s"str:${s}, window:${ws}")
     w.toStringAt(zone) shouldBe expected
     w
   }
@@ -143,18 +144,18 @@ class TimeWindowTest extends AirframeSpec {
 
     "split time windows" in {
       val weeks = t.parse("5w").splitIntoWeeks
-      info(weeks.mkString("\n"))
+      debug(weeks.mkString("\n"))
 
       val weeks2 = t.parse("-5w/2017-06-01").splitIntoWeeks
-      info(weeks2.mkString("\n"))
+      debug(weeks2.mkString("\n"))
 
       val months = t.parse("thisYear/thisMonth").splitIntoMonths
-      info(months.mkString("\n"))
+      debug(months.mkString("\n"))
       val months2 = t.parse("thisYear/0M").splitIntoMonths
-      info(months2.mkString("\n"))
+      debug(months2.mkString("\n"))
 
       val days = t.parse("thisMonth").splitIntoWeeks
-      info(days.mkString("\n"))
+      debug(days.mkString("\n"))
     }
 
     "parse timezone" in {

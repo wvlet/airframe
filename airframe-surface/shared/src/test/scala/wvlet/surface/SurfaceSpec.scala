@@ -22,7 +22,7 @@ trait SurfaceSpec extends AirframeSpec {
 
   def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
-    info(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
+    debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
     surface.toString shouldBe expectedName
     surface
   }

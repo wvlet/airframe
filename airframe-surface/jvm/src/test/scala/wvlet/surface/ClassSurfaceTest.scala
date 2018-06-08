@@ -32,7 +32,7 @@ class ClassSurfaceTest extends SurfaceSpec {
   "Surface for Class" should {
     "support multiple param blocks" in {
       val a = check(surface.of[A], "A")
-      info(a.params.mkString(", "))
+      debug(a.params.mkString(", "))
 
       a.params.length shouldBe 2
 

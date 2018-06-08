@@ -13,25 +13,39 @@
  */
 package wvlet.log
 
+import java.io.{ByteArrayOutputStream, PrintStream}
 import java.util.{logging => jul}
 
 import org.scalatest.Tag
 import wvlet.log.LogFormatter._
 import wvlet.log.LogLevel.LogOrdering
+import wvlet.log.LoggerTest.capture
+
+object LoggerTest {
+  def capture[U](body: => U): String = {
+    val buf = new ByteArrayOutputStream()
+    Console.withErr(buf) {
+      body
+    }
+    buf.toString
+  }
+}
 
 class MyAppClass extends LogSupport {
-  error("error message")
-  warn("warn message")
-  info("info message")
-  debug("debug message")
-  trace("trace message")
+  capture {
+    error("error message")
+    warn("warn message")
+    info("info message")
+    debug("debug message")
+    trace("trace message")
 
-  info(null)
-  info("""This is a multi-line
-      |log message!""".stripMargin)
-  info(Seq(1, 2, 3, 4))
+    info(null)
+    info("""This is a multi-line
+        |log message!""".stripMargin)
+    info(Seq(1, 2, 3, 4))
 
-  warn("stack trace test", new Exception("stack trace test"))
+    warn("stack trace test", new Exception("stack trace test"))
+  }
 }
 
 trait Sample
@@ -75,7 +89,7 @@ class LoggerTest extends Spec {
     }
 
     "display log messages" taggedAs (Tag("app")) in {
-      info("logging test")
+      debug("logging test")
       new MyAppClass
     }
 
@@ -110,46 +124,54 @@ class LoggerTest extends Spec {
 
     "can create local logger" in {
       Logger.setDefaultFormatter(SourceCodeLogFormatter)
-      val l = Logger("org.sample")
-      info(s"logger name: ${l.getName}")
-      l.info("hello logger")
+      capture {
+        val l = Logger("org.sample")
+        info(s"logger name: ${l.getName}")
+        l.info("hello logger")
+      }
     }
 
     "be able to change log levels" in {
-      val l = Logger("org.sample")
-      l.setLogLevel(LogLevel.TRACE)
-      l.getLogLevel shouldBe LogLevel.TRACE
-      l.resetLogLevel
-      l.clear
+      capture {
+        val l = Logger("org.sample")
+        l.setLogLevel(LogLevel.TRACE)
+        l.getLogLevel shouldBe LogLevel.TRACE
+        l.resetLogLevel
+        l.clear
+      }
     }
 
     "support logging methods" in {
-      val l = Logger("org.sample")
-      l.trace("trace")
-      l.debug("debug")
-      l.info("info")
-      l.warn("warn")
-      l.error("error")
+      capture {
+        val l = Logger("org.sample")
+        l.trace("trace log test")
+        l.debug("debug log test")
+        l.info("info log test")
+        l.warn("warn log test")
+        l.error("error log test")
+      }
     }
 
     "display exception stack traces" in {
-      val e = new Exception("exception test")
-      warn("Running stack trace tests")
-      warn(e)
-      warn(new Error("error test"))
-      trace("error", e)
-      debug("error", e)
-      info("error", e)
-      warn("error", e)
-      error("error", e)
+      capture {
+        val e = new Exception("exception test")
+        warn("Running stack trace tests")
+        warn(e)
+        warn(new Error("error test"))
+        trace("error log test", e)
+        debug("error log test", e)
+        info("error log test", e)
+        warn("error log test", e)
+        error("error log test", e)
 
-      val l = Logger("org.sample")
-      l.warn(e)
-      l.trace("error", e)
-      l.debug("error", e)
-      l.info("error", e)
-      l.warn("error", e)
-      l.error("error", e)
+        val l = Logger("org.sample")
+        l.warn(e)
+        l.trace("error log test", e)
+        l.debug("error log test", e)
+        l.info("error log test", e)
+        l.warn("error log test", e)
+        l.error("error log test", e)
+      }
     }
 
     "support having a concrete logger" in {

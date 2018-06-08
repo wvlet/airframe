@@ -7,7 +7,7 @@ import wvlet.log.io.IOUtil
 object SerializationTest {
 
   trait A extends LogSupport {
-    info("new A")
+    debug("new A")
     def hello = info("hello")
   }
 }
@@ -28,7 +28,7 @@ class SerializationTest extends Spec {
       }
       val ser = b.toByteArray
       IOUtil.withResource(new ObjectInputStream(new ByteArrayInputStream(ser))) { in =>
-        info("deserialization")
+        debug("deserialization")
         val a = in.readObject().asInstanceOf[A]
         a.hello
       }

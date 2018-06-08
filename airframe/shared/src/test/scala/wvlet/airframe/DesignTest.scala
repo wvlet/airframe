@@ -81,7 +81,10 @@ class DesignTest extends AirframeSpec {
     }
 
     "display design" in {
-      info(d1.toString)
+      val s = d1.toString
+      // sanity test
+      s shouldNot be(empty)
+      debug(d1.toString)
     }
 
     "remove binding" in {
