@@ -24,7 +24,7 @@ object SerializationTest extends LogSupport {
 
   def provider1(a1: A1): App = {
     val app = App(a1)
-    info(s"Created ${app} from ${a1}")
+    debug(s"Created ${app} from ${a1}")
     app
   }
   val d = Design.blanc.bind[A1].toInstance(A1(1)).bind[App].toProvider(provider1 _)

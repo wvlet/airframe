@@ -317,6 +317,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "forbid binding to the same type" in {
+      warn(s"Running cyclic dependency check test")
       val ex = intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
           .bind[Printer].to[Printer]

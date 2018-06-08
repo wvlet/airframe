@@ -33,19 +33,19 @@ trait CounterUser {
 trait CounterService extends LogSupport {
   val counterService = bind[Counter]
     .onInit { c =>
-      info(s"init: ${c.initialized.get()}")
+      debug(s"init: ${c.initialized.get()}")
       c.initialized.incrementAndGet()
     }
     .onInject { c =>
-      info(s"injected: ${c.initialized.get()}")
+      debug(s"injected: ${c.initialized.get()}")
       c.injected.incrementAndGet()
     }
     .onStart { c =>
-      info(s"start: ${c.started.get()}")
+      debug(s"start: ${c.started.get()}")
       c.started.incrementAndGet()
     }
     .onShutdown { c =>
-      info(s"shutdown: ${c.shutdowned.get()}")
+      debug(s"shutdown: ${c.shutdowned.get()}")
       c.shutdowned.incrementAndGet()
     }
 

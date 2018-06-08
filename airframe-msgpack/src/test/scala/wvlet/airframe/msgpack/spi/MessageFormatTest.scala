@@ -15,6 +15,7 @@ package wvlet.airframe.msgpack.spi
 
 import org.scalatest.exceptions.TestFailedException
 import wvlet.airframe.AirframeSpec
+import wvlet.log.LogLevel
 import wvlet.log.io.{StopWatch, Timer}
 
 import scala.util.Random
@@ -104,7 +105,7 @@ class MessageFormatTest extends AirframeSpec with Timer {
       // Initialize
       MessageFormat.of(0.toByte)
 
-      val t = time("lookup", repeat = 10) {
+      val t = time("lookup", repeat = 10, logLevel = LogLevel.WARN) {
         block("switch") {
           var i = 0
           while (i < N) {

@@ -15,7 +15,6 @@ package wvlet.airframe.tablet.jdbc
 
 import java.sql.{DriverManager, JDBCType}
 
-import org.scalatest.Matchers.convertToStringShouldWrapper
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
 import wvlet.log.io.IOUtil._
@@ -58,13 +57,14 @@ class SQLObjectMapperTest extends AirframeSpec {
             b ++= new ResultSetReader(rs).pipe(new ObjectTabletWriter[R]())
           }
         }
-        info(b.result)
+        val s = b.result
+        debug(b.result)
       }
     }
 
     "allow primary key config" in {
       val sql = SQLObjectMapper.createTableSQLFor[T1]("t1", Map("id" -> "primary key"))
-      info(sql)
+      debug(sql)
       sql should include(""""id" integer primary key""")
       sql shouldNot include(""""name" string primary key""")
     }
