@@ -41,11 +41,12 @@ object Retry {
   }
 
   case class MaxRetryException(retryState: LastError) extends Exception(retryState.lastError)
-  case class LastError(lastError: Throwable, retryCount: Int, maxRetry: Int)
+  case class LastError(lastError: Throwable, retryCount: Int, maxRetry: Int, nextWaitMillis: Int)
 
   private def RETRY_ALL: LastError => Unit = { e: LastError =>
     // Do nothing
   }
+  private val NOT_STARTED = new IllegalStateException("Not started")
 
   case class Retryer(maxRetry: Int, retryWaitStrategy: RetryWaitStrategy, handler: LastError => Any = RETRY_ALL) {
 
@@ -57,10 +58,10 @@ object Retry {
     def retryOn[U](handler: LastError => U): Retryer = Retryer(maxRetry, retryWaitStrategy, handler)
 
     def run[A](body: => A): A = {
-      var result: Option[A]             = None
-      var retryCount                    = 0
-      var retryState: Option[LastError] = None
-      var retryWait                     = retryWaitStrategy.retryConfig.initialIntervalMillis
+      var result: Option[A]     = None
+      var retryCount            = 0
+      var retryWait             = retryWaitStrategy.retryConfig.initialIntervalMillis
+      var retryState: LastError = LastError(NOT_STARTED, 0, maxRetry, retryWait)
 
       while (result.isEmpty && retryCount < maxRetry) {
         Try(body) match {
@@ -68,17 +69,17 @@ object Retry {
             result = Some(a)
           case Failure(e) =>
             retryCount += 1
-            retryState = Some(LastError(e, retryCount, maxRetry))
-            handler(retryState.get)
-            val w = retryWaitStrategy.adjustWait(retryWait)
+            val nextWait = retryWaitStrategy.adjustWait(retryWait)
+            retryState = LastError(e, retryCount, maxRetry, nextWait)
+            handler(retryState)
             retryWait = retryWaitStrategy.updateWait(retryWait)
-            Compat.sleep(w)
+            Compat.sleep(nextWait)
         }
       }
       result match {
         case Some(a) => a
         case None =>
-          throw MaxRetryException(retryState.get)
+          throw MaxRetryException(retryState)
       }
     }
   }

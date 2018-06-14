@@ -22,14 +22,36 @@ import wvlet.airframe.control.Retry.{LastError, MaxRetryException}
 class RetryTest extends AirframeSpec {
   "Control" should {
 
-    "support retry" in {
+    "support backoff retry" in {
       var count = 0
 
       val r =
         Retry
           .withBackOff(maxRetry = 3)
           .retryOn { s: LastError =>
-            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}")
+            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis")
+          }
+          .run {
+            logger.info("hello retry")
+            if (count < 2) {
+              count += 1
+              throw new IllegalStateException("retry test")
+            } else {
+              "success"
+            }
+          }
+
+      r shouldBe "success"
+    }
+
+    "support jitter retry" in {
+      var count = 0
+
+      val r =
+        Retry
+          .withJitter(maxRetry = 3)
+          .retryOn { s: LastError =>
+            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis")
           }
           .run {
             logger.info("hello retry")
