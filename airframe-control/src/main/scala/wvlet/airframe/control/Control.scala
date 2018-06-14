@@ -13,9 +13,15 @@
  */
 package wvlet.airframe.control
 
-import Retry._
-
 /**
   *
   */
-object Control {}
+object Control {
+  def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
+    try {
+      body(resource)
+    } finally {
+      resource.close
+    }
+  }
+}

@@ -48,8 +48,9 @@ class RetryTest extends AirframeSpec {
       val e = intercept[MaxRetryException] {
         Retry
           .withBackOff(maxRetry = 3)
-          .retryOn { s: LastError =>
-            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}")
+          .retryOnError {
+            case e: IllegalStateException =>
+              warn(e.getMessage)
           }
           .run {
             logger.info("hello retry")

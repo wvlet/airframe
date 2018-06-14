@@ -25,7 +25,7 @@ object Retry {
                   maxIntervalMillis: Int = 15000,
                   multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    Retryer(maxRetry, new ExponentialBackOff(config))
+    withRetry(maxRetry, new ExponentialBackOff(config))
   }
 
   def withJitter(maxRetry: Int = 3,
@@ -33,17 +33,19 @@ object Retry {
                  maxIntervalMillis: Int = 15000,
                  multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    Retryer(maxRetry, new Jitter(config))
+    withRetry(maxRetry, new Jitter(config))
   }
 
-  sealed trait RetryException                         extends Exception
-  case class MaxRetryException(retryState: LastError) extends Exception(retryState.lastError) with RetryException
+  def withRetry(maxRetry: Int = 3, retryWaitStrategy: RetryWaitStrategy): Retryer = {
+    Retryer(maxRetry, retryWaitStrategy)
+  }
+
+  case class MaxRetryException(retryState: LastError) extends Exception(retryState.lastError)
+  case class LastError(lastError: Throwable, retryCount: Int, maxRetry: Int)
 
   private def RETRY_ALL: LastError => Unit = { e: LastError =>
     // Do nothing
   }
-
-  case class LastError(lastError: Throwable, retryCount: Int, maxRetry: Int)
 
   case class Retryer(maxRetry: Int, retryWaitStrategy: RetryWaitStrategy, handler: LastError => Any = RETRY_ALL) {
 
