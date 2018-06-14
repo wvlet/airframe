@@ -72,7 +72,7 @@ object Retry {
             handler(retryState.get)
             val w = retryWaitStrategy.adjustWait(retryWait)
             retryWait = retryWaitStrategy.updateWait(retryWait)
-            Thread.sleep(w)
+            Compat.sleep(w)
         }
       }
       result match {

@@ -13,29 +13,11 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.AirframeSpec
-
-object ControlTest {
-  class A extends AutoCloseable {
-    var closed: Boolean = false
-    override def close(): Unit = {
-      closed = true
-    }
-  }
-}
-
 /**
   *
   */
-class ControlTest extends AirframeSpec {
-  "Control" should {
-    "have loan pattern" in {
-      val out = new ControlTest.A
-      out.closed shouldBe false
-      Control.withResource(out) { o =>
-        // do nothing
-      }
-      out.closed shouldBe true
-    }
+object Compat {
+  def sleep(millis: Long): Unit = {
+    scalajs.js.timers.setTimeout(millis) {}
   }
 }
