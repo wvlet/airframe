@@ -14,6 +14,7 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.control.Retry.MaxRetryException
 
 /**
   *
@@ -22,16 +23,23 @@ class ControlTest extends AirframeSpec {
   "Control" should {
 
     "support retry" in {
-      Control
-        .withRetry {
-          "hello"
+      val e = intercept[MaxRetryException] {
+        val retryer = Control
+          .withBackOffRetry(maxRetry = 3)
+          .retryOn {
+            case e: Throwable =>
+              warn(e.getMessage)
+          }
+
+        retryer.run {
+          logger.info("hello retry")
+          throw new IllegalStateException("retry test")
         }
-        .rescue {
-          case e: Throwable =>
-            warn(e)
-        }
+      }
+
+      e.retryState.maxRetry shouldBe 3
+      e.retryState.lastError shouldBe a[IllegalStateException]
     }
 
   }
-
 }

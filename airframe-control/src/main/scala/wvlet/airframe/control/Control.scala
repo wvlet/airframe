@@ -20,35 +20,19 @@ import Retry._
   */
 object Control {
 
-  def withBackOffRetry[A](maxRetry: Int = 10,
-                          initialIntervalMillis: Int = 100,
-                          maxIntervalMillis: Int = 15000,
-                          multiplier: Double = 1.5)(body: => A): Code[A] = {
+  def withBackOffRetry(maxRetry: Int = 3,
+                       initialIntervalMillis: Int = 100,
+                       maxIntervalMillis: Int = 15000,
+                       multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry(maxRetry, new ExponentialBackOff(config))(body)
+    Retryer(maxRetry, new ExponentialBackOff(config))
   }
 
-  def withJitterRetry[A](maxRetry: Int = 10,
-                         initialIntervalMillis: Int = 100,
-                         maxIntervalMillis: Int = 15000,
-                         multiplier: Double = 1.5)(body: => A): Code[A] = {
+  def withJitterRetry(maxRetry: Int = 3,
+                      initialIntervalMillis: Int = 100,
+                      maxIntervalMillis: Int = 15000,
+                      multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry(maxRetry, new Jitter(config))(body)
-  }
-
-  private def withRetry[A](maxRetry: Int = 10, retryWaitStrategy: RetryWaitStrategy)(body: => A): Code[A] = {
-    Code
-      .deffered(body)
-      .rescueWith { e: Throwable =>
-        if (maxRetry > 0) {
-          Code
-            .sleepMillis(retryWaitStrategy.nextWaitMillis)
-            .andThen {
-              withRetry(maxRetry - 1, retryWaitStrategy)(body)
-            }
-        } else {
-          Code.raiseError(e)
-        }
-      }
+    Retryer(maxRetry, new Jitter(config))
   }
 }

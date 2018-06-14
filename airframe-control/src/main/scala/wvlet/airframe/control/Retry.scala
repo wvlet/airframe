@@ -13,14 +13,55 @@
  */
 package wvlet.airframe.control
 
-import scala.util.Random
+import scala.util.{Failure, Random, Success, Try}
 
 /**
   *
   */
 object Retry {
-  trait RetryWaitStrategy {
-    def nextWaitMillis: Int
+
+  sealed trait RetryException                          extends Exception
+  case class MaxRetryException(retryState: RetryState) extends Exception(retryState.lastError) with RetryException
+
+  private def RETRY_ALL: RetryState => Unit = { e: RetryState =>
+    }
+
+  case class RetryState(lastError: Throwable, retryCount: Int, maxRetry: Int)
+
+  case class Retryer(maxRetry: Int, retryWaitStrategy: RetryWaitStrategy, handler: RetryState => Unit = RETRY_ALL) {
+
+    def retryOn(handler: Throwable => Unit): Retryer = {
+      Retryer(maxRetry, retryWaitStrategy, { s: RetryState =>
+        handler(s.lastError)
+      })
+    }
+    def retryOnState(handler: RetryState => Unit): Retryer = Retryer(maxRetry, retryWaitStrategy, handler)
+
+    def run[A](body: => A): A = {
+      var result: Option[A]              = None
+      var retryCount                     = 0
+      var retryState: Option[RetryState] = None
+      var retryWait                      = retryWaitStrategy.retryConfig.initialIntervalMillis
+
+      while (result.isEmpty && retryCount < maxRetry) {
+        Try(body) match {
+          case Success(a) =>
+            result = Some(a)
+          case Failure(e) =>
+            retryState = Some(RetryState(e, retryCount, maxRetry))
+            handler(retryState.get)
+            val w = retryWaitStrategy.adjustWait(retryWait)
+            retryWait = retryWaitStrategy.updateWait(retryWait)
+            retryCount += 1
+            Thread.sleep(w)
+        }
+      }
+      result match {
+        case Some(a) => a
+        case None =>
+          throw MaxRetryException(retryState.get)
+      }
+    }
   }
 
   case class RetryConfig(initialIntervalMillis: Int = 100, maxIntervalMillis: Int = 15000, multiplier: Double = 1.5) {
@@ -29,24 +70,27 @@ object Retry {
     require(multiplier >= 0)
   }
 
-  class ExponentialBackOff(retryConfig: RetryConfig) extends RetryWaitStrategy {
-    private var _nextWaitMillis = retryConfig.initialIntervalMillis
+  trait RetryWaitStrategy {
+    def retryConfig: RetryConfig
+    def updateWait(waitMillis: Int): Int
+    def adjustWait(waitMillis: Int): Int
+  }
 
-    override def nextWaitMillis: Int = {
-      val next = _nextWaitMillis
-      _nextWaitMillis = math.round(_nextWaitMillis * retryConfig.multiplier).toInt.min(retryConfig.maxIntervalMillis)
-      next
+  class ExponentialBackOff(val retryConfig: RetryConfig) extends RetryWaitStrategy {
+    override def updateWait(waitMillis: Int): Int = {
+      math.round(waitMillis * retryConfig.multiplier).toInt.min(retryConfig.maxIntervalMillis)
+    }
+    override def adjustWait(waitMillis: Int): Int = {
+      waitMillis
     }
   }
 
-  class Jitter(retryConfig: RetryConfig) extends RetryWaitStrategy {
-    private val rand            = new Random()
-    private var _nextWaitMillis = retryConfig.initialIntervalMillis
-
-    override def nextWaitMillis: Int = {
-      val next = (_nextWaitMillis.toDouble * rand.nextDouble()).toInt
-      _nextWaitMillis = (_nextWaitMillis * retryConfig.multiplier).round.toInt.min(retryConfig.maxIntervalMillis)
-      next
+  class Jitter(val retryConfig: RetryConfig, rand: Random = new Random()) extends RetryWaitStrategy {
+    override def updateWait(waitMillis: Int): Int = {
+      math.round(waitMillis * retryConfig.multiplier).toInt.min(retryConfig.maxIntervalMillis)
+    }
+    override def adjustWait(waitMillis: Int): Int = {
+      (waitMillis.toDouble * rand.nextDouble()).round.toInt
     }
   }
 }
