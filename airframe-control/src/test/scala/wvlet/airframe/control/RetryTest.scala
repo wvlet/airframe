@@ -23,6 +23,28 @@ class RetryTest extends AirframeSpec {
   "Control" should {
 
     "support retry" in {
+      var count = 0
+
+      val r =
+        Retry
+          .withBackOff(maxRetry = 3)
+          .retryOn { s: LastError =>
+            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}")
+          }
+          .run {
+            logger.info("hello retry")
+            if (count < 2) {
+              count += 1
+              throw new IllegalStateException("retry test")
+            } else {
+              "success"
+            }
+          }
+
+      r shouldBe "success"
+    }
+
+    "throw max retry exception" in {
       val e = intercept[MaxRetryException] {
         Retry
           .withBackOff(maxRetry = 3)
