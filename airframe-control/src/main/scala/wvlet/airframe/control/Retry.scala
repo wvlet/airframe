@@ -20,39 +20,56 @@ import scala.util.{Failure, Random, Success, Try}
   */
 object Retry {
 
-  sealed trait RetryException                          extends Exception
-  case class MaxRetryException(retryState: RetryState) extends Exception(retryState.lastError) with RetryException
+  def withBackOff(maxRetry: Int = 3,
+                  initialIntervalMillis: Int = 100,
+                  maxIntervalMillis: Int = 15000,
+                  multiplier: Double = 1.5): Retry.Retryer = {
+    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+    Retryer(maxRetry, new ExponentialBackOff(config))
+  }
 
-  private def RETRY_ALL: RetryState => Unit = { e: RetryState =>
-    }
+  def withJitter(maxRetry: Int = 3,
+                 initialIntervalMillis: Int = 100,
+                 maxIntervalMillis: Int = 15000,
+                 multiplier: Double = 1.5): Retry.Retryer = {
+    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+    Retryer(maxRetry, new Jitter(config))
+  }
 
-  case class RetryState(lastError: Throwable, retryCount: Int, maxRetry: Int)
+  sealed trait RetryException                         extends Exception
+  case class MaxRetryException(retryState: LastError) extends Exception(retryState.lastError) with RetryException
 
-  case class Retryer(maxRetry: Int, retryWaitStrategy: RetryWaitStrategy, handler: RetryState => Unit = RETRY_ALL) {
+  private def RETRY_ALL: LastError => Unit = { e: LastError =>
+    // Do nothing
+  }
 
-    def retryOn(handler: Throwable => Unit): Retryer = {
-      Retryer(maxRetry, retryWaitStrategy, { s: RetryState =>
+  case class LastError(lastError: Throwable, retryCount: Int, maxRetry: Int)
+
+  case class Retryer(maxRetry: Int, retryWaitStrategy: RetryWaitStrategy, handler: LastError => Any = RETRY_ALL) {
+
+    def retryOnError[U](handler: Throwable => U): Retryer = {
+      Retryer(maxRetry, retryWaitStrategy, { s: LastError =>
         handler(s.lastError)
       })
     }
-    def retryOnState(handler: RetryState => Unit): Retryer = Retryer(maxRetry, retryWaitStrategy, handler)
+    def retryOn[U](handler: LastError => U): Retryer = Retryer(maxRetry, retryWaitStrategy, handler)
 
     def run[A](body: => A): A = {
-      var result: Option[A]              = None
-      var retryCount                     = 0
-      var retryState: Option[RetryState] = None
-      var retryWait                      = retryWaitStrategy.retryConfig.initialIntervalMillis
+      var result: Option[A]             = None
+      var retryCount                    = 0
+      var retryState: Option[LastError] = None
+      var retryWait                     = retryWaitStrategy.retryConfig.initialIntervalMillis
 
       while (result.isEmpty && retryCount < maxRetry) {
         Try(body) match {
           case Success(a) =>
             result = Some(a)
           case Failure(e) =>
-            retryState = Some(RetryState(e, retryCount, maxRetry))
+            retryCount += 1
+            retryState = Some(LastError(e, retryCount, maxRetry))
             handler(retryState.get)
             val w = retryWaitStrategy.adjustWait(retryWait)
             retryWait = retryWaitStrategy.updateWait(retryWait)
-            retryCount += 1
             Thread.sleep(w)
         }
       }

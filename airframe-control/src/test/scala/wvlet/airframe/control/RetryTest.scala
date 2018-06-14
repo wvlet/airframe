@@ -14,27 +14,25 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Retry.MaxRetryException
+import wvlet.airframe.control.Retry.{MaxRetryException, LastError}
 
 /**
   *
   */
-class ControlTest extends AirframeSpec {
+class RetryTest extends AirframeSpec {
   "Control" should {
 
     "support retry" in {
       val e = intercept[MaxRetryException] {
-        val retryer = Control
-          .withBackOffRetry(maxRetry = 3)
-          .retryOn {
-            case e: Throwable =>
-              warn(e.getMessage)
+        Retry
+          .withBackOff(maxRetry = 3)
+          .retryOn { s: LastError =>
+            warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}")
           }
-
-        retryer.run {
-          logger.info("hello retry")
-          throw new IllegalStateException("retry test")
-        }
+          .run {
+            logger.info("hello retry")
+            throw new IllegalStateException("retry test")
+          }
       }
 
       e.retryState.maxRetry shouldBe 3

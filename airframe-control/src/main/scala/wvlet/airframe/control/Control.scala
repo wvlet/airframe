@@ -18,21 +18,4 @@ import Retry._
 /**
   *
   */
-object Control {
-
-  def withBackOffRetry(maxRetry: Int = 3,
-                       initialIntervalMillis: Int = 100,
-                       maxIntervalMillis: Int = 15000,
-                       multiplier: Double = 1.5): Retry.Retryer = {
-    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    Retryer(maxRetry, new ExponentialBackOff(config))
-  }
-
-  def withJitterRetry(maxRetry: Int = 3,
-                      initialIntervalMillis: Int = 100,
-                      maxIntervalMillis: Int = 15000,
-                      multiplier: Double = 1.5): Retry.Retryer = {
-    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    Retryer(maxRetry, new Jitter(config))
-  }
-}
+object Control {}
