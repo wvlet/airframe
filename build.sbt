@@ -119,6 +119,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   logJVM,
   airframeSpecJVM,
   config,
+  controlJVM,
   bootstrap,
   jmx,
   opts,
@@ -128,13 +129,15 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   jdbc,
   msgpackJVM
 )
+
 lazy val jsProjects: Seq[ProjectReference] = List(
   airframeJS,
   surfaceJS,
   logJS,
+  airframeSpecJS,
+  controlJS,
   metricsJS,
-  msgpackJS,
-  airframeSpecJS
+  msgpackJS
 )
 
 lazy val projectJVM =
@@ -280,6 +283,20 @@ lazy val config =
       )
     )
     .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
+
+lazy val control =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-control"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-control",
+      description := "A library for controlling program flows and retrying"
+    )
+    .dependsOn(log, airframeSpec % "test")
+
+lazy val controlJS  = control.js
+lazy val controlJVM = control.jvm
 
 lazy val bootstrap =
   project
