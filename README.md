@@ -7,19 +7,19 @@
 [coverall-badge]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
 [coverall-link]: https://coveralls.io/github/wvlet/airframe?branch=master
 
-Airframe http://wvlet.org/airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
+Airframe https://wvlet.org/airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
 As its core Airframe provides a dependency injection (DI) library tailored to Scala. While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using constructors or providers), Airframe redesigned it for Scala traits so that we can mix-in traits that have several object dependencies.
 
 ## Resources
-- [Airframe Home](http://wvlet.org/airframe/)
-- [Documentation](http://wvlet.org/airframe/docs)
-- [Use Cases](http://wvlet.org/airframe/docs/use-cases.html)
+- [Airframe Home](https://wvlet.org/airframe/)
+- [Documentation](https://wvlet.org/airframe/docs)
+- [Use Cases](https://wvlet.org/airframe/docs/use-cases.html)
    - Configuring applications, managing resources, service mix-in, etc.
-- [DI Framework Comparison](http://wvlet.org/airframe/docs/comparison.html)
+- [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html)
    - Comparing Airframe with Google Guice, Macwire, Dagger2, etc. 
-- [Airframe Utilities](http://wvlet.org/airframe/docs/utils.html)
+- [Airframe Utilities](https://wvlet.org/airframe/docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
-- [Release Notes](http://wvlet.org/airframe/docs/release-notes.html)
+- [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 
 ## Getting Started
  [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12)
@@ -56,7 +56,7 @@ libraryDependencies ++= Seq(
 )
 ```
 
-See [Documentation](http://wvlet.org/airframe/docs/) for further details.
+See [Documentation](https://wvlet.org/airframe/docs/) for further details.
 
 ## LICENSE
 
