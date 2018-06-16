@@ -11,7 +11,7 @@ val targetScalaVersions = Seq(
   SCALA_2_11
 )
 
-val SCALATEST_VERSION               = "3.0.5"
+val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.0"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
