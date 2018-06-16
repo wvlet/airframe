@@ -127,7 +127,8 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   codec,
   tablet,
   jdbc,
-  msgpackJVM
+  msgpackJVM,
+  stream
 )
 
 lazy val jsProjects: Seq[ProjectReference] = List(
@@ -462,3 +463,15 @@ lazy val jdbc =
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
+
+lazy val stream =
+  project
+    .in(file("airframe-stream"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-stream",
+      description := "Stream procesing DSL",
+      libraryDependencies ++= Seq(
+        )
+    )
+    .dependsOn(surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
