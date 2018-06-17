@@ -42,7 +42,10 @@ object SQLSchema {
   *
   */
 object SQL {
-  sealed trait Expression
+
+  trait SQLModel
+
+  sealed trait Expression extends SQLModel
 
   // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends Expression {
@@ -50,7 +53,7 @@ object SQL {
   }
 
   // Operator for ign relations
-  sealed trait Relation
+  sealed trait Relation                                                                           extends SQLModel
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
   case class Values(rows: Seq[Expression])                                                        extends Relation
   case class Table(name: QName)                                                                   extends Relation
