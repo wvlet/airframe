@@ -200,11 +200,11 @@ selectItem
 
 relation
     : left=relation
-      ( CROSS JOIN right=sampledRelation
+      ( CROSS JOIN right=aliasedRelation
       | joinType JOIN rightRelation=relation joinCriteria
-      | NATURAL joinType JOIN right=sampledRelation
+      | NATURAL joinType JOIN right=aliasedRelation
       )                                           #joinRelation
-    | sampledRelation                             #relationDefault
+    | aliasedRelation                             #relationDefault
     ;
 
 joinType
@@ -217,17 +217,6 @@ joinType
 joinCriteria
     : ON booleanExpression
     | USING '(' identifier (',' identifier)* ')'
-    ;
-
-sampledRelation
-    : aliasedRelation (
-        TABLESAMPLE sampleType '(' percentage=expression ')'
-      )?
-    ;
-
-sampleType
-    : BERNOULLI
-    | SYSTEM
     ;
 
 aliasedRelation
