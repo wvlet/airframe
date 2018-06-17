@@ -22,6 +22,7 @@ import wvlet.log.LogSupport
 object SQLParser extends LogSupport {
 
   def parse(sql: String): Unit = {
+    debug(s"parse: ${sql}")
     val lexer       = new SqlBaseLexer(new CaseInsensitiveStream(CharStreams.fromString(sql)))
     val tokenStream = new CommonTokenStream(lexer)
     val parser      = new SqlBaseParser(tokenStream)
