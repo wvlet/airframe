@@ -91,7 +91,7 @@ object SQL {
                    limit: Option[String])
       extends Relation
 
-  sealed trait SelectItem
+  sealed trait SelectItem extends Expression
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
