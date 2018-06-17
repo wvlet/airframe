@@ -40,12 +40,12 @@ statement
     | DROP SCHEMA (IF EXISTS)? qualifiedName (CASCADE | RESTRICT)?     #dropSchema
     | ALTER SCHEMA qualifiedName RENAME TO identifier                  #renameSchema
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName columnAliases?
-        (COMMENT string)?
+        (COMMENT str)?
         (WITH properties)? AS (query | '('query')')
         (WITH (NO)? DATA)?                                             #createTableAsSelect
     | CREATE TABLE (IF NOT EXISTS)? qualifiedName
         '(' tableElement (',' tableElement)* ')'
-         (COMMENT string)?
+         (COMMENT str)?
          (WITH properties)?                                            #createTable
     | DROP TABLE (IF EXISTS)? qualifiedName                            #dropTable
     | INSERT INTO qualifiedName columnAliases? query                   #insertInto
@@ -75,10 +75,10 @@ statement
     | SHOW CREATE TABLE qualifiedName                                  #showCreateTable
     | SHOW CREATE VIEW qualifiedName                                   #showCreateView
     | SHOW TABLES ((FROM | IN) qualifiedName)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showTables
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showTables
     | SHOW SCHEMAS ((FROM | IN) identifier)?
-        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSchemas
-    | SHOW CATALOGS (LIKE pattern=string)?                             #showCatalogs
+        (LIKE pattern=str (ESCAPE escape=str)?)?                 #showSchemas
+    | SHOW CATALOGS (LIKE pattern=str)?                             #showCatalogs
     | SHOW COLUMNS (FROM | IN) qualifiedName                           #showColumns
     | SHOW STATS (FOR | ON) qualifiedName                              #showStats
     | SHOW STATS FOR '(' querySpecification ')'                        #showStatsForQuery
@@ -116,7 +116,7 @@ tableElement
     ;
 
 columnDefinition
-    : identifier type (COMMENT string)?
+    : identifier type (COMMENT str)?
     ;
 
 likeClause
@@ -281,11 +281,11 @@ valueExpression
 primaryExpression
     : NULL                                                                                #nullLiteral
     | interval                                                                            #intervalLiteral
-    | identifier string                                                                   #typeConstructor
-    | DOUBLE_PRECISION string                                                             #typeConstructor
+    | identifier str                                                                   #typeConstructor
+    | DOUBLE_PRECISION str                                                             #typeConstructor
     | number                                                                              #numericLiteral
     | booleanValue                                                                        #booleanLiteral
-    | string                                                                              #stringLiteral
+    | str                                                                              #stringLiteral
     | BINARY_LITERAL                                                                      #binaryLiteral
     | '?'                                                                                 #parameter
     | POSITION '(' valueExpression IN valueExpression ')'                                 #position
@@ -320,14 +320,14 @@ primaryExpression
     | GROUPING '(' (qualifiedName (',' qualifiedName)*)? ')'                              #groupingOperation
     ;
 
-string
+str
     : STRING                                #basicStringLiteral
     | UNICODE_STRING (UESCAPE STRING)?      #unicodeStringLiteral
     ;
 
 timeZoneSpecifier
     : TIME ZONE interval  #timeZoneInterval
-    | TIME ZONE string    #timeZoneString
+    | TIME ZONE str    #timeZoneString
     ;
 
 comparisonOperator
@@ -343,7 +343,7 @@ booleanValue
     ;
 
 interval
-    : INTERVAL sign=(PLUS | MINUS)? string from=intervalField (TO to=intervalField)?
+    : INTERVAL sign=(PLUS | MINUS)? str from=intervalField (TO to=intervalField)?
     ;
 
 intervalField
