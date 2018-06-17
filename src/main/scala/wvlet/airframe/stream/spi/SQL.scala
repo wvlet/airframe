@@ -40,25 +40,36 @@ object SQL {
   case class MapType(keyType: DataType, valueType: DataType) extends DataType
 
   trait Relation
-  case class TableScan(schema: TableSchema)                       extends Relation
-  case class TableScanFilter(schema: TableSchema, filter: Filter) extends Relation
-  case class RawSQL(sql: String, schema: Schema)                  extends Relation
+  case class TableScan(schema: TableSchema)                     extends Relation
+  case class TableScanFilter(schema: TableSchema, filter: Cond) extends Relation
+  case class RawSQL(sql: String, schema: Schema)                extends Relation
 
-  case class Project(schema: Seq[Expression]) extends Relation
+  case class Project(in: Relation, schema: Seq[Expression])                                      extends Relation
+  case class Join(left: Relation, right: Relation, joinType: JoinType, cond: Cond)               extends Relation
+  case class Aggregate(in: Relation, keys: Seq[Expression], aggregate: Seq[AggregateExpression]) extends Relation
+  case class Sort(in: Relation, sortKeys: Seq[Expression])                                       extends Relation
+
+  sealed trait JoinType
+  case object InnerJoin
+  case object LeftOuterJoin
+  case object RightOuterJoin
+  case object FullOuterJoin
+  case object CrossJoin
 
   trait Expression
   sealed trait Ref                   extends Expression
   case class ColumnRef(name: String) extends Ref
 
-  sealed trait Filter                                      extends Expression
-  case class Eq(a: Expression, b: Expression)              extends Filter
-  case class And(a: Expression, b: Expression)             extends Filter
-  case class Or(a: Expression, b: Expression)              extends Filter
-  case class Not(expr: Expression)                         extends Filter
-  case class LessThan(a: Expression, b: Expression)        extends Filter
-  case class LessThanOrEq(a: Expression, b: Expression)    extends Filter
-  case class GreaterThan(a: Expression, b: Expression)     extends Filter
-  case class GreaterThanOrEq(a: Expression, b: Expression) extends Filter
+  sealed trait Cond                                        extends Expression
+  case object NoOp                                         extends Cond
+  case class Eq(a: Expression, b: Expression)              extends Cond
+  case class And(a: Expression, b: Expression)             extends Cond
+  case class Or(a: Expression, b: Expression)              extends Cond
+  case class Not(expr: Expression)                         extends Cond
+  case class LessThan(a: Expression, b: Expression)        extends Cond
+  case class LessThanOrEq(a: Expression, b: Expression)    extends Cond
+  case class GreaterThan(a: Expression, b: Expression)     extends Cond
+  case class GreaterThanOrEq(a: Expression, b: Expression) extends Cond
 
   case class AggregateExpression(func: AggregateFunction, mode: AggregateMode, isDistinct: Boolean) extends Expression
 
