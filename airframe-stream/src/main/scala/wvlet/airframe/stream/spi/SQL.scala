@@ -43,27 +43,34 @@ object SQLSchema {
   */
 object SQL {
   sealed trait Expression
+
+  // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends Expression {
     override def toString = parts.mkString(".")
   }
 
+  // Operator for ign relations
   sealed trait Relation
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
   case class Values(rows: Seq[Expression])                                                        extends Relation
   case class Table(name: QName)                                                                   extends Relation
   case class SubQuery(query: Query)                                                               extends Relation
   case class RawSQL(sql: String)                                                                  extends Relation
-  case class Query(body: Relation, orderBy: Seq[SortItem], limit: Option[Expression])             extends Relation
   case class Project(in: Relation, schema: Seq[Expression])                                       extends Relation
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
   sealed trait JoinType
-  case object InnerJoin      extends JoinType
-  case object LeftOuterJoin  extends JoinType
+  // Exact match (= equi join)
+  case object InnerJoin extends JoinType
+  // Joins for preserving left table entries
+  case object LeftOuterJoin extends JoinType
+  // Joins for preserving right table entries
   case object RightOuterJoin extends JoinType
-  case object FullOuterJoin  extends JoinType
-  case object CrossJoin      extends JoinType
+  // Joins for preserbing both table entries
+  case object FullOuterJoin extends JoinType
+  // Cartesian product of two tables
+  case object CrossJoin extends JoinType
 
   sealed trait JoinCriteria
   case object NaturalJoin                    extends JoinCriteria
@@ -71,14 +78,14 @@ object SQL {
   case class JoinOn(expr: Expression)        extends JoinCriteria
 
   case class Aggregate(in: Relation, keys: Seq[Expression], aggregate: Seq[AggregateExpression]) extends Relation
-  case class Select(item: Seq[SelectItem],
-                    isDistinct: Boolean,
-                    from: Option[Relation],
-                    where: Option[Expression],
-                    groupBy: Seq[Expression],
-                    having: Option[Expression],
-                    orderBy: Seq[SortItem],
-                    limit: Option[String])
+  case class Query(item: Seq[SelectItem],
+                   isDistinct: Boolean,
+                   from: Option[Relation],
+                   where: Option[Expression],
+                   groupBy: Seq[Expression],
+                   having: Option[Expression],
+                   orderBy: Seq[SortItem],
+                   limit: Option[String])
       extends Relation
 
   sealed trait SelectItem
@@ -103,6 +110,7 @@ object SQL {
     }
   }
 
+  // Sort ordering
   sealed trait SortOrdering
   case object Ascending  extends SortOrdering
   case object Descending extends SortOrdering
@@ -138,22 +146,23 @@ object SQL {
 
   class Ref(name: QName) extends Expression
 
-  sealed trait Cond                                        extends Expression
-  case object NoOp                                         extends Cond
-  case class Eq(a: Expression, b: Expression)              extends Cond
-  case class And(a: Expression, b: Expression)             extends Cond
-  case class Or(a: Expression, b: Expression)              extends Cond
-  case class Not(expr: Expression)                         extends Cond
-  case class LessThan(a: Expression, b: Expression)        extends Cond
-  case class LessThanOrEq(a: Expression, b: Expression)    extends Cond
-  case class GreaterThan(a: Expression, b: Expression)     extends Cond
-  case class GreaterThanOrEq(a: Expression, b: Expression) extends Cond
-  case class Between(a: Expression, b: Expression)         extends Cond
-  case class IsNull(a: Expression)                         extends Cond
-  case class IsNotNull(a: Expression)                      extends Cond
-  case class In(a: Expression, list: Seq[Expression])      extends Cond
+  // Conditional expression
+  sealed trait ConditionalExpression                       extends Expression
+  case object NoOp                                         extends ConditionalExpression
+  case class Eq(a: Expression, b: Expression)              extends ConditionalExpression
+  case class And(a: Expression, b: Expression)             extends ConditionalExpression
+  case class Or(a: Expression, b: Expression)              extends ConditionalExpression
+  case class Not(expr: Expression)                         extends ConditionalExpression
+  case class LessThan(a: Expression, b: Expression)        extends ConditionalExpression
+  case class LessThanOrEq(a: Expression, b: Expression)    extends ConditionalExpression
+  case class GreaterThan(a: Expression, b: Expression)     extends ConditionalExpression
+  case class GreaterThanOrEq(a: Expression, b: Expression) extends ConditionalExpression
+  case class Between(a: Expression, b: Expression)         extends ConditionalExpression
+  case class IsNull(a: Expression)                         extends ConditionalExpression
+  case class IsNotNull(a: Expression)                      extends ConditionalExpression
+  case class In(a: Expression, list: Seq[Expression])      extends ConditionalExpression
 
-  case class IfExpr(cond: Cond, onTrue: Expression, onFalse: Expression) extends Expression
+  case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[Expression], defaultValue: Option[Expression])
       extends Expression
   case class WhenClause(operand: Expression, result: Expression) extends Expression

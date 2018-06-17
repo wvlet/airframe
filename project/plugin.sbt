@@ -7,6 +7,9 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.5.0")
 addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.23")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"              % "0.6.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"               % "0.4.1")
+
+addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.1")
+
 // For setting explicit versions for each commit
 addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "3.0.0")
 addSbtPlugin("com.47deg"    % "sbt-microsites" % "0.7.15")

@@ -466,11 +466,16 @@ lazy val jdbc =
 
 lazy val stream =
   project
+    .enablePlugins(Antlr4Plugin)
     .in(file("airframe-stream"))
     .settings(buildSettings)
     .settings(
       name := "airframe-stream",
       description := "Stream procesing DSL",
+      antlr4Version in Antlr4 := "4.7.1",
+      antlr4PackageName in Antlr4 := Some("wvlet.airframe.stream.sql.parser"),
+      antlr4GenListener in Antlr4 := true,
+      antlr4GenVisitor in Antlr4 := true,
       libraryDependencies ++= Seq(
         )
     )
