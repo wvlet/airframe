@@ -17,12 +17,8 @@ import java.util.Locale
 
 import wvlet.surface.Surface
 
-/**
-  *
-  */
-object SQL {
-
-  trait Schema
+object SQLSchema {
+  sealed trait Schema
   case class AnonSchema(columns: Seq[Column])                extends Schema
   case class TableSchema(name: String, columns: Seq[Column]) extends Schema
 
@@ -40,13 +36,23 @@ object SQL {
   case class ObjectType(surface: Surface)                    extends DataType
   case class AraryType(elemType: DataType)                   extends DataType
   case class MapType(keyType: DataType, valueType: DataType) extends DataType
+}
 
-  trait Relation
+/**
+  *
+  */
+object SQL {
+  sealed trait Expression
+  case class QName(parts: Seq[String]) extends Expression {
+    override def toString = parts.mkString(".")
+  }
+
+  sealed trait Relation
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
   case class Values(rows: Seq[Expression])                                                        extends Relation
-  case class Table(schema: TableSchema)                                                           extends Relation
+  case class Table(name: QName)                                                                   extends Relation
   case class SubQuery(query: Query)                                                               extends Relation
-  case class RawSQL(sql: String, schema: Schema)                                                  extends Relation
+  case class RawSQL(sql: String)                                                                  extends Relation
   case class Query(body: Relation, orderBy: Seq[SortItem], limit: Option[Expression])             extends Relation
   case class Project(in: Relation, schema: Seq[Expression])                                       extends Relation
 
@@ -75,7 +81,7 @@ object SQL {
                     limit: Option[String])
       extends Relation
 
-  trait SelectItem
+  sealed trait SelectItem
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
@@ -121,10 +127,6 @@ object SQL {
   case object UnboundedFollowing extends FrameBound
 
   case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound])
-  trait Expression
-  case class QName(parts: Seq[String]) extends Expression {
-    override def toString = parts.mkString(".")
-  }
 
   // Function
   case class FunctionCall(name: QName, args: Seq[Expression], isDistinct: Boolean, window: Option[Window])
@@ -134,7 +136,7 @@ object SQL {
   }
   case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression
 
-  sealed class Ref(name: QName) extends Expression
+  class Ref(name: QName) extends Expression
 
   sealed trait Cond                                        extends Expression
   case object NoOp                                         extends Cond
