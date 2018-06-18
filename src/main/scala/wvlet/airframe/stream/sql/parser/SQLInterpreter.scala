@@ -78,7 +78,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val q =
       Query(item = selectItem,
             isDistinct = false,
-            from = None,
+            from = r.headOption,
             where = None,
             groupBy = Seq.empty,
             having = None,
@@ -86,6 +86,24 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
             limit = None)
 
     q
+  }
+
+  override def visitRelationDefault(ctx: RelationDefaultContext): SQLModel = {
+    debug(s"relation default: ${print(ctx)}")
+    visit(ctx.aliasedRelation())
+  }
+
+  override def visitAliasedRelation(ctx: AliasedRelationContext): SQLModel = {
+    visit(ctx.relationPrimary())
+  }
+
+  override def visitTableName(ctx: TableNameContext): Table = {
+    val tableName = visitQualifiedName(ctx.qualifiedName())
+    Table(tableName)
+  }
+
+  override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
+    QName(ctx.identifier().asScala.map(_.getText))
   }
 
   override def visitSelectAll(ctx: SelectAllContext): SelectItem = {
