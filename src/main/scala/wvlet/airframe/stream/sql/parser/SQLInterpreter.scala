@@ -59,7 +59,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val inputRelation = visit(ctx.queryTerm()).asInstanceOf[Relation]
     // TODO
 
-    val withSort = if (ctx.sortItem() == null) {
+    val withSort = if (ctx.sortItem().isEmpty) {
       inputRelation
     } else {
       val sortKeys = ctx
@@ -276,6 +276,14 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         GreaterThanOrEq(left, right)
       case SqlBaseParser.NEQ =>
         NotEq(left, right)
+    }
+  }
+
+  override def visitBooleanLiteral(ctx: BooleanLiteralContext): SQLModel = {
+    if (ctx.booleanValue().TRUE() != null) {
+      TrueLiteral
+    } else {
+      FalseLiteral
     }
   }
 
