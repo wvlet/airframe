@@ -36,6 +36,8 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a where id is null")
       parse("select * from a where id is not null")
       parse("select x, y from a")
+      parse("select x from a where val > 0.5")
+
     }
   }
 }
