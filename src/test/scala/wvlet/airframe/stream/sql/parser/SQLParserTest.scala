@@ -37,7 +37,15 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a where id is not null")
       parse("select x, y from a")
       parse("select x from a where val > 0.5")
-
+      parse("select `x` from a")
+      parse("""select "x" from a""")
+      parse("select category, count(*) from a group by 1")
+      parse("select * from a order by 1")
+      parse("select * from a order by 1 desc")
+      parse("select * from a order by 1 asc")
+      parse("select * from a order by 1 nulls first")
+      parse("select * from a order by 1 nulls last")
+      parse("select * from a limit 100")
     }
   }
 }
