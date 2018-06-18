@@ -29,6 +29,13 @@ class SQLParserTest extends AirframeSpec {
     "parse SQL" in {
       parse("select * from a") // Query(Seq(AllColumns(None)), false, Some(Table(QName("a"))))
       parse("select * from a where time > 10")
+      parse("select * from a where time < 10")
+      parse("select * from a where time < =10")
+      parse("select * from a where id = 'xxxx'")
+      parse("select * from a where time >= 10 and time < 20")
+      parse("select * from a where id is null")
+      parse("select * from a where id is not null")
+      parse("select x, y from a")
     }
   }
 }

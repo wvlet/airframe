@@ -121,12 +121,16 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): SelectItem = {
-    SingleColumn(visitExpression(ctx.expression()), None)
+    SingleColumn(expression(ctx.expression()), None)
   }
 
-  override def visitExpression(ctx: ExpressionContext): SQL.Expression = {
-    debug(s"expr: ${print(ctx)}")
-    null
+  override def visitExpression(ctx: ExpressionContext): SQLModel = {
+    trace(s"expr: ${print(ctx)}")
+    visit(ctx.booleanExpression())
+  }
+
+  override def visitLogicalNot(ctx: LogicalNotContext): SQLModel = {
+    Not(expression(ctx.booleanExpression()))
   }
 
   def expression(ctx: ParserRuleContext): Expression = {
@@ -137,13 +141,32 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val e = expression(ctx.valueExpression)
     if (ctx.predicate != null) {
       // TODO add predicate
-      e
+      ctx.predicate() match {
+        case n: NullPredicateContext =>
+          if (n.NOT() == null) IsNull(e) else IsNotNull(e)
+        case other =>
+          // TODO
+          warn(s"unhandled predicate: ${print(ctx.predicate())}")
+          e
+      }
     } else {
       e
     }
   }
+
+  override def visitLogicalBinary(ctx: LogicalBinaryContext): SQLModel = {
+    val left  = expression(ctx.left)
+    val right = expression(ctx.right)
+    ctx.operator.getType match {
+      case SqlBaseParser.AND =>
+        And(left, right)
+      case SqlBaseParser.OR =>
+        Or(left, right)
+    }
+  }
+
   override def visitComparison(ctx: ComparisonContext): Expression = {
-    debug(s"comparison: ${print(ctx)}")
+    trace(s"comparison: ${print(ctx)}")
     val left  = expression(ctx.left)
     val right = expression(ctx.right)
     val op    = ctx.comparisonOperator().getChild(0).asInstanceOf[TerminalNode]
@@ -168,10 +191,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitIntegerLiteral(ctx: IntegerLiteralContext): SQLModel = {
-    SQL.LongLiteral(ctx.getText.toInt)
-  }
-  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
-    QName(ctx.nonReserved().getText)
+    LongLiteral(ctx.getText.toInt)
   }
 
+  override def visitStringLiteral(ctx: StringLiteralContext): SQLModel = {
+    val text = ctx.str().getText
+    val s    = text.substring(1, (text.length - 1).max(1))
+    StringLiteral(s)
+  }
+
+  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
+    val id = Option(ctx.nonReserved()).map(_.getText).getOrElse(ctx.getText)
+    QName(id)
+  }
 }
