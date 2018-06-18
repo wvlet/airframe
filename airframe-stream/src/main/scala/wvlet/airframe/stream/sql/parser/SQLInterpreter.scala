@@ -14,6 +14,7 @@
 package wvlet.airframe.stream.sql.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
+import org.antlr.v4.runtime.tree.TerminalNode
 import wvlet.airframe.stream.spi.SQL
 import wvlet.airframe.stream.spi.SQL._
 import wvlet.airframe.stream.sql.parser.SqlBaseParser._
@@ -35,7 +36,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   def interpret(ctx: ParserRuleContext): SQLModel = {
-    debug(s"interpret: ${print(ctx)}")
+    trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
     debug(m)
     m
@@ -50,7 +51,6 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitQuery(ctx: QueryContext): SQLModel = {
-    debug(s"query: ${print(ctx)}")
     visit(ctx.queryNoWith())
   }
 
@@ -71,30 +71,38 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val selectItem = ctx.selectItem().asScala.map { x =>
       visit(x).asInstanceOf[SelectItem]
     }
-    debug(s"select item: ${selectItem}")
     val r = ctx.relation().asScala.map { x =>
       visit(x).asInstanceOf[Relation]
     }
+    val w =
+      Option(ctx.where)
+        .map(visit(_))
+        .collectFirst { case e: Expression => e }
+
     val q =
       Query(item = selectItem,
             isDistinct = false,
             from = r.headOption,
-            where = None,
+            where = w,
             groupBy = Seq.empty,
             having = None,
             orderBy = Seq.empty,
             limit = None)
-
     q
   }
 
   override def visitRelationDefault(ctx: RelationDefaultContext): SQLModel = {
-    debug(s"relation default: ${print(ctx)}")
     visit(ctx.aliasedRelation())
   }
 
   override def visitAliasedRelation(ctx: AliasedRelationContext): SQLModel = {
-    visit(ctx.relationPrimary())
+    val r = visit(ctx.relationPrimary())
+    ctx.identifier() match {
+      case i: IdentifierContext =>
+        AliasedRelation(r.asInstanceOf[Relation], i.getText, None)
+      case null =>
+        r
+    }
   }
 
   override def visitTableName(ctx: TableNameContext): Table = {
@@ -120,4 +128,50 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     debug(s"expr: ${print(ctx)}")
     null
   }
+
+  def expression(ctx: ParserRuleContext): Expression = {
+    ctx.accept(this).asInstanceOf[Expression]
+  }
+
+  override def visitPredicated(ctx: PredicatedContext): Expression = {
+    val e = expression(ctx.valueExpression)
+    if (ctx.predicate != null) {
+      // TODO add predicate
+      e
+    } else {
+      e
+    }
+  }
+  override def visitComparison(ctx: ComparisonContext): Expression = {
+    debug(s"comparison: ${print(ctx)}")
+    val left  = expression(ctx.left)
+    val right = expression(ctx.right)
+    val op    = ctx.comparisonOperator().getChild(0).asInstanceOf[TerminalNode]
+    op.getSymbol.getType match {
+      case SqlBaseParser.EQ =>
+        Eq(left, right)
+      case SqlBaseParser.LT =>
+        LessThan(left, right)
+      case SqlBaseParser.LTE =>
+        LessThanOrEq(left, right)
+      case SqlBaseParser.GT =>
+        GreaterThan(left, right)
+      case SqlBaseParser.GTE =>
+        GreaterThanOrEq(left, right)
+      case SqlBaseParser.NEQ =>
+        NotEq(left, right)
+    }
+  }
+
+  override def visitNumericLiteral(ctx: NumericLiteralContext): SQLModel = {
+    visit(ctx.number())
+  }
+
+  override def visitIntegerLiteral(ctx: IntegerLiteralContext): SQLModel = {
+    SQL.LongLiteral(ctx.getText.toInt)
+  }
+  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
+    QName(ctx.nonReserved().getText)
+  }
+
 }
