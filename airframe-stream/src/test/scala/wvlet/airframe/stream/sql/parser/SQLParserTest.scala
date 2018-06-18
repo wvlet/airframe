@@ -14,7 +14,6 @@
 package wvlet.airframe.stream.sql.parser
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.stream.spi.SQLModel._
 
 /**
   *
@@ -35,11 +34,14 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a where time >= 10 and time < 20")
       parse("select * from a where id is null")
       parse("select * from a where id is not null")
+      parse("select * from a where flag = true")
+      parse("select * from a where flag = false")
       parse("select x, y from a")
       parse("select x from a where val > 0.5")
       parse("select `x` from a")
       parse("""select "x" from a""")
       parse("select category, count(*) from a group by 1")
+      parse("select category, count(*) from a group by category")
       parse("select * from a order by 1")
       parse("select * from a order by 1 desc")
       parse("select * from a order by 1 asc")
