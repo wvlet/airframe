@@ -51,14 +51,61 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitQuery(ctx: QueryContext): SQLModel = {
-    visit(ctx.queryNoWith())
+    val inputRelation = visit(ctx.queryNoWith()).asInstanceOf[Relation]
+    inputRelation
   }
 
   override def visitQueryNoWith(ctx: QueryNoWithContext): SQLModel = {
-    val term = visit(ctx.queryTerm())
+    val inputRelation = visit(ctx.queryTerm()).asInstanceOf[Relation]
     // TODO
-    term
+
+    val withSort = if (ctx.sortItem() == null) {
+      inputRelation
+    } else {
+      val sortKeys = ctx
+        .sortItem()
+        .asScala
+        .map { x =>
+          visitSortItem(x)
+        }
+      Sort(inputRelation, sortKeys)
+    }
+
+    if (ctx.limit == null) {
+      withSort
+    } else {
+      Option(ctx.INTEGER_VALUE())
+        .map { limit =>
+          val l = limit.getText.toInt
+          Limit(withSort, l)
+        }
+        .getOrElse(withSort)
+    }
   }
+
+  override def visitSortItem(ctx: SortItemContext): SortItem = {
+    val key  = expression(ctx.expression())
+    var sort = SortItem(key)
+    if (ctx.ordering != null) {
+      ctx.ordering.getType match {
+        case SqlBaseParser.ASC =>
+          sort = SortItem(key, ordering = Ascending)
+        case SqlBaseParser.DESC =>
+          sort = SortItem(key, ordering = Descending)
+      }
+    }
+
+    if (ctx.nullOrdering != null) {
+      ctx.nullOrdering.getType match {
+        case SqlBaseParser.FIRST =>
+          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsFirst)
+        case SqlBaseParser.LAST =>
+          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsLast)
+      }
+    }
+    sort
+  }
+
   override def visitQueryTermDefault(ctx: QueryTermDefaultContext): SQLModel = {
     visit(ctx.queryPrimary())
   }
@@ -68,27 +115,73 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): SQLModel = {
-    val selectItem = ctx.selectItem().asScala.map { x =>
+
+    val inputRelation: Option[Relation] = fromClause(ctx)
+
+    val withFilter: Option[Relation] = {
+      if (ctx.where == null)
+        inputRelation
+      else {
+        Option(ctx.where)
+          .map(visit(_))
+          .collectFirst { case e: Expression => e }
+          .flatMap { w =>
+            inputRelation.map(in => Filter(in, w))
+          }
+      }
+    }
+
+    val selectItem: Seq[SelectItem] = ctx.selectItem().asScala.map { x =>
       visit(x).asInstanceOf[SelectItem]
     }
-    val r = ctx.relation().asScala.map { x =>
-      visit(x).asInstanceOf[Relation]
-    }
-    val w =
-      Option(ctx.where)
-        .map(visit(_))
-        .collectFirst { case e: Expression => e }
 
-    val q =
-      Query(item = selectItem,
-            isDistinct = false,
-            from = r.headOption,
-            where = w,
-            groupBy = Seq.empty,
-            having = None,
-            orderBy = Seq.empty,
-            limit = None)
-    q
+    val withAggregation = {
+      if (ctx.groupBy() == null) {
+        // No aggregation
+        // TODO distinct check
+        Project(withFilter, false, selectItem)
+      } else {
+        // aggregation
+        val gb = ctx.groupBy()
+        assert(gb != null)
+        if (inputRelation.isEmpty) {
+          throw new IllegalArgumentException(s"group by statement requires input relation")
+        }
+
+        // group by
+        val groupByKeys =
+          gb.expression()
+            .asScala
+            .map {
+              expression(_)
+            }
+
+        val g = Aggregate(withFilter.get, selectItem, groupByKeys)
+
+        // having
+        if (ctx.having != null) {
+          Filter(g, expression(ctx.having))
+        } else {
+          g
+        }
+      }
+    }
+
+    withAggregation
+  }
+
+  private def fromClause(ctx: QuerySpecificationContext): Option[Relation] = {
+    Option(ctx.relation())
+      .flatMap { r =>
+        val relations = r.asScala
+        relations.size match {
+          case 1 =>
+            relations.map(x => visit(x).asInstanceOf[Relation]).headOption
+          case other =>
+            // TODO join processing
+            throw unknown(relations.head)
+        }
+      }
   }
 
   override def visitRelationDefault(ctx: RelationDefaultContext): SQLModel = {
@@ -203,13 +296,21 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitStringLiteral(ctx: StringLiteralContext): SQLModel = {
-    val text = ctx.str().getText
-    val s    = text.substring(1, (text.length - 1).max(1))
-    StringLiteral(s)
+    val text = ctx.str().getText.replaceAll("(^'|'$)", "")
+    StringLiteral(text)
   }
 
   override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
     val id = Option(ctx.nonReserved()).map(_.getText).getOrElse(ctx.getText)
     QName(id)
+  }
+  override def visitBackQuotedIdentifier(ctx: BackQuotedIdentifierContext): SQLModel = {
+    QName(ctx.getText.replaceAll("(^`|`$)", ""))
+  }
+  override def visitQuotedIdentifier(ctx: QuotedIdentifierContext): SQLModel = {
+    QName(ctx.getText.replaceAll("(^\"|\"$)", ""))
+  }
+  override def visitDigitIdentifier(ctx: DigitIdentifierContext): SQLModel = {
+    DigitId(ctx.getText.toInt)
   }
 }

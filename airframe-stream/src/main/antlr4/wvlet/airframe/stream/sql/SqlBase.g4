@@ -163,20 +163,21 @@ querySpecification
     ;
 
 groupBy
-    : setQuantifier? groupingElement (',' groupingElement)*
+//    : setQuantifier? groupingElement (',' groupingElement)*
+    : setQuantifier? expression (',' expression)*
     ;
 
-groupingElement
-    : groupingExpressions                                               #singleGroupingSet
-    | ROLLUP '(' (qualifiedName (',' qualifiedName)*)? ')'              #rollup
-    | CUBE '(' (qualifiedName (',' qualifiedName)*)? ')'                #cube
-    | GROUPING SETS '(' groupingSet (',' groupingSet)* ')'              #multipleGroupingSets
-    ;
+//groupingElement
+//    : expression                                                        #singleGroupingSet
+//    | ROLLUP '(' (qualifiedName (',' qualifiedName)*)? ')'              #rollup
+//    | CUBE '(' (qualifiedName (',' qualifiedName)*)? ')'                #cube
+//    | GROUPING SETS '(' groupingSet (',' groupingSet)* ')'              #multipleGroupingSets
+//    ;
 
-groupingExpressions
-    : '(' (expression (',' expression)*)? ')'
-    | expression
-    ;
+//groupingExpressions
+//    : '(' (expression (',' expression)*)? ')'
+//    | expression
+//    ;
 
 groupingSet
     : '(' (qualifiedName (',' qualifiedName)*)? ')'
