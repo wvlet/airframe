@@ -74,6 +74,9 @@ object SQL {
   case object FullOuterJoin extends JoinType
   // Cartesian product of two tables
   case object CrossJoin extends JoinType
+  // From clause contains only table names, and
+  // Where clause specifies join criteria
+  case object ImplicitJoin extends JoinType
 
   sealed trait JoinCriteria
   case object NaturalJoin                    extends JoinCriteria
