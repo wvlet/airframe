@@ -52,6 +52,13 @@ object SQL {
     override def toString = parts.mkString(".")
   }
 
+  object QName {
+    def apply(s: String): QName = {
+      // TODO handle quotation
+      QName(s.split("\\."))
+    }
+  }
+
   // Operator for ign relations
   sealed trait Relation                                                                           extends SQLModel
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
@@ -85,13 +92,13 @@ object SQL {
 
   case class Aggregate(in: Relation, keys: Seq[Expression], aggregate: Seq[AggregateExpression]) extends Relation
   case class Query(item: Seq[SelectItem],
-                   isDistinct: Boolean,
-                   from: Option[Relation],
-                   where: Option[Expression],
-                   groupBy: Seq[Expression],
-                   having: Option[Expression],
-                   orderBy: Seq[SortItem],
-                   limit: Option[String])
+                   isDistinct: Boolean = false,
+                   from: Option[Relation] = None,
+                   where: Option[Expression] = None,
+                   groupBy: Seq[Expression] = Seq.empty,
+                   having: Option[Expression] = None,
+                   orderBy: Seq[SortItem] = Seq.empty,
+                   limit: Option[String] = None)
       extends Relation
 
   sealed trait SelectItem extends Expression
@@ -156,6 +163,7 @@ object SQL {
   sealed trait ConditionalExpression                       extends Expression
   case object NoOp                                         extends ConditionalExpression
   case class Eq(a: Expression, b: Expression)              extends ConditionalExpression
+  case class NotEq(a: Expression, b: Expression)           extends ConditionalExpression
   case class And(a: Expression, b: Expression)             extends ConditionalExpression
   case class Or(a: Expression, b: Expression)              extends ConditionalExpression
   case class Not(expr: Expression)                         extends ConditionalExpression

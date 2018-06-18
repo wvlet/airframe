@@ -14,14 +14,21 @@
 package wvlet.airframe.stream.sql.parser
 
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.stream.spi.SQL._
 
 /**
   *
   */
 class SQLParserTest extends AirframeSpec {
+
+  def parse(sql: String): Unit = {
+    SQLParser.parse(sql)
+  }
+
   "SQLParser" should {
     "parse SQL" in {
-      SQLParser.parse("select * from a")
+      parse("select * from a") // Query(Seq(AllColumns(None)), false, Some(Table(QName("a"))))
+      parse("select * from a where time > 10")
     }
   }
 }
