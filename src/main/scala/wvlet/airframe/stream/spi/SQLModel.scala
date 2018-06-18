@@ -38,12 +38,12 @@ object SQLSchema {
   case class MapType(keyType: DataType, valueType: DataType) extends DataType
 }
 
+trait SQLModel
+
 /**
   *
   */
-object SQL {
-
-  trait SQLModel
+object SQLModel {
 
   sealed trait Expression extends SQLModel
 

@@ -14,7 +14,7 @@
 package wvlet.airframe.stream.sql.parser
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.stream.spi.SQL._
+import wvlet.airframe.stream.spi.SQLModel._
 
 /**
   *
