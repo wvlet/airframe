@@ -190,6 +190,14 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     visit(ctx.number())
   }
 
+  override def visitDoubleLiteral(ctx: DoubleLiteralContext): SQLModel = {
+    DoubleLiteral(ctx.getText.toDouble)
+  }
+
+  override def visitDecimalLiteral(ctx: DecimalLiteralContext): SQLModel = {
+    DoubleLiteral(ctx.getText.toDouble)
+  }
+
   override def visitIntegerLiteral(ctx: IntegerLiteralContext): SQLModel = {
     LongLiteral(ctx.getText.toInt)
   }
