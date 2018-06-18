@@ -15,6 +15,7 @@ package wvlet.airframe.stream.spi
 
 import java.util.Locale
 
+import wvlet.airframe.stream.spi.SQLModel.Expression
 import wvlet.surface.Surface
 
 object SQLSchema {
@@ -36,6 +37,7 @@ object SQLSchema {
   case class ObjectType(surface: Surface)                    extends DataType
   case class AraryType(elemType: DataType)                   extends DataType
   case class MapType(keyType: DataType, valueType: DataType) extends DataType
+  case object AnyType                                        extends DataType
 }
 
 trait SQLModel
@@ -51,6 +53,7 @@ object SQLModel {
   case class QName(parts: Seq[String]) extends Expression {
     override def toString = parts.mkString(".")
   }
+  case class DigitId(id: Int) extends Expression
 
   object QName {
     def apply(s: String): QName = {
@@ -60,13 +63,16 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation                                                                           extends SQLModel
-  case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
-  case class Values(rows: Seq[Expression])                                                        extends Relation
-  case class Table(name: QName)                                                                   extends Relation
-  case class SubQuery(query: Query)                                                               extends Relation
-  case class RawSQL(sql: String)                                                                  extends Relation
-  case class Project(in: Relation, schema: Seq[Expression])                                       extends Relation
+  sealed trait Relation                                                                               extends SQLModel
+  case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]])     extends Relation
+  case class Values(rows: Seq[Expression])                                                            extends Relation
+  case class Table(name: QName)                                                                       extends Relation
+  case class RawSQL(sql: String)                                                                      extends Relation
+  case class Filter(in: Relation, filterExpr: Expression)                                             extends Relation
+  case class Sort(in: Relation, orderBy: Seq[SortItem])                                               extends Relation
+  case class Limit(in: Relation, limit: Int)                                                          extends Relation
+  case class Project(in: Option[Relation], isDistinct: Boolean = false, selectItems: Seq[SelectItem]) extends Relation
+  case class Aggregate(in: Relation, selectItems: Seq[SelectItem], groupingKeys: Seq[Expression])     extends Relation
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
@@ -90,17 +96,6 @@ object SQLModel {
   case class JoinUsing(columns: Seq[String]) extends JoinCriteria
   case class JoinOn(expr: Expression)        extends JoinCriteria
 
-  case class Aggregate(in: Relation, keys: Seq[Expression], aggregate: Seq[AggregateExpression]) extends Relation
-  case class Query(item: Seq[SelectItem],
-                   isDistinct: Boolean = false,
-                   from: Option[Relation] = None,
-                   where: Option[Expression] = None,
-                   groupBy: Seq[Expression] = Seq.empty,
-                   having: Option[Expression] = None,
-                   orderBy: Seq[SortItem] = Seq.empty,
-                   limit: Option[String] = None)
-      extends Relation
-
   sealed trait SelectItem extends Expression
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
@@ -112,6 +107,7 @@ object SQLModel {
   case class SortItem(sortKey: Expression,
                       ordering: SortOrdering = Ascending,
                       nullOrdering: NullOrdering = UndefinedOrder)
+      extends Expression
 
   sealed trait SetOperation                                               extends Relation
   case class Intersect(relations: Seq[Relation], isDistinct: Boolean)     extends SetOperation
@@ -197,26 +193,6 @@ object SQLModel {
   case object Positive extends Sign("+")
   case object Negative extends Sign("-")
 
-  case class AggregateExpression(func: AggregateFunction, mode: AggregateMode, isDistinct: Boolean) extends Expression
-
-  sealed trait AggregateMode
-  case object PartialAggregate extends AggregateMode
-  case object FinalAggregate   extends AggregateMode
-  case object FullAggregate    extends AggregateMode
-
-  sealed trait AggregateFunction
-  case class Sum(e: Expression)                      extends AggregateFunction
-  case class Avg(e: Expression)                      extends AggregateFunction
-  case class Count(e: Expression)                    extends AggregateFunction
-  case class CountDistinct(e: Expression)            extends AggregateFunction
-  case class CountMinSketch(e: Expression)           extends AggregateFunction
-  case class CountApproximateDistinct(e: Expression) extends AggregateFunction
-  case class ApproximatePercentile(e: Expression)    extends AggregateFunction
-  case class Min(e: Expression)                      extends AggregateFunction
-  case class Max(e: Expression)                      extends AggregateFunction
-  case class First(e: Expression)                    extends AggregateFunction
-  case class Last(e: Expression)                     extends AggregateFunction
-
   // Literal
   sealed trait Literal        extends Expression
   case object NullLiteral     extends Literal
@@ -257,5 +233,29 @@ object SQLModel {
   case class CurrentTimestamp(precision: Option[Int])                         extends CurrentTimeBase("current_timestamp", precision)
   case class CurrentLocalTime(precision: Option[Int])                         extends CurrentTimeBase("localtime", precision)
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
+
+}
+
+object SQLFunction {
+
+  //case class AggregateExpression(func: AggregateFunction, mode: AggregateMode, isDistinct: Boolean) extends Expression
+
+  sealed trait AggregateMode
+  case object PartialAggregate extends AggregateMode
+  case object FinalAggregate   extends AggregateMode
+  case object FullAggregate    extends AggregateMode
+
+  sealed trait AggregateFunction
+  case class Sum(e: Expression)                      extends AggregateFunction
+  case class Avg(e: Expression)                      extends AggregateFunction
+  case class Count(e: Expression)                    extends AggregateFunction
+  case class CountDistinct(e: Expression)            extends AggregateFunction
+  case class CountMinSketch(e: Expression)           extends AggregateFunction
+  case class CountApproximateDistinct(e: Expression) extends AggregateFunction
+  case class ApproximatePercentile(e: Expression)    extends AggregateFunction
+  case class Min(e: Expression)                      extends AggregateFunction
+  case class Max(e: Expression)                      extends AggregateFunction
+  case class First(e: Expression)                    extends AggregateFunction
+  case class Last(e: Expression)                     extends AggregateFunction
 
 }
