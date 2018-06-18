@@ -15,8 +15,8 @@ package wvlet.airframe.stream.sql.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
-import wvlet.airframe.stream.spi.SQL
-import wvlet.airframe.stream.spi.SQL._
+import wvlet.airframe.stream.spi.SQLModel
+import wvlet.airframe.stream.spi.SQLModel._
 import wvlet.airframe.stream.sql.parser.SqlBaseParser._
 import wvlet.log.{LogSupport, Logger}
 
