@@ -4,6 +4,10 @@ title: Release Notes
 ---
 
 # Release Notes
+## 0.50
+ - airframe-control: Add a code for retrying code execution
+ - airframe-stream: Add a simple SQL parser/interpreter for stream processing https://github.com/wvlet/airframe/projects/1
+
 ## 0.49
  - __Important__: `bind[X]`, `bind[X].to[Y]`, etc. now use singleton bindings by default. This is because most of the use cases expect binding
  the same objects to traits. If you need to explicitly instantiate objects for each binding, use `bindInstance[X]` or `bind[X].toInstanceOf[Y]`.
