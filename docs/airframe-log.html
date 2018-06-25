@@ -148,8 +148,9 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <span class="k">class</span> <span class="nc">YourSpec</span> <span class="k">extends</span> <span class="nc">Spec</span> <span class="o">{</span>
    <span class="s">"my application"</span> <span class="n">should</span> <span class="o">{</span>
       <span class="s">"run correctly"</span> <span class="n">in</span> <span class="o">{</span>
-         <span class="c1">// ....
-</span>      <span class="o">}</span>
+         <span class="c1">// show a log message
+</span>         <span class="n">debug</span><span class="o">(</span><span class="s">"this is debug log"</span><span class="o">)</span>
+      <span class="o">}</span>
    <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
@@ -270,6 +271,16 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don’t need to use AsyncHandler with LogRotationHandler.</p>
 
+<h3 id="clear-existing-logger-congigurations">Clear Existing Logger Congigurations</h3>
+
+<p>To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Logger</span><span class="o">.</span><span class="n">clearAllHandlers</span>
+
+<span class="c1">// Then set your logger configurations
+</span><span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">LogFormatter</span><span class="o">.</span><span class="nc">SourceCodeLogFormatter</span><span class="o">)</span>
+</code></pre>
+</div>
+
 <h2 id="internals">Internals</h2>
 
 <h3 id="scala-macro-based-logging-code-generation">Scala macro based logging code generation</h3>
@@ -309,8 +320,12 @@ An wrapper of <em>slf4j</em> for Scala. This also uses Scala macros to make logg
     <p><a href="https://github.com/twitter/util#logging">twitter/util-logging</a>: This is also an wrapper of <code class="highlighter-rouge">java.util.logging</code> for Scala, but it doesn’t use Scala macros, so you need to use an old sprintf style log generation, or <code class="highlighter-rouge">ifDebug(log)</code> 
 method to avoid expensive log message generation.</p>
   </li>
+  <li>
+    <p><a href="https://github.com/outr/scribe">scribe</a>:
+A pure-scala logger implementation, which has a similar set of functionality with airframe-log (e.g., macro based code generation, programatically configurable).
+As of June 2018, scribe doesn’t support runtime log level configurations via JMX nor log.properties file.</p>
+  </li>
 </ul>
-
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
