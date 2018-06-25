@@ -233,6 +233,10 @@ object Logger {
     rootLogger.resetLogLevel
   }
 
+  def clearAllHandlers: Unit = {
+    rootLogger.clearAllHandlers
+  }
+
   /**
     * Set log levels using Properties (key: logger name, value: log level)
     *

@@ -131,7 +131,8 @@ trait Spec extends WordSpec with Matchers with BeforeAndAfterAll with LogSupport
 class YourSpec extends Spec {
    "my application" should {
       "run correctly" in {
-         // ....
+         // show a log message
+         debug("this is debug log")
       }
    }
 }
@@ -250,6 +251,16 @@ Note that however AsyncHandler has usually higher overhead than the default hand
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler. 
 
+### Clear Existing Logger Congigurations
+
+To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:
+```scala
+Logger.clearAllHandlers
+
+// Then set your logger configurations
+Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
+```
+
 ## Internals
 
 ### Scala macro based logging code generation
@@ -288,3 +299,6 @@ An wrapper of *slf4j* for Scala. This also uses Scala macros to make logging eff
 - [twitter/util-logging](https://github.com/twitter/util#logging): This is also an wrapper of `java.util.logging` for Scala, but it doesn't use Scala macros, so you need to use an old sprintf style log generation, or `ifDebug(log)` 
 method to avoid expensive log message generation. 
 
+- [scribe](https://github.com/outr/scribe):
+A pure-scala logger implementation, which has a similar set of functionality with airframe-log (e.g., macro based code generation, programatically configurable).
+As of June 2018, scribe doesn't support runtime log level configurations via JMX nor log.properties file.
