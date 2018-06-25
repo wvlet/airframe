@@ -218,7 +218,7 @@ class LoggerTest extends Spec {
         r.getHandlers shouldBe Seq.empty
 
       } finally {
-        logger.clearAllHandlers
+        Logger.clearAllHandlers
         Logger.setDefaultFormatter(SourceCodeLogFormatter)
       }
     }
