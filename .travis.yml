@@ -67,7 +67,7 @@ matrix:
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Open JDK 10'
+  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Oracle JDK 10'
     jdk: oraclejdk10
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
