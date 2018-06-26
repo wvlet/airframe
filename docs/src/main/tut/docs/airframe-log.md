@@ -32,6 +32,10 @@ title: airframe-log
 - **Production ready**
   - airframe-log has built-in handlers for log file rotations, asynchronous logging.
   - Scala 2.11, 2.12, Scala.js support
+
+## Resources
+- GitHub: [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log)
+- Blog post: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
  
 ## Usage
 
@@ -177,7 +181,7 @@ object CustomLogFormatter extends LogFormatter {
 
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
-See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
+See also the examples in [LogFormat.scala](https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala):
 
 ### Using airframe-log in Scala.js
 
@@ -206,12 +210,19 @@ To configure the log level, use `wvlet.log.setDefaultLogLevel` or `wvlet.log.set
 ### Using with slf4j
 
 If you are using slf4j, just add `slf4j-jdk14` to your dependency. The log messages from slf4j will be sent to wvlet-log:
-```
+```scala
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 ```
 
 - See also the article, [How to start using wvlet-log with slf4j projects](http://blog.seratch.net/post/150202874933/how-to-start-using-wvlet-log-with-slf4j-projects), written by [@seratch](https://github.com/seratch) (author of skinny-framework, scalikejdbc, etc.)
 
+### Using with log4j
+
+For example, the default logger of Hadoop and Spark is log4j. You can send logs from airframe-log to log4j by adding
+log4j-jul binder:
+```scala
+libraryDependencies += "org.apache.logging.log4j" % "log4j-jul" % "2.6.1",
+```
 
 ### Writing and rotating logs with files 
 
