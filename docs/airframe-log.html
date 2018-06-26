@@ -50,6 +50,12 @@ ga('send', 'pageview');
   </li>
 </ul>
 
+<h2 id="resources">Resources</h2>
+<ul>
+  <li>GitHub: <a href="https://github.com/wvlet/airframe/tree/master/airframe-log">airframe-log</a></li>
+  <li>Blog post: <a href="https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc">Airframe Log: A Modern Logging Library for Scala</a></li>
+</ul>
+
 <h2 id="usage">Usage</h2>
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg" alt="Maven Central" /></a></p>
@@ -197,7 +203,7 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">CustomLogFormatter</span><span class="o">)</span>
 </code></pre>
 </div>
-<p>See also the examples in <a href="src/main/scala/wvlet/log/LogFormat.scala">LogFormat.scala</a>:</p>
+<p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala">LogFormat.scala</a>:</p>
 
 <h3 id="using-airframe-log-in-scalajs">Using airframe-log in Scala.js</h3>
 
@@ -225,13 +231,21 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <h3 id="using-with-slf4j">Using with slf4j</h3>
 
 <p>If you are using slf4j, just add <code class="highlighter-rouge">slf4j-jdk14</code> to your dependency. The log messages from slf4j will be sent to wvlet-log:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.slf4j"</span> <span class="o">%</span> <span class="s">"slf4j-jdk14"</span> <span class="o">%</span> <span class="s">"1.7.21"</span>
 </code></pre>
 </div>
 
 <ul>
   <li>See also the article, <a href="http://blog.seratch.net/post/150202874933/how-to-start-using-wvlet-log-with-slf4j-projects">How to start using wvlet-log with slf4j projects</a>, written by <a href="https://github.com/seratch">@seratch</a> (author of skinny-framework, scalikejdbc, etc.)</li>
 </ul>
+
+<h3 id="using-with-log4j">Using with log4j</h3>
+
+<p>For example, the default logger of Hadoop and Spark is log4j. You can send logs from airframe-log to log4j by adding
+log4j-jul binder:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.apache.logging.log4j"</span> <span class="o">%</span> <span class="s">"log4j-jul"</span> <span class="o">%</span> <span class="s">"2.6.1"</span><span class="o">,</span>
+</code></pre>
+</div>
 
 <h3 id="writing-and-rotating-logs-with-files">Writing and rotating logs with files</h3>
 
