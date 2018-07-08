@@ -4,6 +4,10 @@ title: Release Notes
 ---
 
 # Release Notes
+
+## 0.51
+ - airframe-log: Add Logger.clearAllHandlers (#195)
+
 ## 0.50
  - airframe-control: Add a code for retrying code execution
  - airframe-stream: Add a simple SQL parser/interpreter for stream processing https://github.com/wvlet/airframe/projects/1
