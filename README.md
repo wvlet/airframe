@@ -9,7 +9,7 @@
 
 Airframe https://wvlet.org/airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
 
-See [Documentation](https://wvlet.org/airframe/docs/) for further details.
+See [Documentation](https://wvlet.org/airframe/) for further details.
 
 ## Resources
 - [Airframe Home](https://wvlet.org/airframe/)
