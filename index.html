@@ -11,21 +11,32 @@ ga('send', 'pageview');
 <p>Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.</p>
 
 <ul>
-  <li><a href="docs/airframe-log.html">Logging</a></li>
+  <li><a href="docs/airframe-log.html">Logging</a>
+    <ul>
+      <li><a href="https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc">Airframe Log: A Modern Logging Library for Scala</a></li>
+    </ul>
+  </li>
   <li><a href="docs/airframe-config.html">Configuration</a></li>
+  <li><a href="docs/index.html">Dependency Injection (DI)</a> tailored to to <a href="https://www.scala-lang.org/">Scala</a>
+    <ul>
+      <li>Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation;
+Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
+While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers),
+Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.</li>
+      <li><a href="https://wvlet.org/airframe/docs/comparison.html">DI Framework Comparison</a>. Comparing Airframe with Google Guice, Macwire, Dagger2, etc.</li>
+    </ul>
+  </li>
   <li><a href="docs/airframe-codec.html">Object serialization</a></li>
   <li><a href="docs/airframe-opts.html">Option parser</a></li>
   <li><a href="docs/airframe-jmx.html">Runtime monitoring via JMX</a></li>
-  <li><a href="docs/airframe-metrics.html">Human-readable data units</a></li>
+  <li><a href="docs/airframe-metrics.html">Human-readable data and time units</a></li>
   <li><a href="docs/airframe-surface.html">Object shape inspector (Surface)</a></li>
-  <li>etc.</li>
+  <li><a href="https://wvlet.org/airframe/docs/utils.html">Other Utilities</a>
+    <ul>
+      <li>A collection of useful Scala libraries that can be used with Airframe.</li>
+    </ul>
+  </li>
 </ul>
-
-<p>For advanced users we also provide <a href="docs">dependency injection (DI) library</a> tailored to <a href="https://www.scala-lang.org/">Scala</a>. 
-Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation; 
-Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
-While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers),
-Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
 
 <h2 id="resources">Resources</h2>
 <ul>
@@ -40,17 +51,12 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
       <li>Configuring applications, managing resources, service mix-in, etc.</li>
     </ul>
   </li>
-  <li><a href="docs/comparison.html">DI Framework Comparison</a>
-    <ul>
-      <li>Comparing Airframe with Google Guice, Macwire, Dagger2, etc.</li>
-    </ul>
-  </li>
   <li><a href="https://medium.com/@taroleo/airframe-c5d044a97ec">Introdution of Airframe in Japanese (日本語)</a></li>
   <li><a href="https://github.com/wvlet/airframe">Source Code (GitHub)</a></li>
 </ul>
 
 <h2 id="getting-started">Getting Started</h2>
-<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="Latest version" /></a></p>
+<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="Latest version" /></a> <a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p>Airframe is available for Scala 2.13, 2.12, 2.11, and <a href="https://www.scala-js.org/">Scala.js</a>.
 For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
@@ -71,6 +77,7 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
   <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span>         <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Dependency injection
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span>   <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// MessagePack-based schema-on-read transcoder
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-config"</span>  <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// YAML-based configuration
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-control"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Library for retryable execution
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jmx"</span>     <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// JMX monitoring
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jdbc"</span>    <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// JDBC connection pool
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span>     <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Logging
@@ -83,6 +90,7 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
 <span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span><span class="o">.</span><span class="n">js</span><span class="o">,</span> <span class="n">the</span> <span class="n">following</span> <span class="n">libraries</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span><span class="k">:</span>
 <span class="kt">libraryDependencies</span> <span class="kt">++=</span> <span class="kt">Seq</span><span class="o">(</span>
   <span class="err">"</span><span class="kt">org.wvlet.airframe</span><span class="err">"</span> <span class="kt">%%%</span> <span class="err">"</span><span class="kt">airframe</span><span class="err">"</span>         <span class="kt">%</span> <span class="kt">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Dependency injection
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-control"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Library for retryable execution
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span>     <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Logging
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Metrics units
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span>  <span class="c1">// Object surface inspector
