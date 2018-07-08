@@ -11,19 +11,21 @@ technologies:
 Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
 
 - [Logging](docs/airframe-log.html)
+  - [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
 - [Configuration](docs/airframe-config.html)
+- [Dependency Injection (DI)](docs/index.html) tailored to to [Scala](https://www.scala-lang.org/)
+  - Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
+    Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
+    While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers),
+    Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.
+  - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 - [Object serialization](docs/airframe-codec.html)
 - [Option parser](docs/airframe-opts.html)
 - [Runtime monitoring via JMX](docs/airframe-jmx.html)
-- [Human-readable data units](docs/airframe-metrics.html)
+- [Human-readable data and time units](docs/airframe-metrics.html)
 - [Object shape inspector (Surface)](docs/airframe-surface.html)
-- etc.
-
-For advanced users we also provide [dependency injection (DI) library](docs) tailored to [Scala](https://www.scala-lang.org/). 
-Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; 
-Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
-While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers),
-Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.
+- [Other Utilities](https://wvlet.org/airframe/docs/utils.html)
+   - A collection of useful Scala libraries that can be used with Airframe.
 
 
 ## Resources
@@ -32,14 +34,11 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
    - A collection of useful Scala libraries that can be used with Airframe.
 - [Use Cases](docs/use-cases.html)
    - Configuring applications, managing resources, service mix-in, etc.
-- [DI Framework Comparison](docs/comparison.html)
-   - Comparing Airframe with Google Guice, Macwire, Dagger2, etc. 
 - [Introdution of Airframe in Japanese (日本語)](https://medium.com/@taroleo/airframe-c5d044a97ec)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
-
 ## Getting Started
- [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
+ [![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12)
 
 Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/).
 For Scala 2.12.6 or later, Java 9 and 10 are also supported.
@@ -59,6 +58,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe"         % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read transcoder
   "org.wvlet.airframe" %% "airframe-config"  % AIRFRAME_VERSION, // YAML-based configuration
+  "org.wvlet.airframe" %% "airframe-control" % AIRFRAME_VERSION, // Library for retryable execution
   "org.wvlet.airframe" %% "airframe-jmx"     % AIRFRAME_VERSION, // JMX monitoring
   "org.wvlet.airframe" %% "airframe-jdbc"    % AIRFRAME_VERSION, // JDBC connection pool
   "org.wvlet.airframe" %% "airframe-log"     % AIRFRAME_VERSION, // Logging
@@ -71,6 +71,7 @@ libraryDependencies ++= Seq(
 # For Scala.js, the following libraries can be used:
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %%% "airframe-control" % AIRFRAME_VERSION, // Library for retryable execution
   "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
   "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
   "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION  // Object surface inspector
