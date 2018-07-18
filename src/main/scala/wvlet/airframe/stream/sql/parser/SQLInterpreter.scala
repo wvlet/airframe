@@ -68,6 +68,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         .map { x =>
           visitSortItem(x)
         }
+        .toSeq
       Sort(inputRelation, sortKeys)
     }
 
@@ -131,9 +132,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       }
     }
 
-    val selectItem: Seq[SelectItem] = ctx.selectItem().asScala.map { x =>
-      visit(x).asInstanceOf[SelectItem]
-    }
+    val selectItem: Seq[SelectItem] = ctx
+      .selectItem().asScala.map { x =>
+        visit(x).asInstanceOf[SelectItem]
+      }.toSeq
 
     val withAggregation = {
       if (ctx.groupBy() == null) {
@@ -155,6 +157,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
             .map {
               expression(_)
             }
+            .toSeq
 
         val g = Aggregate(withFilter.get, selectItem, groupByKeys)
 
@@ -173,7 +176,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   private def fromClause(ctx: QuerySpecificationContext): Option[Relation] = {
     Option(ctx.relation())
       .flatMap { r =>
-        val relations = r.asScala
+        val relations = r.asScala.toSeq
         relations.size match {
           case 1 =>
             relations.map(x => visit(x).asInstanceOf[Relation]).headOption
@@ -204,7 +207,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
-    QName(ctx.identifier().asScala.map(_.getText))
+    QName(ctx.identifier().asScala.map(_.getText).toSeq)
   }
 
   override def visitSelectAll(ctx: SelectAllContext): SelectItem = {

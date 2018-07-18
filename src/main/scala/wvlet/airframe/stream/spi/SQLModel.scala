@@ -58,7 +58,7 @@ object SQLModel {
   object QName {
     def apply(s: String): QName = {
       // TODO handle quotation
-      QName(s.split("\\."))
+      QName(s.split("\\.").toSeq)
     }
   }
 
