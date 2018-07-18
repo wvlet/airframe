@@ -57,5 +57,12 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a join b using (id)")
       parse("select * from a left join b on a.id = b.id")
     }
+
+    "parse expressions" in {
+      parse("select 1")
+      parse("select 1 + 2")
+      parse("select true")
+      parse("select true or false")
+    }
   }
 }

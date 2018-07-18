@@ -291,6 +291,22 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
+  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): SQLModel = {
+    val left  = expression(ctx.left)
+    val right = expression(ctx.right)
+    val binaryExprType: BinaryExprType =
+      ctx.operator match {
+        case op if ctx.PLUS() != null     => Add
+        case op if ctx.MINUS() != null    => Subtract
+        case op if ctx.ASTERISK() != null => Multiply
+        case op if ctx.SLASH() != null    => Divide
+        case op if ctx.PERCENT() != null  => Modulus
+        case _ =>
+          throw unknown(ctx)
+      }
+    ArithmeticBinaryExpr(binaryExprType, left, right)
+  }
+
   override def visitComparison(ctx: ComparisonContext): Expression = {
     trace(s"comparison: ${print(ctx)}")
     val left  = expression(ctx.left)
