@@ -21,7 +21,8 @@ import wvlet.airframe.AirframeSpec
 class SQLParserTest extends AirframeSpec {
 
   def parse(sql: String): Unit = {
-    SQLParser.parse(sql)
+    val m = SQLParser.parse(sql)
+    info(m)
   }
 
   "SQLParser" should {
@@ -48,6 +49,13 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a order by 1 nulls first")
       parse("select * from a order by 1 nulls last")
       parse("select * from a limit 100")
+    }
+
+    "parse joins" taggedAs ("join") in {
+      parse("select * from a, b")
+      parse("select * from a join b on a.id = b.id")
+      parse("select * from a join b using (id)")
+      parse("select * from a left join b on a.id = b.id")
     }
   }
 }

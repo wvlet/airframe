@@ -14,7 +14,7 @@
 package wvlet.airframe.stream.sql.parser
 
 /**
-  *
+  * Reading SQL texts in case-insensitive manner
   */
 import org.antlr.v4.runtime.CharStream
 import org.antlr.v4.runtime.IntStream

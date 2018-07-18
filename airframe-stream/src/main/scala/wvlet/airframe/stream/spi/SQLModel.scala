@@ -63,16 +63,20 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation                                                                               extends SQLModel
-  case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]])     extends Relation
-  case class Values(rows: Seq[Expression])                                                            extends Relation
-  case class Table(name: QName)                                                                       extends Relation
-  case class RawSQL(sql: String)                                                                      extends Relation
-  case class Filter(in: Relation, filterExpr: Expression)                                             extends Relation
-  case class Sort(in: Relation, orderBy: Seq[SortItem])                                               extends Relation
-  case class Limit(in: Relation, limit: Int)                                                          extends Relation
-  case class Project(in: Option[Relation], isDistinct: Boolean = false, selectItems: Seq[SelectItem]) extends Relation
-  case class Aggregate(in: Relation, selectItems: Seq[SelectItem], groupingKeys: Seq[Expression])     extends Relation
+  sealed trait Relation                                                                           extends SQLModel
+  case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
+  case class Values(rows: Seq[Expression])                                                        extends Relation
+  case class Table(name: QName)                                                                   extends Relation
+  case class RawSQL(sql: String)                                                                  extends Relation
+  case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
+  case class Sort(in: Relation, orderBy: Seq[SortItem])                                           extends Relation
+  case class Limit(in: Relation, limit: Int)                                                      extends Relation
+  case class Project(in: Option[Relation], isDistinct: Boolean = false, selectItems: Seq[SelectItem]) extends Relation {
+    override def toString = s"Project[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct})"
+  }
+  case class Aggregate(in: Relation, selectItems: Seq[SelectItem], groupingKeys: Seq[Expression]) extends Relation {
+    override def toString = s"Aggregate[${groupingKeys.mkString(",")}](${in},${selectItems.mkString(",")})"
+  }
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
@@ -92,9 +96,11 @@ object SQLModel {
   case object ImplicitJoin extends JoinType
 
   sealed trait JoinCriteria
-  case object NaturalJoin                    extends JoinCriteria
-  case class JoinUsing(columns: Seq[String]) extends JoinCriteria
-  case class JoinOn(expr: Expression)        extends JoinCriteria
+  case object NaturalJoin extends JoinCriteria
+  case class JoinUsing(columns: Seq[String]) extends JoinCriteria {
+    override def toString: String = s"JoinUsing(${columns.mkString(",")})"
+  }
+  case class JoinOn(expr: Expression) extends JoinCriteria
 
   sealed trait SelectItem extends Expression
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
