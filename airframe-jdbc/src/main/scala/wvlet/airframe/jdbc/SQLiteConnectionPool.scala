@@ -53,7 +53,7 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
     }
   }
 
-  def stop {
+  def stop: Unit = {
     info(s"Closing connection pool for ${config}")
     conn.close()
   }

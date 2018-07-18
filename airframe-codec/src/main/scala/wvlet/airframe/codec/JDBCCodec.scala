@@ -58,7 +58,7 @@ object JDBCCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder) {
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
       val size = u.unpackArrayHeader()
       for (i <- 0 until size) {
         u.unpackValue()

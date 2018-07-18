@@ -33,51 +33,51 @@ class MessageHolder {
   def hasError: Boolean           = err.isDefined
   def getError: Option[Throwable] = err
 
-  def setNull {
+  def setNull: Unit = {
     dataType = NIL
     value = None
   }
 
-  def setBoolean(v: Boolean) {
+  def setBoolean(v: Boolean): Unit = {
     setValue(BOOLEAN, v)
     b = v
   }
-  def setByte(v: Byte) {
+  def setByte(v: Byte): Unit = {
     setValue(INTEGER, v)
     l = v
   }
-  def setChar(v: Char) {
+  def setChar(v: Char): Unit = {
     setValue(INTEGER, v)
     l = v
   }
-  def setShort(v: Short) {
+  def setShort(v: Short): Unit = {
     setValue(INTEGER, v)
     l = v
   }
-  def setInt(v: Int) {
+  def setInt(v: Int): Unit = {
     setValue(INTEGER, v)
     l = v
   }
-  def setLong(v: Long) {
+  def setLong(v: Long): Unit = {
     setValue(INTEGER, v)
     l = v
   }
 
-  def setFloat(v: Float) {
+  def setFloat(v: Float): Unit = {
     setValue(FLOAT, v)
     d = v
   }
-  def setDouble(v: Double) {
+  def setDouble(v: Double): Unit = {
     setValue(FLOAT, v)
     d = v
   }
 
-  def setString(v: String) {
+  def setString(v: String): Unit = {
     setValue(STRING, v)
     s = v
   }
 
-  def setObject(v: Any) {
+  def setObject(v: Any): Unit = {
     if (v == null) {
       setNull
     } else {
@@ -85,7 +85,7 @@ class MessageHolder {
     }
   }
 
-  protected def setValue(dataType: DataType, v: Any) {
+  protected def setValue(dataType: DataType, v: Any): Unit = {
     this.dataType = dataType
     if (v != null) {
       value = Some(v)
@@ -152,12 +152,12 @@ class MessageHolder {
 
   def getLastValue: Any = value.getOrElse(null)
 
-  def setError[A](e: Throwable) {
+  def setError[A](e: Throwable): Unit = {
     setNull
     err = Option(e)
   }
 
-  def setIncompatibleFormatException[A](codec: MessageCodec[A], message: String) {
+  def setIncompatibleFormatException[A](codec: MessageCodec[A], message: String): Unit = {
     setError(new MessageCodecException(INVALID_DATA, codec, message))
   }
 
