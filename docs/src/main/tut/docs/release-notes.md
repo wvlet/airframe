@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.52
+ - Support Scala 2.13.0-M4
+
 ## 0.51
  - airframe-log: Add Logger.clearAllHandlers (#195)
 
