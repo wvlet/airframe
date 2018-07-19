@@ -152,8 +152,19 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       m(StringValue("name")) shouldBe StringValue("mitsu")
 
       val json = """{"id":1001,"name":"mitsu","address":["xxx-xxxx","yyy-yyyy"]}"""
-      // TODO check the equality as json objects instead of using direct json string comparison
-      check(m, ValueType.MAP, json, json)
+      // check the equality as json objects instead of using direct json string comparison
+      jsonEq(m.toJson, json)
+      jsonEq(m.toString, json)
+    }
+
+    def jsonEq(a: String, b: String): Unit = {
+      // Perform rough comparison of JSON data
+      def sanitize(s: String): Seq[String] = {
+        s.replaceAll("""[\{\}\[\]\"]""", "")
+          .split("[,:]")
+          .sorted
+      }
+      sanitize(a) shouldBe sanitize(b)
     }
 
     "check appropriate range for integers" in {

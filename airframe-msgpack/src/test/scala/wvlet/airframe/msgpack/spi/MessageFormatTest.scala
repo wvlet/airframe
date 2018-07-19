@@ -23,7 +23,7 @@ import scala.util.Random
 class MessageFormatTest extends AirframeSpec with Timer {
   "MessageFormat" should {
     "cover all byte codes" in {
-      def checkV(b: Byte, tpe: ValueType) {
+      def checkV(b: Byte, tpe: ValueType): Unit = {
         try MessageFormat.of(b).valueType shouldBe tpe
         catch {
           case e: TestFailedException =>
@@ -32,11 +32,11 @@ class MessageFormatTest extends AirframeSpec with Timer {
         }
       }
 
-      def checkF(b: Byte, f: MessageFormat) {
+      def checkF(b: Byte, f: MessageFormat): Unit = {
         MessageFormat.of(b) shouldBe f
       }
 
-      def check(b: Byte, tpe: ValueType, f: MessageFormat) {
+      def check(b: Byte, tpe: ValueType, f: MessageFormat): Unit = {
         checkV(b, tpe)
         checkF(b, f)
       }
