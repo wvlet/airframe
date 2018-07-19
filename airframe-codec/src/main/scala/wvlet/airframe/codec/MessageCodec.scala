@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
-trait MessageCodec[A] extends LogSupport {
+trait MessageCodec[A] {
   def pack(p: MessagePacker, v: A): Unit
   def unpack(u: MessageUnpacker, v: MessageHolder): Unit
 

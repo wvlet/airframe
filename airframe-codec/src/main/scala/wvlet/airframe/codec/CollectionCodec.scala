@@ -21,9 +21,6 @@ import wvlet.surface.{Surface, Zero}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
-/**
-  *
-  */
 object CollectionCodec {
 
   object BaseSeqCodec {
@@ -59,7 +56,7 @@ object CollectionCodec {
     }
   }
 
-  case class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
+  class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
     override def pack(p: MessagePacker, v: Seq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
@@ -69,7 +66,7 @@ object CollectionCodec {
     }
   }
 
-  case class IndexedSeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[IndexedSeq[A]] {
+  class IndexedSeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[IndexedSeq[A]] {
     override def pack(p: MessagePacker, v: IndexedSeq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
@@ -88,7 +85,7 @@ object CollectionCodec {
     [error] 	at scala.reflect.internal.tpe.TypeMaps$TypeMap.mapOver(TypeMaps.scala:172)
     </code>
    */
-  case class ListCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
+  class ListCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
     override def pack(p: MessagePacker, v: Seq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
@@ -123,7 +120,7 @@ object CollectionCodec {
   case class MapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B]) extends MessageCodec[Map[A, B]] {
     override def pack(p: MessagePacker, m: Map[A, B]): Unit = {
       p.packMapHeader(m.size)
-      for ((k, v) <- m.seq) {
+      for ((k, v) <- m) {
         keyCodec.pack(p, k)
         valueCodec.pack(p, v)
       }
@@ -148,7 +145,7 @@ object CollectionCodec {
       extends MessageCodec[java.util.Map[A, B]] {
     override def pack(p: MessagePacker, m: java.util.Map[A, B]): Unit = {
       p.packMapHeader(m.size)
-      for ((k, v) <- m.asScala.seq) {
+      for ((k, v) <- m.asScala) {
         keyCodec.pack(p, k)
         valueCodec.pack(p, v)
       }
