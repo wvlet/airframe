@@ -186,7 +186,7 @@ object Packer {
     packFLOAT64(cursor, v)
   }
 
-  def packString(cursor: WriteCursor, s: String) {
+  def packString(cursor: WriteCursor, s: String): Unit = {
     val bytes = s.getBytes(StandardCharsets.UTF_8)
     // Write the length and payload of small string to the buffer so that it avoids an extra flush of buffer
     packRawStringHeader(cursor, bytes.length)

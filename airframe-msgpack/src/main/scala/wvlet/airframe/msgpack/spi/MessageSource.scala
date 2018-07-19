@@ -28,7 +28,7 @@ trait MessageSource extends AutoCloseable {
     * This is useful when it uses a memory pool.
     *
     * @return the next input [[ReadBuffer]], or return None if no more buffer is available.
-    * @throws IOException when IO error occurred when reading the data
+    * @throws java.io.IOException when IO error occurred when reading the data
     */
   def next: Option[ReadBuffer]
 
