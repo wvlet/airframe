@@ -37,11 +37,11 @@ object ServiceMixinExample {
   class ConsolePrinter(config: ConsoleConfig) extends Printer with LogSupport {
     info(s"using config: ${config}")
 
-    def print(s: String) { config.out.println(s) }
+    def print(s: String): Unit = { config.out.println(s) }
   }
 
   class LogPrinter extends Printer with LogSupport {
-    def print(s: String) { info(s) }
+    def print(s: String): Unit = { info(s) }
   }
 
   class Fortune {
@@ -184,11 +184,11 @@ object ServiceMixinExample {
   }
 
   trait ConcreteModule extends AbstractModule with LogSupport {
-    def hello { info("hello!") }
+    def hello: Unit = { info("hello!") }
   }
 
   object ConcreteSingleton extends AbstractModule with LogSupport {
-    def hello { info("hello singleton!") }
+    def hello: Unit = { info("hello singleton!") }
   }
 
   trait NonAbstractModule extends LogSupport {
@@ -215,16 +215,16 @@ object ServiceMixinExample {
     val startCount = new AtomicInteger(0)
     var closeCount = new AtomicInteger(0)
 
-    def init {
+    def init: Unit = {
       info("initialized")
       initCount.incrementAndGet()
     }
-    def start {
+    def start: Unit = {
       info("started")
       startCount.incrementAndGet()
     }
 
-    def close {
+    def close: Unit = {
       info("closed")
       closeCount.incrementAndGet()
     }

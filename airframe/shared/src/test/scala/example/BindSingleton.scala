@@ -37,13 +37,13 @@ object BindSingleton {
     val y = bind[Y]
 
     @PostConstruct
-    def start() {
+    def start(): Unit = {
       // This will be called only once since XY is used as singleton
       info(s"${x.hello} ${y.world}!")
     }
 
     @PreDestroy
-    def close() {
+    def close(): Unit = {
       // This will be called only once since XY is used as singleton
       info(s"${x.goodbye} ${y.world}!")
     }

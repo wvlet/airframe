@@ -15,7 +15,7 @@ package wvlet.airframe
 
 object BindTest {
   class X {
-    def close() {}
+    def close(): Unit = {}
   }
 
   trait Bind {

@@ -43,7 +43,7 @@ class JMXRegistryTest extends AirframeSpec {
 
   val agent = new JMXAgent(new JMXConfig())
 
-  override def afterAll {
+  override def afterAll: Unit = {
     agent.unregisterAll
   }
 

@@ -34,7 +34,7 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       .getOrElse(10000)
   }
 
-  def checkSuccinctType(pack: WriteCursor => Unit, expectedAtMost: MessageFormat) {
+  def checkSuccinctType(pack: WriteCursor => Unit, expectedAtMost: MessageFormat): Unit = {
     try {
       val buf         = ByteArrayBuffer.newBuffer(1024)
       val writeCursor = WriteCursor(buf, 0)

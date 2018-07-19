@@ -59,20 +59,20 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
     h
   }
 
-  def checkCodec[A](codec: MessageCodec[A], v: A) {
+  def checkCodec[A](codec: MessageCodec[A], v: A): Unit = {
     val b = codec.packToBytes(v)
     val r = codec.unpackBytes(b)
     r shouldBe defined
     v shouldBe r.get
   }
 
-  def roundTripTest[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
+  def roundTripTest[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
     forAll { (v: T) =>
       roundtrip(v, dataType)
     }
   }
 
-  def arrayRoundTripTest[T: ru.TypeTag](implicit impArb: Arbitrary[Array[T]]) {
+  def arrayRoundTripTest[T: ru.TypeTag](implicit impArb: Arbitrary[Array[T]]): Unit = {
     val codec         = MessageCodec.of[Array[T]]
     val seqCodec      = MessageCodec.of[Seq[T]]
     val javaListCodec = MessageCodec.of[java.util.List[T]]
@@ -86,7 +86,7 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
     }
   }
 
-  def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]) {
+  def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
     val codec = MessageCodec.of[T]
     forAll { (v: T) =>
       // Test input:T -> output:T

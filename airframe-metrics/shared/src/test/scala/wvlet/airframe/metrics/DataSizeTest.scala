@@ -43,7 +43,7 @@ class DataSizeTest extends AirframeSpec {
     }
 
     "generate succinct rep" in {
-      def checkSuccinctRepOf(bytes: Long, repr: String) {
+      def checkSuccinctRepOf(bytes: Long, repr: String): Unit = {
         DataSize.succinct(bytes).toString shouldBe repr
       }
 

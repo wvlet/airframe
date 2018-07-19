@@ -60,11 +60,11 @@ object Sample extends LogSupport {
   */
 class LoggerTest extends Spec {
 
-  override def beforeAll {
+  override def beforeAll: Unit = {
     Logger.setDefaultLogLevel(LogLevel.TRACE)
   }
 
-  override def afterAll {
+  override def afterAll: Unit = {
     Logger.setDefaultLogLevel(LogLevel.INFO)
   }
 

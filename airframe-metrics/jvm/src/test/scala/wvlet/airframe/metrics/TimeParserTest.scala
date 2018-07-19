@@ -22,7 +22,7 @@ import wvlet.airframe.AirframeSpec
   */
 class TimeParserTest extends AirframeSpec {
 
-  def parse(str: String, expected: String) {
+  def parse(str: String, expected: String): Unit = {
     val z   = TimeParser.parse(str, UTC)
     val ans = ZonedDateTime.parse(expected)
 

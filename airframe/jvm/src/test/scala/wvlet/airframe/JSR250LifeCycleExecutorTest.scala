@@ -20,12 +20,12 @@ trait JSR250Test {
   var stopped     = false
 
   @PostConstruct
-  def init {
+  def init: Unit = {
     initialized = true
   }
 
   @PreDestroy
-  def stop {
+  def stop: Unit = {
     stopped = true
   }
 }

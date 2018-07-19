@@ -20,7 +20,7 @@ import wvlet.log.LogFormatter._
   */
 class WvletLog extends Spec with LogSupport {
 
-  def log(formatter: LogFormatter) {
+  def log(formatter: LogFormatter): Unit = {
     LogEnv.defaultConsoleOutput.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$", "")}]:")
     logger.setFormatter(formatter)
     logger.info("info log")

@@ -270,18 +270,18 @@ object LauncherTest {
 
   class SimpleCommandSet extends DefaultCommand with LogSupport {
 
-    def default {
+    def default: Unit = {
       println(DEFAULT_MESSAGE)
     }
 
     var helloIsExecuted = false
     @command(description = "say hello")
-    def hello = {
+    def hello: Unit = {
       trace("hello")
       helloIsExecuted = true
     }
     @command(description = "say world")
-    def world(@argument message: String) = debug("world world")
+    def world(@argument message: String): Unit = debug("world world")
   }
 
   class MyCommandModule(val g: GlobalOption) extends CommandModule with LogSupport {
@@ -290,7 +290,7 @@ object LauncherTest {
     trace(s"global option: $g")
 
     @command(description = "exception test")
-    def errorTest = {
+    def errorTest: Unit = {
       throw new IllegalArgumentException(s"error test")
     }
   }
@@ -304,7 +304,7 @@ object LauncherTest {
   class MyCommand(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean) {
     @command(description = "say hello")
     def hello(@option(prefix = "-r", description = "repeat times") repeat: Int = 1,
-              @argument message: String = "hello!") {
+              @argument message: String = "hello!"): Unit = {
       for (i <- 0 until repeat) print(message)
     }
   }

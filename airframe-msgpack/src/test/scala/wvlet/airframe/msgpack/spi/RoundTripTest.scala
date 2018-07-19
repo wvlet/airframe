@@ -37,7 +37,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     unpack(readCursor)
   }
 
-  def roundtrip[A](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => A) {
+  def roundtrip[A](v: A)(pack: (WriteCursor, A) => Unit)(unpack: ReadCursor => A): Unit = {
     try {
       val v2 = rawRoundtrip(v)(pack)(unpack)
       v2 shouldBe v
@@ -48,7 +48,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     }
   }
 
-  private def testByte(v: Byte) {
+  private def testByte(v: Byte): Unit = {
     val packers = Seq[(WriteCursor, Byte) => Unit](
       { Packer.packByte(_, _) },
       { Packer.packShort(_, _) },
