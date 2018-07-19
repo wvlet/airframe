@@ -21,7 +21,7 @@ import wvlet.airframe.tablet.{Record, StringArrayRecord, TabletReader}
 import scala.io.Source
 
 trait TextTabletReader extends TabletReader {
-  def close
+  def close: Unit
 }
 
 /**
@@ -30,7 +30,7 @@ trait TextTabletReader extends TabletReader {
 class TSVTabletReader(source: Source) extends TextTabletReader {
   private val lines = source.getLines()
 
-  override def close {
+  override def close: Unit = {
     source.close()
   }
 
@@ -41,7 +41,7 @@ class TSVTabletReader(source: Source) extends TextTabletReader {
     } else {
       val line = lines.next()
       val cols = line.split("\t").map(x => TSVRecordFormatter.unescape(x))
-      Some(StringArrayRecord(if (cols == null) Seq.empty[String] else cols))
+      Some(StringArrayRecord(if (cols == null) Seq.empty[String] else cols.toIndexedSeq))
     }
   }
 }
@@ -56,7 +56,7 @@ class CSVTabletReader(source: Source) extends TextTabletReader {
   // TODO handle CSV properly
   private val lines: Iterator[Seq[String]] = source.getLines().map(line => line.split(",").toSeq)
 
-  override def close {
+  override def close: Unit = {
     source.close()
   }
 

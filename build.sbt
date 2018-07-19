@@ -1,6 +1,6 @@
 import sbtcrossproject.{crossProject, CrossType}
 
-val SCALA_2_13 = "2.13.0-M3"
+val SCALA_2_13 = "2.13.0-M4"
 val SCALA_2_12 = "2.12.6"
 val SCALA_2_11 = "2.11.11"
 
@@ -11,9 +11,9 @@ val targetScalaVersions = Seq(
   SCALA_2_11
 )
 
-val SCALATEST_VERSION               = "3.0.5-M1"
+val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.1.0"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 
 // For using Scala 2.12 in sbt
@@ -52,7 +52,7 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
-  scalacOptions ++= Seq("-feature", "-deprecation"),
+  scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/wvlet/airframe")),
@@ -343,7 +343,7 @@ lazy val log =
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
         "org.scalatest"  %%% "scalatest"   % SCALATEST_VERSION  % "test"
-      ) ++ parallelCollection(scalaVersion.value)
+      )
     )
     .jvmSettings(
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
@@ -382,7 +382,7 @@ lazy val airframeSpec =
       description := "Airframe spec test base library",
       libraryDependencies ++= Seq(
         "org.scalatest" %%% "scalatest" % SCALATEST_VERSION
-      ) ++ parallelCollection(scalaVersion.value)
+      )
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log)
@@ -398,7 +398,7 @@ lazy val msgpack =
     .settings(
       name := "airframe-msgpack",
       description := "Pure-Scala MessagePack library",
-      libraryDependencies ++= parallelCollection(scalaVersion.value) ++ Seq(
+      libraryDependencies ++= Seq(
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
@@ -436,7 +436,7 @@ lazy val tablet =
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For JSON parser
-        "org.json4s" %% "json4s-native" % "3.5.3",
+        "org.json4s" %% "json4s-native" % "3.5.4",
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",

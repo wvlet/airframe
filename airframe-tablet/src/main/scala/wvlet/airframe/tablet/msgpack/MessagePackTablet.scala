@@ -61,7 +61,7 @@ class MessagePackTabletReader(unpacker: MessageUnpacker) extends TabletReader wi
   *
   */
 class MessagePackTabletWriter(packer: MessagePacker) extends TabletWriter[Unit] {
-  def write(r: Record) {
+  def write(r: Record): Unit = {
     r.pack(packer)
   }
 

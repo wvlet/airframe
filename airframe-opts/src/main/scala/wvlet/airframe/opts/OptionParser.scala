@@ -115,7 +115,7 @@ case class CLOption(path: Path, annot: option, override val param: Parameter) ex
 
   // validate prefixes
   val prefixes: Seq[String] =
-    for (p <- annot.prefix.split(",")) yield {
+    for (p <- annot.prefix.split(",").toSeq) yield {
       if (p.startsWith("--") || p.startsWith("-")) {
         p
       } else {
@@ -241,7 +241,7 @@ object ClassOptionSchema extends LogSupport {
       }
     }
 
-    new ClassOptionSchema(surface, o.result, a.result().sortBy(x => x.argIndex))
+    new ClassOptionSchema(surface, o.result.toSeq, a.result().toSeq.sortBy(x => x.argIndex))
   }
 
 }

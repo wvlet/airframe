@@ -27,27 +27,27 @@ case class WriteCursor(var buf: WriteBuffer, var position: Int) {
     buf.ensureCapacity(position + offset, size)
   }
 
-  def writeByte(b: Byte) {
+  def writeByte(b: Byte): Unit = {
     offset += buf.writeByte(position + offset, b)
   }
 
-  def writeByteAndByte(a: Byte, b: Byte) {
+  def writeByteAndByte(a: Byte, b: Byte): Unit = {
     offset += buf.writeByteAndByte(position + offset, a, b)
   }
 
-  def writeByteAndShort(a: Byte, b: Short) {
+  def writeByteAndShort(a: Byte, b: Short): Unit = {
     offset += buf.writeByteAndShort(position + offset, a, b)
   }
 
-  def writeByteAndInt(a: Byte, b: Int) {
+  def writeByteAndInt(a: Byte, b: Int): Unit = {
     offset += buf.writeByteAndInt(position + offset, a, b)
   }
 
-  def writeByteAndLong(a: Byte, b: Long) {
+  def writeByteAndLong(a: Byte, b: Long): Unit = {
     offset += buf.writeByteAndLong(position + offset, a, b)
   }
 
-  def writeByteAndFloat(a: Byte, b: Float) {
+  def writeByteAndFloat(a: Byte, b: Float): Unit = {
     offset += buf.writeByteAndFloat(position + offset, a, b)
   }
   def writeByteAndDouble(a: Byte, b: Double): Unit = {

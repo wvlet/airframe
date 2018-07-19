@@ -30,14 +30,14 @@ private[log] object LogMacros {
 
     import c.universe._
 
-    val disabledLevels: Set[c.universe.Tree] = {
+    val disabledLevels: Set[c.Tree] = {
       val SettingsPrefix = "wvlet.log.disable."
 
-      val TRACE: c.universe.Tree = q"wvlet.log.LogLevel.TRACE"
-      val DEBUG: c.universe.Tree = q"wvlet.log.LogLevel.DEBUG"
-      val INFO: c.universe.Tree  = q"wvlet.log.LogLevel.INFO"
-      val WARN: c.universe.Tree  = q"wvlet.log.LogLevel.WARN"
-      val ERROR: c.universe.Tree = q"wvlet.log.LogLevel.ERROR"
+      val TRACE: c.Tree = q"wvlet.log.LogLevel.TRACE"
+      val DEBUG: c.Tree = q"wvlet.log.LogLevel.DEBUG"
+      val INFO: c.Tree  = q"wvlet.log.LogLevel.INFO"
+      val WARN: c.Tree  = q"wvlet.log.LogLevel.WARN"
+      val ERROR: c.Tree = q"wvlet.log.LogLevel.ERROR"
 
       c.settings
         .collect { case s if s startsWith SettingsPrefix => s stripPrefix SettingsPrefix }
@@ -51,33 +51,31 @@ private[log] object LogMacros {
         .getOrElse(Set.empty)
     }
 
-    private def disabled(level: c.universe.Tree): Boolean = disabledLevels.exists(_.equalsStructure(level))
+    private def disabled(level: c.Tree): Boolean = disabledLevels.exists(_.equalsStructure(level))
 
     def source = {
       val pos = c.enclosingPosition
       q"wvlet.log.LogSource(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
     }
 
-    def log(level: c.universe.Tree, message: c.universe.Tree): c.universe.Tree = {
+    def log(level: c.Tree, message: c.universe.Tree): c.Tree = {
       val logger = q"this.logger"
-      if (disabled(level)) q"()" else q"if ($logger.isEnabled($level)) $logger.log(${level}, ${source}, ${message})"
+      if (disabled(level)) q"{}" else q"if ($logger.isEnabled($level)) $logger.log(${level}, ${source}, ${message})"
     }
 
-    def logWithCause(level: c.universe.Tree, message: c.universe.Tree, cause: c.universe.Tree): c.universe.Tree = {
+    def logWithCause(level: c.Tree, message: c.Tree, cause: c.Tree): c.Tree = {
       val logger = q"this.logger"
-      if (disabled(level)) q"()"
+      if (disabled(level)) q"{}"
       else q"if ($logger.isEnabled($level)) $logger.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
 
-    def logMethod(level: c.universe.Tree, message: c.universe.Tree): c.universe.Tree = {
-      if (disabled(level)) q"()"
+    def logMethod(level: c.Tree, message: c.universe.Tree): c.Tree = {
+      if (disabled(level)) q"{}"
       else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.log(${level}, ${source}, ${message})"
     }
 
-    def logMethodWithCause(level: c.universe.Tree,
-                           message: c.universe.Tree,
-                           cause: c.universe.Tree): c.universe.Tree = {
-      if (disabled(level)) q"()"
+    def logMethodWithCause(level: c.Tree, message: c.Tree, cause: c.Tree): c.Tree = {
+      if (disabled(level)) q"{}"
       else q"if (${c.prefix}.isEnabled($level)) ${c.prefix}.logWithCause(${level}, ${source}, ${message}, ${cause})"
     }
   }

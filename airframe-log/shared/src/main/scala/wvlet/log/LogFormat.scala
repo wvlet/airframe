@@ -51,7 +51,7 @@ object LogFormatter {
     *
     * @param filter
     */
-  def setStackTraceFilter(filter: String => Boolean) {
+  def setStackTraceFilter(filter: String => Boolean): Unit = {
     stackTraceFilter = filter
   }
 

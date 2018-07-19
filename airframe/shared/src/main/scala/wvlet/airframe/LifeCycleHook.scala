@@ -23,7 +23,7 @@ trait LifeCycleHook {
 
 case class EventHookHolder[A](surface: Surface, obj: A, hook: A => Any) extends LifeCycleHook with LogSupport {
   override def toString: String = s"hook for [$surface]"
-  def execute {
+  def execute: Unit = {
     hook(obj)
   }
 }

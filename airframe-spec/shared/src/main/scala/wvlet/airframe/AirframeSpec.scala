@@ -41,20 +41,22 @@ trait AirframeSpec
     Logger.stopScheduledLogLevelScan
     s
   }
-
-  private[airframe] object CompatParColls {
-    val Converters = {
-      import Compat._
-
-      {
-        import scala.collection.parallel._
-
-        CollectionConverters
-      }
-    }
-
-    object Compat {
-      object CollectionConverters
-    }
-  }
+//  Temporarily removed for Scala 2.13.0-M4, which doesn't have parallel collection yet.
+//  https://github.com/scala/scala-parallel-collections/issues/41
+//
+//  private[airframe] object CompatParColls {
+//    val Converters = {
+//      import Compat._
+//
+//      {
+//        import scala.collection.parallel._
+//
+//        CollectionConverters
+//      }
+//    }
+//
+//    object Compat {
+//      object CollectionConverters
+//    }
+//  }
 }

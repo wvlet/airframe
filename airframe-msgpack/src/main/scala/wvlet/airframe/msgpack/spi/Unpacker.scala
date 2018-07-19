@@ -85,7 +85,7 @@ object Unpacker {
     }
   }
 
-  def unpackNil(cursor: ReadCursor) {
+  def unpackNil(cursor: ReadCursor): Unit = {
     cursor.readByte match {
       case Code.NIL => // OK
       case other =>
@@ -570,7 +570,7 @@ object Unpacker {
 
   private val EMPTY_STRING: String = ""
 
-  private[spi] def unexpected(expectedCode: ValueType, actual: Byte) = {
+  private[spi] def unexpected(expectedCode: ValueType, actual: Byte): Nothing = {
     val f = MessageFormat.of(actual)
     if (f == MessageFormat.NEVER_USED) {
       throw new MessageException(NEVER_USED_FORMAT, s"Expected ${expectedCode}, but found 0xC1 (NEVER_USED) byte")

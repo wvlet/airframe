@@ -80,9 +80,9 @@ trait Session extends AutoCloseable {
     }
   }
 
-  def start { lifeCycleManager.start }
-  def shutdown { lifeCycleManager.shutdown }
-  override def close() { shutdown }
+  def start: Unit            = { lifeCycleManager.start }
+  def shutdown: Unit         = { lifeCycleManager.shutdown }
+  override def close(): Unit = { shutdown }
 
   private[airframe] def getBindingOf(t: Surface): Option[Binding]
   private[airframe] def hasSingletonOf(t: Surface): Boolean

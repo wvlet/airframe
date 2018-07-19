@@ -26,7 +26,7 @@ class ResultSetReader(rs: ResultSet) extends TabletReader with LogSupport {
       val b = MessagePack.newDefaultBufferPacker()
       b.packArrayHeader(columns)
 
-      def pack[A, U](v: A, packBody: A => U) {
+      def pack[A, U](v: A, packBody: A => U): Unit = {
         if (rs.wasNull())
           b.packNil()
         else {

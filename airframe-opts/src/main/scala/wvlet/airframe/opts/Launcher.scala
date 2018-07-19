@@ -155,11 +155,11 @@ class Launcher(surface: Surface) extends LogSupport {
     result getOrElse mainObj
   }
 
-  def printHelp {
+  def printHelp: Unit = {
     printHelp(OptionParser(surface), Zero.zeroOf(surface).asInstanceOf[AnyRef])
   }
 
-  def printHelp(p: OptionParser, obj: AnyRef) {
+  def printHelp(p: OptionParser, obj: AnyRef): Unit = {
     trace("print usage")
     p.printUsage
 

@@ -21,9 +21,9 @@ import wvlet.log.LogSupport
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
-trait MessageCodec[A] extends LogSupport {
-  def pack(p: MessagePacker, v: A)
-  def unpack(u: MessageUnpacker, v: MessageHolder)
+trait MessageCodec[A] {
+  def pack(p: MessagePacker, v: A): Unit
+  def unpack(u: MessageUnpacker, v: MessageHolder): Unit
 
   // TODO add specialized methods for primitive values
   // def unpackInt(u:MessageUnpacker) : Int
@@ -51,11 +51,11 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
   def pack(v: A): Value
   def unpack(v: Value): A
 
-  override def pack(p: MessagePacker, v: A) {
+  override def pack(p: MessagePacker, v: A): Unit = {
     p.packValue(pack(v))
   }
 
-  override def unpack(u: MessageUnpacker, v: MessageHolder) {
+  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     val vl = u.unpackValue()
     Try(unpack(vl)) match {
       case Success(x) =>

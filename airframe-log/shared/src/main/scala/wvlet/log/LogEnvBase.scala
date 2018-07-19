@@ -24,13 +24,13 @@ private[log] trait LogEnvBase {
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
     */
-  def scanLogLevels
+  def scanLogLevels: Unit
 
   /**
     * Scan the specified log level file
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String])
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit
 
 }

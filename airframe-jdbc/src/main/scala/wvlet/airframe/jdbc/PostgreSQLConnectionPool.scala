@@ -64,7 +64,7 @@ class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLCon
     }
   }
 
-  def stop {
+  def stop: Unit = {
     info(s"Closing connection pool for ${config}")
     dataSource.close()
   }

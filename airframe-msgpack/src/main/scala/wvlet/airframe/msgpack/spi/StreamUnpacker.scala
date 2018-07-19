@@ -48,9 +48,9 @@ trait StreamUnpacker {
 
   def unpackValue: Value
 
-  def skipPayload(numBytes: Int)
-  def readPayload(dst: Array[Byte])
-  def readPayload(dst: Array[Byte], offset: Int, length: Int)
+  def skipPayload(numBytes: Int): Unit
+  def readPayload(dst: Array[Byte]): Unit
+  def readPayload(dst: Array[Byte], offset: Int, length: Int): Unit
   def readPayload(length: Int): Array[Byte]
 }
 

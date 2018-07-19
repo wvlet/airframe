@@ -51,7 +51,7 @@ trait ConnectionPool extends LogSupport {
       }
     }
   }
-  def executeUpdate(sql: String) {
+  def executeUpdate(sql: String): Unit = {
     // TODO Add update retry
     withConnection { conn =>
       withResource(conn.createStatement()) { stmt =>
@@ -73,7 +73,7 @@ trait ConnectionPool extends LogSupport {
     }
   }
 
-  def updateWith(preparedStatement: String)(body: PreparedStatement => Unit) {
+  def updateWith(preparedStatement: String)(body: PreparedStatement => Unit): Unit = {
     withConnection { conn =>
       withResource(conn.prepareStatement(preparedStatement)) { stmt =>
         body(stmt)

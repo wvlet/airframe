@@ -57,10 +57,10 @@ object SQLObjectMapper extends LogSupport {
 
   def quote(s: String) = s"'${s}'"
 
-  def insertRecord[A: ru.TypeTag](conn: Connection, tableName: String, obj: A) {
+  def insertRecord[A: ru.TypeTag](conn: Connection, tableName: String, obj: A): Unit = {
     val schema  = SurfaceFactory.of[A]
     val colSize = schema.params.size
-    val tuple   = ("?" * colSize).mkString(", ")
+    val tuple   = ("?" * colSize).toSeq.mkString(", ")
     withResource(conn.prepareStatement(s"insert into ${tableName} values(${tuple})")) { prep =>
       for ((p, i) <- schema.params.zipWithIndex) yield {
         val v = p.get(obj).asInstanceOf[AnyRef]
