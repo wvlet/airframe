@@ -15,11 +15,11 @@ object PrettyPrint extends LogSupport {
 
   private val defaultPrinter = new PrettyPrint()
 
-  def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20) {
+  def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20): Unit = {
     defaultPrinter.pp(seq.take(limit))
   }
 
-  def pp[A: ru.TypeTag](seq: Seq[A]) {
+  def pp[A: ru.TypeTag](seq: Seq[A]): Unit = {
     info(defaultPrinter.pf(seq).mkString("\n"))
   }
 
@@ -57,19 +57,19 @@ object PrettyPrint extends LogSupport {
 }
 
 class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
-  def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20) {
+  def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20): Unit = {
     showRaw(SurfaceFactory.of[A], seq, limit)
   }
 
-  def showRaw[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20) {
+  def showRaw[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20): Unit = {
     ppRaw(elementSurface, seq.take(limit))
   }
 
-  def pp[A: ru.TypeTag](seq: Seq[A]) {
+  def pp[A: ru.TypeTag](seq: Seq[A]): Unit = {
     ppRaw(SurfaceFactory.of[A], seq)
   }
 
-  def ppRaw[A](surface: Surface, seq: Seq[A]) {
+  def ppRaw[A](surface: Surface, seq: Seq[A]): Unit = {
     println(pfRaw(surface, seq).mkString("\n"))
   }
 

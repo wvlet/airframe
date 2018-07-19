@@ -124,7 +124,7 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
     holder.getOrElseUpdate(name, ArrayHolder(new ArrayBuffer[Any])).asInstanceOf[ArrayHolder]
   }
 
-  def set(path: Path, value: Any) {
+  def set(path: Path, value: Any): Unit = {
     if (path.isEmpty) {
       // do nothing
     } else {

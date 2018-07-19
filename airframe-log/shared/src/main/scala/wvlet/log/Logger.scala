@@ -79,15 +79,15 @@ class Logger(private val name: String,
     getLogLevelOf(_log)
   }
 
-  def setLogLevel(l: LogLevel) {
+  def setLogLevel(l: LogLevel): Unit = {
     _log.setLevel(l.jlLevel)
   }
 
-  def setFormatter(formatter: LogFormatter) {
+  def setFormatter(formatter: LogFormatter): Unit = {
     resetHandler(new ConsoleLogHandler(formatter))
   }
 
-  def resetHandler(h: Handler) {
+  def resetHandler(h: Handler): Unit = {
     clearHandlers
     _log.addHandler(h)
     setUseParentHandlers(false)
@@ -97,20 +97,20 @@ class Logger(private val name: String,
     Option(wrapped.getParent).map(x => Logger(x.getName))
   }
 
-  def addHandler(h: Handler) {
+  def addHandler(h: Handler): Unit = {
     _log.addHandler(h)
   }
 
-  def setUseParentHandlers(use: Boolean) {
+  def setUseParentHandlers(use: Boolean): Unit = {
     _log.setUseParentHandlers(use)
   }
 
-  def clear {
+  def clear: Unit = {
     clearHandlers
     resetLogLevel
   }
 
-  def clearHandlers {
+  def clearHandlers: Unit = {
     for (lst <- Option(_log.getHandlers); h <- lst) {
       _log.removeHandler(h)
     }
@@ -119,7 +119,7 @@ class Logger(private val name: String,
   /**
     * Clean up all handlers including this and parent, ancestor loggers
     */
-  def clearAllHandlers {
+  def clearAllHandlers: Unit = {
     var l: Option[Logger] = Some(this)
     while (l.isDefined) {
       l.map { x =>
@@ -133,7 +133,7 @@ class Logger(private val name: String,
     wrapped.getHandlers.toSeq
   }
 
-  def resetLogLevel {
+  def resetLogLevel: Unit = {
     _log.setLevel(null)
   }
 
@@ -141,16 +141,16 @@ class Logger(private val name: String,
     _log.isLoggable(level.jlLevel)
   }
 
-  def log(record: LogRecord) {
+  def log(record: LogRecord): Unit = {
     record.setLoggerName(name)
     _log.log(record)
   }
 
-  def log(level: LogLevel, source: LogSource, message: Any) {
+  def log(level: LogLevel, source: LogSource, message: Any): Unit = {
     log(LogRecord(level, source, formatLog(message)))
   }
 
-  def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable) {
+  def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable): Unit = {
     log(LogRecord(level, source, formatLog(message), cause))
   }
 
@@ -217,19 +217,19 @@ object Logger {
 
   def getDefaultLogLevel: LogLevel = rootLogger.getLogLevel
 
-  def setDefaultLogLevel(level: LogLevel) {
+  def setDefaultLogLevel(level: LogLevel): Unit = {
     rootLogger.setLogLevel(level)
   }
 
-  def setDefaultFormatter(formatter: LogFormatter) {
+  def setDefaultFormatter(formatter: LogFormatter): Unit = {
     rootLogger.resetHandler(new ConsoleLogHandler(formatter))
   }
 
-  def setDefaultHandler(handler: jl.Handler) {
+  def setDefaultHandler(handler: jl.Handler): Unit = {
     rootLogger.resetHandler(handler)
   }
 
-  def resetDefaultLogLevel {
+  def resetDefaultLogLevel: Unit = {
     rootLogger.resetLogLevel
   }
 
@@ -242,7 +242,7 @@ object Logger {
     *
     * @param logLevels
     */
-  def setLogLevels(logLevels: Properties) {
+  def setLogLevels(logLevels: Properties): Unit = {
     for ((loggerName, level) <- logLevels.asScala) {
       LogLevel.unapply(level) match {
         case Some(lv) =>

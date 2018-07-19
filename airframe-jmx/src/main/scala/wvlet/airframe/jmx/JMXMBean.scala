@@ -171,7 +171,7 @@ object JMXMBean extends LogSupport {
     var seen   = Set.empty[Annotation]
     val result = Seq.newBuilder[Annotation]
 
-    def loop(lst: Array[Annotation]) {
+    def loop(lst: Array[Annotation]): Unit = {
       for (a <- lst) {
         if (!seen.contains(a)) {
           seen += a

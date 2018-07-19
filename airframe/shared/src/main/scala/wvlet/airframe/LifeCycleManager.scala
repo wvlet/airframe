@@ -34,18 +34,18 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   private val state                = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
-  private[airframe] def onInit(t: Surface, injectee: AnyRef) {
+  private[airframe] def onInit(t: Surface, injectee: AnyRef): Unit = {
     eventHandler.onInit(this, t, injectee)
   }
 
   private var session: Session = _
-  private[airframe] def setSession(s: Session) {
+  private[airframe] def setSession(s: Session): Unit = {
     session = s
   }
 
   def sessionName: String = session.name
 
-  def start {
+  def start: Unit = {
     if (!state.compareAndSet(INIT, STARTING)) {
       throw new IllegalStateException(s"LifeCycle is already starting")
     }
@@ -56,7 +56,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     eventHandler.afterStart(this)
   }
 
-  def shutdown {
+  def shutdown: Unit = {
     if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
         || state.compareAndSet(STARTING, STOPPING)) {
       eventHandler.beforeShutdown(this)
@@ -79,7 +79,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
   }
 
-  def addInitHook(h: LifeCycleHook) {
+  def addInitHook(h: LifeCycleHook): Unit = {
     debug(s"Add init hook: ${h.surface}")
     val canRunHook = !(isSingletonType(h.surface) && initializedSingleton.contains(h.surface))
     if (canRunHook) {
@@ -88,13 +88,13 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addInjectHook(h: LifeCycleHook) {
+  def addInjectHook(h: LifeCycleHook): Unit = {
     debug(s"Add inject hook: ${h.surface}")
     // Run immediately
     h.execute
   }
 
-  def addStartHook(h: LifeCycleHook) {
+  def addStartHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
@@ -109,7 +109,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addPreShutdownHook(h: LifeCycleHook) {
+  def addPreShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && preShutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
@@ -119,7 +119,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addShutdownHook(h: LifeCycleHook) {
+  def addShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
@@ -141,19 +141,19 @@ object LifeCycleManager {
 object ShowLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
-  override def beforeStart(lifeCycleManager: LifeCycleManager) {
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     logger.info(s"[${lifeCycleManager.sessionName}] Life cycle is starting ...")
   }
 
-  override def afterStart(lifeCycleManager: LifeCycleManager) {
+  override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
     logger.info(s"[${lifeCycleManager.sessionName}] ======= STARTED =======")
   }
 
-  override def beforeShutdown(lifeCycleManager: LifeCycleManager) {
+  override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     logger.info(s"[${lifeCycleManager.sessionName}] Stopping life cycle ...")
   }
 
-  override def afterShutdown(lifeCycleManager: LifeCycleManager) {
+  override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     logger.info(s"[${lifeCycleManager.sessionName}] Life cycle has stopped.")
   }
 }

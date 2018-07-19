@@ -134,7 +134,7 @@ class LogRotationHandler(fileName: String,
     }
   }
 
-  private def recoverTempFiles(logPath: String) {
+  private def recoverTempFiles(logPath: String): Unit = {
     // Recover orphaned temp files
     for {
       logPathFile <- Option(new File(logPath).getParentFile)

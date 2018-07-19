@@ -50,18 +50,18 @@ object Packer {
         elems.foreach(packValue(cursor, _))
       case m @ Value.MapValue(entries) =>
         packMapHeader(cursor, m.size)
-        entries.seq.foreach { x =>
+        entries.toIndexedSeq.foreach { x =>
           packValue(cursor, x._1)
           packValue(cursor, x._2)
         }
     }
   }
 
-  def packNil(cursor: WriteCursor) {
+  def packNil(cursor: WriteCursor): Unit = {
     cursor.writeByte(NIL)
   }
 
-  def packBoolean(cursor: WriteCursor, v: Boolean) {
+  def packBoolean(cursor: WriteCursor, v: Boolean): Unit = {
     cursor.writeByte(if (v) TRUE else FALSE)
   }
 
@@ -99,7 +99,7 @@ object Packer {
     cursor.writeByteAndDouble(FLOAT64, v)
   }
 
-  def packByte(cursor: WriteCursor, v: Byte) {
+  def packByte(cursor: WriteCursor, v: Byte): Unit = {
     if (v < -(1 << 5)) {
       packINT8(cursor, v)
     } else {
@@ -107,7 +107,7 @@ object Packer {
     }
   }
 
-  def packShort(cursor: WriteCursor, v: Short) {
+  def packShort(cursor: WriteCursor, v: Short): Unit = {
     if (v < -(1 << 5)) {
       if (v < -(1 << 7)) {
         packINT16(cursor, v)
@@ -123,7 +123,7 @@ object Packer {
     }
   }
 
-  def packInt(cursor: WriteCursor, r: Int) {
+  def packInt(cursor: WriteCursor, r: Int): Unit = {
     if (r < -(1 << 5)) {
       if (r < -(1 << 15)) {
         packINT32(cursor, r)
@@ -143,7 +143,7 @@ object Packer {
     }
   }
 
-  def packLong(cursor: WriteCursor, v: Long) {
+  def packLong(cursor: WriteCursor, v: Long): Unit = {
     if (v < -(1L << 5)) {
       if (v < -(1L << 15)) {
         if (v < -(1L << 31))
@@ -168,7 +168,7 @@ object Packer {
       packUINT64(cursor, v)
   }
 
-  def packBigInteger(cursor: WriteCursor, bi: BigInteger) {
+  def packBigInteger(cursor: WriteCursor, bi: BigInteger): Unit = {
     if (bi.bitLength <= 63) {
       packLong(cursor, bi.longValue)
     } else if (bi.bitLength == 64 && bi.signum == 1) {
@@ -178,11 +178,11 @@ object Packer {
     }
   }
 
-  def packFloat(cursor: WriteCursor, v: Float) {
+  def packFloat(cursor: WriteCursor, v: Float): Unit = {
     packFLOAT32(cursor, v)
   }
 
-  def packDouble(cursor: WriteCursor, v: Double) {
+  def packDouble(cursor: WriteCursor, v: Double): Unit = {
     packFLOAT64(cursor, v)
   }
 
@@ -198,7 +198,7 @@ object Packer {
   }
 
   private val NANOS_PER_SECOND = 1000000000L
-  def packTimestampEpochSecond(cursor: WriteCursor, epochSecond: Long, nanoAdjustment: Int) {
+  def packTimestampEpochSecond(cursor: WriteCursor, epochSecond: Long, nanoAdjustment: Int): Unit = {
     val sec  = Math.addExact(epochSecond, Math.floorDiv(nanoAdjustment, NANOS_PER_SECOND))
     val nsec = Math.floorMod(nanoAdjustment.toLong, NANOS_PER_SECOND)
 
@@ -216,7 +216,7 @@ object Packer {
     }
   }
 
-  private[msgpack] def packTimestamp32(cursor: WriteCursor, sec: Int) { // timestamp 32 in fixext 4
+  private[msgpack] def packTimestamp32(cursor: WriteCursor, sec: Int): Unit = { // timestamp 32 in fixext 4
     cursor.ensureCapacity(6)
 
     cursor.writeByte(FIXEXT4)
@@ -224,7 +224,7 @@ object Packer {
     cursor.writeInt(sec)
   }
 
-  private[msgpack] def packTimestamp64(cursor: WriteCursor, data64: Long) { // timestamp 64 in fixext 8
+  private[msgpack] def packTimestamp64(cursor: WriteCursor, data64: Long): Unit = { // timestamp 64 in fixext 8
     cursor.ensureCapacity(10)
 
     cursor.writeByte(FIXEXT8)
@@ -232,7 +232,7 @@ object Packer {
     cursor.writeLong(data64)
   }
 
-  private[msgpack] def packTimestamp96(cursor: WriteCursor, sec: Long, nsec: Int) { // timestamp 96 in ext 8
+  private[msgpack] def packTimestamp96(cursor: WriteCursor, sec: Long, nsec: Int): Unit = { // timestamp 96 in ext 8
     cursor.ensureCapacity(15)
 
     cursor.writeByte(EXT8)
@@ -242,7 +242,7 @@ object Packer {
     cursor.writeLong(sec)
   }
 
-  def packRawStringHeader(cursor: WriteCursor, len: Int) {
+  def packRawStringHeader(cursor: WriteCursor, len: Int): Unit = {
     if (len < (1 << 5)) {
       cursor.writeByte((FIXSTR_PREFIX | len).toByte)
     } else if (len < (1 << 8)) {
@@ -254,7 +254,7 @@ object Packer {
     }
   }
 
-  def packArrayHeader(cursor: WriteCursor, arraySize: Int) {
+  def packArrayHeader(cursor: WriteCursor, arraySize: Int): Unit = {
     if (arraySize < 0)
       throw new IllegalArgumentException("array size must be >= 0")
 
@@ -266,7 +266,7 @@ object Packer {
       cursor.writeByteAndInt(ARRAY32, arraySize)
   }
 
-  def packMapHeader(cursor: WriteCursor, mapSize: Int) {
+  def packMapHeader(cursor: WriteCursor, mapSize: Int): Unit = {
     if (mapSize < 0)
       throw new IllegalArgumentException("map size must be >= 0")
 
@@ -283,7 +283,7 @@ object Packer {
     packExtTypeHeader(cursor, extTypeHeader.extType, extTypeHeader.byteLength)
   }
 
-  def packExtTypeHeader(cursor: WriteCursor, extType: Byte, payloadLen: Int) {
+  def packExtTypeHeader(cursor: WriteCursor, extType: Byte, payloadLen: Int): Unit = {
     if (payloadLen < (1 << 8)) {
       if (payloadLen > 0 && (payloadLen & (payloadLen - 1)) == 0) { // check whether dataLen == 2^x
         if (payloadLen == 1)
@@ -314,7 +314,7 @@ object Packer {
     }
   }
 
-  def packBinaryHeader(cursor: WriteCursor, len: Int) {
+  def packBinaryHeader(cursor: WriteCursor, len: Int): Unit = {
     if (len < (1 << 8)) {
       cursor.writeByteAndByte(BIN8, len.toByte)
     } else if (len < (1 << 16)) {
@@ -324,11 +324,11 @@ object Packer {
     }
   }
 
-  def writePayload(cursor: WriteCursor, v: Array[Byte]) {
+  def writePayload(cursor: WriteCursor, v: Array[Byte]): Unit = {
     cursor.writeBytes(v)
   }
 
-  def writePayload(cursor: WriteCursor, v: Array[Byte], vOffset: Int, length: Int) {
+  def writePayload(cursor: WriteCursor, v: Array[Byte], vOffset: Int, length: Int): Unit = {
     cursor.writeBytes(v, vOffset, length)
   }
 }

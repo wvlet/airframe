@@ -233,7 +233,7 @@ object Value {
     override def writeTo(packer: StreamPacker): Unit = {
       packer.packMapHeader(entries.size)
       // Ensure using non-parallel collection
-      entries.seq.foreach { x =>
+      entries.toIndexedSeq.foreach { x =>
         x._1.writeTo(packer)
         x._2.writeTo(packer)
       }

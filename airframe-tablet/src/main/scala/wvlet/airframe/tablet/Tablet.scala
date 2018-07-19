@@ -8,7 +8,7 @@ import wvlet.airframe.tablet.text.{CSVTabletPrinter, JSONTabletPrinter, TSVTable
 import scala.reflect.runtime.{universe => ru}
 
 trait Record {
-  def pack(packer: MessagePacker)
+  def pack(packer: MessagePacker): Unit
   def unpacker: MessageUnpacker
 }
 
@@ -60,7 +60,7 @@ trait TabletWriter[A] extends AutoCloseable {
 
   def write(record: Record): A
 
-  override def close() {}
+  override def close(): Unit = {}
 }
 
 object Tablet {

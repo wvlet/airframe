@@ -28,7 +28,7 @@ object JSONCodec extends MessageCodec[String] {
     packJsonValue(p, j)
   }
 
-  private def packJsonValue(p: MessagePacker, v: JValue) {
+  private def packJsonValue(p: MessagePacker, v: JValue): Unit = {
     v match {
       case jo: JObject =>
         val map = jo.obj

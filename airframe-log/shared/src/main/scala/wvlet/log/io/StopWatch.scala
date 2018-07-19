@@ -303,7 +303,7 @@ class StopWatch {
     * getElapsedTime or getIntervalTime will measure the time interval
     * beginning from this method call.
     */
-  def reset = {
+  def reset: Unit = {
     lastSystemTime = System.nanoTime()
     elapsedTimeAccumulated = 0L
   }
@@ -331,7 +331,7 @@ class StopWatch {
   /**
     * Resume the timer
     */
-  def resume {
+  def resume: Unit = {
     if (state == State.RUNNING) {
       return
     }

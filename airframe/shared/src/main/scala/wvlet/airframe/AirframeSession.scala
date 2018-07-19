@@ -57,7 +57,7 @@ private[airframe] class AirframeSession(sessionName: Option[String],
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
-  private[airframe] def init {
+  private[airframe] def init: Unit = {
     debug(s"[${name}] Initializing. Stage:${stage}")
     val production = stage == Stage.PRODUCTION
     if (production) {

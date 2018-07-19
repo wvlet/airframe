@@ -78,7 +78,7 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
 }
 
 object DataSize {
-  private[metrics] def checkState(preCondition: Boolean, errorMessage: String) {
+  private[metrics] def checkState(preCondition: Boolean, errorMessage: String): Unit = {
     if (!preCondition) {
       throw new IllegalStateException(errorMessage)
     }

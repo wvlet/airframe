@@ -19,11 +19,11 @@ import wvlet.surface.Surface
   *
   */
 trait LifeCycleEventHandler {
-  def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef) {}
-  def beforeStart(lifeCycleManager: LifeCycleManager) {}
-  def afterStart(lifeCycleManager: LifeCycleManager) {}
-  def beforeShutdown(lifeCycleManager: LifeCycleManager) {}
-  def afterShutdown(lifeCycleManager: LifeCycleManager) {}
+  def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {}
+  def beforeStart(lifeCycleManager: LifeCycleManager): Unit                          = {}
+  def afterStart(lifeCycleManager: LifeCycleManager): Unit                           = {}
+  def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit                       = {}
+  def afterShutdown(lifeCycleManager: LifeCycleManager): Unit                        = {}
 
   def andThen(next: LifeCycleEventHandler): LifeCycleEventHandler = new LifeCycleEventHandlerChain(this, next)
   def wraps(child: LifeCycleEventHandler): LifeCycleEventHandler  = new LifeCycleEventHandlerPair(this, child)

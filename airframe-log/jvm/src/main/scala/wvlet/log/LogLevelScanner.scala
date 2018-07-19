@@ -32,7 +32,7 @@ object LogLevelScanner {
     *
     * @param file Properties file
     */
-  def setLogLevels(file: File) {
+  def setLogLevels(file: File): Unit = {
     val logLevels = new Properties()
     withResource(new FileReader(file)) { in =>
       logLevels.load(in)
@@ -47,7 +47,7 @@ object LogLevelScanner {
   /**
     * Scan the default log level file only once. To periodically scan, use scheduleLogLevelScan
     */
-  def scanLogLevels {
+  def scanLogLevels: Unit = {
     scanLogLevels(DEFAULT_LOGLEVEL_FILE_CANDIDATES)
   }
 
@@ -56,14 +56,14 @@ object LogLevelScanner {
     *
     * @param loglevelFileCandidates
     */
-  def scanLogLevels(loglevelFileCandidates: Seq[String]) {
+  def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
     LogLevelScanner.scan(loglevelFileCandidates, None)
   }
 
   /**
     * Run the default LogLevelScanner every 1 minute
     */
-  def scheduleLogLevelScan {
+  def scheduleLogLevelScan: Unit = {
     scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(1, TimeUnit.MINUTES)))
   }
 
@@ -72,7 +72,7 @@ object LogLevelScanner {
   /**
     * Schedule the log level scanner with the given configuration.
     */
-  def scheduleLogLevelScan(config: LogLevelScannerConfig) {
+  def scheduleLogLevelScan(config: LogLevelScannerConfig): Unit = {
     logLevelScanner.setConfig(config)
     logLevelScanner.start
   }
@@ -80,7 +80,7 @@ object LogLevelScanner {
   /**
     * Schedule the log level scanner with the given interval
     */
-  def scheduleLogLevelScan(duration: Duration) {
+  def scheduleLogLevelScan(duration: Duration): Unit = {
     scheduleLogLevelScan(LogLevelScannerConfig(DEFAULT_LOGLEVEL_FILE_CANDIDATES, duration))
   }
 
@@ -89,7 +89,7 @@ object LogLevelScanner {
     * the next log scan schedule. This is for reusing the thread if scheduleLogLevelScan is called again in a short duration, and
     * reduce the overhead of creating a new thread.
     */
-  def stopScheduledLogLevelScan {
+  def stopScheduledLogLevelScan: Unit = {
     logLevelScanner.stop
   }
 
@@ -154,7 +154,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   private[log] val scanCount                                 = new AtomicLong(0)
 
   def getConfig: LogLevelScannerConfig = config.get()
-  def setConfig(config: LogLevelScannerConfig) {
+  def setConfig(config: LogLevelScannerConfig): Unit = {
     guard {
       val prev = this.config.get()
       if (prev.logLevelFileCandidates != config.logLevelFileCandidates) {
@@ -167,7 +167,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
 
   private val state = new AtomicReference[ScannerState](STOPPED)
 
-  def start {
+  def start: Unit = {
     guard {
       state.compareAndSet(STOPPING, RUNNING)
       if (state.compareAndSet(STOPPED, RUNNING)) {
@@ -177,7 +177,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
     }
   }
 
-  def stop {
+  def stop: Unit = {
     guard {
       state.set(STOPPING)
     }
@@ -186,7 +186,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   private var lastScheduledMillis: Option[Long] = None
   private var lastScannedMillis: Option[Long]   = None
 
-  private def run {
+  private def run: Unit = {
     // We need to exit here so that the thread can be automatically discarded after the scan interval has passed
     // Otherwise, the thread remains in the classloader(s) if used for running test cases
     while (!state.compareAndSet(STOPPING, STOPPED)) {

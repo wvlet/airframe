@@ -27,18 +27,18 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
 
   private var registeredMBean = Set.empty[ObjectName]
 
-  def register[A: ru.WeakTypeTag](obj: A) {
+  def register[A: ru.WeakTypeTag](obj: A): Unit = {
     val cl          = obj.getClass
     val packageName = cl.getPackage.getName
     val name        = s"${packageName}:name=${cl.getSimpleName}"
     register(name, obj)
   }
 
-  def register[A: ru.WeakTypeTag](name: String, obj: A) {
+  def register[A: ru.WeakTypeTag](name: String, obj: A): Unit = {
     register(new ObjectName(name), obj)
   }
 
-  def register[A: ru.WeakTypeTag](objectName: ObjectName, obj: A) {
+  def register[A: ru.WeakTypeTag](objectName: ObjectName, obj: A): Unit = {
     val mbean = JMXMBean.of(obj)
     mbeanServer.registerMBean(mbean, objectName)
     synchronized {
@@ -47,11 +47,11 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
     debug(s"Registered mbean: ${mbean}")
   }
 
-  def unregister(name: String) {
+  def unregister(name: String): Unit = {
     mbeanServer.unregisterMBean(new ObjectName(name))
   }
 
-  def unregisterAll {
+  def unregisterAll: Unit = {
     synchronized {
       for (name <- registeredMBean) {
         Try(mbeanServer.unregisterMBean(name)) match {
