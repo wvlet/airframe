@@ -494,6 +494,16 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
   }
 
   def createOptionHelpMessage = {
+    val optionList = createOptionList
+    val b          = new StringBuilder
+    if (optionList.nonEmpty) {
+      b.append("[options]\n")
+      b.append(optionList.mkString("\n") + "\n")
+    }
+    b.result
+  }
+
+  def createOptionList: Seq[String] = {
     val optDscr: Seq[(CLOption, String)] = for (o <- schema.options)
       yield {
         val opt: option = o.annot
@@ -520,22 +530,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
         optDscr.map(_._2.length).max
       }
 
-    val defaultInstance: Option[_] = {
-      try schema match {
-        case c: ClassOptionSchema =>
-          Some(Zero.zeroOf(c.surface))
-        case _ => None
-      } catch {
-        case _: Throwable => None
-      }
-    }
-
     def genDescription(opt: CLOption) = {
-      //      if (opt.takesArgument) {
-      //        if(defaultInstance.isDefined && defaultInstance.get)
-      //        "%s (default:%s)".format(opt.annot.description(),
-      //      }
-      //      else
       opt.annot.description()
     }
 
@@ -544,13 +539,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
       val padding    = Array.fill(paddingLen)(" ").mkString
       " %s%s  %s".format(x._2, padding, genDescription(x._1))
     }
-
-    val b = new StringBuilder
-    if (!s.isEmpty) {
-      b.append("[options]\n")
-      b.append(s.mkString("\n") + "\n")
-    }
-    b.result
+    s
   }
 
   def createUsage(template: String = defaultUsageTemplate): String = {
