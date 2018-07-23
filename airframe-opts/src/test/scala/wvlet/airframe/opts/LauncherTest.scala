@@ -88,6 +88,14 @@ class LauncherTest extends AirframeSpec {
       help should (include("--loglevel"))
     }
 
+    "display full options in help" taggedAs ("subhelp") in {
+      val msg = capture {
+        Launcher.execute[MyCommand]("--help")
+        Launcher.execute[MyCommand]("hello --help")
+      }
+      trace(msg)
+    }
+
     "parse double hyphen options" in {
       capture {
         val l = Launcher.execute[GlobalOption]("--help --loglevel debug")

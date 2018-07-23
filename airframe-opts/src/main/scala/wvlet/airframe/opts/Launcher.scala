@@ -48,7 +48,7 @@ object Launcher extends LogSupport {
     def name: String
     def description: String
     def printHelp: Unit
-    def execute[A <: AnyRef](mainObj: A, args: Array[String], showHelp: Boolean): A
+    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A
   }
 
   private[Launcher] class CommandDef(val method: MethodSurface, val command: command) extends Command with LogSupport {
@@ -58,11 +58,17 @@ object Launcher extends LogSupport {
       val parser = new OptionParser(method)
       parser.printUsage
     }
-    def execute[A <: AnyRef](mainObj: A, args: Array[String], showHelp: Boolean): A = {
+    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
       trace(s"execute method: $name")
       val parser = new OptionParser(method)
       if (showHelp) {
         parser.printUsage
+        val globalOptionList = mainParser.createOptionList
+        // Show global options
+        if (globalOptionList.nonEmpty) {
+          println("\n[global options]")
+          println(globalOptionList.mkString("\n"))
+        }
       } else {
         val r_sub = parser.parse(args)
         r_sub.build(new MethodCallBuilder(method, mainObj.asInstanceOf[AnyRef])).execute
@@ -77,7 +83,7 @@ object Launcher extends LogSupport {
       debug("module help")
       new Launcher(m.moduleSurface).printHelp
     }
-    def execute[A <: AnyRef](mainObj: A, args: Array[String], showHelp: Boolean): A = {
+    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
       trace(s"execute module: ${m.moduleSurface.name}")
       val result = new Launcher(m.moduleSurface).execute[A](args, showHelp)
       mainObj.asInstanceOf[CommandModule].executedModule = Some((name, result.asInstanceOf[AnyRef]))
@@ -139,7 +145,7 @@ class Launcher(surface: Surface) extends LogSupport {
     val helpIsOn = r.showHelp || showHelp
     val result = try {
       for (commandName <- cn; c <- findCommand(commandName, mainObj))
-        yield c.execute(mainObj, r.unusedArgument, helpIsOn)
+        yield c.execute(p, mainObj, r.unusedArgument, helpIsOn)
     } catch {
       case e: InvocationTargetException => throw e.getTargetException
     }
