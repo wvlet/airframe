@@ -66,7 +66,7 @@ object TimeStampFormatter {
     humanReadableTimestampFormatter.format(timestamp)
   }
 
-  def formatTimestampWithNoSpaace(timeMillis: Long): String = {
+  def formatTimestampWithNoSpace(timeMillis: Long): String = {
     val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), systemTimeZone)
     noSpaceTimestampFormat.format(timestamp)
   }
