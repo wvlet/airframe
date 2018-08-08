@@ -105,7 +105,7 @@ new A extends SessionHolder {
 }
 ```
 
-### Comparsion with a naive approach
+### Comparison with a naive approach
 
 At first look, the above macro expantion looks quite scarly, however, when calling constructor of `App` you are actually doing similar things:
 ```
@@ -193,7 +193,7 @@ Seq[_] => Seq[AnyRef]
 
 Similarly the above type alias `MyInt` and `Int` will be the same types.
 
-To provide detailed type information only avaiable at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
+To provide detailed type information only available at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
  function argument names, generic types, etc., to the runtime environment. Surface extensively uses `scala.reflect.runtime.universe.Type` 
 information so that bindings using type names can be convenient for the users.  
 

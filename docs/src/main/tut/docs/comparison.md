@@ -12,7 +12,7 @@ There are two types of dependency injection approaches; **runtime** and **compil
 - [Google Guice](https://github.com/google/guice) is a popular run-time dependency injection libraries in Java, which is also used in [Presto](https://github.com/prestodb/presto) to construct a distributed SQL engine consisting of hundreds of classes. Guice itself does not manage the lifecycle of objects and binding configurations, so Presto team at Facebook has developed [airlift-bootstrap](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap) and [airlift- configuration](https://github.com/airlift/airlift/tree/master/configuration/src/main/java/io/airlift/configuration) libraries to extend Guice's functionality.
    - One of the disadvantages of Guice is it requires constructor annotation like `@Inject`. This is less convenient if you are using third-party libraries, which cannot add such annotations. So you often need to write many provider binding modules to use third-party classes.
    - Airframe has provider bindings in `bind { d1: D1 => new X(d1) }` syntax so that you can directly call the constructor of third-party classes. No need to implement object binding modules.
-    - [Guice Bootstrap](https://github.com/embulk/guice-bootstrap) is an extention of Guice to support life-cycle management using `@PostConstruct` and `@PreDestroy` annotations.
+    - [Guice Bootstrap](https://github.com/embulk/guice-bootstrap) is an extension of Guice to support life-cycle management using `@PostConstruct` and `@PreDestroy` annotations.
 
 - [Scaldi](https://github.com/scaldi/scaldi) is an early adaptor of Guice like DI for Scala and has implemented all of the major functionalities of Guice. However it requires extending your class with Scaldi `Module`. Airframe is simplifying it so that you only need to use `bind[X]` without extending any trait.
 
@@ -87,7 +87,7 @@ The chart below shows major features supported in selected DI frameworks. For co
   - **cons**: Missed binding founds as a runtime error.
 
 - Pure-Scala approach
-  - **pros**: It's just Scala! No special extention is required.
+  - **pros**: It's just Scala! No special extension is required.
   - **pros**: Since all objects are manually wired, missing dependencies will be reported as compile errors.
   - **cons**: Requires manual binding and overrides of classes.
   - **cons**: Need to think about how to pass explicit/implicit parameters to classes and traits.

@@ -21,7 +21,7 @@ Release Notes
 - Support Scala.js
   - The usage is same. Just add `wvlet.log.LogSupport` in your traits.
   - limitations 
-     - LogLevelScanner, LogRotateHandler, AsyncHandler are avilable only for ScalaJVM
+     - LogLevelScanner, LogRotateHandler, AsyncHandler are available only for ScalaJVM
      - Because reflection is missing in Scala.js, the logger name of complex traits may not be resolved properly. In this case, call `val logger = wvlet.log.Logger.of(name)` to use a proper logger name.
 
 ## 1.1
