@@ -52,7 +52,7 @@ class NestedMBean {
 
 case class Stat(@JMX count: Int, @JMX state: String)
 ```
-In this example, `stat.count` adn `stat.state` will be reported.
+In this example, `stat.count` and `stat.state` will be reported.
 
 
 ## Launching JMX Registry

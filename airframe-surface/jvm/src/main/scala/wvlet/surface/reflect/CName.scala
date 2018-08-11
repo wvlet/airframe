@@ -124,7 +124,7 @@ object CName {
 }
 
 /**
-  * Cannonical name. This name is used as a common name of wording variants (e.g., difference of capital letter usage, hyphenation, etc.)
+  * Canonical name. This name is used as a common name of wording variants (e.g., difference of capital letter usage, hyphenation, etc.)
   *
   * @param canonicalName
   * @param naturalName

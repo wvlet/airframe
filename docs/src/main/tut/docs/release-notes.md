@@ -68,7 +68,7 @@ title: Release Notes
  - Fixes Logger.scanLoglevels to use given log level files appropriately [#141](https://github.com/wvlet/airframe/pull/141)
 
 ## 0.35
- - Minor fixes to project strucutres and build scripts.
+ - Minor fixes to project strucutures and build scripts.
 
 ## 0.34
  - No major change in terms of features, API.

@@ -67,7 +67,7 @@ trait WriteBuffer extends Buffer {
 
   def writeBytes(position: Int, src: Array[Byte]): Int = writeBytes(position, src, 0, src.length)
   def writeBytes(position: Int, src: Array[Byte], srcOffset: Int, length: Int): Int
-  def writeBytes(position: Int, src: ReadBuffer, srcPosition: Int, lenght: Int): Int
+  def writeBytes(position: Int, src: ReadBuffer, srcPosition: Int, length: Int): Int
 
   def writeByteAndByte(position: Int, b: Byte, v: Byte): Int = {
     ensureCapacity(position, 2)

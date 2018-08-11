@@ -124,7 +124,7 @@ import wvlet.config.Config
 
 ...
 
-val env = "prodcution"
+val env = "production"
 
 // For overriding properties, or you can load the environmental variables here
 val properties = Map(

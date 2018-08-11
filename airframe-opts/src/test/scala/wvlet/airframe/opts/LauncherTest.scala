@@ -123,7 +123,7 @@ class LauncherTest extends AirframeSpec {
       help should (include("--loglevel"))
     }
 
-    "populate nested options even when no paramter is given" taggedAs ("nested2") in {
+    "populate nested options even when no parameter is given" taggedAs ("nested2") in {
       val l = Launcher.execute[NestedOption]("")
       l.g should not be (null)
       l.g.help should be(false)

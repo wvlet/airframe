@@ -52,7 +52,7 @@ class AsyncHandlerTest extends Spec with Timer {
             // sync
             sl.resetHandler(handler)
 
-            // Temporarly removed to handle missing parallel collection issue of Scala 2.13.0-M4
+            // Temporarily removed to handle missing parallel collection issue of Scala 2.13.0-M4
             //import CompatParColls.Converters._
 //            block("async") {
 //              for (i <- (0 until N).par) {
