@@ -108,7 +108,7 @@ val a2 = session.build[A] // This is OK
 </code></pre>
 </div>
 
-<h3 id="comparsion-with-a-naive-approach">Comparsion with a naive approach</h3>
+<h3 id="comparison-with-a-naive-approach">Comparison with a naive approach</h3>
 
 <p>At first look, the above macro expantion looks quite scarly, however, when calling constructor of <code class="highlighter-rouge">App</code> you are actually doing similar things:</p>
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> 
@@ -198,7 +198,7 @@ Seq[_] =&gt; Seq[AnyRef]
 
 <p>Similarly the above type alias <code class="highlighter-rouge">MyInt</code> and <code class="highlighter-rouge">Int</code> will be the same types.</p>
 
-<p>To provide detailed type information only avaiable at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
+<p>To provide detailed type information only available at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
  function argument names, generic types, etc., to the runtime environment. Surface extensively uses <code class="highlighter-rouge">scala.reflect.runtime.universe.Type</code> 
 information so that bindings using type names can be convenient for the users.</p>
 

@@ -17,7 +17,7 @@ ga('send', 'pageview');
     <ul>
       <li>One of the disadvantages of Guice is it requires constructor annotation like <code class="highlighter-rouge">@Inject</code>. This is less convenient if you are using third-party libraries, which cannot add such annotations. So you often need to write many provider binding modules to use third-party classes.</li>
       <li>Airframe has provider bindings in <code class="highlighter-rouge">bind { d1: D1 =&gt; new X(d1) }</code> syntax so that you can directly call the constructor of third-party classes. No need to implement object binding modules.</li>
-      <li><a href="https://github.com/embulk/guice-bootstrap">Guice Bootstrap</a> is an extention of Guice to support life-cycle management using <code class="highlighter-rouge">@PostConstruct</code> and <code class="highlighter-rouge">@PreDestroy</code> annotations.</li>
+      <li><a href="https://github.com/embulk/guice-bootstrap">Guice Bootstrap</a> is an extension of Guice to support life-cycle management using <code class="highlighter-rouge">@PostConstruct</code> and <code class="highlighter-rouge">@PreDestroy</code> annotations.</li>
     </ul>
   </li>
   <li>
@@ -203,7 +203,7 @@ dependencies ambiguous.</p>
   </li>
   <li>Pure-Scala approach
     <ul>
-      <li><strong>pros</strong>: It’s just Scala! No special extention is required.</li>
+      <li><strong>pros</strong>: It’s just Scala! No special extension is required.</li>
       <li><strong>pros</strong>: Since all objects are manually wired, missing dependencies will be reported as compile errors.</li>
       <li><strong>cons</strong>: Requires manual binding and overrides of classes.</li>
       <li><strong>cons</strong>: Need to think about how to pass explicit/implicit parameters to classes and traits.</li>
