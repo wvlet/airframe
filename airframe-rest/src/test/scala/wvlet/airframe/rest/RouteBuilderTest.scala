@@ -21,15 +21,23 @@ import wvlet.airframe.AirframeSpec
 class RouteBuilderTest extends AirframeSpec {
 
   "RouteBuilder" should {
+    "reject invalid path" in {
+      val e = intercept[IllegalArgumentException] {
+        RouteBuilder()
+          .add[InvalidService]
+      }
+      debug(e.getMessage)
+    }
 
     "register functions as routes" in {
       val r = RouteBuilder()
         .add[ServiceExample]
 
-      info(r.routes)
+      debug(r.routes)
       r.routes.filter(_.path == "/user/:id").size shouldBe 3
+      val post = r.routes.find(p => p.path == "/user" && p.method == HttpMethod.POST)
+      post shouldBe defined
     }
 
   }
-
 }

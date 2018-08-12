@@ -19,7 +19,11 @@ import wvlet.surface.reflect._
 
 import scala.reflect.runtime.{universe => ru}
 
-case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
+case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) {
+  require(
+    path.startsWith("/"),
+    s"Invalid route path: ${path}. @Path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
+}
 
 case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
 

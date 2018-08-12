@@ -58,3 +58,8 @@ trait ServiceExample extends LogSupport {
     info(s"id: ${id}, ${httpRequest.contentString}")
   }
 }
+
+trait InvalidService {
+  @Path("wrong_path")
+  def hello: Unit = {}
+}
