@@ -31,6 +31,17 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     * Find methods annotated with [javax.ws.rs.Path]
     */
   def add[A: ru.TypeTag]: RouteBuilder = {
+
+    // Check prefix
+    val prefixPath =
+      surface
+        .of[A]
+        .findAnnotationOf[javax.ws.rs.Path]
+        .map { p =>
+          p.value()
+        }
+        .getOrElse("")
+
     val newRoutes =
       surface
         .methodsOf[A]
@@ -50,7 +61,7 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
                 case _ =>
                   HttpMethod.GET
               }
-            RequestRoute(method, path.value(), m)
+            RequestRoute(method, prefixPath + path.value(), m)
         }
 
     RouteBuilder(routes ++ newRoutes)

@@ -39,5 +39,12 @@ class RouteBuilderTest extends AirframeSpec {
       post shouldBe defined
     }
 
+    "support prefixed paths" in {
+      val r = RouteBuilder()
+        .add[PrefixExample]
+
+      debug(r.routes)
+      r.routes.head.path shouldBe "/v1/hello"
+    }
   }
 }

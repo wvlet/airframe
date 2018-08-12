@@ -63,3 +63,13 @@ trait InvalidService {
   @Path("wrong_path")
   def hello: Unit = {}
 }
+
+@Path("/v1")
+trait PrefixExample {
+
+  @GET
+  @Path("/hello")
+  def hello: String = {
+    "hello"
+  }
+}
