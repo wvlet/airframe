@@ -13,18 +13,43 @@
  */
 package wvlet.airframe.rest
 
-trait Request {
-  def method: String
-  def path: String
-  def query: String
-}
+import javax.ws.rs.{DELETE, GET, POST, PUT}
+import wvlet.surface
+import wvlet.surface.reflect._
 
-trait Router {
+import scala.reflect.runtime.{universe => ru}
 
-  def route(request: Request): Unit = {
+case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
 
-    val path = request.path
+case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
 
+  /**
+    * Find methods annotated with [javax.ws.rs.Path]
+    */
+  def add[A: ru.TypeTag]: RouteBuilder = {
+    val newRoutes =
+      surface
+        .methodsOf[A]
+        .map(m => (m, m.findAnnotationOf[javax.ws.rs.Path]))
+        .collect {
+          case (m: ReflectMethodSurface, Some(path)) =>
+            val method =
+              m match {
+                case m if m.findAnnotationOf[GET].isDefined =>
+                  HttpMethod.GET
+                case m if m.findAnnotationOf[POST].isDefined =>
+                  HttpMethod.POST
+                case m if m.findAnnotationOf[DELETE].isDefined =>
+                  HttpMethod.DELETE
+                case m if m.findAnnotationOf[PUT].isDefined =>
+                  HttpMethod.PUT
+                case _ =>
+                  HttpMethod.GET
+              }
+            RequestRoute(method, path.value(), m)
+        }
+
+    RouteBuilder(routes ++ newRoutes)
   }
 
 }
