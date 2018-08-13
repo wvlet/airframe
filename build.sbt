@@ -177,7 +177,7 @@ lazy val projectJVM2_12 =
       noPublish,
       crossScalaVersions := untilScala2_12
     )
-    .aggregate(jvmProjects: _*)
+    .aggregate(jvmProjects2_12: _*)
 
 lazy val projectJS =
   project
