@@ -4,16 +4,8 @@ val SCALA_2_13 = "2.13.0-M4"
 val SCALA_2_12 = "2.12.6"
 val SCALA_2_11 = "2.11.11"
 
-// TODO: Exclude Scala 2.13.0-M3 since play-json is not available https://github.com/playframework/play-json/issues/109
-val targetScalaVersions = Seq(
-  SCALA_2_13,
-  SCALA_2_12,
-  SCALA_2_11
-)
-val exceptScala_2_13 = Seq(
-  SCALA_2_12,
-  SCALA_2_11
-)
+val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
+val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
@@ -100,24 +92,25 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jsProjects): _*)
+    .aggregate((jvmProjects2_13 ++ jvmProjects2_12 ++ jsProjects): _*)
 
 lazy val scaladoc =
   project
-    .in(file("airframe-scaladoc"))
     .enablePlugins(ScalaUnidocPlugin)
-    .settings(buildSettings)
+    .in(file("airframe-scaladoc"))
     .settings(
+      buildSettings,
       name := "airframe-scaladoc",
       // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
       unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(
         jsProjects: _*),
+      // compile projects first
       Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
-    .aggregate(jvmProjects: _*)
+    .aggregate(jvmProjects2_13: _*)
 
-lazy val jvmProjects: Seq[ProjectReference] = List(
+// JVM projects that supports Scala 2.13
+lazy val jvmProjects2_13: Seq[ProjectReference] = List(
   airframeJVM,
   surfaceJVM,
   logJVM,
@@ -133,10 +126,15 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   jdbc,
   msgpackJVM,
   stream,
-  rest,
+  rest
+)
+
+// JVM projects that cannot be build in Scala 2.13
+lazy val jvmProjects2_12: Seq[ProjectReference] = List(
   finagle
 )
 
+// Scala.js builds is only for Scala 2.12
 lazy val jsProjects: Seq[ProjectReference] = List(
   airframeJS,
   surfaceJS,
@@ -148,10 +146,25 @@ lazy val jsProjects: Seq[ProjectReference] = List(
 )
 
 lazy val projectJVM =
-  project.settings(noPublish).aggregate(jvmProjects: _*)
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
+    .aggregate(jvmProjects2_13 ++ jvmProjects2_12: _*)
+
+lazy val projectJVM2_12 =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := untilScala2_12
+    )
+    .aggregate(jvmProjects2_12: _*)
 
 lazy val projectJS =
-  project.settings(noPublish).aggregate(jsProjects: _*)
+  project
+    .settings(noPublish)
+    .aggregate(jsProjects: _*)
 
 lazy val docs =
   project
@@ -300,6 +313,7 @@ lazy val control =
       name := "airframe-control",
       description := "A library for controlling program flows and retrying"
     )
+    .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")
 
 lazy val controlJS  = control.js
@@ -509,7 +523,7 @@ lazy val finagle =
       name := "airframe-finagle",
       description := "REST API for Finagle",
       // Finagle doesn't support Scala 2.13 yet
-      crossScalaVersions := exceptScala_2_13,
+      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
