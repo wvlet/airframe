@@ -26,14 +26,14 @@ class RouteBuilderTest extends AirframeSpec {
         RouteBuilder()
           .add[InvalidService]
       }
-      debug(e.getMessage)
+      trace(e.getMessage)
     }
 
     "register functions as routes" in {
       val r = RouteBuilder()
         .add[ServiceExample]
 
-      debug(r.routes)
+      trace(r.routes)
       r.routes.filter(_.path == "/user/:id").size shouldBe 3
       val post = r.routes.find(p => p.path == "/user" && p.method == HttpMethod.POST)
       post shouldBe defined
@@ -43,7 +43,7 @@ class RouteBuilderTest extends AirframeSpec {
       val r = RouteBuilder()
         .add[PrefixExample]
 
-      debug(r.routes)
+      trace(r.routes)
       r.routes.head.path shouldBe "/v1/hello"
     }
   }

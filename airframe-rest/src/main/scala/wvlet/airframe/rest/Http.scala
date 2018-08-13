@@ -28,4 +28,10 @@ trait HttpRequest {
   def contentString: String
 }
 
+case class SimpleHttpRequest(method: HttpMethod,
+                             path: String,
+                             query: Map[String, String] = Map.empty,
+                             contentString: String = "")
+    extends HttpRequest
+
 trait HttpResponse {}

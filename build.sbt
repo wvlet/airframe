@@ -518,4 +518,3 @@ lazy val finagle =
       )
     )
     .dependsOn(rest, airframeSpecJVM % "test")
-
