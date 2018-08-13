@@ -7,7 +7,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
   tar xvf travis/secrets.tar
   if [ -z "$TRAVIS_TAG" ]; then
      # Publish a snapshot
-     ./sbt "; + projectJVM/publish; + projectJVM2_12/publish; projectJS/publish"
+     ./sbt "; + projectJVM2_13/publish; + projectJVM2_12/publish; projectJS/publish"
   else
      # Publish a release version
      RELEASE=true ./sbt "; + projectJVM/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeReleaseAll"

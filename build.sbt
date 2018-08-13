@@ -150,6 +150,7 @@ lazy val jsProjects: Seq[ProjectReference] = List(
   msgpackJS
 )
 
+// For Scala 2.12
 lazy val projectJVM =
   project
     .settings(
@@ -157,15 +158,25 @@ lazy val projectJVM =
       crossScalaVersions := targetScalaVersions
     )
     .aggregate(scaladoc)
+    .aggregate(jvmProjects ++ jvmProjects2_12: _*)
+
+// For Scala 2.13
+lazy val projectJVM2_13 =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
     .aggregate(jvmProjects: _*)
 
+// For projects only upto Scala 2.12
 lazy val projectJVM2_12 =
   project
     .settings(
       noPublish,
       crossScalaVersions := untilScala2_12
     )
-    .aggregate(jvmProjects2_12: _*)
+    .aggregate(jvmProjects: _*)
 
 lazy val projectJS =
   project
