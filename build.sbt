@@ -106,7 +106,7 @@ lazy val scaladoc =
       // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
       unidocProjectFilter in (ScalaUnidoc, unidoc) :=
         inAnyProject --
-          inProjects(jvmProjects2_12:_*) --
+          inProjects(jvmProjects2_12: _*) --
           inProjects(airframeMacrosJS) --
           inProjects(jsProjects: _*),
       // compile projects first
