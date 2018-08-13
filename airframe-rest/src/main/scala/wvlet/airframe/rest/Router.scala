@@ -30,7 +30,6 @@ class Router(routes: Seq[RequestRoute]) {
         request.path.startsWith(r.pathPrefix)
       }
   }
-
 }
 
 case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) {

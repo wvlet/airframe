@@ -29,6 +29,22 @@ class RouterTest extends AirframeSpec {
       val r = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/user/1"))
       debug(r)
       r shouldBe defined
+      r.get.method shouldBe HttpMethod.GET
+
+      val r2 = router.findRoute(SimpleHttpRequest(HttpMethod.POST, "/user"))
+      debug(r2)
+      r2 shouldBe defined
+      r2.get.method shouldBe HttpMethod.POST
+
+      val r3 = router.findRoute(SimpleHttpRequest(HttpMethod.PUT, "/user/2"))
+      debug(r3)
+      r3 shouldBe defined
+      r3.get.method shouldBe HttpMethod.PUT
+
+      val r4 = router.findRoute(SimpleHttpRequest(HttpMethod.DELETE, "/user/3"))
+      debug(r4)
+      r4 shouldBe defined
+      r4.get.method shouldBe HttpMethod.DELETE
     }
 
   }
