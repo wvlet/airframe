@@ -66,8 +66,6 @@ trait InvalidService {
 
 @Path("/v1")
 trait PrefixExample {
-
-  @GET
   @Path("/hello")
   def hello: String = {
     "hello"
