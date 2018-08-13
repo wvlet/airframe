@@ -14,13 +14,13 @@
 package wvlet.airframe.http
 
 import com.twitter.finagle.http
-import wvlet.airframe.http.{HttpMethod, HttpRequest}
 
 /**
   *
   */
 package object finagle {
   implicit class FinagleHttpRequest(request: http.Request) extends HttpRequest {
+    def asAirframeHttpRequest: HttpRequest  = this
     override def method: HttpMethod         = toHttpMethod(request.method)
     override def path: String               = request.path
     override def query: Map[String, String] = request.params
