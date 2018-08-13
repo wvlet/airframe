@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.http
 
 import com.twitter.finagle.http
-import wvlet.airframe.rest.{HttpMethod, HttpRequest}
+import wvlet.airframe.http.{HttpMethod, HttpRequest}
 
 /**
   *

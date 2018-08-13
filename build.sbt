@@ -131,7 +131,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   jdbc,
   msgpackJVM,
   stream,
-  rest
+  http
 )
 
 // JVM projects that cannot be build in Scala 2.13
@@ -522,13 +522,13 @@ lazy val stream =
     )
     .dependsOn(surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
 
-lazy val rest =
+lazy val http =
   project
-    .in(file("airframe-rest"))
+    .in(file("airframe-http"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-rest",
-      description := "A functional REST API interface",
+      name := "airframe-http",
+      description := "JAX-RS based REST API Framework",
       libraryDependencies ++= Seq(
         "javax.ws.rs" % "javax.ws.rs-api" % "2.1"
       )
@@ -538,11 +538,11 @@ lazy val rest =
 val FINAGLE_VERSION = "18.8.0"
 lazy val finagle =
   project
-    .in(file("airframe-finagle"))
+    .in(file("airframe-http-finagle"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-finagle",
-      description := "REST API for Finagle",
+      name := "airframe-http-finagle",
+      description := "REST API binding for Finagle",
       // Finagle doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
@@ -552,4 +552,4 @@ lazy val finagle =
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION
       )
     )
-    .dependsOn(rest, airframeSpecJVM % "test")
+    .dependsOn(http, airframeSpecJVM % "test")
