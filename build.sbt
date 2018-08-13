@@ -159,7 +159,7 @@ lazy val projectJVM =
     )
     .aggregate(jvmProjects ++ jvmProjects2_12: _*)
 
-// For Scala 2.13
+// For Scala 2.13 (excluding projects supporting only upto Scala 2.12)
 lazy val projectJVM2_13 =
   project
     .settings(
