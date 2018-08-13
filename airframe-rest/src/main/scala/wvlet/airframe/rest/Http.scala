@@ -26,6 +26,9 @@ trait HttpRequest {
   def path: String
   def query: Map[String, String]
   def contentString: String
+  lazy val pathComponents: IndexedSeq[String] = {
+    path.replaceFirst("/", "").split("/")
+  }
 }
 
 case class SimpleHttpRequest(method: HttpMethod,

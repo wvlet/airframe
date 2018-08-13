@@ -22,14 +22,12 @@ import scala.reflect.runtime.{universe => ru}
 class Router(routes: Seq[RequestRoute]) {
 
   def findRoute(request: HttpRequest): Option[RequestRoute] = {
-    val requestPath    = request.path
-    val pathComponents = requestPath.replaceFirst("/", "").split("/")
 
     routes
       .find { r =>
         r.method == request.method &&
-        pathComponents.length == r.pathComponents.length &&
-        requestPath.startsWith(r.pathPrefix)
+        r.pathComponents.length == request.pathComponents.length &&
+        request.path.startsWith(r.pathPrefix)
       }
   }
 
@@ -40,7 +38,7 @@ case class RequestRoute(method: HttpMethod, path: String, methodSurface: Reflect
     path.startsWith("/"),
     s"Invalid route path: ${path}. @Path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
 
-  lazy val pathComponents: Seq[String] = {
+  lazy val pathComponents: IndexedSeq[String] = {
     path
       .substring(1)
       .split("/")
