@@ -41,6 +41,7 @@ case class RequestRoute(method: HttpMethod, path: String, methodSurface: Reflect
     path
       .substring(1)
       .split("/")
+      .toIndexedSeq
   }
 
   lazy val pathPrefix: String = {
