@@ -10,6 +10,10 @@ val targetScalaVersions = Seq(
   SCALA_2_12,
   SCALA_2_11
 )
+val exceptScala_2_13 = Seq(
+  SCALA_2_12,
+  SCALA_2_11
+)
 
 val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
@@ -496,7 +500,7 @@ lazy val rest =
     )
     .dependsOn(airframeJVM, surfaceJVM, codec, airframeSpecJVM % "test")
 
-val FINAGLE_VERSION = "18.4.0"
+val FINAGLE_VERSION = "18.8.0"
 lazy val finagle =
   project
     .in(file("airframe-finagle"))
@@ -504,6 +508,8 @@ lazy val finagle =
     .settings(
       name := "airframe-finagle",
       description := "REST API for Finagle",
+      // Finagle doesn't support Scala 2.13 yet
+      crossScalaVersions := exceptScala_2_13,
       libraryDependencies ++= Seq(
         "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
