@@ -92,7 +92,8 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
-    .aggregate((jvmProjects2_13 ++ jvmProjects2_12 ++ jsProjects): _*)
+    .aggregate(scaladoc)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
 lazy val scaladoc =
   project
@@ -100,17 +101,21 @@ lazy val scaladoc =
     .in(file("airframe-scaladoc"))
     .settings(
       buildSettings,
+      crossScalaVersions := targetScalaVersions,
       name := "airframe-scaladoc",
       // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
-      unidocProjectFilter in (ScalaUnidoc, unidoc) := inAnyProject -- inProjects(airframeMacrosJS) -- inProjects(
-        jsProjects: _*),
+      unidocProjectFilter in (ScalaUnidoc, unidoc) :=
+        inAnyProject --
+          inProjects(jvmProjects2_12:_*) --
+          inProjects(airframeMacrosJS) --
+          inProjects(jsProjects: _*),
       // compile projects first
       Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
-    .aggregate(jvmProjects2_13: _*)
+    .aggregate(jvmProjects: _*)
 
 // JVM projects that supports Scala 2.13
-lazy val jvmProjects2_13: Seq[ProjectReference] = List(
+lazy val jvmProjects: Seq[ProjectReference] = List(
   airframeJVM,
   surfaceJVM,
   logJVM,
@@ -151,7 +156,8 @@ lazy val projectJVM =
       noPublish,
       crossScalaVersions := targetScalaVersions
     )
-    .aggregate(jvmProjects2_13 ++ jvmProjects2_12: _*)
+    .aggregate(scaladoc)
+    .aggregate(jvmProjects: _*)
 
 lazy val projectJVM2_12 =
   project
@@ -163,7 +169,10 @@ lazy val projectJVM2_12 =
 
 lazy val projectJS =
   project
-    .settings(noPublish)
+    .settings(
+      noPublish,
+      crossScalaVersions := Seq(SCALA_2_12)
+    )
     .aggregate(jsProjects: _*)
 
 lazy val docs =

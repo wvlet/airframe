@@ -47,7 +47,7 @@ matrix:
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script:
-    - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
+    - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; ${PROJECT}2_12/test; coverageReport"
     - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
   - env: SCALA_VERSION=2.13.0-M4 PROJECT=projectJVM
     services: postgresql
@@ -58,16 +58,16 @@ matrix:
     jdk: oraclejdk8
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
-    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test ${PROJECT}2_12/test
   - env: SCALA_VERSION=2.12.6 PROJECT=projectJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Oracle JDK 9'
+  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM
     jdk: oraclejdk9
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM JDK='Oracle JDK 10'
+  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM
     jdk: oraclejdk10
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
