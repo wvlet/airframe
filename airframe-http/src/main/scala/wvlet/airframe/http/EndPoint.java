@@ -11,22 +11,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
 
-trait HttpRequest {
-  def method: HttpMethod
-  def path: String
-  def query: Map[String, String]
-  def contentString: String
-  lazy val pathComponents: IndexedSeq[String] = {
-    path.replaceFirst("/", "").split("/").toIndexedSeq
-  }
+package wvlet.airframe.http;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Retention(RUNTIME)
+@Target({METHOD, TYPE})
+public @interface EndPoint
+{
+    /**
+     * Uri beginning from / (slash)
+     * @return
+     */
+    String path();
+    HttpMethod method() default HttpMethod.GET;
+    String description() default "";
 }
-
-case class SimpleHttpRequest(method: HttpMethod,
-                             path: String,
-                             query: Map[String, String] = Map.empty,
-                             contentString: String = "")
-    extends HttpRequest
-
-trait HttpResponse {}

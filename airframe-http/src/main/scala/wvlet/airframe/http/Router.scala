@@ -35,7 +35,7 @@ class Router(routes: Seq[RequestRoute]) {
 case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) {
   require(
     path.startsWith("/"),
-    s"Invalid route path: ${path}. @Path must start wibuith a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
+    s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
 
   lazy val pathComponents: IndexedSeq[String] = {
     path
@@ -63,37 +63,23 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     * Find methods annotated with [javax.ws.rs.Path]
     */
   def add[A: ru.TypeTag]: RouteBuilder = {
-
     // Check prefix
     val prefixPath =
       surface
         .of[A]
-        .findAnnotationOf[javax.ws.rs.Path]
+        .findAnnotationOf[EndPoint]
         .map { p =>
-          p.value()
+          p.path()
         }
         .getOrElse("")
 
     val newRoutes =
       surface
         .methodsOf[A]
-        .map(m => (m, m.findAnnotationOf[javax.ws.rs.Path]))
+        .map(m => (m, m.findAnnotationOf[EndPoint]))
         .collect {
-          case (m: ReflectMethodSurface, Some(path)) =>
-            val method =
-              m match {
-                case m if m.findAnnotationOf[GET].isDefined =>
-                  HttpMethod.GET
-                case m if m.findAnnotationOf[POST].isDefined =>
-                  HttpMethod.POST
-                case m if m.findAnnotationOf[DELETE].isDefined =>
-                  HttpMethod.DELETE
-                case m if m.findAnnotationOf[PUT].isDefined =>
-                  HttpMethod.PUT
-                case _ =>
-                  HttpMethod.GET
-              }
-            RequestRoute(method, prefixPath + path.value(), m)
+          case (m: ReflectMethodSurface, Some(endPoint)) =>
+            RequestRoute(endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
     RouteBuilder(routes ++ newRoutes)
