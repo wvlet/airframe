@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.http
 
-import javax.ws.rs.{DELETE, GET, POST, PUT}
+import wvlet.airframe.codec.{MessageCodec, MethodCallBuilder}
+import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.reflect._
 
@@ -22,7 +23,6 @@ import scala.reflect.runtime.{universe => ru}
 class Router(routes: Seq[RequestRoute]) {
 
   def findRoute(request: HttpRequest): Option[RequestRoute] = {
-
     routes
       .find { r =>
         r.method == request.method &&
@@ -32,7 +32,7 @@ class Router(routes: Seq[RequestRoute]) {
   }
 }
 
-case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) {
+case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) extends LogSupport {
   require(
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
@@ -51,6 +51,20 @@ case class RequestRoute(method: HttpMethod, path: String, methodSurface: Reflect
         .mkString("/")
   }
 
+  private lazy val methodCallBuilder = MethodCallBuilder.of(methodSurface)
+
+  def call(request: HttpRequest, obj: Any): Any = {
+    // Resolving path parameter values
+    // For example, /user/:id with /user/1 gives { id -> 1 }
+    val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
+      elem.substring(1) -> actual
+    }).toMap[String, String]
+
+    val methodParams = pathParams ++ request.query
+    val methodCall   = methodCallBuilder.build(methodParams)
+    debug(methodCall)
+    methodSurface.call(obj, methodCall.paramArgs: _*)
+  }
 }
 
 case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {

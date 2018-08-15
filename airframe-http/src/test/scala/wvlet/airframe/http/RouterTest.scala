@@ -47,5 +47,19 @@ class RouterTest extends AirframeSpec {
       r4.get.method shouldBe HttpMethod.DELETE
     }
 
+    "call registered methods" in {
+      val router = RouteBuilder()
+        .add[ServiceExample]
+        .build
+      val s = new ServiceExample {}
+
+      val req = SimpleHttpRequest(HttpMethod.GET, "/user/10")
+      val ret =
+        router
+          .findRoute(req)
+          .map(_.call(req, s))
+
+      ret.get shouldBe ServiceExample.User("10", "leo")
+    }
   }
 }
