@@ -70,7 +70,6 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
           request
         case _ =>
           val codec = MessageCodec.default.of(s)
-          JSONCodec.request.contentString
 
           ParamListCodec.defaultEmptyParamBinder(s)
       }
@@ -102,9 +101,7 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     val prefixPath =
       serviceSurface
         .findAnnotationOf[Endpoint]
-        .map { p =>
-          p.path()
-        }
+        .map(_.path())
         .getOrElse("")
 
     val newRoutes =
