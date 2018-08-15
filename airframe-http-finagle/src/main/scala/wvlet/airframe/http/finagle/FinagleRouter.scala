@@ -16,12 +16,12 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.http.{Router, ServiceProvider, ServiceResponseHandler}
+import wvlet.airframe.http.{Router, ControllerProvider, ResponseHandler}
 
 /**
   * A filter for dispatching http requests with Finagle
   */
-class FinagleRouter(router: Router, serviceProvider: ServiceProvider, responseHandler: ServiceResponseHandler[Response])
+class FinagleRouter(router: Router, serviceProvider: ControllerProvider, responseHandler: ResponseHandler[Response])
     extends SimpleFilter[Request, Response] {
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {

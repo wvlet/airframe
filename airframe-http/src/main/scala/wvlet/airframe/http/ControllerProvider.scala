@@ -18,10 +18,10 @@ import wvlet.surface.Surface
 /**
   *
   */
-trait ServiceProvider {
-  def find(serviceSurface: Surface): Option[Any]
+trait ControllerProvider {
+  def find(controllerSurface: Surface): Option[Any]
 }
 
-trait ServiceResponseHandler[Res] {
+trait ResponseHandler[Res] {
   def toHttpResponse[A](a: A): Res
 }

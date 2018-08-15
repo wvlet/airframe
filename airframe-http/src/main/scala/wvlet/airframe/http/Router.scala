@@ -53,7 +53,7 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
         .mkString("/")
   }
 
-  def call(serviceProvider: ServiceProvider, request: HttpRequest): Option[Any] = {
+  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
     // Resolving path parameter values
     // For example, /user/:id with /user/1 gives { id -> 1 }
     val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
@@ -66,8 +66,12 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
     val emptyValueFinder = { s: Surface =>
       s.rawType match {
         case c if c == classOf[HttpRequest] =>
+          // Bind HttpRequest in the function argument
           request
         case _ =>
+          val codec = MessageCodec.default.of(s)
+          JSONCodec.request.contentString
+
           ParamListCodec.defaultEmptyParamBinder(s)
       }
     }
@@ -77,7 +81,7 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
     val methodCall        = methodCallBuilder.prepare(methodParams)
     debug(methodCall)
 
-    serviceProvider.find(serviceSurface).map { serviceObj =>
+    controllerProvider.find(serviceSurface).map { serviceObj =>
       methodSurface.call(serviceObj, methodCall.paramArgs: _*)
     }
   }
