@@ -21,7 +21,16 @@ import wvlet.surface.{Parameter, Surface, Zero}
 
 import scala.util.{Failure, Success, Try}
 
-class ParamListCodec(name: String, params: IndexedSeq[Parameter], paramCodec: Seq[MessageCodec[_]])
+object ParamListCodec {
+  val defaultEmptyParamBinder = { s: Surface =>
+    Zero.zeroOf(s)
+  }
+}
+
+class ParamListCodec(name: String,
+                     params: IndexedSeq[Parameter],
+                     paramCodec: Seq[MessageCodec[_]],
+                     emptyParamBinder: Surface => Any = ParamListCodec.defaultEmptyParamBinder)
     extends MessageCodec[Seq[Any]]
     with LogSupport {
   private lazy val codecTable =
@@ -81,7 +90,7 @@ class ParamListCodec(name: String, params: IndexedSeq[Parameter], paramCodec: Se
         // Populate args with the default or zero value
         while (index < numParams) {
           val p = params(index)
-          b += p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+          b += p.getDefaultValue.getOrElse(emptyParamBinder(p.surface))
           index += 1
         }
         // Ignore additional args
@@ -120,7 +129,7 @@ class ParamListCodec(name: String, params: IndexedSeq[Parameter], paramCodec: Se
           map.get(paramName) match {
             case Some(x) => x
             case None =>
-              p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+              p.getDefaultValue.getOrElse(emptyParamBinder(p.surface))
           }
         }
         v.setObject(args)

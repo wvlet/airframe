@@ -72,6 +72,14 @@ class RouterTest extends AirframeSpec {
           .flatMap(_.call(serviceProvider, req))
 
       ret.get shouldBe ServiceExample.User("10", "leo")
+
+      val req2 = SimpleHttpRequest(HttpMethod.PUT, "/user/2", contentString = "hello")
+      val ret2 =
+        router
+          .findRoute(req2)
+          .flatMap(_.call(serviceProvider, req2))
+
+      ret2.get shouldBe "hello"
     }
   }
 }

@@ -11,31 +11,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
+package wvlet.airframe.http
 
 import org.msgpack.core.MessagePack
-import wvlet.surface.MethodSurface
+import wvlet.airframe.codec._
+import wvlet.surface.{MethodSurface, Surface}
 
 case class MethodCall(methodSurface: MethodSurface, paramArgs: Seq[Any])
 
-object MethodCallBuilder {
-  private[codec] val mapCodec = MessageCodec.of[Map[String, String]]
+object MethodCaller {
+  private[http] val mapCodec = MessageCodec.of[Map[String, String]]
 
-  def of(methodSurface: MethodSurface, codecFactory: MessageCodecFactory = MessageCodec.default): MethodCallBuilder = {
+  def of(methodSurface: MethodSurface,
+         emptyParamBinder: Surface => Any = ParamListCodec.defaultEmptyParamBinder,
+         codecFactory: MessageCodecFactory = MessageCodec.default): MethodCaller = {
     val argCodec = methodSurface.args.map(x => codecFactory.of(x.surface))
-    new MethodCallBuilder(methodSurface, argCodec)
+    new MethodCaller(methodSurface, argCodec, emptyParamBinder)
   }
 }
 
 /**
   *
   */
-class MethodCallBuilder(methodSurface: MethodSurface, argCodec: Seq[MessageCodec[_]]) {
+class MethodCaller(methodSurface: MethodSurface, argCodec: Seq[MessageCodec[_]], emptyParamBinder: Surface => Any) {
 
-  private val paramListCodec = new ParamListCodec(methodSurface.name, methodSurface.args.toIndexedSeq, argCodec)
+  private val paramListCodec =
+    new ParamListCodec(methodSurface.name, methodSurface.args.toIndexedSeq, argCodec, emptyParamBinder)
 
-  def build(params: Map[String, String]): MethodCall = {
-    val msgpack  = MethodCallBuilder.mapCodec.packToBytes(params)
+  def prepare(params: Map[String, String]): MethodCall = {
+    val msgpack  = MethodCaller.mapCodec.packToBytes(params)
     val unpacker = MessagePack.newDefaultUnpacker(msgpack)
     val v        = new MessageHolder
     val m        = Map.newBuilder[String, Any]

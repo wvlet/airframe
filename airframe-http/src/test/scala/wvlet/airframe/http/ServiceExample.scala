@@ -50,8 +50,9 @@ trait ServiceExample extends LogSupport {
   }
 
   @EndPoint(path = "/user/:id", method = HttpMethod.PUT)
-  def updateUser(id: String, httpRequest: HttpRequest): Unit = {
+  def updateUser(id: String, httpRequest: HttpRequest): String = {
     info(s"id: ${id}, ${httpRequest.contentString}")
+    httpRequest.contentString
   }
 }
 

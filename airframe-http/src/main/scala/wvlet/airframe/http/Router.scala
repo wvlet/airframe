@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.{MessageCodec, MethodCallBuilder}
+import wvlet.airframe.codec.{MessageCodec, ParamListCodec}
 import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.Surface
@@ -53,8 +53,6 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
         .mkString("/")
   }
 
-  private lazy val methodCallBuilder = MethodCallBuilder.of(methodSurface)
-
   def call(serviceProvider: ServiceProvider, request: HttpRequest): Option[Any] = {
     // Resolving path parameter values
     // For example, /user/:id with /user/1 gives { id -> 1 }
@@ -63,7 +61,20 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
     }).toMap[String, String]
 
     val methodParams = request.query ++ pathParams
-    val methodCall   = methodCallBuilder.build(methodParams)
+
+    // TODO use Airframe session for find bindings
+    val emptyValueFinder = { s: Surface =>
+      s.rawType match {
+        case c if c == classOf[HttpRequest] =>
+          request
+        case _ =>
+          ParamListCodec.defaultEmptyParamBinder(s)
+      }
+    }
+
+    // TODO initialize MethodCaller outside this function for reuse
+    val methodCallBuilder = MethodCaller.of(methodSurface, emptyValueFinder)
+    val methodCall        = methodCallBuilder.prepare(methodParams)
     debug(methodCall)
 
     serviceProvider.find(serviceSurface).map { serviceObj =>
