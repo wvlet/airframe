@@ -101,7 +101,7 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     val serviceSurface = surface.of[A]
     val prefixPath =
       serviceSurface
-        .findAnnotationOf[EndPoint]
+        .findAnnotationOf[Endpoint]
         .map { p =>
           p.path()
         }
@@ -110,7 +110,7 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     val newRoutes =
       surface
         .methodsOf[A]
-        .map(m => (m, m.findAnnotationOf[EndPoint]))
+        .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
             RequestRoute(serviceSurface, endPoint.method(), prefixPath + endPoint.path(), m)

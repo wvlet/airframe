@@ -29,14 +29,14 @@ object ServiceExample {
 trait ServiceExample extends LogSupport {
   import ServiceExample._
 
-  @EndPoint(path = "/user/:id", method = HttpMethod.GET)
+  @Endpoint(path = "/user/:id", method = HttpMethod.GET)
   def getUser(id: String): User = {
     val u = User(id, "leo")
     info(s"get ${u}")
     u
   }
 
-  @EndPoint(path = "/user", method = HttpMethod.POST)
+  @Endpoint(path = "/user", method = HttpMethod.POST)
   def newUser(userUpdateRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
     val newUser = User(UUID.randomUUID().toString, userUpdateRequest.name)
@@ -44,12 +44,12 @@ trait ServiceExample extends LogSupport {
     newUser
   }
 
-  @EndPoint(path = "/user/:id", method = HttpMethod.DELETE)
+  @Endpoint(path = "/user/:id", method = HttpMethod.DELETE)
   def deleteUser(id: String): Unit = {
     info(s"delete ${id}")
   }
 
-  @EndPoint(path = "/user/:id", method = HttpMethod.PUT)
+  @Endpoint(path = "/user/:id", method = HttpMethod.PUT)
   def updateUser(id: String, httpRequest: HttpRequest): String = {
     info(s"id: ${id}, ${httpRequest.contentString}")
     httpRequest.contentString
@@ -57,14 +57,14 @@ trait ServiceExample extends LogSupport {
 }
 
 trait InvalidService {
-  @EndPoint(path = "wrong_path")
+  @Endpoint(path = "wrong_path")
   def hello: Unit = {}
 }
 
-@EndPoint(path = "/v1")
+@Endpoint(path = "/v1")
 trait PrefixExample {
 
-  @EndPoint(path = "/hello")
+  @Endpoint(path = "/hello")
   def hello: String = {
     "hello"
   }
