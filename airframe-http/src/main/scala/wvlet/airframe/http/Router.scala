@@ -62,7 +62,7 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
       elem.substring(1) -> actual
     }).toMap[String, String]
 
-    val methodParams = pathParams ++ request.query
+    val methodParams = request.query ++ pathParams
     val methodCall   = methodCallBuilder.build(methodParams)
     debug(methodCall)
 
