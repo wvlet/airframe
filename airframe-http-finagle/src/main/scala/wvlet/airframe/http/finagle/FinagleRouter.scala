@@ -16,17 +16,25 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.http.Router
+import wvlet.airframe.http.{Router, ServiceProvider, ServiceResponseHandler}
 
 /**
-  * Dispatching http requests
+  * A filter for dispatching http requests with Finagle
   */
-class FinagleRouter(router: Router) extends SimpleFilter[Request, Response] {
+class FinagleRouter(router: Router, serviceProvider: ServiceProvider, responseHandler: ServiceResponseHandler[Response])
+    extends SimpleFilter[Request, Response] {
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     router.findRoute(request) match {
       case Some(route) =>
-      case None        =>
+        route.call(serviceProvider, request) match {
+          case None =>
+            Future.exception(new IllegalStateException(s"${route.serviceSurface} is not found"))
+          case Some(x) =>
+            Future.value(responseHandler.toHttpResponse(x))
+        }
+      case None =>
+        service(request)
     }
   }
 }

@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.{MessageCodec, MethodCallBuilder}
 import wvlet.log.LogSupport
 import wvlet.surface
+import wvlet.surface.Surface
 import wvlet.surface.reflect._
 
 import scala.reflect.runtime.{universe => ru}
@@ -32,7 +33,8 @@ class Router(routes: Seq[RequestRoute]) {
   }
 }
 
-case class RequestRoute(method: HttpMethod, path: String, methodSurface: ReflectMethodSurface) extends LogSupport {
+case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
+    extends LogSupport {
   require(
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
@@ -53,7 +55,7 @@ case class RequestRoute(method: HttpMethod, path: String, methodSurface: Reflect
 
   private lazy val methodCallBuilder = MethodCallBuilder.of(methodSurface)
 
-  def call(request: HttpRequest, obj: Any): Any = {
+  def call(serviceProvider: ServiceProvider, request: HttpRequest): Option[Any] = {
     // Resolving path parameter values
     // For example, /user/:id with /user/1 gives { id -> 1 }
     val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
@@ -63,7 +65,10 @@ case class RequestRoute(method: HttpMethod, path: String, methodSurface: Reflect
     val methodParams = pathParams ++ request.query
     val methodCall   = methodCallBuilder.build(methodParams)
     debug(methodCall)
-    methodSurface.call(obj, methodCall.paramArgs: _*)
+
+    serviceProvider.find(serviceSurface).map { serviceObj =>
+      methodSurface.call(serviceObj, methodCall.paramArgs: _*)
+    }
   }
 }
 
@@ -78,9 +83,9 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
     */
   def add[A: ru.TypeTag]: RouteBuilder = {
     // Check prefix
+    val serviceSurface = surface.of[A]
     val prefixPath =
-      surface
-        .of[A]
+      serviceSurface
         .findAnnotationOf[EndPoint]
         .map { p =>
           p.path()
@@ -93,7 +98,7 @@ case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
         .map(m => (m, m.findAnnotationOf[EndPoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
-            RequestRoute(endPoint.method(), prefixPath + endPoint.path(), m)
+            RequestRoute(serviceSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
     RouteBuilder(routes ++ newRoutes)

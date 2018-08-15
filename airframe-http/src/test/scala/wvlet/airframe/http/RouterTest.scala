@@ -14,6 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.AirframeSpec
+import wvlet.surface
+import wvlet.surface.Surface
 
 /**
   *
@@ -51,13 +53,23 @@ class RouterTest extends AirframeSpec {
       val router = RouteBuilder()
         .add[ServiceExample]
         .build
+
       val s = new ServiceExample {}
+
+      val serviceProvider = new ServiceProvider {
+        override def find(serviceSurface: Surface): Option[Any] = {
+          serviceSurface match {
+            case sf if sf == surface.of[ServiceExample] => Some(s)
+            case _                                      => None
+          }
+        }
+      }
 
       val req = SimpleHttpRequest(HttpMethod.GET, "/user/10")
       val ret =
         router
           .findRoute(req)
-          .map(_.call(req, s))
+          .flatMap(_.call(serviceProvider, req))
 
       ret.get shouldBe ServiceExample.User("10", "leo")
     }
