@@ -33,6 +33,8 @@ class JSONScannerTest extends AirframeSpec {
 
       scan("""{"id":1}""")
       scan("""{"id":1, "name":"leo"}""")
+
+      scan("[0, 1, -1, -1.0, 1.0123, 1.11, 10.234, 1.0e-10, 1.123e+10, 12.3E50]")
     }
 
   }

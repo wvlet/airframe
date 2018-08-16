@@ -100,7 +100,7 @@ class JSONEventHandler extends LogSupport {
     info(s"start array: ${start}")
   }
   def endArray(s: Array[Byte], start: Int, end: Int, numElem: Int): Unit = {
-    info(s"end array: [${start},${end}), num elems:${numElem})")
+    info(s"end array: [${start},${end}), num elems:${numElem}")
   }
   def stringValue(s: Array[Byte], start: Int, end: Int): Unit = {
     info(s"string value: [${start},${end}) ${extract(s, start, end)}")
@@ -217,7 +217,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   }
 
   private def ensure(length: Int): Unit = {
-    if (cursor + 4 >= s.length) {
+    if (cursor + length >= s.length) {
       throw new UnexpectedEOF(cursor, s"expected having ${length} characters, but ${s.length - cursor} is left")
     }
   }
@@ -240,7 +240,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   def scanFalse: Unit = {
     ensure(5)
-    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e') {
+    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e'.toByte) {
       cursor += 5
     } else {
       throw unexpected("false")
