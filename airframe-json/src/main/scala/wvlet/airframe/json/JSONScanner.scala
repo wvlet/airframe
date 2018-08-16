@@ -85,24 +85,28 @@ class UnexpectedEOF(pos: Int, message: String)   extends JSONParseException(mess
 
 class JSONEventHandler extends LogSupport {
 
-  def startObject(start: Int): Unit = {
+  def extract(s: Array[Byte], start: Int, end: Int): String = {
+    new String(s, start, end - start)
+  }
+
+  def startObject(s: Array[Byte], start: Int): Unit = {
     info(s"start obj: ${start}")
   }
 
-  def endObject(start: Int, end: Int, numElem: Int): Unit = {
+  def endObject(s: Array[Byte], start: Int, end: Int, numElem: Int): Unit = {
     info(s"end obj: [${start},${end}),  num elems:${numElem}")
   }
-  def startArray(start: Int): Unit = {
+  def startArray(s: Array[Byte], start: Int): Unit = {
     info(s"start array: ${start}")
   }
-  def endArray(start: Int, end: Int, numElem: Int): Unit = {
+  def endArray(s: Array[Byte], start: Int, end: Int, numElem: Int): Unit = {
     info(s"end array: [${start},${end}), num elems:${numElem})")
   }
-  def stringValue(start: Int, end: Int): Unit = {
-    info(s"string value: [${start},${end})")
+  def stringValue(s: Array[Byte], start: Int, end: Int): Unit = {
+    info(s"string value: [${start},${end}) ${extract(s, start, end)}")
   }
-  def numberValue(start: Int, end: Int): Unit = {
-    info(s"number value: [${start}, ${end})")
+  def numberValue(s: Array[Byte], start: Int, end: Int): Unit = {
+    info(s"number value: [${start}, ${end}) ${extract(s, start, end)}")
   }
 
 }
@@ -123,7 +127,9 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   private def unexpected(expected: String): Exception = {
     val char = s(cursor)
-    new UnexpectedToken(cursor, f"found '${String.valueOf(char.toChar)}' at pos: ${cursor}, expected: ${expected}")
+    new UnexpectedToken(
+      cursor,
+      f"found '${String.valueOf(char.toChar)}' 0x${char}%02x at pos: ${cursor}, expected: ${expected}")
   }
 
   def scan: Unit = {
@@ -175,7 +181,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
         scanExp
     }
     val numberEnd = cursor
-    eventHandler.numberValue(numberStart, numberEnd)
+    eventHandler.numberValue(s, numberStart, numberEnd)
   }
 
   def scanDigits: Unit = {
@@ -234,7 +240,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   def scanFalse: Unit = {
     ensure(5)
-    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'f') {
+    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e') {
       cursor += 5
     } else {
       throw unexpected("false")
@@ -252,7 +258,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   def scanObject: Unit = {
     val objStart = cursor
-    eventHandler.startObject(objStart)
+    eventHandler.startObject(s, objStart)
     var numElem = 0
     cursor += 1
 
@@ -265,30 +271,31 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
       scanColon
       scanValue
       numElem += 1
+      skipWhiteSpaces
     }
     cursor += 1
     val objEnd = cursor
-    eventHandler.endObject(objStart, objEnd, numElem)
+    eventHandler.endObject(s, objStart, objEnd, numElem)
   }
 
   def scanArray: Unit = {
     val arrStart = cursor
-    eventHandler.startArray(arrStart)
+    eventHandler.startArray(s, arrStart)
     var numElem = 0
     cursor += 1
 
     skipWhiteSpaces
-    val ch = s(cursor)
-    while (ch != RSquare) {
+    while (s(cursor) != RSquare) {
       if (numElem > 0) {
-        scanColon
+        scanComma
       }
       scanValue
       numElem += 1
+      skipWhiteSpaces
     }
     cursor += 1
     val arrEnd = cursor
-    eventHandler.endArray(arrStart, arrEnd, numElem)
+    eventHandler.endArray(s, arrStart, arrEnd, numElem)
   }
 
   def scanString: Unit = {
@@ -298,7 +305,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
         cursor += 1
         val stringStart = cursor
         scanStringFragment
-        eventHandler.stringValue(stringStart, cursor - 1)
+        eventHandler.stringValue(s, stringStart, cursor - 1)
       case _ =>
         throw unexpected("string")
     }
@@ -315,20 +322,46 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
         case BackSlash =>
           scanEscape
         case _ =>
-          // utf-8: 0020 ... 10ffff
           scanUtf8
       }
     }
   }
 
   def scanUtf8: Unit = {
+    // utf-8: 0020 ... 10ffff
     val ch = s(cursor)
-
-    if ((ch > 0 && ch >= 0x20)) {
+    val b1 = ch & 0xFF
+    if ((b1 & 0x80) == 0 && ch >= 0x20) {
+      // 0xxxxxxx
       cursor += 1
-      // TODO scan 2-4 byte code
+    } else if ((b1 & 0xE0) == 0xC0) {
+      // 110xxxxx
+      cursor += 1
+      scanUtf8Body
+    } else if ((b1 & 0xF0) == 0xE0) {
+      // 1110xxxx
+      cursor += 1
+      scanUtf8Body
+      scanUtf8Body
+    } else if ((b1 & 0xF8) == 0xF0) {
+      // 11110xxx
+      cursor += 1
+      scanUtf8Body
+      scanUtf8Body
+      scanUtf8Body
     } else {
       throw unexpected("utf8")
+    }
+  }
+
+  def scanUtf8Body: Unit = {
+    val ch = s(cursor)
+    val b  = ch & 0xFF
+    if ((b & 0xC0) == 0x80) {
+      // 10xxxxxx
+      cursor += 1
+    } else {
+      throw unexpected("utf8 body")
     }
   }
 
