@@ -15,6 +15,8 @@ package wvlet.airframe.json
 
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
+
 object JSONToken {
 
   val LBracket: Byte = '{'.toByte
@@ -70,15 +72,6 @@ object JSONEvent {
 
 }
 
-object JSONScanner {
-
-  def scan(s: String, handler: JSONEventHandler): Unit = {
-    val scanner = new JSONScanner(s.getBytes("UTF-8"), handler)
-    scanner.scan
-  }
-
-}
-
 abstract class JSONParseException(m: String)     extends Exception(m)
 class UnexpectedToken(pos: Int, message: String) extends JSONParseException(message)
 class UnexpectedEOF(pos: Int, message: String)   extends JSONParseException(message)
@@ -116,16 +109,75 @@ class JSONEventHandler extends LogSupport {
   }
 }
 
+object JSONScanner {
+
+  def scan(s: String, handler: JSONEventHandler): Unit = {
+    val scanner = new JSONScanner(s.getBytes("UTF-8"), handler)
+    scanner.scan
+  }
+
+  // 2-bit vector of utf8 character length table
+  // Using the first 4-bits of an utf8 string
+  private[json] val utf8CharLenTable: Long = {
+    var l: Long = 0L
+    for (i <- 0 until 16) {
+      val code = i << 4
+      val len  = utf8CharLen(code)
+      if (len > 0) {
+        l = l | (len << (i * 2))
+      }
+    }
+    l
+  }
+  // Check the valid utf8 by using the first 5-bits of utf8 string
+  private[json] val validUtf8BitVector: Long = {
+    var l: Long = 0L
+    for (i <- 0 until 32) {
+      val code = i << 3
+      val len  = utf8CharLen(code)
+      if ((len == 0 && code >= 0x20) || len >= 0) {
+        l = l | (1L << i)
+      }
+    }
+    l
+  }
+
+  private def utf8CharLen(code: Int): Int = {
+    val i = code & 0xFF
+    if ((i & 0x80) == 0) {
+      // 0xxxxxxx
+      0
+    } else if ((i & 0xE0) == 0xC0) {
+      // 110xxxxx
+      1
+    } else if ((i & 0xF0) == 0xE0) {
+      // 1110xxxx
+      2
+    } else if ((i & 0xF8) == 0xF0) {
+      3
+    } else {
+      -1
+    }
+  }
+}
+
 class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSupport {
-  private var cursor: Int = 0
+  private var cursor: Int       = 0
+  private var lineStartPos: Int = 0
+  private var line: Int         = 0
 
   import JSONEvent._
   import JSONToken._
+  import JSONScanner._
 
   private def skipWhiteSpaces: Unit = {
     var ch = s(cursor)
     while (cursor < s.length && (ch == WS || ch == WS_T | ch == WS_N | ch == WS_R)) {
       cursor += 1
+      if (ch == WS_N) {
+        line += 1
+        lineStartPos = cursor
+      }
       ch = s(cursor)
     }
   }
@@ -134,7 +186,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
     val char = s(cursor)
     new UnexpectedToken(
       cursor,
-      f"found '${String.valueOf(char.toChar)}' 0x${char}%02x at pos: ${cursor}, expected: ${expected}")
+      f"found '${String.valueOf(char.toChar)}' 0x${char}%02x at ${line}(${cursor - lineStartPos}), expected: ${expected}")
   }
 
   def scan: Unit = {
@@ -336,6 +388,21 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   }
 
   def scanUtf8: Unit = {
+    val ch                = s(cursor)
+    val first5bit         = (ch & 0xF8) >> 3
+    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+    if (isValidUtf8Header != 0L) {
+      val pos     = (ch & 0xF0) >> (4 - 1)
+      val mask    = 0x03L << pos
+      val utf8len = (utf8CharLenTable & mask) >> pos
+      cursor += 1
+      scanUtf8Body(utf8len.toInt)
+    } else {
+      throw unexpected("utf8")
+    }
+  }
+
+  def scanUtf8_slow: Unit = {
     // utf-8: 0020 ... 10ffff
     val ch = s(cursor)
     val b1 = ch & 0xFF
@@ -345,61 +412,63 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
     } else if ((b1 & 0xE0) == 0xC0) {
       // 110xxxxx
       cursor += 1
-      scanUtf8Body
+      scanUtf8Body(1)
     } else if ((b1 & 0xF0) == 0xE0) {
       // 1110xxxx
       cursor += 1
-      scanUtf8Body
-      scanUtf8Body
+      scanUtf8Body(2)
     } else if ((b1 & 0xF8) == 0xF0) {
       // 11110xxx
       cursor += 1
-      scanUtf8Body
-      scanUtf8Body
-      scanUtf8Body
+      scanUtf8Body(3)
     } else {
       throw unexpected("utf8")
     }
   }
 
-  def scanUtf8Body: Unit = {
-    val ch = s(cursor)
-    val b  = ch & 0xFF
-    if ((b & 0xC0) == 0x80) {
-      // 10xxxxxx
-      cursor += 1
-    } else {
-      throw unexpected("utf8 body")
+  @tailrec
+  private def scanUtf8Body(n: Int): Unit = {
+    if (n > 0) {
+      val ch = s(cursor)
+      val b  = ch & 0xFF
+      if ((b & 0xC0) == 0x80) {
+        // 10xxxxxx
+        cursor += 1
+        scanUtf8Body(n - 1)
+      } else {
+        throw unexpected("utf8 body")
+      }
     }
   }
 
-  def scanEscape: Unit = {
+  private def scanEscape: Unit = {
     cursor += 1
     s(cursor) match {
       case DoubleQuote | BackSlash | Slash | 'b' | 'f' | 'n' | 'r' | 't' =>
         cursor += 1
       case 'u' =>
         cursor += 1
-        scanHex
-        scanHex
-        scanHex
-        scanHex
+        scanHex(4)
       case _ =>
         throw unexpected("escape")
     }
   }
 
-  def scanHex: Unit = {
-    val ch = s(cursor)
-    if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'A') || (ch >= '0' && ch <= '9')) {
-      // OK
-      cursor += 1
-    } else {
-      throw unexpected("hex")
+  @tailrec
+  private def scanHex(n: Int): Unit = {
+    if (n > 0) {
+      val ch = s(cursor)
+      if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch >= '0' && ch <= '9')) {
+        // OK
+        cursor += 1
+        scanHex(n - 1)
+      } else {
+        throw unexpected("hex")
+      }
     }
   }
 
-  def scanColon: Unit = {
+  private def scanColon: Unit = {
     skipWhiteSpaces
     if (s(cursor) == Colon) {
       cursor += 1
@@ -407,7 +476,8 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
       throw unexpected("colon")
     }
   }
-  def scanComma: Unit = {
+
+  private def scanComma: Unit = {
     skipWhiteSpaces
     if (s(cursor) == Comma) {
       cursor += 1
