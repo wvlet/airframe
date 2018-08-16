@@ -391,7 +391,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   def scanHex: Unit = {
     val ch = s(cursor)
-    if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'A') || (ch >= '0' && ch <= '0')) {
+    if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'A') || (ch >= '0' && ch <= '9')) {
       // OK
       cursor += 1
     } else {
