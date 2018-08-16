@@ -55,11 +55,12 @@ object JSONToken {
       (('l'.toByte & 0xFF) << 8) |
       ('l'.toByte & 0xFF)
 
-  val FALS_E: Int =
-    (('f'.toByte & 0xFF) << 24) |
-      (('a'.toByte & 0xFF) << 16) |
-      (('l'.toByte & 0xFF) << 8) |
-      ('s'.toByte & 0xFF)
+  val FALSE: Long =
+    (('f'.toByte & 0xFFL) << 32) |
+      (('a'.toByte & 0xFFL) << 24) |
+      (('l'.toByte & 0xFFL) << 16) |
+      (('s'.toByte & 0xFFL) << 8) |
+      ('e'.toByte & 0xFFL)
 }
 
 sealed trait JSONEvent
@@ -282,9 +283,18 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   private def get4bytesAsInt: Int = {
     ensure(4)
     ((s(cursor) & 0xFF) << 24) |
-      ((s(cursor + 1) & 0xff) << 16) |
-      ((s(cursor + 2) & 0xff) << 8) |
-      (s(cursor + 3) & 0xff)
+      ((s(cursor + 1) & 0xFF) << 16) |
+      ((s(cursor + 2) & 0xFF) << 8) |
+      (s(cursor + 3) & 0xFF)
+  }
+
+  private def get5bytesAsLong: Long = {
+    ensure(5)
+    ((s(cursor) & 0xFFL) << 32) |
+      ((s(cursor + 1) & 0xFFL) << 24) |
+      ((s(cursor + 2) & 0xFFL) << 16) |
+      ((s(cursor + 3) & 0xFFL) << 8) |
+      (s(cursor + 4) & 0xFFL)
   }
 
   def scanTrue: Unit = {
@@ -297,8 +307,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   }
 
   def scanFalse: Unit = {
-    ensure(5)
-    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e') {
+    if (get5bytesAsLong == FALSE) {
       cursor += 5
       eventHandler.booleanValue(s, false, cursor - 5, cursor)
     } else {
@@ -391,10 +400,10 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
     val ch                = s(cursor)
     val first5bit         = (ch & 0xF8) >> 3
     val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+    val pos               = (ch & 0xF0) >> (4 - 1)
+    val mask              = 0x03L << pos
+    val utf8len           = (utf8CharLenTable & mask) >> pos
     if (isValidUtf8Header != 0L) {
-      val pos     = (ch & 0xF0) >> (4 - 1)
-      val mask    = 0x03L << pos
-      val utf8len = (utf8CharLenTable & mask) >> pos
       cursor += 1
       scanUtf8Body(utf8len.toInt)
     } else {
