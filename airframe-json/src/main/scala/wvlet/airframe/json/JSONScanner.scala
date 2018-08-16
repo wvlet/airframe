@@ -396,21 +396,6 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
     }
   }
 
-  def scanUtf8: Unit = {
-    val ch                = s(cursor)
-    val first5bit         = (ch & 0xF8) >> 3
-    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
-    val pos               = (ch & 0xF0) >> (4 - 1)
-    val mask              = 0x03L << pos
-    val utf8len           = (utf8CharLenTable & mask) >> pos
-    if (isValidUtf8Header != 0L) {
-      cursor += 1
-      scanUtf8Body(utf8len.toInt)
-    } else {
-      throw unexpected("utf8")
-    }
-  }
-
   def scanUtf8_slow: Unit = {
     // utf-8: 0020 ... 10ffff
     val ch = s(cursor)
@@ -430,6 +415,21 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
       // 11110xxx
       cursor += 1
       scanUtf8Body(3)
+    } else {
+      throw unexpected("utf8")
+    }
+  }
+
+  def scanUtf8: Unit = {
+    val ch                = s(cursor)
+    val first5bit         = (ch & 0xF8) >> 3
+    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+    val pos               = (ch & 0xF0) >> (4 - 1)
+    val mask              = 0x03L << pos
+    val utf8len           = (utf8CharLenTable & mask) >> pos
+    if (isValidUtf8Header != 0L) {
+      cursor += 1
+      scanUtf8Body(utf8len.toInt)
     } else {
       throw unexpected("utf8")
     }
