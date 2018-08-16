@@ -131,7 +131,8 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   jdbc,
   msgpackJVM,
   stream,
-  http
+  http,
+  jsonJVM
 )
 
 // JVM projects that cannot be build in Scala 2.13
@@ -147,7 +148,8 @@ lazy val jsProjects: Seq[ProjectReference] = List(
   airframeSpecJS,
   controlJS,
   metricsJS,
-  msgpackJS
+  msgpackJS,
+  jsonJS
 )
 
 // For Scala 2.12
@@ -553,3 +555,18 @@ lazy val finagle =
       )
     )
     .dependsOn(http, airframeSpecJVM % "test")
+
+lazy val json =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-json"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-json",
+      description := "JSON pull parser"
+    )
+    .jsSettings(jsBuildSettings)
+    .dependsOn(log, airframeSpec % "test")
+
+lazy val jsonJVM = json.jvm
+lazy val jsonJS = json.js
