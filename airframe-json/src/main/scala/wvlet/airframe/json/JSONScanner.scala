@@ -108,7 +108,12 @@ class JSONEventHandler extends LogSupport {
   def numberValue(s: Array[Byte], start: Int, end: Int): Unit = {
     info(s"number value: [${start}, ${end}) ${extract(s, start, end)}")
   }
-
+  def booleanValue(s: Array[Byte], v: Boolean, start: Int, end: Int): Unit = {
+    info(s"boolean value: [${start}, ${end}) ${extract(s, start, end)}")
+  }
+  def nullValue(s: Array[Byte], start: Int, end: Int): Unit = {
+    info(s"null value: [${start}, ${end}) ${extract(s, start, end)}")
+  }
 }
 
 class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSupport {
@@ -233,6 +238,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   def scanTrue: Unit = {
     if (get4bytesAsInt == TRUE) {
       cursor += 4
+      eventHandler.booleanValue(s, true, cursor - 4, cursor)
     } else {
       throw unexpected("true")
     }
@@ -240,8 +246,9 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
 
   def scanFalse: Unit = {
     ensure(5)
-    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e'.toByte) {
+    if (get4bytesAsInt == FALS_E && s(cursor + 4) == 'e') {
       cursor += 5
+      eventHandler.booleanValue(s, false, cursor - 5, cursor)
     } else {
       throw unexpected("false")
     }
@@ -251,6 +258,7 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
     ensure(4)
     if (get4bytesAsInt == NULL) {
       cursor += 4
+      eventHandler.nullValue(s, cursor - 4, cursor)
     } else {
       throw unexpected("null")
     }
