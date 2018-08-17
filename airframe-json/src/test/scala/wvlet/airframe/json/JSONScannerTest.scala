@@ -26,6 +26,11 @@ class JSONScannerTest extends AirframeSpec {
   }
 
   "JSONScanner" should {
+    "extract string" in {
+      val s = JSONSource.fromString("""[1, 2, 3]""")
+      s.substring(1, 2) shouldBe "1"
+    }
+
     "parse JSON" in {
       scan("{}")
       scan("[]")
@@ -37,7 +42,7 @@ class JSONScannerTest extends AirframeSpec {
       scan("[true, false, null]")
       scan("""{"elem":[0, 1], "data":{"id":"0x0x", "val":0.1234}}""")
 
-      scan(s"""["\u0fA9\u0123", "\u0123"]""")
+      scan(s"""["\\u0fA9\\u0123", "\\u0123"]""")
     }
 
     "throw unexpected error" in {
@@ -53,9 +58,21 @@ class JSONScannerTest extends AirframeSpec {
       intercept[UnexpectedToken] {
         scan("""{"id" "name"]""") // colon expected
       }
-//      intercept[UnexpectedToken] {
-//        scan("""["\\u000"]""") // too small hex
-//      }
+      intercept[UnexpectedToken] {
+        scan("""0""") // json obj or array expected
+      }
+      intercept[UnexpectedToken] {
+        scan("""[trux]""") //
+      }
+      intercept[UnexpectedToken] {
+        scan("""[falsx]""") //
+      }
+      intercept[UnexpectedToken] {
+        scan("""[nult]""") //
+      }
+      intercept[UnexpectedToken] {
+        scan("[\"\\u000\"]") // too small hex
+      }
     }
 
     "throw EOF" in {
