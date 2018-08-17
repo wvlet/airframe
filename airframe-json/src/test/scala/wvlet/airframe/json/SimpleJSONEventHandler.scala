@@ -19,6 +19,8 @@ import wvlet.log.LogSupport
   *
   */
 object SimpleJSONEventHandler extends JSONEventHandler with LogSupport {
+  def startJson(s: JSONSource, start: Int) {}
+  def endJson(s: JSONSource, start: Int) {}
   def startObject(s: JSONSource, start: Int): Unit = {
     debug(s"start obj: ${start}")
   }

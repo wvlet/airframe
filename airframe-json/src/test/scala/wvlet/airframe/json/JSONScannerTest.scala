@@ -36,11 +36,25 @@ class JSONScannerTest extends AirframeSpec {
       scan("[0, 1, -1, -1.0, 1.0123, 1.11, 10.234, 1.0e-10, 1.123e+10, 12.3E50]")
       scan("[true, false, null]")
       scan("""{"elem":[0, 1], "data":{"id":"0x0x", "val":0.1234}}""")
+
+      //scan(s"""[\\u0fA9]""")
     }
 
     "throw unexpected error" in {
       intercept[UnexpectedToken] {
         scan("{13}")
+      }
+      intercept[UnexpectedToken] {
+        scan("""["\k"]""") // unknown escape
+      }
+      intercept[UnexpectedToken] {
+        scan("""[0 1]""") // comma expected
+      }
+      intercept[UnexpectedToken] {
+        scan("""{"id" "name"]""") // colon expected
+      }
+      intercept[UnexpectedToken] {
+        scan("""[\\u000]""") // too small hex
       }
     }
 
@@ -48,6 +62,15 @@ class JSONScannerTest extends AirframeSpec {
       // workaround: Scala.js throws UndefinedBehaviorError if ArrayIndexOutOfBoundsException is thrown
       intercept[Throwable] {
         scan("{")
+      }
+      intercept[UnexpectedEOF] {
+        scan("""[tru]""") // too small boolean
+      }
+      intercept[UnexpectedEOF] {
+        scan("""[fa]""") // too small boolean
+      }
+      intercept[UnexpectedEOF] {
+        scan("""[nul]""") // insufficient null token
       }
     }
 

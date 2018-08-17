@@ -16,6 +16,8 @@ package wvlet.airframe.json
 import wvlet.log.LogSupport
 
 trait JSONEventHandler {
+  def startJson(s: JSONSource, start: Int): Unit
+  def endJson(s: JSONSource, start: Int): Unit
   def startObject(s: JSONSource, start: Int): Unit
   def endObject(s: JSONSource, start: Int, end: Int, numElem: Int)
   def startArray(s: JSONSource, start: Int): Unit

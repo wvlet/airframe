@@ -21,8 +21,8 @@ import java.nio.charset.StandardCharsets
   */
 object JSONSource {
 
-  def fromString(s: String)                             = fromBytes(s.getBytes(StandardCharsets.UTF_8))
-  def fromBytes(b: Array[Byte])                         = new ByteArrayJSONSource(b, 0, b.length)
+  def fromString(s: String): ByteArrayJSONSource        = fromBytes(s.getBytes(StandardCharsets.UTF_8))
+  def fromBytes(b: Array[Byte]): ByteArrayJSONSource    = fromBytes(b, 0, b.length)
   def fromBytes(b: Array[Byte], offset: Int, size: Int) = new ByteArrayJSONSource(b, offset, size)
   def fromByteBuffer(b: ByteBuffer)                     = new ByteBufferJSONSource(b)
 }

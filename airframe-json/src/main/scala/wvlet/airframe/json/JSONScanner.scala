@@ -174,6 +174,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
   def scan: Unit = {
     try {
       skipWhiteSpaces
+      eventHandler.startJson(s, cursor)
       s(cursor) match {
         case LBracket =>
           scanObject
@@ -182,6 +183,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         case other =>
           throw unexpected("object or array")
       }
+      eventHandler.endJson(s, cursor)
     } catch {
       case e: ArrayIndexOutOfBoundsException =>
         throw new UnexpectedEOF(line, cursor - lineStartPos, cursor, s"Unexpected EOF")
@@ -223,6 +225,8 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         scanDigits
         scanFrac
         scanExp
+      case _ =>
+      // non number char
     }
     val numberEnd = cursor
     eventHandler.numberValue(s, numberStart, numberEnd)
@@ -385,29 +389,29 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanUtf8_slow: Unit = {
-    // utf-8: 0020 ... 10ffff
-    val ch = s(cursor)
-    val b1 = ch & 0xFF
-    if ((b1 & 0x80) == 0 && ch >= 0x20) {
-      // 0xxxxxxx
-      cursor += 1
-    } else if ((b1 & 0xE0) == 0xC0) {
-      // 110xxxxx
-      cursor += 1
-      scanUtf8Body(1)
-    } else if ((b1 & 0xF0) == 0xE0) {
-      // 1110xxxx
-      cursor += 1
-      scanUtf8Body(2)
-    } else if ((b1 & 0xF8) == 0xF0) {
-      // 11110xxx
-      cursor += 1
-      scanUtf8Body(3)
-    } else {
-      throw unexpected("utf8")
-    }
-  }
+//  def scanUtf8_slow: Unit = {
+//    // utf-8: 0020 ... 10ffff
+//    val ch = s(cursor)
+//    val b1 = ch & 0xFF
+//    if ((b1 & 0x80) == 0 && ch >= 0x20) {
+//      // 0xxxxxxx
+//      cursor += 1
+//    } else if ((b1 & 0xE0) == 0xC0) {
+//      // 110xxxxx
+//      cursor += 1
+//      scanUtf8Body(1)
+//    } else if ((b1 & 0xF0) == 0xE0) {
+//      // 1110xxxx
+//      cursor += 1
+//      scanUtf8Body(2)
+//    } else if ((b1 & 0xF8) == 0xF0) {
+//      // 11110xxx
+//      cursor += 1
+//      scanUtf8Body(3)
+//    } else {
+//      throw unexpected("utf8")
+//    }
+//  }
 
   def scanUtf8: Unit = {
     val ch = s(cursor)
