@@ -566,7 +566,8 @@ lazy val json =
       description := "JSON pull parser",
       libraryDependencies ++= Seq(
         "org.json4s" %% "json4s-native" % "3.5.4",
-        "org.json4s" %% "json4s-jackson" % "3.5.4"
+        "org.json4s" %% "json4s-jackson" % "3.5.4",
+        "com.lihaoyi" %% "ujson" % "0.6.6"
       )
     )
     .jsSettings(jsBuildSettings)

@@ -153,7 +153,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
   private def skipWhiteSpaces: Unit = {
     var toContinue = true
     while (toContinue && cursor < s.length) {
-      var ch = s(cursor)
+      val ch = s(cursor)
       ch match {
         case WS | WS_T | WS_R | WS_N =>
           cursor += 1

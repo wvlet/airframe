@@ -30,7 +30,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
       val jsonBytes      = json.getBytes(StandardCharsets.UTF_8)
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
 
-      time("twitter.json", repeat = 10, blockRepeat = 10) {
+      time("twitter.json", repeat = 10, blockRepeat = 1) {
         block("airframe (string)    ") {
           JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
         }
@@ -45,6 +45,12 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
         }
         block("json4s 3.5.4 (jackson)") {
           org.json4s.jackson.JsonMethods.parse(json)
+        }
+        block("uJson (string)        ") {
+          ujson.read(json)
+        }
+        block("uJson (byte array)    ") {
+          ujson.read(jsonBytes)
         }
       }
     }
