@@ -77,43 +77,10 @@ abstract class JSONParseException(m: String)     extends Exception(m)
 class UnexpectedToken(pos: Int, message: String) extends JSONParseException(message)
 class UnexpectedEOF(pos: Int, message: String)   extends JSONParseException(message)
 
-class JSONEventHandler extends LogSupport {
-
-  def extract(s: Array[Byte], start: Int, end: Int): String = {
-    new String(s, start, end - start)
-  }
-
-  def startObject(s: Array[Byte], start: Int): Unit = {
-    info(s"start obj: ${start}")
-  }
-
-  def endObject(s: Array[Byte], start: Int, end: Int, numElem: Int): Unit = {
-    info(s"end obj: [${start},${end}),  num elems:${numElem}")
-  }
-  def startArray(s: Array[Byte], start: Int): Unit = {
-    info(s"start array: ${start}")
-  }
-  def endArray(s: Array[Byte], start: Int, end: Int, numElem: Int): Unit = {
-    info(s"end array: [${start},${end}), num elems:${numElem}")
-  }
-  def stringValue(s: Array[Byte], start: Int, end: Int): Unit = {
-    info(s"string value: [${start},${end}) ${extract(s, start, end)}")
-  }
-  def numberValue(s: Array[Byte], start: Int, end: Int): Unit = {
-    info(s"number value: [${start}, ${end}) ${extract(s, start, end)}")
-  }
-  def booleanValue(s: Array[Byte], v: Boolean, start: Int, end: Int): Unit = {
-    info(s"boolean value: [${start}, ${end}) ${extract(s, start, end)}")
-  }
-  def nullValue(s: Array[Byte], start: Int, end: Int): Unit = {
-    info(s"null value: [${start}, ${end}) ${extract(s, start, end)}")
-  }
-}
-
 object JSONScanner {
 
   def scan(s: String, handler: JSONEventHandler): Unit = {
-    val scanner = new JSONScanner(s.getBytes("UTF-8"), handler)
+    val scanner = new JSONScanner(JSONSource.fromBytes(s.getBytes("UTF-8")), handler)
     scanner.scan
   }
 
@@ -162,7 +129,7 @@ object JSONScanner {
   }
 }
 
-class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSupport {
+class JSONScanner(s: ByteArrayJSONSource, eventHandler: JSONEventHandler) extends LogSupport {
   private var cursor: Int       = 0
   private var lineStartPos: Int = 0
   private var line: Int         = 0
@@ -421,17 +388,22 @@ class JSONScanner(s: Array[Byte], eventHandler: JSONEventHandler) extends LogSup
   }
 
   def scanUtf8: Unit = {
-    val ch                = s(cursor)
-    val first5bit         = (ch & 0xF8) >> 3
-    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
-    val pos               = (ch & 0xF0) >> (4 - 1)
-    val mask              = 0x03L << pos
-    val utf8len           = (utf8CharLenTable & mask) >> pos
-    if (isValidUtf8Header != 0L) {
+    val ch = s(cursor)
+    if (ch <= 0x7F && ch >= 0x20) {
+      // Fast path for 1-byte utf8 chars
       cursor += 1
-      scanUtf8Body(utf8len.toInt)
     } else {
-      throw unexpected("utf8")
+      val first5bit         = (ch & 0xF8) >> 3
+      val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+      val pos               = (ch & 0xF0) >> (4 - 1)
+      val mask              = 0x03L << pos
+      val utf8len           = (utf8CharLenTable & mask) >> pos
+      if (isValidUtf8Header != 0L) {
+        cursor += 1
+        scanUtf8Body(utf8len.toInt)
+      } else {
+        throw unexpected("utf8")
+      }
     }
   }
 

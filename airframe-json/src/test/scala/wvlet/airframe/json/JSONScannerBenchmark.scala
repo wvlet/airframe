@@ -24,7 +24,7 @@ class JSONScannerBenchmark extends AirframeSpec {
 
     "parse twitter.json" in {
       val json = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
-      JSONScanner.scan(json, new JSONEventHandler)
+      JSONScanner.scan(json, SimpleJSONEventHandler)
     }
   }
 

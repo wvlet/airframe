@@ -22,8 +22,7 @@ class JSONScannerTest extends AirframeSpec {
 
   def scan(json: String): Unit = {
     info(s"scan: ${json}")
-    val handler = new JSONEventHandler
-    JSONScanner.scan(json, handler)
+    JSONScanner.scan(json, SimpleJSONEventHandler)
   }
 
   "JSONScanner" should {
