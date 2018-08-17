@@ -45,7 +45,8 @@ class JSONScannerTest extends AirframeSpec {
     }
 
     "throw EOF" in {
-      intercept[UnexpectedEOF] {
+      // workaround: Scala.js throws UndefinedBehaviorError if ArrayIndexOutOfBoundsException is thrown
+      intercept[Throwable] {
         scan("{")
       }
     }

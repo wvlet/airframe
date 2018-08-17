@@ -15,9 +15,8 @@ package wvlet.airframe.json
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
-
 import wvlet.airframe.AirframeSpec
-import wvlet.log.io.{IOUtil, StopWatch, Timer}
+import wvlet.log.io.{IOUtil, Timer}
 
 /**
   *

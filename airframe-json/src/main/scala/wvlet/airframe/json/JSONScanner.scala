@@ -180,7 +180,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         case LSquare =>
           scanArray
         case other =>
-          throw unexpected("object")
+          throw unexpected("object or array")
       }
     } catch {
       case e: ArrayIndexOutOfBoundsException =>
