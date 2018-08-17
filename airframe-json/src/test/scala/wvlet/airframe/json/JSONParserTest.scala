@@ -23,14 +23,14 @@ class JSONParserTest extends AirframeSpec {
 
   def parse(s: String): JSONValue = {
     val v = JSON.parse(JSONSource.fromString(s))
-    info(s"parse ${s}: ${v}")
+    debug(s"parse ${s}: ${v}")
     v
   }
 
   "JSONParser" should {
     "parser json string" in {
       parse("{}")
-      parse("""{"id":1, "name":"leo", "value":0.1}""")
+      parse("""{"id":1, "name":"leo", "value":0.1, "num":10000000000000000000000000}""")
     }
   }
 }

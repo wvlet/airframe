@@ -19,6 +19,7 @@ import wvlet.airframe.json.JSON._
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
+import scala.util.Try
 
 /**
   *
@@ -89,9 +90,15 @@ private class JSONParser(s: JSONSource) extends JSONEventHandler {
     if (JSONParser.fracDelimiters.matcher(v).find()) {
       stack.head += JSONDouble(v.toDouble)
     } else {
-      stack.head += JSONLong(v.toLong)
+      Try(JSONLong(v.toLong))
+        .recover {
+          case e: NumberFormatException =>
+            JSONDouble(v.toDouble)
+        }
+        .map(stack.head += _)
     }
   }
+
   override def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
     stack.head += (if (v) JSONTrue else JSONFalse)
   }
