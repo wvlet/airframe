@@ -73,10 +73,6 @@ object JSONEvent {
 
 }
 
-abstract class JSONParseException(m: String)     extends Exception(m)
-class UnexpectedToken(pos: Int, message: String) extends JSONParseException(message)
-class UnexpectedEOF(pos: Int, message: String)   extends JSONParseException(message)
-
 object JSONScanner {
 
   def scan(s: JSONSource, handler: JSONEventHandler): Unit = {
@@ -169,20 +165,26 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 
   private def unexpected(expected: String): Exception = {
     val char = s(cursor)
-    new UnexpectedToken(
-      cursor,
-      f"found '${String.valueOf(char.toChar)}' 0x${char}%02x at ${line}(${cursor - lineStartPos}), expected: ${expected}")
+    new UnexpectedToken(line,
+                        cursor - lineStartPos,
+                        cursor,
+                        f"Found '${String.valueOf(char.toChar)}' 0x${char}%02x. expected: ${expected}")
   }
 
   def scan: Unit = {
-    skipWhiteSpaces
-    s(cursor) match {
-      case LBracket =>
-        scanObject
-      case LSquare =>
-        scanArray
-      case other =>
-        throw unexpected("object")
+    try {
+      skipWhiteSpaces
+      s(cursor) match {
+        case LBracket =>
+          scanObject
+        case LSquare =>
+          scanArray
+        case other =>
+          throw unexpected("object")
+      }
+    } catch {
+      case e: ArrayIndexOutOfBoundsException =>
+        throw new UnexpectedEOF(line, cursor - lineStartPos, cursor, s"Unexpected EOF")
     }
   }
 
@@ -260,7 +262,10 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 
   private def ensure(length: Int): Unit = {
     if (cursor + length >= s.length) {
-      throw new UnexpectedEOF(cursor, s"expected having ${length} characters, but ${s.length - cursor} is left")
+      throw new UnexpectedEOF(line,
+                              cursor - lineStartPos,
+                              cursor,
+                              s"Expected having ${length} characters, but ${s.length - cursor} is left")
     }
   }
 

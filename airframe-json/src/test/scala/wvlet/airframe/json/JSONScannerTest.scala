@@ -21,7 +21,7 @@ import wvlet.airframe.AirframeSpec
 class JSONScannerTest extends AirframeSpec {
 
   def scan(json: String): Unit = {
-    info(s"scan: ${json}")
+    debug(s"scan: ${json}")
     JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
   }
 
@@ -34,6 +34,20 @@ class JSONScannerTest extends AirframeSpec {
       scan("""{"id":1, "name":"leo"}""")
 
       scan("[0, 1, -1, -1.0, 1.0123, 1.11, 10.234, 1.0e-10, 1.123e+10, 12.3E50]")
+      scan("[true, false, null]")
+      scan("""{"elem":[0, 1], "data":{"id":"0x0x", "val":0.1234}}""")
+    }
+
+    "throw unexpected error" in {
+      intercept[UnexpectedToken] {
+        scan("{13}")
+      }
+    }
+
+    "throw EOF" in {
+      intercept[UnexpectedEOF] {
+        scan("{")
+      }
     }
 
   }
