@@ -563,7 +563,11 @@ lazy val json =
     .settings(buildSettings)
     .settings(
       name := "airframe-json",
-      description := "JSON pull parser"
+      description := "JSON pull parser",
+      libraryDependencies ++= Seq(
+        "org.json4s" %% "json4s-native" % "3.5.4",
+        "org.json4s" %% "json4s-jackson" % "3.5.4"
+      )
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")

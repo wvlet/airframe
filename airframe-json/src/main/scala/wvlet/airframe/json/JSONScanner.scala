@@ -110,6 +110,19 @@ object JSONScanner {
     l
   }
 
+  private[json] val whiteSpaceBitVector: Array[Long] = {
+    var b = new Array[Long](256 / 64)
+    for (i <- 0 until 256) {
+      import JSONToken._
+      i match {
+        case WS | WS_T | WS_R | WS_N =>
+          b(i / 64) |= (1L << (i % 64))
+        case _ =>
+      }
+    }
+    b
+  }
+
   private def utf8CharLen(code: Int): Int = {
     val i = code & 0xFF
     if ((i & 0x80) == 0) {
@@ -134,19 +147,23 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
   private var lineStartPos: Int = 0
   private var line: Int         = 0
 
-  import JSONEvent._
   import JSONToken._
   import JSONScanner._
 
   private def skipWhiteSpaces: Unit = {
-    var ch = s(cursor)
-    while (cursor < s.length && (ch == WS || ch == WS_T | ch == WS_N | ch == WS_R)) {
-      cursor += 1
-      if (ch == WS_N) {
-        line += 1
-        lineStartPos = cursor
+    var toContinue = true
+    while (toContinue && cursor < s.length) {
+      var ch = s(cursor)
+      ch match {
+        case WS | WS_T | WS_R | WS_N =>
+          cursor += 1
+          if (ch == WS_N) {
+            line += 1
+            lineStartPos = cursor
+          }
+        case _ =>
+          toContinue = false
       }
-      ch = s(cursor)
     }
   }
 
