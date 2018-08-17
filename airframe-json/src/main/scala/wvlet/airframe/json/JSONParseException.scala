@@ -17,7 +17,10 @@ package wvlet.airframe.json
   *
   */
 abstract class JSONParseException(m: String) extends Exception(m)
+
 class UnexpectedToken(line: Int, column: Int, pos: Int, message: String)
     extends JSONParseException(s"line:${line}, column:${column}: ${message}")
 class UnexpectedEOF(line: Int, column: Int, pos: Int, message: String)
     extends JSONParseException(s"line:${line}, column:${column}: ${message}")
+
+class InvalidJSONObject(messsage: String) extends JSONParseException(messsage)
