@@ -565,13 +565,14 @@ lazy val json =
       name := "airframe-json",
       description := "JSON pull parser",
       libraryDependencies ++= Seq(
-        "org.json4s" %% "json4s-native" % "3.5.4",
-        "org.json4s" %% "json4s-jackson" % "3.5.4",
-        "com.lihaoyi" %% "ujson" % "0.6.6"
+        // Used only for benchmark purpose
+//        "org.json4s" %% "json4s-native" % "3.5.4",
+//        "org.json4s" %% "json4s-jackson" % "3.5.4",
+//        "com.lihaoyi" %% "ujson" % "0.6.6"
       )
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")
 
 lazy val jsonJVM = json.jvm
-lazy val jsonJS = json.js
+lazy val jsonJS  = json.js

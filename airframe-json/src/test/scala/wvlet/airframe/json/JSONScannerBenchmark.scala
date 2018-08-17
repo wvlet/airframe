@@ -37,21 +37,22 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
         block("airframe (byte buffer)") {
           JSONScanner.scan(JSONSource.fromByteBuffer(jsonByteBuffer), SimpleJSONEventHandler)
         }
-        block("json4s 3.5.4 (native)") {
-          org.json4s.native.JsonMethods.parse(json)
-        }
         block("airframe (byte array)") {
           JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
         }
-        block("json4s 3.5.4 (jackson)") {
-          org.json4s.jackson.JsonMethods.parse(json)
-        }
-        block("uJson (string)        ") {
-          ujson.read(json)
-        }
-        block("uJson (byte array)    ") {
-          ujson.read(jsonBytes)
-        }
+//        // Excluded for supporting muiltiple Scala versions
+//        block("json4s 3.5.4 (native)") {
+//          org.json4s.native.JsonMethods.parse(json)
+//        }
+//        block("json4s 3.5.4 (jackson)") {
+//          org.json4s.jackson.JsonMethods.parse(json)
+//        }
+//        block("uJson (string)        ") {
+//          ujson.read(json)
+//        }
+//        block("uJson (byte array)    ") {
+//          ujson.read(jsonBytes)
+//        }
       }
     }
   }
