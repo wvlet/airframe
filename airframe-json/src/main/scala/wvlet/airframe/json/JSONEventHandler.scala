@@ -26,30 +26,3 @@ trait JSONEventHandler {
   def numberValue(s: JSONSource, start: Int, end: Int): Unit
   def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int)
 }
-
-object SimpleJSONEventHandler extends JSONEventHandler with LogSupport {
-  def startObject(s: JSONSource, start: Int): Unit = {
-    info(s"start obj: ${start}")
-  }
-  def endObject(s: JSONSource, start: Int, end: Int, numElem: Int): Unit = {
-    info(s"end obj: [${start},${end}),  num elems:${numElem}")
-  }
-  def startArray(s: JSONSource, start: Int): Unit = {
-    info(s"start array: ${start}")
-  }
-  def endArray(s: JSONSource, start: Int, end: Int, numElem: Int): Unit = {
-    info(s"end array: [${start},${end}), num elems:${numElem}")
-  }
-  def stringValue(s: JSONSource, start: Int, end: Int): Unit = {
-    info(s"string value: [${start},${end}) ${s.substring(start, end)}")
-  }
-  def numberValue(s: JSONSource, start: Int, end: Int): Unit = {
-    info(s"number value: [${start}, ${end}) ${s.substring(start, end)}")
-  }
-  def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
-    info(s"boolean value: [${start}, ${end}) ${s.substring(start, end)}")
-  }
-  def nullValue(s: JSONSource, start: Int, end: Int): Unit = {
-    info(s"null value: [${start}, ${end}) ${s.substring(start, end)}")
-  }
-}

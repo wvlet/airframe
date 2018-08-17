@@ -79,8 +79,8 @@ class UnexpectedEOF(pos: Int, message: String)   extends JSONParseException(mess
 
 object JSONScanner {
 
-  def scan(s: String, handler: JSONEventHandler): Unit = {
-    val scanner = new JSONScanner(JSONSource.fromBytes(s.getBytes("UTF-8")), handler)
+  def scan(s: JSONSource, handler: JSONEventHandler): Unit = {
+    val scanner = new JSONScanner(s, handler)
     scanner.scan
   }
 
@@ -129,7 +129,7 @@ object JSONScanner {
   }
 }
 
-class JSONScanner(s: ByteArrayJSONSource, eventHandler: JSONEventHandler) extends LogSupport {
+class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupport {
   private var cursor: Int       = 0
   private var lineStartPos: Int = 0
   private var line: Int         = 0

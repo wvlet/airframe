@@ -13,18 +13,34 @@
  */
 package wvlet.airframe.json
 
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+
 import wvlet.airframe.AirframeSpec
-import wvlet.log.io.IOUtil
+import wvlet.log.io.{IOUtil, StopWatch, Timer}
 
 /**
   *
   */
-class JSONScannerBenchmark extends AirframeSpec {
+class JSONScannerBenchmark extends AirframeSpec with Timer {
   "JSONScannerBenchmarhk" should {
 
     "parse twitter.json" in {
-      val json = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
-      JSONScanner.scan(json, SimpleJSONEventHandler)
+      val json           = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+      val jsonBytes      = json.getBytes(StandardCharsets.UTF_8)
+      val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
+
+      time("twitter.json", repeat = 10, blockRepeat = 10) {
+        block("string") {
+          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
+        }
+        block("byte array") {
+          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+        }
+        block("byte buffer") {
+          JSONScanner.scan(JSONSource.fromByteBuffer(jsonByteBuffer), SimpleJSONEventHandler)
+        }
+      }
     }
   }
 

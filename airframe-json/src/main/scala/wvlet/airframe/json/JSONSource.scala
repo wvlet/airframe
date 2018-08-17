@@ -13,12 +13,18 @@
  */
 package wvlet.airframe.json
 
+import java.nio.ByteBuffer
+import java.nio.charset.StandardCharsets
+
 /**
   *
   */
 object JSONSource {
+
+  def fromString(s: String)                             = fromBytes(s.getBytes(StandardCharsets.UTF_8))
   def fromBytes(b: Array[Byte])                         = new ByteArrayJSONSource(b, 0, b.length)
   def fromBytes(b: Array[Byte], offset: Int, size: Int) = new ByteArrayJSONSource(b, offset, size)
+  def fromByteBuffer(b: ByteBuffer)                     = new ByteBufferJSONSource(b)
 }
 
 trait JSONSource {
@@ -37,4 +43,21 @@ class ByteArrayJSONSource(b: Array[Byte], offset: Int, val size: Int) extends JS
     b(index + offset)
   }
   override def substring(start: Int, end: Int): String = new String(b, offset + start, end - start)
+}
+
+class ByteBufferJSONSource(b: ByteBuffer) extends JSONSource {
+  private val offset = b.position()
+  val size           = b.limit() - offset
+
+  def apply(index: Int): Byte = {
+    b.get(index + offset)
+  }
+  override def substring(start: Int, end: Int): String = {
+    val s          = new Array[Byte](end - start)
+    val currentPos = b.position()
+    b.get(s, 0, s.length)
+    b.position(currentPos)
+    new String(s, 0, s.length, StandardCharsets.UTF_8)
+  }
+
 }
