@@ -23,7 +23,8 @@ class MessageCodecTest extends AirframeSpec {
   "MessageCodec" should {
 
     "have surface" in {
-      info(LongCodec.surface)
+      val l = LongCodec.surface
+      debug(l)
     }
 
   }

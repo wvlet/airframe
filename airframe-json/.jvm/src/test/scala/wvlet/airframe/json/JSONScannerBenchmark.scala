@@ -22,10 +22,11 @@ import wvlet.log.io.{IOUtil, Timer}
   *
   */
 class JSONScannerBenchmark extends AirframeSpec with Timer {
-  "JSONScannerBenchmarhk" should {
 
+  val json = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+
+  "JSONScannerBenchmarhk" should {
     "parse twitter.json" in {
-      val json           = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
       val jsonBytes      = json.getBytes(StandardCharsets.UTF_8)
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
 
@@ -38,6 +39,9 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
         }
         block("airframe (byte array)") {
           JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+        }
+        block("airframe json parser ") {
+          JSON.parse(jsonBytes)
         }
 //        // Excluded for supporting muiltiple Scala versions
 //        block("json4s 3.5.4 (native)") {
@@ -53,6 +57,10 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
 //          ujson.read(jsonBytes)
 //        }
       }
+    }
+
+    "parser twiter.json as JSONValue" in {
+      val j = JSON.parse(json)
     }
   }
 

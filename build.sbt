@@ -466,7 +466,7 @@ lazy val codec =
         "org.scalacheck" %% "scalacheck"  % SCALACHECK_VERSION % "test"
       )
     )
-    .dependsOn(logJVM, surfaceJVM, msgpackJVM, airframeSpecJVM % "test")
+    .dependsOn(logJVM, surfaceJVM, msgpackJVM, jsonJVM, airframeSpecJVM % "test")
 
 lazy val tablet =
   project
@@ -478,8 +478,6 @@ lazy val tablet =
       libraryDependencies ++= Seq(
         // scala-csv doesn't support Scala 2.13 yet
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
-        // For JSON parser
-        "org.json4s" %% "json4s-native" % "3.5.4",
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",

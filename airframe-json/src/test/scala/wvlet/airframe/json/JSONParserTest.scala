@@ -13,14 +13,24 @@
  */
 package wvlet.airframe.json
 
+import wvlet.airframe.AirframeSpec
+import wvlet.airframe.json.JSON.JSONValue
+
 /**
   *
   */
-abstract class JSONParseException(m: String) extends Exception(m)
+class JSONParserTest extends AirframeSpec {
 
-class UnexpectedToken(line: Int, column: Int, pos: Int, message: String)
-    extends JSONParseException(s"line:${line}, column:${column}: ${message}")
-class UnexpectedEOF(line: Int, column: Int, pos: Int, message: String)
-    extends JSONParseException(s"line:${line}, column:${column}: ${message}")
+  def parse(s: String): JSONValue = {
+    val v = JSON.parse(JSONSource.fromString(s))
+    debug(s"parse ${s}: ${v}")
+    v
+  }
 
-class InvalidJSONObject(messsage: String) extends JSONParseException(messsage)
+  "JSONParser" should {
+    "parser json string" in {
+      parse("{}")
+      parse("""{"id":1, "name":"leo", "value":0.1, "num":10000000000000000000000000}""")
+    }
+  }
+}

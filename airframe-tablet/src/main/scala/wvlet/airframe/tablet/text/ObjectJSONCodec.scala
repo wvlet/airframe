@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{MessageCodec, MessageHolder, ObjectCodec}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder, ObjectCodec}
 import wvlet.airframe.tablet.MessagePackRecord
 import wvlet.surface
 

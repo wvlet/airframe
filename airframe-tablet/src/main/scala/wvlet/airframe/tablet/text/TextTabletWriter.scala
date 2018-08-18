@@ -15,9 +15,8 @@ package wvlet.airframe.tablet.text
 
 import org.msgpack.core.MessageUnpacker
 import org.msgpack.value.ValueType
+import wvlet.airframe.json.JSON
 import wvlet.airframe.tablet.{Record, TabletWriter}
-
-import scala.util.parsing.json.JSONFormat
 
 object TextTabletWriter {
 
@@ -36,7 +35,7 @@ object TextTabletWriter {
   }
 
   object JSONRecordFormatter extends RecordFormatter {
-    override def sanitize(s: String): String         = quote(JSONFormat.quoteString(s))
+    override def sanitize(s: String): String         = quote(JSON.quoteJSONString(s))
     override def sanitizeEmbedded(s: String): String = s
     override def format(record: Seq[String]): String = {
       s"[${record.mkString(",")}]"
