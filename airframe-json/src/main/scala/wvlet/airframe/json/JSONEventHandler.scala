@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.json
 
-import wvlet.log.LogSupport
-
 trait JSONEventHandler {
   def startJson(s: JSONSource, start: Int): Unit
   def endJson(s: JSONSource, start: Int): Unit

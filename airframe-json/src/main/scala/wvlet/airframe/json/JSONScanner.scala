@@ -63,16 +63,6 @@ object JSONToken {
       ('e'.toByte & 0xFFL)
 }
 
-sealed trait JSONEvent
-object JSONEvent {
-
-  case object StartArray  extends JSONEvent
-  case object EndArray    extends JSONEvent
-  case object StartObject extends JSONEvent
-  case object EndObject   extends JSONEvent
-
-}
-
 object JSONScanner {
 
   def scan(s: JSONSource, handler: JSONEventHandler): Unit = {

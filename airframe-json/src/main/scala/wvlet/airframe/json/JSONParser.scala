@@ -16,9 +16,7 @@ package wvlet.airframe.json
 import java.util.regex.Pattern
 
 import wvlet.airframe.json.JSON._
-import wvlet.log.LogSupport
 
-import scala.collection.mutable
 import scala.util.Try
 
 /**
