@@ -44,6 +44,9 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
           JSON.parse(jsonBytes)
         }
 //        // Excluded for supporting muiltiple Scala versions
+//        block("circe                 ") {
+//          io.circe.parser.parse(json)
+//        }
 //        block("json4s 3.5.4 (native)") {
 //          org.json4s.native.JsonMethods.parse(json)
 //        }
