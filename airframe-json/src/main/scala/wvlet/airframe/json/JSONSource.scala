@@ -42,7 +42,8 @@ class ByteArrayJSONSource(b: Array[Byte], offset: Int, val size: Int) extends JS
   def apply(index: Int): Byte = {
     b(index + offset)
   }
-  override def substring(start: Int, end: Int): String = new String(b, offset + start, end - start)
+  override def substring(start: Int, end: Int): String =
+    new String(b, offset + start, end - start, StandardCharsets.UTF_8)
 }
 
 class ByteBufferJSONSource(b: ByteBuffer) extends JSONSource {

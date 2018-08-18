@@ -64,7 +64,7 @@ object JSON {
     }
   }
 
-  case class JSONObject(v: Map[String, JSONValue]) extends JSONValue {
+  case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("{")
