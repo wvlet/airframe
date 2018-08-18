@@ -22,27 +22,27 @@ object SimpleJSONEventHandler extends JSONEventHandler with LogSupport {
   def startJson(s: JSONSource, start: Int) {}
   def endJson(s: JSONSource, start: Int) {}
   def startObject(s: JSONSource, start: Int): Unit = {
-    debug(s"start obj: ${start}")
+    //debug(s"start obj: ${start}")
   }
   def endObject(s: JSONSource, start: Int, end: Int, numElem: Int): Unit = {
-    debug(s"end obj: [${start},${end}),  num elems:${numElem}")
+    //debug(s"end obj: [${start},${end}),  num elems:${numElem}")
   }
   def startArray(s: JSONSource, start: Int): Unit = {
-    debug(s"start array: ${start}")
+    //debug(s"start array: ${start}")
   }
   def endArray(s: JSONSource, start: Int, end: Int, numElem: Int): Unit = {
-    debug(s"end array: [${start},${end}), num elems:${numElem}")
+    //debug(s"end array: [${start},${end}), num elems:${numElem}")
   }
   def stringValue(s: JSONSource, start: Int, end: Int): Unit = {
-    debug(s"string value: [${start},${end}) ${s.substring(start, end)}")
+    //debug(s"string value: [${start},${end}) ${s.substring(start, end)}")
   }
   def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
-    debug(s"number value: [${start}, ${end}) dot:${dotIndex}, exp:${expIndex} ${s.substring(start, end)}")
+    //debug(s"number value: [${start}, ${end}) dot:${dotIndex}, exp:${expIndex} ${s.substring(start, end)}")
   }
   def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
-    debug(s"boolean value: [${start}, ${end}) ${s.substring(start, end)}")
+    //debug(s"boolean value: [${start}, ${end}) ${s.substring(start, end)}")
   }
   def nullValue(s: JSONSource, start: Int, end: Int): Unit = {
-    debug(s"null value: [${start}, ${end}) ${s.substring(start, end)}")
+    //debug(s"null value: [${start}, ${end}) ${s.substring(start, end)}")
   }
 }

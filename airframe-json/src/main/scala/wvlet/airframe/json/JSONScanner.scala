@@ -15,47 +15,47 @@ package wvlet.airframe.json
 
 import wvlet.log.LogSupport
 
-import scala.annotation.tailrec
+import scala.annotation.{switch, tailrec}
 
 object JSONToken {
 
-  val LBracket: Byte = '{'.toByte
-  val RBracket: Byte = '}'.toByte
-  val Comma: Byte    = ','.toByte
+  final val LBracket = '{'
+  final val RBracket = '}'
+  final val Comma    = ','
 
-  val DoubleQuote: Byte = '"'.toByte
-  val Colon: Byte       = ':'.toByte
+  final val DoubleQuote = '"'
+  final val Colon       = ':'
 
-  val Minus: Byte = '-'.toByte
-  val Plus: Byte  = '+'.toByte
-  val Dot: Byte   = '.'.toByte
-  val Exp: Byte   = 'e'.toByte
-  val ExpL: Byte  = 'E'.toByte
+  final val Minus = '-'
+  final val Plus  = '+'
+  final val Dot   = '.'
+  final val Exp   = 'e'
+  final val ExpL  = 'E'
 
-  val LSquare: Byte = '['.toByte
-  val RSquare: Byte = ']'.toByte
+  final val LSquare = '['
+  final val RSquare = ']'
 
-  val WS: Byte   = ' '.toByte
-  val WS_T: Byte = '\t'.toByte
-  val WS_N: Byte = '\n'.toByte
-  val WS_R: Byte = '\r'.toByte
+  final val WS   = ' '
+  final val WS_T = '\t'
+  final val WS_N = '\n'
+  final val WS_R = '\r'
 
-  val Slash: Byte     = '/'.toByte
-  val BackSlash: Byte = '\\'.toByte
+  final val Slash     = '/'
+  final val BackSlash = '\\'
 
-  val TRUE: Int =
+  final val TRUE: Int =
     (('t'.toByte & 0xFF) << 24) |
       (('r'.toByte & 0xFF) << 16) |
       (('u'.toByte & 0xFF) << 8) |
       ('e'.toByte & 0xFF)
 
-  val NULL: Int =
+  final val NULL: Int =
     (('n'.toByte & 0xFF) << 24) |
       (('u'.toByte & 0xFF) << 16) |
       (('l'.toByte & 0xFF) << 8) |
       ('l'.toByte & 0xFF)
 
-  val FALSE: Long =
+  final val FALSE: Long =
     (('f'.toByte & 0xFFL) << 32) |
       (('a'.toByte & 0xFFL) << 24) |
       (('l'.toByte & 0xFFL) << 16) |
@@ -72,7 +72,7 @@ object JSONScanner {
 
   // 2-bit vector of utf8 character length table
   // Using the first 4-bits of an utf8 string
-  private[json] val utf8CharLenTable: Long = {
+  private[json] final val utf8CharLenTable: Long = {
     var l: Long = 0L
     for (i <- 0 until 16) {
       val code = i << 4
@@ -84,7 +84,7 @@ object JSONScanner {
     l
   }
   // Check the valid utf8 by using the first 5-bits of utf8 string
-  private[json] val validUtf8BitVector: Long = {
+  private[json] final val validUtf8BitVector: Long = {
     var l: Long = 0L
     for (i <- 0 until 32) {
       val code = i << 3
@@ -96,7 +96,7 @@ object JSONScanner {
     l
   }
 
-  private[json] val whiteSpaceBitVector: Array[Long] = {
+  private[json] final val whiteSpaceBitVector: Array[Long] = {
     var b = new Array[Long](256 / 64)
     for (i <- 0 until 256) {
       import JSONToken._
@@ -140,13 +140,17 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     var toContinue = true
     while (toContinue && cursor < s.length) {
       val ch = s(cursor)
-      ch match {
-        case WS | WS_T | WS_R | WS_N =>
+      (ch: @switch) match {
+        case WS =>
           cursor += 1
-          if (ch == WS_N) {
-            line += 1
-            lineStartPos = cursor
-          }
+        case WS_T =>
+          cursor += 1
+        case WS_R =>
+          cursor += 1
+        case WS_N =>
+          cursor += 1
+          line += 1
+          lineStartPos = cursor
         case _ =>
           toContinue = false
       }
@@ -180,9 +184,9 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanValue: Unit = {
+  private def scanValue: Unit = {
     skipWhiteSpaces
-    s(cursor) match {
+    (s(cursor): @switch) match {
       case DoubleQuote =>
         scanString
       case LBracket =>
@@ -200,7 +204,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanNumber: Unit = {
+  private def scanNumber: Unit = {
     val numberStart = cursor
     if (s(cursor) == Minus) {
       cursor += 1
@@ -215,7 +219,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
 
     // frac
-    var dotIndex = cursor
+    var dotIndex = -1
     if (s(cursor) == '.') {
       dotIndex = cursor
       cursor += 1
@@ -223,7 +227,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
 
     // exp
-    var expIndex = cursor
+    var expIndex = -1
     s(cursor) match {
       case Exp | ExpL =>
         expIndex = cursor
@@ -242,7 +246,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanDigits: Unit = {
+  private def scanDigits: Unit = {
     var continue = true
     while (continue) {
       s(cursor) match {
@@ -280,7 +284,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
       (s(cursor + 4) & 0xFFL)
   }
 
-  def scanTrue: Unit = {
+  private def scanTrue: Unit = {
     if (get4bytesAsInt == TRUE) {
       cursor += 4
       eventHandler.booleanValue(s, true, cursor - 4, cursor)
@@ -289,7 +293,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanFalse: Unit = {
+  private def scanFalse: Unit = {
     if (get5bytesAsLong == FALSE) {
       cursor += 5
       eventHandler.booleanValue(s, false, cursor - 5, cursor)
@@ -298,7 +302,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanNull: Unit = {
+  private def scanNull: Unit = {
     ensure(4)
     if (get4bytesAsInt == NULL) {
       cursor += 4
@@ -308,7 +312,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  def scanObject: Unit = {
+  private def scanObject: Unit = {
     val objStart = cursor
     eventHandler.startObject(s, objStart)
     var numElem = 0
@@ -330,7 +334,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     eventHandler.endObject(s, objStart, objEnd, numElem)
   }
 
-  def scanArray: Unit = {
+  private def scanArray: Unit = {
     val arrStart = cursor
     eventHandler.startArray(s, arrStart)
     var numElem = 0
@@ -350,32 +354,29 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     eventHandler.endArray(s, arrStart, arrEnd, numElem)
   }
 
-  def scanString: Unit = {
+  private def scanString: Unit = {
     skipWhiteSpaces
     s(cursor) match {
       case DoubleQuote =>
         cursor += 1
         val stringStart = cursor
-        scanStringFragment
+
+        var continue = true
+        while (continue) {
+          val ch = s(cursor)
+          (ch: @switch) match {
+            case DoubleQuote =>
+              cursor += 1
+              continue = false
+            case BackSlash =>
+              scanEscape
+            case _ =>
+              scanUtf8
+          }
+        }
         eventHandler.stringValue(s, stringStart, cursor - 1)
       case _ =>
         throw unexpected("string")
-    }
-  }
-
-  def scanStringFragment: Unit = {
-    var continue = true
-    while (continue) {
-      val ch = s(cursor)
-      ch match {
-        case DoubleQuote =>
-          cursor += 1
-          continue = false
-        case BackSlash =>
-          scanEscape
-        case _ =>
-          scanUtf8
-      }
     }
   }
 
@@ -440,7 +441,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 
   private def scanEscape: Unit = {
     cursor += 1
-    s(cursor) match {
+    (s(cursor): @switch) match {
       case DoubleQuote | BackSlash | Slash | 'b' | 'f' | 'n' | 'r' | 't' =>
         cursor += 1
       case 'u' =>
