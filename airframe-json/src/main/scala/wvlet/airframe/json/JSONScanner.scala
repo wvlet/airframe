@@ -205,21 +205,41 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     if (s(cursor) == Minus) {
       cursor += 1
     }
-    s(cursor) match {
-      case '0' =>
-        cursor += 1
-        scanFrac
-        scanExp
-      case d if d >= '1' && d <= '9' =>
-        cursor += 1
-        scanDigits
-        scanFrac
-        scanExp
-      case _ =>
-      // non number char
+
+    var ch = s(cursor)
+    if (ch == '0') {
+      cursor += 1
+    } else if (ch >= '1' && ch <= '9') {
+      cursor += 1
+      scanDigits
     }
+
+    // frac
+    var dotIndex = cursor
+    if (s(cursor) == '.') {
+      dotIndex = cursor
+      cursor += 1
+      scanDigits
+    }
+
+    // exp
+    var expIndex = cursor
+    s(cursor) match {
+      case Exp | ExpL =>
+        expIndex = cursor
+        cursor += 1
+        val ch = s(cursor)
+        if (ch == Plus | ch == Minus) {
+          cursor += 1
+        }
+        scanDigits
+      case _ =>
+    }
+
     val numberEnd = cursor
-    eventHandler.numberValue(s, numberStart, numberEnd)
+    if (numberStart < numberEnd) {
+      eventHandler.numberValue(s, numberStart, numberEnd, dotIndex, expIndex)
+    }
   }
 
   def scanDigits: Unit = {
@@ -231,26 +251,6 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         case _ =>
           continue = false
       }
-    }
-  }
-
-  def scanFrac: Unit = {
-    if (s(cursor) == '.') {
-      cursor += 1
-      scanDigits
-    }
-  }
-
-  def scanExp: Unit = {
-    s(cursor) match {
-      case Exp | ExpL =>
-        cursor += 1
-        val ch = s(cursor)
-        if (ch == Plus | ch == Minus) {
-          cursor += 1
-        }
-        scanDigits
-      case _ =>
     }
   }
 

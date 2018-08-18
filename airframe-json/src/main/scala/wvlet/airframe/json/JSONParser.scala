@@ -86,9 +86,9 @@ private class JSONParser(s: JSONSource) extends JSONEventHandler {
     stack.head += JSONString(s.substring(start, end))
   }
 
-  override def numberValue(s: JSONSource, start: Int, end: Int): Unit = {
+  override def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
-    if (JSONParser.fracDelimiters.matcher(v).find()) {
+    if (dotIndex < end || expIndex < end) {
       stack.head += JSONDouble(v.toDouble)
     } else {
       Try(JSONLong(v.toLong))

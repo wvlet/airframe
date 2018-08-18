@@ -23,6 +23,6 @@ trait JSONEventHandler {
 
   def nullValue(s: JSONSource, start: Int, end: Int): Unit
   def stringValue(s: JSONSource, start: Int, end: Int): Unit
-  def numberValue(s: JSONSource, start: Int, end: Int): Unit
+  def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit
   def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int)
 }
