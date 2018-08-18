@@ -566,6 +566,7 @@ lazy val json =
         // Used only for benchmark purpose
 //        "org.json4s" %% "json4s-native" % "3.5.4",
 //        "org.json4s" %% "json4s-jackson" % "3.5.4",
+//        "io.circe" %% "circe-parser" % "0.9.3",
 //        "com.lihaoyi" %% "ujson" % "0.6.6"
       )
     )

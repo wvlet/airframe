@@ -16,9 +16,7 @@ package wvlet.airframe.json
 import java.util.regex.Pattern
 
 import wvlet.airframe.json.JSON._
-import wvlet.log.LogSupport
 
-import scala.collection.mutable
 import scala.util.Try
 
 /**
@@ -35,7 +33,7 @@ object JSONParser {
 }
 
 private class JSONParser(s: JSONSource) extends JSONEventHandler {
-  private var stack = IndexedSeq.newBuilder[JSONValue] :: Nil
+  private var stack = Seq.newBuilder[JSONValue] :: Nil
 
   def result: JSONValue = {
     val v = stack.head.result()
@@ -48,7 +46,7 @@ private class JSONParser(s: JSONSource) extends JSONEventHandler {
   override def startJson(s: JSONSource, start: Int): Unit = {}
   override def endJson(s: JSONSource, start: Int): Unit   = {}
   override def startObject(s: JSONSource, start: Int): Unit = {
-    stack = IndexedSeq.newBuilder[JSONValue] :: stack
+    stack = Seq.newBuilder[JSONValue] :: stack
   }
   override def endObject(s: JSONSource, start: Int, end: Int, numElem: Int): Unit = {
     val h = stack.head.result()
@@ -56,17 +54,20 @@ private class JSONParser(s: JSONSource) extends JSONEventHandler {
       throw new InvalidJSONObject(s"json object contains ${h.size} elements")
     }
 
-    val m = mutable.LinkedHashMap.newBuilder[String, JSONValue]
-    for (i <- (0 until h.size) by 2) {
+    val m = Seq.newBuilder[(String, JSONValue)]
+    var i = 0
+    val N = h.size
+    while (i < N) {
       h(i) match {
         case JSONString(s) =>
           m += s -> h(i + 1)
         case _ =>
           throw new InvalidJSONObject(s"json string is expected but found: ${h(i)}")
       }
+      i += 2
     }
     stack = stack.tail
-    stack.head += JSONObject(m.result().toMap)
+    stack.head += JSONObject(m.result())
   }
 
   override def startArray(s: JSONSource, start: Int): Unit = {
