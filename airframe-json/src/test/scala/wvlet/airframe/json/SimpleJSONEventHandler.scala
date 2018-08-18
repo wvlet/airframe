@@ -36,8 +36,8 @@ object SimpleJSONEventHandler extends JSONEventHandler with LogSupport {
   def stringValue(s: JSONSource, start: Int, end: Int): Unit = {
     debug(s"string value: [${start},${end}) ${s.substring(start, end)}")
   }
-  def numberValue(s: JSONSource, start: Int, end: Int): Unit = {
-    debug(s"number value: [${start}, ${end}) ${s.substring(start, end)}")
+  def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
+    debug(s"number value: [${start}, ${end}) dot:${dotIndex}, exp:${expIndex} ${s.substring(start, end)}")
   }
   def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
     debug(s"boolean value: [${start}, ${end}) ${s.substring(start, end)}")
