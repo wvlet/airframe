@@ -15,8 +15,11 @@ package wvlet.airframe.json
 
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+
 import wvlet.airframe.AirframeSpec
 import wvlet.log.io.{IOUtil, Timer}
+
+import scala.util.Random
 
 /**
   *
@@ -59,6 +62,15 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
 //        block("uJson (byte array)    ") {
 //          ujson.read(jsonBytes)
 //        }
+      }
+    }
+
+    "parser boolen arrays" taggedAs ("boolean-array") in {
+      val jsonArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
+      val s         = JSONSource.fromString(jsonArray)
+
+      time("boolean array", repeat = 10) {
+        JSONScanner.scan(s, SimpleJSONEventHandler)
       }
     }
 

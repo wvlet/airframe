@@ -42,25 +42,6 @@ object JSONToken {
 
   final val Slash     = '/'
   final val BackSlash = '\\'
-
-  final val TRUE: Int =
-    (('t'.toByte & 0xFF) << 24) |
-      (('r'.toByte & 0xFF) << 16) |
-      (('u'.toByte & 0xFF) << 8) |
-      ('e'.toByte & 0xFF)
-
-  final val NULL: Int =
-    (('n'.toByte & 0xFF) << 24) |
-      (('u'.toByte & 0xFF) << 16) |
-      (('l'.toByte & 0xFF) << 8) |
-      ('l'.toByte & 0xFF)
-
-  final val FALSE: Long =
-    (('f'.toByte & 0xFFL) << 32) |
-      (('a'.toByte & 0xFFL) << 24) |
-      (('l'.toByte & 0xFFL) << 16) |
-      (('s'.toByte & 0xFFL) << 8) |
-      ('e'.toByte & 0xFFL)
 }
 
 object JSONScanner {
@@ -285,7 +266,8 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
   }
 
   private def scanTrue: Unit = {
-    if (get4bytesAsInt == TRUE) {
+    ensure(4)
+    if (s(cursor) == 't' && s(cursor + 1) == 'r' && s(cursor + 2) == 'u' && s(cursor + 3) == 'e') {
       cursor += 4
       eventHandler.booleanValue(s, true, cursor - 4, cursor)
     } else {
@@ -294,7 +276,8 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
   }
 
   private def scanFalse: Unit = {
-    if (get5bytesAsLong == FALSE) {
+    ensure(5)
+    if (s(cursor) == 'f' && s(cursor + 1) == 'a' && s(cursor + 2) == 'l' && s(cursor + 3) == 's' && s(cursor + 4) == 'e') {
       cursor += 5
       eventHandler.booleanValue(s, false, cursor - 5, cursor)
     } else {
@@ -304,7 +287,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 
   private def scanNull: Unit = {
     ensure(4)
-    if (get4bytesAsInt == NULL) {
+    if (s(cursor) == 'n' && s(cursor + 1) == 'u' && s(cursor + 2) == 'l' && s(cursor + 3) == 'l') {
       cursor += 4
       eventHandler.nullValue(s, cursor - 4, cursor)
     } else {
