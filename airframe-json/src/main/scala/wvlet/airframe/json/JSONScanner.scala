@@ -122,11 +122,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     while (toContinue && cursor < s.length) {
       val ch = s(cursor)
       (ch: @switch) match {
-        case WS =>
-          cursor += 1
-        case WS_T =>
-          cursor += 1
-        case WS_R =>
+        case WS | WS_T | WS_R =>
           cursor += 1
         case WS_N =>
           cursor += 1
@@ -246,23 +242,6 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
                               cursor,
                               s"Expected having ${length} characters, but ${s.length - cursor} is left")
     }
-  }
-
-  private def get4bytesAsInt: Int = {
-    ensure(4)
-    ((s(cursor) & 0xFF) << 24) |
-      ((s(cursor + 1) & 0xFF) << 16) |
-      ((s(cursor + 2) & 0xFF) << 8) |
-      (s(cursor + 3) & 0xFF)
-  }
-
-  private def get5bytesAsLong: Long = {
-    ensure(5)
-    ((s(cursor) & 0xFFL) << 32) |
-      ((s(cursor + 1) & 0xFFL) << 24) |
-      ((s(cursor + 2) & 0xFFL) << 16) |
-      ((s(cursor + 3) & 0xFFL) << 8) |
-      (s(cursor + 4) & 0xFFL)
   }
 
   private def scanTrue: Unit = {
@@ -388,22 +367,17 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 //  }
 
   def scanUtf8: Unit = {
-    val ch = s(cursor)
-    if (ch <= 0x7F && ch >= 0x20) {
-      // Fast path for 1-byte utf8 chars
+    val ch                = s(cursor)
+    val first5bit         = (ch & 0xF8) >> 3
+    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+    if (isValidUtf8Header != 0L) {
+      val pos     = (ch & 0xF0) >> (4 - 1)
+      val mask    = 0x03L << pos
+      val utf8len = (utf8CharLenTable & mask) >> pos
       cursor += 1
+      scanUtf8Body(utf8len.toInt)
     } else {
-      val first5bit         = (ch & 0xF8) >> 3
-      val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
-      val pos               = (ch & 0xF0) >> (4 - 1)
-      val mask              = 0x03L << pos
-      val utf8len           = (utf8CharLenTable & mask) >> pos
-      if (isValidUtf8Header != 0L) {
-        cursor += 1
-        scanUtf8Body(utf8len.toInt)
-      } else {
-        throw unexpected("utf8")
-      }
+      throw unexpected("utf8")
     }
   }
 
