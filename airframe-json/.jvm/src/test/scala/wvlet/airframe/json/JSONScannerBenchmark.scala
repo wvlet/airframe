@@ -27,11 +27,11 @@ import scala.util.Random
   */
 class JSONScannerBenchmark extends AirframeSpec with Timer {
 
-  val json = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+  val json      = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+  val jsonBytes = json.getBytes(StandardCharsets.UTF_8)
 
   "JSONScannerBenchmarhk" should {
     "parse twitter.json" in {
-      val jsonBytes      = json.getBytes(StandardCharsets.UTF_8)
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
 
       time("twitter.json", repeat = 3, blockRepeat = 10) {
@@ -66,6 +66,14 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
       }
     }
 
+    "parse twitter.json bytes" taggedAs ("airframe-push") in {
+      time("airframe-push", repeat = 10, blockRepeat = 1) {
+        block("airframe (byte array)") {
+          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+        }
+      }
+    }
+
     "parse boolen arrays" taggedAs ("boolean-array") in {
       val jsonArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
       val s         = JSONSource.fromString(jsonArray)
@@ -76,7 +84,6 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
     }
 
     "parse string arrays" taggedAs ("string-array") in {
-
       // Extract JSON strings from twitter.json
       val j = JSON.parse(json)
       val b = Seq.newBuilder[JSONString]
@@ -91,7 +98,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
       val jsonArray = JSONArray(b.result()).toJSON
       val s         = JSONSource.fromString(jsonArray)
 
-      time("string array", repeat = 1000) {
+      time("string array", repeat = 10) {
         JSONScanner.scan(s, SimpleJSONEventHandler)
       }
     }
