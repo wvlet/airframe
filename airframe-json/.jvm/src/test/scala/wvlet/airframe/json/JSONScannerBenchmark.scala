@@ -35,32 +35,32 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
     "parse twitter.json" taggedAs ("comparison") in {
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
       val jawnParser     = new JawnParser()
-      time("twitter.json", repeat = 10, blockRepeat = 10) {
+      time("twitter.json", repeat = 10, blockRepeat = 3) {
 //        block("airframe (string)    ") {
 //          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
 //        }
 //        block("airframe (byte buffer)") {
 //          JSONScanner.scan(JSONSource.fromByteBuffer(ByteBuffer.wrap(jsonBytes)), SimpleJSONEventHandler)
 //        }
-        // Excluded for supporting muiltiple Scala versions
-        block("jawn                  ") {
-          jawnParser.parse(json)
-        }
-        block("circe                 ") {
-          io.circe.parser.parse(json)
+        block("airframe json parser ") {
+          JSON.parse(jsonBytes)
         }
         block("airframe (push parser) ") {
           JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
         }
-        block("json4s 3.5.4 (native)") {
-          org.json4s.native.JsonMethods.parse(json)
-        }
-        block("json4s 3.5.4 (jackson)") {
-          org.json4s.jackson.JsonMethods.parse(json)
-        }
-        block("airframe json parser ") {
-          JSON.parse(jsonBytes)
-        }
+        // Excluded for supporting muiltiple Scala versions
+//        block("jawn                  ") {
+//          jawnParser.parse(json)
+//        }
+//        block("circe                 ") {
+//          io.circe.parser.parse(json)
+//        }
+//        block("json4s 3.5.4 (native)") {
+//          org.json4s.native.JsonMethods.parse(json)
+//        }
+//        block("json4s 3.5.4 (jackson)") {
+//          org.json4s.jackson.JsonMethods.parse(json)
+//        }
 //        block("uJson (string)        ") {
 //          ujson.read(json)
 //        }
