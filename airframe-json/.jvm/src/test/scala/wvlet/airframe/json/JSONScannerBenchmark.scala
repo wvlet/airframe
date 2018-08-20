@@ -34,8 +34,8 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
   "JSONScannerBenchmarhk" should {
     "parse twitter.json" taggedAs ("comparison") in {
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
-
-      time("twitter.json", repeat = 3, blockRepeat = 10) {
+      val jawnParser     = new JawnParser()
+      time("twitter.json", repeat = 10, blockRepeat = 10) {
 //        block("airframe (string)    ") {
 //          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
 //        }
@@ -43,14 +43,14 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
 //          JSONScanner.scan(JSONSource.fromByteBuffer(ByteBuffer.wrap(jsonBytes)), SimpleJSONEventHandler)
 //        }
         // Excluded for supporting muiltiple Scala versions
-        block("airframe (push parser) ") {
-          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
-        }
         block("jawn                  ") {
-          new JawnParser().parse(json)
+          jawnParser.parse(json)
         }
         block("circe                 ") {
           io.circe.parser.parse(json)
+        }
+        block("airframe (push parser) ") {
+          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
         }
         block("json4s 3.5.4 (native)") {
           org.json4s.native.JsonMethods.parse(json)

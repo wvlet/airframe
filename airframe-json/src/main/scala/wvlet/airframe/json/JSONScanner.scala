@@ -161,15 +161,24 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  private def scanValue: Unit = {
-    skipWhiteSpaces
+  private[this] final def scanValue: Unit = {
     (s(cursor): @switch) match {
+      case WS | WS_T | WS_R =>
+        cursor += 1
+        scanValue
+      case WS_N =>
+        cursor += 1
+        line += 1
+        lineStartPos = cursor
+        scanValue
       case DoubleQuote =>
         scanString
       case LBracket =>
         scanObject
       case LSquare =>
         scanArray
+      case '-' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+        scanNumber
       case 't' =>
         scanTrue
       case 'f' =>
@@ -177,44 +186,65 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
       case 'n' =>
         scanNull
       case _ =>
-        scanNumber
+        throw unexpected("object or array")
     }
   }
 
   private def scanNumber: Unit = {
     val numberStart = cursor
-    if (s(cursor) == Minus) {
-      cursor += 1
-    }
 
     var ch = s(cursor)
+    if (ch == Minus) {
+      cursor += 1
+      ch = s(cursor)
+    }
+
     if (ch == '0') {
       cursor += 1
-    } else if (ch >= '1' && ch <= '9') {
-      cursor += 1
-      scanDigits
+      ch = s(cursor)
+    } else if ('1' <= ch && ch <= '9') {
+      while ('0' <= ch && ch <= '9') {
+        cursor += 1
+        ch = s(cursor)
+      }
+    } else {
+      throw unexpected("digits")
     }
 
     // frac
     var dotIndex = -1
-    if (s(cursor) == '.') {
+    if (ch == '.') {
       dotIndex = cursor
       cursor += 1
-      scanDigits
+      ch = s(cursor)
+      if ('0' <= ch && ch <= '9') {
+        while ('0' <= ch && ch <= '9') {
+          cursor += 1
+          ch = s(cursor)
+        }
+      } else {
+        throw unexpected("digist")
+      }
     }
 
     // exp
     var expIndex = -1
-    s(cursor) match {
-      case Exp | ExpL =>
-        expIndex = cursor
+    if (ch == Exp || ch == ExpL) {
+      expIndex = cursor
+      cursor += 1
+      ch = s(cursor)
+      if (ch == Plus | ch == Minus) {
         cursor += 1
-        val ch = s(cursor)
-        if (ch == Plus | ch == Minus) {
+        ch = s(cursor)
+      }
+      if (ch >= '1' && ch <= '9') {
+        while ('0' <= ch && ch <= '9') {
           cursor += 1
+          ch = s(cursor)
         }
-        scanDigits
-      case _ =>
+      } else {
+        throw unexpected("digits")
+      }
     }
 
     val numberEnd = cursor
@@ -281,15 +311,21 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     cursor += 1
 
     skipWhiteSpaces
-    while (s(cursor) != RBracket) {
+    var ch = s(cursor)
+    while (ch != RBracket) {
       if (numElem > 0) {
-        scanComma
+        if (ch == Comma) {
+          cursor += 1
+        } else {
+          throw unexpected("comma")
+        }
       }
       scanString
       scanColon
       scanValue
       numElem += 1
       skipWhiteSpaces
+      ch = s(cursor)
     }
     cursor += 1
     val objEnd = cursor
@@ -303,13 +339,19 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     cursor += 1
 
     skipWhiteSpaces
+    var ch = s(cursor)
     while (s(cursor) != RSquare) {
       if (numElem > 0) {
-        scanComma
+        if (ch == Comma) {
+          cursor += 1
+        } else {
+          throw unexpected("comma")
+        }
       }
       scanValue
       numElem += 1
       skipWhiteSpaces
+      ch = s(cursor)
     }
     cursor += 1
     val arrEnd = cursor
