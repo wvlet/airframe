@@ -44,7 +44,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
           JSON.parse(jsonBytes)
         }
         block("airframe (push parser) ") {
-          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+          JSONScanner.scan(JSONSource.fromBytes(jsonBytes))
         }
         // Excluded for supporting muiltiple Scala versions
 //        block("jawn                  ") {
@@ -71,7 +71,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
     "parse twitter.json bytes" taggedAs ("airframe-push") in {
       time("airframe-push", repeat = 10, blockRepeat = 1) {
         block("airframe (byte array)") {
-          JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+          JSONScanner.scan(JSONSource.fromBytes(jsonBytes))
         }
       }
     }
@@ -81,14 +81,14 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
       val s         = JSONSource.fromString(jsonArray)
 
       time("boolean array", repeat = 10) {
-        JSONScanner.scan(s, SimpleJSONEventHandler)
+        JSONScanner.scan(s)
       }
     }
 
     "parse string arrays" taggedAs ("string-array") in {
       // Extract JSON strings from twitter.json
       val j = JSON.parse(json)
-      val b = Seq.newBuilder[JSONString]
+      val b = IndexedSeq.newBuilder[JSONString]
       JSONTraverser.traverse(j, new JSONVisitor {
         override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
           b += JSONString(k)
@@ -101,7 +101,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
       val s         = JSONSource.fromString(jsonArray)
 
       time("string array", repeat = 10) {
-        JSONScanner.scan(s, SimpleJSONEventHandler)
+        JSONScanner.scan(s)
       }
     }
 

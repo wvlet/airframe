@@ -22,7 +22,7 @@ class JSONScannerTest extends AirframeSpec {
 
   def scan(json: String): Unit = {
     debug(s"scan: ${json}")
-    JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
+    JSONScanner.scan(JSONSource.fromString(json))
   }
 
   "JSONScanner" should {

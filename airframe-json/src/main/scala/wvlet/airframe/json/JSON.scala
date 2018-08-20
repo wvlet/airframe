@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.json
 
+import wvlet.log.LogSupport
+
 /**
   *
   */
-object JSON {
+object JSON extends LogSupport {
 
   def parse(s: String): JSONValue = {
     parse(JSONSource.fromString(s))
@@ -28,7 +30,10 @@ object JSON {
     parse(JSONSource.fromBytes(s, offset, length))
   }
   def parse(s: JSONSource): JSONValue = {
-    JSONParser.parse(s)
+    val b = new JSONValueBuilder().singleContext(s, 0)
+    JSONScanner.scan(s, b)
+    val j = b.result
+    j
   }
 
   sealed trait JSONValue {
@@ -55,6 +60,7 @@ object JSON {
     override def toJSON: String = v.toString
   }
   case class JSONString(v: String) extends JSONValue {
+    override def toString = v
     override def toJSON: String = {
       val s = new StringBuilder(v.length + 2)
       s.append("\"")
@@ -83,7 +89,7 @@ object JSON {
       s.result()
     }
   }
-  case class JSONArray(v: Seq[JSONValue]) extends JSONValue {
+  case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("[")

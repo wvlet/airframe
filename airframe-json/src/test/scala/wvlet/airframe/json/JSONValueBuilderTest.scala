@@ -19,7 +19,7 @@ import wvlet.airframe.json.JSON.JSONValue
 /**
   *
   */
-class JSONParserTest extends AirframeSpec {
+class JSONValueBuilderTest extends AirframeSpec {
 
   def parse(s: String): JSONValue = {
     val v = JSON.parse(JSONSource.fromString(s))
