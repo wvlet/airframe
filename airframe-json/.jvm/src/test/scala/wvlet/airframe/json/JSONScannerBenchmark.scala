@@ -16,7 +16,6 @@ package wvlet.airframe.json
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
-import io.circe.jawn.JawnParser
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.log.io.{IOUtil, Timer}
@@ -34,7 +33,6 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
   "JSONScannerBenchmarhk" should {
     "parse twitter.json" taggedAs ("comparison") in {
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
-      val jawnParser     = new JawnParser()
       time("twitter.json", repeat = 10, blockRepeat = 3) {
 //        block("airframe (string)    ") {
 //          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
@@ -50,7 +48,7 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
         }
         // Excluded for supporting muiltiple Scala versions
 //        block("jawn                  ") {
-//          jawnParser.parse(json)
+//          io.circe.jawn.JawnParser.parse(json)
 //        }
 //        block("circe                 ") {
 //          io.circe.parser.parse(json)
