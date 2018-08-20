@@ -19,29 +19,29 @@ import scala.annotation.{switch, tailrec}
 
 object JSONToken {
 
-  final val LBracket = '{'
-  final val RBracket = '}'
-  final val Comma    = ','
+  @inline final val LBracket = '{'
+  @inline final val RBracket = '}'
+  @inline final val Comma    = ','
 
-  final val DoubleQuote = '"'
-  final val Colon       = ':'
+  @inline final val DoubleQuote = '"'
+  @inline final val Colon       = ':'
 
-  final val Minus = '-'
-  final val Plus  = '+'
-  final val Dot   = '.'
-  final val Exp   = 'e'
-  final val ExpL  = 'E'
+  @inline final val Minus = '-'
+  @inline final val Plus  = '+'
+  @inline final val Dot   = '.'
+  @inline final val Exp   = 'e'
+  @inline final val ExpL  = 'E'
 
-  final val LSquare = '['
-  final val RSquare = ']'
+  @inline final val LSquare = '['
+  @inline final val RSquare = ']'
 
-  final val WS   = ' '
-  final val WS_T = '\t'
-  final val WS_N = '\n'
-  final val WS_R = '\r'
+  @inline final val WS   = ' '
+  @inline final val WS_T = '\t'
+  @inline final val WS_N = '\n'
+  @inline final val WS_R = '\r'
 
-  final val Slash     = '/'
-  final val BackSlash = '\\'
+  @inline final val Slash     = '/'
+  @inline final val BackSlash = '\\'
 }
 
 object JSONScanner {
