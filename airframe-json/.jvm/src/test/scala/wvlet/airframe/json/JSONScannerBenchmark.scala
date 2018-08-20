@@ -16,6 +16,7 @@ package wvlet.airframe.json
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 
+import io.circe.jawn.JawnParser
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.log.io.{IOUtil, Timer}
@@ -31,32 +32,35 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
   val jsonBytes = json.getBytes(StandardCharsets.UTF_8)
 
   "JSONScannerBenchmarhk" should {
-    "parse twitter.json" in {
+    "parse twitter.json" taggedAs ("comparison") in {
       val jsonByteBuffer = ByteBuffer.wrap(jsonBytes)
 
       time("twitter.json", repeat = 3, blockRepeat = 10) {
-        block("airframe (string)    ") {
-          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
-        }
-        block("airframe (byte buffer)") {
-          JSONScanner.scan(JSONSource.fromByteBuffer(jsonByteBuffer), SimpleJSONEventHandler)
-        }
-        block("airframe (byte array)") {
+//        block("airframe (string)    ") {
+//          JSONScanner.scan(JSONSource.fromString(json), SimpleJSONEventHandler)
+//        }
+//        block("airframe (byte buffer)") {
+//          JSONScanner.scan(JSONSource.fromByteBuffer(ByteBuffer.wrap(jsonBytes)), SimpleJSONEventHandler)
+//        }
+        // Excluded for supporting muiltiple Scala versions
+        block("airframe (push parser) ") {
           JSONScanner.scan(JSONSource.fromBytes(jsonBytes), SimpleJSONEventHandler)
+        }
+        block("jawn                  ") {
+          new JawnParser().parse(json)
+        }
+        block("circe                 ") {
+          io.circe.parser.parse(json)
+        }
+        block("json4s 3.5.4 (native)") {
+          org.json4s.native.JsonMethods.parse(json)
+        }
+        block("json4s 3.5.4 (jackson)") {
+          org.json4s.jackson.JsonMethods.parse(json)
         }
         block("airframe json parser ") {
           JSON.parse(jsonBytes)
         }
-//        // Excluded for supporting muiltiple Scala versions
-//        block("circe                 ") {
-//          io.circe.parser.parse(json)
-//        }
-//        block("json4s 3.5.4 (native)") {
-//          org.json4s.native.JsonMethods.parse(json)
-//        }
-//        block("json4s 3.5.4 (jackson)") {
-//          org.json4s.jackson.JsonMethods.parse(json)
-//        }
 //        block("uJson (string)        ") {
 //          ujson.read(json)
 //        }

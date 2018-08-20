@@ -564,10 +564,11 @@ lazy val json =
       description := "JSON pull parser",
       libraryDependencies ++= Seq(
         // Used only for benchmark purpose
-//        "org.json4s" %% "json4s-native" % "3.5.4",
-//        "org.json4s" %% "json4s-jackson" % "3.5.4",
-//        "io.circe" %% "circe-parser" % "0.9.3",
-//        "com.lihaoyi" %% "ujson" % "0.6.6"
+        "org.json4s"     %% "json4s-native"  % "3.5.4",
+        "org.json4s"     %% "json4s-jackson" % "3.5.4",
+        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
+        "io.circe"       %% "circe-parser"   % "0.9.3",
+        "com.lihaoyi"    %% "ujson"          % "0.6.6"
       )
     )
     .jsSettings(jsBuildSettings)
