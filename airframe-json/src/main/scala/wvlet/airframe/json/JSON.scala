@@ -82,7 +82,6 @@ object JSON {
       s.append("}")
       s.result()
     }
-
   }
   case class JSONArray(v: Seq[JSONValue]) extends JSONValue {
     override def toJSON: String = {

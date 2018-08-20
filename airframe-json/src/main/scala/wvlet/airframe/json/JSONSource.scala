@@ -21,44 +21,54 @@ import java.nio.charset.StandardCharsets
   */
 object JSONSource {
 
-  def fromString(s: String): ByteArrayJSONSource        = fromBytes(s.getBytes(StandardCharsets.UTF_8))
-  def fromBytes(b: Array[Byte]): ByteArrayJSONSource    = fromBytes(b, 0, b.length)
-  def fromBytes(b: Array[Byte], offset: Int, size: Int) = new ByteArrayJSONSource(b, offset, size)
-  def fromByteBuffer(b: ByteBuffer)                     = new ByteBufferJSONSource(b)
+  def fromString(s: String): JSONSource                 = fromBytes(s.getBytes(StandardCharsets.UTF_8))
+  def fromBytes(b: Array[Byte]): JSONSource             = fromBytes(b, 0, b.length)
+  def fromBytes(b: Array[Byte], offset: Int, size: Int) = new JSONSource(b, offset, size)
+  def fromByteBuffer(b: ByteBuffer) = {
+    val a       = new Array[Byte](b.remaining())
+    val current = b.position()
+    b.get(a, 0, a.length)
+    b.position(current)
+    fromBytes(a)
+  }
 }
 
-trait JSONSource {
-  def length: Int = size
-  def size: Int
-  def apply(index: Int): Byte
-  def substring(start: Int, end: Int): String
-}
-
-class ByteArrayJSONSource(b: Array[Byte], offset: Int, val size: Int) extends JSONSource {
+final class JSONSource(b: Array[Byte], val offset: Int, val size: Int) {
   assert(offset >= 0, s"The offset must be >= 0: ${offset}")
   assert(size >= 0, s"The size must be >= 0: ${size}")
   assert(offset + size <= b.length, s"The offset + size must be <= ${b.length}: ${offset}+${size}")
-
-  def apply(index: Int): Byte = {
-    b(index + offset)
-  }
-  override def substring(start: Int, end: Int): String =
+  def length: Int             = size
+  def apply(index: Int): Byte = b(index + offset)
+  def substring(start: Int, end: Int): String = {
     new String(b, offset + start, end - start, StandardCharsets.UTF_8)
+  }
 }
 
-class ByteBufferJSONSource(b: ByteBuffer) extends JSONSource {
-  private val offset = b.position()
-  val size           = b.limit() - offset
+//class ByteArrayJSONSource(b: Array[Byte], offset: Int, val size: Int) extends JSONSource {
+//  assert(offset >= 0, s"The offset must be >= 0: ${offset}")
+//  assert(size >= 0, s"The size must be >= 0: ${size}")
+//  assert(offset + size <= b.length, s"The offset + size must be <= ${b.length}: ${offset}+${size}")
+//
+//  def apply(index: Int): Byte = {
+//    b(index + offset)
+//  }
+//  override def substring(start: Int, end: Int): String =
+//    new String(b, offset + start, end - start, StandardCharsets.UTF_8)
+//}
 
-  def apply(index: Int): Byte = {
-    b.get(index + offset)
-  }
-  override def substring(start: Int, end: Int): String = {
-    val s          = new Array[Byte](end - start)
-    val currentPos = b.position()
-    b.get(s, 0, s.length)
-    b.position(currentPos)
-    new String(s, 0, s.length, StandardCharsets.UTF_8)
-  }
-
-}
+//class ByteBufferJSONSource(b: ByteBuffer) extends JSONSource {
+//  private val offset = b.position()
+//  val size           = b.limit() - offset
+//
+//  def apply(index: Int): Byte = {
+//    b.get(index + offset)
+//  }
+//  override def substring(start: Int, end: Int): String = {
+//    val s          = new Array[Byte](end - start)
+//    val currentPos = b.position()
+//    b.get(s, 0, s.length)
+//    b.position(currentPos)
+//    new String(s, 0, s.length, StandardCharsets.UTF_8)
+//  }
+//
+//}

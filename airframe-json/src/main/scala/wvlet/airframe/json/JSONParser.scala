@@ -28,8 +28,6 @@ object JSONParser {
     JSONScanner.scan(s, parser)
     parser.result
   }
-
-  private[json] val fracDelimiters = Pattern.compile("[\\.eE]")
 }
 
 private class JSONParser(s: JSONSource) extends JSONEventHandler {
@@ -88,7 +86,7 @@ private class JSONParser(s: JSONSource) extends JSONEventHandler {
 
   override def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
-    if (dotIndex < end || expIndex < end) {
+    if (dotIndex >= 0 && expIndex >= 0) {
       stack.head += JSONDouble(v.toDouble)
     } else {
       Try(JSONLong(v.toLong))
