@@ -11,7 +11,6 @@ val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
-val JSON4S_VERSION                  = "3.5.4"
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
@@ -532,11 +531,9 @@ lazy val http =
       name := "airframe-http",
       description := "JAX-RS based REST API Framework",
       libraryDependencies ++= Seq(
-        "javax.ws.rs" % "javax.ws.rs-api" % "2.1",
-        "org.json4s"  %% "json4s-native"  % JSON4S_VERSION
-      )
+        )
     )
-    .dependsOn(airframeJVM, surfaceJVM, codec, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, surfaceJVM, jsonJVM, codec, airframeSpecJVM % "test")
 
 val FINAGLE_VERSION = "18.8.0"
 lazy val finagle =
