@@ -20,59 +20,60 @@ import scala.util.Try
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
-  override def inObjectContext: Boolean                    = ???
-  override def closeContext(s: JSONSource, end: Int): Unit = ???
-  override def add(v: JSONValue): Unit                     = ???
-  override def result: JSONValue                           = ???
-
-  protected val parent: Option[JSONValueBuilder] = None
-
-  override def singleContext(s: JSONSource, start: Int): JSONValueBuilder = new JSONValueBuilder {
-    override protected val parent: Option[JSONValueBuilder]  = Some(self)
-    private var holder: JSONValue                            = _
-    override def inObjectContext                             = false
-    override def closeContext(s: JSONSource, end: Int): Unit = {}
-    override def add(v: JSONValue): Unit = {
-      holder = v
-    }
-    override def result: JSONValue = holder
+  private var holder: JSONValue                            = _
+  override def result: JSONValue                           = holder
+  override def isObjectContext: Boolean                    = false
+  override def closeContext(s: JSONSource, end: Int): Unit = {}
+  def add(v: JSONValue): Unit = {
+    this.holder = v
   }
 
-  override def objectContext(s: JSONSource, start: Int): JSONValueBuilder = new JSONValueBuilder {
-    override protected val parent: Option[JSONValueBuilder] = Some(self)
-    private var key: String                                 = null
-    private val list                                        = Seq.newBuilder[(String, JSONValue)]
-    override def closeContext(s: JSONSource, end: Int): Unit = {
-      parent.map(p => p.add(result))
+  override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+    new JSONValueBuilder {
+      private var holder: JSONValue                            = _
+      override def isObjectContext                             = false
+      override def closeContext(s: JSONSource, end: Int): Unit = {}
+      override def add(v: JSONValue): Unit = {
+        holder = v
+      }
+      override def result: JSONValue = holder
     }
-    override def inObjectContext: Boolean = true
-    override def add(v: JSONValue): Unit = {
-      if (key == null) {
-        key = v.toString
-      } else {
-        list += key -> v
-        key = null
+
+  override def objectContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+    new JSONValueBuilder {
+      private var key: String = null
+      private val list        = Seq.newBuilder[(String, JSONValue)]
+      override def closeContext(s: JSONSource, end: Int): Unit = {
+        self.add(result)
+      }
+      override def isObjectContext: Boolean = true
+      override def add(v: JSONValue): Unit = {
+        if (key == null) {
+          key = v.toString
+        } else {
+          list += key -> v
+          key = null
+        }
+      }
+      override def result: JSONValue = {
+        JSONObject(list.result())
       }
     }
-    override def result: JSONValue = {
-      JSONObject(list.result())
-    }
-  }
 
-  override def arrayContext(s: JSONSource, start: Int): JSONValueBuilder = new JSONValueBuilder {
-    override protected val parent: Option[JSONValueBuilder] = Some(self)
-    private val list                                        = IndexedSeq.newBuilder[JSONValue]
-    override def inObjectContext: Boolean                   = false
-    override def closeContext(s: JSONSource, end: Int): Unit = {
-      parent.map(p => p.add(result))
+  override def arrayContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+    new JSONValueBuilder {
+      private val list                      = IndexedSeq.newBuilder[JSONValue]
+      override def isObjectContext: Boolean = false
+      override def closeContext(s: JSONSource, end: Int): Unit = {
+        self.add(result)
+      }
+      override def add(v: JSONValue): Unit = {
+        list += v
+      }
+      override def result: JSONValue = {
+        JSONArray(list.result())
+      }
     }
-    override def add(v: JSONValue): Unit = {
-      list += v
-    }
-    override def result: JSONValue = {
-      JSONArray(list.result())
-    }
-  }
 
   override def nullValue(s: JSONSource, start: Int, end: Int): JSONValue   = JSONNull
   override def stringValue(s: JSONSource, start: Int, end: Int): JSONValue = JSONString(s.substring(start, end))

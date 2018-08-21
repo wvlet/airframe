@@ -19,14 +19,10 @@ import wvlet.log.LogSupport
   *
   */
 class SimpleJSONContext(isObject: Boolean) extends JSONContext[Unit] with LogSupport {
-  override def inObjectContext: Boolean                                                           = isObject
-  override def objectContext(s: JSONSource, start: Int): JSONContext[Unit]                        = new SimpleJSONContext(true)
-  override def arrayContext(s: JSONSource, start: Int): JSONContext[Unit]                         = new SimpleJSONContext(false)
-  override def closeContext(s: JSONSource, end: Int): Unit                                        = {}
-  override def addNull(s: JSONSource, start: Int, end: Int): Unit                                 = {}
-  override def addString(s: JSONSource, start: Int, end: Int): Unit                               = {}
-  override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {}
-  override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit                  = {}
+  override def isObjectContext: Boolean                                    = isObject
+  override def objectContext(s: JSONSource, start: Int): JSONContext[Unit] = new SimpleJSONContext(true)
+  override def arrayContext(s: JSONSource, start: Int): JSONContext[Unit]  = new SimpleJSONContext(false)
+  override def closeContext(s: JSONSource, end: Int): Unit                 = {}
 
   override def add(v: Unit): Unit                                                                   = {}
   override def singleContext(s: JSONSource, start: Int): JSONContext[Unit]                          = new SimpleJSONContext(false)

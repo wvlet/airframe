@@ -17,26 +17,34 @@ trait JSONHandler[Expr] {
   def singleContext(s: JSONSource, start: Int): JSONContext[Expr]
   def objectContext(s: JSONSource, start: Int): JSONContext[Expr]
   def arrayContext(s: JSONSource, start: Int): JSONContext[Expr]
+}
+
+trait JSONContext[Expr] extends JSONHandler[Expr] {
+  def result: Expr
+  def isObjectContext: Boolean
+  private[json] final def endScannerState: Int = {
+    if (isObjectContext) JSONScanner.OBJECT_END
+    else JSONScanner.ARRAY_END
+  }
+
+  def add(v: Expr): Unit
+  def closeContext(s: JSONSource, end: Int): Unit
 
   def nullValue(s: JSONSource, start: Int, end: Int): Expr
   def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Expr
   def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Expr
   def stringValue(s: JSONSource, start: Int, end: Int): Expr
 
-  def result: Expr
-}
-
-trait JSONContext[Expr] extends JSONHandler[Expr] {
-  def inObjectContext: Boolean
-  private[json] final def endScannerState: Int = if (inObjectContext) JSONScanner.OBJECT_END else JSONScanner.ARRAY_END
-
-  def closeContext(s: JSONSource, end: Int): Unit
-
-  def add(v: Expr): Unit
-
-  def addNull(s: JSONSource, start: Int, end: Int): Unit   = add(nullValue(s, start, end))
-  def addString(s: JSONSource, start: Int, end: Int): Unit = add(stringValue(s, start, end))
-  def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit =
+  def addNull(s: JSONSource, start: Int, end: Int): Unit = {
+    add(nullValue(s, start, end))
+  }
+  def addString(s: JSONSource, start: Int, end: Int): Unit = {
+    add(stringValue(s, start, end))
+  }
+  def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     add(numberValue(s, start, end, dotIndex, expIndex))
-  def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int) = add(booleanValue(s, v, start, end))
+  }
+  def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int) = {
+    add(booleanValue(s, v, start, end))
+  }
 }
