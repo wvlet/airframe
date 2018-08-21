@@ -15,7 +15,6 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.http.HttpMethod
 
 /**
   *

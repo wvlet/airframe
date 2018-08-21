@@ -13,20 +13,15 @@
  */
 package wvlet.airframe.http
 
-trait HttpRequest {
-  def method: HttpMethod
-  def path: String
-  def query: Map[String, String]
-  def contentString: String
-  lazy val pathComponents: IndexedSeq[String] = {
-    path.replaceFirst("/", "").split("/").toIndexedSeq
-  }
+import wvlet.surface.Surface
+
+/**
+  *
+  */
+trait ControllerProvider {
+  def find(controllerSurface: Surface): Option[Any]
 }
 
-case class SimpleHttpRequest(method: HttpMethod,
-                             path: String,
-                             query: Map[String, String] = Map.empty,
-                             contentString: String = "")
-    extends HttpRequest
-
-trait HttpResponse {}
+trait ResponseHandler[Res] {
+  def toHttpResponse[A](a: A): Res
+}

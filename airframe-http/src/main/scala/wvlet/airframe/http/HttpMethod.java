@@ -11,22 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
 
-trait HttpRequest {
-  def method: HttpMethod
-  def path: String
-  def query: Map[String, String]
-  def contentString: String
-  lazy val pathComponents: IndexedSeq[String] = {
-    path.replaceFirst("/", "").split("/").toIndexedSeq
-  }
+package wvlet.airframe.http;
+
+public enum HttpMethod
+{
+    GET,
+    POST,
+    DELETE,
+    PUT;
 }
-
-case class SimpleHttpRequest(method: HttpMethod,
-                             path: String,
-                             query: Map[String, String] = Map.empty,
-                             contentString: String = "")
-    extends HttpRequest
-
-trait HttpResponse {}

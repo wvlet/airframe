@@ -531,10 +531,9 @@ lazy val http =
       name := "airframe-http",
       description := "JAX-RS based REST API Framework",
       libraryDependencies ++= Seq(
-        "javax.ws.rs" % "javax.ws.rs-api" % "2.1"
-      )
+        )
     )
-    .dependsOn(airframeJVM, surfaceJVM, codec, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, surfaceJVM, jsonJVM, codec, airframeSpecJVM % "test")
 
 val FINAGLE_VERSION = "18.8.0"
 lazy val finagle =

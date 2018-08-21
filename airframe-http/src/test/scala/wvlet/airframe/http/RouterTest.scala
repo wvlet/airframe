@@ -14,6 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.AirframeSpec
+import wvlet.surface
+import wvlet.surface.Surface
 
 /**
   *
@@ -21,10 +23,40 @@ import wvlet.airframe.AirframeSpec
 class RouterTest extends AirframeSpec {
   "Router" should {
 
+    "reject invalid path" in {
+      val e = intercept[IllegalArgumentException] {
+        Router.of[InvalidService]
+      }
+      trace(e.getMessage)
+    }
+
+    "register functions as routes" in {
+      val r = Router.of[ControllerExample]
+
+      trace(r.routes)
+      r.routes.filter(_.path == "/user/:id").size shouldBe 3
+      val post = r.routes.find(p => p.path == "/user" && p.method == HttpMethod.POST)
+      post shouldBe defined
+    }
+
+    "support prefixed paths" in {
+      val r = Router.of[PrefixExample]
+
+      trace(r.routes)
+      r.routes.head.path shouldBe "/v1/hello"
+    }
+
+    "combination of multiple controllers" in {
+      val r = Router
+        .of[ControllerExample]
+        .add[PrefixExample]
+
+      r.routes.find(_.path == "/user/:id") shouldBe defined
+      r.routes.find(_.path == "/v1/hello") shouldBe defined
+    }
+
     "find target method" in {
-      val router = RouteBuilder()
-        .add[ServiceExample]
-        .build
+      val router = Router.of[ControllerExample]
 
       val r = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/user/1"))
       debug(r)
@@ -47,5 +79,49 @@ class RouterTest extends AirframeSpec {
       r4.get.method shouldBe HttpMethod.DELETE
     }
 
+    "call registered methods" in {
+      val router = Router.of[ControllerExample]
+
+      val s = new ControllerExample {}
+
+      val serviceProvider = new ControllerProvider {
+        override def find(serviceSurface: Surface): Option[Any] = {
+          serviceSurface match {
+            case sf if sf == surface.of[ControllerExample] => Some(s)
+            case _                                         => None
+          }
+        }
+      }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/user/10")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe ControllerExample.User("10", "leo")
+      }
+
+      {
+        val req2 = SimpleHttpRequest(HttpMethod.PUT, "/user/2", contentString = "hello")
+        val ret2 =
+          router
+            .findRoute(req2)
+            .flatMap(_.call(serviceProvider, req2))
+
+        ret2.get shouldBe "hello"
+      }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.POST, "/user", contentString = """{"name":"aina"}""")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get.asInstanceOf[ControllerExample.User].name shouldBe "aina"
+      }
+    }
   }
 }

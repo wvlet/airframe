@@ -15,10 +15,9 @@ package wvlet.airframe.http
 
 import java.util.UUID
 
-import javax.ws.rs._
 import wvlet.log.LogSupport
 
-object ServiceExample {
+object ControllerExample {
   case class User(id: String, name: String)
   case class CreateUserRequest(name: String)
 }
@@ -26,47 +25,46 @@ object ServiceExample {
 /**
   *
   */
-trait ServiceExample extends LogSupport {
-  import ServiceExample._
+trait ControllerExample extends LogSupport {
+  import ControllerExample._
 
-  @GET
-  @Path("/user/:id")
+  @Endpoint(path = "/user/:id", method = HttpMethod.GET)
   def getUser(id: String): User = {
     val u = User(id, "leo")
     info(s"get ${u}")
     u
   }
 
-  @POST
-  @Path("/user")
-  def newUser(userUpdateRequest: CreateUserRequest): User = {
+  // Request body -> function arg (CreateUserRequest) mapping
+  @Endpoint(path = "/user", method = HttpMethod.POST)
+  def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
-    val newUser = User(UUID.randomUUID().toString, userUpdateRequest.name)
-    info(s"create user: ${newUser}")
+    val newUser = User(UUID.randomUUID().toString, createUserRequest.name)
+    info(s"create user: ${newUser}, create request:${createUserRequest}")
     newUser
   }
 
-  @DELETE
-  @Path("/user/:id")
+  @Endpoint(path = "/user/:id", method = HttpMethod.DELETE)
   def deleteUser(id: String): Unit = {
     info(s"delete ${id}")
   }
 
-  @PUT
-  @Path("/user/:id")
-  def updateUser(id: String, httpRequest: HttpRequest): Unit = {
+  @Endpoint(path = "/user/:id", method = HttpMethod.PUT)
+  def updateUser(id: String, httpRequest: HttpRequest): String = {
     info(s"id: ${id}, ${httpRequest.contentString}")
+    httpRequest.contentString
   }
 }
 
 trait InvalidService {
-  @Path("wrong_path")
+  @Endpoint(path = "wrong_path")
   def hello: Unit = {}
 }
 
-@Path("/v1")
+@Endpoint(path = "/v1")
 trait PrefixExample {
-  @Path("/hello")
+
+  @Endpoint(path = "/hello")
   def hello: String = {
     "hello"
   }
