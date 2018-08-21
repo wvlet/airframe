@@ -19,6 +19,10 @@ trait JSONHandler[Expr] {
   def arrayContext(s: JSONSource, start: Int): JSONContext[Expr]
 }
 
+/**
+  * A facade to build json ASTs while scanning json with JSONScanner
+  * @tparam Expr
+  */
 trait JSONContext[Expr] extends JSONHandler[Expr] {
   def result: Expr
   def isObjectContext: Boolean

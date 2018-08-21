@@ -54,7 +54,7 @@ object JSONScanner {
   @inline final val SEPARATOR    = 7
 
   private[json] def scan(s: JSONSource): Unit = {
-    scan(s, new SimpleJSONContext(isObject = true))
+    scan(s, new NullJSONContext(isObject = true))
   }
 
   def scan[J](s: JSONSource, handler: JSONHandler[J]): Unit = {
