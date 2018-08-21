@@ -242,6 +242,7 @@ def parallelCollection(scalaVersion: String) = {
 
 lazy val airframe =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe"))
     .settings(buildSettings)
     .settings(
