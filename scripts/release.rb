@@ -23,7 +23,7 @@ new_release_notes <<= logs.split(/\n/)
   .reject{|line| line.include?("#{last_version} release notes")}
   .map{|x| 
     rev = x[0..6]
-    "- #{x[8..-1]} ([#{rev}](#{PREFIX}/commit/#{rev}))\n"
+    "- #{x[8..-1]} [[#{rev}](#{PREFIX}/commit/#{rev})]\n"
   }
 
 release_notes = []
