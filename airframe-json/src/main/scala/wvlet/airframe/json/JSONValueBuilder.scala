@@ -20,13 +20,10 @@ import scala.util.Try
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
-  private var holder: JSONValue                            = _
-  override def result: JSONValue                           = holder
+  override def result: JSONValue                           = null
   override def isObjectContext: Boolean                    = false
   override def closeContext(s: JSONSource, end: Int): Unit = {}
-  def add(v: JSONValue): Unit = {
-    this.holder = v
-  }
+  def add(v: JSONValue): Unit                              = {}
 
   override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
@@ -75,9 +72,13 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
       }
     }
 
-  override def nullValue(s: JSONSource, start: Int, end: Int): JSONValue   = JSONNull
-  override def stringValue(s: JSONSource, start: Int, end: Int): JSONValue = JSONString(s.substring(start, end))
-  override def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): JSONValue = {
+  override def addNull(s: JSONSource, start: Int, end: Int): Unit = {
+    add(JSONNull)
+  }
+  override def addString(s: JSONSource, start: Int, end: Int): Unit = {
+    add(JSONString(s.substring(start, end)))
+  }
+  override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
     val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {
       JSONDouble(v.toDouble)
@@ -87,10 +88,11 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
           JSONDouble(v.toDouble)
       }.get
     }
-    num
+    add(num)
   }
 
-  override def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): JSONValue = {
-    if (v) JSONTrue else JSONFalse
+  override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {
+    val b = if (v) JSONTrue else JSONFalse
+    add(b)
   }
 }

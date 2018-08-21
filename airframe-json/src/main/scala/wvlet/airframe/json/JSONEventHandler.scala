@@ -34,21 +34,8 @@ trait JSONContext[Expr] extends JSONHandler[Expr] {
   def add(v: Expr): Unit
   def closeContext(s: JSONSource, end: Int): Unit
 
-  def nullValue(s: JSONSource, start: Int, end: Int): Expr
-  def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Expr
-  def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int): Expr
-  def stringValue(s: JSONSource, start: Int, end: Int): Expr
-
-  def addNull(s: JSONSource, start: Int, end: Int): Unit = {
-    add(nullValue(s, start, end))
-  }
-  def addString(s: JSONSource, start: Int, end: Int): Unit = {
-    add(stringValue(s, start, end))
-  }
-  def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
-    add(numberValue(s, start, end, dotIndex, expIndex))
-  }
-  def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int) = {
-    add(booleanValue(s, v, start, end))
-  }
+  def addNull(s: JSONSource, start: Int, end: Int): Unit
+  def addString(s: JSONSource, start: Int, end: Int): Unit
+  def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit
+  def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int)
 }

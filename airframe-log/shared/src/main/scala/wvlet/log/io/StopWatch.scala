@@ -171,6 +171,7 @@ trait TimeReport extends Ordered[TimeReport] {
 
   private var maxInterval: Double = 0.0
   private var minInterval: Double = Double.MaxValue
+  private val timeReport          = Seq.newBuilder[Double]
 
   {
     s.stop
@@ -198,6 +199,7 @@ trait TimeReport extends Ordered[TimeReport] {
         body
       } finally {
         val intervalTime = s.stop
+        timeReport += intervalTime
         _executionCount += 1
 
         maxInterval = math.max(maxInterval, intervalTime)
@@ -219,6 +221,12 @@ trait TimeReport extends Ordered[TimeReport] {
     } else {
       average
     }
+  }
+
+  def median: Double = {
+    val r = timeReport.result
+    r.length
+    r.sorted.apply(r.length / 2)
   }
 
   def average: Double = {
@@ -250,8 +258,8 @@ trait TimeReport extends Ordered[TimeReport] {
   }
 
   def genReportLine: String = {
-    f"-$name%-15s\ttotal:${toHumanReadableFormat(s.getElapsedTime)}, count:${executionCount}%,5d, avg:${toHumanReadableFormat(average)}, core avg:${toHumanReadableFormat(
-      averageWithoutMinMax)}, min:${toHumanReadableFormat(minInterval)}, max:${toHumanReadableFormat(maxInterval)}"
+    f"-$name%-15s\ttotal:${toHumanReadableFormat(s.getElapsedTime)}, count:${executionCount}%,5d, avg:${toHumanReadableFormat(
+      average)}, min:${toHumanReadableFormat(minInterval)}, median:${toHumanReadableFormat(median)}, max:${toHumanReadableFormat(maxInterval)}"
   }
 
   def report: String = {

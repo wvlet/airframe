@@ -46,25 +46,25 @@ class JSONScannerBenchmark extends AirframeSpec with Timer {
         block("airframe (push parser) ") {
           JSONScanner.scan(JSONSource.fromBytes(jsonBytes))
         }
+        block("circe                 ") {
+          io.circe.parser.parse(json).right
+        }
         // Excluded for supporting muiltiple Scala versions
-//        block("jawn                  ") {
-//          io.circe.jawn.JawnParser.parse(json)
-//        }
-//        block("circe                 ") {
-//          io.circe.parser.parse(json)
-//        }
-//        block("json4s 3.5.4 (native)") {
-//          org.json4s.native.JsonMethods.parse(json)
-//        }
-//        block("json4s 3.5.4 (jackson)") {
-//          org.json4s.jackson.JsonMethods.parse(json)
-//        }
-//        block("uJson (string)        ") {
-//          ujson.read(json)
-//        }
-//        block("uJson (byte array)    ") {
-//          ujson.read(jsonBytes)
-//        }
+        block("jawn                  ") {
+          new io.circe.jawn.JawnParser().parse(json)
+        }
+        block("json4s 3.5.4 (jackson)") {
+          org.json4s.jackson.JsonMethods.parse(json)
+        }
+        block("json4s 3.5.4 (native)") {
+          org.json4s.native.JsonMethods.parse(json)
+        }
+        block("uJson (string)        ") {
+          ujson.read(json)
+        }
+        block("uJson (byte array)    ") {
+          ujson.read(jsonBytes)
+        }
       }
     }
 

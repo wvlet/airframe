@@ -41,11 +41,11 @@ object JSON extends LogSupport {
     def toJSON: String
   }
 
-  case object JSONNull extends JSONValue {
+  final case object JSONNull extends JSONValue {
     override def toJSON: String = "null"
   }
 
-  case class JSONBoolean(val v: Boolean) extends JSONValue {
+  final case class JSONBoolean(val v: Boolean) extends JSONValue {
     override def toJSON: String = if (v) "true" else "false"
   }
 
@@ -53,13 +53,13 @@ object JSON extends LogSupport {
   val JSONFalse = JSONBoolean(false)
 
   trait JSONNumber extends JSONValue
-  case class JSONDouble(v: Double) extends JSONNumber {
+  final case class JSONDouble(v: Double) extends JSONNumber {
     override def toJSON: String = v.toString
   }
-  case class JSONLong(v: Long) extends JSONNumber {
+  final case class JSONLong(v: Long) extends JSONNumber {
     override def toJSON: String = v.toString
   }
-  case class JSONString(v: String) extends JSONValue {
+  final case class JSONString(v: String) extends JSONValue {
     override def toString = v
     override def toJSON: String = {
       val s = new StringBuilder(v.length + 2)
@@ -70,7 +70,7 @@ object JSON extends LogSupport {
     }
   }
 
-  case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
+  final case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("{")
@@ -89,7 +89,7 @@ object JSON extends LogSupport {
       s.result()
     }
   }
-  case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
+  final case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("[")
