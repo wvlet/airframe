@@ -137,7 +137,8 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
 
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = List(
-  finagle
+  finagle,
+  jsonBenchmark
 )
 
 // Scala.js builds is only for Scala 2.12
@@ -561,18 +562,30 @@ lazy val json =
     .settings(buildSettings)
     .settings(
       name := "airframe-json",
-      description := "JSON pull parser",
-      libraryDependencies ++= Seq(
-        // Used only for benchmark purpose
-//        "org.json4s"     %% "json4s-native"  % "3.5.4",
-//        "org.json4s"     %% "json4s-jackson" % "3.5.4",
-//        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
-//        "io.circe"       %% "circe-parser"   % "0.9.3",
-//        "com.lihaoyi"    %% "ujson"          % "0.6.6"
-      )
+      description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")
 
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
+
+lazy val jsonBenchmark =
+  project
+    .in(file("airframe-json-benchmark"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name := "airframe-json-benchmark",
+      description := "JSON parser benchmark",
+      crossScalaVersions := untilScala2_12,
+      libraryDependencies ++= Seq(
+        // Used only for benchmark purpose
+        "org.json4s" %% "json4s-native"  % "3.5.4",
+        "org.json4s" %% "json4s-jackson" % "3.5.4",
+        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
+        "io.circe"    %% "circe-parser" % "0.9.3",
+        "com.lihaoyi" %% "ujson"        % "0.6.6"
+      )
+    )
+    .dependsOn(jsonJVM, airframeSpecJVM % "test")

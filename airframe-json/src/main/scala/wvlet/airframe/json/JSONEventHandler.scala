@@ -13,16 +13,29 @@
  */
 package wvlet.airframe.json
 
-trait JSONEventHandler {
-  def startJson(s: JSONSource, start: Int): Unit
-  def endJson(s: JSONSource, start: Int): Unit
-  def startObject(s: JSONSource, start: Int): Unit
-  def endObject(s: JSONSource, start: Int, end: Int, numElem: Int)
-  def startArray(s: JSONSource, start: Int): Unit
-  def endArray(s: JSONSource, start: Int, end: Int, numElem: Int)
+trait JSONHandler[Expr] {
+  def singleContext(s: JSONSource, start: Int): JSONContext[Expr]
+  def objectContext(s: JSONSource, start: Int): JSONContext[Expr]
+  def arrayContext(s: JSONSource, start: Int): JSONContext[Expr]
+}
 
-  def nullValue(s: JSONSource, start: Int, end: Int): Unit
-  def stringValue(s: JSONSource, start: Int, end: Int): Unit
-  def numberValue(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit
-  def booleanValue(s: JSONSource, v: Boolean, start: Int, end: Int)
+/**
+  * A facade to build json ASTs while scanning json with JSONScanner
+  * @tparam Expr
+  */
+trait JSONContext[Expr] extends JSONHandler[Expr] {
+  def result: Expr
+  def isObjectContext: Boolean
+  private[json] final def endScannerState: Int = {
+    if (isObjectContext) JSONScanner.OBJECT_END
+    else JSONScanner.ARRAY_END
+  }
+
+  def add(v: Expr): Unit
+  def closeContext(s: JSONSource, end: Int): Unit
+
+  def addNull(s: JSONSource, start: Int, end: Int): Unit
+  def addString(s: JSONSource, start: Int, end: Int): Unit
+  def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit
+  def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int)
 }

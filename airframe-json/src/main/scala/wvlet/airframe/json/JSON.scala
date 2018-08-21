@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.json
 
+import wvlet.log.LogSupport
+
 /**
   *
   */
-object JSON {
+object JSON extends LogSupport {
 
   def parse(s: String): JSONValue = {
     parse(JSONSource.fromString(s))
@@ -28,7 +30,10 @@ object JSON {
     parse(JSONSource.fromBytes(s, offset, length))
   }
   def parse(s: JSONSource): JSONValue = {
-    JSONParser.parse(s)
+    val b = new JSONValueBuilder().singleContext(s, 0)
+    JSONScanner.scan(s, b)
+    val j = b.result
+    j
   }
 
   sealed trait JSONValue {
@@ -36,11 +41,11 @@ object JSON {
     def toJSON: String
   }
 
-  case object JSONNull extends JSONValue {
+  final case object JSONNull extends JSONValue {
     override def toJSON: String = "null"
   }
 
-  case class JSONBoolean(val v: Boolean) extends JSONValue {
+  final case class JSONBoolean(val v: Boolean) extends JSONValue {
     override def toJSON: String = if (v) "true" else "false"
   }
 
@@ -48,13 +53,14 @@ object JSON {
   val JSONFalse = JSONBoolean(false)
 
   trait JSONNumber extends JSONValue
-  case class JSONDouble(v: Double) extends JSONNumber {
+  final case class JSONDouble(v: Double) extends JSONNumber {
     override def toJSON: String = v.toString
   }
-  case class JSONLong(v: Long) extends JSONNumber {
+  final case class JSONLong(v: Long) extends JSONNumber {
     override def toJSON: String = v.toString
   }
-  case class JSONString(v: String) extends JSONValue {
+  final case class JSONString(v: String) extends JSONValue {
+    override def toString = v
     override def toJSON: String = {
       val s = new StringBuilder(v.length + 2)
       s.append("\"")
@@ -64,7 +70,7 @@ object JSON {
     }
   }
 
-  case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
+  final case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("{")
@@ -83,7 +89,7 @@ object JSON {
       s.result()
     }
   }
-  case class JSONArray(v: Seq[JSONValue]) extends JSONValue {
+  final case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("[")

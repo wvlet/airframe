@@ -53,33 +53,11 @@ object JSONScanner {
   @inline final val ARRAY_END    = 6
   @inline final val SEPARATOR    = 7
 
-  sealed trait ScanContext {
-    def isObject: Boolean
-    def endState: Int
-    def start: Int
-    def addValue: Unit
-    def numElems: Int
-  }
-  case class InObject(start: Int) extends ScanContext {
-    private var count              = 0
-    override def isObject: Boolean = true
-    override def endState: Int     = OBJECT_END
-    override def numElems: Int     = count
-    override def addValue: Unit = {
-      count += 1
-    }
-  }
-  case class InArray(start: Int) extends ScanContext {
-    private var count              = 0
-    override def isObject: Boolean = false
-    override def endState: Int     = ARRAY_END
-    override def numElems: Int     = count
-    override def addValue: Unit = {
-      count += 1
-    }
+  private[json] def scan(s: JSONSource): Unit = {
+    scan(s, new NullJSONContext(isObject = true))
   }
 
-  def scan(s: JSONSource, handler: JSONEventHandler): Unit = {
+  def scan[J](s: JSONSource, handler: JSONHandler[J]): Unit = {
     val scanner = new JSONScanner(s, handler)
     scanner.scan
   }
@@ -142,7 +120,7 @@ object JSONScanner {
   }
 }
 
-class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupport {
+class JSONScanner[J](s: JSONSource, handler: JSONHandler[J]) extends LogSupport {
   private var cursor: Int       = 0
   private var lineStartPos: Int = 0
   private var line: Int         = 0
@@ -175,34 +153,32 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
                         f"Found '${String.valueOf(char.toChar)}' 0x${char}%02x. expected: ${expected}")
   }
 
-  def scan: Unit = {
+  def scan[J]: Unit = {
     try {
       skipWhiteSpaces
-      eventHandler.startJson(s, cursor)
       s(cursor) match {
         case LBracket =>
-          scanObject(Nil)
+          cursor += 1
+          rscan(OBJECT_START, handler.objectContext(s, cursor - 1) :: Nil)
         case LSquare =>
-          scanArray(Nil)
+          cursor += 1
+          rscan(ARRAY_START, handler.arrayContext(s, cursor - 1) :: Nil)
         case other =>
           throw unexpected("object or array")
       }
-      eventHandler.endJson(s, cursor)
     } catch {
       case e: ArrayIndexOutOfBoundsException =>
         throw new UnexpectedEOF(line, cursor - lineStartPos, cursor, s"Unexpected EOF")
     }
   }
 
-  final def scanObject(stack: List[ScanContext]): Unit = {
+  final def scanObject(stack: List[JSONContext[J]]): Unit = {
     cursor += 1
-    eventHandler.startObject(s, cursor - 1)
-    rscan(OBJECT_START, InObject(cursor - 1) :: stack)
+    rscan(OBJECT_START, stack.head.objectContext(s, cursor - 1) :: stack)
   }
-  final def scanArray(stack: List[ScanContext]): Unit = {
+  final def scanArray(stack: List[JSONContext[J]]): Unit = {
     cursor += 1
-    eventHandler.startArray(s, cursor - 1)
-    rscan(ARRAY_START, InArray(cursor - 1) :: stack)
+    rscan(ARRAY_START, stack.head.arrayContext(s, cursor - 1) :: stack)
   }
 
   final def scanValue: Unit = {
@@ -216,26 +192,26 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         lineStartPos = cursor
         scanValue
       case DoubleQuote =>
-        scanString
+        scanString(handler.singleContext(s, cursor))
       case LBracket =>
-        scanObject(Nil)
+        scanObject(handler.singleContext(s, cursor) :: Nil)
       case LSquare =>
-        scanArray(Nil)
+        scanArray(handler.singleContext(s, cursor) :: Nil)
       case '-' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-        scanNumber
+        scanNumber(handler.singleContext(s, cursor))
       case 't' =>
-        scanTrue
+        scanTrue(handler.singleContext(s, cursor))
       case 'f' =>
-        scanFalse
+        scanFalse(handler.singleContext(s, cursor))
       case 'n' =>
-        scanNull
+        scanNull(handler.singleContext(s, cursor))
       case _ =>
         throw unexpected("object or array")
     }
   }
 
   @tailrec
-  private final def rscan(state: Int, stack: List[ScanContext]) {
+  private final def rscan(state: Int, stack: List[JSONContext[J]]) {
     var ch = s(cursor)
     if (ch == WS_N) {
       cursor += 1
@@ -253,25 +229,20 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
       } else {
         val ctx = stack.head
         if ((ch >= '0' && ch <= '9') || ch == '-') {
-          scanNumber
-          ctx.addValue
-          rscan(ctx.endState, stack)
+          scanNumber(ctx)
+          rscan(ctx.endScannerState, stack)
         } else if (ch == DoubleQuote) {
-          scanString
-          ctx.addValue
-          rscan(ctx.endState, stack)
+          scanString(ctx)
+          rscan(ctx.endScannerState, stack)
         } else if (ch == 't') {
-          scanTrue
-          ctx.addValue
-          rscan(ctx.endState, stack)
+          scanTrue(ctx)
+          rscan(ctx.endScannerState, stack)
         } else if (ch == 'f') {
-          scanFalse
-          ctx.addValue
-          rscan(ctx.endState, stack)
+          scanFalse(ctx)
+          rscan(ctx.endScannerState, stack)
         } else if (ch == 'n') {
-          scanNull
-          ctx.addValue
-          rscan(ctx.endState, stack)
+          scanNull(ctx)
+          rscan(ctx.endScannerState, stack)
         } else {
           throw unexpected("json value")
         }
@@ -284,23 +255,18 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
         val ctx1 = stack.head
         val tail = stack.tail
 
-        if (ctx1.isObject) {
-          eventHandler.endObject(s, ctx1.start, cursor, ctx1.numElems)
-        } else {
-          eventHandler.endArray(s, ctx1.start, cursor, ctx1.numElems)
-        }
+        ctx1.closeContext(s, cursor)
         cursor += 1
         if (tail.isEmpty) {
           // root context
         } else {
           val ctx2 = tail.head
-          ctx2.addValue
-          rscan(ctx2.endState, tail)
+          rscan(ctx2.endScannerState, tail)
         }
       }
     } else if (state == OBJECT_KEY) {
       if (ch == DoubleQuote) {
-        scanString
+        scanString(stack.head)
         rscan(SEPARATOR, stack)
       } else {
         throw unexpected("DoubleQuote")
@@ -333,7 +299,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  private def scanNumber: Unit = {
+  private def scanNumber(ctx: JSONContext[J]): Unit = {
     val numberStart = cursor
 
     var ch = s(cursor)
@@ -392,7 +358,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
 
     val numberEnd = cursor
     if (numberStart < numberEnd) {
-      eventHandler.numberValue(s, numberStart, numberEnd, dotIndex, expIndex)
+      ctx.addNumber(s, numberStart, numberEnd, dotIndex, expIndex)
     }
   }
 
@@ -405,31 +371,31 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     }
   }
 
-  private def scanTrue: Unit = {
+  private def scanTrue(ctx: JSONContext[J]): Unit = {
     ensure(4)
     if (s(cursor) == 't' && s(cursor + 1) == 'r' && s(cursor + 2) == 'u' && s(cursor + 3) == 'e') {
       cursor += 4
-      eventHandler.booleanValue(s, true, cursor - 4, cursor)
+      ctx.addBoolean(s, true, cursor - 4, cursor)
     } else {
       throw unexpected("true")
     }
   }
 
-  private def scanFalse: Unit = {
+  private def scanFalse(ctx: JSONContext[J]): Unit = {
     ensure(5)
     if (s(cursor) == 'f' && s(cursor + 1) == 'a' && s(cursor + 2) == 'l' && s(cursor + 3) == 's' && s(cursor + 4) == 'e') {
       cursor += 5
-      eventHandler.booleanValue(s, false, cursor - 5, cursor)
+      ctx.addBoolean(s, false, cursor - 5, cursor)
     } else {
       throw unexpected("false")
     }
   }
 
-  private def scanNull: Unit = {
+  private def scanNull(ctx: JSONContext[J]): Unit = {
     ensure(4)
     if (s(cursor) == 'n' && s(cursor + 1) == 'u' && s(cursor + 2) == 'l' && s(cursor + 3) == 'l') {
       cursor += 4
-      eventHandler.nullValue(s, cursor - 4, cursor)
+      ctx.addNull(s, cursor - 4, cursor)
     } else {
       throw unexpected("null")
     }
@@ -451,13 +417,13 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
     i
   }
 
-  private final def scanString: Unit = {
+  private final def scanString(ctx: JSONContext[J]): Unit = {
     cursor += 1
     val stringStart = cursor
     val k           = scanSimpleString
     if (k != -1) {
       cursor += k + 1
-      eventHandler.stringValue(s, stringStart, cursor - 1)
+      ctx.addString(s, stringStart, cursor - 1)
       return
     }
 
@@ -474,7 +440,7 @@ class JSONScanner(s: JSONSource, eventHandler: JSONEventHandler) extends LogSupp
           scanUtf8
       }
     }
-    eventHandler.stringValue(s, stringStart, cursor - 1)
+    ctx.addString(s, stringStart, cursor - 1)
   }
 
 //  def scanUtf8_slow: Unit = {
