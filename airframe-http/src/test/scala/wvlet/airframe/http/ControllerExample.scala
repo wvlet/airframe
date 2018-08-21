@@ -15,7 +15,6 @@ package wvlet.airframe.http
 
 import java.util.UUID
 
-import javax.ws.rs._
 import wvlet.log.LogSupport
 
 object ControllerExample {
@@ -36,6 +35,7 @@ trait ControllerExample extends LogSupport {
     u
   }
 
+  // Request body -> function arg (CreateUserRequest) mapping
   @Endpoint(path = "/user", method = HttpMethod.POST)
   def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
