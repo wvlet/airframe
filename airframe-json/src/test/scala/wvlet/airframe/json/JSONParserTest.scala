@@ -15,11 +15,12 @@ package wvlet.airframe.json
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON.JSONValue
+import wvlet.log.io.IOUtil
 
 /**
   *
   */
-class JSONValueBuilderTest extends AirframeSpec {
+class JSONParserTest extends AirframeSpec {
 
   def parse(s: String): JSONValue = {
     val v = JSON.parse(JSONSource.fromString(s))
@@ -27,10 +28,16 @@ class JSONValueBuilderTest extends AirframeSpec {
     v
   }
 
+  lazy val twitterJson = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+
   "JSONParser" should {
     "parser json string" in {
       parse("{}")
       parse("""{"id":1, "name":"leo", "value":0.1, "num":10000000000000000000000000}""")
+    }
+
+    "parser twiter.json as JSONValue" in {
+      val j = JSON.parse(twitterJson)
     }
   }
 }

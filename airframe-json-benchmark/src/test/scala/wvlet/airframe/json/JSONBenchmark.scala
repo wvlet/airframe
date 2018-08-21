@@ -13,9 +13,6 @@
  */
 package wvlet.airframe.json
 
-import java.nio.ByteBuffer
-import java.nio.charset.StandardCharsets
-
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.log.io.{IOUtil, Timer}
@@ -27,7 +24,7 @@ import scala.util.Random
   */
 class JSONBenchmark extends AirframeSpec with Timer {
 
-  def bench(benchName:String, json:String, N:Int = 10, B:Int=3): Unit = {
+  def bench(benchName: String, json: String, N: Int = 5, B: Int = 2): Unit = {
     val jsonSource = JSONSource.fromString(json)
     time(benchName, repeat = N, blockRepeat = B) {
       block("airframe      ") {
@@ -80,10 +77,6 @@ class JSONBenchmark extends AirframeSpec with Timer {
       })
       val jsonArray = JSONArray(b.result()).toJSON
       bench("string array", jsonArray)
-    }
-
-    "parser twiter.json as JSONValue" in {
-      val j = JSON.parse(twitterJson)
     }
   }
 
