@@ -18,7 +18,7 @@ import java.util.UUID
 import javax.ws.rs._
 import wvlet.log.LogSupport
 
-object ServiceExample {
+object ControllerExample {
   case class User(id: String, name: String)
   case class CreateUserRequest(name: String)
 }
@@ -26,8 +26,8 @@ object ServiceExample {
 /**
   *
   */
-trait ServiceExample extends LogSupport {
-  import ServiceExample._
+trait ControllerExample extends LogSupport {
+  import ControllerExample._
 
   @Endpoint(path = "/user/:id", method = HttpMethod.GET)
   def getUser(id: String): User = {
@@ -37,10 +37,10 @@ trait ServiceExample extends LogSupport {
   }
 
   @Endpoint(path = "/user", method = HttpMethod.POST)
-  def newUser(userUpdateRequest: CreateUserRequest): User = {
+  def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
-    val newUser = User(UUID.randomUUID().toString, userUpdateRequest.name)
-    info(s"create user: ${newUser}")
+    val newUser = User(UUID.randomUUID().toString, createUserRequest.name)
+    info(s"create user: ${newUser}, create request:${createUserRequest}")
     newUser
   }
 

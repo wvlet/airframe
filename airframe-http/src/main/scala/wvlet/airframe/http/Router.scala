@@ -21,7 +21,7 @@ import wvlet.surface.reflect._
 
 import scala.reflect.runtime.{universe => ru}
 
-class Router(routes: Seq[RequestRoute]) {
+class Router(val routes: Seq[RequestRoute]) {
 
   def findRoute(request: HttpRequest): Option[RequestRoute] = {
     routes
@@ -31,6 +31,38 @@ class Router(routes: Seq[RequestRoute]) {
         request.path.startsWith(r.pathPrefix)
       }
   }
+
+  /**
+    * Add methods annotated with @Endpoint to the routing table
+    */
+  def add[Controller: ru.TypeTag]: Router = {
+    // Import ReflectSurface to find method annotations (Endpoint)
+    import wvlet.surface.reflect._
+
+    // Check prefix
+    val serviceSurface = surface.of[Controller]
+    val prefixPath =
+      serviceSurface
+        .findAnnotationOf[Endpoint]
+        .map(_.path())
+        .getOrElse("")
+
+    val newRoutes =
+      surface
+        .methodsOf[Controller]
+        .map(m => (m, m.findAnnotationOf[Endpoint]))
+        .collect {
+          case (m: ReflectMethodSurface, Some(endPoint)) =>
+            RequestRoute(serviceSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+        }
+
+    new Router(routes ++ newRoutes)
+  }
+}
+
+object Router {
+  def of[Controller: ru.TypeTag]: Router = apply().add[Controller]
+  def apply(): Router                    = new Router(Seq.empty)
 }
 
 case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
@@ -53,30 +85,34 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
         .mkString("/")
   }
 
-  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
-    // Resolving path parameter values
-    // For example, /user/:id with /user/1 gives { id -> 1 }
+  // TODO use Airframe session for find bindings
+  private def emptyValueFinder(request: HttpRequest) = { s: Surface =>
+    s.rawType match {
+      case c if c == classOf[HttpRequest] =>
+        // Bind HttpRequest in the function argument
+        request
+      case _ =>
+        val codec = MessageCodec.default.of(s)
+        ParamListCodec.defaultEmptyParamBinder(s)
+    }
+  }
+
+  /**
+    * Resolving path parameter values. For example, /user/:id with /user/1 gives { id -> 1 }
+    */
+  private def pathParameterMap(request: HttpRequest): Map[String, String] = {
     val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
       elem.substring(1) -> actual
     }).toMap[String, String]
+    pathParams
+  }
 
-    val methodParams = request.query ++ pathParams
-
-    // TODO use Airframe session for find bindings
-    val emptyValueFinder = { s: Surface =>
-      s.rawType match {
-        case c if c == classOf[HttpRequest] =>
-          // Bind HttpRequest in the function argument
-          request
-        case _ =>
-          val codec = MessageCodec.default.of(s)
-
-          ParamListCodec.defaultEmptyParamBinder(s)
-      }
-    }
+  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
+    // Override url query parameters with method path parameter values
+    val methodParams = request.query ++ pathParameterMap(request)
 
     // TODO initialize MethodCaller outside this function for reuse
-    val methodCallBuilder = MethodCaller.of(methodSurface, emptyValueFinder)
+    val methodCallBuilder = MethodCaller.of(methodSurface, emptyValueFinder(request))
     val methodCall        = methodCallBuilder.prepare(methodParams)
     debug(methodCall)
 
@@ -84,36 +120,4 @@ case class RequestRoute(serviceSurface: Surface, method: HttpMethod, path: Strin
       methodSurface.call(serviceObj, methodCall.paramArgs: _*)
     }
   }
-}
-
-case class RouteBuilder(routes: Seq[RequestRoute] = Seq.empty) {
-
-  def build: Router = {
-    new Router(routes)
-  }
-
-  /**
-    * Find methods annotated with [javax.ws.rs.Path]
-    */
-  def add[A: ru.TypeTag]: RouteBuilder = {
-    // Check prefix
-    val serviceSurface = surface.of[A]
-    val prefixPath =
-      serviceSurface
-        .findAnnotationOf[Endpoint]
-        .map(_.path())
-        .getOrElse("")
-
-    val newRoutes =
-      surface
-        .methodsOf[A]
-        .map(m => (m, m.findAnnotationOf[Endpoint]))
-        .collect {
-          case (m: ReflectMethodSurface, Some(endPoint)) =>
-            RequestRoute(serviceSurface, endPoint.method(), prefixPath + endPoint.path(), m)
-        }
-
-    RouteBuilder(routes ++ newRoutes)
-  }
-
 }
