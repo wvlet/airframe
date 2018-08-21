@@ -114,7 +114,7 @@ case class Route(serviceSurface: Surface, method: HttpMethod, path: String, meth
     val methodArgs: Seq[Any] =
       for (arg <- methodSurface.args) yield {
         arg.surface.rawType match {
-          case c if c == classOf[HttpRequest] =>
+          case cl if classOf[HttpRequest].isAssignableFrom(cl) =>
             // Bind the current http request instance
             request
           case _ =>
