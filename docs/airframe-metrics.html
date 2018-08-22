@@ -59,7 +59,7 @@ measuring elapsed times.</p>
 <h3 id="code-example">Code Example</h3>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
 
-<span class="k">val</span> <span class="n">w</span> <span class="k">=</span> 
+<span class="k">val</span> <span class="n">w</span> <span class="k">=</span>
   <span class="nc">TimeWindow</span>
   <span class="o">.</span><span class="n">withTimeZone</span><span class="o">(</span><span class="s">"PDT"</span><span class="o">)</span>  <span class="c1">// Set a time zone (you can also use withSystemTimeZone, withUTC, etc.)
 </span>  <span class="o">.</span><span class="n">withOffset</span><span class="o">(</span><span class="s">"2016-06-26 01:23:45-0700"</span><span class="o">)</span> <span class="c1">// Specify the context time. The default is the current time.
@@ -67,8 +67,8 @@ measuring elapsed times.</p>
 <span class="c1">// last 7 days
 </span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d"</span><span class="o">))</span>     <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 00:00:00-0700)
 </span>
-<span class="c1">// last 7 days to now 
-</span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d/now"</span><span class="o">))</span> <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700) 
+<span class="c1">// last 7 days to now
+</span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d/now"</span><span class="o">))</span> <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)
 </span></code></pre>
 </div>
 
@@ -104,19 +104,19 @@ DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
   </thead>
   <tbody>
     <tr>
-      <td><code class="highlighter-rouge">0h</code></td>
+      <td><code class="highlighter-rouge">1h</code></td>
       <td>this hour</td>
       <td><code class="highlighter-rouge">2016-06-26 01:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2016-06-26 02:00:00-0700</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">0d</code></td>
+      <td><code class="highlighter-rouge">1d</code></td>
       <td>today</td>
       <td><code class="highlighter-rouge">2016-06-26 00:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2016-06-27 00:00:00-0700</code></td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">0M</code></td>
+      <td><code class="highlighter-rouge">1M</code></td>
       <td>this month</td>
       <td><code class="highlighter-rouge">2016-06-01 00:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2016-07-01 00:00:00-0700</code></td>
@@ -207,7 +207,6 @@ DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
     </tr>
   </tbody>
 </table>
-
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
 });
