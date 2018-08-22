@@ -60,7 +60,7 @@ When writing data processing programs of time-series data, we usually don't care
 ```scala
 import wvlet.airframe.metrics.TimeWindow
 
-val w = 
+val w =
   TimeWindow
   .withTimeZone("PDT")  // Set a time zone (you can also use withSystemTimeZone, withUTC, etc.)
   .withOffset("2016-06-26 01:23:45-0700") // Specify the context time. The default is the current time.
@@ -68,8 +68,8 @@ val w =
 // last 7 days
 println(w.parse("-7d"))     // [2016-06-19 00:00:00-0700,2016-06-26 00:00:00-0700)
 
-// last 7 days to now 
-println(w.parse("-7d/now")) // [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700) 
+// last 7 days to now
+println(w.parse("-7d/now")) // [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)
 ```
 
 ## Time Window String Representation
@@ -95,9 +95,9 @@ Here are several examples of relative time window strings when the current time 
 
 | Duration| Definition | start      | end (exclusive) |
 |---------|------------|------------|-----------------|
-|   `0h`    | this hour  | `2016-06-26 01:00:00-0700` | `2016-06-26 02:00:00-0700` |
-|   `0d`    | today | `2016-06-26 00:00:00-0700` | `2016-06-27 00:00:00-0700` |
-|   `0M`    | this month | `2016-06-01 00:00:00-0700` | `2016-07-01 00:00:00-0700` |
+|   `1h`    | this hour  | `2016-06-26 01:00:00-0700` | `2016-06-26 02:00:00-0700` |
+|   `1d`    | today | `2016-06-26 00:00:00-0700` | `2016-06-27 00:00:00-0700` |
+|   `1M`    | this month | `2016-06-01 00:00:00-0700` | `2016-07-01 00:00:00-0700` |
 |  `-1h`   | last hour   |  `2016-06-26 00:00:00-0700` | `2016-06-26 01:00:00-0700`|
 |  `-1h/now`   | last hour to now  |  `2016-06-26 00:00:00-0700` | `2016-06-26 01:23:45-0700`|
 |`-60m/2017-01-23 01:23:45`| last 60 minutes to now| `2017-01-23 00:23:00-0700` | `2017-01-23 01:23:45-0700`|
@@ -112,4 +112,3 @@ Here are several examples of relative time window strings when the current time 
 |  `-1y`    | last year  |`2015-01-01 00:00:00-0700` | `2016-01-01 00:00:00-0700`|
 |`-1h/2017-01-23 01:00:00`| last hour to a given offset | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1h/2017-01-23 01:23:45`| last hour to a given offset | `2017-01-23 00:00:00-0700` | `2017-01-23 01:23:45-0700`|
-
