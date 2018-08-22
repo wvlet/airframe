@@ -62,6 +62,18 @@ class TimeWindowTest extends AirframeSpec {
 
       // The default offset is 0(UNIT) (the beginning of the given time unit)
 
+      // 0 means no duration from the beginning of specified time unit
+      parse("0h", "[2016-06-26 01:00:00-0700,2016-06-26 01:00:00-0700)")
+      parse("0d", "[2016-06-26 00:00:00-0700,2016-06-26 00:00:00-0700)")
+      parse("0M", "[2016-06-01 00:00:00-0700,2016-06-01 00:00:00-0700)")
+
+      // 1 hour from the beginning of today
+      parse("1h", "[2016-06-26 01:00:00-0700,2016-06-26 02:00:00-0700)")
+      // today
+      parse("1d", "[2016-06-26 00:00:00-0700,2016-06-27 00:00:00-0700)")
+      // this month
+      parse("1M", "[2016-06-01 00:00:00-0700,2016-07-01 00:00:00-0700)")
+
       // 7 days ago until at the beginning of today.
       // 0d := the beginning of the day
       // [-7d, 0d)
