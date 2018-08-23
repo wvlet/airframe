@@ -15,7 +15,7 @@ package wvlet.airframe.metrics
 
 import java.time.ZonedDateTime
 
-case class TimeVector(x: Long, offset: Long, unit: TimeUnit) {
+case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
 
   def timeWindowFrom(context: ZonedDateTime): TimeWindow = {
     val grid = unit.truncate(context)
@@ -45,23 +45,23 @@ object TimeVector {
       //   |----------x----------|
       //   <---------------------| x = -1, 1 unit distance from the offset
       //  grid (offset=0)  offset = 1
-      case "thisHour"  => TimeVector(-1, 1, TimeUnit.Hour)
-      case "today"     => TimeVector(-1, 1, TimeUnit.Day)
-      case "thisWeek"  => TimeVector(-1, 1, TimeUnit.Week)
-      case "thisMonth" => TimeVector(-1, 1, TimeUnit.Month)
-      case "thisYear"  => TimeVector(-1, 1, TimeUnit.Year)
+      case "thisHour"  => TimeVector(-1, 1, TimeWindowUnit.Hour)
+      case "today"     => TimeVector(-1, 1, TimeWindowUnit.Day)
+      case "thisWeek"  => TimeVector(-1, 1, TimeWindowUnit.Week)
+      case "thisMonth" => TimeVector(-1, 1, TimeWindowUnit.Month)
+      case "thisYear"  => TimeVector(-1, 1, TimeWindowUnit.Year)
       // past
-      case "lastHour"  => TimeVector(-1, 0, TimeUnit.Hour)
-      case "yesterday" => TimeVector(-1, 0, TimeUnit.Day)
-      case "lastWeek"  => TimeVector(-1, 0, TimeUnit.Week)
-      case "lastMonth" => TimeVector(-1, 0, TimeUnit.Month)
-      case "lastYear"  => TimeVector(-1, 0, TimeUnit.Year)
+      case "lastHour"  => TimeVector(-1, 0, TimeWindowUnit.Hour)
+      case "yesterday" => TimeVector(-1, 0, TimeWindowUnit.Day)
+      case "lastWeek"  => TimeVector(-1, 0, TimeWindowUnit.Week)
+      case "lastMonth" => TimeVector(-1, 0, TimeWindowUnit.Month)
+      case "lastYear"  => TimeVector(-1, 0, TimeWindowUnit.Year)
       // future
-      case "nextHour"  => TimeVector(1, 1, TimeUnit.Hour)
-      case "tomorrow"  => TimeVector(1, 1, TimeUnit.Day)
-      case "nextWeek"  => TimeVector(1, 1, TimeUnit.Week)
-      case "nextMonth" => TimeVector(1, 1, TimeUnit.Month)
-      case "nextYear"  => TimeVector(1, 1, TimeUnit.Year)
+      case "nextHour"  => TimeVector(1, 1, TimeWindowUnit.Hour)
+      case "tomorrow"  => TimeVector(1, 1, TimeWindowUnit.Day)
+      case "nextWeek"  => TimeVector(1, 1, TimeWindowUnit.Week)
+      case "nextMonth" => TimeVector(1, 1, TimeWindowUnit.Month)
+      case "nextYear"  => TimeVector(1, 1, TimeWindowUnit.Year)
 
       case other =>
         durationPattern.findFirstMatchIn(s) match {
@@ -69,7 +69,7 @@ object TimeVector {
             throw new IllegalArgumentException(s"Invalid duration: ${s}")
           case Some(m) =>
             val length = m.group("num").toInt
-            val unit   = TimeUnit.of(m.group("unit"))
+            val unit   = TimeWindowUnit.of(m.group("unit"))
             m.group("prefix") match {
               case "-" | "last" =>
                 TimeVector(-length, 0, unit)
