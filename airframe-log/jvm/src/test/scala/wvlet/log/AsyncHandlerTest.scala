@@ -1,5 +1,7 @@
 package wvlet.log
 
+import java.util.concurrent.{ExecutorService, Executors, TimeUnit}
+
 import wvlet.log.LogFormatter.BareFormatter
 import wvlet.log.io.IOUtil._
 import wvlet.log.io.Timer
@@ -43,6 +45,18 @@ class AsyncHandlerTest extends Spec with Timer {
       al.setLogLevel(LogLevel.INFO)
       sl.setLogLevel(LogLevel.INFO)
 
+      sl.setLogLevel(LogLevel.INFO)
+
+      def withThreadManager[U](body: ExecutorService => U): U = {
+        val threadManager = Executors.newFixedThreadPool(Runtime.getRuntime.availableProcessors())
+        try {
+          body(threadManager)
+        } finally {
+          threadManager.shutdown()
+          while (!threadManager.awaitTermination(10, TimeUnit.MILLISECONDS)) {}
+        }
+      }
+
       val result = for ((handlerName, handler) <- Seq(("log-with-heavy-handler", HeavyHandler),
                                                       ("log-with-fast-handler", NullHandler))) yield {
         time(s"${handlerName}", repeat = R0, blockRepeat = R1) {
@@ -52,19 +66,35 @@ class AsyncHandlerTest extends Spec with Timer {
             // sync
             sl.resetHandler(handler)
 
-            // Temporarily removed to handle missing parallel collection issue of Scala 2.13.0-M4
+            // Using a thread manager explicitly because of parallel collection issue of Scala 2.13.0-M4
             //import CompatParColls.Converters._
-//            block("async") {
-//              for (i <- (0 until N).par) {
-//                al.info(s"hello world: ${i}")
-//              }
-//            }
-//
-//            block("sync") {
-//              for (i <- (0 until N).par) {
-//                sl.info(s"hello world: ${i}")
-//              }
-//            }
+            block("async") {
+              withThreadManager { threadManager =>
+                for (i <- (0 until N)) {
+                  threadManager.submit(
+                    new Runnable {
+                      override def run(): Unit = {
+                        al.info(s"hello world: ${i}")
+                      }
+                    }
+                  )
+                }
+              }
+            }
+
+            block("sync") {
+              withThreadManager { threadManager =>
+                for (i <- (0 until N)) {
+                  threadManager.submit(
+                    new Runnable {
+                      override def run(): Unit = {
+                        sl.info(s"hello world: ${i}")
+                      }
+                    }
+                  )
+                }
+              }
+            }
           }
         }
       }
