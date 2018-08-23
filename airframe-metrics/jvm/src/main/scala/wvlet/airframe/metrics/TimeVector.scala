@@ -14,15 +14,14 @@
 package wvlet.airframe.metrics
 
 import java.time.ZonedDateTime
-import java.time.temporal.ChronoUnit
 
-case class TimeVector(x: Long, offset: Long, unit: ChronoUnit) {
+case class TimeVector(x: Long, offset: Long, unit: TimeUnit) {
 
   def timeWindowFrom(context: ZonedDateTime): TimeWindow = {
-    val grid = TimeWindow.truncateTo(context, unit)
+    val grid = unit.truncate(context)
 
-    val startOffset = grid.plus(offset, unit)
-    val end         = startOffset.plus(x, unit)
+    val startOffset = unit.increment(grid, offset)
+    val end         = unit.increment(startOffset, x)
 
     val onGrid = grid.compareTo(context) == 0
     val start  = if (onGrid) startOffset else context
@@ -36,7 +35,7 @@ case class TimeVector(x: Long, offset: Long, unit: ChronoUnit) {
 }
 
 object TimeVector {
-  private val durationPattern = "^([+-]|last|next)?([0-9]+)(s|m|d|h|w|M|y)".r("prefix", "num", "unit")
+  private val durationPattern = "^([+-]|last|next)?([0-9]+)(s|m|d|h|w|M|q|y)".r("prefix", "num", "unit")
 
   def apply(s: String): TimeVector = {
     s match {
@@ -46,23 +45,23 @@ object TimeVector {
       //   |----------x----------|
       //   <---------------------| x = -1, 1 unit distance from the offset
       //  grid (offset=0)  offset = 1
-      case "thisHour"  => TimeVector(-1, 1, ChronoUnit.HOURS)
-      case "today"     => TimeVector(-1, 1, ChronoUnit.DAYS)
-      case "thisWeek"  => TimeVector(-1, 1, ChronoUnit.WEEKS)
-      case "thisMonth" => TimeVector(-1, 1, ChronoUnit.MONTHS)
-      case "thisYear"  => TimeVector(-1, 1, ChronoUnit.YEARS)
+      case "thisHour"  => TimeVector(-1, 1, TimeUnit.Hour)
+      case "today"     => TimeVector(-1, 1, TimeUnit.Day)
+      case "thisWeek"  => TimeVector(-1, 1, TimeUnit.Week)
+      case "thisMonth" => TimeVector(-1, 1, TimeUnit.Month)
+      case "thisYear"  => TimeVector(-1, 1, TimeUnit.Year)
       // past
-      case "lastHour"  => TimeVector(-1, 0, ChronoUnit.HOURS)
-      case "yesterday" => TimeVector(-1, 0, ChronoUnit.DAYS)
-      case "lastWeek"  => TimeVector(-1, 0, ChronoUnit.WEEKS)
-      case "lastMonth" => TimeVector(-1, 0, ChronoUnit.MONTHS)
-      case "lastYear"  => TimeVector(-1, 0, ChronoUnit.YEARS)
+      case "lastHour"  => TimeVector(-1, 0, TimeUnit.Hour)
+      case "yesterday" => TimeVector(-1, 0, TimeUnit.Day)
+      case "lastWeek"  => TimeVector(-1, 0, TimeUnit.Week)
+      case "lastMonth" => TimeVector(-1, 0, TimeUnit.Month)
+      case "lastYear"  => TimeVector(-1, 0, TimeUnit.Year)
       // future
-      case "nextHour"  => TimeVector(1, 1, ChronoUnit.HOURS)
-      case "tomorrow"  => TimeVector(1, 1, ChronoUnit.DAYS)
-      case "nextWeek"  => TimeVector(1, 1, ChronoUnit.WEEKS)
-      case "nextMonth" => TimeVector(1, 1, ChronoUnit.MONTHS)
-      case "nextYear"  => TimeVector(1, 1, ChronoUnit.YEARS)
+      case "nextHour"  => TimeVector(1, 1, TimeUnit.Hour)
+      case "tomorrow"  => TimeVector(1, 1, TimeUnit.Day)
+      case "nextWeek"  => TimeVector(1, 1, TimeUnit.Week)
+      case "nextMonth" => TimeVector(1, 1, TimeUnit.Month)
+      case "nextYear"  => TimeVector(1, 1, TimeUnit.Year)
 
       case other =>
         durationPattern.findFirstMatchIn(s) match {
@@ -70,7 +69,7 @@ object TimeVector {
             throw new IllegalArgumentException(s"Invalid duration: ${s}")
           case Some(m) =>
             val length = m.group("num").toInt
-            val unit   = unitOf(m.group("unit"))
+            val unit   = TimeUnit.of(m.group("unit"))
             m.group("prefix") match {
               case "-" | "last" =>
                 TimeVector(-length, 0, unit)
@@ -82,19 +81,4 @@ object TimeVector {
         }
     }
   }
-
-  private val unitTable: Map[String, ChronoUnit] = Map(
-    "s" -> ChronoUnit.SECONDS,
-    "m" -> ChronoUnit.MINUTES,
-    "d" -> ChronoUnit.DAYS,
-    "h" -> ChronoUnit.HOURS,
-    "w" -> ChronoUnit.WEEKS,
-    "M" -> ChronoUnit.MONTHS,
-    "y" -> ChronoUnit.YEARS
-  )
-
-  private[metrics] def unitOf(s: String): ChronoUnit = {
-    unitTable.getOrElse(s, throw new IllegalArgumentException(s"Unknown unit type ${s}"))
-  }
-
 }
