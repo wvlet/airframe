@@ -80,8 +80,8 @@ Values with (or without)<code class="highlighter-rouge">-</code> sign means the 
 <h3 id="format">Format</h3>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
-// seconds, minutes, hours, days, weeks, (M)onths, years
-UNIT     := s | m | h | d | w | M | y
+// seconds, minutes, hours, days, weeks, (M)onths, quarters, years
+UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
 RANGE    := (DURATION) (/ (OFFSET))?
@@ -186,6 +186,12 @@ DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
       <td>last month</td>
       <td><code class="highlighter-rouge">2016-05-01 00:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2016-06-01 00:00:00-0700</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">-1q</code></td>
+      <td>last quarter</td>
+      <td><code class="highlighter-rouge">2016-01-01 00:00:00-0700</code></td>
+      <td><code class="highlighter-rouge">2016-04-01 00:00:00-0700</code></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">-1y</code></td>
