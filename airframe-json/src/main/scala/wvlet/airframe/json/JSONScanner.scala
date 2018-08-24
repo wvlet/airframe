@@ -120,10 +120,10 @@ object JSONScanner {
   }
 }
 
-class JSONScanner[J](s: JSONSource, handler: JSONHandler[J]) extends LogSupport {
-  private var cursor: Int       = 0
-  private var lineStartPos: Int = 0
-  private var line: Int         = 0
+class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler: JSONHandler[J]) extends LogSupport {
+  private[this] var cursor: Int       = 0
+  private[this] var lineStartPos: Int = 0
+  private[this] var line: Int         = 0
 
   import JSONToken._
   import JSONScanner._
