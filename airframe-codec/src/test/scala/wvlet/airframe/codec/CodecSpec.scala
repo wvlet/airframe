@@ -60,7 +60,7 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   }
 
   def checkCodec[A](codec: MessageCodec[A], v: A): Unit = {
-    val b = codec.packToBytes(v)
+    val b = codec.toMsgPack(v)
     val r = codec.unpackBytes(b)
     r shouldBe defined
     v shouldBe r.get

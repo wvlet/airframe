@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.{Session, bind}
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
 

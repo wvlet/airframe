@@ -91,22 +91,23 @@ class FinagleRouterTest extends AirframeSpec {
         val client = Http.client
           .newService(s"localhost:${port}")
         val f1 = client(Request("/v1/info")).map { response =>
-          info(response.contentString)
+          debug(response.contentString)
         }
         val f2 = client(Request("/v1/rich_info")).map { r =>
-          info(r.contentString)
+          debug(r.contentString)
         }
 
         Await.result(f1.join(f2))
 
         // making many requests
-        val futures = (0 until 10).map { x =>
+        val futures = (0 until 5).map { x =>
           client(Request("/v1/rich_info")).map { response =>
             response.contentString
           }
         }
 
-        Await.result(Future.collect(futures))
+        val result = Await.result(Future.collect(futures))
+        debug(result.mkString(", "))
       }
     }
   }

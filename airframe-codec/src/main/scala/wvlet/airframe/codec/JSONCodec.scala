@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.JSONValue
 
@@ -25,6 +25,12 @@ object JSONCodec extends MessageCodec[String] {
   override def pack(p: MessagePacker, json: String): Unit = {
     val j = JSON.parse(json)
     packJsonValue(p, j)
+  }
+
+  def toMsgPack(jsonBytes: Array[Byte]): Array[Byte] = {
+    val packer = MessagePack.newDefaultBufferPacker()
+    packJsonValue(packer, JSON.parse(jsonBytes))
+    packer.toByteArray
   }
 
   private def packJsonValue(p: MessagePacker, v: JSONValue): Unit = {

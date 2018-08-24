@@ -68,7 +68,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
           case o: ObjectCodec[_] =>
             o.asInstanceOf[ObjectCodec[A]].packAsMapBytes(a)
           case m: MessageCodec[_] =>
-            m.asInstanceOf[MessageCodec[A]].packToBytes(a)
+            m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
           case _ =>
             throw new IllegalArgumentException(s"Unknown codec: ${rs}")
         }

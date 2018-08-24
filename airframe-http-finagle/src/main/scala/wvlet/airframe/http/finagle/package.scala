@@ -32,6 +32,12 @@ package object finagle {
     override def path: String               = request.path
     override def query: Map[String, String] = request.params
     override def contentString: String      = request.contentString
+    override def contentBytes: Array[Byte] = {
+      val size = request.content.length
+      val b    = new Array[Byte](size)
+      request.content.write(b, 0)
+      b
+    }
   }
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {

@@ -21,7 +21,7 @@ import wvlet.airframe.json.JSON
   */
 class JSONCodecTest extends AirframeSpec {
   def check(json: String): Unit = {
-    val b = JSONCodec.packToBytes(json)
+    val b = JSONCodec.toMsgPack(json)
     JSONCodec.unpackBytes(b) match {
       case Some(parsedJson) =>
         JSON.parse(parsedJson) shouldBe JSON.parse(json)
