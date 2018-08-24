@@ -81,8 +81,8 @@ Values with (or without)`-` sign means the *last* time range, and values with `+
 
 ```
 DURATION := (+ | -)?(INTEGER)(UNIT)
-// seconds, minutes, hours, days, weeks, (M)onths, years
-UNIT     := s | m | h | d | w | M | y
+// seconds, minutes, hours, days, weeks, (M)onths, quarters, years
+UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
 RANGE    := (DURATION) (/ (OFFSET))?
@@ -109,6 +109,7 @@ Here are several examples of relative time window strings when the current time 
 |`+7d/now`| next 7 days from now | `2016-06-26 01:23:45-0700` | `2016-07-03 00:00:00-0700`|
 |  `-1w`    | last week  |`2016-06-13 00:00:00-0700` | `2016-06-20 00:00:00-0700`|
 |  `-1M`    | last month |`2016-05-01 00:00:00-0700` | `2016-06-01 00:00:00-0700`|
+|  `-1q`    | last quarter |`2016-01-01 00:00:00-0700` | `2016-04-01 00:00:00-0700`|
 |  `-1y`    | last year  |`2015-01-01 00:00:00-0700` | `2016-01-01 00:00:00-0700`|
 |`-1h/2017-01-23 01:00:00`| last hour to a given offset | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1h/2017-01-23 01:23:45`| last hour to a given offset | `2017-01-23 00:00:00-0700` | `2017-01-23 01:23:45-0700`|

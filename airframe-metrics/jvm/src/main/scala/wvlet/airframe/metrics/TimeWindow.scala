@@ -118,22 +118,6 @@ object TimeWindow {
   def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
   def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
   def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
-
-  def truncateTo(t: ZonedDateTime, unit: ChronoUnit): ZonedDateTime = {
-    unit match {
-      case ChronoUnit.SECONDS | ChronoUnit.MINUTES | ChronoUnit.HOURS | ChronoUnit.DAYS =>
-        t.truncatedTo(unit)
-      case ChronoUnit.WEEKS =>
-        t.truncatedTo(ChronoUnit.DAYS).`with`(DayOfWeek.MONDAY)
-      case ChronoUnit.MONTHS =>
-        t.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS)
-      case ChronoUnit.YEARS =>
-        t.withDayOfYear(1).truncatedTo(ChronoUnit.DAYS)
-      case other =>
-        throw new UnsupportedOperationException(s"${other} is not supported")
-    }
-  }
-
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
@@ -195,7 +179,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
         m.group("offset") match {
           case null =>
             // When offset is not given, use the truncated time
-            val context = TimeWindow.truncateTo(now, duration.unit)
+            val context = duration.unit.truncate(now)
             duration.timeWindowFrom(context)
           case offsetStr =>
             val offset = parseOffset(offsetStr)

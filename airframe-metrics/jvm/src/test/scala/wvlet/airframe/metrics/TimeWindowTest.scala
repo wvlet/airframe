@@ -128,6 +128,12 @@ class TimeWindowTest extends AirframeSpec {
       parse("-1h/2017-01-23 01:00:00", "[2017-01-23 00:00:00-0700,2017-01-23 01:00:00-0700)")
       parse("-1h/2017-01-23 01:23:45", "[2017-01-23 00:00:00-0700,2017-01-23 01:23:45-0700)")
       parse("-60m/2017-01-23 01:23:45", "[2017-01-23 00:23:00-0700,2017-01-23 01:23:45-0700)")
+
+      // quarter
+      parse("-1q", "[2016-01-01 00:00:00-0700,2016-04-01 00:00:00-0700)")
+      parse("1q", "[2016-04-01 00:00:00-0700,2016-07-01 00:00:00-0700)")
+      parse("-2q", "[2015-10-01 00:00:00-0700,2016-04-01 00:00:00-0700)")
+      parse("-1q/0y", "[2015-10-01 00:00:00-0700,2016-01-01 00:00:00-0700)")
     }
 
     "support human-friendly range" in {
@@ -187,10 +193,10 @@ class TimeWindowTest extends AirframeSpec {
       try {
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
         val t = TimeParser.parse("2017-04-04", ZoneOffset.of("-07:00"))
-        info(t)
+        debug(t)
         val w = TimeWindow.withTimeZone("PDT")
         val d = w.parse("-3d/2017-04-07")
-        info(d)
+        debug(d)
       } finally {
         TimeZone.setDefault(default)
       }
