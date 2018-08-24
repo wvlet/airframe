@@ -28,7 +28,6 @@ case class RichInfo(version: String, name: String)
 trait MyApi extends LogSupport {
   @Endpoint(path = "/v1/info")
   def getInfo: String = {
-    info("here")
     "hello MyApi"
   }
 
@@ -77,11 +76,12 @@ trait MyApiServer extends LogSupport {
 class FinagleRouterTest extends AirframeSpec {
   val port   = IOUtil.unusedPort
   val router = Router.of[MyApi]
+
   val d = newDesign
     .bind[FinagleRouter].toSingleton
     .bind[Router].toInstance(router)
-    .bind[ControllerProvider].to[FinagleControllerProvider]
     .bind[MyApi].toSingleton
+    .bind[ControllerProvider].to[FinagleControllerProvider]
     .bind[ResponseHandler[Response]].to[FinagleResponseHandler]
     .bind[MyServerConfig].toInstance(MyServerConfig(port))
 
@@ -100,6 +100,15 @@ class FinagleRouterTest extends AirframeSpec {
         }
 
         Await.result(f1.join(f2))
+
+        // making many requests
+        val futures = (0 until 10).map { x =>
+          client(Request("/v1/rich_info")).map { response =>
+            response.contentString
+          }
+        }
+
+        Await.result(Future.collect(futures))
       }
     }
   }
