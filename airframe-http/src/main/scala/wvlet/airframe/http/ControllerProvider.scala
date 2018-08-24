@@ -23,5 +23,5 @@ trait ControllerProvider {
 }
 
 trait ResponseHandler[Res] {
-  def toHttpResponse[A](a: A): Res
+  def toHttpResponse[A](responseSurface: Surface, a: A): Res
 }

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ValueType, Variable}
 import wvlet.log.LogSupport
 import wvlet.surface.reflect.CName
@@ -163,6 +163,12 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
 
   def packAsMap(p: MessagePacker, v: A): Unit = {
     paramListCodec.packAsMap(p, v)
+  }
+
+  def packAsMapBytes(v: A): Array[Byte] = {
+    val packer = MessagePack.newDefaultBufferPacker()
+    paramListCodec.packAsMap(packer, v)
+    packer.toByteArray
   }
 
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {

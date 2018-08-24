@@ -65,9 +65,9 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     }
     binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
-        getInstance(from)
+        getInstanceOf(from)
       case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
-        getInstance(factory.from)
+        getInstanceOf(factory.from)
     }
     debug(s"[${name}] Completed the initialization")
   }
@@ -98,7 +98,7 @@ private[airframe] class AirframeSession(sessionName: Option[String],
           case Some(x) =>
             x.asInstanceOf[A]
           case None =>
-            getInstance(surface).asInstanceOf[A]
+            getInstanceOf(surface).asInstanceOf[A]
         }
       case other =>
         register(surface, objectFactory)
@@ -119,7 +119,7 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     obj.asInstanceOf[AnyRef]
   }
 
-  private def getInstance(t: Surface): AnyRef = {
+  def getInstanceOf(t: Surface): AnyRef = {
     getInstance(t, List.empty)
   }
 

@@ -20,7 +20,7 @@ import wvlet.airframe.AirframeSpec
   *
   */
 class FinagleTest extends AirframeSpec {
-  "Finagle pacage" should {
+  "airframe-finagle package" should {
     "provide facade of http requests" in {
       import wvlet.airframe.http.finagle._
 

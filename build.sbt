@@ -553,7 +553,7 @@ lazy val finagle =
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION
       )
     )
-    .dependsOn(http, airframeSpecJVM % "test")
+    .dependsOn(http, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

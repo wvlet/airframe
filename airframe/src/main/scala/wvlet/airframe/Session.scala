@@ -52,6 +52,8 @@ trait Session extends AutoCloseable {
     */
   private[airframe] def get[A](surface: Surface): A
 
+  def getInstanceOf(surface: Surface): Any
+
   /**
     * Internal method for building an instance of type A using a provider generated object.
     *
