@@ -19,7 +19,7 @@ import com.twitter.util.{Await, Future}
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe._
-import wvlet.airframe.http.{ControllerProvider, Endpoint, ResponseHandler, Router}
+import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -77,13 +77,11 @@ class FinagleRouterTest extends AirframeSpec {
   val port   = IOUtil.unusedPort
   val router = Router.of[MyApi]
 
-  val d = newDesign
-    .bind[FinagleRouter].toSingleton
-    .bind[Router].toInstance(router)
-    .bind[MyApi].toSingleton
-    .bind[ControllerProvider].to[FinagleControllerProvider]
-    .bind[ResponseHandler[Response]].to[FinagleResponseHandler]
-    .bind[MyServerConfig].toInstance(MyServerConfig(port))
+  val d =
+    finagleDefaultDesign
+      .bind[Router].toInstance(router)
+      .bind[MyApi].toSingleton
+      .bind[MyServerConfig].toInstance(MyServerConfig(port))
 
   "FinagleRouter" should {
 

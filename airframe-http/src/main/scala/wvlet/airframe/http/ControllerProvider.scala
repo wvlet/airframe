@@ -13,15 +13,34 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.{Session, bind}
+import wvlet.log.LogSupport
 import wvlet.surface.Surface
+
+import scala.util.{Failure, Success, Try}
+import wvlet.airframe._
 
 /**
   *
   */
 trait ControllerProvider {
-  def find(controllerSurface: Surface): Option[Any]
+  def findController(controllerSurface: Surface): Option[Any]
 }
 
-trait ResponseHandler[Res] {
-  def toHttpResponse[A](responseSurface: Surface, a: A): Res
+trait ControllerProviderFromSession extends ControllerProvider with LogSupport {
+  private val session = bind[Session]
+
+  override def findController(controllerSurface: Surface): Option[Any] = {
+    Try(session.getInstanceOf(controllerSurface)) match {
+      case Success(controller) =>
+        Some(controller)
+      case Failure(e) =>
+        warn(e)
+        None
+    }
+  }
+}
+
+trait ResponseHandler[Req, Res] {
+  def toHttpResponse[A](request: Req, responseTypeSurface: Surface, a: A): Res
 }
