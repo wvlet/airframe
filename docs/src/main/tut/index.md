@@ -40,12 +40,11 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
 ## Getting Started
 
 [sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
-[sindex-link]: https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe_2.12
+[sindex-link]: https://index.scala-lang.org/wvlet/airframe
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
-[![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]](central-link)
-
+[![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
 Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/).
 For Scala 2.12.6 or later, Java 9 and 10 are also supported.
