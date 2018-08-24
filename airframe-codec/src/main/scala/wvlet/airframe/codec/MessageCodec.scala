@@ -77,6 +77,6 @@ object MessageCodec {
   trait ErrorCode
   case object INVALID_DATA extends ErrorCode
 
-  def default                            = new MessageCodecFactory(StandardCodec.standardCodec)
-  def of[A: ru.TypeTag]: MessageCodec[A] = default.of[A]
+  def defautlFactory                     = new MessageCodecFactory(StandardCodec.standardCodec)
+  def of[A: ru.TypeTag]: MessageCodec[A] = defautlFactory.of[A]
 }

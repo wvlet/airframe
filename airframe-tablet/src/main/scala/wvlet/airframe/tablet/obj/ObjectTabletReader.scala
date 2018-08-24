@@ -33,12 +33,12 @@ class ObjectTabletReader[A](elementCodec: MessageCodec[A], input: Seq[A]) extend
 
 object ObjectTabletReader {
   def newTabletReader[A](seq: Seq[A], surface: Surface, codec: Map[Surface, MessageCodec[_]] = Map.empty) = {
-    val elementCodec = MessageCodec.default.withCodecs(codec).of(surface)
+    val elementCodec = MessageCodec.defautlFactory.withCodecs(codec).of(surface)
     new ObjectTabletReader[A](elementCodec.asInstanceOf[MessageCodec[A]], seq)
   }
 
   def newTabletReaderOf[A: ru.TypeTag](seq: Seq[A], codec: Map[Surface, MessageCodec[_]] = Map.empty) = {
-    val elementCodec = MessageCodec.default.withCodecs(codec).of[A]
+    val elementCodec = MessageCodec.defautlFactory.withCodecs(codec).of[A]
     new ObjectTabletReader[A](elementCodec, seq)
   }
 }
