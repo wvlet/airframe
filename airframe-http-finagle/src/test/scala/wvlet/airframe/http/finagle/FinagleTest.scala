@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.nio.charset.StandardCharsets
+
 import com.twitter.finagle.http
 import wvlet.airframe.AirframeSpec
 
@@ -33,6 +35,7 @@ class FinagleTest extends AirframeSpec {
           r.path shouldBe "/hello"
           r.query shouldBe Map.empty
           r.contentString shouldBe "hello finagle"
+          r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
         }
     }
   }

@@ -22,7 +22,7 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 /**
-  * A filter for dispatching http requests with Finagle
+  * A filter for dispatching http requests to the predefined routes with Finagle
   */
 class FinagleRouter(router: Router,
                     controllerProvider: ControllerProvider,
@@ -51,6 +51,9 @@ class FinagleRouter(router: Router,
   }
 }
 
+/**
+  * Converting controller results into finagle http responses.
+  */
 trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
