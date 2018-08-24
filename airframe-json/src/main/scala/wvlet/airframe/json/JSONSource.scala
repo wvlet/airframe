@@ -33,7 +33,7 @@ object JSONSource {
   }
 }
 
-final class JSONSource(b: Array[Byte], val offset: Int, val size: Int) {
+final class JSONSource(private[this] val b: Array[Byte], private[this] val offset: Int, private[this] val size: Int) {
   assert(offset >= 0, s"The offset must be >= 0: ${offset}")
   assert(size >= 0, s"The size must be >= 0: ${size}")
   assert(offset + size <= b.length, s"The offset + size must be <= ${b.length}: ${offset}+${size}")
