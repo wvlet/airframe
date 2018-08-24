@@ -85,7 +85,7 @@ class RouterTest extends AirframeSpec {
       val s = new ControllerExample {}
 
       val serviceProvider = new ControllerProvider {
-        override def find(serviceSurface: Surface): Option[Any] = {
+        override def findController(serviceSurface: Surface): Option[Any] = {
           serviceSurface match {
             case sf if sf == surface.of[ControllerExample] => Some(s)
             case _                                         => None

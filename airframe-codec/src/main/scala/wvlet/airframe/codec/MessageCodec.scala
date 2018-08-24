@@ -28,7 +28,7 @@ trait MessageCodec[A] {
   // TODO add specialized methods for primitive values
   // def unpackInt(u:MessageUnpacker) : Int
 
-  def packToBytes(v: A): Array[Byte] = {
+  def toMsgPack(v: A): Array[Byte] = {
     val packer = MessagePack.newDefaultBufferPacker()
     pack(packer, v)
     packer.toByteArray

@@ -70,7 +70,7 @@ object Router {
   def apply(): Router                    = new Router(Seq.empty)
 }
 
-case class Route(serviceSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
+case class Route(controllerSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
     extends LogSupport {
   require(
     path.startsWith("/"),
@@ -90,6 +90,8 @@ case class Route(serviceSurface: Surface, method: HttpMethod, path: String, meth
         .mkString("/")
   }
 
+  def returnTypeSurface: Surface = methodSurface.returnType
+
   /**
     * Extracting path parameter values. For example, /user/:id with /user/1 gives { id -> 1 }
     */
@@ -102,11 +104,10 @@ case class Route(serviceSurface: Surface, method: HttpMethod, path: String, meth
 
   /**
     * Find a corresponding controller and call the matching methods
-    * @param controllerProvider
     * @param request
     * @return
     */
-  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
+  def buildControllerMethodArgs(request: HttpRequest): Seq[Any] = {
     // Collect URL query parameters and other parameteres embedded inside URL.
     val requestParams = request.query ++ extractPathParams(request)
 
@@ -123,13 +124,13 @@ case class Route(serviceSurface: Surface, method: HttpMethod, path: String, meth
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // String parameter to the method argument
-                argCodec.unpackBytes(StringCodec.packToBytes(paramValue))
+                argCodec.unpackBytes(StringCodec.toMsgPack(paramValue))
               case None =>
                 // Build from the content body
-                val content = request.contentString
-                if (content.nonEmpty) {
+                val contentBytes = request.contentBytes
+                if (contentBytes.nonEmpty) {
                   // JSON -> msgpack -> argument
-                  val msgpack = JSONCodec.packToBytes(content)
+                  val msgpack = JSONCodec.toMsgPack(contentBytes)
                   argCodec.unpackBytes(msgpack)
                 } else {
                   // Rerturn the method default argument if exists
@@ -141,9 +142,16 @@ case class Route(serviceSurface: Surface, method: HttpMethod, path: String, meth
         }
       }
     trace(s"(${methodSurface.args.mkString(", ")}) <=  [${methodArgs.mkString(", ")}]")
+    methodArgs
+  }
 
-    controllerProvider.find(serviceSurface).map { serviceObj =>
-      methodSurface.call(serviceObj, methodArgs: _*)
+  def call(controller: Any, methodArgs: Seq[Any]): Any = {
+    methodSurface.call(controller, methodArgs: _*)
+  }
+
+  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
+    controllerProvider.findController(controllerSurface).map { controller =>
+      call(controller, buildControllerMethodArgs(request))
     }
   }
 }

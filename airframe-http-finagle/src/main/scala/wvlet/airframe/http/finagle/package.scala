@@ -14,17 +14,30 @@
 package wvlet.airframe.http
 
 import com.twitter.finagle.http
+import wvlet.airframe.Design
 
 /**
   *
   */
 package object finagle {
+
+  def finagleDefaultDesign: Design =
+    httpDefaultDesign
+      .bind[FinagleRouter].toSingleton
+      .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
+
   implicit class FinagleHttpRequest(request: http.Request) extends HttpRequest {
     def asAirframeHttpRequest: HttpRequest  = this
     override def method: HttpMethod         = toHttpMethod(request.method)
     override def path: String               = request.path
     override def query: Map[String, String] = request.params
     override def contentString: String      = request.contentString
+    override def contentBytes: Array[Byte] = {
+      val size = request.content.length
+      val b    = new Array[Byte](size)
+      request.content.write(b, 0)
+      b
+    }
   }
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {

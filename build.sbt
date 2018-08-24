@@ -534,7 +534,12 @@ lazy val http =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(airframeJVM, surfaceJVM, jsonJVM, codec, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM,
+               airframeMacrosJVM % "compile-internal,test-internal",
+               surfaceJVM,
+               jsonJVM,
+               codec,
+               airframeSpecJVM % "test")
 
 val FINAGLE_VERSION = "18.8.0"
 lazy val finagle =
@@ -550,10 +555,12 @@ lazy val finagle =
         "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
-        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION
+        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
+        // Redirecting slf4j log in Finagle to airframe-log
+        "org.slf4j" % "slf4j-jdk14" % "1.7.25"
       )
     )
-    .dependsOn(http, airframeSpecJVM % "test")
+    .dependsOn(http, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

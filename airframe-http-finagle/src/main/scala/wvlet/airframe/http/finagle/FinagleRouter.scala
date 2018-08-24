@@ -13,28 +13,80 @@
  */
 package wvlet.airframe.http.finagle
 
+import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
-import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.http.{Router, ControllerProvider, ResponseHandler}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, ObjectCodec}
+import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
+import wvlet.log.LogSupport
+import wvlet.surface.Surface
 
 /**
-  * A filter for dispatching http requests with Finagle
+  * A filter for dispatching http requests to the predefined routes with Finagle
   */
-class FinagleRouter(router: Router, serviceProvider: ControllerProvider, responseHandler: ResponseHandler[Response])
-    extends SimpleFilter[Request, Response] {
+class FinagleRouter(router: Router,
+                    controllerProvider: ControllerProvider,
+                    responseHandler: ResponseHandler[Request, Response])
+    extends SimpleFilter[Request, Response]
+    with LogSupport {
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+    // Find a route matching to the request
     router.findRoute(request) match {
       case Some(route) =>
-        route.call(serviceProvider, request) match {
+        // Find the corresponding controller
+        controllerProvider.findController(route.controllerSurface) match {
+          case Some(controller) =>
+            // Call the method in this controller
+            val args   = route.buildControllerMethodArgs(request)
+            val result = route.call(controller, args)
+            Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
           case None =>
-            Future.exception(new IllegalStateException(s"${route.serviceSurface} is not found"))
-          case Some(x) =>
-            Future.value(responseHandler.toHttpResponse(x))
+            Future.exception(new IllegalStateException(s"Controller ${route.controllerSurface} is not found"))
         }
       case None =>
+        // No route is found
         service(request)
+    }
+  }
+}
+
+/**
+  * Converting controller results into finagle http responses.
+  */
+trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
+  def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
+    a match {
+      case r: Response =>
+        // Return the response as is
+        r
+      case s: String =>
+        val r = Response()
+        r.contentString = s
+        r
+      case _ =>
+        // Convert the response object into JSON
+        val rs = MessageCodec.default.of(responseSurface)
+        val bytes: Array[Byte] = rs match {
+          case o: ObjectCodec[_] =>
+            o.asInstanceOf[ObjectCodec[A]].packAsMapBytes(a)
+          case m: MessageCodec[_] =>
+            m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
+          case _ =>
+            throw new IllegalArgumentException(s"Unknown codec: ${rs}")
+        }
+
+        // TODO return application/msgpack content type
+        val json = JSONCodec.unpackBytes(bytes)
+        json match {
+          case Some(j) =>
+            val res = Response(Status.Ok)
+            res.setContentTypeJson()
+            res.setContentString(json.get)
+            res
+          case None =>
+            Response(Status.InternalServerError)
+        }
     }
   }
 }

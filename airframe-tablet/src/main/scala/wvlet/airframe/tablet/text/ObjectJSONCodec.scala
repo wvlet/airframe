@@ -33,7 +33,7 @@ case class ObjectJSONCodec[A](codec: ObjectCodec[A]) {
   }
 
   def fromJSON(json: String, v: MessageHolder): Unit = {
-    val jsonMessage = MessagePackRecord(JSONCodec.packToBytes(json))
+    val jsonMessage = MessagePackRecord(JSONCodec.toMsgPack(json))
     codec.unpack(jsonMessage.unpacker, v)
   }
 }
