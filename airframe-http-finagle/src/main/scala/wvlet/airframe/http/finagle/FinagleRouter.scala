@@ -65,9 +65,16 @@ trait FinagleResponseHandler extends ResponseHandler[Response] {
         r.contentString = s
         r
       case _ =>
-        val rs    = MessageCodec.default.of(responseSurface).asInstanceOf[ObjectCodec[A]]
-        val bytes = rs.packAsMapBytes(a)
-        val json  = JSONCodec.unpackBytes(bytes)
+        val rs = MessageCodec.default.of(responseSurface)
+        val bytes: Array[Byte] = rs match {
+          case o: ObjectCodec[_] =>
+            o.asInstanceOf[ObjectCodec[A]].packAsMapBytes(a)
+          case m: MessageCodec[_] =>
+            m.asInstanceOf[MessageCodec[A]].packToBytes(a)
+          case _ =>
+            throw new IllegalArgumentException(s"Unknown codec: ${rs}")
+        }
+        val json = JSONCodec.unpackBytes(bytes)
         json match {
           case Some(j) =>
             val res = Response(Status.Ok)
