@@ -27,7 +27,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private var holder: JSONValue                            = _
+      private[this] var holder: JSONValue                      = _
       override def isObjectContext                             = false
       override def closeContext(s: JSONSource, end: Int): Unit = {}
       override def add(v: JSONValue): Unit = {
@@ -38,8 +38,8 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def objectContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private var key: String = null
-      private val list        = Seq.newBuilder[(String, JSONValue)]
+      private[this] var key: String = null
+      private[this] val list        = Seq.newBuilder[(String, JSONValue)]
       override def closeContext(s: JSONSource, end: Int): Unit = {
         self.add(result)
       }
@@ -59,7 +59,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def arrayContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private val list                      = IndexedSeq.newBuilder[JSONValue]
+      private[this] val list                = IndexedSeq.newBuilder[JSONValue]
       override def isObjectContext: Boolean = false
       override def closeContext(s: JSONSource, end: Int): Unit = {
         self.add(result)
