@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, ObjectCodec}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory, ObjectCodec}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
@@ -55,6 +55,11 @@ class FinagleRouter(router: Router,
   * Converting controller results into finagle http responses.
   */
 trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
+
+  // Use Map codecs to create natural JSON responses
+  private[this] val mapCodecFactory =
+    MessageCodec.defautlFactory.withObjectMapCodec
+
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
       case r: Response =>
@@ -66,10 +71,8 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         r
       case _ =>
         // Convert the response object into JSON
-        val rs = MessageCodec.default.of(responseSurface)
+        val rs = mapCodecFactory.of(responseSurface)
         val bytes: Array[Byte] = rs match {
-          case o: ObjectCodec[_] =>
-            o.asInstanceOf[ObjectCodec[A]].packAsMapBytes(a)
           case m: MessageCodec[_] =>
             m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
           case _ =>

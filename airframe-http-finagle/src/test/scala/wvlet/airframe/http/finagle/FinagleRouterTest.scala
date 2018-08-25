@@ -23,7 +23,8 @@ import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-case class RichInfo(version: String, name: String)
+case class RichInfo(version: String, name: String, details: RichNestedInfo)
+case class RichNestedInfo(serverType: String)
 
 trait MyApi extends LogSupport {
   @Endpoint(path = "/v1/info")
@@ -33,7 +34,7 @@ trait MyApi extends LogSupport {
 
   @Endpoint(path = "/v1/rich_info")
   def getRichInfo: RichInfo = {
-    RichInfo("0.1", "MyApi")
+    RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
   }
 }
 

@@ -165,10 +165,37 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
     paramListCodec.packAsMap(p, v)
   }
 
-  def packAsMapBytes(v: A): Array[Byte] = {
-    val packer = MessagePack.newDefaultBufferPacker()
-    paramListCodec.packAsMap(packer, v)
-    packer.toByteArray
+  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    paramListCodec.unpack(u, v)
+    if (!v.isNull) {
+      val args = v.getLastValue.asInstanceOf[Seq[Any]]
+      surface.objectFactory match {
+        case Some(c) =>
+          Try(c.newInstance(args)) match {
+            case Success(x) => v.setObject(x)
+            case Failure(e) => v.setError(e)
+          }
+        case None =>
+          warn(s"No factory is found for ${surface}")
+          v.setNull
+      }
+    }
+  }
+}
+
+/**
+  * ObjectCodec for generating map values. This is suited to JSON object generation
+  * @param surface
+  * @param paramCodec
+  * @tparam A
+  */
+case class ObjectMapCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
+    extends MessageCodec[A]
+    with LogSupport {
+  private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
+
+  override def pack(p: MessagePacker, v: A): Unit = {
+    paramListCodec.packAsMap(p, v)
   }
 
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {

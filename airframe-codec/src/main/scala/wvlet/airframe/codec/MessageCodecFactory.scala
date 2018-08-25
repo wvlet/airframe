@@ -14,27 +14,50 @@
 package wvlet.airframe.codec
 
 import CollectionCodec._
+
 import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.codec.StandardCodec.EnumCodec
-import wvlet.log.LogSupport
 import wvlet.surface
 import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
 import wvlet.surface.{EnumSurface, GenericSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
+object MessageCodecFactory {
+
+  type ObjectCodecFactory = Function2[Surface, Seq[MessageCodec[_]], MessageCodec[_]]
+
+  def defaultObjectCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
+    ObjectCodec(surface, paramCodec.toIndexedSeq)
+  }
+  def objectMapCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
+    ObjectMapCodec(surface, paramCodec.toIndexedSeq)
+  }
+}
+
+import wvlet.airframe.codec.MessageCodecFactory._
+
 /**
   *
   */
-class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
+class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]],
+                          objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
+                            MessageCodecFactory.defaultObjectCodecFactory) {
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    new MessageCodecFactory(knownCodecs ++ additionalCodecs)
+    new MessageCodecFactory(knownCodecs ++ additionalCodecs, objectCodecFactory)
   }
 
-  private var cache = Map.empty[Surface, MessageCodec[_]]
+  def withObjectMapCodec: MessageCodecFactory = {
+    new MessageCodecFactory(knownCodecs, MessageCodecFactory.objectMapCodecFactory)
+  }
+  def withObjectCodecFactory(f: ObjectCodecFactory): MessageCodecFactory = {
+    new MessageCodecFactory(knownCodecs, f)
+  }
 
-  private def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
+  protected[this] var cache = Map.empty[Surface, MessageCodec[_]]
+
+  protected[this] def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
 
     if (knownCodecs.contains(surface)) {
@@ -82,7 +105,7 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
             val codecs = for (p <- surface.params) yield {
               ofSurface(p.surface, seenSet)
             }
-            ObjectCodec(surface, codecs.toIndexedSeq)
+            objectCodecFactory(surface, codecs.toIndexedSeq)
         }
       cache += surface -> codec
       codec
@@ -92,5 +115,4 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]]) {
   def of[A: ru.TypeTag]: MessageCodec[A]    = ofSurface(surface.of[A]).asInstanceOf[MessageCodec[A]]
   def of(surface: Surface): MessageCodec[_] = ofSurface(surface)
   def ofType(tpe: ru.Type): MessageCodec[_] = ofSurface(SurfaceFactory.ofType(tpe))
-
 }
