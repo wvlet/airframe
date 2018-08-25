@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
-import wvlet.log.io.Resource
 import wvlet.airframe.AirframeSpec
+import wvlet.log.io.Resource
 
 case class MyConfig(id: Int, fullName: String, port: Int = 8989)
 case class DB(accountId: Int, database: String, table: Seq[String])

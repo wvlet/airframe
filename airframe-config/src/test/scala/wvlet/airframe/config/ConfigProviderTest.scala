@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
 //import wvlet.airframe._
 import wvlet.airframe.AirframeSpec
@@ -24,8 +24,7 @@ object ConfigProviderTest {
 //    val configA = bind[ConfigA]
   }
 }
-
-import wvlet.config.ConfigProviderTest._
+import ConfigProviderTest._
 
 /**
   *

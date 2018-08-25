@@ -69,7 +69,7 @@ server.password=xxxxxyyyyyy
 
 **Sacla code**:
 ```scala
-import wvlet.config.Config
+import wvlet.airframe.config.Config
 import wvlet.surface.tag.@@
 
 // Configuration classes can have default values

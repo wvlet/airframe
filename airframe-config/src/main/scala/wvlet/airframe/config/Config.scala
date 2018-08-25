@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
 import java.io.{File, FileInputStream, FileNotFoundException}
 import java.util.Properties
 
-import wvlet.config.PropertiesConfig.ConfigKey
-import wvlet.config.YamlReader.loadMapOf
+import PropertiesConfig.ConfigKey
+import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 import wvlet.surface
@@ -79,7 +79,7 @@ case class ConfigChange(tpe: Surface, key: ConfigKey, default: Any, current: Any
   override def toString = s"[${tpe}] ${key} = ${current} (default = ${default})"
 }
 
-import wvlet.config.Config._
+import wvlet.airframe.config.Config._
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     extends Iterable[ConfigHolder]

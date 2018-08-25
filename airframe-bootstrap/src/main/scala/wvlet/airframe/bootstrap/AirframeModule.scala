@@ -14,7 +14,7 @@
 package wvlet.airframe.bootstrap
 
 import wvlet.airframe.Design
-import wvlet.config.Config
+import wvlet.airframe.config.Config
 
 /**
   * Airframe

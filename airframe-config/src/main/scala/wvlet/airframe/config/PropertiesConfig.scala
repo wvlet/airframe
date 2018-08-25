@@ -11,16 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
 import java.util.Properties
 
 import wvlet.log.LogSupport
-import wvlet.surface.{Surface, TaggedSurface}
+import wvlet.surface.CanonicalNameFormatter._
 import wvlet.surface.reflect.ObjectBuilder
+import wvlet.surface.{Surface, TaggedSurface}
 
 import scala.util.{Failure, Success, Try}
-import wvlet.surface.CanonicalNameFormatter._
 
 /**
   * Helper class to overwrite config objects using Java Properties
