@@ -14,7 +14,7 @@
 package wvlet.airframe.bootstrap
 
 import wvlet.airframe.Design
-import wvlet.airframe.config.config.{Config, ConfigHolder}
+import wvlet.airframe.config.{Config, ConfigHolder}
 import wvlet.log.LogSupport
 
 object AirframeBootstrap extends LogSupport {
