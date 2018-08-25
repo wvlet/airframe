@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
 import java.{lang => jl, util => ju}
 

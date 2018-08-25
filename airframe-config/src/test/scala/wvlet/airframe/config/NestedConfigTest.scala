@@ -11,16 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.config
+package wvlet.airframe.config
 
 import wvlet.airframe.AirframeSpec
-import wvlet.config.NestedConfigTest.ServerPoolConfig
 
 /**
   *
   */
 class NestedConfigTest extends AirframeSpec {
-
+  import NestedConfigTest._
   "Config" should {
     "support nested case classes" in {
       val configPaths = Seq("airframe-config/src/test/resources")
