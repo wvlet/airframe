@@ -165,12 +165,6 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
     paramListCodec.packAsMap(p, v)
   }
 
-  def packAsMapBytes(v: A): Array[Byte] = {
-    val packer = MessagePack.newDefaultBufferPacker()
-    paramListCodec.packAsMap(packer, v)
-    packer.toByteArray
-  }
-
   override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
     paramListCodec.unpack(u, v)
     if (!v.isNull) {
