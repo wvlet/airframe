@@ -107,7 +107,7 @@ object JSON extends LogSupport {
     s.map {
       case '"'  => "\\\""
       case '\\' => "\\\\"
-      case '/'  => "\\/"
+//      case '/'  => "\\/" We don't need to escape forward slashes
       case '\b' => "\\b"
       case '\f' => "\\f"
       case '\n' => "\\n"
