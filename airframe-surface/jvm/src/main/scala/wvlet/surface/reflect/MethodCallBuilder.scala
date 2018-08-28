@@ -18,6 +18,7 @@ package wvlet.surface.reflect
   */
 import wvlet.log.LogSupport
 import wvlet.surface.{MethodParameter, MethodSurface, Zero}
+import wvlet.surface.CanonicalNameFormatter._
 
 //--------------------------------------
 //
@@ -34,7 +35,11 @@ import wvlet.surface.{MethodParameter, MethodSurface, Zero}
 class MethodCallBuilder(m: MethodSurface, owner: AnyRef) extends StandardBuilder with LogSupport {
 
   // Find the default arguments of the method
-  protected def defaultValues = (for (p <- m.args; v <- findDefaultValue(p.name)) yield p.name -> v).toMap
+  protected def defaultValues =
+    (for (p <- m.args; v <- findDefaultValue(p.name)) yield {
+      trace(s"set default parameter $p to $v")
+      p.name.canonicalName -> v
+    }).toMap
 
   protected def findParameter(name: String): Option[MethodParameter] = {
     val cname = CName(name)
