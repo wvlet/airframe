@@ -80,7 +80,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         }
 
         // TODO return application/msgpack content type
-        val json = JSONCodec.unpackBytes(bytes)
+        val json = JSONCodec.unpackMsgPack(bytes)
         json match {
           case Some(j) =>
             val res = Response(Status.Ok)

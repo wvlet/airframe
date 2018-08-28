@@ -34,9 +34,9 @@ trait MessageCodec[A] {
     packer.toByteArray
   }
 
-  def unpackBytes(data: Array[Byte]): Option[A] = unpackBytes(data, 0, data.length)
-  def unpackBytes(data: Array[Byte], offset: Int, len: Int): Option[A] = {
-    val unpacker = MessagePack.newDefaultUnpacker(data, offset, len)
+  def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
+  def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
+    val unpacker = MessagePack.newDefaultUnpacker(msgpack, offset, len)
     val v        = new MessageHolder
     unpack(unpacker, v)
     if (v.isNull) {

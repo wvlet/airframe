@@ -33,6 +33,7 @@ object ScalaStandardCodec {
       val f = u.getNextFormat
       f.getValueType match {
         case ValueType.NIL =>
+          u.unpackNil()
           v.setObject(None)
         case _ =>
           elementCodec.unpack(u, v)

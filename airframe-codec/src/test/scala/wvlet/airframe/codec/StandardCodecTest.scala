@@ -55,7 +55,7 @@ class StandardCodecTest extends CodecSpec {
       p.packString(timeStr)                // Timestamp in string format
       p.packString("invalidstr")
 
-      val v = codec.unpackBytes(p.toByteArray)
+      val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe defined
       v.get shouldBe Seq[Instant](epochSecond, epochSecond, i, null)
     }
@@ -67,7 +67,7 @@ class StandardCodecTest extends CodecSpec {
       val codec = MessageCodec.of[ZonedDateTime]
       val p     = MessagePack.newDefaultBufferPacker()
       p.packString("non-date string")
-      val v = codec.unpackBytes(p.toByteArray)
+      val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty
     }
 
@@ -84,7 +84,7 @@ class StandardCodecTest extends CodecSpec {
       val codec = MessageCodec.of[TestEnum]
       val p     = MessagePack.newDefaultBufferPacker()
       p.packString("ABORTED") // non-existing enum type
-      val v = codec.unpackBytes(p.toByteArray)
+      val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty
     }
   }
