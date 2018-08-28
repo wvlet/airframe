@@ -68,6 +68,23 @@ class ObjectCodecTest extends CodecSpec {
     h.getLastValue shouldBe A2(10, 2L, 0)
   }
 
+  "populate case class with Option" in {
+    val codecFactory = MessageCodec.defautlFactory.withObjectMapCodec
+    val codec        = codecFactory.of[A3]
+
+    {
+      val msgpack = JSONCodec.toMsgPack("""{"opt":null, "str":"hello"}""")
+      val a       = codec.unpackMsgPack(msgpack)
+      a.get shouldBe A3(None, "hello")
+    }
+
+    {
+      val msgpack = JSONCodec.toMsgPack("""{"opt":"hello", "str":"world"}""")
+      val a       = codec.unpackMsgPack(msgpack)
+      a.get shouldBe A3(Some("hello"), "world")
+    }
+  }
+
 }
 
 object ObjectCodecTest {
@@ -84,4 +101,5 @@ object ObjectCodecTest {
 
   case class A2(i: Int, l: Long = 2L, i2: Int)
 
+  case class A3(opt: Option[String], str: String)
 }

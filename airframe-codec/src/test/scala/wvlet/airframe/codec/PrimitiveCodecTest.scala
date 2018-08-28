@@ -76,7 +76,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Int]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -98,7 +98,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Long]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -120,7 +120,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Short]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -142,7 +142,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Byte]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -164,7 +164,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Char]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -186,7 +186,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Float]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -208,7 +208,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Double]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -234,7 +234,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packBigInteger(LARGE_VALUE) // will be 0
 
       val codec = MessageCodec.of[Seq[Boolean]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }
@@ -271,7 +271,7 @@ class PrimitiveCodecTest extends CodecSpec {
       p.packString("leo")
 
       val codec = MessageCodec.of[Seq[String]]
-      val seq   = codec.unpackBytes(p.toByteArray)
+      val seq   = codec.unpackMsgPack(p.toByteArray)
       seq shouldBe defined
       seq.get shouldBe expected
     }

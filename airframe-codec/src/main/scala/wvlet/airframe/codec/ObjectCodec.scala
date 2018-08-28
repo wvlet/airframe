@@ -125,7 +125,9 @@ class ParamListCodec(name: String,
           codecTable.get(cKey) match {
             case Some(codec) =>
               codec.unpack(u, v)
-              m += (cKey -> v.getLastValue)
+              if (!v.isNull) {
+                m += (cKey -> v.getLastValue)
+              }
             case None =>
               // unknown parameter
               u.skipValue()

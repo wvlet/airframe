@@ -124,14 +124,14 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // String parameter to the method argument
-                argCodec.unpackBytes(StringCodec.toMsgPack(paramValue))
+                argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
                 // Build from the content body
                 val contentBytes = request.contentBytes
                 if (contentBytes.nonEmpty) {
                   // JSON -> msgpack -> argument
                   val msgpack = JSONCodec.toMsgPack(contentBytes)
-                  argCodec.unpackBytes(msgpack)
+                  argCodec.unpackMsgPack(msgpack)
                 } else {
                   // Rerturn the method default argument if exists
                   arg.getDefaultValue
