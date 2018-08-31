@@ -36,6 +36,7 @@ class FinagleTest extends AirframeSpec {
           r.query shouldBe Map.empty
           r.contentString shouldBe "hello finagle"
           r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
+          r.toRaw shouldBe req
         }
     }
   }
