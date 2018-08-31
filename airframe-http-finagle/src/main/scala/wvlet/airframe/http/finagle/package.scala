@@ -26,16 +26,17 @@ package object finagle {
       .bind[FinagleRouter].toSingleton
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
 
-  implicit class FinagleHttpRequest(request: http.Request) extends HttpRequest {
-    def asAirframeHttpRequest: HttpRequest  = this
-    override def method: HttpMethod         = toHttpMethod(request.method)
-    override def path: String               = request.path
-    override def query: Map[String, String] = request.params
-    override def contentString: String      = request.contentString
+  implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
+    def asAirframeHttpRequest: HttpRequest[http.Request]  = this
+    override def toRaw = raw
+    override def method: HttpMethod         = toHttpMethod(raw.method)
+    override def path: String               = raw.path
+    override def query: Map[String, String] = raw.params
+    override def contentString: String      = raw.contentString
     override def contentBytes: Array[Byte] = {
-      val size = request.content.length
+      val size = raw.content.length
       val b    = new Array[Byte](size)
-      request.content.write(b, 0)
+      raw.content.write(b, 0)
       b
     }
   }

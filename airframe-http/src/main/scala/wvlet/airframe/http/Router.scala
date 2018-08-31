@@ -28,7 +28,7 @@ import scala.reflect.runtime.{universe => ru}
   */
 class Router(val routes: Seq[Route]) {
 
-  def findRoute(request: HttpRequest): Option[Route] = {
+  def findRoute[A](request: HttpRequest[A]): Option[Route] = {
     routes
       .find { r =>
         r.method == request.method &&
@@ -95,7 +95,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
   /**
     * Extracting path parameter values. For example, /user/:id with /user/1 gives { id -> 1 }
     */
-  private def extractPathParams(request: HttpRequest): Map[String, String] = {
+  private def extractPathParams[A](request: HttpRequest[A]): Map[String, String] = {
     val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
       elem.substring(1) -> actual
     }).toMap[String, String]
@@ -107,7 +107,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @param request
     * @return
     */
-  def buildControllerMethodArgs(request: HttpRequest): Seq[Any] = {
+  def buildControllerMethodArgs[A](request: HttpRequest[A]): Seq[Any] = {
     // Collect URL query parameters and other parameteres embedded inside URL.
     val requestParams = request.query ++ extractPathParams(request)
 
@@ -115,7 +115,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     val methodArgs: Seq[Any] =
       for (arg <- methodSurface.args) yield {
         arg.surface.rawType match {
-          case cl if classOf[HttpRequest].isAssignableFrom(cl) =>
+          case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
             request
           case _ =>
@@ -149,7 +149,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     methodSurface.call(controller, methodArgs: _*)
   }
 
-  def call(controllerProvider: ControllerProvider, request: HttpRequest): Option[Any] = {
+  def call[A](controllerProvider: ControllerProvider, request: HttpRequest[A]): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
       call(controller, buildControllerMethodArgs(request))
     }

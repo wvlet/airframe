@@ -15,7 +15,7 @@ package wvlet.airframe.http
 
 import java.nio.charset.StandardCharsets
 
-trait HttpRequest {
+trait HttpRequest[Req] {
   def method: HttpMethod
   def path: String
   def query: Map[String, String]
@@ -24,16 +24,18 @@ trait HttpRequest {
   lazy val pathComponents: IndexedSeq[String] = {
     path.replaceFirst("/", "").split("/").toIndexedSeq
   }
+  def toRaw: Req
 }
 
 case class SimpleHttpRequest(method: HttpMethod,
                              path: String,
                              query: Map[String, String] = Map.empty,
                              contentString: String = "")
-    extends HttpRequest {
+    extends HttpRequest[SimpleHttpRequest] {
   override def contentBytes: Array[Byte] = {
     contentString.getBytes(StandardCharsets.UTF_8)
   }
+  override def toRaw: SimpleHttpRequest = this
 }
 
 trait HttpResponse {}
