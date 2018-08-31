@@ -36,6 +36,16 @@ trait MyApi extends LogSupport {
   def getRichInfo: RichInfo = {
     RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
   }
+
+  @Endpoint(path = "/v1/future")
+  def futureString: Future[String] = {
+    Future.value("hello")
+  }
+
+  @Endpoint(path = "/v1/rich_info_future")
+  def futureRichInfo: Future[RichInfo] = {
+    Future.value(getRichInfo)
+  }
 }
 
 case class MyServerConfig(port: Int)
@@ -109,6 +119,19 @@ class FinagleRouterTest extends AirframeSpec {
 
         val result = Await.result(Future.collect(futures))
         debug(result.mkString(", "))
+
+        // Future response
+        Await.result(client(Request("/v1/future")).map { response =>
+          response.contentString
+        }) shouldBe "hello"
+
+        {
+          val json = Await.result(client(Request("/v1/rich_info_future")).map { response => response.contentString
+          })
+
+          json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
+        }
+
       }
     }
   }
