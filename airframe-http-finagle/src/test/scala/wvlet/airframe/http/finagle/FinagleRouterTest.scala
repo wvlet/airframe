@@ -101,19 +101,16 @@ class FinagleRouterTest extends AirframeSpec {
       d.build[MyApiServer] { server =>
         val client = Http.client
           .newService(s"localhost:${port}")
-        val f1 = client(Request("/v1/info")).map { response =>
-          debug(response.contentString)
+        val f1 = client(Request("/v1/info")).map { response => debug(response.contentString)
         }
-        val f2 = client(Request("/v1/rich_info")).map { r =>
-          debug(r.contentString)
+        val f2 = client(Request("/v1/rich_info")).map { r => debug(r.contentString)
         }
 
         Await.result(f1.join(f2))
 
         // making many requests
         val futures = (0 until 5).map { x =>
-          client(Request("/v1/rich_info")).map { response =>
-            response.contentString
+          client(Request("/v1/rich_info")).map { response => response.contentString
           }
         }
 
@@ -121,8 +118,7 @@ class FinagleRouterTest extends AirframeSpec {
         debug(result.mkString(", "))
 
         // Future response
-        Await.result(client(Request("/v1/future")).map { response =>
-          response.contentString
+        Await.result(client(Request("/v1/future")).map { response => response.contentString
         }) shouldBe "hello"
 
         {
