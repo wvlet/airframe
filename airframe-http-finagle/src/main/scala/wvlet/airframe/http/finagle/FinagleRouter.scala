@@ -40,7 +40,21 @@ class FinagleRouter(router: Router,
             // Call the method in this controller
             val args   = route.buildControllerMethodArgs(request)
             val result = route.call(controller, args)
-            Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
+
+            route.returnTypeSurface.rawType match {
+              case f if f == classOf[Future[_]] =>
+                val valueType = route.returnTypeSurface.typeArgs(0)
+                valueType.rawType match {
+                  case vc if vc == classOf[Response] =>
+                    result.asInstanceOf[Future[Response]]
+                  case other =>
+                    result.asInstanceOf[Future[_]].map { r =>
+                      responseHandler.toHttpResponse(request, valueType, r)
+                    }
+                }
+              case _ =>
+                Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
+            }
           case None =>
             Future.exception(new IllegalStateException(s"Controller ${route.controllerSurface} is not found"))
         }
