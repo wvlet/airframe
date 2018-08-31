@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory, ObjectCodec}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.log.LogSupport
 import wvlet.surface.Surface
@@ -42,14 +42,14 @@ class FinagleRouter(router: Router,
             val result = route.call(controller, args)
 
             route.returnTypeSurface.rawType match {
-              case f if f == classOf[Future[_]] =>
-                val valueType = route.returnTypeSurface.typeArgs(0)
-                valueType.rawType match {
-                  case vc if vc == classOf[Response] =>
+              case f if classOf[Future[_]].isAssignableFrom(f) =>
+                val futureValueSurface = route.returnTypeSurface.typeArgs(0)
+                futureValueSurface.rawType match {
+                  case vc if classOf[Response].isAssignableFrom(vc) =>
                     result.asInstanceOf[Future[Response]]
                   case other =>
                     result.asInstanceOf[Future[_]].map { r =>
-                      responseHandler.toHttpResponse(request, valueType, r)
+                      responseHandler.toHttpResponse(request, futureValueSurface, r)
                     }
                 }
               case _ =>
