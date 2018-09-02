@@ -12,8 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.log.LogSupport
 
-object Airframe extends LogSupport {
+/**
+  * If importing wvlet.airframe._ is not preferrable, Airframe.newDesign can be used.
+  */
+object Airframe {
   def newDesign: Design = Design.blanc
 }

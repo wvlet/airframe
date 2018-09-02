@@ -17,11 +17,11 @@ package wvlet.airframe
   *
   */
 class SessionBuilderTest extends AirframeSpec {
-  val d = Airframe.newDesign
+  val d = newSilentDesign
 
   "SessionBuilder" should {
     "create a named session" in {
-      val session = d.session
+      val session = d.newSessionBuilder
         .withName("MySession")
         .create
       session.name shouldBe "MySession"
@@ -33,8 +33,8 @@ class SessionBuilderTest extends AirframeSpec {
 
     "create a session with custom event handler" in {
       var counter = 0
-      val session = d.session
-        .addEventHandler(new LifeCycleEventHandler {
+      val session = d.newSessionBuilder
+        .withEventHandler(new LifeCycleEventHandler {
           override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
             counter += 1
           }

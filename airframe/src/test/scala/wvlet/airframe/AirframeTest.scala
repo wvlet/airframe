@@ -15,12 +15,11 @@ package wvlet.airframe
 
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
-import wvlet.surface.{Primitive, Surface}
 import wvlet.surface
+import wvlet.surface.{Primitive, Surface}
 
 import scala.util.Random
 
@@ -267,9 +266,18 @@ class AirframeTest extends AirframeSpec {
 
   "Airframe" should {
 
+    "be able to use wvlet.airframe.Airframe to define a new design" in {
+      val d = wvlet.airframe.Airframe.newDesign
+
+      // For test coverage
+      d.withLifeCycleLogging.withoutLifeCycleLogging
+        .withSession { session =>
+          }
+    }
+
     "create a design" in {
       // Both should work
-      val d  = Airframe.newDesign.bind[Printer].to[ConsolePrinter]
+      val d  = newDesign.bind[Printer].to[ConsolePrinter]
       val d1 = newDesign.bind[Printer].to[ConsolePrinter]
     }
 
@@ -381,8 +389,8 @@ class AirframeTest extends AirframeSpec {
           .bind[EagerSingleton].toEagerSingleton
           .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val session = design.session
-        .addEventHandler(new LifeCycleEventHandler {
+      val session = design.newSessionBuilder
+        .withEventHandler(new LifeCycleEventHandler {
           override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
             counter.incrementAndGet()
           }
@@ -476,7 +484,7 @@ class AirframeTest extends AirframeSpec {
 
     "create single with inject eagerly" in {
       val start = System.nanoTime()
-      val d = newDesign
+      val d = newSilentDesign
         .bind[EagerSingletonWithInject].toEagerSingleton
       val s       = d.newSession.build[EagerSingletonWithInject]
       val current = System.nanoTime()
@@ -485,7 +493,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "support onInit and onShutdown" taggedAs ("lifecycle") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[LifeCycleExample]
       e.module.initCount.get() shouldBe 1
       session.start
@@ -494,7 +502,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "bind lifecycle code" taggedAs ("bind-init") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[BindLifeCycleExample]
       e.module.initCount.get() shouldBe 1
 
@@ -506,7 +514,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "bind lifecycle" taggedAs ("bind-lifecycle") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[BindLifeCycleExample2]
       e.module.initCount.get() shouldBe 1
 
@@ -526,7 +534,7 @@ class AirframeTest extends AirframeSpec {
 
       val d = d1 + d2
 
-      val session = d.newSession
+      val session = d.withoutLifeCycleLogging.newSession
       session.build[HeavyObject]
       session.build[ConsoleConfig]
     }

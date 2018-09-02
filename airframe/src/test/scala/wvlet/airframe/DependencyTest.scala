@@ -30,7 +30,7 @@ object DependencyTest1 {
 class DependencyTest extends AirframeSpec {
   "Airframe" should {
     "show missing dependencies" in {
-      val d = newDesign
+      val d = newSilentDesign
       d.withSession { session =>
         val m = intercept[MISSING_DEPENDENCY] {
           val a = session.build[DependencyTest1.A]
@@ -41,7 +41,7 @@ class DependencyTest extends AirframeSpec {
     }
 
     "resolve concrete dependencies" in {
-      val d = newDesign
+      val d = newSilentDesign
         .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concreate trait
       d.withSession { session =>
         val a = session.build[DependencyTest1.A]

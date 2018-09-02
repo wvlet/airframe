@@ -201,15 +201,26 @@ These life cycle hooks except `onInject` will be called only once when the bindi
 ### Eager Initialization of Singletons for Production
 
 In production, initializing singletons (by calling onStart) is preferred. To use production mode, 
-use `Design.buildProduction` or `Design.withProductionSession`:
+use `Design.withProductionMode`:
 
 ```scala
 // All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called) 
-design.buildProduction[X]{ x =>
-  // Do something with X
-}
+design
+  .withProductionMode
+  .build[X]{ x =>
+    // Do something with X
+  }
 ```
 
+### Suppress Life Cycle Logging
+
+If you don't need to show Session start/terminate logs, use `Design.withoutLifeCycleLogging`:
+```scala
+design
+  .withoutLifeCycleLogging
+  .build[X]{ x => ... }
+```
+This will show lifecycle event logs only in debug level logs.
 
 ### Annotation-based life cycle hooks
 

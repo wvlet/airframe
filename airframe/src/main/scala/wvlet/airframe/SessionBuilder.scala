@@ -35,24 +35,19 @@ object Stage {
   */
 class SessionBuilder(design: Design,
                      name: Option[String] = None,
-                     stage: Stage = Stage.DEVELOPMENT,
-                     handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
+                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.mandatoryObjectLifeCycleHandler)
     extends LogSupport {
 
   /**
     * @param e
     * @return
     */
-  def addEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, stage, handler.wraps(e))
+  def withEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
+    new SessionBuilder(design, name, e.wraps(lifeCycleEventHandler))
   }
 
   def withName(sessionName: String): SessionBuilder = {
-    new SessionBuilder(design, Some(sessionName), stage, handler)
-  }
-
-  def withProductionStage: SessionBuilder = {
-    new SessionBuilder(design, name, Stage.PRODUCTION)
+    new SessionBuilder(design, Some(sessionName), lifeCycleEventHandler)
   }
 
   def create: Session = {
@@ -62,8 +57,18 @@ class SessionBuilder(design: Design,
     }
     val keyIndex: Map[Surface, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings              = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    val l                           = new LifeCycleManager(handler)
-    val session                     = new AirframeSession(name, sortedBindings, stage, l)
+
+    // Combine the lifecycle logger and event handlers
+    val lifeCycleLogger =
+      if (design.designConfig.enabledLifeCycleLogging) {
+        ShowLifeCycleLog
+      } else {
+        // Show life cycle log in debug level only
+        ShowDebugLifeCycleLog
+      }
+    val eventHandler = lifeCycleLogger wraps lifeCycleEventHandler
+    val l            = new LifeCycleManager(eventHandler)
+    val session      = new AirframeSession(name, sortedBindings, design.designConfig.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init
