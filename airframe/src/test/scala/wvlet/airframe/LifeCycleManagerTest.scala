@@ -192,5 +192,11 @@ class LifeCycleManagerTest extends AirframeSpec {
       l.preShutdown shouldBe 3
       l.shutdown shouldBe 4
     }
+
+    "show life cycle log" in {
+      newDesign.withSession { session =>
+        // Just show debug logs
+      }
+    }
   }
 }

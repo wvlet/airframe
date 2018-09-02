@@ -35,8 +35,12 @@ package object airframe {
     * val d = design.bind[X]
     * </code>
     */
-  def newDesign: Design                         = Design.blanc
-  private[airframe] def newSilentDesign: Design = newDesign.withoutLifeCycleLogging
+  def newDesign: Design = Design.blanc
+
+  /**
+    * Create an empty design, which sends life cycle logs to debug log level
+    */
+  def newSilentDesign: Design = newDesign.withoutLifeCycleLogging
 
   def bindInstance[A]: A = macro bindImpl[A]
   def bindInstance[A](factory: => A): A = macro bind0Impl[A]

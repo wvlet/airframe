@@ -142,11 +142,11 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.info(s"[${lifeCycleManager.sessionName}] Starting life cycle ...")
+    logger.info(s"[${lifeCycleManager.sessionName}] Starting a new life cycle ...")
   }
 
   override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.info(s"[${lifeCycleManager.sessionName}] ======= STARTED =======")
+    logger.info(s"[${lifeCycleManager.sessionName}] ======== STARTED ========")
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
@@ -162,11 +162,11 @@ object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.debug(s"[${lifeCycleManager.sessionName}] Starting life cycle ...")
+    logger.debug(s"[${lifeCycleManager.sessionName}] Starting a new life cycle ...")
   }
 
   override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.debug(s"[${lifeCycleManager.sessionName}] ======= STARTED =======")
+    logger.debug(s"[${lifeCycleManager.sessionName}] ======== STARTED ========")
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {

@@ -475,7 +475,7 @@ class AirframeTest extends AirframeSpec {
 
     "create single with inject eagerly" in {
       val start = System.nanoTime()
-      val d = newDesign
+      val d = newSilentDesign
         .bind[EagerSingletonWithInject].toEagerSingleton
       val s       = d.newSession.build[EagerSingletonWithInject]
       val current = System.nanoTime()
@@ -484,7 +484,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "support onInit and onShutdown" taggedAs ("lifecycle") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[LifeCycleExample]
       e.module.initCount.get() shouldBe 1
       session.start
@@ -493,7 +493,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "bind lifecycle code" taggedAs ("bind-init") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[BindLifeCycleExample]
       e.module.initCount.get() shouldBe 1
 
@@ -505,7 +505,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "bind lifecycle" taggedAs ("bind-lifecycle") in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val e       = session.build[BindLifeCycleExample2]
       e.module.initCount.get() shouldBe 1
 

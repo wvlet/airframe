@@ -24,7 +24,7 @@ class MapBindingTest extends AirframeSpec {
 
   "Airframe" should {
     "support map binding" in {
-      val d = newDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")
+      val d = newSilentDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")
 
       d.withSession { session =>
         val m = session.build[Mapper]

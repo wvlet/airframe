@@ -57,7 +57,7 @@ object BindSingleton {
   trait App1 extends XYService
   trait App2 extends XYService
 
-  val session = newDesign.newSession
+  val session = newSilentDesign.newSession
   val app     = session.build[App1] // shows "Hello World!"
   val app2    = session.build[App2] // shows nothing since XY is already initialized
   session.shutdown // shows "Good-bye World!"
