@@ -103,20 +103,6 @@ case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends 
   def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
 
   /**
-    * A helper method of creating a new session and an instance of A.
-    * This will eagerly instantiate registered singletons in the design.
-    *
-    * This method is useful when you only need to use A as an entry point of your program.
-    * After executing the body, the sesion will be closed.
-    *
-    * @deprecated Use Design.withProductionMode instead
-    * @param body
-    * @tparam A
-    * @return
-    */
-  def buildProduction[A](body: A => Any): Any = macro AirframeMacros.buildWithProductionSession[A]
-
-  /**
     * Method for configuring the session in details
     */
   def newSessionBuilder: SessionBuilder = {
@@ -151,20 +137,6 @@ case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends 
     */
   def withSession[U](body: Session => U): U = {
     runWithSession(newSession)(body)
-  }
-
-  /**
-    * Run the code block with a new session.
-    * This method will eagerly instantiate objects registered in the design.
-    *
-    * This method will create a new session, start it, run the given code block, and finally terminate the session after
-    * the code block completion.
-    *
-    * @deprecated Use Design.withProductionMode instead
-    */
-  def withProductionSession[U](body: Session => U): U = {
-    val session = this.withProductionMode.newSessionBuilder.create
-    runWithSession(session)(body)
   }
 
   override def toString: String = {

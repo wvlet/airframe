@@ -98,7 +98,7 @@ class LazyStartTest extends AirframeSpec {
       }
       (f1.get, f2.get) shouldBe (false, false)
 
-      d.buildProduction[MyApp2] { app =>
+      d.withProductionMode.build[MyApp2] { app =>
         (f1.get, f2.get) shouldBe (true, true)
       }
       (f1.get, f2.get) shouldBe (false, false)
