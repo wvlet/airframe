@@ -36,23 +36,32 @@ object Stage {
 class SessionBuilder(design: Design,
                      name: Option[String] = None,
                      stage: Stage = Stage.DEVELOPMENT,
-                     handler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
+                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.mandatoryObjectLifeCycleHandler,
+                     lifeCycleLogger: Option[LifeCycleEventHandler] = Some(ShowLifeCycleLog))
     extends LogSupport {
 
   /**
     * @param e
     * @return
     */
-  def addEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, stage, handler.wraps(e))
+  def withEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
+    new SessionBuilder(design, name, stage, e.wraps(lifeCycleEventHandler), lifeCycleLogger)
+  }
+
+  def withoutLifeCycleLog: SessionBuilder = {
+    new SessionBuilder(design, name, stage, lifeCycleEventHandler, None)
+  }
+
+  def withLifeCycleLogger(customLifeCycleLogger: LifeCycleEventHandler): SessionBuilder = {
+    new SessionBuilder(design, name, stage, lifeCycleEventHandler, Some(customLifeCycleLogger))
   }
 
   def withName(sessionName: String): SessionBuilder = {
-    new SessionBuilder(design, Some(sessionName), stage, handler)
+    new SessionBuilder(design, Some(sessionName), stage, lifeCycleEventHandler, lifeCycleLogger)
   }
 
   def withProductionStage: SessionBuilder = {
-    new SessionBuilder(design, name, Stage.PRODUCTION)
+    new SessionBuilder(design, name, Stage.PRODUCTION, lifeCycleEventHandler, lifeCycleLogger)
   }
 
   def create: Session = {
@@ -62,8 +71,15 @@ class SessionBuilder(design: Design,
     }
     val keyIndex: Map[Surface, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
     val sortedBindings              = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-    val l                           = new LifeCycleManager(handler)
-    val session                     = new AirframeSession(name, sortedBindings, stage, l)
+
+    // Combine the lifecycle logger and event handlers
+    val eventHandler =
+      lifeCycleLogger
+        .map(_.wraps(lifeCycleEventHandler))
+        .getOrElse(lifeCycleEventHandler)
+
+    val l       = new LifeCycleManager(eventHandler)
+    val session = new AirframeSession(name, sortedBindings, stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

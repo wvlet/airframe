@@ -53,7 +53,6 @@ object DesignTest {
   */
 class DesignTest extends AirframeSpec {
   import DesignTest._
-  import wvlet.surface._
 
   "Design" should {
     "be immutable" in {

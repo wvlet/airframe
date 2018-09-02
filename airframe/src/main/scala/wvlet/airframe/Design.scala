@@ -49,14 +49,30 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     new Design(binding.filterNot(_.from == t))
   }
 
-  def session: SessionBuilder = {
+  /**
+    * Method for configuring the session in details
+    */
+  def newSessionBuilder: SessionBuilder = {
     new SessionBuilder(this)
   }
 
+  /**
+    * Create a new session.
+    *
+    * With this method, the session will not start automatically. You need to explicitly call
+    * session.start and session.shutdown to start/terminate the lifecycle of objects
+    * @return
+    */
   def newSession: Session = {
     new SessionBuilder(this).create
   }
 
+  /**
+    * Run the code block with a new session.
+    *
+    * This method will create a new session, start it, run the given code block, and finally terminate the session after
+    * the code block completion.
+    */
   def withSession[U](body: Session => U): U = {
     val session = newSession
     try {
@@ -67,8 +83,15 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
     }
   }
 
+  /**
+    * Run the code block with a new session.
+    * This method will eagerly instantiate objects registered in the design.
+    *
+    * This method will create a new session, start it, run the given code block, and finally terminate the session after
+    * the code block completion.
+    */
   def withProductionSession[U](body: Session => U): U = {
-    val session = this.session.withProductionStage.create
+    val session = this.newSessionBuilder.withProductionStage.create
     try {
       session.start
       body(session)
@@ -78,13 +101,25 @@ case class Design(binding: Vector[Binding]) extends LogSupport {
   }
 
   /**
-    * A short hand of creating a new session, building a new instance of A, and running a code that uses A.
+    * A helper method of creating a new session and an instance of A.
+    * This method is useful when you only need to use A as an entry point of your program.
     * After executing the body, the sesion will be closed.
     * @param body
     * @tparam A
     * @return
     */
   def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
+
+  /**
+    * A helper method of creating a new session and an instance of A.
+    * This will eagerly instantiate registered singletons in the design.
+    *
+    * This method is useful when you only need to use A as an entry point of your program.
+    * After executing the body, the sesion will be closed.
+    * @param body
+    * @tparam A
+    * @return
+    */
   def buildProduction[A](body: A => Any): Any = macro AirframeMacros.buildWithProductionSession[A]
 
   override def toString: String = {

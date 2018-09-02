@@ -15,12 +15,11 @@ package wvlet.airframe
 
 import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
-import wvlet.surface.{Primitive, Surface}
 import wvlet.surface
+import wvlet.surface.{Primitive, Surface}
 
 import scala.util.Random
 
@@ -381,8 +380,8 @@ class AirframeTest extends AirframeSpec {
           .bind[EagerSingleton].toEagerSingleton
           .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val session = design.session
-        .addEventHandler(new LifeCycleEventHandler {
+      val session = design.newSessionBuilder
+        .withEventHandler(new LifeCycleEventHandler {
           override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
             counter.incrementAndGet()
           }

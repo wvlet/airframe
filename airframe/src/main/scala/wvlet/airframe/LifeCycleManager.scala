@@ -132,9 +132,9 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
 object LifeCycleManager {
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
-    ShowLifeCycleLog wraps defaultObjectLifeCycleHandler
+    ShowLifeCycleLog wraps mandatoryObjectLifeCycleHandler
 
-  def defaultObjectLifeCycleHandler: LifeCycleEventHandler =
+  def mandatoryObjectLifeCycleHandler: LifeCycleEventHandler =
     FILOLifeCycleHookExecutor andThen JSR250LifeCycleExecutor andThen AddShutdownHook
 }
 
@@ -176,7 +176,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     // beforeShutdown
     for (h <- lifeCycleManager.preShutdownHooks.reverse) {
-      debug(s"Calling pre-shutdown hoook: $h")
+      trace(s"Calling pre-shutdown hoook: $h")
       h.execute
     }
 
