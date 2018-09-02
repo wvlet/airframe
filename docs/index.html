@@ -204,14 +204,26 @@ If you need to create a new instance for each binding, use <code class="highligh
 <h3 id="eager-initialization-of-singletons-for-production">Eager Initialization of Singletons for Production</h3>
 
 <p>In production, initializing singletons (by calling onStart) is preferred. To use production mode, 
-use <code class="highlighter-rouge">Design.buildProduction</code> or <code class="highlighter-rouge">Design.withProductionSession</code>:</p>
+use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called) 
-</span><span class="n">design</span><span class="o">.</span><span class="n">buildProduction</span><span class="o">[</span><span class="kt">X</span><span class="o">]{</span> <span class="n">x</span> <span class="k">=&gt;</span>
-  <span class="c1">// Do something with X
-</span><span class="o">}</span>
+</span><span class="n">design</span>
+  <span class="o">.</span><span class="n">withProductionMode</span>
+  <span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]{</span> <span class="n">x</span> <span class="k">=&gt;</span>
+    <span class="c1">// Do something with X
+</span>  <span class="o">}</span>
 </code></pre>
 </div>
+
+<h3 id="suppress-life-cycle-logging">Suppress Life Cycle Logging</h3>
+
+<p>If you don’t need to show Session start/terminate logs, use <code class="highlighter-rouge">Design.withoutLifeCycleLogging</code>:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span>
+  <span class="o">.</span><span class="n">withoutLifeCycleLogging</span>
+  <span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]{</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="o">...</span> <span class="o">}</span>
+</code></pre>
+</div>
+<p>This will show lifecycle event logs only in debug level logs.</p>
 
 <h3 id="annotation-based-life-cycle-hooks">Annotation-based life cycle hooks</h3>
 
