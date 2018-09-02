@@ -14,9 +14,9 @@
 package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.log.LogSupport
+import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class Counter extends LogSupport {
   val initialized = new AtomicInteger(0)
@@ -196,6 +196,17 @@ class LifeCycleManagerTest extends AirframeSpec {
     "show life cycle log" in {
       newDesign.withSession { session =>
         // Just show debug logs
+      }
+
+      val l       = Logger("wvlet.airframe")
+      val current = l.getLogLevel
+      try {
+        l.setLogLevel(LogLevel.DEBUG)
+        newSilentDesign.withSession { session =>
+          // Show debug level session life cycle log
+        }
+      } finally {
+        l.setLogLevel(current)
       }
     }
   }
