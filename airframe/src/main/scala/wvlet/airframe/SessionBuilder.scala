@@ -35,9 +35,7 @@ object Stage {
   */
 class SessionBuilder(design: Design,
                      name: Option[String] = None,
-                     stage: Stage = Stage.DEVELOPMENT,
-                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.mandatoryObjectLifeCycleHandler,
-                     lifeCycleLogger: Option[LifeCycleEventHandler] = Some(ShowLifeCycleLog))
+                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.mandatoryObjectLifeCycleHandler)
     extends LogSupport {
 
   /**
@@ -45,23 +43,11 @@ class SessionBuilder(design: Design,
     * @return
     */
   def withEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, stage, e.wraps(lifeCycleEventHandler), lifeCycleLogger)
-  }
-
-  def withoutLifeCycleLog: SessionBuilder = {
-    new SessionBuilder(design, name, stage, lifeCycleEventHandler, None)
-  }
-
-  def withLifeCycleLogger(customLifeCycleLogger: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, stage, lifeCycleEventHandler, Some(customLifeCycleLogger))
+    new SessionBuilder(design, name, e.wraps(lifeCycleEventHandler))
   }
 
   def withName(sessionName: String): SessionBuilder = {
-    new SessionBuilder(design, Some(sessionName), stage, lifeCycleEventHandler, lifeCycleLogger)
-  }
-
-  def withProductionStage: SessionBuilder = {
-    new SessionBuilder(design, name, Stage.PRODUCTION, lifeCycleEventHandler, lifeCycleLogger)
+    new SessionBuilder(design, Some(sessionName), lifeCycleEventHandler)
   }
 
   def create: Session = {
@@ -74,12 +60,14 @@ class SessionBuilder(design: Design,
 
     // Combine the lifecycle logger and event handlers
     val eventHandler =
-      lifeCycleLogger
-        .map(_.wraps(lifeCycleEventHandler))
-        .getOrElse(lifeCycleEventHandler)
+      if (design.designConfig.enabledLifeCycleLogging) {
+        ShowLifeCycleLog wraps (lifeCycleEventHandler)
+      } else {
+        lifeCycleEventHandler
+      }
 
     val l       = new LifeCycleManager(eventHandler)
-    val session = new AirframeSession(name, sortedBindings, stage, l)
+    val session = new AirframeSession(name, sortedBindings, design.designConfig.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

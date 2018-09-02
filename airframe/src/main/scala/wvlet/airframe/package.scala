@@ -35,7 +35,9 @@ package object airframe {
     * val d = design.bind[X]
     * </code>
     */
-  def newDesign: Design     = Design.blanc
+  def newDesign: Design                         = Design.blanc
+  private[airframe] def newSilentDesign: Design = newDesign.withoutLifeCycleLogging
+
   def blancSession: Session = Design.blanc.newSession
 
   def bindInstance[A]: A = macro bindImpl[A]

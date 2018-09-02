@@ -46,6 +46,7 @@ object DesignTest {
       .bind[Message].toSingletonOf[Hello]
       .bind[ProductionMessage].toInstance(Hello("production"))
       .bind[DevelopmentMessage].toInstance(Hello("development"))
+      .withoutLifeCycleLogging
 }
 
 /**
@@ -53,6 +54,8 @@ object DesignTest {
   */
 class DesignTest extends AirframeSpec {
   import DesignTest._
+
+  val o = Hello("override")
 
   "Design" should {
     "be immutable" in {
@@ -63,18 +66,15 @@ class DesignTest extends AirframeSpec {
     }
 
     "be appendable" in {
-      val o  = Hello("override")
       val d2 = d1.bind[Hello].toInstance(o)
 
       val d3 = d1 + d2
       val d4 = d1.add(d2)
 
-      d3.withSession { session =>
-        val h = session.build[Hello]
+      d3.build[Hello] { h =>
         h should be theSameInstanceAs o
       }
-      d4.withSession { session =>
-        val h = session.build[Hello]
+      d4.build[Hello] { h =>
         h should be theSameInstanceAs o
       }
     }
@@ -102,27 +102,31 @@ class DesignTest extends AirframeSpec {
     }
 
     "bind providers" in {
-      val d = newDesign
+      val d = newSilentDesign
         .bind[Hello].toProvider { (m: ProductionString) =>
           Hello(m)
         }
         .bind[ProductionString].toInstance("hello production")
 
-      val h = d.newSession.build[Hello]
-      h.message shouldBe "hello production"
+      d.build[Hello] { h =>
+        h.message shouldBe "hello production"
+      }
     }
 
     "bind type aliases" taggedAs ("alias") in {
-      val d = newDesign
+      val d = newSilentDesign
         .bind[HelloRef].toInstance(new StringHello)
 
-      val h = d.newSession.build[HelloRef]
-      h.hello shouldBe "hello world"
+      d.build[HelloRef] { h =>
+        h.hello shouldBe "hello world"
+      }
     }
 
     "start and stop session" in {
       // Sanity test
-      newDesign.withSession { session =>
+      newDesign.withoutLifeCycleLogging
+        .withSession { session =>
+          // Do nothing
         }
     }
   }

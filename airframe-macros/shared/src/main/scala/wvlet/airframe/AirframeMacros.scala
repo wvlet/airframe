@@ -244,8 +244,9 @@ private[wvlet] object AirframeMacros {
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
+         val d = ${c.prefix}
          val target = ${h.surfaceOf(t)}
-         new wvlet.airframe.Design(${c.prefix}.binding.filterNot(_.from == target))
+         new wvlet.airframe.Design(d.designConfig, d.binding.filterNot(_.from == target))
         }
      """
   }
@@ -409,11 +410,35 @@ private[wvlet] object AirframeMacros {
      """
   }
 
+  def buildWithSilentSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+           ${c.prefix}.withSilentSession { session =>
+              val a = session.build[${t}]
+              ${body}(a)
+           }
+        }
+     """
+  }
+
   def buildWithProductionSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
            ${c.prefix}.withProductionSession { session =>
+              val a = session.build[${t}]
+              ${body}(a)
+           }
+        }
+     """
+  }
+
+  def buildWithSilentProductSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+           ${c.prefix}.withSilentProductionSession { session =>
               val a = session.build[${t}]
               ${body}(a)
            }
