@@ -17,7 +17,7 @@ package wvlet.airframe
   *
   */
 class SessionBuilderTest extends AirframeSpec {
-  val d = Airframe.newDesign
+  val d = newSilentDesign
 
   "SessionBuilder" should {
     "create a named session" in {

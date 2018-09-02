@@ -38,8 +38,6 @@ package object airframe {
   def newDesign: Design                         = Design.blanc
   private[airframe] def newSilentDesign: Design = newDesign.withoutLifeCycleLogging
 
-  def blancSession: Session = Design.blanc.newSession
-
   def bindInstance[A]: A = macro bindImpl[A]
   def bindInstance[A](factory: => A): A = macro bind0Impl[A]
   def bindInstance[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]

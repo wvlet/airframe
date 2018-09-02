@@ -32,9 +32,8 @@ class BindTest extends AirframeSpec {
 
   "Bind" should {
     "allow provider based initialization" in {
-      val s = blancSession
-      s.start {
-        s.build[Bind]
+      val s = newSilentDesign.build[Bind] { b =>
+        //
       }
     }
   }

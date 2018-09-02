@@ -36,7 +36,8 @@ trait JSR250Test {
 class JSR250LifeCycleExecutorTest extends AirframeSpec {
   "Airframe" should {
     "support JSR250 event" in {
-      val s = blancSession
+      val s = newSilentDesign.newSession
+
       val t = s.build[JSR250Test]
       t.initialized shouldBe true
       t.stopped shouldBe false

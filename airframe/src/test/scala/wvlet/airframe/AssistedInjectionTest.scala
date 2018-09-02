@@ -25,7 +25,7 @@ class AssistedInjectionTest extends AirframeSpec {
   "Airframe" should {
 
     "support assistd injection" in {
-      newDesign
+      newSilentDesign
         .bind[MyService].toInstance("hello")
         .withSession { session =>
           val p  = session.build[NamedServiceProvider]

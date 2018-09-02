@@ -268,7 +268,7 @@ class AirframeTest extends AirframeSpec {
 
     "create a design" in {
       // Both should work
-      val d  = Airframe.newDesign.bind[Printer].to[ConsolePrinter]
+      val d  = newDesign.bind[Printer].to[ConsolePrinter]
       val d1 = newDesign.bind[Printer].to[ConsolePrinter]
     }
 
@@ -525,7 +525,7 @@ class AirframeTest extends AirframeSpec {
 
       val d = d1 + d2
 
-      val session = d.newSession
+      val session = d.withoutLifeCycleLogging.newSession
       session.build[HeavyObject]
       session.build[ConsoleConfig]
     }

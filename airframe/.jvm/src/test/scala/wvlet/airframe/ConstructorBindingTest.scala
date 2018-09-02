@@ -23,7 +23,7 @@ class ConstructorBindingTest extends AirframeSpec {
 
   "Airframe" should {
     "build objects using default constructor parameters" in {
-      newDesign.withSession { session =>
+      newSilentDesign.withSession { session =>
         val a = session.build[CbTest]
         debug(a)
         a shouldBe CbTest(-1, "leo")
@@ -31,7 +31,7 @@ class ConstructorBindingTest extends AirframeSpec {
     }
 
     "build objects using default param and binding" in {
-      newDesign.bind[MyValue].toInstance("hello").withSession { session =>
+      newSilentDesign.bind[MyValue].toInstance("hello").withSession { session =>
         val a = session.build[CbTest1]
         debug(a)
         a shouldBe CbTest1(-1, "hello")

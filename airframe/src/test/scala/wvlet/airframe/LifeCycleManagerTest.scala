@@ -86,12 +86,12 @@ trait LifeCycleOrder {
 class LifeCycleManagerTest extends AirframeSpec {
   "LifeCycleManager" should {
     "call init hook" taggedAs ("init") in {
-      val c = newDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
+      val c = newSilentDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
       c.initCount shouldBe 1
     }
 
     "call lifecycle hooks properly for singleton" taggedAs ("start") in {
-      val session      = newDesign.bind[CounterService].toSingleton.newSession
+      val session      = newSilentDesign.bind[CounterService].toSingleton.newSession
       val multiCounter = session.build[CounterUser]
       multiCounter.counter1 shouldBe theSameInstanceAs(multiCounter.counter2)
 
@@ -114,7 +114,7 @@ class LifeCycleManagerTest extends AirframeSpec {
     }
 
     "start and shutdown only once for singleton referenced multiple times" taggedAs ("multi") in {
-      val session = newDesign.bind[Counter].toSingleton.newSession
+      val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
       val u1 = session.build[User1]
       val u2 = session.build[User2]
@@ -143,7 +143,7 @@ class LifeCycleManagerTest extends AirframeSpec {
     }
 
     "run start hook when the seesion is already strarted" in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
 
       var cs: CounterService = null
       session.start {
@@ -158,7 +158,7 @@ class LifeCycleManagerTest extends AirframeSpec {
     }
 
     "run start hook only once for singleton after session is started" in {
-      val session = newDesign.bind[Counter].toSingleton.newSession
+      val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
       var cs: CounterService  = null
       var cs2: CounterService = null
@@ -184,7 +184,7 @@ class LifeCycleManagerTest extends AirframeSpec {
     }
 
     "execute beforeShutdown hook" in {
-      val session = newDesign.newSession
+      val session = newSilentDesign.newSession
       val l       = session.build[LifeCycleOrder]
       session.start {}
       l.init shouldBe 1

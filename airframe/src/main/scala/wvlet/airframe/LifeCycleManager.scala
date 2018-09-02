@@ -158,6 +158,26 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   }
 }
 
+object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
+  private val logger = Logger.of[LifeCycleManager]
+
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    logger.debug(s"[${lifeCycleManager.sessionName}] Starting life cycle ...")
+  }
+
+  override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
+    logger.debug(s"[${lifeCycleManager.sessionName}] ======= STARTED =======")
+  }
+
+  override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    logger.debug(s"[${lifeCycleManager.sessionName}] Stopping the life cycle ...")
+  }
+
+  override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    logger.debug(s"[${lifeCycleManager.sessionName}] The life cycle has stopped.")
+  }
+}
+
 /**
   * First In, Last Out (FILO) hook executor.
   *
