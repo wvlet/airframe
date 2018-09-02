@@ -211,7 +211,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   }
 
   @tailrec
-  private final def rscan(state: Int, stack: List[JSONContext[J]]) {
+  private final def rscan(state: Int, stack: List[JSONContext[J]]): Unit = {
     var ch = s(cursor)
     if (ch == WS_N) {
       cursor += 1

@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.msgpack.spi
 
-import java.io.IOException
-
 /**
   *
   */
