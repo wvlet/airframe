@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 0.61
+- Support bind[Design] to reference the original design ([#237](https://github.com/wvlet/airframe/issues/237)) [[7d362c9](https://github.com/wvlet/airframe/commit/7d362c9)]
+
 ## 0.60
 - Added Design.withoutLifeCycleLogging, Design.withProductionMode, Design.withLazyMode
   - [#233](https://github.com/wvlet/airframe/issues/233): Allow disabling LifeCycleLogger ([#234](https://github.com/wvlet/airframe/issues/234)) [[4d2c80a](https://github.com/wvlet/airframe/commit/4d2c80a)]
