@@ -155,17 +155,23 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
 
   def yesterday = today.minus(1, ChronoUnit.DAYS)
 
-  private def parseOffset(o: String): ZonedDateTime = {
+  private def parseOffset(o: String, windowUnit: TimeWindowUnit): ZonedDateTime = {
     o match {
       case "now" => now
       case other =>
         Try(TimeVector(o)) match {
           case Success(x) =>
+            // When the offset string is time duration patterns (e.g., 0M, 0d, etc.)
             x.timeWindowFrom(now).start
           case Failure(e) =>
-            TimeParser.parse(o, zone).getOrElse {
-              throw new IllegalArgumentException(s"Invalid offset string: ${o}")
-            }
+            // When the offset string is the exact date
+            TimeParser
+              .parse(o, zone)
+              // Truncate the exact date time to the time window unit
+              .map(offset => windowUnit.truncate(offset))
+              .getOrElse {
+                throw new IllegalArgumentException(s"Invalid offset string: ${o}")
+              }
         }
     }
   }
@@ -182,7 +188,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
             val context = duration.unit.truncate(now)
             duration.timeWindowFrom(context)
           case offsetStr =>
-            val offset = parseOffset(offsetStr)
+            val offset = parseOffset(offsetStr, duration.unit)
             duration.timeWindowFrom(offset)
         }
       case None =>

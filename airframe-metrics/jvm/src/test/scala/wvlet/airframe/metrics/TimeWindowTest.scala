@@ -16,6 +16,7 @@ package wvlet.airframe.metrics
 import java.time.ZoneOffset
 import java.util.TimeZone
 
+import org.scalatest.exceptions.TestFailedException
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -41,7 +42,14 @@ class TimeWindowTest extends AirframeSpec {
     val w  = t.parse(s)
     val ws = w.toString // Check toString
     debug(s"str:${s}, window:${ws}")
-    w.toStringAt(zone) shouldBe expected
+    try {
+      w.toStringAt(zone) shouldBe expected
+    } catch {
+      case e: TestFailedException =>
+        warn(s"Failed parsing: string:${s}\nwindow:   ${ws}\nexpected: ${expected}")
+        throw e
+    }
+
     w
   }
 
@@ -103,6 +111,7 @@ class TimeWindowTest extends AirframeSpec {
       parse("-1h", "[2016-06-26 00:00:00-0700,2016-06-26 01:00:00-0700)")
       // [-1h, now)
       parse("-1h/now", "[2016-06-26 00:00:00-0700,2016-06-26 01:23:45-0700)")
+      parse("-1h/0m", "[2016-06-26 00:00:00-0700,2016-06-26 01:23:00-0700)")
 
       // -12h/now  (last 12 hours + fraction until now)
 
@@ -122,12 +131,18 @@ class TimeWindowTest extends AirframeSpec {
       parse("-1M/-1M", "[2016-04-01 00:00:00-0700,2016-05-01 00:00:00-0700)")
       parse("-1M/lastMonth", "[2016-04-01 00:00:00-0700,2016-05-01 00:00:00-0700)")
 
-      // -1h/2017-01-23 01:00:00 -> [2017-01-23 00:00:00,2017-01-23 01:00:00]
-      // -1h/2017-01-23 01:23:45 -> [2017-01-23 00:00:00,2017-01-23 01:23:45]
-      // 60m/2017-01-23 01:23:45 -> [2017-01-23 00:23:45,2017-01-23 01:23:45]
+      // Offset dates can be arbitrary time units
+      parse("-1M/2018-09-02", "[2018-08-01 00:00:00-0700,2018-09-01 00:00:00-0700)")
+      parse("-1M/2018-09-02 01:12:13", "[2018-08-01 00:00:00-0700,2018-09-01 00:00:00-0700)")
       parse("-1h/2017-01-23 01:00:00", "[2017-01-23 00:00:00-0700,2017-01-23 01:00:00-0700)")
-      parse("-1h/2017-01-23 01:23:45", "[2017-01-23 00:00:00-0700,2017-01-23 01:23:45-0700)")
-      parse("-60m/2017-01-23 01:23:45", "[2017-01-23 00:23:00-0700,2017-01-23 01:23:45-0700)")
+      parse("-1h/2017-01-23 01:23:45", "[2017-01-23 00:00:00-0700,2017-01-23 01:00:00-0700)")
+      parse("-60m/2017-01-23 01:23:45", "[2017-01-23 00:23:00-0700,2017-01-23 01:23:00-0700)")
+
+      // If different units are used for duration and offset, try to extend to the range to the offset unit
+      parse("-1M/0d", "[2016-05-01 00:00:00-0700,2016-06-26 00:00:00-0700)")
+      parse("-1M/0h", "[2016-05-01 00:00:00-0700,2016-06-26 01:00:00-0700)")
+      parse("-1M/0m", "[2016-05-01 00:00:00-0700,2016-06-26 01:23:00-0700)")
+      parse("-1M/0s", "[2016-05-01 00:00:00-0700,2016-06-26 01:23:45-0700)")
 
       // quarter
       parse("-1q", "[2016-01-01 00:00:00-0700,2016-04-01 00:00:00-0700)")
