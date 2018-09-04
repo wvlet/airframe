@@ -28,10 +28,13 @@ trait Session extends AutoCloseable {
 
   /**
     * Name of the session (default: object hash code)
-    *
-    * @return
     */
   def name: String
+
+  /**
+    * Reference to the design used for creating this session.
+    */
+  def design: Design
 
   /**
     * Build an instance of A. In general this method is necessary only when creating an entry

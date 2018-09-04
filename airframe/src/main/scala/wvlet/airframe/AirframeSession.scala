@@ -26,6 +26,7 @@ import scala.util.Try
   *
   */
 private[airframe] class AirframeSession(sessionName: Option[String],
+                                        val design: Design,
                                         binding: Seq[Binding],
                                         stage: Stage,
                                         val lifeCycleManager: LifeCycleManager)
@@ -41,6 +42,12 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     val sessionBinding =
       ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
     b += sessionSurface -> sessionBinding
+
+    // Add a reference to the design
+    val designSurface = wvlet.surface.of[Design]
+    val designBinding =
+      ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]), true, true)
+    b += designSurface -> designBinding
 
     // Add user-defined bindings
     binding.foreach(x => b += (x.from -> x))
