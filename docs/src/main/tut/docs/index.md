@@ -23,7 +23,7 @@ import wvlet.airframe._
 
 ## Bind
 
-In Airframe, yopu can use two types of dependency injections: __constructor injection__ or
+In Airframe, you can use two types of dependency injections: __constructor injection__ or
 __in-trait injection__.
  
 ### Constructor Injection
