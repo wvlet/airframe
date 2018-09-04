@@ -23,10 +23,21 @@ trait SessionBindExample {
   val s = bind[Session]
 }
 
+trait DesignBindExample {
+  val a      = bind[HelloBind]
+  val design = bind[Design]
+}
+
 /**
   *
   */
 class SessionTest extends AirframeSpec {
+
+  val d1 =
+    newDesign
+      .bind[HelloBind].toSingleton
+      .withoutLifeCycleLogging
+
   "Session" should {
     "pre-compile session injection template" taggedAs ("session-inject") in {
       val session = newDesign.newSession
@@ -51,6 +62,12 @@ class SessionTest extends AirframeSpec {
 
       val e = session.build[SessionBindExample]
       e.s shouldBe theSameInstanceAs(session)
+    }
+
+    "should contain the reference to the design" in {
+      d1.build[DesignBindExample] { e =>
+        e.design shouldBe theSameInstanceAs(d1)
+      }
     }
   }
 }

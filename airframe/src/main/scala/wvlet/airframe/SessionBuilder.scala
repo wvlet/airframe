@@ -68,7 +68,7 @@ class SessionBuilder(design: Design,
       }
     val eventHandler = lifeCycleLogger wraps lifeCycleEventHandler
     val l            = new LifeCycleManager(eventHandler)
-    val session      = new AirframeSession(name, sortedBindings, design.designConfig.stage, l)
+    val session      = new AirframeSession(name, design, sortedBindings, design.designConfig.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init
