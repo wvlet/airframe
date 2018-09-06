@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.Value
 import wvlet.airframe.codec.MessageCodec.ErrorCode
-import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
@@ -33,6 +32,9 @@ trait MessageCodec[A] {
     pack(packer, v)
     packer.toByteArray
   }
+
+  def unpackBytes(msgpack: Array[Byte]): Option[A]                        = unpackMsgPack(msgpack)
+  def unpackBytes(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = unpackMsgPack(msgpack, offset, len)
 
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
