@@ -260,7 +260,15 @@ object SurfaceFactory extends LogSupport {
           if symbol.isType &&
             symbol.asType.isAliasType &&
             !belongsToScalaDefault(alias) =>
-        val inner    = surfaceOf(alias.dealias)
+        val dealiased = alias.dealias
+        val inner = if (alias != dealiased) {
+          surfaceOf(dealiased)
+        } else {
+          // When higher kind types are aliased (e.g., type M[A] = Future[A]),
+          // alias.dealias will not return the aliased type (Future[A]),
+          // So we need to find the resulting type by applying type erasure.
+          surfaceOf(alias.erasure)
+        }
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         Alias(name, fullName, inner)

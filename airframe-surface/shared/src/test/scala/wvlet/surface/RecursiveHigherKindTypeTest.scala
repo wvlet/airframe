@@ -13,19 +13,20 @@
  */
 package wvlet.surface
 import wvlet.surface
+import scala.language.higherKinds
 
 object RecursiveHigherKindTypeTest {
-  trait UserAccountRepository[M[_]]
+  trait Holder[M[_]]
 
-  trait MyTask[A]
+  class MyTask[A]
 
-  object UserAccountRepository {
+  object Holder {
     type BySkinny[A] = MyTask[A]
-    def bySkinny: UserAccountRepository[BySkinny] = new UserAccountRepositoryBySkinny
+    def bySkinny: Holder[BySkinny] = new InterpretedHolder
   }
 
-  import UserAccountRepository._
-  class UserAccountRepositoryBySkinny extends UserAccountRepository[BySkinny] {}
+  import Holder._
+  class InterpretedHolder extends Holder[BySkinny] {}
 }
 
 /**
@@ -33,12 +34,13 @@ object RecursiveHigherKindTypeTest {
   */
 class RecursiveHigherKindTypeTest extends SurfaceSpec {
   import RecursiveHigherKindTypeTest._
-  import UserAccountRepository.BySkinny
+  import Holder.BySkinny
 
   "Surface" should {
     "support recursive higher kind types" in {
-      val s = surface.of[UserAccountRepository[BySkinny]]
-      debug(s)
+      val s = surface.of[Holder[BySkinny]]
+      s.name shouldBe "Holder[BySkinny]"
+      s.typeArgs(0).dealias.name shouldBe "MyTask[_]"
     }
   }
 }
