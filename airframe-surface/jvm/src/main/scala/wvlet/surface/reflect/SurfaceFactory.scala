@@ -190,30 +190,37 @@ object SurfaceFactory extends LogSupport {
     }
 
     def surfaceOf(tpe: ru.Type): Surface = {
-      val fullName = fullTypeNameOf(tpe)
-      if (surfaceCache.contains(fullName)) {
-        surfaceCache(fullName)
-      } else if (seen.contains(tpe)) {
-        // Recursive type
-        LazySurface(resolveClass(tpe), fullName, typeArgsOf(tpe).map(x => surfaceOf(x)))
-      } else {
-        seen += tpe
-        val m = surfaceFactories.orElse[ru.Type, Surface] {
-          case _ =>
-            trace(f"Resolving the unknown type $tpe into AnyRef")
-            new GenericSurface(resolveClass(tpe))
+      try {
+        val fullName = fullTypeNameOf(tpe)
+        if (surfaceCache.contains(fullName)) {
+          surfaceCache(fullName)
+        } else if (seen.contains(tpe)) {
+          // Recursive type
+          LazySurface(resolveClass(tpe), fullName, typeArgsOf(tpe).map(x => surfaceOf(x)))
+        } else {
+          seen += tpe
+          val m = surfaceFactories.orElse[ru.Type, Surface] {
+            case _ =>
+              trace(f"Resolving the unknown type $tpe into AnyRef")
+              new GenericSurface(resolveClass(tpe))
+          }
+          val surface = m(tpe)
+          // Cache if not yet cached
+          surfaceCache.getOrElseUpdate(fullName, surface)
+          typeMap.getOrElseUpdate(surface, tpe)
+          surface
         }
-        val surface = m(tpe)
-        // Cache if not yet cached
-        surfaceCache.getOrElseUpdate(fullName, surface)
-        typeMap.getOrElseUpdate(surface, tpe)
-        surface
+      } catch {
+        case e: Throwable =>
+          error(s"Failed to build surface.of[${tpe}]", e)
+          throw e
       }
     }
 
     private val surfaceFactories: SurfaceMatcher =
       taggedTypeFactory orElse
         aliasFactory orElse
+        higherKindedTypeFactory orElse
         primitiveTypeFactory orElse
         arrayFactory orElse
         optionFactory orElse
@@ -248,6 +255,15 @@ object SurfaceFactory extends LogSupport {
 
     private def elementTypeOf(t: ru.Type): Surface = {
       typeArgsOf(t).map(surfaceOf(_)).head
+    }
+
+    private def higherKindedTypeFactory: SurfaceMatcher = {
+      case t @ TypeRef(prefix, symbol, args) if t.typeArgs.isEmpty && t.takesTypeArgs =>
+        // When higher-kinded types (e.g., Option[X], Future[X]) is passed as Option, Future without type arguments
+        val name     = symbol.asType.name.decodedName.toString
+        val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+        val inner    = surfaceOf(t.erasure)
+        Alias(name, fullName, inner)
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {
