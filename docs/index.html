@@ -217,9 +217,9 @@ use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
 
 <h3 id="suppress-life-cycle-logging">Suppress Life Cycle Logging</h3>
 
-<p>If you don’t need to show Session start/terminate logs, use <code class="highlighter-rouge">Design.withoutLifeCycleLogging</code>:</p>
+<p>If you don’t need to show Session start/terminate logs, use <code class="highlighter-rouge">Design.noLifeCycleLogging</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span>
-  <span class="o">.</span><span class="n">withoutLifeCycleLogging</span>
+  <span class="o">.</span><span class="n">noLifeCycleLogging</span>
   <span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]{</span> <span class="n">x</span> <span class="k">=&gt;</span> <span class="o">...</span> <span class="o">}</span>
 </code></pre>
 </div>
