@@ -19,7 +19,6 @@ object RecursiveSurfaceTest {
 
   case class Leaf(name: String)
   case class Cons(head: String, tail: Cons)
-
   case class TypedCons[A](head: String, tail: TypedCons[A])
 
 }
@@ -71,5 +70,4 @@ class RecursiveSurfaceTest extends SurfaceSpec {
       lazyC.isOption shouldBe false
     }
   }
-
 }
