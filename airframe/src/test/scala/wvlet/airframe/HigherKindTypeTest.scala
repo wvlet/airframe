@@ -15,14 +15,12 @@ package wvlet.airframe
 import scala.language.higherKinds
 
 object HigherKindTypeTest {
-
   trait Holder[M[_]] {
     def hello = "hello"
   }
 
   trait Task[A]
   trait MyFuture[A]
-
   trait HolderInterpreted extends Holder[Task]
 
   val interpreted = new HolderInterpreted {
@@ -47,7 +45,6 @@ class HigherKindTypeTest extends AirframeSpec {
       .noLifeCycleLogging
 
   "Airframe" should {
-
     "support higher kind types" in {
       design.build[HolderInterpreted] { repo =>
         repo.hello shouldBe "new interpretation"

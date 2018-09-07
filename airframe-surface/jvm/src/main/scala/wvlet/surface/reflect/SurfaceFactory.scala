@@ -269,9 +269,11 @@ object SurfaceFactory extends LogSupport {
           // So we need to find the resulting type by applying type erasure.
           surfaceOf(alias.erasure)
         }
+
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        Alias(name, fullName, inner)
+        val a        = Alias(name, fullName, inner)
+        a
     }
 
     private def arrayFactory: SurfaceMatcher = {
