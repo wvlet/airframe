@@ -74,7 +74,8 @@ case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends 
   def withLifeCycleLogging: Design = {
     new Design(designConfig.withLifeCycleLogging, binding)
   }
-  def withoutLifeCycleLogging: Design = {
+
+  def noLifeCycleLogging: Design = {
     new Design(designConfig.withoutLifeCycleLogging, binding)
   }
 

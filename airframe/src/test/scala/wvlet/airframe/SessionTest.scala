@@ -36,7 +36,7 @@ class SessionTest extends AirframeSpec {
   val d1 =
     newDesign
       .bind[HelloBind].toSingleton
-      .withoutLifeCycleLogging
+      .noLifeCycleLogging
 
   "Session" should {
     "pre-compile session injection template" taggedAs ("session-inject") in {
