@@ -13,7 +13,6 @@
  */
 package wvlet.surface
 import scala.language.existentials
-import scala.reflect.runtime.{universe => ru}
 
 /**
   * Parameters of a Surface
