@@ -46,7 +46,7 @@ object DesignTest {
       .bind[Message].toSingletonOf[Hello]
       .bind[ProductionMessage].toInstance(Hello("production"))
       .bind[DevelopmentMessage].toInstance(Hello("development"))
-      .withoutLifeCycleLogging
+      .noLifeCycleLogging
 }
 
 /**
@@ -124,7 +124,7 @@ class DesignTest extends AirframeSpec {
 
     "start and stop session" in {
       // Sanity test
-      newDesign.withoutLifeCycleLogging
+      newDesign.noLifeCycleLogging
         .withSession { session =>
           // Do nothing
         }

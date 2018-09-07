@@ -270,7 +270,7 @@ class AirframeTest extends AirframeSpec {
       val d = wvlet.airframe.Airframe.newDesign
 
       // For test coverage
-      d.withLifeCycleLogging.withoutLifeCycleLogging
+      d.withLifeCycleLogging.noLifeCycleLogging
         .withSession { session =>
           }
     }
@@ -534,7 +534,7 @@ class AirframeTest extends AirframeSpec {
 
       val d = d1 + d2
 
-      val session = d.withoutLifeCycleLogging.newSession
+      val session = d.noLifeCycleLogging.newSession
       session.build[HeavyObject]
       session.build[ConsoleConfig]
     }
