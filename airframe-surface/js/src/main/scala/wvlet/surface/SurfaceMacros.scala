@@ -129,6 +129,15 @@ private[surface] object SurfaceMacros {
         q"wvlet.surface.Alias(${name}, ${fullName}, $inner)"
     }
 
+    private val higherKindedTypeFactory: SurfaceFactory = {
+      case t @ TypeRef(prefix, symbol, args) if t.typeArgs.isEmpty && t.takesTypeArgs =>
+        // When higher-kinded types (e.g., Option[X], Future[X]) is passed as Option, Future without type arguments
+        val name     = symbol.asType.name.decodedName.toString
+        val fullName = s"${prefix.typeSymbol.fullName}.${name}"
+        val inner    = surfaceOf(t.erasure)
+        q"wvlet.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner})"
+    }
+
     private val primitiveFactory: SurfaceFactory = {
       case t if t == typeOf[Short]            => q"wvlet.surface.Primitive.Short"
       case t if t == typeOf[Boolean]          => q"wvlet.surface.Primitive.Boolean"
@@ -423,6 +432,7 @@ private[surface] object SurfaceMacros {
       primitiveFactory orElse
         taggedTypeFactory orElse
         aliasFactory orElse
+        higherKindedTypeFactory orElse
         arrayFactory orElse
         optionFactory orElse
         tupleFactory orElse
