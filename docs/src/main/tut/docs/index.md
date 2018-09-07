@@ -214,10 +214,10 @@ design
 
 ### Suppress Life Cycle Logging
 
-If you don't need to show Session start/terminate logs, use `Design.withoutLifeCycleLogging`:
+If you don't need to show Session start/terminate logs, use `Design.noLifeCycleLogging`:
 ```scala
 design
-  .withoutLifeCycleLogging
+  .noLifeCycleLogging
   .build[X]{ x => ... }
 ```
 This will show lifecycle event logs only in debug level logs.
