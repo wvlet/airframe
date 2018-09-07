@@ -16,6 +16,7 @@ package wvlet.surface.reflect
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.log.LogSupport
+import wvlet.surface
 import wvlet.surface._
 
 import scala.collection.JavaConverters._
@@ -260,10 +261,10 @@ object SurfaceFactory extends LogSupport {
     private def higherKindedTypeFactory: SurfaceMatcher = {
       case t @ TypeRef(prefix, symbol, args) if t.typeArgs.isEmpty && t.takesTypeArgs =>
         // When higher-kinded types (e.g., Option[X], Future[X]) is passed as Option, Future without type arguments
+        val inner    = surfaceOf(t.erasure)
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        val inner    = surfaceOf(t.erasure)
-        Alias(name, fullName, inner)
+        HigherKindedTypeSurface(name, fullName, inner)
     }
 
     private def taggedTypeFactory: SurfaceMatcher = {

@@ -135,7 +135,7 @@ private[surface] object SurfaceMacros {
         val name     = symbol.asType.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         val inner    = surfaceOf(t.erasure)
-        q"wvlet.surface.Alias(${name}, ${fullName}, ${inner})"
+        q"wvlet.surface.HigherKindedTypeSurface(${name}, ${fullName}, ${inner})"
     }
 
     private val primitiveFactory: SurfaceFactory = {

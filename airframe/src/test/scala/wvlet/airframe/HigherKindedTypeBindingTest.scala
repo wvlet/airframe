@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.surface
+
 import scala.concurrent.Future
 import scala.util.Success
 import scala.language.higherKinds
@@ -46,6 +48,10 @@ class HigherKindedTypeBindingTest extends AirframeSpec {
 
   "Airframe" should {
     "support higher-kinded type binding" in {
+
+      val s = surface.of[WebApp[Future]]
+      info(s)
+      info(s.typeArgs(0))
 
       val d = newDesign
         .bind[WebApp[Future]].toInstance(webAppWithFuture)

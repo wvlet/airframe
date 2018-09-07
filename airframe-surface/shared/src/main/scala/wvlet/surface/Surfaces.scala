@@ -110,6 +110,14 @@ case class Alias(override val name: String, override val fullName: String, ref: 
   override def dealias: Surface     = ref.dealias
 }
 
+case class HigherKindedTypeSurface(override val name: String, override val fullName: String, ref: Surface)
+    extends GenericSurface(ref.rawType, ref.typeArgs, ref.params, ref.objectFactory) {
+  override def isAlias: Boolean     = false
+  override def isPrimitive: Boolean = ref.isPrimitive
+  override def isOption: Boolean    = ref.isOption
+  override def dealias: Surface     = ref.dealias
+}
+
 case object ExistentialType extends GenericSurface(classOf[Any]) {
   override def name: String     = "_"
   override def fullName: String = "_"
