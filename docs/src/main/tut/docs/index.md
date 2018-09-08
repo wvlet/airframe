@@ -34,7 +34,7 @@ its arguments, then creates a new instance of `A` by finding dependencies from a
 ```scala
 import wvlet.airframe._
 
-class MyApp(val config:Config)
+class MyApp(val config:AppConfig)
 case class AppConfig(appName:String)
 
 // Define a design
