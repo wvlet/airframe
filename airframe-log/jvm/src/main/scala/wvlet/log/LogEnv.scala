@@ -1,6 +1,8 @@
 package wvlet.log
 import java.io.PrintStream
+import java.lang.management.ManagementFactory
 
+import javax.management.ObjectName
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 /**
@@ -48,5 +50,14 @@ private[log] object LogEnv extends LogEnvBase {
   }
   override def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
     LogLevelScanner.scanLogLevels(loglevelFileCandidates)
+  }
+
+  {
+    // Register the log level configuration interface to JMX
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val name        = new ObjectName("wvlet.log:type=Logger")
+    if (!mbeanServer.isRegistered(name)) {
+      mbeanServer.registerMBean(LoggerJMX, name)
+    }
   }
 }
