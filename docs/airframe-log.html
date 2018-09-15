@@ -285,7 +285,7 @@ log4j-jul binder:</p>
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don’t need to use AsyncHandler with LogRotationHandler.</p>
 
-<h3 id="clear-existing-logger-congigurations">Clear Existing Logger Congigurations</h3>
+<h3 id="clear-existing-logger-configurations">Clear Existing Logger Configurations</h3>
 
 <p>To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Logger</span><span class="o">.</span><span class="n">clearAllHandlers</span>
@@ -294,6 +294,13 @@ LogRotationHandler is already optimized for writing logs to files, so you usuall
 </span><span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">LogFormatter</span><span class="o">.</span><span class="nc">SourceCodeLogFormatter</span><span class="o">)</span>
 </code></pre>
 </div>
+
+<h3 id="changing-log-levels-using-jmx">Changing Log Levels using JMX</h3>
+
+<p>To change the log levels outside the JVM process, you can use the JMX interface of <code class="highlighter-rouge">wvlet.log.Logger</code>.</p>
+
+<p>For example, by using <a href="https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html">jconsole</a> you can access the JMX interface and change the log levels:
+<img src="../../img/airframe-log/jmx.png" alt="image" /></p>
 
 <h2 id="internals">Internals</h2>
 
