@@ -262,7 +262,7 @@ Note that however AsyncHandler has usually higher overhead than the default hand
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler. 
 
-### Clear Existing Logger Congigurations
+### Clear Existing Logger Configurations
 
 To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:
 ```scala
@@ -271,6 +271,13 @@ Logger.clearAllHandlers
 // Then set your logger configurations
 Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
 ```
+
+### Changing Log Levels using JMX
+
+To change the log levels outside the JVM process, you can use the JMX interface of `wvlet.log.Logger`.
+
+For example, by using [jconsole](https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html) you can access the JMX interface and change the log levels:
+![image](../../img/airframe-log/jmx.png)
 
 ## Internals
 
