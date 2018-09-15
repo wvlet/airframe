@@ -12,12 +12,44 @@
  * limitations under the License.
  */
 package wvlet.log
+import java.lang.management.ManagementFactory
+
+import javax.management.{Attribute, JMX, ObjectName}
 
 /**
   *
   */
 class LoggerJMXTest extends Spec {
   "LoggerJXM" should {
-    "support changing log levels through JMX" in {}
+    "be registered" in {
+      // Initialize a logger
+      val l = Logger.rootLogger
+
+      val mbeanServer = ManagementFactory.getPlatformMBeanServer
+      val name        = new ObjectName("wvlet.log:type=Logger")
+      mbeanServer.isRegistered(name) shouldBe true
+
+      // Check the default log level
+      mbeanServer.getAttribute(name, "DefaultLogLevel").toString shouldBe l.getLogLevel.toString
+
+      val currentLogLevel = l.getLogLevel
+      try {
+        mbeanServer.setAttribute(name, new Attribute("DefaultLogLevel", "error"))
+        l.getLogLevel shouldBe LogLevel.ERROR
+      } finally {
+        l.setLogLevel(currentLogLevel)
+      }
+    }
+
+    "support setting log levels through JMX" in {
+      // Creating JMX proxy is a bit complicated, so just test LoggerJMX impl here
+      val current = LoggerJMX.getLogLevel("wvlet.log")
+      try {
+        LoggerJMX.setLogLevel("wvlet.log", "WARN")
+        LoggerJMX.getLogLevel("wvlet.log") shouldBe "warn"
+      } finally {
+        LoggerJMX.setLogLevel("wvlet.log", current)
+      }
+    }
   }
 }
