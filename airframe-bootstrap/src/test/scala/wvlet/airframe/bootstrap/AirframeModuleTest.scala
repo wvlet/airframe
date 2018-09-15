@@ -19,6 +19,8 @@ case class AppConfig(name: String)
 case class App2Config(name: String)
 
 object AirframeModuleTest {
+  import wvlet.airframe._
+
   lazy val module1 =
     AirframeModule.newModule
       .withConfig { c =>

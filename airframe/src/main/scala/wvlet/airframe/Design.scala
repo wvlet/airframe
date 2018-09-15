@@ -19,25 +19,34 @@ import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 
-case class DesignConfig(enabledLifeCycleLogging: Boolean = true, stage: Stage = Stage.DEVELOPMENT) {
+case class DesignConfig(
+    enabledLifeCycleLogging: Boolean = true,
+    stage: Stage = Stage.DEVELOPMENT,
+    // Used for storing additional configurations (e.g., wvlet.airframe.config.Config)
+    props: Map[String, Any] = Map.empty
+) {
   def +(other: DesignConfig): DesignConfig = {
     // configs will be overwritten
     other
   }
 
   def withLifeCycleLogging: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging = true, stage)
+    DesignConfig(enabledLifeCycleLogging = true, stage, props)
   }
   def withoutLifeCycleLogging: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging = false, stage)
+    DesignConfig(enabledLifeCycleLogging = false, stage, props)
   }
 
   def withProductionMode: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging, Stage.PRODUCTION)
+    DesignConfig(enabledLifeCycleLogging, Stage.PRODUCTION, props)
   }
 
   def withLazyMode: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging, Stage.DEVELOPMENT)
+    DesignConfig(enabledLifeCycleLogging, Stage.DEVELOPMENT, props)
+  }
+
+  def withProperty[A](key: String, v: A): DesignConfig = {
+    DesignConfig(enabledLifeCycleLogging, stage, props + (key -> v))
   }
 }
 
@@ -45,6 +54,8 @@ case class DesignConfig(enabledLifeCycleLogging: Boolean = true, stage: Stage = 
   * Immutable airframe design
   */
 case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends LogSupport {
+
+  private[airframe] def getDesignConfig: DesignConfig = designConfig
 
   def add(other: Design): Design = {
     new Design(designConfig + other.designConfig, binding ++ other.binding)
@@ -91,6 +102,10 @@ case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends 
     */
   def withLazyMode: Design = {
     new Design(designConfig.withLazyMode, binding)
+  }
+
+  private[airframe] def withProperty[A](key: String, v: A): Design = {
+    new Design(designConfig.withProperty(key, v), binding)
   }
 
   /**

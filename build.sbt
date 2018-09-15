@@ -327,7 +327,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.18"
       )
     )
-    .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", tablet, airframeSpecJVM % "test")
 
 lazy val control =
   crossProject(JSPlatform, JVMPlatform)
