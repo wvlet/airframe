@@ -37,13 +37,32 @@ object AirframeBootstrapTest {
   */
 class AirframeBootstrapTest extends AirframeSpec {
   import AirframeBootstrapTest._
+  import wvlet.airframe.config._
 
   "AirframeBootstrap" should {
     "bind configs" in {
-      module1.withSession { session =>
-        session.build[AppConfig] shouldBe AppConfig("hello")
-        session.build[String] shouldBe "world"
-      }
+      module1.noLifeCycleLogging
+        .withSession { session =>
+          session.build[AppConfig] shouldBe AppConfig("hello")
+          session.build[String] shouldBe "world"
+        }
+    }
+
+    "combine modules" in {
+      (module1 + module2).noLifeCycleLogging
+        .withSession { session =>
+          session.build[AppConfig] shouldBe AppConfig("hello")
+          session.build[String] shouldBe "Airframe"
+        }
+    }
+
+    "override config" in {
+      (module1 + module3).noLifeCycleLogging
+        .withConfigOverride(Map("app.name" -> "good morning"))
+        .withSession { session =>
+          session.build[AppConfig] shouldBe AppConfig("good morning")
+          session.build[App2Config] shouldBe App2Config("scala")
+        }
     }
 
   }
