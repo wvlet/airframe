@@ -60,7 +60,7 @@ class AirframeBootstrapTest extends AirframeSpec {
 
     "override config" in {
       (module1 + module3).noLifeCycleLogging
-        .withConfigOverride(Map("app.name" -> "good morning"))
+        .overrideConfigParams(Map("app.name" -> "good morning"))
         .showConfig
         .withSession { session =>
           session.build[AppConfig] shouldBe AppConfig("good morning")

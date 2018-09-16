@@ -13,20 +13,17 @@
  */
 package wvlet.airframe.config
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe._
+import wvlet.surface.tag._
+
+trait AppTag
 
 /**
   *
   */
 class ConfigPackageTest extends AirframeSpec {
-  import wvlet.airframe._
-  import wvlet.airframe.config._
 
   private val configPaths = Seq("airframe-config/src/test/resources")
-
-  def loadConfig(env: String) =
-    Config(env = env, configPaths = configPaths)
-      .registerFromYaml[SampleConfig]("myconfig.yml")
-      .registerFromYaml[ClassConfig]("classes.yml")
 
   "config package" should {
     "bind config with Airframe design" in {
@@ -35,7 +32,12 @@ class ConfigPackageTest extends AirframeSpec {
         .withConfigPaths(configPaths)
         .bindConfig[DefaultConfig](DefaultConfig(10, "aina"))
         .bindConfigFromYaml[ClassConfig]("classes.yml")
+        // Specifying non exising yaml file
         .bindConfigFromYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
+        // Switching env
+        .withConfigEnv(env = "staging")
+        .bindConfigFromYaml[SampleConfig @@ AppTag]("myconfig.yml")
+        .overrideConfigParams(Map("sample.id" -> 2))
 
       d.withSession { session =>
         session.build[DefaultConfig] shouldBe DefaultConfig(10, "aina")
@@ -43,7 +45,8 @@ class ConfigPackageTest extends AirframeSpec {
         val classConfig = session.build[ClassConfig]
         classConfig.classes shouldBe Seq("class1", "class2", "class3")
         classConfig.classAssignments shouldBe Map("nobita" -> "class1", "takeshi" -> "class2", "suneo" -> "class3")
-        session.build[SampleConfig] shouldBe SampleConfig(1, "leo")
+        session.build[SampleConfig] shouldBe SampleConfig(2, "leo")
+        session.build[SampleConfig @@ AppTag] shouldBe SampleConfig(2, "staging-config")
       }
     }
   }

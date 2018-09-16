@@ -94,8 +94,11 @@ package object config {
         .bind(s).toInstance(newConfig)
     }
 
-    def withConfigOverride(props: Map[String, Any],
-                           onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
+    /**
+      * Overide a subset of the configuration parameters, registered to the design.
+      */
+    def overrideConfigParams(props: Map[String, Any],
+                             onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
       val prevConfig   = getConfig
       val configHolder = getConfig.overrideWith(props, onUnusedProperties)
       val d2           = d.withConfig(configHolder)
@@ -107,13 +110,17 @@ package object config {
       d3
     }
 
-    def withConfigOverrideProperties(props: Properties,
-                                     onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
+    /**
+      * Overide a subset of the configuration parameters, registered to the design.
+      */
+    def overrideConfigParamsWithProperties(
+        props: Properties,
+        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
       import scala.collection.JavaConverters._
       val m = for (key <- props.propertyNames().asScala) yield {
         key.toString -> props.get(key).asInstanceOf[Any]
       }
-      withConfigOverride(m.toMap, onUnusedProperties)
+      overrideConfigParams(m.toMap, onUnusedProperties)
     }
   }
 }
