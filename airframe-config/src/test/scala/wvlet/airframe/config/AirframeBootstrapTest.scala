@@ -11,12 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.bootstrap
+package wvlet.airframe.config
+
 import wvlet.airframe.AirframeSpec
 
 object AirframeBootstrapTest {
+  case class AppConfig(name: String)
+  case class App2Config(name: String)
+
   import wvlet.airframe._
-  import wvlet.airframe.config._
 
   val module1 =
     newDesign
@@ -37,11 +40,10 @@ object AirframeBootstrapTest {
   */
 class AirframeBootstrapTest extends AirframeSpec {
   import AirframeBootstrapTest._
-  import wvlet.airframe.config._
 
   "AirframeBootstrap" should {
     "bind configs" in {
-      module1.noLifeCycleLogging
+      module1.noLifeCycleLogging.showConfig
         .withSession { session =>
           session.build[AppConfig] shouldBe AppConfig("hello")
           session.build[String] shouldBe "world"
@@ -49,7 +51,7 @@ class AirframeBootstrapTest extends AirframeSpec {
     }
 
     "combine modules" in {
-      (module1 + module2).noLifeCycleLogging
+      (module1 + module2).noLifeCycleLogging.showConfig
         .withSession { session =>
           session.build[AppConfig] shouldBe AppConfig("hello")
           session.build[String] shouldBe "Airframe"
@@ -59,12 +61,11 @@ class AirframeBootstrapTest extends AirframeSpec {
     "override config" in {
       (module1 + module3).noLifeCycleLogging
         .withConfigOverride(Map("app.name" -> "good morning"))
+        .showConfig
         .withSession { session =>
           session.build[AppConfig] shouldBe AppConfig("good morning")
           session.build[App2Config] shouldBe App2Config("scala")
         }
     }
-
   }
-
 }

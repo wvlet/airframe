@@ -15,7 +15,7 @@ package wvlet.airframe
 import java.util.Properties
 
 import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 import wvlet.surface
 
 import scala.reflect.ClassTag
@@ -23,11 +23,29 @@ import scala.reflect.ClassTag
 /**
   *
   */
-package object config extends LogSupport {
+package object config {
+  private val logger = Logger("wvlet.airframe.config")
+
   import wvlet.airframe._
   import scala.reflect.runtime.{universe => ru}
 
+  def printConfig(c: Config): Unit = {
+    logger.info("Configurations:")
+    for (c <- c.getAll) {
+      logger.info(s"${c.tpe}: ${c.value}")
+    }
+  }
+
   implicit class ConfigurableDesign(d: Design) {
+
+    def showConfig = {
+      bootstrapWithConfigProcessor(printConfig)
+    }
+
+    def bootstrapWithConfigProcessor(configProcessor: Config => Unit): Design = {
+      configProcessor(getConfig)
+      d
+    }
 
     private def getConfig: Config = {
       d.getDesignConfig match {
