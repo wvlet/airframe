@@ -36,7 +36,7 @@ object Config extends LogSupport {
 
   def empty = Config()
 
-  private def defaultConfigPath =
+  private[config] def defaultConfigPath =
     cleanupConfigPaths(
       Seq(
         ".", // current directory

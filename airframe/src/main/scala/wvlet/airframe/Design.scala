@@ -19,35 +19,53 @@ import wvlet.surface.Surface
 
 import scala.language.experimental.macros
 
-case class DesignConfig(enabledLifeCycleLogging: Boolean = true, stage: Stage = Stage.DEVELOPMENT) {
-  def +(other: DesignConfig): DesignConfig = {
+class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stage = Stage.DEVELOPMENT)
+    extends Serializable {
+  def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten
-    other
+    new DesignOptions(other.enabledLifeCycleLogging, other.stage)
   }
 
-  def withLifeCycleLogging: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging = true, stage)
+  def withLifeCycleLogging: DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging = true, stage)
   }
-  def withoutLifeCycleLogging: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging = false, stage)
-  }
-
-  def withProductionMode: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging, Stage.PRODUCTION)
+  def withoutLifeCycleLogging: DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging = false, stage)
   }
 
-  def withLazyMode: DesignConfig = {
-    DesignConfig(enabledLifeCycleLogging, Stage.DEVELOPMENT)
+  def withProductionMode: DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging, Stage.PRODUCTION)
+  }
+
+  def withLazyMode: DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT)
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[DesignOptions]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: DesignOptions =>
+      (that canEqual this) &&
+        enabledLifeCycleLogging == that.enabledLifeCycleLogging &&
+        stage == that.stage
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(enabledLifeCycleLogging, stage)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 /**
   * Immutable airframe design
   */
-case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends LogSupport {
+case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
+
+  private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   def add(other: Design): Design = {
-    new Design(designConfig + other.designConfig, binding ++ other.binding)
+    new Design(designOptions + other.designOptions, binding ++ other.binding)
   }
 
   def +(other: Design): Design = add(other)
@@ -62,35 +80,35 @@ case class Design(designConfig: DesignConfig, binding: Vector[Binding]) extends 
 
   def addBinding(b: Binding): Design = {
     debug(s"Add binding: $b")
-    new Design(designConfig, binding :+ b)
+    new Design(designOptions, binding :+ b)
   }
 
   def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
 
   def remove(t: Surface): Design = {
-    new Design(designConfig, binding.filterNot(_.from == t))
+    new Design(designOptions, binding.filterNot(_.from == t))
   }
 
   def withLifeCycleLogging: Design = {
-    new Design(designConfig.withLifeCycleLogging, binding)
+    new Design(designOptions.withLifeCycleLogging, binding)
   }
 
   def noLifeCycleLogging: Design = {
-    new Design(designConfig.withoutLifeCycleLogging, binding)
+    new Design(designOptions.withoutLifeCycleLogging, binding)
   }
 
   /**
     * Enable eager initialization of singletons services for production mode
     */
   def withProductionMode: Design = {
-    new Design(designConfig.withProductionMode, binding)
+    new Design(designOptions.withProductionMode, binding)
   }
 
   /**
     * Do not initialize singletons for debugging
     */
   def withLazyMode: Design = {
-    new Design(designConfig.withLazyMode, binding)
+    new Design(designOptions.withLazyMode, binding)
   }
 
   /**
@@ -150,5 +168,5 @@ object Design {
   /**
     * Empty design.
     */
-  val blanc: Design = new Design(DesignConfig(), Vector.empty) // Use Vector for better append performance
+  val blanc: Design = new Design(new DesignOptions(), Vector.empty) // Use Vector for better append performance
 }

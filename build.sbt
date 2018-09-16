@@ -122,7 +122,6 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   airframeSpecJVM,
   config,
   controlJVM,
-  bootstrap,
   jmx,
   opts,
   metricsJVM,
@@ -327,7 +326,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.18"
       )
     )
-    .dependsOn(surfaceJVM, tablet, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", tablet, airframeSpecJVM % "test")
 
 lazy val control =
   crossProject(JSPlatform, JVMPlatform)
@@ -343,16 +342,6 @@ lazy val control =
 
 lazy val controlJS  = control.js
 lazy val controlJVM = control.jvm
-
-lazy val bootstrap =
-  project
-    .in(file("airframe-bootstrap"))
-    .settings(buildSettings)
-    .settings(
-      name := "airframe-bootstrap",
-      description := "Bootstrap module for Airframe"
-    )
-    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", config, airframeSpecJVM % "test")
 
 lazy val jmx =
   project

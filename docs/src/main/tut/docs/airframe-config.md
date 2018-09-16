@@ -23,8 +23,8 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-config" % "(version)"
 Here is the details of the application configuration flow:
 
 1. The application specifies an environment (e.g., `test`, `staging`, `production`, etc) and configuration file paths.
-1. Read a configuration file (YAML) from `configpath(s)`.
-   - The first found YAML file in the config paths will be used.
+1. Read a configuration file (YAML) from the paths specified in `configpaths`.
+   - The first YAML file found in the config paths will be read.
    - `config.registerFromYaml[A](yaml file)` will create an object `A` from the YAML data.
    - If the YAML file does not contain data for the target environment, it searches for `default` environment instead.
        - If `default` environment is also not found, the provided default object will be used (optional).
@@ -116,38 +116,37 @@ for(change <- config.getConfigChanges) {
 
 ## Using with Airframe
 
-Here is an example of using `Config` with `Airframe`:
+Since Airframe 0.65, binding configurations to design becomes easier.
+By importing `wvlet.airframe.config._`, you can bind configurations to design objects.
 
+Example:
 ```scala
 import wvlet.airframe._
-import wvlet.config.Config
+// Import config._ to use bindConfigXXX methods
+import wvlet.airframe.config._
 
-...
+// Load "production" configurations from Yaml files
+val design = 
+  newDesign
+    // Set an environment to use
+    .withConfigEnv(env = "production", defaultEnv = "default")
+    // Load configs from YAML files
+    .bindConfigFromYaml[LogConfig]("access-log.yml")  
+    .bindConfigFromYaml[ServerConfig]("server.yml")
+    // Bind other designs
+    .bind[X].toInstance(...)
+    .bind[Y].toProvider{ ... }
 
-val env = "production"
-
-// For overriding properties, or you can load the environmental variables here
+// If you need to override some config parameters, prepare Map[String, Any] objects:
 val properties = Map(
   "server.host" -> "xxx.xxx.xxx" 
 )
 
-// Load "production" configurations from Yaml files
-val config: Config =
-  Config(env = env, defaultEnv = "default")
-  .registerFromYaml[LogConfig]("access-log.yml")  
-  .registerFromYaml[ServerConfig]("server.yml")
-  .overrideWith(properties) // Override config with property values
+// Override config with property values
+val finalDesign = 
+  design.overrideConfigParams(properties) 
 
-// Bind config to design
-val design = config.getAll.foldLeft(newDesign) {
-  (d: Design, c: ConfigHolder) => d.bind(c.tpe).toInstance(c.value)
+finalDesign.build[X] { x =>
+  // ... start the application 
 }
-  
-val firnalDesign = design
-  .bind[X].toInstance(...)
-  .bind[Y].toProvider{ ... }
-   
-val session = finalDesign.newSession
-...
-
 ```
