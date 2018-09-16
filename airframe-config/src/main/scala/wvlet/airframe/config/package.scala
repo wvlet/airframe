@@ -38,7 +38,7 @@ package object config {
 
   implicit class ConfigurableDesign(d: Design) {
 
-    def showConfig = {
+    def showConfig: Design = {
       bootstrapWithConfigProcessor(printConfig)
     }
 
