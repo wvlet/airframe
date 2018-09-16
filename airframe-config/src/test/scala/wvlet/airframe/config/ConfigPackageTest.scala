@@ -34,8 +34,8 @@ class ConfigPackageTest extends AirframeSpec {
         .withConfigEnv(env = "development")
         .withConfigPaths(configPaths)
         .bindConfig[DefaultConfig](DefaultConfig(10, "aina"))
-        .bindConfigWithYaml[ClassConfig]("classes.yml")
-        .bindConfigWithYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
+        .bindConfigFromYaml[ClassConfig]("classes.yml")
+        .bindConfigFromYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
 
       d.withSession { session =>
         session.build[DefaultConfig] shouldBe DefaultConfig(10, "aina")

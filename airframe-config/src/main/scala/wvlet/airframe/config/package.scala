@@ -80,13 +80,13 @@ package object config {
         .bind(s).toInstance(config)
     }
 
-    def bindConfigWithYaml[A: ru.TypeTag](yamlFile: String): Design = {
+    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String): Design = {
       val configHolder = getConfig.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
         .bind(surface.of[A]).toInstance(configHolder.of[A])
     }
 
-    def bindConfigWithYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
+    def bindConfigFromYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
       val configHolder = getConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = surface.of[A]
       val newConfig    = configHolder.of[A]
