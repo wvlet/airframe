@@ -210,6 +210,10 @@ private[surface] object SurfaceMacros {
       t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
+    private def isPathDependentType(t: c.Type): Boolean = {
+      !t.typeSymbol.isStatic && t.toString.contains("#")
+    }
+
     case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
       def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
       private def paramNameTerm = TermName(paramName.name.decodedName.toString)
@@ -351,7 +355,7 @@ private[surface] object SurfaceMacros {
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (isAbstract(targetType)) {
+      if (isAbstract(targetType) || isPathDependentType(targetType)) {
         None
       } else {
         findPrimaryConstructorOf(targetType).map { primaryConstructor =>

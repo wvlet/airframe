@@ -46,6 +46,7 @@ object Examples {
 
   case class E(a: A)
   case class F(p0: Int = 10)
+
 }
 
 import wvlet.surface.Examples._
