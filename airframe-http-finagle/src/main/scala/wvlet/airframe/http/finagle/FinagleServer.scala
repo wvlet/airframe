@@ -14,7 +14,7 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
-import com.twitter.util.Future
+import com.twitter.util.{Await, Future}
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Route, Router}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
@@ -41,6 +41,10 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
   def stop = {
     info(s"Stopping the server http://localhost:${finagleConfig.port}")
     server.map(_.close())
+  }
+
+  def waitServerTermination: Unit = {
+    server.map(s => Await.ready(s))
   }
 }
 
