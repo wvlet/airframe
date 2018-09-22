@@ -55,7 +55,7 @@ object FinagleServer extends LogSupport {
   type FinagleService       = Service[Request, Response]
 
   /**
-    * A simple error handler for logging exceptions
+    * A simple error handler for wrapping exceptions as InternalServerError (500)
     */
   def defautlErrorHandler = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {

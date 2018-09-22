@@ -23,6 +23,7 @@ import wvlet.log.io.IOUtil
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)
 case class RichNestedInfo(serverType: String)
+case class RichRequest(id: Int, name: String)
 
 trait MyApi extends LogSupport {
   @Endpoint(path = "/v1/info")
@@ -44,6 +45,12 @@ trait MyApi extends LogSupport {
   def futureRichInfo: Future[RichInfo] = {
     Future.value(getRichInfo)
   }
+
+  // An example to map JSON requests to objects
+  @Endpoint(path = "/v1/json_api")
+  def jsonApi(request: RichRequest): Future[String] = {
+    Future.value(request.toString)
+  }
 }
 
 /**
@@ -62,7 +69,6 @@ class FinagleRouterTest extends AirframeSpec {
   "FinagleRouter" should {
 
     "work with Airframe" in {
-
       d.build[FinagleServer] { server =>
         val client = Http.client
           .newService(s"localhost:${port}")
@@ -90,6 +96,7 @@ class FinagleRouterTest extends AirframeSpec {
           response.contentString
         }) shouldBe "hello"
 
+        // JSON response
         {
           val json = Await.result(client(Request("/v1/rich_info_future")).map { response =>
             response.contentString
@@ -98,6 +105,13 @@ class FinagleRouterTest extends AirframeSpec {
           json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
         }
 
+        // JSON requests
+        {
+          val request = Request("/v1/json_api")
+          request.contentString = """{"id":10, "name":"leo"}"""
+          val ret = Await.result(client(request).map(_.contentString))
+          ret shouldBe """RichRequest(10,leo)"""
+        }
       }
     }
   }
