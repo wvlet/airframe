@@ -25,7 +25,7 @@ package object finagle {
   def finagleDefaultDesign: Design =
     httpDefaultDesign
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
-      .bind[FinagleRouter].toSingleton
+      .bind[Router].toInstance(Router.empty)
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }

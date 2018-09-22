@@ -16,8 +16,10 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.Future
 import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Route, Router}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.LogSupport
+import wvlet.airframe._
 
 case class FinagleServerConfig(port: Int)
 
@@ -35,8 +37,20 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
 
   @PreDestroy
   def stop = {
-    info(s"Stopping the server")
+    info(s"Stopping the server http://localhost:${finagleConfig.port}")
     server.map(_.close())
+  }
+}
+
+trait FinagleServerFactory {
+
+  private val controllerProvider = bind[ControllerProvider]
+  private val responseHandler    = bind[ResponseHandler[Request, Response]]
+
+  def newFinagleServer(port: Int, router: Router): FinagleServer = {
+    val finagleRouter = new FinagleRouter(router, controllerProvider, responseHandler)
+    val service       = FinagleServer.defaultService(finagleRouter)
+    new FinagleServer(finagleConfig = FinagleServerConfig(port = port), finagleService = service)
   }
 }
 
