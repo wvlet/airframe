@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.Http
+import com.twitter.finagle.http.Request
 import com.twitter.util.{Await, Future}
-import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe._
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -48,39 +46,6 @@ trait MyApi extends LogSupport {
   }
 }
 
-case class MyServerConfig(port: Int)
-
-trait MyApiServer extends LogSupport {
-  private val config = bind[MyServerConfig]
-
-  val service = new SimpleFilter[Request, Response] {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-      service(request).rescue {
-        case e: Throwable =>
-          logger.warn(e.getMessage)
-          Future.value(Response(Status.InternalServerError))
-      }
-    }
-  } andThen bind[FinagleRouter] andThen
-    new Service[Request, Response] {
-      def apply(req: Request): Future[Response] = Future.value(Response())
-    }
-
-  var server: Option[ListeningServer] = None
-
-  @PostConstruct
-  def start {
-    info(s"Starting the server at http://localhost:${config.port}")
-    server = Some(Http.serve(s":${config.port}", service))
-  }
-
-  @PreDestroy
-  def stop = {
-    info(s"Stopping the server")
-    server.map(_.close())
-  }
-}
-
 /**
   *
   */
@@ -92,13 +57,13 @@ class FinagleRouterTest extends AirframeSpec {
     finagleDefaultDesign
       .bind[Router].toInstance(router)
       .bind[MyApi].toSingleton
-      .bind[MyServerConfig].toInstance(MyServerConfig(port))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port))
 
   "FinagleRouter" should {
 
     "work with Airframe" in {
 
-      d.build[MyApiServer] { server =>
+      d.build[FinagleServer] { server =>
         val client = Http.client
           .newService(s"localhost:${port}")
         val f1 = client(Request("/v1/info")).map { response =>

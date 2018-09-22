@@ -15,6 +15,7 @@ package wvlet.airframe.http
 
 import com.twitter.finagle.http
 import wvlet.airframe.Design
+import wvlet.airframe.http.finagle.FinagleServer.{FinagleErrorHandler, FinagleRequestLogger, FinagleService}
 
 /**
   *
@@ -23,8 +24,11 @@ package object finagle {
 
   def finagleDefaultDesign: Design =
     httpDefaultDesign
+      .bind[FinagleRequestLogger].to[FinagleServer.FinagleDefaultRequestLogger]
+      .bind[FinagleErrorHandler].toInstance(FinagleServer.defautlErrorHandler)
       .bind[FinagleRouter].toSingleton
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
+      .bind[FinagleService].toInstance(FinagleServer.notFound)
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this
