@@ -33,27 +33,19 @@ class FinagleServerFactoryTest extends AirframeSpec {
   type MyServer1 = FinagleServer
   type MyServer2 = FinagleServer
 
-  val d =
-    finagleDefaultDesign
-      .bind[MyApi].toSingleton
-      .bind[MyServer1].toProvider { f: FinagleServerFactory =>
-        f.newFinagleServer(p1, router1)
-      }
-      .bind[MyServer2].toProvider { f: FinagleServerFactory =>
-        f.newFinagleServer(p2, router2)
-      }
-      .withProductionMode // Start up both servers
-
-  val p3 = IOUtil.unusedPort
-  val d2 =
-    finagleDefaultDesign
-      .bind[FinagleServer].toProvider { f: CustomFinagleServerFactory =>
-        f.newFinagleServer(p3, Router.empty)
-      }
-      .withProductionMode
-
   "FinagleServerFactory" should {
     "start multiple FinagleServers" in {
+      val d =
+        finagleDefaultDesign
+          .bind[MyApi].toSingleton
+          .bind[MyServer1].toProvider { f: FinagleServerFactory =>
+            f.newFinagleServer(p1, router1)
+          }
+          .bind[MyServer2].toProvider { f: FinagleServerFactory =>
+            f.newFinagleServer(p2, router2)
+          }
+          .withProductionMode // Start up both servers
+
       d.withSession { session =>
         val client1 = Http.client
           .newService(s"localhost:${p1}")
@@ -66,6 +58,13 @@ class FinagleServerFactoryTest extends AirframeSpec {
     }
 
     "allow customize services" in {
+      val p3 = IOUtil.unusedPort
+      val d2 =
+        finagleDefaultDesign
+          .bind[FinagleServer].toProvider { f: CustomFinagleServerFactory =>
+            f.newFinagleServer(p3, Router.empty)
+          }
+          .withProductionMode
       d2.build[FinagleServer] { server =>
         val client = Http.client.newService(s"localhost:${server.port}")
         Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
