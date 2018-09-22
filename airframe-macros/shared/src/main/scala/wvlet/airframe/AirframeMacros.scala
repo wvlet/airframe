@@ -41,7 +41,13 @@ private[wvlet] object AirframeMacros {
         // = Non static type
         // If X is non static type (= local class or trait),
         // we need to instantiate it first in order to populate its $outer variables
-        true
+
+        // We cannot instantiate path-dependent types
+        if (t.toString.contains("#")) {
+          false
+        } else {
+          true
+        }
       } else if (a.isAbstract) {
         // = Abstract type
         // We cannot build abstract type X that has abstract methods, so bind[X].to[ConcreteType]
