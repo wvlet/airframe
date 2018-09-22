@@ -11,9 +11,11 @@ airframe-http is a library for creating HTTP web services at ease.
 
 # airframe-http-finagle
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/)
 **build.sbt**
-```
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/)
+
+```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-finagle-http" %% AIRFRAME_VERSION
 ```
 
@@ -74,6 +76,7 @@ Mapping between JSON values and Scala objects will be handled automatically.
 
 To start a server, add airframe bindings based on `finagleDefaultDesign`:
 ```scala
+import wvlet.airframe._
 import wvlet.airframe.http.finagle._
 import com.twitter.finagle.http.Request
 
@@ -104,7 +107,7 @@ design.build[FinagleServer] { server =>
 
 It's possible to customize web servers. For example, if you need to:
 - Customize Finagle filters, or
-- Start multiple Finagle HTTP servers
+- Start multiple Finagle HTTP servers with different configurations
 
 see the examples here:
 https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala
