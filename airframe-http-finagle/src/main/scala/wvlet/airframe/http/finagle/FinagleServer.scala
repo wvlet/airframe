@@ -16,7 +16,7 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.Future
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe._
+import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.LogSupport
 
 case class FinagleServerConfig(port: Int)
@@ -24,21 +24,13 @@ case class FinagleServerConfig(port: Int)
 /**
   *
   */
-trait FinagleServer extends LogSupport {
-  private val finagleConfig                           = bind[FinagleServerConfig]
+class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService) extends LogSupport {
   protected[this] var server: Option[ListeningServer] = None
-
-  import FinagleServer._
-  protected[this] val service: Service[Request, Response] =
-    bind[FinagleRequestLogger] andThen
-      bind[FinagleErrorHandler] andThen
-      bind[FinagleRouter] andThen
-      bind[FinagleService]
 
   @PostConstruct
   def start {
     info(s"Starting a server at http://localhost:${finagleConfig.port}")
-    server = Some(Http.serve(s":${finagleConfig.port}", service))
+    server = Some(Http.serve(s":${finagleConfig.port}", finagleService))
   }
 
   @PreDestroy
@@ -49,15 +41,19 @@ trait FinagleServer extends LogSupport {
 }
 
 object FinagleServer extends LogSupport {
+  type FinagleService = Service[Request, Response]
 
-  type FinagleRequestLogger = SimpleFilter[Request, Response]
-  type FinagleErrorHandler  = SimpleFilter[Request, Response]
-  type FinagleService       = Service[Request, Response]
+  def defaultService(router: FinagleRouter): FinagleService = {
+    FinagleServer.defaultRequestLogger andThen
+      FinagleServer.defaultErrorHandler andThen
+      router andThen
+      FinagleServer.notFound
+  }
 
   /**
     * A simple error handler for wrapping exceptions as InternalServerError (500)
     */
-  def defautlErrorHandler = new SimpleFilter[Request, Response] {
+  def defaultErrorHandler = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       service(request).rescue {
         case e: Throwable =>
@@ -71,7 +67,7 @@ object FinagleServer extends LogSupport {
   /**
     * Simple logger for logging http requests and responses to stderr
     */
-  trait FinagleDefaultRequestLogger extends SimpleFilter[Request, Response] {
+  def defaultRequestLogger = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       logger.trace(request)
       service(request).map { response =>
