@@ -22,13 +22,23 @@ import wvlet.airframe.http.finagle.FinagleServer.FinagleService
   */
 package object finagle {
 
-  def finagleDefaultDesign: Design =
+  private def finagleBaseDesign: Design =
     httpDefaultDesign
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
-      .bind[Router].toInstance(Router.empty)
+
+  def finagleDefaultDesign: Design =
+    finagleBaseDesign
+      .bind[Router].toSingleton
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }
+
+  /**
+    * Design for running multiple Finagle servers
+    */
+  def finagleMultiServerDesign: Design =
+    // Do not bind Router, FinagleService etc. to allow having multiple router/service pairs
+    finagleBaseDesign
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this

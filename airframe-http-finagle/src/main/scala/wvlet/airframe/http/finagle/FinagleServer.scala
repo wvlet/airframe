@@ -42,18 +42,6 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
   }
 }
 
-trait FinagleServerFactory {
-
-  private val controllerProvider = bind[ControllerProvider]
-  private val responseHandler    = bind[ResponseHandler[Request, Response]]
-
-  def newFinagleServer(port: Int, router: Router): FinagleServer = {
-    val finagleRouter = new FinagleRouter(router, controllerProvider, responseHandler)
-    val service       = FinagleServer.defaultService(finagleRouter)
-    new FinagleServer(finagleConfig = FinagleServerConfig(port = port), finagleService = service)
-  }
-}
-
 object FinagleServer extends LogSupport {
   type FinagleService = Service[Request, Response]
 
@@ -98,5 +86,20 @@ object FinagleServer extends LogSupport {
     override def apply(request: Request): Future[Response] = {
       Future.value(Response(Status.NotFound))
     }
+  }
+}
+
+trait FinagleServerFactory {
+  private val controllerProvider = bind[ControllerProvider]
+  private val responseHandler    = bind[ResponseHandler[Request, Response]]
+
+  /**
+    * Override this method to customize finagle service filters
+    */
+  protected def newService(finagleRouter: FinagleRouter) = FinagleServer.defaultService(finagleRouter)
+
+  def newFinagleServer(port: Int, router: Router): FinagleServer = {
+    val finagleRouter = new FinagleRouter(router, controllerProvider, responseHandler)
+    new FinagleServer(finagleConfig = FinagleServerConfig(port = port), finagleService = newService(finagleRouter))
   }
 }
