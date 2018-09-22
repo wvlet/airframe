@@ -66,6 +66,7 @@ class Router(val routes: Seq[Route]) {
 }
 
 object Router {
+  def empty: Router                      = Router()
   def of[Controller: ru.TypeTag]: Router = apply().add[Controller]
   def apply(): Router                    = new Router(Seq.empty)
 }

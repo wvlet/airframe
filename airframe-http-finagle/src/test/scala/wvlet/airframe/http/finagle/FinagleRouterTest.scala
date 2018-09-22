@@ -13,18 +13,17 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.Http
+import com.twitter.finagle.http.Request
 import com.twitter.util.{Await, Future}
-import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe._
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)
 case class RichNestedInfo(serverType: String)
+case class RichRequest(id: Int, name: String)
 
 trait MyApi extends LogSupport {
   @Endpoint(path = "/v1/info")
@@ -46,38 +45,11 @@ trait MyApi extends LogSupport {
   def futureRichInfo: Future[RichInfo] = {
     Future.value(getRichInfo)
   }
-}
 
-case class MyServerConfig(port: Int)
-
-trait MyApiServer extends LogSupport {
-  private val config = bind[MyServerConfig]
-
-  val service = new SimpleFilter[Request, Response] {
-    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-      service(request).rescue {
-        case e: Throwable =>
-          logger.warn(e.getMessage)
-          Future.value(Response(Status.InternalServerError))
-      }
-    }
-  } andThen bind[FinagleRouter] andThen
-    new Service[Request, Response] {
-      def apply(req: Request): Future[Response] = Future.value(Response())
-    }
-
-  var server: Option[ListeningServer] = None
-
-  @PostConstruct
-  def start {
-    info(s"Starting the server at http://localhost:${config.port}")
-    server = Some(Http.serve(s":${config.port}", service))
-  }
-
-  @PreDestroy
-  def stop = {
-    info(s"Stopping the server")
-    server.map(_.close())
+  // An example to map JSON requests to objects
+  @Endpoint(path = "/v1/json_api")
+  def jsonApi(request: RichRequest): Future[String] = {
+    Future.value(request.toString)
   }
 }
 
@@ -92,13 +64,12 @@ class FinagleRouterTest extends AirframeSpec {
     finagleDefaultDesign
       .bind[Router].toInstance(router)
       .bind[MyApi].toSingleton
-      .bind[MyServerConfig].toInstance(MyServerConfig(port))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port))
 
   "FinagleRouter" should {
 
     "work with Airframe" in {
-
-      d.build[MyApiServer] { server =>
+      d.build[FinagleServer] { server =>
         val client = Http.client
           .newService(s"localhost:${port}")
         val f1 = client(Request("/v1/info")).map { response =>
@@ -125,6 +96,7 @@ class FinagleRouterTest extends AirframeSpec {
           response.contentString
         }) shouldBe "hello"
 
+        // JSON response
         {
           val json = Await.result(client(Request("/v1/rich_info_future")).map { response =>
             response.contentString
@@ -133,6 +105,13 @@ class FinagleRouterTest extends AirframeSpec {
           json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
         }
 
+        // JSON requests
+        {
+          val request = Request("/v1/json_api")
+          request.contentString = """{"id":10, "name":"leo"}"""
+          val ret = Await.result(client(request).map(_.contentString))
+          ret shouldBe """RichRequest(10,leo)"""
+        }
       }
     }
   }

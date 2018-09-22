@@ -15,16 +15,24 @@ package wvlet.airframe.http
 
 import com.twitter.finagle.http
 import wvlet.airframe.Design
+import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
 /**
   *
   */
 package object finagle {
 
-  def finagleDefaultDesign: Design =
+  private def finagleBaseDesign: Design =
     httpDefaultDesign
-      .bind[FinagleRouter].toSingleton
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
+
+  def finagleDefaultDesign: Design =
+    finagleBaseDesign
+    // Add a default router so that we can instantiate FinagleRouter even when users speicfy no Router
+      .bind[Router].toInstance(Router.empty)
+      .bind[FinagleService].toProvider { router: FinagleRouter =>
+        FinagleServer.defaultService(router)
+      }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this

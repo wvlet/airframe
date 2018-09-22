@@ -34,7 +34,7 @@ class FinagleRouter(router: Router,
     // Find a route matching to the request
     router.findRoute(request) match {
       case Some(route) =>
-        // Find the corresponding controller
+        // Find a corresponding controller
         controllerProvider.findController(route.controllerSurface) match {
           case Some(controller) =>
             // Call the method in this controller
@@ -42,17 +42,22 @@ class FinagleRouter(router: Router,
             val result = route.call(controller, args)
 
             route.returnTypeSurface.rawType match {
+              // When a return type is Future[X]
               case f if classOf[Future[_]].isAssignableFrom(f) =>
+                // Check the type of X
                 val futureValueSurface = route.returnTypeSurface.typeArgs(0)
                 futureValueSurface.rawType match {
+                  // If X is Response type, return as is
                   case vc if classOf[Response].isAssignableFrom(vc) =>
                     result.asInstanceOf[Future[Response]]
                   case other =>
+                    // If X is other type, convert X into an HttpResponse
                     result.asInstanceOf[Future[_]].map { r =>
                       responseHandler.toHttpResponse(request, futureValueSurface, r)
                     }
                 }
               case _ =>
+                // If the route returns non future value, convert it into Future response
                 Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
             }
           case None =>
