@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
-import com.twitter.finagle.Http
-import com.twitter.finagle.http.Request
-import com.twitter.util.Await
+import com.twitter.finagle.{Http, Service}
+import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http.Router
+import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
 
 /**
@@ -33,7 +34,7 @@ class FinagleServerFactoryTest extends AirframeSpec {
   type MyServer2 = FinagleServer
 
   val d =
-    finagleMultiServerDesign
+    finagleDefaultDesign
       .bind[MyApi].toSingleton
       .bind[MyServer1].toProvider { f: FinagleServerFactory =>
         f.newFinagleServer(p1, router1)
@@ -42,6 +43,14 @@ class FinagleServerFactoryTest extends AirframeSpec {
         f.newFinagleServer(p2, router2)
       }
       .withProductionMode // Start up both servers
+
+  val p3 = IOUtil.unusedPort
+  val d2 =
+    finagleDefaultDesign
+      .bind[FinagleServer].toProvider { f: CustomFinagleServerFactory =>
+        f.newFinagleServer(p3, Router.empty)
+      }
+      .withProductionMode
 
   "FinagleServerFactory" should {
     "start multiple FinagleServers" in {
@@ -53,6 +62,26 @@ class FinagleServerFactoryTest extends AirframeSpec {
 
         Await.result(client1(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
         Await.result(client2(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
+      }
+    }
+
+    "allow customize services" in {
+      d2.build[FinagleServer] { server =>
+        val client = Http.client.newService(s"localhost:${server.port}")
+        Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
+      }
+    }
+  }
+}
+
+trait CustomFinagleServerFactory extends FinagleServerFactory {
+  override protected def newService(finagleRouter: FinagleRouter): FinagleService = {
+    // You can customize service filter as you with
+    finagleRouter andThen new Service[Request, Response] {
+      override def apply(request: Request): Future[Response] = {
+        val r = Response(Status.Ok)
+        r.contentString = "hello custom server"
+        Future.value(r)
       }
     }
   }

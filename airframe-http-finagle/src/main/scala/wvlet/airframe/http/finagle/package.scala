@@ -28,17 +28,11 @@ package object finagle {
 
   def finagleDefaultDesign: Design =
     finagleBaseDesign
-      .bind[Router].toSingleton
+    // Add a default router so that we can instantiate FinagleRouter even when users speicfy no Router
+      .bind[Router].toInstance(Router.empty)
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }
-
-  /**
-    * Design for running multiple Finagle servers
-    */
-  def finagleMultiServerDesign: Design =
-    // Do not bind Router, FinagleService etc. to allow having multiple router/service pairs
-    finagleBaseDesign
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this

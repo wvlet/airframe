@@ -29,6 +29,8 @@ case class FinagleServerConfig(port: Int)
 class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService) extends LogSupport {
   protected[this] var server: Option[ListeningServer] = None
 
+  def port: Int = finagleConfig.port
+
   @PostConstruct
   def start {
     info(s"Starting a server at http://localhost:${finagleConfig.port}")
