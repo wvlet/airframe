@@ -109,7 +109,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @return
     */
   def buildControllerMethodArgs[A](request: HttpRequest[A]): Seq[Any] = {
-    // Collect URL query parameters and other parameteres embedded inside URL.
+    // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams = request.query ++ extractPathParams(request)
 
     // Build the function arguments
@@ -134,7 +134,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                   val msgpack = JSONCodec.toMsgPack(contentBytes)
                   argCodec.unpackMsgPack(msgpack)
                 } else {
-                  // Rerturn the method default argument if exists
+                  // Return the method default argument if exists
                   arg.getDefaultValue
                 }
             }
