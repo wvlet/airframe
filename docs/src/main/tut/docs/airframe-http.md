@@ -2,12 +2,14 @@
 layout: docs
 title: airframe-http
 ---
-Airframe HTTP: A light weight web server
+Airframe HTTP: A lightweight web service builder
 ===
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
 
-airframe-http is a library for creating HTTP web services at ease.
+airframe-http is a library for creating HTTP web services.
 - **airframe-http-finagle**: Finagle as a backend HTTP server
+
+Blog article: [Airframe HTTP: A Minimalist Appraoch For Building Web Services in Scala](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
 # airframe-http-finagle
 

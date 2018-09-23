@@ -11,7 +11,6 @@ technologies:
 Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
 
 - [Logging](docs/airframe-log.html)
-  - [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
 - [Configuration](docs/airframe-config.html)
 - [Dependency Injection (DI)](docs/index.html) tailored to to [Scala](https://www.scala-lang.org/)
   - Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
@@ -28,15 +27,25 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
 - [Other Utilities](https://wvlet.org/airframe/docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 
-
 ## Resources
 - [Documentation](docs)
 - [Airframe Utilities](docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 - [Use Cases](docs/use-cases.html)
    - Configuring applications, managing resources, service mix-in, etc.
-- [Introdution of Airframe in Japanese (日本語)](https://medium.com/@taroleo/airframe-c5d044a97ec)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
+
+## Blog Articles
+
+- [Airframe HTTP: A Minimalist Approach For Building Web Services in Scala](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
+  - airframe-http, airframe-http-finagle
+- [Demystifying Dependency Injection with Airframe](https://medium.com/@taroleo/demystifying-dependency-injection-with-airframe-9b637034a78a)
+  - airframe dependency injection
+- [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
+  - airframe-log
+- [3 Tips For Maintaining Your Scala Projects](https://medium.com/@taroleo/3-tips-for-maintaining-your-scala-projects-e54a2feea9c4)
+  - Tips on how we are maintaining Airframe.
+- [Introdution of Airframe in Japanese (日本語)](https://medium.com/@taroleo/airframe-c5d044a97ec)
 
 ## Getting Started
 
