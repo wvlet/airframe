@@ -20,7 +20,7 @@ ga('send', 'pageview');
 
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-finagle-http"</span> <span class="o">%%</span> <span class="nc">AIRFRAME_VERSION</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span> <span class="o">%%</span> <span class="nc">AIRFRAME_VERSION</span>
 </code></pre>
 </div>
 
@@ -109,14 +109,13 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <h2 id="customizing-finagle">Customizing Finagle</h2>
 
-<p>It’s possible to customize web servers. For example, if you need to:</p>
+<p>It’s possible to customize Finagle. For example, if you need to:</p>
 <ul>
   <li>Customize Finagle filters, or</li>
   <li>Start multiple Finagle HTTP servers with different configurations</li>
 </ul>
 
-<p>see the examples here:
-https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala</p>
+<p>see the examples <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
 
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
 languages:['scala','java','bash']
