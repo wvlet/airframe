@@ -168,5 +168,6 @@ object Design {
   /**
     * Empty design.
     */
-  val blanc: Design = new Design(new DesignOptions(), Vector.empty) // Use Vector for better append performance
+  private[airframe] val blanc
+    : Design = new Design(new DesignOptions(), Vector.empty) // Use Vector for better append performance
 }
