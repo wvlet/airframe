@@ -82,5 +82,5 @@ object MessageCodec {
   @deprecated(message = "Use defaultFactory instead", since = "0.67")
   def defautlFactory: MessageCodecFactory = defaultFactory
   def defaultFactory: MessageCodecFactory = new MessageCodecFactory(StandardCodec.standardCodec)
-  def of[A: ru.TypeTag]: MessageCodec[A] = defaultFactory.of[A]
+  def of[A: ru.TypeTag]: MessageCodec[A]  = defaultFactory.of[A]
 }

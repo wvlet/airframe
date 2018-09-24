@@ -55,7 +55,7 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
     new JMXServiceURL(url)
   }
 
-  @deprecated("Use #withConnector instead",  since = "0.67")
+  @deprecated("Use #withConnector instead", since = "0.67")
   def withConnetor[U](f: JMXConnector => U): U = withConnector(f)
 
   def withConnector[U](f: JMXConnector => U): U = {

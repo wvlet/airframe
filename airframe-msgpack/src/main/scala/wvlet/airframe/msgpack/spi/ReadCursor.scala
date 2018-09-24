@@ -23,7 +23,7 @@ case class ReadCursor(var buf: ReadBuffer, var position: Int) {
 
   @deprecated("Use #lastReadByteLength instead", since = "0.67")
   def lastReaadByteLength: Int = lastReadByteLength
-  def lastReadByteLength: Int = offset
+  def lastReadByteLength: Int  = offset
 
   def resetCursor: Unit = {
     offset = 0
