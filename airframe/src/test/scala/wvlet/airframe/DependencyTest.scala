@@ -42,7 +42,7 @@ class DependencyTest extends AirframeSpec {
 
     "resolve concrete dependencies" in {
       val d = newSilentDesign
-        .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concreate trait
+        .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concrete trait
       d.withSession { session =>
         val a = session.build[DependencyTest1.A]
       }

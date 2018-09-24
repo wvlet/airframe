@@ -15,7 +15,7 @@ package wvlet.airframe
 import java.util.Properties
 
 import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.Logger
 import wvlet.surface
 
 import scala.reflect.ClassTag
@@ -26,7 +26,6 @@ import scala.reflect.ClassTag
 package object config {
   private val logger = Logger("wvlet.airframe.config")
 
-  import wvlet.airframe._
   import scala.reflect.runtime.{universe => ru}
 
   def printConfig(c: Config): Unit = {
@@ -95,7 +94,7 @@ package object config {
     }
 
     /**
-      * Overide a subset of the configuration parameters, registered to the design.
+      * Override a subset of the configuration parameters, registered to the design.
       */
     def overrideConfigParams(props: Map[String, Any],
                              onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
@@ -111,7 +110,7 @@ package object config {
     }
 
     /**
-      * Overide a subset of the configuration parameters, registered to the design.
+      * Override a subset of the configuration parameters, registered to the design.
       */
     def overrideConfigParamsWithProperties(
         props: Properties,

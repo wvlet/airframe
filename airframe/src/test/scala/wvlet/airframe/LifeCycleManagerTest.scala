@@ -15,7 +15,6 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class Counter extends LogSupport {
@@ -142,7 +141,7 @@ class LifeCycleManagerTest extends AirframeSpec {
       u2.shutdownCount shouldBe 1
     }
 
-    "run start hook when the seesion is already strarted" in {
+    "run start hook when the session is already started" in {
       val session = newSilentDesign.newSession
 
       var cs: CounterService = null

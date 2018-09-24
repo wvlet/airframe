@@ -28,7 +28,7 @@ class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = M
     extends TabletWriter[A]
     with LogSupport {
 
-  private val elementCodec = MessageCodec.defautlFactory.withCodecs(codec).of[A]
+  private val elementCodec = MessageCodec.defaultFactory.withCodecs(codec).of[A]
 
   private val h         = new MessageHolder
   private val s         = surface.of[A]

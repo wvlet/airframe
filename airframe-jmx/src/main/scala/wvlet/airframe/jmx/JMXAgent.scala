@@ -55,20 +55,23 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
     new JMXServiceURL(url)
   }
 
-  def withConnetor[U](f: JMXConnector => U): U = {
+  @deprecated("Use #withConnector instead",  since = "0.67")
+  def withConnetor[U](f: JMXConnector => U): U = withConnector(f)
+
+  def withConnector[U](f: JMXConnector => U): U = {
     withResource(JMXConnectorFactory.connect(serviceUrl)) { connector =>
       f(connector)
     }
   }
 
   def getMBeanInfo(mbeanName: String): MBeanInfo = {
-    withConnetor { connector =>
+    withConnector { connector =>
       connector.getMBeanServerConnection.getMBeanInfo(new ObjectName(mbeanName))
     }
   }
 
   def getMBeanAttribute(mbeanName: String, attrName: String): Any = {
-    withConnetor { connector =>
+    withConnector { connector =>
       connector.getMBeanServerConnection.getAttribute(new ObjectName(mbeanName), attrName)
     }
   }

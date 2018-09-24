@@ -196,7 +196,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     // beforeShutdown
     for (h <- lifeCycleManager.preShutdownHooks.reverse) {
-      trace(s"Calling pre-shutdown hoook: $h")
+      trace(s"Calling pre-shutdown hook: $h")
       h.execute
     }
 

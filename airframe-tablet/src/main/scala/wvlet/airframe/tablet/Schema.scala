@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.tablet
 
-import java.util.Locale
-
 object Schema {
   sealed trait DataType {
     def signature: String

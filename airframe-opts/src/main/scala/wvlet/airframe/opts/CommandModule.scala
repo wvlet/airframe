@@ -21,7 +21,6 @@
 
 package wvlet.airframe.opts
 
-import wvlet.surface.Surface
 import wvlet.surface.reflect.SurfaceFactory
 
 import scala.reflect.runtime.{universe => ru}

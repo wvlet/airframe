@@ -24,7 +24,7 @@ class AssistedInjectionTest extends AirframeSpec {
 
   "Airframe" should {
 
-    "support assistd injection" in {
+    "support assisted injection" in {
       newSilentDesign
         .bind[MyService].toInstance("hello")
         .withSession { session =>
