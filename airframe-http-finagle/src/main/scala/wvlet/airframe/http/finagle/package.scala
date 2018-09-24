@@ -28,7 +28,7 @@ package object finagle {
 
   def finagleDefaultDesign: Design =
     finagleBaseDesign
-    // Add a default router so that we can instantiate FinagleRouter even when users speicfy no Router
+    // Add a default router so that we can instantiate FinagleRouter even when users specify no Router
       .bind[Router].toInstance(Router.empty)
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
@@ -55,7 +55,7 @@ package object finagle {
       case http.Method.Post   => HttpMethod.POST
       case http.Method.Put    => HttpMethod.PUT
       case http.Method.Delete => HttpMethod.DELETE
-      case other              => throw new IllegalArgumentException(s"Unsupporeted method: ${method}")
+      case other              => throw new IllegalArgumentException(s"Unsupported method: ${method}")
     }
   }
 }
