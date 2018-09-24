@@ -23,4 +23,5 @@ class UnexpectedToken(line: Int, column: Int, pos: Int, message: String)
 class UnexpectedEOF(line: Int, column: Int, pos: Int, message: String)
     extends JSONParseException(s"line:${line}, column:${column}: ${message}")
 
-class InvalidJSONObject(messsage: String) extends JSONParseException(messsage)
+// TODO: unused as of 0.66
+class InvalidJSONObject(message: String) extends JSONParseException(message)

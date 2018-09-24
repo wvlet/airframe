@@ -28,7 +28,7 @@ class ObjectCodecTest extends CodecSpec {
     roundtrip(codec, v, DataType.ANY)
 
     forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
-      // scalacheck supports only upto 6 elements
+      // scalacheck supports only up to 6 elements
       forAll { (b: Boolean, s: String) =>
         val v = A1(i, l, f, d, c, st, b, s)
         roundtrip[A1](codec, v, DataType.ANY)
@@ -69,7 +69,7 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   "populate case class with Option" in {
-    val codecFactory = MessageCodec.defautlFactory.withObjectMapCodec
+    val codecFactory = MessageCodec.defaultFactory.withObjectMapCodec
     val codec        = codecFactory.of[A3]
 
     {

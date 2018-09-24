@@ -77,7 +77,7 @@ object CollectionCodec {
   }
 
   /*
-    Note: If we use MessageCodec[List[A]] it causes StackOverflow. Need more inverstigation
+    Note: If we use MessageCodec[List[A]] it causes StackOverflow. Need more investigation
     <code>
     [error] java.lang.StackOverflowError
     [error] 	at scala.reflect.internal.tpe.TypeMaps$SubstMap.apply(TypeMaps.scala:764)

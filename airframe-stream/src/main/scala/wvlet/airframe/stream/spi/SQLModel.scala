@@ -83,7 +83,7 @@ object SQLModel {
   case object LeftOuterJoin extends JoinType
   // Joins for preserving right table entries
   case object RightOuterJoin extends JoinType
-  // Joins for preserbing both table entries
+  // Joins for preserving both table entries
   case object FullOuterJoin extends JoinType
   // Cartesian product of two tables
   case object CrossJoin extends JoinType

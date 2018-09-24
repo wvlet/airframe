@@ -26,7 +26,7 @@ class JMXAgentTest extends AirframeSpec {
     "find jmx registry" in {
       if (!JMXUtil.isAtLeastJava9) {
         val agent = new JMXAgent(new JMXConfig())
-        agent.withConnetor { connector =>
+        agent.withConnector { connector =>
           val connection = connector.getMBeanServerConnection()
           connection.getMBeanCount.toInt shouldBe >(0)
           val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))

@@ -19,7 +19,7 @@ import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 /**
   *
   */
-class aMessageCodecTest extends AirframeSpec {
+class MessageCodecTest extends AirframeSpec {
   "MessageCodec" should {
 
     "have surface" in {

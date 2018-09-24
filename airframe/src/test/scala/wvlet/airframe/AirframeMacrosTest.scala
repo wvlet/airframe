@@ -13,10 +13,7 @@
  */
 package wvlet.airframe
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
-
-import wvlet.log.{LogLevel, LogSupport, Logger}
-import wvlet.surface.Surface
+import wvlet.log.LogSupport
 
 trait NonAbstractTrait extends LogSupport {
   info("hello trait")

@@ -23,7 +23,7 @@ import wvlet.airframe.msgpack.spi.Value._
 import MessageException._
 
 /**
-  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReaadByteLength]] method.
+  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadByteLength]] method.
   */
 object Unpacker {
   def unpackValue(cursor: ReadCursor): Value = {
@@ -430,7 +430,7 @@ object Unpacker {
 
   def unpackString(cursor: ReadCursor): String = {
     val len       = unpackRawStringHeader(cursor)
-    val headerLen = cursor.lastReaadByteLength
+    val headerLen = cursor.lastReadByteLength
     if (len == 0) {
       EMPTY_STRING
     } else if (len >= Integer.MAX_VALUE) {

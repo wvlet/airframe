@@ -67,7 +67,7 @@ object ServiceMixinExample {
     *   - Need to define XXXService boilerplate, which just has a val or def of the service object
     *   - Cannot change the variable name without defining additional XXXService trait
     *     - Need to care about variable naming conflict
-    *   - We don't know the missing dependenncy at compile time
+    *   - We don't know the missing dependency at compile time
     */
   trait FortunePrinterMixin extends PrinterService with FortuneService {
     printer.print(fortune.generate)
@@ -164,7 +164,7 @@ object ServiceMixinExample {
   }
 
   trait Nest1 extends LogSupport {
-    info("instanciated Nest1")
+    info("instantiated Nest1")
     val nest2 = bind[Nest2]
   }
 

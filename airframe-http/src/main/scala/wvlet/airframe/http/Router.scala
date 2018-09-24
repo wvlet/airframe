@@ -121,7 +121,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             request
           case _ =>
             // Build from the string value in the request params
-            val argCodec = MessageCodec.defautlFactory.of(arg.surface)
+            val argCodec = MessageCodec.defaultFactory.of(arg.surface)
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // String parameter to the method argument
