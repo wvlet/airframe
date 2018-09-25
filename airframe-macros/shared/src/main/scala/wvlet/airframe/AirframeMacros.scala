@@ -109,6 +109,19 @@ private[wvlet] object AirframeMacros {
       }
     }
 
+    def newFactoryBinder(i1: c.Type, a: c.Type): c.Tree = {
+      if (shouldGenerateTrait(a)) {
+        q"""{
+             session : wvlet.airframe.Session =>
+             session.getOrElseUpdateFactory[$i1, $a](${surfaceOf(i1)}, ${surfaceOf(a)},
+              (new $a with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$a]
+             )
+            }"""
+      } else {
+        q"""{ session : wvlet.airframe.Session => session.getFactory[$i1, $a](${surfaceOf(i1)}, ${surfaceOf(a)}) }"""
+      }
+    }
+
     def registorFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q""" {
@@ -492,20 +505,6 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  import scala.language.higherKinds
-  def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
-    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
-    val i1 = t.typeArgs(0) // I1
-    val a  = t.typeArgs(1) // A
-    val h  = new BindHelper[c.type](c)
-    q"""{
-         println(${h.surfaceOf(i1)})
-         println(${h.surfaceOf(a)})
-         {(x: ${i1}) => null.asInstanceOf[${a}]}.asInstanceOf[${t}]
-       }"""
-  }
-
   def bindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
@@ -615,6 +614,27 @@ private[wvlet] object AirframeMacros {
          session.getOrElseUpdate(${h.surfaceOf(t)},
            $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
+        }
+      """
+  }
+
+  def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import scala.language.higherKinds
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
+    val i1 = t.typeArgs(0) // I1
+    val a  = t.typeArgs(1) // A
+    val h  = new BindHelper[c.type](c)
+
+    q"""{
+         val session = ${h.findSession}
+         val factory: ${i1} => ${a} =
+           session.getOrElseUpdateFactory(
+             ${h.surfaceOf(i1)},
+             ${h.surfaceOf(a)},
+             ${h.newSingletonBinder(a)}(session)
+           )
+         factory
         }
       """
   }
