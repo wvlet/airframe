@@ -126,35 +126,48 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       throw new CYCLIC_DEPENDENCY(seen.toSet)
     }
 
-    val obj = bindingTable.get(t).map {
-      case ClassBinding(from, to) =>
-        trace(s"Found a class binding from ${from} to ${to}")
-        getInstance(to, t :: seen)
-      case sb @ SingletonBinding(from, to, eager) if from != to =>
-        trace(s"Found a singleton for ${from}: ${to}")
-        singletonHolder.getOrElseUpdate(from, registerInjectee(from, getInstance(to, t :: seen)))
-      case sb @ SingletonBinding(from, to, eager) if from == to =>
-        singletonHolder.getOrElseUpdate(
-          from,
-          registerInjectee(from, defaultValue.map(_.eval).getOrElse(buildInstance(to, t :: seen))))
-      case p @ ProviderBinding(factory, provideSingleton, eager) =>
-        trace(s"Found a provider for ${p.from}: ${p}")
-        def buildWithProvider: Any = {
-          val dependencies = for (d <- factory.dependencyTypes) yield {
-            getInstance(d, t :: seen)
+    val obj =
+      bindingTable.get(t).map {
+        case ClassBinding(from, to) =>
+          trace(s"Found a class binding from ${from} to ${to}")
+          getInstance(to, t :: seen)
+        case sb @ SingletonBinding(from, to, eager) if from != to =>
+          trace(s"Found a singleton for ${from} => ${to}")
+          singletonHolder.getOrElseUpdate(from, registerInjectee(from, getInstance(to, t :: seen, defaultValue)))
+        case sb @ SingletonBinding(from, to, eager) if from == to =>
+          trace(s"Found a singleton for ${from}")
+          singletonHolder.getOrElseUpdate(from,
+                                          registerInjectee(from,
+                                                           defaultValue
+                                                             .map(_.eval)
+                                                             .getOrElse(buildInstance(to, t :: seen))))
+        case p @ ProviderBinding(factory, provideSingleton, eager) =>
+          trace(s"Found a provider for ${p.from}: ${p}")
+          def buildWithProvider: Any = {
+            val dependencies = for (d <- factory.dependencyTypes) yield {
+              getInstance(d, t :: seen)
+            }
+            factory.create(dependencies)
           }
-          factory.create(dependencies)
-        }
-        if (provideSingleton) {
-          singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, buildWithProvider))
-        } else {
-          registerInjectee(p.from, buildWithProvider)
-        }
-    }
+          if (provideSingleton) {
+            singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, buildWithProvider))
+          } else {
+            registerInjectee(p.from, buildWithProvider)
+          }
+      }
 
     val result = obj
-    // Use the provided object factory if exists
-      .orElse(defaultValue.map(_.eval))
+      .orElse {
+        trace(s"Using a pre-registered factory for ${t}")
+        factoryCache.get(t).map { f =>
+          f(this)
+        }
+      }
+      .orElse {
+        // Use the provided object factory if exists
+        trace(s"Using a pre-generated instance of ${t}")
+        defaultValue.map(_.eval)
+      }
       .getOrElse {
         parent
           .map { p =>

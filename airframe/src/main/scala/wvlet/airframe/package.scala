@@ -25,7 +25,7 @@ import scala.language.implicitConversions
 /**
   *
   */
-package object airframe {
+package object airframe extends LogSupport {
 
   /**
     * The entry point to create a new design beginning from a blanc design
@@ -113,6 +113,10 @@ package object airframe {
   // For internal use to pre-compile objects
   import scala.collection.JavaConverters._
   val factoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+  def getOrElseUpdateFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+    trace(s"Adding factory of ${s}")
+    factoryCache.getOrElseUpdate(s, factory)
+  }
 
   //import wvlet.obj.tag._
   // Automatically add tag

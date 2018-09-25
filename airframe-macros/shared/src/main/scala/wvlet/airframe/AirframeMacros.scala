@@ -109,11 +109,14 @@ private[wvlet] object AirframeMacros {
       }
     }
 
+    /**
+      * Register factory
+      */
     def registorFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q""" {
            val s = ${surfaceOf(t)}
-           wvlet.airframe.factoryCache.getOrElse(s,
+           wvlet.airframe.getOrElseUpdateFactoryCache(s,
              { session: wvlet.airframe.Session => (new $t with wvlet.airframe.SessionHolder { def airframeSession = session }).asInstanceOf[Any] }
            )
            s
