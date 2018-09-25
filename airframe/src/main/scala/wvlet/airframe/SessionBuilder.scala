@@ -51,13 +51,6 @@ class SessionBuilder(design: Design,
   }
 
   def create: Session = {
-    // Override preceding bindings
-    val effectiveBindings = for ((key, lst) <- design.binding.groupBy(_.from)) yield {
-      lst.last
-    }
-    val keyIndex: Map[Surface, Int] = design.binding.map(_.from).zipWithIndex.map(x => x._1 -> x._2).toMap
-    val sortedBindings              = effectiveBindings.toSeq.sortBy(x => keyIndex(x.from))
-
     // Combine the lifecycle logger and event handlers
     val lifeCycleLogger =
       if (design.designOptions.enabledLifeCycleLogging) {
@@ -68,7 +61,7 @@ class SessionBuilder(design: Design,
       }
     val eventHandler = lifeCycleLogger wraps lifeCycleEventHandler
     val l            = new LifeCycleManager(eventHandler)
-    val session      = new AirframeSession(name, design, sortedBindings, design.designOptions.stage, l)
+    val session      = new AirframeSession(parent = None, name, design, design.designOptions.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

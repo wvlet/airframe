@@ -25,9 +25,9 @@ import scala.util.Try
 /**
   *
   */
-private[airframe] class AirframeSession(sessionName: Option[String],
+private[airframe] class AirframeSession(parent: Option[Session],
+                                        sessionName: Option[String],
                                         val design: Design,
-                                        binding: Seq[Binding],
                                         stage: Stage,
                                         val lifeCycleManager: LifeCycleManager)
     extends Session
@@ -50,7 +50,7 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     b += designSurface -> designBinding
 
     // Add user-defined bindings
-    binding.foreach(x => b += (x.from -> x))
+    design.binding.foreach(x => b += (x.from -> x))
     b.result.toMap[Surface, Binding]
   }
 
@@ -63,6 +63,16 @@ private[airframe] class AirframeSession(sessionName: Option[String],
 
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
+  override def withInstanceBinding(surface: Surface, obj: Any): Session = {
+    new AirframeSession(
+      parent = Some(this),
+      sessionName,
+      newDesign.bind(surface).toInstance(obj),
+      stage,
+      lifeCycleManager
+    )
+  }
+
   // Initialize eager singleton, pre-defined instances, eager singleton providers
   private[airframe] def init: Unit = {
     debug(s"[${name}] Initializing. Stage:${stage}")
@@ -70,7 +80,7 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     if (production) {
       debug(s"Eagerly initializing singletons in production mode")
     }
-    binding.collect {
+    design.binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstanceOf(from)
       case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
@@ -112,11 +122,18 @@ private[airframe] class AirframeSession(sessionName: Option[String],
     }
   }
 
-  private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface): I1 => A = {}
-
-  private[airframe] def getOrElseUpdateFactory[I1, A](inputSurface: Surface,
-                                                      outputSurface: Surface,
-                                                      obj: => A): I1 => A = {}
+//  private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface): I1 => A = {
+//    { i1: I1 =>
+//
+//      getInstance(outputSurface, List.empty).asInstanceOf[A]
+//    }
+//  }
+//
+//  private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface, obj: => A): I1 => A = {
+//    { i1: I1 =>
+//      getOrElseUpdate(outputSurface, List.empty, obj).asInstanceOf[A]
+//    }
+//  }
 
   private def register[A](t: Surface, obj: A): A = {
     registerInjectee(t, obj).asInstanceOf[A]

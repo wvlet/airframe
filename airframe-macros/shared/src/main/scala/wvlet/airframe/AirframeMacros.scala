@@ -109,19 +109,6 @@ private[wvlet] object AirframeMacros {
       }
     }
 
-    def newFactoryBinder(i1: c.Type, a: c.Type): c.Tree = {
-      if (shouldGenerateTrait(a)) {
-        q"""{
-             session : wvlet.airframe.Session =>
-             session.getOrElseUpdateFactory[$i1, $a](${surfaceOf(i1)}, ${surfaceOf(a)},
-              (new $a with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$a]
-             )
-            }"""
-      } else {
-        q"""{ session : wvlet.airframe.Session => session.getFactory[$i1, $a](${surfaceOf(i1)}, ${surfaceOf(a)}) }"""
-      }
-    }
-
     def registorFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q""" {
@@ -625,16 +612,9 @@ private[wvlet] object AirframeMacros {
     val i1 = t.typeArgs(0) // I1
     val a  = t.typeArgs(1) // A
     val h  = new BindHelper[c.type](c)
-
-    q"""{
-         val session = ${h.findSession}
-         val factory: ${i1} => ${a} =
-           session.getOrElseUpdateFactory(
-             ${h.surfaceOf(i1)},
-             ${h.surfaceOf(a)},
-             ${h.newSingletonBinder(a)}(session)
-           )
-         factory
+    q"""{ x: ${i1} =>
+         val session = ${h.findSession}.withInstanceBinding(${h.surfaceOf(i1)}, x)
+         ${h.newBinder(a)}(session)
         }
       """
   }
