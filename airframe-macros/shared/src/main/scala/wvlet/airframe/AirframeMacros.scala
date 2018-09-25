@@ -492,6 +492,20 @@ private[wvlet] object AirframeMacros {
       """
   }
 
+  import scala.language.higherKinds
+  def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
+    val i1 = t.typeArgs(0) // I1
+    val a  = t.typeArgs(1) // A
+    val h  = new BindHelper[c.type](c)
+    q"""{
+         println(${h.surfaceOf(i1)})
+         println(${h.surfaceOf(a)})
+         {(x: ${i1}) => null.asInstanceOf[${a}]}.asInstanceOf[${t}]
+       }"""
+  }
+
   def bindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)

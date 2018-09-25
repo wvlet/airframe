@@ -73,6 +73,9 @@ package object airframe {
   def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
     macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
+  import scala.language.higherKinds
+  def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]
+
   private[airframe] val DO_NOTHING = { a: Any =>
     // no-op
   }
