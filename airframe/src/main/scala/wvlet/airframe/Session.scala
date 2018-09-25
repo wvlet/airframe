@@ -54,6 +54,7 @@ trait Session extends AutoCloseable {
     * @return
     */
   private[airframe] def get[A](surface: Surface): A
+  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A
 
   def getInstanceOf(surface: Surface): Any
 
@@ -64,18 +65,14 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElseUpdate[A](surface: Surface, obj: => A): A
-
-  private[airframe] def getSingleton[A](surface: Surface): A
-  private[airframe] def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A
+  //private[airframe] def getOrElseUpdate[A](surface: Surface, obj: => A): A
+  //private[airframe] def getSingleton[A](surface: Surface): A
+  //private[airframe] def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A
 
   /**
-    * Create a child session that overrides the instance binding of the surface
-    * @param surface
-    * @param obj
-    * @return
+    * Create a child session with additional design (bindings)
     */
-  private[airframe] def withInstanceBinding(surface: Surface, obj: Any): Session
+  private[airframe] def newChildSession(d: Design): Session
 
   /**
     * Get the object LifeCycleManager of this session.
@@ -109,10 +106,10 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface: Surface): A                                 = session.get[A](surface)
-    def getOrElseUpdate[A](surface: Surface, obj: => A): A          = session.getOrElseUpdate[A](surface, obj)
-    def getSingleton[A](surface: Surface): A                        = session.getSingleton[A](surface)
-    def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
+    def get[A](surface: Surface): A                  = session.get[A](surface)
+    def getOrElse[A](surface: Surface, obj: => A): A = session.getOrElse[A](surface, obj)
+//    def getSingleton[A](surface: Surface): A                        = session.getSingleton[A](surface)
+//    def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
   def getSession(obj: Any): Option[Session] = {

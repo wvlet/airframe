@@ -18,11 +18,14 @@ object FactoryBindingTest {
   case class MyConfig(a: Int)
   case class MyConfig2(b: Int)
   case class D1(d: String)
+
   trait MyModule1 {
     val config = bind[MyConfig]
     val d1     = bind[D1]
   }
-  class MyModule2(config: MyConfig, d1: D1)
+
+  case class MyModule2(config: MyConfig, d1: D1)
+
   trait MyModule3 {
     val c1 = bind[MyConfig]
     val c2 = bind[MyConfig2]
@@ -47,7 +50,7 @@ class FactoryBindingTest extends AirframeSpec {
   val d1 = D1("hello hello")
 
   "Airframe binding" should {
-    "create factory to override partial binding" in {
+    "create factories to override partial binding" in {
       val d = newDesign.noLifeCycleLogging
         .bind[MyConfig].toInstance(c1)
         .bind[MyConfig2].toInstance(c2)
@@ -61,6 +64,14 @@ class FactoryBindingTest extends AirframeSpec {
         val i2 = f.factory1(MyConfig(16))
         i2.config shouldBe MyConfig(16)
         i2.d1 shouldBe d1
+
+        val j1 = f.factory2(MyConfig(17))
+        j1.config shouldBe MyConfig(17)
+        j1.d1 shouldBe d1
+
+        val j2 = f.factory2(MyConfig(18))
+        j2.config shouldBe MyConfig(18)
+        j2.d1 shouldBe d1
       }
     }
   }
