@@ -25,7 +25,7 @@ import scala.util.Try
 /**
   *
   */
-private[airframe] class AirframeSession(parent: Option[Session],
+private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                         sessionName: Option[String],
                                         val design: Design,
                                         stage: Stage,
@@ -35,7 +35,7 @@ private[airframe] class AirframeSession(parent: Option[Session],
   self =>
   import scala.collection.JavaConverters._
 
-  private lazy val bindingTable = {
+  private lazy val bindingTable: Map[Surface, Binding] = {
     val b = Seq.newBuilder[(Surface, Binding)]
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = wvlet.surface.of[Session]
@@ -63,10 +63,18 @@ private[airframe] class AirframeSession(parent: Option[Session],
 
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
+  def getInstanceOf(t: Surface): AnyRef = {
+    getInstance(t, List.empty)
+  }
+
+  private def hasBindingFor(s: Surface): Boolean = {
+    bindingTable.contains(s)
+  }
+
   override def withInstanceBinding(surface: Surface, obj: Any): Session = {
     new AirframeSession(
       parent = Some(this),
-      sessionName,
+      sessionName, // Should we add suffixes for child sessions?
       newDesign.bind(surface).toInstance(obj),
       stage,
       lifeCycleManager
@@ -136,16 +144,13 @@ private[airframe] class AirframeSession(parent: Option[Session],
     obj.asInstanceOf[AnyRef]
   }
 
-  def getInstanceOf(t: Surface): AnyRef = {
-    getInstance(t, List.empty)
-  }
-
   private def getInstance(t: Surface, seen: List[Surface], defaultValue: Option[Any] = None): AnyRef = {
     trace(s"Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
       throw new CYCLIC_DEPENDENCY(seen.toSet)
     }
+
     val obj = bindingTable.get(t).map {
       case ClassBinding(from, to) =>
         trace(s"Found a class binding from ${from} to ${to}")
@@ -174,10 +179,18 @@ private[airframe] class AirframeSession(parent: Option[Session],
         }
     }
 
-    val result = obj.orElse(defaultValue).getOrElse {
-      trace(s"No binding is found for ${t}")
-      buildInstance(t, t :: seen)
-    }
+    val result = obj
+      .orElse(defaultValue).getOrElse {
+        parent
+          .map { p =>
+            // Check the parent session
+            p.getInstance(t, seen, defaultValue)
+          }
+          .getOrElse {
+            trace(s"No binding is found for ${t}")
+            buildInstance(t, t :: seen)
+          }
+      }
     result.asInstanceOf[AnyRef]
   }
 
