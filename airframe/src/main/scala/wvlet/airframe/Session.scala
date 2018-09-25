@@ -69,9 +69,13 @@ trait Session extends AutoCloseable {
   private[airframe] def getSingleton[A](surface: Surface): A
   private[airframe] def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A
 
+  /**
+    * Create a child session that overrides the instance binding of the surface
+    * @param surface
+    * @param obj
+    * @return
+    */
   private[airframe] def withInstanceBinding(surface: Surface, obj: Any): Session
-  //private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface): I1 => A
-  //private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface, obj: => A): I1 => A
 
   /**
     * Get the object LifeCycleManager of this session.

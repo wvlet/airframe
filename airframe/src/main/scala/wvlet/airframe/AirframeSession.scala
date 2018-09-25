@@ -122,19 +122,6 @@ private[airframe] class AirframeSession(parent: Option[Session],
     }
   }
 
-//  private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface): I1 => A = {
-//    { i1: I1 =>
-//
-//      getInstance(outputSurface, List.empty).asInstanceOf[A]
-//    }
-//  }
-//
-//  private[airframe] def getFactory[I1, A](inputSurface: Surface, outputSurface: Surface, obj: => A): I1 => A = {
-//    { i1: I1 =>
-//      getOrElseUpdate(outputSurface, List.empty, obj).asInstanceOf[A]
-//    }
-//  }
-
   private def register[A](t: Surface, obj: A): A = {
     registerInjectee(t, obj).asInstanceOf[A]
   }
