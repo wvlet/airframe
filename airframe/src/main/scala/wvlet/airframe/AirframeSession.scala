@@ -157,7 +157,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       }
 
     val result =
-      obj.getOrElse(buildInstance(t, seen, defaultValue))
+      obj.getOrElse(registerInjectee(t, buildInstance(t, seen, defaultValue)))
 
     result.asInstanceOf[AnyRef]
   }
