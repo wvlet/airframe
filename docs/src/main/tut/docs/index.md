@@ -5,11 +5,15 @@ title: Quick Start
 
 # Quick Start
 
-[![Latest version](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
-
 This page describes all you need to know to start using dependency injection with Airframe.
 
 ## sbt
+[sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
+[sindex-link]: https://index.scala-lang.org/wvlet/airframe
+[central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
+[central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
+
+[![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
 To use Airframe, add the following to your **build.sbt**:
 ```scala
@@ -41,15 +45,17 @@ case class AppConfig(appName:String)
 val d = newDesign
   .bind[AppConfig].toInstance(AppConfig("Hello Airframe!"))
 
-// Create MyApp. AppConfig in the design will be used
-d.build[MyApp]{ app => // new MyApp(AppConfig("Hello Airframe!"))
+// Create MyApp. AppConfig instance defined in the design will be used.
+// d.build[MyApp] will call new MyApp(AppConfig("Hello Airframe!")) to build a MyApp instance
+d.build[MyApp]{ app: MyApp => 
   // Do something with app
+  ...
 }
 // Session will be closed here
 ```
 
 ### In-Trait Injection
-In-trait injection is useful to create reusable moduels. This only works inside Scala traits:
+In-trait injection with `bind[X]` is useful to create reusable moduels. Note that this only works inside Scala traits:
 ```scala
 import wvlet.airframe._
 
@@ -61,11 +67,12 @@ trait DatabaseService {
 val d = newDesign
   .bind[Connection].to[ConnectionImpl]
 
-d.withSession { session=>
   // Creates a new DatabaseService with ConnectionImpl
-  val service = session.build[DatabaseService]
+d.build[DatabaseServcie] { db: DatabaseServcie =>
+   ...
 }
-// [DON'T DO THIS] You cannot use bind[X] inside classes:
+
+// [DON'T DO THIS] You can't use bind[X] inside classes:
 class A {
   val a = bind[B] // [Error] Because class A can't find the current session
 }
@@ -89,6 +96,11 @@ val p3: P = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and
 val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
 val pd: P = bindInstance { provider _ } // Create a new P using the provider
 
+// Factory bindings can be used to override a part of the dependencies
+val f1: D1 => P = bindFactory[D1 => P] // A factory to use a given D1 to generate P
+val f2: (D1, D2) => P = bindFactory2[(D1, D2) => P] // A factory to use given D1 and D2
+...
+
 object BindingExample {
   case class P(d1:D1 = D1(), d2:D2 = D2(), d3:D3 = D3())
   def provider(d1:D1, d2:D2, d3:D3) : P = P(d1, d2, d3)
@@ -97,7 +109,8 @@ object BindingExample {
 
 By default all injections generates singleton objects,
 which are available until the session closes.
-If you need to create a new instance for each binding, use `bindInstance[X]`.
+
+If you need to create a new instance for each binding, use `bindInstance[X]` or `bindFactory[I => X]`.
 
 ## Design
 

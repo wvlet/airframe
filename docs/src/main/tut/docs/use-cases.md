@@ -9,6 +9,7 @@ This page illustrates typical use cases of Airframe.
 
 - [Configuring Applications](#configuring-applications)
 - [Managing Resources](#managing-resources)
+- [Factory Binding](#factory-binding)
 - [Service Mix-In](#service-mix-in)
 - [Override Bindings](#override-bindings)
 
@@ -95,6 +96,41 @@ d.withSession { session =>
 // database connection will be closed automatically
 
 ```
+
+## Factory Binding
+
+If you need to configure a service (e.g., port number of an web client), but you need to provide other dependencies from Airframe,
+`bindFactory[I => A]` can be used.
+
+```scala
+trait MyClient {
+  private val port = bind[Int] // This will be overwritten by the factory
+  private val httpClientConfig = bind[HttpClientConfig] // Use the shared instance 
+  private val httpClient = new HttpClient(port, httpClientConfig)
+  
+  @PreDestroy
+  def stop: Unit = {
+    httpClient.close()
+  }
+}
+
+trait MyService {
+  // Create a factory Int => MyClient, which will override Int binding using a given parameter.
+  val clientFactory = bindFactory[Int => MyClient]
+}
+
+
+newDesign
+  .bind[HttpClientConfig].toInstance(HttpClientConfig(useSSL=true, timeoutSec=60))
+  .build[MyService] { s =>
+    val client1 = s.clientFactory(8080)
+    val client2 = s.clientFactory(80801)
+  }
+// clients will be closed here
+```
+In this example, port number (Int) can be provided later when instantiating MyClient. 
+HttpClientConfig instance can be shared between generated clients. 
+You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.
 
 
 ## Service Mix-In
