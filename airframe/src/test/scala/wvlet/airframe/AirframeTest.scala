@@ -381,7 +381,7 @@ class AirframeTest extends AirframeSpec {
       new ClassWithContext(session)
     }
 
-    "support binding listener" in {
+    "support binding listener" taggedAs ("listener") in {
       val counter = new AtomicInteger(0)
 
       val design =
@@ -392,6 +392,7 @@ class AirframeTest extends AirframeSpec {
       val session = design.newSessionBuilder
         .withEventHandler(new LifeCycleEventHandler {
           override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+            logger.debug(s"injected: ${t}")
             counter.incrementAndGet()
           }
         })
