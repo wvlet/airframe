@@ -25,7 +25,7 @@ import scala.language.implicitConversions
 /**
   *
   */
-package object airframe {
+package object airframe extends LogSupport {
 
   /**
     * The entry point to create a new design beginning from a blanc design
@@ -42,14 +42,14 @@ package object airframe {
     */
   def newSilentDesign: Design = newDesign.noLifeCycleLogging
 
-  def bindInstance[A]: A = macro bindImpl[A]
-  def bindInstance[A](factory: => A): A = macro bind0Impl[A]
-  def bindInstance[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]
-  def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
-  def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
-  def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
+  def bindInstance[A]: A = macro bindInstanceImpl[A]
+  def bindInstance[A](factory: => A): A = macro bindInstance0Impl[A]
+  def bindInstance[A, D1](factory: D1 => A): A = macro bindInstance1Impl[A, D1]
+  def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bindInstance2Impl[A, D1, D2]
+  def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bindInstance3Impl[A, D1, D2, D3]
+  def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bindInstance4Impl[A, D1, D2, D3, D4]
   def bindInstance[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
-    macro bind5Impl[A, D1, D2, D3, D4, D5]
+    macro bindInstance5Impl[A, D1, D2, D3, D4, D5]
 
   /**
     * Inject a singleton of A
@@ -73,6 +73,13 @@ package object airframe {
   def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
     macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
+  import scala.language.higherKinds
+  def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]
+  def bindFactory2[F <: (_, _) => _]: F = macro bindFactory2Impl[F]
+  def bindFactory3[F <: (_, _, _) => _]: F = macro bindFactory3Impl[F]
+  def bindFactory4[F <: (_, _, _, _) => _]: F = macro bindFactory4Impl[F]
+  def bindFactory5[F <: (_, _, _, _, _) => _]: F = macro bindFactory5Impl[F]
+
   private[airframe] val DO_NOTHING = { a: Any =>
     // no-op
   }
@@ -81,7 +88,6 @@ package object airframe {
     * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-
     @deprecated(message = "Use onInit, onStart, anShutdown, etc", since = "0.49")
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
@@ -107,9 +113,13 @@ package object airframe {
     }
   }
 
-  // For internal use to pre-compile objects
+  // For internal use to hold caches of factories of trait with a session
   import scala.collection.JavaConverters._
-  val factoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+  val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+  def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+    trace(s"Adding factory of ${s}")
+    traitFactoryCache.getOrElseUpdate(s, factory)
+  }
 
   //import wvlet.obj.tag._
   // Automatically add tag

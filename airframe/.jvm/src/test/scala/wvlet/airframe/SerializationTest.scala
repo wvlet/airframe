@@ -27,7 +27,9 @@ object SerializationTest extends LogSupport {
     debug(s"Created ${app} from ${a1}")
     app
   }
-  val d = Design.blanc.bind[A1].toInstance(A1(1)).bind[App].toProvider(provider1 _)
+  val d = newDesign
+    .bind[A1].toInstance(A1(1))
+    .bind[App].toProvider(provider1 _)
 }
 
 import DesignSerializationTest._
@@ -51,8 +53,12 @@ class SerializationTest extends AirframeSpec {
       import ProviderVal._
 
       val d = newDesign
-        .bind[D1].toInstance(d1).bind[D2].toInstance(d2).bind[D3].toInstance(d3).bind[D4].toInstance(d4).bind[D5].toInstance(
-          d5).bind[App].toProvider(provider5 _)
+        .bind[D1].toInstance(d1)
+        .bind[D2].toInstance(d2)
+        .bind[D3].toInstance(d3)
+        .bind[D4].toInstance(d4)
+        .bind[D5].toInstance(d5)
+        .bind[App].toProvider(provider5 _)
 
       val b  = serialize(d)
       val ds = deserialize(b)

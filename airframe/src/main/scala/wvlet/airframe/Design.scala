@@ -58,14 +58,18 @@ class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stag
 }
 
 /**
-  * Immutable airframe design
+  * Immutable airframe design.
+  *
+  * Design instance does not hold any duplicate bindings for the same Surface.
   */
 case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
 
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   def add(other: Design): Design = {
-    new Design(designOptions + other.designOptions, binding ++ other.binding)
+    val b          = Vector.newBuilder[Binding]
+    val newBinding = other.binding.foldLeft(binding) { case (current, b) => Design.upsertBinding(current, b) }
+    new Design(designOptions + other.designOptions, newBinding)
   }
 
   def +(other: Design): Design = add(other)
@@ -80,7 +84,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   def addBinding(b: Binding): Design = {
     debug(s"Add binding: $b")
-    new Design(designOptions, binding :+ b)
+    new Design(designOptions, Design.upsertBinding(binding, b))
   }
 
   def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
@@ -167,7 +171,20 @@ object Design {
 
   /**
     * Empty design.
+    * Using Vector as a binding holder for performance and serialization reason
     */
-  private[airframe] val blanc
-    : Design = new Design(new DesignOptions(), Vector.empty) // Use Vector for better append performance
+  private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
+
+  private def upsertBinding(binding: Vector[Binding], b: Binding): Vector[Binding] = {
+    var replaced = false
+    val newBinding = binding.map { x =>
+      if (x.from == b.from) {
+        replaced = true
+        b
+      } else {
+        x
+      }
+    }
+    if (replaced) newBinding else binding :+ b
+  }
 }
