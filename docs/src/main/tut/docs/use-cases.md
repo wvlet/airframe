@@ -124,7 +124,7 @@ newDesign
   .bind[HttpClientConfig].toInstance(HttpClientConfig(useSSL=true, timeoutSec=60))
   .build[MyService] { s =>
     val client1 = s.clientFactory(8080)
-    val client2 = s.clientFactory(80801)
+    val client2 = s.clientFactory(8081)
   }
 // clients will be closed here
 ```
