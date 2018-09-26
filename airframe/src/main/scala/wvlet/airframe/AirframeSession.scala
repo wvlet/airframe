@@ -191,6 +191,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private def buildInstance(surface: Surface, seen: List[Surface]): Any = {
     trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
+      //wvlet.surface.Zero.zeroOf(surface)
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(seen)
     } else {

@@ -622,6 +622,94 @@ private[wvlet] object AirframeMacros {
       """
   }
 
+  def bindFactory2Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import scala.language.higherKinds
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2), A]
+    val i1 = t.typeArgs(0) // I1
+    val i2 = t.typeArgs(1) // I2
+    val a  = t.typeArgs(2) // A
+    val h  = new BindHelper[c.type](c)
+    q"""{ (i1: ${i1}, i2: ${i2}) =>
+         val session = ${h.findSession}.newSharedChildSession(
+           wvlet.airframe.newDesign
+           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+         )
+         ${h.newBinder(a)}(session)
+        }
+      """
+  }
+
+  def bindFactory3Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import scala.language.higherKinds
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3), A]
+    val i1 = t.typeArgs(0) // I1
+    val i2 = t.typeArgs(1) // I2
+    val i3 = t.typeArgs(2) // I3
+    val a  = t.typeArgs(3) // A
+    val h  = new BindHelper[c.type](c)
+    q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}) =>
+         val session = ${h.findSession}.newSharedChildSession(
+           wvlet.airframe.newDesign
+           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
+         )
+         ${h.newBinder(a)}(session)
+        }
+      """
+  }
+
+  def bindFactory4Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import scala.language.higherKinds
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4), A]
+    val i1 = t.typeArgs(0) // I1
+    val i2 = t.typeArgs(1) // I2
+    val i3 = t.typeArgs(2) // I3
+    val i4 = t.typeArgs(3) // I4
+    val a  = t.typeArgs(4) // A
+    val h  = new BindHelper[c.type](c)
+    q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}) =>
+         val session = ${h.findSession}.newSharedChildSession(
+           wvlet.airframe.newDesign
+           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
+         )
+         ${h.newBinder(a)}(session)
+        }
+      """
+  }
+
+  def bindFactory5Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import scala.language.higherKinds
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4, I4), A]
+    val i1 = t.typeArgs(0) // I1
+    val i2 = t.typeArgs(1) // I2
+    val i3 = t.typeArgs(2) // I3
+    val i4 = t.typeArgs(3) // I4
+    val i5 = t.typeArgs(4) // I5
+    val a  = t.typeArgs(5) // A
+    val h  = new BindHelper[c.type](c)
+    q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}, i5:${i5}) =>
+         val session = ${h.findSession}.newSharedChildSession(
+           wvlet.airframe.newDesign
+           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
+           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
+           .bind(${h.surfaceOf(i5)}).toLazyInstance(i5)
+         )
+         ${h.newBinder(a)}(session)
+        }
+      """
+  }
+
   def bindSingletonImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val h = new BindHelper[c.type](c)
     val t = implicitly[c.WeakTypeTag[A]].tpe

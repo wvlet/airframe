@@ -75,6 +75,10 @@ package object airframe extends LogSupport {
 
   import scala.language.higherKinds
   def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]
+  def bindFactory2[F <: (_, _) => _]: F = macro bindFactory2Impl[F]
+  def bindFactory3[F <: (_, _, _) => _]: F = macro bindFactory3Impl[F]
+  def bindFactory4[F <: (_, _, _, _) => _]: F = macro bindFactory4Impl[F]
+  def bindFactory5[F <: (_, _, _, _, _) => _]: F = macro bindFactory5Impl[F]
 
   private[airframe] val DO_NOTHING = { a: Any =>
     // no-op
