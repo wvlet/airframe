@@ -67,8 +67,8 @@ trait Session extends AutoCloseable {
   def getInstanceOf(surface: Surface): Any
 
   /**
-    * Create a child session that shares the same singleton holder and lifecycle manager,
-    * but with an additional design (bindings)
+    * Create a child session with an additional design.
+    * The created session shares the same singleton holder and lifecycle manager with this session.
     */
   def newSharedChildSession(d: Design): Session
 

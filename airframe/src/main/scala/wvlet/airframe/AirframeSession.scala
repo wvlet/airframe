@@ -63,7 +63,9 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private[airframe] def getBindingOf(t: Surface): Option[Binding] = {
-    bindingTable.get(t).orElse(parent.flatMap(_.getBindingOf(t)))
+    bindingTable
+      .get(t)
+      .orElse(parent.flatMap(_.getBindingOf(t))) // Fallback to parent
   }
   private[airframe] def hasSingletonOf(t: Surface): Boolean = {
     singletonHolder.contains(t)
@@ -169,7 +171,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private def buildInstance(t: Surface, seen: List[Surface], defaultValue: Option[() => Any] = None): Any = {
     traitFactoryCache
       .get(t).map { f =>
-        trace(s"Using a pre-registered factory for ${t}")
+        trace(s"Using a pre-registered trait factory for ${t}")
         f(this)
       }
       .orElse {
@@ -191,7 +193,6 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private def buildInstance(surface: Surface, seen: List[Surface]): Any = {
     trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
-      //wvlet.surface.Zero.zeroOf(surface)
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(seen)
     } else {
@@ -212,7 +213,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
               //buildWithReflection(t)
               warn(
                 s"No binding nor the default constructor for ${surface} is found. " +
-                  s"Add bind[${surface}].toXXX to your design. dependencies:[${seen.mkString(" <- ")}]")
+                  s"Add bind[${surface}].toXXX to your design or dependencies:[${seen.mkString(" <- ")}]")
               throw MISSING_DEPENDENCY(seen)
           }
           obj

@@ -12,6 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import java.util.concurrent.atomic.AtomicInteger
+
+import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.log.LogSupport
 
 object FactoryBindingTest {
 
@@ -40,7 +44,6 @@ object FactoryBindingTest {
 
   trait FactorySet {
     val factory = bindFactory[MyConfig => MyModule1]
-
   }
 
   trait FactorySet2 {
@@ -52,6 +55,29 @@ object FactoryBindingTest {
     val f3 = bindFactory3[(MyConfig, MyConfig2, MyConfig3) => MyModule3]
     val f4 = bindFactory4[(MyConfig, MyConfig2, MyConfig3, MyConfig4) => MyModule3]
     val f5 = bindFactory5[(MyConfig, MyConfig2, MyConfig3, MyConfig4, MyConfig5) => MyModule3]
+  }
+
+  val startCounter = collection.mutable.Map[Int, AtomicInteger]()
+  val endCounter   = collection.mutable.Map[Int, AtomicInteger]()
+
+  trait MyClient extends LogSupport {
+    val port = bind[Int]
+
+    @PostConstruct
+    def start: Unit = {
+      debug(s"start client for ${port}")
+      startCounter.getOrElseUpdate(port, new AtomicInteger()).incrementAndGet()
+    }
+
+    @PreDestroy
+    def end: Unit = {
+      debug(s"end client for ${port}")
+      endCounter.getOrElseUpdate(port, new AtomicInteger()).incrementAndGet()
+    }
+  }
+
+  trait ClientFactory {
+    val factory = bindFactory[Int => MyClient]
   }
 
 }
@@ -139,6 +165,26 @@ class FactoryBindingTest extends AirframeSpec {
           j.d1 shouldBe d1
         }
       }
+    }
+
+    "run shutdown hooks" in {
+      newSilentDesign.build[ClientFactory] { f =>
+        startCounter shouldBe empty
+        endCounter shouldBe empty
+
+        val c1 = f.factory(8081)
+        startCounter(8081).get() shouldBe 1
+        endCounter.get(8081) shouldBe empty
+
+        val c2 = f.factory(8082)
+        startCounter(8082).get() shouldBe 1
+        endCounter.get(8082) shouldBe empty
+      }
+
+      startCounter(8081).get() shouldBe 1
+      startCounter(8082).get() shouldBe 1
+      endCounter(8081).get() shouldBe 1
+      endCounter(8082).get() shouldBe 1
     }
   }
 }

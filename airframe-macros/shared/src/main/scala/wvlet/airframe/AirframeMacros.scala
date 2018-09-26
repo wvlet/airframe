@@ -110,7 +110,7 @@ private[wvlet] object AirframeMacros {
     }
 
     /**
-      * Register factory for generating a trait that embeds the current session
+      * Register a factory for generating a trait that embeds the current session
       */
     def registerTraitFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
@@ -460,6 +460,21 @@ private[wvlet] object AirframeMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
+    q"""{
+         val session = ${h.findSession}
+         val dep = ${c.prefix}.dep
+         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
+         dep
+        }
+      """
+  }
+
+  def addStartLifeCycleForFactory[F: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val t  = implicitly[c.WeakTypeTag[F]].tpe
+    val i1 = t.typeArgs(0)
+    val a  = t.typeArgs(1)
+    val h  = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
@@ -823,5 +838,4 @@ private[wvlet] object AirframeMacros {
         }
       """
   }
-
 }

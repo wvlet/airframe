@@ -88,7 +88,6 @@ package object airframe extends LogSupport {
     * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
     */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-
     @deprecated(message = "Use onInit, onStart, anShutdown, etc", since = "0.49")
     def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
