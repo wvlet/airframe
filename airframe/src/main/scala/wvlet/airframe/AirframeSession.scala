@@ -115,6 +115,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     getInstance(surface, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
+  private[airframe] def getOrElseSingleton[A](surface: Surface, objectFactory: => A): A = {
+    debug(s"Get dependency [${surface}] or create from factory")
+    singletonHolder
+      .getOrElseUpdate(surface, getInstance(surface, List.empty, Some(() => objectFactory))).asInstanceOf[A]
+  }
+
   /**
     * Called when injecting an instance of the surface for the first time
     */

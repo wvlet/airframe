@@ -42,14 +42,14 @@ package object airframe extends LogSupport {
     */
   def newSilentDesign: Design = newDesign.noLifeCycleLogging
 
-  def bindInstance[A]: A = macro bindImpl[A]
-  def bindInstance[A](factory: => A): A = macro bind0Impl[A]
-  def bindInstance[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]
-  def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
-  def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
-  def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
+  def bindInstance[A]: A = macro bindInstanceImpl[A]
+  def bindInstance[A](factory: => A): A = macro bindInstance0Impl[A]
+  def bindInstance[A, D1](factory: D1 => A): A = macro bindInstance1Impl[A, D1]
+  def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bindInstance2Impl[A, D1, D2]
+  def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bindInstance3Impl[A, D1, D2, D3]
+  def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bindInstance4Impl[A, D1, D2, D3, D4]
   def bindInstance[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
-    macro bind5Impl[A, D1, D2, D3, D4, D5]
+    macro bindInstance5Impl[A, D1, D2, D3, D4, D5]
 
   /**
     * Inject a singleton of A

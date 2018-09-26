@@ -57,11 +57,18 @@ object FactoryBindingTest {
     val f5 = bindFactory5[(MyConfig, MyConfig2, MyConfig3, MyConfig4, MyConfig5) => MyModule3]
   }
 
-  val startCounter = collection.mutable.Map[Int, AtomicInteger]()
-  val endCounter   = collection.mutable.Map[Int, AtomicInteger]()
+  val startCounter  = collection.mutable.Map[Int, AtomicInteger]()
+  val endCounter    = collection.mutable.Map[Int, AtomicInteger]()
+  val threadCounter = new AtomicInteger()
+
+  trait MyThread extends LogSupport {
+    debug("hello MyThread")
+    threadCounter.incrementAndGet()
+  }
 
   trait MyClient extends LogSupport {
-    val port = bind[Int]
+    val port      = bind[Int]
+    val singleton = bind[MyThread]
 
     @PostConstruct
     def start: Unit = {
@@ -168,6 +175,7 @@ class FactoryBindingTest extends AirframeSpec {
     }
 
     "run shutdown hooks" in {
+      threadCounter.get() shouldBe 0
       newSilentDesign.build[ClientFactory] { f =>
         startCounter shouldBe empty
         endCounter shouldBe empty
@@ -185,6 +193,8 @@ class FactoryBindingTest extends AirframeSpec {
       startCounter(8082).get() shouldBe 1
       endCounter(8081).get() shouldBe 1
       endCounter(8082).get() shouldBe 1
+
+      threadCounter.get() shouldBe 1 // Generate the singleton MyThread only once
     }
   }
 }
