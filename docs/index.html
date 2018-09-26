@@ -8,11 +8,11 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class=" active ">Quick Start</a> <ul class="sub_section"> <li><a href="/airframe/docs/index.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/index.html#design" class="">Design</a></li> <li><a href="/airframe/docs/index.html#session" class="">Session</a></li> <li><a href="/airframe/docs/index.html#life-cycle" class="">Life Cycle</a></li></ul></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/utils.html" class="">Airframe Utilities</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe-log.html" class="">airframe-log</a></li> <li><a href="/airframe/docs/airframe-codec.html" class="">airframe-codec</a></li> <li><a href="/airframe/docs/airframe-config.html" class="">airframe-config</a></li> <li><a href="/airframe/docs/airframe-http.html" class="">airframe-http</a></li> <li><a href="/airframe/docs/airframe-opts.html" class="">airframe-opts</a></li> <li><a href="/airframe/docs/airframe-metrics.html" class="">airframe-metrics</a></li> <li><a href="/airframe/docs/airframe-jdbc.html" class="">airframe-jdbc</a></li> <li><a href="/airframe/docs/airframe-jmx.html" class="">airframe-jmx</a></li> <li><a href="/airframe/docs/airframe-surface.html" class="">airframe-surface</a></li></ul></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="quick-start">Quick Start</h1>
 
-<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="Latest version" /></a></p>
-
 <p>This page describes all you need to know to start using dependency injection with Airframe.</p>
 
 <h2 id="sbt">sbt</h2>
+
+<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="scala-index" /></a> <a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central" /></a></p>
 
 <p>To use Airframe, add the following to your <strong>build.sbt</strong>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span> <span class="o">%</span> <span class="s">"(version)"</span>
@@ -43,16 +43,18 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">AppConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">AppConfig</span><span class="o">(</span><span class="s">"Hello Airframe!"</span><span class="o">))</span>
 
-<span class="c1">// Create MyApp. AppConfig in the design will be used
-</span><span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]{</span> <span class="n">app</span> <span class="k">=&gt;</span> <span class="c1">// new MyApp(AppConfig("Hello Airframe!"))
-</span>  <span class="c1">// Do something with app
-</span><span class="o">}</span>
+<span class="c1">// Create MyApp. AppConfig instance defined in the design will be used.
+// d.build[MyApp] will call new MyApp(AppConfig("Hello Airframe!")) to build a MyApp instance
+</span><span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]{</span> <span class="n">app</span><span class="k">:</span> <span class="kt">MyApp</span> <span class="o">=&gt;</span> 
+  <span class="c1">// Do something with app
+</span>  <span class="o">...</span>
+<span class="o">}</span>
 <span class="c1">// Session will be closed here
 </span></code></pre>
 </div>
 
 <h3 id="in-trait-injection">In-Trait Injection</h3>
-<p>In-trait injection is useful to create reusable moduels. This only works inside Scala traits:</p>
+<p>In-trait injection with <code class="highlighter-rouge">bind[X]</code> is useful to create reusable moduels. Note that this only works inside Scala traits:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">class</span> <span class="nc">Database</span><span class="o">(</span><span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">conn</span><span class="k">:</span><span class="kt">Connection</span><span class="o">)</span>
@@ -63,11 +65,12 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 <span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Connection</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ConnectionImpl</span><span class="o">]</span>
 
-<span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span><span class="k">=&gt;</span>
   <span class="c1">// Creates a new DatabaseService with ConnectionImpl
-</span>  <span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">DatabaseService</span><span class="o">]</span>
+</span><span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">DatabaseServcie</span><span class="o">]</span> <span class="o">{</span> <span class="n">db</span><span class="k">:</span> <span class="kt">DatabaseServcie</span> <span class="o">=&gt;</span>
+   <span class="o">...</span>
 <span class="o">}</span>
-<span class="c1">// [DON'T DO THIS] You cannot use bind[X] inside classes:
+
+<span class="c1">// [DON'T DO THIS] You can't use bind[X] inside classes:
 </span><span class="k">class</span> <span class="nc">A</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="c1">// [Error] Because class A can't find the current session
 </span><span class="o">}</span>
@@ -91,6 +94,11 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3 to call a provider function
 </span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bindInstance</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Create a new P using the provider
 </span>
+<span class="c1">// Factory bindings can be used to override a part of the dependencies
+</span><span class="k">val</span> <span class="n">f1</span><span class="k">:</span> <span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">D1</span> <span class="k">=&gt;</span> <span class="kt">P</span><span class="o">]</span> <span class="c1">// A factory to use a given D1 to generate P
+</span><span class="k">val</span> <span class="n">f2</span><span class="k">:</span> <span class="o">(</span><span class="kt">D1</span><span class="o">,</span> <span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span> <span class="k">=</span> <span class="n">bindFactory2</span><span class="o">[(</span><span class="kt">D1</span>, <span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="kt">P</span><span class="o">]</span> <span class="c1">// A factory to use given D1 and D2
+</span><span class="o">...</span>
+
 <span class="k">object</span> <span class="nc">BindingExample</span> <span class="o">{</span>
   <span class="k">case</span> <span class="k">class</span> <span class="nc">P</span><span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=</span> <span class="n">D1</span><span class="o">(),</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span> <span class="o">=</span> <span class="n">D2</span><span class="o">(),</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span> <span class="o">=</span> <span class="n">D3</span><span class="o">())</span>
   <span class="k">def</span> <span class="n">provider</span><span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">,</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span><span class="o">)</span> <span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">,</span> <span class="n">d3</span><span class="o">)</span>
@@ -99,8 +107,9 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </div>
 
 <p>By default all injections generates singleton objects,
-which are available until the session closes.
-If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindInstance[X]</code>.</p>
+which are available until the session closes.</p>
+
+<p>If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindInstance[X]</code> or <code class="highlighter-rouge">bindFactory[I =&gt; X]</code>.</p>
 
 <h2 id="design">Design</h2>
 

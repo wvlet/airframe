@@ -13,6 +13,7 @@ ga('send', 'pageview');
 <ul>
   <li><a href="#configuring-applications">Configuring Applications</a></li>
   <li><a href="#managing-resources">Managing Resources</a></li>
+  <li><a href="#factory-binding">Factory Binding</a></li>
   <li><a href="#service-mix-in">Service Mix-In</a></li>
   <li><a href="#override-bindings">Override Bindings</a></li>
 </ul>
@@ -100,6 +101,41 @@ configuring your applications with YAML files.</p>
 </span>
 </code></pre>
 </div>
+
+<h2 id="factory-binding">Factory Binding</h2>
+
+<p>If you need to configure a service (e.g., port number of an web client), but you need to provide other dependencies from Airframe,
+<code class="highlighter-rouge">bindFactory[I =&gt; A]</code> can be used.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyClient</span> <span class="o">{</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="n">port</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="c1">// This will be overwritten by the factory
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">httpClientConfig</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">]</span> <span class="c1">// Use the shared instance 
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">httpClient</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">HttpClient</span><span class="o">(</span><span class="n">port</span><span class="o">,</span> <span class="n">httpClientConfig</span><span class="o">)</span>
+  
+  <span class="nd">@PreDestroy</span>
+  <span class="k">def</span> <span class="n">stop</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">httpClient</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">trait</span> <span class="nc">MyService</span> <span class="o">{</span>
+  <span class="c1">// Create a factory Int =&gt; MyClient, which will override Int binding using a given parameter.
+</span>  <span class="k">val</span> <span class="n">clientFactory</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">Int</span> <span class="k">=&gt;</span> <span class="kt">MyClient</span><span class="o">]</span>
+<span class="o">}</span>
+
+
+<span class="n">newDesign</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">HttpClientConfig</span><span class="o">(</span><span class="n">useSSL</span><span class="k">=</span><span class="kc">true</span><span class="o">,</span> <span class="n">timeoutSec</span><span class="k">=</span><span class="mi">60</span><span class="o">))</span>
+  <span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyService</span><span class="o">]</span> <span class="o">{</span> <span class="n">s</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="n">client1</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">clientFactory</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">client2</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">clientFactory</span><span class="o">(</span><span class="mi">8081</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="c1">// clients will be closed here
+</span></code></pre>
+</div>
+<p>In this example, port number (Int) can be provided later when instantiating MyClient. 
+HttpClientConfig instance can be shared between generated clients. 
+You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.</p>
 
 <h2 id="service-mix-in">Service Mix-In</h2>
 
