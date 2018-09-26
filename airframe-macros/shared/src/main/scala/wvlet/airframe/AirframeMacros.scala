@@ -616,7 +616,7 @@ private[wvlet] object AirframeMacros {
     val a  = t.typeArgs(1) // A
     val h  = new BindHelper[c.type](c)
     q"""{ x: ${i1} =>
-         val session = ${h.findSession}.newChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toInstance(x))
+         val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toLazyInstance(x))
          ${h.newBinder(a)}(session)
         }
       """

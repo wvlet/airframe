@@ -54,25 +54,23 @@ trait Session extends AutoCloseable {
     * @return
     */
   private[airframe] def get[A](surface: Surface): A
-  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A
-
-  def getInstanceOf(surface: Surface): Any
 
   /**
-    * Internal method for building an instance of type A using a provider generated object.
+    * Internal method for building an instance of type A, or if no binding is found, use the given trait instance factory
     *
     * @param obj
     * @tparam A
     * @return
     */
-  //private[airframe] def getOrElseUpdate[A](surface: Surface, obj: => A): A
-  //private[airframe] def getSingleton[A](surface: Surface): A
-  //private[airframe] def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A
+  private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A): A
+
+  def getInstanceOf(surface: Surface): Any
 
   /**
-    * Create a child session with additional design (bindings)
+    * Create a child session that shares the same singleton holder and lifecycle manager,
+    * but with an additional design (bindings)
     */
-  private[airframe] def newChildSession(d: Design): Session
+  private[airframe] def newSharedChildSession(d: Design): Session
 
   /**
     * Get the object LifeCycleManager of this session.
@@ -108,8 +106,6 @@ object Session extends LogSupport {
   implicit class SessionAccess(session: Session) {
     def get[A](surface: Surface): A                  = session.get[A](surface)
     def getOrElse[A](surface: Surface, obj: => A): A = session.getOrElse[A](surface, obj)
-//    def getSingleton[A](surface: Surface): A                        = session.getSingleton[A](surface)
-//    def getOrElseUpdateSingleton[A](surface: Surface, obj: => A): A = session.getOrElseUpdateSingleton[A](surface, obj)
   }
 
   def getSession(obj: Any): Option[Session] = {

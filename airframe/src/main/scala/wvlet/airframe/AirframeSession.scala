@@ -21,6 +21,7 @@ import wvlet.log.LogSupport
 import wvlet.surface.Surface
 
 import scala.util.Try
+import scala.collection.JavaConverters._
 
 /**
   *
@@ -29,11 +30,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                         sessionName: Option[String],
                                         val design: Design,
                                         stage: Stage,
-                                        val lifeCycleManager: LifeCycleManager)
+                                        val lifeCycleManager: LifeCycleManager,
+                                        private val singletonHolder: collection.mutable.Map[Surface, Any] =
+                                          new ConcurrentHashMap[Surface, Any]().asScala)
     extends Session
     with LogSupport {
   self =>
-  import scala.collection.JavaConverters._
 
   require(
     design.binding.map(_.from).distinct.length == design.binding.length,
@@ -60,12 +62,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     b.result.toMap[Surface, Binding]
   }
 
-  private[airframe] def getBindingOf(t: Surface) = bindingTable.get(t)
+  private[airframe] def getBindingOf(t: Surface): Option[Binding] = {
+    bindingTable.get(t).orElse(parent.flatMap(_.getBindingOf(t)))
+  }
   private[airframe] def hasSingletonOf(t: Surface): Boolean = {
     singletonHolder.contains(t)
   }
-
-  private lazy val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
 
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
@@ -73,13 +75,15 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     getInstance(t, List.empty)
   }
 
-  override def newChildSession(d: Design): Session = {
+  override def newSharedChildSession(d: Design): Session = {
+    trace(s"Creating a new child session with ${d}")
     new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
       d,
       stage,
-      lifeCycleManager
+      lifeCycleManager,
+      singletonHolder
     )
   }
 
@@ -131,7 +135,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     // Find instance from bindings
     val obj =
-      bindingTable.get(t).map {
+      getBindingOf(t).map {
         case ClassBinding(from, to) =>
           trace(s"Found a class binding from ${from} to ${to}")
           registerInjectee(from, getInstance(to, t :: seen))
@@ -176,16 +180,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         }
       }
       .getOrElse {
-        parent
-          .map { p =>
-            // Check the parent session
-            warn(s"checking the parent for ${t}")
-            p.getInstance(t, seen, defaultValue)
-          }
-          .getOrElse {
-            trace(s"No binding is found for ${t}")
-            buildInstance(t, t :: seen)
-          }
+        trace(s"No binding is found for ${t}")
+        buildInstance(t, t :: seen)
       }
   }
 
@@ -200,7 +196,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     } else {
       surface.objectFactory match {
         case Some(factory) =>
-          trace(s"Using the default constructor for injecting ${surface}")
+          trace(s"Using the default constructor for building ${surface}")
           val args = for (p <- surface.params) yield {
             getInstance(p.surface, seen, p.getDefaultValue.map(x => () => x))
           }
