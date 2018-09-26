@@ -70,7 +70,7 @@ trait Session extends AutoCloseable {
     * Create a child session that shares the same singleton holder and lifecycle manager,
     * but with an additional design (bindings)
     */
-  private[airframe] def newSharedChildSession(d: Design): Session
+  def newSharedChildSession(d: Design): Session
 
   /**
     * Get the object LifeCycleManager of this session.
