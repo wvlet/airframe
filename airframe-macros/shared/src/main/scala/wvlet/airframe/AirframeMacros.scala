@@ -110,13 +110,13 @@ private[wvlet] object AirframeMacros {
     }
 
     /**
-      * Register factory
+      * Register factory for generating a trait that embeds the current session
       */
-    def registorFactory(t: c.Type): c.Tree = {
+    def registerTraitFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q""" {
            val s = ${surfaceOf(t)}
-           wvlet.airframe.getOrElseUpdateFactoryCache(s,
+           wvlet.airframe.getOrElseUpdateTraitFactoryCache(s,
              { session: wvlet.airframe.Session => (new $t with wvlet.airframe.SessionHolder { def airframeSession = session }).asInstanceOf[Any] }
            )
            s
@@ -129,7 +129,7 @@ private[wvlet] object AirframeMacros {
 
     def withFactoryRegistration(t: c.Type, body: c.Tree): c.Tree = {
       q"""
-        ${registorFactory(t)}
+        ${registerTraitFactory(t)}
         ${body}
         """
     }
@@ -142,7 +142,7 @@ private[wvlet] object AirframeMacros {
       val ev1 = implicitly[c.WeakTypeTag[D1]].tpe
       q"""{
            val self = ${c.prefix.tree}
-           val d1 = ${registorFactory(ev1)}
+           val d1 = ${registerTraitFactory(ev1)}
            import wvlet.airframe.Binder._
            self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}))
         }
@@ -156,8 +156,8 @@ private[wvlet] object AirframeMacros {
       val ev2 = implicitly[c.WeakTypeTag[D2]].tpe
       q"""{
            val self = ${c.prefix.tree}
-           val d1 = ${registorFactory(ev1)}
-           val d2 = ${registorFactory(ev2)}
+           val d1 = ${registerTraitFactory(ev1)}
+           val d2 = ${registerTraitFactory(ev2)}
            import wvlet.airframe.Binder._
            self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}))
         }
@@ -172,9 +172,9 @@ private[wvlet] object AirframeMacros {
       val ev3 = implicitly[c.WeakTypeTag[D3]].tpe
       q"""{
            val self = ${c.prefix.tree}
-           val d1 = ${registorFactory(ev1)}
-           val d2 = ${registorFactory(ev2)}
-           val d3 = ${registorFactory(ev3)}
+           val d1 = ${registerTraitFactory(ev1)}
+           val d2 = ${registerTraitFactory(ev2)}
+           val d3 = ${registerTraitFactory(ev3)}
            import wvlet.airframe.Binder._
            self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}))
         }
@@ -191,10 +191,10 @@ private[wvlet] object AirframeMacros {
       val ev4 = implicitly[c.WeakTypeTag[D4]].tpe
       q"""{
            val self = ${c.prefix.tree}
-           val d1 = ${registorFactory(ev1)}
-           val d2 = ${registorFactory(ev2)}
-           val d3 = ${registorFactory(ev3)}
-           val d4 = ${registorFactory(ev4)}
+           val d1 = ${registerTraitFactory(ev1)}
+           val d2 = ${registerTraitFactory(ev2)}
+           val d3 = ${registerTraitFactory(ev3)}
+           val d4 = ${registerTraitFactory(ev4)}
            import wvlet.airframe.Binder._
            self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}))
         }
@@ -212,11 +212,11 @@ private[wvlet] object AirframeMacros {
       val ev5 = implicitly[c.WeakTypeTag[D5]].tpe
       q"""{
            val self = ${c.prefix.tree}
-           val d1 = ${registorFactory(ev1)}
-           val d2 = ${registorFactory(ev2)}
-           val d3 = ${registorFactory(ev3)}
-           val d4 = ${registorFactory(ev4)}
-           val d5 = ${registorFactory(ev5)}
+           val d1 = ${registerTraitFactory(ev1)}
+           val d2 = ${registerTraitFactory(ev2)}
+           val d3 = ${registerTraitFactory(ev3)}
+           val d4 = ${registerTraitFactory(ev4)}
+           val d5 = ${registerTraitFactory(ev5)}
            import wvlet.airframe.Binder._
            self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}))
         }

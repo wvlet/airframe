@@ -163,7 +163,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private def buildInstance(t: Surface, seen: List[Surface], defaultValue: Option[() => Any] = None): Any = {
-    factoryCache
+    traitFactoryCache
       .get(t).map { f =>
         trace(s"Using a pre-registered factory for ${t}")
         f(this)
@@ -207,7 +207,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           val obj = factory.newInstance(args)
           obj
         case None =>
-          val obj = factoryCache.get(surface) match {
+          val obj = traitFactoryCache.get(surface) match {
             case Some(factory) =>
               trace(s"Using pre-compiled factory for ${surface}")
               factory.asInstanceOf[Session => Any](this)

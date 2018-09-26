@@ -110,12 +110,12 @@ package object airframe extends LogSupport {
     }
   }
 
-  // For internal use to pre-compile objects
+  // For internal use to hold caches of factories of trait with a session
   import scala.collection.JavaConverters._
-  val factoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
-  def getOrElseUpdateFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
+  val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
+  def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
     trace(s"Adding factory of ${s}")
-    factoryCache.getOrElseUpdate(s, factory)
+    traitFactoryCache.getOrElseUpdate(s, factory)
   }
 
   //import wvlet.obj.tag._
