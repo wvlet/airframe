@@ -49,7 +49,7 @@ class StringTemplate(template: String) {
     val pattern = """(^\$|[^\\]\$)[^\$]+\$""".r
     val out     = new StringBuilder
 
-    for ((line, lineCount) <- template.lines.zipWithIndex) {
+    for ((line, lineCount) <- template.linesIterator.zipWithIndex) {
       if (lineCount > 0) {
         out.append("\n")
       }
