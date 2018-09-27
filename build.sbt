@@ -63,8 +63,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   // Use sonatype resolvers
   resolvers ++= Seq(
-    Resolver.sonatypeRepo("releases"),
-    Resolver.sonatypeRepo("snapshots")
+    Resolver.sonatypeRepo("releases")
   )
 )
 
