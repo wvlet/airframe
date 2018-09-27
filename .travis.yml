@@ -42,7 +42,7 @@ matrix:
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script:
     - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM
+  - env: SCALA_VERSION=2.12.7 PROJECT=projectJVM
     jdk: oraclejdk8
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
@@ -59,10 +59,10 @@ matrix:
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJS
+  - env: SCALA_VERSION=2.12.7 PROJECT=projectJS
     jdk: oraclejdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-  - env: SCALA_VERSION=2.12.6 PROJECT=projectJVM
+  - env: SCALA_VERSION=2.12.7 PROJECT=projectJVM
     jdk: oraclejdk11
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
