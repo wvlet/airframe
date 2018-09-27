@@ -29,10 +29,23 @@ object StringTemplate {
 
   private final val LF             = 0x0A
   private final val FF             = 0x0C
+  private final val CR             = 0x0D
   private def isLineBreak(c: Char) = c == LF || c == FF
 
   def linesOf(str: String): Iterator[String] = {
-    linesWithSeparators(str).map(line => new WrappedString(line).stripLineEnd)
+    linesWithSeparators(str).map(line => stripLineEnd(line))
+  }
+
+  private def stripLineEnd(s: String): String = {
+    val len = s.length
+    if (len == 0) toString
+    else {
+      val last = s.apply(len - 1)
+      if (isLineBreak(last))
+        s.substring(0, if (last == LF && len >= 2 && s.apply(len - 2) == CR) len - 2 else len - 1)
+      else
+        s
+    }
   }
 
   // A copy of linesIterator implementation of StringLike.scala
