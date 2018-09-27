@@ -13,6 +13,8 @@
  */
 
 package wvlet.airframe.opts
+import scala.collection.immutable.WrappedString
+import scala.collection.{AbstractIterator, Iterator}
 
 //--------------------------------------
 //
@@ -25,6 +27,41 @@ object StringTemplate {
 
   def eval(template: String)(properties: Map[Any, String]) = new StringTemplate(template).eval(properties)
 
+  private final val LF             = 0x0A
+  private final val FF             = 0x0C
+  private final val CR             = 0x0D
+  private def isLineBreak(c: Char) = c == LF || c == FF
+
+  def linesOf(str: String): Iterator[String] = {
+    linesWithSeparators(str).map(line => stripLineEnd(line))
+  }
+
+  private def stripLineEnd(s: String): String = {
+    val len = s.length
+    if (len == 0) toString
+    else {
+      val last = s.apply(len - 1)
+      if (isLineBreak(last))
+        s.substring(0, if (last == LF && len >= 2 && s.apply(len - 2) == CR) len - 2 else len - 1)
+      else
+        s
+    }
+  }
+
+  // A copy of linesIterator implementation of StringLike.scala
+  // TODO: Use String.linesIterator after Scala 2.13.0-RC1 is released.
+  private def linesWithSeparators(str: String): Iterator[String] = new AbstractIterator[String] {
+    private val len      = str.length
+    private var index    = 0
+    def hasNext: Boolean = index < len
+    def next(): String = {
+      if (index >= len) throw new NoSuchElementException("next on empty iterator")
+      val start = index
+      while (index < len && !isLineBreak(str.charAt(index))) index += 1
+      index += 1
+      str.substring(start, index min len)
+    }
+  }
 }
 
 /**
@@ -49,7 +86,7 @@ class StringTemplate(template: String) {
     val pattern = """(^\$|[^\\]\$)[^\$]+\$""".r
     val out     = new StringBuilder
 
-    for ((line, lineCount) <- template.lines.zipWithIndex) {
+    for ((line, lineCount) <- StringTemplate.linesOf(template).zipWithIndex) {
       if (lineCount > 0) {
         out.append("\n")
       }
