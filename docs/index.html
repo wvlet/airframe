@@ -24,6 +24,19 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
+<h3 id="scalafmtconf">.scalafmt.conf</h3>
+<p>If you are using <a href="https://scalameta.org/scalafmt/">scalafmt</a> for code formatting, add the following option to your <code class="highlighter-rouge">.scalafmt.conf</code>:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>optIn.breaksInsideChains = true
+</code></pre>
+</div>
+
+<p>This option enables writing each binding in a single line:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(...)</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Y</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">YImpl</span><span class="o">]</span>
+</code></pre>
+</div>
+
 <h2 id="bind">Bind</h2>
 
 <p>In Airframe, you can use two types of dependency injections: <strong>constructor injection</strong> or
