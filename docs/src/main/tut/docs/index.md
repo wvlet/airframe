@@ -25,6 +25,20 @@ And import `wvlet.airframe._` in your Scala code:
 import wvlet.airframe._
 ```
 
+### .scalafmt.conf
+If you are using [scalafmt](https://scalameta.org/scalafmt/) for code formatting, add the following option to your `.scalafmt.conf`:
+```
+optIn.breaksInsideChains = true
+```
+
+This option enables writing each binding in a single line:
+```scala
+val d = newDesign
+  .bind[X].toInstance(...)
+  .bind[Y].to[YImpl]
+```
+
+
 ## Bind
 
 In Airframe, you can use two types of dependency injections: __constructor injection__ or
