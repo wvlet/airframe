@@ -12,6 +12,9 @@ val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 
+// Allow using Ctrl+C in sbt without exiting the prompt
+cancelable in Global := true
+
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
