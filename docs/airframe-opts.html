@@ -48,6 +48,7 @@ ga('send', 'pageview');
     <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"world ${message}"</span><span class="o">)</span>
   <span class="o">}</span>
   
+  <span class="nd">@command</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"start a server"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">start</span><span class="o">(</span>
     <span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">"-p,--port"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"port number"</span><span class="o">)</span>
     <span class="n">port</span><span class="k">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">8080</span><span class="o">,</span>
