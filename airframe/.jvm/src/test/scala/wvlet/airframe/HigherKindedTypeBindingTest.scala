@@ -13,8 +13,6 @@
  */
 package wvlet.airframe
 
-import wvlet.surface
-
 import scala.concurrent.Future
 import scala.language.higherKinds
 import scala.util.Success

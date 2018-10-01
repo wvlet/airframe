@@ -16,7 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.MISSING_SESSION
 import wvlet.airframe.Binder.Binding
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.language.experimental.macros
 import scala.util.Try

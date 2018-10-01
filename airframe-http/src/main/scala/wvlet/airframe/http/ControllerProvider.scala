@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.util.{Failure, Success, Try}
 import wvlet.airframe._

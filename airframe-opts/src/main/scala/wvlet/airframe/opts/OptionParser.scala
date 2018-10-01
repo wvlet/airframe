@@ -21,8 +21,8 @@ package wvlet.airframe.opts
 //--------------------------------------
 
 import wvlet.log.{LogSupport, Logger}
-import wvlet.surface._
-import wvlet.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
+import wvlet.airframe.surface._
+import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -93,7 +93,7 @@ sealed trait CLOptionItem {
 
 abstract class CLOptionItemBase(val param: Parameter) extends CLOptionItem {
   override def takesMultipleArguments: Boolean = {
-    import wvlet.surface.reflect.ReflectTypeUtil._
+    import wvlet.airframe.surface.reflect.ReflectTypeUtil._
     val t: Class[_] = param.surface.rawType
     isArray(t) || isSeq(t)
   }
@@ -197,7 +197,7 @@ trait OptionSchema extends LogSupport {
 }
 
 object ClassOptionSchema extends LogSupport {
-  import wvlet.surface.reflect._
+  import wvlet.airframe.surface.reflect._
 
   /**
     * Create an option schema from a given class definition
@@ -278,7 +278,7 @@ class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val ar
   * @param method
   */
 class MethodOptionSchema(method: MethodSurface) extends OptionSchema {
-  import wvlet.surface.reflect._
+  import wvlet.airframe.surface.reflect._
   val options =
     for (p <- method.args; opt <- p.findAnnotationOf[option]) yield new CLOption(Path(p.name), opt, p)
 

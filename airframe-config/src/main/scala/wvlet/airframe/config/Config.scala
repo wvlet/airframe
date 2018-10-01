@@ -20,8 +20,8 @@ import PropertiesConfig.ConfigKey
 import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
-import wvlet.surface
-import wvlet.surface.{Surface, Zero}
+import wvlet.airframe.surface
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 import scala.language.existentials
 
 trait AirframeException extends Exception { self =>

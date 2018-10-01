@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 trait LifeCycleHook {
   def surface: Surface

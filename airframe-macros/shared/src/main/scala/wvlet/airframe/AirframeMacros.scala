@@ -35,7 +35,7 @@ private[wvlet] object AirframeMacros {
 
       val hasAbstractMethods = t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
-      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.surface.tag.")
+      val isTaggedType = t.typeSymbol.fullName.startsWith("wvlet.airframe.surface.tag.")
 
       val shouldInstantiateTrait = if (!a.isStatic) {
         // = Non static type
@@ -135,7 +135,7 @@ private[wvlet] object AirframeMacros {
     }
 
     def surfaceOf(t: c.Type): c.Tree = {
-      q"wvlet.surface.of[$t]"
+      q"wvlet.airframe.surface.of[$t]"
     }
 
     def provider1Binding[D1: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {

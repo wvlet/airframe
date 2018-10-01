@@ -18,8 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
-import wvlet.surface
-import wvlet.surface.{Primitive, Surface}
+import wvlet.airframe.surface.{Primitive, Surface}
 
 import scala.util.Random
 

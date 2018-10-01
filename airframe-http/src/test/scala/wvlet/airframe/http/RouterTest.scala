@@ -14,8 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.AirframeSpec
-import wvlet.surface
-import wvlet.surface.Surface
+import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 /**
   *

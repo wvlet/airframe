@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.util.Try
 import scala.collection.JavaConverters._
@@ -46,13 +46,13 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private lazy val bindingTable: Map[Surface, Binding] = {
     val b = Seq.newBuilder[(Surface, Binding)]
     // Add a reference to this session to allow bind[Session]
-    val sessionSurface = wvlet.surface.of[Session]
+    val sessionSurface = wvlet.airframe.surface.of[Session]
     val sessionBinding =
       ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
     b += sessionSurface -> sessionBinding
 
     // Add a reference to the design
-    val designSurface = wvlet.surface.of[Design]
+    val designSurface = wvlet.airframe.surface.of[Design]
     val designBinding =
       ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]), true, true)
     b += designSurface -> designBinding

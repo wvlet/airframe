@@ -16,7 +16,7 @@ package wvlet.airframe.tablet.text
 import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder, ObjectCodec}
 import wvlet.airframe.tablet.MessagePackRecord
-import wvlet.surface
+import wvlet.airframe.surface
 
 import scala.reflect.runtime.{universe => ru}
 

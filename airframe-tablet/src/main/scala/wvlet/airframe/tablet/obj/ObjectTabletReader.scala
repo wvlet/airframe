@@ -4,7 +4,7 @@ import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.tablet.{MessagePackRecord, Record, TabletReader}
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.{universe => ru}
 

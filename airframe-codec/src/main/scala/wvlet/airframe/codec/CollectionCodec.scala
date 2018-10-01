@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.util
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import wvlet.surface.{Surface, Zero}
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

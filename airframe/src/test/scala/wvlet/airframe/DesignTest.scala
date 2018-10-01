@@ -13,7 +13,6 @@
  */
 package wvlet.airframe
 import wvlet.airframe.Alias.{HelloRef, StringHello}
-import wvlet.surface
 
 trait Message
 case class Hello(message: String) extends Message

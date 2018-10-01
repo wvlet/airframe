@@ -16,8 +16,8 @@ package wvlet.airframe.tablet.obj
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 import wvlet.airframe.tablet.{Record, TabletWriter}
 import wvlet.log.LogSupport
-import wvlet.surface
-import wvlet.surface.{Surface, Zero}
+import wvlet.airframe.surface
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.runtime.{universe => ru}
 

@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.surface
 
 /**
   *

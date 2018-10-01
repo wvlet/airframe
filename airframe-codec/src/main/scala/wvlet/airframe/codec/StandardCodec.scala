@@ -23,8 +23,8 @@ import org.msgpack.value.ValueType
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
-import wvlet.surface
-import wvlet.surface.Surface
+import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 import scala.util.{Failure, Success, Try}
 

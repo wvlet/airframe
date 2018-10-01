@@ -16,7 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.log.{LogSupport, Logger}
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 sealed trait LifeCycleStage
 case object INIT     extends LifeCycleStage
