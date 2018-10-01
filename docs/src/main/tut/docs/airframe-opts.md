@@ -46,6 +46,7 @@ class MyApp(g:GlobalOption) extends DefaultCommand with LogSupport {
     println(s"world ${message}")
   }
   
+  @command(description = "start a server")
   def start(
     @option(prefix="-p,--port", description = "port number")
     port:Int = 8080,
