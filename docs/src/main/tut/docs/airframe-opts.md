@@ -30,6 +30,8 @@ case class GlobalOption(
 )
 
 class MyApp(g:GlobalOption) extends DefaultCommand with LogSupport {
+  Logger.setDefaultLogLevel(g.loglevel)
+
   def default {
     println("Type --help to display the list of commands")
   }
@@ -42,6 +44,16 @@ class MyApp(g:GlobalOption) extends DefaultCommand with LogSupport {
   @command(description = "say world")
   def world(@argument message: String) {
     println(s"world ${message}")
+  }
+  
+  def start(
+    @option(prefix="-p,--port", description = "port number")
+    port:Int = 8080,
+    @option(prefix="--host",description = "server address")
+    host:Option[String] = None
+  ) {
+    val addr = host.getOrElse("localhost")
+    println(s"Starting server at ${addr}:${port}")
   }
 }
 ```
