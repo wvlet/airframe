@@ -19,7 +19,7 @@ import java.util.Properties
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.config.PropertiesConfig.{ConfigKey, Prefix}
 import wvlet.log.io.IOUtil
-import wvlet.surface.tag._
+import wvlet.airframe.surface.tag._
 
 trait AppScope
 trait SessionScope

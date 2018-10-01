@@ -16,9 +16,9 @@ package wvlet.airframe.config
 import java.util.Properties
 
 import wvlet.log.LogSupport
-import wvlet.surface.CanonicalNameFormatter._
-import wvlet.surface.reflect.ObjectBuilder
-import wvlet.surface.{Surface, TaggedSurface}
+import wvlet.airframe.surface.CanonicalNameFormatter._
+import wvlet.airframe.surface.reflect.ObjectBuilder
+import wvlet.airframe.surface.{Surface, TaggedSurface}
 
 import scala.util.{Failure, Success, Try}
 

@@ -18,7 +18,7 @@ import java.util.UUID
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.AirframeMacros._
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.language.experimental.macros
 

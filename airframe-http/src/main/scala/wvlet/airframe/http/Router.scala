@@ -16,9 +16,9 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, ParamListCodec}
 import wvlet.log.LogSupport
-import wvlet.surface
-import wvlet.surface.{Surface, Zero}
-import wvlet.surface.reflect._
+import wvlet.airframe.surface
+import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.airframe.surface.reflect._
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -42,7 +42,7 @@ class Router(val routes: Seq[Route]) {
     */
   def add[Controller: ru.TypeTag]: Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
-    import wvlet.surface.reflect._
+    import wvlet.airframe.surface.reflect._
 
     // Check prefix
     val serviceSurface = surface.of[Controller]

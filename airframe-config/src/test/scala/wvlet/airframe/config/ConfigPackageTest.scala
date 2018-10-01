@@ -14,7 +14,7 @@
 package wvlet.airframe.config
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe._
-import wvlet.surface.tag._
+import wvlet.airframe.surface.tag._
 
 trait AppTag
 

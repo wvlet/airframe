@@ -18,8 +18,8 @@ import java.lang.reflect.Method
 import javax.management._
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect._
-import wvlet.surface.{MethodSurface, Parameter, ParameterBase, Surface}
+import wvlet.airframe.surface.reflect._
+import wvlet.airframe.surface.{MethodSurface, Parameter, ParameterBase, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -147,7 +147,7 @@ object JMXMBean extends LogSupport {
   }
 
   private def isNestedMBean(p: ParameterBase): Boolean = {
-    import wvlet.surface.reflect._
+    import wvlet.airframe.surface.reflect._
 
     val jmxParams = p.surface.params.find(x => x.findAnnotationOf[JMX].isDefined)
     if (jmxParams.isDefined) {

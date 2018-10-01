@@ -15,8 +15,8 @@ package wvlet.airframe.codec
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
-import wvlet.surface
-import wvlet.surface.{Primitive, Surface}
+import wvlet.airframe.surface
+import wvlet.airframe.surface.{Primitive, Surface}
 
 import scala.util.Try
 

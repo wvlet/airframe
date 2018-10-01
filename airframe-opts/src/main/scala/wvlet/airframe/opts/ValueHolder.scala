@@ -14,7 +14,7 @@
 package wvlet.airframe.opts
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.Path
+import wvlet.airframe.surface.reflect.Path
 
 /**
   * Holder of structured data consisting of named values. ValueHolder is immutable, so

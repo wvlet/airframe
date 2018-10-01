@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.surface
-import wvlet.surface.Surface
+import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.{universe => ru}
 

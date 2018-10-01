@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.jmx
 
-import wvlet.surface.{ParameterBase, Surface}
+import wvlet.airframe.surface.{ParameterBase, Surface}
 
 sealed trait MBeanParameter {
   def name: String

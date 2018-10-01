@@ -19,7 +19,7 @@ import com.twitter.util.Future
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 /**
   * A filter for dispatching http requests to the predefined routes with Finagle

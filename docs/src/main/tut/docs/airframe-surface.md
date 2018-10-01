@@ -40,18 +40,18 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
 ## surface.of[X]
 
 ```scala
-import wvlet.surface
+import wvlet.airframe.surface
 
 case class A(id:Int, name:String)
 
-val surface = surface.of[A]
-println(surface.toString) // This will show A(id:Int, name:String)
+val s = surface.of[A]
+println(s.toString) // This will show A(id:Int, name:String)
 
 // Find object parameters
-surface.params.mkString(", ") // Returns "id:Int, name:String"
+s.params.mkString(", ") // Returns "id:Int, name:String"
 
 // Object factory
-surface.objectFactory.map{ f =>
+s.objectFactory.map{ f =>
   f.newInstance(Seq(1, "leo"))
 }
 // Some(A(1, "leo"))
@@ -73,8 +73,8 @@ surface.of[UserName] //  Returns UserName:=String
 To have different surfaces for the same type, you can use tagged type (@@):
 
 ```scala
-import wvlet.surface.surface
-import wvlet.surface.tag._
+import wvlet.airframe.surface
+import wvlet.airframe.surface.tag._
 
 class Fruit
 trait Apple
@@ -86,11 +86,11 @@ surface.of[Fruit @@ Banana]
 
 ### Runtime Annotation
 
-Reading runtime-annotation is supported for JVM projects. Import `wvlet.surface.reflect._` to use this feature.
+Reading runtime-annotation is supported for JVM projects. Import `wvlet.airframe.surface.reflect._` to use this feature.
 
 ```scala
-import wvlet.surface
-import wvlet.surface.reflect._
+import wvlet.airframe.surface
+import wvlet.airframe.surface.reflect._
 import javax.annotation.Resource
  
 @Resource(name="my resource")

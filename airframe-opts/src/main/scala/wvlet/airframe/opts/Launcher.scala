@@ -24,8 +24,8 @@ package wvlet.airframe.opts
 import java.lang.reflect.InvocationTargetException
 
 import wvlet.log.LogSupport
-import wvlet.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
-import wvlet.surface.{MethodSurface, Surface, Zero}
+import wvlet.airframe.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
+import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -181,7 +181,7 @@ class Launcher(surface: Surface) extends LogSupport {
   }
 
   private lazy val commandList: Seq[Command] = {
-    import wvlet.surface.reflect._
+    import wvlet.airframe.surface.reflect._
     trace(s"command class:${surface.name}")
     val methods = SurfaceFactory.methodsOf(surface)
     val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandDef(m, c)

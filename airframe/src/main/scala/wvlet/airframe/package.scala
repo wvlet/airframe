@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeMacros._
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions

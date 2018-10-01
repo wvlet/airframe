@@ -17,9 +17,9 @@ import CollectionCodec._
 
 import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
 import wvlet.airframe.codec.StandardCodec.EnumCodec
-import wvlet.surface
-import wvlet.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
-import wvlet.surface.{EnumSurface, GenericSurface, Surface}
+import wvlet.airframe.surface
+import wvlet.airframe.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
+import wvlet.airframe.surface.{EnumSurface, GenericSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 

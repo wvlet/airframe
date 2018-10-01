@@ -12,8 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.surface
-import wvlet.surface.tag._
+import wvlet.airframe.surface.tag._
 
 object TaggedBindingTest {
   case class Fruit(name: String)

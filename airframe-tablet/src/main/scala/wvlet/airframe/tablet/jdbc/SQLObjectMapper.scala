@@ -7,8 +7,8 @@ import wvlet.airframe.tablet.Schema
 import wvlet.airframe.tablet.Schema.DataType
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.surface.reflect.SurfaceFactory
-import wvlet.surface.{Primitive, Surface}
+import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.surface.{Primitive, Surface}
 
 /**
   *

@@ -16,7 +16,6 @@ import java.util.Properties
 
 import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
 import wvlet.log.Logger
-import wvlet.surface
 
 import scala.reflect.ClassTag
 

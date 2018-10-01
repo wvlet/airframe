@@ -17,7 +17,7 @@ import java.{lang => jl}
 import javax.annotation.{PostConstruct, PreDestroy}
 
 import wvlet.log.LogSupport
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 import scala.reflect.ClassTag
 
