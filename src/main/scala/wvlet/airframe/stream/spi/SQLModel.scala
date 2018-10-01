@@ -16,7 +16,7 @@ package wvlet.airframe.stream.spi
 import java.util.Locale
 
 import wvlet.airframe.stream.spi.SQLModel.Expression
-import wvlet.surface.Surface
+import wvlet.airframe.surface.Surface
 
 object SQLSchema {
   sealed trait Schema
