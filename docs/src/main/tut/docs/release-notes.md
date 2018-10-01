@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 0.69
+-  surface: [#270](https://github.com/wvlet/airframe/issues/270): Move wvlet.surface -> wvlet.airframe.surface ([#272](https://github.com/wvlet/airframe/issues/272)) [[5ca3143](https://github.com/wvlet/airframe/commit/5ca3143)]
+-  docs: Add note on scalafmt [[6867642](https://github.com/wvlet/airframe/commit/6867642)]
+-  docs: Add [airframe-opts](https://wvlet.org/airframe/docs/airframe-opts.html) docs [[dd4ecb4](https://github.com/wvlet/airframe/commit/dd4ecb4)]
+-  internal: Enable using ctrl+c in sbt console [[143053b](https://github.com/wvlet/airframe/commit/143053b)]
+
 ## 0.68
 -  Support JDK11 ([#265](https://github.com/wvlet/airframe/issues/265)) [[7e8799d](https://github.com/wvlet/airframe/commit/7e8799d)]
 -  Use openjdk because we will mostly use this free JDK versions ([#266](https://github.com/wvlet/airframe/issues/266)) [[fd7f641](https://github.com/wvlet/airframe/commit/fd7f641)]
