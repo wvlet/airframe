@@ -32,6 +32,8 @@ ga('send', 'pageview');
 <span class="o">)</span>
 
 <span class="k">class</span> <span class="nc">MyApp</span><span class="o">(</span><span class="n">g</span><span class="k">:</span><span class="kt">GlobalOption</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">DefaultCommand</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
+  <span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultLogLevel</span><span class="o">(</span><span class="n">g</span><span class="o">.</span><span class="n">loglevel</span><span class="o">)</span>
+
   <span class="k">def</span> <span class="n">default</span> <span class="o">{</span>
     <span class="n">println</span><span class="o">(</span><span class="s">"Type --help to display the list of commands"</span><span class="o">)</span>
   <span class="o">}</span>
@@ -44,6 +46,16 @@ ga('send', 'pageview');
   <span class="nd">@command</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"say world"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">world</span><span class="o">(</span><span class="nd">@argument</span> <span class="n">message</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span> <span class="o">{</span>
     <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"world ${message}"</span><span class="o">)</span>
+  <span class="o">}</span>
+  
+  <span class="k">def</span> <span class="n">start</span><span class="o">(</span>
+    <span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">"-p,--port"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"port number"</span><span class="o">)</span>
+    <span class="n">port</span><span class="k">:</span><span class="kt">Int</span> <span class="o">=</span> <span class="mi">8080</span><span class="o">,</span>
+    <span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span><span class="o">=</span><span class="s">"--host"</span><span class="o">,</span><span class="n">description</span> <span class="k">=</span> <span class="s">"server address"</span><span class="o">)</span>
+    <span class="n">host</span><span class="k">:</span><span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">]</span> <span class="k">=</span> <span class="nc">None</span>
+  <span class="o">)</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="n">addr</span> <span class="k">=</span> <span class="n">host</span><span class="o">.</span><span class="n">getOrElse</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">)</span>
+    <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Starting server at ${addr}:${port}"</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
