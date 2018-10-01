@@ -104,7 +104,7 @@ Tagged binding `@@` is also useful to annotate type names:
 
 ```scala
 // This import statement is necessary to use tagged type (@@)
-import wvlet.surface.tag._
+import wvlet.airframe.surface.tag._
 
 trait Name
 trait Id

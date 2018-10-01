@@ -103,8 +103,12 @@ private[surface] object SurfaceMacros {
       typeArgsOf(t).map(surfaceOf(_)).head
     }
 
+    private def isTaggedType(t: c.Type): Boolean = {
+      typeNameOf(t).startsWith("wvlet.airframe.surface.tag.")
+    }
+
     private val taggedTypeFactory: SurfaceFactory = {
-      case t if t.typeArgs.length == 2 && typeNameOf(t).startsWith("wvlet.airframe.surface.tag.") =>
+      case t if t.typeArgs.length == 2 && isTaggedType(t) =>
         val typeArgs = t.typeArgs
         q"wvlet.airframe.surface.TaggedSurface(${surfaceOf(typeArgs(0))}, ${surfaceOf(typeArgs(1))})"
     }
