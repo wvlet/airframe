@@ -70,7 +70,7 @@ server.password=xxxxxyyyyyy
 **Sacla code**:
 ```scala
 import wvlet.airframe.config.Config
-import wvlet.surface.tag.@@
+import wvlet.airframe.surface.tag.@@
 
 // Configuration classes can have default values
 // Configuration class name convention: xxxxConfig (xxxx will be the prefix for properties file)
@@ -82,7 +82,7 @@ trait Access
 trait Db
 
 val config = 
-  Config(env="development", configPaths="./config")
+  Config(env="development", configPaths=Seq("./config"))
     .registerFromYaml[LogConfig @@ Access]("access-log.yml")
     .registerFromYaml[LogConfig @@ Db]("db-log.yml")
     .registerFromYaml[ServerConfig]("server.yml")
