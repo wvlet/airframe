@@ -30,7 +30,6 @@ class ConfigOverrideTest extends AirframeSpec {
 
   "Config" should {
     "override config via canonical param name" in {
-
       val prop = Map("app.coordinator_address" -> "mylocalhost:8081")
 
       val config: Config = Config(env = "default").register[AppConfig](AppConfig()).overrideWith(prop)

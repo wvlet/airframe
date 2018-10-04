@@ -1,0 +1,10 @@
+default: &default
+  file: &file_default
+    name: access.log
+    maxFileSize: 20
+
+development:
+  <<: *default
+  file:
+    <<: *file_default
+    maxFileSize: 5
