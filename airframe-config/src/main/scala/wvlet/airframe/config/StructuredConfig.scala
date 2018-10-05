@@ -86,13 +86,7 @@ object StructuredConfig extends LogSupport {
 /**
   *
   */
-case class StructuredConfig(configList: Seq[ConfigValue], hierarchy: Seq[String] = ConfigTarget.defaultHierarchy) {
-
-  def add(v: ConfigValue): StructuredConfig = {
-    StructuredConfig(v +: configList, hierarchy)
-  }
-
-}
+case class StructuredConfig(configList: Seq[ConfigValue], hierarchy: Seq[String] = ConfigTarget.defaultHierarchy) {}
 
 object StructuredConfigCodec extends MessageCodec[StructuredConfig] with LogSupport {
   override def pack(p: MessagePacker, v: StructuredConfig): Unit = {
@@ -106,36 +100,44 @@ object StructuredConfigCodec extends MessageCodec[StructuredConfig] with LogSupp
       case ValueType.MAP =>
         val m = u.unpackValue()
         info(m)
-        val sc = parse(Seq.empty, m.asMapValue(), Tags.empty)
+        val configList = parse(Seq.empty, m.asMapValue(), Tags.empty)
+        val sc         = StructuredConfig(configList)
+        info(sc.configList.mkString("\n"))
         v.setObject(sc)
       case ohter =>
         v.setIncompatibleFormatException(this, s"Unexpected value type: ${vt}")
     }
   }
 
+  /**
+    * Recursively parse MapValue. If the key name is xxxx[yyyy] format, ConfigTag(tag:xxxx, value:yyyy) will be added to the scope
+    * @param path
+    * @param m
+    * @param tags
+    * @return
+    */
   private def parse(path: Seq[String], m: MapValue, tags: Tags): Seq[ConfigValue] = {
     import scala.collection.JavaConverters._
     val b = Seq.newBuilder[ConfigValue]
     for ((k, v) <- m.map().asScala) {
+      def parseValue(nextPath: Seq[String], nextTags: Tags): Unit = {
+        if (v.isMapValue) {
+          b ++= parse(nextPath, v.asMapValue(), nextTags)
+        } else {
+          b += ConfigValue(nextPath, v, nextTags)
+        }
+      }
+
       val key = k.toString
       findTag(key) match {
         case Some(c) => // tagged key
-          if (v.isMapValue) {
-            b ++= parse(path, v.asMapValue(), c :: tags)
-          } else {
-            b += ConfigValue(path, v, c :: tags)
-          }
+          parseValue(path, c :: tags)
         case None => // regular path
-          val currentTag = if (tags.isEmpty && key == "default") {
-            Tags.empty
+          if (tags.isEmpty && key == "default") {
+            // global default values (empty tags)
+            parseValue(path, Tags.empty)
           } else {
-            tags
-          }
-          // global default values
-          if (v.isMapValue) {
-            b ++= parse(path :+ key, v.asMapValue(), currentTag)
-          } else {
-            b += ConfigValue(path :+ key, v, currentTag)
+            parseValue(path :+ key, tags)
           }
       }
     }
