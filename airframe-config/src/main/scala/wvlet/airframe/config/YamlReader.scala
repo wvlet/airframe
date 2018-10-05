@@ -72,7 +72,7 @@ object YamlReader extends LogSupport {
   }
 
   def toMsgPack(prop: Map[AnyRef, AnyRef]): Array[Byte] = {
-    new YamlReader(prop).toMsgpack
+    new YamlReader(prop).toMsgPack
   }
 }
 
@@ -82,7 +82,7 @@ object YamlReader extends LogSupport {
   */
 class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
 
-  def toMsgpack: Array[Byte] = {
+  def toMsgPack: Array[Byte] = {
     val packer = MessagePack.newDefaultBufferPacker()
     packer.packMapHeader(map.size)
     for ((k, v) <- map) yield {

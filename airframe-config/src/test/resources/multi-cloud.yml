@@ -1,0 +1,37 @@
+default:
+  port: 8080
+  address: myapi-test.com
+  log:
+    level: info
+    file: log.txt
+
+stage[development]:
+  log:
+    level: debug
+    file: log-debug.txt
+
+region[*]:
+  region_name: $region
+
+cloud[aws]:
+  region[us-east]:
+    stage[production]:
+      address: myapi.com
+      port: 10010
+    stage[staging]:
+      address: myapi-staging.com
+    stage[development]:
+      address: myapi-development.com
+  region[ap-northwest]:
+    stage[production]:
+      address: myapi.co.jp
+    stage[staging]:
+      address: myapi-staging.co.jp
+    stage[development]:
+      address: myapi-development.co.jp
+
+site[global]:
+  name: myapi-global
+
+site[us]:
+  name: myapi-us
