@@ -43,7 +43,7 @@ case class Tags(tags: List[ConfigTag]) {
   def nonEmpty: Boolean      = !isEmpty
   def ::(t: ConfigTag): Tags = Tags(t :: tags)
 
-  def matchesWith(targetTags: List[ConfigTag]): Boolean = {
+  def matchesWith(targetTags: Seq[ConfigTag]): Boolean = {
     targetTags.forall { p =>
       (p.tag, targetTags.map(_.tag).find(_ == p.tag)) match {
         case ("*", _)       => true
@@ -130,13 +130,16 @@ object StructuredConfigCodec extends MessageCodec[StructuredConfig] with LogSupp
 
       val key = k.toString
       findTag(key) match {
-        case Some(c) => // tagged key
+        case Some(c) =>
+          // Add a new tag
           parseValue(path, c :: tags)
-        case None => // regular path
+        case None =>
+          // regular path
           if (tags.isEmpty && key == "default") {
             // global default values (empty tags)
             parseValue(path, Tags.empty)
           } else {
+            // Nested path
             parseValue(path :+ key, tags)
           }
       }
