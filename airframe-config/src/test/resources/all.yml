@@ -1,0 +1,69 @@
+default:
+  name: '*:*:*:*:*'
+
+cluster[A]:
+  name: '*:*:*:*:A'
+
+stage[A]:
+  name: '*:*:*:A:*'
+  cluster[A]:
+    name: '*:*:*:A:A'
+
+region[A]:
+  name: '*:*:A:*:*'
+  cluster[A]:
+    name: '*:*:A:*:A'
+  stage[A]:
+    name: '*:*:A:A:*'
+    cluster[A]:
+      name: '*:*:A:A:A'
+
+cloud[A]:
+  name: '*:A:*:*:*'
+  cluster[A]:
+    name: '*:A:*:*:A'
+  stage[A]:
+    name: '*:A:*:A:*'
+    cluster[A]:
+      name: '*:A:*:A:A'
+  region[A]:
+    name: '*:A:A:*:*'
+    cluster[A]:
+      name: '*:A:A:*:A'
+    stage[A]:
+      name: '*:A:A:A:*'
+      cluster[A]:
+        name: '*:A:A:A:A'
+
+site[A]:
+  name: 'A:*:*:*:*'
+  cluster[A]:
+    name: 'A:*:*:*:A'
+  stage[A]:
+    name: 'A:*:*:A:*'
+    cluster[A]:
+      name: 'A:*:*:A:A'
+  region[A]:
+    name: 'A:*:A:*:*'
+    cluster[A]:
+      name: 'A:*:A:*:A'
+    stage[A]:
+      name: 'A:*:A:A:*'
+      cluster[A]:
+        name: 'A:*:A:A:A'
+  cloud[A]:
+    name: 'A:A:*:*:*'
+    cluster[A]:
+      name: 'A:A:*:*:A'
+    stage[A]:
+      name: 'A:A:*:A:*'
+      cluster[A]:
+        name: 'A:A:*:A:A'
+    region[A]:
+      name: 'A:A:A:*:*'
+      cluster[A]:
+        name: 'A:A:A:*:A'
+      stage[A]:
+        name: 'A:A:A:A:*'
+        cluster[A]:
+          name: 'A:A:A:A:A'
