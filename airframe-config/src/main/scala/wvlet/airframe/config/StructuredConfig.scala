@@ -43,9 +43,9 @@ case class Tags(tags: List[ConfigTag]) {
   def nonEmpty: Boolean      = !isEmpty
   def ::(t: ConfigTag): Tags = Tags(t :: tags)
 
-  def matchesWith(targetTags: Seq[ConfigTag]): Boolean = {
-    targetTags.forall { p =>
-      (p.tag, targetTags.map(_.tag).find(_ == p.tag)) match {
+  def matchesWith(targetTags: Tags): Boolean = {
+    targetTags.tags.forall { p =>
+      (p.tag, targetTags.tags.map(_.tag).find(_ == p.tag)) match {
         case ("*", _)       => true
         case (_, Some("*")) => true
         case (_, None)      => true
@@ -55,7 +55,8 @@ case class Tags(tags: List[ConfigTag]) {
   }
 }
 object Tags {
-  val empty = Tags(List.empty)
+  val empty                          = Tags(List.empty)
+  def apply(s: Seq[ConfigTag]): Tags = Tags(s.toList)
 }
 
 case class ConfigValue(path: Seq[String], value: Value, tags: Tags) {
@@ -78,7 +79,7 @@ object StructuredConfig extends LogSupport {
   def loadYaml(resourcePath: String) = {
     val m       = YamlReader.loadYaml(resourcePath)
     val msgPack = YamlReader.toMsgPack(m)
-    StructuredConfigCodec.unpackBytes(msgPack)
+    StructuredConfigCodec.unpackBytes(msgPack).get
   }
 
 }
@@ -86,7 +87,17 @@ object StructuredConfig extends LogSupport {
 /**
   *
   */
-case class StructuredConfig(configList: Seq[ConfigValue], hierarchy: Seq[String] = ConfigTarget.defaultHierarchy) {}
+case class StructuredConfig(configList: Seq[ConfigValue], hierarchy: Seq[String] = ConfigTarget.defaultHierarchy)
+    extends LogSupport {
+
+  def get(tags: Tags): Option[String] = {
+    info(s"get: ${tags}")
+    val matches = configList.filter(x => x.tags.matchesWith(tags))
+    info(s"matches:\n${matches.mkString("\n")}")
+    None
+  }
+
+}
 
 object StructuredConfigCodec extends MessageCodec[StructuredConfig] with LogSupport {
   override def pack(p: MessagePacker, v: StructuredConfig): Unit = {
@@ -98,11 +109,9 @@ object StructuredConfigCodec extends MessageCodec[StructuredConfig] with LogSupp
     val vt = f.getValueType
     vt match {
       case ValueType.MAP =>
-        val m = u.unpackValue()
-        info(m)
+        val m          = u.unpackValue()
         val configList = parse(Seq.empty, m.asMapValue(), Tags.empty)
         val sc         = StructuredConfig(configList)
-        info(sc.configList.mkString("\n"))
         v.setObject(sc)
       case ohter =>
         v.setIncompatibleFormatException(this, s"Unexpected value type: ${vt}")
