@@ -15,13 +15,14 @@ package wvlet.airframe.jmx
 
 import java.lang.annotation.Annotation
 import java.lang.reflect.Method
-import javax.management._
 
+import javax.management._
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect._
 import wvlet.airframe.surface.{MethodSurface, Parameter, ParameterBase, Surface}
 
 import scala.reflect.runtime.{universe => ru}
+import wvlet.airframe.{jmx => aj}
 
 /**
   * Expose object information using DynamicMBean
@@ -76,7 +77,7 @@ object JMXMBean extends LogSupport {
     // Find JMX description
     val cl = obj.getClass
 
-    val description = cl.getAnnotation(classOf[JMX]) match {
+    val description = cl.getAnnotation(classOf[aj.JMX]) match {
       case a if a != null => a.description()
       case _              => ""
     }
@@ -112,8 +113,8 @@ object JMXMBean extends LogSupport {
 
   private def getDescription(h: ParameterBase): String = {
     h match {
-      case p: Parameter     => p.findAnnotationOf[JMX].map(_.description()).getOrElse("")
-      case m: MethodSurface => m.findAnnotationOf[JMX].map(_.description()).getOrElse("")
+      case p: Parameter     => p.findAnnotationOf[aj.JMX].map(_.description()).getOrElse("")
+      case m: MethodSurface => m.findAnnotationOf[aj.JMX].map(_.description()).getOrElse("")
     }
   }
 
@@ -121,8 +122,8 @@ object JMXMBean extends LogSupport {
     val surface = SurfaceFactory.ofType(tpe)
     val methods = SurfaceFactory.methodsOfType(tpe)
 
-    val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[JMX].isDefined) ++ methods.find(
-      _.findAnnotationOf[JMX].isDefined)
+    val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[aj.JMX].isDefined) ++ methods.find(
+      _.findAnnotationOf[aj.JMX].isDefined)
 
     jmxParams.flatMap { p =>
       val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)
@@ -149,7 +150,7 @@ object JMXMBean extends LogSupport {
   private def isNestedMBean(p: ParameterBase): Boolean = {
     import wvlet.airframe.surface.reflect._
 
-    val jmxParams = p.surface.params.find(x => x.findAnnotationOf[JMX].isDefined)
+    val jmxParams = p.surface.params.find(x => x.findAnnotationOf[aj.JMX].isDefined)
     if (jmxParams.isDefined) {
       true
     } else {
@@ -157,7 +158,7 @@ object JMXMBean extends LogSupport {
         case None => false
         case Some(tpe) =>
           val methods    = SurfaceFactory.methodsOfType(tpe)
-          val jmxMethods = methods.find(m => m.findAnnotationOf[JMX].isDefined)
+          val jmxMethods = methods.find(m => m.findAnnotationOf[aj.JMX].isDefined)
           jmxMethods.isDefined
       }
     }
