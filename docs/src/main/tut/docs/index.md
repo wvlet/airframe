@@ -82,7 +82,7 @@ val d = newDesign
   .bind[Connection].to[ConnectionImpl]
 
   // Creates a new DatabaseService with ConnectionImpl
-d.build[DatabaseServcie] { db: DatabaseServcie =>
+d.build[DatabaseService] { db: DatabaseService =>
    ...
 }
 
