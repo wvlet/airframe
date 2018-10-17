@@ -67,7 +67,7 @@ server.host=mydomain.com
 server.password=xxxxxyyyyyy
 ```
 
-**Sacla code**:
+**Scala code**:
 ```scala
 import wvlet.airframe.config.Config
 import wvlet.airframe.surface.tag.@@
