@@ -20,6 +20,9 @@ See [Documentation](https://wvlet.org/airframe/) for further details.
 - [Documentation](https://wvlet.org/airframe/docs)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 
+- Slideshare: [Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018](https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014)
+
+
 ## Getting Started
 [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
