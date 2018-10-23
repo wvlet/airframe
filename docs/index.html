@@ -203,12 +203,12 @@ which are available until the session closes.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
-    <span class="o">.</span><span class="n">onInit</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">init</span> <span class="o">}</span>      <span class="c1">// Called when the object is initialized
-</span>    <span class="o">.</span><span class="n">onInject</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">inject</span> <span class="o">}</span>  <span class="c1">// Called when the object is injected 
-</span>    <span class="o">.</span><span class="n">onStart</span> <span class="k">=</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">start</span> <span class="o">}</span>  <span class="c1">// Called when session.start is called
-</span>    <span class="o">.</span><span class="n">beforeShutdown</span> <span class="k">=</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">notify</span> <span class="o">}</span> <span class="c1">// Called right before all shutdown hook is called
-</span>                                   <span class="c1">// Useful for adding pre-shutdown step 
-</span>    <span class="o">.</span><span class="n">onShutdown</span> <span class="k">=</span> <span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">stop</span> <span class="o">}</span> <span class="c1">// Called when session.shutdown is called
+    <span class="o">.</span><span class="n">onInit</span><span class="o">(</span> <span class="k">_</span><span class="o">.</span><span class="n">init</span> <span class="o">)</span>   <span class="c1">// Called when the object is initialized
+</span>    <span class="o">.</span><span class="n">onInject</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">inject</span><span class="o">)</span> <span class="c1">// Called when the object is injected 
+</span>    <span class="o">.</span><span class="n">onStart</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">start</span><span class="o">)</span>   <span class="c1">// Called when session.start is called
+</span>    <span class="o">.</span><span class="n">beforeShutdown</span><span class="o">(</span> <span class="k">_</span><span class="o">.</span><span class="n">notify</span><span class="o">)</span> <span class="c1">// Called right before all shutdown hook is called
+</span>                               <span class="c1">// Useful for adding pre-shutdown step 
+</span>    <span class="o">.</span><span class="n">onShutdown</span><span class="o">(</span> <span class="k">_</span><span class="o">.</span><span class="n">stop</span> <span class="o">)</span> <span class="c1">// Called when session.shutdown is called
 </span>  <span class="o">)</span>
 <span class="o">}</span>
 
