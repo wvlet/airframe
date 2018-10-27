@@ -11,28 +11,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package wvlet.airframe.surface
+import wvlet.airframe.surface
 
-import wvlet.airframe.AirframeSpec
-import scala.language.implicitConversions
+object MultipleConstructorArgsTest {
 
-trait SurfaceSpec extends AirframeSpec {
-
-  def check(body: => Surface, expectedName: String): Surface = {
-    val surface = body
-    debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    surface.toString shouldBe expectedName
-    surface
+  case class MultiC(a: Int)(implicit val s: String) {
+    def msg: String = s"${a}:${s}"
   }
 
-  def checkPrimitive(body: => Surface, expectedName: String): Surface = {
-    val s = check(body, expectedName)
-    s.isAlias shouldBe false
-    s.isOption shouldBe false
-    s.isPrimitive shouldBe true
-    s.objectFactory.isEmpty shouldBe true
-    s
-  }
+}
 
+import MultipleConstructorArgsTest._
+class MultipleConstructorArgsTest extends SurfaceSpec {
+  "support muliple constructor args" in {
+
+    val s: Surface = surface.of[MultiC]
+    s.objectFactory shouldNot be(empty)
+
+    val f = s.objectFactory.get
+    s.params.size shouldBe 2
+    val i = f.newInstance(Seq(1, "hello"))
+    i.asInstanceOf[MultiC].msg shouldBe "1:hello"
+  }
 }
