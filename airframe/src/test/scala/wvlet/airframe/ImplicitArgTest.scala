@@ -15,7 +15,8 @@ package wvlet.airframe
 
 object ImplicitArgTest {
 
-  case class ImpA(a: String)(implicit val b: Int)
+  case class ImplA(a: String)(implicit val b: Int)
+  case class ImplB(a: String)(implicit val b: Int)
 
 }
 
@@ -30,12 +31,18 @@ class ImplicitArgTest extends AirframeSpec {
     val d = newDesign
       .bind[String].toInstance("hello")
       .bind[Int].toInstance(10)
-      .bind.toProvider[String, Int](ImpA.apply(_)(_))
+      .bind[ImplB].toSingleton
+      .bind.toProvider((a: String, b: Int) => ImplA(a)(b))
       .noLifeCycleLogging
 
-    d.build[ImpA] { a =>
+    d.build[ImplA] { a =>
       a.a shouldBe "hello"
       a.b shouldBe 10
+    }
+
+    d.build[ImplB] { b =>
+      b.a shouldBe "hello"
+      b.b shouldBe 10
     }
   }
 
