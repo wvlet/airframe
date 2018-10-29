@@ -214,7 +214,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
     val (joinType, joinCriteria) = Option(ctx.joinCriteria()) match {
       case Some(c) if c.USING() != null =>
-        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText)))
+        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText).toSeq))
       case Some(c) if c.booleanExpression() != null =>
         (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())))
       case _ =>
