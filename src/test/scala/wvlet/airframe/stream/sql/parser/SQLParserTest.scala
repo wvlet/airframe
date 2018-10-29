@@ -13,7 +13,10 @@
  */
 package wvlet.airframe.stream.sql.parser
 
+import java.io.File
+
 import wvlet.airframe.AirframeSpec
+import wvlet.log.io.{IOUtil, Resource}
 
 /**
   *
@@ -21,7 +24,8 @@ import wvlet.airframe.AirframeSpec
 class SQLParserTest extends AirframeSpec {
 
   def parse(sql: String): Unit = {
-    SQLParser.parse(sql)
+    val m = SQLParser.parse(sql)
+    info(m)
   }
 
   "SQLParser" should {
@@ -49,5 +53,38 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a order by 1 nulls last")
       parse("select * from a limit 100")
     }
+
+    "parse joins" taggedAs ("join") in {
+      parse("select * from a, b")
+      parse("select * from a join b on a.id = b.id")
+      parse("select * from a join b using (id)")
+      parse("select * from a left join b on a.id = b.id")
+    }
+
+    "parse expressions" in {
+      parse("select 1")
+      parse("select 1 + 2")
+      parse("select true")
+      parse("select true or false")
+    }
+
+    "parse tpc-ds queries" taggedAs ("tpc-ds") in {
+      pending
+      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-ds")
+      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
+        val sql = IOUtil.readAsString(f.getPath)
+        parse(sql)
+      }
+    }
+
+    "parse tpc-h queries" taggedAs ("tpc-h") in {
+      pending
+      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
+      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
+        val sql = IOUtil.readAsString(f.getPath)
+        parse(sql)
+      }
+    }
+
   }
 }
