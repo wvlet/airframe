@@ -176,13 +176,15 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   private def fromClause(ctx: QuerySpecificationContext): Option[Relation] = {
     Option(ctx.relation())
       .flatMap { r =>
-        val relations = r.asScala.toSeq
-        relations.size match {
-          case 1 =>
-            relations.map(x => visit(x).asInstanceOf[Relation]).headOption
-          case other =>
-            // TODO join processing
-            throw unknown(relations.head)
+        val relations = r.asScala
+        relations.foldLeft(None: Option[Relation]) { (left, x) =>
+          val right = visit(x).asInstanceOf[Relation]
+          left match {
+            case None    => Some(right)
+            case Some(l) =>
+              // TODO resolve join types
+              Some(Join(ImplicitJoin, l, right, NaturalJoin))
+          }
         }
       }
   }
@@ -196,9 +198,33 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     ctx.identifier() match {
       case i: IdentifierContext =>
         AliasedRelation(r.asInstanceOf[Relation], i.getText, None)
-      case null =>
+      case other =>
         r
     }
+  }
+
+  override def visitJoinRelation(ctx: JoinRelationContext): SQLModel = {
+    val tmpJoinType = ctx.joinType() match {
+      case null                     => None
+      case jt if jt.LEFT() != null  => Some(LeftOuterJoin)
+      case jt if jt.RIGHT() != null => Some(RightOuterJoin)
+      case jt if jt.FULL() != null  => Some(FullOuterJoin)
+      case _                        => None
+    }
+
+    val (joinType, joinCriteria) = Option(ctx.joinCriteria()) match {
+      case Some(c) if c.USING() != null =>
+        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText).toSeq))
+      case Some(c) if c.booleanExpression() != null =>
+        (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())))
+      case _ =>
+        (CrossJoin, NaturalJoin)
+    }
+
+    val l = visit(ctx.left).asInstanceOf[Relation]
+    val r = visit(ctx.rightRelation).asInstanceOf[Relation]
+    val j = Join(joinType, l, r, joinCriteria)
+    j
   }
 
   override def visitTableName(ctx: TableNameContext): Table = {
@@ -208,6 +234,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
   override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
     QName(ctx.identifier().asScala.map(_.getText).toSeq)
+  }
+
+  override def visitDereference(ctx: DereferenceContext): SQLModel = {
+    QName(s"${ctx.base.getText}.${ctx.fieldName.getText}")
   }
 
   override def visitSelectAll(ctx: SelectAllContext): SelectItem = {
@@ -259,6 +289,22 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       case SqlBaseParser.OR =>
         Or(left, right)
     }
+  }
+
+  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): SQLModel = {
+    val left  = expression(ctx.left)
+    val right = expression(ctx.right)
+    val binaryExprType: BinaryExprType =
+      ctx.operator match {
+        case op if ctx.PLUS() != null     => Add
+        case op if ctx.MINUS() != null    => Subtract
+        case op if ctx.ASTERISK() != null => Multiply
+        case op if ctx.SLASH() != null    => Divide
+        case op if ctx.PERCENT() != null  => Modulus
+        case _ =>
+          throw unknown(ctx)
+      }
+    ArithmeticBinaryExpr(binaryExprType, left, right)
   }
 
   override def visitComparison(ctx: ComparisonContext): Expression = {
