@@ -287,6 +287,21 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       }
     }
 
+    "support INT8" in {
+      // INT8
+      roundtrip[Short](-1) { (cursor, v) =>
+        Packer.packShort(cursor, v)
+      } { Unpacker.unpackShort(_) }
+
+      roundtrip(-1) { (cursor, v) =>
+        Packer.packInt(cursor, v)
+      } { Unpacker.unpackInt(_) }
+
+      roundtrip(-1.toLong) { (cursor, v) =>
+        Packer.packLong(cursor, v)
+      } { Unpacker.unpackLong(_) }
+    }
+
     "support BigInteger" in {
       // UINT32
       roundtrip((1L << 31) + 1) { (c, v) =>
