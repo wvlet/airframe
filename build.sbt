@@ -11,7 +11,7 @@ val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
-val SLF4J_VERSION = "1.7.25"
+val SLF4J_VERSION                   = "1.7.25"
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
