@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 0.70
+-  airframe-control: Add a shell command launcher ([#287](https://github.com/wvlet/airframe/issues/287)) [[1339caf](https://github.com/wvlet/airframe/commit/1339caf)]
+-  Upgrade to sbt 1.2.6 ([#285](https://github.com/wvlet/airframe/issues/285)) [[614dba6](https://github.com/wvlet/airframe/commit/614dba6)]
+-  Fix typos in docs
+
 ## 0.69
 -  surface: [#270](https://github.com/wvlet/airframe/issues/270): Move wvlet.surface -> wvlet.airframe.surface ([#272](https://github.com/wvlet/airframe/issues/272)) [[5ca3143](https://github.com/wvlet/airframe/commit/5ca3143)]
 -  docs: Add note on scalafmt [[6867642](https://github.com/wvlet/airframe/commit/6867642)]
