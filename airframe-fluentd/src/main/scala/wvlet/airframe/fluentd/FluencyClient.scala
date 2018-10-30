@@ -48,9 +48,7 @@ trait FluencyClient extends FluentdClient with LogSupport {
     fluency.close()
   }
 
-  def emit(tag: String, event: Map[String, Any]): Unit = {
-    val fullTag = enrichTag(tag)
-
+  protected override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
     if (fluencyConfig.useExtendedEventTime) {
       val now       = Instant.now()
       val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);

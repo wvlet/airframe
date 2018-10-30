@@ -17,9 +17,11 @@ package wvlet.airframe
   *
   */
 package object fluentd {
-  val fluencyDesign = newDesign
-    .bind[FluentdClient].to[FluencyClient]
+  def fluencyDesign =
+    newDesign
+      .bind[FluentdClient].to[FluencyClient]
 
-  val consoleLoggingDesign = newDesign
-    .bind[FluentdClient].to[ConsoleLoggingClient]
+  def consoleLoggingDesign =
+    newDesign
+      .bind[FluentdClient].to[ConsoleLoggingClient]
 }

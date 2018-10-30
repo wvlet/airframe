@@ -24,7 +24,11 @@ case class FluentdConfig(
 trait FluentdClient {
   protected val fluentdConfig = bind[FluentdConfig]
 
-  def emit(tag: String, event: Map[String, Any]): Unit
+  protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
+
+  def emit(tag: String, event: Map[String, Any]): Unit = {
+    emitRaw(enrichTag(tag), event)
+  }
 
   protected def enrichTag(tag: String): String = {
     if (fluentdConfig.tagPrefix.isEmpty) {
