@@ -18,9 +18,9 @@ import wvlet.airframe._
 /**
   *
   */
-class FluencyClientTest extends AirframeSpec {
+class FluentdClientTest extends AirframeSpec {
 
-  "should run Fluency as fluentd client" in {
+  "should use Fluency as a Fluentd client" in {
     val d = fluentd.withFluency.noLifeCycleLogging
 
     d.build[FluentdClient] { f =>

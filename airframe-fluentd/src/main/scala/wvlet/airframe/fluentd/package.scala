@@ -17,6 +17,11 @@ package wvlet.airframe
   *
   */
 package object fluentd {
+
+  /**
+    * A design for using Fluency-backed FluentdClient
+    * @return
+    */
   def withFluency =
     newDesign
       .bind[FluentdClient].to[FluencyClient]
