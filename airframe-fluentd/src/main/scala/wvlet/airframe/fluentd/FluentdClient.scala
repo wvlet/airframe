@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.fluentd
 
-import java.util.concurrent.TimeUnit
+import java.time.Instant
 
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.airframe._
@@ -21,31 +21,50 @@ import wvlet.airframe._
 import scala.collection.JavaConverters._
 
 case class FluentdConfig(
-  host: String = "127.0.0.1",
-  port: Int = 24224,
-  // tag prefix pre-pended to each message
-  tagPrefix: String = "",
-  useEventTime: Boolean = false,
-  fluencyConfig: Fluency.Config = new Fluency.Config()
+    host: String = "127.0.0.1",
+    port: Int = 24224,
+    // tag prefix pre-pended to each message
+    tagPrefix: Option[String] = None,
+    // Use the extended EventTime timestamps https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+    useExtendedEventTime: Boolean = false,
+    fluencyConfig: Fluency.Config = new Fluency.Config()
 )
 
+object FluentdClient {
+  def newFluency(fluentdConfig: FluentdConfig): Fluency = {
+    Fluency.defaultFluency(fluentdConfig.host, fluentdConfig.port, fluentdConfig.fluencyConfig)
+  }
+}
+
 trait FluentdClient {
-  private lazy val fluentdConfig = bind[FluentdConfig]
-  private      val fluency       = bind[Fluency] {Fluency.defaultFluency(fluentdConfig.host, fluentdConfig.port, fluentdConfig.fluencyConfig)}
+  private val fluentdConfig = bind[FluentdConfig]
+  private val fluency: Fluency = bind { config: FluentdConfig =>
+    FluentdClient.newFluency(config)
+  }.onShutdown { x =>
+    close
+  }
+
+  def close: Unit = {
+    fluency.flush()
+    fluency.close()
+  }
 
   def emit(tag: String, event: Map[String, AnyRef]) {
-    val fullTag = if (fluentdConfig.tagPrefix.isEmpty) {
-      tag
+    val fullTag = fluentdConfig.tagPrefix match {
+      case None         => tag
+      case Some(prefix) => s"${prefix}.tag"
     }
-    else {
-      s"${fluentdConfig.tagPrefix}.${tag}"
-    }
-    if (fluentdConfig.useEventTime) {
-      val eventTime = EventTime.fromEpochMilli(TimeUnit.NANOSECONDS.toMillis(System.nanoTime()))
+
+    if (fluentdConfig.useExtendedEventTime) {
+      val now       = Instant.now()
+      val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);
       fluency.emit(fullTag, eventTime, event.asJava)
-    }
-    else {
+    } else {
       fluency.emit(fullTag, event.asJava)
     }
   }
+}
+
+trait FluentdService {
+  val fluentd = bind[FluentdClient]
 }
