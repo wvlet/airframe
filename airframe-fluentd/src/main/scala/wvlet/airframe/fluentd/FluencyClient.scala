@@ -69,5 +69,4 @@ trait FluencyClient extends FluentdClient with LogSupport {
       fluency.emit(tag, event, 0, event.length)
     }
   }
-
 }
