@@ -29,6 +29,8 @@ options:
         url: docs/airframe-codec.html
       - title: airframe-config
         url: docs/airframe-config.html
+      - title: airframe-fluentd
+        url: docs/airframe-fluentd.html
       - title: airframe-http
         url: docs/airframe-http.html
       - title: airframe-opts
