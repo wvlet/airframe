@@ -12,10 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
+import java.lang.reflect.InvocationTargetException
+
 import wvlet.airframe.{AirframeSpec, fluentd}
 
 case class SampleMetric(time: Long, value: String)
 case class NestedMetric(message: String, data: Seq[Int], opt: Option[String], sample: SampleMetric)
+
+case class ErrorMetric(errorType: String, ex: Exception)
 
 /**
   *
@@ -40,6 +44,14 @@ class MetricLoggerTest extends AirframeSpec {
                      Seq(10, 20),
                      Some("optional value"),
                      SampleMetric(100003, "option value is also supported")))
+    }
+  }
+
+  "support exception stack trace metrics" in {
+    d.build[MetricLoggerFactory] { f =>
+      val l = f.newMetricLogger[ErrorMetric](tag = "error_log")
+      l.emit(ErrorMetric("illegal_argument", new IllegalArgumentException("invalid input")))
+      l.emit(ErrorMetric("remote error", new InvocationTargetException(new IllegalStateException("unknown error"))))
     }
   }
 }
