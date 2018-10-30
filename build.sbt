@@ -7,7 +7,7 @@ val SCALA_2_11 = "2.11.11"
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
-val SCALATEST_VERSION               = "3.0.6-SNAP3"
+val SCALATEST_VERSION               = "3.0.6-SNAP4"
 val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
