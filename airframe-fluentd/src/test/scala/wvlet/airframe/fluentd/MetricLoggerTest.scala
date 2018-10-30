@@ -15,15 +15,15 @@ package wvlet.airframe.fluentd
 import wvlet.airframe.{AirframeSpec, fluentd}
 
 case class SampleMetric(time: Long, value: String)
+case class NestedMetric(message: String, data: Seq[Int], opt: Option[String], sample: SampleMetric)
 
 /**
   *
   */
 class MetricLoggerTest extends AirframeSpec {
+  val d = fluentd.withConsoleLogging.noLifeCycleLogging
 
   "generate MetricLogger for case classes" in {
-    val d = fluentd.withConsoleLogging.noLifeCycleLogging
-
     d.build[MetricLoggerFactory] { f =>
       val l = f.newMetricLogger[SampleMetric](tag = "sample")
       l.emit(SampleMetric(100000, "hello"))
@@ -31,4 +31,15 @@ class MetricLoggerTest extends AirframeSpec {
     }
   }
 
+  "support nested metrics" in {
+    d.build[MetricLoggerFactory] { f =>
+      val l = f.newMetricLogger[NestedMetric](tag = "nested")
+      l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
+      l.emit(
+        NestedMetric("test options",
+                     Seq(10, 20),
+                     Some("optional value"),
+                     SampleMetric(100003, "option value is also supported")))
+    }
+  }
 }
