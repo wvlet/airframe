@@ -35,6 +35,7 @@ object StandardCodec {
 
   val javaClassCodec = Map(
     surface.of[File]      -> FileCodec,
+    surface.of[Throwable] -> ThrowableCodec,
     surface.of[Exception] -> ThrowableCodec
   )
 
