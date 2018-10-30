@@ -15,8 +15,8 @@ package wvlet.airframe.fluentd
 import java.time.Instant
 
 import org.komamitsu.fluency.{EventTime, Fluency}
-import wvlet.airframe._
 import wvlet.log.LogSupport
+import wvlet.airframe._
 
 case class FluencyConfig(
     // Use the extended EventTime timestamps
@@ -49,13 +49,25 @@ trait FluencyClient extends FluentdClient with LogSupport {
     fluency.close()
   }
 
-  protected override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
+  private def getEventTime: EventTime = {
+    val now       = Instant.now()
+    val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);
+    eventTime
+  }
+
+  override protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
     if (fluencyConfig.useExtendedEventTime) {
-      val now       = Instant.now()
-      val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);
-      fluency.emit(fullTag, eventTime, toJavaMap(event))
+      fluency.emit(fullTag, getEventTime, toJavaMap(event))
     } else {
       fluency.emit(fullTag, toJavaMap(event))
     }
   }
+  override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
+    if (fluencyConfig.useExtendedEventTime) {
+      fluency.emit(tag, getEventTime, event, 0, event.length)
+    } else {
+      fluency.emit(tag, event, 0, event.length)
+    }
+  }
+
 }

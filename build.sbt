@@ -608,4 +608,4 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
+    .dependsOn(codec, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")

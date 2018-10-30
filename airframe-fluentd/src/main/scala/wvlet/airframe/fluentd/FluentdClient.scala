@@ -25,7 +25,7 @@ case class FluentdConfig(
 )
 
 case class FluentdTag(
-    // A tag prefix pre-pended to each message
+    // A tag prefix prepended to each message
     prefix: String = ""
 )
 
@@ -33,9 +33,14 @@ trait FluentdClient {
   private val fluentdTag = bind[FluentdTag]
 
   protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
+  protected def emitRawMsgPack(fullTag: String, event: Array[Byte]): Unit
 
   def emit(tag: String, event: Map[String, Any]): Unit = {
     emitRaw(enrichTag(tag), event)
+  }
+
+  def emitMsgPack(tag: String, event: Array[Byte]): Unit = {
+    emitRawMsgPack(enrichTag(tag), event)
   }
 
   private def enrichTag(tag: String): String = {

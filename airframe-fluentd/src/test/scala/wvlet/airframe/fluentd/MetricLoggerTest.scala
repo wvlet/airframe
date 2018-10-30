@@ -12,20 +12,23 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import org.msgpack.core.MessagePack
-import wvlet.log.LogSupport
+import wvlet.airframe.{AirframeSpec, fluentd}
+
+case class SampleMetric(time: Long, value: String)
 
 /**
-  * Fluentd client implementation for debugging. This just emits metrics to the console log
+  *
   */
-trait ConsoleFluentdClient extends FluentdClient with LogSupport {
-  override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
-    info(s"[${tag}] ${event.mkString(", ")}")
+class MetricLoggerTest extends AirframeSpec {
+
+  "generate MetricLogger for case classes" in {
+    val d = fluentd.withConsoleLogging.noLifeCycleLogging
+
+    d.build[MetricLoggerFactory] { f =>
+      val l = f.newMetricLogger[SampleMetric](tag = "sample")
+      l.emit(SampleMetric(100000, "hello"))
+      l.emit(SampleMetric(100001, "fluentd"))
+    }
   }
-  override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
-    val unpacker = MessagePack.newDefaultUnpacker(event)
-    val v        = unpacker.unpackValue()
-    unpacker.close()
-    info(s"[${tag}] ${v}")
-  }
+
 }
