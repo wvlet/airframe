@@ -20,12 +20,12 @@ import wvlet.log.LogSupport
   */
 trait ConsoleFluentdClient extends FluentdClient with LogSupport {
   override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
-    info(s"[${tag}] ${event.mkString(", ")}")
+    info(s"${tag}: ${event.mkString(", ")}")
   }
   override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
     val unpacker = MessagePack.newDefaultUnpacker(event)
     val v        = unpacker.unpackValue()
     unpacker.close()
-    info(s"[${tag}] ${v}")
+    info(s"${tag}: ${v}")
   }
 }

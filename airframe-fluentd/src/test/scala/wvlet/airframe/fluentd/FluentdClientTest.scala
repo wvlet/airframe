@@ -21,10 +21,13 @@ import wvlet.airframe._
 class FluentdClientTest extends AirframeSpec {
 
   "should use Fluency as a Fluentd client" in {
-    val d = fluentd.withFluency.noLifeCycleLogging
+    val d = fluentd.withFluency
+      .bind[FluentdTag].toInstance(FluentdTag(prefix = "mymetric"))
+      .noLifeCycleLogging
 
     d.build[FluentdClient] { f =>
       //
+      f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
   }
 
