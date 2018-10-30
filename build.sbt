@@ -11,6 +11,7 @@ val SCALATEST_VERSION               = "3.0.6-SNAP1"
 val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
+val SLF4J_VERSION = "1.7.25"
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
@@ -499,7 +500,7 @@ lazy val jdbc =
         "org.postgresql" % "postgresql"  % "42.1.4",
         "com.zaxxer"     % "HikariCP"    % "2.6.2",
         // For routing slf4j log to airframe-log
-        "org.slf4j" % "slf4j-jdk14" % "1.7.25"
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
@@ -554,7 +555,7 @@ lazy val finagle =
         "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
         // Redirecting slf4j log in Finagle to airframe-log
-        "org.slf4j" % "slf4j-jdk14" % "1.7.25"
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
     .dependsOn(http, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
@@ -595,12 +596,16 @@ lazy val jsonBenchmark =
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
 
 lazy val fluentd =
-  Project(id = "airframe-fluentd", base = file("airframe-fluentd"))
-  .settings(buildSettings)
-  .settings(
-    description := "Fluentd logger",
-    libraryDependencies ++= Seq(
-      "org.komamitsu" % "fluency" % "1.8.1"
+  project
+    .in(file("airframe-fluentd"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-fluentd",
+      description := "Fluentd logger",
+      libraryDependencies ++= Seq(
+        "org.komamitsu" % "fluency" % "1.8.1",
+        // Redirecting slf4j log from Fluency to aiframe-log
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
+      )
     )
-  )
-  .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal")
+    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")

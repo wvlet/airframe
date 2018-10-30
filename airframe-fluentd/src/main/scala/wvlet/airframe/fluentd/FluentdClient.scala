@@ -12,14 +12,32 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
+import wvlet.airframe._
 
 case class FluentdConfig(
     host: String = "127.0.0.1",
     port: Int = 24224,
-    // tag prefix pre-pended to each message
+    // A tag prefix pre-pended to each message
     tagPrefix: String = "",
 )
 
 trait FluentdClient {
-  def emit(tag: String, event: Map[String, AnyRef]): Unit
+  protected val fluentdConfig = bind[FluentdConfig]
+
+  def emit(tag: String, event: Map[String, Any]): Unit
+
+  protected def enrichTag(tag: String): String = {
+    if (fluentdConfig.tagPrefix.isEmpty) {
+      tag
+    } else {
+      s"${fluentdConfig.tagPrefix}.${tag}"
+    }
+  }
+
+  protected def toJavaMap(event: Map[String, Any]): java.util.Map[String, AnyRef] = {
+    import scala.collection.JavaConverters._
+    (for ((k, v) <- event) yield {
+      k -> v.asInstanceOf[AnyRef]
+    }).asJava
+  }
 }

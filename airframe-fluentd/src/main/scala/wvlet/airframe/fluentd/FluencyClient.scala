@@ -15,17 +15,8 @@ package wvlet.airframe.fluentd
 import java.time.Instant
 
 import org.komamitsu.fluency.{EventTime, Fluency}
-import scala.collection.JavaConverters._
 import wvlet.airframe._
-
-/**
-  *
-  */
-object FluencyClient {
-  def newFluency(fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig): Fluency = {
-    Fluency.defaultFluency(fluentdConfig.host, fluentdConfig.port, fluencyConfig.fluencyConfig)
-  }
-}
+import wvlet.log.LogSupport
 
 case class FluencyConfig(
     // Use the extended EventTime timestamps
@@ -34,33 +25,38 @@ case class FluencyConfig(
     fluencyConfig: Fluency.Config = new Fluency.Config()
 )
 
-trait FluencyClient extends FluentdClient {
-  private val fluentdConfig = bind[FluentdConfig]
+object FluencyClient {
+  def newFluency(fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig): Fluency = {
+    Fluency.defaultFluency(fluentdConfig.host, fluentdConfig.port, fluencyConfig.fluencyConfig)
+  }
+}
+
+trait FluencyClient extends FluentdClient with LogSupport {
   private val fluencyConfig = bind[FluencyConfig]
   private val fluency: Fluency = bind { (fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig) =>
     FluencyClient.newFluency(fluentdConfig, fluencyConfig)
-  }.onShutdown { x =>
-    close
-  }
+  }.onStart { x =>
+      info(s"Starting Fluency")
+    }
+    .onShutdown { x =>
+      info(s"Stopping Fluency")
+      close
+    }
 
   def close: Unit = {
     fluency.flush()
     fluency.close()
   }
 
-  def emit(tag: String, event: Map[String, AnyRef]): Unit = {
-    val fullTag = if (fluentdConfig.tagPrefix.isEmpty) {
-      tag
-    } else {
-      s"${fluentdConfig.tagPrefix}.${tag}"
-    }
+  def emit(tag: String, event: Map[String, Any]): Unit = {
+    val fullTag = enrichTag(tag)
 
     if (fluencyConfig.useExtendedEventTime) {
       val now       = Instant.now()
       val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);
-      fluency.emit(fullTag, eventTime, event.asJava)
+      fluency.emit(fullTag, eventTime, toJavaMap(event))
     } else {
-      fluency.emit(fullTag, event.asJava)
+      fluency.emit(fullTag, toJavaMap(event))
     }
   }
 }
