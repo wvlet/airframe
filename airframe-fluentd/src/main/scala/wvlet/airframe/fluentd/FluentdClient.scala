@@ -14,15 +14,23 @@
 package wvlet.airframe.fluentd
 import wvlet.airframe._
 
+/**
+  * Fluentd daemon address
+  * @param host
+  * @param port
+  */
 case class FluentdConfig(
     host: String = "127.0.0.1",
-    port: Int = 24224,
+    port: Int = 24224
+)
+
+case class FluentdTag(
     // A tag prefix pre-pended to each message
-    tagPrefix: String = "",
+    prefix: String = ""
 )
 
 trait FluentdClient {
-  protected val fluentdConfig = bind[FluentdConfig]
+  private val fluentdTag = bind[FluentdTag]
 
   protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
 
@@ -30,11 +38,11 @@ trait FluentdClient {
     emitRaw(enrichTag(tag), event)
   }
 
-  protected def enrichTag(tag: String): String = {
-    if (fluentdConfig.tagPrefix.isEmpty) {
+  private def enrichTag(tag: String): String = {
+    if (fluentdTag.prefix.isEmpty) {
       tag
     } else {
-      s"${fluentdConfig.tagPrefix}.${tag}"
+      s"${fluentdTag.prefix}.${tag}"
     }
   }
 

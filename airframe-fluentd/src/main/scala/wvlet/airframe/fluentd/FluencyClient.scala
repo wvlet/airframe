@@ -32,6 +32,7 @@ object FluencyClient {
 }
 
 trait FluencyClient extends FluentdClient with LogSupport {
+  private val fluentdConfig = bind[FluentdConfig]
   private val fluencyConfig = bind[FluencyConfig]
   private val fluency: Fluency = bind { (fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig) =>
     FluencyClient.newFluency(fluentdConfig, fluencyConfig)

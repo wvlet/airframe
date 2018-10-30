@@ -17,11 +17,11 @@ package wvlet.airframe
   *
   */
 package object fluentd {
-  def fluencyDesign =
+  def withFluency =
     newDesign
       .bind[FluentdClient].to[FluencyClient]
 
-  def consoleLoggingDesign =
+  def withConsoleLogging =
     newDesign
-      .bind[FluentdClient].to[ConsoleLoggingClient]
+      .bind[FluentdClient].to[ConsoleFluentdClient]
 }

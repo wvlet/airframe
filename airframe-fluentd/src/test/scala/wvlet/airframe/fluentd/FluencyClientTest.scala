@@ -21,7 +21,7 @@ import wvlet.airframe._
 class FluencyClientTest extends AirframeSpec {
 
   "should run Fluency as fluentd client" in {
-    val d = fluentd.fluencyDesign
+    val d = fluentd.withFluency.noLifeCycleLogging
 
     d.build[FluentdClient] { f =>
       //
@@ -29,10 +29,13 @@ class FluencyClientTest extends AirframeSpec {
   }
 
   "should support console logging" in {
-    val d = fluentd.consoleLoggingDesign
+    val d =
+      fluentd.withConsoleLogging
+        .bind[FluentdTag].toInstance(FluentdTag(prefix = "metrics"))
+        .noLifeCycleLogging
 
     d.build[FluentdClient] { f =>
-      f.emit("data", Map("id" -> 1))
+      f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
 
   }

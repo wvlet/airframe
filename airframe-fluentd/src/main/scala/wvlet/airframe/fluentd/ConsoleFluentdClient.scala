@@ -17,8 +17,8 @@ import wvlet.log.LogSupport
 /**
   *
   */
-class ConsoleLoggingClient extends FluentdClient with LogSupport {
+trait ConsoleFluentdClient extends FluentdClient with LogSupport {
   override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
-    info(s"${enrichTag(tag)} ${event.mkString(", ")}")
+    info(s"[${tag}] ${event.mkString(", ")}")
   }
 }
