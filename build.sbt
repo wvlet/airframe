@@ -339,6 +339,11 @@ lazy val control =
       name := "airframe-control",
       description := "A library for controlling program flows and retrying"
     )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
+      )
+    )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airframeSpec % "test")
 
