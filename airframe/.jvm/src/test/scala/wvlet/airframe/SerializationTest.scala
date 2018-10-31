@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 
+import org.scalatest.Tag
 import wvlet.log.LogSupport
 
 object SerializationTest extends LogSupport {
@@ -34,10 +35,12 @@ object SerializationTest extends LogSupport {
 
 import DesignSerializationTest._
 
+object Serde extends Tag("serde")
+
 class SerializationTest extends AirframeSpec {
 
   "Airframe" should {
-    "serialize provider" in {
+    "serialize provider" taggedAs (Serde) in {
       import wvlet.airframe.SerializationTest._
       val b  = serialize(d)
       val ds = deserialize(b)
@@ -48,7 +51,7 @@ class SerializationTest extends AirframeSpec {
       s.build[App] shouldBe App(A1(1))
     }
 
-    "serialize provider that involves toInstance of local var" in {
+    "serialize provider that involves toInstance of local var" taggedAs (Serde) in {
       import ProviderSerializationExample._
       import ProviderVal._
 

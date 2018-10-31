@@ -256,7 +256,6 @@ lazy val airframe =
       )
     )
     .jvmSettings(
-      fork in Test := (scalaVersion.value == SCALA_2_13),
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar

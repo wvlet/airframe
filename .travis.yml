@@ -60,7 +60,8 @@ matrix:
     - gem install fluentd -v 1.2.6
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
-    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+    # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
+    script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly* -- -l serde"
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: openjdk8
     # Install fluentd
