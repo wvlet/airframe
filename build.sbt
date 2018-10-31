@@ -51,6 +51,7 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
+  fork in Test := (scalaVersion.value == SCALA_2_13),
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
