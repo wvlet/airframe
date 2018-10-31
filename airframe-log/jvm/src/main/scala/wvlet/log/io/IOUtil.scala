@@ -41,6 +41,7 @@ object IOUtil {
     }
   }
 
+  def randomPort: Int = unusedPort
   def unusedPort: Int = {
     withResource(new ServerSocket(0)) { socket =>
       socket.getLocalPort

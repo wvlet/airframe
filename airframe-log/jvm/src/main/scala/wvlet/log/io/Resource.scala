@@ -263,8 +263,13 @@ object Resource {
         throw new IllegalArgumentException("invalid resource URL: " + resourceURL)
       }
 
-      val jarPath      = path.substring(0, pos) replaceAll ("%20", " ")
-      val filePath     = path.substring(0, pos) replaceAll ("%20", " ") replace ("file:", "")
+      val jarPath = path.substring(0, pos).replaceAll("%20", " ")
+      val filePath =
+        path
+          .substring(0, pos)
+          .replaceAll("%20", " ")
+          .replaceAll("%25", "%") // %25 => %
+          .replace("file:", "")
       val jarURLString = "jar:" + jarPath
       val jf: JarFile  = new JarFile(filePath)
       val entryEnum    = jf.entries
