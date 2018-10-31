@@ -18,6 +18,7 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
     While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers),
     Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.
   - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
+- [Fluentd Client](docs/airframe-fluentd.html)
 - [HTTP Server](docs/airframe-http.html)
 - [Object serialization](docs/airframe-codec.html)
 - [Option parser](docs/airframe-opts.html)

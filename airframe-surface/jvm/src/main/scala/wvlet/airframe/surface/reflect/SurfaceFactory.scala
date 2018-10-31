@@ -460,7 +460,7 @@ object SurfaceFactory extends LogSupport {
                               override val typeArgs: Seq[Surface] = Seq.empty,
                               override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None)
-      with LogSupport {
+      with LogSupport { self =>
     override val objectFactory: Option[ObjectFactory] = {
       if (rawType.getConstructors.isEmpty) {
         None
@@ -468,18 +468,23 @@ object SurfaceFactory extends LogSupport {
         Some(new ObjectFactory {
           // Create instance with Reflection
           override def newInstance(args: Seq[Any]): Any = {
-            // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
-            val cc = rawType.getConstructors()
-            assert(cc.length > 0)
-            val primaryConstructor = cc(0)
-            val obj = if (args.isEmpty) {
-              primaryConstructor.newInstance()
-            } else {
-              val a = args.map(_.asInstanceOf[AnyRef])
-              logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
-              primaryConstructor.newInstance(a: _*)
+            try {
+              // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
+              val cc = rawType.getConstructors()
+              assert(cc.length > 0)
+              val primaryConstructor = cc(0)
+              val obj = if (args.isEmpty) {
+                primaryConstructor.newInstance()
+              } else {
+                val a = args.map(_.asInstanceOf[AnyRef])
+                logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
+                primaryConstructor.newInstance(a: _*)
+              }
+              obj.asInstanceOf[Any]
+            } catch {
+              case e: Throwable =>
+                logger.warn(s"Failed to instantiate ${self}: ${e.getMessage}\nargs:\n${args.mkString("\n")}")
             }
-            obj.asInstanceOf[Any]
           }
         })
       }
