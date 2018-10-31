@@ -53,8 +53,8 @@ ga('send', 'pageview');
 <span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MetricLoggerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">f</span> <span class="k">=&gt;</span>
    <span class="c1">// Create a metric logger for MyMetric class
 </span>   <span class="k">val</span> <span class="n">l</span> <span class="k">=</span> <span class="n">f</span><span class="o">.</span><span class="n">newMetricLogger</span><span class="o">[</span><span class="kt">MyMetric</span><span class="o">](</span><span class="n">tag</span> <span class="k">=</span> <span class="s">"my_metric"</span><span class="o">)</span>
-   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"hello"</span><span class="o">))</span>   <span class="c1">// prints [data.my_metric] {"a":1, "b":"hello"}
-</span>   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"fluentd"</span><span class="o">))</span> <span class="c1">// prints [data.my_metric] {"a":2, "b":"fluentd"}
+   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"hello"</span><span class="o">))</span>   <span class="c1">// prints data.my_metric: {"a":1, "b":"hello"}
+</span>   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"fluentd"</span><span class="o">))</span> <span class="c1">// prints data.my_metric: {"a":2, "b":"fluentd"}
 </span><span class="o">}</span>
 </code></pre>
 </div>
