@@ -14,6 +14,9 @@ before_cache:
 
 language: scala
 
+before_install:
+  - rvm use 2.2.5 --install --fuzzy
+  - gem install fluentd -v 1.2.6
 
 matrix:
   include:

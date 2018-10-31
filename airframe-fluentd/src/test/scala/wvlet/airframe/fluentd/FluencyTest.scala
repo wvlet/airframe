@@ -24,6 +24,7 @@ trait FluentdStandaloneService {
 }
 
 trait MetricLoggingService extends FluentdStandaloneService {
+  val client  = bind[FluentdClient]
   val factory = bind[MetricLoggerFactory]
 }
 
@@ -41,6 +42,10 @@ class FluencyTest extends AirframeSpec {
 
   "should send metrics to fluentd through Fluency" in {
     d.build[MetricLoggingService] { f =>
+      // Use a regular emit method
+      f.client.emit("mytag", Map("data" -> "hello"))
+
+      // Use object metric logger
       val l = f.factory.newMetricLogger[FluencyMetric]("fluency_metric")
       l.emit(FluencyMetric(1, "leo"))
     }
