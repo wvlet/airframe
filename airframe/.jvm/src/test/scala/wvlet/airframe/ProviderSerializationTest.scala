@@ -23,7 +23,7 @@ import DesignSerializationTest._
 class ProviderSerializationTest extends AirframeSpec {
 
   "Design" should {
-    "serialize design with provider" taggedAs ("ser") in {
+    "serialize design with provider" taggedAs (Serde) in {
       val testBinderDesign =
         providerDesign.bind[App].toProvider(provider5 _)
 
@@ -34,7 +34,7 @@ class ProviderSerializationTest extends AirframeSpec {
       app shouldBe App(d1, d2, d3, d4, d5)
     }
 
-    "serialize design with provider1" taggedAs ("ser-p1") in {
+    "serialize design with provider1" taggedAs (Serde) in {
       val testBinderDesign =
         providerDesign.bind[App].toProvider(provider1 _)
 

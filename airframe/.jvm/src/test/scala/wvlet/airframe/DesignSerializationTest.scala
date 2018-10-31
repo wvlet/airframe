@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
 import DesignTest._
+import org.scalatest.Tag
 
 object DesignSerializationTest {
 
@@ -42,13 +43,13 @@ class DesignSerializationTest extends AirframeSpec {
   import DesignSerializationTest._
 
   "Design" should {
-    "be serializable" taggedAs ("ser") in {
+    "be serializable" taggedAs (Serde) in {
       val b   = serialize(d1)
       val d1s = deserialize(b)
       d1s shouldBe (d1)
     }
 
-    "serialize instance binding" taggedAs ("ser1") in {
+    "serialize instance binding" taggedAs (Serde) in {
       val d  = Design.blanc.bind[Message].toInstance(Hello("world"))
       val b  = serialize(d)
       val ds = deserialize(b)

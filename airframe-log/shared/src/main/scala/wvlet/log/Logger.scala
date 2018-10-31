@@ -17,8 +17,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging._
 import java.util.{Properties, logging => jl}
 
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
-
 import scala.annotation.tailrec
 import scala.language.experimental.macros
 import scala.reflect.ClassTag
@@ -147,11 +145,11 @@ class Logger(private val name: String,
   }
 
   def log(level: LogLevel, source: LogSource, message: Any): Unit = {
-    log(LogRecord(level, source, formatLog(message)))
+    log(wvlet.log.LogRecord(level, source, formatLog(message)))
   }
 
   def logWithCause(level: LogLevel, source: LogSource, message: Any, cause: Throwable): Unit = {
-    log(LogRecord(level, source, formatLog(message), cause))
+    log(wvlet.log.LogRecord(level, source, formatLog(message), cause))
   }
 
   protected def isMultiLine(str: String) = str.contains("\n")

@@ -52,7 +52,7 @@ matrix:
     script:
     - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
     - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
-  - env: SCALA_VERSION=2.13.0-M4 PROJECT=projectJVM2_13
+  - env: SCALA_VERSION=2.13.0-M5 PROJECT=projectJVM2_13
     jdk: openjdk8
     # Install fluentd
     install:
@@ -60,7 +60,8 @@ matrix:
     - gem install fluentd -v 1.2.6
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
-    script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+    # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
+    script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly * -- -l serde"
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: openjdk8
     # Install fluentd
