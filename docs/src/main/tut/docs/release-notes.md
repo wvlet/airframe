@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 0.72
+-  Support Scala 2.13.0-M5 ([#232](https://github.com/wvlet/airframe/issues/232)) [[c31a4da](https://github.com/wvlet/airframe/commit/c31a4da)]
+  - Notice: Due to a bug https://github.com/scala/bug/issues/11192, serilization of Design objects may not work when using sbt with Scala 2.13.0-M5. Using `fork in Test = true` is a workaround.
+
 ## 0.71
 -  Added [airframe-fluentd](https://wvlet.org/airframe/docs/airframe-fluentd.html) for sending object-based metrics to Fluentd. ([#286](https://github.com/wvlet/airframe/issues/286)) [[28a70c3](https://github.com/wvlet/airframe/commit/28a70c3)]
 
