@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import java.io.File
+import java.io.{File, PrintWriter, StringWriter}
 import java.text.DateFormat
 import java.time.{Instant, ZonedDateTime}
 import java.util.Date
@@ -34,7 +34,9 @@ import scala.util.{Failure, Success, Try}
 object StandardCodec {
 
   val javaClassCodec = Map(
-    surface.of[File] -> FileCodec
+    surface.of[File]      -> FileCodec,
+    surface.of[Throwable] -> ThrowableCodec,
+    surface.of[Exception] -> ThrowableCodec
   )
 
   val javaTimeCodec = Map(
@@ -45,6 +47,44 @@ object StandardCodec {
 
   val standardCodec
     : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec ++ javaTimeCodec
+
+  object ThrowableCodec extends MessageCodec[Throwable] {
+    override def pack(p: MessagePacker, v: Throwable): Unit = {
+      p.packMapHeader(4)
+      // param 1
+      p.packString("type")
+      p.packString(v.getClass.getName)
+
+      // param 2
+      p.packString("message")
+      val msg = v.getMessage
+      if (msg == null) {
+        p.packNil()
+      } else {
+        p.packString(msg)
+      }
+
+      // param 3
+      val s = new StringWriter
+      val w = new PrintWriter(s)
+      v.printStackTrace(w)
+      w.flush()
+      w.close()
+      p.packString("stackTrace")
+      p.packString(s.toString)
+
+      // param 4
+      p.packString("cause")
+      val cause = v.getCause
+      if (cause == null || cause == v) {
+        p.packNil()
+      } else {
+        ThrowableCodec.pack(p, cause)
+      }
+    }
+    // We do not support deserialization of generic Throwable classes
+    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = ???
+  }
 
   object FileCodec extends MessageCodec[File] {
     override def pack(p: MessagePacker, v: File): Unit = {
