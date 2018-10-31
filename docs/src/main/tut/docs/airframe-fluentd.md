@@ -50,8 +50,8 @@ val d = fluentd.withConsoleLogging // Use a console logger instead of sending lo
 d.build[MetricLoggerFactory] { f =>
    // Create a metric logger for MyMetric class
    val l = f.newMetricLogger[MyMetric](tag = "my_metric")
-   l.emit(MyMetric(1, "hello"))   // prints [data.my_metric] {"a":1, "b":"hello"}
-   l.emit(MyMetric(2, "fluentd")) // prints [data.my_metric] {"a":2, "b":"fluentd"}
+   l.emit(MyMetric(1, "hello"))   // prints data.my_metric: {"a":1, "b":"hello"}
+   l.emit(MyMetric(2, "fluentd")) // prints data.my_metric: {"a":2, "b":"fluentd"}
 }
 ```
 
