@@ -52,7 +52,6 @@ val buildSettings = Seq[Setting[_]](
   crossPaths := true,
   publishMavenStyle := true,
   logBuffered in Test := false,
-  fork in Test := (scalaVersion.value == SCALA_2_13),
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -135,14 +134,14 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   msgpackJVM,
   stream,
   http,
-  jsonJVM,
-  fluentd
+  jsonJVM
 )
 
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = List(
   finagle,
-  jsonBenchmark
+  jsonBenchmark,
+  fluentd
 )
 
 // Scala.js builds is only for Scala 2.12
@@ -257,6 +256,7 @@ lazy val airframe =
       )
     )
     .jvmSettings(
+      fork in Test := (scalaVersion.value == SCALA_2_13),
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar
