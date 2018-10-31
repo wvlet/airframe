@@ -134,14 +134,14 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   msgpackJVM,
   stream,
   http,
-  jsonJVM
+  jsonJVM,
+  fluentd
 )
 
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = List(
   finagle,
-  jsonBenchmark,
-  fluentd
+  jsonBenchmark
 )
 
 // Scala.js builds is only for Scala 2.12
@@ -606,7 +606,7 @@ lazy val fluentd =
         "org.komamitsu" % "fluency" % "1.8.1",
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j"  % "slf4j-jdk14"         % SLF4J_VERSION,
-        "org.xerial" %% "fluentd-standalone" % "1.2.6" % "test"
+        "org.xerial" %% "fluentd-standalone" % "1.2.6.1" % "test"
       )
     )
     .dependsOn(codec, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
