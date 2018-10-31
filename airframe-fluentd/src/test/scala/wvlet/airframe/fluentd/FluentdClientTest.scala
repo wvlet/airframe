@@ -26,8 +26,8 @@ class FluentdClientTest extends AirframeSpec {
       .noLifeCycleLogging
 
     d.build[FluentdClient] { f =>
-      //
-      f.emit("data", Map("id" -> 1, "event" -> "GET"))
+      // Just test the client initialization
+      // More complete test can be found at FluencyTest
     }
   }
 
