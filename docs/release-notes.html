@@ -10,8 +10,11 @@ ga('send', 'pageview');
 
 <h2 id="072">0.72</h2>
 <ul>
-  <li>Support Scala 2.13.0-M5 (<a href="https://github.com/wvlet/airframe/issues/232">#232</a>) [<a href="https://github.com/wvlet/airframe/commit/c31a4da">c31a4da</a>]</li>
-  <li>Notice: Due to a bug https://github.com/scala/bug/issues/11192, serilization of Design objects may not work when using sbt with Scala 2.13.0-M5. Using <code class="highlighter-rouge">fork in Test = true</code> is a workaround.</li>
+  <li>Support Scala 2.13.0-M5 (<a href="https://github.com/wvlet/airframe/issues/232">#232</a>) [<a href="https://github.com/wvlet/airframe/commit/c31a4da">c31a4da</a>]
+    <ul>
+      <li>Notice: Due to a <a href="https://github.com/scala/bug/issues/11192">bug</a> of Scala 2.13.0-M5, serilization of Design objects may not work when using sbt with Scala 2.13.0-M5. Using <code class="highlighter-rouge">fork in Test := true</code> is a workaround.</li>
+    </ul>
+  </li>
 </ul>
 
 <h2 id="071">0.71</h2>
