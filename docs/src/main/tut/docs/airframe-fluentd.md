@@ -17,9 +17,6 @@ airframe-fluentd is a logging library for sending object-based metrics to [Fluen
 __build.sbt__
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-fluentd" % "(version)"
-
-// For Scala.js (Since airframe-log 1.2)
-libraryDependencies += "org.wvlet.airframe" %%% "airframe-fluentd" % "(version)"
 ```
 
 ### Example
@@ -33,13 +30,13 @@ val d = fluentd.withFluency // Using Fluency as the fluentd client
    // This line is unnecessary if you are using the default fluentd configuration
   .bind[FluentdConfig].toInstance(FluentdConfig(host="localhost", port=24224))
   // Set a common fluentd metric tag prefix (default = "")
-  .bind[FluentdTag].toInstance(FluentdTag(prefix="")) 
+  .bind[FluentdTag].toInstance(FluentdTag(prefix="data")) 
 
 d.build[MetricLoggerFactory] { f =>
    // Create a metric logger for MyMetric class
    val l = f.newMetricLogger[MyMetric](tag = "my_metric")
-   l.emit(MyMetric(1, "hello"))   // my_metric {"a":1, "b":"hello"}
-   l.emit(MyMetric(2, "fluentd")) // my_metric {"a":2, "b":"fluentd"}
+   l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
+   l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
 }
 ```
 
@@ -53,8 +50,8 @@ val d = fluentd.withConsoleLogging // Use a console logger instead of sending lo
 d.build[MetricLoggerFactory] { f =>
    // Create a metric logger for MyMetric class
    val l = f.newMetricLogger[MyMetric](tag = "my_metric")
-   l.emit(MyMetric(1, "hello"))   // prints [my_metric] {"a":1, "b":"hello"}
-   l.emit(MyMetric(2, "fluentd")) // prints [my_metric] {"a":2, "b":"fluentd"}
+   l.emit(MyMetric(1, "hello"))   // prints [data.my_metric] {"a":1, "b":"hello"}
+   l.emit(MyMetric(2, "fluentd")) // prints [data.my_metric] {"a":2, "b":"fluentd"}
 }
 ```
 
