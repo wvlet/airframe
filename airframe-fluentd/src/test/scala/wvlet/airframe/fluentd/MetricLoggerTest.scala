@@ -15,9 +15,6 @@ package wvlet.airframe.fluentd
 import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.{AirframeSpec, fluentd}
-import wvlet.log.io.IOUtil
-import xerial.fluentd.FluentdStandalone
-import wvlet.airframe._
 
 case class SampleMetric(time: Long, value: String)
 case class NestedMetric(message: String, data: Seq[Int], opt: Option[String], sample: SampleMetric)
@@ -28,12 +25,7 @@ case class ErrorMetric(errorType: String, ex: Exception)
   *
   */
 class MetricLoggerTest extends AirframeSpec {
-  val fluentdPort = IOUtil.randomPort
-
-  val d = fluentd.withConsoleLogging
-    .bind[FluentdStandalone].toInstance(new FluentdStandalone(fluentdPort))
-    .bind[FluentdConfig].toInstance(FluentdConfig(port = fluentdPort))
-    .noLifeCycleLogging
+  val d = fluentd.withConsoleLogging.noLifeCycleLogging
 
   "generate MetricLogger for case classes" in {
     d.build[MetricLoggerFactory] { f =>
