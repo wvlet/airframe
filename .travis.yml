@@ -14,10 +14,6 @@ before_cache:
 
 language: scala
 
-before_install:
-  - rvm use 2.2.5 --install --fuzzy
-  - gem install fluentd -v 1.2.6
-
 matrix:
   include:
   - env: PROJECT=code-format
@@ -48,17 +44,29 @@ matrix:
   - env: SCALA_VERSION=2.12.7 PROJECT=projectJVM
     jdk: openjdk8
     services: postgresql
+    # Install fluentd
+    install:
+    - rvm use 2.2.5 --install --fuzzy
+    - gem install fluentd -v 1.2.6
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script:
     - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
     - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
   - env: SCALA_VERSION=2.13.0-M4 PROJECT=projectJVM2_13
+    jdk: openjdk8
+    # Install fluentd
+    install:
+    - rvm use 2.2.5 --install --fuzzy
+    - gem install fluentd -v 1.2.6
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
-    jdk: openjdk8
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.11.11 PROJECT=projectJVM
     jdk: openjdk8
+    # Install fluentd
+    install:
+    - rvm use 2.2.5 --install --fuzzy
+    - gem install fluentd -v 1.2.6
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
@@ -67,6 +75,9 @@ matrix:
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
   - env: SCALA_VERSION=2.12.7 PROJECT=projectJVM
     jdk: openjdk11
+    install:
+    - rvm use 2.2.5 --install --fuzzy
+    - gem install fluentd -v 1.2.6
     services: postgresql
     before_script: psql -c 'create database travis_ci_test;' -U postgres
     script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
