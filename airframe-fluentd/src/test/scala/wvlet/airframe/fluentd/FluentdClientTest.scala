@@ -40,7 +40,5 @@ class FluentdClientTest extends AirframeSpec {
     d.build[FluentdClient] { f =>
       f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
-
   }
-
 }

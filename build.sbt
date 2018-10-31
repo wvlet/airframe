@@ -605,7 +605,8 @@ lazy val fluentd =
       libraryDependencies ++= Seq(
         "org.komamitsu" % "fluency" % "1.8.1",
         // Redirecting slf4j log from Fluency to aiframe-log
-        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
+        "org.slf4j"  % "slf4j-jdk14"         % SLF4J_VERSION,
+        "org.xerial" %% "fluentd-standalone" % "1.2.6" % "test"
       )
     )
     .dependsOn(codec, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
