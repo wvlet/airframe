@@ -73,6 +73,21 @@ class YourApp {
 }
 ```
 
+### Using the default configuration
+
+If your project involves dependencies that set their own java.util.logging configurations, 
+you can force using the default configuration of Airframe Log by calling `wvlet.airframe.log.init`:
+
+```scala
+import wvlet.airframe._
+
+// Initialize with INFO level and SourceCodeLogFormatter
+log.init
+
+// For terminals not supporting ANSI colors
+log.initNoColor
+```
+
 ### Configuring log levels
 
 (This feature is not available in Scala.js)
@@ -161,6 +176,7 @@ This code will show:
 ### Pre-defined log formatters:
 Here is the list of pre-defined log formatters. 
  - **SourceCodeLogFormatter** (with source code location) 
+ - **PlainSourceCodeLogFormatter** (with source code location without ANSI coloring) 
  - **AppLogFormatter** (without source code location)
  - **TSVLogFormatter** (logging in TSV format)
  - **IntelliJLogFormatter** (for debugging using IntelliJ console)

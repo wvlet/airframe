@@ -157,6 +157,22 @@ object LogFormatter {
   }
 
   /**
+    * log format for debugging source code without using ANSI colors
+    */
+  object PlainSourceCodeLogFormatter extends LogFormatter {
+    override def formatLog(r: LogRecord): String = {
+      val loc =
+        r.source
+          .map(source => s" - (${source.fileLoc})")
+          .getOrElse("")
+
+      val log =
+        f"${formatTimestamp(r.getMillis)} ${r.level.name}%5s [${r.leafLoggerName}] ${r.getMessage} ${loc}"
+      appendStackTrace(log, r)
+    }
+  }
+
+  /**
     * Enable source code links in the run/debug console of IntelliJ
     */
   object IntelliJLogFormatter extends LogFormatter {
