@@ -82,22 +82,18 @@ object Launcher extends LogSupport {
     }
   }
 
-  private[Launcher] case class CommandModule(suface: Surface, name: String, description: String)
+  private[Launcher] case class CommandModule(surface: Surface, name: String, description: String)
       extends Command
       with LogSupport {
-    def name = m.name
     def printHelp = {
       debug("module help")
-      new Launcher(m.moduleSurface).printHelp
+      new Launcher(surface, name).printHelp
     }
     def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
-      trace(s"execute module: ${m.moduleSurface.name}")
-      val result = new Launcher(m.moduleSurface).execute[A](args, showHelp)
-      mainObj.asInstanceOf[CommandModule].executedModule = Some((name, result.asInstanceOf[AnyRef]))
+      trace(s"execute module: ${name}")
+      val result = new Launcher(surface, name).execute[A](args, showHelp)
       mainObj
     }
-
-    def description = m.description
   }
 
   private[opts] val commandNameParam = "command name"
@@ -212,7 +208,7 @@ class Launcher(surface: Surface, name: String, description: String = "", subComm
       commandList.find(e => CName(e.name) == cname)
     }
 
-    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Launcher] =
+    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Command] =
       subCommands.find(x => x.name == name)
 
     find(name) orElse findModule(name, mainObj) orElse {
