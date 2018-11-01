@@ -235,6 +235,18 @@ DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
       <td><code class="highlighter-rouge">2016-12-01 00:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2017-01-01 00:00:00-0700</code></td>
     </tr>
+    <tr>
+      <td><code class="highlighter-rouge">0M/2017-01-23)</code></td>
+      <td>from beginning of the month to a given offset</td>
+      <td><code class="highlighter-rouge">2017-01-01 00:00:00-0700</code></td>
+      <td><code class="highlighter-rouge">2017-01-23 00:00:00-0700</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">+1M/2017-01-23 01:23:45)</code></td>
+      <td>from a given offset to end of the month</td>
+      <td><code class="highlighter-rouge">2017-01-23 01:23:45-0700</code></td>
+      <td><code class="highlighter-rouge">2017-02-01 00:00:00-0700</code></td>
+    </tr>
   </tbody>
 </table>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
