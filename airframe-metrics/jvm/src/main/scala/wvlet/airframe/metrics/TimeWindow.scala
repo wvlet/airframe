@@ -165,7 +165,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
             x.timeWindowFrom(now).start
           case Failure(e) =>
             // When the offset string is the exact date
-            val (timeString, truncate) = if(o.endsWith(")")) {
+            val (timeString, truncate) = if (o.endsWith(")")) {
               (o.substring(0, o.length - 1), false)
             } else {
               (o, true)
