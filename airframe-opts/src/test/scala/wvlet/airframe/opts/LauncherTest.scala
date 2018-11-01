@@ -276,8 +276,9 @@ object LauncherTest {
 
   val DEFAULT_MESSAGE = "Type --help to display the list of commands"
 
-  class SimpleCommandSet extends DefaultCommand with LogSupport {
+  class SimpleCommandSet extends LogSupport {
 
+    @defaultCommand
     def default: Unit = {
       println(DEFAULT_MESSAGE)
     }

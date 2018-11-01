@@ -46,5 +46,3 @@ public @interface option {
      */
     boolean isHelp() default false;
 }
-
-

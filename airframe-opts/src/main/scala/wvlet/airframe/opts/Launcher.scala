@@ -97,13 +97,6 @@ object Launcher extends LogSupport {
 }
 
 /**
-  * Implement this trait to supply a default command invoked when no command name is specified.
-  */
-trait DefaultCommand {
-  def default: Unit
-}
-
-/**
   * Command launcher.
   *
   * {{{
@@ -153,12 +146,22 @@ class Launcher(surface: Surface) extends LogSupport {
     if (result.isEmpty) {
       if (helpIsOn) {
         printHelp(p, mainObj)
-      } else if (classOf[DefaultCommand].isAssignableFrom(surface.rawType)) {
-        // has a default command
-        mainObj.asInstanceOf[DefaultCommand].default
+      } else {
+        findDefaultCommand(surface).map { defaultCommandMethod =>
+          defaultCommandMethod.call(mainObj)
+        }
       }
     }
     result getOrElse mainObj
+  }
+
+  private def findDefaultCommand(s: Surface): Option[MethodSurface] = {
+    SurfaceFactory
+      .methodsOf(s)
+      .find { m =>
+        import wvlet.airframe.surface.reflect._
+        m.findAnnotationOf[defaultCommand].isDefined
+      }
   }
 
   def printHelp: Unit = {
