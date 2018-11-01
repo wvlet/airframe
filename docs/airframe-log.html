@@ -92,6 +92,21 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
+<h3 id="using-the-default-configuration">Using the default configuration</h3>
+
+<p>If your project involves dependencies that set their own java.util.logging configurations, 
+you can force using the default configuration of Airframe Log by calling <code class="highlighter-rouge">wvlet.airframe.log.init</code>:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="c1">// Initialize with INFO level and SourceCodeLogFormatter
+</span><span class="n">log</span><span class="o">.</span><span class="n">init</span>
+
+<span class="c1">// For terminals not supporting ANSI colors
+</span><span class="n">log</span><span class="o">.</span><span class="n">initNoColor</span>
+</code></pre>
+</div>
+
 <h3 id="configuring-log-levels">Configuring log levels</h3>
 
 <p>(This feature is not available in Scala.js)</p>
@@ -182,6 +197,7 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <p>Here is the list of pre-defined log formatters.</p>
 <ul>
   <li><strong>SourceCodeLogFormatter</strong> (with source code location)</li>
+  <li><strong>PlainSourceCodeLogFormatter</strong> (with source code location without ANSI coloring)</li>
   <li><strong>AppLogFormatter</strong> (without source code location)</li>
   <li><strong>TSVLogFormatter</strong> (logging in TSV format)</li>
   <li><strong>IntelliJLogFormatter</strong> (for debugging using IntelliJ console)</li>
