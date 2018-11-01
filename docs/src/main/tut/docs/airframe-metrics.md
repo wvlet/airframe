@@ -117,3 +117,5 @@ Here are several examples of relative time window strings when the current time 
 |`-1h/2017-01-23 01:00:00`| last hour from the given offset (hour) | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1h/2017-01-23 01:23:45`| last hour from the given offset (hour) | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1M/2017-01-23 01:23:45`| last month from the given offset (hour) | `2016-12-01 00:00:00-0700` | `2017-01-01 00:00:00-0700`|
+|`0M/2017-01-23)`| from beginning of the month to a given offset | `2017-01-01 00:00:00-0700` | `2017-01-23 00:00:00-0700`|
+|`+1M/2017-01-23 01:23:45)`| from a given offset to end of the month | `2017-01-23 01:23:45-0700` | `2017-02-01 00:00:00-0700`|
