@@ -35,7 +35,7 @@ import scala.reflect.runtime.{universe => ru}
 object Launcher extends LogSupport {
 
   def of[A: ru.WeakTypeTag]: Launcher = {
-    new Launcher(SurfaceFactory.of[A])
+    new Launcher(SurfaceFactory.of[A], "")
   }
 
   def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
@@ -44,6 +44,9 @@ object Launcher extends LogSupport {
     l.execute(args)
   }
 
+  /**
+    * Based trait for managing nested traits
+    */
   sealed trait Command {
     def name: String
     def description: String
@@ -51,7 +54,9 @@ object Launcher extends LogSupport {
     def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A
   }
 
-  private[Launcher] class CommandDef(val method: MethodSurface, val command: command) extends Command with LogSupport {
+  private[Launcher] class CommandMethod(val method: MethodSurface, val command: command)
+      extends Command
+      with LogSupport {
     val name        = method.name
     val description = command.description
     def printHelp = {
@@ -77,7 +82,9 @@ object Launcher extends LogSupport {
     }
   }
 
-  private[Launcher] case class ModuleRef[A](m: ModuleDef[A]) extends Command with LogSupport {
+  private[Launcher] case class CommandModule(suface: Surface, name: String, description: String)
+      extends Command
+      with LogSupport {
     def name = m.name
     def printHelp = {
       debug("module help")
@@ -121,11 +128,17 @@ object Launcher extends LogSupport {
   *
   * @author leo
   */
-class Launcher(surface: Surface) extends LogSupport {
+class Launcher(surface: Surface, name: String, description: String = "", subCommands: Seq[Launcher] = Seq.empty)
+    extends LogSupport {
 
   import Launcher._
 
   lazy private val schema = ClassOptionSchema(surface)
+
+  def addSubCommand[A: ru.TypeTag](subCommandName: String, subCommandDescription: String = ""): Launcher = {
+    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[A]].tpe)
+    Launcher(surface, name, description, subCommands :+ Launcher(moduleSurface, subCommandName, subCommandDescription))
+  }
 
   def execute[A <: AnyRef](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
   def execute[A <: AnyRef](args: Array[String], showHelp: Boolean = false): A = {
@@ -172,7 +185,7 @@ class Launcher(surface: Surface) extends LogSupport {
     trace("print usage")
     p.printUsage
 
-    val lst = commandList ++ moduleList(obj)
+    val lst = commandList ++ subCommands
     if (!lst.isEmpty) {
       println("[commands]")
       val maxCommandNameLen = lst.map(_.name.length).max
@@ -187,16 +200,8 @@ class Launcher(surface: Surface) extends LogSupport {
     import wvlet.airframe.surface.reflect._
     trace(s"command class:${surface.name}")
     val methods = SurfaceFactory.methodsOf(surface)
-    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandDef(m, c)
+    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandMethod(m, c)
     lst
-  }
-
-  def moduleList[A <: AnyRef](mainObj: A): Seq[Command] = {
-    if (CommandModule.isModuleClass(mainObj.getClass)) {
-      mainObj.asInstanceOf[CommandModule].modules.map(ModuleRef(_))
-    } else {
-      Seq.empty
-    }
   }
 
   private def findCommand(name: String, mainObj: AnyRef): Option[Command] = {
@@ -207,8 +212,8 @@ class Launcher(surface: Surface) extends LogSupport {
       commandList.find(e => CName(e.name) == cname)
     }
 
-    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Command] =
-      moduleList(mainObj).find(_.name == name)
+    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Launcher] =
+      subCommands.find(x => x.name == name)
 
     find(name) orElse findModule(name, mainObj) orElse {
       warn(s"Unknown command: $name")

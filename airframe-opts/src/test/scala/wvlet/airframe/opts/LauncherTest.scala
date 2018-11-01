@@ -157,7 +157,7 @@ class LauncherTest extends AirframeSpec {
 
     "create command modules" in {
       val c = Launcher.execute[MyCommandModule]("box hello")
-      c.executedModule should be('defined)
+      c.executedModule shouldBe defined
       c.executedModule map { m =>
         m._1 should be("box")
         m._2.getClass should be(classOf[SimpleCommandSet])
