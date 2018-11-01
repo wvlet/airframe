@@ -235,6 +235,12 @@ object Logger {
     rootLogger.clearAllHandlers
   }
 
+  def init: Unit = {
+    clearAllHandlers
+    resetDefaultLogLevel
+    rootLogger.resetHandler(LogEnv.defaultHandler)
+  }
+
   /**
     * Set log levels using Properties (key: logger name, value: log level)
     *
