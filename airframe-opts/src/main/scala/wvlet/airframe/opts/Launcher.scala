@@ -30,83 +30,10 @@ import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  * Command launcher
-  */
-object Launcher extends LogSupport {
-
-  def of[A: ru.WeakTypeTag]: Launcher = {
-    new Launcher(SurfaceFactory.of[A], "")
-  }
-
-  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
-    val l = Launcher.of[A]
-    l.execute(args)
-  }
-
-  /**
-    * Based trait for managing nested traits
-    */
-  sealed trait Command {
-    def name: String
-    def description: String
-    def printHelp: Unit
-    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A
-  }
-
-  private[Launcher] class CommandMethod(val method: MethodSurface, val command: command)
-      extends Command
-      with LogSupport {
-    val name        = method.name
-    val description = command.description
-    def printHelp = {
-      val parser = new OptionParser(method)
-      parser.printUsage
-    }
-    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
-      trace(s"execute method: $name")
-      val parser = new OptionParser(method)
-      if (showHelp) {
-        parser.printUsage
-        val globalOptionList = mainParser.createOptionList
-        // Show global options
-        if (globalOptionList.nonEmpty) {
-          println("\n[global options]")
-          println(globalOptionList.mkString("\n"))
-        }
-      } else {
-        val r_sub = parser.parse(args)
-        r_sub.build(new MethodCallBuilder(method, mainObj.asInstanceOf[AnyRef])).execute
-      }
-      mainObj
-    }
-  }
-
-  private[Launcher] case class CommandModule(surface: Surface, name: String, description: String)
-      extends Command
-      with LogSupport {
-    def printHelp = {
-      debug("module help")
-      new Launcher(surface, name).printHelp
-    }
-    def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
-      trace(s"execute module: ${name}")
-      val result = new Launcher(surface, name).execute[A](args, showHelp)
-      mainObj
-    }
-  }
-
-  private[opts] val commandNameParam = "command name"
-}
-
-/**
   * Command launcher.
   *
   * {{{
-  *
   * class MyCommand(@option(prefix="-h,--help", description="display help", isHelp=true) help:Boolean) {
-  *
-  *
   *   @command(description="Say hello")
   *   def hello(@option(prefix="-r", description="repeat times")
   *             repeat:Int=1,
@@ -117,12 +44,8 @@ object Launcher extends LogSupport {
   * }
   *
   * Launcher.execute[MyCommand]("hello -r 3")  // hello x 3
-  *
-  *
-  *
   * }}}
   *
-  * @author leo
   */
 class Launcher(surface: Surface, name: String, description: String = "", subCommands: Seq[Launcher] = Seq.empty)
     extends LogSupport {
@@ -217,3 +140,78 @@ class Launcher(surface: Surface, name: String, description: String = "", subComm
     }
   }
 }
+
+/**
+  * Command launcher
+  */
+object Launcher extends LogSupport {
+
+  /**
+    * Create a new Launcher of the given type
+    * @tparam A
+    * @return
+    */
+  def of[A: ru.WeakTypeTag]: Launcher = {
+    new Launcher(SurfaceFactory.of[A], "")
+  }
+
+  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
+    val l = Launcher.of[A]
+    l.execute(args)
+  }
+}
+
+///**
+//  * Based trait for managing nested traits
+//  */
+//sealed trait Command {
+//  def name: String
+//  def description: String
+//  def printHelp: Unit
+//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A
+//}
+//
+//private[Launcher] class CommandMethod(val method: MethodSurface, val command: command)
+//  extends Command
+//    with LogSupport {
+//  val name        = method.name
+//  val description = command.description
+//  def printHelp = {
+//    val parser = new OptionParser(method)
+//    parser.printUsage
+//  }
+//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
+//    trace(s"execute method: $name")
+//    val parser = new OptionParser(method)
+//    if (showHelp) {
+//      parser.printUsage
+//      val globalOptionList = mainParser.createOptionList
+//      // Show global options
+//      if (globalOptionList.nonEmpty) {
+//        println("\n[global options]")
+//        println(globalOptionList.mkString("\n"))
+//      }
+//    } else {
+//      val r_sub = parser.parse(args)
+//      r_sub.build(new MethodCallBuilder(method, mainObj.asInstanceOf[AnyRef])).execute
+//    }
+//    mainObj
+//  }
+//}
+//
+//private[Launcher] case class CommandModule(surface: Surface, name: String, description: String)
+//  extends Command
+//    with LogSupport {
+//  def printHelp = {
+//    debug("module help")
+//    new Launcher(surface, name).printHelp
+//  }
+//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
+//    trace(s"execute module: ${name}")
+//    val result = new Launcher(surface, name).execute[A](args, showHelp)
+//    mainObj
+//  }
+//}
+//
+//private[opts] val commandNameParam = "command name"

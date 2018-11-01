@@ -147,7 +147,7 @@ case class CLArgument(path: Path, arg: argument, argIndex: Int, override val par
 
 case class CommandNameArgument(path: Path) extends CLArgItem {
   def argIndex = 0
-  def name     = Launcher.commandNameParam
+  def name     = Launcher.
 }
 
 case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
