@@ -54,6 +54,13 @@ class Launcher(surface: Surface, name: String, description: String = "", subComm
 
   lazy private val schema = ClassOptionSchema(surface)
 
+  /**
+    * Add a sub command to the launcher
+    * @param subCommandName
+    * @param subCommandDescription
+    * @tparam A
+    * @return
+    */
   def addSubCommand[A: ru.TypeTag](subCommandName: String, subCommandDescription: String = ""): Launcher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[A]].tpe)
     Launcher(surface, name, description, subCommands :+ Launcher(moduleSurface, subCommandName, subCommandDescription))
