@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.opts
+import wvlet.airframe.opts.OptionParser.{CLArgItem, CLArgument, CLOption}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -48,16 +49,6 @@ trait OptionSchema extends LogSupport {
     if (args.isDefinedAt(argIndex)) Some(args(argIndex)) else None
   }
 
-  def description: String
-  def usage: String
-
-  protected def defaultUsage: String = {
-    val l = for (a <- args) yield {
-      a.name
-    }
-    l.map("[%s]".format(_)).mkString(" ")
-  }
-
   override def toString = "options:[%s], args:[%s]".format(options.mkString(", "), args.mkString(", "))
 }
 
@@ -89,7 +80,7 @@ object ClassOptionSchema extends LogSupport {
       }
 
       if (optAnnot.isEmpty || argAnnot.isEmpty) {
-        // The parameter might be a nested parameter object
+        // The parameter migcan be a nested object
         val nested = ClassOptionSchema(p.surface, nextPath, argCount)
         o ++= nested.options
         a ++= nested.args
@@ -106,25 +97,7 @@ object ClassOptionSchema extends LogSupport {
   * @param surface
   */
 class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val args: Seq[CLArgItem])
-    extends OptionSchema {
-
-  def description = {
-    surface.rawType.getDeclaredAnnotations
-      .collectFirst {
-        case c: command => c.description
-      }
-      .getOrElse("")
-  }
-
-  override def usage = {
-    surface.rawType.getDeclaredAnnotations
-      .collectFirst {
-        case c: command if !c.usage.isEmpty => c.usage
-      }
-      .getOrElse(defaultUsage)
-  }
-
-}
+    extends OptionSchema {}
 
 /**
   * OptionSchema created from a method definition
@@ -143,31 +116,4 @@ class MethodOptionSchema(method: MethodSurface) extends OptionSchema {
     }
     l.sortBy(x => x.argIndex)
   }
-
-  def description = {
-    method match {
-      case m: ReflectMethodSurface if m.getMethod.isDefined =>
-        m.getMethod.get.getDeclaredAnnotations
-          .collectFirst {
-            case c: command => c.description
-          }
-          .getOrElse("")
-      case _ => ""
-    }
-  }
-
-  override def usage = {
-    val argLine =
-      method match {
-        case m: ReflectMethodSurface if m.getMethod.isDefined =>
-          m.getMethod.get.getDeclaredAnnotations
-            .collectFirst {
-              case c: command if !c.usage.isEmpty => c.usage
-            }
-            .getOrElse(defaultUsage)
-        case _ => defaultUsage
-      }
-    "%s %s".format(method.name, argLine)
-  }
-
 }

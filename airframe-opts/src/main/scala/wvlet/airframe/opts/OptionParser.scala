@@ -20,15 +20,15 @@ package wvlet.airframe.opts
 //
 //--------------------------------------
 
-import wvlet.log.{LogSupport, Logger}
 import wvlet.airframe.surface._
 import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
+import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.{universe => ru}
 import scala.util.matching.Regex
 import scala.util.matching.Regex.Match
-import scala.reflect.runtime.{universe => ru}
 
 /**
   * Creates option parsers
@@ -55,10 +55,15 @@ object OptionParser extends LogSupport {
     parse(tokenize(argLine))
   }
 
-  val defaultUsageTemplate =
-    """|usage:$COMMAND$ $ARGUMENT_LIST$
-      |  $DESCRIPTION$
-      |$OPTION_LIST$""".stripMargin
+  private[opts] def splitPrefixes(prefix: String): Seq[String] = {
+    for (p <- prefix.split(",").toSeq) yield {
+      if (p.startsWith("--") || p.startsWith("-")) {
+        p
+      } else {
+        throw new IllegalArgumentException(s"Invalid prefix ${prefix} (not beginning with - or --)")
+      }
+    }
+  }
 
   /**
     * Option -> value mapping result
@@ -80,101 +85,92 @@ object OptionParser extends LogSupport {
     def iterator = value.map(opt.path -> _).iterator
   }
 
-}
-
-/**
-  * command-line option
-  */
-sealed trait CLOptionItem {
-  def path: Path
-  def takesArgument: Boolean          = false
-  def takesMultipleArguments: Boolean = false
-}
-
-abstract class CLOptionItemBase(val param: Parameter) extends CLOptionItem {
-  override def takesMultipleArguments: Boolean = {
-    import wvlet.airframe.surface.reflect.ReflectTypeUtil._
-    val t: Class[_] = param.surface.rawType
-    isArray(t) || isSeq(t)
+  /**
+    * command-line option
+    */
+  sealed trait CLOptionItem {
+    def path: Path
+    def takesArgument: Boolean          = false
+    def takesMultipleArguments: Boolean = false
   }
-}
 
-trait CLArgItem extends CLOptionItem {
-  def path: Path
-  def name: String
-  def argIndex: Int
-}
+  abstract class CLOptionItemBase(val param: Parameter) extends CLOptionItem {
+    override def takesMultipleArguments: Boolean = {
+      import wvlet.airframe.surface.reflect.ReflectTypeUtil._
+      val t: Class[_] = param.surface.rawType
+      isArray(t) || isSeq(t)
+    }
+  }
 
-/**
-  * CommandTrait line option and the associated class parameter
-  *
-  * @param annot
-  * @param param
-  */
-case class CLOption(path: Path, annot: option, override val param: Parameter) extends CLOptionItemBase(param) {
+  trait CLArgItem extends CLOptionItem {
+    def path: Path
+    def name: String
+    def argIndex: Int
+  }
 
-  // validate prefixes
-  val prefixes: Seq[String] =
-    for (p <- annot.prefix.split(",").toSeq) yield {
-      if (p.startsWith("--") || p.startsWith("-")) {
-        p
+  /**
+    * CommandTrait line option and the associated class parameter
+    *
+    * @param annot
+    * @param param
+    */
+  case class CLOption(path: Path, annot: option, override val param: Parameter) extends CLOptionItemBase(param) {
+
+    // validate prefixes
+    val prefixes: Seq[String]           = splitPrefixes(annot.prefix())
+    override def takesArgument: Boolean = param.surface != Primitive.Boolean
+  }
+
+  /**
+    * CommandTrait line argument type and the associated class parameter
+    *
+    * @param arg
+    * @param param
+    */
+  case class CLArgument(path: Path, arg: argument, argIndex: Int, override val param: Parameter)
+      extends CLOptionItemBase(param)
+      with CLArgItem {
+    def name: String =
+      if (arg.name.isEmpty) {
+        param.name
       } else {
-        throw new IllegalArgumentException(
-          "Invalid prefix %s (not beginning with - or --). Fix option of %s".format(p, param.name))
+        arg.name
       }
+
+  }
+
+  case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
+      extends LogSupport {
+
+    override def toString: String = {
+      s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
     }
 
-  override def takesArgument: Boolean = param.surface != Primitive.Boolean
+    def buildObject(surface: Surface): Any = {
+      val b = ObjectBuilder(surface)
+      build(b).build
+    }
+
+    def buildObjectWithFilter[A](surface: Surface, filter: String => Boolean): Any = {
+      val b = ObjectBuilder(surface)
+      trace(s"build from parse tree: ${parseTree}")
+      for ((path, value) <- parseTree.dfs if filter(path.last)) {
+        b.set(path, value)
+      }
+      b.build.asInstanceOf[A]
+    }
+
+    def build[B <: GenericBuilder](builder: B): B = {
+      trace(s"build from parse tree: ${parseTree}")
+      for ((path, value) <- parseTree.dfs) {
+        builder.set(path, value)
+      }
+      builder
+    }
+  }
 }
 
-/**
-  * CommandTrait line argument type and the associated class parameter
-  *
-  * @param arg
-  * @param param
-  */
-case class CLArgument(path: Path, arg: argument, argIndex: Int, override val param: Parameter)
-    extends CLOptionItemBase(param)
-    with CLArgItem {
-  def name: String =
-    if (arg.name.isEmpty) {
-      param.name
-    } else {
-      arg.name
-    }
-
-}
-
-case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
-    extends LogSupport {
-
-  override def toString: String = {
-    s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
-  }
-
-  def buildObject(surface: Surface): Any = {
-    val b = ObjectBuilder(surface)
-    build(b).build
-  }
-
-  def buildObjectWithFilter[A](surface: Surface, filter: String => Boolean): Any = {
-    val b = ObjectBuilder(surface)
-    trace(s"build from parse tree: ${parseTree}")
-    for ((path, value) <- parseTree.dfs if filter(path.last)) {
-      b.set(path, value)
-    }
-    b.build.asInstanceOf[A]
-  }
-
-  def build[B <: GenericBuilder](builder: B): B = {
-    trace(s"build from parse tree: ${parseTree}")
-    for ((path, value) <- parseTree.dfs) {
-      builder.set(path, value)
-    }
-    builder
-  }
-
-}
+import OptionParser._
 
 /**
   * CommandTrait-line argument parser
@@ -308,8 +304,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
           } else {
             ArgMapping(a, values(0))
           }
-//        case (cn: CommandNameArgument, values) =>
-//          ArgMapping(cn, values(0))
+        //        case (cn: CommandNameArgument, values) =>
+        //          ArgMapping(cn, values(0))
       }
       m.toSeq
     }
@@ -320,68 +316,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     new OptionParserResult(holder, unusedArguments.toArray, showHelp)
   }
 
-  def printUsage = {
-    print(createUsage())
+  def optionList: Seq[CLOption] = {
+    schema.options
   }
-
-  def createOptionHelpMessage = {
-    val optionList = createOptionList
-    val b          = new StringBuilder
-    if (optionList.nonEmpty) {
-      b.append("[options]\n")
-      b.append(optionList.mkString("\n") + "\n")
-    }
-    b.result
-  }
-
-  def optionList: Seq[option] = {
-    schema.options.map(_.annot)
-  }
-
-  def createOptionList: Seq[String] = {
-    val optDscr: Seq[(CLOption, String)] = for (o <- schema.options)
-      yield {
-        val opt: option = o.annot
-        val hasShort    = o.prefixes.exists(_.length == 2)
-        val hasAlias    = o.prefixes.exists(_.length > 2)
-        val l           = new StringBuilder
-        l append o.prefixes.mkString(", ")
-
-        if (o.takesArgument) {
-          if (hasAlias) {
-            l append ":"
-          } else if (hasShort) {
-            l append " "
-          }
-          l append "[%s]".format(o.param.name.toUpperCase)
-        }
-        (o, l.toString)
-      }
-
-    val optDscrLenMax =
-      if (optDscr.isEmpty) {
-        0
-      } else {
-        optDscr.map(_._2.length).max
-      }
-
-    def genDescription(opt: CLOption) = {
-      opt.annot.description()
-    }
-
-    val s = for (x <- optDscr) yield {
-      val paddingLen = optDscrLenMax - x._2.length
-      val padding    = Array.fill(paddingLen)(" ").mkString
-      " %s%s  %s".format(x._2, padding, genDescription(x._1))
-    }
-    s
-  }
-
-  def createUsage(template: String = defaultUsageTemplate): String = {
-    StringTemplate.eval(template) {
-      Map('ARGUMENT_LIST -> schema.usage, 'OPTION_LIST -> createOptionHelpMessage, 'DESCRIPTION -> schema.description)
-    }
-
-  }
-
 }

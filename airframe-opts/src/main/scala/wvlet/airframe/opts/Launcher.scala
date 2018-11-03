@@ -23,9 +23,10 @@ package wvlet.airframe.opts
 
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.log.LogSupport
+import wvlet.airframe.opts.OptionParser.CLOption
 import wvlet.airframe.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
-import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
+import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -49,6 +50,11 @@ object Launcher extends LogSupport {
     val result = l.execute(args)
     result.getRootInstance.asInstanceOf[A]
   }
+
+  val defaultUsageTemplate =
+    """|usage:$COMMAND$ $ARGUMENT_LIST$
+       |  $DESCRIPTION$
+       |$OPTION_LIST$""".stripMargin
 }
 
 /**
@@ -85,15 +91,15 @@ abstract class Launcher extends LogSupport {
   import Launcher._
 
   def name: String
-  def description: String
   def subCommands: Seq[Launcher]
 
-  def optionList: Seq[option] = {
+  def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
 
   def optionParser: OptionParser
 
+  protected def helpMessageTemplate = defaultUsageTemplate
   //lazy private[opts] val schema = ClassOptionSchema(surface)
 
   /**
@@ -121,14 +127,31 @@ abstract class Launcher extends LogSupport {
     subCommands.find(x => CName(x.name) == cname)
   }
 
+  def description: String
+  def usage: String
+
+  protected def defaultUsage: String = {
+    val l = for (a <- optionParser.schema.args) yield {
+      a.name
+    }
+    l.map("[%s]".format(_)).mkString(" ")
+  }
+
+  def printUsage = {
+    val m = StringTemplate.eval(helpMessageTemplate) {
+      Map('ARGUMENT_LIST -> usage, 'OPTION_LIST -> createOptionHelpMessage, 'DESCRIPTION -> description)
+    }
+    print(m)
+  }
+
   def printHelp(stack: List[LauncherInstance] = Nil): Unit = {
     trace("print usage")
     val p = optionParser
-    p.printUsage
+    printUsage
 
     // Show parent options
     val parentOptions = stack.flatMap { x =>
-      x.launcher.optionParser.createOptionList
+      x.launcher.optionList
     }
     if (parentOptions.nonEmpty) {
       println("[global options]")
@@ -146,7 +169,57 @@ abstract class Launcher extends LogSupport {
       }
     }
   }
+
+  def createOptionHelpMessage = {
+    val optionList = createOptionList
+    val b          = new StringBuilder
+    if (optionList.nonEmpty) {
+      b.append("[options]\n")
+      b.append(optionList.mkString("\n") + "\n")
+    }
+    b.result
+  }
+
+  def createOptionList: Seq[String] = {
+    val optDscr: Seq[(CLOption, String)] = for (o <- optionList) yield {
+      val prefixes = o.prefixes
+      val hasShort = prefixes.exists(_.length == 2)
+      val hasAlias = prefixes.exists(_.length > 2)
+      val l        = new StringBuilder
+      l.append(prefixes.mkString(", "))
+
+      if (o.takesArgument) {
+        if (hasAlias) {
+          l append ":"
+        } else if (hasShort) {
+          l append " "
+        }
+        l append "[%s]".format(o.param.name.toUpperCase)
+      }
+      (o, l.toString)
+    }
+
+    val optDscrLenMax =
+      if (optDscr.isEmpty) {
+        0
+      } else {
+        optDscr.map(_._2.length).max
+      }
+
+    def genDescription(opt: CLOption) = {
+      opt.annot.description()
+    }
+
+    val s = for (x <- optDscr) yield {
+      val paddingLen = optDscrLenMax - x._2.length
+      val padding    = Array.fill(paddingLen)(" ").mkString
+      " %s%s  %s".format(x._2, padding, genDescription(x._1))
+    }
+    s
+  }
 }
+
+import wvlet.airframe.surface.reflect._
 
 object ClassLauncher {
 
@@ -231,11 +304,18 @@ private[opts] class ClassLauncher(surface: Surface,
       }
     }
   }
+
+  override def usage = {
+    surface
+      .findAnnotationOf[command]
+      .map(_.usage)
+      .find(_.nonEmpty)
+      .getOrElse(defaultUsage)
+  }
 }
 
 private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: command) extends Launcher {
   override def name: String                                              = methodSurface.name
-  override def description: String                                       = method.description()
   override def subCommands: Seq[Launcher]                                = Seq.empty
   override def add(subCommandName: String, launcher: Launcher): Launcher = ???
 
@@ -267,5 +347,20 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
         case other: Throwable             => throw other
       }
     }
+  }
+
+  override def description = {
+    Some(method.description())
+      .map(x => x)
+      .find(_.nonEmpty)
+      .getOrElse("")
+  }
+
+  override def usage = {
+    val argLine = Some(method.description())
+      .map(x => x)
+      .find(_.nonEmpty)
+      .getOrElse(defaultUsage)
+    s"${methodSurface.name} ${argLine}"
   }
 }
