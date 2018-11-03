@@ -145,13 +145,12 @@ case class CLArgument(path: Path, arg: argument, argIndex: Int, override val par
 
 }
 
-case class CommandNameArgument(path: Path) extends CLArgItem {
-  def argIndex = 0
-  def name     = Launcher.
-}
-
 case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
     extends LogSupport {
+
+  override def toString: String = {
+    s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
+  }
 
   def buildObject(surface: Surface): Any = {
     val b = ObjectBuilder(surface)
@@ -309,8 +308,8 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
           } else {
             ArgMapping(a, values(0))
           }
-        case (cn: CommandNameArgument, values) =>
-          ArgMapping(cn, values(0))
+//        case (cn: CommandNameArgument, values) =>
+//          ArgMapping(cn, values(0))
       }
       m.toSeq
     }

@@ -47,56 +47,51 @@ import scala.reflect.runtime.{universe => ru}
   * }}}
   *
   */
-class Launcher(surface: Surface, name: String, description: String = "", subCommands: Seq[Launcher] = Seq.empty)
+case class SubCommand(name: String, launcher: Launcher)
+
+case class Launcher(surface: Surface, name: String, description: String = "", subCommands: Seq[SubCommand] = Seq.empty)
     extends LogSupport {
 
   import Launcher._
 
-  lazy private val schema = ClassOptionSchema(surface)
+  //lazy private[opts] val schema = ClassOptionSchema(surface)
 
   /**
     * Add a sub command to the launcher
     * @param subCommandName
-    * @param subCommandDescription
+    * @param description
     * @tparam A
     * @return
     */
-  def addSubCommand[A: ru.TypeTag](subCommandName: String, subCommandDescription: String = ""): Launcher = {
+  def addSubCommand[A: ru.TypeTag](name: String, description: String = ""): Launcher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[A]].tpe)
-    Launcher(surface, name, description, subCommands :+ Launcher(moduleSurface, subCommandName, subCommandDescription))
+    add(name, new Launcher(moduleSurface, name, description))
+  }
+
+  def add(subCommandName: String, launcher: Launcher): Launcher = {
+    Launcher(surface, this.name, this.description, subCommands :+ SubCommand(subCommandName, launcher))
+  }
+
+  private[opts] def findSubCommand(name: String): Option[Launcher] = {
+    subCommands.find(_.name == name).map(_.launcher)
   }
 
   def execute[A <: AnyRef](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
   def execute[A <: AnyRef](args: Array[String], showHelp: Boolean = false): A = {
-    val p = new OptionParser(schema)
-    val r = p.parse(args)
-    trace(s"parse tree: ${r.parseTree}")
-    val mainObj: A = r.buildObjectWithFilter(surface, _ != commandNameParam).asInstanceOf[A]
-    val cn: Option[String] =
-      (for ((path, value) <- r.parseTree.dfs if path.fullPath == commandNameParam) yield value).toSeq.headOption
-    val helpIsOn = r.showHelp || showHelp
-    val result = try {
-      for (commandName <- cn; c <- findCommand(commandName, mainObj))
-        yield c.execute(p, mainObj, r.unusedArgument, helpIsOn)
-    } catch {
-      case e: InvocationTargetException => throw e.getTargetException
-    }
 
-    if (result.isEmpty) {
-      if (helpIsOn) {
-        printHelp(p, mainObj)
-      } else {
-        findDefaultCommand(surface).map { defaultCommandMethod =>
-          defaultCommandMethod.call(mainObj)
-        }
-      }
-    }
-    result getOrElse mainObj
+    // Process args using the
+    val argProcessor = new ArgProcessor(this)
+    val result       = argProcessor.process(args)
+
+    //for (p <- surface.params) {}
+
+    // TODO
+    null.asInstanceOf[A]
   }
 
-  private def findDefaultCommand(s: Surface): Option[MethodSurface] = {
+  private[opts] def findDefaultCommand: Option[MethodSurface] = {
     SurfaceFactory
-      .methodsOf(s)
+      .methodsOf(surface)
       .find { m =>
         import wvlet.airframe.surface.reflect._
         m.findAnnotationOf[defaultCommand].isDefined
@@ -104,48 +99,48 @@ class Launcher(surface: Surface, name: String, description: String = "", subComm
   }
 
   def printHelp: Unit = {
-    printHelp(OptionParser(surface), Zero.zeroOf(surface).asInstanceOf[AnyRef])
-  }
-
-  def printHelp(p: OptionParser, obj: AnyRef): Unit = {
     trace("print usage")
+    val p = OptionParser(surface)
     p.printUsage
 
-    val lst = commandList ++ subCommands
-    if (!lst.isEmpty) {
-      println("[commands]")
-      val maxCommandNameLen = lst.map(_.name.length).max
-      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
-      lst.foreach { c =>
-        println(format.format(c.name, c.description))
-      }
-    }
+    // TODO Show sub commend lists
   }
 
-  private lazy val commandList: Seq[Command] = {
-    import wvlet.airframe.surface.reflect._
-    trace(s"command class:${surface.name}")
-    val methods = SurfaceFactory.methodsOf(surface)
-    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandMethod(m, c)
-    lst
-  }
+  //    val lst = commandList ++ subCommands
+  //    if (!lst.isEmpty) {
+  //      println("[commands]")
+  //      val maxCommandNameLen = lst.map(_.name.length).max
+  //      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+  //      lst.foreach { c =>
+  //        println(format.format(c.name, c.description))
+  //      }
+  //    }
+// }
 
-  private def findCommand(name: String, mainObj: AnyRef): Option[Command] = {
+//  private def commandList: Seq[Command] = {
+//    import wvlet.airframe.surface.reflect._
+//    trace(s"command class:${surface.name}")
+//    val methods = SurfaceFactory.methodsOf(surface)
+//    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandMethod(m, c)
+//    lst
+//  }
 
-    def find(name: String): Option[Command] = {
-      val cname = CName(name)
-      trace(s"trying to find command:$cname")
-      commandList.find(e => CName(e.name) == cname)
-    }
-
-    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Command] =
-      subCommands.find(x => x.name == name)
-
-    find(name) orElse findModule(name, mainObj) orElse {
-      warn(s"Unknown command: $name")
-      None
-    }
-  }
+//  private def findCommand(name: String, mainObj: AnyRef): Option[Command] = {
+//
+//    def find(name: String): Option[Command] = {
+//      val cname = CName(name)
+//      trace(s"trying to find command:$cname")
+//      commandList.find(e => CName(e.name) == cname)
+//    }
+//
+//    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Command] =
+//      subCommands.find(x => x.name == name)
+//
+//    find(name) orElse findModule(name, mainObj) orElse {
+//      warn(s"Unknown command: $name")
+//      None
+//    }
+//  }
 }
 
 /**

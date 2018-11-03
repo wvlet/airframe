@@ -12,13 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.opts
-import wvlet.airframe.opts.ClassOptionSchema.error
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
-/**
-  *
-  */
 /**
   * Schema of the command line options
   */
@@ -76,43 +72,32 @@ object ClassOptionSchema extends LogSupport {
     val o        = Array.newBuilder[CLOption]
     val a        = Array.newBuilder[CLArgItem]
     for (p <- surface.params) {
-
       val nextPath = path / p.name
-      p.findAnnotationOf[option] match {
-        case Some(opt) => o += new CLOption(nextPath, opt, p)
-        case None =>
-          p.findAnnotationOf[argument] match {
-            case Some(arg) => {
-              a += new CLArgument(nextPath, arg, argIndexOffset + argCount, p)
-              argCount += 1
-            }
-            case None => // nested option
-              val nested = ClassOptionSchema(p.surface, nextPath, argCount)
-              o ++= nested.options
-              a ++= nested.args
-              argCount += nested.args.length
-          }
+
+      val optAnnot = p.findAnnotationOf[option]
+      val argAnnot = p.findAnnotationOf[argument]
+
+      // @option
+      optAnnot.map { opt =>
+        o += new CLOption(nextPath, opt, p)
+      }
+
+      // @argument
+      argAnnot.map { arg =>
+        a += new CLArgument(nextPath, arg, argIndexOffset + argCount, p)
+        argCount += 1
+      }
+
+      if (optAnnot.isEmpty || argAnnot.isEmpty) {
+        // The parameter might be a nested parameter object
+        val nested = ClassOptionSchema(p.surface, nextPath, argCount)
+        o ++= nested.options
+        a ++= nested.args
+        argCount += nested.args.length
       }
     }
-
-    // find command methods
-    val tpe = SurfaceFactory.findTypeOf(surface).getOrElse {
-      throw new IllegalThreadStateException(s"Cannot find runtime type of ${surface}")
-    }
-    val methods        = SurfaceFactory.methodsOfType(tpe)
-    val commandMethods = for (m <- methods; c <- m.findAnnotationOf[command]) yield m
-    if (!commandMethods.isEmpty || CommandModule.isModuleClass(surface.rawType)) {
-      if (!a.result().isEmpty) {
-        error(s"class ${surface} with @command methods cannot have @argument in constructor")
-      } else {
-        // Add command name argument
-        a += new CommandNameArgument(path / Launcher.commandNameParam)
-      }
-    }
-
     new ClassOptionSchema(surface, o.result.toSeq, a.result().toSeq.sortBy(x => x.argIndex))
   }
-
 }
 
 /**

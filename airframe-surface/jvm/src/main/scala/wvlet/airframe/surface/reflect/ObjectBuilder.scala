@@ -13,16 +13,14 @@
  */
 package wvlet.airframe.surface.reflect
 
-import java.util.Locale
-
-import wvlet.log.LogSupport
-import wvlet.airframe.surface.reflect.ReflectTypeUtil._
+import wvlet.airframe.surface.CanonicalNameFormatter._
 import wvlet.airframe.surface._
+import wvlet.airframe.surface.reflect.ReflectTypeUtil._
+import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import wvlet.airframe.surface.CanonicalNameFormatter._
 import scala.language.existentials
 
 //--------------------------------------
@@ -213,8 +211,6 @@ trait StandardBuilder extends GenericBuilder with LogSupport {
 
 class SimpleObjectBuilder(surface: Surface) extends ObjectBuilder with StandardBuilder with LogSupport {
   require(surface.objectFactory.isDefined, s"No object factory is found for ${surface}")
-
-  import ObjectBuilder._
 
   protected def findParameter(name: String) = {
     assert(surface != null)
