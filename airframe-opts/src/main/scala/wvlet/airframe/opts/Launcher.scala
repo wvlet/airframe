@@ -180,9 +180,10 @@ private[opts] class ClassLauncher(surface: Surface,
   }
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
-    val schema    = ClassOptionSchema(surface)
-    val parser    = new OptionParser(schema)
-    val result    = parser.parse(args.toArray)
+    val schema = ClassOptionSchema(surface)
+    val parser = new OptionParser(schema)
+    val result = parser.parse(args.toArray)
+    debug(result)
     val obj       = result.buildObject(surface)
     val nextStack = LauncherInstance(this, obj) :: stack
 
@@ -212,7 +213,7 @@ private[opts] class ClassLauncher(surface: Surface,
       val subCommandName = result.unusedArgument.head
       findSubCommand(subCommandName) match {
         case Some(subCommand) =>
-          subCommand.execute(nextStack, result.unusedArgument.tail, showHelp)
+          subCommand.execute(nextStack, result.unusedArgument.tail, showHelpMessage)
         case None =>
           throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
       }
