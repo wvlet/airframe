@@ -49,7 +49,9 @@ class LauncherTest extends AirframeSpec {
       Console.withOut(out) {
         body
       }
-      new String(out.toByteArray)
+      val s = new String(out.toByteArray)
+      debug(s)
+      s
     }
 
     def captureErr[U](body: => U): String = {
@@ -57,7 +59,9 @@ class LauncherTest extends AirframeSpec {
       Console.withErr(out) {
         body
       }
-      new String(out.toByteArray)
+      val s = new String(out.toByteArray)
+      debug(s)
+      s
     }
 
     "populate arguments in constructor" taggedAs ("test1") in {
@@ -166,9 +170,9 @@ class LauncherTest extends AirframeSpec {
 //      c.g should not be (null)
 //    }
 
-    "display comand module help" in {
+    "display command module help" in {
       val help = capture {
-        Launcher.execute[MyCommandModule]("-h")
+        myCommandModule.execute("-h")
       }
       trace(help)
       help should (include("-h"))
@@ -177,10 +181,11 @@ class LauncherTest extends AirframeSpec {
       help should (include("command set"))
     }
 
-    "display individual command help" in {
+    "display individual command help" taggedAs ("failed") in {
       val help = capture {
-        val l = Launcher.execute[MyCommandModule]("box --help")
-        l.g.help should be(true)
+        val result = myCommandModule.execute("box --help")
+        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+        m.g.help should be(true)
       }
       trace(help)
       help should (include("hello"))

@@ -47,7 +47,7 @@ object Launcher extends LogSupport {
   def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
     val l      = Launcher.of[A]
     val result = l.execute(args)
-    result.executedModule.asInstanceOf[A]
+    result.getRootInstance.asInstanceOf[A]
   }
 }
 
@@ -56,7 +56,12 @@ object Launcher extends LogSupport {
   * @param executedModule
   * @param result
   */
-case class LauncherResult(executedModule: Any, result: Option[Any])
+case class LauncherResult(launcherStack: List[LauncherInstance], result: Option[Any]) {
+  require(launcherStack.nonEmpty, "launcherStack should not be empty")
+
+  def getRootInstance: Any = launcherStack.reverse.head.instance
+}
+case class LauncherInstance(launcher: Launcher, instance: Any)
 
 /**
   * Command launcher.
@@ -99,9 +104,10 @@ abstract class Launcher extends LogSupport {
 
   def add(subCommandName: String, launcher: Launcher): Launcher
 
-  def execute(argLine: String): LauncherResult                                = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute(args: Array[String], showHelp: Boolean = false): LauncherResult = execute(None, args.toSeq, showHelp)
-  private[opts] def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult
+  def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute(args: Array[String], showHelp: Boolean = false): LauncherResult =
+    execute(List.empty, args.toSeq, showHelp)
+  private[opts] def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult
 
   private[opts] def findDefaultCommand: Option[MethodSurface]
   private[opts] def findSubCommand(name: String): Option[Launcher] = {
@@ -173,16 +179,12 @@ private[opts] class ClassLauncher(surface: Surface,
       }
   }
 
-  override def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult = {
-
-    info(args.mkString(", "))
-    val schema = ClassOptionSchema(surface)
-    val parser = new OptionParser(schema)
-    val result = parser.parse(args.toArray)
-    info(result)
-
-    val obj = result.buildObject(surface)
-    info(s"build object: ${obj}")
+  override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
+    val schema    = ClassOptionSchema(surface)
+    val parser    = new OptionParser(schema)
+    val result    = parser.parse(args.toArray)
+    val obj       = result.buildObject(surface)
+    val nextStack = LauncherInstance(this, obj) :: stack
 
     val showHelpMessage = result.showHelp | showHelp
 
@@ -191,7 +193,7 @@ private[opts] class ClassLauncher(surface: Surface,
       if (showHelpMessage) {
         // Show the help message
         printHelp
-        LauncherResult(obj, None)
+        LauncherResult(nextStack, None)
       } else {
         // Run the default command
         findDefaultCommand
@@ -199,10 +201,10 @@ private[opts] class ClassLauncher(surface: Surface,
             defaultCommand.call(obj)
           }
           .map { x =>
-            LauncherResult(obj, Some(x))
+            LauncherResult(nextStack, Some(x))
           }
           .getOrElse {
-            LauncherResult(obj, None)
+            LauncherResult(nextStack, None)
           }
       }
     } else {
@@ -210,7 +212,7 @@ private[opts] class ClassLauncher(surface: Surface,
       val subCommandName = result.unusedArgument.head
       findSubCommand(subCommandName) match {
         case Some(subCommand) =>
-          subCommand.execute(parent = Some((this, obj)), result.unusedArgument.tail, showHelp)
+          subCommand.execute(nextStack, result.unusedArgument.tail, showHelp)
         case None =>
           throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
       }
@@ -227,14 +229,11 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
   override private[opts] def findDefaultCommand: Option[MethodSurface] = None
   override def printHelp: Unit                                         = {}
 
-  override def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult = {
-    info(args.mkString(", "))
+  override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val schema = new MethodOptionSchema(methodSurface)
     val parser = new OptionParser(schema)
     val result = parser.parse(args.toArray)
-    info(result)
-
-    val parentObj = parent.map(_._2).getOrElse {
+    val parentObj = stack.headOption.map(_.instance).getOrElse {
       throw new IllegalStateException("parent should not be empty")
     }
 
@@ -245,11 +244,11 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
     }
 
     if (showHelpMessage) {
-      LauncherResult(parentObj, None)
+      LauncherResult(stack, None)
     } else {
       val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
       val methodResult = result.build(m).execute
-      LauncherResult(parentObj, Some(methodResult))
+      LauncherResult(stack, Some(methodResult))
     }
   }
 }

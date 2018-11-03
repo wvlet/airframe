@@ -18,6 +18,7 @@ object ArgProcessorTest {
 
   case class Cmd(
       @option(prefix = "-h,--help", description = "show help messages", isHelp = true) help: Boolean = false) {
+
     @defaultCommand
     def usage: Unit = {
       println("Type --help to show the list of sub commands")
