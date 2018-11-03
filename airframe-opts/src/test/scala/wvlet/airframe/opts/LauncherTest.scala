@@ -181,7 +181,7 @@ class LauncherTest extends AirframeSpec {
       help should (include("command set"))
     }
 
-    "display individual command help" taggedAs ("failed") in {
+    "display individual command help" in {
       val help = capture {
         val result = myCommandModule.execute("box --help")
         val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
@@ -192,10 +192,11 @@ class LauncherTest extends AirframeSpec {
       help should (include("world"))
     }
 
-    "display subcommand help" in {
+    "display sub-command help" in {
       val help = capture {
-        val l = Launcher.execute[MyCommandModule]("box world --help")
-        l.g.help should be(true)
+        val result = myCommandModule.execute("box world --help")
+        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+        m.g.help should be(true)
       }
       trace(s"box world --help:\n$help")
       help should (include("message"))
@@ -203,7 +204,9 @@ class LauncherTest extends AirframeSpec {
 
     "display invalid command error" in {
       val msg = capture {
-        Launcher.execute[MyCommandModule]("unknown-command")
+        intercept[IllegalArgumentException] {
+          myCommandModule.execute("unknown-command")
+        }
       }
       trace(msg)
     }
@@ -211,7 +214,7 @@ class LauncherTest extends AirframeSpec {
     "unwrap InvocationTargetException" in {
       val msg = capture {
         intercept[IllegalArgumentException] {
-          Launcher.execute[MyCommandModule]("errorTest")
+          myCommandModule.execute("errorTest")
         }
       }
       trace(msg)

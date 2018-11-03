@@ -228,7 +228,11 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
   override def add(subCommandName: String, launcher: Launcher): Launcher = ???
 
   override private[opts] def findDefaultCommand: Option[MethodSurface] = None
-  override def printHelp: Unit                                         = {}
+  override def printHelp: Unit = {
+    trace("print usage")
+    val p = new OptionParser(methodSurface)
+    p.printUsage
+  }
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val schema = new MethodOptionSchema(methodSurface)
@@ -245,11 +249,17 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
     }
 
     if (showHelpMessage) {
+      printHelp
       LauncherResult(stack, None)
     } else {
-      val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
-      val methodResult = result.build(m).execute
-      LauncherResult(stack, Some(methodResult))
+      try {
+        val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
+        val methodResult = result.build(m).execute
+        LauncherResult(stack, Some(methodResult))
+      } catch {
+        case e: InvocationTargetException => throw e.getTargetException
+        case other: Throwable             => throw other
+      }
     }
   }
 }
