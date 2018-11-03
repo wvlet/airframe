@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit
 
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -155,6 +156,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
 
   def yesterday = today.minus(1, ChronoUnit.DAYS)
 
+  @tailrec
   private def parseOffset(o: String, windowUnit: TimeWindowUnit, adjustments: Seq[TimeVector] = Nil): ZonedDateTime = {
     val pattern = s"^([^/]+)(/(.+))".r("duration", "sep", "offset")
     pattern.findFirstMatchIn(o) match {
