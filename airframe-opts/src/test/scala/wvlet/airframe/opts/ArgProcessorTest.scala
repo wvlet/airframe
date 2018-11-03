@@ -25,6 +25,13 @@ object ArgProcessorTest {
     }
   }
 
+  case class SubCmd(@option(prefix = "-p", description = "port number") port: Int)
+
+  val nestedLauncher =
+    Launcher
+      .of[Cmd]
+      .addSubCommand[SubCmd]("sub", description = "sub command")
+
 }
 
 class ArgProcessorTest extends AirframeSpec {
@@ -34,6 +41,14 @@ class ArgProcessorTest extends AirframeSpec {
     val l = Launcher.of[Cmd]
     l.execute("")
     l.execute("-h")
+  }
+
+  "should show global options" in {
+    val c = LauncherTest.capture {
+      nestedLauncher.execute("sub -h")
+    }
+    c should contain("global options")
+    c should contain("port number")
   }
 
 }

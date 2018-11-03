@@ -23,7 +23,7 @@ package wvlet.airframe.opts
 
 import java.io.ByteArrayOutputStream
 
-import wvlet.log.{LogLevel, LogSupport}
+import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -31,39 +31,9 @@ import wvlet.airframe.AirframeSpec
   */
 class LauncherTest extends AirframeSpec {
 
-  import Launcher._
-
   "Launcher" should {
 
     import LauncherTest._
-
-    /**
-      * Captures the output stream and returns the printed messages as a String
-      *
-      * @param body
-      * @tparam U
-      * @return
-      */
-    def capture[U](body: => U): String = {
-      val out = new ByteArrayOutputStream
-      Console.withOut(out) {
-        body
-      }
-      val s = new String(out.toByteArray)
-      debug(s)
-      s
-    }
-
-    def captureErr[U](body: => U): String = {
-      val out = new ByteArrayOutputStream
-      Console.withErr(out) {
-        body
-      }
-      val s = new String(out.toByteArray)
-      debug(s)
-      s
-    }
-
     "populate arguments in constructor" taggedAs ("test1") in {
       capture {
         val l = Launcher.execute[GlobalOption]("-h -l debug")
@@ -266,6 +236,35 @@ class LauncherTest extends AirframeSpec {
 }
 
 object LauncherTest {
+
+  private val logger = Logger.of[LauncherTest]
+
+  /**
+    * Captures the output stream and returns the printed messages as a String
+    *
+    * @param body
+    * @tparam U
+    * @return
+    */
+  def capture[U](body: => U): String = {
+    val out = new ByteArrayOutputStream
+    Console.withOut(out) {
+      body
+    }
+    val s = new String(out.toByteArray)
+    logger.debug(s)
+    s
+  }
+
+  def captureErr[U](body: => U): String = {
+    val out = new ByteArrayOutputStream
+    Console.withErr(out) {
+      body
+    }
+    val s = new String(out.toByteArray)
+    logger.debug(s)
+    s
+  }
 
   case class GlobalOption(
       @option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,

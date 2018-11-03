@@ -158,12 +158,12 @@ private[opts] class ClassLauncher(surface: Surface,
     val p = OptionParser(surface)
     p.printUsage
 
-    // TODO Show sub commend lists
     if (subCommands.nonEmpty) {
       println("[commands]")
 
       val maxCommandNameLen = subCommands.map(_.name.length).max
       val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+      // Show sub commend lists
       subCommands.foreach { c =>
         println(format.format(c.name, c.description))
       }
@@ -241,17 +241,16 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
     val parentObj = stack.headOption.map(_.instance).getOrElse {
       throw new IllegalStateException("parent should not be empty")
     }
-
     val showHelpMessage = result.showHelp | showHelp
-    if (result.unusedArgument.nonEmpty) {
-      throw new IllegalArgumentException(
-        s"Unknown command-line arguments are found: ${result.unusedArgument.mkString(", ")}")
-    }
 
     if (showHelpMessage) {
       printHelp
       LauncherResult(stack, None)
     } else {
+      if (result.unusedArgument.nonEmpty) {
+        throw new IllegalArgumentException(
+          s"Unknown command-line arguments are found: ${result.unusedArgument.mkString(", ")}")
+      }
       try {
         val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
         val methodResult = result.build(m).execute
