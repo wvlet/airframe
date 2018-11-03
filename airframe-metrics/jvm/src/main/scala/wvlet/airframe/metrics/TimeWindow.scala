@@ -161,10 +161,12 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
     val pattern = s"^([^/]+)(/(.+))".r("duration", "sep", "offset")
     pattern.findFirstMatchIn(o) match {
       case Some(m) =>
+        // When a nested offset is found
         val d        = m.group("duration")
         val duration = TimeVector(d)
         parseOffset(m.group("offset"), windowUnit, adjustments :+ duration)
       case None =>
+        // no more nested offsets
         o match {
           case "now" => adjustOffset(now, adjustments)
           case other =>
