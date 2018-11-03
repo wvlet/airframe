@@ -43,10 +43,11 @@ object Launcher extends LogSupport {
     ClassLauncher(SurfaceFactory.of[A], name = "", description = "")
   }
 
-  def execute[A: ru.WeakTypeTag](argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute[A: ru.WeakTypeTag](args: Array[String]): LauncherResult = {
-    val l = Launcher.of[A]
-    l.execute(args)
+  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
+    val l      = Launcher.of[A]
+    val result = l.execute(args)
+    result.executedModule.asInstanceOf[A]
   }
 }
 
@@ -233,7 +234,7 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
     val result = parser.parse(args.toArray)
     info(result)
 
-    val obj = parent.map(_._2).getOrElse {
+    val parentObj = parent.map(_._2).getOrElse {
       throw new IllegalStateException("parent should not be empty")
     }
 
@@ -244,8 +245,12 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
     }
 
     if (showHelpMessage) {
-      LauncherResult(obj, None)
-    } else {}
+      LauncherResult(parentObj, None)
+    } else {
+      val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
+      val methodResult = result.build(m).execute
+      LauncherResult(parentObj, Some(methodResult))
+    }
   }
 }
 

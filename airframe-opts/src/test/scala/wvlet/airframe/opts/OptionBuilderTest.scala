@@ -33,9 +33,10 @@ class OptionBuilderTest extends AirframeSpec {
 
   "OptionBuilder" should {
     "read default value" in {
-      val l        = Launcher.of[Main1]
-      val m: Main1 = l.execute("")
-      m.opt.env shouldBe "default"
+      val l   = Launcher.of[Main1]
+      val m   = l.execute("")
+      val opt = m.executedModule.asInstanceOf[Opt1]
+      opt.env shouldBe "default"
     }
   }
 }
