@@ -18,6 +18,7 @@ import java.time.temporal.ChronoUnit
 
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -155,29 +156,48 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
 
   def yesterday = today.minus(1, ChronoUnit.DAYS)
 
-  private def parseOffset(o: String, windowUnit: TimeWindowUnit): ZonedDateTime = {
-    o match {
-      case "now" => now
-      case other =>
-        Try(TimeVector(o)) match {
-          case Success(x) =>
-            // When the offset string is time duration patterns (e.g., 0M, 0d, etc.)
-            x.timeWindowFrom(now).start
-          case Failure(e) =>
-            // When the offset string is the exact date
-            val (timeString, truncate) = if (o.endsWith(")")) {
-              (o.substring(0, o.length - 1), false)
-            } else {
-              (o, true)
+  @tailrec
+  private def parseOffset(o: String, windowUnit: TimeWindowUnit, adjustments: Seq[TimeVector] = Nil): ZonedDateTime = {
+    val pattern = s"^([^/]+)(/(.+))".r("duration", "sep", "offset")
+    pattern.findFirstMatchIn(o) match {
+      case Some(m) =>
+        // When a nested offset is found
+        val d        = m.group("duration")
+        val duration = TimeVector(d)
+        parseOffset(m.group("offset"), windowUnit, duration +: adjustments)
+      case None =>
+        // no more nested offsets
+        o match {
+          case "now" => adjustOffset(now, adjustments)
+          case other =>
+            Try(TimeVector(o)) match {
+              case Success(x) =>
+                // When the offset string is time duration patterns (e.g., 0M, 0d, etc.)
+                x.timeWindowFrom(adjustOffset(now, adjustments)).start
+              case Failure(e) =>
+                // When the offset string is the exact date
+                val (timeString, truncate) = if (o.endsWith(")")) {
+                  (o.substring(0, o.length - 1), false)
+                } else {
+                  (o, true)
+                }
+                TimeParser
+                  .parse(timeString, zone)
+                  .map(offset => adjustOffset(offset, adjustments))
+                  // Truncate the exact date time to the time window unit
+                  .map(offset => if (truncate) windowUnit.truncate(offset) else offset)
+                  .getOrElse {
+                    throw new IllegalArgumentException(s"Invalid offset string: ${o}")
+                  }
             }
-            TimeParser
-              .parse(timeString, zone)
-              // Truncate the exact date time to the time window unit
-              .map(offset => if (truncate) windowUnit.truncate(offset) else offset)
-              .getOrElse {
-                throw new IllegalArgumentException(s"Invalid offset string: ${o}")
-              }
         }
+    }
+  }
+
+  private def adjustOffset(offset: ZonedDateTime, adjustments: Seq[TimeVector]): ZonedDateTime = {
+    adjustments.foldLeft(offset) {
+      case (offset, duration) =>
+        duration.unit.increment(offset, duration.x)
     }
   }
 
