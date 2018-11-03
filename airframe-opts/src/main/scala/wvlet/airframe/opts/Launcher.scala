@@ -88,6 +88,12 @@ abstract class Launcher extends LogSupport {
   def description: String
   def subCommands: Seq[Launcher]
 
+  def optionList: Seq[option] = {
+    optionParser.optionList
+  }
+
+  def optionParser: OptionParser
+
   //lazy private[opts] val schema = ClassOptionSchema(surface)
 
   /**
@@ -115,7 +121,7 @@ abstract class Launcher extends LogSupport {
     subCommands.find(x => CName(x.name) == cname)
   }
 
-  def printHelp: Unit
+  def printHelp(stack: List[LauncherInstance] = Nil): Unit
 }
 
 object ClassLauncher {
@@ -129,7 +135,6 @@ object ClassLauncher {
     }
     new ClassLauncher(surface, name, description, subCommands)
   }
-
 }
 
 /**
@@ -153,10 +158,21 @@ private[opts] class ClassLauncher(surface: Surface,
     new ClassLauncher(surface, this.name, this.description, subCommands :+ launcher)
   }
 
-  override def printHelp: Unit = {
+  override def optionParser = OptionParser(surface)
+
+  override def printHelp(stack: List[LauncherInstance]): Unit = {
     trace("print usage")
-    val p = OptionParser(surface)
+    val p = optionParser
     p.printUsage
+
+    // Show parent options
+    val parentOptions = stack.flatMap { x =>
+      x.launcher.optionParser.createOptionList
+    }
+    if (parentOptions.nonEmpty) {
+      println("[global options]")
+      println(parentOptions.mkString("\n"))
+    }
 
     if (subCommands.nonEmpty) {
       println("[commands]")
@@ -181,8 +197,7 @@ private[opts] class ClassLauncher(surface: Surface,
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val schema = ClassOptionSchema(surface)
-    val parser = new OptionParser(schema)
-    val result = parser.parse(args.toArray)
+    val result = optionParser.parse(args.toArray)
     debug(result)
     val obj       = result.buildObject(surface)
     val nextStack = LauncherInstance(this, obj) :: stack
@@ -193,7 +208,7 @@ private[opts] class ClassLauncher(surface: Surface,
       // This Launcher is a leaf (= no more sub commands)
       if (showHelpMessage) {
         // Show the help message
-        printHelp
+        printHelp(stack)
         LauncherResult(nextStack, None)
       } else {
         // Run the default command
@@ -219,6 +234,7 @@ private[opts] class ClassLauncher(surface: Surface,
       }
     }
   }
+
 }
 
 private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: command) extends Launcher {
@@ -228,23 +244,24 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
   override def add(subCommandName: String, launcher: Launcher): Launcher = ???
 
   override private[opts] def findDefaultCommand: Option[MethodSurface] = None
-  override def printHelp: Unit = {
+
+  override def optionParser = new OptionParser(methodSurface)
+
+  override def printHelp(stack: List[LauncherInstance]): Unit = {
     trace("print usage")
-    val p = new OptionParser(methodSurface)
-    p.printUsage
+    optionParser.printUsage
   }
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val schema = new MethodOptionSchema(methodSurface)
-    val parser = new OptionParser(schema)
-    val result = parser.parse(args.toArray)
+    val result = optionParser.parse(args.toArray)
     val parentObj = stack.headOption.map(_.instance).getOrElse {
       throw new IllegalStateException("parent should not be empty")
     }
     val showHelpMessage = result.showHelp | showHelp
 
     if (showHelpMessage) {
-      printHelp
+      printHelp(stack)
       LauncherResult(stack, None)
     } else {
       if (result.unusedArgument.nonEmpty) {
@@ -261,17 +278,9 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
       }
     }
   }
+
 }
 
-///**
-//  * Based trait for managing nested traits
-//  */
-//sealed trait Command {
-//  def name: String
-//  def description: String
-//  def printHelp: Unit
-//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A
-//}
 //
 //private[Launcher] class CommandMethod(val method: MethodSurface, val command: command)
 //  extends Command
@@ -300,19 +309,3 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
 //    mainObj
 //  }
 //}
-//
-//private[Launcher] case class CommandModule(surface: Surface, name: String, description: String)
-//  extends Command
-//    with LogSupport {
-//  def printHelp = {
-//    debug("module help")
-//    new Launcher(surface, name).printHelp
-//  }
-//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
-//    trace(s"execute module: ${name}")
-//    val result = new Launcher(surface, name).execute[A](args, showHelp)
-//    mainObj
-//  }
-//}
-//
-//private[opts] val commandNameParam = "command name"

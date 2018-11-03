@@ -47,8 +47,8 @@ class ArgProcessorTest extends AirframeSpec {
     val c = LauncherTest.capture {
       nestedLauncher.execute("sub -h")
     }
-    c should contain("global options")
-    c should contain("port number")
+    c should include("global options")
+    c should include("port number")
   }
 
 }

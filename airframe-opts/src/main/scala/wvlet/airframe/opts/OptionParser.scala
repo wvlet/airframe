@@ -334,6 +334,10 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     b.result
   }
 
+  def optionList: Seq[option] = {
+    schema.options.map(_.annot)
+  }
+
   def createOptionList: Seq[String] = {
     val optDscr: Seq[(CLOption, String)] = for (o <- schema.options)
       yield {
