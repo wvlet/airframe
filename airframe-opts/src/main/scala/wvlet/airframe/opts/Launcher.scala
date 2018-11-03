@@ -121,7 +121,31 @@ abstract class Launcher extends LogSupport {
     subCommands.find(x => CName(x.name) == cname)
   }
 
-  def printHelp(stack: List[LauncherInstance] = Nil): Unit
+  def printHelp(stack: List[LauncherInstance] = Nil): Unit = {
+    trace("print usage")
+    val p = optionParser
+    p.printUsage
+
+    // Show parent options
+    val parentOptions = stack.flatMap { x =>
+      x.launcher.optionParser.createOptionList
+    }
+    if (parentOptions.nonEmpty) {
+      println("[global options]")
+      println(parentOptions.mkString("\n"))
+    }
+
+    if (subCommands.nonEmpty) {
+      println("[commands]")
+
+      val maxCommandNameLen = subCommands.map(_.name.length).max
+      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+      // Show sub commend lists
+      subCommands.foreach { c =>
+        println(format.format(c.name, c.description))
+      }
+    }
+  }
 }
 
 object ClassLauncher {
@@ -160,32 +184,6 @@ private[opts] class ClassLauncher(surface: Surface,
 
   override def optionParser = OptionParser(surface)
 
-  override def printHelp(stack: List[LauncherInstance]): Unit = {
-    trace("print usage")
-    val p = optionParser
-    p.printUsage
-
-    // Show parent options
-    val parentOptions = stack.flatMap { x =>
-      x.launcher.optionParser.createOptionList
-    }
-    if (parentOptions.nonEmpty) {
-      println("[global options]")
-      println(parentOptions.mkString("\n"))
-    }
-
-    if (subCommands.nonEmpty) {
-      println("[commands]")
-
-      val maxCommandNameLen = subCommands.map(_.name.length).max
-      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
-      // Show sub commend lists
-      subCommands.foreach { c =>
-        println(format.format(c.name, c.description))
-      }
-    }
-  }
-
   override private[opts] def findDefaultCommand: Option[MethodSurface] = {
     SurfaceFactory
       .methodsOf(surface)
@@ -196,7 +194,6 @@ private[opts] class ClassLauncher(surface: Surface,
   }
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
-    val schema = ClassOptionSchema(surface)
     val result = optionParser.parse(args.toArray)
     debug(result)
     val obj       = result.buildObject(surface)
@@ -234,7 +231,6 @@ private[opts] class ClassLauncher(surface: Surface,
       }
     }
   }
-
 }
 
 private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: command) extends Launcher {
@@ -247,13 +243,7 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
 
   override def optionParser = new OptionParser(methodSurface)
 
-  override def printHelp(stack: List[LauncherInstance]): Unit = {
-    trace("print usage")
-    optionParser.printUsage
-  }
-
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
-    val schema = new MethodOptionSchema(methodSurface)
     val result = optionParser.parse(args.toArray)
     val parentObj = stack.headOption.map(_.instance).getOrElse {
       throw new IllegalStateException("parent should not be empty")
@@ -278,34 +268,4 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
       }
     }
   }
-
 }
-
-//
-//private[Launcher] class CommandMethod(val method: MethodSurface, val command: command)
-//  extends Command
-//    with LogSupport {
-//  val name        = method.name
-//  val description = command.description
-//  def printHelp = {
-//    val parser = new OptionParser(method)
-//    parser.printUsage
-//  }
-//  def execute[A <: AnyRef](mainParser: OptionParser, mainObj: A, args: Array[String], showHelp: Boolean): A = {
-//    trace(s"execute method: $name")
-//    val parser = new OptionParser(method)
-//    if (showHelp) {
-//      parser.printUsage
-//      val globalOptionList = mainParser.createOptionList
-//      // Show global options
-//      if (globalOptionList.nonEmpty) {
-//        println("\n[global options]")
-//        println(globalOptionList.mkString("\n"))
-//      }
-//    } else {
-//      val r_sub = parser.parse(args)
-//      r_sub.build(new MethodCallBuilder(method, mainObj.asInstanceOf[AnyRef])).execute
-//    }
-//    mainObj
-//  }
-//}
