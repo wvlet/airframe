@@ -30,6 +30,34 @@ import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
 import scala.reflect.runtime.{universe => ru}
 
 /**
+  * Command launcher
+  */
+object Launcher extends LogSupport {
+
+  /**
+    * Create a new Launcher of the given type
+    * @tparam A
+    * @return
+    */
+  def of[A: ru.WeakTypeTag]: Launcher = {
+    ClassLauncher(SurfaceFactory.of[A], name = "", description = "")
+  }
+
+  def execute[A: ru.WeakTypeTag](argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute[A: ru.WeakTypeTag](args: Array[String]): LauncherResult = {
+    val l = Launcher.of[A]
+    l.execute(args)
+  }
+}
+
+/**
+  * Command execution results
+  * @param executedModule
+  * @param result
+  */
+case class LauncherResult(executedModule: Any, result: Option[Any])
+
+/**
   * Command launcher.
   *
   * {{{
@@ -47,12 +75,12 @@ import scala.reflect.runtime.{universe => ru}
   * }}}
   *
   */
-case class SubCommand(name: String, launcher: Launcher)
-
-case class Launcher(surface: Surface, name: String, description: String = "", subCommands: Seq[SubCommand] = Seq.empty)
-    extends LogSupport {
-
+abstract class Launcher extends LogSupport {
   import Launcher._
+
+  def name: String
+  def description: String
+  def subCommands: Seq[Launcher]
 
   //lazy private[opts] val schema = ClassOptionSchema(surface)
 
@@ -65,31 +93,77 @@ case class Launcher(surface: Surface, name: String, description: String = "", su
     */
   def addSubCommand[A: ru.TypeTag](name: String, description: String = ""): Launcher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[A]].tpe)
-    add(name, new Launcher(moduleSurface, name, description))
+    add(name, ClassLauncher(moduleSurface, name, description))
   }
+
+  def add(subCommandName: String, launcher: Launcher): Launcher
+
+  def execute(argLine: String): LauncherResult                                = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute(args: Array[String], showHelp: Boolean = false): LauncherResult = execute(None, args.toSeq, showHelp)
+  private[opts] def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult
+
+  private[opts] def findDefaultCommand: Option[MethodSurface]
+  private[opts] def findSubCommand(name: String): Option[Launcher] = {
+    val cname = CName(name)
+    subCommands.find(x => CName(x.name) == cname)
+  }
+
+  def printHelp: Unit
+}
+
+object ClassLauncher {
+
+  def apply(surface: Surface, name: String, description: String): ClassLauncher = {
+    val methods = SurfaceFactory.methodsOf(surface)
+    import wvlet.airframe.surface.reflect._
+    // Register sub command functions marked with [[wvlet.airframe.opts.command]] annotation
+    val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
+      new LocalMethodLauncher(m, c)
+    }
+    new ClassLauncher(surface, name, description, subCommands)
+  }
+
+}
+
+/**
+  * Command definition using a class.
+  *
+  * Constructor parameters becomes command-line option parameters, and functions
+  * annotated with {{@command}} will be sub commands.
+  *
+  * @param surface
+  * @param name
+  * @param description
+  * @param subCommands
+  */
+private[opts] class ClassLauncher(surface: Surface,
+                                  val name: String,
+                                  val description: String,
+                                  val subCommands: Seq[Launcher])
+    extends Launcher {
 
   def add(subCommandName: String, launcher: Launcher): Launcher = {
-    Launcher(surface, this.name, this.description, subCommands :+ SubCommand(subCommandName, launcher))
+    new ClassLauncher(surface, this.name, this.description, subCommands :+ launcher)
   }
 
-  private[opts] def findSubCommand(name: String): Option[Launcher] = {
-    subCommands.find(_.name == name).map(_.launcher)
+  override def printHelp: Unit = {
+    trace("print usage")
+    val p = OptionParser(surface)
+    p.printUsage
+
+    // TODO Show sub commend lists
+    if (subCommands.nonEmpty) {
+      println("[commands]")
+
+      val maxCommandNameLen = subCommands.map(_.name.length).max
+      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+      subCommands.foreach { c =>
+        println(format.format(c.name, c.description))
+      }
+    }
   }
 
-  def execute[A <: AnyRef](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute[A <: AnyRef](args: Array[String], showHelp: Boolean = false): A = {
-
-    // Process args using the
-    val argProcessor = new ArgProcessor(this)
-    val result       = argProcessor.process(args)
-
-    //for (p <- surface.params) {}
-
-    // TODO
-    null.asInstanceOf[A]
-  }
-
-  private[opts] def findDefaultCommand: Option[MethodSurface] = {
+  override private[opts] def findDefaultCommand: Option[MethodSurface] = {
     SurfaceFactory
       .methodsOf(surface)
       .find { m =>
@@ -98,69 +172,80 @@ case class Launcher(surface: Surface, name: String, description: String = "", su
       }
   }
 
-  def printHelp: Unit = {
-    trace("print usage")
-    val p = OptionParser(surface)
-    p.printUsage
+  override def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult = {
 
-    // TODO Show sub commend lists
+    info(args.mkString(", "))
+    val schema = ClassOptionSchema(surface)
+    val parser = new OptionParser(schema)
+    val result = parser.parse(args.toArray)
+    info(result)
+
+    val obj = result.buildObject(surface)
+    info(s"build object: ${obj}")
+
+    val showHelpMessage = result.showHelp | showHelp
+
+    if (result.unusedArgument.isEmpty) {
+      // This Launcher is a leaf (= no more sub commands)
+      if (showHelpMessage) {
+        // Show the help message
+        printHelp
+        LauncherResult(obj, None)
+      } else {
+        // Run the default command
+        findDefaultCommand
+          .map { defaultCommand =>
+            defaultCommand.call(obj)
+          }
+          .map { x =>
+            LauncherResult(obj, Some(x))
+          }
+          .getOrElse {
+            LauncherResult(obj, None)
+          }
+      }
+    } else {
+      // The first argument should be sub command name
+      val subCommandName = result.unusedArgument.head
+      findSubCommand(subCommandName) match {
+        case Some(subCommand) =>
+          subCommand.execute(parent = Some((this, obj)), result.unusedArgument.tail, showHelp)
+        case None =>
+          throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
+      }
+    }
   }
-
-  //    val lst = commandList ++ subCommands
-  //    if (!lst.isEmpty) {
-  //      println("[commands]")
-  //      val maxCommandNameLen = lst.map(_.name.length).max
-  //      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
-  //      lst.foreach { c =>
-  //        println(format.format(c.name, c.description))
-  //      }
-  //    }
-// }
-
-//  private def commandList: Seq[Command] = {
-//    import wvlet.airframe.surface.reflect._
-//    trace(s"command class:${surface.name}")
-//    val methods = SurfaceFactory.methodsOf(surface)
-//    val lst     = for (m <- methods; c <- m.findAnnotationOf[command]) yield new CommandMethod(m, c)
-//    lst
-//  }
-
-//  private def findCommand(name: String, mainObj: AnyRef): Option[Command] = {
-//
-//    def find(name: String): Option[Command] = {
-//      val cname = CName(name)
-//      trace(s"trying to find command:$cname")
-//      commandList.find(e => CName(e.name) == cname)
-//    }
-//
-//    def findModule[A <: AnyRef](name: String, mainObj: A): Option[Command] =
-//      subCommands.find(x => x.name == name)
-//
-//    find(name) orElse findModule(name, mainObj) orElse {
-//      warn(s"Unknown command: $name")
-//      None
-//    }
-//  }
 }
 
-/**
-  * Command launcher
-  */
-object Launcher extends LogSupport {
+private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: command) extends Launcher {
+  override def name: String                                              = methodSurface.name
+  override def description: String                                       = method.description()
+  override def subCommands: Seq[Launcher]                                = Seq.empty
+  override def add(subCommandName: String, launcher: Launcher): Launcher = ???
 
-  /**
-    * Create a new Launcher of the given type
-    * @tparam A
-    * @return
-    */
-  def of[A: ru.WeakTypeTag]: Launcher = {
-    new Launcher(SurfaceFactory.of[A], "")
-  }
+  override private[opts] def findDefaultCommand: Option[MethodSurface] = None
+  override def printHelp: Unit                                         = {}
 
-  def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute[A: ru.WeakTypeTag](args: Array[String]): A = {
-    val l = Launcher.of[A]
-    l.execute(args)
+  override def execute(parent: Option[(Launcher, Any)], args: Seq[String], showHelp: Boolean): LauncherResult = {
+    info(args.mkString(", "))
+    val schema = new MethodOptionSchema(methodSurface)
+    val parser = new OptionParser(schema)
+    val result = parser.parse(args.toArray)
+    info(result)
+
+    val obj = parent.map(_._2).getOrElse {
+      throw new IllegalStateException("parent should not be empty")
+    }
+
+    val showHelpMessage = result.showHelp | showHelp
+    if (result.unusedArgument.nonEmpty) {
+      throw new IllegalArgumentException(
+        s"Unknown command-line arguments are found: ${result.unusedArgument.mkString(", ")}")
+    }
+
+    if (showHelpMessage) {
+      LauncherResult(obj, None)
+    } else {}
   }
 }
 
