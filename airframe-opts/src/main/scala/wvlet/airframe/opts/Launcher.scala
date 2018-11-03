@@ -97,7 +97,7 @@ abstract class Launcher extends LogSupport {
     optionParser.optionList
   }
 
-  def optionParser: OptionParser
+  private[opts] def optionParser: OptionParser
 
   protected def helpMessageTemplate = defaultUsageTemplate
   //lazy private[opts] val schema = ClassOptionSchema(surface)
@@ -321,7 +321,7 @@ private[opts] class LocalMethodLauncher(methodSurface: MethodSurface, method: co
 
   override private[opts] def findDefaultCommand: Option[MethodSurface] = None
 
-  override def optionParser = new OptionParser(methodSurface)
+  override private[opts] def optionParser = new OptionParser(methodSurface)
 
   override def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
