@@ -164,7 +164,7 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
         // When a nested offset is found
         val d        = m.group("duration")
         val duration = TimeVector(d)
-        parseOffset(m.group("offset"), windowUnit, adjustments :+ duration)
+        parseOffset(m.group("offset"), windowUnit, duration +: adjustments)
       case None =>
         // no more nested offsets
         o match {
@@ -195,8 +195,8 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
   }
 
   private def adjustOffset(offset: ZonedDateTime, adjustments: Seq[TimeVector]): ZonedDateTime = {
-    adjustments.foldRight(offset) {
-      case (duration, offset) =>
+    adjustments.foldLeft(offset) {
+      case (offset, duration) =>
         duration.unit.increment(offset, duration.x)
     }
   }
