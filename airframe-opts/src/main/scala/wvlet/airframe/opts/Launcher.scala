@@ -50,11 +50,6 @@ object Launcher extends LogSupport {
     val result = l.execute(args)
     result.getRootInstance.asInstanceOf[A]
   }
-
-  val defaultUsageTemplate =
-    """|usage:$COMMAND$ $ARGUMENT_LIST$
-       |  $DESCRIPTION$
-       |$OPTION_LIST$""".stripMargin
 }
 
 /**
@@ -99,9 +94,6 @@ abstract class Launcher extends LogSupport {
 
   private[opts] def optionParser: OptionParser
 
-  protected def helpMessageTemplate = defaultUsageTemplate
-  //lazy private[opts] val schema = ClassOptionSchema(surface)
-
   /**
     * Add a sub command to the launcher
     * @param subCommandName
@@ -138,9 +130,8 @@ abstract class Launcher extends LogSupport {
   }
 
   def printUsage = {
-    val m = StringTemplate.eval(helpMessageTemplate) {
-      Map('ARGUMENT_LIST -> usage, 'OPTION_LIST -> createOptionHelpMessage, 'DESCRIPTION -> description)
-    }
+    val m = new HelpMessage()
+      .render(commandName = "", argumentList = usage, description = description, optionList = createOptionHelpMessage)
     print(m)
   }
 
