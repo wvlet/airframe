@@ -51,16 +51,23 @@ object Launcher extends LogSupport {
     result.getRootInstance.asInstanceOf[A]
   }
 
+  /**
+    * Create a launcher for a class
+    * @return
+    */
   private def newLauncher[A](surface: Surface,
                              name: String,
                              description: String,
                              helpMessagePrinter: HelpMessagePrinter): Launcher[A] = {
     val parser = OptionParser(surface)
 
+    // Generate a command-line usage message
     val defaultUsage =
       parser.schema.args.map(x => s"[${x}]").mkString(" ")
 
     import wvlet.airframe.surface.reflect._
+
+    // If the user specified a usage description via @command annotation, use this.
     val usage =
       surface
         .findAnnotationOf[command]
@@ -68,10 +75,9 @@ object Launcher extends LogSupport {
         .find(_.nonEmpty)
         .getOrElse(defaultUsage)
 
-    // Find sub commands
-    val methods = SurfaceFactory.methodsOf(surface)
+    // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
     import wvlet.airframe.surface.reflect._
-    // Register sub command functions marked with [[wvlet.airframe.opts.command]] annotation
+    val methods = SurfaceFactory.methodsOf(surface)
     val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
       newMethodLauncher(m, c, helpMessagePrinter)
     }
@@ -90,6 +96,9 @@ object Launcher extends LogSupport {
     new Launcher[A](LauncherInfo(name, description, usage), parser, subCommands, defaultCommand, helpMessagePrinter)
   }
 
+  /**
+    * Create a launcher from a method in a class
+    */
   private def newMethodLauncher(m: MethodSurface,
                                 command: command,
                                 helpMessagePrinter: HelpMessagePrinter): Launcher[_] = {
@@ -114,7 +123,6 @@ object Launcher extends LogSupport {
     val li = LauncherInfo(m.name, description, usage)
     new Launcher(li, parser, Seq.empty, None, helpMessagePrinter)
   }
-
 }
 
 /**
@@ -158,7 +166,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
   import Launcher._
 
   def name: String = launcherInfo.name
-  def optionList: Seq[CLOption] = {
+  private[opts] def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
 
@@ -196,7 +204,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
   def execute(args: Array[String], showHelp: Boolean = false): LauncherResult =
     execute(List.empty, args.toSeq, showHelp)
 
-  private[opts] def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
+  private def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
     debug(result)
 
@@ -251,7 +259,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
     }
   }
 
-  private[opts] def findSubCommand(name: String): Option[Launcher[_]] = {
+  private def findSubCommand(name: String): Option[Launcher[_]] = {
     val cname = CName(name)
     subCommands.find(x => CName(x.name) == cname)
   }
