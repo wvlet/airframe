@@ -13,11 +13,12 @@
  */
 package wvlet.airframe.opts
 import wvlet.airframe.opts.OptionParser.{CLArgItem, CLOption}
+import wvlet.log.LogSupport
 
 /**
   *
   */
-class HelpMessage {
+class HelpMessagePrinter extends LogSupport {
 
   def render(commandName: String, argumentList: String, description: String, optionList: String): String = {
     s"""|usage:${commandName} ${argumentList}
@@ -29,7 +30,7 @@ class HelpMessage {
     val l = for (a <- args) yield {
       a.name
     }
-    l.map("[%s]".format(_)).mkString(" ")
+    l.map(x => s"[${x}").mkString(" ")
   }
 
   def printHelp(stack: List[LauncherInstance] = Nil): Unit = {

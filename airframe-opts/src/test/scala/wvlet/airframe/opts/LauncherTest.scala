@@ -303,7 +303,7 @@ object LauncherTest {
   def myCommandModule =
     Launcher
       .of[MyCommandModule]
-      .addSubCommand[SimpleCommandSet]("box", description = "command set")
+      .addModule[SimpleCommandSet]("box", description = "command set")
 
   class MyCommandModule(val g: GlobalOption) extends LogSupport {
     trace(s"global option: $g")
