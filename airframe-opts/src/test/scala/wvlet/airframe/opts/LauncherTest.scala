@@ -112,7 +112,7 @@ class LauncherTest extends AirframeSpec {
 
     "display command list" in {
       val help = capture {
-        Launcher.of[SimpleCommandSet].printHelp()
+        Launcher.of[SimpleCommandSet].printHelp
       }
       trace(s"command list help:\n$help")
       help should (include("hello"))

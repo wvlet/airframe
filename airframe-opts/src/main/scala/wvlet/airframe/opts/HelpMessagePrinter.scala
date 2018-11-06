@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 class HelpMessagePrinter extends LogSupport {
 
   def render(commandName: String, argumentList: String, description: String, optionList: String): String = {
-    s"""|usage:${commandName} ${argumentList}
+    s"""|usage: ${commandName} ${argumentList}
         |  ${description}
         |${optionList}""".stripMargin
   }
@@ -33,34 +33,45 @@ class HelpMessagePrinter extends LogSupport {
     l.map(x => s"[${x}").mkString(" ")
   }
 
-  def printHelp(stack: List[LauncherInstance] = Nil): Unit = {
+  def printHelp(stack: List[Launcher[_]] = Nil): Unit = {
     trace("print usage")
-    val p = optionParser
-    printUsage
+
+    val l = stack.head
+
+    // Show basic usage
+    println(
+      render(commandName = l.name,
+             argumentList = l.usage,
+             description = l.description,
+             optionList = createOptionHelpMessage(l)))
 
     // Show parent options
-    val parentOptions = stack.flatMap { x =>
-      x.launcher.optionList
+    val parentOptions = stack.tail.flatMap { x =>
+      x.optionList
     }
     if (parentOptions.nonEmpty) {
       println("[global options]")
-      println(parentOptions.mkString("\n"))
+      println(createOptionList(parentOptions).mkString("\n"))
     }
 
-    if (subCommands.nonEmpty) {
+    if (l.subCommands.nonEmpty) {
       println("[commands]")
 
-      val maxCommandNameLen = subCommands.map(_.name.length).max
+      val maxCommandNameLen = l.subCommands.map(_.name.length).max
       val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
       // Show sub commend lists
-      subCommands.foreach { c =>
+      l.subCommands.foreach { c =>
         println(format.format(c.name, c.description))
       }
     }
   }
 
-  def createOptionHelpMessage = {
-    val optionList = createOptionList
+  def helpHeader(l: Launcher[_]): String = {
+    ""
+  }
+
+  private def createOptionHelpMessage(l: Launcher[_]) = {
+    val optionList = createOptionList(l.optionList)
     val b          = new StringBuilder
     if (optionList.nonEmpty) {
       b.append("[options]\n")
@@ -69,7 +80,7 @@ class HelpMessagePrinter extends LogSupport {
     b.result
   }
 
-  def createOptionList: Seq[String] = {
+  private def createOptionList(optionList: Seq[CLOption]): Seq[String] = {
     val optDscr: Seq[(CLOption, String)] = for (o <- optionList) yield {
       val prefixes = o.prefixes
       val hasShort = prefixes.exists(_.length == 2)

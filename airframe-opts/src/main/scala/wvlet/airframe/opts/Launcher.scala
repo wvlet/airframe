@@ -159,13 +159,20 @@ case class LauncherInfo(name: String, description: String, usage: String)
   */
 class Launcher[A](launcherInfo: LauncherInfo,
                   optionParser: OptionParser,
-                  subCommands: Seq[Launcher[_]],
+                  private[opts] val subCommands: Seq[Launcher[_]],
                   defaultCommand: Option[A => Any],
                   helpMessagePrinter: HelpMessagePrinter)
     extends LogSupport {
   import Launcher._
 
-  def name: String = launcherInfo.name
+  def name: String        = launcherInfo.name
+  def description: String = launcherInfo.description
+  def usage: String       = launcherInfo.usage
+
+  def printHelp: Unit = {
+    helpMessagePrinter.printHelp(List(this))
+  }
+
   private[opts] def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
@@ -206,7 +213,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
 
   private def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
-    debug(result)
+    trace(result)
 
     val showHelpMessage = result.showHelp | showHelp
 
@@ -219,7 +226,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
           // This Launcher is a leaf (= no more sub commands)
           if (showHelpMessage) {
             // Show the help message
-            helpMessagePrinter.printHelp(stack)
+            helpMessagePrinter.printHelp(nextStack.map(_.launcher))
             LauncherResult(nextStack, None)
           } else {
             // Run the default command
@@ -256,12 +263,17 @@ class Launcher[A](launcherInfo: LauncherInfo,
 
         if (showHelpMessage) {
           // Show the help message
-          helpMessagePrinter.printHelp(stack)
+          helpMessagePrinter.printHelp(stack.map(_.launcher))
           LauncherResult(stack, None)
         } else {
-          val methodCallBuilder = new MethodCallBuilder(m.method, parentObj.asInstanceOf[AnyRef])
-          val methodResult      = result.build(methodCallBuilder).execute
-          LauncherResult(stack, Some(methodResult))
+          try {
+            val methodCallBuilder = new MethodCallBuilder(m.method, parentObj.asInstanceOf[AnyRef])
+            val methodResult      = result.build(methodCallBuilder).execute
+            LauncherResult(stack, Some(methodResult))
+          } catch {
+            case e: InvocationTargetException => throw e.getTargetException
+            case other: Throwable             => throw other
+          }
         }
     }
   }
