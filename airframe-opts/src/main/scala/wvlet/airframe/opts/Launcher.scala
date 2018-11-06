@@ -191,13 +191,13 @@ class Launcher[A](launcherInfo: LauncherInfo,
     * @tparam A
     * @return
     */
-  def addModule[A: ru.TypeTag](name: String, description: String = ""): Launcher[A] = {
-    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[A]].tpe)
+  def addModule[B: ru.TypeTag](name: String, description: String = ""): Launcher[A] = {
+    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
     add(name, Launcher.newLauncher(moduleSurface, name, description, helpMessagePrinter))
   }
 
   def add(subCommandName: String, launcher: Launcher[_]): Launcher[A] = {
-    new Launcher(launcherInfo, optionParser, subCommands :+ launcher, defaultCommand, helpMessagePrinter)
+    new Launcher[A](launcherInfo, optionParser, subCommands :+ launcher, defaultCommand, helpMessagePrinter)
   }
 
   def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
@@ -208,54 +208,61 @@ class Launcher[A](launcherInfo: LauncherInfo,
     val result = optionParser.parse(args.toArray)
     debug(result)
 
-    // For class call
-    val obj       = result.buildObject(surface)
-    val nextStack = LauncherInstance(this, obj) :: stack
-    // For method call
-    //    val parentObj = stack.headOption.map(_.instance).getOrElse {
-    //      throw new IllegalStateException("parent should not be empty")
-    //    }
-
     val showHelpMessage = result.showHelp | showHelp
 
-    if (result.unusedArgument.isEmpty) {
-      // This Launcher is a leaf (= no more sub commands)
-      if (showHelpMessage) {
-        // Show the help message
-        helpMessagePrinter.printHelp(stack)
-        LauncherResult(nextStack, None)
-      } else {
-        // Run the default command
-        defaultCommand
-          .map { defaultCommand =>
-            defaultCommand(obj)
-          }
-          .map { x =>
-            LauncherResult(nextStack, Some(x))
-          }
-          .getOrElse {
-            LauncherResult(nextStack, None)
-          }
-      }
-    } else {
-      // The first argument should be sub command name
-      val subCommandName = result.unusedArgument.head
-      findSubCommand(subCommandName) match {
-        case Some(subCommand) =>
-          subCommand.execute(nextStack, result.unusedArgument.tail, showHelpMessage)
-        case None =>
-          throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
-      }
+    optionParser.schema match {
+      case c: ClassOptionSchema =>
+        val obj       = result.buildObject(c.surface)
+        val nextStack = LauncherInstance(this, obj) :: stack
 
-      // For Method call
-      //      try {
-      //        val m            = new MethodCallBuilder(methodSurface, parentObj.asInstanceOf[AnyRef])
-      //        val methodResult = result.build(m).execute
-      //        LauncherResult(stack, Some(methodResult))
-      //      } catch {
-      //        case e: InvocationTargetException => throw e.getTargetException
-      //        case other: Throwable             => throw other
-      //      }
+        if (result.unusedArgument.isEmpty) {
+          // This Launcher is a leaf (= no more sub commands)
+          if (showHelpMessage) {
+            // Show the help message
+            helpMessagePrinter.printHelp(stack)
+            LauncherResult(nextStack, None)
+          } else {
+            // Run the default command
+            defaultCommand
+              .map { defaultCommand =>
+                defaultCommand(obj.asInstanceOf[A])
+              }
+              .map { x =>
+                LauncherResult(nextStack, Some(x))
+              }
+              .getOrElse {
+                LauncherResult(nextStack, None)
+              }
+          }
+        } else {
+          // The first argument should be sub command name
+          val subCommandName = result.unusedArgument.head
+          findSubCommand(subCommandName) match {
+            case Some(subCommand) =>
+              subCommand.execute(nextStack, result.unusedArgument.tail, showHelpMessage)
+            case None =>
+              throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
+          }
+        }
+      case m: MethodOptionSchema =>
+        // A command method inside the class
+        if (result.unusedArgument.nonEmpty) {
+          throw new IllegalArgumentException(s"Unknown arguments are found: [${result.unusedArgument.mkString(", ")}]")
+        }
+
+        val parentObj = stack.headOption.map(_.instance).getOrElse {
+          throw new IllegalStateException("parent should not be empty")
+        }
+
+        if (showHelpMessage) {
+          // Show the help message
+          helpMessagePrinter.printHelp(stack)
+          LauncherResult(stack, None)
+        } else {
+          val methodCallBuilder = new MethodCallBuilder(m.method, parentObj.asInstanceOf[AnyRef])
+          val methodResult      = result.build(methodCallBuilder).execute
+          LauncherResult(stack, Some(methodResult))
+        }
     }
   }
 

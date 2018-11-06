@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.opts
-import wvlet.airframe.opts.OptionParser.{CLArgItem, CLArgument, CLOption}
+import wvlet.airframe.opts.OptionParser.{CLArgItem, CLArgument, CLOption, OptionParserResult}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 /**
   * Schema of the command line options
   */
-trait OptionSchema extends LogSupport {
+sealed trait OptionSchema extends LogSupport {
 
   val options: Seq[CLOption]
   val args: Seq[CLArgItem] // must be sorted by arg.index in ascending order
@@ -104,7 +104,7 @@ class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val ar
   *
   * @param method
   */
-class MethodOptionSchema(method: MethodSurface) extends OptionSchema {
+class MethodOptionSchema(private[opts] val method: MethodSurface) extends OptionSchema {
   import wvlet.airframe.surface.reflect._
   val options =
     for (p <- method.args; opt <- p.findAnnotationOf[option]) yield new CLOption(Path(p.name), opt, p)
