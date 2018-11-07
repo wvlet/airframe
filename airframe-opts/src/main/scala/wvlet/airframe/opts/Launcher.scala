@@ -332,7 +332,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
               methodSurface.name,
               methodSurface.args.toIndexedSeq,
               paramCodecs,
-              // We need to supply default values of method parameters by using the parent object
+              // We need to supply default values by using the parent object
               ParamListCodec.resolveMethodArgDefaultFromOwnerObject(parentObj)
             )
 

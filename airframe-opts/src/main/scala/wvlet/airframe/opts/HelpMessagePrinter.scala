@@ -26,6 +26,13 @@ class HelpMessagePrinter extends LogSupport {
         |${optionList}""".stripMargin
   }
 
+  protected def defaultUsage(args: Seq[CLArgItem]): String = {
+    val l = for (a <- args) yield {
+      a.name
+    }
+    l.map(x => s"[${x}").mkString(" ")
+  }
+
   def printHelp(stack: List[CommandLauncher] = Nil): Unit = {
     trace("print usage")
 
