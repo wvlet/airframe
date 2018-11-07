@@ -179,10 +179,15 @@ class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
     * @tparam A
     * @return
     */
-  def addCommandModule[B: ru.TypeTag](name: String, description: String = ""): Launcher = {
-    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
-    new Launcher(config, mainLauncher.add(name, Launcher.newCommandLauncher(moduleSurface, name, description)))
+  def addCommandModule[B: ru.TypeTag](name: String, description: String): Launcher = {
+    new Launcher(config, mainLauncher.addCommandModule[B](name, description))
   }
+
+  def addNestedCommandModule[B: ru.TypeTag](name: String, description: String)(
+      nested: CommandLauncher => CommandLauncher): Launcher = {
+    new Launcher(config, mainLauncher.addNestedCommandModule[B](name, description)(nested))
+  }
+
 }
 
 /**
@@ -232,14 +237,27 @@ class CommandLauncher(launcherInfo: LauncherInfo,
     optionParser.optionList
   }
 
-  def add(subCommandName: String, commandLauncher: CommandLauncher): CommandLauncher = {
+  def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
+    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
+    val subLauncher   = Launcher.newCommandLauncher(moduleSurface, name, description)
+    add(name, subLauncher)
+  }
+
+  def addNestedCommandModule[B: ru.TypeTag](name: String, description: String)(
+      nested: CommandLauncher => CommandLauncher): CommandLauncher = {
+    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
+    val subLauncher   = nested(Launcher.newCommandLauncher(moduleSurface, name, description))
+    add(name, subLauncher)
+  }
+
+  private[opts] def add(subCommandName: String, commandLauncher: CommandLauncher): CommandLauncher = {
     new CommandLauncher(launcherInfo, optionParser, subCommands :+ commandLauncher, defaultCommand)
   }
 
-  def execute(launcherConfig: LauncherConfig,
-              stack: List[LauncherInstance],
-              args: Seq[String],
-              showHelp: Boolean): LauncherResult = {
+  private[opts] def execute(launcherConfig: LauncherConfig,
+                            stack: List[LauncherInstance],
+                            args: Seq[String],
+                            showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
     trace(result)
 

@@ -29,7 +29,7 @@ object ArgProcessorTest {
 
   case class SubCmd(@option(prefix = "-p", description = "port number") port: Int) extends LogSupport {
 
-    @command
+    @command(description = "say hello")
     def hello(@option(prefix = "-t", description = "timeout sec") timeoutSec: Int = 10): Unit = {
       info(s"hello: timeout=${timeoutSec}")
     }
@@ -39,6 +39,21 @@ object ArgProcessorTest {
     Launcher
       .of[Cmd]
       .addCommandModule[SubCmd]("sub", description = "sub command")
+
+  class NestedCmd {
+    @command(description = "hello a")
+    def a: String = "hello"
+    @command(description = "hello b")
+    def b: String = "launcher"
+  }
+
+  val moreNestedLauncher =
+    Launcher
+      .of[Cmd]
+      .addNestedCommandModule[SubCmd](name = "sub", description = "sub commands") { x =>
+        x.addCommandModule[NestedCmd](name = "nested1", description = "further nested command set 1")
+          .addCommandModule[NestedCmd](name = "nested2", description = "further nested command set 2")
+      }
 
 }
 
@@ -72,6 +87,27 @@ class ArgProcessorTest extends AirframeSpec {
       nestedLauncher.execute("sub hello")
       nestedLauncher.execute("sub hello -t 100")
     }
+  }
+
+  "should support more nested commands" in {
+    val c = capture {
+      moreNestedLauncher.execute("sub nested1 --help")
+    }
+    c should include("hello a")
+    c should include("hello b")
+
+    val c2 = capture {
+      moreNestedLauncher.execute("--help")
+    }
+    c2 should include("sub")
+    c2 should not include ("nested1")
+
+    val c3 = capture {
+      moreNestedLauncher.execute("sub --help")
+    }
+    c3 should include("hello")
+    c3 should include("nested1")
+    c3 should include("nested2")
   }
 
 }
