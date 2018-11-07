@@ -66,10 +66,6 @@ class HelpMessagePrinter extends LogSupport {
     }
   }
 
-  def helpHeader(l: Launcher[_]): String = {
-    ""
-  }
-
   private def createOptionHelpMessage(l: Launcher[_]) = {
     val optionList = createOptionList(l.optionList)
     val b          = new StringBuilder

@@ -133,7 +133,8 @@ object Launcher extends LogSupport {
 case class LauncherResult(launcherStack: List[LauncherInstance], result: Option[Any]) {
   require(launcherStack.nonEmpty, "launcherStack should not be empty")
 
-  def getRootInstance: Any = launcherStack.reverse.head.instance
+  def getRootInstance: Any  = launcherStack.reverse.head.instance
+  def executedInstance: Any = launcherStack.head.instance
 }
 case class LauncherInstance(launcher: Launcher[_], instance: Any)
 

@@ -63,11 +63,12 @@ class LauncherTest extends AirframeSpec {
     }
 
     "display full options in help" taggedAs ("subhelp") in {
-      val msg = capture {
+      capture {
         Launcher.execute[MyCommand]("--help")
+      } should include("--help")
+      capture {
         Launcher.execute[MyCommand]("hello --help")
-      }
-      trace(msg)
+      } should include("--help")
     }
 
     "parse double hyphen options" in {
@@ -129,16 +130,16 @@ class LauncherTest extends AirframeSpec {
       help should (include(DEFAULT_MESSAGE))
     }
 
-//    "create command modules" in {
-//      val c = myCommandModule
-//      c.executedModule shouldBe defined
-//      c.executedModule map { m =>
-//        m._1 should be("box")
-//        m._2.getClass should be(classOf[SimpleCommandSet])
-//        m._2.asInstanceOf[SimpleCommandSet].helloIsExecuted should be(true)
-//      }
-//      c.g should not be (null)
-//    }
+    "create command modules" in {
+      val c = myCommandModule
+
+      capture {
+        val r = c.execute("box hello")
+        val m = r.executedInstance
+        m.getClass should be(classOf[SimpleCommandSet])
+        m.asInstanceOf[SimpleCommandSet].helloIsExecuted should be(true)
+      }
+    }
 
     "display command module help" in {
       val help = capture {
@@ -303,7 +304,7 @@ object LauncherTest {
   def myCommandModule =
     Launcher
       .of[MyCommandModule]
-      .addModule[SimpleCommandSet]("box", description = "command set")
+      .addModule[SimpleCommandSet]("box", description = "sub command set")
 
   class MyCommandModule(val g: GlobalOption) extends LogSupport {
     trace(s"global option: $g")
