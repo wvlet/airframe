@@ -42,8 +42,9 @@ object Launcher extends LogSupport {
     * @tparam A
     * @return
     */
-  def of[A: ru.WeakTypeTag]: Launcher[A] = {
-    newLauncher[A](SurfaceFactory.of[A], name = "", description = "", helpMessagePrinter = new HelpMessagePrinter)
+  def of[A: ru.WeakTypeTag]: Launcher = {
+    val cl = newCommandLauncher(SurfaceFactory.of[A], name = "", description = "")
+    new Launcher(LauncherConfig(), cl)
   }
 
   def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
@@ -57,10 +58,7 @@ object Launcher extends LogSupport {
     * Create a launcher for a class
     * @return
     */
-  private def newLauncher[A](surface: Surface,
-                             name: String,
-                             description: String,
-                             helpMessagePrinter: HelpMessagePrinter): Launcher[A] = {
+  private[opts] def newCommandLauncher(surface: Surface, name: String, description: String): CommandLauncher = {
     val parser = OptionParser(surface)
 
     // Generate a command-line usage message
@@ -81,7 +79,7 @@ object Launcher extends LogSupport {
     import wvlet.airframe.surface.reflect._
     val methods = SurfaceFactory.methodsOf(surface)
     val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
-      newMethodLauncher(m, c, helpMessagePrinter)
+      newMethodLauncher(m, c)
     }
 
     // Find the default command
@@ -91,19 +89,19 @@ object Launcher extends LogSupport {
         import wvlet.airframe.surface.reflect._
         m.findAnnotationOf[defaultCommand].isDefined
       }
-      .map { m => x: A =>
-        m.call(x)
+      .map { m =>
+        { li: LauncherInstance =>
+          m.call(li.instance)
+        }
       }
 
-    new Launcher[A](LauncherInfo(name, description, usage), parser, subCommands, defaultCommand, helpMessagePrinter)
+    new CommandLauncher(LauncherInfo(name, description, usage), parser, subCommands, defaultCommand)
   }
 
   /**
     * Create a launcher from a method in a class
     */
-  private def newMethodLauncher(m: MethodSurface,
-                                command: command,
-                                helpMessagePrinter: HelpMessagePrinter): Launcher[_] = {
+  private def newMethodLauncher(m: MethodSurface, command: command): CommandLauncher = {
 
     val parser       = new OptionParser(m)
     val defaultUsage = parser.schema.args.map(x => s"[${x}]").mkString(" ")
@@ -123,7 +121,66 @@ object Launcher extends LogSupport {
     }
 
     val li = LauncherInfo(m.name, description, usage)
-    new Launcher(li, parser, Seq.empty, None, helpMessagePrinter)
+    new CommandLauncher(li, parser, Seq.empty, None)
+  }
+}
+
+/**
+  * Using a mutable data structure for simplicity.
+  * This should be safe since this config is internal-only config holder
+  */
+private[opts] case class LauncherConfig(
+    var withHelpOption: Boolean = true,
+    var helpMessagePrinter: HelpMessagePrinter = new HelpMessagePrinter,
+    var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
+    // command name -> default action
+    var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
+      li.launcher.printHelp()
+    }
+)
+
+class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
+
+  def printHelp: Unit = {
+    mainLauncher.printHelp()
+  }
+
+  /**
+    * Set a function to be used when there is no command is specified
+    * @param command
+    * @tparam U
+    * @return
+    */
+  def withDefaultCommand(newDefaultCommand: LauncherInstance => Any): Launcher = {
+    config.defaultCommand = newDefaultCommand
+    this
+  }
+
+  def withHelpMessagePrinter(newHelpMessagePrinter: HelpMessagePrinter): Launcher = {
+    config.helpMessagePrinter = newHelpMessagePrinter
+    this
+  }
+
+  def withCodecFactory(newCodecFactory: MessageCodecFactory): Launcher = {
+    config.codecFactory = newCodecFactory
+    this
+  }
+
+  def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
+  def execute(args: Array[String]): LauncherResult = {
+    mainLauncher.execute(config, List.empty, args.toSeq, showHelp = false)
+  }
+
+  /**
+    * Add a sub command module to the launcher
+    * @param subCommandName
+    * @param description
+    * @tparam A
+    * @return
+    */
+  def addModule[B: ru.TypeTag](name: String, description: String = ""): Launcher = {
+    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
+    new Launcher(config, mainLauncher.add(name, Launcher.newCommandLauncher(moduleSurface, name, description)))
   }
 }
 
@@ -138,7 +195,7 @@ case class LauncherResult(launcherStack: List[LauncherInstance], result: Option[
   def getRootInstance: Any  = launcherStack.reverse.head.instance
   def executedInstance: Any = launcherStack.head.instance
 }
-case class LauncherInstance(launcher: Launcher[_], instance: Any)
+case class LauncherInstance(launcher: CommandLauncher, instance: Any)
 
 case class LauncherInfo(name: String, description: String, usage: String)
 
@@ -160,63 +217,30 @@ case class LauncherInfo(name: String, description: String, usage: String)
   * }}}
   *
   */
-class Launcher[A](launcherInfo: LauncherInfo,
-                  optionParser: OptionParser,
-                  private[opts] val subCommands: Seq[Launcher[_]],
-                  defaultCommand: Option[A => Any],
-                  helpMessagePrinter: HelpMessagePrinter)
+class CommandLauncher(launcherInfo: LauncherInfo,
+                      optionParser: OptionParser,
+                      private[opts] val subCommands: Seq[CommandLauncher],
+                      defaultCommand: Option[LauncherInstance => Any])
     extends LogSupport {
-  import Launcher._
-
-  private val codecFactory = MessageCodec.defaultFactory
 
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
 
-  def printHelp: Unit = {
-    helpMessagePrinter.printHelp(List(this))
-  }
-
   private[opts] def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
 
-  /**
-    * Set a function to be used when there is no command is specified
-    * @param command
-    * @tparam U
-    * @return
-    */
-  def withDefaultCommand(body: A => Any): Launcher[A] = {
-    new Launcher(launcherInfo, optionParser, subCommands, Some(body), helpMessagePrinter)
+  def printHelp(): Unit = {}
+
+  def add(subCommandName: String, commandLauncher: CommandLauncher): CommandLauncher = {
+    new CommandLauncher(launcherInfo, optionParser, subCommands :+ commandLauncher, defaultCommand)
   }
 
-  def withHelpMessagePrinter(newHelpMessagePrinter: HelpMessagePrinter): Launcher[A] = {
-    new Launcher(launcherInfo, optionParser, subCommands, defaultCommand, newHelpMessagePrinter)
-  }
-
-  /**
-    * Add a sub command module to the launcher
-    * @param subCommandName
-    * @param description
-    * @tparam A
-    * @return
-    */
-  def addModule[B: ru.TypeTag](name: String, description: String = ""): Launcher[A] = {
-    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
-    add(name, Launcher.newLauncher(moduleSurface, name, description, helpMessagePrinter))
-  }
-
-  def add(subCommandName: String, launcher: Launcher[_]): Launcher[A] = {
-    new Launcher[A](launcherInfo, optionParser, subCommands :+ launcher, defaultCommand, helpMessagePrinter)
-  }
-
-  def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
-  def execute(args: Array[String], showHelp: Boolean = false): LauncherResult =
-    execute(List.empty, args.toSeq, showHelp)
-
-  private def execute(stack: List[LauncherInstance], args: Seq[String], showHelp: Boolean): LauncherResult = {
+  def execute(launcherConfig: LauncherConfig,
+              stack: List[LauncherInstance],
+              args: Seq[String],
+              showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
     trace(result)
 
@@ -225,7 +249,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
     optionParser.schema match {
       case c: ClassOptionSchema =>
         val msgpack = result.parseTree.toMsgPack
-        val codec   = codecFactory.withObjectMapCodec.of(c.surface)
+        val codec   = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
         val h       = new MessageHolder
         codec.unpack(MessagePack.newDefaultUnpacker(msgpack), h)
         h.getError.map { e =>
@@ -234,19 +258,20 @@ class Launcher[A](launcherInfo: LauncherInfo,
         val obj = h.getLastValue
 
         //val obj       = result.buildObject(c.surface)
-        val nextStack = LauncherInstance(this, obj) :: stack
+        val head      = LauncherInstance(this, obj)
+        val nextStack = head :: stack
 
         if (result.unusedArgument.isEmpty) {
           // This Launcher is a leaf (= no more sub commands)
           if (showHelpMessage) {
             // Show the help message
-            helpMessagePrinter.printHelp(nextStack.map(_.launcher))
+            launcherConfig.helpMessagePrinter.printHelp(nextStack.map(_.launcher))
             LauncherResult(nextStack, None)
           } else {
             // Run the default command
             defaultCommand
               .map { defaultCommand =>
-                defaultCommand(obj.asInstanceOf[A])
+                defaultCommand(head)
               }
               .map { x =>
                 LauncherResult(nextStack, Some(x))
@@ -260,7 +285,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
           val subCommandName = result.unusedArgument.head
           findSubCommand(subCommandName) match {
             case Some(subCommand) =>
-              subCommand.execute(nextStack, result.unusedArgument.tail, showHelpMessage)
+              subCommand.execute(launcherConfig, nextStack, result.unusedArgument.tail, showHelpMessage)
             case None =>
               throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
           }
@@ -277,21 +302,23 @@ class Launcher[A](launcherInfo: LauncherInfo,
 
         if (showHelpMessage) {
           // Show the help message
-          helpMessagePrinter.printHelp(stack.map(_.launcher))
+          launcherConfig.helpMessagePrinter.printHelp(stack.map(_.launcher))
           LauncherResult(stack, None)
         } else {
           try {
             // parseTree -> msgpack -> method arguments
             val methodSurface = m.method
             val paramCodecs = methodSurface.args.map { x =>
-              codecFactory.of(x.surface)
+              launcherConfig.codecFactory.of(x.surface)
             }
-            val methodArgCodec = new ParamListCodec(methodSurface.name,
-                                                    methodSurface.args.toIndexedSeq,
-                                                    paramCodecs,
-                                                    ParamListCodec.resolveDefaultFromParentObject(parentObj))
+            val methodArgCodec = new ParamListCodec(
+              methodSurface.name,
+              methodSurface.args.toIndexedSeq,
+              paramCodecs,
+              // We need to supply default values by using the parent object
+              ParamListCodec.resolveMethodArgDefaultFromOwnerObject(parentObj)
+            )
 
-            // TODO need to supply default values by using the parent object
             val msgpack = result.parseTree.toMsgPack
             methodArgCodec
               .unpackMsgPack(msgpack).map { args =>
@@ -309,7 +336,7 @@ class Launcher[A](launcherInfo: LauncherInfo,
     }
   }
 
-  private def findSubCommand(name: String): Option[Launcher[_]] = {
+  private def findSubCommand(name: String): Option[CommandLauncher] = {
     val cname = CName(name)
     subCommands.find(x => CName(x.name) == cname)
   }

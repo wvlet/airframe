@@ -26,16 +26,30 @@ object ParamListCodec extends LogSupport {
     Zero.zeroOf(p.surface)
   }
 
-  def resolveDefaultFromParentObject(parentObj: Any) = { p: Parameter =>
+  /**
+    * Access the default value of a method argument, through the owner object.
+    *
+    * {{{
+    * public class wvlet.airframe.opts.LauncherTest$MyCommand {
+    *   public void hello(int, java.lang.String);
+    *      descriptor: (ILjava/lang/String;)V
+    *   public int hello$default$1();
+    *      descriptor: ()I
+    * }
+    * }}}
+    *
+    * @param methodOwner
+    * @return
+    */
+  def resolveMethodArgDefaultFromOwnerObject(methodOwner: Any) = { p: Parameter =>
     p match {
       case m: MethodParameter =>
         try {
           val methodName = "%s$default$%d".format(m.method.name, p.index + 1)
-          val dm         = parentObj.getClass.getMethod(methodName)
-          dm.invoke(parentObj)
+          val dm         = methodOwner.getClass.getMethod(methodName)
+          dm.invoke(methodOwner)
         } catch {
           case e: Throwable =>
-            warn(e)
             Zero.zeroOf(p.surface)
         }
       case ohter =>

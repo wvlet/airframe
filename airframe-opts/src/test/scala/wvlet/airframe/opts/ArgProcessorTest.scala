@@ -33,7 +33,6 @@ object ArgProcessorTest {
     def hello(@option(prefix = "-t", description = "timeout sec") timeoutSec: Int = 10): Unit = {
       info(s"hello: timeout=${timeoutSec}")
     }
-
   }
 
   val nestedLauncher =

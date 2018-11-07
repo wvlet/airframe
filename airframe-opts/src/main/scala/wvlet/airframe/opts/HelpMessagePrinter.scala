@@ -33,7 +33,7 @@ class HelpMessagePrinter extends LogSupport {
     l.map(x => s"[${x}").mkString(" ")
   }
 
-  def printHelp(stack: List[Launcher[_]] = Nil): Unit = {
+  def printHelp(stack: List[CommandLauncher] = Nil): Unit = {
     trace("print usage")
 
     val l = stack.head
@@ -66,7 +66,7 @@ class HelpMessagePrinter extends LogSupport {
     }
   }
 
-  private def createOptionHelpMessage(l: Launcher[_]) = {
+  private def createOptionHelpMessage(l: CommandLauncher) = {
     val optionList = createOptionList(l.optionList)
     val b          = new StringBuilder
     if (optionList.nonEmpty) {
