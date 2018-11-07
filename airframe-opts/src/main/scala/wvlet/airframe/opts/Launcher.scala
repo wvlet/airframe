@@ -135,14 +135,14 @@ private[opts] case class LauncherConfig(
     var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
     // command name -> default action
     var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
-      li.launcher.printHelp()
+      println("Type --help to see the usage")
     }
 )
 
 class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
 
   def printHelp: Unit = {
-    mainLauncher.printHelp()
+    config.helpMessagePrinter.printHelp(List(mainLauncher))
   }
 
   /**
@@ -230,8 +230,6 @@ class CommandLauncher(launcherInfo: LauncherInfo,
   private[opts] def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
-
-  def printHelp(): Unit = {}
 
   def add(subCommandName: String, commandLauncher: CommandLauncher): CommandLauncher = {
     new CommandLauncher(launcherInfo, optionParser, subCommands :+ commandLauncher, defaultCommand)
