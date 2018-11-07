@@ -25,8 +25,9 @@ import java.lang.reflect.InvocationTargetException
 
 import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
+import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.opts.OptionParser.CLOption
-import wvlet.airframe.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
+import wvlet.airframe.surface.reflect.{CName, SurfaceFactory}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -178,7 +179,7 @@ class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
     * @tparam A
     * @return
     */
-  def addModule[B: ru.TypeTag](name: String, description: String = ""): Launcher = {
+  def addCommandModule[B: ru.TypeTag](name: String, description: String = ""): Launcher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
     new Launcher(config, mainLauncher.add(name, Launcher.newCommandLauncher(moduleSurface, name, description)))
   }
@@ -313,7 +314,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
               methodSurface.name,
               methodSurface.args.toIndexedSeq,
               paramCodecs,
-              // We need to supply default values by using the parent object
+              // We need to supply default values of method parameters by using the parent object
               ParamListCodec.resolveMethodArgDefaultFromOwnerObject(parentObj)
             )
 

@@ -20,8 +20,9 @@ package wvlet.airframe.opts
 //
 //--------------------------------------
 
+import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
+import wvlet.airframe.surface.reflect.{Path, SurfaceFactory}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer
@@ -145,32 +146,8 @@ object OptionParser extends LogSupport {
     override def toString: String = {
       s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
     }
-
-    def buildObject(surface: Surface): Any = {
-      val b = ObjectBuilder(surface)
-      build(b).build
-    }
-
-    def buildObjectWithFilter[A](surface: Surface, filter: String => Boolean): Any = {
-      val b = ObjectBuilder(surface)
-      trace(s"build from parse tree: ${parseTree}")
-      for ((path, value) <- parseTree.dfs if filter(path.last)) {
-        b.set(path, value)
-      }
-      b.build.asInstanceOf[A]
-    }
-
-    def build[B <: GenericBuilder](builder: B): B = {
-      trace(s"build from parse tree: ${parseTree}")
-      for ((path, value) <- parseTree.dfs) {
-        builder.set(path, value)
-      }
-      builder
-    }
   }
 }
-
-import OptionParser._
 
 /**
   * CommandTrait-line argument parser

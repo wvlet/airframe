@@ -38,7 +38,7 @@ object ArgProcessorTest {
   val nestedLauncher =
     Launcher
       .of[Cmd]
-      .addModule[SubCmd]("sub", description = "sub command")
+      .addCommandModule[SubCmd]("sub", description = "sub command")
 
 }
 

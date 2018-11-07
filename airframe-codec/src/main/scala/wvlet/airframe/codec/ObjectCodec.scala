@@ -27,10 +27,13 @@ object ParamListCodec extends LogSupport {
   }
 
   /**
-    * Access the default value of a method argument, through the owner object.
+    * Access the default value of a method argument through the owner object.
+    *
+    * For example, if define a class MyCommand { def hello(i:Int, message:Sting="hello!") } inside object A,
+    * the default value of the method argument of message can be accessed from an instance of MyCommand:
     *
     * {{{
-    * public class wvlet.airframe.opts.LauncherTest$MyCommand {
+    * public class A$MyCommand {
     *   public void hello(int, java.lang.String);
     *      descriptor: (ILjava/lang/String;)V
     *   public int hello$default$1();
