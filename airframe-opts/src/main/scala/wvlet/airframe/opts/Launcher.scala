@@ -286,7 +286,10 @@ class Launcher[A](launcherInfo: LauncherInfo,
             val paramCodecs = methodSurface.args.map { x =>
               codecFactory.of(x.surface)
             }
-            val methodArgCodec = new ParamListCodec(methodSurface.name, methodSurface.args.toIndexedSeq, paramCodecs)
+            val methodArgCodec = new ParamListCodec(methodSurface.name,
+                                                    methodSurface.args.toIndexedSeq,
+                                                    paramCodecs,
+                                                    ParamListCodec.resolveDefaultFromParentObject(parentObj))
 
             // TODO need to supply default values by using the parent object
             val msgpack = result.parseTree.toMsgPack
