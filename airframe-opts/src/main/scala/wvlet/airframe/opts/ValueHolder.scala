@@ -100,6 +100,9 @@ sealed trait ValueHolder[+A] {
 
   def isEmpty = false
 
+  def toMsgPack: Array[Byte] = {
+    ValueHolderCodec.toMsgPack(this)
+  }
 }
 
 object ValueHolder extends LogSupport {
@@ -188,5 +191,4 @@ object ValueHolder extends LogSupport {
     def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)
 
   }
-
 }

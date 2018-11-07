@@ -18,8 +18,8 @@ import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 /**
   *
   */
-object ValueHolderCodec extends MessageCodec[ValueHolder[String]] {
-  override def pack(p: MessagePacker, v: ValueHolder[String]): Unit = {
+object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
+  override def pack(p: MessagePacker, v: ValueHolder[_]): Unit = {
     v match {
       case ValueHolder.Empty =>
         // For nested objects, we should use an empty Map to use default values
@@ -27,12 +27,12 @@ object ValueHolderCodec extends MessageCodec[ValueHolder[String]] {
       case ValueHolder.Node(child) => {
         p.packMapHeader(child.size)
         for ((key, x) <- child) {
-          p.packString(key)
+          p.packString(key.toString)
           pack(p, x)
         }
       }
       case ValueHolder.Leaf(v) =>
-        p.packString(v)
+        p.packString(v.toString)
       case ValueHolder.SeqLeaf(elems) =>
         p.packArrayHeader(elems.length)
         for (x <- elems) {

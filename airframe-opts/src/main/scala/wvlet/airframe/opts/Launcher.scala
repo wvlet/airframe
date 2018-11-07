@@ -24,7 +24,7 @@ package wvlet.airframe.opts
 import java.lang.reflect.InvocationTargetException
 
 import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder}
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.opts.OptionParser.CLOption
 import wvlet.airframe.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
 import wvlet.airframe.surface.{MethodSurface, Surface}
@@ -168,6 +168,8 @@ class Launcher[A](launcherInfo: LauncherInfo,
     extends LogSupport {
   import Launcher._
 
+  private val codecFactory = MessageCodec.defaultFactory
+
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
@@ -222,12 +224,12 @@ class Launcher[A](launcherInfo: LauncherInfo,
 
     optionParser.schema match {
       case c: ClassOptionSchema =>
-        val msgpack = ValueHolderCodec.toMsgPack(result.parseTree)
-        val codec   = MessageCodec.defaultFactory.withObjectMapCodec.of(c.surface)
+        val msgpack = result.parseTree.toMsgPack
+        val codec   = codecFactory.withObjectMapCodec.of(c.surface)
         val h       = new MessageHolder
         codec.unpack(MessagePack.newDefaultUnpacker(msgpack), h)
         h.getError.map { e =>
-          throw e
+          throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")
         }
         val obj = h.getLastValue
 
@@ -279,9 +281,23 @@ class Launcher[A](launcherInfo: LauncherInfo,
           LauncherResult(stack, None)
         } else {
           try {
-            val methodCallBuilder = new MethodCallBuilder(m.method, parentObj.asInstanceOf[AnyRef])
-            val methodResult      = result.build(methodCallBuilder).execute
-            LauncherResult(stack, Some(methodResult))
+            // parseTree -> msgpack -> method arguments
+            val methodSurface = m.method
+            val paramCodecs = methodSurface.args.map { x =>
+              codecFactory.of(x.surface)
+            }
+            val methodArgCodec = new ParamListCodec(methodSurface.name, methodSurface.args.toIndexedSeq, paramCodecs)
+
+            // TODO need to supply default values by using the parent object
+            val msgpack = result.parseTree.toMsgPack
+            methodArgCodec
+              .unpackMsgPack(msgpack).map { args =>
+                val methodResult = methodSurface.call(parentObj, args: _*)
+                LauncherResult(stack, Some(methodResult))
+              }
+              .getOrElse {
+                throw new IllegalArgumentException(s"Failed to call ${methodSurface}: ${result.parseTree}")
+              }
           } catch {
             case e: InvocationTargetException => throw e.getTargetException
             case other: Throwable             => throw other

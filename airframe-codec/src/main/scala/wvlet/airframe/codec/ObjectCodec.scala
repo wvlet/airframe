@@ -138,7 +138,8 @@ class ParamListCodec(name: String,
           val p         = params(i)
           val paramName = CName.toCanonicalName(p.name)
           map.get(paramName) match {
-            case Some(x) => x
+            case Some(x) =>
+              x
             case None =>
               p.getDefaultValue.getOrElse(emptyParamBinder(p.surface))
           }

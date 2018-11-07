@@ -18,6 +18,8 @@ import java.{lang => jl}
 
 import wvlet.log.LogSupport
 
+import scala.util.Try
+
 /**
   * MethodParameter implementation using reflection for accessing parameter values
   */

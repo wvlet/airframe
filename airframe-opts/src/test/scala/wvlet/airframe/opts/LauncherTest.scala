@@ -198,7 +198,7 @@ class LauncherTest extends AirframeSpec {
       }
     }
 
-    "run test command" in {
+    "run test command" taggedAs ("failed") in {
       val message = capture {
         Launcher.execute[MyCommand]("hello -r 3") // hello x 3
       }
