@@ -23,6 +23,8 @@ package wvlet.airframe.opts
 
 import java.lang.reflect.InvocationTargetException
 
+import org.msgpack.core.MessagePack
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder}
 import wvlet.airframe.opts.OptionParser.CLOption
 import wvlet.airframe.surface.reflect.{CName, MethodCallBuilder, SurfaceFactory}
 import wvlet.airframe.surface.{MethodSurface, Surface}
@@ -220,7 +222,16 @@ class Launcher[A](launcherInfo: LauncherInfo,
 
     optionParser.schema match {
       case c: ClassOptionSchema =>
-        val obj       = result.buildObject(c.surface)
+        val msgpack = ValueHolderCodec.toMsgPack(result.parseTree)
+        val codec   = MessageCodec.defaultFactory.withObjectMapCodec.of(c.surface)
+        val h       = new MessageHolder
+        codec.unpack(MessagePack.newDefaultUnpacker(msgpack), h)
+        h.getError.map { e =>
+          throw e
+        }
+        val obj = h.getLastValue
+
+        //val obj       = result.buildObject(c.surface)
         val nextStack = LauncherInstance(this, obj) :: stack
 
         if (result.unusedArgument.isEmpty) {

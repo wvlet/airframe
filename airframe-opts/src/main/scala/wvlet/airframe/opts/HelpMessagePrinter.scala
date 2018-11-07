@@ -39,7 +39,7 @@ class HelpMessagePrinter extends LogSupport {
     val l = stack.head
 
     // Show basic usage
-    println(
+    print(
       render(commandName = l.name,
              argumentList = l.usage,
              description = l.description,

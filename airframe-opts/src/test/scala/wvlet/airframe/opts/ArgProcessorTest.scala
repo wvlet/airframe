@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.opts
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.opts.LauncherTest.capture
+import wvlet.log.LogSupport
 
 object ArgProcessorTest {
 
@@ -25,7 +27,14 @@ object ArgProcessorTest {
     }
   }
 
-  case class SubCmd(@option(prefix = "-p", description = "port number") port: Int)
+  case class SubCmd(@option(prefix = "-p", description = "port number") port: Int) extends LogSupport {
+
+    @command
+    def hello(@option(prefix = "-t", description = "timeout sec") timeoutSec: Int = 10): Unit = {
+      info(s"hello: timeout=${timeoutSec}")
+    }
+
+  }
 
   val nestedLauncher =
     Launcher
@@ -44,11 +53,26 @@ class ArgProcessorTest extends AirframeSpec {
   }
 
   "should show global options" in {
-    val c = LauncherTest.capture {
+    val c = capture {
       nestedLauncher.execute("sub -h")
     }
     c should include("global options")
     c should include("port number")
+  }
+
+  "should show sub command options" in {
+    val c = capture {
+      nestedLauncher.execute("sub hello -h")
+    }
+    c should include("global options")
+    c should include("port number")
+  }
+
+  "should execute sub commands" in {
+    capture {
+      nestedLauncher.execute("sub hello")
+      nestedLauncher.execute("sub hello -t 100")
+    }
   }
 
 }

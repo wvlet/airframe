@@ -22,7 +22,8 @@ object ValueHolderCodec extends MessageCodec[ValueHolder[String]] {
   override def pack(p: MessagePacker, v: ValueHolder[String]): Unit = {
     v match {
       case ValueHolder.Empty =>
-        p.packNil
+        // For nested objects, we should use an empty Map to use default values
+        p.packMapHeader(0)
       case ValueHolder.Node(child) => {
         p.packMapHeader(child.size)
         for ((key, x) <- child) {
