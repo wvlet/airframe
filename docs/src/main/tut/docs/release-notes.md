@@ -20,7 +20,7 @@ title: Release Notes
 ## 0.69
 -  surface: [#270](https://github.com/wvlet/airframe/issues/270): Move wvlet.surface -> wvlet.airframe.surface ([#272](https://github.com/wvlet/airframe/issues/272)) [[5ca3143](https://github.com/wvlet/airframe/commit/5ca3143)]
 -  docs: Add note on scalafmt [[6867642](https://github.com/wvlet/airframe/commit/6867642)]
--  docs: Add [airframe-opts](https://wvlet.org/airframe/docs/airframe-opts.html) docs [[dd4ecb4](https://github.com/wvlet/airframe/commit/dd4ecb4)]
+-  docs: Add [airframe-opts](https://wvlet.org/airframe/docs/airframe-launcher.html) docs [[dd4ecb4](https://github.com/wvlet/airframe/commit/dd4ecb4)]
 -  internal: Enable using ctrl+c in sbt console [[143053b](https://github.com/wvlet/airframe/commit/143053b)]
 
 ## 0.68
@@ -159,7 +159,7 @@ title: Release Notes
  - Fix a singleton binding bug: If `bind[A].toSingletonOf[B]` is used and A is non-abstract trait, A was used instead of B.
 
 ## 0.40
- - airframe-opts: Fixes [#147](https://github.com/wvlet/airframe/issues/147) when reading the default values of nested options
+ - airframe-launcher: Fixes [#147](https://github.com/wvlet/airframe/issues/147) when reading the default values of nested options
 
 ## 0.39
  - Add a unified scaladoc for all modules
@@ -226,7 +226,7 @@ title: Release Notes
  - Apply scalafmt code style 
 
 ## 0.21
- - Add [airframe-opts](https://github.com/wvlet/airframe/tree/master/airframe-opts) command line parser.
+ - Add [airframe-launcher](https://github.com/wvlet/airframe/tree/master/airframe-opts) command line parser.
 
 ## 0.20
  - Migrated [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log) from [wvlet-log](https://github.com/wvlet/log) because 

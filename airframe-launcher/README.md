@@ -1,5 +1,5 @@
-# Airframe Opts
+# Airframe Launcher
 
-*airframe-opts* is a command-line parser library.
+*airframe-launcher* is a handy command-line program launcher.
 
-- [Documentation](https://wvlet.org/airframe/docs/airframe-opts.html)
+- [Documentation](https://wvlet.org/airframe/docs/airframe-launcher.html)

@@ -16,53 +16,16 @@ Airframe https://wvlet.org/airframe is a collection of lightweight building bloc
 See [Documentation](https://wvlet.org/airframe/) for further details.
 
 ## Resources
+
 - [Airframe Home](https://wvlet.org/airframe/)
 - [Documentation](https://wvlet.org/airframe/docs)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 
-- Slideshare: [Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018](https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014)
-
-
 ## Getting Started
 [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
-**build.sbt**
 
-Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:
-```scala
-val AIRFRAME_VERSION = "(version)"
-
-# For Scala 2.11, 2.12, and 2.13
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %% "airframe"              % AIRFRAME_VERSION, // Dependency injection
-  "org.wvlet.airframe" %% "airframe-codec"        % AIRFRAME_VERSION, // MessagePack-based schema-on-read transcoder
-  "org.wvlet.airframe" %% "airframe-config"       % AIRFRAME_VERSION, // YAML-based configuration
-  "org.wvlet.airframe" %% "airframe-control"      % AIRFRAME_VERSION, // Library for retryable execution
-  "org.wvlet.airframe" %% "airframe-http"         % AIRFRAME_VERSION, // HTTP REST API router
-  "org.wvlet.airframe" %% "airframe-http-finagle" % AIRFRAME_VERSION, // HTTP server (Finagle backend)
-  "org.wvlet.airframe" %% "airframe-jmx"          % AIRFRAME_VERSION, // JMX monitoring
-  "org.wvlet.airframe" %% "airframe-jdbc"         % AIRFRAME_VERSION, // JDBC connection pool
-  "org.wvlet.airframe" %% "airframe-json"         % AIRFRAME_VERSION, // Pure Scala JSON parser
-  "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION, // Logging
-  "org.wvlet.airframe" %% "airframe-metrics"      % AIRFRAME_VERSION, // Metrics units
-  "org.wvlet.airframe" %% "airframe-msgpack"      % AIRFRAME_VERSION, // Pure-Scala MessagePack
-  "org.wvlet.airframe" %% "airframe-opts"         % AIRFRAME_VERSION, // Command-line option parser
-  "org.wvlet.airframe" %% "airframe-stream"       % AIRFRAME_VERSION, // Stream processing library 
-  "org.wvlet.airframe" %% "airframe-surface"      % AIRFRAME_VERSION, // Object surface inspector
-  "org.wvlet.airframe" %% "airframe-tablet"       % AIRFRAME_VERSION  // Table data reader/writer
-)
-
-# For Scala.js, the following libraries can be used:
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
-  "org.wvlet.airframe" %%% "airframe-control" % AIRFRAME_VERSION, // Library for retryable execution
-  "org.wvlet.airframe" %%% "airframe-json"    % AIRFRAME_VERSION, // Pure Scala JSON parser
-  "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
-  "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
-  "org.wvlet.airframe" %%% "airframe-msgpack" % AIRFRAME_VERSION, // Pure-Scala MessagePack
-  "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION  // Object surface inspector
-)
-```
+See the instruction at [documentation](https://wvlet.org/airframe/) page.
 
 ## LICENSE
 

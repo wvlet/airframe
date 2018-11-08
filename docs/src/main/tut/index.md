@@ -10,21 +10,23 @@ technologies:
 
 Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
 
-- [Logging](docs/airframe-log.html)
-- [Configuration](docs/airframe-config.html)
-- [Dependency Injection (DI)](docs/index.html) tailored to to [Scala](https://www.scala-lang.org/)
+- [Logging](docs/airframe-log.html) (airframe-log)
+- [Configuration](docs/airframe-config.html) (airframe-config)
+- [Dependency Injection (DI)](docs/index.html) tailored to to [Scala](https://www.scala-lang.org/) (airframe)
   - Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
     Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
     While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers),
     Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.
   - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
-- [Fluentd Client](docs/airframe-fluentd.html)
-- [HTTP Server](docs/airframe-http.html)
-- [Object serialization](docs/airframe-codec.html)
-- [Option parser](docs/airframe-opts.html)
-- [Runtime monitoring via JMX](docs/airframe-jmx.html)
-- [Human-readable data and time units](docs/airframe-metrics.html)
-- [Object shape inspector (Surface)](docs/airframe-surface.html)
+- [Fluentd Client](docs/airframe-fluentd.html) (airframe-fluentd)
+  - For logging object data
+- [HTTP Server](docs/airframe-http.html) (airframe-http)
+  - Finagle extention (airframe-http-finagle)
+- [Object serialization](docs/airframe-codec.html) (airframe-codec)
+- [Command-line program launcher](docs/airframe-launcher.html) (ariframe-launcher)
+- [Runtime monitoring via JMX](docs/airframe-jmx.html) (airframe-jmx)
+- [Human-readable data and time units](docs/airframe-metrics.html) (airframe-metrics)
+- [Object shape inspector (Surface)](docs/airframe-surface.html) (airframe-surface)
 - [Other Utilities](https://wvlet.org/airframe/docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 
@@ -37,7 +39,6 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Blog Articles
-
 - [Airframe HTTP: A Minimalist Approach For Building Web Services in Scala](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
   - airframe-http, airframe-http-finagle
 - [Demystifying Dependency Injection with Airframe](https://medium.com/@taroleo/demystifying-dependency-injection-with-airframe-9b637034a78a)
@@ -46,7 +47,15 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
   - airframe-log
 - [3 Tips For Maintaining Your Scala Projects](https://medium.com/@taroleo/3-tips-for-maintaining-your-scala-projects-e54a2feea9c4)
   - Tips on how we are maintaining Airframe.
+
+### In Japanese
+- [Airframe Meetup #1: Scala開発に役立つ5つのデザインパターンを紹介](https://medium.com/airframe/airframe-meetup-72d6db13182e)
+- [AirframeによるScalaプログラミング：「何ができるか」から「何を効果的に忘れられるか」を考える](https://medium.com/airframe/e9e0f7fc983a)
 - [Introdution of Airframe in Japanese (日本語)](https://medium.com/@taroleo/airframe-c5d044a97ec)
+
+## Presentations
+- [Airframe Meetup #1. 2018-10-23 @ Arm Treasure Data (Tokyo Office)](https://www.slideshare.net/taroleo/airframe-meetup-1-20181023-arm-treasure-data-tokyo-office)
+- [Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018](https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014)
 
 ## Getting Started
 
@@ -84,7 +93,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-log"          % AIRFRAME_VERSION, // Logging
   "org.wvlet.airframe" %% "airframe-metrics"      % AIRFRAME_VERSION, // Metrics units
   "org.wvlet.airframe" %% "airframe-msgpack"      % AIRFRAME_VERSION, // Pure-Scala MessagePack
-  "org.wvlet.airframe" %% "airframe-opts"         % AIRFRAME_VERSION, // Command-line option parser
+  "org.wvlet.airframe" %% "airframe-launcher"     % AIRFRAME_VERSION, // Command-line program launcher
   "org.wvlet.airframe" %% "airframe-stream"       % AIRFRAME_VERSION, // Stream processing library
   "org.wvlet.airframe" %% "airframe-surface"      % AIRFRAME_VERSION, // Object surface inspector
   "org.wvlet.airframe" %% "airframe-tablet"       % AIRFRAME_VERSION  // Table data reader/writer
