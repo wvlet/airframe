@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.opts.LauncherTest.capture
+import wvlet.airframe.launcher.LauncherTest.capture
 import wvlet.log.LogSupport
 
 object ArgProcessorTest {
@@ -60,6 +60,14 @@ object ArgProcessorTest {
 
 class ArgProcessorTest extends AirframeSpec {
   import ArgProcessorTest._
+
+  "should run the default command" in {
+
+    val c = capture {
+      Launcher.of[Cmd].execute("")
+    }
+    c should include("Type --help to show the list of sub commands")
+  }
 
   "should parse top-level arguments" in {
     val l = Launcher.of[Cmd]

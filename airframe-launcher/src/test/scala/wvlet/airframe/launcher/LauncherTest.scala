@@ -19,7 +19,7 @@
 //
 //--------------------------------------
 
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 import java.io.ByteArrayOutputStream
 

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 

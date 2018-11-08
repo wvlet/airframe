@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 //--------------------------------------
 //
@@ -56,7 +56,7 @@ object OptionParser extends LogSupport {
     parse(tokenize(argLine))
   }
 
-  private[opts] def splitPrefixes(prefix: String): Seq[String] = {
+  private[launcher] def splitPrefixes(prefix: String): Seq[String] = {
     for (p <- prefix.split(",").toSeq) yield {
       if (p.startsWith("--") || p.startsWith("-")) {
         p

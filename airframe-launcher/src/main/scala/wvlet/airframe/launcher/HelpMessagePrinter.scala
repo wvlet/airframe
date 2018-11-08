@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 import java.io.{PrintWriter, StringWriter}
 
-import wvlet.airframe.opts.OptionParser.{CLArgItem, CLOption}
+import wvlet.airframe.launcher.OptionParser.{CLArgItem, CLOption}
 import wvlet.log.LogSupport
 
 /**

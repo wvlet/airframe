@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package wvlet.airframe.opts;
+package wvlet.airframe.launcher;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,29 +20,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for specifying command-line options.
+ * Annotation for methods that can be invoked as commands
  *
  * @author leo
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
-public @interface option {
-
-    /**
-     * Comma-separated list of option prefixes. For example, "-h,--help" handles option "-h" and
-     * "--help". If no prefix is specified, this parameter is handled as a nested option.
-     */
-    String prefix() default "";
+@Target( { ElementType.METHOD })
+public @interface command {
 
     /**
      * Description of the option, used to generate a help message of this
-     * command-line option.
+     * command-line options.
      */
     String description() default "";
 
     /**
-     * If this option is used as a switch to display help messages of commands, set this value to true.
+     * One-line usage note e.g. "$ command name (argument)"
+     * @return
      */
-    boolean isHelp() default false;
+    String usage() default "";
 }

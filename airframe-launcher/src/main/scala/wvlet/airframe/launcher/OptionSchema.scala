@@ -11,8 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
-import wvlet.airframe.opts.OptionParser.{CLArgItem, CLArgument, CLOption, OptionParserResult}
+package wvlet.airframe.launcher
+import wvlet.airframe.launcher.OptionParser.{CLArgItem, CLArgument, CLOption, OptionParserResult}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -104,7 +104,7 @@ class ClassOptionSchema(val surface: Surface, val options: Seq[CLOption], val ar
   *
   * @param method
   */
-class MethodOptionSchema(private[opts] val method: MethodSurface) extends OptionSchema {
+class MethodOptionSchema(private[launcher] val method: MethodSurface) extends OptionSchema {
   import wvlet.airframe.surface.reflect._
   val options =
     for (p <- method.args; opt <- p.findAnnotationOf[option]) yield new CLOption(Path(p.name), opt, p)

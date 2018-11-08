@@ -12,31 +12,17 @@
  * limitations under the License.
  */
 
-package wvlet.airframe.opts;
+package wvlet.airframe.launcher;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 /**
- * CommandTrait-line argument with no option prefix such as "-" or "--"
- *
- * @author leo
- *
+ * Use a method annotated with this as the default command
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD })
-public @interface argument {
-
-    /**
-     * Name of this argument. If nothing is given, field name is used;
-     */
-    String name() default "";
-
-    /**
-     * Description of this argument
-     */
-    String description() default "";
+@Target( { ElementType.METHOD })
+public @interface defaultCommand {
 }

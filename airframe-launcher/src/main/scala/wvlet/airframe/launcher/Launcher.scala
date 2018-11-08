@@ -19,14 +19,14 @@
 //
 //--------------------------------------
 
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 import java.lang.reflect.InvocationTargetException
 
 import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
-import wvlet.airframe.opts.OptionParser.CLOption
+import wvlet.airframe.launcher.OptionParser.CLOption
 import wvlet.airframe.surface.reflect.{CName, SurfaceFactory}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
@@ -59,7 +59,7 @@ object Launcher extends LogSupport {
     * Create a launcher for a class
     * @return
     */
-  private[opts] def newCommandLauncher(surface: Surface, name: String, description: String): CommandLauncher = {
+  private[launcher] def newCommandLauncher(surface: Surface, name: String, description: String): CommandLauncher = {
     val parser = OptionParser(surface)
 
     // Generate a command-line usage message
@@ -130,7 +130,7 @@ object Launcher extends LogSupport {
   * Using a mutable data structure for simplicity.
   * This should be safe since this config is internal-only config holder
   */
-private[opts] case class LauncherConfig(
+private[launcher] case class LauncherConfig(
     var withHelpOption: Boolean = true,
     var helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
     var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
@@ -140,7 +140,7 @@ private[opts] case class LauncherConfig(
     }
 )
 
-class Launcher(config: LauncherConfig, private[opts] val mainLauncher: CommandLauncher) {
+class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
 
   def printHelp: Unit = {
     mainLauncher.printHelpInternal(config, List(mainLauncher))
@@ -222,8 +222,8 @@ case class LauncherInfo(name: String, description: String, usage: String)
   *
   */
 class CommandLauncher(launcherInfo: LauncherInfo,
-                      private[opts] val optionParser: OptionParser,
-                      private[opts] val subCommands: Seq[CommandLauncher],
+                      private[launcher] val optionParser: OptionParser,
+                      private[launcher] val subCommands: Seq[CommandLauncher],
                       defaultCommand: Option[LauncherInstance => Any])
     extends LogSupport {
 
@@ -231,32 +231,32 @@ class CommandLauncher(launcherInfo: LauncherInfo,
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
 
-  private[opts] def withLauncherInfo(name: String, description: String): CommandLauncher = {
+  private[launcher] def withLauncherInfo(name: String, description: String): CommandLauncher = {
     new CommandLauncher(LauncherInfo(name, description, launcherInfo.usage), optionParser, subCommands, defaultCommand)
   }
 
-  private[opts] def optionList: Seq[CLOption] = {
+  private[launcher] def optionList: Seq[CLOption] = {
     optionParser.optionList
   }
 
-  private[opts] def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
+  private[launcher] def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
     val subLauncher   = Launcher.newCommandLauncher(moduleSurface, name, description)
     add(name, description, subLauncher)
   }
 
-  private[opts] def add(name: String, description: String, commandLauncher: CommandLauncher): CommandLauncher = {
+  private[launcher] def add(name: String, description: String, commandLauncher: CommandLauncher): CommandLauncher = {
     new CommandLauncher(launcherInfo,
                         optionParser,
                         subCommands :+ commandLauncher.withLauncherInfo(name, description),
                         defaultCommand)
   }
 
-  private[opts] def printHelp(launcherConfig: LauncherConfig, stack: List[LauncherInstance]): Unit = {
+  private[launcher] def printHelp(launcherConfig: LauncherConfig, stack: List[LauncherInstance]): Unit = {
     printHelpInternal(launcherConfig, stack.map(_.launcher))
   }
 
-  private[opts] def printHelpInternal(launcherConfig: LauncherConfig, stack: List[CommandLauncher]): Unit = {
+  private[launcher] def printHelpInternal(launcherConfig: LauncherConfig, stack: List[CommandLauncher]): Unit = {
     val l             = stack.head
     val schema        = l.optionParser.schema
     val globalOptions = stack.tail.flatMap(_.optionParser.optionList)
@@ -274,10 +274,10 @@ class CommandLauncher(launcherInfo: LauncherInfo,
     print(help)
   }
 
-  private[opts] def execute(launcherConfig: LauncherConfig,
-                            stack: List[LauncherInstance],
-                            args: Seq[String],
-                            showHelp: Boolean): LauncherResult = {
+  private[launcher] def execute(launcherConfig: LauncherConfig,
+                                stack: List[LauncherInstance],
+                                args: Seq[String],
+                                showHelp: Boolean): LauncherResult = {
     val result = optionParser.parse(args.toArray)
     trace(result)
 
