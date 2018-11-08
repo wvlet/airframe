@@ -11,9 +11,9 @@ ga('send', 'pageview');
 <p>Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.</p>
 
 <ul>
-  <li><a href="docs/airframe-log.html">Logging</a></li>
-  <li><a href="docs/airframe-config.html">Configuration</a></li>
-  <li><a href="docs/index.html">Dependency Injection (DI)</a> tailored to to <a href="https://www.scala-lang.org/">Scala</a>
+  <li><a href="docs/airframe-log.html">Logging</a> (airframe-log)</li>
+  <li><a href="docs/airframe-config.html">Configuration</a> (airframe-config)</li>
+  <li><a href="docs/index.html">Dependency Injection (DI)</a> tailored to to <a href="https://www.scala-lang.org/">Scala</a> (airframe)
     <ul>
       <li>Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation;
 Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
@@ -22,13 +22,21 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
       <li><a href="https://wvlet.org/airframe/docs/comparison.html">DI Framework Comparison</a>. Comparing Airframe with Google Guice, Macwire, Dagger2, etc.</li>
     </ul>
   </li>
-  <li><a href="docs/airframe-fluentd.html">Fluentd Client</a></li>
-  <li><a href="docs/airframe-http.html">HTTP Server</a></li>
-  <li><a href="docs/airframe-codec.html">Object serialization</a></li>
-  <li><a href="docs/airframe-opts.html">Option parser</a></li>
-  <li><a href="docs/airframe-jmx.html">Runtime monitoring via JMX</a></li>
-  <li><a href="docs/airframe-metrics.html">Human-readable data and time units</a></li>
-  <li><a href="docs/airframe-surface.html">Object shape inspector (Surface)</a></li>
+  <li><a href="docs/airframe-fluentd.html">Fluentd Client</a> (airframe-fluentd)
+    <ul>
+      <li>For logging object data</li>
+    </ul>
+  </li>
+  <li><a href="docs/airframe-http.html">HTTP Server</a> (airframe-http)
+    <ul>
+      <li>Finagle extention (airframe-http-finagle)</li>
+    </ul>
+  </li>
+  <li><a href="docs/airframe-codec.html">Object serialization</a> (airframe-codec)</li>
+  <li><a href="docs/airframe-launcher.html">Command-line program launcher</a> (ariframe-launcher)</li>
+  <li><a href="docs/airframe-jmx.html">Runtime monitoring via JMX</a> (airframe-jmx)</li>
+  <li><a href="docs/airframe-metrics.html">Human-readable data and time units</a> (airframe-metrics)</li>
+  <li><a href="docs/airframe-surface.html">Object shape inspector (Surface)</a> (airframe-surface)</li>
   <li><a href="https://wvlet.org/airframe/docs/utils.html">Other Utilities</a>
     <ul>
       <li>A collection of useful Scala libraries that can be used with Airframe.</li>
@@ -53,7 +61,6 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
 </ul>
 
 <h2 id="blog-articles">Blog Articles</h2>
-
 <ul>
   <li><a href="https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f">Airframe HTTP: A Minimalist Approach For Building Web Services in Scala</a>
     <ul>
@@ -75,7 +82,19 @@ Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Sc
       <li>Tips on how we are maintaining Airframe.</li>
     </ul>
   </li>
+</ul>
+
+<h3 id="in-japanese">In Japanese</h3>
+<ul>
+  <li><a href="https://medium.com/airframe/airframe-meetup-72d6db13182e">Airframe Meetup #1: Scala開発に役立つ5つのデザインパターンを紹介</a></li>
+  <li><a href="https://medium.com/airframe/e9e0f7fc983a">AirframeによるScalaプログラミング：「何ができるか」から「何を効果的に忘れられるか」を考える</a></li>
   <li><a href="https://medium.com/@taroleo/airframe-c5d044a97ec">Introdution of Airframe in Japanese (日本語)</a></li>
+</ul>
+
+<h2 id="presentations">Presentations</h2>
+<ul>
+  <li><a href="https://www.slideshare.net/taroleo/airframe-meetup-1-20181023-arm-treasure-data-tokyo-office">Airframe Meetup #1. 2018-10-23 @ Arm Treasure Data (Tokyo Office)</a></li>
+  <li><a href="https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014">Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018</a></li>
 </ul>
 
 <h2 id="getting-started">Getting Started</h2>
@@ -110,7 +129,7 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span>          <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Logging
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span>      <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Metrics units
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-msgpack"</span>      <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Pure-Scala MessagePack
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-opts"</span>         <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Command-line option parser
+</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-launcher"</span>     <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Command-line program launcher
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-stream"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Stream processing library
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-surface"</span>      <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Object surface inspector
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-tablet"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span>  <span class="c1">// Table data reader/writer
