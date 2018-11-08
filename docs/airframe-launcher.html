@@ -24,31 +24,32 @@ ga('send', 'pageview');
 <ol>
   <li>Import <code class="highlighter-rouge">wvlet.airframe.launcher._</code></li>
   <li>Create a class <code class="highlighter-rouge">A</code> with constructor arguments annotated with <code class="highlighter-rouge">@option</code> or <code class="highlighter-rouge">@argument</code></li>
-  <li>Call <code class="highlighter-rouge">Launcher.of[A].execute("command line")</code>
-```scala
-import wvlet.airframe.launcher._</li>
+  <li>Call <code class="highlighter-rouge">Launcher.of[A].execute("command line")</code></li>
 </ol>
 
-<p>class MyApp(@option(prefix = “-h,–help”, description = “display help messages”, isHelp = true) 
-            help: Boolean = false,
-            @option(prefix = “-p”, description = “port number”) 
-            port: Int = 8080) {</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.launcher._</span>
 
-<p>@defaultCommand       <br />
-   def default: Unit = {
-     println(s”Hello airframe. port:${port}”)
-   }
-}</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>
-A function annotated with `@defaultCommand` will be executed.
+<span class="k">class</span> <span class="nc">MyApp</span><span class="o">(</span><span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span> <span class="k">=</span> <span class="s">"-h,--help"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"display help messages"</span><span class="o">,</span> <span class="n">isHelp</span> <span class="k">=</span> <span class="kc">true</span><span class="o">)</span> 
+            <span class="n">help</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span>
+            <span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span> <span class="k">=</span> <span class="s">"-p"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"port number"</span><span class="o">)</span> 
+            <span class="n">port</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">8080</span><span class="o">)</span> <span class="o">{</span>
 
-```scala
-Launcher.execute[MyApp]("-p 10010")
-// Hello airframe. port:10010
-
-Launcher.execute[MyApp]("-p 10010")
-// Hello airframe. port:10010
+   <span class="nd">@defaultCommand</span>         
+   <span class="k">def</span> <span class="n">default</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+     <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Hello airframe. port:${port}"</span><span class="o">)</span>
+   <span class="o">}</span>
+<span class="o">}</span>
 </code></pre>
+</div>
+
+<p>A function annotated with <code class="highlighter-rouge">@defaultCommand</code> will be executed.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"-p 10010"</span><span class="o">)</span>
+<span class="c1">// Hello airframe. port:10010
+</span>
+<span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"-p 10010"</span><span class="o">)</span>
+<span class="c1">// Hello airframe. port:10010
+</span></code></pre>
 </div>
 
 <p>A command line help message can be automatically generated:</p>
