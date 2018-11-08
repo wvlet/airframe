@@ -47,14 +47,15 @@ object ArgProcessorTest {
     def b: String = "launcher"
   }
 
+  val subCommandModule = Launcher
+    .of[SubCmd]
+    .addCommandModule[NestedCmd](name = "nested1", description = "further nested command set 1")
+    .addCommandModule[NestedCmd](name = "nested2", description = "further nested command set 2")
+
   val moreNestedLauncher =
     Launcher
       .of[Cmd]
-      .addNestedCommandModule[SubCmd](name = "sub", description = "sub commands") { x =>
-        x.addCommandModule[NestedCmd](name = "nested1", description = "further nested command set 1")
-          .addCommandModule[NestedCmd](name = "nested2", description = "further nested command set 2")
-      }
-
+      .add(subCommandModule, "sub", "sub command")
 }
 
 class ArgProcessorTest extends AirframeSpec {

@@ -140,7 +140,7 @@ private[opts] case class LauncherConfig(
     }
 )
 
-class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
+class Launcher(config: LauncherConfig, private[opts] val mainLauncher: CommandLauncher) {
 
   def printHelp: Unit = {
     config.helpMessagePrinter.printHelp(List(mainLauncher))
@@ -183,11 +183,9 @@ class Launcher(config: LauncherConfig, mainLauncher: CommandLauncher) {
     new Launcher(config, mainLauncher.addCommandModule[B](name, description))
   }
 
-  def addNestedCommandModule[B: ru.TypeTag](name: String, description: String)(
-      nested: CommandLauncher => CommandLauncher): Launcher = {
-    new Launcher(config, mainLauncher.addNestedCommandModule[B](name, description)(nested))
+  def add(l: Launcher, name: String, description: String): Launcher = {
+    new Launcher(config, mainLauncher.add(name, description, l.mainLauncher))
   }
-
 }
 
 /**
@@ -229,6 +227,10 @@ class CommandLauncher(launcherInfo: LauncherInfo,
                       defaultCommand: Option[LauncherInstance => Any])
     extends LogSupport {
 
+  def withLauncherInfo(name: String, description: String): CommandLauncher = {
+    new CommandLauncher(LauncherInfo(name, description, ""), optionParser, subCommands, defaultCommand)
+  }
+
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
@@ -237,27 +239,24 @@ class CommandLauncher(launcherInfo: LauncherInfo,
     optionParser.optionList
   }
 
-  def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
+  private[opts] def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
     val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
     val subLauncher   = Launcher.newCommandLauncher(moduleSurface, name, description)
-    add(name, subLauncher)
+    add(name, description, subLauncher)
   }
 
-  def addNestedCommandModule[B: ru.TypeTag](name: String, description: String)(
-      nested: CommandLauncher => CommandLauncher): CommandLauncher = {
-    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
-    val subLauncher   = nested(Launcher.newCommandLauncher(moduleSurface, name, description))
-    add(name, subLauncher)
-  }
-
-  private[opts] def add(subCommandName: String, commandLauncher: CommandLauncher): CommandLauncher = {
-    new CommandLauncher(launcherInfo, optionParser, subCommands :+ commandLauncher, defaultCommand)
+  private[opts] def add(name: String, description: String, commandLauncher: CommandLauncher): CommandLauncher = {
+    new CommandLauncher(launcherInfo,
+                        optionParser,
+                        subCommands :+ commandLauncher.withLauncherInfo(name, description),
+                        defaultCommand)
   }
 
   private[opts] def execute(launcherConfig: LauncherConfig,
                             stack: List[LauncherInstance],
                             args: Seq[String],
                             showHelp: Boolean): LauncherResult = {
+    debug(s"execute[${name}] ${args.mkString(" ")}")
     val result = optionParser.parse(args.toArray)
     trace(result)
 
