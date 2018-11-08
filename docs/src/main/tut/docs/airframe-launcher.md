@@ -119,6 +119,35 @@ Launcher.execute[MyApp]("start --host localhost -p 10000")
 // Straing server at localhost:10000
 ```
 
+## Nesting Sub Commands
+
+With `addModule`, you can add nested command set
+
+```scala
+// Add sub commands `command1` and `command2`:
+val l = Launcher.of[A]
+  .addModule[B](name="command1", description="nested command set")
+  .addModule[C](name="command2", description="...")
+
+// Launch B
+l.execute("command1")
+
+// Launch C
+l.execute("command2")
+```
+
+It is also possible to nest Launcher(s):
+
+```scala
+val subModule = Launcher.of[A]
+
+val l = Launcher.of[Main]
+  .add(subModule, name="cmd-a", description="sub command set")
+
+// Launch A in subModule
+l.exucute("cmd-a")
+```
+
 
 ### Packaging with sbt-pack
 If you use [sbt-pack](https://github.com/xerial/sbt-pack) plugin, you can create a stand-alone Scala program with a command-line interface:
