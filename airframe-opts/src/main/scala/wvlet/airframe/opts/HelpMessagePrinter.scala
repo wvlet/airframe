@@ -15,6 +15,7 @@ package wvlet.airframe.opts
 import java.io.{PrintWriter, StringWriter}
 
 import wvlet.airframe.opts.OptionParser.{CLArgItem, CLOption}
+import wvlet.log.LogSupport
 
 /**
   * Interface for printing help messages
@@ -23,6 +24,7 @@ trait HelpMessagePrinter {
 
   def render(commandName: String,
              arguments: Seq[CLArgItem],
+             oneLineUsage: Option[String],
              description: String,
              options: Seq[CLOption],
              globalOptions: Seq[CLOption],
@@ -30,28 +32,66 @@ trait HelpMessagePrinter {
 
 }
 
-object HelpMessagePrinter {
+object HelpMessagePrinter extends LogSupport {
 
+  /**
+    * Teh default help message printer in this format:
+    * {{{
+    *   usage: (command name) (command arguments)
+    *      (description)
+    *
+    *   [global options]
+    *   ...
+    *   [options]
+    *   ...
+    *
+    *   [commands]
+    *   ...
+    * }}}
+    */
   val default = new HelpMessagePrinter {
     override def render(
         commandName: String,
         arguments: Seq[CLArgItem],
+        oneLineUsage: Option[String],
         description: String,
         options: Seq[CLOption],
         globalOptions: Seq[CLOption],
         subCommands: Seq[CommandLauncher]
     ): String = {
-
       val str = new StringWriter()
       val s   = new PrintWriter(str)
 
-      val argumentList = arguments.map(x => s"[${x.name}]").mkString(" ")
-      s.println(s"usage: ${commandName} ${argumentList}")
-      s.println(s"  ${description}")
-      if (globalOptions.nonEmpty || options.nonEmpty) {
+      val hasAnyOption = globalOptions.nonEmpty || options.nonEmpty
+
+      // Print one-line command usage
+      s.print("usage:")
+      s.println(oneLineUsage.getOrElse {
+        val line = new StringBuilder
+        if (globalOptions.nonEmpty) {
+          line.append(s" [global options]")
+        }
+        line.append(s" ${commandName}")
+        if (options.nonEmpty) {
+          line.append(s" [options]")
+        }
+        if (arguments.nonEmpty) {
+          line.append(arguments.map(x => s" [${x.name}]").mkString)
+        }
+        if (subCommands.nonEmpty) {
+          line.append(s" <command name>")
+        }
+        line.result()
+      })
+      // Print description
+      if (description.nonEmpty) {
+        s.println(s"  ${description}")
+      }
+      if (hasAnyOption) {
         s.println()
       }
 
+      // Print options
       if (globalOptions.nonEmpty) {
         s.println("[global options]")
         s.println(renderOptionList(globalOptions))

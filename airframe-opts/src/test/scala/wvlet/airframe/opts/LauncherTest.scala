@@ -111,7 +111,7 @@ class LauncherTest extends AirframeSpec {
       c.helloIsExecuted should be(true)
     }
 
-    "display command list" in {
+    "display command list" taggedAs ("help") in {
       val help = capture {
         Launcher.of[SimpleCommandSet].printHelp
       }
@@ -284,8 +284,8 @@ object LauncherTest {
 
   val DEFAULT_MESSAGE = "Type --help to display the list of commands"
 
+  @command(usage = "(sub command) [opts]", description = "simple command set")
   class SimpleCommandSet extends LogSupport {
-
     @defaultCommand
     def default: Unit = {
       println(DEFAULT_MESSAGE)

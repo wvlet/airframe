@@ -18,6 +18,7 @@ import wvlet.log.LogSupport
 
 object ArgProcessorTest {
 
+  @command(description = "My command")
   case class Cmd(
       @option(prefix = "-h,--help", description = "show help messages", isHelp = true) help: Boolean = false) {
 
@@ -28,7 +29,6 @@ object ArgProcessorTest {
   }
 
   case class SubCmd(@option(prefix = "-p", description = "port number") port: Int) extends LogSupport {
-
     @command(description = "say hello")
     def hello(@option(prefix = "-t", description = "timeout sec") timeoutSec: Int = 10): Unit = {
       info(s"hello: timeout=${timeoutSec}")

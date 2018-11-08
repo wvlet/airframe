@@ -67,14 +67,11 @@ object Launcher extends LogSupport {
       parser.schema.args.map(x => s"[${x}]").mkString(" ")
 
     import wvlet.airframe.surface.reflect._
-
-    // If the user specified a usage description via @command annotation, use this.
-    val usage =
-      surface
-        .findAnnotationOf[command]
-        .map(_.usage)
-        .find(_.nonEmpty)
-        .getOrElse(defaultUsage)
+    val command = surface.findAnnotationOf[command]
+    // If the user specified usage and description via @command annotation, use them.
+    val commandUsage       = command.map(_.usage()).find(_.nonEmpty).getOrElse(defaultUsage)
+    val commandDescription = command.map(_.description()).find(_.nonEmpty).getOrElse(description)
+    val commandName        = if (name.nonEmpty) name else CName.toNaturalName(surface.name).replaceAll("\\s+", "_")
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
     import wvlet.airframe.surface.reflect._
@@ -96,7 +93,10 @@ object Launcher extends LogSupport {
         }
       }
 
-    new CommandLauncher(LauncherInfo(name, description, usage), parser, subCommands, defaultCommand)
+    new CommandLauncher(LauncherInfo(commandName, commandDescription, commandUsage),
+                        parser,
+                        subCommands,
+                        defaultCommand)
   }
 
   /**
@@ -232,7 +232,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
   def usage: String       = launcherInfo.usage
 
   private[opts] def withLauncherInfo(name: String, description: String): CommandLauncher = {
-    new CommandLauncher(LauncherInfo(name, description, ""), optionParser, subCommands, defaultCommand)
+    new CommandLauncher(LauncherInfo(name, description, launcherInfo.usage), optionParser, subCommands, defaultCommand)
   }
 
   private[opts] def optionList: Seq[CLOption] = {
@@ -257,17 +257,17 @@ class CommandLauncher(launcherInfo: LauncherInfo,
   }
 
   private[opts] def printHelpInternal(launcherConfig: LauncherConfig, stack: List[CommandLauncher]): Unit = {
-    val l      = stack.head
-    val schema = l.optionParser.schema
-
+    val l             = stack.head
+    val schema        = l.optionParser.schema
     val globalOptions = stack.tail.flatMap(_.optionParser.optionList)
 
     val help = launcherConfig.helpMessagePrinter.render(
       commandName = l.name,
       arguments = schema.args,
+      oneLineUsage = if (l.usage.isEmpty) None else Some(l.usage),
       description = l.description,
       options = schema.options,
-      globalOptions = globalOptions.toSeq,
+      globalOptions = globalOptions,
       subCommands = l.subCommands
     )
 

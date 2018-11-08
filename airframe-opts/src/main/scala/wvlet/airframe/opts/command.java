@@ -40,11 +40,4 @@ public @interface command {
      * @return
      */
     String usage() default "";
-
-    /**
-     * Detailed help message of the command. For writing multi-line help messages,
-     * "|" can be used as prefixes of lines.
-     * @return
-     */
-    String detailedHelp() default "";
 }
