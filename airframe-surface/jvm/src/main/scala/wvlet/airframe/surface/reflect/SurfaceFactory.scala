@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.surface.reflect
 
+import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.log.LogSupport
@@ -482,8 +483,15 @@ object SurfaceFactory extends LogSupport {
               }
               obj.asInstanceOf[Any]
             } catch {
+              case e: InvocationTargetException =>
+                logger.warn(
+                  s"Failed to instantiate ${self}: [${e.getTargetException.getClass.getName}] ${e.getTargetException.getMessage}\nargs:[${args
+                    .mkString(", ")}]")
+                throw e.getTargetException
               case e: Throwable =>
-                logger.warn(s"Failed to instantiate ${self}: ${e.getMessage}\nargs:\n${args.mkString("\n")}")
+                logger.warn(
+                  s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]")
+                throw e
             }
           }
         })
