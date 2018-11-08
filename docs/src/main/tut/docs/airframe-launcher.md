@@ -21,6 +21,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-launcher" % "(version)"
 1. Import `wvlet.airframe.launcher._`
 1. Create a class `A` with constructor arguments annotated with `@option` or `@argument`
 1. Call `Launcher.of[A].execute("command line")` 
+
 ```scala
 import wvlet.airframe.launcher._
 
