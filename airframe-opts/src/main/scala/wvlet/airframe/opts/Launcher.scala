@@ -179,7 +179,7 @@ class Launcher(config: LauncherConfig, private[opts] val mainLauncher: CommandLa
     * @tparam A
     * @return
     */
-  def addCommandModule[B: ru.TypeTag](name: String, description: String): Launcher = {
+  def addModule[B: ru.TypeTag](name: String, description: String): Launcher = {
     new Launcher(config, mainLauncher.addCommandModule[B](name, description))
   }
 
@@ -227,13 +227,13 @@ class CommandLauncher(launcherInfo: LauncherInfo,
                       defaultCommand: Option[LauncherInstance => Any])
     extends LogSupport {
 
-  def withLauncherInfo(name: String, description: String): CommandLauncher = {
-    new CommandLauncher(LauncherInfo(name, description, ""), optionParser, subCommands, defaultCommand)
-  }
-
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage
+
+  private[opts] def withLauncherInfo(name: String, description: String): CommandLauncher = {
+    new CommandLauncher(LauncherInfo(name, description, ""), optionParser, subCommands, defaultCommand)
+  }
 
   private[opts] def optionList: Seq[CLOption] = {
     optionParser.optionList
@@ -251,6 +251,8 @@ class CommandLauncher(launcherInfo: LauncherInfo,
                         subCommands :+ commandLauncher.withLauncherInfo(name, description),
                         defaultCommand)
   }
+
+  private def printHelp
 
   private[opts] def execute(launcherConfig: LauncherConfig,
                             stack: List[LauncherInstance],

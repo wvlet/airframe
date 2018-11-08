@@ -12,38 +12,68 @@
  * limitations under the License.
  */
 package wvlet.airframe.opts
+import java.io.{PrintWriter, StringWriter}
+
 import wvlet.airframe.opts.OptionParser.{CLArgItem, CLOption}
-import wvlet.log.LogSupport
 
-/**
-  *
-  */
-class HelpMessagePrinter extends LogSupport {
+trait HelpMessagePrinter {
 
-  def render(commandName: String, argumentList: String, description: String, optionList: String): String = {
-    s"""|usage: ${commandName} ${argumentList}
-        |  ${description}
-        |${optionList}""".stripMargin
-  }
+  def render(commandName: String,
+             arguments: Seq[CLArgItem],
+             description: String,
+             options: Seq[CLOption],
+             globalOptions: Seq[CLOption],
+             subCommands: Seq[CommandLauncher]): String
 
-  protected def defaultUsage(args: Seq[CLArgItem]): String = {
-    val l = for (a <- args) yield {
-      a.name
+}
+
+object HelpMessagePrinter {
+
+  val defaultHelpMessagePrinter = new HelpMessagePrinter {
+    override def render(
+        commandName: String,
+        arguments: Seq[CLArgItem],
+        description: String,
+        options: Seq[CLOption],
+        globalOptions: Seq[CLOption],
+        subCommands: Seq[CommandLauncher]
+    ): String = {
+
+      val str = new StringWriter()
+      val s   = new PrintWriter(str)
+
+      val argumentList = arguments.map(x => s"[${x.name}]").mkString(" ")
+      s.println(s"usage: ${commandName} ${argumentList}")
+      s.println(s"  ${description}")
+
+      if (globalOptions.nonEmpty) {
+        s.println()
+        s.println("[global options]")
+        s.println(renderOptionList(globalOptions))
+      }
+
+      if (options.nonEmpty) {
+        s.println()
+        s.println("[options]")
+        s.println(renderOptionList(options))
+      }
+
+      if (subCommands.nonEmpty) {
+        s.println("")
+        s.println("[commands]")
+        s.println(renderCommandList(subCommands))
+      }
+
+      s.flush()
+      str.toString
     }
-    l.map(x => s"[${x}").mkString(" ")
   }
 
   def printHelp(stack: List[CommandLauncher] = Nil): Unit = {
-    trace("print usage")
 
     val l = stack.head
 
     // Show basic usage
-    print(
-      render(commandName = l.name,
-             argumentList = l.usage,
-             description = l.description,
-             optionList = createOptionHelpMessage(l)))
 
     // Show parent options
     val parentOptions = stack.tail.flatMap { x =>
@@ -66,17 +96,18 @@ class HelpMessagePrinter extends LogSupport {
     }
   }
 
-  private def createOptionHelpMessage(l: CommandLauncher) = {
-    val optionList = createOptionList(l.optionList)
-    val b          = new StringBuilder
-    if (optionList.nonEmpty) {
-      b.append("[options]\n")
-      b.append(optionList.mkString("\n") + "\n")
-    }
-    b.result
+  def renderCommandList(commandList: Seq[CommandLauncher]): String = {
+    val maxCommandNameLen = commandList.map(_.name.length).max
+    val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+    // Show sub commend lists
+    commandList
+      .map { c =>
+        format.format(c.name, c.description)
+      }
+      .mkString("\n")
   }
 
-  private def createOptionList(optionList: Seq[CLOption]): Seq[String] = {
+  def renderOptionList(optionList: Seq[CLOption]): String = {
     val optDscr: Seq[(CLOption, String)] = for (o <- optionList) yield {
       val prefixes = o.prefixes
       val hasShort = prefixes.exists(_.length == 2)
@@ -111,7 +142,7 @@ class HelpMessagePrinter extends LogSupport {
       val padding    = Array.fill(paddingLen)(" ").mkString
       " %s%s  %s".format(x._2, padding, genDescription(x._1))
     }
-    s
+    s.mkString("\n")
   }
 
 }
