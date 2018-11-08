@@ -132,7 +132,7 @@ object Launcher extends LogSupport {
   */
 private[opts] case class LauncherConfig(
     var withHelpOption: Boolean = true,
-    var helpMessagePrinter: HelpMessagePrinter = new HelpMessagePrinter,
+    var helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
     var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
     // command name -> default action
     var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
@@ -143,7 +143,7 @@ private[opts] case class LauncherConfig(
 class Launcher(config: LauncherConfig, private[opts] val mainLauncher: CommandLauncher) {
 
   def printHelp: Unit = {
-    config.helpMessagePrinter.printHelp(List(mainLauncher))
+    mainLauncher.printHelpInternal(config, List(mainLauncher))
   }
 
   /**
@@ -222,7 +222,7 @@ case class LauncherInfo(name: String, description: String, usage: String)
   *
   */
 class CommandLauncher(launcherInfo: LauncherInfo,
-                      optionParser: OptionParser,
+                      private[opts] val optionParser: OptionParser,
                       private[opts] val subCommands: Seq[CommandLauncher],
                       defaultCommand: Option[LauncherInstance => Any])
     extends LogSupport {
@@ -252,13 +252,32 @@ class CommandLauncher(launcherInfo: LauncherInfo,
                         defaultCommand)
   }
 
-  private def printHelp
+  private[opts] def printHelp(launcherConfig: LauncherConfig, stack: List[LauncherInstance]): Unit = {
+    printHelpInternal(launcherConfig, stack.map(_.launcher))
+  }
+
+  private[opts] def printHelpInternal(launcherConfig: LauncherConfig, stack: List[CommandLauncher]): Unit = {
+    val l      = stack.head
+    val schema = l.optionParser.schema
+
+    val globalOptions = stack.tail.flatMap(_.optionParser.optionList)
+
+    val help = launcherConfig.helpMessagePrinter.render(
+      commandName = l.name,
+      arguments = schema.args,
+      description = l.description,
+      options = schema.options,
+      globalOptions = globalOptions.toSeq,
+      subCommands = l.subCommands
+    )
+
+    print(help)
+  }
 
   private[opts] def execute(launcherConfig: LauncherConfig,
                             stack: List[LauncherInstance],
                             args: Seq[String],
                             showHelp: Boolean): LauncherResult = {
-    debug(s"execute[${name}] ${args.mkString(" ")}")
     val result = optionParser.parse(args.toArray)
     trace(result)
 
@@ -283,7 +302,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
           // This Launcher is a leaf (= no more sub commands)
           if (showHelpMessage) {
             // Show the help message
-            launcherConfig.helpMessagePrinter.printHelp(nextStack.map(_.launcher))
+            printHelp(launcherConfig, nextStack)
             LauncherResult(nextStack, None)
           } else {
             // Run the default command
@@ -320,7 +339,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
 
         if (showHelpMessage) {
           // Show the help message
-          launcherConfig.helpMessagePrinter.printHelp(stack.map(_.launcher))
+          printHelp(launcherConfig, stack)
           LauncherResult(stack, None)
         } else {
           try {

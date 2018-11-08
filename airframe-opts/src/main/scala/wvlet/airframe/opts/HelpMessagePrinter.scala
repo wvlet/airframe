@@ -16,6 +16,9 @@ import java.io.{PrintWriter, StringWriter}
 
 import wvlet.airframe.opts.OptionParser.{CLArgItem, CLOption}
 
+/**
+  * Interface for printing help messages
+  */
 trait HelpMessagePrinter {
 
   def render(commandName: String,
@@ -29,7 +32,7 @@ trait HelpMessagePrinter {
 
 object HelpMessagePrinter {
 
-  val defaultHelpMessagePrinter = new HelpMessagePrinter {
+  val default = new HelpMessagePrinter {
     override def render(
         commandName: String,
         arguments: Seq[CLArgItem],
@@ -45,15 +48,16 @@ object HelpMessagePrinter {
       val argumentList = arguments.map(x => s"[${x.name}]").mkString(" ")
       s.println(s"usage: ${commandName} ${argumentList}")
       s.println(s"  ${description}")
+      if (globalOptions.nonEmpty || options.nonEmpty) {
+        s.println()
+      }
 
       if (globalOptions.nonEmpty) {
-        s.println()
         s.println("[global options]")
         s.println(renderOptionList(globalOptions))
       }
 
       if (options.nonEmpty) {
-        s.println()
         s.println("[options]")
         s.println(renderOptionList(options))
       }
@@ -66,33 +70,6 @@ object HelpMessagePrinter {
 
       s.flush()
       str.toString
-    }
-  }
-
-  def printHelp(stack: List[CommandLauncher] = Nil): Unit = {
-
-    val l = stack.head
-
-    // Show basic usage
-
-    // Show parent options
-    val parentOptions = stack.tail.flatMap { x =>
-      x.optionList
-    }
-    if (parentOptions.nonEmpty) {
-      println("[global options]")
-      println(createOptionList(parentOptions).mkString("\n"))
-    }
-
-    if (l.subCommands.nonEmpty) {
-      println("[commands]")
-
-      val maxCommandNameLen = l.subCommands.map(_.name.length).max
-      val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
-      // Show sub commend lists
-      l.subCommands.foreach { c =>
-        println(format.format(c.name, c.description))
-      }
     }
   }
 
