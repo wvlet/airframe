@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 import wvlet.airframe.AirframeSpec
 
@@ -33,9 +33,10 @@ class OptionBuilderTest extends AirframeSpec {
 
   "OptionBuilder" should {
     "read default value" in {
-      val l        = Launcher.of[Main1]
-      val m: Main1 = l.execute("")
-      m.opt.env shouldBe "default"
+      val l   = Launcher.of[Main1]
+      val m   = l.execute("")
+      val opt = m.getRootInstance.asInstanceOf[Main1].opt
+      opt.env shouldBe "default"
     }
   }
 }

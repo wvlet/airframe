@@ -14,8 +14,7 @@
 package wvlet.airframe.codec
 
 import CollectionCodec._
-
-import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
+import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec, UnapplyFromStringCodec}
 import wvlet.airframe.codec.StandardCodec.EnumCodec
 import wvlet.airframe.surface
 import wvlet.airframe.surface.reflect.{ReflectTypeUtil, SurfaceFactory}
@@ -101,6 +100,8 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]],
           case s if ReflectTypeUtil.isTuple(s.rawType) =>
             // Tuple
             TupleCodec(surface.typeArgs.map(x => ofSurface(x, seenSet)))
+          case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
+            new UnapplyFromStringCodec(s)
           case _ =>
             val codecs = for (p <- surface.params) yield {
               ofSurface(p.surface, seenSet)

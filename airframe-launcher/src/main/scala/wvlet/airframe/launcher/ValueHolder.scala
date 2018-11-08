@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect.Path
@@ -34,7 +34,7 @@ import wvlet.airframe.surface.reflect.Path
   * </pre>
   *
   */
-trait ValueHolder[+A] {
+sealed trait ValueHolder[+A] {
 
   def +[B >: A](e: (Path, B)): ValueHolder[B] = set(e._1, e._2)
   def ++[B >: A](it: Iterable[(Path, B)]): ValueHolder[B] = it.foldLeft[ValueHolder[B]](this) { (h, e) =>
@@ -100,6 +100,9 @@ trait ValueHolder[+A] {
 
   def isEmpty = false
 
+  def toMsgPack: Array[Byte] = {
+    ValueHolderCodec.toMsgPack(this)
+  }
 }
 
 object ValueHolder extends LogSupport {
@@ -110,7 +113,7 @@ object ValueHolder extends LogSupport {
 
   val empty: ValueHolder[Nothing] = Empty
 
-  private case object Empty extends ValueHolder[Nothing] {
+  private[launcher] case object Empty extends ValueHolder[Nothing] {
     def set[B >: Nothing](path: Path, value: B) = {
       if (path.isEmpty) {
         Leaf(value)
@@ -125,7 +128,7 @@ object ValueHolder extends LogSupport {
     override def isEmpty = true
   }
 
-  private case class Node[A](child: IMap[String, ValueHolder[A]]) extends ValueHolder[A] {
+  private[launcher] case class Node[A](child: IMap[String, ValueHolder[A]]) extends ValueHolder[A] {
     override def toString: String =
       "{%s}".format(
         child
@@ -154,7 +157,7 @@ object ValueHolder extends LogSupport {
     def dfs(path: Path) = (for ((name, h) <- child) yield h.dfs(path / name)).reduce(_ ++ _)
   }
 
-  private case class Leaf[A](value: A) extends ValueHolder[A] {
+  private[launcher] case class Leaf[A](value: A) extends ValueHolder[A] {
     override def toString = value.toString
     def set[B >: A](path: Path, value: B) = {
       SeqLeaf(Seq(this, Empty.set[B](path, value)))
@@ -171,7 +174,7 @@ object ValueHolder extends LogSupport {
     def dfs(path: Path) = Iterator.single(path -> value)
   }
 
-  private case class SeqLeaf[A](elems: Seq[ValueHolder[A]]) extends ValueHolder[A] {
+  private[launcher] case class SeqLeaf[A](elems: Seq[ValueHolder[A]]) extends ValueHolder[A] {
     override def toString = "[%s]".format(elems.mkString(", "))
 
     def set[B >: A](path: Path, value: B) = {
@@ -188,5 +191,4 @@ object ValueHolder extends LogSupport {
     def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)
 
   }
-
 }

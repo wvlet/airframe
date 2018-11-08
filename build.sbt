@@ -126,7 +126,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   config,
   controlJVM,
   jmx,
-  opts,
+  launcher,
   metricsJVM,
   codec,
   tablet,
@@ -362,18 +362,18 @@ lazy val jmx =
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
 
-lazy val opts =
+lazy val launcher =
   project
-    .in(file("airframe-opts"))
+    .in(file("airframe-launcher"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-opts",
-      description := "Command-line option parser",
+      name := "airframe-launcher",
+      description := "Command-line program launcher",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(surfaceJVM, controlJVM, codec, airframeSpecJVM % "test")
 
 // airframe-log should have minimum dependencies
 lazy val log =

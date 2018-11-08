@@ -33,8 +33,8 @@ options:
         url: docs/airframe-fluentd.html
       - title: airframe-http
         url: docs/airframe-http.html
-      - title: airframe-opts
-        url: docs/airframe-opts.html
+      - title: airframe-launcher
+        url: docs/airframe-launcher.html
       - title: airframe-metrics
         url: docs/airframe-metrics.html
       - title: airframe-jdbc

@@ -19,11 +19,11 @@
 //
 //--------------------------------------
 
-package wvlet.airframe.opts
+package wvlet.airframe.launcher
 
 import java.io.ByteArrayOutputStream
 
-import wvlet.log.{LogLevel, LogSupport}
+import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -31,35 +31,9 @@ import wvlet.airframe.AirframeSpec
   */
 class LauncherTest extends AirframeSpec {
 
-  import Launcher._
-
   "Launcher" should {
 
     import LauncherTest._
-
-    /**
-      * Captures the output stream and returns the printed messages as a String
-      *
-      * @param body
-      * @tparam U
-      * @return
-      */
-    def capture[U](body: => U): String = {
-      val out = new ByteArrayOutputStream
-      Console.withOut(out) {
-        body
-      }
-      new String(out.toByteArray)
-    }
-
-    def captureErr[U](body: => U): String = {
-      val out = new ByteArrayOutputStream
-      Console.withErr(out) {
-        body
-      }
-      new String(out.toByteArray)
-    }
-
     "populate arguments in constructor" taggedAs ("test1") in {
       capture {
         val l = Launcher.execute[GlobalOption]("-h -l debug")
@@ -89,11 +63,12 @@ class LauncherTest extends AirframeSpec {
     }
 
     "display full options in help" taggedAs ("subhelp") in {
-      val msg = capture {
+      capture {
         Launcher.execute[MyCommand]("--help")
+      } should include("--help")
+      capture {
         Launcher.execute[MyCommand]("hello --help")
-      }
-      trace(msg)
+      } should include("--help")
     }
 
     "parse double hyphen options" in {
@@ -136,7 +111,7 @@ class LauncherTest extends AirframeSpec {
       c.helloIsExecuted should be(true)
     }
 
-    "display command list" in {
+    "display command list" taggedAs ("help") in {
       val help = capture {
         Launcher.of[SimpleCommandSet].printHelp
       }
@@ -156,19 +131,19 @@ class LauncherTest extends AirframeSpec {
     }
 
     "create command modules" in {
-      val c = Launcher.execute[MyCommandModule]("box hello")
-      c.executedModule should be('defined)
-      c.executedModule map { m =>
-        m._1 should be("box")
-        m._2.getClass should be(classOf[SimpleCommandSet])
-        m._2.asInstanceOf[SimpleCommandSet].helloIsExecuted should be(true)
+      val c = myCommandModule
+
+      capture {
+        val r = c.execute("box hello")
+        val m = r.executedInstance
+        m.getClass should be(classOf[SimpleCommandSet])
+        m.asInstanceOf[SimpleCommandSet].helloIsExecuted should be(true)
       }
-      c.g should not be (null)
     }
 
-    "display comand module help" in {
+    "display command module help" in {
       val help = capture {
-        Launcher.execute[MyCommandModule]("-h")
+        myCommandModule.execute("-h")
       }
       trace(help)
       help should (include("-h"))
@@ -179,18 +154,20 @@ class LauncherTest extends AirframeSpec {
 
     "display individual command help" in {
       val help = capture {
-        val l = Launcher.execute[MyCommandModule]("box --help")
-        l.g.help should be(true)
+        val result = myCommandModule.execute("box --help")
+        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+        m.g.help should be(true)
       }
       trace(help)
       help should (include("hello"))
       help should (include("world"))
     }
 
-    "display subcommand help" in {
+    "display sub-command help" in {
       val help = capture {
-        val l = Launcher.execute[MyCommandModule]("box world --help")
-        l.g.help should be(true)
+        val result = myCommandModule.execute("box world --help")
+        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+        m.g.help should be(true)
       }
       trace(s"box world --help:\n$help")
       help should (include("message"))
@@ -198,7 +175,9 @@ class LauncherTest extends AirframeSpec {
 
     "display invalid command error" in {
       val msg = capture {
-        Launcher.execute[MyCommandModule]("unknown-command")
+        intercept[IllegalArgumentException] {
+          myCommandModule.execute("unknown-command")
+        }
       }
       trace(msg)
     }
@@ -206,7 +185,7 @@ class LauncherTest extends AirframeSpec {
     "unwrap InvocationTargetException" in {
       val msg = capture {
         intercept[IllegalArgumentException] {
-          Launcher.execute[MyCommandModule]("errorTest")
+          myCommandModule.execute("errorTest")
         }
       }
       trace(msg)
@@ -219,7 +198,7 @@ class LauncherTest extends AirframeSpec {
       }
     }
 
-    "run test command" in {
+    "run test command" taggedAs ("failed") in {
       val message = capture {
         Launcher.execute[MyCommand]("hello -r 3") // hello x 3
       }
@@ -259,6 +238,35 @@ class LauncherTest extends AirframeSpec {
 
 object LauncherTest {
 
+  private val logger = Logger.of[LauncherTest]
+
+  /**
+    * Captures the output stream and returns the printed messages as a String
+    *
+    * @param body
+    * @tparam U
+    * @return
+    */
+  def capture[U](body: => U): String = {
+    val out = new ByteArrayOutputStream
+    Console.withOut(out) {
+      body
+    }
+    val s = new String(out.toByteArray)
+    logger.debug(s)
+    s
+  }
+
+  def captureErr[U](body: => U): String = {
+    val out = new ByteArrayOutputStream
+    Console.withErr(out) {
+      body
+    }
+    val s = new String(out.toByteArray)
+    logger.debug(s)
+    s
+  }
+
   case class GlobalOption(
       @option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
       @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
@@ -276,8 +284,9 @@ object LauncherTest {
 
   val DEFAULT_MESSAGE = "Type --help to display the list of commands"
 
-  class SimpleCommandSet extends DefaultCommand with LogSupport {
-
+  @command(usage = "(sub command) [opts]", description = "simple command set")
+  class SimpleCommandSet extends LogSupport {
+    @defaultCommand
     def default: Unit = {
       println(DEFAULT_MESSAGE)
     }
@@ -292,9 +301,12 @@ object LauncherTest {
     def world(@argument message: String): Unit = debug("world world")
   }
 
-  class MyCommandModule(val g: GlobalOption) extends CommandModule with LogSupport {
-    def modules = Seq(ModuleDef[SimpleCommandSet]("box", description = "command set"))
+  def myCommandModule =
+    Launcher
+      .of[MyCommandModule]
+      .addModule[SimpleCommandSet]("box", description = "sub command set")
 
+  class MyCommandModule(val g: GlobalOption) extends LogSupport {
     trace(s"global option: $g")
 
     @command(description = "exception test")

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package wvlet.airframe.opts;
+package wvlet.airframe.launcher;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
