@@ -43,16 +43,18 @@ A function annotated with `@defaultCommand` will be executed.
 Launcher.execute[MyApp]("-p 10010")
 // Hello airframe. port:10010
 
-Launcher.execute[MyApp]("-p 10010")
-// Hello airframe. port:10010
+Launcher.execute[MyApp]("")
+// Hello airframe. port:8080
 ```
 
-A command line help message can be automatically generated:
+If there is a _help_ option (`isHelp = true`), command line help messages can be generated automatically.
+
+For example, enable the help option like this:
 ```scala
 Launcher.execute[MyApp]("--help")
 ```
 
-This shows the following help message:
+Then it will show the following help message:
 ```
 usage: myapp [options]
 
@@ -60,6 +62,17 @@ usage: myapp [options]
  -p [PORT]   port number
  -h, --help  show help messages
 ```
+
+### Available Annotations
+
+- `@option` options 
+  - You can specify multiple option prefixes (e.g., `-h,--help`) for the same option
+- `@argument`
+  - For mapping non-option arguments. If you want to handle multiple arguments, use `Seq[String]`, `Array[String]` types.  
+- `@command`
+  - Defining function or class as a command module. You can specify `description` and (one-line) `usage` of the command in this annotation.
+- `@defaultCommand`
+  - If no sub-command name is given, the function annotated with this annoation will be executed.
 
 ## Defining Multiple Sub Commands
 
