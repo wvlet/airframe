@@ -43,7 +43,7 @@ class ObjectCodecTest extends CodecSpec {
     val b = packer.toByteArray
 
     val h = new MessageHolder
-    codec.unpack(MessagePack.newDefaultUnpacker(b), h)
+    codec.unpack(msgpack.newUnpacker(b), h)
 
     h.isNull shouldBe false
     h.hasError shouldBe false
@@ -59,7 +59,7 @@ class ObjectCodecTest extends CodecSpec {
     val b = packer.toByteArray
 
     val h = new MessageHolder
-    MessageCodec.of[A2].unpack(MessagePack.newDefaultUnpacker(b), h)
+    MessageCodec.of[A2].unpack(msgpack.newUnpacker(b), h)
 
     h.isNull shouldBe false
     h.hasError shouldBe false

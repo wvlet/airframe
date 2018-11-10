@@ -18,8 +18,6 @@ import java.text.DateFormat
 import java.time.{Instant, ZonedDateTime}
 import java.util.Date
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import org.msgpack.value.ValueType
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi._
 import wvlet.log.LogSupport
@@ -83,15 +81,15 @@ object StandardCodec {
       }
     }
     // We do not support deserialization of generic Throwable classes
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = ???
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
   object FileCodec extends MessageCodec[File] {
     override def pack(p: Packer, v: File): Unit = {
       p.packString(v.getPath)
     }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val path = u.unpackString()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val path = u.unpackString
       v.setObject(new File(path))
     }
   }
@@ -107,26 +105,19 @@ object StandardCodec {
       p.writePayload(extData, 0, cursor.lastWrittenBytes)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       Try {
         u.getNextFormat.getValueType match {
           case ValueType.STRING =>
             // Use ISO instant formatter
-            val isoInstantFormat = u.unpackString()
+            val isoInstantFormat = u.unpackString
             Try(Instant.parse(isoInstantFormat))
               .getOrElse(Instant.ofEpochMilli(isoInstantFormat.toLong))
           case ValueType.INTEGER =>
-            val epochMillis = u.unpackLong()
+            val epochMillis = u.unpackLong
             Instant.ofEpochMilli(epochMillis)
           case ValueType.EXTENSION =>
-            // TODO usg airframe-msgpack directly
-            val extHeader = u.unpackExtensionTypeHeader()
-            val buf       = ByteArrayBuffer.newBuffer(15)
-            val cursor    = WriteCursor(buf, 0)
-            OffsetPacker.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
-            val data = u.readPayload(extHeader.getLength)
-            cursor.writeBytes(data)
-            OffsetUnpacker.unpackTimestamp(ReadCursor(buf, 0))
+            u.unpackTimestamp
           case other =>
             v.setIncompatibleFormatException(this, s"Cannot create Instant from ${other} type")
         }
@@ -143,8 +134,8 @@ object StandardCodec {
       p.packString(v.toString)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val zonedDateTimeStr = u.unpackString()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val zonedDateTimeStr = u.unpackString
       Try(ZonedDateTime.parse(zonedDateTimeStr)) match {
         case Success(zd) =>
           v.setObject(zd)
@@ -162,7 +153,7 @@ object StandardCodec {
       // Use Instant for encoding
       JavaInstantTimeCodec.pack(p, v.toInstant)
     }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       JavaInstantTimeCodec.unpack(u, v)
       if (!v.isNull) {
         v.setObject(Date.from(v.getLastValue.asInstanceOf[Instant]))
@@ -177,7 +168,7 @@ object StandardCodec {
       p.packString(v.asInstanceOf[Enum[_]].name())
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       val name = u.unpackString
 
       Try(enumValueOfMethod.invoke(null, enumType, name)) match {

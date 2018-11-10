@@ -13,8 +13,8 @@
  */
 package wvlet.airframe
 import org.msgpack.core.MessagePack
-import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl}
-import wvlet.airframe.msgpack.spi.{BufferPacker, Packer}
+import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, UnpackerImpl}
+import wvlet.airframe.msgpack.spi.{BufferPacker, Packer, Unpacker}
 
 /**
   *
@@ -23,5 +23,13 @@ package object msgpack {
 
   def newBufferPacker: BufferPacker = {
     new BufferPackerImpl(MessagePack.newDefaultBufferPacker())
+  }
+
+  def newUnpacker(msgpack: Array[Byte]): Unpacker = {
+    newUnpacker(msgpack, 0, msgpack.length)
+  }
+
+  def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = {
+    new UnpackerImpl(MessagePack.newDefaultUnpacker(msgpack, offset, len))
   }
 }

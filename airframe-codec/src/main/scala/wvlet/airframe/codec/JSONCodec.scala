@@ -17,7 +17,7 @@ import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.msgpack
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
   *
@@ -63,8 +63,8 @@ object JSONCodec extends MessageCodec[String] {
     }
   }
 
-  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-    val json = u.unpackValue().toJson
+  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    val json = u.unpackValue.toJson
     v.setString(json)
   }
 }

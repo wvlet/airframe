@@ -15,12 +15,14 @@ package wvlet.airframe.msgpack.impl
 import java.math.BigInteger
 import java.time.Instant
 
-import org.msgpack.core.{MessageTypeException, MessageUnpacker}
+import org.msgpack.core.MessageUnpacker
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi._
 
+import scala.collection.immutable.ListMap
+
 /**
-  *
+  * A bridge implementation with msgpack-core MessageUnpacker
   */
 class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   override def hasNext: Boolean = {
@@ -76,17 +78,16 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   }
 
   override def unpackTimestamp: Instant = {
-    val extTypeHeader = unpacker.unpackExtensionTypeHeader()
-    if (extTypeHeader.getType != -1) {
-      throw new MessageTypeException(s"Unexpected type: ${extTypeHeader}. Expected -1 (Timestamp)")
-    }
-    val ext    = unpacker.readPayload(extTypeHeader.getLength)
-    val cursor = new ReadCursor(ByteArrayBuffer(ext), 0)
-    val instant = OffsetUnpacker.unpackTimestampInternal(
-      ExtTypeHeader(extType = extTypeHeader.getType, byteLength = extTypeHeader.getLength),
-      cursor)
-    instant
+    // TODO usg airframe-msgpack directly
+    val extHeader = unpacker.unpackExtensionTypeHeader()
+    val buf       = ByteArrayBuffer.newBuffer(15)
+    val cursor    = WriteCursor(buf, 0)
+    OffsetPacker.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
+    val data = unpacker.readPayload(extHeader.getLength)
+    cursor.writeBytes(data)
+    OffsetUnpacker.unpackTimestamp(ReadCursor(buf, 0))
   }
+
   override def unpackArrayHeader: Int = {
     unpacker.unpackArrayHeader()
   }
@@ -136,6 +137,7 @@ object UnpackerImpl {
 
   import org.msgpack.{value => v8}
   import wvlet.airframe.msgpack.spi.Value._
+
   import scala.collection.JavaConverters._
 
   def fromMsgPackV8Value(v: v8.Value): Value = {
@@ -150,10 +152,13 @@ object UnpackerImpl {
       case v: v8.ArrayValue =>
         ArrayValue(v.asScala.map(fromMsgPackV8Value(_)).toIndexedSeq)
       case v: v8.MapValue =>
-        MapValue(
-          v.entrySet().asScala.map { e =>
-              fromMsgPackV8Value(e.getKey) -> fromMsgPackV8Value(e.getValue)
-            }.toMap)
+        // Use ListMap to maintain key-value pair orders
+        val m = ListMap.newBuilder[Value, Value]
+        for (it <- v.getKeyValueArray().sliding(2, 2)) {
+          val kv = it.toIndexedSeq
+          m += fromMsgPackV8Value(kv(0)) -> fromMsgPackV8Value(kv(1))
+        }
+        MapValue(m.result())
     }
   }
 }

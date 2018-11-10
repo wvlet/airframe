@@ -14,8 +14,7 @@
 package wvlet.airframe.codec
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
-import org.msgpack.value.ValueType
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.airframe.surface
 import wvlet.airframe.surface.{Primitive, Surface}
 
@@ -68,7 +67,7 @@ object PrimitiveCodec {
       p.packByte(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Byte): Unit = {
         try {
           v.setByte(body)
@@ -84,21 +83,21 @@ object PrimitiveCodec {
       val vt = f.getValueType
       vt match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackByte)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toByte)
+          read(u.unpackDouble.toByte)
         case ValueType.STRING =>
           read {
             val s = u.unpackString
             Try(s.toByte).getOrElse(s.toDouble.toByte)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toByte)
+          read(u.unpackBoolean.toByte)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -111,7 +110,7 @@ object PrimitiveCodec {
       p.packInt(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Char): Unit = {
         try {
           v.setChar(body)
@@ -127,7 +126,7 @@ object PrimitiveCodec {
       val vt = f.getValueType
       vt match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackInt.toChar)
@@ -138,11 +137,11 @@ object PrimitiveCodec {
             else s.toDouble.toChar
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toChar)
+          read(u.unpackBoolean.toChar)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toChar)
+          read(u.unpackDouble.toChar)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -154,7 +153,7 @@ object PrimitiveCodec {
       p.packShort(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Short): Unit = {
         try {
           v.setShort(body)
@@ -170,21 +169,21 @@ object PrimitiveCodec {
       val vt = f.getValueType
       vt match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.INTEGER =>
-          read(u.unpackShort())
+          read(u.unpackShort)
         case ValueType.STRING =>
           read {
             val s = u.unpackString
             Try(s.toShort).getOrElse(s.toDouble.toShort)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toShort)
+          read(u.unpackBoolean.toShort)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toShort)
+          read(u.unpackDouble.toShort)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -196,7 +195,7 @@ object PrimitiveCodec {
       p.packInt(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Int): Unit = {
         try {
           v.setInt(body)
@@ -212,7 +211,7 @@ object PrimitiveCodec {
       val vt = f.getValueType
       vt match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackInt)
@@ -222,11 +221,11 @@ object PrimitiveCodec {
             Try(s.toInt).getOrElse(s.toDouble.toInt)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toInt)
+          read(u.unpackBoolean.toInt)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toInt)
+          read(u.unpackDouble.toInt)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -239,7 +238,7 @@ object PrimitiveCodec {
       p.packLong(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Long): Unit = {
         try {
           v.setLong(body)
@@ -254,21 +253,21 @@ object PrimitiveCodec {
       val vt = f.getValueType
       vt match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.INTEGER =>
           read(u.unpackLong)
         case ValueType.STRING =>
           read {
-            val s = u.unpackString()
+            val s = u.unpackString
             Try(s.toLong).getOrElse(s.toDouble.toLong)
           }
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toInt)
+          read(u.unpackBoolean.toInt)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toLong)
+          read(u.unpackDouble.toLong)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -285,7 +284,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => String): Unit = {
         try {
           val s = body
@@ -300,23 +299,23 @@ object PrimitiveCodec {
 
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.STRING =>
-          read(u.unpackString())
+          read(u.unpackString)
         case ValueType.INTEGER =>
-          read(u.unpackLong().toString)
+          read(u.unpackLong.toString)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toString)
+          read(u.unpackBoolean.toString)
         case ValueType.FLOAT =>
-          read(u.unpackDouble().toString)
+          read(u.unpackDouble.toString)
         case ValueType.MAP =>
-          read(u.unpackValue().toJson)
+          read(u.unpackValue.toJson)
         case ValueType.ARRAY =>
-          read(u.unpackValue().toJson)
+          read(u.unpackValue.toJson)
         case ValueType.BINARY =>
           read {
-            val len = u.unpackBinaryHeader()
+            val len = u.unpackBinaryHeader
             new String(u.readPayload(len))
           }
         case _ =>
@@ -332,7 +331,7 @@ object PrimitiveCodec {
       p.packBoolean(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Boolean): Unit = {
         try {
           val b = body
@@ -349,21 +348,21 @@ object PrimitiveCodec {
 
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean())
+          read(u.unpackBoolean)
         case ValueType.STRING =>
           read {
-            val s = u.unpackString()
+            val s = u.unpackString
             Try(s.toBoolean).getOrElse(s.toDouble != 0.0)
           }
         case ValueType.INTEGER =>
-          read(u.unpackLong() != 0L)
+          read(u.unpackLong != 0L)
         case ValueType.FLOAT =>
-          read(u.unpackDouble() != 0.0)
+          read(u.unpackDouble != 0.0)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -375,7 +374,7 @@ object PrimitiveCodec {
       p.packFloat(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Float): Unit = {
         try {
           v.setFloat(body)
@@ -390,18 +389,18 @@ object PrimitiveCodec {
       }
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.FLOAT =>
-          read(u.unpackFloat().toFloat)
+          read(u.unpackFloat.toFloat)
         case ValueType.INTEGER =>
-          read(u.unpackLong().toFloat)
+          read(u.unpackLong.toFloat)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toInt.toFloat)
+          read(u.unpackBoolean.toInt.toFloat)
         case ValueType.STRING =>
-          read(u.unpackString().toFloat)
+          read(u.unpackString.toFloat)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -414,7 +413,7 @@ object PrimitiveCodec {
       p.packDouble(v)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       def read(body: => Double): Unit = {
         try {
           v.setDouble(body)
@@ -429,18 +428,18 @@ object PrimitiveCodec {
       }
       u.getNextFormat.getValueType match {
         case ValueType.NIL =>
-          u.unpackNil()
+          u.unpackNil
           v.setNull
         case ValueType.FLOAT =>
-          read(u.unpackDouble())
+          read(u.unpackDouble)
         case ValueType.INTEGER =>
-          read(u.unpackLong().toDouble)
+          read(u.unpackLong.toDouble)
         case ValueType.BOOLEAN =>
-          read(u.unpackBoolean().toInt.toDouble)
+          read(u.unpackBoolean.toInt.toDouble)
         case ValueType.STRING =>
           read(u.unpackString.toDouble)
         case _ =>
-          u.skipValue()
+          u.skipValue
           v.setNull
       }
     }
@@ -454,8 +453,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Int]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -480,8 +479,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Short]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -511,8 +510,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Char]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -542,8 +541,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Long]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -568,8 +567,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Float]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -594,8 +593,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Double]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -619,8 +618,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Boolean]
       b.sizeHint(len)
       (0 until len).foreach { i =>
@@ -641,8 +640,8 @@ object PrimitiveCodec {
       p.packBinaryHeader(v.length)
       p.addPayload(v)
     }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackBinaryHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackBinaryHeader
       val b   = u.readPayload(len)
       v.setObject(b)
     }
@@ -656,8 +655,8 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Array.newBuilder[String]
       b.sizeHint(len)
       (0 until len).foreach { i =>

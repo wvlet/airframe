@@ -14,7 +14,7 @@
 package wvlet.airframe.launcher
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
   *
@@ -42,5 +42,5 @@ object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
     }
   }
 
-  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = ???
+  override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
 }

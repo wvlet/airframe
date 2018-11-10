@@ -15,9 +15,8 @@ package wvlet.airframe.codec
 
 import java.{sql, lang => jl}
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.PrimitiveCodec._
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.log.LogSupport
 
 /**
@@ -59,12 +58,11 @@ object JDBCCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val size = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val size = u.unpackArrayHeader
       for (i <- 0 until size) {
-        u.unpackValue()
+        u.unpackValue
       }
-
     }
   }
 

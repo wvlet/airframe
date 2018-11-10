@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.util
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import wvlet.airframe.msgpack.spi.Packer
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
@@ -35,13 +35,13 @@ object CollectionCodec {
       }
     }
 
-    def unpack[A](u: MessageUnpacker,
+    def unpack[A](u: Unpacker,
                   v: MessageHolder,
                   surface: Surface,
                   elementCodec: MessageCodec[A],
                   newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
       // Read elements
-      val len = u.unpackArrayHeader()
+      val len = u.unpackArrayHeader
       val b   = newBuilder
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -62,7 +62,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, Seq.newBuilder[A])
     }
   }
@@ -72,7 +72,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, IndexedSeq.newBuilder[A])
     }
   }
@@ -91,7 +91,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, List.newBuilder[A])
     }
   }
@@ -106,8 +106,8 @@ object CollectionCodec {
       }
     }
 
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackArrayHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackArrayHeader
       val b   = Seq.newBuilder[Any]
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -126,8 +126,8 @@ object CollectionCodec {
         valueCodec.pack(p, v)
       }
     }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackMapHeader
       val b   = Map.newBuilder[Any, Any]
       b.sizeHint(len)
       for (i <- 0 until len) {
@@ -151,8 +151,8 @@ object CollectionCodec {
         valueCodec.pack(p, v)
       }
     }
-    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader()
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val len = u.unpackMapHeader
       val b   = Map.newBuilder[Any, Any]
       b.sizeHint(len)
       for (i <- 0 until len) {

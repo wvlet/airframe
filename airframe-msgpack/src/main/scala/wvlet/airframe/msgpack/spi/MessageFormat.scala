@@ -14,7 +14,9 @@
 
 package wvlet.airframe.msgpack.spi
 
-sealed abstract class MessageFormat(val valueType: ValueType)
+sealed abstract class MessageFormat(val valueType: ValueType) {
+  def getValueType: ValueType = valueType
+}
 
 /**
   * Describes the list of the message format types defined in the MessagePack specification.
