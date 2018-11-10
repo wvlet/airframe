@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
+import wvlet.airframe.msgpack.spi.Packer
 import wvlet.airframe.surface
 import wvlet.airframe.surface.{Primitive, Surface}
 
@@ -63,7 +64,7 @@ object PrimitiveCodec {
   object ByteCodec extends PrimitiveCodec[Byte] {
     def surface = Primitive.Byte
 
-    override def pack(p: MessagePacker, v: Byte): Unit = {
+    override def pack(p: Packer, v: Byte): Unit = {
       p.packByte(v)
     }
 
@@ -106,7 +107,7 @@ object PrimitiveCodec {
   object CharCodec extends PrimitiveCodec[Char] {
     def surface = Primitive.Char
 
-    override def pack(p: MessagePacker, v: Char): Unit = {
+    override def pack(p: Packer, v: Char): Unit = {
       p.packInt(v)
     }
 
@@ -149,7 +150,7 @@ object PrimitiveCodec {
 
   object ShortCodec extends PrimitiveCodec[Short] {
     def surface = Primitive.Short
-    override def pack(p: MessagePacker, v: Short): Unit = {
+    override def pack(p: Packer, v: Short): Unit = {
       p.packShort(v)
     }
 
@@ -191,7 +192,7 @@ object PrimitiveCodec {
 
   object IntCodec extends PrimitiveCodec[Int] {
     def surface = Primitive.Int
-    override def pack(p: MessagePacker, v: Int): Unit = {
+    override def pack(p: Packer, v: Int): Unit = {
       p.packInt(v)
     }
 
@@ -234,7 +235,7 @@ object PrimitiveCodec {
   object LongCodec extends PrimitiveCodec[Long] {
     def surface = Primitive.Long
 
-    override def pack(p: MessagePacker, v: Long): Unit = {
+    override def pack(p: Packer, v: Long): Unit = {
       p.packLong(v)
     }
 
@@ -276,9 +277,9 @@ object PrimitiveCodec {
   object StringCodec extends PrimitiveCodec[String] {
     def surface = Primitive.String
 
-    override def pack(p: MessagePacker, v: String): Unit = {
+    override def pack(p: Packer, v: String): Unit = {
       if (v == null) {
-        p.packNil()
+        p.packNil
       } else {
         p.packString(v)
       }
@@ -327,7 +328,7 @@ object PrimitiveCodec {
 
   object BooleanCodec extends PrimitiveCodec[Boolean] {
     def surface = Primitive.Boolean
-    override def pack(p: MessagePacker, v: Boolean): Unit = {
+    override def pack(p: Packer, v: Boolean): Unit = {
       p.packBoolean(v)
     }
 
@@ -370,7 +371,7 @@ object PrimitiveCodec {
 
   object FloatCodec extends PrimitiveCodec[Float] {
     def surface = Primitive.Float
-    override def pack(p: MessagePacker, v: Float): Unit = {
+    override def pack(p: Packer, v: Float): Unit = {
       p.packFloat(v)
     }
 
@@ -409,7 +410,7 @@ object PrimitiveCodec {
   object DoubleCodec extends PrimitiveCodec[Double] {
     def surface = Primitive.Double
 
-    override def pack(p: MessagePacker, v: Double): Unit = {
+    override def pack(p: Packer, v: Double): Unit = {
       p.packDouble(v)
     }
 
@@ -446,7 +447,7 @@ object PrimitiveCodec {
   }
 
   object IntArrayCodec extends MessageCodec[Array[Int]] {
-    override def pack(p: MessagePacker, v: Array[Int]): Unit = {
+    override def pack(p: Packer, v: Array[Int]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         IntCodec.pack(p, x)
@@ -472,7 +473,7 @@ object PrimitiveCodec {
   }
 
   object ShortArrayCodec extends MessageCodec[Array[Short]] {
-    override def pack(p: MessagePacker, v: Array[Short]): Unit = {
+    override def pack(p: Packer, v: Array[Short]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         ShortCodec.pack(p, x)
@@ -503,7 +504,7 @@ object PrimitiveCodec {
   }
 
   object CharArrayCodec extends MessageCodec[Array[Char]] {
-    override def pack(p: MessagePacker, v: Array[Char]): Unit = {
+    override def pack(p: Packer, v: Array[Char]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         CharCodec.pack(p, x)
@@ -534,7 +535,7 @@ object PrimitiveCodec {
   }
 
   object LongArrayCodec extends MessageCodec[Array[Long]] {
-    override def pack(p: MessagePacker, v: Array[Long]): Unit = {
+    override def pack(p: Packer, v: Array[Long]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         LongCodec.pack(p, x)
@@ -560,7 +561,7 @@ object PrimitiveCodec {
   }
 
   object FloatArrayCodec extends MessageCodec[Array[Float]] {
-    override def pack(p: MessagePacker, v: Array[Float]): Unit = {
+    override def pack(p: Packer, v: Array[Float]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         FloatCodec.pack(p, x)
@@ -586,7 +587,7 @@ object PrimitiveCodec {
   }
 
   object DoubleArrayCodec extends MessageCodec[Array[Double]] {
-    override def pack(p: MessagePacker, v: Array[Double]): Unit = {
+    override def pack(p: Packer, v: Array[Double]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         DoubleCodec.pack(p, x)
@@ -611,7 +612,7 @@ object PrimitiveCodec {
   }
 
   object BooleanArrayCodec extends MessageCodec[Array[Boolean]] {
-    override def pack(p: MessagePacker, v: Array[Boolean]): Unit = {
+    override def pack(p: Packer, v: Array[Boolean]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         BooleanCodec.pack(p, x)
@@ -636,7 +637,7 @@ object PrimitiveCodec {
   }
 
   object ByteArrayCodec extends MessageCodec[Array[Byte]] {
-    override def pack(p: MessagePacker, v: Array[Byte]): Unit = {
+    override def pack(p: Packer, v: Array[Byte]): Unit = {
       p.packBinaryHeader(v.length)
       p.addPayload(v)
     }
@@ -648,7 +649,7 @@ object PrimitiveCodec {
   }
 
   object StringArrayCodec extends MessageCodec[Array[String]] {
-    override def pack(p: MessagePacker, v: Array[String]): Unit = {
+    override def pack(p: Packer, v: Array[String]): Unit = {
       p.packArrayHeader(v.length)
       v.foreach { x =>
         StringCodec.pack(p, x)

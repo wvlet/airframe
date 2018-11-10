@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import org.msgpack.core.MessagePack
 import org.scalacheck.Arbitrary
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.{AirframeSpec, msgpack}
 
 import scala.reflect.runtime.{universe => ru}
 import scala.collection.JavaConverters._
@@ -32,7 +32,7 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   def roundtrip[A: ru.TypeTag](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     trace(s"Testing roundtrip of ${v} with ${codec}")
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = msgpack.newBufferPacker
     codec.pack(packer, v)
     val unpacker = MessagePack.newDefaultUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)

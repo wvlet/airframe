@@ -14,21 +14,21 @@
 package wvlet.airframe.codec
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
-import org.msgpack.value.Value
 import wvlet.airframe.codec.MessageCodec.ErrorCode
+import wvlet.airframe.msgpack.spi.{Packer, Value}
 
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] {
-  def pack(p: MessagePacker, v: A): Unit
+  def pack(p: Packer, v: A): Unit
   def unpack(u: MessageUnpacker, v: MessageHolder): Unit
 
   // TODO add specialized methods for primitive values
   // def unpackInt(u:MessageUnpacker) : Int
 
   def toMsgPack(v: A): Array[Byte] = {
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = wvlet.airframe.msgpack.newBufferPacker
     pack(packer, v)
     packer.toByteArray
   }
@@ -51,9 +51,9 @@ trait MessageCodec[A] {
 
 trait MessageValueCodec[A] extends MessageCodec[A] {
   def pack(v: A): Value
-  def unpack(v: Value): A
+  def unpack(v: org.msgpack.value.Value): A
 
-  override def pack(p: MessagePacker, v: A): Unit = {
+  override def pack(p: Packer, v: A): Unit = {
     p.packValue(pack(v))
   }
 

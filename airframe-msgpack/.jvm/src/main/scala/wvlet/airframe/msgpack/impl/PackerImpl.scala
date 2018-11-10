@@ -14,12 +14,10 @@
 package wvlet.airframe.msgpack.impl
 import java.math.BigInteger
 
-import org.msgpack.core.MessagePacker
-import org.msgpack.value.ValueFactory
+import org.msgpack.core.{MessageBufferPacker, MessagePacker}
 import org.msgpack.{value => v8}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi.Value.{BooleanValue, NilValue}
-import wvlet.airframe.msgpack.spi.{OffsetPacker, Packer, Value, WriteCursor}
+import wvlet.airframe.msgpack.spi._
 
 /**
   * Adapter to msgpack-core's MessagePacker
@@ -122,11 +120,11 @@ class PackerImpl(packer: MessagePacker) extends Packer {
   }
 }
 
+class BufferPackerImpl(bufferPacker: MessageBufferPacker) extends PackerImpl(bufferPacker) with BufferPacker {
+  override def toByteArray: Array[Byte] = bufferPacker.toByteArray
+}
+
 object PackerImpl {
-
-  import wvlet.airframe.msgpack.spi.Value._
-
-  import v8.ValueFactory
 
   def timeStampExtBytes(epochSecond: Long, nanoAdjustment: Int): Array[Byte] = {
     val buf    = ByteArrayBuffer.newBuffer(15)
@@ -137,6 +135,7 @@ object PackerImpl {
   }
 
   def toMsgPackV8Value(v: Value): v8.Value = {
+    import wvlet.airframe.msgpack.spi.Value._
     v match {
       case NilValue                   => v8.ValueFactory.newNil()
       case BooleanValue(v)            => v8.ValueFactory.newBoolean(v)

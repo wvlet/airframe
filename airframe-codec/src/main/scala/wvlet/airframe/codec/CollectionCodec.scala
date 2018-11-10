@@ -16,6 +16,7 @@ package wvlet.airframe.codec
 import java.util
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
+import wvlet.airframe.msgpack.spi.Packer
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
@@ -24,7 +25,7 @@ import scala.collection.mutable
 object CollectionCodec {
 
   object BaseSeqCodec {
-    def pack[A](p: MessagePacker, v: Seq[A], elementCodec: MessageCodec[A]): Unit = {
+    def pack[A](p: Packer, v: Seq[A], elementCodec: MessageCodec[A]): Unit = {
       // elements
       // [e1, e2, ...]
       val len = v.length
@@ -57,7 +58,7 @@ object CollectionCodec {
   }
 
   class SeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
-    override def pack(p: MessagePacker, v: Seq[A]): Unit = {
+    override def pack(p: Packer, v: Seq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
@@ -67,7 +68,7 @@ object CollectionCodec {
   }
 
   class IndexedSeqCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[IndexedSeq[A]] {
-    override def pack(p: MessagePacker, v: IndexedSeq[A]): Unit = {
+    override def pack(p: Packer, v: IndexedSeq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
@@ -86,7 +87,7 @@ object CollectionCodec {
     </code>
    */
   class ListCodec[A](surface: Surface, elementCodec: MessageCodec[A]) extends MessageCodec[Seq[A]] {
-    override def pack(p: MessagePacker, v: Seq[A]): Unit = {
+    override def pack(p: Packer, v: Seq[A]): Unit = {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
@@ -97,7 +98,7 @@ object CollectionCodec {
 
   // TODO Just use SeqCodec for Scala and adapt the result type
   case class JavaListCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[java.util.List[A]] {
-    override def pack(p: MessagePacker, v: util.List[A]): Unit = {
+    override def pack(p: Packer, v: util.List[A]): Unit = {
       val len = v.size
       p.packArrayHeader(len)
       for (e <- v.asScala) {
@@ -118,7 +119,7 @@ object CollectionCodec {
   }
 
   case class MapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B]) extends MessageCodec[Map[A, B]] {
-    override def pack(p: MessagePacker, m: Map[A, B]): Unit = {
+    override def pack(p: Packer, m: Map[A, B]): Unit = {
       p.packMapHeader(m.size)
       for ((k, v) <- m) {
         keyCodec.pack(p, k)
@@ -143,7 +144,7 @@ object CollectionCodec {
   // TODO Just use MapCodec for Scala and adapt the result type
   case class JavaMapCodec[A, B](keyCodec: MessageCodec[A], valueCodec: MessageCodec[B])
       extends MessageCodec[java.util.Map[A, B]] {
-    override def pack(p: MessagePacker, m: java.util.Map[A, B]): Unit = {
+    override def pack(p: Packer, m: util.Map[A, B]): Unit = {
       p.packMapHeader(m.size)
       for ((k, v) <- m.asScala) {
         keyCodec.pack(p, k)

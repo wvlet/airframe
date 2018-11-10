@@ -49,7 +49,7 @@ object StandardCodec {
     : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec ++ javaTimeCodec
 
   object ThrowableCodec extends MessageCodec[Throwable] {
-    override def pack(p: MessagePacker, v: Throwable): Unit = {
+    override def pack(p: Packer, v: Throwable): Unit = {
       p.packMapHeader(4)
       // param 1
       p.packString("type")
@@ -59,7 +59,7 @@ object StandardCodec {
       p.packString("message")
       val msg = v.getMessage
       if (msg == null) {
-        p.packNil()
+        p.packNil
       } else {
         p.packString(msg)
       }
@@ -77,7 +77,7 @@ object StandardCodec {
       p.packString("cause")
       val cause = v.getCause
       if (cause == null || cause == v) {
-        p.packNil()
+        p.packNil
       } else {
         ThrowableCodec.pack(p, cause)
       }
@@ -87,7 +87,7 @@ object StandardCodec {
   }
 
   object FileCodec extends MessageCodec[File] {
-    override def pack(p: MessagePacker, v: File): Unit = {
+    override def pack(p: Packer, v: File): Unit = {
       p.packString(v.getPath)
     }
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {
@@ -97,7 +97,7 @@ object StandardCodec {
   }
 
   object JavaInstantTimeCodec extends MessageCodec[Instant] {
-    override def pack(p: MessagePacker, v: Instant): Unit = {
+    override def pack(p: Packer, v: Instant): Unit = {
       // TODO airframe-msgpack in Codec interface
       // Use msgpack Timestamp type
       val buf    = ByteArrayBuffer.newBuffer(15)
@@ -138,7 +138,7 @@ object StandardCodec {
   }
 
   object ZonedDateTimeCodec extends MessageCodec[ZonedDateTime] {
-    override def pack(p: MessagePacker, v: ZonedDateTime): Unit = {
+    override def pack(p: Packer, v: ZonedDateTime): Unit = {
       // Use java standard ZonedDateTime string repr such as "2007-12-03T10:15:30+01:00[Europe/Paris]"
       p.packString(v.toString)
     }
@@ -158,7 +158,7 @@ object StandardCodec {
   object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
     private val format = DateFormat.getInstance()
 
-    override def pack(p: MessagePacker, v: Date): Unit = {
+    override def pack(p: Packer, v: Date): Unit = {
       // Use Instant for encoding
       JavaInstantTimeCodec.pack(p, v.toInstant)
     }
@@ -173,7 +173,7 @@ object StandardCodec {
   case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
     private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[Class[_]], classOf[String])
 
-    override def pack(p: MessagePacker, v: A): Unit = {
+    override def pack(p: Packer, v: A): Unit = {
       p.packString(v.asInstanceOf[Enum[_]].name())
     }
 

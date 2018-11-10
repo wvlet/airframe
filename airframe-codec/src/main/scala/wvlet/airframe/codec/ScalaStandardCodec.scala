@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import org.msgpack.value.ValueType
+import wvlet.airframe.msgpack.spi.Packer
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.TypeConverter
 import wvlet.log.LogSupport
@@ -24,9 +25,9 @@ import wvlet.log.LogSupport
   */
 object ScalaStandardCodec {
   case class OptionCodec[A](elementCodec: MessageCodec[A]) extends MessageCodec[Option[A]] {
-    override def pack(p: MessagePacker, v: Option[A]): Unit = {
+    override def pack(p: Packer, v: Option[A]): Unit = {
       v match {
-        case None => p.packNil()
+        case None => p.packNil
         case Some(x) =>
           elementCodec.pack(p, x)
       }
@@ -47,7 +48,7 @@ object ScalaStandardCodec {
 
   case class TupleCodec(elementCodec: Seq[MessageCodec[_]]) extends MessageCodec[Product] {
 
-    override def pack(p: MessagePacker, v: Product): Unit = {
+    override def pack(p: Packer, v: Product): Unit = {
       val arity = v.productArity
       p.packArrayHeader(arity)
       for ((e, codec) <- v.productIterator.toSeq.zip(elementCodec)) {
@@ -201,7 +202,7 @@ object ScalaStandardCodec {
   }
 
   class UnapplyFromStringCodec[A](codec: Surface) extends MessageCodec[A] with LogSupport {
-    override def pack(p: MessagePacker, v: A): Unit = {
+    override def pack(p: Packer, v: A): Unit = {
       p.packString(v.toString)
     }
     override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {

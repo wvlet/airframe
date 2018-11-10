@@ -49,3 +49,7 @@ trait Packer {
   def addPayload(src: Array[Byte]): this.type
   def addPayload(src: Array[Byte], offset: Int, length: Int): this.type
 }
+
+trait BufferPacker extends Packer {
+  def toByteArray: Array[Byte]
+}

@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ValueType, Variable}
+import wvlet.airframe.msgpack.spi.Packer
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect.CName
 import wvlet.airframe.surface.{MethodParameter, Parameter, Surface, Zero}
@@ -79,24 +80,24 @@ class ParamListCodec(name: String,
       .map { case (p, c) => CName.toCanonicalName(p.name) -> c }
       .toMap[String, MessageCodec[_]]
 
-  override def pack(p: MessagePacker, v: Seq[Any]): Unit = {
+  override def pack(p: Packer, v: Seq[Any]): Unit = {
     packAsArray(p, v)
   }
 
-  def packAsArray(p: MessagePacker, paramValueList: Seq[Any]): Unit = {
+  def packAsArray(p: Packer, paramValueList: Seq[Any]): Unit = {
     val numParams = params.length
     // Use array format [p1, p2, ....]
     p.packArrayHeader(numParams)
     for ((paramValue, codec) <- paramValueList.zip(paramCodec)) {
       if (paramValue == null) {
-        p.packNil()
+        p.packNil
       } else {
         codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
       }
     }
   }
 
-  def packAsMap(p: MessagePacker, obj: Any): Unit = {
+  def packAsMap(p: Packer, obj: Any): Unit = {
     val numParams = params.length
     // Use array format [p1, p2, ....]
     p.packMapHeader(numParams)
@@ -190,12 +191,12 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
 
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
 
-  override def pack(p: MessagePacker, v: A): Unit = {
+  override def pack(p: Packer, v: A): Unit = {
     val paramValues = surface.params.map(p => p.get(v))
     paramListCodec.packAsArray(p, paramValues)
   }
 
-  def packAsMap(p: MessagePacker, v: A): Unit = {
+  def packAsMap(p: Packer, v: A): Unit = {
     paramListCodec.packAsMap(p, v)
   }
 
@@ -228,7 +229,7 @@ case class ObjectMapCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     with LogSupport {
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
 
-  override def pack(p: MessagePacker, v: A): Unit = {
+  override def pack(p: Packer, v: A): Unit = {
     paramListCodec.packAsMap(p, v)
   }
 

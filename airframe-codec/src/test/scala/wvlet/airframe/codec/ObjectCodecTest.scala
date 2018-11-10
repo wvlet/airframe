@@ -14,8 +14,8 @@
 package wvlet.airframe.codec
 
 import org.msgpack.core.MessagePack
-
 import ObjectCodecTest._
+import wvlet.airframe.msgpack
 
 /**
   *
@@ -38,7 +38,7 @@ class ObjectCodecTest extends CodecSpec {
 
   "support reading map value" in {
     val v: A1  = A1(1, 2, 3, 4, 5, 6, true, "str")
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = msgpack.newBufferPacker
     codec.packAsMap(packer, v)
     val b = packer.toByteArray
 

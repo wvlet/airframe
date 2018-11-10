@@ -13,10 +13,11 @@
  */
 package wvlet.airframe.codec
 
-import java.{lang => jl}
+import java.{sql, lang => jl}
 
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.PrimitiveCodec._
+import wvlet.airframe.msgpack.spi.Packer
 import wvlet.log.LogSupport
 
 /**
@@ -25,7 +26,7 @@ import wvlet.log.LogSupport
 object JDBCCodec {
 
   object SQLArrayCodec extends MessageCodec[java.sql.Array] with LogSupport {
-    override def pack(p: MessagePacker, v: java.sql.Array): Unit = {
+    override def pack(p: Packer, v: sql.Array): Unit = {
       val elemType = v.getBaseType
       debug(s"elemType:${elemType}, ${java.sql.JDBCType.valueOf(elemType)}")
       val jdbcType    = java.sql.JDBCType.valueOf(elemType)
