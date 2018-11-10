@@ -35,15 +35,15 @@ object SingletonTest {
   }
 
   trait A {
-    val t = bindSingleton[X]
+    val t = bind[X]
   }
 
   trait B {
-    val t = bindSingleton[X]
+    val t = bind[X]
   }
 
   trait SingletonService {
-    val service = bindSingleton[X]
+    val service = bind[X]
   }
 
   trait U1 extends SingletonService
@@ -72,7 +72,7 @@ class SingletonTest extends AirframeSpec {
       .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
   "Singleton" should {
-    "support bindSingleton[X]" in {
+    "bind singleton with bind[X]" in {
       val session = design.newSession
 
       val a = session.build[A]
@@ -82,7 +82,7 @@ class SingletonTest extends AirframeSpec {
       session.build[TraitCounter].get() shouldBe 1
     }
 
-    "support using bindSingleton[X] as a service" in {
+    "bind singleton with bind[X] as a service" in {
       val session = design.newSession
 
       val u1 = session.build[U1]

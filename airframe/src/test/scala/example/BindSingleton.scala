@@ -49,9 +49,9 @@ object BindSingleton {
     }
   }
 
-  // Use bindSingleton[XY] for sharing a singleton of XY between App1 and App2
+  // Use bind[XY] for sharing a singleton of XY between App1 and App2
   trait XYService {
-    val service = bindSingleton[XY]
+    val service = bind[XY]
   }
 
   trait App1 extends XYService
