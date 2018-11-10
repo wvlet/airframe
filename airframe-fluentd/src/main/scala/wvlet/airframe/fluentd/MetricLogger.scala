@@ -22,13 +22,13 @@ import wvlet.airframe._
   * Object based metric logger. This automatically converts object into Map type values
   */
 class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: FluentdClient) {
-  private val packer = MessagePack.newDefaultBufferPacker()
+  private val packer = msgpack.newBufferPacker
 
   def emit(metric: A): Unit = {
     // packer is non-thread safe
     synchronized {
       // Reuse the buffer
-      packer.clear()
+      packer.clear
       // A -> MessagePack Map value
       codec.pack(packer, metric)
       val msgpack = packer.toByteArray

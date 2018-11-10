@@ -1,6 +1,6 @@
 package wvlet.airframe.tablet.text
 
-import org.msgpack.value.{ValueType, Variable}
+import wvlet.airframe.msgpack.spi.ValueType
 import wvlet.airframe.tablet.{Record, TabletWriter}
 
 /**
@@ -12,18 +12,17 @@ object RecordPrinter extends TabletWriter[Seq[String]] {
     val f        = unpacker.getNextFormat
     f.getValueType match {
       case ValueType.NIL =>
-        unpacker.unpackNil()
+        unpacker.unpackNil
         Seq.empty
       case ValueType.ARRAY =>
-        val len = unpacker.unpackArrayHeader()
-        val v   = new Variable
+        val len = unpacker.unpackArrayHeader
         val array = (0 until len).map { i =>
-          unpacker.unpackValue(v)
+          val v = unpacker.unpackValue
           v.toString
         }
         array
       case other =>
-        val v = unpacker.unpackValue()
+        val v = unpacker.unpackValue
         Seq(v.toString)
     }
   }

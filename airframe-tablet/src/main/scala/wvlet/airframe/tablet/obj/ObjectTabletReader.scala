@@ -2,6 +2,7 @@ package wvlet.airframe.tablet.obj
 
 import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.msgpack
 import wvlet.airframe.tablet.{MessagePackRecord, Record, TabletReader}
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
@@ -20,9 +21,9 @@ class ObjectTabletReader[A](elementCodec: MessageCodec[A], input: Seq[A]) extend
       None
     } else {
       val elem   = cursor.next()
-      val packer = MessagePack.newDefaultBufferPacker()
+      val packer = msgpack.newBufferPacker
       if (elem == null) {
-        packer.packNil()
+        packer.packNil
       } else {
         elementCodec.pack(packer, elem)
       }

@@ -19,7 +19,7 @@ import java.time.Instant
 /**
   * Message Packer interface
   */
-trait Packer {
+trait Packer extends AutoCloseable {
   def packNil: this.type
   def packBoolean(v: Boolean): this.type
   def packByte(v: Byte): this.type
@@ -52,4 +52,5 @@ trait Packer {
 
 trait BufferPacker extends Packer {
   def toByteArray: Array[Byte]
+  def clear: Unit
 }

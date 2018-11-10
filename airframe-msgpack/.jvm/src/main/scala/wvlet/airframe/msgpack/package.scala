@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import java.io.{InputStream, OutputStream}
+
 import org.msgpack.core.MessagePack
 import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, UnpackerImpl}
 import wvlet.airframe.msgpack.spi.{BufferPacker, Packer, Unpacker}
@@ -23,6 +25,14 @@ package object msgpack {
 
   def newBufferPacker: BufferPacker = {
     new BufferPackerImpl(MessagePack.newDefaultBufferPacker())
+  }
+
+  def newPacker(out: OutputStream): Packer = {
+    new PackerImpl(MessagePack.newDefaultPacker(out))
+  }
+
+  def newUnpacker(in: InputStream): Unpacker = {
+    new UnpackerImpl(MessagePack.newDefaultUnpacker(in))
   }
 
   def newUnpacker(msgpack: Array[Byte]): Unpacker = {

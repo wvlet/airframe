@@ -118,10 +118,14 @@ class PackerImpl(packer: MessagePacker) extends Packer {
     packer.addPayload(src, offset, length)
     this
   }
+  override def close(): Unit = {
+    packer.close()
+  }
 }
 
 class BufferPackerImpl(bufferPacker: MessageBufferPacker) extends PackerImpl(bufferPacker) with BufferPacker {
   override def toByteArray: Array[Byte] = bufferPacker.toByteArray
+  override def clear: Unit              = bufferPacker.clear()
 }
 
 object PackerImpl {

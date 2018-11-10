@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.MessageCodec.ErrorCode
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
 

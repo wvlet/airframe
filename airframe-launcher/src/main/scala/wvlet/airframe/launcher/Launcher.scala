@@ -285,10 +285,10 @@ class CommandLauncher(launcherInfo: LauncherInfo,
 
     optionParser.schema match {
       case c: ClassOptionSchema =>
-        val msgpack = result.parseTree.toMsgPack
-        val codec   = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
-        val h       = new MessageHolder
-        codec.unpack(MessagePack.newDefaultUnpacker(msgpack), h)
+        val parseTree_mp = result.parseTree.toMsgPack
+        val codec        = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
+        val h            = new MessageHolder
+        codec.unpack(wvlet.airframe.msgpack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
           throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")
         }
