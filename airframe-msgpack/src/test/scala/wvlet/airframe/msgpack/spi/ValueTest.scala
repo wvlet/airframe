@@ -39,7 +39,7 @@ class ValueTest extends AirframeSpec with PropertyChecks {
       val buf         = ByteArrayBuffer.newBuffer(1024)
       val writeCursor = WriteCursor(buf, 0)
       pack(writeCursor)
-      val v = Unpacker.unpackValue(ReadCursor(buf, 0))
+      val v = OffsetUnpacker.unpackValue(ReadCursor(buf, 0))
       v.valueType shouldBe ValueType.INTEGER
       val i  = v.asInstanceOf[IntegerValue]
       val mf = i.mostSuccinctMessageFormat
@@ -52,24 +52,25 @@ class ValueTest extends AirframeSpec with PropertyChecks {
   "Value" should {
     "tell most succinct integer type" in {
       forAll { (v: Byte) =>
-        checkSuccinctType(Packer.packByte(_, v), MessageFormat.INT8)
+        checkSuccinctType(OffsetPacker.packByte(_, v), MessageFormat.INT8)
       }
       forAll { (v: Short) =>
-        checkSuccinctType(Packer.packShort(_, v), MessageFormat.INT16)
+        checkSuccinctType(OffsetPacker.packShort(_, v), MessageFormat.INT16)
       }
       forAll { (v: Int) =>
-        checkSuccinctType(Packer.packInt(_, v), MessageFormat.INT32)
+        checkSuccinctType(OffsetPacker.packInt(_, v), MessageFormat.INT32)
       }
       forAll { (v: Long) =>
-        checkSuccinctType(Packer.packLong(_, v), MessageFormat.INT64)
+        checkSuccinctType(OffsetPacker.packLong(_, v), MessageFormat.INT64)
       }
       forAll { (v: Long) =>
-        checkSuccinctType(Packer.packBigInteger(_, BigInteger.valueOf(v)), MessageFormat.INT64)
+        checkSuccinctType(OffsetPacker.packBigInteger(_, BigInteger.valueOf(v)), MessageFormat.INT64)
       }
       forAll { (v: Long) =>
         whenever(v > 0) {
           // Create value between 2^63-1 < v <= 2^64-1
-          checkSuccinctType(Packer.packBigInteger(_, BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))),
+          checkSuccinctType(OffsetPacker.packBigInteger(_,
+                                                        BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))),
                             MessageFormat.UINT64)
         }
       }

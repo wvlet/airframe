@@ -50,29 +50,29 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
   private def testByte(v: Byte): Unit = {
     val packers = Seq[(WriteCursor, Byte) => Unit](
-      { Packer.packByte(_, _) },
-      { Packer.packShort(_, _) },
-      { Packer.packInt(_, _) },
-      { Packer.packLong(_, _) },
-      { Packer.packINT8(_, _) },
-      { Packer.packINT16(_, _) },
-      { Packer.packINT32(_, _) },
-      { Packer.packINT64(_, _) }
+      { OffsetPacker.packByte(_, _) },
+      { OffsetPacker.packShort(_, _) },
+      { OffsetPacker.packInt(_, _) },
+      { OffsetPacker.packLong(_, _) },
+      { OffsetPacker.packINT8(_, _) },
+      { OffsetPacker.packINT16(_, _) },
+      { OffsetPacker.packINT32(_, _) },
+      { OffsetPacker.packINT64(_, _) }
     )
 
     val posNumPackers = Seq[(WriteCursor, Byte) => Unit](
-      { Packer.packUINT8(_, _) },
-      { Packer.packUINT16(_, _) },
-      { Packer.packUINT32(_, _) },
-      { Packer.packUINT64(_, _) }
+      { OffsetPacker.packUINT8(_, _) },
+      { OffsetPacker.packUINT16(_, _) },
+      { OffsetPacker.packUINT32(_, _) },
+      { OffsetPacker.packUINT64(_, _) }
     )
 
     val unpackers = Seq[ReadCursor => Byte](
-      { Unpacker.unpackByte(_) },
-      { Unpacker.unpackShort(_).toByte },
-      { Unpacker.unpackInt(_).toByte },
-      { Unpacker.unpackLong(_).toByte },
-      { Unpacker.unpackBigInteger(_).longValue().toByte }
+      { OffsetUnpacker.unpackByte(_) },
+      { OffsetUnpacker.unpackShort(_).toByte },
+      { OffsetUnpacker.unpackInt(_).toByte },
+      { OffsetUnpacker.unpackLong(_).toByte },
+      { OffsetUnpacker.unpackBigInteger(_).longValue().toByte }
     )
 
     for (p <- packers; u <- unpackers) {
@@ -87,25 +87,25 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
   private def testShort(v: Short): Unit = {
     val packers = Seq[(WriteCursor, Short) => Unit](
-      { Packer.packShort(_, _) },
-      { Packer.packInt(_, _) },
-      { Packer.packLong(_, _) },
-      { Packer.packINT16(_, _) },
-      { Packer.packINT32(_, _) },
-      { Packer.packINT64(_, _) }
+      { OffsetPacker.packShort(_, _) },
+      { OffsetPacker.packInt(_, _) },
+      { OffsetPacker.packLong(_, _) },
+      { OffsetPacker.packINT16(_, _) },
+      { OffsetPacker.packINT32(_, _) },
+      { OffsetPacker.packINT64(_, _) }
     )
 
     val posNumPackers = Seq[(WriteCursor, Short) => Unit](
-      { Packer.packUINT16(_, _) },
-      { Packer.packUINT32(_, _) },
-      { Packer.packUINT64(_, _) }
+      { OffsetPacker.packUINT16(_, _) },
+      { OffsetPacker.packUINT32(_, _) },
+      { OffsetPacker.packUINT64(_, _) }
     )
 
     val unpackers = Seq[ReadCursor => Short](
-      { Unpacker.unpackShort(_) },
-      { Unpacker.unpackInt(_).toShort },
-      { Unpacker.unpackLong(_).toShort },
-      { Unpacker.unpackBigInteger(_).longValue().toShort }
+      { OffsetUnpacker.unpackShort(_) },
+      { OffsetUnpacker.unpackInt(_).toShort },
+      { OffsetUnpacker.unpackLong(_).toShort },
+      { OffsetUnpacker.unpackBigInteger(_).longValue().toShort }
     )
 
     for (p <- packers; u <- unpackers) {
@@ -135,13 +135,13 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         newMap(newString("a") -> newString("apple"), newString("b") -> newString("banana"))
       )
       for (v <- list) {
-        roundtrip(v) { Packer.packValue(_, _) } { Unpacker.unpackValue(_) }
+        roundtrip(v) { OffsetPacker.packValue(_, _) } { OffsetUnpacker.unpackValue(_) }
       }
     }
 
     "report error on too big integer" in {
       intercept[IllegalArgumentException] {
-        Packer.packBigInteger(WriteCursor(buf, 0), BigInteger.valueOf(1).shiftLeft(64))
+        OffsetPacker.packBigInteger(WriteCursor(buf, 0), BigInteger.valueOf(1).shiftLeft(64))
       }
     }
 
@@ -154,29 +154,29 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       // Byte
       (b1 ++ b2 ++ b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackByte(_) }
+          rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { OffsetUnpacker.unpackByte(_) }
         }
       }
 
       // Short
       (b2 ++ b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackShort(_) }
+          rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { OffsetUnpacker.unpackShort(_) }
         }
       }
 
       // Int
       (b3 ++ b4).foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { Unpacker.unpackInt(_) }
+          rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { OffsetUnpacker.unpackInt(_) }
         }
       }
 
       // Long
       b4.foreach { b =>
         intercept[IntegerOverflowException] {
-          rawRoundtrip(b) { Packer.packBigInteger(_, _) } { x =>
-            BigInteger.valueOf(Unpacker.unpackLong(x))
+          rawRoundtrip(b) { OffsetPacker.packBigInteger(_, _) } { x =>
+            BigInteger.valueOf(OffsetUnpacker.unpackLong(x))
           }
         }
       }
@@ -184,20 +184,20 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
     "support Nil" in {
       rawRoundtrip(null) { (cursor, v) =>
-        Packer.packNil(cursor)
+        OffsetPacker.packNil(cursor)
       } { cursor =>
-        Unpacker.unpackNil(_); null
+        OffsetUnpacker.unpackNil(_); null
       }
       rawRoundtrip(null) { (cursor, v) =>
-        Packer.packNil(cursor)
+        OffsetPacker.packNil(cursor)
       } { cursor =>
-        Unpacker.tryUnpackNil(_); null
+        OffsetUnpacker.tryUnpackNil(_); null
       }
     }
 
     "support Boolean" in {
-      roundtrip(true) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
-      roundtrip(false) { Packer.packBoolean(_, _) } { Unpacker.unpackBoolean(_) }
+      roundtrip(true) { OffsetPacker.packBoolean(_, _) } { OffsetUnpacker.unpackBoolean(_) }
+      roundtrip(false) { OffsetPacker.packBoolean(_, _) } { OffsetUnpacker.unpackBoolean(_) }
     }
 
     "support Fixnum" in {
@@ -227,21 +227,21 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     "support Int" in {
       forAll { (v: Int) =>
         val packers = Seq[(WriteCursor, Int) => Unit](
-          { Packer.packInt(_, _) },
-          { Packer.packLong(_, _) },
-          { Packer.packINT32(_, _) },
-          { Packer.packINT64(_, _) }
+          { OffsetPacker.packInt(_, _) },
+          { OffsetPacker.packLong(_, _) },
+          { OffsetPacker.packINT32(_, _) },
+          { OffsetPacker.packINT64(_, _) }
         )
 
         val posNumPackers = Seq[(WriteCursor, Int) => Unit](
-          { Packer.packUINT32(_, _) },
-          { Packer.packUINT64(_, _) }
+          { OffsetPacker.packUINT32(_, _) },
+          { OffsetPacker.packUINT64(_, _) }
         )
 
         val unpackers = Seq[ReadCursor => Int](
-          { Unpacker.unpackInt(_) },
-          { Unpacker.unpackLong(_).toInt },
-          { Unpacker.unpackBigInteger(_).longValue().toInt }
+          { OffsetUnpacker.unpackInt(_) },
+          { OffsetUnpacker.unpackLong(_).toInt },
+          { OffsetUnpacker.unpackBigInteger(_).longValue().toInt }
         )
 
         for (p <- packers; u <- unpackers) {
@@ -258,22 +258,22 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     "support Long" in {
       // UINT32
       roundtrip((1L << 31) + 1) { (c, v) =>
-        Packer.packUINT32(c, v.toInt)
-      } { Unpacker.unpackLong(_) }
+        OffsetPacker.packUINT32(c, v.toInt)
+      } { OffsetUnpacker.unpackLong(_) }
 
       forAll { (v: Long) =>
         val packers = Seq[(WriteCursor, Long) => Unit](
-          { Packer.packLong(_, _) },
-          { Packer.packINT64(_, _) }
+          { OffsetPacker.packLong(_, _) },
+          { OffsetPacker.packINT64(_, _) }
         )
 
         val posNumPackers = Seq[(WriteCursor, Long) => Unit](
-          { Packer.packUINT64(_, _) }
+          { OffsetPacker.packUINT64(_, _) }
         )
 
         val unpackers = Seq[ReadCursor => Long](
-          { Unpacker.unpackLong(_) },
-          { Unpacker.unpackBigInteger(_).longValue() }
+          { OffsetUnpacker.unpackLong(_) },
+          { OffsetUnpacker.unpackBigInteger(_).longValue() }
         )
 
         for (p <- packers; u <- unpackers) {
@@ -290,40 +290,40 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     "support INT8" in {
       // INT8
       roundtrip[Short](-1) { (cursor, v) =>
-        Packer.packShort(cursor, v)
-      } { Unpacker.unpackShort(_) }
+        OffsetPacker.packShort(cursor, v)
+      } { OffsetUnpacker.unpackShort(_) }
 
       roundtrip(-1) { (cursor, v) =>
-        Packer.packInt(cursor, v)
-      } { Unpacker.unpackInt(_) }
+        OffsetPacker.packInt(cursor, v)
+      } { OffsetUnpacker.unpackInt(_) }
 
       roundtrip(-1.toLong) { (cursor, v) =>
-        Packer.packLong(cursor, v)
-      } { Unpacker.unpackLong(_) }
+        OffsetPacker.packLong(cursor, v)
+      } { OffsetUnpacker.unpackLong(_) }
     }
 
     "support BigInteger" in {
       // UINT32
       roundtrip((1L << 31) + 1) { (c, v) =>
-        Packer.packUINT32(c, v.toInt)
-      } { Unpacker.unpackBigInteger(_).longValue() }
+        OffsetPacker.packUINT32(c, v.toInt)
+      } { OffsetUnpacker.unpackBigInteger(_).longValue() }
       forAll { (l: Long) =>
         val v = BigInteger.valueOf(l)
-        roundtrip(v) { Packer.packBigInteger(_, _) } { Unpacker.unpackBigInteger(_) }
+        roundtrip(v) { OffsetPacker.packBigInteger(_, _) } { OffsetUnpacker.unpackBigInteger(_) }
       }
     }
 
     "support Float" in {
       forAll { (v: Float) =>
         val packers = Seq[(WriteCursor, Float) => Unit](
-          { Packer.packFloat(_, _) },
-          { Packer.packFLOAT32(_, _) },
-          { Packer.packFLOAT64(_, _) }
+          { OffsetPacker.packFloat(_, _) },
+          { OffsetPacker.packFLOAT32(_, _) },
+          { OffsetPacker.packFLOAT64(_, _) }
         )
 
         val unpackers = Seq[ReadCursor => Float](
-          { Unpacker.unpackFloat(_) },
-          { Unpacker.unpackDouble(_).toFloat }
+          { OffsetUnpacker.unpackFloat(_) },
+          { OffsetUnpacker.unpackDouble(_).toFloat }
         )
 
         for (p <- packers; u <- unpackers) {
@@ -335,24 +335,24 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     "support Double" in {
       forAll { (v: Double) =>
         val packers = Seq[(WriteCursor, Double) => Unit](
-          { Packer.packDouble(_, _) },
-          { Packer.packFLOAT64(_, _) }
+          { OffsetPacker.packDouble(_, _) },
+          { OffsetPacker.packFLOAT64(_, _) }
         )
 
         val unpackers = Seq[ReadCursor => Double](
-          { Unpacker.unpackDouble(_) }
+          { OffsetUnpacker.unpackDouble(_) }
         )
 
         for (p <- packers; u <- unpackers) {
           roundtrip(v)(p)(u)
         }
-        roundtrip(v) { Packer.packDouble(_, _) } { Unpacker.unpackDouble(_) }
+        roundtrip(v) { OffsetPacker.packDouble(_, _) } { OffsetUnpacker.unpackDouble(_) }
       }
     }
 
     "support String" in {
       forAll(arbitrary[String]) { v: String => // Generate unicode strings
-        roundtrip(v) { Packer.packString(_, _) } { Unpacker.unpackString(_) }
+        roundtrip(v) { OffsetPacker.packString(_, _) } { OffsetUnpacker.unpackString(_) }
       }
     }
 
@@ -361,11 +361,11 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
         val b = s.getBytes(StandardCharsets.UTF_8)
         val v = b.slice(0, b.length.min(1024))
         roundtrip(b) { (cursor, v) =>
-          Packer.packRawStringHeader(cursor, v.length)
-          Packer.writePayload(cursor, v)
+          OffsetPacker.packRawStringHeader(cursor, v.length)
+          OffsetPacker.writePayload(cursor, v)
         } { cursor =>
-          val len = Unpacker.unpackRawStringHeader(cursor)
-          Unpacker.readPayload(cursor, len)
+          val len = OffsetUnpacker.unpackRawStringHeader(cursor)
+          OffsetUnpacker.readPayload(cursor, len)
         }
       }
     }
@@ -373,11 +373,11 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
     "support Binary" in {
       forAll { (v: Array[Byte]) =>
         roundtrip(v) { (cursor, v) =>
-          Packer.packBinaryHeader(cursor, v.length)
-          Packer.writePayload(cursor, v)
+          OffsetPacker.packBinaryHeader(cursor, v.length)
+          OffsetPacker.writePayload(cursor, v)
         } { cursor =>
-          val len = Unpacker.unpackBinaryHeader(cursor)
-          Unpacker.readPayload(cursor, len)
+          val len = OffsetUnpacker.unpackBinaryHeader(cursor)
+          OffsetUnpacker.readPayload(cursor, len)
         }
       }
     }
@@ -387,12 +387,12 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
       val posInt  = Gen.chooseNum(0, 1000000000 - 1) // NANOS_PER_SECOND
       forAll(posLong, posInt) { (second: Long, nano: Int) =>
         val v = Instant.ofEpochSecond(second, nano)
-        roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+        roundtrip(v) { OffsetPacker.packTimestamp(_, _) } { OffsetUnpacker.unpackTimestamp(_) }
       }
       val secLessThan34bits = Gen.chooseNum[Long](0, 1L << 34)
       forAll(secLessThan34bits, posInt) { (second: Long, nano: Int) =>
         val v = Instant.ofEpochSecond(second, nano)
-        roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+        roundtrip(v) { OffsetPacker.packTimestamp(_, _) } { OffsetUnpacker.unpackTimestamp(_) }
       }
 
       // Corner cases for u
@@ -403,7 +403,7 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
              Instant.ofEpochSecond(-747359729L, 0), // 1946-04-27T00:04:31Z
              Instant.ofEpochSecond(4257387427L, 0) // 2104-11-29T07:37:07Z
            )) {
-        roundtrip(v) { Packer.packTimestamp(_, _) } { Unpacker.unpackTimestamp(_) }
+        roundtrip(v) { OffsetPacker.packTimestamp(_, _) } { OffsetUnpacker.unpackTimestamp(_) }
       }
     }
 
@@ -412,48 +412,52 @@ class RoundTripTest extends AirframeSpec with PropertyChecks {
 
     "support ArrayHeader" in {
       for (size <- headerSizes) {
-        roundtrip(size) { Packer.packArrayHeader(_, _) } { Unpacker.unpackArrayHeader(_) }
+        roundtrip(size) { OffsetPacker.packArrayHeader(_, _) } { OffsetUnpacker.unpackArrayHeader(_) }
       }
 
       forAll(sizeGen) { (len: Int) =>
-        roundtrip(len) { Packer.packArrayHeader(_, _) } { Unpacker.unpackArrayHeader(_) }
+        roundtrip(len) { OffsetPacker.packArrayHeader(_, _) } { OffsetUnpacker.unpackArrayHeader(_) }
       }
     }
 
     "support MapHeader" in {
       for (size <- headerSizes) {
-        roundtrip(size) { Packer.packMapHeader(_, _) } { Unpacker.unpackMapHeader(_) }
+        roundtrip(size) { OffsetPacker.packMapHeader(_, _) } { OffsetUnpacker.unpackMapHeader(_) }
       }
       forAll(sizeGen) { (len: Int) =>
-        roundtrip(len) { Packer.packMapHeader(_, _) } { Unpacker.unpackMapHeader(_) }
+        roundtrip(len) { OffsetPacker.packMapHeader(_, _) } { OffsetUnpacker.unpackMapHeader(_) }
       }
     }
 
     "supprot RawStringHeader" in {
       for (size <- headerSizes) {
-        roundtrip(size) { Packer.packRawStringHeader(_, _) } { Unpacker.unpackRawStringHeader(_) }
+        roundtrip(size) { OffsetPacker.packRawStringHeader(_, _) } { OffsetUnpacker.unpackRawStringHeader(_) }
       }
       forAll(sizeGen) { (len: Int) =>
-        roundtrip(len) { Packer.packRawStringHeader(_, _) } { Unpacker.unpackRawStringHeader(_) }
+        roundtrip(len) { OffsetPacker.packRawStringHeader(_, _) } { OffsetUnpacker.unpackRawStringHeader(_) }
       }
     }
 
     "support BinaryHeader" in {
       for (size <- headerSizes) {
-        roundtrip(size) { Packer.packBinaryHeader(_, _) } { Unpacker.unpackBinaryHeader(_) }
+        roundtrip(size) { OffsetPacker.packBinaryHeader(_, _) } { OffsetUnpacker.unpackBinaryHeader(_) }
       }
       forAll(sizeGen) { (len: Int) =>
-        roundtrip(len) { Packer.packBinaryHeader(_, _) } { Unpacker.unpackBinaryHeader(_) }
+        roundtrip(len) { OffsetPacker.packBinaryHeader(_, _) } { OffsetUnpacker.unpackBinaryHeader(_) }
       }
     }
 
     "support ExtHeader" in {
       // For FIXEXT1, 2, 4, 8, 16, etc.
       for (i <- headerSizes) {
-        roundtrip(ExtTypeHeader(1, i)) { Packer.packExtTypeHeader(_, _) } { Unpacker.unpackExtTypeHeader(_) }
+        roundtrip(ExtTypeHeader(1, i)) { OffsetPacker.packExtTypeHeader(_, _) } {
+          OffsetUnpacker.unpackExtTypeHeader(_)
+        }
       }
       forAll(Gen.posNum[Byte], sizeGen) { (v: Byte, len: Int) =>
-        roundtrip(ExtTypeHeader(v, len)) { Packer.packExtTypeHeader(_, _) } { Unpacker.unpackExtTypeHeader(_) }
+        roundtrip(ExtTypeHeader(v, len)) { OffsetPacker.packExtTypeHeader(_, _) } {
+          OffsetUnpacker.unpackExtTypeHeader(_)
+        }
       }
     }
   }

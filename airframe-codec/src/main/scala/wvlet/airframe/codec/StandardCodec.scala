@@ -102,7 +102,7 @@ object StandardCodec {
       // Use msgpack Timestamp type
       val buf    = ByteArrayBuffer.newBuffer(15)
       val cursor = WriteCursor(buf, 0)
-      Packer.packTimestamp(cursor, v)
+      OffsetPacker.packTimestamp(cursor, v)
       val extData = buf.readBytes(0, cursor.lastWrittenBytes)
       p.writePayload(extData, 0, cursor.lastWrittenBytes)
     }
@@ -123,10 +123,10 @@ object StandardCodec {
             val extHeader = u.unpackExtensionTypeHeader()
             val buf       = ByteArrayBuffer.newBuffer(15)
             val cursor    = WriteCursor(buf, 0)
-            Packer.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
+            OffsetPacker.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
             val data = u.readPayload(extHeader.getLength)
             cursor.writeBytes(data)
-            Unpacker.unpackTimestamp(ReadCursor(buf, 0))
+            OffsetUnpacker.unpackTimestamp(ReadCursor(buf, 0))
           case other =>
             v.setIncompatibleFormatException(this, s"Cannot create Instant from ${other} type")
         }
