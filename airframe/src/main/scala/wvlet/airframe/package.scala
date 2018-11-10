@@ -64,15 +64,6 @@ package object airframe extends LogSupport {
   def bind[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
     macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
 
-  def bindSingleton[A]: A = macro bindSingletonImpl[A]
-  def bindSingleton[A](factory: => A): A = macro bind0SingletonImpl[A]
-  def bindSingleton[A, D1](factory: D1 => A): A = macro bind1SingletonImpl[A, D1]
-  def bindSingleton[A, D1, D2](factory: (D1, D2) => A): A = macro bind2SingletonImpl[A, D1, D2]
-  def bindSingleton[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3SingletonImpl[A, D1, D2, D3]
-  def bindSingleton[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4SingletonImpl[A, D1, D2, D3, D4]
-  def bindSingleton[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
-    macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
-
   import scala.language.higherKinds
   def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]
   def bindFactory2[F <: (_, _) => _]: F = macro bindFactory2Impl[F]

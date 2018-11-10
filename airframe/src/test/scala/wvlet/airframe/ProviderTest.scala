@@ -93,7 +93,8 @@ trait SingletonProviderExample {
 }
 
 trait PS0_S {
-  val p = bindSingleton(App())
+  // Bind singleton by default
+  val p = bind(App())
 }
 
 trait PS0 {
