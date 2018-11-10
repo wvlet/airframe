@@ -34,21 +34,21 @@ trait Value {
     * @param packer
     * @return
     */
-  def writeTo(packer: StreamPacker): Unit
+  def writeTo(packer: Packer): Unit
 }
 
 object Value {
   case object NilValue extends Value {
     override def toJson    = "null"
     override def valueType = ValueType.NIL
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packNil
     }
   }
   case class BooleanValue(v: Boolean) extends Value {
     override def toJson    = if (v) "true" else "false"
     override def valueType = ValueType.BOOLEAN
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packBoolean(v)
     }
   }
@@ -70,7 +70,7 @@ object Value {
 
   case class LongValue(v: Long) extends IntegerValue {
     override def toJson = v.toString
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packLong(v)
     }
 
@@ -109,7 +109,7 @@ object Value {
     def asInt: Int               = if (isValidInt) v.intValue() else throw overflow(v)
     def asLong: Long             = if (isValidLong) v.longValue() else throw overflow(v)
     def asBigInteger: BigInteger = v
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packBigInteger(v)
     }
   }
@@ -117,7 +117,7 @@ object Value {
   case class DoubleValue(v: Double) extends Value {
     override def toJson               = if (v.isNaN || v.isInfinite) "null" else v.toString
     override def valueType: ValueType = ValueType.FLOAT
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packDouble(v)
     }
   }
@@ -135,7 +135,7 @@ object Value {
     override def toString                      = v
     override protected def toRawString: String = v
     override def valueType                     = ValueType.STRING
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packString(v)
     }
   }
@@ -144,7 +144,7 @@ object Value {
     @transient private var decodedStringCache: String = null
 
     override def valueType: ValueType = ValueType.BINARY
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packBinaryHeader(v.length)
       packer.writePayload(v)
     }
@@ -179,7 +179,7 @@ object Value {
       s"""[${extType.toInt.toString},"${sb.result.mkString(" ")}"]"""
     }
     override def valueType: ValueType = ValueType.EXTENSION
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packExtensionTypeHeader(extType, v.length)
       packer.writePayload(v)
     }
@@ -202,7 +202,7 @@ object Value {
       LogTimestampFormatter.formatTimestamp(v.toEpochMilli)
     }
     override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packTimestamp(v)
     }
   }
@@ -215,7 +215,7 @@ object Value {
       s"[${elems.map(_.toJson).mkString(",")}]"
     }
     override def valueType: ValueType = ValueType.ARRAY
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packArrayHeader(elems.length)
       elems.foreach(x => x.writeTo(packer))
     }
@@ -230,7 +230,7 @@ object Value {
       s"{${entries.map(x => s"${x._1.toJson}:${x._2.toJson}").mkString(",")}}"
     }
     override def valueType: ValueType = ValueType.MAP
-    override def writeTo(packer: StreamPacker): Unit = {
+    override def writeTo(packer: Packer): Unit = {
       packer.packMapHeader(entries.size)
       // Ensure using non-parallel collection
       entries.toIndexedSeq.foreach { x =>

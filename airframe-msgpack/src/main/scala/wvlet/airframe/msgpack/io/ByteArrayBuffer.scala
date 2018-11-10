@@ -89,7 +89,7 @@ case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadB
       (a(pos + 7).toLong & 0xFF))
   }
 
-  override def readBytes(position: Int, length: Int) = {
+  override def readBytes(position: Int, length: Int): Array[Byte] = {
     ensureCapacity(position, length)
     val dest = new Array[Byte](length)
     Array.copy(a, offset + position, dest, 0, length)
