@@ -476,7 +476,7 @@ lazy val codec =
     .dependsOn(log, surface, msgpack, json, airframeSpec % "test")
 
 lazy val codecJVM = codec.jvm
-lazy val codecJS = codec.js
+lazy val codecJS  = codec.js
 
 lazy val tablet =
   project
