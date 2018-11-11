@@ -14,7 +14,6 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.DataType._
-import wvlet.airframe.codec.MessageCodec.INVALID_DATA
 
 /**
   *

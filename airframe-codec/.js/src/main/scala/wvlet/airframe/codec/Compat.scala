@@ -19,7 +19,8 @@ import wvlet.airframe.surface.Surface
   */
 object Compat {
 
-  def codecFinder: CodecFinder = JSCodecFinger
+  def codecFinder: CodecFinder                      = JSCodecFinger
+  def platformCodecs: Map[Surface, MessageCodec[_]] = Map.empty
 
   object JSCodecFinger extends CodecFinder {
     override def findCodec(factory: MessageCodecFactory,

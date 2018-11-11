@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 
 import java.math.BigInteger
 
-import wvlet.airframe.msgpack
+import wvlet.airframe.{msgpack, surface}
 
 /**
   *
@@ -24,36 +24,36 @@ class PrimitiveCodecTest extends CodecSpec {
   "PrimitiveCodec" should {
 
     "support numeric" in {
-      roundTripTestWithStr[Int](DataType.INTEGER)
-      roundTripTestWithStr[Byte](DataType.INTEGER)
-      roundTripTestWithStr[Short](DataType.INTEGER)
-      roundTripTestWithStr[Long](DataType.INTEGER)
-      roundTripTestWithStr[Boolean](DataType.BOOLEAN)
+      roundTripTestWithStr[Int](surface.of[Int], DataType.INTEGER)
+      roundTripTestWithStr[Byte](surface.of[Byte], DataType.INTEGER)
+      roundTripTestWithStr[Short](surface.of[Short], DataType.INTEGER)
+      roundTripTestWithStr[Long](surface.of[Long], DataType.INTEGER)
+      roundTripTestWithStr[Boolean](surface.of[Boolean], DataType.BOOLEAN)
     }
 
     "support char" in {
-      roundTripTest[Char](DataType.INTEGER)
+      roundTripTest[Char](surface.of[Char], DataType.INTEGER)
     }
 
     "support float" in {
-      roundTripTestWithStr[Float](DataType.FLOAT)
-      roundTripTestWithStr[Double](DataType.FLOAT)
+      roundTripTestWithStr[Float](surface.of[Float], DataType.FLOAT)
+      roundTripTestWithStr[Double](surface.of[Double], DataType.FLOAT)
     }
 
     "support string" in {
-      roundTripTest[String](DataType.STRING)
+      roundTripTest[String](surface.of[String], DataType.STRING)
     }
 
     "support arrays" taggedAs ("array") in {
-      arrayRoundTripTest[Byte]
-      arrayRoundTripTest[Char]
-      arrayRoundTripTest[Int]
-      arrayRoundTripTest[Short]
-      arrayRoundTripTest[Long]
-      arrayRoundTripTest[String]
-      arrayRoundTripTest[Float]
-      arrayRoundTripTest[Double]
-      arrayRoundTripTest[Boolean]
+      arrayRoundTripTest[Byte](surface.of[Byte])
+      arrayRoundTripTest[Char](surface.of[Char])
+      arrayRoundTripTest[Int](surface.of[Int])
+      arrayRoundTripTest[Short](surface.of[Short])
+      arrayRoundTripTest[Long](surface.of[Long])
+      arrayRoundTripTest[String](surface.of[String])
+      arrayRoundTripTest[Float](surface.of[Float])
+      arrayRoundTripTest[Double](surface.of[Double])
+      arrayRoundTripTest[Boolean](surface.of[Boolean])
     }
 
     // Value 2^64-1 is the maximum value

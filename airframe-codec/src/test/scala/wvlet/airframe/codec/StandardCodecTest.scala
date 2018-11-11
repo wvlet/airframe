@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.io.File
 import java.time.{Instant, ZonedDateTime}
 
-import wvlet.airframe.msgpack
+import wvlet.airframe.{msgpack, surface}
 
 /**
   *
@@ -35,50 +35,9 @@ class StandardCodecTest extends CodecSpec {
       check(new File("relative/path.txt"))
     }
 
-    "support Java Instant" in {
-      val now     = Instant.now()
-      val timeStr = "2018-05-26T21:10:29.858818Z"
-      val i       = Instant.parse(timeStr)
-      roundtrip(i)
-
-      roundtrip(Instant.ofEpochMilli(0))
-      roundtrip(Instant.ofEpochMilli(14000000))
-      roundtrip(now)
-
-      val codec = MessageCodec.of[Seq[Instant]]
-      val p     = msgpack.newBufferPacker
-
-      val epochSecond = Instant.ofEpochMilli(now.getEpochSecond)
-      p.packArrayHeader(4)
-      p.packLong(epochSecond.toEpochMilli) // Timestamp as millisec LONG
-      p.packString(epochSecond.toString)   // Timestamp as millisec string
-      p.packString(timeStr)                // Timestamp in string format
-      p.packString("invalidstr")
-
-      val v = codec.unpackMsgPack(p.toByteArray)
-      v shouldBe defined
-      v.get shouldBe Seq[Instant](epochSecond, epochSecond, i, null)
-    }
-
-    "support ZonedDateTime" in {
-      roundtrip(ZonedDateTime.now())
-      roundtrip(ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
-
-      val codec = MessageCodec.of[ZonedDateTime]
-      val p     = msgpack.newBufferPacker
-      p.packString("non-date string")
-      val v = codec.unpackMsgPack(p.toByteArray)
-      v shouldBe empty
-    }
-
-    "support java.util.Date" in {
-      val now = java.util.Date.from(Instant.now())
-      roundtrip(now)
-    }
-
     "support Enum" in {
       for (v <- TestEnum.values()) {
-        roundtrip[TestEnum](v)
+        roundtrip[TestEnum](surface.of[TestEnum], v)
       }
 
       val codec = MessageCodec.of[TestEnum]

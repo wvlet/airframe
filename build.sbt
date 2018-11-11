@@ -467,7 +467,7 @@ lazy val codec =
       name := "airframe-codec",
       description := "Airframe MessagePack-based codec",
       libraryDependencies ++= Seq(
-        "org.scalacheck" %% "scalacheck" % SCALACHECK_VERSION % "test"
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
     .jsSettings(

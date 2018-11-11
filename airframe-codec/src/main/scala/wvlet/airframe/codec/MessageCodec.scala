@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.codec.MessageCodec.ErrorCode
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
+import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
@@ -69,14 +69,8 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
   }
 }
 
-class MessageCodecException[A](val errorCode: ErrorCode, val codec: MessageCodec[A], val message: String)
-    extends Exception(message) {
-  override def getMessage = s"[${errorCode}] coded:${codec} ${message}"
-}
-
 object MessageCodec {
-  trait ErrorCode
-  case object INVALID_DATA extends ErrorCode
 
-  def of[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
+  def of[A: ru.TypeTag]: MessageCodec[A]     = MessageCodecFactory.defaultFactory.of[A]
+  def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.of(s)
 }

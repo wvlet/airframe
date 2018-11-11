@@ -15,20 +15,20 @@ package wvlet.airframe.codec
 
 import org.scalacheck.Arbitrary
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 import wvlet.airframe.{AirframeSpec, msgpack}
 
 import scala.collection.JavaConverters._
-import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   */
 trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
-  def roundtrip[A: ru.TypeTag](v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
-    roundtrip(MessageCodec.of[A], v, expectedType)
+  def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
+    roundtrip[A](MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[A]], v, expectedType)
   }
 
-  def roundtrip[A: ru.TypeTag](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
+  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     trace(s"Testing roundtrip of ${v} with ${codec}")
     val packer = msgpack.newBufferPacker
@@ -65,16 +65,19 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
     v shouldBe r.get
   }
 
-  def roundTripTest[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
+  def roundTripTest[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
     forAll { (v: T) =>
-      roundtrip(v, dataType)
+      roundtrip(surface, v, dataType)
     }
   }
 
-  def arrayRoundTripTest[T: ru.TypeTag](implicit impArb: Arbitrary[Array[T]]): Unit = {
-    val codec         = MessageCodec.of[Array[T]]
-    val seqCodec      = MessageCodec.of[Seq[T]]
-    val javaListCodec = MessageCodec.of[java.util.List[T]]
+  def arrayRoundTripTest[T](surface: Surface)(implicit impArb: Arbitrary[Array[T]]): Unit = {
+    val codec = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
+    val seqCodec =
+      MessageCodec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
+    val javaListCodec = MessageCodec
+      .ofSurface(new GenericSurface(classOf[java.util.List[_]], Seq(surface))).asInstanceOf[MessageCodec[
+        java.util.List[T]]]
     forAll { (v: Array[T]) =>
       // Array round trip
       roundtrip(codec, v, DataType.ANY)
@@ -85,8 +88,8 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
     }
   }
 
-  def roundTripTestWithStr[T: ru.TypeTag](dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
-    val codec = MessageCodec.of[T]
+  def roundTripTestWithStr[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
+    val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[T]]
     forAll { (v: T) =>
       // Test input:T -> output:T
       roundtrip(codec, v, dataType)

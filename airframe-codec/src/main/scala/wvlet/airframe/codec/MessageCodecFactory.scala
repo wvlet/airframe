@@ -18,7 +18,8 @@ object MessageCodecFactory {
     ObjectMapCodec(surface, paramCodec.toIndexedSeq)
   }
 
-  def defaultFactory: MessageCodecFactory = new MessageCodecFactory(StandardCodec.standardCodec)
+  def defaultFactory: MessageCodecFactory =
+    new MessageCodecFactory(StandardCodec.standardCodec ++ Compat.platformCodecs)
 
   private[codec] def defaultFinder(factory: MessageCodecFactory,
                                    seenSet: Set[Surface]): PartialFunction[Surface, MessageCodec[_]] = {
@@ -53,7 +54,7 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]],
 
   protected[this] var cache = Map.empty[Surface, MessageCodec[_]]
 
-  private val codecFinder: CodecFinder = wvlet.airframe.codec.Compat.codecFinder
+  private val codecFinder: CodecFinder = Compat.codecFinder
 
   protected[codec] def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)

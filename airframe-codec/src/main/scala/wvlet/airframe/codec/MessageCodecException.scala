@@ -12,13 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+
+trait CodecErrorCode
+case object INVALID_DATA extends CodecErrorCode
 
 /**
   *
   */
-object Compat {
-  def codecFinder: CodecFinder = JVMCodecFactory
-
-  def platformCodecs: Map[Surface, MessageCodec[_]] = JavaTimeCodec.javaTimeCodecs
+class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
+    extends Exception(message) {
+  override def getMessage = s"[${errorCode}] coded:${codec} ${message}"
 }

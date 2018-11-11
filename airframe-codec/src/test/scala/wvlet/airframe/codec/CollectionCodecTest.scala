@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.surface
+
 import scala.collection.JavaConverters._
 
 /**
@@ -23,17 +25,17 @@ class CollectionCodecTest extends CodecSpec {
   "CollectionCodec" should {
     "support Map type" in {
       val v = Map("id" -> 1)
-      roundtrip(v, DataType.ANY)
+      roundtrip(surface.of[Map[String, Int]], v, DataType.ANY)
     }
 
     "support Java Map type" in {
       val v = Map("id" -> 1).asJava
-      roundtrip(v, DataType.ANY)
+      roundtrip(surface.of[Map[String, Int]], v, DataType.ANY)
     }
 
     "support Seq/List type" in {
-      roundtrip(Seq(1, 2, 3), DataType.ANY)
-      roundtrip(List(1, 2, 3), DataType.ANY)
+      roundtrip(surface.of[Seq[Int]], Seq(1, 2, 3), DataType.ANY)
+      roundtrip(surface.of[List[Int]], List(1, 2, 3), DataType.ANY)
     }
   }
 
