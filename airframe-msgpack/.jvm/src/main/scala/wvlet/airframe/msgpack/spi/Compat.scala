@@ -12,13 +12,37 @@
  * limitations under the License.
  */
 package wvlet.airframe.msgpack.spi
+import java.io.{InputStream, OutputStream}
+
+import org.msgpack.{core => mj}
+import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, UnpackerImpl}
 
 /**
-  *
+  * For compatibility with Scala, Scala.js
   */
 object Compat {
   def isScalaJS = false
 
   def floatToIntBits(v: Float): Int     = java.lang.Float.floatToRawIntBits(v)
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToRawLongBits(v)
+
+  def newBufferPacker: BufferPacker = {
+    new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
+  }
+
+  def newPacker(out: OutputStream): Packer = {
+    new PackerImpl(mj.MessagePack.newDefaultPacker(out))
+  }
+
+  def newUnpacker(in: InputStream): Unpacker = {
+    new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(in))
+  }
+
+  def newUnpacker(msgpack: Array[Byte]): Unpacker = {
+    newUnpacker(msgpack, 0, msgpack.length)
+  }
+
+  def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = {
+    new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
+  }
 }

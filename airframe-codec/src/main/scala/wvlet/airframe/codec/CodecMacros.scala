@@ -11,20 +11,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.text
+package wvlet.airframe.codec
 
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.msgpack.spi.MessagePack
+import scala.reflect.macros.{blackbox => sm}
 
 /**
   *
   */
-class JSONObjectPrinterTest extends AirframeSpec {
+object CodecMacros {
 
-  "JSONObjectPrinter" should {
-    "allow empty input" in {
-      val unpacker = MessagePack.newUnpacker(Array.empty[Byte])
-      JSONObjectPrinter.read(unpacker) shouldBe "{}"
-    }
+  def codecOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"wvlet.airframe.codec.MessageCodec.ofSurface(wvlet.airframe.surface.of[${t}]).asInstanceOf[wvlet.airframe.codec.MessageCodec[${t}]]"
   }
 }

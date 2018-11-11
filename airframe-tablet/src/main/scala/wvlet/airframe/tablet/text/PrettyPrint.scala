@@ -1,10 +1,10 @@
 package wvlet.airframe.tablet.text
 
 import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.tablet.obj.ObjectTabletReader
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.tablet.obj.ObjectTabletReader
+import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 

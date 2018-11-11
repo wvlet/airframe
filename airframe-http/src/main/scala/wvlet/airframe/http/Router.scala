@@ -14,11 +14,11 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, ParamListCodec}
-import wvlet.log.LogSupport
+import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
 import wvlet.airframe.surface
-import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.airframe.surface.reflect._
+import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -121,7 +121,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             request
           case _ =>
             // Build from the string value in the request params
-            val argCodec = MessageCodec.defaultFactory.of(arg.surface)
+            val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // String parameter to the method argument

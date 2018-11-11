@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.launcher
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 

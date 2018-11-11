@@ -23,12 +23,12 @@ package wvlet.airframe.launcher
 
 import java.lang.reflect.InvocationTargetException
 
-import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
+import wvlet.airframe.codec.{MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
-import wvlet.airframe.surface.reflect.{CName, SurfaceFactory}
-import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
@@ -133,7 +133,7 @@ object Launcher extends LogSupport {
 private[launcher] case class LauncherConfig(
     var withHelpOption: Boolean = true,
     var helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
-    var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
+    var codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // command name -> default action
     var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
       println("Type --help to see the usage")
@@ -288,7 +288,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
         val parseTree_mp = result.parseTree.toMsgPack
         val codec        = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
         val h            = new MessageHolder
-        codec.unpack(wvlet.airframe.msgpack.newUnpacker(parseTree_mp), h)
+        codec.unpack(MessagePack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
           throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")
         }

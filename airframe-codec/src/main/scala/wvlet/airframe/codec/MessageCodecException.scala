@@ -13,28 +13,13 @@
  */
 package wvlet.airframe.codec
 
-import scala.collection.JavaConverters._
+trait CodecErrorCode
+case object INVALID_DATA extends CodecErrorCode
 
 /**
   *
   */
-class CollectionCodecTest extends CodecSpec {
-
-  "CollectionCodec" should {
-    "support Map type" in {
-      val v = Map("id" -> 1)
-      roundtrip(v, DataType.ANY)
-    }
-
-    "support Java Map type" in {
-      val v = Map("id" -> 1).asJava
-      roundtrip(v, DataType.ANY)
-    }
-
-    "support Seq/List type" in {
-      roundtrip(Seq(1, 2, 3), DataType.ANY)
-      roundtrip(List(1, 2, 3), DataType.ANY)
-    }
-  }
-
+class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
+    extends Exception(message) {
+  override def getMessage = s"[${errorCode}] coded:${codec} ${message}"
 }

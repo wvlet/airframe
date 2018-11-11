@@ -11,20 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.text
-
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.msgpack.spi.MessagePack
+package wvlet.airframe.codec
+import wvlet.airframe.surface.Surface
 
 /**
   *
   */
-class JSONObjectPrinterTest extends AirframeSpec {
-
-  "JSONObjectPrinter" should {
-    "allow empty input" in {
-      val unpacker = MessagePack.newUnpacker(Array.empty[Byte])
-      JSONObjectPrinter.read(unpacker) shouldBe "{}"
-    }
-  }
+trait CodecFinder {
+  def findCodec(factory: MessageCodecFactory,
+                seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, MessageCodec[_]]
 }

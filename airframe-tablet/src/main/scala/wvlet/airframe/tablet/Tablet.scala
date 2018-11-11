@@ -1,9 +1,8 @@
 package wvlet.airframe.tablet
 
-import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ArrayValue, MapValue, Value}
 import wvlet.airframe
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.airframe.tablet.text.{CSVTabletPrinter, JSONTabletPrinter, TSVTabletPrinter}
 
@@ -22,7 +21,7 @@ case class ShallowMessagePackRecord(unpacker: Unpacker) extends Record {
 
 case class MessagePackRecord(arr: Array[Byte]) extends Record {
   override def unpacker = {
-    airframe.msgpack.newUnpacker(arr)
+    MessagePack.newUnpacker(arr)
   }
   override def pack(packer: Packer): Unit = {
     packer.addPayload(arr)
@@ -30,9 +29,9 @@ case class MessagePackRecord(arr: Array[Byte]) extends Record {
 }
 case class StringArrayRecord(arr: Seq[String]) extends Record {
   override def unpacker = {
-    val packer = airframe.msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     pack(packer)
-    airframe.msgpack.newUnpacker(packer.toByteArray)
+    MessagePack.newUnpacker(packer.toByteArray)
   }
   override def pack(packer: Packer): Unit = {
     packer.packArrayHeader(arr.length)

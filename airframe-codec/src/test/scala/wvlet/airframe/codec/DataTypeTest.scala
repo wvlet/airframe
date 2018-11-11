@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.codec
 
-import java.util.Locale
-
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.codec.DataType.Column
 
@@ -35,7 +33,7 @@ class DataTypeTest extends AirframeSpec {
       DataType.primitiveTypes should contain(DataType.JSON)
 
       for (p <- DataType.primitiveTypes) {
-        val name = p.toString.toLowerCase(Locale.ENGLISH)
+        val name = p.toString.toLowerCase()
         p.typeName shouldBe name
         p.signature shouldBe name
         p.typeArgs shouldBe empty

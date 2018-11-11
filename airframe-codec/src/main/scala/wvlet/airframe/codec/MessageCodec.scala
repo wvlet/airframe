@@ -13,11 +13,11 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.codec.MessageCodec.ErrorCode
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, Value}
+import wvlet.airframe.surface.Surface
 
-import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
+import scala.language.experimental.macros
 
 trait MessageCodec[A] {
   def pack(p: Packer, v: A): Unit
@@ -27,7 +27,7 @@ trait MessageCodec[A] {
   // def unpackInt(u:MessageUnpacker) : Int
 
   def toMsgPack(v: A): Array[Byte] = {
-    val packer = wvlet.airframe.msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     pack(packer, v)
     packer.toByteArray
   }
@@ -37,7 +37,7 @@ trait MessageCodec[A] {
 
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
-    val unpacker = wvlet.airframe.msgpack.newUnpacker(msgpack, offset, len)
+    val unpacker = MessagePack.newUnpacker(msgpack, offset, len)
     val v        = new MessageHolder
     unpack(unpacker, v)
     if (v.isNull) {
@@ -69,15 +69,7 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
   }
 }
 
-class MessageCodecException[A](val errorCode: ErrorCode, val codec: MessageCodec[A], val message: String)
-    extends Exception(message) {
-  override def getMessage = s"[${errorCode}] coded:${codec} ${message}"
-}
-
 object MessageCodec {
-  trait ErrorCode
-  case object INVALID_DATA extends ErrorCode
-
-  def defaultFactory: MessageCodecFactory = new MessageCodecFactory(StandardCodec.standardCodec)
-  def of[A: ru.TypeTag]: MessageCodec[A]  = defaultFactory.of[A]
+  def of[A]: MessageCodec[A] = macro CodecMacros.codecOf[A]
+  def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.ofSurface(s)
 }

@@ -12,13 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+import wvlet.airframe.surface.Surface
+
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   */
-class MessageCodecFactoryTest extends CodecSpec {
+object Compat {
+  def codecFinder: CodecFinder = JVMCodecFactory
+  def platformSpecificCodecs: Map[Surface, MessageCodec[_]] =
+    JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 
-  "MessageCodecFactory" should {}
+  def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
 }
-
-object MessageCodecFactoryTest {}

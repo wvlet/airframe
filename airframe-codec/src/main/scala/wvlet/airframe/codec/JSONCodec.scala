@@ -15,8 +15,7 @@ package wvlet.airframe.codec
 
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.JSONValue
-import wvlet.airframe.msgpack
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
 
 /**
   *
@@ -29,7 +28,7 @@ object JSONCodec extends MessageCodec[String] {
   }
 
   def toMsgPack(jsonBytes: Array[Byte]): Array[Byte] = {
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     packJsonValue(packer, JSON.parse(jsonBytes))
     packer.toByteArray
   }
