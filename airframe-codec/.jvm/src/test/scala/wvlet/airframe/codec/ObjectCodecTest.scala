@@ -22,18 +22,18 @@ import wvlet.airframe.msgpack.spi.MessagePack
 class ObjectCodecTest extends CodecSpec {
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
-  "support case classes" in {
-    val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
-    roundtrip(codec, v, DataType.ANY)
-
-    forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
-      // scalacheck supports only up to 6 elements
-      forAll { (b: Boolean, s: String) =>
-        val v = A1(i, l, f, d, c, st, b, s)
-        roundtrip[A1](codec, v, DataType.ANY)
-      }
-    }
-  }
+//  "support case classes" in {
+//    val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
+//    roundtrip(codec, v, DataType.ANY)
+//
+//    forAll { (i: Int, l: Long, f: Float, d: Double, c: Char, st: Short) =>
+//      // scalacheck supports only up to 6 elements
+//      forAll { (b: Boolean, s: String) =>
+//        val v = A1(i, l, f, d, c, st, b, s)
+//        roundtrip[A1](codec, v, DataType.ANY)
+//      }
+//    }
+//  }
 
   "support reading map value" in {
     val v: A1  = A1(1, 2, 3, 4, 5, 6, true, "str")

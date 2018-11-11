@@ -15,13 +15,51 @@ package wvlet.airframe.codec
 
 import java.math.BigInteger
 
+import org.scalacheck.Arbitrary
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface
+import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 
 /**
   *
   */
-class PrimitiveCodecTest extends CodecSpec {
+class PrimitiveCodecTest extends CodecSpec with GeneratorDrivenPropertyChecks {
+  import scala.collection.JavaConverters._
+
+  def roundTripTest[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
+    forAll { (v: T) =>
+      roundtrip(surface, v, dataType)
+    }
+  }
+
+  def arrayRoundTripTest[T](surface: Surface)(implicit impArb: Arbitrary[Array[T]]): Unit = {
+    val codec = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
+    val seqCodec =
+      MessageCodec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
+    val javaListCodec = MessageCodec
+      .ofSurface(new GenericSurface(classOf[java.util.List[_]], Seq(surface))).asInstanceOf[MessageCodec[
+        java.util.List[T]]]
+    forAll { (v: Array[T]) =>
+      // Array round trip
+      roundtrip(codec, v, DataType.ANY)
+      // Seq -> Array
+      roundtrip(seqCodec, v.toSeq, DataType.ANY)
+      // java.util.List[T] -> Array
+      roundtrip(javaListCodec, v.toSeq.asJava, DataType.ANY)
+    }
+  }
+
+  def roundTripTestWithStr[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
+    val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[T]]
+    forAll { (v: T) =>
+      // Test input:T -> output:T
+      roundtrip(codec, v, dataType)
+      // Test from input:String -> output:T
+      roundtripStr(codec, v, dataType)
+    }
+  }
+
   "PrimitiveCodec" should {
 
     "support numeric" in {
