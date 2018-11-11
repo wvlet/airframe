@@ -1,7 +1,6 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
-import wvlet.airframe.codec.StandardCodec.EnumCodec
 import wvlet.airframe.surface
 import wvlet.airframe.surface.{EnumSurface, Surface}
 
@@ -27,8 +26,6 @@ object MessageCodecFactory {
       // Option type
       val elementSurface = s.typeArgs(0)
       OptionCodec(factory.ofSurface(elementSurface, seenSet))
-    case EnumSurface(cl) =>
-      EnumCodec(cl)
   }
 }
 

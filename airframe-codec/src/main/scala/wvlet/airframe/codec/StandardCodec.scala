@@ -72,23 +72,4 @@ object StandardCodec {
     // We do not support deserialization of generic Throwable classes
     override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
-
-  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
-    private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[Class[_]], classOf[String])
-
-    override def pack(p: Packer, v: A): Unit = {
-      p.packString(v.asInstanceOf[Enum[_]].name())
-    }
-
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val name = u.unpackString
-
-      Try(enumValueOfMethod.invoke(null, enumType, name)) match {
-        case Success(enum) => v.setObject(enum)
-        case _ =>
-          v.setIncompatibleFormatException(this, s"${name} is not a value of ${enumType}")
-      }
-    }
-  }
-
 }

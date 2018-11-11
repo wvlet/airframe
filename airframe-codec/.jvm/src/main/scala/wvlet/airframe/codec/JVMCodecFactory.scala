@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.codec
 import wvlet.airframe.codec.CollectionCodec.{IndexedSeqCodec, ListCodec, SeqCodec}
+import wvlet.airframe.codec.JavaStandardCodec.EnumCodec
 import wvlet.airframe.codec.ScalaStandardCodec.TupleCodec
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
-import wvlet.airframe.surface.{GenericSurface, Surface}
+import wvlet.airframe.surface.{EnumSurface, GenericSurface, Surface}
 
 /**
   *
@@ -24,6 +25,8 @@ object JVMCodecFactory extends CodecFinder {
 
   def findCodec(factory: MessageCodecFactory,
                 seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, MessageCodec[_]] = {
+    case EnumSurface(cl) =>
+      EnumCodec(cl)
     case s if ReflectTypeUtil.isTuple(s.rawType) =>
       TupleCodec(s.typeArgs.map(x => factory.ofSurface(x)))
     case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>

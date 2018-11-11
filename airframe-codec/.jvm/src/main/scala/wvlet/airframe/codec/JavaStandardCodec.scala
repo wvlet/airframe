@@ -17,6 +17,9 @@ import java.io.File
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
+
+import scala.util.{Success, Try}
 
 /**
   *
@@ -36,4 +39,23 @@ object JavaStandardCodec {
       v.setObject(new File(path))
     }
   }
+
+  case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
+    private val enumValueOfMethod = classOf[Enum[_]].getDeclaredMethod("valueOf", classOf[Class[_]], classOf[String])
+
+    override def pack(p: Packer, v: A): Unit = {
+      p.packString(v.asInstanceOf[Enum[_]].name())
+    }
+
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val name = u.unpackString
+
+      Try(enumValueOfMethod.invoke(null, enumType, name)) match {
+        case Success(enum) => v.setObject(enum)
+        case _ =>
+          v.setIncompatibleFormatException(this, s"${name} is not a value of ${enumType}")
+      }
+    }
+  }
+
 }
