@@ -11,18 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
-
-import wvlet.airframe.msgpack.spi.{BufferPacker, Packer, Unpacker}
 
 /**
   *
   */
-package object msgpack {
-  def newBufferPacker: BufferPacker                                      = ???
-  def newPacker(out: OutputStream): Packer                               = ???
-  def newUnpacker(in: InputStream): Unpacker                             = ???
-  def newUnpacker(msgpack: Array[Byte]): Unpacker                        = ???
-  def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = ???
+object MessagePack {
+  def newBufferPacker: BufferPacker                                      = Compat.newBufferPacker
+  def newPacker(out: OutputStream): Packer                               = Compat.newPacker(out)
+  def newUnpacker(in: InputStream): Unpacker                             = Compat.newUnpacker(in)
+  def newUnpacker(msgpack: Array[Byte]): Unpacker                        = Compat.newUnpacker(msgpack)
+  def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = Compat.newUnpacker(msgpack, offset, len)
 }

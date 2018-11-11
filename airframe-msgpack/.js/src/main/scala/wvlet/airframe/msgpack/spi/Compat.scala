@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.msgpack.spi
+import java.io.{InputStream, OutputStream}
 
 /**
-  *
+  * Compatibility layer for Scala.js
   */
 object Compat {
   def isScalaJS = true
@@ -23,4 +24,10 @@ object Compat {
   // See https://github.com/scala-js/scala-js/issues/2327
   def floatToIntBits(v: Float): Int     = java.lang.Float.floatToIntBits(v)
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToLongBits(v)
+
+  def newBufferPacker: BufferPacker                                      = ???
+  def newPacker(out: OutputStream): Packer                               = ???
+  def newUnpacker(in: InputStream): Unpacker                             = ???
+  def newUnpacker(msgpack: Array[Byte]): Unpacker                        = ???
+  def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = ???
 }
