@@ -12,17 +12,28 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import java.io.File
 
-import scala.reflect.runtime.{universe => ru}
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 /**
   *
   */
-object Compat {
-  def codecFinder: CodecFinder = JVMCodecFactory
-  def platformSpecificCodecs: Map[Surface, MessageCodec[_]] =
-    JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
+object JavaStandardCodec {
 
-  def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
+  val javaStandardCodecs: Map[Surface, MessageCodec[_]] = Map(
+    surface.of[File] -> FileCodec
+  )
+
+  object FileCodec extends MessageCodec[File] {
+    override def pack(p: Packer, v: File): Unit = {
+      p.packString(v.getPath)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      val path = u.unpackString
+      v.setObject(new File(path))
+    }
+  }
 }

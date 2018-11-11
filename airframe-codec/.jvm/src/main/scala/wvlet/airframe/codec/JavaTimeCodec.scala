@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.text.DateFormat
 import java.time.{Instant, ZonedDateTime}
 import java.util.Date
 
@@ -87,8 +86,6 @@ object JavaTimeCodec {
   }
 
   object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
-    private val format = DateFormat.getInstance()
-
     override def pack(p: Packer, v: Date): Unit = {
       // Use Instant for encoding
       JavaInstantTimeCodec.pack(p, v.toInstant)

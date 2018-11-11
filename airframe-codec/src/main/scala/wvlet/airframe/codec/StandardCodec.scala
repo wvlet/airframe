@@ -28,7 +28,6 @@ import scala.util.{Success, Try}
 object StandardCodec {
 
   val javaClassCodec = Map(
-    surface.of[File]      -> FileCodec,
     surface.of[Throwable] -> ThrowableCodec,
     surface.of[Exception] -> ThrowableCodec
   )
@@ -72,16 +71,6 @@ object StandardCodec {
     }
     // We do not support deserialization of generic Throwable classes
     override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
-  }
-
-  object FileCodec extends MessageCodec[File] {
-    override def pack(p: Packer, v: File): Unit = {
-      p.packString(v.getPath)
-    }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val path = u.unpackString
-      v.setObject(new File(path))
-    }
   }
 
   case class EnumCodec[A](enumType: Class[A]) extends MessageCodec[A] with LogSupport {
