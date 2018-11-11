@@ -14,12 +14,13 @@
 package wvlet.airframe.launcher
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.codec.{MessageCodec, MessageHolder}
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
   *
   */
 object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
-  override def pack(p: MessagePacker, v: ValueHolder[_]): Unit = {
+  override def pack(p: Packer, v: ValueHolder[_]): Unit = {
     v match {
       case ValueHolder.Empty =>
         // For nested objects, we should use an empty Map to use default values
@@ -41,5 +42,5 @@ object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
     }
   }
 
-  override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = ???
+  override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
 }

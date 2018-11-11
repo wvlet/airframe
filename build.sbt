@@ -445,6 +445,9 @@ lazy val msgpack =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
+    .jvmSettings(
+      libraryDependencies += "org.msgpack" % "msgpack-core" % "0.8.16"
+    )
     .jsSettings(
       jsBuildSettings,
       libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5"
@@ -462,8 +465,7 @@ lazy val codec =
       name := "airframe-codec",
       description := "Airframe MessagePack-based codec",
       libraryDependencies ++= Seq(
-        "org.msgpack"    % "msgpack-core" % "0.8.14",
-        "org.scalacheck" %% "scalacheck"  % SCALACHECK_VERSION % "test"
+        "org.scalacheck" %% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
     .dependsOn(logJVM, surfaceJVM, msgpackJVM, jsonJVM, airframeSpecJVM % "test")

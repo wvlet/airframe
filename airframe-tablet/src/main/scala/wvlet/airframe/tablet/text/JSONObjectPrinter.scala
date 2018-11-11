@@ -14,6 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import org.msgpack.core.MessageUnpacker
+import wvlet.airframe.msgpack.spi.Unpacker
 import wvlet.airframe.tablet.{Record, TabletWriter}
 import wvlet.log.LogSupport
 
@@ -22,11 +23,11 @@ import wvlet.log.LogSupport
   */
 object JSONObjectPrinter extends TabletWriter[String] with LogSupport {
 
-  def read(unpacker: MessageUnpacker): String = {
+  def read(unpacker: Unpacker): String = {
     if (!unpacker.hasNext) {
       "{}"
     } else {
-      unpacker.unpackValue().toJson
+      unpacker.unpackValue.toJson
     }
   }
 

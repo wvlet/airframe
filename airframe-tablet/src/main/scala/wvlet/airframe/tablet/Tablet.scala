@@ -2,37 +2,39 @@ package wvlet.airframe.tablet
 
 import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import org.msgpack.value.{ArrayValue, MapValue, Value}
+import wvlet.airframe
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.airframe.tablet.text.{CSVTabletPrinter, JSONTabletPrinter, TSVTabletPrinter}
 
 import scala.reflect.runtime.{universe => ru}
 
 trait Record {
-  def pack(packer: MessagePacker): Unit
-  def unpacker: MessageUnpacker
+  def pack(packer: Packer): Unit
+  def unpacker: Unpacker
 }
 
-case class ShallowMessagePackRecord(unpacker: MessageUnpacker) extends Record {
-  override def pack(packer: MessagePacker): Unit = {
+case class ShallowMessagePackRecord(unpacker: Unpacker) extends Record {
+  override def pack(packer: Packer): Unit = {
     throw new UnsupportedOperationException("pack is not supported")
   }
 }
 
 case class MessagePackRecord(arr: Array[Byte]) extends Record {
   override def unpacker = {
-    MessagePack.newDefaultUnpacker(arr)
+    airframe.msgpack.newUnpacker(arr)
   }
-  override def pack(packer: MessagePacker): Unit = {
+  override def pack(packer: Packer): Unit = {
     packer.addPayload(arr)
   }
 }
 case class StringArrayRecord(arr: Seq[String]) extends Record {
   override def unpacker = {
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = airframe.msgpack.newBufferPacker
     pack(packer)
-    MessagePack.newDefaultUnpacker(packer.toByteArray)
+    airframe.msgpack.newUnpacker(packer.toByteArray)
   }
-  override def pack(packer: MessagePacker): Unit = {
+  override def pack(packer: Packer): Unit = {
     packer.packArrayHeader(arr.length)
     arr.foreach(v => packer.packString(v))
   }
@@ -98,7 +100,7 @@ object Tablet {
 object NullTabletWriter extends TabletWriter[Unit] {
   override def write(record: Record): Unit = {
     val u = record.unpacker
-    u.skipValue()
+    u.skipValue
   }
 
   override def close(): Unit = {}

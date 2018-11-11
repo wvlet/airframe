@@ -13,9 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import org.msgpack.core.MessageUnpacker
-import org.msgpack.value.ValueType
 import wvlet.airframe.json.JSON
+import wvlet.airframe.msgpack.spi.{Unpacker, ValueType}
 import wvlet.airframe.tablet.{Record, TabletWriter}
 
 object TextTabletWriter {
@@ -140,7 +139,7 @@ import wvlet.airframe.tablet.text.TextTabletWriter._
   */
 class TabletPrinter(val formatter: RecordFormatter) extends TabletWriter[String] {
 
-  def read(unpacker: MessageUnpacker, depth: Int): String = {
+  def read(unpacker: Unpacker, depth: Int): String = {
     if (!unpacker.hasNext) {
       ""
     } else {
@@ -151,7 +150,7 @@ class TabletPrinter(val formatter: RecordFormatter) extends TabletWriter[String]
           // TODO Switch output mode: empty string or "null"
           "null"
         case ValueType.BOOLEAN =>
-          val b = unpacker.unpackBoolean()
+          val b = unpacker.unpackBoolean
           if (b) "true" else "false"
         case ValueType.INTEGER =>
           unpacker.unpackLong.toString
@@ -161,11 +160,11 @@ class TabletPrinter(val formatter: RecordFormatter) extends TabletWriter[String]
           val s = unpacker.unpackString
           formatter.sanitize(s)
         case ValueType.BINARY =>
-          val b = unpacker.unpackValue()
+          val b = unpacker.unpackValue
           // TODO formatting
           formatter.sanitize(b.toJson)
         case ValueType.ARRAY =>
-          val arrSize = unpacker.unpackArrayHeader()
+          val arrSize = unpacker.unpackArrayHeader
           val r       = Seq.newBuilder[String]
           var i       = 0
           while (i < arrSize) {
@@ -179,7 +178,7 @@ class TabletPrinter(val formatter: RecordFormatter) extends TabletWriter[String]
             formatter.sanitizeEmbedded(formatter.format(r.result()))
           }
         case ValueType.MAP =>
-          formatter.sanitizeEmbedded(unpacker.unpackValue().toJson)
+          formatter.sanitizeEmbedded(unpacker.unpackValue.toJson)
         case ValueType.EXTENSION =>
           "null"
       }
