@@ -199,7 +199,7 @@ object PrimitiveCodec {
         try {
           v.setInt(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for an Int value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -417,7 +417,7 @@ object PrimitiveCodec {
         try {
           v.setDouble(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setDouble(e.getBigInteger.doubleValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
