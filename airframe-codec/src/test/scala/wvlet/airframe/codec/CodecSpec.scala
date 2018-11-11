@@ -30,7 +30,7 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
 
   def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
-    trace(s"Testing roundtrip of ${v} with ${codec}")
+    debug(s"Testing roundtrip of ${v} with ${codec}")
     val packer = msgpack.newBufferPacker
     codec.pack(packer, v)
     val unpacker = msgpack.newUnpacker(packer.toByteArray)

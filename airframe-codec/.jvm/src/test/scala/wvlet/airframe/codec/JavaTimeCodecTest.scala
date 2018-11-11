@@ -26,9 +26,9 @@ class JavaTimeCodecTest extends CodecSpec {
     val i       = Instant.parse(timeStr)
     roundtrip(surface.of[Instant], i)
 
-    roundtrip(Instant.ofEpochMilli(0))
-    roundtrip(Instant.ofEpochMilli(14000000))
-    roundtrip(now)
+    roundtrip(surface.of[Instant], Instant.ofEpochMilli(0))
+    roundtrip(surface.of[Instant], Instant.ofEpochMilli(14000000))
+    roundtrip(surface.of[Instant], now)
 
     val codec = MessageCodec.of[Seq[Instant]]
     val p     = msgpack.newBufferPacker

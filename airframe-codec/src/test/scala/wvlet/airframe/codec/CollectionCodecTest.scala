@@ -30,7 +30,7 @@ class CollectionCodecTest extends CodecSpec {
 
     "support Java Map type" in {
       val v = Map("id" -> 1).asJava
-      roundtrip(surface.of[Map[String, Int]], v, DataType.ANY)
+      roundtrip(surface.of[java.util.Map[String, Int]], v, DataType.ANY)
     }
 
     "support Seq/List type" in {
