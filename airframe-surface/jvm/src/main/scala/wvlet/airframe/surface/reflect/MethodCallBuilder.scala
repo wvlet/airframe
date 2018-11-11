@@ -16,9 +16,9 @@ package wvlet.airframe.surface.reflect
 /**
   *
   */
-import wvlet.log.LogSupport
-import wvlet.airframe.surface.{MethodParameter, MethodSurface, Zero}
 import wvlet.airframe.surface.CanonicalNameFormatter._
+import wvlet.airframe.surface.{CName, MethodParameter, MethodSurface, Zero}
+import wvlet.log.LogSupport
 
 //--------------------------------------
 //

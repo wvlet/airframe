@@ -14,9 +14,6 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
-import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.TypeConverter
-import wvlet.log.LogSupport
 
 /**
   *
@@ -195,21 +192,6 @@ object ScalaStandardCodec {
         } else {
           v.setIncompatibleFormatException(this, s"Tuples of ${numElems} elements is not supported")
         }
-      }
-    }
-  }
-
-  class UnapplyFromStringCodec[A](codec: Surface) extends MessageCodec[A] with LogSupport {
-    override def pack(p: Packer, v: A): Unit = {
-      p.packString(v.toString)
-    }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val s = u.unpackString
-      TypeConverter.convert(s, codec.rawType) match {
-        case Some(x) =>
-          v.setObject(x)
-        case None =>
-          v.setNull
       }
     }
   }

@@ -13,13 +13,12 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.MessagePack
 import org.scalacheck.Arbitrary
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import wvlet.airframe.{AirframeSpec, msgpack}
 
-import scala.reflect.runtime.{universe => ru}
 import scala.collection.JavaConverters._
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *

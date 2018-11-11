@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package wvlet.airframe.surface.reflect
+package wvlet.airframe.surface
 
 import java.util.regex.Pattern
 

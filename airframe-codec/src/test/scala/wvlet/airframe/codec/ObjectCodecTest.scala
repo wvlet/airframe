@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.MessagePack
-import ObjectCodecTest._
+import wvlet.airframe.codec.ObjectCodecTest._
 import wvlet.airframe.msgpack
 
 /**
@@ -52,7 +51,7 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   "populate the default value when missing" in {
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = msgpack.newBufferPacker
     packer.packMapHeader(1)
     packer.packString("i")
     packer.packInt(10)
@@ -69,8 +68,7 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   "populate case class with Option" in {
-    val codecFactory = MessageCodec.defaultFactory.withObjectMapCodec
-    val codec        = codecFactory.of[A3]
+    val codec = MessageCodec.of[A3]
 
     {
       val msgpack = JSONCodec.toMsgPack("""{"opt":null, "str":"hello"}""")

@@ -128,7 +128,7 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   jmx,
   launcher,
   metricsJVM,
-  codec,
+  codecJVM,
   tablet,
   jdbc,
   msgpackJVM,
@@ -152,6 +152,7 @@ lazy val jsProjects: Seq[ProjectReference] = List(
   airframeSpecJS,
   controlJS,
   metricsJS,
+  codecJS,
   msgpackJS,
   jsonJS
 )
@@ -373,7 +374,7 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, controlJVM, codec, airframeSpecJVM % "test")
+    .dependsOn(surfaceJVM, controlJVM, codecJVM, airframeSpecJVM % "test")
 
 // airframe-log should have minimum dependencies
 lazy val log =
@@ -458,7 +459,8 @@ lazy val msgpackJVM = msgpack.jvm
 lazy val msgpackJS  = msgpack.js
 
 lazy val codec =
-  project
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-codec"))
     .settings(buildSettings)
     .settings(
@@ -468,7 +470,13 @@ lazy val codec =
         "org.scalacheck" %% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
-    .dependsOn(logJVM, surfaceJVM, msgpackJVM, jsonJVM, airframeSpecJVM % "test")
+    .jsSettings(
+      jsBuildSettings
+    )
+    .dependsOn(log, surface, msgpack, json, airframeSpec % "test")
+
+lazy val codecJVM = codec.jvm
+lazy val codecJS = codec.js
 
 lazy val tablet =
   project
@@ -488,7 +496,7 @@ lazy val tablet =
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
     )
-    .dependsOn(codec, logJVM, surfaceJVM, airframeSpecJVM % "test")
+    .dependsOn(codecJVM, logJVM, surfaceJVM, airframeSpecJVM % "test")
 
 lazy val jdbc =
   project
@@ -538,7 +546,7 @@ lazy val http =
                airframeMacrosJVM % "compile-internal,test-internal",
                surfaceJVM,
                jsonJVM,
-               codec,
+               codecJVM,
                airframeSpecJVM % "test")
 
 val FINAGLE_VERSION = "18.8.0"
@@ -611,4 +619,4 @@ lazy val fluentd =
         "org.xerial" %% "fluentd-standalone" % "1.2.6.1" % "test"
       )
     )
-    .dependsOn(codec, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
+    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")

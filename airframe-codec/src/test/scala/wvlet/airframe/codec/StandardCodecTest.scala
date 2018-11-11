@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.io.File
 import java.time.{Instant, ZonedDateTime}
 
-import org.msgpack.core.MessagePack
+import wvlet.airframe.msgpack
 
 /**
   *
@@ -46,7 +46,7 @@ class StandardCodecTest extends CodecSpec {
       roundtrip(now)
 
       val codec = MessageCodec.of[Seq[Instant]]
-      val p     = MessagePack.newDefaultBufferPacker()
+      val p     = msgpack.newBufferPacker
 
       val epochSecond = Instant.ofEpochMilli(now.getEpochSecond)
       p.packArrayHeader(4)
@@ -65,7 +65,7 @@ class StandardCodecTest extends CodecSpec {
       roundtrip(ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
 
       val codec = MessageCodec.of[ZonedDateTime]
-      val p     = MessagePack.newDefaultBufferPacker()
+      val p     = msgpack.newBufferPacker
       p.packString("non-date string")
       val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty
@@ -82,7 +82,7 @@ class StandardCodecTest extends CodecSpec {
       }
 
       val codec = MessageCodec.of[TestEnum]
-      val p     = MessagePack.newDefaultBufferPacker()
+      val p     = msgpack.newBufferPacker
       p.packString("ABORTED") // non-existing enum type
       val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty

@@ -15,8 +15,7 @@ package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.reflect.CName
-import wvlet.airframe.surface.{MethodParameter, Parameter, Surface, Zero}
+import wvlet.airframe.surface._
 
 import scala.util.{Failure, Success, Try}
 

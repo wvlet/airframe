@@ -27,7 +27,7 @@ import org.msgpack.core.MessagePack
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
-import wvlet.airframe.surface.reflect.{CName, SurfaceFactory}
+import wvlet.airframe.surface.reflect.SurfaceFactory
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
