@@ -15,14 +15,15 @@ package wvlet.airframe.msgpack.impl
 import java.math.BigInteger
 import java.time.Instant
 
-import org.msgpack.core.MessageUnpacker
+import org.msgpack.core.{MessageIntegerOverflowException, MessageUnpacker}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi._
 
 import scala.collection.immutable.ListMap
 
 /**
-  * A bridge implementation with msgpack-core MessageUnpacker
+  * A bridge implementation with msgpack-core MessageUnpacker.
+  * TODO: Use pure-Scala impl
   */
 class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   override def hasNext: Boolean = {
@@ -43,6 +44,21 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
     unpacker.skipValue(count)
   }
 
+  /**
+    * Convert MessagePack exceptions into msgpack SPI's one
+    * @param body
+    * @tparam A
+    * @return
+    */
+  private def wrapOverflowException[A](body: => A): A = {
+    try {
+      body
+    } catch {
+      case e: MessageIntegerOverflowException =>
+        throw IntegerOverflowException(e.getBigInteger)
+    }
+  }
+
   override def unpackNil: Unit = {
     unpacker.unpackNil()
   }
@@ -50,28 +66,44 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
     unpacker.tryUnpackNil()
   }
   override def unpackBoolean: Boolean = {
-    unpacker.unpackBoolean()
+    wrapOverflowException {
+      unpacker.unpackBoolean()
+    }
   }
   override def unpackByte: Byte = {
-    unpacker.unpackByte()
+    wrapOverflowException {
+      unpacker.unpackByte()
+    }
   }
   override def unpackShort: Short = {
-    unpacker.unpackShort()
+    wrapOverflowException {
+      unpacker.unpackShort()
+    }
   }
   override def unpackInt: Int = {
-    unpacker.unpackInt()
+    wrapOverflowException {
+      unpacker.unpackInt()
+    }
   }
   override def unpackLong: Long = {
-    unpacker.unpackLong()
+    wrapOverflowException {
+      unpacker.unpackLong()
+    }
   }
   override def unpackBigInteger: BigInteger = {
-    unpacker.unpackBigInteger()
+    wrapOverflowException {
+      unpacker.unpackBigInteger()
+    }
   }
   override def unpackFloat: Float = {
-    unpacker.unpackFloat()
+    wrapOverflowException {
+      unpacker.unpackFloat()
+    }
   }
   override def unpackDouble: Double = {
-    unpacker.unpackDouble()
+    wrapOverflowException {
+      unpacker.unpackDouble()
+    }
   }
   override def unpackString: String = {
     unpacker.unpackString()
@@ -105,7 +137,9 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
     unpacker.unpackBinaryHeader()
   }
   override def unpackValue: Value = {
-    UnpackerImpl.fromMsgPackV8Value(unpacker.unpackValue())
+    wrapOverflowException {
+      UnpackerImpl.fromMsgPackV8Value(unpacker.unpackValue())
+    }
   }
 //  override def skipPayload(numBytes: Int): Unit                              = {
 //    unpacker.skipPayload()

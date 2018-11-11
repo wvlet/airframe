@@ -15,7 +15,6 @@ package wvlet.airframe.codec
 
 import java.util
 
-import org.msgpack.core.{MessagePacker, MessageUnpacker}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.{Surface, Zero}
 

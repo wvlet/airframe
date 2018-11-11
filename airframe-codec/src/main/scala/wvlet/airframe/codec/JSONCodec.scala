@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessagePack, MessagePacker, MessageUnpacker}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.msgpack

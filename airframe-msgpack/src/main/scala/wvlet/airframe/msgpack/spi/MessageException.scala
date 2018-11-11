@@ -42,7 +42,9 @@ case class InsufficientBufferException(currentPosition: Int, expectedLength: Int
   * that is larger than Integer.MAX_VALUE will cause this exception.
   */
 case class IntegerOverflowException(bigInteger: BigInteger)
-    extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}")
+    extends MessageException(ErrorCode.INTEGER_OVERFLOW, s"Too large integer: ${bigInteger}") {
+  def getBigInteger = bigInteger
+}
 case class TooLargeMessageException(size: Long)
     extends MessageException(ErrorCode.TOO_LARGE_MESSAGE, s"Too large message size: ${size}")
 

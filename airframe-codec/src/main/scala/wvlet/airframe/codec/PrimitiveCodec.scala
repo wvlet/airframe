@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import org.msgpack.core.{MessageIntegerOverflowException, MessagePacker, MessageUnpacker}
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import wvlet.airframe.msgpack.spi.{IntegerOverflowException, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface
 import wvlet.airframe.surface.{Primitive, Surface}
 
@@ -72,7 +71,7 @@ object PrimitiveCodec {
         try {
           v.setByte(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Byte value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -115,7 +114,7 @@ object PrimitiveCodec {
         try {
           v.setChar(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Char value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -158,7 +157,7 @@ object PrimitiveCodec {
         try {
           v.setShort(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Short value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -243,7 +242,7 @@ object PrimitiveCodec {
         try {
           v.setLong(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setIncompatibleFormatException(this, s"${e.getBigInteger} is too large for a Long value")
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -290,7 +289,7 @@ object PrimitiveCodec {
           val s = body
           v.setString(s)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             read(e.getBigInteger.toString())
           case e: NumberFormatException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -337,7 +336,7 @@ object PrimitiveCodec {
           val b = body
           v.setBoolean(b)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setBoolean(e.getBigInteger.doubleValue() != 0.0)
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
@@ -379,7 +378,7 @@ object PrimitiveCodec {
         try {
           v.setFloat(body)
         } catch {
-          case e: MessageIntegerOverflowException =>
+          case e: IntegerOverflowException =>
             v.setFloat(e.getBigInteger.floatValue())
           case e: IllegalArgumentException =>
             v.setIncompatibleFormatException(this, e.getMessage)
