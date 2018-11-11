@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.codec.{JSONCodec, Codec, MessageCodecFactory}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -92,8 +92,8 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         // Convert the response object into JSON
         val rs = mapCodecFactory.of(responseSurface)
         val bytes: Array[Byte] = rs match {
-          case m: Codec[_] =>
-            m.asInstanceOf[Codec[A]].toMsgPack(a)
+          case m: MessageCodec[_] =>
+            m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
           case _ =>
             throw new IllegalArgumentException(s"Unknown codec: ${rs}")
         }

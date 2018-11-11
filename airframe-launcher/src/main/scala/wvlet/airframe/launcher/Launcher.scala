@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException
 import wvlet.airframe.codec.{MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.SurfaceFactory
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
@@ -287,7 +288,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
         val parseTree_mp = result.parseTree.toMsgPack
         val codec        = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
         val h            = new MessageHolder
-        codec.unpack(wvlet.airframe.msgpack.newUnpacker(parseTree_mp), h)
+        codec.unpack(MessagePack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
           throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")
         }

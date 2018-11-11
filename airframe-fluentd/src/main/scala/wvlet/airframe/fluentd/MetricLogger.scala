@@ -14,15 +14,16 @@
 package wvlet.airframe.fluentd
 
 import wvlet.airframe._
-import wvlet.airframe.codec.{Codec, MessageCodecFactory}
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.msgpack.spi.MessagePack
 
 import scala.reflect.runtime.{universe => ru}
 
 /**
   * Object based metric logger. This automatically converts object into Map type values
   */
-class MetricLogger[A](tag: String, codec: Codec[A], fluentdClient: FluentdClient) {
-  private val packer = msgpack.newBufferPacker
+class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: FluentdClient) {
+  private val packer = MessagePack.newBufferPacker
 
   def emit(metric: A): Unit = {
     // packer is non-thread safe

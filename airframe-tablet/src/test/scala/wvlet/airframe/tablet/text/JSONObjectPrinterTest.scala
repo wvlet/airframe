@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.{AirframeSpec, msgpack}
+import wvlet.airframe.AirframeSpec
+import wvlet.airframe.msgpack.spi.MessagePack
 
 /**
   *
@@ -22,7 +23,7 @@ class JSONObjectPrinterTest extends AirframeSpec {
 
   "JSONObjectPrinter" should {
     "allow empty input" in {
-      val unpacker = msgpack.newUnpacker(Array.empty[Byte])
+      val unpacker = MessagePack.newUnpacker(Array.empty[Byte])
       JSONObjectPrinter.read(unpacker) shouldBe "{}"
     }
   }

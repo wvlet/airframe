@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{JSONCodec, Codec, MessageHolder, ObjectCodec}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder, ObjectCodec}
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.tablet.MessagePackRecord
 import wvlet.airframe.{msgpack, surface}
 
@@ -26,7 +26,7 @@ import scala.reflect.runtime.{universe => ru}
 case class ObjectJSONCodec[A](codec: ObjectCodec[A]) {
 
   def toJSON(v: A): String = {
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     codec.packAsMap(packer, v)
     val bytes = packer.toByteArray
     JSONObjectPrinter.write(MessagePackRecord(bytes))

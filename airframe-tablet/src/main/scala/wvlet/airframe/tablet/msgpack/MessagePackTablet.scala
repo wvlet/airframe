@@ -16,8 +16,7 @@ package wvlet.airframe.tablet.msgpack
 import java.io.{FileInputStream, FileOutputStream}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
-import wvlet.airframe.msgpack
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
 import wvlet.airframe.tablet.{Record, ShallowMessagePackRecord, TabletReader, TabletWriter}
 import wvlet.log.LogSupport
 
@@ -27,11 +26,11 @@ import wvlet.log.LogSupport
 object MessagePackTablet {
 
   def msgpackGzReader(file: String): TabletReader = {
-    new MessagePackTabletReader(msgpack.newUnpacker(new GZIPInputStream(new FileInputStream(file))))
+    new MessagePackTabletReader(MessagePack.newUnpacker(new GZIPInputStream(new FileInputStream(file))))
   }
 
   def msgpackGzWriter(file: String): TabletWriter[Unit] = {
-    new MessagePackTabletWriter(msgpack.newPacker(new GZIPOutputStream(new FileOutputStream(file))))
+    new MessagePackTabletWriter(MessagePack.newPacker(new GZIPOutputStream(new FileOutputStream(file))))
   }
 
 }
