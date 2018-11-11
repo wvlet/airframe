@@ -41,7 +41,7 @@ case class ObjectJSONCodec[A](codec: ObjectCodec[A]) {
 object ObjectJSONCodec {
 
   def of[A: ru.TypeTag]: ObjectJSONCodec[A] = {
-    Codec.of[A] match {
+    MessageCodec.of[A] match {
       case oc: ObjectCodec[A] => new ObjectJSONCodec[A](oc)
       case _ =>
         throw new IllegalArgumentException(s"${surface.of[A]} has no ObjectCodec")

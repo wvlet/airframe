@@ -17,6 +17,7 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
 import wvlet.airframe.surface.Surface
 
 import scala.util.{Failure, Success, Try}
+import scala.language.experimental.macros
 
 trait MessageCodec[A] {
   def pack(p: Packer, v: A): Unit
@@ -66,4 +67,9 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
         v.setError(e)
     }
   }
+}
+
+object MessageCodec {
+  def of[A]: MessageCodec[A] = macro CodecMacros.codecOf[A]
+  def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.ofSurface(s)
 }

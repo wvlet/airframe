@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
   */
 trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
-    roundtrip[A](Codec.ofSurface(surface).asInstanceOf[MessageCodec[A]], v, expectedType)
+    roundtrip[A](MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[A]], v, expectedType)
   }
 
   def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
@@ -72,10 +72,10 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   }
 
   def arrayRoundTripTest[T](surface: Surface)(implicit impArb: Arbitrary[Array[T]]): Unit = {
-    val codec = Codec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
+    val codec = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
     val seqCodec =
-      Codec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
-    val javaListCodec = Codec
+      MessageCodec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
+    val javaListCodec = MessageCodec
       .ofSurface(new GenericSurface(classOf[java.util.List[_]], Seq(surface))).asInstanceOf[MessageCodec[
         java.util.List[T]]]
     forAll { (v: Array[T]) =>
@@ -89,7 +89,7 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   }
 
   def roundTripTestWithStr[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
-    val codec = Codec.ofSurface(surface).asInstanceOf[MessageCodec[T]]
+    val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[T]]
     forAll { (v: T) =>
       // Test input:T -> output:T
       roundtrip(codec, v, dataType)

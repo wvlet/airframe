@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
 /**
   *
   */
-class StringUnapplyCodec[A](codec: Surface) extends Codec[A] with LogSupport {
+class StringUnapplyCodec[A](codec: Surface) extends MessageCodec[A] with LogSupport {
   override def pack(p: Packer, v: A): Unit = {
     p.packString(v.toString)
   }

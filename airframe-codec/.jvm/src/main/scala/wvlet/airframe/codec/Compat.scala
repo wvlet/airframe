@@ -14,11 +14,14 @@
 package wvlet.airframe.codec
 import wvlet.airframe.surface.Surface
 
+import scala.reflect.runtime.{universe => ru}
+
 /**
   *
   */
 object Compat {
-  def codecFinder: CodecFinder = JVMCodecFactory
+  def codecFinder: CodecFinder                      = JVMCodecFactory
+  def platformCodecs: Map[Surface, MessageCodec[_]] = JavaTimeCodec.javaTimeCodecs
 
-  def platformCodecs: Map[Surface, Codec[_]] = JavaTimeCodec.javaTimeCodecs
+  def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
 }
