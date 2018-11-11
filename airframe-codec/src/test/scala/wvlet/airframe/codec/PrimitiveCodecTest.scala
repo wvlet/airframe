@@ -15,7 +15,8 @@ package wvlet.airframe.codec
 
 import java.math.BigInteger
 
-import wvlet.airframe.{msgpack, surface}
+import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface
 
 /**
   *
@@ -62,7 +63,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as int" in {
       val expected = Seq(10, 12, 13, 0, 1, 13, 12345, 0, 0, 0)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -84,7 +85,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as long" in {
       val expected = Seq[Long](10, 12, 13, 0, 1, 13, 12345, 0, 0, 0)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -106,7 +107,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as short" in {
       val expected = Seq[Short](10, 12, 13, 0, 1, 13, 1021, 0, 0, 0)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -128,7 +129,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as byte" in {
       val expected = Seq[Byte](10, 12, 13, 0, 1, 13, 123, 0, 0, 0)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -150,7 +151,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as char" in {
       val expected = Seq[Char](10, 12, 13, 0, 1, 13, 123, 0, 0, 0)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -172,7 +173,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as float" in {
       val expected = Seq[Float](10f, 12f, 13.2f, 0f, 1f, 13.4f, 12345.01f, 0f, 0f, LARGE_VALUE.floatValue())
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -194,7 +195,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as double" in {
       val expected = Seq[Double](10.0, 12.0, 13.2, 0.0, 1.0, 0.1f, 12345.01, 0.0, 0.0, LARGE_VALUE.doubleValue())
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -216,7 +217,7 @@ class PrimitiveCodecTest extends CodecSpec {
     "read various types of data as boolean" in {
       val expected = Seq(true, true, true, false, true, false, false, true, false, true, true, false, false, true)
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")
@@ -252,7 +253,7 @@ class PrimitiveCodecTest extends CodecSpec {
                          """[1,"leo"]""",
                          """{"name":"leo"}""")
 
-      val p = msgpack.newBufferPacker
+      val p = MessagePack.newBufferPacker
       p.packArrayHeader(expected.size)
       p.packInt(10)
       p.packString("12")

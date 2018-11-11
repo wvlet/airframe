@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.ObjectCodecTest._
-import wvlet.airframe.msgpack
+import wvlet.airframe.msgpack.spi.MessagePack
 
 /**
   *
@@ -37,12 +37,12 @@ class ObjectCodecTest extends CodecSpec {
 
   "support reading map value" in {
     val v: A1  = A1(1, 2, 3, 4, 5, 6, true, "str")
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     codec.packAsMap(packer, v)
     val b = packer.toByteArray
 
     val h = new MessageHolder
-    codec.unpack(msgpack.newUnpacker(b), h)
+    codec.unpack(MessagePack.newUnpacker(b), h)
 
     h.isNull shouldBe false
     h.hasError shouldBe false
@@ -51,14 +51,14 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   "populate the default value when missing" in {
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     packer.packMapHeader(1)
     packer.packString("i")
     packer.packInt(10)
     val b = packer.toByteArray
 
     val h = new MessageHolder
-    MessageCodec.of[A2].unpack(msgpack.newUnpacker(b), h)
+    MessageCodec.of[A2].unpack(MessagePack.newUnpacker(b), h)
 
     h.isNull shouldBe false
     h.hasError shouldBe false

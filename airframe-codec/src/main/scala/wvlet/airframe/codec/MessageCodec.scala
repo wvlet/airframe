@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, Value}
 import wvlet.airframe.surface.Surface
 
 import scala.util.{Failure, Success, Try}
@@ -27,7 +27,7 @@ trait MessageCodec[A] {
   // def unpackInt(u:MessageUnpacker) : Int
 
   def toMsgPack(v: A): Array[Byte] = {
-    val packer = wvlet.airframe.msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     pack(packer, v)
     packer.toByteArray
   }
@@ -37,7 +37,7 @@ trait MessageCodec[A] {
 
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
-    val unpacker = wvlet.airframe.msgpack.newUnpacker(msgpack, offset, len)
+    val unpacker = MessagePack.newUnpacker(msgpack, offset, len)
     val v        = new MessageHolder
     unpack(unpacker, v)
     if (v.isNull) {

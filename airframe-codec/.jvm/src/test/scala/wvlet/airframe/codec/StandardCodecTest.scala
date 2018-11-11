@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 
 import java.io.File
 
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.{msgpack, surface}
 
 /**
@@ -40,7 +41,7 @@ class StandardCodecTest extends CodecSpec {
       }
 
       val codec = MessageCodec.of[TestEnum]
-      val p     = msgpack.newBufferPacker
+      val p     = MessagePack.newBufferPacker
       p.packString("ABORTED") // non-existing enum type
       val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty

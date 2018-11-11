@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 
 import org.scalacheck.Arbitrary
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 import wvlet.airframe.{AirframeSpec, msgpack}
 
@@ -31,9 +32,9 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     debug(s"Testing roundtrip of ${v} with ${codec}")
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     codec.pack(packer, v)
-    val unpacker = msgpack.newUnpacker(packer.toByteArray)
+    val unpacker = MessagePack.newUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)
 
     h.isNull shouldBe false
@@ -46,9 +47,9 @@ trait CodecSpec extends AirframeSpec with GeneratorDrivenPropertyChecks {
   def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     trace(s"Testing str based roundtrip of ${v} with ${codec}")
-    val packer = msgpack.newBufferPacker
+    val packer = MessagePack.newBufferPacker
     packer.packString(v.toString)
-    val unpacker = msgpack.newUnpacker(packer.toByteArray)
+    val unpacker = MessagePack.newUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)
 
     h.isNull shouldBe false
