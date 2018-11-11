@@ -1,6 +1,6 @@
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.Codec
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
@@ -56,7 +56,7 @@ object PrettyPrint extends LogSupport {
   }
 }
 
-class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
+class PrettyPrint(codec: Map[Surface, Codec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
   def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20): Unit = {
     showRaw(SurfaceFactory.of[A], seq, limit)
   }

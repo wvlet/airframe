@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder, ObjectCodec}
+import wvlet.airframe.codec.{JSONCodec, Codec, MessageHolder, ObjectCodec}
 import wvlet.airframe.tablet.MessagePackRecord
 import wvlet.airframe.{msgpack, surface}
 
@@ -41,7 +41,7 @@ case class ObjectJSONCodec[A](codec: ObjectCodec[A]) {
 object ObjectJSONCodec {
 
   def of[A: ru.TypeTag]: ObjectJSONCodec[A] = {
-    MessageCodec.of[A] match {
+    Codec.of[A] match {
       case oc: ObjectCodec[A] => new ObjectJSONCodec[A](oc)
       case _ =>
         throw new IllegalArgumentException(s"${surface.of[A]} has no ObjectCodec")

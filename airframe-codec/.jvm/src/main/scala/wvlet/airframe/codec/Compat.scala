@@ -20,5 +20,5 @@ import wvlet.airframe.surface.Surface
 object Compat {
   def codecFinder: CodecFinder = JVMCodecFactory
 
-  def platformCodecs: Map[Surface, MessageCodec[_]] = JavaTimeCodec.javaTimeCodecs
+  def platformCodecs: Map[Surface, Codec[_]] = JavaTimeCodec.javaTimeCodecs
 }

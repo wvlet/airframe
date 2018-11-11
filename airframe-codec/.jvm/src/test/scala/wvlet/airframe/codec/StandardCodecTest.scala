@@ -14,7 +14,6 @@
 package wvlet.airframe.codec
 
 import java.io.File
-import java.time.{Instant, ZonedDateTime}
 
 import wvlet.airframe.{msgpack, surface}
 
@@ -24,7 +23,7 @@ import wvlet.airframe.{msgpack, surface}
 class StandardCodecTest extends CodecSpec {
   "StandardCodec" should {
     "support File" in {
-      val codec          = MessageCodec.of[File]
+      val codec          = Codec.of[File]
       def check(v: File) = checkCodec(codec, v)
       check(new File("sample.txt"))
       check(new File("/var/log"))
@@ -40,7 +39,7 @@ class StandardCodecTest extends CodecSpec {
         roundtrip[TestEnum](surface.of[TestEnum], v)
       }
 
-      val codec = MessageCodec.of[TestEnum]
+      val codec = Codec.of[TestEnum]
       val p     = msgpack.newBufferPacker
       p.packString("ABORTED") // non-existing enum type
       val v = codec.unpackMsgPack(p.toByteArray)

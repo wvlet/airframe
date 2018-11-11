@@ -13,13 +13,13 @@
  */
 package wvlet.airframe.launcher
 import org.msgpack.core.{MessagePacker, MessageUnpacker}
-import wvlet.airframe.codec.{MessageCodec, MessageHolder}
+import wvlet.airframe.codec.{Codec, MessageHolder}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
   *
   */
-object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
+object ValueHolderCodec extends Codec[ValueHolder[_]] {
   override def pack(p: Packer, v: ValueHolder[_]): Unit = {
     v match {
       case ValueHolder.Empty =>

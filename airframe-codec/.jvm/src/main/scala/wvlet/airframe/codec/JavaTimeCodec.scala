@@ -34,7 +34,7 @@ object JavaTimeCodec {
     surface.of[Date]          -> JavaUtilDateCodec
   )
 
-  object JavaInstantTimeCodec extends MessageCodec[Instant] {
+  object JavaInstantTimeCodec extends Codec[Instant] {
     override def pack(p: Packer, v: Instant): Unit = {
       // TODO airframe-msgpack in Codec interface
       // Use msgpack Timestamp type
@@ -68,7 +68,7 @@ object JavaTimeCodec {
     }
   }
 
-  object ZonedDateTimeCodec extends MessageCodec[ZonedDateTime] {
+  object ZonedDateTimeCodec extends Codec[ZonedDateTime] {
     override def pack(p: Packer, v: ZonedDateTime): Unit = {
       // Use java standard ZonedDateTime string repr such as "2007-12-03T10:15:30+01:00[Europe/Paris]"
       p.packString(v.toString)
@@ -86,7 +86,7 @@ object JavaTimeCodec {
     }
   }
 
-  object JavaUtilDateCodec extends MessageCodec[Date] with LogSupport {
+  object JavaUtilDateCodec extends Codec[Date] with LogSupport {
     private val format = DateFormat.getInstance()
 
     override def pack(p: Packer, v: Date): Unit = {

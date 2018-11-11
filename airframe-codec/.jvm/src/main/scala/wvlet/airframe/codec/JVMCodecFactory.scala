@@ -22,8 +22,7 @@ import wvlet.airframe.surface.{GenericSurface, Surface}
   */
 object JVMCodecFactory extends CodecFinder {
 
-  def findCodec(factory: MessageCodecFactory,
-                seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, MessageCodec[_]] = {
+  def findCodec(factory: MessageCodecFactory, seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, Codec[_]] = {
     case s if ReflectTypeUtil.isTuple(s.rawType) =>
       TupleCodec(s.typeArgs.map(x => factory.ofSurface(x)))
     case g: GenericSurface if ReflectTypeUtil.isSeq(g.rawType) =>

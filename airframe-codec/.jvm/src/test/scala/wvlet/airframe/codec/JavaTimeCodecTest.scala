@@ -30,7 +30,7 @@ class JavaTimeCodecTest extends CodecSpec {
     roundtrip(surface.of[Instant], Instant.ofEpochMilli(14000000))
     roundtrip(surface.of[Instant], now)
 
-    val codec = MessageCodec.of[Seq[Instant]]
+    val codec = Codec.of[Seq[Instant]]
     val p     = msgpack.newBufferPacker
 
     val epochSecond = Instant.ofEpochMilli(now.getEpochSecond)
@@ -49,7 +49,7 @@ class JavaTimeCodecTest extends CodecSpec {
     roundtrip(surface.of[ZonedDateTime], ZonedDateTime.now())
     roundtrip(surface.of[ZonedDateTime], ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
 
-    val codec = MessageCodec.of[ZonedDateTime]
+    val codec = Codec.of[ZonedDateTime]
     val p     = msgpack.newBufferPacker
     p.packString("non-date string")
     val v = codec.unpackMsgPack(p.toByteArray)

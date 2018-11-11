@@ -20,7 +20,7 @@ import wvlet.airframe.msgpack
   *
   */
 class ObjectCodecTest extends CodecSpec {
-  val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
+  val codec = Codec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
   "support case classes" in {
     val v: A1 = A1(1, 2, 3, 4, 5, 6, true, "str")
@@ -58,7 +58,7 @@ class ObjectCodecTest extends CodecSpec {
     val b = packer.toByteArray
 
     val h = new MessageHolder
-    MessageCodec.of[A2].unpack(msgpack.newUnpacker(b), h)
+    Codec.of[A2].unpack(msgpack.newUnpacker(b), h)
 
     h.isNull shouldBe false
     h.hasError shouldBe false
@@ -68,7 +68,7 @@ class ObjectCodecTest extends CodecSpec {
   }
 
   "populate case class with Option" in {
-    val codec = MessageCodec.of[A3]
+    val codec = Codec.of[A3]
 
     {
       val msgpack = JSONCodec.toMsgPack("""{"opt":null, "str":"hello"}""")

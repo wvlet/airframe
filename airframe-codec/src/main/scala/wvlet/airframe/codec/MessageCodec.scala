@@ -16,7 +16,6 @@ package wvlet.airframe.codec
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, Value}
 import wvlet.airframe.surface.Surface
 
-import scala.reflect.runtime.{universe => ru}
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] {
@@ -67,10 +66,4 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
         v.setError(e)
     }
   }
-}
-
-object MessageCodec {
-
-  def of[A: ru.TypeTag]: MessageCodec[A]     = MessageCodecFactory.defaultFactory.of[A]
-  def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.of(s)
 }

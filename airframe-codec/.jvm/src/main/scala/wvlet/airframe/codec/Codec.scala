@@ -12,25 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.TypeConverter
-import wvlet.log.LogSupport
 
 /**
   *
   */
-class StringUnapplyCodec[A](codec: Surface) extends Codec[A] with LogSupport {
-  override def pack(p: Packer, v: A): Unit = {
-    p.packString(v.toString)
-  }
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-    val s = u.unpackString
-    TypeConverter.convert(s, codec.rawType) match {
-      case Some(x) =>
-        v.setObject(x)
-      case None =>
-        v.setNull
-    }
-  }
+object Codec {
+  import scala.reflect.runtime.{universe => ru}
+
+  def of[A: ru.TypeTag]: MessageCodec[A]     = MessageCodecFactory.defaultFactory.of[A]
+  def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.of(s)
 }
