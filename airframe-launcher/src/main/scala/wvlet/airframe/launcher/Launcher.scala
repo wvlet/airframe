@@ -23,12 +23,11 @@ package wvlet.airframe.launcher
 
 import java.lang.reflect.InvocationTargetException
 
-import org.msgpack.core.MessagePack
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder, ParamListCodec}
+import wvlet.airframe.codec.{MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
 import wvlet.airframe.surface.reflect.SurfaceFactory
-import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
@@ -133,7 +132,7 @@ object Launcher extends LogSupport {
 private[launcher] case class LauncherConfig(
     var withHelpOption: Boolean = true,
     var helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
-    var codecFactory: MessageCodecFactory = MessageCodec.defaultFactory,
+    var codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // command name -> default action
     var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
       println("Type --help to see the usage")

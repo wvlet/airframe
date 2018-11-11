@@ -16,10 +16,10 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
-import wvlet.airframe.codec.{JSONCodec, MessageCodec}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   * A filter for dispatching http requests to the predefined routes with Finagle
@@ -77,7 +77,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
 
   // Use Map codecs to create natural JSON responses
   private[this] val mapCodecFactory =
-    MessageCodec.defaultFactory.withObjectMapCodec
+    MessageCodecFactory.defaultFactory.withObjectMapCodec
 
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {

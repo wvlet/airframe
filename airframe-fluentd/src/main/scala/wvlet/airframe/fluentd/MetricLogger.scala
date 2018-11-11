@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.fluentd
 
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import org.msgpack.core.MessagePack
-import scala.reflect.runtime.{universe => ru}
 import wvlet.airframe._
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+
+import scala.reflect.runtime.{universe => ru}
 
 /**
   * Object based metric logger. This automatically converts object into Map type values
@@ -43,7 +43,7 @@ class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: Fluent
 trait MetricLoggerFactory {
   private val fluentdClient = bind[FluentdClient]
   // Use object -> Map value codec
-  private val codecFactory = bind[MessageCodecFactory] { MessageCodec.defaultFactory.withObjectMapCodec }
+  private val codecFactory = bind[MessageCodecFactory] { MessageCodecFactory.defaultFactory.withObjectMapCodec }
 
   def newMetricLogger[A: ru.TypeTag](tag: String): MetricLogger[A] = {
     val codec = codecFactory.of[A]

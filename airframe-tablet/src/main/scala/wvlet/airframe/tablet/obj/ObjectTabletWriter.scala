@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.codec.{MessageCodec, MessageHolder}
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder}
 import wvlet.airframe.tablet.{Record, TabletWriter}
 import wvlet.log.LogSupport
 import wvlet.airframe.surface
@@ -28,7 +28,7 @@ class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = M
     extends TabletWriter[A]
     with LogSupport {
 
-  private val elementCodec = MessageCodec.defaultFactory.withCodecs(codec).of[A]
+  private val elementCodec = MessageCodecFactory.defaultFactory.withCodecs(codec).of[A]
 
   private val h         = new MessageHolder
   private val s         = surface.of[A]
