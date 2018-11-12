@@ -105,7 +105,7 @@ package object airframe extends LogSupport {
   }
 
   // For internal use to hold caches of factories of trait with a session
-  private[airframe] def registerTraitFactory[A]: Surface = macro registerTraitFactoryImpl[A]
+  def registerTraitFactory[A]: Surface = macro registerTraitFactoryImpl[A]
 
   import scala.collection.JavaConverters._
   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
