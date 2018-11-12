@@ -21,6 +21,18 @@ import scala.reflect.macros.{blackbox => sm}
   */
 private[surface] object SurfaceMacros {
 
+  def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val targetType = implicitly[c.WeakTypeTag[A]].tpe
+    q"wvlet.airframe.surface.SurfaceFactory.of[${targetType}]"
+  }
+
+  def methodSurfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val targetType = implicitly[c.WeakTypeTag[A]].tpe
+    q"wvlet.airframe.surface.SurfaceFactory.methodsOf[${targetType}]"
+  }
+
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
     new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)

@@ -22,5 +22,5 @@ import scala.reflect.runtime.{universe => ru}
   *
   */
 object RuntimeSurface extends LogSupport {
-  def of[A: ru.WeakTypeTag]: Surface = SurfaceFactory.of[A]
+  def of[A: ru.WeakTypeTag]: Surface = ReflectSurfaceFactory.of[A]
 }

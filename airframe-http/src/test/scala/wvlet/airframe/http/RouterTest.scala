@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.Surface
 
 /**
@@ -87,7 +87,7 @@ class RouterTest extends AirframeSpec {
       val serviceProvider = new ControllerProvider {
         override def findController(serviceSurface: Surface): Option[Any] = {
           serviceSurface match {
-            case sf if sf == surface.of[ControllerExample] => Some(s)
+            case sf if sf == Surface.of[ControllerExample] => Some(s)
             case _                                         => None
           }
         }

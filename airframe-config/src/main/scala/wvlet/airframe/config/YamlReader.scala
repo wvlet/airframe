@@ -21,7 +21,7 @@ import wvlet.airframe.tablet.MessagePackRecord
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
@@ -42,7 +42,7 @@ object YamlReader extends LogSupport {
   def loadMapOf[A: ru.TypeTag](resourcePath: String): Map[String, A] = {
     val yaml = loadYaml(resourcePath)
     trace(s"yaml data: ${yaml.mkString(", ")}")
-    val surface: Surface = wvlet.airframe.surface.of[A]
+    val surface: Surface = wvlet.airframe.surface.Surface.of[A]
     val map              = ListMap.newBuilder[String, A]
     for ((k, v) <- yaml) yield {
       map += k.toString -> bindMap[A](surface, v.asInstanceOf[ju.Map[AnyRef, AnyRef]].asScala.toMap)
@@ -60,7 +60,7 @@ object YamlReader extends LogSupport {
   }
 
   def bind[A: ru.TypeTag](prop: Map[AnyRef, AnyRef]): A = {
-    bindMap(surface.of[A], prop).asInstanceOf[A]
+    bindMap(Surface.of[A], prop).asInstanceOf[A]
   }
 
   def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {

@@ -22,7 +22,7 @@ package wvlet.airframe.launcher
 
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.surface._
-import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, SurfaceFactory}
+import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, ReflectSurfaceFactory}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.collection.mutable.ArrayBuffer
@@ -39,7 +39,7 @@ object OptionParser extends LogSupport {
   def tokenize(line: String): Array[String] = CommandLineTokenizer.tokenize(line)
 
   def of[A: ru.WeakTypeTag]: OptionParser = {
-    apply(SurfaceFactory.of[A])
+    apply(ReflectSurfaceFactory.of[A])
   }
 
   def apply(surface: Surface): OptionParser = {

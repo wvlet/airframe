@@ -32,12 +32,12 @@ class RecursiveSurfaceTest extends SurfaceSpec {
 
   "Surface" should {
     "find surface from full type name string" in {
-      val s = surface.of[Leaf]
+      val s = Surface.of[Leaf]
       surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") shouldBe s
     }
 
     "support recursive type" in {
-      val c: Surface = surface.of[Cons]
+      val c: Surface = Surface.of[Cons]
       c.toString shouldBe "Cons"
 
       c.params should have length (2)
@@ -57,7 +57,7 @@ class RecursiveSurfaceTest extends SurfaceSpec {
     }
 
     "support generic recursive type" in {
-      val c: Surface = surface.of[TypedCons[String]]
+      val c: Surface = Surface.of[TypedCons[String]]
       c.toString shouldBe "TypedCons[String]"
 
       c.params should have length (2)

@@ -15,8 +15,8 @@ package wvlet.airframe.tablet.text
 
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder, ObjectCodec}
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface.Surface
 import wvlet.airframe.tablet.MessagePackRecord
-import wvlet.airframe.{msgpack, surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -44,7 +44,7 @@ object ObjectJSONCodec {
     MessageCodec.of[A] match {
       case oc: ObjectCodec[A] => new ObjectJSONCodec[A](oc)
       case _ =>
-        throw new IllegalArgumentException(s"${surface.of[A]} has no ObjectCodec")
+        throw new IllegalArgumentException(s"${Surface.of[A]} has no ObjectCodec")
     }
   }
 }

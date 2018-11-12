@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 import java.io.File
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -27,7 +27,7 @@ import scala.util.{Success, Try}
 object JavaStandardCodec {
 
   val javaStandardCodecs: Map[Surface, MessageCodec[_]] = Map(
-    surface.of[File] -> FileCodec
+    Surface.of[File] -> FileCodec
   )
 
   object FileCodec extends MessageCodec[File] {

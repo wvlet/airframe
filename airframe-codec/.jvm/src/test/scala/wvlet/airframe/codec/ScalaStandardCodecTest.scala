@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 /**
   *
@@ -21,51 +21,51 @@ class ScalaStandardCodecTest extends CodecSpec {
   "ScalaStandardCodec" should {
     "support Option[A]" in {
       val v = Some("hello")
-      roundtrip(surface.of[Option[String]], Some("hello"))
-      roundtrip[Option[String]](surface.of[Option[String]], None)
-      roundtrip[Option[Int]](surface.of[Option[Int]], None)
-      roundtrip[Option[Seq[Int]]](surface.of[Option[Seq[Int]]], Some(Seq(1, 2, 3)))
+      roundtrip(Surface.of[Option[String]], Some("hello"))
+      roundtrip[Option[String]](Surface.of[Option[String]], None)
+      roundtrip[Option[Int]](Surface.of[Option[Int]], None)
+      roundtrip[Option[Seq[Int]]](Surface.of[Option[Seq[Int]]], Some(Seq(1, 2, 3)))
     }
 
     "support tuple" in {
-      roundtrip[Tuple1[String]](surface.of[Tuple1[String]], Tuple1("hello"))
-      roundtrip(surface.of[(Int, Int)], (1, 2))
-      roundtrip(surface.of[(Int, Int, Int)], (1, 2, 3))
-      roundtrip(surface.of[(Int, String, Boolean, Float)], (1, "a", true, 2.0f))
-      roundtrip(surface.of[(Int, String, Boolean, Float, String)], (1, "a", true, 2.0f, "hello"))
-      roundtrip(surface.of[(Int, String, Boolean, Float, String, Seq[Int])],
+      roundtrip[Tuple1[String]](Surface.of[Tuple1[String]], Tuple1("hello"))
+      roundtrip(Surface.of[(Int, Int)], (1, 2))
+      roundtrip(Surface.of[(Int, Int, Int)], (1, 2, 3))
+      roundtrip(Surface.of[(Int, String, Boolean, Float)], (1, "a", true, 2.0f))
+      roundtrip(Surface.of[(Int, String, Boolean, Float, String)], (1, "a", true, 2.0f, "hello"))
+      roundtrip(Surface.of[(Int, String, Boolean, Float, String, Seq[Int])],
                 (1, "a", true, 2.0f, "hello", Seq(1, 3, 4)))
 
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8, 9))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7))
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8))
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8, 9))
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)], (1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
-      roundtrip(surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
+      roundtrip(Surface.of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18))
-      roundtrip(surface
+      roundtrip(Surface
                   .of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
                 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19))
       roundtrip(
-        surface
+        Surface
           .of[(Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
         (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)
       )
       roundtrip(
-        surface
+        Surface
           .of[
             (Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int, Int)],
         (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21)

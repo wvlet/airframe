@@ -119,8 +119,8 @@ object JMXMBean extends LogSupport {
   }
 
   private def collectMBeanParameters(parent: Option[ParameterBase], tpe: ru.Type): Seq[MBeanParameter] = {
-    val surface = SurfaceFactory.ofType(tpe)
-    val methods = SurfaceFactory.methodsOfType(tpe)
+    val surface = ReflectSurfaceFactory.ofType(tpe)
+    val methods = ReflectSurfaceFactory.methodsOfType(tpe)
 
     val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[aj.JMX].isDefined) ++ methods.find(
       _.findAnnotationOf[aj.JMX].isDefined)
@@ -128,7 +128,7 @@ object JMXMBean extends LogSupport {
     jmxParams.flatMap { p =>
       val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)
       if (isNestedMBean(p)) {
-        SurfaceFactory.findTypeOf(p.surface) match {
+        ReflectSurfaceFactory.findTypeOf(p.surface) match {
           case Some(tpe) => collectMBeanParameters(Some(p), tpe)
           case None      => Seq.empty
         }
@@ -154,10 +154,10 @@ object JMXMBean extends LogSupport {
     if (jmxParams.isDefined) {
       true
     } else {
-      SurfaceFactory.findTypeOf(p.surface) match {
+      ReflectSurfaceFactory.findTypeOf(p.surface) match {
         case None => false
         case Some(tpe) =>
-          val methods    = SurfaceFactory.methodsOfType(tpe)
+          val methods    = ReflectSurfaceFactory.methodsOfType(tpe)
           val jmxMethods = methods.find(m => m.findAnnotationOf[aj.JMX].isDefined)
           jmxMethods.isDefined
       }

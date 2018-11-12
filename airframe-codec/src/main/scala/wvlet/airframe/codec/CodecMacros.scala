@@ -23,6 +23,6 @@ object CodecMacros {
   def codecOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"wvlet.airframe.codec.MessageCodec.ofSurface(wvlet.airframe.surface.of[${t}]).asInstanceOf[wvlet.airframe.codec.MessageCodec[${t}]]"
+    q"wvlet.airframe.codec.MessageCodec.ofSurface(wvlet.airframe.surface.Surface.of[${t}]).asInstanceOf[wvlet.airframe.codec.MessageCodec[${t}]]"
   }
 }

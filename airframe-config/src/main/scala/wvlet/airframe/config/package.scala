@@ -15,6 +15,7 @@ package wvlet.airframe
 import java.util.Properties
 
 import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
+import wvlet.airframe.surface.Surface
 import wvlet.log.Logger
 
 import scala.reflect.ClassTag
@@ -73,7 +74,7 @@ package object config {
 
     def bindConfig[A: ru.TypeTag](config: A): Design = {
       val configHolder = getConfig.register[A](config)
-      val s            = surface.of[A]
+      val s            = Surface.of[A]
       d.withConfig(configHolder)
         .bind(s).toInstance(config)
     }
@@ -81,12 +82,12 @@ package object config {
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String): Design = {
       val configHolder = getConfig.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
-        .bind(surface.of[A]).toInstance(configHolder.of[A])
+        .bind(Surface.of[A]).toInstance(configHolder.of[A])
     }
 
     def bindConfigFromYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
       val configHolder = getConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
-      val s            = surface.of[A]
+      val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
       d.withConfig(configHolder)
         .bind(s).toInstance(newConfig)

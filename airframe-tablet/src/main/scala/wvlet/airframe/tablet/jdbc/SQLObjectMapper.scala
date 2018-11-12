@@ -7,7 +7,7 @@ import wvlet.airframe.tablet.Schema
 import wvlet.airframe.tablet.Schema.DataType
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.{Primitive, Surface}
 
 /**
@@ -42,7 +42,7 @@ object SQLObjectMapper extends LogSupport {
   }
 
   def createTableSQLFor[A: ru.TypeTag](tableName: String, columnConfig: Map[String, String] = Map.empty): String = {
-    val schema = SurfaceFactory.of[A]
+    val schema = ReflectSurfaceFactory.of[A]
     val params = for (p <- schema.params) yield {
       val decl = s""""${p.name}" ${sqlTypeOf(p.surface)}"""
       columnConfig
@@ -58,7 +58,7 @@ object SQLObjectMapper extends LogSupport {
   def quote(s: String) = s"'${s}'"
 
   def insertRecord[A: ru.TypeTag](conn: Connection, tableName: String, obj: A): Unit = {
-    val schema  = SurfaceFactory.of[A]
+    val schema  = ReflectSurfaceFactory.of[A]
     val colSize = schema.params.size
     val tuple   = ("?" * colSize).toSeq.mkString(", ")
     withResource(conn.prepareStatement(s"insert into ${tableName} values(${tuple})")) { prep =>

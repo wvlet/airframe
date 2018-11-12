@@ -27,7 +27,7 @@ import wvlet.airframe.codec.{MessageCodecFactory, MessageHolder, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.{CName, MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -44,7 +44,7 @@ object Launcher extends LogSupport {
     * @return
     */
   def of[A: ru.WeakTypeTag]: Launcher = {
-    val cl = newCommandLauncher(SurfaceFactory.of[A], name = "", description = "")
+    val cl = newCommandLauncher(ReflectSurfaceFactory.of[A], name = "", description = "")
     new Launcher(LauncherConfig(), cl)
   }
 
@@ -75,13 +75,13 @@ object Launcher extends LogSupport {
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
     import wvlet.airframe.surface.reflect._
-    val methods = SurfaceFactory.methodsOf(surface)
+    val methods = ReflectSurfaceFactory.methodsOf(surface)
     val subCommands = for (m <- methods; c <- m.findAnnotationOf[command]) yield {
       newMethodLauncher(m, c)
     }
 
     // Find the default command
-    val defaultCommand = SurfaceFactory
+    val defaultCommand = ReflectSurfaceFactory
       .methodsOf(surface)
       .find { m =>
         import wvlet.airframe.surface.reflect._
@@ -240,7 +240,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
   }
 
   private[launcher] def addCommandModule[B: ru.TypeTag](name: String, description: String): CommandLauncher = {
-    val moduleSurface = SurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
+    val moduleSurface = ReflectSurfaceFactory.ofType(implicitly[ru.TypeTag[B]].tpe)
     val subLauncher   = Launcher.newCommandLauncher(moduleSurface, name, description)
     add(name, description, subLauncher)
   }

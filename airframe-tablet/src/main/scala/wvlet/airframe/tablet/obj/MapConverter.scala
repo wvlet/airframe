@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.surface
 import wvlet.airframe.surface.Surface
 
 import scala.reflect.runtime.{universe => ru}
@@ -29,7 +28,7 @@ class MapConverter[A](surface: Surface) {
 }
 
 object MapConverter {
-  def of[A: ru.TypeTag]: MapConverter[A] = new MapConverter(surface.of[A])
+  def of[A: ru.TypeTag]: MapConverter[A] = new MapConverter(Surface.of[A])
 
   def toMap[A: ru.TypeTag](a: A): Map[String, Any] = {
     MapConverter.of[A].toMap(a)

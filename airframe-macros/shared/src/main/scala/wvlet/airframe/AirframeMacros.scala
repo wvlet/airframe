@@ -135,7 +135,7 @@ private[wvlet] object AirframeMacros {
     }
 
     def surfaceOf(t: c.Type): c.Tree = {
-      q"wvlet.airframe.surface.of[$t]"
+      q"wvlet.airframe.surface.Surface.of[$t]"
     }
 
     def provider1Binding[D1: c.WeakTypeTag](factory: c.Tree, singleton: Boolean, eager: Boolean): c.Tree = {

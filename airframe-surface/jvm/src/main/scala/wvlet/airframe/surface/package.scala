@@ -13,17 +13,11 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.surface.reflect.SurfaceFactory
-
-import scala.reflect.runtime.{universe => ru}
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 
 /**
   *
   */
 package object surface {
-
-  def of[A: ru.WeakTypeTag]: Surface                   = SurfaceFactory.of[A]
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = SurfaceFactory.methodsOf[A]
-
-  def getCached(fullName: String): Surface = SurfaceFactory.get(fullName)
+  def getCached(fullName: String): Surface = ReflectSurfaceFactory.get(fullName)
 }

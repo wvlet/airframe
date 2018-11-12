@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.surface
-import wvlet.airframe.surface
 
 object MultipleConstructorArgsTest {
 
@@ -26,7 +25,7 @@ import MultipleConstructorArgsTest._
 class MultipleConstructorArgsTest extends SurfaceSpec {
   "support muliple constructor args" in {
 
-    val s: Surface = surface.of[MultiC]
+    val s: Surface = Surface.of[MultiC]
     s.objectFactory shouldNot be(empty)
 
     val f = s.objectFactory.get

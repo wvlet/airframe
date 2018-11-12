@@ -15,6 +15,12 @@
 package wvlet.airframe.surface
 
 import scala.language.existentials
+import scala.language.experimental.macros
+
+object Surface {
+  def of[A]: Surface = macro SurfaceMacros.surfaceOf[A]
+  def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodSurfaceOf[A]
+}
 
 trait Surface extends Serializable {
   def rawType: Class[_]
