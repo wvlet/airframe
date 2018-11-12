@@ -260,7 +260,7 @@ these are often commonly used.
 ## 0.15
  - Surface will be gererated by using runtime-type information. This improves the compilation speed in Scala JVM projects.
    - Scala.js version still uses compile-time surface generation
- - Interface change: `Surface.of[X]` to `Surface.of[X]`.
+ - Interface change: `Surface.of[X]` to `surface.of[X]`.
    - This is for providing different implementations of Surface for ScalaJVM and Scala.js.
  - Fixed an issue when tagged type is used inside constructor parameters.
  - Fixed an issue that lifecycle hooks are wrongly called when debug level logging is used.
