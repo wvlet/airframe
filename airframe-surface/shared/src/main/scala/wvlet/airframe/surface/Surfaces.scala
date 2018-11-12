@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.surface
 
+import wvlet.log.LogSupport
+
 import scala.language.existentials
 
 /**
@@ -169,13 +171,24 @@ class GenericSurface(
     val typeArgs: Seq[Surface] = Seq.empty,
     val params: Seq[Parameter] = Seq.empty,
     override val objectFactory: Option[ObjectFactory] = None
-) extends Surface {
+) extends Surface
+    with LogSupport {
+
+  private def getClassName: String = {
+    try {
+      rawType.getSimpleName
+    } catch {
+      case e: InternalError =>
+        // Scala REPL use class name like $line3.$read$$iw$$iw$A, which causes InternalError at getSimpleName
+        rawType.getName
+    }
+  }
 
   def name: String = {
     if (typeArgs.isEmpty) {
-      rawType.getSimpleName
+      getClassName
     } else {
-      s"${rawType.getSimpleName}[${typeArgs.map(_.name).mkString(",")}]"
+      s"${getClassName}[${typeArgs.map(_.name).mkString(",")}]"
     }
   }
 
