@@ -57,13 +57,13 @@ trait MyApi extends LogSupport {
   *
   */
 class FinagleRouterTest extends AirframeSpec {
-  val port   = IOUtil.unusedPort
+  val port = IOUtil.unusedPort
+
   val router = Router.of[MyApi]
 
   val d =
     finagleDefaultDesign
       .bind[Router].toInstance(router)
-      .bind[MyApi].toSingleton
       .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port))
 
   "FinagleRouter" should {

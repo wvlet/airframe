@@ -238,6 +238,13 @@ private[wvlet] object AirframeMacros {
     }
   }
 
+  def registerTraitFactoryImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    val h = new BindHelper[c.type](c)
+    h.registerTraitFactory(t)
+  }
+
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe

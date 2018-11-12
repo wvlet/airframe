@@ -88,8 +88,6 @@ val router = Router.of[MyApi]
 
 val design =
   finagleDefaultDesign
-    // Register API impl
-    .bind[MyApi].toSingleton
     // Register http routes
     .bind[Router].toInstance(router)
     // Configure port
