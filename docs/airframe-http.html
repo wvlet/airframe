@@ -92,8 +92,6 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <span class="k">val</span> <span class="n">design</span> <span class="k">=</span>
   <span class="n">finagleDefaultDesign</span>
-    <span class="c1">// Register API impl
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">].</span><span class="n">toSingleton</span>
     <span class="c1">// Register http routes
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Router</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">router</span><span class="o">)</span>
     <span class="c1">// Configure port
