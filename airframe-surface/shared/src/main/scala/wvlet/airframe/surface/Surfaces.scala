@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.log.LogSupport
-
 import scala.language.existentials
 
 /**
@@ -171,8 +169,7 @@ class GenericSurface(
     val typeArgs: Seq[Surface] = Seq.empty,
     val params: Seq[Parameter] = Seq.empty,
     override val objectFactory: Option[ObjectFactory] = None
-) extends Surface
-    with LogSupport {
+) extends Surface {
 
   private def getClassName: String = {
     try {
