@@ -42,13 +42,13 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
-<h2 id="surfaceofx">surface.of[X]</h2>
+<h2 id="surfaceofx">Surface.of[X]</h2>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface.Surface</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="n">id</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
-<span class="k">val</span> <span class="n">s</span> <span class="k">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+<span class="k">val</span> <span class="n">s</span> <span class="k">=</span> <span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="n">toString</span><span class="o">)</span> <span class="c1">// This will show A(id:Int, name:String)
 </span>
 <span class="c1">// Find object parameters
@@ -68,7 +68,7 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code>
 <span class="k">type</span> <span class="kt">UserName</span> <span class="o">=</span> <span class="nc">String</span>
 
-<span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">UserName</span><span class="o">]</span> <span class="c1">//  Returns UserName:=String
+<span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">UserName</span><span class="o">]</span> <span class="c1">//  Returns UserName:=String
 </span>
 </code></pre>
 </div>
@@ -77,15 +77,15 @@ ga('send', 'pageview');
 
 <p>To have different surfaces for the same type, you can use tagged type (@@):</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface.Surface</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.surface.tag._</span>
 
 <span class="k">class</span> <span class="nc">Fruit</span>
 <span class="k">trait</span> <span class="nc">Apple</span>
 <span class="k">trait</span> <span class="nc">Banana</span>
 
-<span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Apple</span><span class="o">]</span>
-<span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Banana</span><span class="o">]</span>
+<span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Apple</span><span class="o">]</span>
+<span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Fruit</span> <span class="kt">@@</span> <span class="kt">Banana</span><span class="o">]</span>
 </code></pre>
 </div>
 
@@ -93,14 +93,14 @@ ga('send', 'pageview');
 
 <p>Reading runtime-annotation is supported for JVM projects. Import <code class="highlighter-rouge">wvlet.airframe.surface.reflect._</code> to use this feature.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.surface.Surface</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.surface.reflect._</span>
 <span class="k">import</span> <span class="nn">javax.annotation.Resource</span>
  
 <span class="nd">@Resource</span><span class="o">(</span><span class="n">name</span><span class="o">=</span><span class="s">"my resource"</span><span class="o">)</span>
 <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="nd">@Resource</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"param 1"</span><span class="o">)</span> <span class="n">a</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
-<span class="k">val</span> <span class="n">s</span> <span class="k">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+<span class="k">val</span> <span class="n">s</span> <span class="k">=</span> <span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 <span class="c1">// Reading class annotation
 </span><span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">findAnnotationOf</span><span class="o">[</span><span class="kt">Resource</span><span class="o">]</span>
 <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="o">.</span><span class="n">name</span> <span class="c1">// "my resource"

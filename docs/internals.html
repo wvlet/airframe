@@ -156,7 +156,7 @@ manually writing such object management codes will be cumbersome tasks.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// case class X(a:A, b:B, ..)
 </span>
-<span class="k">val</span> <span class="n">surface</span> <span class="k">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span>
+<span class="k">val</span> <span class="n">surface</span> <span class="k">=</span> <span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span>
 <span class="c1">// build instances of a, b, ...
 </span><span class="k">val</span> <span class="n">args</span> <span class="k">=</span> <span class="n">surface</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">p</span> <span class="o">-&gt;</span> <span class="n">session</span><span class="o">.</span><span class="n">getInstance</span><span class="o">(</span><span class="n">p</span><span class="o">.</span><span class="n">surface</span><span class="o">))</span>
 <span class="n">surface</span><span class="o">.</span><span class="n">objectFactory</span><span class="o">.</span><span class="n">newInstance</span><span class="o">(</span><span class="n">p</span><span class="o">)</span>
@@ -167,7 +167,7 @@ manually writing such object management codes will be cumbersome tasks.</p>
   <li>If <code class="highlighter-rouge">X</code> is an abstract class or trait, <code class="highlighter-rouge">X</code> needs to be found in X because <code class="highlighter-rouge">X</code> cannot be instantiated automatically:</li>
 </ul>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">X</span><span class="o">])</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="o">(</span><span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">X</span><span class="o">])</span>
 </code></pre>
 </div>
 
@@ -178,14 +178,14 @@ manually writing such object management codes will be cumbersome tasks.</p>
 <p>Here are some examples of Surface:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.surface</span>
 
-<span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="c1">// A
-</span><span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="c1">// Seq[Int]
-</span><span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="k">_</span><span class="o">]]</span> <span class="c1">// Seq[_]
+<span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="c1">// A
+</span><span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]]</span> <span class="c1">// Seq[Int]
+</span><span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Seq</span><span class="o">[</span><span class="k">_</span><span class="o">]]</span> <span class="c1">// Seq[_]
 // Seq[Int] and Seq[_] are different types as Surface
 </span>
 <span class="c1">// Type alias
 </span><span class="k">type</span> <span class="kt">MyInt</span> <span class="o">=</span> <span class="nc">Int</span>
-<span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">MyInt</span><span class="o">]</span> <span class="c1">// MyInt:=Int
+<span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">MyInt</span><span class="o">]</span> <span class="c1">// MyInt:=Int
 </span></code></pre>
 </div>
 
@@ -211,7 +211,7 @@ Surface uses Scala macros to embed compile-time type information into the runtim
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="n">b</span><span class="k">:</span><span class="kt">B</span><span class="o">,</span> <span class="n">c</span><span class="k">:</span><span class="kt">C</span><span class="o">)</span>
 
 <span class="c1">// B and C will be necessary to build A
-</span><span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=&gt;</span> <span class="nc">Surface</span><span class="o">(</span><span class="s">"A"</span><span class="o">,</span> <span class="n">params</span><span class="k">:</span><span class="kt">Seq</span><span class="o">(</span><span class="err">"</span><span class="kt">b</span><span class="err">"</span> <span class="kt">-&gt;</span> <span class="kt">surface.of</span><span class="o">[</span><span class="kt">B</span><span class="o">],</span> <span class="s">"c"</span> <span class="o">-&gt;</span> <span class="n">surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">C</span><span class="o">]))</span>
+</span><span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="k">=&gt;</span> <span class="nc">Surface</span><span class="o">(</span><span class="s">"A"</span><span class="o">,</span> <span class="n">params</span><span class="k">:</span><span class="kt">Seq</span><span class="o">(</span><span class="err">"</span><span class="kt">b</span><span class="err">"</span> <span class="kt">-&gt;</span> <span class="kt">Surface.of</span><span class="o">[</span><span class="kt">B</span><span class="o">],</span> <span class="s">"c"</span> <span class="o">-&gt;</span> <span class="nc">Surface</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">C</span><span class="o">]))</span>
 </code></pre>
 </div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({
