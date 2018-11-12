@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airframe.surface
 import scala.language.higherKinds
 
 object RecursiveHigherKindTypeTest {
@@ -39,7 +38,7 @@ class RecursiveHigherKindTypeTest extends SurfaceSpec {
 
   "Surface" should {
     "support recursive higher kind types" in {
-      val s = surface.of[Holder[BySkinny]]
+      val s = Surface.of[Holder[BySkinny]]
       s.name shouldBe "Holder[BySkinny]"
       s.typeArgs(0).dealias.name shouldBe "MyTask[_]"
     }

@@ -15,7 +15,6 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
-import wvlet.airframe.surface
 import wvlet.airframe.surface.reflect._
 import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.log.LogSupport
@@ -45,7 +44,7 @@ class Router(val routes: Seq[Route]) {
     import wvlet.airframe.surface.reflect._
 
     // Check prefix
-    val serviceSurface = surface.of[Controller]
+    val serviceSurface = Surface.of[Controller]
     val prefixPath =
       serviceSurface
         .findAnnotationOf[Endpoint]
@@ -53,7 +52,7 @@ class Router(val routes: Seq[Route]) {
         .getOrElse("")
 
     val newRoutes =
-      surface
+      Surface
         .methodsOf[Controller]
         .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {

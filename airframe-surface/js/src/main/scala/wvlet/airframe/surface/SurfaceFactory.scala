@@ -13,24 +13,12 @@
  */
 package wvlet.airframe.surface
 
-object ParamTest {
-  object A {
-    def hello: String       = "hello"
-    def apply(s: String): A = A(s.toInt)
-  }
+import scala.language.experimental.macros
 
-  def getter(x: Int): Int = x * 2
-  case class A(id: Int = -1, p1: Int = getter(10))
-}
-
-class ParamTest extends SurfaceSpec {
-  "Parameter" should {
-    "have default value" in {
-      val s = Surface.of[ParamTest.A]
-      val p = s.params.head
-      p.getDefaultValue shouldBe Option(-1)
-      val p1 = s.params(1)
-      p1.getDefaultValue shouldBe Option(20)
-    }
-  }
+/**
+  *
+  */
+object SurfaceFactory {
+  def of[A]: Surface = macro SurfaceMacros.of[A]
+  def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }

@@ -17,7 +17,7 @@ import java.util.Date
 
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi._
-import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -28,9 +28,9 @@ import scala.util.{Failure, Success, Try}
 object JavaTimeCodec {
 
   val javaTimeCodecs = Map(
-    surface.of[Instant]       -> JavaInstantTimeCodec,
-    surface.of[ZonedDateTime] -> ZonedDateTimeCodec,
-    surface.of[Date]          -> JavaUtilDateCodec
+    Surface.of[Instant]       -> JavaInstantTimeCodec,
+    Surface.of[ZonedDateTime] -> ZonedDateTimeCodec,
+    Surface.of[Date]          -> JavaUtilDateCodec
   )
 
   object JavaInstantTimeCodec extends MessageCodec[Instant] {

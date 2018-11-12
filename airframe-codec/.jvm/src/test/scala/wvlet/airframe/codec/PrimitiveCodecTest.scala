@@ -18,7 +18,6 @@ import java.math.BigInteger
 import org.scalacheck.Arbitrary
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.surface
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 
 /**
@@ -63,36 +62,36 @@ class PrimitiveCodecTest extends CodecSpec with GeneratorDrivenPropertyChecks {
   "PrimitiveCodec" should {
 
     "support numeric" in {
-      roundTripTestWithStr[Int](surface.of[Int], DataType.INTEGER)
-      roundTripTestWithStr[Byte](surface.of[Byte], DataType.INTEGER)
-      roundTripTestWithStr[Short](surface.of[Short], DataType.INTEGER)
-      roundTripTestWithStr[Long](surface.of[Long], DataType.INTEGER)
-      roundTripTestWithStr[Boolean](surface.of[Boolean], DataType.BOOLEAN)
+      roundTripTestWithStr[Int](Surface.of[Int], DataType.INTEGER)
+      roundTripTestWithStr[Byte](Surface.of[Byte], DataType.INTEGER)
+      roundTripTestWithStr[Short](Surface.of[Short], DataType.INTEGER)
+      roundTripTestWithStr[Long](Surface.of[Long], DataType.INTEGER)
+      roundTripTestWithStr[Boolean](Surface.of[Boolean], DataType.BOOLEAN)
     }
 
     "support char" in {
-      roundTripTest[Char](surface.of[Char], DataType.INTEGER)
+      roundTripTest[Char](Surface.of[Char], DataType.INTEGER)
     }
 
     "support float" in {
-      roundTripTestWithStr[Float](surface.of[Float], DataType.FLOAT)
-      roundTripTestWithStr[Double](surface.of[Double], DataType.FLOAT)
+      roundTripTestWithStr[Float](Surface.of[Float], DataType.FLOAT)
+      roundTripTestWithStr[Double](Surface.of[Double], DataType.FLOAT)
     }
 
     "support string" in {
-      roundTripTest[String](surface.of[String], DataType.STRING)
+      roundTripTest[String](Surface.of[String], DataType.STRING)
     }
 
     "support arrays" taggedAs ("array") in {
-      arrayRoundTripTest[Byte](surface.of[Byte])
-      arrayRoundTripTest[Char](surface.of[Char])
-      arrayRoundTripTest[Int](surface.of[Int])
-      arrayRoundTripTest[Short](surface.of[Short])
-      arrayRoundTripTest[Long](surface.of[Long])
-      arrayRoundTripTest[String](surface.of[String])
-      arrayRoundTripTest[Float](surface.of[Float])
-      arrayRoundTripTest[Double](surface.of[Double])
-      arrayRoundTripTest[Boolean](surface.of[Boolean])
+      arrayRoundTripTest[Byte](Surface.of[Byte])
+      arrayRoundTripTest[Char](Surface.of[Char])
+      arrayRoundTripTest[Int](Surface.of[Int])
+      arrayRoundTripTest[Short](Surface.of[Short])
+      arrayRoundTripTest[Long](Surface.of[Long])
+      arrayRoundTripTest[String](Surface.of[String])
+      arrayRoundTripTest[Float](Surface.of[Float])
+      arrayRoundTripTest[Double](Surface.of[Double])
+      arrayRoundTripTest[Boolean](Surface.of[Boolean])
     }
 
     // Value 2^64-1 is the maximum value

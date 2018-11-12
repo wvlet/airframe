@@ -14,7 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{IntegerOverflowException, Packer, Unpacker, ValueType}
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.{Primitive, Surface}
 
 import scala.util.Try
@@ -37,15 +37,15 @@ object PrimitiveCodec {
   )
 
   val primitiveArrayCodec = Map(
-    surface.of[Array[Int]]     -> IntArrayCodec,
-    surface.of[Array[Long]]    -> LongArrayCodec,
-    surface.of[Array[Float]]   -> FloatArrayCodec,
-    surface.of[Array[Double]]  -> DoubleArrayCodec,
-    surface.of[Array[Boolean]] -> BooleanArrayCodec,
-    surface.of[Array[String]]  -> StringArrayCodec,
-    surface.of[Array[Byte]]    -> ByteArrayCodec,
-    surface.of[Array[Short]]   -> ShortArrayCodec,
-    surface.of[Array[Char]]    -> CharArrayCodec
+    Surface.of[Array[Int]]     -> IntArrayCodec,
+    Surface.of[Array[Long]]    -> LongArrayCodec,
+    Surface.of[Array[Float]]   -> FloatArrayCodec,
+    Surface.of[Array[Double]]  -> DoubleArrayCodec,
+    Surface.of[Array[Boolean]] -> BooleanArrayCodec,
+    Surface.of[Array[String]]  -> StringArrayCodec,
+    Surface.of[Array[Byte]]    -> ByteArrayCodec,
+    Surface.of[Array[Short]]   -> ShortArrayCodec,
+    Surface.of[Array[Char]]    -> CharArrayCodec
   )
 
   private implicit class RichBoolean(b: Boolean) {

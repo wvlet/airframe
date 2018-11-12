@@ -1,7 +1,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.{EnumSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
@@ -84,7 +84,7 @@ class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]],
     }
   }
 
-  def of[A: ru.TypeTag]: MessageCodec[A]    = ofSurface(surface.of[A]).asInstanceOf[MessageCodec[A]]
+  def of[A: ru.TypeTag]: MessageCodec[A]    = ofSurface(Surface.of[A]).asInstanceOf[MessageCodec[A]]
   def of(surface: Surface): MessageCodec[_] = ofSurface(surface)
   //def ofType(tpe: ru.Type): MessageCodec[_] = ofSurface(SurfaceFactory.ofType(tpe))
 }

@@ -153,7 +153,7 @@ When `bind[X]` is used, according to the type of `X` different codes will be gen
 ```scala
 // case class X(a:A, b:B, ..)
 
-val surface = surface.of[X]
+val surface = Surface.of[X]
 // build instances of a, b, ...
 val args = surface.params.map(p -> session.getInstance(p.surface))
 surface.objectFactory.newInstance(p)
@@ -162,7 +162,7 @@ surface.objectFactory.newInstance(p)
 - If `X` is an abstract class or trait, `X` needs to be found in X because `X` cannot be instantiated automatically:
 
 ```scala
-session.get(surface.of[X])
+session.get(Surface.of[X])
 ```
 
 
@@ -174,14 +174,14 @@ Here are some examples of Surface:
 ```scala
 import wvlet.surface
 
-surface.of[A] // A
-surface.of[Seq[Int]] // Seq[Int]
-surface.of[Seq[_]] // Seq[_]
+Surface.of[A] // A
+Surface.of[Seq[Int]] // Seq[Int]
+Surface.of[Seq[_]] // Seq[_]
 // Seq[Int] and Seq[_] are different types as Surface
 
 // Type alias
 type MyInt = Int
-surface.of[MyInt] // MyInt:=Int
+Surface.of[MyInt] // MyInt:=Int
 ```
 
 Scala is a JVM language so at the byte-code level all of generics type parameters will be removed (type erasure).
@@ -207,5 +207,5 @@ Surface also holds object parmeters, so that we can find objects necessary for b
 case class A(b:B, c:C)
 
 // B and C will be necessary to build A
-surface.of[A] => Surface("A", params:Seq("b" -> surface.of[B], "c" -> surface.of[C]))
+Surface.of[A] => Surface("A", params:Seq("b" -> Surface.of[B], "c" -> Surface.of[C]))
 ```

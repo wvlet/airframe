@@ -15,7 +15,7 @@ package wvlet.airframe.codec
 import java.time.{Instant, ZonedDateTime}
 
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.{AirframeSpec, msgpack, surface}
+import wvlet.airframe.surface.Surface
 
 /**
   *
@@ -25,11 +25,11 @@ class JavaTimeCodecTest extends CodecSpec {
     val now     = Instant.now()
     val timeStr = "2018-05-26T21:10:29.858818Z"
     val i       = Instant.parse(timeStr)
-    roundtrip(surface.of[Instant], i)
+    roundtrip(Surface.of[Instant], i)
 
-    roundtrip(surface.of[Instant], Instant.ofEpochMilli(0))
-    roundtrip(surface.of[Instant], Instant.ofEpochMilli(14000000))
-    roundtrip(surface.of[Instant], now)
+    roundtrip(Surface.of[Instant], Instant.ofEpochMilli(0))
+    roundtrip(Surface.of[Instant], Instant.ofEpochMilli(14000000))
+    roundtrip(Surface.of[Instant], now)
 
     val codec = MessageCodec.of[Seq[Instant]]
     val p     = MessagePack.newBufferPacker
@@ -47,8 +47,8 @@ class JavaTimeCodecTest extends CodecSpec {
   }
 
   "support ZonedDateTime" in {
-    roundtrip(surface.of[ZonedDateTime], ZonedDateTime.now())
-    roundtrip(surface.of[ZonedDateTime], ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
+    roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.now())
+    roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
 
     val codec = MessageCodec.of[ZonedDateTime]
     val p     = MessagePack.newBufferPacker
@@ -59,7 +59,7 @@ class JavaTimeCodecTest extends CodecSpec {
 
   "support java.util.Date" in {
     val now = java.util.Date.from(Instant.now())
-    roundtrip(surface.of[java.util.Date], now)
+    roundtrip(Surface.of[java.util.Date], now)
   }
 
 }

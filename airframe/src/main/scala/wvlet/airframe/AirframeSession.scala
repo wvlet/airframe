@@ -46,13 +46,13 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private lazy val bindingTable: Map[Surface, Binding] = {
     val b = Seq.newBuilder[(Surface, Binding)]
     // Add a reference to this session to allow bind[Session]
-    val sessionSurface = wvlet.airframe.surface.of[Session]
+    val sessionSurface = Surface.of[Session]
     val sessionBinding =
       ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
     b += sessionSurface -> sessionBinding
 
     // Add a reference to the design
-    val designSurface = wvlet.airframe.surface.of[Design]
+    val designSurface = Surface.of[Design]
     val designBinding =
       ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]), true, true)
     b += designSurface -> designBinding

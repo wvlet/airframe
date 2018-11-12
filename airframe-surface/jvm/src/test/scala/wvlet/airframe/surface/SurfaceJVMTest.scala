@@ -17,8 +17,6 @@ package wvlet.airframe.surface
 import java.time.temporal.ChronoUnit
 import java.io.File
 
-import wvlet.airframe.surface
-
 object SurfaceJVMTest {
   type MyChrono = ChronoUnit
 }
@@ -30,20 +28,20 @@ class SurfaceJVMTest extends SurfaceSpec {
     "resolve ParSeq" in {
       pending
       //import scala.collection.parallel.ParSeq
-      //check(surface.of[ParSeq[Int]], "ParSeq[Int]")
+      //check(Surface.of[ParSeq[Int]], "ParSeq[Int]")
     }
 
     "resolve java util type" in {
-      check(surface.of[File], "File")
-      check(surface.of[java.util.Date], "Date")
-      check(surface.of[java.time.LocalDate], "LocalDate")
-      check(surface.of[java.time.LocalDateTime], "LocalDateTime")
-      check(surface.of[java.time.Instant], "Instant")
+      check(Surface.of[File], "File")
+      check(Surface.of[java.util.Date], "Date")
+      check(Surface.of[java.time.LocalDate], "LocalDate")
+      check(Surface.of[java.time.LocalDateTime], "LocalDateTime")
+      check(Surface.of[java.time.Instant], "Instant")
     }
 
     "resolve java enum type" in {
-      check(surface.of[ChronoUnit], "ChronoUnit")
-      check(surface.of[MyChrono], "MyChrono:=ChronoUnit")
+      check(Surface.of[ChronoUnit], "ChronoUnit")
+      check(Surface.of[MyChrono], "MyChrono:=ChronoUnit")
     }
   }
 }

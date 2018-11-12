@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.io.File
 
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.{msgpack, surface}
+import wvlet.airframe.surface.Surface
 
 /**
   *
@@ -37,7 +37,7 @@ class StandardCodecTest extends CodecSpec {
 
     "support Enum" in {
       for (v <- TestEnum.values()) {
-        roundtrip[TestEnum](surface.of[TestEnum], v)
+        roundtrip[TestEnum](Surface.of[TestEnum], v)
       }
 
       val codec = MessageCodec.of[TestEnum]

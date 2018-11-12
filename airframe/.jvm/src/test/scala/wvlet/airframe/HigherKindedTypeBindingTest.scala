@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.surface.Surface
+
 import scala.concurrent.Future
 import scala.language.higherKinds
 import scala.util.Success
@@ -48,7 +50,7 @@ class HigherKindedTypeBindingTest extends AirframeSpec {
     "support higher-kinded type binding" in {
 
       // TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js
-      val s = surface.of[WebApp[Future]]
+      val s = Surface.of[WebApp[Future]]
       info(s)
       info(s.typeArgs(0))
 

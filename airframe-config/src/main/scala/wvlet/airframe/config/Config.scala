@@ -20,7 +20,7 @@ import PropertiesConfig.ConfigKey
 import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.ClassTag
@@ -117,7 +117,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   }
 
   def of[ConfigType: ru.TypeTag]: ConfigType = {
-    val t = surface.of[ConfigType]
+    val t = Surface.of[ConfigType]
     find(t) match {
       case Some(x) =>
         x.asInstanceOf[ConfigType]
@@ -127,7 +127,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   }
 
   def getOrElse[ConfigType: ru.TypeTag](default: => ConfigType): ConfigType = {
-    val t = surface.of[ConfigType]
+    val t = Surface.of[ConfigType]
     find(t) match {
       case Some(x) =>
         x.asInstanceOf[ConfigType]
@@ -136,7 +136,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     }
   }
   def defaultValueOf[ConfigType: ru.TypeTag]: ConfigType = {
-    val tpe = surface.of[ConfigType]
+    val tpe = Surface.of[ConfigType]
     getDefaultValueOf(tpe).asInstanceOf[ConfigType]
   }
 
@@ -146,7 +146,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   }
 
   def register[ConfigType: ru.TypeTag](config: ConfigType): Config = {
-    val tpe = surface.of[ConfigType]
+    val tpe = Surface.of[ConfigType]
     this + ConfigHolder(tpe, config)
   }
 
@@ -156,12 +156,12 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     * @return
     */
   def registerDefault[ConfigType: ru.TypeTag]: Config = {
-    val tpe = surface.of[ConfigType]
+    val tpe = Surface.of[ConfigType]
     this + ConfigHolder(tpe, defaultValueOf[ConfigType])
   }
 
   def registerFromYaml[ConfigType: ru.TypeTag](yamlFile: String): Config = {
-    val tpe = surface.of[ConfigType]
+    val tpe = Surface.of[ConfigType]
     val config: Option[ConfigType] = loadFromYaml[ConfigType](yamlFile, onMissingFile = {
       throw new FileNotFoundException(s"${yamlFile} is not found in ${env.configPaths.mkString(":")}")
     })
@@ -175,7 +175,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
 
   private def loadFromYaml[ConfigType: ru.TypeTag](yamlFile: String,
                                                    onMissingFile: => Option[ConfigType]): Option[ConfigType] = {
-    val tpe = surface.of[ConfigType]
+    val tpe = Surface.of[ConfigType]
     findConfigFile(yamlFile) match {
       case None =>
         onMissingFile
@@ -199,7 +199,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
 
   def registerFromYamlOrElse[ConfigType: ru.TypeTag: ClassTag](yamlFile: String,
                                                                defaultValue: => ConfigType): Config = {
-    val tpe    = surface.of[ConfigType]
+    val tpe    = Surface.of[ConfigType]
     val config = loadFromYaml[ConfigType](yamlFile, onMissingFile = Some(defaultValue))
     this + ConfigHolder(tpe, config.get)
   }

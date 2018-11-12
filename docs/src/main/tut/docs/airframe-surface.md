@@ -37,14 +37,14 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-surface" % "(version)"
 libraryDependencies += "org.wvlet.airframe" %%% "airframe-surface" % "(version)"
 ```
 
-## surface.of[X]
+## Surface.of[X]
 
 ```scala
-import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 
 case class A(id:Int, name:String)
 
-val s = surface.of[A]
+val s = Surface.of[A]
 println(s.toString) // This will show A(id:Int, name:String)
 
 // Find object parameters
@@ -64,7 +64,7 @@ s.objectFactory.map{ f =>
 
 type UserName = String
 
-surface.of[UserName] //  Returns UserName:=String
+Surface.of[UserName] //  Returns UserName:=String
 
 ```
 
@@ -73,15 +73,15 @@ surface.of[UserName] //  Returns UserName:=String
 To have different surfaces for the same type, you can use tagged type (@@):
 
 ```scala
-import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.tag._
 
 class Fruit
 trait Apple
 trait Banana
 
-surface.of[Fruit @@ Apple]
-surface.of[Fruit @@ Banana]
+Surface.of[Fruit @@ Apple]
+Surface.of[Fruit @@ Banana]
 ```
 
 ### Runtime Annotation
@@ -89,14 +89,14 @@ surface.of[Fruit @@ Banana]
 Reading runtime-annotation is supported for JVM projects. Import `wvlet.airframe.surface.reflect._` to use this feature.
 
 ```scala
-import wvlet.airframe.surface
+import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect._
 import javax.annotation.Resource
  
 @Resource(name="my resource")
 class A(@Resource(name = "param 1") a:String)
 
-val s = surface.of[A]
+val s = Surface.of[A]
 // Reading class annotation
 val a = s.findAnnotationOf[Resource]
 a.get.name // "my resource"

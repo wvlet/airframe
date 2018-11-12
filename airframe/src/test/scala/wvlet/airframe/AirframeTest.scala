@@ -329,18 +329,18 @@ class AirframeTest extends AirframeSpec {
         val d = newDesign
           .bind[Printer].to[Printer]
       }
-      ex.deps should contain(surface.of[Printer])
+      ex.deps should contain(Surface.of[Printer])
       ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
           .bind[Printer].toSingletonOf[Printer]
-      }.deps should contain(surface.of[Printer])
+      }.deps should contain(Surface.of[Printer])
 
       intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
           .bind[Printer].toEagerSingletonOf[Printer]
-      }.deps should contain(surface.of[Printer])
+      }.deps should contain(Surface.of[Printer])
     }
 
 //    trait HasCycle {
@@ -357,8 +357,8 @@ class AirframeTest extends AirframeSpec {
 //        c.build[HasCycle]
 //      }
 //      warn(s"${caught}")
-//      caught.deps should contain(surface.of[A])
-//      caught.deps should contain(surface.of[B])
+//      caught.deps should contain(Surface.of[A])
+//      caught.deps should contain(Surface.of[B])
     }
 
     "detect missing dependencies" in {
@@ -414,7 +414,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "support type alias" taggedAs ("alias") in {
-      val apple = surface.of[Apple]
+      val apple = Surface.of[Apple]
       warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
       val d = newDesign
@@ -543,7 +543,7 @@ class AirframeTest extends AirframeSpec {
 
       warn("Running MISSING_SESSION test")
       val caught = intercept[MISSING_SESSION] {
-        Session.findSession(surface.of[Test], new Test {})
+        Session.findSession(Surface.of[Test], new Test {})
       }
       warn(caught.getMessage)
     }

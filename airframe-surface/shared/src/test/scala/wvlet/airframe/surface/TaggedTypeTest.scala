@@ -15,7 +15,6 @@
 package wvlet.airframe.surface
 
 import wvlet.airframe.surface.tag._
-import wvlet.airframe.surface
 
 object TaggedTypeTest {
   case class Person(id: Int, name: String)
@@ -37,7 +36,7 @@ class TaggedTypeTest extends SurfaceSpec {
     }
 
     "be a reference" in {
-      val t = check(surface.of[Person @@ Employee], "Person@@Employee")
+      val t = check(Surface.of[Person @@ Employee], "Person@@Employee")
       val p = t.dealias
       p.name shouldBe "Person"
       t.isPrimitive shouldBe false
@@ -48,7 +47,7 @@ class TaggedTypeTest extends SurfaceSpec {
       t.typeArgs shouldBe empty
       t.params.mkString(",") shouldBe "id:Int,name:String"
 
-      val n    = check(surface.of[Name @@ Employee], "Name@@Employee")
+      val n    = check(Surface.of[Name @@ Employee], "Name@@Employee")
       val name = n.dealias
       name.name shouldBe "String"
       n.isPrimitive shouldBe true
@@ -58,26 +57,26 @@ class TaggedTypeTest extends SurfaceSpec {
     }
 
     "tag tagged type" in {
-      check(surface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
+      check(Surface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
     }
 
     "be comparable" in {
-      val t1 = check(surface.of[Person @@ Employee], "Person@@Employee")
-      val t2 = check(surface.of[Person @@ Customer], "Person@@Customer")
-      val t3 = check(surface.of[Person @@ Guest], "Person@@Guest")
+      val t1 = check(Surface.of[Person @@ Employee], "Person@@Employee")
+      val t2 = check(Surface.of[Person @@ Customer], "Person@@Customer")
+      val t3 = check(Surface.of[Person @@ Guest], "Person@@Guest")
 
       val set = Set(t1, t2)
-      set should contain(surface.of[Person @@ Employee])
-      set should contain(surface.of[Person @@ Customer])
-      set should not contain (surface.of[Person @@ Guest])
+      set should contain(Surface.of[Person @@ Employee])
+      set should contain(Surface.of[Person @@ Customer])
+      set should not contain (Surface.of[Person @@ Guest])
 
       set should contain(t1)
       set should contain(t2)
       set should not contain (t3)
 
-      val c = check(surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
+      val c = check(Surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
       val s = Set(c)
-      s should contain(surface.of[Seq[String] @@ Employee])
+      s should contain(Surface.of[Seq[String] @@ Employee])
       s should contain(c)
     }
   }

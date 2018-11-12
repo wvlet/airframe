@@ -2,7 +2,7 @@ package wvlet.airframe.tablet.text
 
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.surface.reflect.SurfaceFactory
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.tablet.obj.ObjectTabletReader
 import wvlet.log.LogSupport
 
@@ -58,7 +58,7 @@ object PrettyPrint extends LogSupport {
 
 class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth: Int = 100) extends LogSupport {
   def show[A: ru.TypeTag](seq: Seq[A], limit: Int = 20): Unit = {
-    showRaw(SurfaceFactory.of[A], seq, limit)
+    showRaw(ReflectSurfaceFactory.of[A], seq, limit)
   }
 
   def showRaw[A](elementSurface: Surface, seq: Seq[A], limit: Int = 20): Unit = {
@@ -66,7 +66,7 @@ class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth:
   }
 
   def pp[A: ru.TypeTag](seq: Seq[A]): Unit = {
-    ppRaw(SurfaceFactory.of[A], seq)
+    ppRaw(ReflectSurfaceFactory.of[A], seq)
   }
 
   def ppRaw[A](surface: Surface, seq: Seq[A]): Unit = {
@@ -74,7 +74,7 @@ class PrettyPrint(codec: Map[Surface, MessageCodec[_]] = Map.empty, maxColWidth:
   }
 
   def pf[A: ru.TypeTag](seq: Seq[A]): Seq[String] = {
-    pfRaw(SurfaceFactory.of[A], seq)
+    pfRaw(ReflectSurfaceFactory.of[A], seq)
   }
 
   def pfRaw[A](surface: Surface, seq: Seq[A]): Seq[String] = {

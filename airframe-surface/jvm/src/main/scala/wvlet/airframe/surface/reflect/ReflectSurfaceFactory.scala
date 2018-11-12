@@ -17,7 +17,6 @@ import java.lang.reflect.InvocationTargetException
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface
 import wvlet.airframe.surface._
 
 import scala.collection.JavaConverters._
@@ -26,7 +25,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-object SurfaceFactory extends LogSupport {
+object ReflectSurfaceFactory extends LogSupport {
 
   import ru._
 
@@ -218,7 +217,7 @@ object SurfaceFactory extends LogSupport {
         }
       } catch {
         case e: Throwable =>
-          error(s"Failed to build surface.of[${tpe}]", e)
+          error(s"Failed to build Surface.of[${tpe}]", e)
           throw e
       }
     }

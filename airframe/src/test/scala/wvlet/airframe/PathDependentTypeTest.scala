@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import wvlet.airframe.surface.Surface
 
 /**
   *
@@ -19,7 +20,7 @@ package wvlet.airframe
 class PathDependentTypeTest extends AirframeSpec {
   "pass dependent types" in {
     import PathDependentType._
-    val s = surface.of[JdbcProfile#Backend#Database]
+    val s = Surface.of[JdbcProfile#Backend#Database]
 
     val d = newDesign.noLifeCycleLogging
       .bind[JdbcProfile#Backend#Database].toInstance(new PathDependentType.MyBackend.DatabaseDef)

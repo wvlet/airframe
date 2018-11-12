@@ -16,7 +16,7 @@ package wvlet.airframe.tablet.obj
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory, MessageHolder}
 import wvlet.airframe.tablet.{Record, TabletWriter}
 import wvlet.log.LogSupport
-import wvlet.airframe.surface
+
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.runtime.{universe => ru}
@@ -31,7 +31,7 @@ class ObjectTabletWriter[A: ru.TypeTag](codec: Map[Surface, MessageCodec[_]] = M
   private val elementCodec = MessageCodecFactory.defaultFactory.withCodecs(codec).of[A]
 
   private val h         = new MessageHolder
-  private val s         = surface.of[A]
+  private val s         = Surface.of[A]
   private lazy val zero = Zero.zeroOf(s)
 
   def write(record: Record): A = {
