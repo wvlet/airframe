@@ -37,7 +37,6 @@ class FinagleServerFactoryTest extends AirframeSpec {
     "start multiple FinagleServers" in {
       val d =
         finagleDefaultDesign
-          .bind[MyApi].toSingleton
           .bind[MyServer1].toProvider { f: FinagleServerFactory =>
             f.newFinagleServer(p1, router1)
           }

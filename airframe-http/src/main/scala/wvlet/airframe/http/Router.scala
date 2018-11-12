@@ -16,10 +16,10 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
 import wvlet.airframe.surface.reflect._
-import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
 import wvlet.log.LogSupport
 
-import scala.reflect.runtime.{universe => ru}
+import scala.language.experimental.macros
 
 /**
   * Provides mapping from HTTP requests to controller methods (= Route)
@@ -39,35 +39,35 @@ class Router(val routes: Seq[Route]) {
   /**
     * Add methods annotated with @Endpoint to the routing table
     */
-  def add[Controller: ru.TypeTag]: Router = {
+  def add[Controller]: Router = macro RouterMacros.add[Controller]
+}
+
+object Router extends LogSupport {
+  def empty: Router = Router()
+  def of[Controller]: Router = macro RouterMacros.of[Controller]
+  def apply(): Router = new Router(Seq.empty)
+
+  def add(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
     import wvlet.airframe.surface.reflect._
 
-    // Check prefix
-    val serviceSurface = Surface.of[Controller]
     val prefixPath =
-      serviceSurface
+      controllerSurface
         .findAnnotationOf[Endpoint]
         .map(_.path())
         .getOrElse("")
 
     val newRoutes =
-      Surface
-        .methodsOf[Controller]
+      controllerMethodSurfaces
         .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
-            Route(serviceSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+            Route(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
-    new Router(routes ++ newRoutes)
+    new Router(r.routes ++ newRoutes)
   }
-}
 
-object Router {
-  def empty: Router                      = Router()
-  def of[Controller: ru.TypeTag]: Router = apply().add[Controller]
-  def apply(): Router                    = new Router(Seq.empty)
 }
 
 case class Route(controllerSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
