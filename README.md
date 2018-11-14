@@ -12,6 +12,8 @@
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
 ![Airframe Icon](airframe_icon_small.png) 
+
+
 Airframe https://wvlet.org/airframe is a collection of lightweight building blocks for Scala.
 
 - [Getting Started](https://wvlet.org/airframe/)
