@@ -39,7 +39,7 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Blog Articles
-- [Airframe HTTP: A Minimalist Approach For Building Web Services in Scala](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
+- [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
   - airframe-http, airframe-http-finagle
 - [Demystifying Dependency Injection with Airframe](https://medium.com/@taroleo/demystifying-dependency-injection-with-airframe-9b637034a78a)
   - airframe dependency injection

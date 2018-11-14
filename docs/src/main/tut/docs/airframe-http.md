@@ -9,7 +9,7 @@ Airframe HTTP: A lightweight web service builder
 airframe-http is a library for creating HTTP web services.
 - **airframe-http-finagle**: Finagle as a backend HTTP server
 
-Blog article: [Airframe HTTP: A Minimalist Appraoch For Building Web Services in Scala](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
+Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
 # airframe-http-finagle
 
