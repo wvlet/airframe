@@ -11,21 +11,15 @@
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
+![Airframe Icon](airframe_icon.png) 
 Airframe https://wvlet.org/airframe is a collection of lightweight building blocks for Scala.
 
-See [Documentation](https://wvlet.org/airframe/) for further details.
+- [Getting Started](https://wvlet.org/airframe/)
 
 ## Resources
 
-- [Airframe Home](https://wvlet.org/airframe/)
 - [Documentation](https://wvlet.org/airframe/docs)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
-
-## Getting Started
-[![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
-
-
-See the instruction at [documentation](https://wvlet.org/airframe/) page.
 
 ## LICENSE
 
