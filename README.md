@@ -11,8 +11,7 @@
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
-![Airframe Icon](logos/airframe-badge-light.png)
-
+<p align="center"><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-badge-light.png" alt="logo" width="500px"></p>
 
 Airframe https://wvlet.org/airframe is a collection of lightweight building blocks for Scala.
 
