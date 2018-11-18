@@ -1,4 +1,4 @@
-<html><head><title>Airframe: airframe-metrics</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Taro L. Saito" /><meta name="description" content="Lightweight Building Blocks for Scala" /><meta name="og:image" content="/airframe/img/poster.png" /><meta name="og:title" content="Airframe: airframe-metrics" /><meta name="og:site_name" content="Airframe" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Lightweight Building Blocks for Scala" /><link rel="icon" type="image/png" href="/airframe/img/favicon.png" /><meta name="twitter:title" content="Airframe: airframe-metrics" /><meta name="twitter:image" content="/airframe/img/poster.png" /><meta name="twitter:description" content="Lightweight Building Blocks for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><script async="async">
+<html><head><title>Airframe: airframe-metrics</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Taro L. Saito" /><meta name="description" content="Lightweight Building Blocks for Scala" /><meta name="og:image" content="/airframe/img/poster.png" /><meta name="og:title" content="Airframe: airframe-metrics" /><meta name="og:site_name" content="Airframe" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Lightweight Building Blocks for Scala" /><link rel="icon" type="image/png" href="/airframe/img/favicon.png" /><meta name="twitter:title" content="Airframe: airframe-metrics" /><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png" /><meta name="twitter:description" content="Lightweight Building Blocks for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><script async="async">
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -15,15 +15,14 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h2 id="datasize">DataSize</h2>
 
 <p>Human-readable byte-size representation (e.g., 10GB, 1TB, etc.)</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.DataSize</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.DataSize</span>
 
 <span class="c1">// Returns the most succinct representation of the data size
 </span><span class="nc">DataSize</span><span class="o">.</span><span class="n">succinct</span><span class="o">(</span><span class="mi">1024</span><span class="o">).</span><span class="n">toString</span> <span class="c1">// 1kB
@@ -31,15 +30,14 @@ ga('send', 'pageview');
 </span>
 <span class="c1">// Parse the datasize strings
 </span><span class="nc">DataSize</span><span class="o">(</span><span class="s">"5GB"</span><span class="o">)</span> <span class="c1">// DataSize(5.0, GIGABYTE)
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="elapsedtime">ElapsedTime</h2>
 
 <p>Human-readable time representation (e.g., 1ns, 1 us, 1ms, 1s, 1m, 1h, 1d, etc.) useful for
 measuring elapsed times.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.ElapsedTime</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.ElapsedTime</span>
 
 <span class="c1">// Returns the most succinct
 </span><span class="nc">ElapsedTime</span><span class="o">.</span><span class="n">succinctMillis</span><span class="o">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">)</span> <span class="c1">// ElapsedTime(3.0, SECONDS)
@@ -48,8 +46,7 @@ measuring elapsed times.</p>
 <span class="c1">// Parse the elapsed time strings
 </span><span class="k">val</span> <span class="n">e</span> <span class="k">=</span> <span class="nc">ElapsedTime</span><span class="o">(</span><span class="s">"1h"</span><span class="o">)</span> <span class="c1">// ElapsedTime(1.0, HOURS)
 </span><span class="n">e</span><span class="o">.</span><span class="n">toMillis</span> <span class="c1">// 3600000
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="relative-time-window">Relative Time Window</h2>
 
@@ -57,7 +54,7 @@ measuring elapsed times.</p>
 <code class="highlighter-rouge">TimeWindow</code> class in airframe-metrics enables specifying such time windows using a human-friendly string format.</p>
 
 <h3 id="code-example">Code Example</h3>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
 
 <span class="k">val</span> <span class="n">w</span> <span class="k">=</span>
   <span class="nc">TimeWindow</span>
@@ -69,8 +66,7 @@ measuring elapsed times.</p>
 </span>
 <span class="c1">// last 7 days to now
 </span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d/now"</span><span class="o">))</span> <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="time-window-string-representation">Time Window String Representation</h2>
 
@@ -79,15 +75,14 @@ Values with (or without)<code class="highlighter-rouge">-</code> sign means the 
 
 <h3 id="format">Format</h3>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
 // seconds, minutes, hours, days, weeks, (M)onths, quarters, years
 UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
 RANGE    := (DURATION) (/ (OFFSET))?
 DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="examples">Examples</h3>
 
