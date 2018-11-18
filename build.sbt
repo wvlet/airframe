@@ -212,6 +212,7 @@ lazy val docs =
       micrositeHighlightTheme := "ocean",
       micrositeGithubOwner := "wvlet",
       micrositeGithubRepo := "airframe",
+      micrositeUrl := "https://wvlet.org",
       micrositeBaseUrl := "airframe",
       micrositeAnalyticsToken := "UA-98364158-1",
       micrositeDocumentationUrl := "docs",
