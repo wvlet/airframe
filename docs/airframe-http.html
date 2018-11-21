@@ -22,13 +22,14 @@ ga('send', 'pageview');
 
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span> <span class="o">%%</span> <span class="nc">AIRFRAME_VERSION</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span> <span class="o">%%</span> <span class="nc">AIRFRAME_VERSION</span>
+</code></pre>
+</div>
 
 <h2 id="defining-http-endpoints">Defining HTTP Endpoints</h2>
 
 <p><strong>MyApi.scala</strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
 <span class="k">import</span> <span class="nn">com.twitter.util.Future</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.</span><span class="o">{</span><span class="nc">Endpoint</span><span class="o">,</span> <span class="nc">HttpMethod</span><span class="o">,</span> <span class="nc">HttpRequest</span><span class="o">}</span>
 
@@ -65,21 +66,23 @@ ga('send', 'pageview');
     <span class="nc">Future</span><span class="o">.</span><span class="n">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">userAgent</span><span class="o">))</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>This <code class="highlighter-rouge">MyApi</code> defines these http end points:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET  /v1/user/:name    returns {"name":"..."}
+<div class="highlighter-rouge"><pre class="highlight"><code>GET  /v1/user/:name    returns {"name":"..."}
 POST /v1/user          returns {"name":"..."}
 GET  /v1/info          returns {"version":"1.0", "ua":"...."}
 GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>Mapping between JSON values and Scala objects will be handled automatically.</p>
 
 <h2 id="starting-a-finagle-http-server">Starting A Finagle HTTP Server</h2>
 
 <p>To start a server, add airframe bindings based on <code class="highlighter-rouge">finagleDefaultDesign</code>:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 <span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
 
@@ -101,7 +104,8 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 </span>  <span class="n">server</span><span class="o">.</span><span class="n">waitServerTermination</span>
 <span class="o">}</span>
 <span class="c1">// The server will terminate here
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <h2 id="customizing-finagle">Customizing Finagle</h2>
 

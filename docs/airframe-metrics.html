@@ -15,14 +15,15 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h2 id="datasize">DataSize</h2>
 
 <p>Human-readable byte-size representation (e.g., 10GB, 1TB, etc.)</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.DataSize</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.DataSize</span>
 
 <span class="c1">// Returns the most succinct representation of the data size
 </span><span class="nc">DataSize</span><span class="o">.</span><span class="n">succinct</span><span class="o">(</span><span class="mi">1024</span><span class="o">).</span><span class="n">toString</span> <span class="c1">// 1kB
@@ -30,14 +31,15 @@ ga('send', 'pageview');
 </span>
 <span class="c1">// Parse the datasize strings
 </span><span class="nc">DataSize</span><span class="o">(</span><span class="s">"5GB"</span><span class="o">)</span> <span class="c1">// DataSize(5.0, GIGABYTE)
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <h2 id="elapsedtime">ElapsedTime</h2>
 
 <p>Human-readable time representation (e.g., 1ns, 1 us, 1ms, 1s, 1m, 1h, 1d, etc.) useful for
 measuring elapsed times.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.ElapsedTime</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.ElapsedTime</span>
 
 <span class="c1">// Returns the most succinct
 </span><span class="nc">ElapsedTime</span><span class="o">.</span><span class="n">succinctMillis</span><span class="o">(</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">1000</span><span class="o">)</span> <span class="c1">// ElapsedTime(3.0, SECONDS)
@@ -46,7 +48,8 @@ measuring elapsed times.</p>
 <span class="c1">// Parse the elapsed time strings
 </span><span class="k">val</span> <span class="n">e</span> <span class="k">=</span> <span class="nc">ElapsedTime</span><span class="o">(</span><span class="s">"1h"</span><span class="o">)</span> <span class="c1">// ElapsedTime(1.0, HOURS)
 </span><span class="n">e</span><span class="o">.</span><span class="n">toMillis</span> <span class="c1">// 3600000
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <h2 id="relative-time-window">Relative Time Window</h2>
 
@@ -54,7 +57,7 @@ measuring elapsed times.</p>
 <code class="highlighter-rouge">TimeWindow</code> class in airframe-metrics enables specifying such time windows using a human-friendly string format.</p>
 
 <h3 id="code-example">Code Example</h3>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.metrics.TimeWindow</span>
 
 <span class="k">val</span> <span class="n">w</span> <span class="k">=</span>
   <span class="nc">TimeWindow</span>
@@ -66,7 +69,8 @@ measuring elapsed times.</p>
 </span>
 <span class="c1">// last 7 days to now
 </span><span class="n">println</span><span class="o">(</span><span class="n">w</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"-7d/now"</span><span class="o">))</span> <span class="c1">// [2016-06-19 00:00:00-0700,2016-06-26 01:23:45-0700)
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <h2 id="time-window-string-representation">Time Window String Representation</h2>
 
@@ -75,14 +79,15 @@ Values with (or without)<code class="highlighter-rouge">-</code> sign means the 
 
 <h3 id="format">Format</h3>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
+<div class="highlighter-rouge"><pre class="highlight"><code>DURATION := (+ | -)?(INTEGER)(UNIT)
 // seconds, minutes, hours, days, weeks, (M)onths, quarters, years
 UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
 RANGE    := (DURATION) (/ (OFFSET))?
 DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="examples">Examples</h3>
 

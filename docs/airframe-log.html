@@ -60,48 +60,52 @@ ga('send', 'pageview');
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
 
 <span class="c1">// For Scala.js (Since airframe-log 1.2)
 </span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="using-logsupport-trait">Using LogSupport trait</h3>
 
 <p>The most convenient way to use airframe-log is adding <code class="highlighter-rouge">LogSupport</code> to your class:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
 
 <span class="k">object</span> <span class="nc">MyApp</span> <span class="k">extends</span> <span class="nc">LogSupport</span>  <span class="o">{</span>
    <span class="n">info</span><span class="o">(</span><span class="s">"info log"</span><span class="o">)</span>
    <span class="n">debug</span><span class="o">(</span><span class="s">"debug log"</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>The logger name will be determined from your class name (e.g., <code class="highlighter-rouge">MyApp</code>).</p>
 
 <p>Alternatively you can load <code class="highlighter-rouge">Logger</code> instance manually:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.Logger</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.Logger</span>
 
 <span class="k">class</span> <span class="nc">YourApp</span> <span class="o">{</span>
    <span class="k">private</span> <span class="k">val</span> <span class="n">logger</span> <span class="k">=</span> <span class="nc">Logger</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">YourApp</span><span class="o">]</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="using-the-default-configuration">Using the default configuration</h3>
 
 <p>If your project involves dependencies that set their own java.util.logging configurations, 
 you can force using the default configuration of Airframe Log by calling <code class="highlighter-rouge">wvlet.airframe.log.init</code>:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="c1">// Initialize with INFO level and SourceCodeLogFormatter
 </span><span class="n">log</span><span class="o">.</span><span class="n">init</span>
 
 <span class="c1">// For terminals not supporting ANSI colors
 </span><span class="n">log</span><span class="o">.</span><span class="n">initNoColor</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="configuring-log-levels">Configuring log levels</h3>
 
@@ -109,19 +113,21 @@ you can force using the default configuration of Airframe Log by calling <code c
 
 <p>If <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> is called, airframe-log periodically scans log-level properties file (default every 1 minute) to configure logger levels:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.Logger</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.Logger</span>
 
 <span class="o">#</span><span class="k">#</span> <span class="nc">Scan</span> <span class="n">log</span> <span class="n">files</span> <span class="o">(</span><span class="n">not</span> <span class="n">available</span> <span class="k">for</span> <span class="nc">Scala</span><span class="o">.</span><span class="n">js</span><span class="o">)</span>
 <span class="nc">Logger</span><span class="o">.</span><span class="n">scheduleLogLevelScan</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p><strong><em>log.properties</em></strong> example:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># You can use all, trace, debug, info, warn, error, info, all as log level
+<div class="highlighter-rouge"><pre class="highlight"><code># You can use all, trace, debug, info, warn, error, info, all as log level
 wvlet.airframe=debug
 org.eclipse.jetty=info
 org.apache.http=info
 com.amazonaws=info
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>The format follows <a href="https://docs.oracle.com/javase/7/docs/api/java/util/Properties.html#load(java.io.Reader)">Java Properties file format</a>.</p>
 
 <p>In default, loglevel file will be found in this order:</p>
@@ -141,7 +147,7 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <p>To scan log level properties periodically with <a href="http://www.scalatest.org/">ScalaTest</a>, define the base trait as follows:</p>
 
 <p><strong><a href="https://github.com/wvlet/log/blob/master/src/test/scala/wvlet/log/Spec.scala">Spec.scala</a></strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalatest.</span><span class="o">{</span><span class="nc">BeforeAndAfter</span><span class="o">,</span> <span class="nc">BeforeAndAfterAll</span><span class="o">,</span> <span class="nc">WordSpec</span><span class="o">,</span> <span class="k">_</span><span class="o">}</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">org.scalatest.</span><span class="o">{</span><span class="nc">BeforeAndAfter</span><span class="o">,</span> <span class="nc">BeforeAndAfterAll</span><span class="o">,</span> <span class="nc">WordSpec</span><span class="o">,</span> <span class="k">_</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">wvlet.log.LogFormatter.SourceCodeLogFormatter</span>
 
 <span class="k">trait</span> <span class="nc">Spec</span> <span class="k">extends</span> <span class="nc">WordSpec</span> <span class="k">with</span> <span class="nc">Matchers</span> <span class="k">with</span> <span class="nc">BeforeAndAfterAll</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
@@ -168,22 +174,25 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
       <span class="o">}</span>
    <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="customizing-log-format">Customizing log format</h3>
 
 <p>You can show the source code location where the log message is generated:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log._</span>
 
 <span class="k">object</span> <span class="nc">MyApp</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
    <span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">LogFormatter</span><span class="o">.</span><span class="nc">SourceCodeLogFormatter</span><span class="o">)</span>
    <span class="n">info</span><span class="o">(</span><span class="s">"log with source code"</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>This code will show:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[MyApp$] log with source code - (MyApp.scala:6)
-</code></pre></div></div>
+<div class="highlighter-rouge"><pre class="highlight"><code>[MyApp$] log with source code - (MyApp.scala:6)
+</code></pre>
+</div>
 <h3 id="pre-defined-log-formatters">Pre-defined log formatters:</h3>
 <p>Here is the list of pre-defined log formatters.</p>
 <ul>
@@ -199,7 +208,7 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <h3 id="customising-logformatter">Customising LogFormatter</h3>
 <p>You can also define your own LogFormatter:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.LogFormatter._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log.LogFormatter._</span>
 <span class="k">object</span> <span class="nc">CustomLogFormatter</span> <span class="k">extends</span> <span class="nc">LogFormatter</span> <span class="o">{</span>
   <span class="k">override</span> <span class="k">def</span> <span class="n">formatLog</span><span class="o">(</span><span class="n">r</span><span class="k">:</span> <span class="kt">LogRecord</span><span class="o">)</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">val</span> <span class="n">log</span> <span class="k">=</span> <span class="n">s</span><span class="s">"[${highlightLog(r.level, r.leafLoggerName)}] ${highlightLog(r.level, r.getMessage)}"</span>
@@ -208,12 +217,13 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 <span class="o">}</span>
 
 <span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">CustomLogFormatter</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala">LogFormat.scala</a>:</p>
 
 <h3 id="using-airframe-log-in-scalajs">Using airframe-log in Scala.js</h3>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.log._</span>
 
 <span class="c1">// This configuration becomes unnecessary since 0.43
 //Logger.setDefaultHandler(new JSConsoleLogHandler)
@@ -222,21 +232,24 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 
   <span class="n">info</span><span class="o">(</span><span class="s">"hello"</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>The log message will be showin in your browser’s developer console.</p>
 
 <p>To configure the log level, use <code class="highlighter-rouge">wvlet.log.setDefaultLogLevel</code> or <code class="highlighter-rouge">wvlet.log.setLogLevel</code>:</p>
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nx">wvlet</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">setDefaultLogLevel</span><span class="p">(</span><span class="s2">"debug"</span><span class="p">)</span>
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="o">&gt;</span> <span class="nx">wvlet</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">setDefaultLogLevel</span><span class="p">(</span><span class="s2">"debug"</span><span class="p">)</span>
 
 <span class="o">&gt;</span> <span class="nx">wvlet</span><span class="p">.</span><span class="nx">log</span><span class="p">.</span><span class="nx">setLogLevel</span><span class="p">(</span><span class="s2">"your.logger.name"</span><span class="p">,</span> <span class="s2">"trace"</span><span class="p">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="using-with-slf4j">Using with slf4j</h3>
 
 <p>If you are using slf4j, just add <code class="highlighter-rouge">slf4j-jdk14</code> to your dependency. The log messages from slf4j will be sent to wvlet-log:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.slf4j"</span> <span class="o">%</span> <span class="s">"slf4j-jdk14"</span> <span class="o">%</span> <span class="s">"1.7.21"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.slf4j"</span> <span class="o">%</span> <span class="s">"slf4j-jdk14"</span> <span class="o">%</span> <span class="s">"1.7.21"</span>
+</code></pre>
+</div>
 
 <ul>
   <li>See also the article, <a href="http://blog.seratch.net/post/150202874933/how-to-start-using-wvlet-log-with-slf4j-projects">How to start using wvlet-log with slf4j projects</a>, written by <a href="https://github.com/seratch">@seratch</a> (author of skinny-framework, scalikejdbc, etc.)</li>
@@ -246,40 +259,44 @@ call <code class="highlighter-rouge">Logger.scheduleLogLevelScan</code> before r
 
 <p>For example, the default logger of Hadoop and Spark is log4j. You can send logs from airframe-log to log4j by adding
 log4j-jul binder:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.apache.logging.log4j"</span> <span class="o">%</span> <span class="s">"log4j-jul"</span> <span class="o">%</span> <span class="s">"2.6.1"</span><span class="o">,</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.apache.logging.log4j"</span> <span class="o">%</span> <span class="s">"log4j-jul"</span> <span class="o">%</span> <span class="s">"2.6.1"</span><span class="o">,</span>
+</code></pre>
+</div>
 
 <h3 id="writing-and-rotating-logs-with-files">Writing and rotating logs with files</h3>
 
 <p>To write and rotate your logs, use <code class="highlighter-rouge">LogRotationHandler</code>:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>logger.resetHandler(new LogRotationHandler(
+<div class="highlighter-rouge"><pre class="highlight"><code>logger.resetHandler(new LogRotationHandler(
     fileName = "your-app.log",
     maxNumberOfFiles = 100, // rotate up to 100 log files
     maxSizeInBytes = 100 * 1024 * 1024 // 100MB
     AppLogFormatter // Any log formatter you like
 ))
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>If you simply need to output logs to a single file without any rotation, use <code class="highlighter-rouge">FileHandler</code>:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">logger</span><span class="o">.</span><span class="n">resetHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">FileHandler</span><span class="o">(</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">logger</span><span class="o">.</span><span class="n">resetHandler</span><span class="o">(</span><span class="k">new</span> <span class="nc">FileHandler</span><span class="o">(</span>
     <span class="n">fileName</span> <span class="k">=</span> <span class="s">"your-app.log"</span><span class="o">,</span> <span class="c1">// Log file name
 </span>    <span class="n">formatter</span> <span class="k">=</span> <span class="nc">AppLogFormatter</span> <span class="c1">// Any log formatter you like
 </span><span class="o">))</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="asynchronous-logging">Asynchronous logging</h3>
 
 <p>If you know your LogHandler is a heavy process (e.g., writing to network or slow disks), you can use 
 <code class="highlighter-rouge">AsyncHandler</code> to do the logging in a background thread:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">asyncHandler</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">AsyncHandler</span><span class="o">(</span><span class="n">a</span> <span class="n">heavy</span> <span class="n">parent</span> <span class="n">log</span> <span class="n">handler</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">asyncHandler</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">AsyncHandler</span><span class="o">(</span><span class="n">a</span> <span class="n">heavy</span> <span class="n">parent</span> <span class="n">log</span> <span class="n">handler</span><span class="o">)</span>
 <span class="k">try</span> <span class="o">{</span>
   <span class="n">logger</span><span class="o">.</span><span class="n">resetHandler</span><span class="o">(</span><span class="n">asyncHandler</span><span class="o">)</span>
 <span class="o">}</span>   
 <span class="k">finally</span> <span class="o">{</span>
   <span class="n">asyncHandler</span><span class="o">.</span><span class="n">close</span> <span class="c1">// To flush unwritten log messages
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>Note that however AsyncHandler has usually higher overhead than the default handler since the asynchronous process involves locking and signal calls. 
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don’t need to use AsyncHandler with LogRotationHandler.</p>
@@ -287,11 +304,12 @@ LogRotationHandler is already optimized for writing logs to files, so you usuall
 <h3 id="clear-existing-logger-configurations">Clear Existing Logger Configurations</h3>
 
 <p>To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Logger</span><span class="o">.</span><span class="n">clearAllHandlers</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Logger</span><span class="o">.</span><span class="n">clearAllHandlers</span>
 
 <span class="c1">// Then set your logger configurations
 </span><span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultFormatter</span><span class="o">(</span><span class="nc">LogFormatter</span><span class="o">.</span><span class="nc">SourceCodeLogFormatter</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="changing-log-levels-using-jmx">Changing Log Levels using JMX</h3>
 
@@ -306,13 +324,15 @@ LogRotationHandler is already optimized for writing logs to files, so you usuall
 
 <p>airframe-log is efficient since it generate the log message objects only when necessary. 
 For example, this logging code:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">debug</span><span class="o">(</span><span class="n">s</span><span class="s">"heavy debug log generation ${obj.toString}"</span><span class="o">)</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">debug</span><span class="o">(</span><span class="n">s</span><span class="s">"heavy debug log generation ${obj.toString}"</span><span class="o">)</span>
+</code></pre>
+</div>
 <p>will be translated into the following efficient one with Scala macros:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">if</span><span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="n">isDebugEnabled</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">if</span><span class="o">(</span><span class="n">logger</span><span class="o">.</span><span class="n">isDebugEnabled</span><span class="o">)</span> <span class="o">{</span>
    <span class="n">debug</span><span class="o">(</span><span class="n">s</span><span class="s">"heavy debug log generation ${obj.toString}"</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>Log message String generation will not happen unless the debug log is effective. 
 Scala macro is also used for finding source code location (LogSource).</p>
 

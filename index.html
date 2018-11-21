@@ -113,7 +113,7 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
 <p>Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:</p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">=</span><span class="s">"(version)"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">=</span><span class="s">"(version)"</span>
 
 <span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span> <span class="mf">2.11</span><span class="o">,</span> <span class="mf">2.12</span><span class="o">,</span> <span class="n">and</span> <span class="mf">2.13</span>
 <span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
@@ -144,14 +144,15 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Metrics units
 </span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span>  <span class="c1">// Object surface inspector
 </span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="dependency-injection-with-airframe">Dependency Injection with Airframe</h3>
 
 <p>With Airframe, your Scala programming can be greatly simplified:</p>
 
 <p>First, <strong>bind</strong> objects to your code with <code class="highlighter-rouge">bind[X]</code>:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">trait</span> <span class="nc">App</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">x</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span>
@@ -159,21 +160,24 @@ For Scala 2.12.6 or later, Java 9 and 10 are also supported.</p>
   <span class="k">val</span> <span class="n">z</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Z</span><span class="o">]</span>
   <span class="c1">// Do something with x, y, and z
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>Next, <strong>design</strong> the object bindings:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">design</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">design</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span>
   <span class="n">newDesign</span>
     <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="n">X</span><span class="o">)</span>  <span class="c1">// Bind type X to a concrete instance
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Y</span><span class="o">].</span><span class="n">toSingleton</span>        <span class="c1">// Bind type Y to a singleton object
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Z</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ZImpl</span><span class="o">]</span>          <span class="c1">// Bind type Z to a singletone of ZImpl instance
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <p>Then <strong>build</strong> an instance and use it:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]{</span> <span class="n">app</span> <span class="k">=&gt;</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]{</span> <span class="n">app</span> <span class="k">=&gt;</span>
   <span class="c1">// Do something with App
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>Airframe builds an instance of <code class="highlighter-rouge">App</code> based on the binding rules specified in the <em>design</em> object. That means when writing applications, you only need to care about how to use objects (<em>bind</em>), rather than how to build them, because design objects already knows how to provide necessary objects to build your classes.</p>
 

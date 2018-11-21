@@ -15,8 +15,9 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-launcher"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-launcher"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h2 id="quick-start">Quick Start</h2>
 
@@ -26,7 +27,7 @@ ga('send', 'pageview');
   <li>Call <code class="highlighter-rouge">Launcher.of[A].execute("command line")</code></li>
 </ol>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.launcher._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.launcher._</span>
 
 <span class="k">class</span> <span class="nc">MyApp</span><span class="o">(</span><span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span> <span class="k">=</span> <span class="s">"-h,--help"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"display help messages"</span><span class="o">,</span> <span class="n">isHelp</span> <span class="k">=</span> <span class="kc">true</span><span class="o">)</span> 
             <span class="n">help</span><span class="k">:</span> <span class="kt">Boolean</span> <span class="o">=</span> <span class="kc">false</span><span class="o">,</span>
@@ -38,30 +39,34 @@ ga('send', 'pageview');
      <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Hello airframe. port:${port}"</span><span class="o">)</span>
    <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>A function annotated with <code class="highlighter-rouge">@defaultCommand</code> will be executed.</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"-p 10010"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"-p 10010"</span><span class="o">)</span>
 <span class="c1">// Hello airframe. port:10010
 </span>
 <span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">""</span><span class="o">)</span>
 <span class="c1">// Hello airframe. port:8080
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <p>If there is a <em>help</em> option (<code class="highlighter-rouge">isHelp = true</code>), command line help messages can be generated automatically.</p>
 
 <p>For example, enable the help option like this:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"--help"</span><span class="o">)</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"--help"</span><span class="o">)</span>
+</code></pre>
+</div>
 
 <p>Then it will show the following help message:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>usage: myapp [options]
+<div class="highlighter-rouge"><pre class="highlight"><code>usage: myapp [options]
 
 [options]
  -p [PORT]   port number
  -h, --help  show help messages
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="available-annotations">Available Annotations</h3>
 
@@ -93,7 +98,7 @@ ga('send', 'pageview');
 <p>You can define a command module (= a set of sub commands) using funcitons in a class.</p>
 
 <p>Add <code class="highlighter-rouge">@command</code> annotation to functions in order to define sub commands:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.launcher._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.launcher._</span>
 <span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
 
 <span class="c1">// Define a global option
@@ -133,23 +138,25 @@ ga('send', 'pageview');
     <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Starting server at ${addr}:${port}"</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>You can call sub commands by specifying the name of the function.
 The sub command name will be matched in a canonical form (ignoring case and removing any symbols like ‘_’, ‘-‘)</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"hello"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"hello"</span><span class="o">)</span>
 <span class="c1">// hello
 </span>
 <span class="nc">Launcher</span><span class="o">.</span><span class="n">execute</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">](</span><span class="s">"start --host localhost -p 10000"</span><span class="o">)</span>
 <span class="c1">// Straing server at localhost:10000
-</span></code></pre></div></div>
+</span></code></pre>
+</div>
 
 <h2 id="nesting-sub-commands">Nesting Sub Commands</h2>
 
 <p>With <code class="highlighter-rouge">addModule</code>, you can add nested command set</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add sub commands `command1` and `command2`:
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// Add sub commands `command1` and `command2`:
 </span><span class="k">val</span> <span class="n">l</span> <span class="k">=</span> <span class="nc">Launcher</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
   <span class="o">.</span><span class="n">addModule</span><span class="o">[</span><span class="kt">B</span><span class="o">](</span><span class="n">name</span><span class="o">=</span><span class="s">"command1"</span><span class="o">,</span> <span class="n">description</span><span class="o">=</span><span class="s">"nested command set"</span><span class="o">)</span>
   <span class="o">.</span><span class="n">addModule</span><span class="o">[</span><span class="kt">C</span><span class="o">](</span><span class="n">name</span><span class="o">=</span><span class="s">"command2"</span><span class="o">,</span> <span class="n">description</span><span class="o">=</span><span class="s">"..."</span><span class="o">)</span>
@@ -159,47 +166,51 @@ The sub command name will be matched in a canonical form (ignoring case and remo
 
 <span class="c1">// Launch C
 </span><span class="n">l</span><span class="o">.</span><span class="n">execute</span><span class="o">(</span><span class="s">"command2"</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>It is also possible to nest Launcher(s):</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">subModule</span> <span class="k">=</span> <span class="nc">Launcher</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">subModule</span> <span class="k">=</span> <span class="nc">Launcher</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 
 <span class="k">val</span> <span class="n">l</span> <span class="k">=</span> <span class="nc">Launcher</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Main</span><span class="o">]</span>
   <span class="o">.</span><span class="n">add</span><span class="o">(</span><span class="n">subModule</span><span class="o">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"cmd-a"</span><span class="o">,</span> <span class="n">description</span><span class="o">=</span><span class="s">"sub command set"</span><span class="o">)</span>
 
 <span class="c1">// Launch A in subModule
 </span><span class="n">l</span><span class="o">.</span><span class="n">exucute</span><span class="o">(</span><span class="s">"cmd-a"</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="packaging-with-sbt-pack">Packaging with sbt-pack</h3>
 <p>If you use <a href="https://github.com/xerial/sbt-pack">sbt-pack</a> plugin, you can create a stand-alone Scala program with a command-line interface:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">enablePlugins</span><span class="o">(</span><span class="nc">PackPlugin</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">enablePlugins</span><span class="o">(</span><span class="nc">PackPlugin</span><span class="o">)</span>
 
 <span class="c1">// This example creates `myapp` command (target/pack/bin/hello) that calls org.mydomain.MyApp#main(Array[String]) 
 </span><span class="n">packMain</span> <span class="o">:=</span> <span class="nc">Map</span><span class="o">(</span><span class="s">"myapp"</span> <span class="o">-&gt;</span> <span class="s">"org.mydomain.MyApp"</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="run-the-program">Run the program</h3>
-<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>sbt pack
+<div class="language-sh highlighter-rouge"><pre class="highlight"><code><span class="gp">$ </span>sbt pack
 ...
 
-<span class="nv">$ </span>./target/pack/bin/myapp 
-Type <span class="nt">--help</span> to display the list of commands
-<span class="nv">$ </span>./target/pack/bin/myapp <span class="nt">--help</span>
+<span class="gp">$ </span>./target/pack/bin/myapp 
+Type --help to display the list of commands
+<span class="gp">$ </span>./target/pack/bin/myapp --help
 usage: <span class="o">[</span>options] &lt;<span class="nb">command </span>name&gt;
 
 <span class="o">[</span>options]
- <span class="nt">-h</span>, <span class="nt">--help</span>                 display <span class="nb">help </span>messages
- <span class="nt">-l</span>, <span class="nt">--loglevel</span><span class="o">=[</span>LOGLEVEL]  log level 
+ -h, --help                 display <span class="nb">help </span>messages
+ -l, --loglevel<span class="o">=[</span>LOGLEVEL]  log level 
 <span class="o">[</span>commands]
  hello      say hello
  world     	say world
 
-<span class="nv">$ </span>./target/pack/bin/myapp hello
+<span class="gp">$ </span>./target/pack/bin/myapp hello
 hello
-</code></pre></div></div>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

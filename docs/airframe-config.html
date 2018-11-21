@@ -19,8 +19,9 @@ ga('send', 'pageview');
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-config"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-config"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h2 id="detailed-application-configuration-flow">Detailed application configuration flow</h2>
 
@@ -51,18 +52,20 @@ ga('send', 'pageview');
 <h2 id="example">Example</h2>
 
 <p><strong>config/access-log.yml</strong>:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>default:
+<div class="highlighter-rouge"><pre class="highlight"><code>default:
   file: log/access.log
   max_files: 50
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p><strong>config/db-log.yml</strong>:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>default:
+<div class="highlighter-rouge"><pre class="highlight"><code>default:
   file: log/db.log
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p><strong>config/server.yml</strong></p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>default:
+<div class="highlighter-rouge"><pre class="highlight"><code>default:
   host: localhost
   port: 8080
 
@@ -70,19 +73,21 @@ ga('send', 'pageview');
 development:
   &lt;&lt;: *default
   port: 9000
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p><strong>config.properties</strong>:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># [prefix](@[tag])?.[param]=(value)
+<div class="highlighter-rouge"><pre class="highlight"><code># [prefix](@[tag])?.[param]=(value)
 log@access.file=/path/to/access.log
 log@db.file=/path/to/db.log
 log@db.log.max_files=250
 server.host=mydomain.com
 server.password=xxxxxyyyyyy
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p><strong>Sacla code</strong>:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.config.Config</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.config.Config</span>
 <span class="k">import</span> <span class="nn">wvlet.surface.tag.</span><span class="o">@@</span>
 
 <span class="c1">// Configuration classes can have default values
@@ -110,15 +115,17 @@ server.password=xxxxxyyyyyy
 <span class="k">val</span> <span class="n">serverConfig</span> <span class="k">=</span> <span class="n">config</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">ServerConfig</span><span class="o">]</span>
 <span class="c1">// ServerConfig(host="mydomain.com",port=9000,password="xxxxxyyyyyy")
 </span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="show-configuration-changes">Show configuration changes</h3>
 
 <p>To see the effective configurations, use <code class="highlighter-rouge">Config.getConfigChanges</code> method:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span><span class="o">(</span><span class="n">change</span> <span class="k">&lt;-</span> <span class="n">config</span><span class="o">.</span><span class="n">getConfigChanges</span><span class="o">)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">for</span><span class="o">(</span><span class="n">change</span> <span class="k">&lt;-</span> <span class="n">config</span><span class="o">.</span><span class="n">getConfigChanges</span><span class="o">)</span> <span class="o">{</span>
   <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"[${change.key}] default:${change.default}, current:${change.current}"</span><span class="o">)</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h2 id="using-with-airframe">Using with Airframe</h2>
 
@@ -126,7 +133,7 @@ server.password=xxxxxyyyyyy
 By importing <code class="highlighter-rouge">wvlet.airframe.config._</code>, you can bind configurations to design objects.</p>
 
 <p>Example:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="c1">// Import config._ to use bindConfigXXX methods
 </span><span class="k">import</span> <span class="nn">wvlet.airframe.config._</span>
 
@@ -154,7 +161,8 @@ By importing <code class="highlighter-rouge">wvlet.airframe.config._</code>, you
 <span class="n">finalDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="o">{</span> <span class="n">x</span> <span class="k">=&gt;</span>
   <span class="c1">// ... start the application 
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

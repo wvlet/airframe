@@ -18,35 +18,39 @@ use <code class="highlighter-rouge">jconsole</code> program to access JMX parame
 </ul>
 
 <p>For analyzing application behaviour for longer ranges (5 minute or more), we recommend using <a href="treasuredata.com">Treasure Data</a> along with DataDog:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>JMX -&gt; fluentd -&gt; DataDog   (For real-time monitoring)
+<div class="highlighter-rouge"><pre class="highlight"><code>JMX -&gt; fluentd -&gt; DataDog   (For real-time monitoring)
                -&gt; Treasure Data -&gt; Presto SQL (Doing metric-driven actions with SQL queries)
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h2 id="usage">Usage</h2>
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jmx"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jmx"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <p>Usage is simple: Add <code class="highlighter-rouge">@JMX</code> annotation to variables or methods you want to see in JMX.</p>
 
 <h2 id="registering-jmx-parameters">Registering JMX parameters</h2>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@JMX</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"A example MBean object"</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="nd">@JMX</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"A example MBean object"</span><span class="o">)</span>
 <span class="k">class</span> <span class="nc">SampleMBean</span> <span class="o">{</span>
   <span class="nd">@JMX</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"free memory size"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">freeMemory</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=</span> <span class="o">{</span>
     <span class="nc">Runtime</span><span class="o">.</span><span class="n">getRuntime</span><span class="o">.</span><span class="n">freeMemory</span><span class="o">()</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">FieldMBean</span><span class="o">(</span><span class="nd">@JMX</span> <span class="n">a</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="nd">@JMX</span> <span class="n">b</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">FieldMBean</span><span class="o">(</span><span class="nd">@JMX</span> <span class="n">a</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="nd">@JMX</span> <span class="n">b</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
+</code></pre>
+</div>
 
 <h2 id="nested-parameters">Nested parameters</h2>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NestedMBean</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NestedMBean</span> <span class="o">{</span>
   <span class="nd">@JMX</span><span class="o">(</span><span class="n">description</span> <span class="k">=</span> <span class="s">"nested stat"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">stat</span><span class="k">:</span> <span class="kt">Stat</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">new</span> <span class="nc">Stat</span><span class="o">(</span><span class="nc">Random</span><span class="o">.</span><span class="n">nextInt</span><span class="o">(</span><span class="mi">10</span><span class="o">),</span> <span class="s">"nested JMX bean"</span><span class="o">)</span>
@@ -54,23 +58,26 @@ use <code class="highlighter-rouge">jconsole</code> program to access JMX parame
 <span class="o">}</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Stat</span><span class="o">(</span><span class="nd">@JMX</span> <span class="n">count</span><span class="k">:</span> <span class="kt">Int</span><span class="o">,</span> <span class="nd">@JMX</span> <span class="n">state</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 <p>In this example, <code class="highlighter-rouge">stat.count</code> and <code class="highlighter-rouge">stat.state</code> will be reported.</p>
 
 <h2 id="launching-jmx-registry">Launching JMX Registry</h2>
 
 <p>You can launch JMXRegistry (e.g., on port 7199) by setting these JVM parameters:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>-Dcom.sun.management.jmxremote
+<div class="highlighter-rouge"><pre class="highlight"><code>-Dcom.sun.management.jmxremote
 -Dcom.sun.management.jmxremote.port=7199
 -Dcom.sun.management.jmxremote.authenticate=false
 -Dcom.sun.management.jmxremote.local.only=false
 -Dcom.sun.management.jmxremote.ssl=false
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>For convenience, you can start JMXRegistry inside your program:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wvlet</span><span class="o">.</span><span class="n">airframe</span><span class="o">.</span><span class="n">jmx</span><span class="o">.</span><span class="nc">JMXAgent</span><span class="o">.</span><span class="n">start</span><span class="o">(</span><span class="n">registryPort</span><span class="k">=</span><span class="mi">7199</span><span class="o">)</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">wvlet</span><span class="o">.</span><span class="n">airframe</span><span class="o">.</span><span class="n">jmx</span><span class="o">.</span><span class="nc">JMXAgent</span><span class="o">.</span><span class="n">start</span><span class="o">(</span><span class="n">registryPort</span><span class="k">=</span><span class="mi">7199</span><span class="o">)</span>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

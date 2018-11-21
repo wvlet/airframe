@@ -19,12 +19,13 @@ ga('send', 'pageview');
 <h2 id="usage">Usage</h2>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-fluentd"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-fluentd"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h3 id="example">Example</h3>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.fluentd._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.fluentd._</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">MyMetric</span><span class="o">(</span><span class="n">a</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">b</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
@@ -40,13 +41,14 @@ ga('send', 'pageview');
    <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"hello"</span><span class="o">))</span>   <span class="c1">// data.my_metric {"a":1, "b":"hello"}
 </span>   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"fluentd"</span><span class="o">))</span> <span class="c1">// data.my_metric {"a":2, "b":"fluentd"}
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <h3 id="debugging">Debugging</h3>
 
 <p>For debugging purpose, use <code class="highlighter-rouge">fluentd.withConsoleLogging</code> design:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">fluentd</span><span class="o">.</span><span class="n">withConsoleLogging</span> <span class="c1">// Use a console logger instead of sending logs to Fluentd
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">fluentd</span><span class="o">.</span><span class="n">withConsoleLogging</span> <span class="c1">// Use a console logger instead of sending logs to Fluentd
 </span>
 <span class="n">d</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MetricLoggerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">f</span> <span class="k">=&gt;</span>
    <span class="c1">// Create a metric logger for MyMetric class
@@ -54,7 +56,8 @@ ga('send', 'pageview');
    <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"hello"</span><span class="o">))</span>   <span class="c1">// prints data.my_metric: {"a":1, "b":"hello"}
 </span>   <span class="n">l</span><span class="o">.</span><span class="n">emit</span><span class="o">(</span><span class="nc">MyMetric</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="s">"fluentd"</span><span class="o">))</span> <span class="c1">// prints data.my_metric: {"a":2, "b":"fluentd"}
 </span><span class="o">}</span>
-</code></pre></div></div>
+</code></pre>
+</div>
 
 <p>This is convenient if you have no fluentd process running in your machine.</p>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
