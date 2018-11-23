@@ -503,18 +503,18 @@ private[wvlet] object AirframeMacros {
     h.bind(h.findSession, t)
   }
 
-  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind0Impl[A: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
          val session = ${h.findSession}
-         session.getOrElse(${h.surfaceOf(t)}, $factory)
+         session.getOrElse(${h.surfaceOf(t)}, $provider)
         }
       """
   }
 
-  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
     import c.universe._
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
@@ -522,12 +522,12 @@ private[wvlet] object AirframeMacros {
     val dep1 = h.newInstanceBinder(d1)
     q"""{
          val session = ${h.findSession}
-         session.getOrElse(${h.surfaceOf(t)}, $factory($dep1(session)))
+         session.getOrElse(${h.surfaceOf(t)}, $provider($dep1(session)))
         }
       """
   }
 
-  def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
+  def bind2Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
     import c.universe._
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
@@ -537,13 +537,13 @@ private[wvlet] object AirframeMacros {
     val dep2 = h.newInstanceBinder(d2)
     q"""{
          val session = ${h.findSession}
-         session.getOrElse(${h.surfaceOf(t)}, $factory($dep1(session), $dep2(session)))
+         session.getOrElse(${h.surfaceOf(t)}, $provider($dep1(session), $dep2(session)))
         }
       """
   }
 
   def bind3Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag](c: sm.Context)(
-      factory: c.Tree): c.Tree = {
+      provider: c.Tree): c.Tree = {
     import c.universe._
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
@@ -555,13 +555,13 @@ private[wvlet] object AirframeMacros {
     val dep3 = h.newInstanceBinder(d3)
     q"""{
          val session = ${h.findSession}
-         session.getOrElse(${h.surfaceOf(t)}, $factory($dep1(session),$dep2(session),$dep3(session)))
+         session.getOrElse(${h.surfaceOf(t)}, $provider($dep1(session),$dep2(session),$dep3(session)))
         }
       """
   }
 
   def bind4Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag](
-      c: sm.Context)(factory: c.Tree): c.Tree = {
+      c: sm.Context)(provider: c.Tree): c.Tree = {
     import c.universe._
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
@@ -576,7 +576,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          session.getOrElse(${h.surfaceOf(t)},
-           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session))
+           $provider($dep1(session),$dep2(session),$dep3(session),$dep4(session))
          )
         }
       """
@@ -587,7 +587,7 @@ private[wvlet] object AirframeMacros {
                 D2: c.WeakTypeTag,
                 D3: c.WeakTypeTag,
                 D4: c.WeakTypeTag,
-                D5: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {
+                D5: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
     import c.universe._
     val h    = new BindHelper[c.type](c)
     val t    = implicitly[c.WeakTypeTag[A]].tpe
@@ -604,7 +604,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          session.getOrElse(${h.surfaceOf(t)},
-           $factory($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
+           $provider($dep1(session),$dep2(session),$dep3(session),$dep4(session),$dep5(session))
          )
         }
       """

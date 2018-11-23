@@ -47,12 +47,12 @@ package object airframe extends LogSupport {
     * @tparam A
     */
   def bind[A]: A = macro bindImpl[A]
-  def bind[A](factory: => A): A = macro bind0Impl[A]
-  def bind[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]
-  def bind[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
-  def bind[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
-  def bind[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
-  def bind[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
+  def bind[A](provider: => A): A = macro bind0Impl[A]
+  def bind[A, D1](provider: D1 => A): A = macro bind1Impl[A, D1]
+  def bind[A, D1, D2](provider: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
+  def bind[A, D1, D2, D3](provider: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
+  def bind[A, D1, D2, D3, D4](provider: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
+  def bind[A, D1, D2, D3, D4, D5](provider: (D1, D2, D3, D4, D5) => A): A =
     macro bind5Impl[A, D1, D2, D3, D4, D5]
 
   import scala.language.higherKinds
