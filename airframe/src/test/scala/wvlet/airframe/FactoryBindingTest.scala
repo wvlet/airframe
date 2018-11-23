@@ -52,7 +52,6 @@ object FactoryBindingTest {
     val f4 = bindFactory4[(MyConfig, MyConfig2, MyConfig3, MyConfig4) => MyModule3]
     val f5 = bindFactory5[(MyConfig, MyConfig2, MyConfig3, MyConfig4, MyConfig5) => MyModule3]
   }
-
 }
 
 /**
@@ -70,7 +69,7 @@ class FactoryBindingTest extends AirframeSpec {
     .bind[MyConfig2].toInstance(c2)
     .bind[D1].toInstance(d1)
 
-  "create factories to override partial binding" taggedAs ("failing") in {
+  "create factories to override partial binding" in {
     d.build[FactoryExample] { f =>
       val m1 = f.factory(MyConfig(15))
       m1.config shouldBe MyConfig(15)

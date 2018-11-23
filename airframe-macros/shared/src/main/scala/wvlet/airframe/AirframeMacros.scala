@@ -89,6 +89,19 @@ private[wvlet] object AirframeMacros {
       }
     }
 
+    def createNewInstanceOf(t: c.Type): c.Tree = {
+      if (shouldGenerateTrait(t)) {
+        q"""{
+             session : wvlet.airframe.Session =>
+             session.createNewInstanceOf(${surfaceOf(t)},
+              (new $t with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$t]
+             )
+            }"""
+      } else {
+        q"""{ session : wvlet.airframe.Session => session.createNewInstanceOf[$t](${surfaceOf(t)}) }"""
+      }
+    }
+
     /**
       * Register a factory for generating a trait that embeds the current session
       */
@@ -617,9 +630,9 @@ private[wvlet] object AirframeMacros {
     val i1 = t.typeArgs(0) // I1
     val a  = t.typeArgs(1) // A
     val h  = new BindHelper[c.type](c)
-    q"""{ x: ${i1} =>
-         val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toLazyInstance(x))
-         ${h.newInstanceBinder(a)}(session)
+    q"""{ i1: ${i1} =>
+          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toLazyInstance(i1))
+          ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
@@ -638,7 +651,7 @@ private[wvlet] object AirframeMacros {
            .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
            .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
          )
-         ${h.newInstanceBinder(a)}(session)
+         ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
@@ -659,7 +672,7 @@ private[wvlet] object AirframeMacros {
            .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
            .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
          )
-         ${h.newInstanceBinder(a)}(session)
+         ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
@@ -682,7 +695,7 @@ private[wvlet] object AirframeMacros {
            .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
            .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
          )
-         ${h.newInstanceBinder(a)}(session)
+         ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
@@ -707,7 +720,7 @@ private[wvlet] object AirframeMacros {
            .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
            .bind(${h.surfaceOf(i5)}).toLazyInstance(i5)
          )
-         ${h.newInstanceBinder(a)}(session)
+         ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
