@@ -47,7 +47,7 @@ object ProviderExample extends Serializable {
 
   def provider1(d1: D1): App                                 = App(d1)
   def provider2(d1: D1, d2: D2): App                         = App(d1, d2)
-  def provider3(d1: D1, d2: D2, D3: D3): App                 = App(d1, d2, d3)
+  def provider3(d1: D1, d2: D2, d3: D3): App                 = App(d1, d2, d3)
   def provider4(d1: D1, d2: D2, d3: D3, d4: D4): App         = App(d1, d2, d3, d4)
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 
@@ -58,8 +58,6 @@ import wvlet.airframe.ProviderExample._
 trait ProviderExample {
   // Constructor binding (singleton)
   val c = bind[App]
-  // Instance binding
-  val ci = bind[App]
 
   // Provider binding
   val p0 = bind { App() }
@@ -139,8 +137,6 @@ class ProviderTest extends AirframeSpec {
       p.p5 shouldBe App(d1, d2, d3, d4, d5)
 
       // Instance binding should generate a new instance
-      p.c shouldNot be theSameInstanceAs (p.ci)
-
       p.pp1 shouldBe App(d1, z2, z3, z4, z5)
       p.pp2 shouldBe App(d1, d2, z3, z4, z5)
       p.pp3 shouldBe App(d1, d2, d3, z4, z5)

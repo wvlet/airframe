@@ -170,6 +170,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     val result =
       obj.getOrElse {
+        trace(s"No binding is found for ${t}")
         // Create a singleton if no binding is found
         singletonHolder.getOrElseUpdate(t, registerInjectee(t, buildInstance(t, seen, defaultValue)))
       }
