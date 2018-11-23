@@ -125,23 +125,25 @@ trait PS5 {
   */
 class ProviderTest extends AirframeSpec {
   "Airframe" should {
-    "build object with provider" taggedAs ("provider") in {
+    "build singletons with provider" taggedAs ("provider") in {
       val p = providerDesign.newSession.build[ProviderExample]
 
-      p.c shouldBe App(d1, d2, d3, d4, d5)
-      p.p0 shouldBe App(z1, z2, z3, z4, z5)
-      p.p1 shouldBe App(d1, z2, z3, z4, z5)
-      p.p2 shouldBe App(d1, d2, z3, z4, z5)
-      p.p3 shouldBe App(d1, d2, d3, z4, z5)
-      p.p4 shouldBe App(d1, d2, d3, d4, z5)
-      p.p5 shouldBe App(d1, d2, d3, d4, d5)
+      val firstSingleton = App(d1, d2, d3, d4, d5)
+      p.c shouldBe firstSingleton
 
-      // Instance binding should generate a new instance
-      p.pp1 shouldBe App(d1, z2, z3, z4, z5)
-      p.pp2 shouldBe App(d1, d2, z3, z4, z5)
-      p.pp3 shouldBe App(d1, d2, d3, z4, z5)
-      p.pp4 shouldBe App(d1, d2, d3, d4, z5)
-      p.pp5 shouldBe App(d1, d2, d3, d4, d5)
+      // The other provider binding will have no effect
+      p.p0 shouldBe firstSingleton
+      p.p1 shouldBe firstSingleton
+      p.p2 shouldBe firstSingleton
+      p.p3 shouldBe firstSingleton
+      p.p4 shouldBe firstSingleton
+      p.p5 shouldBe firstSingleton
+
+      p.pp1 shouldBe firstSingleton
+      p.pp2 shouldBe firstSingleton
+      p.pp3 shouldBe firstSingleton
+      p.pp4 shouldBe firstSingleton
+      p.pp5 shouldBe firstSingleton
     }
 
     "build object from instance provider bindings" taggedAs ("provider-binding") in {
