@@ -117,8 +117,8 @@ lazy val scaladoc =
     )
     .aggregate(jvmProjects: _*)
 
-// JVM projects that supports Scala 2.13
-lazy val jvmProjects: Seq[ProjectReference] = List(
+// JVM projects for scala-community build. This should have no tricky setup and support Scala 2.12.
+lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeJVM,
   surfaceJVM,
   logJVM,
@@ -130,22 +130,26 @@ lazy val jvmProjects: Seq[ProjectReference] = List(
   metricsJVM,
   codecJVM,
   tablet,
-  jdbc,
   msgpackJVM,
   stream,
   http,
-  jsonJVM,
+  jsonJVM
+)
+
+// JVM projects that supports Scala 2.13
+lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
+  jdbc,
   fluentd
 )
 
 // JVM projects that cannot be build in Scala 2.13
-lazy val jvmProjects2_12: Seq[ProjectReference] = List(
+lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
   jsonBenchmark
 )
 
 // Scala.js builds is only for Scala 2.12
-lazy val jsProjects: Seq[ProjectReference] = List(
+lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
   logJS,
@@ -156,6 +160,15 @@ lazy val jsProjects: Seq[ProjectReference] = List(
   msgpackJS,
   jsonJS
 )
+
+// For community-build
+lazy val communityBuild =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := targetScalaVersions
+    )
+    .aggregate(communityBuildProjects: _*)
 
 // For Scala 2.12
 lazy val projectJVM =
