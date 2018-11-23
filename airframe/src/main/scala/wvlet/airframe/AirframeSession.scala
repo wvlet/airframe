@@ -115,10 +115,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     getInstance(surface, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseSingleton[A](surface: Surface, objectFactory: => A): A = {
-    debug(s"Get dependency [${surface}] or create from factory")
-    singletonHolder
-      .getOrElseUpdate(surface, getInstance(surface, List.empty, Some(() => objectFactory))).asInstanceOf[A]
+  private def isSingletonBinding(surface: Surface): Boolean = {
+    getBindingOf(surface)
+      .map(_.forSingleton)
+      .getOrElse(true)
   }
 
   /**
@@ -169,7 +169,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       }
 
     val result =
-      obj.getOrElse(registerInjectee(t, buildInstance(t, seen, defaultValue)))
+      obj.getOrElse {
+        // Create a singleton if no binding is found
+        singletonHolder.getOrElseUpdate(t, registerInjectee(t, buildInstance(t, seen, defaultValue)))
+      }
 
     result.asInstanceOf[AnyRef]
   }

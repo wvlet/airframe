@@ -59,32 +59,32 @@ trait ProviderExample {
   // Constructor binding (singleton)
   val c = bind[App]
   // Instance binding
-  val ci = bindInstance[App]
+  val ci = bind[App]
 
   // Provider binding
-  val p0 = bindInstance { App() }
-  val p1 = bindInstance { d1: D1 =>
+  val p0 = bind { App() }
+  val p1 = bind { d1: D1 =>
     App(d1)
   }
-  val p2 = bindInstance { (d1: D1, d2: D2) =>
+  val p2 = bind { (d1: D1, d2: D2) =>
     App(d1, d2)
   }
-  val p3 = bindInstance { (d1: D1, d2: D2, d3: D3) =>
+  val p3 = bind { (d1: D1, d2: D2, d3: D3) =>
     App(d1, d2, d3)
   }
-  val p4 = bindInstance { (d1: D1, d2: D2, d3: D3, d4: D4) =>
+  val p4 = bind { (d1: D1, d2: D2, d3: D3, d4: D4) =>
     App(d1, d2, d3, d4)
   }
-  val p5 = bindInstance { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
+  val p5 = bind { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
     App(d1, d2, d3, d4, d5)
   }
 
   // Provider ref binding
-  val pp1 = bindInstance(provider1 _)
-  val pp2 = bindInstance(provider2 _)
-  val pp3 = bindInstance(provider3 _)
-  val pp4 = bindInstance(provider4 _)
-  val pp5 = bindInstance(provider5 _)
+  val pp1 = bind(provider1 _)
+  val pp2 = bind(provider2 _)
+  val pp3 = bind(provider3 _)
+  val pp4 = bind(provider4 _)
+  val pp5 = bind(provider5 _)
 }
 
 trait SingletonProviderExample {

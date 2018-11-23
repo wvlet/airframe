@@ -76,7 +76,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   def shutdownHooks: Seq[LifeCycleHook]    = shutdownHook
 
   private def isSingletonType(t: Surface): Boolean = {
-    session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
+    session.getBindingOf(t).map(_.forSingleton).getOrElse(true)
   }
 
   def addInitHook(h: LifeCycleHook): Unit = {

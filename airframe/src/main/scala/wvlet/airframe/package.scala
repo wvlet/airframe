@@ -42,27 +42,18 @@ package object airframe extends LogSupport {
     */
   def newSilentDesign: Design = newDesign.noLifeCycleLogging
 
-  def bindInstance[A]: A = macro bindInstanceImpl[A]
-  def bindInstance[A](factory: => A): A = macro bindInstance0Impl[A]
-  def bindInstance[A, D1](factory: D1 => A): A = macro bindInstance1Impl[A, D1]
-  def bindInstance[A, D1, D2](factory: (D1, D2) => A): A = macro bindInstance2Impl[A, D1, D2]
-  def bindInstance[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bindInstance3Impl[A, D1, D2, D3]
-  def bindInstance[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bindInstance4Impl[A, D1, D2, D3, D4]
-  def bindInstance[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
-    macro bindInstance5Impl[A, D1, D2, D3, D4, D5]
-
   /**
     * Inject a singleton of A
     * @tparam A
     */
-  def bind[A]: A = macro bindSingletonImpl[A]
-  def bind[A](factory: => A): A = macro bind0SingletonImpl[A]
-  def bind[A, D1](factory: D1 => A): A = macro bind1SingletonImpl[A, D1]
-  def bind[A, D1, D2](factory: (D1, D2) => A): A = macro bind2SingletonImpl[A, D1, D2]
-  def bind[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3SingletonImpl[A, D1, D2, D3]
-  def bind[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4SingletonImpl[A, D1, D2, D3, D4]
+  def bind[A]: A = macro bindImpl[A]
+  def bind[A](factory: => A): A = macro bind0Impl[A]
+  def bind[A, D1](factory: D1 => A): A = macro bind1Impl[A, D1]
+  def bind[A, D1, D2](factory: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
+  def bind[A, D1, D2, D3](factory: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
+  def bind[A, D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
   def bind[A, D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): A =
-    macro bind5SingletonImpl[A, D1, D2, D3, D4, D5]
+    macro bind5Impl[A, D1, D2, D3, D4, D5]
 
   import scala.language.higherKinds
   def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]
