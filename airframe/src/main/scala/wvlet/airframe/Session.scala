@@ -96,7 +96,6 @@ trait Session extends AutoCloseable {
   override def close(): Unit = { shutdown }
 
   private[airframe] def getBindingOf(t: Surface): Option[Binding]
-  private[airframe] def isSingletonBinding(t: Surface): Boolean
 }
 
 object Session extends LogSupport {

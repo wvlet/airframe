@@ -125,21 +125,6 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     getInstance(surface, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
-  private[airframe] def isSingletonBinding(surface: Surface): Boolean = {
-    val b =
-      getBindingOf(surface)
-        .map(x => x.forSingleton)
-        .orElse {
-          parent.map { x =>
-            warn(s"check parent: ${surface}")
-            x.isSingletonBinding(surface)
-          }
-        }
-        .getOrElse(true)
-    debug(s"[${name}] isSingletonBinding[${surface}] = ${b}")
-    b
-  }
-
   /**
     * Called when injecting an instance of the surface for the first time.
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
