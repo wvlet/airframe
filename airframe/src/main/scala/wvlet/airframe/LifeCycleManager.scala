@@ -132,7 +132,7 @@ object LifeCycleManager {
       */
     def canRegistered(x: LifeCycleHook): Boolean = {
       synchronized {
-        if (list.exists(_ == x)) {
+        if (list.exists(_.injectee == x.injectee)) {
           false
         } else {
           holder :+= x
