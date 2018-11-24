@@ -83,13 +83,13 @@ package object airframe extends LogSupport {
     def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING, shutdown: A => Unit = DO_NOTHING): A = {
 
       if (!(init eq DO_NOTHING)) {
-        session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init))
+        session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init), dep)
       }
       if (!(start eq DO_NOTHING)) {
-        session.lifeCycleManager.addStartHook(EventHookHolder(surface, dep, start))
+        session.lifeCycleManager.addStartHook(EventHookHolder(surface, dep, start), dep)
       }
       if (!(shutdown eq DO_NOTHING)) {
-        session.lifeCycleManager.addShutdownHook(EventHookHolder(surface, dep, shutdown))
+        session.lifeCycleManager.addShutdownHook(EventHookHolder(surface, dep, shutdown), dep)
       }
       dep
     }

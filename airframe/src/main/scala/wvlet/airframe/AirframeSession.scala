@@ -79,7 +79,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
   override def newSharedChildSession(d: Design): Session = {
     trace(s"Creating a new child session with ${d}")
-    new AirframeSession(
+    val childSession = new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
       d,
@@ -87,6 +87,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       lifeCycleManager,
       singletonHolder
     )
+    childSession
   }
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
