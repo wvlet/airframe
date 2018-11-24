@@ -124,10 +124,19 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     getInstance(surface, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
-  private def isSingletonBinding(surface: Surface): Boolean = {
-    getBindingOf(surface)
-      .map(_.forSingleton)
-      .getOrElse(true)
+  private[airframe] def isSingletonBinding(surface: Surface): Boolean = {
+    val b =
+      getBindingOf(surface)
+        .map(x => x.forSingleton)
+        .orElse {
+          parent.map { x =>
+            warn(s"check parent: ${surface}")
+            x.isSingletonBinding(surface)
+          }
+        }
+        .getOrElse(true)
+    debug(s"[${name}] isSingletonBinding[${surface}] = ${b}")
+    b
   }
 
   /**
@@ -144,7 +153,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private def getInstance(t: Surface,
-                          create: Boolean,
+                          create: Boolean, // true for factory binding
                           seen: List[Surface],
                           defaultValue: Option[() => Any] = None): AnyRef = {
     trace(s"Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
