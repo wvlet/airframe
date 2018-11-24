@@ -21,10 +21,10 @@ import wvlet.airframe.surface.Surface
 
 import scala.reflect.ClassTag
 
-class MethodCallHook[A](val surface: Surface, obj: A, method: jl.reflect.Method) extends LifeCycleHook {
+class MethodCallHook(val injectee: Injectee, method: jl.reflect.Method) extends LifeCycleHook {
   override def toString: String = s"MethodCallHook for [${surface}]"
   def execute: Unit = {
-    method.invoke(obj)
+    method.invoke(injectee.injectee)
   }
 }
 
@@ -46,12 +46,12 @@ object JSR250LifeCycleExecutor extends LifeCycleEventHandler with LogSupport {
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
     for (m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PostConstruct](m.getDeclaredAnnotations)) {
       trace(s"[${t}] Found @PostConstruct annotation")
-      lifeCycleManager.addInitHook(new MethodCallHook(t, injectee, m), injectee)
+      lifeCycleManager.addInitHook(new MethodCallHook(new Injectee(t, injectee), m))
     }
 
     for (m <- t.rawType.getDeclaredMethods; a <- findAnnotation[PreDestroy](m.getDeclaredAnnotations)) {
       trace(s"[${t}] Found @PreDestroy annotation")
-      lifeCycleManager.addShutdownHook(new MethodCallHook(t, injectee, m), injectee)
+      lifeCycleManager.addShutdownHook(new MethodCallHook(new Injectee(t, injectee), m))
     }
   }
 }

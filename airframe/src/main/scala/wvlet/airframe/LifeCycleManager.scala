@@ -66,7 +66,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  private var initializedSingleton = Set.empty[Surface]
+  private var initializedInjectees = Set.empty[(Surface, Int)]
   private var startHook            = Vector.empty[LifeCycleHook]
   private var preShutdownHook      = Vector.empty[LifeCycleHook]
   private var shutdownHook         = Vector.empty[LifeCycleHook]
@@ -81,24 +81,30 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     b
   }
 
-  def addInitHook(h: LifeCycleHook, injectee: Any): Unit = {
-    debug(s"Add init hook: ${h.surface}")
-    val canRunHook = !(isSingletonType(h.surface) && initializedSingleton.contains(h.surface))
+  def addInitHook(h: LifeCycleHook): Unit = {
+    val objectHash: Int = Option(h.injectee).map(_.hashCode()).getOrElse(0)
+    val pair            = (h.surface, objectHash)
+    val canRunHook      = !initializedInjectees.contains(pair)
+    debug(s"Add init hook: ${h.surface} (run hook: ${canRunHook})")
     if (canRunHook) {
-      initializedSingleton += h.surface
+      initializedInjectees += pair
       h.execute
     } else {
-      trace(s"${h.surface} is already initialized")
+      trace(s"${pair} is already initialized")
     }
   }
 
-  def addInjectHook(h: LifeCycleHook, injectee: Any): Unit = {
+  def addInjectHook(h: LifeCycleHook): Unit = {
     debug(s"Add inject hook: ${h.surface}")
     // Run immediately
     h.execute
   }
 
-  def addStartHook(h: LifeCycleHook, injectee: Any): Unit = {
+  private def isInitialized(pair: (Surface, Int)): Boolean = {
+    initializedInjectees.contains(pair)
+  }
+
+  def addStartHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
       if (canAddHook) {
@@ -113,7 +119,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addPreShutdownHook(h: LifeCycleHook, injectee: Any): Unit = {
+  def addPreShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && preShutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {
@@ -123,7 +129,7 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  def addShutdownHook(h: LifeCycleHook, injectee: Any): Unit = {
+  def addShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
       if (canAddHook) {

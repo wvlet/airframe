@@ -141,16 +141,17 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   /**
-    * Called when injecting an instance of the surface for the first time
+    * Called when injecting an instance of the surface for the first time.
+    * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private def registerInjectee(t: Surface, obj: Any): AnyRef = {
-    trace(s"registerInjectee[${t}], injectee:${obj}")
-    Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
+  private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
+    debug(s"registerInjectee[${t}], injectee:${injectee}")
+    Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
-        error(s"Error occurred while executing onInject(${t}, ${obj})", e)
+        error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
         throw e
     }
-    obj.asInstanceOf[AnyRef]
+    injectee.asInstanceOf[AnyRef]
   }
 
   private def getInstance(t: Surface,
@@ -163,7 +164,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       throw new CYCLIC_DEPENDENCY(seen.toSet)
     }
 
-    // Find instance from bindings
+    // Find or create an instance for the binding
+    // When the instance is created for the first time, it will call onInit lifecycle hook.
     val obj =
       getBindingOf(t).map {
         case ClassBinding(from, to) =>
@@ -193,7 +195,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     val result =
       obj.getOrElse {
-        trace(s"No binding is found for ${t}")
+        trace(s"No binding is found for ${t}. Building the instance")
         // Create a singleton if no binding is found
         if (create) {
           registerInjectee(t, buildInstance(t, seen, defaultValue))

@@ -437,7 +437,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addInitHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addInitHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -450,7 +450,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addInjectHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addInjectHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -463,7 +463,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -478,7 +478,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addStartHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -491,7 +491,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addPreShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addPreShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """
@@ -504,7 +504,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val session = ${h.findSession}
          val dep = ${c.prefix}.dep
-         session.lifeCycleManager.addShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}), dep)
+         session.lifeCycleManager.addShutdownHook(wvlet.airframe.EventHookHolder(${h.surfaceOf(t)}, dep, ${body}))
          dep
         }
       """

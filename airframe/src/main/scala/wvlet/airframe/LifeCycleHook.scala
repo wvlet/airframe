@@ -16,14 +16,37 @@ package wvlet.airframe
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
 
-trait LifeCycleHook {
-  def surface: Surface
-  def execute: Unit
+class Injectee(val surface: Surface, val injectee: Any) {
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Injectee]
+  override def equals(other: Any): Boolean = other match {
+    case that: Injectee =>
+      (that canEqual this) &&
+        surface == that.surface &&
+        injectee == that.injectee
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val h = 31 * surface.hashCode() + (if (injectee != null) injectee.hashCode() else 0)
+    h
+  }
 }
 
-case class EventHookHolder[A](surface: Surface, obj: A, hook: A => Any) extends LifeCycleHook with LogSupport {
+trait LifeCycleHook {
+  def surface: Surface = injectee.surface
+  def execute: Unit
+  def injectee: Injectee
+}
+
+object EventHookHolder {
+  def apply[A](surface: Surface, injectee: A, hook: A => Any): EventHookHolder[A] = {
+    EventHookHolder(new Injectee(surface, injectee), hook)
+  }
+}
+
+case class EventHookHolder[A](injectee: Injectee, hook: A => Any) extends LifeCycleHook with LogSupport {
   override def toString: String = s"hook for [$surface]"
   def execute: Unit = {
-    hook(obj)
+    hook(injectee.injectee.asInstanceOf[A])
   }
 }
