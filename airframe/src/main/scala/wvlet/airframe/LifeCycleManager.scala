@@ -31,6 +31,8 @@ case object STOPPED  extends LifeCycleStage
 class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   self =>
 
+  import LifeCycleManager._
+
   private val state                = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
@@ -66,31 +68,21 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  private var initializedInjectees = Set.empty[(Surface, Int)]
-  private var startHook            = Vector.empty[LifeCycleHook]
-  private var preShutdownHook      = Vector.empty[LifeCycleHook]
-  private var shutdownHook         = Vector.empty[LifeCycleHook]
+  private var initHookHolder        = new LifeCycleHookHolder
+  private var startHookHolder       = new LifeCycleHookHolder
+  private var preShutdownHookHolder = new LifeCycleHookHolder
+  private var shutdownHookHolder    = new LifeCycleHookHolder
 
-  def startHooks: Seq[LifeCycleHook]       = startHook
-  def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHook
-  def shutdownHooks: Seq[LifeCycleHook]    = shutdownHook
-
-  private def isSingletonType(t: Surface): Boolean = {
-    val b = session.isSingletonBinding(t)
-    warn(s"[${session.name}] isSingletonType[$t]: ${b}")
-    b
-  }
+  def startHooks: Seq[LifeCycleHook]       = startHookHolder.list
+  def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHookHolder.list
+  def shutdownHooks: Seq[LifeCycleHook]    = shutdownHookHolder.list
 
   def addInitHook(h: LifeCycleHook): Unit = {
-    val objectHash: Int = Option(h.injectee).map(_.hashCode()).getOrElse(0)
-    val pair            = (h.surface, objectHash)
-    val canRunHook      = !initializedInjectees.contains(pair)
-    debug(s"Add init hook: ${h.surface} (run hook: ${canRunHook})")
-    if (canRunHook) {
-      initializedInjectees += pair
+    if (initHookHolder.canRegistered(h)) {
+      debug(s"Add init hook: ${h.surface}")
       h.execute
     } else {
-      trace(s"${pair} is already initialized")
+      trace(s"${h.injectee} is already initialized")
     }
   }
 
@@ -100,17 +92,11 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     h.execute
   }
 
-  private def isInitialized(pair: (Surface, Int)): Boolean = {
-    initializedInjectees.contains(pair)
-  }
-
   def addStartHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (startHookHolder.canRegistered(h)) {
         debug(s"Add start hook for ${h.surface}")
         val s = state.get
-        startHook :+= h
         if (s == STARTED) {
           // If a session is already started, run the start hook immediately
           h.execute
@@ -121,26 +107,41 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && preShutdownHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (preShutdownHookHolder.canRegistered(h)) {
         debug(s"Add pre-shutdown hook for ${h.surface}")
-        preShutdownHook :+= h
       }
     }
   }
 
   def addShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (shutdownHookHolder.canRegistered(h)) {
         debug(s"Add shutdown hook for ${h.surface}")
-        shutdownHook :+= h
       }
     }
   }
 }
 
 object LifeCycleManager {
+
+  private[airframe] class LifeCycleHookHolder(private var holder: Vector[LifeCycleHook] = Vector.empty) {
+    def list: Seq[LifeCycleHook] = holder
+
+    /**
+      *  Return true if it is not yet registered
+      */
+    def canRegistered(x: LifeCycleHook): Boolean = {
+      synchronized {
+        if (list.exists(_ == x)) {
+          false
+        } else {
+          holder :+= x
+          true
+        }
+      }
+    }
+  }
+
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     ShowLifeCycleLog wraps mandatoryObjectLifeCycleHandler
 
