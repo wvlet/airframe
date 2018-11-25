@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
+import com.sun.org.omg.CORBA.ContextIdSeqHelper
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.log.LogSupport
@@ -62,19 +63,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     b.result.toMap[Surface, Binding]
   }
 
-  /**
-    * Find binding and its context session
-    * @param t
-    * @return
-    */
-  private[airframe] def getBindingOf(t: Surface): Option[Binding] = {
-    bindingTable
-      .get(t)
-      .orElse(parent.flatMap(_.getBindingOf(t))) // Fallback to parent
-  }
-
-  private[airframe] def hasSingletonOf(t: Surface): Boolean = {
-    singletonHolder.contains(t)
+  private[airframe] def getSingletonOf(t: Surface): Option[Any] = {
+    singletonHolder.get(t)
   }
 
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
@@ -160,8 +150,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     injectee.asInstanceOf[AnyRef]
   }
 
+  /**
+    * Find a session (including parent and ancestor parents) that can define t
+    */
+  private[airframe] def findTargetSessionFor(t: Surface): Option[AirframeSession] = {
+    if (bindingTable.contains(t) ||
+        // If a singleton for t is already defined, use this session
+        singletonHolder.contains(t)) {
+      Some(this)
+    } else {
+      parent.flatMap(_.findTargetSessionFor(t))
+    }
+  }
+
   private[airframe] def getInstance(t: Surface,
-                                    contextSession: Session,
+                                    contextSession: AirframeSession,
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
@@ -178,11 +181,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case None =>
           // If no binding is found in the current, traverse to the parent
           debug(s"Search parent for ${t}")
-          parent.flatMap(p =>
-            p.getBindingOf(t).map { parentBinding =>
-              // Use parent session only when binding is found
-              p.getInstance(t, contextSession, create, seen, defaultValue)
-          })
+          parent.flatMap { p =>
+            p.findTargetSessionFor(t).map { targetSession =>
+              // Use the parent session only when binding is found in the parent
+              targetSession.getInstance(t, contextSession, create, seen, defaultValue)
+            }
+          }
         case Some(b) =>
           val result =
             b match {
@@ -235,7 +239,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private[airframe] def buildInstance(t: Surface,
-                                      contextSession: Session,
+                                      contextSession: AirframeSession,
                                       seen: List[Surface],
                                       defaultValue: Option[() => Any] = None): Any = {
     traitFactoryCache
@@ -259,7 +263,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   /**
     * Create a new instance of the surface
     */
-  private def buildInstance(surface: Surface, contextSession: Session, seen: List[Surface]): Any = {
+  private def buildInstance(surface: Surface, contextSession: AirframeSession, seen: List[Surface]): Any = {
     trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
       // Cannot build Primitive types
