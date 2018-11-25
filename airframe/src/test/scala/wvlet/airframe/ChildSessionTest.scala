@@ -14,6 +14,8 @@
 package wvlet.airframe
 import wvlet.log.LogSupport
 
+import scala.util.Random
+
 object ChildSessionTest {
 
   case class HttpRequest(path: String, userName: String)
@@ -26,8 +28,12 @@ object ChildSessionTest {
       user.name == "aina"
     }
   }
+  // Should be shared among child sessions
+  trait ThreadManager {
+    val threadId = Random.nextInt(100000)
+  }
 
-  trait HttpServer extends LogSupport {
+  trait HttpServer extends LogSupport with ThreadManager {
     private val session = bind[Session]
 
     def handle(req: HttpRequest) = {
@@ -51,14 +57,14 @@ object ChildSessionTest {
     }
   }
 
-  case class HandlerResult(path: String, user: User, authorized: Boolean)
+  case class HandlerResult(parentThreadId: Int, path: String, user: User, authorized: Boolean)
 
-  trait HttpRequestHandler extends LogSupport with UserAuth {
+  trait HttpRequestHandler extends LogSupport with UserAuth with ThreadManager {
     val req  = bind[HttpRequest]
     val user = bind[User]
 
     def handle: HandlerResult = {
-      HandlerResult(req.path, user, authorized)
+      HandlerResult(threadId, req.path, user, authorized)
     }
   }
 
@@ -66,6 +72,7 @@ object ChildSessionTest {
   trait QueryHandler extends HttpRequestHandler
 
   val serverDesign = newDesign
+    .bind[ThreadManager].toSingleton
     .bind[HttpServer].toSingleton
     .bind[UserAuth].toSingleton
     .bind[User].toInstance(User("default-user"))
@@ -78,9 +85,10 @@ class ChildSessionTest extends AirframeSpec {
   import ChildSessionTest._
   "support creating a child session" in {
     serverDesign.build[HttpServer] { server =>
-      server.handle(HttpRequest("/info", "leo"))
-      server.handle(HttpRequest("/info", "yui"))
-      server.handle(HttpRequest("/query", "aina"))
+      val parentThreadId = server.threadId
+      server.handle(HttpRequest("/info", "leo")) shouldBe HandlerResult(parentThreadId, "/info", User("leo"), false)
+      server.handle(HttpRequest("/info", "yui")) shouldBe HandlerResult(parentThreadId, "/info", User("yui"), false)
+      server.handle(HttpRequest("/query", "aina")) shouldBe HandlerResult(parentThreadId, "/query", User("aina"), true)
     }
   }
 }
