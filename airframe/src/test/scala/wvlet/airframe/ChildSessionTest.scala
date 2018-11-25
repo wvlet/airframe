@@ -33,8 +33,9 @@ object ChildSessionTest {
     val threadId = Random.nextInt(100000)
   }
 
-  trait HttpServer extends LogSupport with ThreadManager {
-    private val session = bind[Session]
+  trait HttpServer extends LogSupport {
+    private val currentSession = bind[Session]
+    val threadManager          = bind[ThreadManager]
 
     def handle(req: HttpRequest) = {
       warn(s"get request:${req}")
@@ -42,7 +43,7 @@ object ChildSessionTest {
         .bind[HttpRequest].toInstance(req)
         .bind[User].toInstance(User(req.userName))
 
-      val childSession = session.newChildSession(childDesign)
+      val childSession = currentSession.newChildSession(childDesign)
       childSession.start {
         val handler = req.path match {
           case "/info" =>
@@ -59,12 +60,13 @@ object ChildSessionTest {
 
   case class HandlerResult(parentThreadId: Int, path: String, user: User, authorized: Boolean)
 
-  trait HttpRequestHandler extends LogSupport with UserAuth with ThreadManager {
-    val req  = bind[HttpRequest]
-    val user = bind[User]
+  trait HttpRequestHandler extends LogSupport with UserAuth {
+    val req           = bind[HttpRequest]
+    val user          = bind[User]
+    val threadManager = bind[ThreadManager]
 
     def handle: HandlerResult = {
-      HandlerResult(threadId, req.path, user, authorized)
+      HandlerResult(threadManager.threadId, req.path, user, authorized)
     }
   }
 
@@ -85,7 +87,7 @@ class ChildSessionTest extends AirframeSpec {
   import ChildSessionTest._
   "support creating a child session" in {
     serverDesign.build[HttpServer] { server =>
-      val parentThreadId = server.threadId
+      val parentThreadId = server.threadManager.threadId
       server.handle(HttpRequest("/info", "leo")) shouldBe HandlerResult(parentThreadId, "/info", User("leo"), false)
       server.handle(HttpRequest("/info", "yui")) shouldBe HandlerResult(parentThreadId, "/info", User("yui"), false)
       server.handle(HttpRequest("/query", "aina")) shouldBe HandlerResult(parentThreadId, "/query", User("aina"), true)
