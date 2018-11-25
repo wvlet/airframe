@@ -142,6 +142,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
     debug(s"registerInjectee[${t}], injectee:${injectee}")
+    observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
         error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
@@ -150,16 +151,17 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     injectee.asInstanceOf[AnyRef]
   }
 
+  // type -> firstObservedTimeMillis
+  private[airframe] val observedTypes = new ConcurrentHashMap[Surface, Long]().asScala
+
   /**
-    * Find a session (including parent and ancestor parents) that can define t
+    * Find a session (including parent and ancestor parents) that owns t, that is, a session that can build t or has ever built t.
     */
-  private[airframe] def findTargetSessionFor(t: Surface): Option[AirframeSession] = {
-    if (bindingTable.contains(t) ||
-        // If a singleton for t is already defined, use this session
-        singletonHolder.contains(t)) {
+  private[airframe] def findOwnerSessionOf(t: Surface): Option[AirframeSession] = {
+    if (bindingTable.contains(t) || observedTypes.contains(t)) {
       Some(this)
     } else {
-      parent.flatMap(_.findTargetSessionFor(t))
+      parent.flatMap(_.findOwnerSessionOf(t))
     }
   }
 
@@ -182,7 +184,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           // If no binding is found in the current, traverse to the parent
           debug(s"Search parent for ${t}")
           parent.flatMap { p =>
-            p.findTargetSessionFor(t).map { targetSession =>
+            p.findOwnerSessionOf(t).map { targetSession =>
               // Use the parent session only when binding is found in the parent
               targetSession.getInstance(t, contextSession, create, seen, defaultValue)
             }
