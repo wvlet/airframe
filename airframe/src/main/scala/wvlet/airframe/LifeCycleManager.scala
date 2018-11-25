@@ -213,7 +213,9 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
 
     // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
-    debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
+    if (shutdownOrder.nonEmpty) {
+      debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
+    }
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
       h.execute
