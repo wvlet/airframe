@@ -38,7 +38,7 @@ object ChildSessionTest {
     val threadManager          = bind[ThreadManager]
 
     def handle(req: HttpRequest) = {
-      warn(s"get request:${req}")
+      debug(s"get request:${req}")
       val childDesign = newDesign
         .bind[HttpRequest].toInstance(req)
         .bind[User].toInstance(User(req.userName))
@@ -61,9 +61,12 @@ object ChildSessionTest {
   case class HandlerResult(parentThreadId: Int, path: String, user: User, authorized: Boolean)
 
   trait HttpRequestHandler extends LogSupport with UserAuth {
-    val req           = bind[HttpRequest]
-    val user          = bind[User]
+    val req  = bind[HttpRequest]
+    val user = bind[User]
     val threadManager = bind[ThreadManager]
+      .onStart { x =>
+        throw new IllegalStateException("Child session manager must not the parent thread manager")
+      }
 
     def handle: HandlerResult = {
       HandlerResult(threadManager.threadId, req.path, user, authorized)
