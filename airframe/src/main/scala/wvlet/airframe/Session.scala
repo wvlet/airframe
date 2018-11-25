@@ -76,6 +76,14 @@ trait Session extends AutoCloseable {
   def newSharedChildSession(d: Design): Session
 
   /**
+    * Create a child session with an additional design.
+    * The created session has its own singleton hodler and life cycle manager.
+    * @param d
+    * @return
+    */
+  def newChildSession(d: Design): Session
+
+  /**
     * Get the object LifeCycleManager of this session.
     *
     * @return

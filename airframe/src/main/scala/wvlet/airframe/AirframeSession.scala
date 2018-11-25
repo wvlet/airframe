@@ -78,7 +78,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   override def newSharedChildSession(d: Design): Session = {
-    trace(s"Creating a new child session with ${d}")
+    trace(s"Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
@@ -87,6 +87,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       lifeCycleManager,
       singletonHolder
     )
+    childSession
+  }
+
+  override def newChildSession(d: Design): Session = {
+    val l = new LifeCycleManager(lifeCycleManager.eventHandler)
+    val childSession = new AirframeSession(
+      parent = Some(this),
+      None, // TODO Should we create a child session name?
+      d,
+      stage,
+      l
+    )
+    // LifeCycleManager needs to know about the session
+    l.setSession(childSession)
+    trace(s"Creating a new child session ${childSession.name} with ${d}")
     childSession
   }
 
