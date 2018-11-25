@@ -66,7 +66,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     singletonHolder.get(t)
   }
 
-  def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
+  def name: String = sessionName.getOrElse {
+    val current = f"session:${hashCode()}%x"
+    parent
+      .map { p =>
+        f"${p.name} -> ${current}"
+      }
+      .getOrElse(current)
+  }
 
   def getInstanceOf(t: Surface): AnyRef = {
     getInstance(t, this, create = false, List.empty)
@@ -122,16 +129,16 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A = {
-    debug(s"Get dependency [${surface}] or create from factory")
+    debug(s"Get dependency [${surface}] (or create with factory)")
     getInstance(surface, this, create = false, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
   private[airframe] def createNewInstanceOf[A](surface: Surface): A = {
-    debug(s"Create a new instance of [${surface}]")
+    debug(s"Create dependency [${surface}]")
     getInstance(surface, this, create = true, List.empty).asInstanceOf[A]
   }
   private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A): A = {
-    debug(s"Get dependency [${surface}] or create from factory")
+    debug(s"Create dependency [${surface}] (with factory)")
     getInstance(surface, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
@@ -140,7 +147,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
-    debug(s"registerInjectee[${t}], injectee:${injectee}")
+    debug(s"Inject [${t}]: ${injectee}")
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
@@ -180,12 +187,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     val obj =
       bindingTable.get(t) match {
         case None =>
-          // If no binding is found in the current, traverse to the parent
-          debug(s"Search parent for ${t}")
+          // If no binding is found in the current, traverse to the parent.
+          trace(s"Search parent for ${t}")
           parent.flatMap { p =>
-            p.findOwnerSessionOf(t).map { targetSession =>
-              // Use the parent session only when binding is found in the parent
-              targetSession.getInstance(t, contextSession, create, seen, defaultValue)
+            p.findOwnerSessionOf(t).map { owner =>
+              // Use the parent session only when some binding is found in the parent
+              owner.getInstance(t, contextSession, create, seen, defaultValue)
             }
           }
         case Some(b) =>
