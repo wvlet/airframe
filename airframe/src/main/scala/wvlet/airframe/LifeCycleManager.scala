@@ -15,8 +15,8 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicReference
 
-import wvlet.log.{LogSupport, Logger}
 import wvlet.airframe.surface.Surface
+import wvlet.log.{LogSupport, Logger}
 
 sealed trait LifeCycleStage
 case object INIT     extends LifeCycleStage
@@ -28,7 +28,7 @@ case object STOPPED  extends LifeCycleStage
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
+class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler) extends LogSupport {
   self =>
 
   import LifeCycleManager._

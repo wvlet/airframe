@@ -14,7 +14,6 @@
 package wvlet.airframe
 
 import wvlet.log.LogSupport
-import wvlet.airframe.surface.Surface
 
 sealed trait Stage
 object Stage {
