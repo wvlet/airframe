@@ -292,6 +292,7 @@ lazy val airframeJS  = airframe.js
 // Airframe depends on Airframe Macros, so we needed to split the project
 lazy val airframeMacros =
   crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airframe-macros"))
     .settings(buildSettings)
     .settings(
