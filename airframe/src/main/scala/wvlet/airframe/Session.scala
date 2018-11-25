@@ -102,19 +102,6 @@ trait Session extends AutoCloseable {
   def start: Unit            = { lifeCycleManager.start }
   def shutdown: Unit         = { lifeCycleManager.shutdown }
   override def close(): Unit = { shutdown }
-
-  private[airframe] def getBindingOf(t: Surface): Option[Binding]
-  private[airframe] def getInstance(t: Surface,
-                                    contextSession: Session,
-                                    create: Boolean,
-                                    seen: List[Surface],
-                                    defaultValue: Option[() => Any] = None): AnyRef
-
-  private[airframe] def buildInstance(t: Surface,
-                                      contextSession: Session,
-                                      seen: List[Surface],
-                                      defaultValue: Option[() => Any] = None): Any
-
 }
 
 object Session extends LogSupport {
