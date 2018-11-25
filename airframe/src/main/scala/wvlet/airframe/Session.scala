@@ -64,15 +64,8 @@ trait Session extends AutoCloseable {
     */
   private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A): A
 
-  /**
-    * Internal method for building a singleton instance of type A.
-    * If no binding for A is found, use the given trait instance factory to generate A
-    *
-    * @param obj
-    * @tparam A
-    * @return
-    */
-  private[airframe] def getOrElseSingleton[A](surface: Surface, traitInstanceFactory: => A): A
+  private[airframe] def createNewInstanceOf[A](surface: Surface): A
+  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A): A
 
   def getInstanceOf(surface: Surface): Any
 
@@ -103,7 +96,6 @@ trait Session extends AutoCloseable {
   override def close(): Unit = { shutdown }
 
   private[airframe] def getBindingOf(t: Surface): Option[Binding]
-  private[airframe] def hasSingletonOf(t: Surface): Boolean
 }
 
 object Session extends LogSupport {
@@ -114,9 +106,8 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface: Surface): A                           = session.get[A](surface)
-    def getOrElse[A](surface: Surface, obj: => A): A          = session.getOrElse[A](surface, obj)
-    def getOrElseSingleton[A](surface: Surface, obj: => A): A = session.getOrElseSingleton[A](surface, obj)
+    def get[A](surface: Surface): A                  = session.get[A](surface)
+    def getOrElse[A](surface: Surface, obj: => A): A = session.getOrElse[A](surface, obj)
   }
 
   def getSession(obj: Any): Option[Session] = {

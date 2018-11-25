@@ -38,21 +38,20 @@ object FactoryBindingTest {
     val d1 = bind[D1]
   }
 
-  trait FactorySet {
+  trait FactoryExample {
     val factory = bindFactory[MyConfig => MyModule1]
   }
 
-  trait FactorySet2 {
+  trait FactoryExample2 {
     val factory = bindFactory[MyConfig => MyModule2]
   }
 
-  trait FactorySet3 {
+  trait FactorySetExample {
     val f2 = bindFactory2[(MyConfig, MyConfig2) => MyModule3]
     val f3 = bindFactory3[(MyConfig, MyConfig2, MyConfig3) => MyModule3]
     val f4 = bindFactory4[(MyConfig, MyConfig2, MyConfig3, MyConfig4) => MyModule3]
     val f5 = bindFactory5[(MyConfig, MyConfig2, MyConfig3, MyConfig4, MyConfig5) => MyModule3]
   }
-
 }
 
 /**
@@ -71,19 +70,19 @@ class FactoryBindingTest extends AirframeSpec {
     .bind[D1].toInstance(d1)
 
   "create factories to override partial binding" in {
-    d.build[FactorySet] { f =>
-      val i1 = f.factory(MyConfig(15))
-      i1.config shouldBe MyConfig(15)
-      i1.d1 shouldBe d1
+    d.build[FactoryExample] { f =>
+      val m1 = f.factory(MyConfig(15))
+      m1.config shouldBe MyConfig(15)
+      m1.d1 shouldBe d1
 
-      val i2 = f.factory(MyConfig(16))
-      i2.config shouldBe MyConfig(16)
-      i2.d1 shouldBe d1
+      val m2 = f.factory(MyConfig(16))
+      m2.config shouldBe MyConfig(16)
+      m2.d1 shouldBe d1
     }
   }
 
   "create constructor binding factories" in {
-    d.build[FactorySet2] { f =>
+    d.build[FactoryExample2] { f =>
       val j1 = f.factory(MyConfig(17))
       j1.config shouldBe MyConfig(17)
       j1.d1 shouldBe d1
@@ -95,7 +94,7 @@ class FactoryBindingTest extends AirframeSpec {
   }
 
   "create factory of many args" in {
-    d.build[FactorySet3] { f =>
+    d.build[FactorySetExample] { f =>
       {
         val j = f.f2(MyConfig(2), MyConfig2(3))
         j.c1 shouldBe MyConfig(2)

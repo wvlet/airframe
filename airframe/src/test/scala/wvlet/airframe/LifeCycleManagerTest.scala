@@ -36,7 +36,7 @@ trait CounterService extends LogSupport {
       c.initialized.incrementAndGet()
     }
     .onInject { c =>
-      debug(s"injected: ${c.initialized.get()}")
+      debug(s"injected: ${c.injected.get()}")
       c.injected.incrementAndGet()
     }
     .onStart { c =>
@@ -170,12 +170,12 @@ class LifeCycleManagerTest extends AirframeSpec {
 
         cs2 = session.build[CounterService]
         cs2.initCount shouldBe 1
-        cs2.injectCount shouldBe 2
+        cs2.injectCount shouldBe 1 // CounterService is already instantiated
         cs2.startCount shouldBe 1
         cs2.shutdownCount shouldBe 0
       }
       cs.initCount shouldBe 1
-      cs.injectCount shouldBe 2
+      cs.injectCount shouldBe 1
       cs.startCount shouldBe 1
       cs.shutdownCount shouldBe 1
 

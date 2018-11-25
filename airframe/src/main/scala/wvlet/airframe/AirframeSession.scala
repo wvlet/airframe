@@ -74,12 +74,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   def name: String = sessionName.getOrElse(f"session:${hashCode()}%x")
 
   def getInstanceOf(t: Surface): AnyRef = {
-    getInstance(t, List.empty)
+    getInstance(t, create = false, List.empty)
   }
 
   override def newSharedChildSession(d: Design): Session = {
     trace(s"Creating a new child session with ${d}")
-    new AirframeSession(
+    val childSession = new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
       d,
@@ -87,6 +87,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       lifeCycleManager,
       singletonHolder
     )
+    childSession
   }
 
   // Initialize eager singleton, pre-defined instances, eager singleton providers
@@ -107,49 +108,58 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
   private[airframe] def get[A](surface: Surface): A = {
     debug(s"Get dependency [${surface}]")
-    getInstance(surface, List.empty).asInstanceOf[A]
+    getInstance(surface, create = false, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A = {
     debug(s"Get dependency [${surface}] or create from factory")
-    getInstance(surface, List.empty, Some(() => objectFactory)).asInstanceOf[A]
+    getInstance(surface, create = false, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElseSingleton[A](surface: Surface, objectFactory: => A): A = {
+  private[airframe] def createNewInstanceOf[A](surface: Surface): A = {
+    debug(s"Create a new instance of [${surface}]")
+    getInstance(surface, create = true, List.empty).asInstanceOf[A]
+  }
+  private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A): A = {
     debug(s"Get dependency [${surface}] or create from factory")
-    singletonHolder
-      .getOrElseUpdate(surface, getInstance(surface, List.empty, Some(() => objectFactory))).asInstanceOf[A]
+    getInstance(surface, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
   /**
-    * Called when injecting an instance of the surface for the first time
+    * Called when injecting an instance of the surface for the first time.
+    * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private def registerInjectee(t: Surface, obj: Any): AnyRef = {
-    trace(s"registerInjectee[${t}], injectee:${obj}")
-    Try(lifeCycleManager.onInit(t, obj.asInstanceOf[AnyRef])).recover {
+  private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
+    debug(s"registerInjectee[${t}], injectee:${injectee}")
+    Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
-        error(s"Error occurred while executing onInject(${t}, ${obj})", e)
+        error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
         throw e
     }
-    obj.asInstanceOf[AnyRef]
+    injectee.asInstanceOf[AnyRef]
   }
 
-  private def getInstance(t: Surface, seen: List[Surface], defaultValue: Option[() => Any] = None): AnyRef = {
+  private def getInstance(t: Surface,
+                          create: Boolean, // true for factory binding
+                          seen: List[Surface],
+                          defaultValue: Option[() => Any] = None): AnyRef = {
     trace(s"Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
       throw new CYCLIC_DEPENDENCY(seen.toSet)
     }
 
-    // Find instance from bindings
+    // Find or create an instance for the binding
+    // When the instance is created for the first time, it will call onInit lifecycle hook.
     val obj =
       getBindingOf(t).map {
         case ClassBinding(from, to) =>
           trace(s"Found a class binding from ${from} to ${to}")
-          registerInjectee(from, getInstance(to, t :: seen))
+          registerInjectee(from, getInstance(to, create, t :: seen))
         case sb @ SingletonBinding(from, to, eager) if from != to =>
           trace(s"Found a singleton binding: ${from} => ${to}")
-          singletonHolder.getOrElseUpdate(from, registerInjectee(from, getInstance(to, t :: seen, defaultValue)))
+          singletonHolder.getOrElseUpdate(from,
+                                          registerInjectee(from, getInstance(to, create, t :: seen, defaultValue)))
         case sb @ SingletonBinding(from, to, eager) if from == to =>
           trace(s"Found a singleton binding: ${from}")
           singletonHolder.getOrElseUpdate(from, registerInjectee(from, buildInstance(to, seen, defaultValue)))
@@ -157,7 +167,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           trace(s"Found a provider for ${p.from}: ${p}")
           def buildWithProvider: Any = {
             val dependencies = for (d <- factory.dependencyTypes) yield {
-              getInstance(d, t :: seen)
+              getInstance(d, false, t :: seen)
             }
             factory.create(dependencies)
           }
@@ -169,7 +179,15 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       }
 
     val result =
-      obj.getOrElse(registerInjectee(t, buildInstance(t, seen, defaultValue)))
+      obj.getOrElse {
+        trace(s"No binding is found for ${t}. Building the instance")
+        // Create a singleton if no binding is found
+        if (create) {
+          registerInjectee(t, buildInstance(t, seen, defaultValue))
+        } else {
+          singletonHolder.getOrElseUpdate(t, registerInjectee(t, buildInstance(t, seen, defaultValue)))
+        }
+      }
 
     result.asInstanceOf[AnyRef]
   }
@@ -206,7 +224,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case Some(factory) =>
           trace(s"Using the default constructor for building ${surface}")
           val args = for (p <- surface.params) yield {
-            getInstance(p.surface, seen, p.getDefaultValue.map(x => () => x))
+            getInstance(p.surface, create = false, seen, p.getDefaultValue.map(x => () => x))
           }
           val obj = factory.newInstance(args)
           obj

@@ -31,6 +31,8 @@ case object STOPPED  extends LifeCycleStage
 class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
   self =>
 
+  import LifeCycleManager._
+
   private val state                = new AtomicReference[LifeCycleStage](INIT)
   def currentState: LifeCycleStage = state.get()
 
@@ -66,25 +68,21 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
     }
   }
 
-  private var initializedSingleton = Set.empty[Surface]
-  private var startHook            = Vector.empty[LifeCycleHook]
-  private var preShutdownHook      = Vector.empty[LifeCycleHook]
-  private var shutdownHook         = Vector.empty[LifeCycleHook]
+  private var initHookHolder        = new LifeCycleHookHolder
+  private var startHookHolder       = new LifeCycleHookHolder
+  private var preShutdownHookHolder = new LifeCycleHookHolder
+  private var shutdownHookHolder    = new LifeCycleHookHolder
 
-  def startHooks: Seq[LifeCycleHook]       = startHook
-  def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHook
-  def shutdownHooks: Seq[LifeCycleHook]    = shutdownHook
-
-  private def isSingletonType(t: Surface): Boolean = {
-    session.getBindingOf(t).exists(_.forSingleton) || session.hasSingletonOf(t)
-  }
+  def startHooks: Seq[LifeCycleHook]       = startHookHolder.list
+  def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHookHolder.list
+  def shutdownHooks: Seq[LifeCycleHook]    = shutdownHookHolder.list
 
   def addInitHook(h: LifeCycleHook): Unit = {
-    debug(s"Add init hook: ${h.surface}")
-    val canRunHook = !(isSingletonType(h.surface) && initializedSingleton.contains(h.surface))
-    if (canRunHook) {
-      initializedSingleton += h.surface
+    if (initHookHolder.canRegistered(h)) {
+      debug(s"Add init hook: ${h.surface}")
       h.execute
+    } else {
+      trace(s"${h.injectee} is already initialized")
     }
   }
 
@@ -96,11 +94,9 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addStartHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && startHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (startHookHolder.canRegistered(h)) {
         debug(s"Add start hook for ${h.surface}")
         val s = state.get
-        startHook :+= h
         if (s == STARTED) {
           // If a session is already started, run the start hook immediately
           h.execute
@@ -111,26 +107,41 @@ class LifeCycleManager(eventHandler: LifeCycleEventHandler) extends LogSupport {
 
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && preShutdownHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (preShutdownHookHolder.canRegistered(h)) {
         debug(s"Add pre-shutdown hook for ${h.surface}")
-        preShutdownHook :+= h
       }
     }
   }
 
   def addShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
-      val canAddHook = !(isSingletonType(h.surface) && shutdownHook.exists(_.surface == h.surface))
-      if (canAddHook) {
+      if (shutdownHookHolder.canRegistered(h)) {
         debug(s"Add shutdown hook for ${h.surface}")
-        shutdownHook :+= h
       }
     }
   }
 }
 
 object LifeCycleManager {
+
+  private[airframe] class LifeCycleHookHolder(private var holder: Vector[LifeCycleHook] = Vector.empty) {
+    def list: Seq[LifeCycleHook] = holder
+
+    /**
+      *  Return true if it is not yet registered
+      */
+    def canRegistered(x: LifeCycleHook): Boolean = {
+      synchronized {
+        if (list.exists(_.injectee == x.injectee)) {
+          false
+        } else {
+          holder :+= x
+          true
+        }
+      }
+    }
+  }
+
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     ShowLifeCycleLog wraps mandatoryObjectLifeCycleHandler
 

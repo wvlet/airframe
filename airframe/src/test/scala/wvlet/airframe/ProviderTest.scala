@@ -47,7 +47,7 @@ object ProviderExample extends Serializable {
 
   def provider1(d1: D1): App                                 = App(d1)
   def provider2(d1: D1, d2: D2): App                         = App(d1, d2)
-  def provider3(d1: D1, d2: D2, D3: D3): App                 = App(d1, d2, d3)
+  def provider3(d1: D1, d2: D2, d3: D3): App                 = App(d1, d2, d3)
   def provider4(d1: D1, d2: D2, d3: D3, d4: D4): App         = App(d1, d2, d3, d4)
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
 
@@ -58,33 +58,31 @@ import wvlet.airframe.ProviderExample._
 trait ProviderExample {
   // Constructor binding (singleton)
   val c = bind[App]
-  // Instance binding
-  val ci = bindInstance[App]
 
   // Provider binding
-  val p0 = bindInstance { App() }
-  val p1 = bindInstance { d1: D1 =>
+  val p0 = bind { App() }
+  val p1 = bind { d1: D1 =>
     App(d1)
   }
-  val p2 = bindInstance { (d1: D1, d2: D2) =>
+  val p2 = bind { (d1: D1, d2: D2) =>
     App(d1, d2)
   }
-  val p3 = bindInstance { (d1: D1, d2: D2, d3: D3) =>
+  val p3 = bind { (d1: D1, d2: D2, d3: D3) =>
     App(d1, d2, d3)
   }
-  val p4 = bindInstance { (d1: D1, d2: D2, d3: D3, d4: D4) =>
+  val p4 = bind { (d1: D1, d2: D2, d3: D3, d4: D4) =>
     App(d1, d2, d3, d4)
   }
-  val p5 = bindInstance { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
+  val p5 = bind { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
     App(d1, d2, d3, d4, d5)
   }
 
   // Provider ref binding
-  val pp1 = bindInstance(provider1 _)
-  val pp2 = bindInstance(provider2 _)
-  val pp3 = bindInstance(provider3 _)
-  val pp4 = bindInstance(provider4 _)
-  val pp5 = bindInstance(provider5 _)
+  val pp1 = bind(provider1 _)
+  val pp2 = bind(provider2 _)
+  val pp3 = bind(provider3 _)
+  val pp4 = bind(provider4 _)
+  val pp5 = bind(provider5 _)
 }
 
 trait SingletonProviderExample {
@@ -127,25 +125,25 @@ trait PS5 {
   */
 class ProviderTest extends AirframeSpec {
   "Airframe" should {
-    "build object with provider" taggedAs ("provider") in {
+    "build singletons with provider" taggedAs ("provider") in {
       val p = providerDesign.newSession.build[ProviderExample]
 
-      p.c shouldBe App(d1, d2, d3, d4, d5)
-      p.p0 shouldBe App(z1, z2, z3, z4, z5)
-      p.p1 shouldBe App(d1, z2, z3, z4, z5)
-      p.p2 shouldBe App(d1, d2, z3, z4, z5)
-      p.p3 shouldBe App(d1, d2, d3, z4, z5)
-      p.p4 shouldBe App(d1, d2, d3, d4, z5)
-      p.p5 shouldBe App(d1, d2, d3, d4, d5)
+      val firstSingleton = App(d1, d2, d3, d4, d5)
+      p.c shouldBe firstSingleton
 
-      // Instance binding should generate a new instance
-      p.c shouldNot be theSameInstanceAs (p.ci)
+      // The other provider binding will have no effect
+      p.p0 shouldBe firstSingleton
+      p.p1 shouldBe firstSingleton
+      p.p2 shouldBe firstSingleton
+      p.p3 shouldBe firstSingleton
+      p.p4 shouldBe firstSingleton
+      p.p5 shouldBe firstSingleton
 
-      p.pp1 shouldBe App(d1, z2, z3, z4, z5)
-      p.pp2 shouldBe App(d1, d2, z3, z4, z5)
-      p.pp3 shouldBe App(d1, d2, d3, z4, z5)
-      p.pp4 shouldBe App(d1, d2, d3, d4, z5)
-      p.pp5 shouldBe App(d1, d2, d3, d4, d5)
+      p.pp1 shouldBe firstSingleton
+      p.pp2 shouldBe firstSingleton
+      p.pp3 shouldBe firstSingleton
+      p.pp4 shouldBe firstSingleton
+      p.pp5 shouldBe firstSingleton
     }
 
     "build object from instance provider bindings" taggedAs ("provider-binding") in {
