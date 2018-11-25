@@ -15,14 +15,13 @@ package wvlet.airframe
 
 import java.util.concurrent.ConcurrentHashMap
 
-import com.sun.org.omg.CORBA.ContextIdSeqHelper
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
-import scala.util.Try
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 /**
   *
