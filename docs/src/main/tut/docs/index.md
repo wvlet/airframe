@@ -94,7 +94,6 @@ class A {
 The following examples show basic binding types available in Airframe:
 ```scala
 val a = bind[A]          // Inject A as a singleton
-val b = bindInstance[B]  // Inject an instance of B
 
 import BindingExample._
 
@@ -108,7 +107,6 @@ val p1: P = bind { d1:D1 => P(d1) } // Inject D1 to create P
 val p2: P = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
 val p3: P = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
 val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
-val pd: P = bindInstance { provider _ } // Create a new P using the provider
 
 // Factory bindings can be used to override a part of the dependencies
 val f1: D1 => P = bindFactory[D1 => P] // A factory to use a given D1 to generate P
@@ -124,7 +122,7 @@ object BindingExample {
 By default all injections generates singleton objects,
 which are available until the session closes.
 
-If you need to create a new instance for each binding, use `bindInstance[X]` or `bindFactory[I => X]`.
+If you need to create a new instance for each binding, use `bindFactory[I => X]`.
 
 ## Design
 
