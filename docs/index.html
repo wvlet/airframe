@@ -91,7 +91,6 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </div>
 <p>The following examples show basic binding types available in Airframe:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>          <span class="c1">// Inject A as a singleton
-</span><span class="k">val</span> <span class="n">b</span> <span class="k">=</span> <span class="n">bindInstance</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span>  <span class="c1">// Inject an instance of B
 </span>
 <span class="k">import</span> <span class="nn">BindingExample._</span>
 
@@ -105,7 +104,6 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </span><span class="k">val</span> <span class="n">p2</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1 and D2 to create P
 </span><span class="k">val</span> <span class="n">p3</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">,</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">,</span> <span class="n">d3</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3
 </span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3 to call a provider function
-</span><span class="k">val</span> <span class="n">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bindInstance</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Create a new P using the provider
 </span>
 <span class="c1">// Factory bindings can be used to override a part of the dependencies
 </span><span class="k">val</span> <span class="n">f1</span><span class="k">:</span> <span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">D1</span> <span class="k">=&gt;</span> <span class="kt">P</span><span class="o">]</span> <span class="c1">// A factory to use a given D1 to generate P
@@ -122,7 +120,7 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 <p>By default all injections generates singleton objects,
 which are available until the session closes.</p>
 
-<p>If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindInstance[X]</code> or <code class="highlighter-rouge">bindFactory[I =&gt; X]</code>.</p>
+<p>If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindFactory[I =&gt; X]</code>.</p>
 
 <h2 id="design">Design</h2>
 
