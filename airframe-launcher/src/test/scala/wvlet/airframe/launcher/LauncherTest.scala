@@ -163,14 +163,16 @@ class LauncherTest extends AirframeSpec {
       help should (include("world"))
     }
 
-    "display sub-command help" in {
+    "display sub-command help" taggedAs ("sub-command-help") in {
       val help = capture {
         val result = myCommandModule.execute("box world --help")
         val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
         m.g.help should be(true)
       }
       trace(s"box world --help:\n$help")
-      help should (include("message"))
+      help should (include("argMessage"))
+      help should (include("--color  use color"))
+      help should (include("say world"))
     }
 
     "display invalid command error" in {
@@ -298,7 +300,8 @@ object LauncherTest {
       helloIsExecuted = true
     }
     @command(description = "say world")
-    def world(@argument message: String): Unit = debug("world world")
+    def world(@argument argMessage: String,
+              @option(prefix = "--color", description = "use color") color: Boolean): Unit = debug("world world")
   }
 
   def myCommandModule =

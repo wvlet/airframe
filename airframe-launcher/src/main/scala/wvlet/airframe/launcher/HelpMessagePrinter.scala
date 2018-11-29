@@ -65,23 +65,23 @@ object HelpMessagePrinter extends LogSupport {
       val hasAnyOption = globalOptions.nonEmpty || options.nonEmpty
 
       // Print one-line command usage
-      s.print("usage:")
+      s.print("usage: ")
       s.println(oneLineUsage.getOrElse {
-        val line = new StringBuilder
+        val b = Seq.newBuilder[String]
         if (globalOptions.nonEmpty) {
-          line.append(s" [global options]")
+          b += s"[global options]"
         }
-        line.append(s" ${commandName}")
+        b += commandName
         if (options.nonEmpty) {
-          line.append(s" [options]")
+          b += "[options]"
         }
         if (arguments.nonEmpty) {
-          line.append(arguments.map(x => s" [${x.name}]").mkString)
+          b += arguments.map(x => s" [${x.name}]").mkString
         }
         if (subCommands.nonEmpty) {
-          line.append(s" <command name>")
+          b += "<command name>"
         }
-        line.result()
+        b.result().mkString(" ")
       })
       // Print description
       if (description.nonEmpty) {

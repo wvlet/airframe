@@ -70,7 +70,7 @@ object Launcher extends LogSupport {
     val command = surface.findAnnotationOf[command]
     // If the user specified usage and description via @command annotation, use them.
     val commandUsage       = command.map(_.usage()).find(_.nonEmpty).getOrElse(defaultUsage)
-    val commandDescription = command.map(_.description()).find(_.nonEmpty).getOrElse(description)
+    val commandDescription = command.map(_.description()).find(_.nonEmpty).getOrElse(description.trim)
     val commandName        = if (name.nonEmpty) name else CName.toNaturalName(surface.name).replaceAll("\\s+", "_")
 
     // Find sub commands marked with [[wvlet.airframe.opts.command]] annotation
@@ -105,7 +105,7 @@ object Launcher extends LogSupport {
   private def newMethodLauncher(m: MethodSurface, command: command): CommandLauncher = {
 
     val parser       = new OptionParser(m)
-    val defaultUsage = parser.schema.args.map(x => s"[${x}]").mkString(" ")
+    val defaultUsage = parser.schema.args.map(x => s"[${x.name}]").mkString(" ")
 
     val description =
       Some(command.description())
@@ -114,7 +114,7 @@ object Launcher extends LogSupport {
         .getOrElse("")
 
     val usage = {
-      val argLine = Some(command.description())
+      val argLine = Some(command.usage())
         .map(x => x)
         .find(_.nonEmpty)
         .getOrElse(defaultUsage)
@@ -221,7 +221,7 @@ case class LauncherInfo(name: String, description: String, usage: String)
   * }}}
   *
   */
-class CommandLauncher(launcherInfo: LauncherInfo,
+class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
                       private[launcher] val optionParser: OptionParser,
                       private[launcher] val subCommands: Seq[CommandLauncher],
                       defaultCommand: Option[LauncherInstance => Any])
@@ -254,6 +254,27 @@ class CommandLauncher(launcherInfo: LauncherInfo,
 
   private[launcher] def printHelp(launcherConfig: LauncherConfig, stack: List[LauncherInstance]): Unit = {
     printHelpInternal(launcherConfig, stack.map(_.launcher))
+  }
+
+  private[launcher] def printMethodHelp(launcherConfig: LauncherConfig,
+                                        m: MethodOptionSchema,
+                                        stack: List[LauncherInstance]): Unit = {
+    val h             = stack.head
+    val globalOptions = stack.tail.flatMap(_.launcher.optionParser.optionList)
+
+    val li = h.launcher.launcherInfo
+
+    val help = launcherConfig.helpMessagePrinter.render(
+      commandName = li.name,
+      arguments = m.args,
+      oneLineUsage = if (li.usage.isEmpty) None else Some(li.usage),
+      description = li.description,
+      options = m.options,
+      globalOptions = globalOptions,
+      subCommands = Seq.empty
+    )
+
+    print(help)
   }
 
   private[launcher] def printHelpInternal(launcherConfig: LauncherConfig, stack: List[CommandLauncher]): Unit = {
@@ -339,7 +360,7 @@ class CommandLauncher(launcherInfo: LauncherInfo,
 
         if (showHelpMessage) {
           // Show the help message
-          printHelp(launcherConfig, stack)
+          printMethodHelp(launcherConfig, m, LauncherInstance(this, parentObj) :: stack)
           LauncherResult(stack, None)
         } else {
           try {
