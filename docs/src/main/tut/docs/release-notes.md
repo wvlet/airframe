@@ -5,6 +5,23 @@ title: Release Notes
 
 # Release Notes
 
+## 0.74
+-  airframe-launcher: Fix sub method command help message [[3b22d74](https://github.com/wvlet/airframe/commit/3b22d74)]
+-  Deprecate in-trait bindInstance[X] ([#317](https://github.com/wvlet/airframe/issues/317)) [[1f15aef](https://github.com/wvlet/airframe/commit/1f15aef)]
+-  Deprecate in-trait bindSingleton[X] now that bind[X] binds singletons by default ([#300](https://github.com/wvlet/airframe/issues/300)) [[fe75bb0](https://github.com/wvlet/airframe/commit/fe75bb0)]
+-  Register a trait factory when Route.of[A] is called ([#307](https://github.com/wvlet/airframe/issues/307)) [[2cf505b](https://github.com/wvlet/airframe/commit/2cf505b)]
+-  Rename surface.of[X] -> Surface.of[X] ([#306](https://github.com/wvlet/airframe/issues/306)) [[cea2cbb](https://github.com/wvlet/airframe/commit/cea2cbb)]
+-  Pure-Scala Airframe Codec SPI ([#302](https://github.com/wvlet/airframe/issues/302)) [[7677d26](https://github.com/wvlet/airframe/commit/7677d26)]
+-  airframe-codec: Scala.js support  ([#303](https://github.com/wvlet/airframe/issues/303)) [[ff7bd97](https://github.com/wvlet/airframe/commit/ff7bd97)]
+- Internal changes: 
+   -  airframe-macros is now a pure Scala project ([#319](https://github.com/wvlet/airframe/issues/319)) [[43ec5d5](https://github.com/wvlet/airframe/commit/43ec5d5)]
+   -  Add an aggregated project for Scala community-build ([#316](https://github.com/wvlet/airframe/issues/316)) [[fa78beb](https://github.com/wvlet/airframe/commit/fa78beb)]
+   -  Upgrade to sbt-microsites 0.7.26 [[40f0b7f](https://github.com/wvlet/airframe/commit/40f0b7f)]
+   -  Fix twitter icon card [[0217f54](https://github.com/wvlet/airframe/commit/0217f54)]
+   -  Adjust logo size [[16a5530](https://github.com/wvlet/airframe/commit/16a5530)]
+   -  Update logos [[e295e8e](https://github.com/wvlet/airframe/commit/e295e8e)]
+   -  Add a workaround: Surface.of[A] throws InternalError on REPL ([#308](https://github.com/wvlet/airframe/issues/308)) [[1be3796](https://github.com/wvlet/airframe/commit/1be3796)]
+
 ## 0.73
 -  airfarme-opts is redesigned as [airframe-launcher](https://wvlet.org/airframe/docs/airframe-launcher.html) Option parser v2 ([#295](https://github.com/wvlet/airframe/issues/295)) [[a270128](https://github.com/wvlet/airframe/commit/a270128)]
 -  Support netsted offset in time window ([#296](https://github.com/wvlet/airframe/issues/296)) [[0c6e218](https://github.com/wvlet/airframe/commit/0c6e218)]
