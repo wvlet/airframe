@@ -182,7 +182,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       obj.getOrElse {
         trace(s"No binding is found for ${t}. Building the instance. create = ${create}")
         if (create) {
-          // Create a new instance for bindFactory[X] or building X using default constructor
+          // Create a new instance for bindFactory[X] or building X using its default value
           registerInjectee(t, buildInstance(t, seen, defaultValue))
         } else {
           // Create a singleton if no binding is found
