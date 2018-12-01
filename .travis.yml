@@ -37,8 +37,6 @@ matrix:
       cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
   - env: PROJECT=publish
     jdk: openjdk8
-    services: postgresql
-    before_script: psql -c 'create database travis_ci_test;' -U postgres
     script:
     - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
   - env: SCALA_VERSION=2.12.7 PROJECT=projectJVM
