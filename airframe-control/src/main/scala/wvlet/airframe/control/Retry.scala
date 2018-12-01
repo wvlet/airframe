@@ -82,6 +82,10 @@ object Retry {
     def retryOn[U](errorHandler: RetryContext[C] => U): Retryer[C] =
       Retryer(context, maxRetry, retryWaitStrategy, errorHandler)
 
+    def runWithContext[A](context: C)(body: => A): A = {
+      withContext(context).run(body)
+    }
+
     def run[A](body: => A): A = {
       var result: Option[A]           = None
       var retryCount                  = 0

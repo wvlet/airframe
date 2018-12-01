@@ -29,8 +29,8 @@ class RetryTest extends AirframeSpec {
             ctx.context.get shouldBe "hello"
           }
 
-      r.withContext("hello")
-        .run {}
+      r.runWithContext("hello") {}
+      r.withContext("hello").run {}
     }
 
     "support backoff retry" in {
