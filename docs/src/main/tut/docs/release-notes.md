@@ -8,8 +8,7 @@ title: Release Notes
 ## 0.75
 -  airframe-di: Fix a bug the default values in a constructor are registered as singletons [[40d97ca](https://github.com/wvlet/airframe/commit/40d97ca)]
 -  airframe-control: Allow passing retry context ([#327](https://github.com/wvlet/airframe/issues/327)) [[afb34b9](https://github.com/wvlet/airframe/commit/afb34b9)]
--  Internal
-  - Upgrade to sbt 1.2.7 ([#325](https://github.com/wvlet/airframe/issues/325)) [[b6ebaf1](https://github.com/wvlet/airframe/commit/b6ebaf1)]
+- [internal] Upgrade to sbt 1.2.7 ([#325](https://github.com/wvlet/airframe/issues/325)) [[b6ebaf1](https://github.com/wvlet/airframe/commit/b6ebaf1)]
 
 ## 0.74
 
