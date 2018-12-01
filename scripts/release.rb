@@ -5,6 +5,9 @@ require 'fileutils'
 PREFIX = 'https://github.com/wvlet/airframe'
 RELEASE_NOTES_FILE = "docs/src/main/tut/docs/release-notes.md"
 
+current_branch = `git rev-parse --abbrev-ref HEAD`
+abort("release.rb must run on master branch. The current branch is #{current_branch}") if current_branch != "master"
+
 last_tag = `git describe --tags --abbrev=0`.chomp
 last_version = last_tag.sub("v", "")
 puts "last version: #{last_version}"
