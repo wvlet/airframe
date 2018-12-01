@@ -14,13 +14,24 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Retry.{LastError, MaxRetryException}
+import wvlet.airframe.control.Retry.{RetryContext, MaxRetryException}
 
 /**
   *
   */
 class RetryTest extends AirframeSpec {
   "Control" should {
+    "convery a context" in {
+      val r =
+        Retry
+          .withBackOff[String](maxRetry = 3)
+          .retryOn { ctx: RetryContext[String] =>
+            ctx.context.get shouldBe "hello"
+          }
+
+      r.runWithContext("hello") {}
+      r.withContext("hello").run {}
+    }
 
     "support backoff retry" in {
       var count = 0
@@ -28,7 +39,7 @@ class RetryTest extends AirframeSpec {
       val r =
         Retry
           .withBackOff(maxRetry = 3)
-          .retryOn { s: LastError =>
+          .retryOn { s: RetryContext[_] =>
             warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis")
           }
           .run {
@@ -50,7 +61,7 @@ class RetryTest extends AirframeSpec {
       val r =
         Retry
           .withJitter(maxRetry = 3)
-          .retryOn { s: LastError =>
+          .retryOn { s: RetryContext[_] =>
             warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis")
           }
           .run {
