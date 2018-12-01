@@ -180,11 +180,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     val result =
       obj.getOrElse {
-        trace(s"No binding is found for ${t}. Building the instance")
-        // Create a singleton if no binding is found
+        trace(s"No binding is found for ${t}. Building the instance. create = ${create}")
         if (create) {
+          // Create a new instance for bindFactory[X] or building X using its default value
           registerInjectee(t, buildInstance(t, seen, defaultValue))
         } else {
+          // Create a singleton if no binding is found
           singletonHolder.getOrElseUpdate(t, registerInjectee(t, buildInstance(t, seen, defaultValue)))
         }
       }
@@ -201,7 +202,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       .orElse {
         // Use the provided object factory if exists
         defaultValue.map { f =>
-          trace(s"Using a pre-generated instance of ${t}")
+          trace(s"Using the default value for ${t}")
           f()
         }
       }
@@ -224,7 +225,9 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case Some(factory) =>
           trace(s"Using the default constructor for building ${surface}")
           val args = for (p <- surface.params) yield {
-            getInstance(p.surface, create = false, seen, p.getDefaultValue.map(x => () => x))
+            // When using the default constructor, we should disable singleton registration for p unless p has SingletonBinding
+            // For example, when building A(p1:Long=10, p2:Long=20, ...), we should not register p1, p2 long values as singleton.
+            getInstance(p.surface, create = true, seen, p.getDefaultValue.map(x => () => x))
           }
           val obj = factory.newInstance(args)
           obj
