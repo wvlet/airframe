@@ -50,9 +50,11 @@ class SessionBuilder(design: Design,
   }
 
   def create: Session = {
+    // Remove duplicate bindings in the deisgn
+    val d = design.minimize
     // Combine the lifecycle logger and event handlers
     val lifeCycleLogger =
-      if (design.designOptions.enabledLifeCycleLogging) {
+      if (d.designOptions.enabledLifeCycleLogging) {
         ShowLifeCycleLog
       } else {
         // Show life cycle log in debug level only
@@ -60,7 +62,7 @@ class SessionBuilder(design: Design,
       }
     val eventHandler = lifeCycleLogger wraps lifeCycleEventHandler
     val l            = new LifeCycleManager(eventHandler)
-    val session      = new AirframeSession(parent = None, name, design, design.designOptions.stage, l)
+    val session      = new AirframeSession(parent = None, name, d, d.designOptions.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init
