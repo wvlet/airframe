@@ -42,6 +42,8 @@ object LogTimestampFormatter {
     .appendValue(MINUTE_OF_HOUR, 2)
     .appendLiteral(':')
     .appendValue(SECOND_OF_MINUTE, 2)
+    .appendLiteral('.')
+    .appendValue(MILLI_OF_SECOND, 3)
     .appendOffset("+HHMM", "Z")
     .toFormatter(Locale.US)
 
