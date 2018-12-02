@@ -28,16 +28,17 @@ object ConfigOverrideTest {
 class ConfigOverrideTest extends AirframeSpec {
   import ConfigOverrideTest._
 
-  "Config" should {
-    "override config via canonical param name" in {
-      val prop = Map("app.coordinator_address" -> "mylocalhost:8081")
+  "override config via canonical param name" in {
+    val prop = Map("app.coordinator_address" -> "mylocalhost:8081")
 
-      val config: Config = Config(env = "default").register[AppConfig](AppConfig()).overrideWith(prop)
+    val config: Config = Config(env = "default").register[AppConfig](AppConfig()).overrideWith(prop)
 
-      val appConfig = config.of[AppConfig]
-      info(s"AppConfig: ${appConfig}")
-      appConfig.coordinatorAddress shouldBe "mylocalhost:8081"
-      appConfig.name shouldBe "myapp"
-    }
+    val appConfig = config.of[AppConfig]
+    info(s"AppConfig: ${appConfig}")
+    appConfig.coordinatorAddress shouldBe "mylocalhost:8081"
+    appConfig.name shouldBe "myapp"
   }
+
+  "override config with key names with hyphen" in {}
+
 }

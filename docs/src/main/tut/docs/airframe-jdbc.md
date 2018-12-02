@@ -61,7 +61,7 @@ trait MyDbTest extends ConnectionPoolFactoryService {
 val d = newDesign
    // ConnectionPoolFactory should be a singleton so as not to create duplicated pools
   .bind[ConnectionPoolFactory].toSingleton
-  .bind[DbConfig].toInstance(DbConfig(`type`="sqlite", database="mydb.sqlite"))
+  .bind[DbConfig].toInstance(DbConfig.ofSQLite(path="mydb.sqlite"))
 
 d.withSession { session =>
    val t = session.build[MyDbTest]
@@ -81,12 +81,12 @@ For using RDS, configure DbConfig as follows:
 val d = newDesign
   .bind[ConnectionPoolFactory].toSingleton
   .bind[DbConfig].toInstance(
-    DbConfig(
-      `type`="postgresql", 
-      host=Some("(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"),
-      user=Some("postgres"),
-      password=Some("xxxxx"),
-      database="mydatabase")
+    DbConfig.ofPostgreSQL(
+      host="(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)",
+      database="mydatabase"
+    )
+    .withUser("postgres")
+    .withPassword("xxxxx")
   )
 ```
 
@@ -95,12 +95,12 @@ For accessing a local PostgreSQL without SSL support, disable SSL access like th
 val d = newDesign
   .bind[ConnectionPoolFactory].toSingleton
   .bind[DbConfig].toInstance(
-    DbConfig(
-      `type`="postgresql", 
-      host=Some("(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"),
-      user=Some("postgres"),
-      password=Some("xxxxx"),
-      database="mydatabase"),
+    DbConfig.ofPostgreSQL(
+      host="(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)",
+      database="mydatabase"
+    )
+    .withUser("postgres")
+    .withPassword("xxxxx"),
     PostgreSQLConfig(useSSL=false)
   )
 ```
@@ -127,7 +127,7 @@ trait MultipleConnection extends ConnectionPoolFactoryService {
 
 val d = newDesign
   .bind[ConnectionPoolFactory].toSingleton
-  .bind[MyDb1Config].toInstance(DbConfig(`type`="sqlite"))
-  .bind[MyDb2Config].toInstance(DbConfig(`type`="postgres", ...))
+  .bind[MyDb1Config].toInstance(DbConfig.of("sqlite")...)
+  .bind[MyDb2Config].toInstance(DbConfig.of("postgres")..))
 
 ``` 
