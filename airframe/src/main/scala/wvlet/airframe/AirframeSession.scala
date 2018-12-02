@@ -80,7 +80,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   override def newSharedChildSession(d: Design): Session = {
-    trace(s"Creating a new shared child session with ${d}")
+    trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
@@ -103,7 +103,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     )
     // LifeCycleManager needs to know about the session
     l.setSession(childSession)
-    trace(s"Creating a new child session ${childSession.name} with ${d}")
+    trace(s"[${name}] Creating a new child session ${childSession.name} with ${d}")
     childSession
   }
 
@@ -112,7 +112,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     debug(s"[${name}] Initializing. Stage:${stage}")
     val production = stage == Stage.PRODUCTION
     if (production) {
-      debug(s"Eagerly initializing singletons in production mode")
+      debug(s"[${name}] Eagerly initializing singletons in production mode")
     }
     design.binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
@@ -124,21 +124,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   }
 
   private[airframe] def get[A](surface: Surface): A = {
-    debug(s"Get dependency [${surface}]")
+    debug(s"[${name}] Get dependency [${surface}]")
     getInstance(surface, this, create = false, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A = {
-    debug(s"Get dependency [${surface}] (or create with factory)")
+    debug(s"[${name}] Get dependency [${surface}] (or create with factory)")
     getInstance(surface, this, create = false, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
   private[airframe] def createNewInstanceOf[A](surface: Surface): A = {
-    debug(s"Create dependency [${surface}]")
+    debug(s"[${name}] Create dependency [${surface}]")
     getInstance(surface, this, create = true, List.empty).asInstanceOf[A]
   }
   private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A): A = {
-    debug(s"Create dependency [${surface}] (with factory)")
+    debug(s"[${name}] Create dependency [${surface}] (with factory)")
     getInstance(surface, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
@@ -147,7 +147,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
-    debug(s"Inject [${t}]: ${injectee}")
+    debug(s"[${name}] Inject [${t}]: ${injectee}")
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
@@ -176,7 +176,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
-    trace(s"Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
+    trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
       throw new CYCLIC_DEPENDENCY(seen.toSet)
@@ -188,7 +188,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       bindingTable.get(t) match {
         case None =>
           // If no binding is found in the current, traverse to the parent.
-          trace(s"Search parent for ${t}")
+          trace(s"[${name}] Search parent for ${t}")
           parent.flatMap { p =>
             p.findOwnerSessionOf(t).map { owner =>
               // Use the parent session only when some binding is found in the parent
@@ -199,21 +199,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           val result =
             b match {
               case ClassBinding(from, to) =>
-                trace(s"Found a class binding from ${from} to ${to}")
+                trace(s"[${name}] Found a class binding from ${from} to ${to}")
                 registerInjectee(from, contextSession.getInstance(to, contextSession, create, t :: seen))
               case sb @ SingletonBinding(from, to, eager) if from != to =>
-                trace(s"Found a singleton binding: ${from} => ${to}")
+                trace(s"[${name}] Found a singleton binding: ${from} => ${to}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from,
                                    contextSession.getInstance(to, contextSession, create, t :: seen, defaultValue)))
               case sb @ SingletonBinding(from, to, eager) if from == to =>
-                trace(s"Found a singleton binding: ${from}")
+                trace(s"[${name}] Found a singleton binding: ${from}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from, contextSession.buildInstance(to, contextSession, seen, defaultValue)))
               case p @ ProviderBinding(factory, provideSingleton, eager) =>
-                trace(s"Found a provider for ${p.from}: ${p}")
+                trace(s"[${name}] Found a provider for ${p.from}: ${p}")
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {
                     contextSession.getInstance(d, contextSession, false, t :: seen)
@@ -231,7 +231,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     val result =
       obj.getOrElse {
-        trace(s"No binding is found for ${t}. Building the instance. create = ${create}")
+        trace(s"[${name}] No binding is found for ${t}. Building the instance. create = ${create}")
         if (create) {
           // Create a new instance for bindFactory[X] or building X using its default value
           registerInjectee(t, contextSession.buildInstance(t, contextSession, seen, defaultValue))
@@ -252,18 +252,18 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                       defaultValue: Option[() => Any] = None): Any = {
     traitFactoryCache
       .get(t).map { f =>
-        trace(s"Using a pre-registered trait factory for ${t}")
+        trace(s"[${name}] Using a pre-registered trait factory for ${t}")
         f(this)
       }
       .orElse {
         // Use the provided object factory if exists
         defaultValue.map { f =>
-          trace(s"Using the default value for ${t}")
+          trace(s"[${name}] Using the default value for ${t}")
           f()
         }
       }
       .getOrElse {
-        trace(s"No binding is found for ${t}")
+        trace(s"[${name}] No binding is found for ${t}")
         buildInstance(t, contextSession, t :: seen)
       }
   }
@@ -272,7 +272,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     * Create a new instance of the surface
     */
   private def buildInstance(surface: Surface, contextSession: AirframeSession, seen: List[Surface]): Any = {
-    trace(s"buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
+    trace(s"[${name}] buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
       // Cannot build Primitive types
       throw MISSING_DEPENDENCY(seen)
@@ -294,12 +294,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case None =>
           val obj = traitFactoryCache.get(surface) match {
             case Some(factory) =>
-              trace(s"Using pre-compiled factory for ${surface}")
+              trace(s"[${name}] Using pre-compiled factory for ${surface}")
               factory.asInstanceOf[Session => Any](this)
             case None =>
               //buildWithReflection(t)
               warn(
-                s"No binding nor the default constructor for ${surface} is found. " +
+                s"[${name}] No binding nor the default constructor for ${surface} is found. " +
                   s"Add bind[${surface}].toXXX to your design or dependencies:[${seen.mkString(" <- ")}]")
               throw MISSING_DEPENDENCY(seen)
           }

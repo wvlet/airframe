@@ -79,15 +79,15 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
 
   def addInitHook(h: LifeCycleHook): Unit = {
     if (initHookHolder.canRegistered(h)) {
-      debug(s"Add init hook: ${h.surface}")
+      debug(s"[${sessionName}] Add an init hook: ${h.surface}")
       h.execute
     } else {
-      trace(s"${h.injectee} is already initialized")
+      trace(s"[${sessionName}] ${h.injectee} is already initialized")
     }
   }
 
   def addInjectHook(h: LifeCycleHook): Unit = {
-    debug(s"Add inject hook: ${h.surface}")
+    debug(s"[${sessionName}] Add an inject hook: ${h.surface}")
     // Run immediately
     h.execute
   }
@@ -95,7 +95,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addStartHook(h: LifeCycleHook): Unit = {
     synchronized {
       if (startHookHolder.canRegistered(h)) {
-        debug(s"Add start hook for ${h.surface}")
+        debug(s"[${sessionName}] Add a start hook for ${h.surface}")
         val s = state.get
         if (s == STARTED) {
           // If a session is already started, run the start hook immediately
@@ -108,7 +108,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       if (preShutdownHookHolder.canRegistered(h)) {
-        debug(s"Add pre-shutdown hook for ${h.surface}")
+        debug(s"[${sessionName}] Add a pre-shutdown hook for ${h.surface}")
       }
     }
   }
@@ -116,7 +116,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addShutdownHook(h: LifeCycleHook): Unit = {
     synchronized {
       if (shutdownHookHolder.canRegistered(h)) {
-        debug(s"Add shutdown hook for ${h.surface}")
+        debug(s"[${sessionName}] Add a shutdown hook for ${h.surface}")
       }
     }
   }

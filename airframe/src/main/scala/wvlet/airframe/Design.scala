@@ -14,8 +14,8 @@
 package wvlet.airframe
 
 import wvlet.airframe.Binder.Binding
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 
@@ -83,7 +83,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
   }
 
   def addBinding(b: Binding): Design = {
-    debug(s"Add binding: $b")
+    debug(s"Add a binding: $b")
     new Design(designOptions, Design.upsertBinding(binding, b))
   }
 
