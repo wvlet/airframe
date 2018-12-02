@@ -70,17 +70,17 @@ trait Session extends AutoCloseable {
 
   /**
     * Create a child session with an additional design.
-    * The created session shares the same singleton holder and lifecycle manager with this session.
+    * The created session shares the same singleton holder and the lifecycle manager with this session.
     */
   def newSharedChildSession(d: Design): Session
 
   /**
     * Create a child session with an additional design.
-    * The created session has its own singleton hodler and lifecycle manager.
+    * The created session has its own singleton hodler and a lifecycle manager.
     *
-    * - Child sessions tries to delegate object binding to the parent session if no corresponding binding is defined in the child design.
-    * - If parents has no binding for a given type, it will creates a new object in the child session.
-    * - If a parent or ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called.
+    * - Child sessions tries to delegate the object binding to the parent (or ansector) session if no corresponding binding is defined in the child design.
+    * - If the parent and ancestors ve no binding for a given type, it will creates a new object in the child session.
+    * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
     *
     * @param d Additional design for child session
     * @return
