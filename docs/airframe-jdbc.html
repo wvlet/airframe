@@ -65,7 +65,7 @@ ga('send', 'pageview');
 </span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
    <span class="c1">// ConnectionPoolFactory should be a singleton so as not to create duplicated pools
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ConnectionPoolFactory</span><span class="o">].</span><span class="n">toSingleton</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DbConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">(</span><span class="n">`type`</span><span class="o">=</span><span class="s">"sqlite"</span><span class="o">,</span> <span class="n">database</span><span class="o">=</span><span class="s">"mydb.sqlite"</span><span class="o">))</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DbConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">.</span><span class="n">ofSQLite</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"mydb.sqlite"</span><span class="o">))</span>
 
 <span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
    <span class="k">val</span> <span class="n">t</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyDbTest</span><span class="o">]</span>
@@ -85,12 +85,12 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ConnectionPoolFactory</span><span class="o">].</span><span class="n">toSingleton</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DbConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span>
-    <span class="nc">DbConfig</span><span class="o">(</span>
-      <span class="n">`type`</span><span class="o">=</span><span class="s">"postgresql"</span><span class="o">,</span> 
-      <span class="n">host</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span><span class="o">),</span>
-      <span class="n">user</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"postgres"</span><span class="o">),</span>
-      <span class="n">password</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"xxxxx"</span><span class="o">),</span>
-      <span class="n">database</span><span class="o">=</span><span class="s">"mydatabase"</span><span class="o">)</span>
+    <span class="nc">DbConfig</span><span class="o">.</span><span class="n">ofPostgreSQL</span><span class="o">(</span>
+      <span class="n">host</span><span class="o">=</span><span class="s">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span><span class="o">,</span>
+      <span class="n">database</span><span class="o">=</span><span class="s">"mydatabase"</span>
+    <span class="o">)</span>
+    <span class="o">.</span><span class="n">withUser</span><span class="o">(</span><span class="s">"postgres"</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withPassword</span><span class="o">(</span><span class="s">"xxxxx"</span><span class="o">)</span>
   <span class="o">)</span>
 </code></pre>
 </div>
@@ -99,12 +99,12 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ConnectionPoolFactory</span><span class="o">].</span><span class="n">toSingleton</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DbConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span>
-    <span class="nc">DbConfig</span><span class="o">(</span>
-      <span class="n">`type`</span><span class="o">=</span><span class="s">"postgresql"</span><span class="o">,</span> 
-      <span class="n">host</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span><span class="o">),</span>
-      <span class="n">user</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"postgres"</span><span class="o">),</span>
-      <span class="n">password</span><span class="k">=</span><span class="nc">Some</span><span class="o">(</span><span class="s">"xxxxx"</span><span class="o">),</span>
-      <span class="n">database</span><span class="o">=</span><span class="s">"mydatabase"</span><span class="o">),</span>
+    <span class="nc">DbConfig</span><span class="o">.</span><span class="n">ofPostgreSQL</span><span class="o">(</span>
+      <span class="n">host</span><span class="o">=</span><span class="s">"(your RDS address, e.g., mypostgres.xxxxxx.us-east-1.rds.amazonaws.com)"</span><span class="o">,</span>
+      <span class="n">database</span><span class="o">=</span><span class="s">"mydatabase"</span>
+    <span class="o">)</span>
+    <span class="o">.</span><span class="n">withUser</span><span class="o">(</span><span class="s">"postgres"</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">withPassword</span><span class="o">(</span><span class="s">"xxxxx"</span><span class="o">),</span>
     <span class="nc">PostgreSQLConfig</span><span class="o">(</span><span class="n">useSSL</span><span class="k">=</span><span class="kc">false</span><span class="o">)</span>
   <span class="o">)</span>
 </code></pre>
@@ -131,8 +131,8 @@ ga('send', 'pageview');
 
 <span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
   <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ConnectionPoolFactory</span><span class="o">].</span><span class="n">toSingleton</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">MyDb1Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">(</span><span class="n">`type`</span><span class="o">=</span><span class="s">"sqlite"</span><span class="o">))</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">MyDb2Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">(</span><span class="n">`type`</span><span class="o">=</span><span class="s">"postgres"</span><span class="o">,</span> <span class="o">...))</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">MyDb1Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">.</span><span class="n">ofSQLite</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"mydb.sqlite"</span><span class="o">))</span>
+  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">MyDb2Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DbConfig</span><span class="o">.</span><span class="n">ofPostgreSQL</span><span class="o">(</span><span class="n">database</span><span class="o">=</span><span class="s">"mydatabase"</span><span class="o">))</span>
 
 </code></pre>
 </div>
