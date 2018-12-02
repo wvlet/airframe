@@ -38,5 +38,5 @@ object DbConfig {
   def of(dbType: String): DbConfig     = DbConfig(`type` = dbType)
   def ofSQLite(path: String): DbConfig = DbConfig("sqlite", None, database = path, None, None, None)
   def ofPostgreSQL(host: String = "localhost", port: Int = 5432, database: String): DbConfig =
-    DbConfig("postgres", host = Option(host), database = database, port = Some(port))
+    DbConfig("postgresql", host = Option(host), database = database, port = Some(port))
 }

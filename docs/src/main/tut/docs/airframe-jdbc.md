@@ -127,7 +127,7 @@ trait MultipleConnection extends ConnectionPoolFactoryService {
 
 val d = newDesign
   .bind[ConnectionPoolFactory].toSingleton
-  .bind[MyDb1Config].toInstance(DbConfig.of("sqlite")...)
-  .bind[MyDb2Config].toInstance(DbConfig.of("postgres")..))
+  .bind[MyDb1Config].toInstance(DbConfig.ofSQLite(path="mydb.sqlite"))
+  .bind[MyDb2Config].toInstance(DbConfig.ofPostgreSQL(database="mydatabase"))
 
 ``` 
