@@ -242,6 +242,9 @@ class ConfigTest extends AirframeSpec {
       PropertiesConfig.configKeyOf("tpe.param") shouldBe ConfigKey(Prefix("tpe", None), "param")
       PropertiesConfig.configKeyOf("tpe@tag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
       PropertiesConfig.configKeyOf("tpe@@tag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
+      // Allow hyphenated names
+      PropertiesConfig.configKeyOf("t-pe@@tag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
+      PropertiesConfig.configKeyOf("t-pe@@t-ag.param") shouldBe ConfigKey(Prefix("tpe", Some("tag")), "param")
 
       intercept[IllegalArgumentException] {
         PropertiesConfig.configKeyOf("tpe@@param")
