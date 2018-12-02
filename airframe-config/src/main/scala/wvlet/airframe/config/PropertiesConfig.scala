@@ -58,9 +58,9 @@ object PropertiesConfig extends LogSupport {
         val prefixSplit = c(0).split("@+")
         if (prefixSplit.length > 1) {
           val param = c(1).mkString.canonicalName
-          ConfigKey(Prefix(prefixSplit(0), Some(prefixSplit(1))), param)
+          ConfigKey(Prefix(prefixSplit(0).canonicalName, Some(prefixSplit(1).canonicalName)), param)
         } else {
-          val prefix = c(0)
+          val prefix = c(0).canonicalName
           val param  = c(1).canonicalName
           ConfigKey(Prefix(prefix, None), param)
         }
