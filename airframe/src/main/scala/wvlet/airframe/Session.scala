@@ -14,9 +14,8 @@
 package wvlet.airframe
 
 import wvlet.airframe.AirframeException.MISSING_SESSION
-import wvlet.airframe.Binder.Binding
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.util.Try
@@ -78,10 +77,21 @@ trait Session extends AutoCloseable {
   /**
     * Create a child session with an additional design.
     * The created session has its own singleton hodler and life cycle manager.
-    * @param d
+    *
+    * @param d additional design for child session
     * @return
     */
-  def newChildSession(d: Design): Session
+  def newChildSession(d: Design = Design.blanc): Session
+
+  def withChildSession[U](d: Design = Design.blanc)(body: Session => U): U = {
+    val childSession = newChildSession(d)
+    try {
+      childSession.start
+      body(childSession)
+    } finally {
+      childSession.shutdown
+    }
+  }
 
   /**
     * Get the object LifeCycleManager of this session.
