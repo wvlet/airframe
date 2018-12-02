@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
+
 import wvlet.log.LogSupport
 
 import scala.util.Random
@@ -28,16 +30,36 @@ object ChildSessionTest {
       user.name == "aina"
     }
   }
+
+  val closed = new AtomicBoolean(false)
+
   // Should be shared among child sessions
   trait ThreadManager {
     val threadId = Random.nextInt(100000)
   }
 
-  trait HttpServer extends LogSupport {
+  trait ThreadManagerService extends LogSupport {
+    val threadManager = bind[ThreadManager]
+      .onStart { t =>
+        warn(s"Started thread manager: ${t.threadId}")
+      }
+      .onShutdown { t =>
+        if (closed.get()) {
+          throw new IllegalStateException("ThreadManager is already closed")
+        }
+        debug(s"Closing thread manger: ${t.threadId}")
+        closed.set(true)
+      }
+  }
+
+  trait HttpServer extends ThreadManagerService with LogSupport {
     private val currentSession = bind[Session]
-    val threadManager          = bind[ThreadManager]
 
     def handle(req: HttpRequest) = {
+      if (closed.get()) {
+        new IllegalStateException("Thread manager is closed")
+      }
+
       debug(s"get request:${req}")
       val childDesign = newDesign
         .bind[HttpRequest].toInstance(req)
@@ -60,13 +82,14 @@ object ChildSessionTest {
 
   case class HandlerResult(parentThreadId: Int, path: String, user: User, authorized: Boolean)
 
-  trait HttpRequestHandler extends LogSupport with UserAuth {
-    val req  = bind[HttpRequest]
-    val user = bind[User]
-    val threadManager = bind[ThreadManager]
-      .onStart { x =>
-        throw new IllegalStateException("Child session manager must not the parent thread manager")
+  val requestCount = new AtomicInteger(0)
+
+  trait HttpRequestHandler extends LogSupport with ThreadManagerService with UserAuth {
+    val req = bind[HttpRequest]
+      .onShutdown { r =>
+        requestCount.incrementAndGet()
       }
+    val user = bind[User]
 
     def handle: HandlerResult = {
       HandlerResult(threadManager.threadId, req.path, user, authorized)
@@ -89,11 +112,15 @@ object ChildSessionTest {
 class ChildSessionTest extends AirframeSpec {
   import ChildSessionTest._
   "support creating a child session" in {
+    requestCount.get() shouldBe 0
     serverDesign.build[HttpServer] { server =>
       val parentThreadId = server.threadManager.threadId
+      closed.get() shouldBe false
       server.handle(HttpRequest("/info", "leo")) shouldBe HandlerResult(parentThreadId, "/info", User("leo"), false)
       server.handle(HttpRequest("/info", "yui")) shouldBe HandlerResult(parentThreadId, "/info", User("yui"), false)
       server.handle(HttpRequest("/query", "aina")) shouldBe HandlerResult(parentThreadId, "/query", User("aina"), true)
     }
+    closed.get() shouldBe true
+    requestCount.get() shouldBe 3
   }
 }

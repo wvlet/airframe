@@ -153,7 +153,7 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.info(s"[${lifeCycleManager.sessionName}] Starting a new life cycle ...")
+    logger.info(s"[${lifeCycleManager.sessionName}] Starting a new lifecycle ...")
   }
 
   override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
@@ -161,11 +161,11 @@ object ShowLifeCycleLog extends LifeCycleEventHandler {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.info(s"[${lifeCycleManager.sessionName}] Stopping the life cycle ...")
+    logger.info(s"[${lifeCycleManager.sessionName}] Stopping the lifecycle ...")
   }
 
   override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.info(s"[${lifeCycleManager.sessionName}] The life cycle has stopped.")
+    logger.info(s"[${lifeCycleManager.sessionName}] The lifecycle has stopped.")
   }
 }
 
@@ -173,7 +173,7 @@ object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
   private val logger = Logger.of[LifeCycleManager]
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.debug(s"[${lifeCycleManager.sessionName}] Starting a new life cycle ...")
+    logger.debug(s"[${lifeCycleManager.sessionName}] Starting a new lifecycle ...")
   }
 
   override def afterStart(lifeCycleManager: LifeCycleManager): Unit = {
@@ -181,11 +181,11 @@ object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.debug(s"[${lifeCycleManager.sessionName}] Stopping the life cycle ...")
+    logger.debug(s"[${lifeCycleManager.sessionName}] Stopping the lifecycle ...")
   }
 
   override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
-    logger.debug(s"[${lifeCycleManager.sessionName}] The life cycle has stopped.")
+    logger.debug(s"[${lifeCycleManager.sessionName}] The lifecycle has stopped.")
   }
 }
 
@@ -214,7 +214,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
     if (shutdownOrder.nonEmpty) {
-      debug(s"Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
+      debug(s"[${lifeCycleManager.sessionName}] Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
     }
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
