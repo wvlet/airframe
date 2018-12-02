@@ -40,8 +40,8 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
     eventHandler.onInit(this, t, injectee)
   }
 
-  private var session: Session = _
-  private[airframe] def setSession(s: Session): Unit = {
+  private var session: AirframeSession = _
+  private[airframe] def setSession(s: AirframeSession): Unit = {
     session = s
   }
 
@@ -68,55 +68,73 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
     }
   }
 
-  private var initHookHolder        = new LifeCycleHookHolder
-  private var startHookHolder       = new LifeCycleHookHolder
-  private var preShutdownHookHolder = new LifeCycleHookHolder
-  private var shutdownHookHolder    = new LifeCycleHookHolder
+  private[airframe] var initHookHolder        = new LifeCycleHookHolder
+  private[airframe] var startHookHolder       = new LifeCycleHookHolder
+  private[airframe] var preShutdownHookHolder = new LifeCycleHookHolder
+  private[airframe] var shutdownHookHolder    = new LifeCycleHookHolder
 
   def startHooks: Seq[LifeCycleHook]       = startHookHolder.list
   def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHookHolder.list
   def shutdownHooks: Seq[LifeCycleHook]    = shutdownHookHolder.list
 
+  protected def addHook(h: LifeCycleHook)(body: LifeCycleManager => Unit): Unit = {
+    // Adding a lifecycle hook in the owner session
+    session.findOwnerSessionOf(h.surface) match {
+      case Some(s) => body(s.lifeCycleManager)
+      case None    => body(this)
+    }
+  }
+
   def addInitHook(h: LifeCycleHook): Unit = {
-    if (initHookHolder.canRegistered(h)) {
-      debug(s"[${sessionName}] Add an init hook: ${h.surface}")
-      h.execute
-    } else {
-      trace(s"[${sessionName}] ${h.injectee} is already initialized")
+    addHook(h) { l =>
+      if (l.initHookHolder.registered(h)) {
+        debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
+        h.execute
+      } else {
+        trace(s"[${l.sessionName}] ${h.injectee} is already initialized")
+      }
     }
   }
 
   def addInjectHook(h: LifeCycleHook): Unit = {
-    debug(s"[${sessionName}] Add an inject hook: ${h.surface}")
-    // Run immediately
-    h.execute
+    addHook(h) { l =>
+      debug(s"[${l.sessionName}] Running an inject hook: ${h.surface}")
+      // Run immediately
+      h.execute
+    }
   }
 
   def addStartHook(h: LifeCycleHook): Unit = {
-    synchronized {
-      if (startHookHolder.canRegistered(h)) {
-        debug(s"[${sessionName}] Add a start hook for ${h.surface}")
-        val s = state.get
-        if (s == STARTED) {
-          // If a session is already started, run the start hook immediately
-          h.execute
+    addHook(h) { l =>
+      l.synchronized {
+        if (l.startHookHolder.registered(h)) {
+          debug(s"[${l.sessionName}] Add a start hook for ${h.surface}")
+          val s = l.state.get
+          if (s == STARTED) {
+            // If a session is already started, run the start hook immediately
+            h.execute
+          }
         }
       }
     }
   }
 
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
-    synchronized {
-      if (preShutdownHookHolder.canRegistered(h)) {
-        debug(s"[${sessionName}] Add a pre-shutdown hook for ${h.surface}")
+    addHook(h) { l =>
+      l.synchronized {
+        if (l.preShutdownHookHolder.registered(h)) {
+          debug(s"[${l.sessionName}] Add a pre-shutdown hook for ${h.surface}")
+        }
       }
     }
   }
 
   def addShutdownHook(h: LifeCycleHook): Unit = {
-    synchronized {
-      if (shutdownHookHolder.canRegistered(h)) {
-        debug(s"[${sessionName}] Add a shutdown hook for ${h.surface}")
+    addHook(h) { l =>
+      l.synchronized {
+        if (l.shutdownHookHolder.registered(h)) {
+          debug(s"[${l.sessionName}] Add a shutdown hook for ${h.surface}")
+        }
       }
     }
   }
@@ -130,7 +148,7 @@ object LifeCycleManager {
     /**
       *  Return true if it is not yet registered
       */
-    def canRegistered(x: LifeCycleHook): Boolean = {
+    def registered(x: LifeCycleHook): Boolean = {
       synchronized {
         if (list.exists(_.injectee == x.injectee)) {
           false
