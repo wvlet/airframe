@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.jdbc
 
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe._
+import wvlet.airframe.{AirframeSpec, _}
 import wvlet.log.LogSupport
 
 object ConnectionPoolFactoryTest {
@@ -25,7 +24,7 @@ object ConnectionPoolFactoryTest {
 
 }
 
-import ConnectionPoolFactoryTest._
+import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
 
 trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
   lazy val pool1 = bind { c: MyDbConfig1 =>
@@ -88,6 +87,8 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
   "ConnectionPoolFactory" should {
 
     "use multiple SQLite configs" in {
+      if (!inCI) pending
+
       d.withSession { session =>
         val t = session.build[TestConnection]
         t.test(t.pool1)
@@ -96,6 +97,8 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
     }
 
     "use PostgreSQL connection pool" in {
+      if (!inCI) pending
+
       d.withSession { session =>
         val t = session.build[TestConnection]
         t.test(t.pgPool)
