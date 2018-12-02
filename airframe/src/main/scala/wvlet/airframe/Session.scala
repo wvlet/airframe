@@ -76,13 +76,26 @@ trait Session extends AutoCloseable {
 
   /**
     * Create a child session with an additional design.
-    * The created session has its own singleton hodler and life cycle manager.
+    * The created session has its own singleton hodler and lifecycle manager.
     *
-    * @param d additional design for child session
+    * - Child sessions tries to delegate object binding to the parent session if no corresponding binding is defined in the child design.
+    * - If parents has no binding for a given type, it will creates a new object in the child session.
+    * - If a parent or ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called.
+    *
+    * @param d Additional design for child session
     * @return
     */
   def newChildSession(d: Design = Design.blanc): Session
 
+  /**
+    * Create a child session and execute the body part.
+    * The created session has its own singleton holder and lifecycle manager.
+    *
+    * @param d Additional design for child session.
+    * @param body
+    * @tparam U
+    * @return
+    */
   def withChildSession[U](d: Design = Design.blanc)(body: Session => U): U = {
     val childSession = newChildSession(d)
     try {
