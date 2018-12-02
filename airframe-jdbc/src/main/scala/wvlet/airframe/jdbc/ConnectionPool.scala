@@ -21,20 +21,6 @@ import wvlet.log.{Guard, LogSupport}
 
 import scala.util.{Failure, Success, Try}
 
-/**
-  *
-  */
-case class DbConfig(
-    `type`: String = "sqlite",
-    host: Option[String] = None,
-    database: String = "log/sample.db",
-    port: Option[Int] = None,
-    user: Option[String] = None,
-    password: Option[String] = None
-) {
-  override def toString = s"DbConfig(${`type`},${host},$database,$port,$user,xxxxxx)"
-}
-
 trait ConnectionPool extends LogSupport {
   def config: DbConfig
 

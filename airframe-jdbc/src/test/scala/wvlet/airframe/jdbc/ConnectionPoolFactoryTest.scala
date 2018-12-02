@@ -79,10 +79,9 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
 
   val d = newDesign
     .bind[ConnectionPoolFactory].toSingleton
-    .bind[MyDbConfig1].toInstance(DbConfig(database = "target/test/mydb1.sqlite"))
-    .bind[MyDbConfig2].toInstance(DbConfig(database = "target/test/mydb2.sqlite"))
-    .bind[MyDbConfig3].toInstance(
-      DbConfig(`type` = "postgresql", host = Option("localhost"), database = "travis_ci_test", user = Some("postgres")))
+    .bind[MyDbConfig1].toInstance(DbConfig.ofSQLite(path = "target/test/mydb1.sqlite"))
+    .bind[MyDbConfig2].toInstance(DbConfig.ofSQLite(path = "target/test/mydb2.sqlite"))
+    .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
 
   "ConnectionPoolFactory" should {
 
@@ -109,7 +108,7 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
       intercept[IllegalArgumentException] {
         d.withSession { session =>
           val f = session.build[ConnectionPoolFactory]
-          f.newConnectionPool(DbConfig(`type` = "superdb"))
+          f.newConnectionPool(DbConfig.of("superdb"))
         }
       }
     }
@@ -118,7 +117,7 @@ class ConnectionPoolFactoryTest extends AirframeSpec {
       intercept[IllegalArgumentException] {
         d.withSession { session =>
           val f = session.build[ConnectionPoolFactory]
-          f.newConnectionPool(DbConfig(`type` = "postgresql", host = None))
+          f.newConnectionPool(DbConfig.of("postgresql"))
         }
       }
     }
