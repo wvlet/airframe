@@ -267,6 +267,45 @@ use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
 
 <p>These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class.</p>
 
+<h2 id="child-sessions">Child Sessions</h2>
+
+<p>If you need to override a part of the design in a short term, you can use <em>child sessions</em>. Child sessios are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.).</p>
+
+<p><strong><em>Usage Example</em></strong></p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="k">trait</span> <span class="nc">MyServer</span> <span class="o">{</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>   <span class="c1">// Bind the current session
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">childDesign</span> <span class="k">=</span> <span class="n">newDesign</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toSingleton</span>
+
+  <span class="k">def</span> <span class="n">handleInChildSession</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="c1">// Creates a new child session that uses the childDesign
+</span>    <span class="n">session</span><span class="o">.</span><span class="n">withChildSession</span><span class="o">(</span><span class="n">childDesign</span><span class="o">)</span> <span class="o">{</span> <span class="n">childSession</span> <span class="k">=&gt;</span>
+      <span class="n">childSession</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="o">{</span> <span class="n">x</span> <span class="k">=&gt;</span>
+         <span class="o">...</span>
+      <span class="o">}</span>      
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// Creates a parent session
+</span><span class="n">newDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+   <span class="c1">// Creates a short-lifecycle child session
+</span>   <span class="n">server</span><span class="o">.</span><span class="n">handleInChildSession</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>When building an object <code class="highlighter-rouge">X</code> in a child session, it will follow these rules:</p>
+<ul>
+  <li>If <code class="highlighter-rouge">X</code> is defined in the child design, the child session will be used for <code class="highlighter-rouge">X</code>.</li>
+  <li>If <code class="highlighter-rouge">X</code> is not defined in the child design, Airframe tries to find a design for <code class="highlighter-rouge">X</code> in the parent (or an ancestor) session (owner session).</li>
+  <li>If <code class="highlighter-rouge">X</code> involves internal objects that are defined in a parent (e.g., <code class="highlighter-rouge">P1</code>) or an ancestor (e.g., <code class="highlighter-rouge">A1</code>), their owner sessions will be used
+for instantiating <code class="highlighter-rouge">P1</code> and <code class="highlighter-rouge">A1</code>.</li>
+  <li>Lifecycle hooks will be registered to the owner sessions of the target objects.</li>
+</ul>
+
 <h2 id="whats-next">What’s Next</h2>
 
 <ul>
