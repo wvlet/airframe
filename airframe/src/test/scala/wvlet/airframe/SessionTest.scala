@@ -64,9 +64,9 @@ class SessionTest extends AirframeSpec {
       e.s shouldBe theSameInstanceAs(session)
     }
 
-    "should contain the reference to the design" in {
+    "should bind an equivalent design" in {
       d1.build[DesignBindExample] { e =>
-        e.design shouldBe theSameInstanceAs(d1)
+        e.design shouldBe d1.minimize
       }
     }
   }

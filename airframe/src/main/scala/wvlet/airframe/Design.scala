@@ -66,10 +66,30 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
+  /**
+    * Generates a minimized design by removing overwritten bindings
+    * @return
+    */
+  def minimize: Design = {
+    var seen          = Set.empty[Surface]
+    var minimizedList = List.empty[Binding]
+
+    for (b <- binding) {
+      val surface = b.from
+      if (seen.contains(surface)) {
+        // Remove the previous binding for the same surface
+        minimizedList = minimizedList.filter(_.from != surface)
+      } else {
+        seen += surface
+      }
+      minimizedList = b :: minimizedList
+    }
+
+    Design(designOptions, minimizedList.reverse.toVector)
+  }
+
   def add(other: Design): Design = {
-    val b          = Vector.newBuilder[Binding]
-    val newBinding = other.binding.foldLeft(binding) { case (current, b) => Design.upsertBinding(current, b) }
-    new Design(designOptions + other.designOptions, newBinding)
+    new Design(designOptions + other.designOptions, binding ++ other.binding)
   }
 
   def +(other: Design): Design = add(other)
@@ -84,7 +104,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   def addBinding(b: Binding): Design = {
     debug(s"Add a binding: $b")
-    new Design(designOptions, Design.upsertBinding(binding, b))
+    new Design(designOptions, binding :+ b)
   }
 
   def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
@@ -174,17 +194,4 @@ object Design {
     * Using Vector as a binding holder for performance and serialization reason
     */
   private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
-
-  private def upsertBinding(binding: Vector[Binding], b: Binding): Vector[Binding] = {
-    var replaced = false
-    val newBinding = binding.map { x =>
-      if (x.from == b.from) {
-        replaced = true
-        b
-      } else {
-        x
-      }
-    }
-    if (replaced) newBinding else binding :+ b
-  }
 }
