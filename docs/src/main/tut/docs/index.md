@@ -269,6 +269,44 @@ trait MyService {
 
 These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class. 
 
+## Child Sessions
+
+If you need to override a part of the design in a short term, you can use _child sessions_. Child sessios are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
+
+___Usage Example___
+
+```scala
+import wvlet.airframe._
+
+trait MyServer {
+  private val session = bind[Session]   // Bind the current session
+  private val childDesign = newDesign.bind[X].toSingleton
+
+  def handleInChildSession = {
+    // Creates a new child session that uses the childDesign
+    session.withChildSession(childDesign) { childSession =>
+      childSession.build[X] { x =>
+         ...
+      }      
+    }
+  }
+}
+
+// Creates a parent session
+newDesign.build[MyServer] { server =>
+   // Creates a short-lifecycle child session
+   server.handleInChildSession
+}
+```
+
+When building an object `X` in a child session, it will follow these rules:
+- If `X` is defined in the child design, the child session will be used for `X`.
+- If `X` is not defined in the child design, Airframe tries to find a design for `X` in the parent (or an ancestor) session (owner session).
+- If `X` involves internal objects that are defined in a parent (e.g., `P1`) or an ancestor (e.g., `A1`), their owner sessions will be used
+for instantiating `P1` and `A1`. 
+- Lifecycle hooks will be registered to the owner sessions of the target objects.
+
+
 ## What's Next
 
 - See typical [Use Cases](use-cases.html) of Airframe
