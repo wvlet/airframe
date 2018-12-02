@@ -87,7 +87,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
 
   def addInitHook(h: LifeCycleHook): Unit = {
     addHook(h) { l =>
-      if (l.initHookHolder.registered(h)) {
+      if (l.initHookHolder.isFirstRegistration(h)) {
         debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
         h.execute
       } else {
@@ -107,7 +107,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addStartHook(h: LifeCycleHook): Unit = {
     addHook(h) { l =>
       l.synchronized {
-        if (l.startHookHolder.registered(h)) {
+        if (l.startHookHolder.isFirstRegistration(h)) {
           debug(s"[${l.sessionName}] Add a start hook for ${h.surface}")
           val s = l.state.get
           if (s == STARTED) {
@@ -122,7 +122,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
     addHook(h) { l =>
       l.synchronized {
-        if (l.preShutdownHookHolder.registered(h)) {
+        if (l.preShutdownHookHolder.isFirstRegistration(h)) {
           debug(s"[${l.sessionName}] Add a pre-shutdown hook for ${h.surface}")
         }
       }
@@ -132,7 +132,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def addShutdownHook(h: LifeCycleHook): Unit = {
     addHook(h) { l =>
       l.synchronized {
-        if (l.shutdownHookHolder.registered(h)) {
+        if (l.shutdownHookHolder.isFirstRegistration(h)) {
           debug(s"[${l.sessionName}] Add a shutdown hook for ${h.surface}")
         }
       }
@@ -148,11 +148,12 @@ object LifeCycleManager {
     /**
       *  Return true if it is not yet registered
       */
-    def registered(x: LifeCycleHook): Boolean = {
+    def isFirstRegistration(x: LifeCycleHook): Boolean = {
       synchronized {
         if (list.exists(_.injectee == x.injectee)) {
           false
         } else {
+          // Register this hook
           holder :+= x
           true
         }
