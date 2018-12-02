@@ -41,7 +41,7 @@ object ChildSessionTest {
   trait ThreadManagerService extends LogSupport {
     val threadManager = bind[ThreadManager]
       .onStart { t =>
-        warn(s"Started thread manager: ${t.threadId}")
+        debug(s"Started thread manager: ${t.threadId}")
       }
       .onShutdown { t =>
         if (closed.get()) {
@@ -74,7 +74,7 @@ object ChildSessionTest {
             childSession.build[QueryHandler]
         }
         val response = handler.handle
-        info(response)
+        debug(response)
         response
       }
     }
@@ -104,6 +104,7 @@ object ChildSessionTest {
     .bind[HttpServer].toSingleton
     .bind[UserAuth].toSingleton
     .bind[User].toInstance(User("default-user"))
+    .noLifeCycleLogging
 }
 
 /**
