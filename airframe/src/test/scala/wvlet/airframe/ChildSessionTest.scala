@@ -65,18 +65,18 @@ object ChildSessionTest {
         .bind[HttpRequest].toInstance(req)
         .bind[User].toInstance(User(req.userName))
 
-      val childSession = currentSession.newChildSession(childDesign)
-      childSession.start {
-        val handler = req.path match {
-          case "/info" =>
-            childSession.build[InfoHandler]
-          case "/query" =>
-            childSession.build[QueryHandler]
+      currentSession
+        .withChildSession(childDesign) { childSession =>
+          val handler = req.path match {
+            case "/info" =>
+              childSession.build[InfoHandler]
+            case "/query" =>
+              childSession.build[QueryHandler]
+          }
+          val response = handler.handle
+          debug(response)
+          response
         }
-        val response = handler.handle
-        debug(response)
-        response
-      }
     }
   }
 
