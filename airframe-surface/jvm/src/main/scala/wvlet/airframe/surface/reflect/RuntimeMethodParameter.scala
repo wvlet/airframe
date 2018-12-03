@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.{MethodParameter, MethodRef, Parameter, Surface}
 import java.{lang => jl}
 
+import wvlet.airframe.surface.{MethodParameter, MethodRef, Surface}
 import wvlet.log.LogSupport
-
-import scala.util.Try
 
 /**
   * MethodParameter implementation using reflection for accessing parameter values
@@ -63,6 +61,17 @@ case class RuntimeMethodParameter(
         case e: Throwable =>
           None
       }
+    }
+  }
+
+  override def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = {
+    try {
+      val methodName = "%s$default$%d".format(method.name, index + 1)
+      val dm         = methodOwner.getClass.getMethod(methodName)
+      Some(dm.invoke(methodOwner))
+    } catch {
+      case e: Throwable =>
+        None
     }
   }
 }

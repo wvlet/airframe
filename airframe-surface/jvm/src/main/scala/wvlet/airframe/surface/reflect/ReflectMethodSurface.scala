@@ -36,9 +36,12 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
   override def call(obj: Any, x: Any*): Any = method match {
     case Some(m) =>
       if (x == null || x.isEmpty) {
+        trace(s"Calling method ${name}")
         m.invoke(obj)
       } else {
-        m.invoke(obj, x.map(_.asInstanceOf[AnyRef]): _*)
+        val args = x.map(_.asInstanceOf[AnyRef])
+        trace(s"Calling method ${name} with args: ${args.mkString(", ")}")
+        m.invoke(obj, args: _*)
       }
     case None => null
   }

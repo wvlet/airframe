@@ -81,6 +81,7 @@ case class MethodRef(owner: Class[_], name: String, paramTypes: Seq[Class[_]], i
 
 trait MethodParameter extends Parameter {
   def method: MethodRef
+  def getMethodArgDefaultValue(methodOwner: Any): Option[Any] = getDefaultValue
 }
 
 trait MethodSurface extends ParameterBase {

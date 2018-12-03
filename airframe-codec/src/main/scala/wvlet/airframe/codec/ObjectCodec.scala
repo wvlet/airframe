@@ -19,43 +19,6 @@ import wvlet.airframe.surface._
 
 import scala.util.{Failure, Success, Try}
 
-object ParamListCodec extends LogSupport {
-  val defaultEmptyParamBinder = { p: Parameter =>
-    Zero.zeroOf(p.surface)
-  }
-
-  /**
-    * Access the default value of a method argument, through the owner object.
-    *
-    * {{{
-    * public class wvlet.airframe.opts.LauncherTest$MyCommand {
-    *   public void hello(int, java.lang.String);
-    *      descriptor: (ILjava/lang/String;)V
-    *   public int hello$default$1();
-    *      descriptor: ()I
-    * }
-    * }}}
-    *
-    * @param methodOwner
-    * @return
-    */
-  def resolveMethodArgDefaultFromOwnerObject(methodOwner: Any) = { p: Parameter =>
-    p match {
-      case m: MethodParameter =>
-        try {
-          val methodName = "%s$default$%d".format(m.method.name, p.index + 1)
-          val dm         = methodOwner.getClass.getMethod(methodName)
-          dm.invoke(methodOwner)
-        } catch {
-          case e: Throwable =>
-            Zero.zeroOf(p.surface)
-        }
-      case ohter =>
-        Zero.zeroOf(p.surface)
-    }
-  }
-}
-
 /**
   * A generic codec for parameter lists:
   * - array form: [v1, v2, ...]
@@ -63,12 +26,12 @@ object ParamListCodec extends LogSupport {
   * @param name
   * @param params
   * @param paramCodec
-  * @param emptyParamBinder
+  * @param methodOwner
   */
 class ParamListCodec(name: String,
                      params: IndexedSeq[Parameter],
                      paramCodec: Seq[MessageCodec[_]],
-                     emptyParamBinder: Parameter => Any = ParamListCodec.defaultEmptyParamBinder)
+                     methodOwner: Option[Any] = None)
     extends MessageCodec[Seq[Any]]
     with LogSupport {
   private lazy val codecTable =
@@ -105,6 +68,21 @@ class ParamListCodec(name: String,
     }
   }
 
+  private def getParamDefaultValue(p: Parameter): Any = {
+    p match {
+      case m: MethodParameter =>
+        methodOwner
+          .flatMap { owner =>
+            // If the method owner instance is provided, we can resolve method arg default values
+            m.getMethodArgDefaultValue(owner)
+          }
+          .orElse(p.getDefaultValue)
+          .getOrElse(Zero.zeroOf(p.surface))
+      case other =>
+        p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+    }
+  }
+
   override def unpack(u: Unpacker, v: MessageHolder): Unit = {
     val numParams = params.length
 
@@ -118,7 +96,7 @@ class ParamListCodec(name: String,
           paramCodec(index).unpack(u, v)
           val arg = if (v.isNull) {
             trace(v.getError)
-            p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+            getParamDefaultValue(p)
           } else {
             v.getLastValue
           }
@@ -128,7 +106,8 @@ class ParamListCodec(name: String,
         // Populate args with the default or zero value
         while (index < numParams) {
           val p = params(index)
-          b += p.getDefaultValue.getOrElse(emptyParamBinder(p))
+          val v = getParamDefaultValue(p)
+          b += v
           index += 1
         }
         // Ignore additional args
@@ -165,13 +144,11 @@ class ParamListCodec(name: String,
         val args = for (i <- 0 until numParams) yield {
           val p         = params(i)
           val paramName = CName.toCanonicalName(p.name)
-          map.get(paramName) match {
-            case Some(x) =>
-              x
-            case None =>
-              p.getDefaultValue.getOrElse(emptyParamBinder(p))
-          }
+          map
+            .get(paramName)
+            .getOrElse(getParamDefaultValue(p))
         }
+        trace(s"map:${map.mkString(",")}, args:${args.mkString(", ")}")
         v.setObject(args)
       case other =>
         u.skipValue
