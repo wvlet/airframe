@@ -277,14 +277,18 @@ use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
 
 <span class="k">trait</span> <span class="nc">MyServer</span> <span class="o">{</span>
   <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>   <span class="c1">// Bind the current session
-</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">childDesign</span> <span class="k">=</span> <span class="n">newDesign</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toSingleton</span>
-
+</span>
   <span class="k">def</span> <span class="n">handleInChildSession</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="c1">// Creates a new child session that uses the childDesign
+    <span class="c1">// Define a child session specific design
+</span>    <span class="k">val</span> <span class="n">childDesign</span> <span class="k">=</span>
+      <span class="n">newDesign</span>
+        <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">X</span><span class="o">].</span><span class="n">toSingleton</span>
+
+    <span class="c1">// Creates a new child session
 </span>    <span class="n">session</span><span class="o">.</span><span class="n">withChildSession</span><span class="o">(</span><span class="n">childDesign</span><span class="o">)</span> <span class="o">{</span> <span class="n">childSession</span> <span class="k">=&gt;</span>
       <span class="n">childSession</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="o">{</span> <span class="n">x</span> <span class="k">=&gt;</span>
          <span class="o">...</span>
-      <span class="o">}</span>      
+      <span class="o">}</span>
     <span class="o">}</span>
   <span class="o">}</span>
 <span class="o">}</span>
@@ -303,7 +307,8 @@ use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
   <li>If <code class="highlighter-rouge">X</code> is not defined in the child design, Airframe tries to find a design for <code class="highlighter-rouge">X</code> in the parent (or an ancestor) session (owner session).</li>
   <li>If <code class="highlighter-rouge">X</code> involves internal objects that are defined in a parent (e.g., <code class="highlighter-rouge">P1</code>) or an ancestor (e.g., <code class="highlighter-rouge">A1</code>), their owner sessions will be used
 for instantiating <code class="highlighter-rouge">P1</code> and <code class="highlighter-rouge">A1</code>.</li>
-  <li>Lifecycle hooks will be registered to the owner sessions of the target objects.</li>
+  <li>Lifecycle hooks for <code class="highlighter-rouge">X</code> will be registered to the owner sessions of the target objects.
+For example, if <code class="highlighter-rouge">X</code> is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.</li>
 </ul>
 
 <h2 id="whats-next">What’s Next</h2>
