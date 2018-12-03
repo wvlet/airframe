@@ -172,6 +172,9 @@ class Logger(private val name: String,
 
 object Logger {
 
+  // Set a custom LogManager to show log messages even in shutdown hooks
+  System.setProperty("java.util.logging.manager", "wvlet.log.AirframeLogManager")
+
   import collection.JavaConverters._
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
