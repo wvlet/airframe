@@ -35,5 +35,5 @@ class AirframeLogManager extends LogManager {
     // Don't reset yet
   }
 
-  private def reset0(): Unit = { super.reset }
+  private[log] def reset0(): Unit = { super.reset }
 }
