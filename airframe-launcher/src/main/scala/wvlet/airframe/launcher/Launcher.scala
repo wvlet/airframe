@@ -373,13 +373,14 @@ class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
               methodSurface.name,
               methodSurface.args.toIndexedSeq,
               paramCodecs,
-              // We need to supply default values by using the parent object
-              ParamListCodec.resolveMethodArgDefaultFromOwnerObject(parentObj)
+              // We need to supply method owner object to resolve function arg values
+              methodOwner = Some(parentObj)
             )
 
             val msgpack = result.parseTree.toMsgPack
             methodArgCodec
               .unpackMsgPack(msgpack).map { args =>
+                trace(s"calling method ${methodSurface} with args: ${args.mkString(", ")}")
                 val methodResult = methodSurface.call(parentObj, args: _*)
                 LauncherResult(stack, Some(methodResult))
               }

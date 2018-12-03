@@ -50,7 +50,7 @@ class ObjectCodecTest extends CodecSpec {
     h.getLastValue shouldBe v
   }
 
-  "populate the default value when missing" in {
+  "populate the default value when missing" taggedAs ("default-arg") in {
     val packer = MessagePack.newBufferPacker
     packer.packMapHeader(1)
     packer.packString("i")

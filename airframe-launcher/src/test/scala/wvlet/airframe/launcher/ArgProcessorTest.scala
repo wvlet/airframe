@@ -15,6 +15,7 @@ package wvlet.airframe.launcher
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.launcher.LauncherTest.capture
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
 
 object ArgProcessorTest {
 
@@ -56,6 +57,17 @@ object ArgProcessorTest {
     Launcher
       .of[Cmd]
       .add(subCommandModule, name = "sub", description = "sub command")
+
+  class FunctionArg(
+      @option(prefix = "-e", description = "Environment")
+      env: String = "default-env")
+      extends LogSupport {
+
+    @command(description = "Start a proxy server")
+    def proxy(
+        @option(prefix = "-p,--port", description = "port number")
+        port: Int = IOUtil.randomPort) = {}
+  }
 }
 
 class ArgProcessorTest extends AirframeSpec {
@@ -119,4 +131,7 @@ class ArgProcessorTest extends AirframeSpec {
     c3 should include("nested2")
   }
 
+  "should support function arg" taggedAs ("farg") in {
+    Launcher.of[FunctionArg].execute("proxy")
+  }
 }
