@@ -280,14 +280,18 @@ import wvlet.airframe._
 
 trait MyServer {
   private val session = bind[Session]   // Bind the current session
-  private val childDesign = newDesign.bind[X].toSingleton
 
   def handleInChildSession = {
-    // Creates a new child session that uses the childDesign
+    // Define a child session specific design
+    val childDesign =
+      newDesign
+        .bind[X].toSingleton
+
+    // Creates a new child session
     session.withChildSession(childDesign) { childSession =>
       childSession.build[X] { x =>
          ...
-      }      
+      }
     }
   }
 }
@@ -303,8 +307,9 @@ When building an object `X` in a child session, it will follow these rules:
 - If `X` is defined in the child design, the child session will be used for `X`.
 - If `X` is not defined in the child design, Airframe tries to find a design for `X` in the parent (or an ancestor) session (owner session).
 - If `X` involves internal objects that are defined in a parent (e.g., `P1`) or an ancestor (e.g., `A1`), their owner sessions will be used
-for instantiating `P1` and `A1`. 
-- Lifecycle hooks will be registered to the owner sessions of the target objects.
+for instantiating `P1` and `A1`.
+- Lifecycle hooks for `X` will be registered to the owner sessions of the target objects.
+For example, if `X` is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.
 
 
 ## What's Next
