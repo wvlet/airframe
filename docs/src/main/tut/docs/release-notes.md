@@ -5,9 +5,29 @@ title: Release Notes
 
 # Release Notes
 
+## 0.76
+[airframe DI]
+- Support creating [child sessions](https://wvlet.org/airframe/docs/#child-sessions) with `session.withChildSession`. [#321](https://github.com/wvlet/airframe/issues/321) 
+- Improve Design.+ performance by checking Design duplicates right before building a new Session ([#334](https://github.com/wvlet/airframe/issues/334)) [[3e13659](https://github.com/wvlet/airframe/commit/3e13659)]
+- Add session id to logs [[0cbd9cc](https://github.com/wvlet/airframe/commit/0cbd9cc)]
+- Improved the debug log message by showing session hierarchy and injection behavior [[05c014d](https://github.com/wvlet/airframe/commit/05c014d)]
+- [internal] Do not register shutdown hooks for child sessions to avoid closing loggers [[a6460cd](https://github.com/wvlet/airframe/commit/a6460cd)]
+
+[airframe-launcher]
+- [bug] Fix in getting the default values of method arguments. ([#339](https://github.com/wvlet/airframe/issues/339)) [[438f2cc](https://github.com/wvlet/airframe/commit/438f2cc)]
+
+[airframe-log]
+- Show logs during shutdown hooks by using a custom LogManager so as not to close logger during shutdown hooks [[4dffce2](https://github.com/wvlet/airframe/commit/4dffce2)]
+- Show  millisec in log timestamps ([#335](https://github.com/wvlet/airframe/issues/335)) [[7b6ec05](https://github.com/wvlet/airframe/commit/7b6ec05)]
+
+[misc.]
+- [airframe-config] [#268](https://github.com/wvlet/airframe/issues/268): Allow hyphens in key names ([#333](https://github.com/wvlet/airframe/issues/333)) [[c237b84](https://github.com/wvlet/airframe/commit/c237b84)]
+- [airframe-jdbc] [#133](https://github.com/wvlet/airframe/issues/133): Add DbConfig helper ([#332](https://github.com/wvlet/airframe/issues/332)) [[d274448](https://github.com/wvlet/airframe/commit/d274448)]
+- [airframe-codec] BinaryValue encoding was missing ([#331](https://github.com/wvlet/airframe/issues/331)) [[4eb8899](https://github.com/wvlet/airframe/commit/4eb8899)]
+
 ## 0.75
--  airframe-di: Fix a bug the default values in a constructor are registered as singletons [[40d97ca](https://github.com/wvlet/airframe/commit/40d97ca)]
--  airframe-control: Allow passing retry context ([#327](https://github.com/wvlet/airframe/issues/327)) [[afb34b9](https://github.com/wvlet/airframe/commit/afb34b9)]
+- airframe-di: Fix a bug the default values in a constructor are registered as singletons [[40d97ca](https://github.com/wvlet/airframe/commit/40d97ca)]
+- airframe-control: Allow passing retry context ([#327](https://github.com/wvlet/airframe/issues/327)) [[afb34b9](https://github.com/wvlet/airframe/commit/afb34b9)]
 - [internal] Upgrade to sbt 1.2.7 ([#325](https://github.com/wvlet/airframe/issues/325)) [[b6ebaf1](https://github.com/wvlet/airframe/commit/b6ebaf1)]
 
 ## 0.74
