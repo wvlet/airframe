@@ -83,9 +83,10 @@ trait Session extends AutoCloseable {
     * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
     *
     * @param d Additional design for child session
+    *          @param inheritParentDesignOptions if true (default) use the same design options (e.g., production mode, life cycle logging) with the parent design
     * @return
     */
-  def newChildSession(d: Design = Design.blanc): Session
+  def newChildSession(d: Design = Design.blanc, inheritParentDesignOptions: Boolean = true): Session
 
   /**
     * Create a child session and execute the body part.

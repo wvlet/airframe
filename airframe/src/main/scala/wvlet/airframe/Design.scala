@@ -29,7 +29,7 @@ class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stag
   def withLifeCycleLogging: DesignOptions = {
     new DesignOptions(enabledLifeCycleLogging = true, stage)
   }
-  def withoutLifeCycleLogging: DesignOptions = {
+  def noLifecycleLogging: DesignOptions = {
     new DesignOptions(enabledLifeCycleLogging = false, stage)
   }
 
@@ -118,7 +118,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
   }
 
   def noLifeCycleLogging: Design = {
-    new Design(designOptions.withoutLifeCycleLogging, binding)
+    new Design(designOptions.noLifecycleLogging, binding)
   }
 
   /**

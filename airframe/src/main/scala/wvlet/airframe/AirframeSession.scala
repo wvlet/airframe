@@ -84,7 +84,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     val childSession = new AirframeSession(
       parent = Some(this),
       sessionName, // Should we add suffixes for child sessions?
-      d,
+      new Design(design.designOptions, d.binding), // Inherit parent options
       stage,
       lifeCycleManager,
       singletonHolder
@@ -92,17 +92,22 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     childSession
   }
 
-  override def newChildSession(d: Design): Session = {
-    val l = new LifeCycleManager(lifeCycleManager.eventHandler)
-    val childSession = new AirframeSession(
-      parent = Some(this),
-      None, // TODO Should we create a child session name?
-      d,
-      stage,
-      l
-    )
-    // LifeCycleManager needs to know about the session
-    l.setSession(childSession)
+  override def newChildSession(d: Design, inheritParentDesignOptions: Boolean): Session = {
+    val childDesign = if (inheritParentDesignOptions) {
+      new Design(design.designOptions, d.binding) // Inherit parent options
+    } else {
+      d
+    }
+    val sb =
+      new SessionBuilder(
+        design = childDesign,
+        parent = Some(this),
+        name = None,
+        addShutdownHook = false, // Disable registration of shutdown hooks
+        lifeCycleEventHandler = lifeCycleManager.coreEventHandler // Use only core lifecycle event handlers
+      )
+
+    val childSession = sb.create
     trace(s"[${name}] Creating a new child session ${childSession.name} with ${d}")
     childSession
   }

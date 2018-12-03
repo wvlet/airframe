@@ -13,13 +13,26 @@
  */
 package wvlet.airframe
 
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
+
+import wvlet.log.AirframeLogManager
+
 /**
   *
   */
 object AddShutdownHook extends LifeCycleEventHandler {
+
+  private val registered = new AtomicInteger(0)
+
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    registered.incrementAndGet()
     sys.addShutdownHook {
       lifeCycleManager.shutdown
+
+      if (registered.decrementAndGet() <= 0) {
+        // Resetting the logger when all lifecycle have terminated
+        AirframeLogManager.resetFinally
+      }
     }
   }
 }
