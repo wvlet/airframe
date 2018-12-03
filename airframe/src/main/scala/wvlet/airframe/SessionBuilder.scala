@@ -33,8 +33,10 @@ object Stage {
   *
   */
 class SessionBuilder(design: Design,
+                     parent: Option[AirframeSession] = None,
                      name: Option[String] = None,
-                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.mandatoryObjectLifeCycleHandler)
+                     addShutdownHook: Boolean = true,
+                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
     extends LogSupport {
 
   /**
@@ -42,11 +44,15 @@ class SessionBuilder(design: Design,
     * @return
     */
   def withEventHandler(e: LifeCycleEventHandler): SessionBuilder = {
-    new SessionBuilder(design, name, e.wraps(lifeCycleEventHandler))
+    new SessionBuilder(design, parent, name, addShutdownHook, e.wraps(lifeCycleEventHandler))
   }
 
   def withName(sessionName: String): SessionBuilder = {
-    new SessionBuilder(design, Some(sessionName), lifeCycleEventHandler)
+    new SessionBuilder(design, parent, Some(sessionName), addShutdownHook, lifeCycleEventHandler)
+  }
+
+  def noShutdownHook: SessionBuilder = {
+    new SessionBuilder(design, parent, name, false, lifeCycleEventHandler)
   }
 
   def create: Session = {
@@ -60,9 +66,17 @@ class SessionBuilder(design: Design,
         // Show life cycle log in debug level only
         ShowDebugLifeCycleLog
       }
-    val eventHandler = lifeCycleLogger wraps lifeCycleEventHandler
-    val l            = new LifeCycleManager(eventHandler)
-    val session      = new AirframeSession(parent = None, name, d, d.designOptions.stage, l)
+
+    // Add a shutdown hook handler if necessary
+    val lh = lifeCycleEventHandler.removeAll(AddShutdownHook)
+    val eventHandler = if (addShutdownHook) {
+      lh andThen AddShutdownHook
+    } else {
+      lh
+    }
+
+    val l       = new LifeCycleManager(lifeCycleLogger wraps eventHandler, lh)
+    val session = new AirframeSession(parent = parent, name, d, d.designOptions.stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init

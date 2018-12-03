@@ -27,6 +27,21 @@ trait LifeCycleEventHandler {
 
   def andThen(next: LifeCycleEventHandler): LifeCycleEventHandler = new LifeCycleEventHandlerChain(this, next)
   def wraps(child: LifeCycleEventHandler): LifeCycleEventHandler  = new LifeCycleEventHandlerPair(this, child)
+
+  def removeAll(h: LifeCycleEventHandler): LifeCycleEventHandler = {
+    if (this eq h) {
+      NilLifeCycleEventHandler
+    } else {
+      this
+    }
+  }
+}
+
+object NilLifeCycleEventHandler extends LifeCycleEventHandler {
+  override def andThen(next: LifeCycleEventHandler): LifeCycleEventHandler = next
+  override def wraps(child: LifeCycleEventHandler): LifeCycleEventHandler  = child
+
+  override def removeAll(h: LifeCycleEventHandler): LifeCycleEventHandler = NilLifeCycleEventHandler
 }
 
 class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEventHandler)
@@ -51,6 +66,10 @@ class LifeCycleEventHandlerChain(prev: LifeCycleEventHandler, next: LifeCycleEve
     prev.afterShutdown(lifeCycleManager)
     next.afterShutdown(lifeCycleManager)
   }
+
+  override def removeAll(h: LifeCycleEventHandler): LifeCycleEventHandler = {
+    prev.removeAll(h) andThen next.removeAll(h)
+  }
 }
 
 class LifeCycleEventHandlerPair(parent: LifeCycleEventHandler, child: LifeCycleEventHandler)
@@ -74,5 +93,8 @@ class LifeCycleEventHandlerPair(parent: LifeCycleEventHandler, child: LifeCycleE
   override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
     child.afterShutdown(lifeCycleManager)
     parent.afterShutdown(lifeCycleManager)
+  }
+  override def removeAll(h: LifeCycleEventHandler): LifeCycleEventHandler = {
+    parent.removeAll(h) wraps child.removeAll(h)
   }
 }

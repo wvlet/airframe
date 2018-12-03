@@ -35,7 +35,7 @@ case class DesignOptionsWithConfig(override val enabledLifeCycleLogging: Boolean
   override def withLifeCycleLogging: DesignOptionsWithConfig = {
     new DesignOptionsWithConfig(enabledLifeCycleLogging = true, stage, config)
   }
-  override def withoutLifeCycleLogging: DesignOptionsWithConfig = {
+  override def noLifecycleLogging: DesignOptionsWithConfig = {
     new DesignOptionsWithConfig(enabledLifeCycleLogging = false, stage, config)
   }
 
