@@ -69,7 +69,7 @@ d.build[MyApp]{ app: MyApp =>
 ```
 
 ### In-Trait Injection
-In-trait injection with `bind[X]` is useful to create reusable moduels. Note that this only works inside Scala traits:
+In-trait injection with `bind[X]` is useful to create reusable modules. Note that this only works inside Scala traits:
 ```scala
 import wvlet.airframe._
 
