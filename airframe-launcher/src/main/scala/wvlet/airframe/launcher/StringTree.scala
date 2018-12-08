@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.launcher
 
+import wvlet.airframe.launcher.StringTree.Leaf
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.reflect.Path
 
@@ -25,20 +26,20 @@ import wvlet.airframe.surface.reflect.Path
   *
   * { a: apple, B:{b:book, c:car} }
   *
-  * val n1 = Empty.set("a", apple)  =>  Node(a -> Leaf(apple))
+  * val n1 = EmptyNode.set("a", apple)  =>  Node(a -> Leaf(apple))
   * val n2 = n1.set("B.b", "book")
-  * => Node(a -> Leaf(apple), B -> Empty.set("b", "book"))
+  * => Node(a -> Leaf(apple), B -> EmptyNode.set("b", "book"))
   * => Node(a -> apple, B->Node(b -> Leaf(book)))
   * val n3 = n2.set("B.c", "car") => Node(a ->apple, B->Node(b -> Leaf(book), c->Leaf(car)))
   *
   * </pre>
   *
   */
-sealed trait ValueHolder[+A] {
+sealed trait StringTree {
 
-  def +[B >: A](e: (Path, B)): ValueHolder[B] = set(e._1, e._2)
-  def ++[B >: A](it: Iterable[(Path, B)]): ValueHolder[B] = it.foldLeft[ValueHolder[B]](this) { (h, e) =>
-    h.set(e._1, e._2)
+  def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)
+  def ++(it: Iterable[(Path, StringTree)]): StringTree = it.foldLeft[StringTree](this) { (h, e) =>
+    h.setNode(e._1, e._2)
   }
 
   /**
@@ -48,7 +49,9 @@ sealed trait ValueHolder[+A] {
     * @param value
     * @return updated value holder
     */
-  def set[B >: A](path: String, value: B): ValueHolder[B] = set(Path(path), value)
+  def set(path: String, value: String): StringTree = setNode(Path(path), Leaf(value))
+
+  def set(path: Path, value: String): StringTree = setNode(path, Leaf(value))
 
   /**
     * Set a value at the specified path
@@ -57,7 +60,7 @@ sealed trait ValueHolder[+A] {
     * @param value String value to set
     * @return updated value holder
     */
-  def set[B >: A](path: Path, value: B): ValueHolder[B]
+  def setNode(path: Path, node: StringTree): StringTree
 
   /**
     * Extract a part of the value holder under the path
@@ -65,7 +68,7 @@ sealed trait ValueHolder[+A] {
     * @param path
     * @return value holder under the path
     */
-  def get(path: String): ValueHolder[A] = get(Path(path))
+  def get(path: String): StringTree = get(Path(path))
 
   /**
     * Extract a part of the value holder under the path
@@ -73,14 +76,14 @@ sealed trait ValueHolder[+A] {
     * @param path
     * @return value holder under the path
     */
-  def get(path: Path): ValueHolder[A]
+  def get(path: Path): StringTree
 
   /**
     * Depth first search iterator
     *
     * @return
     */
-  def dfs: Iterator[(Path, A)] = dfs(Path.current)
+  def dfs: Iterator[(Path, String)] = dfs(Path.current)
 
   /**
     * Depth first search iterator under the specified path
@@ -88,7 +91,7 @@ sealed trait ValueHolder[+A] {
     * @param path
     * @return
     */
-  def dfs(path: Path): Iterator[(Path, A)]
+  def dfs(path: Path): Iterator[(Path, String)]
 
   /**
     * Depth first search iterator under the specified path
@@ -96,52 +99,47 @@ sealed trait ValueHolder[+A] {
     * @param path
     * @return
     */
-  def dfs(path: String): Iterator[(Path, A)] = dfs(Path(path))
+  def dfs(path: String): Iterator[(Path, String)] = dfs(Path(path))
 
   def isEmpty = false
 
   def toMsgPack: Array[Byte] = {
-    ValueHolderCodec.toMsgPack(this)
+    StringTreeCodec.toMsgPack(this)
   }
 }
 
-object ValueHolder extends LogSupport {
+object StringTree extends LogSupport {
 
   import collection.immutable.{Map => IMap}
 
-  def apply[A](elems: Iterable[(Path, A)]): ValueHolder[A] = Empty.++[A](elems)
+  def apply(elems: Iterable[(Path, StringTree)]): StringTree = EmptyNode.++(elems)
 
-  val empty: ValueHolder[Nothing] = Empty
+  val empty: StringTree = EmptyNode
 
-  private[launcher] case object Empty extends ValueHolder[Nothing] {
-    def set[B >: Nothing](path: Path, value: B) = {
+  private[launcher] case object EmptyNode extends StringTree {
+    def setNode(path: Path, value: StringTree) = {
       if (path.isEmpty) {
-        Leaf(value)
+        value
       } else {
-        Node(IMap.empty[String, ValueHolder[B]]).set(path, value)
+        Node(IMap.empty[String, StringTree]).setNode(path, value)
       }
     }
-    def get(path: Path)     = Empty
-    def extract(path: Path) = Empty
+    def get(path: Path)     = EmptyNode
+    def extract(path: Path) = EmptyNode
 
     def dfs(path: Path)  = Iterator.empty
     override def isEmpty = true
   }
 
-  private[launcher] case class Node[A](child: IMap[String, ValueHolder[A]]) extends ValueHolder[A] {
+  private[launcher] case class Node(child: IMap[String, StringTree]) extends StringTree {
     override def toString: String =
-      "{%s}".format(
-        child
-          .map { e =>
-            "%s:%s".format(e._1, e._2)
-          }
-          .mkString(", "))
+      s"{${child.map(e => s"${e._1}:${e._2}").mkString(", ")}}"
 
-    def set[B >: A](path: Path, value: B): ValueHolder[B] = {
+    def setNode(path: Path, value: StringTree): StringTree = {
       if (path.isEmpty) {
         throw new IllegalStateException("path cannot be empty")
       } else {
-        val p = child.getOrElse(path.head, Empty).set(path.tailPath, value)
+        val p = child.getOrElse(path.head, EmptyNode).setNode(path.tailPath, value)
         Node(child + (path.head -> p))
       }
     }
@@ -150,42 +148,46 @@ object ValueHolder extends LogSupport {
       if (path.isEmpty) {
         this
       } else {
-        child.get(path.head) map { _.get(path.tailPath) } getOrElse Empty
+        child.get(path.head) map { _.get(path.tailPath) } getOrElse EmptyNode
       }
     }
 
     def dfs(path: Path) = (for ((name, h) <- child) yield h.dfs(path / name)).reduce(_ ++ _)
   }
 
-  private[launcher] case class Leaf[A](value: A) extends ValueHolder[A] {
+  private[launcher] case class Leaf(value: String) extends StringTree {
     override def toString = value.toString
-    def set[B >: A](path: Path, value: B) = {
-      SeqLeaf(Seq(this, Empty.set[B](path, value)))
+    def setNode(path: Path, value: StringTree) = {
+      SeqLeaf(Seq(this, EmptyNode.setNode(path, value)))
     }
 
     def get(path: Path) = {
       if (path.isEmpty) {
         this
       } else {
-        Empty
+        EmptyNode
       }
     }
 
     def dfs(path: Path) = Iterator.single(path -> value)
   }
 
-  private[launcher] case class SeqLeaf[A](elems: Seq[ValueHolder[A]]) extends ValueHolder[A] {
-    override def toString = "[%s]".format(elems.mkString(", "))
+  /**
+    * Node containing multiple elements
+    * @param elems
+    */
+  private[launcher] case class SeqLeaf(elems: Seq[StringTree]) extends StringTree {
+    override def toString = s"[${elems.mkString(", ")}]"
 
-    def set[B >: A](path: Path, value: B) = {
-      SeqLeaf(elems :+ Empty.set(path, value))
+    def setNode(path: Path, value: StringTree) = {
+      SeqLeaf(elems :+ EmptyNode.setNode(path, value))
     }
 
     def get(path: Path) =
       if (path.isEmpty) {
         this
       } else {
-        Empty
+        EmptyNode
       }
 
     def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)

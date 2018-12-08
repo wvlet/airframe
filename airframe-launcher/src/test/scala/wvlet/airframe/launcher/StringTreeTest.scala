@@ -26,11 +26,11 @@ import wvlet.airframe.AirframeSpec
 /**
   * @author leo
   */
-class ValueHolderTest extends AirframeSpec {
+class StringTreeTest extends AirframeSpec {
 
   "ValueHolder" should {
     "have nested values" in {
-      val h  = ValueHolder.empty
+      val h  = StringTree.empty
       val h2 = h.set("a", "apple")
       debug(h2)
       val h3 = h2.set("B/b", "book")
