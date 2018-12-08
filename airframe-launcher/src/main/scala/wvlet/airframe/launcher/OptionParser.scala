@@ -293,7 +293,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
         case (c: CLOption, values) =>
           if (c.takesArgument) {
             if (c.takesMultipleArguments) {
-              OptMappingMultiple(c, values)
+              OptMappingMultiple(c, values.toSeq)
             } else {
               OptMapping(c, values(0))
             }
@@ -302,7 +302,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
           }
         case (a: CLArgument, values) =>
           if (a.takesMultipleArguments) {
-            ArgMappingMultiple(a, values)
+            ArgMappingMultiple(a, values.toSeq)
           } else {
             ArgMapping(a, values(0))
           }
