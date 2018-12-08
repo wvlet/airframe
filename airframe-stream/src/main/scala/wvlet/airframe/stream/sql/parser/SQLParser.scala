@@ -28,7 +28,7 @@ object SQLParser extends LogSupport {
     val tokenStream = new CommonTokenStream(lexer)
     val parser      = new SqlBaseParser(tokenStream)
     val ctx         = parser.singleStatement()
-    debug(ctx.toStringTree(parser))
+    trace(ctx.toStringTree(parser))
     val interpreter = new SQLInterpreter
     interpreter.interpret(ctx)
   }
