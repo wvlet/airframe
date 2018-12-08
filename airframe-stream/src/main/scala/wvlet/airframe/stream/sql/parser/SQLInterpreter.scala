@@ -50,7 +50,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     visit(ctx.query())
   }
 
-  override def visitQuery(ctx: QueryContext): SQLModel = {
+  override def visitQuery(ctx: QueryContext): Relation = {
     val inputRelation = visit(ctx.queryNoWith()).asInstanceOf[Relation]
     inputRelation
   }
@@ -220,10 +220,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       case _ =>
         (CrossJoin, NaturalJoin)
     }
-
-    val l = visit(ctx.left).asInstanceOf[Relation]
-    val r = visit(ctx.rightRelation).asInstanceOf[Relation]
-    val j = Join(joinType, l, r, joinCriteria)
+    val l     = visit(ctx.left).asInstanceOf[Relation]
+    val right = Option(ctx.aliasedRelation()).getOrElse(ctx.relation(0))
+    val r     = visit(right).asInstanceOf[Relation]
+    val j     = Join(joinType, l, r, joinCriteria)
     j
   }
 
@@ -270,9 +270,24 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       ctx.predicate() match {
         case n: NullPredicateContext =>
           if (n.NOT() == null) IsNull(e) else IsNotNull(e)
+        case b: BetweenContext =>
+          Between(expression(b.lower), expression(b.upper))
+        case i: InSubqueryContext =>
+          val subQuery = visitQuery(i.query())
+          if (i.NOT() == null) InSubQuery(subQuery) else NotInSubQuery(subQuery)
+        case i: InListContext =>
+          val inList = i.expression().asScala.map(x => expression(x))
+          if (i.NOT() == null) In(inList) else NotIn(inList)
+        case l: LikeContext =>
+          // TODO: Handle ESCAPE
+          val likeExpr = expression(l.pattern)
+          if (l.NOT() == null) Like(likeExpr) else NotLike(likeExpr)
+        case d: DistinctFromContext =>
+          val distinctExpr = expression(d.valueExpression())
+          if (d.NOT() == null) DistinctFrom(distinctExpr) else NotDistinctFrom(distinctExpr)
         case other =>
           // TODO
-          warn(s"unhandled predicate: ${print(ctx.predicate())}")
+          warn(s"unhandled predicate ${ctx.predicate().getClass}:\n${print(ctx.predicate())}")
           e
       }
     } else {

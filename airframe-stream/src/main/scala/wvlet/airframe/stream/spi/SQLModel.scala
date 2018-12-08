@@ -176,7 +176,14 @@ object SQLModel {
   case class Between(a: Expression, b: Expression)         extends ConditionalExpression
   case class IsNull(a: Expression)                         extends ConditionalExpression
   case class IsNotNull(a: Expression)                      extends ConditionalExpression
-  case class In(a: Expression, list: Seq[Expression])      extends ConditionalExpression
+  case class In(list: Seq[Expression])                     extends ConditionalExpression
+  case class NotIn(list: Seq[Expression])                  extends ConditionalExpression
+  case class InSubQuery(in: Relation)                      extends ConditionalExpression
+  case class NotInSubQuery(in: Relation)                   extends ConditionalExpression
+  case class Like(e: Expression)                           extends ConditionalExpression
+  case class NotLike(e: Expression)                        extends ConditionalExpression
+  case class DistinctFrom(e: Expression)                   extends ConditionalExpression
+  case class NotDistinctFrom(e: Expression)                extends ConditionalExpression
 
   case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[Expression], defaultValue: Option[Expression])
