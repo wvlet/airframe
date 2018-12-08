@@ -68,6 +68,8 @@ object ArgProcessorTest {
         @option(prefix = "-p,--port", description = "port number")
         port: Int = IOUtil.randomPort) = {}
   }
+
+  class SeqArg(@argument args: Seq[String])
 }
 
 class ArgProcessorTest extends AirframeSpec {
@@ -133,5 +135,12 @@ class ArgProcessorTest extends AirframeSpec {
 
   "should support function arg" taggedAs ("farg") in {
     Launcher.of[FunctionArg].execute("proxy")
+  }
+
+  "should support argument list" in {
+    // Single element => Seq("apple")
+    Launcher.of[SeqArg].execute("apple")
+    // Multiple elements => Seq("apple", "banana")
+    Launcher.of[SeqArg].execute("apple banana")
   }
 }

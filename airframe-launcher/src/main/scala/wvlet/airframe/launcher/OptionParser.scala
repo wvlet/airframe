@@ -21,6 +21,7 @@ package wvlet.airframe.launcher
 //--------------------------------------
 
 import wvlet.airframe.control.CommandLineTokenizer
+import wvlet.airframe.launcher.StringTree.{Leaf, SeqLeaf}
 import wvlet.airframe.surface._
 import wvlet.airframe.surface.reflect.{GenericBuilder, ObjectBuilder, Path, ReflectSurfaceFactory}
 import wvlet.log.{LogSupport, Logger}
@@ -69,21 +70,23 @@ object OptionParser extends LogSupport {
   /**
     * Option -> value mapping result
     */
-  sealed abstract class OptionMapping extends Iterable[(Path, String)]
+  sealed abstract class OptionMapping {
+    def path: (Path, StringTree)
+  }
   case class OptSetFlag(opt: CLOption) extends OptionMapping {
-    def iterator = Iterator.single(opt.path -> "true")
+    def path = opt.path -> Leaf("true")
   }
   case class OptMapping(opt: CLOption, value: String) extends OptionMapping {
-    def iterator = Iterator.single(opt.path -> value)
+    def path = opt.path -> Leaf(value)
   }
-  case class OptMappingMultiple(opt: CLOption, value: Array[String]) extends OptionMapping {
-    def iterator = value.map(opt.path -> _).iterator
+  case class OptMappingMultiple(opt: CLOption, value: Seq[String]) extends OptionMapping {
+    def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
   case class ArgMapping(opt: CLArgItem, value: String) extends OptionMapping {
-    def iterator = Iterator.single(opt.path -> value)
+    def path = opt.path -> Leaf(value)
   }
-  case class ArgMappingMultiple(opt: CLArgument, value: Array[String]) extends OptionMapping {
-    def iterator = value.map(opt.path -> _).iterator
+  case class ArgMappingMultiple(opt: CLArgument, value: Seq[String]) extends OptionMapping {
+    def path = opt.path -> SeqLeaf(value.map(Leaf(_)))
   }
 
   /**
@@ -140,7 +143,7 @@ object OptionParser extends LogSupport {
 
   }
 
-  case class OptionParserResult(parseTree: ValueHolder[String], unusedArgument: Array[String], val showHelp: Boolean)
+  case class OptionParserResult(parseTree: StringTree, unusedArgument: Array[String], val showHelp: Boolean)
       extends LogSupport {
 
     override def toString: String = {
@@ -290,7 +293,7 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
         case (c: CLOption, values) =>
           if (c.takesArgument) {
             if (c.takesMultipleArguments) {
-              OptMappingMultiple(c, values.toArray)
+              OptMappingMultiple(c, values)
             } else {
               OptMapping(c, values(0))
             }
@@ -299,17 +302,15 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
           }
         case (a: CLArgument, values) =>
           if (a.takesMultipleArguments) {
-            ArgMappingMultiple(a, values.toArray)
+            ArgMappingMultiple(a, values)
           } else {
             ArgMapping(a, values(0))
           }
-        //        case (cn: CommandNameArgument, values) =>
-        //          ArgMapping(cn, values(0))
       }
       m.toSeq
     }
 
-    val holder = ValueHolder(for (m <- mapping; (p, v) <- m) yield p -> v)
+    val holder = StringTree(for (m <- mapping) yield m.path)
     trace(s"parse tree: $holder")
     val showHelp = mapping.collectFirst { case c @ OptSetFlag(o) if o.annot.isHelp => c }.isDefined
     new OptionParserResult(holder, unusedArguments.toArray, showHelp)

@@ -18,22 +18,22 @@ import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 /**
   *
   */
-object ValueHolderCodec extends MessageCodec[ValueHolder[_]] {
-  override def pack(p: Packer, v: ValueHolder[_]): Unit = {
+object StringTreeCodec extends MessageCodec[StringTree] {
+  override def pack(p: Packer, v: StringTree): Unit = {
     v match {
-      case ValueHolder.Empty =>
+      case StringTree.EmptyNode =>
         // For nested objects, we should use an empty Map to use default values
         p.packMapHeader(0)
-      case ValueHolder.Node(child) => {
+      case StringTree.Node(child) => {
         p.packMapHeader(child.size)
         for ((key, x) <- child) {
           p.packString(key.toString)
           pack(p, x)
         }
       }
-      case ValueHolder.Leaf(v) =>
+      case StringTree.Leaf(v) =>
         p.packString(v.toString)
-      case ValueHolder.SeqLeaf(elems) =>
+      case StringTree.SeqLeaf(elems) =>
         p.packArrayHeader(elems.length)
         for (x <- elems) {
           pack(p, x)

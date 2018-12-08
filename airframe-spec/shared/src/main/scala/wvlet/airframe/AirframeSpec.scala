@@ -30,6 +30,11 @@ trait AirframeSpec
     with BeforeAndAfterAll
     with LogSupport {
 
+  // A tag for the current working test
+  protected val working = Tag("working")
+  // A tag for the failing test.
+  protected val failing = Tag("failing")
+
   protected def inCI: Boolean = {
     sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
   }
