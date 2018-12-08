@@ -69,7 +69,8 @@ object ArgProcessorTest {
         port: Int = IOUtil.randomPort) = {}
   }
 
-  class SeqArg(@argument args: Seq[String])
+  case class SeqArg(@argument args: Seq[String])
+  case class SeqOption(@option(prefix = "-p") ports: Seq[Int])
 }
 
 class ArgProcessorTest extends AirframeSpec {
@@ -139,8 +140,13 @@ class ArgProcessorTest extends AirframeSpec {
 
   "should support argument list" in {
     // Single element => Seq("apple")
-    Launcher.of[SeqArg].execute("apple")
+    Launcher.of[SeqArg].execute("apple").getRootInstance should be(SeqArg(Seq("apple")))
     // Multiple elements => Seq("apple", "banana")
-    Launcher.of[SeqArg].execute("apple banana")
+    Launcher.of[SeqArg].execute("apple banana").getRootInstance should be(SeqArg(Seq("apple", "banana")))
+  }
+
+  "should support multiple same-name options" taggedAs working in {
+    Launcher.of[SeqOption].execute("-p 10").getRootInstance should be(SeqOption(Seq(10)))
+    Launcher.of[SeqOption].execute("-p 10 -p 20 -p 30").getRootInstance should be(SeqOption(Seq(10, 20, 30)))
   }
 }
