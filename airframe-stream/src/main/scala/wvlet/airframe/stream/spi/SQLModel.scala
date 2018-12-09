@@ -195,9 +195,9 @@ object SQLModel {
   case class NotDistinctFrom(e: Expression)                extends ConditionalExpression
 
   case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
-  case class CaseExpr(operand: Option[Expression], whenClauses: Seq[Expression], defaultValue: Option[Expression])
+  case class CaseExpr(operand: Option[Expression], whenClauses: Seq[WhenClause], defaultValue: Option[Expression])
       extends Expression
-  case class WhenClause(operand: Expression, result: Expression) extends Expression
+  case class WhenClause(condition: Expression, result: Expression) extends Expression
 
   sealed trait ArithmeticExpression
   // Arithmetic expr
