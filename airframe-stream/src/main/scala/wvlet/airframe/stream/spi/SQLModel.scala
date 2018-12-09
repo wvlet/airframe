@@ -78,6 +78,11 @@ object SQLModel {
     override def toString = s"Aggregate[${groupingKeys.mkString(",")}](${in},${selectItems.mkString(",")})"
   }
 
+  case class Query(withQuery: With, body: Relation) extends Relation
+
+  case class WithQuery(name: String, query: Relation, columnNames: Option[Seq[Identifier]]) extends SQLModel
+  case class With(recursive: Boolean, queries: Seq[WithQuery])                              extends SQLModel
+
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
   sealed trait JoinType
@@ -234,13 +239,13 @@ object SQLModel {
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
       extends Literal
 
-  sealed trait IntervalField
-  case object Year   extends IntervalField
-  case object Month  extends IntervalField
-  case object Day    extends IntervalField
-  case object Hour   extends IntervalField
-  case object Minute extends IntervalField
-  case object Second extends IntervalField
+  sealed trait IntervalField extends SQLModel
+  case object Year           extends IntervalField
+  case object Month          extends IntervalField
+  case object Day            extends IntervalField
+  case object Hour           extends IntervalField
+  case object Minute         extends IntervalField
+  case object Second         extends IntervalField
 
   // Value constructor
   case class ArrayConstructor(values: Seq[Expression])                        extends Expression
@@ -251,6 +256,7 @@ object SQLModel {
   case class CurrentLocalTime(precision: Option[Int])                         extends CurrentTimeBase("localtime", precision)
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
 
+  case class Identifier(value: String, delimited: Boolean = false) extends Expression
 }
 
 object SQLFunction {
