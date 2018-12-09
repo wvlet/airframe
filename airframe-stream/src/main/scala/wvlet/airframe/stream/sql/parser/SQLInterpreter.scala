@@ -20,12 +20,21 @@ import wvlet.airframe.stream.spi.SQLModel._
 import wvlet.airframe.stream.sql.parser.SqlBaseParser._
 import wvlet.log.{LogSupport, Logger}
 
+object SQLInterpreter {
+  private[parser] def unquote(s: String): String = {
+    s.substring(1, s.length - 1).replace("''", "'")
+  }
+}
+
 /**
   * ANTLR parse tree -> SQL model classes
   */
 class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
+  import SQLInterpreter._
   import scala.collection.JavaConverters._
-  private val parserRules = SqlBaseParser.ruleNames.toList.asJava
+
+  private val parserRules            = SqlBaseParser.ruleNames.toList.asJava
+  private var parameterPosition: Int = 0
 
   private def print(ctx: ParserRuleContext): String = {
     ctx.toStringTree(parserRules)
@@ -337,6 +346,56 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     ctx.accept(this).asInstanceOf[Expression]
   }
 
+  override def visitValueExpressionDefault(ctx: ValueExpressionDefaultContext): Expression = {
+    expression(ctx.primaryExpression())
+  }
+
+  override def visitTypeConstructor(ctx: TypeConstructorContext): Expression = {
+    val v = visit(ctx.str()).asInstanceOf[StringLiteral].value
+
+    if (ctx.DOUBLE_PRECISION() != null) {
+      // TODO
+      GenericLiteral("DOUBLE", v)
+    } else {
+      val tpe = ctx.identifier().getText
+      tpe.toLowerCase match {
+        case "time"      => TimeLiteral(v)
+        case "timestamp" => TimestampLiteral(v)
+        case "decimal"   => DecimalLiteral(v)
+        case "char"      => CharLiteral(v)
+        case other =>
+          GenericLiteral(tpe, v)
+      }
+    }
+  }
+
+  override def visitBasicStringLiteral(ctx: BasicStringLiteralContext): StringLiteral = {
+    StringLiteral(unquote(ctx.STRING().getText))
+  }
+
+  override def visitUnicodeStringLiteral(ctx: UnicodeStringLiteralContext): StringLiteral = {
+    // Decode unicode literal
+    StringLiteral(ctx.getText)
+  }
+
+  override def visitBinaryLiteral(ctx: BinaryLiteralContext): Expression = {
+    BinaryLiteral(ctx.BINARY_LITERAL().getText)
+  }
+
+  override def visitParameter(ctx: ParameterContext): Expression = {
+    // Prepared statement parameter
+    parameterPosition += 1
+    Parameter(parameterPosition)
+  }
+
+  override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
+    expression(ctx.expression())
+  }
+
+  override def visitSubqueryExpression(ctx: SubqueryExpressionContext): Expression = {
+    SubQueryExpression(visitQuery(ctx.query()))
+  }
+
   override def visitPredicated(ctx: PredicatedContext): Expression = {
     val e = expression(ctx.valueExpression)
     if (ctx.predicate != null) {
@@ -571,5 +630,4 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       throw unknown(ctx)
     }
   }
-
 }
