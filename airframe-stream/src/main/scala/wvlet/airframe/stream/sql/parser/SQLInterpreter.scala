@@ -45,7 +45,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   def interpret(ctx: ParserRuleContext): SQLModel = {
-    debug(s"interpret: ${print(ctx)}")
+    trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
     trace(m)
     m
