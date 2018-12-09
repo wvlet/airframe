@@ -230,6 +230,12 @@ object SQLModel {
   case class TimestampLiteral(value: String) extends Literal {
     override def toString = s"timestamp '${value}'"
   }
+  case class DecimalLiteral(value: String) extends Literal {
+    override def toString = value
+  }
+  case class CharLiteral(value: String) extends Literal {
+    override def toString = value
+  }
   case class DoubleLiteral(value: Double) extends Literal {
     override def toString = value.toString
   }
@@ -238,6 +244,9 @@ object SQLModel {
   }
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
       extends Literal
+
+  case class GenericLiteral(tpe: String, value: String) extends Literal
+  case class BinaryLiteral(binary: String)              extends Literal
 
   sealed trait IntervalField extends SQLModel
   case object Year           extends IntervalField
@@ -257,6 +266,9 @@ object SQLModel {
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
 
   case class Identifier(value: String, delimited: Boolean = false) extends Expression
+  // 1-origin parameter
+  case class Parameter(index: Int)               extends Expression
+  case class SubQueryExpression(query: Relation) extends Expression
 }
 
 object SQLFunction {
