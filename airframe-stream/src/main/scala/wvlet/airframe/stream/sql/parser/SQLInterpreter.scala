@@ -71,7 +71,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitWith(ctx: WithContext): With = {
-    val queries = ctx.namedQuery().asScala.map(x => visitNamedQuery(x))
+    val queries = ctx.namedQuery().asScala.map(x => visitNamedQuery(x)).toSeq
     With(false, queries)
   }
 
@@ -79,8 +79,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
     val columnAliases = Option(ctx.columnAliases()).map { x =>
       x.identifier().asScala.map { i =>
-        visitIdentifier(i)
-      }
+          visitIdentifier(i)
+        }.toSeq
     }
     WithQuery(ctx.name.getText, visitQuery(ctx.query()), columnAliases)
   }
@@ -390,7 +390,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
   override def visitSimpleCase(ctx: SimpleCaseContext): Expression = {
     val operand       = expression(ctx.valueExpression())
-    val whenClauses   = ctx.whenClause().asScala.map(visitWhenClause(_))
+    val whenClauses   = ctx.whenClause().asScala.map(visitWhenClause(_)).toSeq
     val defaultClause = Option(ctx.elseExpression).map(expression(_))
 
     CaseExpr(Some(operand), whenClauses, defaultClause)
@@ -401,7 +401,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSearchedCase(ctx: SearchedCaseContext): Expression = {
-    val whenClauses    = ctx.whenClause().asScala.map(visitWhenClause(_))
+    val whenClauses    = ctx.whenClause().asScala.map(visitWhenClause(_)).toSeq
     val defaultClauses = Option(ctx.elseExpression).map(expression(_))
 
     CaseExpr(None, whenClauses, defaultClauses)
@@ -428,7 +428,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
           val subQuery = visitQuery(i.query())
           if (i.NOT() == null) InSubQuery(subQuery) else NotInSubQuery(subQuery)
         case i: InListContext =>
-          val inList = i.expression().asScala.map(x => expression(x))
+          val inList = i.expression().asScala.map(x => expression(x)).toSeq
           if (i.NOT() == null) In(inList) else NotIn(inList)
         case l: LikeContext =>
           // TODO: Handle ESCAPE
@@ -546,11 +546,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     // PARTITION BY
     val partition = Option(ctx.PARTITION())
       .map { p =>
-        ctx.partition.asScala.map(expression(_))
+        ctx.partition.asScala.map(expression(_)).toSeq
       }.getOrElse(Seq.empty)
     val orderBy = Option(ctx.ORDER())
       .map { o =>
-        ctx.sortItem().asScala.map(visitSortItem(_))
+        ctx.sortItem().asScala.map(visitSortItem(_)).toSeq
       }.getOrElse(Seq.empty)
     val windowFrame = Option(ctx.windowFrame()).map(visitWindowFrame(_))
 
@@ -614,7 +614,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     if (ctx.ASTERISK() != null) {
       FunctionCall(name, Seq(AllColumns(None)), false, filter, over)
     } else {
-      val args = ctx.expression().asScala.map(expression(_))
+      val args = ctx.expression().asScala.map(expression(_)).toSeq
       FunctionCall(name, args, false, filter, over)
     }
   }
