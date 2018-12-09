@@ -103,10 +103,26 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
+  override def visitSetOperation(ctx: SetOperationContext): SQLModel = {
+
+    val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
+    val isDistinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
+    if (ctx.INTERSECT() != null) {
+      Intersect(children, isDistinct)
+    } else if (ctx.UNION() != null) {
+      Union(children, isDistinct)
+    } else if (ctx.EXCEPT() != null) {
+      Except(children(0), children(1), isDistinct)
+    } else {
+      throw unknown(ctx)
+    }
+  }
+
   override def visitQueryNoWith(ctx: QueryNoWithContext): SQLModel = {
     val inputRelation = visit(ctx.queryTerm()).asInstanceOf[Relation]
     // TODO
 
+    // TODO union, except, intersect
     val withSort = if (ctx.sortItem().isEmpty) {
       inputRelation
     } else {
@@ -405,6 +421,15 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val defaultClauses = Option(ctx.elseExpression).map(expression(_))
 
     CaseExpr(None, whenClauses, defaultClauses)
+  }
+  override def visitCast(ctx: CastContext): Expression = {
+    if (ctx.CAST() != null) {
+      Cast(expression(ctx.expression()), ctx.`type`().getText)
+    } else if (ctx.TRY_CAST() != null) {
+      Cast(expression(ctx.expression()), ctx.`type`().getText, tryCast = true)
+    } else {
+      throw unknown(ctx)
+    }
   }
 
   override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
