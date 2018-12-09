@@ -38,7 +38,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   def interpret(ctx: ParserRuleContext): SQLModel = {
     trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
-    debug(m)
+    trace(m)
     m
   }
 
@@ -189,15 +189,29 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       }
   }
 
-  override def visitRelationDefault(ctx: RelationDefaultContext): SQLModel = {
-    visit(ctx.aliasedRelation())
+  override def visitRelationDefault(ctx: RelationDefaultContext): Relation = {
+    visitAliasedRelation(ctx.aliasedRelation())
   }
 
-  override def visitAliasedRelation(ctx: AliasedRelationContext): SQLModel = {
-    val r = visit(ctx.relationPrimary())
+  override def visitAliasedRelation(ctx: AliasedRelationContext): Relation = {
+    val r: Relation = ctx.relationPrimary() match {
+      case p: ParenthesizedRelationContext =>
+        visit(p.relation()).asInstanceOf[Relation]
+      //case u: UnnestContext                =>
+//        u.expression().asScala.map(x => expression(x))
+      case s: SubqueryRelationContext =>
+        visitQuery(s.query())
+      case l: LateralContext =>
+        visitQuery(l.query())
+      case t: TableNameContext =>
+        Table(QName(t.qualifiedName().getText))
+      case other =>
+        throw unknown(other)
+    }
+
     ctx.identifier() match {
       case i: IdentifierContext =>
-        AliasedRelation(r.asInstanceOf[Relation], i.getText, None)
+        AliasedRelation(r, i.getText, None)
       case other =>
         r
     }
@@ -252,7 +266,28 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
   override def visitExpression(ctx: ExpressionContext): SQLModel = {
     trace(s"expr: ${print(ctx)}")
-    visit(ctx.booleanExpression())
+    val b: BooleanExpressionContext = ctx.booleanExpression()
+    b match {
+      case lb: LogicalBinaryContext =>
+        if (lb.AND() != null) {
+          And(expression(lb.left), expression(lb.right))
+        } else if (lb.OR() != null) {
+          Or(expression(lb.left), expression(lb.right))
+        } else {
+          throw unknown(lb)
+        }
+      case ln: LogicalNotContext =>
+        if (ln.NOT() != null) {
+          Not(expression(ln.booleanExpression()))
+        } else {
+          throw unknown(ln)
+        }
+      case bd: BooleanDeafaultContext =>
+        visitPredicated(bd.predicated())
+      case other =>
+        warn(s"Unknown expression: ${other.getClass}")
+        visit(ctx.booleanExpression())
+    }
   }
 
   override def visitLogicalNot(ctx: LogicalNotContext): SQLModel = {
@@ -384,5 +419,82 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
   override def visitDigitIdentifier(ctx: DigitIdentifierContext): SQLModel = {
     DigitId(ctx.getText.toInt)
+  }
+
+  override def visitOver(ctx: OverContext): Window = {
+    // PARTITION BY
+    val partition = Option(ctx.PARTITION())
+      .map { p =>
+        ctx.partition.asScala.map(expression(_))
+      }.getOrElse(Seq.empty)
+    val orderBy = Option(ctx.ORDER())
+      .map { o =>
+        ctx.sortItem().asScala.map(visitSortItem(_))
+      }.getOrElse(Seq.empty)
+    val windowFrame = Option(ctx.windowFrame()).map(visitWindowFrame(_))
+
+    Window(partition, orderBy, windowFrame)
+  }
+
+  override def visitWindowFrame(ctx: WindowFrameContext): WindowFrame = {
+    val s = visitFrameBound(ctx.start)
+    val e = Option(ctx.BETWEEN()).map { x =>
+      visitFrameBound(ctx.end)
+    }
+    if (ctx.RANGE() != null) {
+      WindowFrame(RangeFrame, s, e)
+    } else {
+      WindowFrame(RowsFrame, s, e)
+    }
+  }
+
+  private def visitFrameBound(ctx: FrameBoundContext): FrameBound = {
+    ctx match {
+      case bf: BoundedFrameContext =>
+        val bound: Long = expression(bf.expression()) match {
+          case l: LongLiteral =>
+            l.value
+          case other =>
+            throw new IllegalArgumentException(s"Unknown bound context: ${other}")
+        }
+        if (bf.PRECEDING() != null) {
+          Preceding(bound)
+        } else if (bf.FOLLOWING() != null) {
+          Following(bound)
+        } else {
+          throw unknown(bf)
+        }
+      case ub: UnboundedFrameContext =>
+        if (ub.PRECEDING() != null) {
+          UnboundedPreceding
+        } else if (ub.FOLLOWING() != null) {
+          UnboundedFollowing
+        } else {
+          throw unknown(ctx)
+        }
+      case cb: CurrentRowBoundContext =>
+        CurrentRow
+    }
+  }
+
+  override def visitBoundedFrame(ctx: BoundedFrameContext): SQLModel = {
+    super.visitBoundedFrame(ctx)
+  }
+
+  override def visitFunctionCall(ctx: FunctionCallContext): SQLModel = {
+    val name = QName(ctx.qualifiedName().getText)
+    val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
+      expression(f.booleanExpression())
+    }
+    val over: Option[Window] = Option(ctx.over()).map { o: OverContext =>
+      visitOver(o)
+    }
+
+    if (ctx.ASTERISK() != null) {
+      FunctionCall(name, Seq(AllColumns(None)), false, filter, over)
+    } else {
+      val args = ctx.expression().asScala.map(expression(_))
+      FunctionCall(name, args, false, filter, over)
+    }
   }
 }
