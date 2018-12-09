@@ -136,7 +136,7 @@ object SQLModel {
   case object UndefinedOrder extends NullOrdering
 
   // Window functions
-  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame])
+  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends SQLModel
 
   sealed trait FrameType
   case object RangeFrame extends FrameType
@@ -144,15 +144,19 @@ object SQLModel {
 
   sealed trait FrameBound
   case object UnboundedPreceding extends FrameBound
-  case object Preceding          extends FrameBound
-  case object CurrentRow         extends FrameBound
-  case object Following          extends FrameBound
   case object UnboundedFollowing extends FrameBound
+  case class Preceding(n: Long)  extends FrameBound
+  case class Following(n: Long)  extends FrameBound
+  case object CurrentRow         extends FrameBound
 
-  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound])
+  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel
 
   // Function
-  case class FunctionCall(name: QName, args: Seq[Expression], isDistinct: Boolean, window: Option[Window])
+  case class FunctionCall(name: QName,
+                          args: Seq[Expression],
+                          isDistinct: Boolean,
+                          filter: Option[Expression],
+                          window: Option[Window])
       extends Expression {
     def functionName: String = name.toString.toLowerCase(Locale.US)
     override def toString    = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
