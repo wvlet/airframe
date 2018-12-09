@@ -495,6 +495,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
+  override def visitExists(ctx: ExistsContext): Expression = {
+    Exists(SubQueryExpression(visitQuery(ctx.query())))
+  }
+
   override def visitBooleanLiteral(ctx: BooleanLiteralContext): SQLModel = {
     if (ctx.booleanValue().TRUE() != null) {
       TrueLiteral
