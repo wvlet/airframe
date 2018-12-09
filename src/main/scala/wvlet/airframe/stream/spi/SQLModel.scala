@@ -272,6 +272,7 @@ object SQLModel {
   case class Parameter(index: Int)               extends Expression
   case class SubQueryExpression(query: Relation) extends Expression
 
+  case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false) extends Expression
 }
 
 object SQLFunction {
