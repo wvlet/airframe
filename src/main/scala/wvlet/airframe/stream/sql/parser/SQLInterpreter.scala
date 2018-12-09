@@ -36,7 +36,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   def interpret(ctx: ParserRuleContext): SQLModel = {
-    trace(s"interpret: ${print(ctx)}")
+    debug(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
     trace(m)
     m
@@ -52,7 +52,46 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
   override def visitQuery(ctx: QueryContext): Relation = {
     val inputRelation = visit(ctx.queryNoWith()).asInstanceOf[Relation]
-    inputRelation
+
+    if (ctx.`with`() == null) {
+      inputRelation
+    } else {
+      val w = visitWith(ctx.`with`())
+      Query(w, inputRelation)
+    }
+  }
+
+  override def visitWith(ctx: WithContext): With = {
+    val queries = ctx.namedQuery().asScala.map(x => visitNamedQuery(x))
+    With(false, queries)
+  }
+
+  override def visitNamedQuery(ctx: NamedQueryContext): WithQuery = {
+
+    val columnAliases = Option(ctx.columnAliases()).map { x =>
+      x.identifier().asScala.map { i =>
+        visitIdentifier(i)
+      }
+    }
+    WithQuery(ctx.name.getText, visitQuery(ctx.query()), columnAliases)
+  }
+
+  private def visitIdentifier(ctx: IdentifierContext): Identifier = {
+    ctx match {
+      case b: BackQuotedIdentifierContext =>
+        val t = b.getText
+        Identifier(t.substring(1, t.length - 1))
+      case u: UnquotedIdentifierContext =>
+        val id = Option(u.nonReserved())
+          .map(x => x.getText)
+          .getOrElse(u.getText)
+        Identifier(id)
+      case q: QuotedIdentifierContext =>
+        val t = q.getText()
+        Identifier(t.substring(1, t.length - 1))
+      case d: DigitIdentifierContext =>
+        Identifier(d.getText)
+    }
   }
 
   override def visitQueryNoWith(ctx: QueryNoWithContext): SQLModel = {
@@ -497,4 +536,40 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       FunctionCall(name, args, false, filter, over)
     }
   }
+
+  override def visitNullLiteral(ctx: NullLiteralContext): SQLModel = NullLiteral
+
+  override def visitInterval(ctx: IntervalContext): SQLModel = {
+    val sign = if (ctx.MINUS() != null) {
+      Negative
+    } else {
+      Positive
+    }
+
+    val value = ctx.str().getText
+
+    val from = visitIntervalField(ctx.from)
+    val to   = Option(ctx.TO()).map(x => visitIntervalField(ctx.intervalField(0)))
+
+    IntervalLiteral(value, sign, from, to)
+  }
+
+  override def visitIntervalField(ctx: IntervalFieldContext): IntervalField = {
+    if (ctx.YEAR() != null) {
+      Year
+    } else if (ctx.MONTH() != null) {
+      Month
+    } else if (ctx.DAY() != null) {
+      Day
+    } else if (ctx.HOUR() != null) {
+      Hour
+    } else if (ctx.MINUTE() != null) {
+      Minute
+    } else if (ctx.MINUTE() != null) {
+      Second
+    } else {
+      throw unknown(ctx)
+    }
+  }
+
 }
