@@ -199,6 +199,8 @@ object SQLModel {
       extends Expression
   case class WhenClause(condition: Expression, result: Expression) extends Expression
 
+  case class Exists(subQuery: Expression) extends Expression
+
   sealed trait ArithmeticExpression
   // Arithmetic expr
   abstract sealed class BinaryExprType(symbol: String)
@@ -269,6 +271,7 @@ object SQLModel {
   // 1-origin parameter
   case class Parameter(index: Int)               extends Expression
   case class SubQueryExpression(query: Relation) extends Expression
+
 }
 
 object SQLFunction {
