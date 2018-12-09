@@ -388,6 +388,25 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     Parameter(parameterPosition)
   }
 
+  override def visitSimpleCase(ctx: SimpleCaseContext): Expression = {
+    val operand       = expression(ctx.valueExpression())
+    val whenClauses   = ctx.whenClause().asScala.map(visitWhenClause(_))
+    val defaultClause = Option(ctx.elseExpression).map(expression(_))
+
+    CaseExpr(Some(operand), whenClauses, defaultClause)
+  }
+
+  override def visitWhenClause(ctx: WhenClauseContext): WhenClause = {
+    WhenClause(expression(ctx.condition), expression(ctx.result))
+  }
+
+  override def visitSearchedCase(ctx: SearchedCaseContext): Expression = {
+    val whenClauses    = ctx.whenClause().asScala.map(visitWhenClause(_))
+    val defaultClauses = Option(ctx.elseExpression).map(expression(_))
+
+    CaseExpr(None, whenClauses, defaultClauses)
+  }
+
   override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
     expression(ctx.expression())
   }
