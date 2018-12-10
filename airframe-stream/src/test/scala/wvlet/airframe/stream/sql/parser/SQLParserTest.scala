@@ -86,6 +86,10 @@ class SQLParserTest extends AirframeSpec {
       parse("select count(*)")
       parse("select count(distinct a)")
 
+      parse("select 'a'")
+      parse("select `a`")
+      parse("select \"a\"")
+
       parse("select rank() over (partition by a order by b desc range between unbounded preceding row and current row)")
       parse("select rank() over (partition by a order by b desc range between current row and unbounded following)")
 
