@@ -107,6 +107,11 @@ class SQLParserTest extends AirframeSpec {
       parse("select rank() over (partition by a order by b desc rows between current row and 1 following)")
       parse("select rank() over (partition by a order by b desc rows between current row and 1 preceding)")
       parse("select rank() over (partition by a order by b desc)")
+      parse("""select * from (select * from t) as t(a, "b", `c`)""")
+      parse("""with t(a, "b", `c`) as (select 1, 2, 3) as t select * from t""")
+
+      parse("select * from (select 1 limit 1) as a")
+      parse("select * from (a right join b) as c")
 
       parse("""(
           |select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales

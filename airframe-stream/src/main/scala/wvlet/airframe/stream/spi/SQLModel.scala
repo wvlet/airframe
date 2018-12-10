@@ -80,8 +80,8 @@ object SQLModel {
 
   case class Query(withQuery: With, body: Relation) extends Relation
 
-  case class WithQuery(name: String, query: Relation, columnNames: Option[Seq[Identifier]]) extends SQLModel
-  case class With(recursive: Boolean, queries: Seq[WithQuery])                              extends SQLModel
+  case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]]) extends SQLModel
+  case class With(recursive: Boolean, queries: Seq[WithQuery])                                  extends SQLModel
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation

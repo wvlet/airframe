@@ -76,13 +76,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitNamedQuery(ctx: NamedQueryContext): WithQuery = {
-
+    val name = visitIdentifier(ctx.name)
     val columnAliases = Option(ctx.columnAliases()).map { x =>
       x.identifier().asScala.map { i =>
           visitIdentifier(i)
         }.toSeq
     }
-    WithQuery(ctx.name.getText, visitQuery(ctx.query()), columnAliases)
+    WithQuery(name, visitQuery(ctx.query()), columnAliases)
   }
 
   private def visitIdentifier(ctx: IdentifierContext): Identifier = {
