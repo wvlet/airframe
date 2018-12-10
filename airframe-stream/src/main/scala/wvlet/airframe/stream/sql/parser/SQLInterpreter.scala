@@ -686,7 +686,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       Hour
     } else if (ctx.MINUTE() != null) {
       Minute
-    } else if (ctx.MINUTE() != null) {
+    } else if (ctx.SECOND() != null) {
       Second
     } else {
       throw unknown(ctx)
