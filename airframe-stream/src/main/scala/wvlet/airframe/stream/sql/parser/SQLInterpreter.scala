@@ -440,6 +440,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     SubQueryExpression(visitQuery(ctx.query()))
   }
 
+  override def visitSubquery(ctx: SubqueryContext): SQLModel = {
+    visitQueryNoWith(ctx.queryNoWith())
+  }
+
   override def visitPredicated(ctx: PredicatedContext): Expression = {
     val e = expression(ctx.valueExpression)
     if (ctx.predicate != null) {
