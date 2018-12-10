@@ -69,7 +69,13 @@ class SQLParserTest extends AirframeSpec {
 
       parse("select NULL")
       parse("select ARRAY[1, 2]")
+      parse("select interval '1' year")
+      parse("select interval '1' month")
       parse("select interval '1' day")
+      parse("select - interval '1' second")
+      parse("select interval '1' hour")
+      parse("select interval '1' minute")
+      parse("select interval '1' second")
       parse("select data '2012-08-08' + interval '2' day")
       parse("select case a when 1 then 'one' end")
       parse("select case a when 1 then 'one' when 2 then 'two' else 'many' end")
