@@ -636,11 +636,21 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       visitOver(o)
     }
 
+    val isDistinct = Option(ctx.setQuantifier()).map(x => visitSetQuantifier(x).isDistinct).getOrElse(false)
+
     if (ctx.ASTERISK() != null) {
-      FunctionCall(name, Seq(AllColumns(None)), false, filter, over)
+      FunctionCall(name, Seq(AllColumns(None)), isDistinct, filter, over)
     } else {
       val args = ctx.expression().asScala.map(expression(_)).toSeq
-      FunctionCall(name, args, false, filter, over)
+      FunctionCall(name, args, isDistinct, filter, over)
+    }
+  }
+
+  override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {
+    if (ctx.DISTINCT() != null) {
+      Distinct
+    } else {
+      All
     }
   }
 
@@ -678,4 +688,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       throw unknown(ctx)
     }
   }
+
+  override def visitArrayConstructor(ctx: ArrayConstructorContext): Expression = {
+    val elems = ctx.expression().asScala.map(expression(_)).toSeq
+    ArrayConstructor(elems)
+  }
+
 }
