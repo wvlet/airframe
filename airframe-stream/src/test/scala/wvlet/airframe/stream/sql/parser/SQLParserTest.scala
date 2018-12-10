@@ -61,11 +61,24 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a left join b on a.id = b.id")
     }
 
-    "parse expressions" in {
+    "parse expressions" taggedAs working in {
       parse("select 1")
       parse("select 1 + 2")
       parse("select true")
       parse("select true or false")
+
+      parse("select NULL")
+      parse("select ARRAY[1, 2]")
+      parse("select interval '1' day")
+      parse("select data '2012-08-08' + interval '2' day")
+      parse("select case a when 1 then 'one' end")
+      parse("select case a when 1 then 'one' when 2 then 'two' else 'many' end")
+      parse("select case when a=1 then 'one' when a=2 then 'two' else 'many' end")
+
+      parse("select cast(1 as double)")
+      parse("select try_cast(1 as double)")
+      parse("select count(*)")
+      parse("select count(distinct a)")
     }
 
     "parse tpc-ds queries" taggedAs ("tpc-ds") in {
