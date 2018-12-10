@@ -79,6 +79,40 @@ class SQLParserTest extends AirframeSpec {
       parse("select try_cast(1 as double)")
       parse("select count(*)")
       parse("select count(distinct a)")
+
+      parse("""(
+          |select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales
+          |        from catalog_sales, customer, date_dim
+          |        where d_year = 2000
+          |         and d_moy = 2
+          |         and cs_sold_date_sk = d_date_sk
+          |         and cs_item_sk in (select item_sk from frequent_ss_items)
+          |         and cs_bill_customer_sk in (select c_customer_sk from best_ss_customer)
+          |         and cs_bill_customer_sk = c_customer_sk
+          |       group by c_last_name,c_first_name)
+        """.stripMargin)
+
+      parse("""
+          |(select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales
+          |        from catalog_sales, customer, date_dim
+          |        where d_year = 2000
+          |         and d_moy = 2
+          |         and cs_sold_date_sk = d_date_sk
+          |         and cs_item_sk in (select item_sk from frequent_ss_items)
+          |         and cs_bill_customer_sk in (select c_customer_sk from best_ss_customer)
+          |         and cs_bill_customer_sk = c_customer_sk
+          |       group by c_last_name,c_first_name)
+          |      union all
+          |      (select c_last_name,c_first_name,sum(ws_quantity*ws_list_price) sales
+          |       from web_sales, customer, date_dim
+          |       where d_year = 2000
+          |         and d_moy = 2
+          |         and ws_sold_date_sk = d_date_sk
+          |         and ws_item_sk in (select item_sk from frequent_ss_items)
+          |         and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer)
+          |         and ws_bill_customer_sk = c_customer_sk
+          |       group by c_last_name,c_first_name))
+        """.stripMargin)
     }
 
     "parse tpc-ds queries" taggedAs ("tpc-ds") in {
