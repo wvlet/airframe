@@ -72,7 +72,7 @@ class SQLParserTest extends AirframeSpec {
       parse("select interval '1' year")
       parse("select interval '1' month")
       parse("select interval '1' day")
-      parse("select - interval '1' second")
+      parse("select interval - '1' month")
       parse("select interval '1' hour")
       parse("select interval '1' minute")
       parse("select interval '1' second")
@@ -85,6 +85,15 @@ class SQLParserTest extends AirframeSpec {
       parse("select try_cast(1 as double)")
       parse("select count(*)")
       parse("select count(distinct a)")
+
+      parse("select time '01:00'")
+      parse("select timestamp '2012-08-08 01:00'")
+      parse("select date '2018-08-08'")
+      parse("select decimal '1000000000001'")
+      parse("select char 'a'")
+      parse("select binary '00'")
+
+      parse("select ?")
 
       parse("select 'a'")
       parse("select `a`")
