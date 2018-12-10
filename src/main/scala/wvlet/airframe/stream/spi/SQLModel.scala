@@ -217,6 +217,17 @@ object SQLModel {
   case object Positive extends Sign("+")
   case object Negative extends Sign("-")
 
+  // Set quantifier
+  sealed trait SetQuantifier extends Expression {
+    def isDistinct: Boolean
+  }
+  case object All extends SetQuantifier {
+    override def isDistinct: Boolean = false
+  }
+  case object Distinct extends SetQuantifier {
+    override def isDistinct: Boolean = true
+  }
+
   // Literal
   sealed trait Literal        extends Expression
   case object NullLiteral     extends Literal
