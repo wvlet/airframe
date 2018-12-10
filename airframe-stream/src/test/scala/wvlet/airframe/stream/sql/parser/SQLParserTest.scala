@@ -86,6 +86,15 @@ class SQLParserTest extends AirframeSpec {
       parse("select count(*)")
       parse("select count(distinct a)")
 
+      parse("select rank() over (partition by a order by b desc range between unbounded preceding row and current row)")
+      parse("select rank() over (partition by a order by b desc range between current row and unbounded following)")
+
+      parse("select rank() over (partition by a order by b desc rows between unbounded preceding row and current row)")
+      parse("select rank() over (partition by a order by b desc rows between current row and unbounded following)")
+      parse("select rank() over (partition by a order by b desc rows between current row and 1 following)")
+      parse("select rank() over (partition by a order by b desc rows between current row and 1 preceding)")
+      parse("select rank() over (partition by a order by b desc)")
+
       parse("""(
           |select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales
           |        from catalog_sales, customer, date_dim
