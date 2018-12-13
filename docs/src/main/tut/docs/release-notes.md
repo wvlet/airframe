@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 0.77
+-  airframe-launcher: Fix array argument mapping ([#342](https://github.com/wvlet/airframe/issues/342)) [[00145b6](https://github.com/wvlet/airframe/commit/00145b6)]
+-  Upgrade to Scala 2.12.8 ([#341](https://github.com/wvlet/airframe/issues/341)) [[b5b6f9e](https://github.com/wvlet/airframe/commit/b5b6f9e)]
+- internal: Enhance SQL parser
+
 ## 0.76
 [airframe DI]
 - Support creating [child sessions](https://wvlet.org/airframe/docs/#child-sessions) with `session.withChildSession`. [#321](https://github.com/wvlet/airframe/issues/321) 
