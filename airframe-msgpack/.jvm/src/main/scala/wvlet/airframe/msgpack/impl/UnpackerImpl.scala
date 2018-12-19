@@ -26,6 +26,10 @@ import scala.collection.immutable.ListMap
   * TODO: Use pure-Scala impl
   */
 class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
+  override def close(): Unit = {
+    unpacker.close()
+  }
+
   override def hasNext: Boolean = {
     unpacker.hasNext
   }

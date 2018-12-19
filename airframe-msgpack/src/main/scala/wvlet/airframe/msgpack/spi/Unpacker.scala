@@ -19,7 +19,7 @@ import java.time.Instant
 /**
   * MessageUnpacker interface
   */
-trait Unpacker {
+trait Unpacker extends AutoCloseable {
   def hasNext: Boolean
   def getNextFormat: MessageFormat
   def getNextValueType: ValueType

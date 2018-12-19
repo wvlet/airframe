@@ -93,6 +93,13 @@ class MessageHolder {
     }
   }
 
+  def getByte: Byte = {
+    dataType match {
+      case INTEGER if l.isValidByte => l.toByte
+      case _                        => 0
+    }
+  }
+
   def getInt: Int = {
     dataType match {
       case INTEGER if l.isValidInt => l.toInt
