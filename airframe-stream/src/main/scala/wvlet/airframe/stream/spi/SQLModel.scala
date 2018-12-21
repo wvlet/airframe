@@ -212,19 +212,20 @@ object SQLModel {
 
   case class Exists(subQuery: Expression) extends Expression
 
-  sealed trait ArithmeticExpression
   // Arithmetic expr
-  abstract sealed class BinaryExprType(symbol: String)
+  abstract sealed class BinaryExprType(val symbol: String)
   case object Add      extends BinaryExprType("+")
   case object Subtract extends BinaryExprType("-")
   case object Multiply extends BinaryExprType("*")
   case object Divide   extends BinaryExprType("/")
   case object Modulus  extends BinaryExprType("%")
 
-  case class ArithmeticBinaryExpr(exprType: BinaryExprType, left: Expression, right: Expression) extends Expression
-  case class ArithmeticUnaryExpr(sign: Sign, value: Expression)                                  extends Expression
+  sealed trait ArithmeticExpression extends Expression
+  case class ArithmeticBinaryExpr(exprType: BinaryExprType, left: Expression, right: Expression)
+      extends ArithmeticExpression
+  case class ArithmeticUnaryExpr(sign: Sign, value: Expression) extends ArithmeticExpression
 
-  abstract sealed class Sign(symbol: String)
+  abstract sealed class Sign(val symbol: String)
   case object Positive extends Sign("+")
   case object Negative extends Sign("-")
 

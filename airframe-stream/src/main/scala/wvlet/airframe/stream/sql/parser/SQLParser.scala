@@ -26,7 +26,7 @@ import scala.collection.JavaConverters._
 object SQLParser extends LogSupport {
 
   def parse(sql: String): SQLModel = {
-    debug(s"parse: ${sql}")
+    trace(s"parse: ${sql}")
     val parser = new SqlBaseParser(tokenStream(sql))
     val ctx    = parser.singleStatement()
     trace(ctx.toStringTree(parser))

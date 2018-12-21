@@ -14,7 +14,6 @@
 package wvlet.airframe.stream.sql.parser
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.stream.sql.SQLPrinter
-import wvlet.airframe.stream.sql.parser.SQLParser.anonymizeSQL
 
 /**
   *
@@ -25,9 +24,13 @@ class SQLPrinterTest extends AirframeSpec {
     val m1       = SQLParser.parse(sql)
     val printSql = SQLPrinter.print(m1)
     val m2       = SQLParser.parse(printSql)
-    debug(m1)
-    debug(m2)
-    m1 shouldBe m2
+    try {
+      m1 shouldBe m2
+    } catch {
+      case e: Throwable =>
+        warn(s"model didn't match:\n${sql}\n${m1}\n${printSql}\n${m2}")
+        throw e
+    }
   }
 
   "print SQL" in {
@@ -38,5 +41,15 @@ class SQLPrinterTest extends AirframeSpec {
     roundtrip("select * from T where a = 10 limit 1")
     roundtrip("select a, b, c from t where time <= 1000")
     roundtrip("select a, b, c from t where c = 'leo' and td_interval(time, '-1d')")
+
+    roundtrip("select cast(1 as varchar)")
+    roundtrip("select try_cast(1 as varchar)")
+    roundtrip(s"select cast(1 as varchar) as a")
+    roundtrip(s"select 1 + 2")
+    roundtrip(s"select 1 - 2")
+    roundtrip(s"select 1 * 2")
+    roundtrip(s"select 1 / 2")
+    roundtrip(s"select 1 * (2 + 4)")
+    roundtrip("select 'a' || 'b'")
   }
 }

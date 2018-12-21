@@ -79,8 +79,15 @@ object SQLPrinter extends LogSupport {
         s"${name}(${argList})"
       case QName(parts) =>
         parts.mkString(".")
+      case Cast(expr, tpe, tryCast) =>
+        val cmd = if (tryCast) "TRY_CAST" else "CAST"
+        s"${cmd}(${printExpression(expr)} AS ${tpe})"
       case c: ConditionalExpression =>
         printConditionalExpression(c)
+      case ArithmeticBinaryExpr(tpe, left, right) =>
+        s"${printExpression(left)} ${tpe.symbol} ${printExpression(right)}"
+      case ArithmeticUnaryExpr(sign, value) =>
+        s"${sign.symbol} ${printExpression(value)}"
       case other => unknown(other)
     }
   }
