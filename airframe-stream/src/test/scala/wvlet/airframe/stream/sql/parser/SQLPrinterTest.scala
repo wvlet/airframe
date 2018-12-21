@@ -12,8 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.stream.sql.parser
+import java.io.File
+
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.stream.sql.SQLPrinter
+import wvlet.log.io.IOUtil
 
 /**
   *
@@ -28,7 +31,7 @@ class SQLPrinterTest extends AirframeSpec {
       m1 shouldBe m2
     } catch {
       case e: Throwable =>
-        warn(s"model didn't match:\n${sql}\n${m1}\n${printSql}\n${m2}")
+        warn(s"model didn't match:\n[original]\n${sql}\n${m1}\n[printed]\n${printSql}\n${m2}")
         throw e
     }
   }
@@ -51,5 +54,14 @@ class SQLPrinterTest extends AirframeSpec {
     roundtrip(s"select 1 / 2")
     roundtrip(s"select 1 * (2 + 4)")
     roundtrip("select 'a' || 'b'")
+
+  }
+
+  "print TPC-H SQL" in {
+    val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
+    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
+      val sql = IOUtil.readAsString(f.getPath)
+      roundtrip(sql)
+    }
   }
 }

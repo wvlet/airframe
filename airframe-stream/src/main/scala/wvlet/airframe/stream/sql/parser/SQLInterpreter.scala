@@ -149,26 +149,23 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSortItem(ctx: SortItemContext): SortItem = {
-    val key  = expression(ctx.expression())
-    var sort = SortItem(key)
-    if (ctx.ordering != null) {
-      ctx.ordering.getType match {
-        case SqlBaseParser.ASC =>
-          sort = SortItem(key, ordering = Ascending)
-        case SqlBaseParser.DESC =>
-          sort = SortItem(key, ordering = Descending)
+    val key = expression(ctx.expression())
+    val ordering = Option(ctx.ordering).map { x =>
+      x.getType match {
+        case SqlBaseParser.ASC  => Ascending
+        case SqlBaseParser.DESC => Descending
       }
     }
 
-    if (ctx.nullOrdering != null) {
-      ctx.nullOrdering.getType match {
+    val nullOrdering = Option(ctx.nullOrdering).map { x =>
+      x.getType match {
         case SqlBaseParser.FIRST =>
-          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsFirst)
+          SQLModel.NullIsFirst
         case SqlBaseParser.LAST =>
-          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsLast)
+          SQLModel.NullIsLast
       }
     }
-    sort
+    SortItem(key, ordering, nullOrdering)
   }
 
   override def visitQueryTermDefault(ctx: QueryTermDefaultContext): SQLModel = {
@@ -448,17 +445,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
           Between(expression(b.lower), expression(b.upper))
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
-          if (i.NOT() == null) InSubQuery(subQuery) else NotInSubQuery(subQuery)
+          if (i.NOT() == null) InSubQuery(e, subQuery) else NotInSubQuery(e, subQuery)
         case i: InListContext =>
           val inList = i.expression().asScala.map(x => expression(x)).toSeq
-          if (i.NOT() == null) In(inList) else NotIn(inList)
+          if (i.NOT() == null) In(e, inList) else NotIn(e, inList)
         case l: LikeContext =>
           // TODO: Handle ESCAPE
           val likeExpr = expression(l.pattern)
-          if (l.NOT() == null) Like(likeExpr) else NotLike(likeExpr)
+          if (l.NOT() == null) Like(e, likeExpr) else NotLike(e, likeExpr)
         case d: DistinctFromContext =>
           val distinctExpr = expression(d.valueExpression())
-          if (d.NOT() == null) DistinctFrom(distinctExpr) else NotDistinctFrom(distinctExpr)
+          if (d.NOT() == null) DistinctFrom(e, distinctExpr) else NotDistinctFrom(e, distinctExpr)
         case other =>
           // TODO
           warn(s"unhandled predicate ${ctx.predicate().getClass}:\n${print(ctx.predicate())}")

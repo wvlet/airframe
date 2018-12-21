@@ -53,10 +53,31 @@ object SQLPrinter extends LogSupport {
           b += printExpression(w)
         }
         b.result().mkString(" ")
+      case Aggregate(selectItems, in, whereExpr, groupingKeys, having) =>
+        val b = Seq.newBuilder[String]
+        b += "SELECT"
+        b += (selectItems.map(x => print(x)).mkString(", "))
+        in.map { x =>
+          b += "FROM"
+          b += printRelation(x)
+        }
+        whereExpr.map { w =>
+          b += "WHERE"
+          b += printExpression(w)
+        }
+        b += s"GROUP BY ${groupingKeys.map(x => printExpression(x)).mkString(", ")}"
+        having.map { h =>
+          b += "HAVING"
+          b += printExpression(h)
+        }
+        b.result().mkString(" ")
       case Table(t) =>
         printExpression(t)
       case Limit(in, l) =>
         s"${printRelation(in)} LIMIT ${l}"
+      case Sort(in, orderBy) =>
+        val order = orderBy.map(x => printExpression(x)).mkString(", ")
+        s"${printRelation(in)} ORDER BY ${order}"
       case other => unknown(other)
     }
   }
@@ -74,6 +95,11 @@ object SQLPrinter extends LogSupport {
         prefix.map(p => s"${p}.*").getOrElse("*")
       case l: Literal =>
         printLiteral(l)
+      case SortItem(key, ordering, nullOrdering) =>
+        val k  = printExpression(key)
+        val o  = ordering.map(x => s" ${x}").getOrElse("")
+        val no = nullOrdering.map(x => s" ${x}").getOrElse("")
+        s"${k}${o}${no}"
       case FunctionCall(name, args, distinct, filter, window) =>
         val argList = args.map(printExpression(_)).mkString(", ")
         s"${name}(${argList})"
@@ -120,24 +146,24 @@ object SQLPrinter extends LogSupport {
         s"${printExpression(a)} IS NULL"
       case IsNotNull(a) =>
         s"${printExpression(a)} IS NOT NULL"
-      case In(list) =>
+      case In(a, list) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
-        s"IN ${in}"
-      case NotIn(list) =>
+        s"${printExpression(a)} IN ${in}"
+      case NotIn(a, list) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
-        s"NOT IN ${in}"
-      case InSubQuery(in) =>
-        s"IN (${printRelation(in)})"
-      case NotInSubQuery(in) =>
-        s"NOT IN (${printRelation(in)})"
-      case Like(e) =>
-        s"LIKE ${print(e)}"
-      case NotLike(e) =>
-        s"NOT LIKE ${print(e)}"
-      case DistinctFrom(e) =>
-        s"IS DISTINCT FROM ${print(e)}"
-      case NotDistinctFrom(e) =>
-        s"IS NOT DISTINCT FROM ${print(e)}"
+        s"${printExpression(a)} NOT IN ${in}"
+      case InSubQuery(a, in) =>
+        s"${printExpression(a)} IN (${printRelation(in)})"
+      case NotInSubQuery(a, in) =>
+        s"${printExpression(a)} NOT IN (${printRelation(in)})"
+      case Like(a, e) =>
+        s"${printExpression(a)} LIKE ${print(e)}"
+      case NotLike(a, e) =>
+        s"${printExpression(a)} NOT LIKE ${print(e)}"
+      case DistinctFrom(a, e) =>
+        s"${printExpression(a)} IS DISTINCT FROM ${print(e)}"
+      case NotDistinctFrom(a, e) =>
+        s"${printExpression(a)} IS NOT DISTINCT FROM ${print(e)}"
       case other => unknown(other)
     }
   }

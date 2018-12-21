@@ -126,9 +126,7 @@ object SQLModel {
     override def toString = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
   }
 
-  case class SortItem(sortKey: Expression,
-                      ordering: SortOrdering = Ascending,
-                      nullOrdering: NullOrdering = UndefinedOrder)
+  case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
       extends Expression
 
   sealed trait SetOperation                                               extends Relation
@@ -143,8 +141,12 @@ object SQLModel {
 
   // Sort ordering
   sealed trait SortOrdering
-  case object Ascending  extends SortOrdering
-  case object Descending extends SortOrdering
+  case object Ascending extends SortOrdering {
+    override def toString = "ASC"
+  }
+  case object Descending extends SortOrdering {
+    override def toString = "DESC"
+  }
 
   sealed trait NullOrdering
   case object NullIsFirst    extends NullOrdering
@@ -196,14 +198,14 @@ object SQLModel {
   case class Between(a: Expression, b: Expression)         extends ConditionalExpression
   case class IsNull(a: Expression)                         extends ConditionalExpression
   case class IsNotNull(a: Expression)                      extends ConditionalExpression
-  case class In(list: Seq[Expression])                     extends ConditionalExpression
-  case class NotIn(list: Seq[Expression])                  extends ConditionalExpression
-  case class InSubQuery(in: Relation)                      extends ConditionalExpression
-  case class NotInSubQuery(in: Relation)                   extends ConditionalExpression
-  case class Like(e: Expression)                           extends ConditionalExpression
-  case class NotLike(e: Expression)                        extends ConditionalExpression
-  case class DistinctFrom(e: Expression)                   extends ConditionalExpression
-  case class NotDistinctFrom(e: Expression)                extends ConditionalExpression
+  case class In(a: Expression, list: Seq[Expression])      extends ConditionalExpression
+  case class NotIn(a: Expression, list: Seq[Expression])   extends ConditionalExpression
+  case class InSubQuery(a: Expression, in: Relation)       extends ConditionalExpression
+  case class NotInSubQuery(a: Expression, in: Relation)    extends ConditionalExpression
+  case class Like(a: Expression, e: Expression)            extends ConditionalExpression
+  case class NotLike(a: Expression, e: Expression)         extends ConditionalExpression
+  case class DistinctFrom(a: Expression, e: Expression)    extends ConditionalExpression
+  case class NotDistinctFrom(a: Expression, e: Expression) extends ConditionalExpression
 
   case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[WhenClause], defaultValue: Option[Expression])
