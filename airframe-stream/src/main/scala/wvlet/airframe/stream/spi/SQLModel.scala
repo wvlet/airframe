@@ -66,6 +66,7 @@ object SQLModel {
 
   // Operator for ign relations
   sealed trait Relation                                                                           extends SQLModel
+  case class ParenthizedRelation(relation: Relation)                                              extends Relation
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
   case class Values(rows: Seq[Expression])                                                        extends Relation
   case class Table(name: QName)                                                                   extends Relation
@@ -122,7 +123,7 @@ object SQLModel {
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
-  case class SingleColumn(expr: Expression, alias: Option[String]) extends SelectItem {
+  case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
     override def toString = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
   }
 
@@ -184,28 +185,28 @@ object SQLModel {
   class Ref(name: QName) extends Expression
 
   // Conditional expression
-  sealed trait ConditionalExpression                       extends Expression
-  case object NoOp                                         extends ConditionalExpression
-  case class Eq(a: Expression, b: Expression)              extends ConditionalExpression
-  case class NotEq(a: Expression, b: Expression)           extends ConditionalExpression
-  case class And(a: Expression, b: Expression)             extends ConditionalExpression
-  case class Or(a: Expression, b: Expression)              extends ConditionalExpression
-  case class Not(expr: Expression)                         extends ConditionalExpression
-  case class LessThan(a: Expression, b: Expression)        extends ConditionalExpression
-  case class LessThanOrEq(a: Expression, b: Expression)    extends ConditionalExpression
-  case class GreaterThan(a: Expression, b: Expression)     extends ConditionalExpression
-  case class GreaterThanOrEq(a: Expression, b: Expression) extends ConditionalExpression
-  case class Between(a: Expression, b: Expression)         extends ConditionalExpression
-  case class IsNull(a: Expression)                         extends ConditionalExpression
-  case class IsNotNull(a: Expression)                      extends ConditionalExpression
-  case class In(a: Expression, list: Seq[Expression])      extends ConditionalExpression
-  case class NotIn(a: Expression, list: Seq[Expression])   extends ConditionalExpression
-  case class InSubQuery(a: Expression, in: Relation)       extends ConditionalExpression
-  case class NotInSubQuery(a: Expression, in: Relation)    extends ConditionalExpression
-  case class Like(a: Expression, e: Expression)            extends ConditionalExpression
-  case class NotLike(a: Expression, e: Expression)         extends ConditionalExpression
-  case class DistinctFrom(a: Expression, e: Expression)    extends ConditionalExpression
-  case class NotDistinctFrom(a: Expression, e: Expression) extends ConditionalExpression
+  sealed trait ConditionalExpression                              extends Expression
+  case object NoOp                                                extends ConditionalExpression
+  case class Eq(a: Expression, b: Expression)                     extends ConditionalExpression
+  case class NotEq(a: Expression, b: Expression)                  extends ConditionalExpression
+  case class And(a: Expression, b: Expression)                    extends ConditionalExpression
+  case class Or(a: Expression, b: Expression)                     extends ConditionalExpression
+  case class Not(expr: Expression)                                extends ConditionalExpression
+  case class LessThan(a: Expression, b: Expression)               extends ConditionalExpression
+  case class LessThanOrEq(a: Expression, b: Expression)           extends ConditionalExpression
+  case class GreaterThan(a: Expression, b: Expression)            extends ConditionalExpression
+  case class GreaterThanOrEq(a: Expression, b: Expression)        extends ConditionalExpression
+  case class Between(e: Expression, a: Expression, b: Expression) extends ConditionalExpression
+  case class IsNull(a: Expression)                                extends ConditionalExpression
+  case class IsNotNull(a: Expression)                             extends ConditionalExpression
+  case class In(a: Expression, list: Seq[Expression])             extends ConditionalExpression
+  case class NotIn(a: Expression, list: Seq[Expression])          extends ConditionalExpression
+  case class InSubQuery(a: Expression, in: Relation)              extends ConditionalExpression
+  case class NotInSubQuery(a: Expression, in: Relation)           extends ConditionalExpression
+  case class Like(a: Expression, e: Expression)                   extends ConditionalExpression
+  case class NotLike(a: Expression, e: Expression)                extends ConditionalExpression
+  case class DistinctFrom(a: Expression, e: Expression)           extends ConditionalExpression
+  case class NotDistinctFrom(a: Expression, e: Expression)        extends ConditionalExpression
 
   case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[WhenClause], defaultValue: Option[Expression])
@@ -278,8 +279,10 @@ object SQLModel {
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
       extends Literal
 
-  case class GenericLiteral(tpe: String, value: String) extends Literal
-  case class BinaryLiteral(binary: String)              extends Literal
+  case class GenericLiteral(tpe: String, value: String) extends Literal {
+    override def toString = s"${tpe} '${value}'"
+  }
+  case class BinaryLiteral(binary: String) extends Literal
 
   sealed trait IntervalField extends SQLModel
   case object Year           extends IntervalField

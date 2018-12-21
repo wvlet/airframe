@@ -250,7 +250,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   override def visitAliasedRelation(ctx: AliasedRelationContext): Relation = {
     val r: Relation = ctx.relationPrimary() match {
       case p: ParenthesizedRelationContext =>
-        visit(p.relation()).asInstanceOf[Relation]
+        ParenthizedRelation(visit(p.relation()).asInstanceOf[Relation])
       //case u: UnnestContext                =>
 //        u.expression().asScala.map(x => expression(x))
       case s: SubqueryRelationContext =>
@@ -315,7 +315,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): SelectItem = {
-    SingleColumn(expression(ctx.expression()), None)
+    val alias = Option(ctx.AS()).map(x => expression(ctx.identifier()))
+    SingleColumn(expression(ctx.expression()), alias)
   }
 
   override def visitExpression(ctx: ExpressionContext): SQLModel = {
@@ -357,7 +358,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitTypeConstructor(ctx: TypeConstructorContext): Expression = {
-    val v = visit(ctx.str()).asInstanceOf[StringLiteral].value
+    val v = expression(ctx.str()).asInstanceOf[StringLiteral].value
 
     if (ctx.DOUBLE_PRECISION() != null) {
       // TODO
@@ -442,7 +443,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         case n: NullPredicateContext =>
           if (n.NOT() == null) IsNull(e) else IsNotNull(e)
         case b: BetweenContext =>
-          Between(expression(b.lower), expression(b.upper))
+          Between(e, expression(b.lower), expression(b.upper))
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
           if (i.NOT() == null) InSubQuery(e, subQuery) else NotInSubQuery(e, subQuery)

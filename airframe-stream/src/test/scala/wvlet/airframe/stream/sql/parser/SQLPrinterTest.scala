@@ -31,7 +31,7 @@ class SQLPrinterTest extends AirframeSpec {
       m1 shouldBe m2
     } catch {
       case e: Throwable =>
-        warn(s"model didn't match:\n[original]\n${sql}\n${m1}\n[printed]\n${printSql}\n${m2}")
+        warn(s"model didn't match:\n[original]\n${sql}\n\n${m1}\n\n[printed]\n${printSql}\n\n${m2}")
         throw e
     }
   }
