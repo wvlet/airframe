@@ -202,7 +202,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       if (ctx.groupBy() == null) {
         // No aggregation
         // TODO distinct check
-        Select(false, selectItem, inputRelation, filter)
+        val distinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
+        Select(distinct, selectItem, inputRelation, filter)
       } else {
         // aggregation
         val gb = ctx.groupBy()

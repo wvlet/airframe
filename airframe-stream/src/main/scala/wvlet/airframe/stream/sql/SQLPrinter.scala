@@ -14,19 +14,24 @@
 package wvlet.airframe.stream.sql
 import wvlet.airframe.stream.spi.SQLModel
 import wvlet.airframe.stream.spi.SQLModel._
+import wvlet.airframe.stream.sql.parser.SqlBaseParser.BooleanLiteralContext
 import wvlet.log.LogSupport
 
 /**
   *
   */
 object SQLPrinter extends LogSupport {
+
+  private def unknown(e: SQLModel): String = {
+    warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
+    e.toString
+  }
+
   def print(m: SQLModel): String = {
     m match {
       case r: Relation   => printRelation(r)
       case e: Expression => printExpression(e)
-      case other =>
-        warn(s"unknown model: ${other} (${other.getClass.getSimpleName})")
-        other.toString
+      case other         => unknown(other)
     }
   }
 
@@ -50,9 +55,9 @@ object SQLPrinter extends LogSupport {
         b.result().mkString(" ")
       case Table(t) =>
         printExpression(t)
-      case other =>
-        warn(s"Unknown relation: ${other}")
-        other.toString
+      case Limit(in, l) =>
+        s"${printRelation(in)} LIMIT ${l}"
+      case other => unknown(other)
     }
   }
 
@@ -63,14 +68,22 @@ object SQLPrinter extends LogSupport {
         alias
           .map(x => s"${col} AS ${x}")
           .getOrElse(col)
+      case AllColumns(prefix) =>
+        prefix.map(p => s"${p}.*").getOrElse("*")
+      case l: Literal =>
+        printLiteral(l)
+      case FunctionCall(name, args, distinct, filter, window) =>
+        val argList = args.map(printExpression(_)).mkString(", ")
+        s"${name}(${argList})"
       case QName(parts) =>
         parts.mkString(".")
       case c: ConditionalExpression =>
         printConditionalExpression(c)
-      case other =>
-        warn(s"Unknown Expression: ${e} ${e.getClass.getSimpleName}")
-        e.toString
+      case other => unknown(other)
     }
+  }
+  def printLiteral(l: Literal): String = {
+    l.toString
   }
 
   def printConditionalExpression(c: ConditionalExpression): String = {
@@ -94,8 +107,6 @@ object SQLPrinter extends LogSupport {
         s"${printExpression(a)} >= ${printExpression(b)}"
       case Between(a, b) =>
         s"BETWEEN ${printExpression(a)} and ${printExpression(b)}"
-      case Between(a, b) =>
-        s"BETWEEN ${printExpression(a)} and ${printExpression(b)}"
       case IsNull(a) =>
         s"${printExpression(a)} IS NULL"
       case IsNotNull(a) =>
@@ -115,12 +126,10 @@ object SQLPrinter extends LogSupport {
       case NotLike(e) =>
         s"NOT LIKE ${print(e)}"
       case DistinctFrom(e) =>
-        s"DISTINCT FROM ${print(e)}"
+        s"IS DISTINCT FROM ${print(e)}"
       case NotDistinctFrom(e) =>
-        s"NOT DISTINCT FROM ${print(e)}"
-      case other =>
-        warn(s"Unknown ConditionalExpression: ${other} ${other.getClass.getSimpleName}")
-        other.toString
+        s"IS NOT DISTINCT FROM ${print(e)}"
+      case other => unknown(other)
     }
   }
 }

@@ -238,19 +238,25 @@ object SQLModel {
   }
 
   // Literal
-  sealed trait Literal        extends Expression
-  case object NullLiteral     extends Literal
+  sealed trait Literal extends Expression
+  case object NullLiteral extends Literal {
+    override def toString: String = "NULL"
+  }
   sealed trait BooleanLiteral extends Literal
-  case object TrueLiteral     extends BooleanLiteral
-  case object FalseLiteral    extends BooleanLiteral
+  case object TrueLiteral extends BooleanLiteral {
+    override def toString: String = "TRUE"
+  }
+  case object FalseLiteral extends BooleanLiteral {
+    override def toString: String = "FALSE"
+  }
   case class StringLiteral(value: String) extends Literal {
     override def toString = s"'${value}'"
   }
   case class TimeLiteral(value: String) extends Literal {
-    override def toString = s"time '${value}'"
+    override def toString = s"TIME '${value}'"
   }
   case class TimestampLiteral(value: String) extends Literal {
-    override def toString = s"timestamp '${value}'"
+    override def toString = s"TIMESTAMP '${value}'"
   }
   case class DecimalLiteral(value: String) extends Literal {
     override def toString = value

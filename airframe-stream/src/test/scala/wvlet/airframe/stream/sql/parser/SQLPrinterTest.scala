@@ -13,16 +13,30 @@
  */
 package wvlet.airframe.stream.sql.parser
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.stream.sql.SQLPrinter
 import wvlet.airframe.stream.sql.parser.SQLParser.anonymizeSQL
-
-import scala.collection.JavaConverters._
 
 /**
   *
   */
-class SQLTokenizerTest extends AirframeSpec {
-  "tokenize SQL" in {
-    anonymizeSQL("select a, b, c from t where time <= 1000")
-    anonymizeSQL("select a, b, c from t where c = 'leo' and td_interval(time, '-1d')")
+class SQLPrinterTest extends AirframeSpec {
+
+  def roundtrip(sql: String): Unit = {
+    val m1       = SQLParser.parse(sql)
+    val printSql = SQLPrinter.print(m1)
+    val m2       = SQLParser.parse(printSql)
+    debug(m1)
+    debug(m2)
+    m1 shouldBe m2
+  }
+
+  "print SQL" in {
+    roundtrip("select 1")
+    roundtrip("select * from T")
+    roundtrip("select distinct * from T")
+    roundtrip("select * from T where a = 10")
+    roundtrip("select * from T where a = 10 limit 1")
+    roundtrip("select a, b, c from t where time <= 1000")
+    roundtrip("select a, b, c from t where c = 'leo' and td_interval(time, '-1d')")
   }
 }
