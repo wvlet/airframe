@@ -23,8 +23,12 @@ import wvlet.log.LogSupport
 object SQLPrinter extends LogSupport {
 
   private def unknown(e: SQLModel): String = {
-    warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
-    e.toString
+    if (e != null) {
+      warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
+      e.toString
+    } else {
+      ""
+    }
   }
 
   def print(m: SQLModel): String = {
@@ -84,6 +88,9 @@ object SQLPrinter extends LogSupport {
           }.mkString(", ")
         s += printRelation(body)
         s.result().mkString(" ")
+      case Union(relations, isDistinct) =>
+        val op = if (isDistinct) " UNION " else " UNION ALL "
+        relations.map(printRelation(_)).mkString(op)
       case Table(t) =>
         printExpression(t)
       case Limit(in, l) =>

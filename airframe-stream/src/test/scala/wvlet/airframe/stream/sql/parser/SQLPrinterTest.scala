@@ -64,4 +64,16 @@ class SQLPrinterTest extends AirframeSpec {
       roundtrip(sql)
     }
   }
+
+  "print TPC-DS SQL" in {
+    val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-ds")
+    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
+      val sql = IOUtil.readAsString(f.getPath)
+      // TODO We need to support grouping sets
+      if (!Seq("q18.sql", "q27.sql").contains(f.getName)) {
+        roundtrip(sql)
+      }
+    }
+  }
+
 }
