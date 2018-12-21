@@ -55,7 +55,19 @@ object SQLModel {
   case class QName(parts: Seq[String]) extends Expression {
     override def toString = parts.mkString(".")
   }
-  case class DigitId(id: Int) extends Expression
+  sealed trait Identifier extends Expression
+  case class DigitId(value: Int) extends Identifier {
+    override def toString: String = value.toString
+  }
+  case class UnquotedIdentifier(value: String) extends Identifier {
+    override def toString: String = value
+  }
+  case class BackQuotedIdentifier(value: String) extends Identifier {
+    override def toString = s"`${value}`"
+  }
+  case class QuotedIdentifier(value: String) extends Identifier {
+    override def toString = s""""${value}""""
+  }
 
   object QName {
     def apply(s: String): QName = {
@@ -307,7 +319,6 @@ object SQLModel {
   case class CurrentLocalTime(precision: Option[Int])                         extends CurrentTimeBase("localtime", precision)
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
 
-  case class Identifier(value: String, delimited: Boolean = false) extends Expression
   // 1-origin parameter
   case class Parameter(index: Int)               extends Expression
   case class SubQueryExpression(query: Relation) extends Expression

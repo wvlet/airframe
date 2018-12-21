@@ -129,14 +129,14 @@ object SQLPrinter extends LogSupport {
 
   def printExpression(e: Expression): String = {
     e match {
-      case Identifier(value, delimited) =>
-        value
+      case i: Identifier =>
+        i.toString
       case ParenthizedExpression(expr) =>
         s"(${printExpression(expr)})"
       case SingleColumn(ex, alias) =>
         val col = printExpression(ex)
         alias
-          .map(x => s"${col} AS ${x}")
+          .map(x => s"${col} AS ${printExpression(x)}")
           .getOrElse(col)
       case AllColumns(prefix) =>
         prefix.map(p => s"${p}.*").getOrElse("*")

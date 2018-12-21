@@ -86,21 +86,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   private def visitIdentifier(ctx: IdentifierContext): Identifier = {
-    ctx match {
-      case b: BackQuotedIdentifierContext =>
-        val t = b.getText
-        Identifier(t.substring(1, t.length - 1))
-      case u: UnquotedIdentifierContext =>
-        val id = Option(u.nonReserved())
-          .map(x => x.getText)
-          .getOrElse(u.getText)
-        Identifier(id)
-      case q: QuotedIdentifierContext =>
-        val t = q.getText()
-        Identifier(t.substring(1, t.length - 1))
-      case d: DigitIdentifierContext =>
-        Identifier(d.getText)
-    }
+    visit(ctx).asInstanceOf[Identifier]
   }
 
   override def visitSetOperation(ctx: SetOperationContext): SQLModel = {
@@ -548,17 +534,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     StringLiteral(text)
   }
 
-  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
+  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): Identifier = {
     val id = Option(ctx.nonReserved()).map(_.getText).getOrElse(ctx.getText)
-    QName(id)
+    UnquotedIdentifier(id)
   }
-  override def visitBackQuotedIdentifier(ctx: BackQuotedIdentifierContext): SQLModel = {
-    QName(ctx.getText.replaceAll("(^`|`$)", ""))
+  override def visitBackQuotedIdentifier(ctx: BackQuotedIdentifierContext): Identifier = {
+    BackQuotedIdentifier(ctx.getText.replaceAll("(^`|`$)", ""))
   }
-  override def visitQuotedIdentifier(ctx: QuotedIdentifierContext): SQLModel = {
-    QName(ctx.getText.replaceAll("(^\"|\"$)", ""))
+  override def visitQuotedIdentifier(ctx: QuotedIdentifierContext): Identifier = {
+    QuotedIdentifier(ctx.getText.replaceAll("(^\"|\"$)", ""))
   }
-  override def visitDigitIdentifier(ctx: DigitIdentifierContext): SQLModel = {
+  override def visitDigitIdentifier(ctx: DigitIdentifierContext): Identifier = {
     DigitId(ctx.getText.toInt)
   }
 
