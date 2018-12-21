@@ -148,6 +148,14 @@ class SQLParserTest extends AirframeSpec {
         """.stripMargin)
     }
 
+    "parse tpc-h queries" taggedAs ("tpc-h") in {
+      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
+      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
+        val sql = IOUtil.readAsString(f.getPath)
+        parse(sql)
+      }
+    }
+
     "parse tpc-ds queries" taggedAs ("tpc-ds") in {
       val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-ds")
       for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
@@ -155,15 +163,5 @@ class SQLParserTest extends AirframeSpec {
         parse(sql)
       }
     }
-
-    "parse tpc-h queries" taggedAs ("tpc-h") in {
-      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
-      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
-        val sql = IOUtil.readAsString(f.getPath)
-        trace(s"parsing:\n${sql}")
-        parse(sql)
-      }
-    }
-
   }
 }

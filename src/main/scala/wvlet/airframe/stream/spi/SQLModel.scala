@@ -49,11 +49,25 @@ object SQLModel {
 
   sealed trait Expression extends SQLModel
 
+  case class ParenthizedExpression(expr: Expression) extends Expression
+
   // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends Expression {
     override def toString = parts.mkString(".")
   }
-  case class DigitId(id: Int) extends Expression
+  sealed trait Identifier extends Expression
+  case class DigitId(value: Int) extends Identifier {
+    override def toString: String = value.toString
+  }
+  case class UnquotedIdentifier(value: String) extends Identifier {
+    override def toString: String = value
+  }
+  case class BackQuotedIdentifier(value: String) extends Identifier {
+    override def toString = s"`${value}`"
+  }
+  case class QuotedIdentifier(value: String) extends Identifier {
+    override def toString = s""""${value}""""
+  }
 
   object QName {
     def apply(s: String): QName = {
@@ -64,18 +78,30 @@ object SQLModel {
 
   // Operator for ign relations
   sealed trait Relation                                                                           extends SQLModel
+  case class ParenthizedRelation(relation: Relation)                                              extends Relation
   case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
   case class Values(rows: Seq[Expression])                                                        extends Relation
   case class Table(name: QName)                                                                   extends Relation
   case class RawSQL(sql: String)                                                                  extends Relation
-  case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
-  case class Sort(in: Relation, orderBy: Seq[SortItem])                                           extends Relation
-  case class Limit(in: Relation, limit: Int)                                                      extends Relation
-  case class Project(in: Option[Relation], isDistinct: Boolean = false, selectItems: Seq[SelectItem]) extends Relation {
-    override def toString = s"Project[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct})"
+  //case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
+  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation
+  case class Limit(in: Relation, limit: Int)            extends Relation
+  case class Select(isDistinct: Boolean = false,
+                    selectItems: Seq[SelectItem],
+                    in: Option[Relation],
+                    whereExpr: Option[Expression])
+      extends Relation {
+    override def toString =
+      s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct},where:${whereExpr})"
   }
-  case class Aggregate(in: Relation, selectItems: Seq[SelectItem], groupingKeys: Seq[Expression]) extends Relation {
-    override def toString = s"Aggregate[${groupingKeys.mkString(",")}](${in},${selectItems.mkString(",")})"
+  case class Aggregate(selectItems: Seq[SelectItem],
+                       in: Option[Relation],
+                       whereExpr: Option[Expression],
+                       groupingKeys: Seq[Expression],
+                       having: Option[Expression])
+      extends Relation {
+    override def toString =
+      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in},where:${whereExpr}))"
   }
 
   case class Query(withQuery: With, body: Relation) extends Relation
@@ -111,13 +137,11 @@ object SQLModel {
   case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
-  case class SingleColumn(expr: Expression, alias: Option[String]) extends SelectItem {
+  case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
     override def toString = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
   }
 
-  case class SortItem(sortKey: Expression,
-                      ordering: SortOrdering = Ascending,
-                      nullOrdering: NullOrdering = UndefinedOrder)
+  case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
       extends Expression
 
   sealed trait SetOperation                                               extends Relation
@@ -132,8 +156,12 @@ object SQLModel {
 
   // Sort ordering
   sealed trait SortOrdering
-  case object Ascending  extends SortOrdering
-  case object Descending extends SortOrdering
+  case object Ascending extends SortOrdering {
+    override def toString = "ASC"
+  }
+  case object Descending extends SortOrdering {
+    override def toString = "DESC"
+  }
 
   sealed trait NullOrdering
   case object NullIsFirst    extends NullOrdering
@@ -144,17 +172,46 @@ object SQLModel {
   case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends SQLModel
 
   sealed trait FrameType
-  case object RangeFrame extends FrameType
-  case object RowsFrame  extends FrameType
+  case object RangeFrame extends FrameType {
+    override def toString = "RANGE"
+  }
+  case object RowsFrame extends FrameType {
+    override def toString = "ROWS"
+  }
 
   sealed trait FrameBound
-  case object UnboundedPreceding extends FrameBound
-  case object UnboundedFollowing extends FrameBound
-  case class Preceding(n: Long)  extends FrameBound
-  case class Following(n: Long)  extends FrameBound
-  case object CurrentRow         extends FrameBound
+  case object UnboundedPreceding extends FrameBound {
+    override def toString: String = "UNBOUNDED PRECEDING"
+  }
+  case object UnboundedFollowing extends FrameBound {
+    override def toString: String = "UNBOUNDED FOLLOWING"
+  }
+  case class Preceding(n: Long) extends FrameBound {
+    override def toString: String = s"${n} PRECEDING"
+  }
 
-  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel
+  case class Following(n: Long) extends FrameBound {
+    override def toString: String = s"${n} FOLLOWING"
+  }
+  case object CurrentRow extends FrameBound {
+    override def toString: String = "CURRENT ROW"
+  }
+
+  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel {
+    override def toString: String = {
+      val s = Seq.newBuilder[String]
+      s += frameType.toString
+      if (end.isDefined) {
+        s += "BETWEEN"
+      }
+      s += start.toString
+      if (end.isDefined) {
+        s += "AND"
+        s += end.get.toString
+      }
+      s.result().mkString(" ")
+    }
+  }
 
   // Function
   case class FunctionCall(name: QName,
@@ -171,28 +228,28 @@ object SQLModel {
   class Ref(name: QName) extends Expression
 
   // Conditional expression
-  sealed trait ConditionalExpression                       extends Expression
-  case object NoOp                                         extends ConditionalExpression
-  case class Eq(a: Expression, b: Expression)              extends ConditionalExpression
-  case class NotEq(a: Expression, b: Expression)           extends ConditionalExpression
-  case class And(a: Expression, b: Expression)             extends ConditionalExpression
-  case class Or(a: Expression, b: Expression)              extends ConditionalExpression
-  case class Not(expr: Expression)                         extends ConditionalExpression
-  case class LessThan(a: Expression, b: Expression)        extends ConditionalExpression
-  case class LessThanOrEq(a: Expression, b: Expression)    extends ConditionalExpression
-  case class GreaterThan(a: Expression, b: Expression)     extends ConditionalExpression
-  case class GreaterThanOrEq(a: Expression, b: Expression) extends ConditionalExpression
-  case class Between(a: Expression, b: Expression)         extends ConditionalExpression
-  case class IsNull(a: Expression)                         extends ConditionalExpression
-  case class IsNotNull(a: Expression)                      extends ConditionalExpression
-  case class In(list: Seq[Expression])                     extends ConditionalExpression
-  case class NotIn(list: Seq[Expression])                  extends ConditionalExpression
-  case class InSubQuery(in: Relation)                      extends ConditionalExpression
-  case class NotInSubQuery(in: Relation)                   extends ConditionalExpression
-  case class Like(e: Expression)                           extends ConditionalExpression
-  case class NotLike(e: Expression)                        extends ConditionalExpression
-  case class DistinctFrom(e: Expression)                   extends ConditionalExpression
-  case class NotDistinctFrom(e: Expression)                extends ConditionalExpression
+  sealed trait ConditionalExpression                              extends Expression
+  case object NoOp                                                extends ConditionalExpression
+  case class Eq(a: Expression, b: Expression)                     extends ConditionalExpression
+  case class NotEq(a: Expression, b: Expression)                  extends ConditionalExpression
+  case class And(a: Expression, b: Expression)                    extends ConditionalExpression
+  case class Or(a: Expression, b: Expression)                     extends ConditionalExpression
+  case class Not(expr: Expression)                                extends ConditionalExpression
+  case class LessThan(a: Expression, b: Expression)               extends ConditionalExpression
+  case class LessThanOrEq(a: Expression, b: Expression)           extends ConditionalExpression
+  case class GreaterThan(a: Expression, b: Expression)            extends ConditionalExpression
+  case class GreaterThanOrEq(a: Expression, b: Expression)        extends ConditionalExpression
+  case class Between(e: Expression, a: Expression, b: Expression) extends ConditionalExpression
+  case class IsNull(a: Expression)                                extends ConditionalExpression
+  case class IsNotNull(a: Expression)                             extends ConditionalExpression
+  case class In(a: Expression, list: Seq[Expression])             extends ConditionalExpression
+  case class NotIn(a: Expression, list: Seq[Expression])          extends ConditionalExpression
+  case class InSubQuery(a: Expression, in: Relation)              extends ConditionalExpression
+  case class NotInSubQuery(a: Expression, in: Relation)           extends ConditionalExpression
+  case class Like(a: Expression, e: Expression)                   extends ConditionalExpression
+  case class NotLike(a: Expression, e: Expression)                extends ConditionalExpression
+  case class DistinctFrom(a: Expression, e: Expression)           extends ConditionalExpression
+  case class NotDistinctFrom(a: Expression, e: Expression)        extends ConditionalExpression
 
   case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[WhenClause], defaultValue: Option[Expression])
@@ -201,19 +258,20 @@ object SQLModel {
 
   case class Exists(subQuery: Expression) extends Expression
 
-  sealed trait ArithmeticExpression
   // Arithmetic expr
-  abstract sealed class BinaryExprType(symbol: String)
+  abstract sealed class BinaryExprType(val symbol: String)
   case object Add      extends BinaryExprType("+")
   case object Subtract extends BinaryExprType("-")
   case object Multiply extends BinaryExprType("*")
   case object Divide   extends BinaryExprType("/")
   case object Modulus  extends BinaryExprType("%")
 
-  case class ArithmeticBinaryExpr(exprType: BinaryExprType, left: Expression, right: Expression) extends Expression
-  case class ArithmeticUnaryExpr(sign: Sign, value: Expression)                                  extends Expression
+  sealed trait ArithmeticExpression extends Expression
+  case class ArithmeticBinaryExpr(exprType: BinaryExprType, left: Expression, right: Expression)
+      extends ArithmeticExpression
+  case class ArithmeticUnaryExpr(sign: Sign, value: Expression) extends ArithmeticExpression
 
-  abstract sealed class Sign(symbol: String)
+  abstract sealed class Sign(val symbol: String)
   case object Positive extends Sign("+")
   case object Negative extends Sign("-")
 
@@ -229,19 +287,25 @@ object SQLModel {
   }
 
   // Literal
-  sealed trait Literal        extends Expression
-  case object NullLiteral     extends Literal
+  sealed trait Literal extends Expression
+  case object NullLiteral extends Literal {
+    override def toString: String = "NULL"
+  }
   sealed trait BooleanLiteral extends Literal
-  case object TrueLiteral     extends BooleanLiteral
-  case object FalseLiteral    extends BooleanLiteral
+  case object TrueLiteral extends BooleanLiteral {
+    override def toString: String = "TRUE"
+  }
+  case object FalseLiteral extends BooleanLiteral {
+    override def toString: String = "FALSE"
+  }
   case class StringLiteral(value: String) extends Literal {
     override def toString = s"'${value}'"
   }
   case class TimeLiteral(value: String) extends Literal {
-    override def toString = s"time '${value}'"
+    override def toString = s"TIME '${value}'"
   }
   case class TimestampLiteral(value: String) extends Literal {
-    override def toString = s"timestamp '${value}'"
+    override def toString = s"TIMESTAMP '${value}'"
   }
   case class DecimalLiteral(value: String) extends Literal {
     override def toString = value
@@ -256,10 +320,16 @@ object SQLModel {
     override def toString = value.toString
   }
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
-      extends Literal
+      extends Literal {
+    override def toString: String = {
+      s"INTERVAL ${sign.symbol} '${value}' ${startField}"
+    }
+  }
 
-  case class GenericLiteral(tpe: String, value: String) extends Literal
-  case class BinaryLiteral(binary: String)              extends Literal
+  case class GenericLiteral(tpe: String, value: String) extends Literal {
+    override def toString = s"${tpe} '${value}'"
+  }
+  case class BinaryLiteral(binary: String) extends Literal
 
   sealed trait IntervalField extends SQLModel
   case object Year           extends IntervalField
@@ -278,7 +348,6 @@ object SQLModel {
   case class CurrentLocalTime(precision: Option[Int])                         extends CurrentTimeBase("localtime", precision)
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
 
-  case class Identifier(value: String, delimited: Boolean = false) extends Expression
   // 1-origin parameter
   case class Parameter(index: Int)               extends Expression
   case class SubQueryExpression(query: Relation) extends Expression

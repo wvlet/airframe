@@ -86,21 +86,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   private def visitIdentifier(ctx: IdentifierContext): Identifier = {
-    ctx match {
-      case b: BackQuotedIdentifierContext =>
-        val t = b.getText
-        Identifier(t.substring(1, t.length - 1))
-      case u: UnquotedIdentifierContext =>
-        val id = Option(u.nonReserved())
-          .map(x => x.getText)
-          .getOrElse(u.getText)
-        Identifier(id)
-      case q: QuotedIdentifierContext =>
-        val t = q.getText()
-        Identifier(t.substring(1, t.length - 1))
-      case d: DigitIdentifierContext =>
-        Identifier(d.getText)
-    }
+    visit(ctx).asInstanceOf[Identifier]
   }
 
   override def visitSetOperation(ctx: SetOperationContext): SQLModel = {
@@ -149,26 +135,23 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSortItem(ctx: SortItemContext): SortItem = {
-    val key  = expression(ctx.expression())
-    var sort = SortItem(key)
-    if (ctx.ordering != null) {
-      ctx.ordering.getType match {
-        case SqlBaseParser.ASC =>
-          sort = SortItem(key, ordering = Ascending)
-        case SqlBaseParser.DESC =>
-          sort = SortItem(key, ordering = Descending)
+    val key = expression(ctx.expression())
+    val ordering = Option(ctx.ordering).map { x =>
+      x.getType match {
+        case SqlBaseParser.ASC  => Ascending
+        case SqlBaseParser.DESC => Descending
       }
     }
 
-    if (ctx.nullOrdering != null) {
-      ctx.nullOrdering.getType match {
+    val nullOrdering = Option(ctx.nullOrdering).map { x =>
+      x.getType match {
         case SqlBaseParser.FIRST =>
-          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsFirst)
+          SQLModel.NullIsFirst
         case SqlBaseParser.LAST =>
-          sort = SortItem(key, sort.ordering, nullOrdering = SQLModel.NullIsLast)
+          SQLModel.NullIsLast
       }
     }
-    sort
+    SortItem(key, ordering, nullOrdering)
   }
 
   override def visitQueryTermDefault(ctx: QueryTermDefaultContext): SQLModel = {
@@ -183,16 +166,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
     val inputRelation: Option[Relation] = fromClause(ctx)
 
-    val withFilter: Option[Relation] = {
+    val filter: Option[Expression] = {
       if (ctx.where == null)
-        inputRelation
+        None
       else {
         Option(ctx.where)
           .map(visit(_))
           .collectFirst { case e: Expression => e }
-          .flatMap { w =>
-            inputRelation.map(in => Filter(in, w))
-          }
       }
     }
 
@@ -205,7 +185,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       if (ctx.groupBy() == null) {
         // No aggregation
         // TODO distinct check
-        Project(withFilter, false, selectItem)
+        val distinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
+        Select(distinct, selectItem, inputRelation, filter)
       } else {
         // aggregation
         val gb = ctx.groupBy()
@@ -223,14 +204,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
             }
             .toSeq
 
-        val g = Aggregate(withFilter.get, selectItem, groupByKeys)
-
         // having
-        if (ctx.having != null) {
-          Filter(g, expression(ctx.having))
-        } else {
-          g
-        }
+        val having = Option(ctx.having).map(expression(_))
+        Aggregate(selectItem, inputRelation, filter, groupByKeys, having)
       }
     }
 
@@ -260,7 +236,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   override def visitAliasedRelation(ctx: AliasedRelationContext): Relation = {
     val r: Relation = ctx.relationPrimary() match {
       case p: ParenthesizedRelationContext =>
-        visit(p.relation()).asInstanceOf[Relation]
+        ParenthizedRelation(visit(p.relation()).asInstanceOf[Relation])
       //case u: UnnestContext                =>
 //        u.expression().asScala.map(x => expression(x))
       case s: SubqueryRelationContext =>
@@ -325,7 +301,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitSelectSingle(ctx: SelectSingleContext): SelectItem = {
-    SingleColumn(expression(ctx.expression()), None)
+    val alias = Option(ctx.AS()).map(x => expression(ctx.identifier()))
+    SingleColumn(expression(ctx.expression()), alias)
   }
 
   override def visitExpression(ctx: ExpressionContext): SQLModel = {
@@ -367,7 +344,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitTypeConstructor(ctx: TypeConstructorContext): Expression = {
-    val v = visit(ctx.str()).asInstanceOf[StringLiteral].value
+    val v = expression(ctx.str()).asInstanceOf[StringLiteral].value
 
     if (ctx.DOUBLE_PRECISION() != null) {
       // TODO
@@ -433,7 +410,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
-    expression(ctx.expression())
+    ParenthizedExpression(expression(ctx.expression()))
   }
 
   override def visitSubqueryExpression(ctx: SubqueryExpressionContext): Expression = {
@@ -452,20 +429,20 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         case n: NullPredicateContext =>
           if (n.NOT() == null) IsNull(e) else IsNotNull(e)
         case b: BetweenContext =>
-          Between(expression(b.lower), expression(b.upper))
+          Between(e, expression(b.lower), expression(b.upper))
         case i: InSubqueryContext =>
           val subQuery = visitQuery(i.query())
-          if (i.NOT() == null) InSubQuery(subQuery) else NotInSubQuery(subQuery)
+          if (i.NOT() == null) InSubQuery(e, subQuery) else NotInSubQuery(e, subQuery)
         case i: InListContext =>
           val inList = i.expression().asScala.map(x => expression(x)).toSeq
-          if (i.NOT() == null) In(inList) else NotIn(inList)
+          if (i.NOT() == null) In(e, inList) else NotIn(e, inList)
         case l: LikeContext =>
           // TODO: Handle ESCAPE
           val likeExpr = expression(l.pattern)
-          if (l.NOT() == null) Like(likeExpr) else NotLike(likeExpr)
+          if (l.NOT() == null) Like(e, likeExpr) else NotLike(e, likeExpr)
         case d: DistinctFromContext =>
           val distinctExpr = expression(d.valueExpression())
-          if (d.NOT() == null) DistinctFrom(distinctExpr) else NotDistinctFrom(distinctExpr)
+          if (d.NOT() == null) DistinctFrom(e, distinctExpr) else NotDistinctFrom(e, distinctExpr)
         case other =>
           // TODO
           warn(s"unhandled predicate ${ctx.predicate().getClass}:\n${print(ctx.predicate())}")
@@ -557,17 +534,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     StringLiteral(text)
   }
 
-  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): SQLModel = {
+  override def visitUnquotedIdentifier(ctx: UnquotedIdentifierContext): Identifier = {
     val id = Option(ctx.nonReserved()).map(_.getText).getOrElse(ctx.getText)
-    QName(id)
+    UnquotedIdentifier(id)
   }
-  override def visitBackQuotedIdentifier(ctx: BackQuotedIdentifierContext): SQLModel = {
-    QName(ctx.getText.replaceAll("(^`|`$)", ""))
+  override def visitBackQuotedIdentifier(ctx: BackQuotedIdentifierContext): Identifier = {
+    BackQuotedIdentifier(ctx.getText.replaceAll("(^`|`$)", ""))
   }
-  override def visitQuotedIdentifier(ctx: QuotedIdentifierContext): SQLModel = {
-    QName(ctx.getText.replaceAll("(^\"|\"$)", ""))
+  override def visitQuotedIdentifier(ctx: QuotedIdentifierContext): Identifier = {
+    QuotedIdentifier(ctx.getText.replaceAll("(^\"|\"$)", ""))
   }
-  override def visitDigitIdentifier(ctx: DigitIdentifierContext): SQLModel = {
+  override def visitDigitIdentifier(ctx: DigitIdentifierContext): Identifier = {
     DigitId(ctx.getText.toInt)
   }
 
@@ -672,7 +649,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val from = visitIntervalField(ctx.from)
     val to   = Option(ctx.TO()).map(x => visitIntervalField(ctx.intervalField(0)))
 
-    IntervalLiteral(value, sign, from, to)
+    IntervalLiteral(unquote(value), sign, from, to)
   }
 
   override def visitIntervalField(ctx: IntervalFieldContext): IntervalField = {
