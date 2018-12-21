@@ -40,30 +40,6 @@ object SQLParser extends LogSupport {
     tokenStream
   }
 
-  def anonymizeSQL(sql: String) = {
-    debug(s"Anonymize:\n${sql}")
-
-    val m = parse(sql)
-    info(m)
-
-    val str = SQLPrinter.print(m)
-    info(str)
-    //anonymizeTokenStrem(tokenStream(sql))
-  }
-
-  private def anonymizeTokenStrem(t: CommonTokenStream) {
-    // Read all tokens
-    t.fill()
-    t.getTokens.asScala.map { token =>
-      token.getType match {
-        case SqlBaseLexer.IDENTIFIER =>
-          warn(s"Found identifier: ${tokenName(token)} ${token.getText}")
-        case other =>
-          info(s"token: ${tokenName(token)} ${token.getText}")
-      }
-    }
-  }
-
   def tokenName(t: Token): String = {
     SqlBaseParser.VOCABULARY.getDisplayName(t.getType)
   }

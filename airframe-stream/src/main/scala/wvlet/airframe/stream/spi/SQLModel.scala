@@ -172,17 +172,46 @@ object SQLModel {
   case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends SQLModel
 
   sealed trait FrameType
-  case object RangeFrame extends FrameType
-  case object RowsFrame  extends FrameType
+  case object RangeFrame extends FrameType {
+    override def toString = "RANGE"
+  }
+  case object RowsFrame extends FrameType {
+    override def toString = "ROWS"
+  }
 
   sealed trait FrameBound
-  case object UnboundedPreceding extends FrameBound
-  case object UnboundedFollowing extends FrameBound
-  case class Preceding(n: Long)  extends FrameBound
-  case class Following(n: Long)  extends FrameBound
-  case object CurrentRow         extends FrameBound
+  case object UnboundedPreceding extends FrameBound {
+    override def toString: String = "UNBOUNDED PRECEDING"
+  }
+  case object UnboundedFollowing extends FrameBound {
+    override def toString: String = "UNBOUNDED FOLLOWING"
+  }
+  case class Preceding(n: Long) extends FrameBound {
+    override def toString: String = s"${n} PRECEDING"
+  }
 
-  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel
+  case class Following(n: Long) extends FrameBound {
+    override def toString: String = s"${n} FOLLOWING"
+  }
+  case object CurrentRow extends FrameBound {
+    override def toString: String = "CURRENT ROW"
+  }
+
+  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel {
+    override def toString: String = {
+      val s = Seq.newBuilder[String]
+      s += frameType.toString
+      if (end.isDefined) {
+        s += "BETWEEN"
+      }
+      s += start.toString
+      if (end.isDefined) {
+        s += "AND"
+        s += end.get.toString
+      }
+      s.result().mkString(" ")
+    }
+  }
 
   // Function
   case class FunctionCall(name: QName,

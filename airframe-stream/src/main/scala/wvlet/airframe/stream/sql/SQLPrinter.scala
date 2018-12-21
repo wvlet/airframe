@@ -91,6 +91,14 @@ object SQLPrinter extends LogSupport {
       case Union(relations, isDistinct) =>
         val op = if (isDistinct) " UNION " else " UNION ALL "
         relations.map(printRelation(_)).mkString(op)
+      case Except(left, right, distinct) =>
+        val op = if (distinct) " EXCEPT " else " EXCEPT ALL "
+        val l  = printRelation(left)
+        val r  = printRelation(right)
+        s"${l} ${op} ${r}"
+      case Intersect(relations, isDistinct) =>
+        val op = if (isDistinct) " INTERSECT " else " INTERSECT ALL "
+        relations.map(printRelation(_)).mkString(op)
       case Table(t) =>
         printExpression(t)
       case Limit(in, l) =>
@@ -150,7 +158,23 @@ object SQLPrinter extends LogSupport {
       case FunctionCall(name, args, distinct, filter, window) =>
         val argList = args.map(printExpression(_)).mkString(", ")
         val d       = if (distinct) "DISTINCT " else ""
-        s"${name}(${d}${argList})"
+        val wd = window
+          .map { w =>
+            val s = Seq.newBuilder[String]
+
+            if (w.partitionBy.nonEmpty) {
+              s += "PARTITION BY"
+              s += w.partitionBy.map(x => printExpression(x)).mkString(", ")
+            }
+            if (w.orderBy.nonEmpty) {
+              s += "ORDER BY"
+              s += w.orderBy.map(x => printExpression(x)).mkString(", ")
+            }
+            w.frame.map(x => s += x.toString)
+            s" OVER (${s.result().mkString(" ")})"
+          }
+          .getOrElse("")
+        s"${name}(${d}${argList})${wd}"
       case QName(parts) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast) =>
@@ -182,6 +206,8 @@ object SQLPrinter extends LogSupport {
         }
         s += "END"
         s.result().mkString(" ")
+      case w: WindowFrame =>
+        w.toString
       case other => unknown(other)
     }
   }
