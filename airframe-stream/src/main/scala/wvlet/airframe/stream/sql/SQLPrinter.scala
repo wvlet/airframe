@@ -139,6 +139,10 @@ object SQLPrinter extends LogSupport {
         s"${printExpression(left)} ${tpe.symbol} ${printExpression(right)}"
       case ArithmeticUnaryExpr(sign, value) =>
         s"${sign.symbol} ${printExpression(value)}"
+      case Exists(subQuery) =>
+        s"EXISTS(${printExpression(subQuery)})"
+      case SubQueryExpression(query) =>
+        s"(${printRelation(query)})"
       case other => unknown(other)
     }
   }
@@ -173,10 +177,10 @@ object SQLPrinter extends LogSupport {
         s"${printExpression(a)} IS NOT NULL"
       case In(a, list) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
-        s"${printExpression(a)} IN ${in}"
+        s"${printExpression(a)} IN (${in})"
       case NotIn(a, list) =>
         val in = list.map(x => printExpression(x)).mkString(", ")
-        s"${printExpression(a)} NOT IN ${in}"
+        s"${printExpression(a)} NOT IN (${in})"
       case InSubQuery(a, in) =>
         s"${printExpression(a)} IN (${printRelation(in)})"
       case NotInSubQuery(a, in) =>

@@ -79,7 +79,8 @@ object SQLModel {
                     in: Option[Relation],
                     whereExpr: Option[Expression])
       extends Relation {
-    override def toString = s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct})"
+    override def toString =
+      s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct},where:${whereExpr})"
   }
   case class Aggregate(selectItems: Seq[SelectItem],
                        in: Option[Relation],
@@ -87,7 +88,8 @@ object SQLModel {
                        groupingKeys: Seq[Expression],
                        having: Option[Expression])
       extends Relation {
-    override def toString = s"Aggregate[${groupingKeys.mkString(",")}](${in},${selectItems.mkString(",")})"
+    override def toString =
+      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in},where:${whereExpr}))"
   }
 
   case class Query(withQuery: With, body: Relation) extends Relation
@@ -277,7 +279,11 @@ object SQLModel {
     override def toString = value.toString
   }
   case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
-      extends Literal
+      extends Literal {
+    override def toString: String = {
+      s"INTERVAL ${sign.symbol} '${value}' ${startField}"
+    }
+  }
 
   case class GenericLiteral(tpe: String, value: String) extends Literal {
     override def toString = s"${tpe} '${value}'"

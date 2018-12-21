@@ -663,7 +663,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val from = visitIntervalField(ctx.from)
     val to   = Option(ctx.TO()).map(x => visitIntervalField(ctx.intervalField(0)))
 
-    IntervalLiteral(value, sign, from, to)
+    IntervalLiteral(unquote(value), sign, from, to)
   }
 
   override def visitIntervalField(ctx: IntervalFieldContext): IntervalField = {
