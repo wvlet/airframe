@@ -68,13 +68,22 @@ object SQLModel {
   case class Values(rows: Seq[Expression])                                                        extends Relation
   case class Table(name: QName)                                                                   extends Relation
   case class RawSQL(sql: String)                                                                  extends Relation
-  case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
-  case class Sort(in: Relation, orderBy: Seq[SortItem])                                           extends Relation
-  case class Limit(in: Relation, limit: Int)                                                      extends Relation
-  case class Project(in: Option[Relation], isDistinct: Boolean = false, selectItems: Seq[SelectItem]) extends Relation {
-    override def toString = s"Project[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct})"
+  //case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
+  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation
+  case class Limit(in: Relation, limit: Int)            extends Relation
+  case class Select(isDistinct: Boolean = false,
+                    selectItems: Seq[SelectItem],
+                    in: Option[Relation],
+                    whereExpr: Option[Expression])
+      extends Relation {
+    override def toString = s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct})"
   }
-  case class Aggregate(in: Relation, selectItems: Seq[SelectItem], groupingKeys: Seq[Expression]) extends Relation {
+  case class Aggregate(selectItems: Seq[SelectItem],
+                       in: Option[Relation],
+                       whereExpr: Option[Expression],
+                       groupingKeys: Seq[Expression],
+                       having: Option[Expression])
+      extends Relation {
     override def toString = s"Aggregate[${groupingKeys.mkString(",")}](${in},${selectItems.mkString(",")})"
   }
 

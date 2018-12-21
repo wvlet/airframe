@@ -183,16 +183,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
     val inputRelation: Option[Relation] = fromClause(ctx)
 
-    val withFilter: Option[Relation] = {
+    val filter: Option[Expression] = {
       if (ctx.where == null)
-        inputRelation
+        None
       else {
         Option(ctx.where)
           .map(visit(_))
           .collectFirst { case e: Expression => e }
-          .flatMap { w =>
-            inputRelation.map(in => Filter(in, w))
-          }
       }
     }
 
@@ -205,7 +202,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       if (ctx.groupBy() == null) {
         // No aggregation
         // TODO distinct check
-        Project(withFilter, false, selectItem)
+        Select(false, selectItem, inputRelation, filter)
       } else {
         // aggregation
         val gb = ctx.groupBy()
@@ -223,14 +220,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
             }
             .toSeq
 
-        val g = Aggregate(withFilter.get, selectItem, groupByKeys)
-
         // having
-        if (ctx.having != null) {
-          Filter(g, expression(ctx.having))
-        } else {
-          g
-        }
+        val having = Option(ctx.having).map(expression(_))
+        Aggregate(selectItem, inputRelation, filter, groupByKeys, having)
       }
     }
 
