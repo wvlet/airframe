@@ -426,7 +426,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
-    expression(ctx.expression())
+    ParenthizedExpression(expression(ctx.expression()))
   }
 
   override def visitSubqueryExpression(ctx: SubqueryExpressionContext): Expression = {

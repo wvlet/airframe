@@ -49,6 +49,8 @@ object SQLModel {
 
   sealed trait Expression extends SQLModel
 
+  case class ParenthizedExpression(expr: Expression) extends Expression
+
   // Qualified name (QName), such as table and column names
   case class QName(parts: Seq[String]) extends Expression {
     override def toString = parts.mkString(".")

@@ -63,6 +63,8 @@ object SQLPrinter extends LogSupport {
 
   def printExpression(e: Expression): String = {
     e match {
+      case ParenthizedExpression(expr) =>
+        s"(${printExpression(expr)})"
       case SingleColumn(ex, alias) =>
         val col = printExpression(ex)
         alias
