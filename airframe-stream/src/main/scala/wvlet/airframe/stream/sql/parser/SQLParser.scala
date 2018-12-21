@@ -13,9 +13,12 @@
  */
 package wvlet.airframe.stream.sql.parser
 
-import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream, Token}
 import wvlet.airframe.stream.spi.SQLModel
+import wvlet.airframe.stream.sql.SQLPrinter
 import wvlet.log.LogSupport
+
+import scala.collection.JavaConverters._
 
 /**
   *
@@ -23,14 +26,21 @@ import wvlet.log.LogSupport
 object SQLParser extends LogSupport {
 
   def parse(sql: String): SQLModel = {
-    debug(s"parse: ${sql}")
-    val lexer       = new SqlBaseLexer(new CaseInsensitiveStream(CharStreams.fromString(sql)))
-    val tokenStream = new CommonTokenStream(lexer)
-    val parser      = new SqlBaseParser(tokenStream)
-    val ctx         = parser.singleStatement()
+    trace(s"parse: ${sql}")
+    val parser = new SqlBaseParser(tokenStream(sql))
+    val ctx    = parser.singleStatement()
     trace(ctx.toStringTree(parser))
     val interpreter = new SQLInterpreter
     interpreter.interpret(ctx)
   }
 
+  def tokenStream(sql: String): CommonTokenStream = {
+    val lexer       = new SqlBaseLexer(new CaseInsensitiveStream(CharStreams.fromString(sql)))
+    val tokenStream = new CommonTokenStream(lexer)
+    tokenStream
+  }
+
+  def tokenName(t: Token): String = {
+    SqlBaseParser.VOCABULARY.getDisplayName(t.getType)
+  }
 }
