@@ -127,7 +127,8 @@ object SQLPrinter extends LogSupport {
         s"${k}${o}${no}"
       case FunctionCall(name, args, distinct, filter, window) =>
         val argList = args.map(printExpression(_)).mkString(", ")
-        s"${name}(${argList})"
+        val d       = if (distinct) "DISTINCT " else ""
+        s"${name}(${d}${argList})"
       case QName(parts) =>
         parts.mkString(".")
       case Cast(expr, tpe, tryCast) =>
@@ -143,6 +144,21 @@ object SQLPrinter extends LogSupport {
         s"EXISTS(${printExpression(subQuery)})"
       case SubQueryExpression(query) =>
         s"(${printRelation(query)})"
+      case CaseExpr(operand, whenClauses, defaultValue) =>
+        val s = Seq.newBuilder[String]
+        s += "CASE"
+        operand.map(x => s += printExpression(x))
+        whenClauses.map { w =>
+          s += "WHEN"
+          s += printExpression(w.condition)
+          s += "THEN"
+          s += printExpression(w.result)
+        }
+        defaultValue.map { x =>
+          s += "ELSE"
+          s += printExpression(x)
+        }
+        s.result().mkString(" ")
       case other => unknown(other)
     }
   }
@@ -156,11 +172,13 @@ object SQLPrinter extends LogSupport {
       case Eq(a, b) =>
         s"${printExpression(a)} = ${printExpression(b)}"
       case NotEq(a, b) =>
-        s"${printExpression(a)} != ${printExpression(b)}"
+        s"${printExpression(a)} <> ${printExpression(b)}"
       case And(a, b) =>
         s"${printExpression(a)} AND ${printExpression(b)}"
       case Or(a, b) =>
         s"${printExpression(a)} OR ${printExpression(b)}"
+      case Not(e) =>
+        s"NOT ${printExpression(e)}"
       case LessThan(a, b) =>
         s"${printExpression(a)} < ${printExpression(b)}"
       case LessThanOrEq(a, b) =>
