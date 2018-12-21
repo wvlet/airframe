@@ -71,6 +71,19 @@ object SQLPrinter extends LogSupport {
           b += printExpression(h)
         }
         b.result().mkString(" ")
+      case Query(withQuery, body) =>
+        val s = Seq.newBuilder[String]
+        s += "WITH"
+        if (withQuery.recursive) {
+          s += "RECURSIVE"
+        }
+        s += withQuery.queries
+          .map { q =>
+            val columnAliases = q.columnNames.map(x => s"(${x.map(printExpression(_)).mkString(", ")})").getOrElse("")
+            s"${printExpression(q.name)}${columnAliases} AS (${printRelation(q.query)})"
+          }.mkString(", ")
+        s += printRelation(body)
+        s.result().mkString(" ")
       case Table(t) =>
         printExpression(t)
       case Limit(in, l) =>
@@ -109,6 +122,8 @@ object SQLPrinter extends LogSupport {
 
   def printExpression(e: Expression): String = {
     e match {
+      case Identifier(value, delimited) =>
+        value
       case ParenthizedExpression(expr) =>
         s"(${printExpression(expr)})"
       case SingleColumn(ex, alias) =>
@@ -158,6 +173,7 @@ object SQLPrinter extends LogSupport {
           s += "ELSE"
           s += printExpression(x)
         }
+        s += "END"
         s.result().mkString(" ")
       case other => unknown(other)
     }
