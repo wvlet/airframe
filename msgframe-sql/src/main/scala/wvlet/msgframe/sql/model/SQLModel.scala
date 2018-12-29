@@ -141,7 +141,7 @@ object SQLModel {
     override def children: Seq[SQLModel] = {
       val b = Seq.newBuilder[SQLModel]
       b ++= selectItems
-      in.map(b +=)
+      in.map(b += _)
       whereExpr.map(b += _)
       b ++= groupingKeys
       having.map(b += _)
@@ -171,7 +171,9 @@ object SQLModel {
   }
 
   // Joins
-  case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
+  case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation {
+    override def children: Seq[SQLModel] = Seq(left, right, cond)
+  }
   sealed trait JoinType
   // Exact match (= equi join)
   case object InnerJoin extends JoinType
@@ -187,28 +189,42 @@ object SQLModel {
   // Where clause specifies join criteria
   case object ImplicitJoin extends JoinType
 
-  sealed trait JoinCriteria
-  case object NaturalJoin extends JoinCriteria
-  case class JoinUsing(columns: Seq[String]) extends JoinCriteria {
+  sealed trait JoinCriteria extends Expression
+  case object NaturalJoin   extends JoinCriteria with LeafNode
+  case class JoinUsing(columns: Seq[String]) extends JoinCriteria with LeafNode {
     override def toString: String = s"JoinUsing(${columns.mkString(",")})"
   }
-  case class JoinOn(expr: Expression) extends JoinCriteria
+  case class JoinOn(expr: Expression) extends JoinCriteria with UnaryNode {
+    override def child: SQLModel = expr
+  }
 
   sealed trait SelectItem extends Expression
-  case class AllColumns(prefix: Option[QName]) extends SelectItem {
+  case class AllColumns(prefix: Option[QName]) extends SelectItem with LeafNode {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
   case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b += expr
+      alias.map(b += _)
+      b.result()
+    }
     override def toString = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
   }
 
   case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
       extends Expression
+      with UnaryNode {
+    override def child: SQLModel = sortKey
+  }
 
-  sealed trait SetOperation                                               extends Relation
-  case class Intersect(relations: Seq[Relation], isDistinct: Boolean)     extends SetOperation
-  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation
+  sealed trait SetOperation extends Relation
+  case class Intersect(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
+    override def children: Seq[SQLModel] = relations
+  }
+  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryNode
   case class Union(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
+    override def children: Seq[SQLModel] = relations
     override def toString = {
       val name = if (isDistinct) "Union" else "UnionAll"
       s"${name}(${relations.mkString(",")})"
@@ -230,7 +246,15 @@ object SQLModel {
   case object UndefinedOrder extends NullOrdering
 
   // Window functions
-  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends SQLModel
+  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends SQLModel {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b ++= partitionBy
+      b ++= orderBy
+      frame.map(b += _)
+      b.result()
+    }
+  }
 
   sealed trait FrameType
   case object RangeFrame extends FrameType {
@@ -258,7 +282,9 @@ object SQLModel {
     override def toString: String = "CURRENT ROW"
   }
 
-  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends SQLModel {
+  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound])
+      extends SQLModel
+      with LeafNode {
     override def toString: String = {
       val s = Seq.newBuilder[String]
       s += frameType.toString
