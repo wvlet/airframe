@@ -1,7 +1,7 @@
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0-M5"
 
-val targetScalaVersions = Seq(SCALA_2_12, SCALA_2_13)
+val targetScalaVersions = Seq(SCALA_2_12)
 
 val SCALATEST_VERSION               = "3.0.6-SNAP4"
 val SCALACHECK_VERSION              = "1.14.0"
@@ -170,6 +170,8 @@ lazy val sql =
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-msgpack" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-surface" % AIRFRAME_VERSION,
+        // Include Spark just as a reference
+        "org.apache.spark"   %% "spark-sql"        % "2.4.0" % "test",
         airframeSpec
       )
     )

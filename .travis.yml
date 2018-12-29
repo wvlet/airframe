@@ -40,9 +40,9 @@ matrix:
     script:
     - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
     - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
-  - env: SCALA_VERSION=2.13.0-M5 PROJECT=projectJVM
-    jdk: openjdk8
-    script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly *"
+#  - env: SCALA_VERSION=2.13.0-M5 PROJECT=projectJVM
+#    jdk: openjdk8
+#    script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly *"
   - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
     jdk: openjdk11
     before_script: psql -c 'create database travis_ci_test;' -U postgres
