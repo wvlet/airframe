@@ -40,12 +40,23 @@ object SQLSchema {
   case object AnyType                                        extends DataType
 }
 
-trait SQLModel
+trait SQLModel {
+  def children: Seq[SQLModel]
+}
 
 /**
   *
   */
 object SQLModel {
+
+  trait Leaf extends SQLModel {
+    override def children: Seq[SQLModel] = Seq.empty
+  }
+
+  trait UnaryNode extends SQLModel {
+
+    override def children
+  }
 
   sealed trait Expression extends SQLModel
 
