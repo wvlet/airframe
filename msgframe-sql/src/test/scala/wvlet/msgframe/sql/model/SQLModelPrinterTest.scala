@@ -11,22 +11,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.msgframe.sql
-
-import java.io.File
+package wvlet.msgframe.sql.model
 
 import wvlet.airframe.AirframeSpec
-import wvlet.log.io.IOUtil
+import wvlet.msgframe.sql.SQLBenchmark
 import wvlet.msgframe.sql.parser.SQLParser
 
 /**
   *
   */
-class SQLPrinterTest extends AirframeSpec {
+class SQLModelPrinterTest extends AirframeSpec {
 
   def roundtrip(sql: String): Unit = {
     val m1       = SQLParser.parse(sql)
-    val printSql = SQLPrinter.print(m1)
+    val printSql = SQLModelPrinter.print(m1)
     val m2       = SQLParser.parse(printSql)
     try {
       m1 shouldBe m2
