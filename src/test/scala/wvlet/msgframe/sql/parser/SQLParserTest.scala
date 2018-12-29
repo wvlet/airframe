@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.stream.sql.parser
+package wvlet.msgframe.sql.parser
 
 import java.io.File
 
 import wvlet.airframe.AirframeSpec
-import wvlet.log.io.{IOUtil, Resource}
+import wvlet.log.io.IOUtil
 
 /**
   *
