@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.stream.sql
-import wvlet.airframe.stream.spi.SQLModel
-import wvlet.airframe.stream.spi.SQLModel._
-import wvlet.airframe.stream.sql.parser.SqlBaseParser.BooleanLiteralContext
+package wvlet.msgframe.sql
+
+import wvlet.msgframe.sql.model.SQLModel._
+import wvlet.msgframe.sql.parser.SqlBaseParser.BooleanLiteralContext
 import wvlet.log.LogSupport
+import wvlet.msgframe.sql.model.SQLModel
 
 /**
   *

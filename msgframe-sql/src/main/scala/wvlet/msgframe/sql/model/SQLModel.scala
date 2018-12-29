@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.stream.spi
+package wvlet.msgframe.sql.model
 
 import java.util.Locale
 
-import wvlet.airframe.stream.spi.SQLModel.Expression
 import wvlet.airframe.surface.Surface
+import wvlet.msgframe.sql.model.SQLModel.Expression
 
 object SQLSchema {
   sealed trait Schema
