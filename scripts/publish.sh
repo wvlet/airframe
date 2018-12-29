@@ -10,7 +10,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
      ./sbt "+ projectJVM/publish"
   else
      # Publish a release version
-     RELEASE=true ./sbt "; + projectJVM/publish; sonatypeReleaseAll"
+     RELEASE=true ./sbt "; + projectJVM/publishSigned; sonatypeReleaseAll"
   fi
 else
   echo "This not a master branch commit. Skipping the release step"
