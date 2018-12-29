@@ -456,6 +456,72 @@ object SQLModel {
   case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false) extends Expression with UnaryNode {
     override def child: SQLModel = expr
   }
+
+  // DDL
+  sealed trait DDL extends SQLModel
+  case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
+    override def children: Seq[SQLModel] = Seq(schema) ++ properties.getOrElse(Seq.empty)
+  }
+  case class SchemaProperty(key: Identifier, value: Expression) extends Expression {
+    override def children: Seq[SQLModel] = Seq(key, value)
+  }
+  case class DropSchema(schema: QName, ifExists: Boolean, mode: DropSchemaMode) extends DDL with UnaryNode {
+    override def child: SQLModel = schema
+  }
+  sealed trait DropSchemaMode
+  case object Cascade  extends DropSchemaMode
+  case object Restrict extends DropSchemaMode
+
+  case class RenameSchema(schema: QName, renameTo: Identifier) extends DDL {
+    override def children: Seq[SQLModel] = Seq(schema, renameTo)
+  }
+  case class CreateTable(table: QName, ifNotExists: Boolean, columnAliases: Option[Seq[Identifier]]) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty)
+  }
+  case class CreateTableAs(table: QName,
+                           ifNotEotExists: Boolean,
+                           columnAliases: Option[Seq[Identifier]],
+                           query: Relation)
+      extends DDL {
+    override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty) ++ Seq(query)
+  }
+  case class DropTable(table: QName, ifExists: Boolean) extends DDL with UnaryNode {
+    override def child: SQLModel = table
+  }
+  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation) extends SQLModel {
+    override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty) ++ Seq(query)
+  }
+  case class Delete(table: QName, where: Option[Expression]) extends SQLModel {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b += table
+      where.map(b += _)
+      b.result()
+    }
+  }
+  case class RenameTable(table: QName, renameTo: QName) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table, renameTo)
+  }
+  case class RenameColumn(table: QName, column: Identifier, renameTo: Identifier) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table, column, renameTo)
+  }
+  case class DropColumn(table: QName, column: Identifier) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table, column)
+  }
+  case class AddColumn(table: QName, columns: Seq[ColumnDef]) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table) ++ columns
+  }
+  case class ColumnDef(columnName: Identifier, tpe: ColumnType) extends Expression {
+    override def children: Seq[SQLModel] = Seq(columnName, tpe)
+  }
+  trait ColumnType extends Expression
+
+  case class CreateView(viewName: QName, replace: Boolean, query: Relation) extends DDL {
+    override def children: Seq[SQLModel] = Seq(viewName, query)
+  }
+  case class DropView(viewName: QName, ifExists: Boolean) extends DDL with UnaryNode {
+    override def child = viewName
+  }
 }
 
 object SQLFunction {

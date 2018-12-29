@@ -53,7 +53,13 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip(s"select 1 / 2")
     roundtrip(s"select 1 * (2 + 4)")
     roundtrip("select 'a' || 'b'")
+  }
 
+  "print DDL" taggedAs working in {
+    roundtrip("create schema a")
+    roundtrip("create schema if not exists a")
+    roundtrip("create schema if not exists a with (p1=v1)")
+    roundtrip("create schema if not exists a with (p1=v1, p2=v2)")
   }
 
   "print TPC-H SQL" in {
@@ -62,7 +68,7 @@ class SQLModelPrinterTest extends AirframeSpec {
     }
   }
 
-  "print TPC-DS SQL" taggedAs ("working") in {
+  "print TPC-DS SQL" in {
     SQLBenchmark.tpcDS.foreach { sql =>
       roundtrip(sql)
     }
