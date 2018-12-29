@@ -43,7 +43,7 @@ object SQLModel {
 
   sealed trait Expression extends SQLModel
 
-  case class ParenthizedExpression(expr: Expression) extends Expression with UnaryNode {
+  case class ParenthesizedExpression(expr: Expression) extends Expression with UnaryNode {
     override def child: SQLModel = expr
   }
 
@@ -73,8 +73,8 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation                           extends SQLModel
-  case class ParenthizedRelation(child: Relation) extends Relation with UnaryNode
+  sealed trait Relation                             extends SQLModel
+  case class ParenthesizedRelation(child: Relation) extends Relation with UnaryNode
   case class AliasedRelation(child: Relation, alias: String, columnNames: Option[Seq[String]])
       extends Relation
       with UnaryNode

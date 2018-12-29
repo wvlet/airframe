@@ -92,7 +92,7 @@ object SQLModelPrinter extends LogSupport {
       case Sort(in, orderBy) =>
         val order = orderBy.map(x => printExpression(x)).mkString(", ")
         s"${printRelation(in)} ORDER BY ${order}"
-      case ParenthizedRelation(r) =>
+      case ParenthesizedRelation(r) =>
         s"(${printRelation(r)})"
       case AliasedRelation(relation, alias, columnNames) =>
         val r = printRelation(relation)
@@ -125,7 +125,7 @@ object SQLModelPrinter extends LogSupport {
     e match {
       case i: Identifier =>
         i.toString
-      case ParenthizedExpression(expr) =>
+      case ParenthesizedExpression(expr) =>
         s"(${printExpression(expr)})"
       case SingleColumn(ex, alias) =>
         val col = printExpression(ex)

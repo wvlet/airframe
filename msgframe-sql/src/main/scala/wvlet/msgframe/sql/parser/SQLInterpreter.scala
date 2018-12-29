@@ -236,7 +236,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   override def visitAliasedRelation(ctx: AliasedRelationContext): Relation = {
     val r: Relation = ctx.relationPrimary() match {
       case p: ParenthesizedRelationContext =>
-        ParenthizedRelation(visit(p.relation()).asInstanceOf[Relation])
+        ParenthesizedRelation(visit(p.relation()).asInstanceOf[Relation])
       //case u: UnnestContext                =>
 //        u.expression().asScala.map(x => expression(x))
       case s: SubqueryRelationContext =>
@@ -410,7 +410,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitParenthesizedExpression(ctx: ParenthesizedExpressionContext): Expression = {
-    ParenthizedExpression(expression(ctx.expression()))
+    ParenthesizedExpression(expression(ctx.expression()))
   }
 
   override def visitSubqueryExpression(ctx: SubqueryExpressionContext): Expression = {
