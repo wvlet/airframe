@@ -3,8 +3,8 @@ val SCALA_2_13 = "2.13.0-M5"
 
 val targetScalaVersions = Seq(SCALA_2_12, SCALA_2_13)
 
-val SCALATEST_VERSION = "3.0.6-SNAP4"
-val SCALACHECK_VERSION = "1.14.0"
+val SCALATEST_VERSION               = "3.0.6-SNAP4"
+val SCALACHECK_VERSION              = "1.14.0"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 
 val AIRFRAME_VERSION = "0.78"
@@ -50,8 +50,7 @@ val buildSettings = Seq[Setting[_]](
   logBuffered in Test := false,
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   sonatypeProfileName := "org.wvlet",
-  licenses += ("Apache-2.0", url(
-    "https://www.apache.org/licenses/LICENSE-2.0.html")),
+  licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/wvlet/msgframe")),
   scmInfo := Some(
     ScmInfo(
@@ -60,10 +59,7 @@ val buildSettings = Seq[Setting[_]](
     )
   ),
   developers := List(
-    Developer(id = "leo",
-              name = "Taro L. Saito",
-              email = "leo@xerial.org",
-              url = url("http://xerial.org/leo"))
+    Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
   // Use sonatype resolvers
   resolvers ++= Seq(
@@ -98,9 +94,7 @@ lazy val scaladoc =
       crossScalaVersions := targetScalaVersions,
       name := "msgframe-scaladoc",
       // compile projects first
-      Defaults.packageTaskSettings(
-        packageDoc in Compile,
-        (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
+      Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
     .aggregate(jvmProjects: _*)
 
@@ -143,11 +137,11 @@ lazy val docs =
       //micrositePushSiteWith := GitHub4s,
       //micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
       micrositePalette ++= Map(
-        "brand-primary" -> "#2582AA",
+        "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",
-        "brand-tertiary" -> "#042F46",
-        "gray-dark" -> "#453E46",
-        "gray" -> "#534F54"
+        "brand-tertiary"  -> "#042F46",
+        "gray-dark"       -> "#453E46",
+        "gray"            -> "#534F54"
       ),
       watchSources += new sbt.internal.io.Source(
         sourceDirectory.value,
