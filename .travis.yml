@@ -20,7 +20,8 @@ matrix:
     before_install:
     - export PATH=${PATH}:./vendor/bundle
     - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      openssl aes-256-cbc -K $encrypted_54ace9f5ec4e_key -iv $encrypted_54ace9f5ec4e_iv -in travis/deploy-msgframe-travis.enc -out travis/deploy-msgframe-travis -d;
+      openssl aes-256-cbc -K $encrypted_54ace9f5ec4e_key -iv $encrypted_54ace9f5ec4e_iv
+      -in travis/deploy-msgframe-travis.enc -out travis/deploy-msgframe-travis -d;
       chmod 600 travis/deploy-msgframe-travis; cp travis/deploy-msgframe-travis $HOME/.ssh/id_rsa;
       fi
     install:
@@ -34,7 +35,8 @@ matrix:
   - env: PROJECT=publish
     jdk: openjdk8
     before_install:
-    - openssl aes-256-cbc -K $encrypted_28e6d45c0467_key -iv $encrypted_28e6d45c0467_iv -in travis/secrets.tar.enc -out travis/secrets.tar -d
+    - openssl aes-256-cbc -K $encrypted_28e6d45c0467_key -iv $encrypted_28e6d45c0467_iv
+      -in travis/secrets.tar.enc -out travis/secrets.tar -d
     script:
     - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
   - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
@@ -51,7 +53,6 @@ matrix:
     script: "./sbt ++$SCALA_VERSION ${PROJECT}/test"
 env:
   global:
-  - secure: RIFt78J2QOrrIdJ+o9qLnuuzrAjRobVpGoXJIFKWQ7k5UnikwLu67Slpil1BT8Bx0NAVb2Hr4BVU8lfzul85SrcPX7JzQDNJ1/djPz9a+kOBzlr5QeZ1RyLaXKwxlTp9OFyQG0gsTnH/Z+qJLop+N+nGvAqUqxXz52VCWeIUTv34+azp/EdjtubiMF6ZP9nElPlt2czb9Jpt/b0CJ9zxdWHTx+A58P0KUc/b1WoLsX5oaxeesP0nh/3YGV7wfy0+PR9OAGr7vceL8ZkJThfxwR5ZUB38+qYcebxN/+myMIMEcbXnIOW5dZIXm4QrSKe/wZ+/veOv07FIRAC/nADuAw8GzVcULG/Xy22WxpbaWZyuCZ30qP8ERYOB3opWH1pU0p+3nk3rvVErzOwpFfEnttq1rn/r3AkT+tajoiBxsoUnBLWrrpJw7uLgoZmm2r4WgpM9TQTs/frzRaMK7dVUWdKzYcIJqp9BBywJq4NUeG3zgLvQ87TdhFHt+iS95TgneKk/5/FbmhgbXDL3VHhOvTIgSGLQyD6jlt2fF6f8kxXkn205pGgyaGK6Dgs4FPKzn2nb7XQEJrJ3hklb5HaKP76nfx9DkiwX23rV24GMGi3vQfVORP9OT8f7ZmcXkFeCcmvmKqVssvAUbLH23bza53Fb9BbAogMu+URviYyeBww=
-  - secure: DAS+lNA/58rBTFvwSoKf256+GQlEAunoFimshc/EEX64DhcVg63y2ZkCzsmmU/lRKo5/V1sxC3OOuDDpVylEqmJIBM7JVAdd96SQeHAAYGBHZYQtBTTFly3zmU96R0R69MpBhy2CjwiRxyqv786iOlkhwGn4xmrSx9Tn122rGHdQ6Yfj1pIc22/3P4HpZmFLDnWgHFsc8rgKwdf4f50OHeU+Q3yUTlLBi94TPqPm7Zbnn36e6UiiFg9MHIpb9+pR2Pc9+1XEJETahaEalA4/qReKgGqMMCTmuNqtMUN7PgNQVOceB7+UvCKA5xB59vNnssYzCwgifQEgaAydwvytgUvs747iUNelDam4XuN1u4oYG9Oq5RPELfuxHRho8qafNKjpdGGiPVCbcc/s9r+ebksKwW3s5Clpdp0JIjV9BXiHUuTX3szEjugb7joIPP3UAe0QPyeX0apuIzl+9E57wIA1/ED/5oAxFBdWQJrrRv+UexPNYjHCItS2+86QDIEAeaGUZ6cPPjOYMs7LT/EdNvSnhIHdh5rrJePf28dB3zpNOSMcCQgtS3o5DRnPy2AQhRaORt5bNTSG3hGkJjuXFbPO8b1jJN8rwx9sl6rV+9j34lvn0hnyMDjv3qVRBY4t3MbRtRFW6+x7TvMJV7RL2esR9m6nQIL/CHeoh1RXO+c=
-  - secure: bzX6xojzRrvb8gEMO1SYGn6JuI0hI/9Cm5+GXuyAARtdZKm+ZiH7UyOv+1o2fHng32GcijNHvbc8nSd5ihXwPo1pNv8P+3O61guj6L7AqgHljC+9xsaWWBIZnvZa7ZrHRGy21U6RKhO7dQGNe9p3nvWR2VTan3ASEp8/JkNUJXwbI1VcvaPm32546mdQ0/h0cpY7IyLSajoYM8aRZ9xK1AQ26MCfNdQW18h7ITU4HhIb8Jeuz7aW9vHYYMLpWxV+5yAsYgnOBqS2qHhCh3KOq14d8mHWwB00vLu8Zmp7hqiwtFtf/L5YE4pgO8ORu2HQOGjOACtni7zl1n7JFTp1dFxv3+RJLRqyC3xPNpXVjhk34WeCih7zCUuf5J/6od1zoDWXiaz1RBXiRIlmTMERA1WF/ZrOOKRHpaz3YwR/oiYjSCcLMZWmkARNYpmyCXDjFQovzFCWYwNcLGBn/ItDSTBVEprpPwnxdalHPxWMKBW5HyK6RJDSeufQod4vpkB1GGdpasR8GvxOOdYvzxcEd9JeAAeSMknT4HNU6NZXyljuzZcUK6nyux+uQsnb8SxtlpDIIhl93OOedqPyknu4Zr8pGFQxmRlOyZOkaO198ubSu2i8eIa8/TnbdLiwRFj5DFpbdht0b1FaaVODqKD5IT87kVO9MRyckSL2RzrEIk4=
-
+  - secure: Ua45vrm1Uwsa68gXscyblSv4kgOuZTwWvcIplhvPNm8C2xh/td7ynOF7x67FlrwvgUI4NTkpt9PQfACMCi4KzGCVKGlmFffgnPqNn57Evt+oro4VqOeie+i3s8MZMOy6oydc7XQo0JJtQmZq47nFMeX9nOPvfvZmVDDUsPrlSzeFoyjSpW3OxKsOIxEYWdgttgmn+uTZcz38KOGNNM5TXm/QECvp0g8Xc3CWMH9RDhGwvhnq9riS0i61O78v2l4L7obZUlna86ul53eAcbM35n0+SQzcEBQ05WdLiU+EGUBgcAuV+unpegdgsXIlnn1f72m1Q+NGxhKeMCZfrpIlSjnrvoAbnh6qKpiPe1vwIpKCK2hqeGT6JxlIODcKPkEjVdxuJYojGoBTg+K9SXATee+UGvdCTVI3JHWSG+QkvGAOHG/9NtkiNYUVEPkWgq+Ar5DEyMgFdffVFWTMjQHp/GYAtMkkMUVw09vZt76vZKJgzlF8jmfYtZo+PK9K+tO8zaSSyrOC7o+ifIT5iScFEJ1ruJNXgry7Z95hOS3lOTOQHuXGIoeEZqQ1cUkLD7CqZdeIiMHmIOkN3r2qSHz347CPapFuSugAr+dnMoIh9kK1Np1iUjknB1dnhN0wrEg+NH+UJUh70ohDLxPoWYRtMbZPgwXobdvRFYSLMbrZ2A8=
+  - secure: Woqz4f1RJT9d/EKyEEUMQN1fchOi1zrQ1MqWGUHa3GYsqQVvqC/lfoUunDpUXHpWq8DXSv0mmm1q6ZMp0JWqB5UT/q3lB9TkXuCqqQUiQRmo3pX/QzSL9Eq185TIFmiSTzUrws32cTDFmwQe+CsVJk6oHpZrdQRKWVI8mTstEQXveETv/20W8eILQbt72QsFKpg8kycV2gKkdJ8kC0o1zKUVVkTIGi6BT4zec6mFqHVS9NOEIsKs8480zQ98kZRcCbzSMyK0yJ3lNRl5hSOxu6+LjLEoh2D4/URd+9GgM0vAmuG80Q0C4MebnkPIMDo0zR2NFh8cQXH/9jr+kUlMG5cHFA9XQW5d1ykYiiTM/3C7GkN2ogwD287EDx218tC5vqfVzJjKp56G2CyqNZDV6fbZ1xoesTd1QEPmp/xJHROYBomppcFTlGgwQJSns2LE5HlRPBHVWosG78wCNTKamRhYAYBSzeeRKavd4Kt0SZJ6OaiWDMjnV8s4VJthzGwDOfvLRTovqvqxV+H0JBu786DBOIusmt1+fXfZmleYRcMY/fmoTyiwM/qRHaxLBuQYfpjZlngR7ASLFmpC3U6dDE4yKULD5cMRNaPvQitoctmVrWjoIbud5ts7ZAo0tUCq8NMFzIzAckkTHltYuVx5HaZVLRaPKYcVUFHdb2Upg0I=
+  - secure: ZkuSs6eZTPuA1GQg24hHAup70rRIzXrdHQCBJU2bf0FjtiC1UkiWRACPLWlLlRg8DUucty7ZnjiRXpe/xt2ZOiWffx/Ws7Wp83ky1PXXnkJ5SG8fJI1q7y4gtQO31V1ivZlSiozXc9Z3T8cFY/DC9fb/lCVS5NVBqx0ruSD2Cj8lbL0DpunPfRuEdK76I1Al/zSHa65Zw6TlnDHzOdcOdxYHKgInRvshKKm30TC98xQ2+Y+DSaIewsGC550RYlFiQnTdVb0Cc/7t2VwFTl3/JnAdu2351iTaeR3ixj2dgMRVtUgnD2vyO78YCqdnUuob5Sc4X3pgavQGOzCwSBg+D7ay8Hc9elghef1oWQqM/v2pKhwOXHCkkjyTaJ8pI8cvn8aVgDdEDEX4OxvU8UsaLs0w41bRH4ufjg0N0PUh0qNwjTqOQEK9EagBK1ma8Wga74U3SXmlXAdta1Gvs+PPER6IAD12iCxzslRk4Mr057b3WAfIzGmqE3Cj3l31o8cMnqK/6cHpguckvrmYQzGZ1t/sOGcHIFTen8S+VDSOmiYIP/73mHzlGJMh9FI27oayVFWcwo0oVTBuUD7AGreQcm35LbqcEMkPG7XR9KiBkqtGiUrrUtwar2x/QlLrXjS2h+71zNhUA3xvzKPKXsUFWUP0ucjUWkfoMZRD0yYtAUk=
