@@ -56,16 +56,19 @@ class SQLModelPrinterTest extends AirframeSpec {
 
   }
 
-  "print TPC-H SQL"  in  {
+  "print TPC-H SQL" in {
     SQLBenchmark.tpcH.foreach { sql =>
       roundtrip(sql)
     }
   }
 
-  "print TPC-DS SQL"taggedAs("working") in {
-    SQLBenchmark.tpcDS.filter { sql => !sql.toLowerCase.contains("rollup") }.foreach { sql =>
-      roundtrip(sql)
-    }
+  "print TPC-DS SQL" taggedAs ("working") in {
+    SQLBenchmark.tpcDS
+      .filter { sql =>
+        !sql.toLowerCase.contains("rollup")
+      }.foreach { sql =>
+        roundtrip(sql)
+      }
   }
 
 }
