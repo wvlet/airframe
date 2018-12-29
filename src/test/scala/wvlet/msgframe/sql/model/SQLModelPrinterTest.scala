@@ -60,6 +60,11 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("create schema if not exists a")
     roundtrip("create schema if not exists a with (p1=v1)")
     roundtrip("create schema if not exists a with (p1=v1, p2=v2)")
+
+    roundtrip("drop schema a")
+    roundtrip("drop schema if exists a")
+    roundtrip("drop schema if exists a cascade")
+    roundtrip("drop schema a restrict")
   }
 
   "print TPC-H SQL" in {
