@@ -49,24 +49,32 @@ trait SQLModel {
   */
 object SQLModel {
 
-  trait Leaf extends SQLModel {
+  trait LeafNode extends SQLModel {
     override def children: Seq[SQLModel] = Seq.empty
   }
 
   trait UnaryNode extends SQLModel {
+    def child: SQLModel
+    override def children = child :: Nil
+  }
 
-    override def children
+  trait BinaryNode extends SQLModel {
+    def left: SQLModel
+    def right: SQLModel
+    override def children = Seq(left, right)
   }
 
   sealed trait Expression extends SQLModel
 
-  case class ParenthizedExpression(expr: Expression) extends Expression
+  case class ParenthizedExpression(expr: Expression) extends Expression with UnaryNode {
+    override def child: SQLModel = expr
+  }
 
   // Qualified name (QName), such as table and column names
-  case class QName(parts: Seq[String]) extends Expression {
+  case class QName(parts: Seq[String]) extends Expression with LeafNode {
     override def toString = parts.mkString(".")
   }
-  sealed trait Identifier extends Expression
+  sealed trait Identifier extends Expression with LeafNode
   case class DigitId(value: Int) extends Identifier {
     override def toString: String = value.toString
   }
@@ -88,20 +96,38 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation                                                                           extends SQLModel
-  case class ParenthizedRelation(relation: Relation)                                              extends Relation
-  case class AliasedRelation(relation: Relation, alias: String, columnNames: Option[Seq[String]]) extends Relation
-  case class Values(rows: Seq[Expression])                                                        extends Relation
-  case class Table(name: QName)                                                                   extends Relation
-  case class RawSQL(sql: String)                                                                  extends Relation
+  sealed trait Relation                           extends SQLModel
+  case class ParenthizedRelation(child: Relation) extends Relation with UnaryNode
+  case class AliasedRelation(child: Relation, alias: String, columnNames: Option[Seq[String]])
+      extends Relation
+      with UnaryNode
+
+  case class Values(rows: Seq[Expression]) extends Relation {
+    override def children: Seq[SQLModel] = rows
+  }
+  case class Table(name: QName)  extends Relation with LeafNode
+  case class RawSQL(sql: String) extends Relation with LeafNode
   //case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
-  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation
-  case class Limit(in: Relation, limit: Int)            extends Relation
+  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation with UnaryNode {
+    override def child: SQLModel = in
+  }
+  case class Limit(in: Relation, limit: Int) extends Relation with UnaryNode {
+    override def child: SQLModel = in
+  }
   case class Select(isDistinct: Boolean = false,
                     selectItems: Seq[SelectItem],
                     in: Option[Relation],
                     whereExpr: Option[Expression])
       extends Relation {
+
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b ++= selectItems
+      in.map(b += _)
+      whereExpr.map(b += _)
+      b.result()
+    }
+
     override def toString =
       s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct},where:${whereExpr})"
   }
@@ -111,14 +137,38 @@ object SQLModel {
                        groupingKeys: Seq[Expression],
                        having: Option[Expression])
       extends Relation {
+
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b ++= selectItems
+      in.map(b +=)
+      whereExpr.map(b += _)
+      b ++= groupingKeys
+      having.map(b += _)
+      b.result()
+    }
+
     override def toString =
       s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in},where:${whereExpr}))"
   }
 
-  case class Query(withQuery: With, body: Relation) extends Relation
+  case class Query(withQuery: With, body: Relation) extends Relation {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b ++= withQuery.children
+      b += body
+      b.result()
+    }
+  }
 
-  case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]]) extends SQLModel
-  case class With(recursive: Boolean, queries: Seq[WithQuery])                                  extends SQLModel
+  case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]])
+      extends SQLModel
+      with UnaryNode {
+    override def child: SQLModel = query
+  }
+  case class With(recursive: Boolean, queries: Seq[WithQuery]) extends SQLModel {
+    override def children: Seq[SQLModel] = queries.flatMap(_.children)
+  }
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation
@@ -231,43 +281,75 @@ object SQLModel {
                           filter: Option[Expression],
                           window: Option[Window])
       extends Expression {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      b ++= args
+      filter.map(b += _)
+      window.map(b ++= _.children)
+      b.result()
+    }
+
     def functionName: String = name.toString.toLowerCase(Locale.US)
     override def toString    = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
   }
-  case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression
+  case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression with UnaryNode {
+    override def child: SQLModel = body
+  }
 
-  class Ref(name: QName) extends Expression
+  class Ref(name: QName) extends Expression with LeafNode
 
   // Conditional expression
   sealed trait ConditionalExpression                              extends Expression
-  case object NoOp                                                extends ConditionalExpression
-  case class Eq(a: Expression, b: Expression)                     extends ConditionalExpression
-  case class NotEq(a: Expression, b: Expression)                  extends ConditionalExpression
-  case class And(a: Expression, b: Expression)                    extends ConditionalExpression
-  case class Or(a: Expression, b: Expression)                     extends ConditionalExpression
-  case class Not(expr: Expression)                                extends ConditionalExpression
-  case class LessThan(a: Expression, b: Expression)               extends ConditionalExpression
-  case class LessThanOrEq(a: Expression, b: Expression)           extends ConditionalExpression
-  case class GreaterThan(a: Expression, b: Expression)            extends ConditionalExpression
-  case class GreaterThanOrEq(a: Expression, b: Expression)        extends ConditionalExpression
-  case class Between(e: Expression, a: Expression, b: Expression) extends ConditionalExpression
-  case class IsNull(a: Expression)                                extends ConditionalExpression
-  case class IsNotNull(a: Expression)                             extends ConditionalExpression
-  case class In(a: Expression, list: Seq[Expression])             extends ConditionalExpression
-  case class NotIn(a: Expression, list: Seq[Expression])          extends ConditionalExpression
-  case class InSubQuery(a: Expression, in: Relation)              extends ConditionalExpression
-  case class NotInSubQuery(a: Expression, in: Relation)           extends ConditionalExpression
-  case class Like(a: Expression, e: Expression)                   extends ConditionalExpression
-  case class NotLike(a: Expression, e: Expression)                extends ConditionalExpression
-  case class DistinctFrom(a: Expression, e: Expression)           extends ConditionalExpression
-  case class NotDistinctFrom(a: Expression, e: Expression)        extends ConditionalExpression
+  case object NoOp                                                extends ConditionalExpression with LeafNode
+  case class Eq(left: Expression, right: Expression)              extends ConditionalExpression with BinaryNode
+  case class NotEq(left: Expression, right: Expression)           extends ConditionalExpression with BinaryNode
+  case class And(left: Expression, right: Expression)             extends ConditionalExpression with BinaryNode
+  case class Or(left: Expression, right: Expression)              extends ConditionalExpression with BinaryNode
+  case class Not(child: Expression)                               extends ConditionalExpression with UnaryNode
+  case class LessThan(left: Expression, right: Expression)        extends ConditionalExpression with BinaryNode
+  case class LessThanOrEq(left: Expression, right: Expression)    extends ConditionalExpression with BinaryNode
+  case class GreaterThan(left: Expression, right: Expression)     extends ConditionalExpression with BinaryNode
+  case class GreaterThanOrEq(left: Expression, right: Expression) extends ConditionalExpression with BinaryNode
+  case class Between(e: Expression, a: Expression, b: Expression) extends ConditionalExpression {
+    override def children: Seq[SQLModel] = Seq(e, a, b)
+  }
+  case class IsNull(child: Expression)    extends ConditionalExpression with UnaryNode
+  case class IsNotNull(child: Expression) extends ConditionalExpression with UnaryNode
+  case class In(a: Expression, list: Seq[Expression]) extends ConditionalExpression {
+    override def children: Seq[SQLModel] = Seq(a) ++ list
+  }
+  case class NotIn(a: Expression, list: Seq[Expression]) extends ConditionalExpression {
+    override def children: Seq[SQLModel] = Seq(a) ++ list
+  }
+  case class InSubQuery(a: Expression, in: Relation) extends ConditionalExpression {
+    override def children: Seq[SQLModel] = Seq(a, in)
+  }
+  case class NotInSubQuery(a: Expression, in: Relation) extends ConditionalExpression {
+    override def children: Seq[SQLModel] = Seq(a, in)
+  }
+  case class Like(left: Expression, right: Expression)            extends ConditionalExpression with BinaryNode
+  case class NotLike(left: Expression, right: Expression)         extends ConditionalExpression with BinaryNode
+  case class DistinctFrom(left: Expression, right: Expression)    extends ConditionalExpression with BinaryNode
+  case class NotDistinctFrom(left: Expression, right: Expression) extends ConditionalExpression with BinaryNode
 
-  case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression
+  case class IfExpr(cond: ConditionalExpression, onTrue: Expression, onFalse: Expression) extends Expression {
+    override def children: Seq[SQLModel] = Seq(cond, onTrue, onFalse)
+  }
   case class CaseExpr(operand: Option[Expression], whenClauses: Seq[WhenClause], defaultValue: Option[Expression])
-      extends Expression
-  case class WhenClause(condition: Expression, result: Expression) extends Expression
+      extends Expression {
+    override def children: Seq[SQLModel] = {
+      val b = Seq.newBuilder[SQLModel]
+      operand.map(b += _)
+      b ++= whenClauses
+      defaultValue.map(b += _)
+      b.result()
+    }
+  }
+  case class WhenClause(condition: Expression, result: Expression) extends Expression {
+    override def children: Seq[SQLModel] = Seq(condition, result)
+  }
 
-  case class Exists(subQuery: Expression) extends Expression
+  case class Exists(child: Expression) extends Expression with UnaryNode
 
   // Arithmetic expr
   abstract sealed class BinaryExprType(val symbol: String)
@@ -280,14 +362,15 @@ object SQLModel {
   sealed trait ArithmeticExpression extends Expression
   case class ArithmeticBinaryExpr(exprType: BinaryExprType, left: Expression, right: Expression)
       extends ArithmeticExpression
-  case class ArithmeticUnaryExpr(sign: Sign, value: Expression) extends ArithmeticExpression
+      with BinaryNode
+  case class ArithmeticUnaryExpr(sign: Sign, child: Expression) extends ArithmeticExpression with UnaryNode
 
   abstract sealed class Sign(val symbol: String)
   case object Positive extends Sign("+")
   case object Negative extends Sign("-")
 
   // Set quantifier
-  sealed trait SetQuantifier extends Expression {
+  sealed trait SetQuantifier extends Expression with LeafNode {
     def isDistinct: Boolean
   }
   case object All extends SetQuantifier {
@@ -298,7 +381,7 @@ object SQLModel {
   }
 
   // Literal
-  sealed trait Literal extends Expression
+  sealed trait Literal extends Expression with LeafNode
   case object NullLiteral extends Literal {
     override def toString: String = "NULL"
   }
@@ -342,7 +425,7 @@ object SQLModel {
   }
   case class BinaryLiteral(binary: String) extends Literal
 
-  sealed trait IntervalField extends SQLModel
+  sealed trait IntervalField extends SQLModel with LeafNode
   case object Year           extends IntervalField
   case object Month          extends IntervalField
   case object Day            extends IntervalField
@@ -351,8 +434,10 @@ object SQLModel {
   case object Second         extends IntervalField
 
   // Value constructor
-  case class ArrayConstructor(values: Seq[Expression])                        extends Expression
-  abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends Expression
+  case class ArrayConstructor(values: Seq[Expression]) extends Expression {
+    override def children: Seq[SQLModel] = values
+  }
+  abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends Expression with LeafNode
   case class CurrentTime(precision: Option[Int])                              extends CurrentTimeBase("current_time", precision)
   case class CurrentDate(precision: Option[Int])                              extends CurrentTimeBase("current_date", precision)
   case class CurrentTimestamp(precision: Option[Int])                         extends CurrentTimeBase("current_timestamp", precision)
@@ -360,10 +445,14 @@ object SQLModel {
   case class CurrentLocalTimeStamp(precision: Option[Int])                    extends CurrentTimeBase("localtimestamp", precision)
 
   // 1-origin parameter
-  case class Parameter(index: Int)               extends Expression
-  case class SubQueryExpression(query: Relation) extends Expression
+  case class Parameter(index: Int) extends Expression with LeafNode
+  case class SubQueryExpression(query: Relation) extends Expression with UnaryNode {
+    override def child: SQLModel = query
+  }
 
-  case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false) extends Expression
+  case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false) extends Expression with UnaryNode {
+    override def child: SQLModel = expr
+  }
 }
 
 object SQLFunction {
