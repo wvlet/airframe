@@ -20,6 +20,7 @@ object SQLModelPrinter extends LogSupport {
   def print(m: SQLModel): String = {
     m match {
       case r: Relation   => printRelation(r)
+      case d: DDL        => printDDL(d)
       case e: Expression => printExpression(e)
       case other         => unknown(other)
     }
@@ -121,6 +122,15 @@ object SQLModelPrinter extends LogSupport {
     }
   }
 
+  def printDDL(e: DDL): String = {
+    e match {
+      case CreateSchema(name, ifNotExists, propsOpt) =>
+        val e = if (ifNotExists) "IF NOT EXISTS " else ""
+        val w = propsOpt.map(props => s" WITH (${props.map(p => print(p)).mkString(", ")})").getOrElse("")
+        s"CREATE SCHEMA ${e}${name}${w}"
+    }
+  }
+
   def printExpression(e: Expression): String = {
     e match {
       case i: Identifier =>
@@ -194,6 +204,8 @@ object SQLModelPrinter extends LogSupport {
         s.result().mkString(" ")
       case w: WindowFrame =>
         w.toString
+      case SchemaProperty(k, v) =>
+        s"${k} = ${v}"
       case other => unknown(other)
     }
   }
