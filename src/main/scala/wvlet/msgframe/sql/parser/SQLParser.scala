@@ -18,7 +18,7 @@ import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model.SQLModel
 
 /**
-  *
+  * SQL -> Token -> ANTLR parse tree -> SQLModel
   */
 object SQLParser extends LogSupport {
 
