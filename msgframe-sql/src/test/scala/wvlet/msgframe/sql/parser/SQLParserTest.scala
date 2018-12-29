@@ -17,6 +17,7 @@ import java.io.File
 
 import wvlet.airframe.AirframeSpec
 import wvlet.log.io.IOUtil
+import wvlet.msgframe.sql.SQLBenchmark
 
 /**
   *
@@ -149,17 +150,13 @@ class SQLParserTest extends AirframeSpec {
     }
 
     "parse tpc-h queries" taggedAs ("tpc-h") in {
-      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
-      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
-        val sql = IOUtil.readAsString(f.getPath)
+      SQLBenchmark.tpcH.foreach{ sql =>
         parse(sql)
       }
     }
 
     "parse tpc-ds queries" taggedAs ("tpc-ds") in {
-      val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-ds")
-      for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
-        val sql = IOUtil.readAsString(f.getPath)
+      SQLBenchmark.tpcDS.foreach { sql =>
         parse(sql)
       }
     }
