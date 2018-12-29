@@ -1,0 +1,15 @@
+*~
+build
+.bundle
+vendor/bundle
+*.iml
+.idea
+atlassian-ide-plugin.xml
+target
+result
+log-test.properties
+.DS_Store
+node_modules
+package-lock.json
+pgdata
+travis
