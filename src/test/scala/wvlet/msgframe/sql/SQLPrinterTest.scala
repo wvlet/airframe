@@ -11,12 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.stream.sql.parser
+package wvlet.msgframe.sql
+
 import java.io.File
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.stream.sql.SQLPrinter
 import wvlet.log.io.IOUtil
+import wvlet.msgframe.sql.parser.SQLParser
 
 /**
   *
@@ -57,16 +58,16 @@ class SQLPrinterTest extends AirframeSpec {
 
   }
 
-  "print TPC-H SQL" in {
-    val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-h")
+  "print TPC-H SQL"  in  {
+    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-h")
     for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
       val sql = IOUtil.readAsString(f.getPath)
       roundtrip(sql)
     }
   }
 
-  "print TPC-DS SQL" in {
-    val dir = new File("airframe-stream/src/test/resources/wvlet/airframe/stream/sql/tpc-ds")
+  "print TPC-DS SQL"taggedAs("working") in {
+    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-ds")
     for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
       val sql = IOUtil.readAsString(f.getPath)
       if (!sql.toLowerCase.contains("rollup")) { // TODO Support grouping sets operation

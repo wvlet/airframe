@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.stream.sql.parser
+package wvlet.msgframe.sql.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
-import wvlet.airframe.stream.spi.SQLModel
-import wvlet.airframe.stream.spi.SQLModel._
-import wvlet.airframe.stream.sql.parser.SqlBaseParser._
+import wvlet.msgframe.sql.model.SQLModel._
+import wvlet.msgframe.sql.parser.SqlBaseParser._
 import wvlet.log.{LogSupport, Logger}
+import wvlet.msgframe.sql.model.SQLModel
 
 object SQLInterpreter {
   private[parser] def unquote(s: String): String = {
