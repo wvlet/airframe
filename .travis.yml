@@ -20,8 +20,7 @@ matrix:
     before_install:
     - export PATH=${PATH}:./vendor/bundle
     - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
-      openssl aes-256-cbc -K $encrypted_54ace9f5ec4e_key -iv $encrypted_54ace9f5ec4e_iv
-      -in travis/deploy-msgframe-travis.enc -out travis/deploy-msgframe-travis -d;
+      openssl aes-256-cbc -K $encrypted_28e6d45c0467_key -iv $encrypted_28e6d45c0467_iv -in travis/deploy-msgframe-travis.enc -out travis/deploy-msgframe-travis -d;
       chmod 600 travis/deploy-msgframe-travis; cp travis/deploy-msgframe-travis $HOME/.ssh/id_rsa;
       fi
     install:
