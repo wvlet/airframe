@@ -128,6 +128,17 @@ object SQLModelPrinter extends LogSupport {
         val e = if (ifNotExists) "IF NOT EXISTS " else ""
         val w = propsOpt.map(props => s" WITH (${props.map(p => print(p)).mkString(", ")})").getOrElse("")
         s"CREATE SCHEMA ${e}${name}${w}"
+      case DropSchema(name, ifExists, cascade) =>
+        val s = Seq.newBuilder[String]
+        s += "DROP SCHEMA"
+        if (ifExists) {
+          s += "IF EXISTS"
+        }
+        s += name.toString
+        if (cascade) {
+          s += "CASCADE"
+        }
+        s.result().mkString(" ")
     }
   }
 
