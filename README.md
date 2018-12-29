@@ -12,6 +12,9 @@
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.msgframe%22%20AND%20a:%22msgframe_2.12%22
 
 ## Resources
+
+(To be written)
+
 - [Documentation](https://wvlet.org/msgframe/docs)
 - [Release Notes](https://wvlet.org/msgframe/docs/release-notes.html)
 
