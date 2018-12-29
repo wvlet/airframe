@@ -11,8 +11,12 @@ object SQLBenchmark {
 
   def tpcDS: Seq[String] = {
     val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-ds")
-    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
+    val sqls = for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
       IOUtil.readAsString(f.getPath)
+    }
+    sqls.filter { sql =>
+      // TODO support rollup operator
+      !sql.toLowerCase.contains("rollup")
     }
   }
 
@@ -22,5 +26,4 @@ object SQLBenchmark {
       IOUtil.readAsString(f.getPath)
     }
   }
-
 }
