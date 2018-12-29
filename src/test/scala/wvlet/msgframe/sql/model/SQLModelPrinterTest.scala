@@ -63,12 +63,9 @@ class SQLModelPrinterTest extends AirframeSpec {
   }
 
   "print TPC-DS SQL" taggedAs ("working") in {
-    SQLBenchmark.tpcDS
-      .filter { sql =>
-        !sql.toLowerCase.contains("rollup")
-      }.foreach { sql =>
-        roundtrip(sql)
-      }
+    SQLBenchmark.tpcDS.foreach { sql =>
+      roundtrip(sql)
+    }
   }
 
 }
