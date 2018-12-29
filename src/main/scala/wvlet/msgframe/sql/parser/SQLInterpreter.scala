@@ -675,4 +675,16 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     ArrayConstructor(elems)
   }
 
+  override def visitCreateSchema(ctx: CreateSchemaContext): SQLModel = {
+    val schemaName  = QName(ctx.qualifiedName().getText)
+    val ifNotExists = Option(ctx.EXISTS()).map(_ => true).getOrElse(false)
+    val props = Option(ctx.properties())
+      .map(_.property().asScala.map { p =>
+        val key   = visitIdentifier(p.identifier())
+        val value = expression(p.expression())
+        SchemaProperty(key, value)
+      }.toSeq)
+    CreateSchema(schemaName, ifNotExists, props)
+  }
+
 }
