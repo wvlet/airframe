@@ -150,7 +150,7 @@ class SQLParserTest extends AirframeSpec {
     }
 
     "parse tpc-h queries" taggedAs ("tpc-h") in {
-      SQLBenchmark.tpcH.foreach{ sql =>
+      SQLBenchmark.tpcH.foreach { sql =>
         parse(sql)
       }
     }
