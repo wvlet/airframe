@@ -34,9 +34,6 @@ matrix:
       cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
   - env: PROJECT=publish
     jdk: openjdk8
-    before_install:
-    - openssl aes-256-cbc -K $encrypted_28e6d45c0467_key -iv $encrypted_28e6d45c0467_iv
-      -in travis/secrets.tar.enc -out travis/secrets.tar -d
     script:
     - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
   - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
