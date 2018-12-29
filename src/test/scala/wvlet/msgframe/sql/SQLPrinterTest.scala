@@ -59,20 +59,14 @@ class SQLPrinterTest extends AirframeSpec {
   }
 
   "print TPC-H SQL"  in  {
-    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-h")
-    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
-      val sql = IOUtil.readAsString(f.getPath)
+    SQLBenchmark.tpcH.foreach { sql =>
       roundtrip(sql)
     }
   }
 
   "print TPC-DS SQL"taggedAs("working") in {
-    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-ds")
-    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) {
-      val sql = IOUtil.readAsString(f.getPath)
-      if (!sql.toLowerCase.contains("rollup")) { // TODO Support grouping sets operation
-        roundtrip(sql)
-      }
+    SQLBenchmark.tpcDS.filter { sql => !sql.toLowerCase.contains("rollup") }.foreach { sql =>
+      roundtrip(sql)
     }
   }
 
