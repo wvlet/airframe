@@ -1,0 +1,54 @@
+sudo: false
+cache:
+  directories:
+  - "$HOME/.ivy2/cache"
+  - "$HOME/.sbt"
+  - "$HOME/.coursier"
+  - "$HOME/nvm"
+before_cache:
+- find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+- find $HOME/.sbt        -name "*.lock"               -print -delete
+- rm -rf $HOME/.sbt/ghpages
+language: scala
+matrix:
+  include:
+  - env: PROJECT=code-format
+    jdk: openjdk8
+    script: "./scalafmt --test"
+  - env: PROJECT=docs
+    jdk: openjdk8
+    before_install:
+    - export PATH=${PATH}:./vendor/bundle
+    - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      openssl aes-256-cbc -K $encrypted_54ace9f5ec4e_key -iv $encrypted_54ace9f5ec4e_iv -in travis/deploy-msgframe-travis.enc -out travis/deploy-msgframe-travis -d;
+      chmod 600 travis/deploy-msgframe-travis; cp travis/deploy-msgframe-travis $HOME/.ssh/id_rsa;
+      fi
+    install:
+    - rvm use 2.4.5 --install --fuzzy
+    - gem update --system
+    - gem install sass
+    - gem install jekyll -v 3.2.1
+    script:
+    - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
+      cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
+  - env: PROJECT=publish
+    jdk: openjdk8
+    script:
+    - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
+  - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
+    jdk: openjdk8
+    script:
+    - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
+    - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
+  - env: SCALA_VERSION=2.13.0-M5 PROJECT=projectJVM2_13
+    jdk: openjdk8
+    script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly *"
+  - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
+    jdk: openjdk11
+    before_script: psql -c 'create database travis_ci_test;' -U postgres
+    script: "./sbt ++$SCALA_VERSION ${PROJECT}/test"
+env:
+  global:
+  - secure: RIFt78J2QOrrIdJ+o9qLnuuzrAjRobVpGoXJIFKWQ7k5UnikwLu67Slpil1BT8Bx0NAVb2Hr4BVU8lfzul85SrcPX7JzQDNJ1/djPz9a+kOBzlr5QeZ1RyLaXKwxlTp9OFyQG0gsTnH/Z+qJLop+N+nGvAqUqxXz52VCWeIUTv34+azp/EdjtubiMF6ZP9nElPlt2czb9Jpt/b0CJ9zxdWHTx+A58P0KUc/b1WoLsX5oaxeesP0nh/3YGV7wfy0+PR9OAGr7vceL8ZkJThfxwR5ZUB38+qYcebxN/+myMIMEcbXnIOW5dZIXm4QrSKe/wZ+/veOv07FIRAC/nADuAw8GzVcULG/Xy22WxpbaWZyuCZ30qP8ERYOB3opWH1pU0p+3nk3rvVErzOwpFfEnttq1rn/r3AkT+tajoiBxsoUnBLWrrpJw7uLgoZmm2r4WgpM9TQTs/frzRaMK7dVUWdKzYcIJqp9BBywJq4NUeG3zgLvQ87TdhFHt+iS95TgneKk/5/FbmhgbXDL3VHhOvTIgSGLQyD6jlt2fF6f8kxXkn205pGgyaGK6Dgs4FPKzn2nb7XQEJrJ3hklb5HaKP76nfx9DkiwX23rV24GMGi3vQfVORP9OT8f7ZmcXkFeCcmvmKqVssvAUbLH23bza53Fb9BbAogMu+URviYyeBww=
+  - secure: DAS+lNA/58rBTFvwSoKf256+GQlEAunoFimshc/EEX64DhcVg63y2ZkCzsmmU/lRKo5/V1sxC3OOuDDpVylEqmJIBM7JVAdd96SQeHAAYGBHZYQtBTTFly3zmU96R0R69MpBhy2CjwiRxyqv786iOlkhwGn4xmrSx9Tn122rGHdQ6Yfj1pIc22/3P4HpZmFLDnWgHFsc8rgKwdf4f50OHeU+Q3yUTlLBi94TPqPm7Zbnn36e6UiiFg9MHIpb9+pR2Pc9+1XEJETahaEalA4/qReKgGqMMCTmuNqtMUN7PgNQVOceB7+UvCKA5xB59vNnssYzCwgifQEgaAydwvytgUvs747iUNelDam4XuN1u4oYG9Oq5RPELfuxHRho8qafNKjpdGGiPVCbcc/s9r+ebksKwW3s5Clpdp0JIjV9BXiHUuTX3szEjugb7joIPP3UAe0QPyeX0apuIzl+9E57wIA1/ED/5oAxFBdWQJrrRv+UexPNYjHCItS2+86QDIEAeaGUZ6cPPjOYMs7LT/EdNvSnhIHdh5rrJePf28dB3zpNOSMcCQgtS3o5DRnPy2AQhRaORt5bNTSG3hGkJjuXFbPO8b1jJN8rwx9sl6rV+9j34lvn0hnyMDjv3qVRBY4t3MbRtRFW6+x7TvMJV7RL2esR9m6nQIL/CHeoh1RXO+c=
+  - secure: bzX6xojzRrvb8gEMO1SYGn6JuI0hI/9Cm5+GXuyAARtdZKm+ZiH7UyOv+1o2fHng32GcijNHvbc8nSd5ihXwPo1pNv8P+3O61guj6L7AqgHljC+9xsaWWBIZnvZa7ZrHRGy21U6RKhO7dQGNe9p3nvWR2VTan3ASEp8/JkNUJXwbI1VcvaPm32546mdQ0/h0cpY7IyLSajoYM8aRZ9xK1AQ26MCfNdQW18h7ITU4HhIb8Jeuz7aW9vHYYMLpWxV+5yAsYgnOBqS2qHhCh3KOq14d8mHWwB00vLu8Zmp7hqiwtFtf/L5YE4pgO8ORu2HQOGjOACtni7zl1n7JFTp1dFxv3+RJLRqyC3xPNpXVjhk34WeCih7zCUuf5J/6od1zoDWXiaz1RBXiRIlmTMERA1WF/ZrOOKRHpaz3YwR/oiYjSCcLMZWmkARNYpmyCXDjFQovzFCWYwNcLGBn/ItDSTBVEprpPwnxdalHPxWMKBW5HyK6RJDSeufQod4vpkB1GGdpasR8GvxOOdYvzxcEd9JeAAeSMknT4HNU6NZXyljuzZcUK6nyux+uQsnb8SxtlpDIIhl93OOedqPyknu4Zr8pGFQxmRlOyZOkaO198ubSu2i8eIa8/TnbdLiwRFj5DFpbdht0b1FaaVODqKD5IT87kVO9MRyckSL2RzrEIk4=
