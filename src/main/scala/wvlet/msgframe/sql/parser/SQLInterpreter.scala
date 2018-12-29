@@ -676,7 +676,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitCreateSchema(ctx: CreateSchemaContext): SQLModel = {
-    val schemaName  = QName(ctx.qualifiedName().getText)
+    val schemaName  = visitQualifiedName(ctx.qualifiedName())
     val ifNotExists = Option(ctx.EXISTS()).map(_ => true).getOrElse(false)
     val props = Option(ctx.properties())
       .map(_.property().asScala.map { p =>
@@ -685,6 +685,14 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         SchemaProperty(key, value)
       }.toSeq)
     CreateSchema(schemaName, ifNotExists, props)
+  }
+
+  override def visitDropSchema(ctx: DropSchemaContext): SQLModel = {
+    val schemaName = visitQualifiedName(ctx.qualifiedName())
+    val ifExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val cascade =
+      Option(ctx.CASCADE()).map(x => true).getOrElse(false)
+    DropSchema(schemaName, ifExists, cascade)
   }
 
 }

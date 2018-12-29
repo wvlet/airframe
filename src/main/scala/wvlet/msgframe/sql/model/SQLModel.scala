@@ -465,12 +465,9 @@ object SQLModel {
   case class SchemaProperty(key: Identifier, value: Expression) extends Expression {
     override def children: Seq[SQLModel] = Seq(key, value)
   }
-  case class DropSchema(schema: QName, ifExists: Boolean, mode: DropSchemaMode) extends DDL with UnaryNode {
+  case class DropSchema(schema: QName, ifExists: Boolean, cascade: Boolean) extends DDL with UnaryNode {
     override def child: SQLModel = schema
   }
-  sealed trait DropSchemaMode
-  case object Cascade  extends DropSchemaMode
-  case object Restrict extends DropSchemaMode
 
   case class RenameSchema(schema: QName, renameTo: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(schema, renameTo)
