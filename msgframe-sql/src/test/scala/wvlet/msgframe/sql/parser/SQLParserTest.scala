@@ -13,10 +13,7 @@
  */
 package wvlet.msgframe.sql.parser
 
-import java.io.File
-
 import wvlet.airframe.AirframeSpec
-import wvlet.log.io.IOUtil
 import wvlet.msgframe.sql.SQLBenchmark
 
 /**
@@ -25,8 +22,8 @@ import wvlet.msgframe.sql.SQLBenchmark
 class SQLParserTest extends AirframeSpec {
 
   def parse(sql: String): Unit = {
+    trace(sql)
     val m = SQLParser.parse(sql)
-    info(m)
   }
 
   "SQLParser" should {
@@ -34,7 +31,7 @@ class SQLParserTest extends AirframeSpec {
       parse("select * from a") // Query(Seq(AllColumns(None)), false, Some(Table(QName("a"))))
       parse("select * from a where time > 10")
       parse("select * from a where time < 10")
-      parse("select * from a where time < =10")
+      parse("select * from a where time <= 10")
       parse("select * from a where id = 'xxxx'")
       parse("select * from a where time >= 10 and time < 20")
       parse("select * from a where id is null")
@@ -100,19 +97,19 @@ class SQLParserTest extends AirframeSpec {
       parse("select `a`")
       parse("select \"a\"")
 
-      parse("select rank() over (partition by a order by b desc range between unbounded preceding row and current row)")
+      parse("select rank() over (partition by a order by b desc range between unbounded preceding  and current row)")
       parse("select rank() over (partition by a order by b desc range between current row and unbounded following)")
 
-      parse("select rank() over (partition by a order by b desc rows between unbounded preceding row and current row)")
+      parse("select rank() over (partition by a order by b desc rows between unbounded preceding  and current row)")
       parse("select rank() over (partition by a order by b desc rows between current row and unbounded following)")
       parse("select rank() over (partition by a order by b desc rows between current row and 1 following)")
       parse("select rank() over (partition by a order by b desc rows between current row and 1 preceding)")
       parse("select rank() over (partition by a order by b desc)")
       parse("""select * from (select * from t) as t(a, "b", `c`)""")
-      parse("""with t(a, "b", `c`) as (select 1, 2, 3) as t select * from t""")
+      parse("""with t(a, "b", `c`) as (select 1, 2, 3) select * from t""")
 
       parse("select * from (select 1 limit 1) as a")
-      parse("select * from (a right join b) as c")
+      parse("select * from (a right join b on a.id = b.id) as c")
 
       parse("""(
           |select c_last_name,c_first_name,sum(cs_quantity*cs_list_price) sales
@@ -145,7 +142,7 @@ class SQLParserTest extends AirframeSpec {
           |         and ws_item_sk in (select item_sk from frequent_ss_items)
           |         and ws_bill_customer_sk in (select c_customer_sk from best_ss_customer)
           |         and ws_bill_customer_sk = c_customer_sk
-          |       group by c_last_name,c_first_name))
+          |       group by c_last_name,c_first_name)
         """.stripMargin)
     }
 
