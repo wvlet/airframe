@@ -223,7 +223,10 @@ object SQLModelPrinter extends LogSupport {
         w.toString
       case SchemaProperty(k, v) =>
         s"${k} = ${v}"
-      case other => unknown(other)
+      case ColumnDef(name, tpe) =>
+        s"${printExpression(name)} ${printExpression(tpe)}"
+      case ColumnType(tpe) => tpe
+      case other           => unknown(other)
     }
   }
   def printLiteral(l: Literal): String = {
