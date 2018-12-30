@@ -182,6 +182,36 @@ object SQLModelPrinter extends LogSupport {
         }
         b += print(table)
         b.result().mkString(" ")
+      case RenameTable(from, to) =>
+        val b = seqBuilder
+        b += "ALTER TABLE"
+        b += print(from)
+        b += "RENAME TO"
+        b += print(to)
+        b.result().mkString(" ")
+      case RenameColumn(table, from, to) =>
+        val b = seqBuilder
+        b += "ALTER TABLE"
+        b += print(table)
+        b += "RENAME COLUMN"
+        b += print(from)
+        b += "TO"
+        b += print(to)
+        b.result().mkString(" ")
+      case DropColumn(table, col) =>
+        val b = seqBuilder
+        b += "ALTER TABLE"
+        b += print(table)
+        b += "DROP COLUMN"
+        b += print(col)
+        b.result().mkString(" ")
+      case AddColumn(table, colDef) =>
+        val b = seqBuilder
+        b += "ALTER TABLE"
+        b += print(table)
+        b += "ADD COLUMN"
+        b += print(colDef)
+        b.result().mkString(" ")
     }
   }
 

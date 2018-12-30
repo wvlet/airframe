@@ -760,4 +760,28 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     Delete(table, cond)
   }
 
+  override def visitRenameTable(ctx: RenameTableContext): SQLModel = {
+    val from = visitQualifiedName(ctx.qualifiedName(0))
+    val to   = visitQualifiedName(ctx.qualifiedName(1))
+    RenameTable(from, to)
+  }
+
+  override def visitRenameColumn(ctx: RenameColumnContext): SQLModel = {
+    val table = visitQualifiedName(ctx.tableName)
+    val from  = visitIdentifier(ctx.from)
+    val to    = visitIdentifier(ctx.to)
+    RenameColumn(table, from, to)
+  }
+
+  override def visitDropColumn(ctx: DropColumnContext): SQLModel = {
+    val table = visitQualifiedName(ctx.tableName)
+    val c     = visitIdentifier(ctx.column)
+    DropColumn(table, c)
+  }
+
+  override def visitAddColumn(ctx: AddColumnContext): SQLModel = {
+    val table  = visitQualifiedName(ctx.tableName)
+    val coldef = visitColumnDefinition(ctx.column)
+    AddColumn(table, coldef)
+  }
 }
