@@ -18,6 +18,7 @@ import java.util.Locale
 import wvlet.msgframe.sql.model.SQLModel.Expression
 
 trait SQLModel {
+  def modelName = this.getClass.getSimpleName
   def children: Seq[SQLModel]
 }
 
