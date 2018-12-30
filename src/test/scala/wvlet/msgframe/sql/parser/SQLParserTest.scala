@@ -21,107 +21,38 @@ import wvlet.msgframe.sql.SQLBenchmark
   */
 class SQLParserTest extends AirframeSpec {
 
-  def parse(sql: String): Unit = {
-    trace(sql)
-    val m = SQLParser.parse(sql)
+  def roundtrip(sql: String): Unit = {
+    debug(sql)
+    val m1 = SQLParser.parse(sql)
+    debug(m1)
+    val printSql = SQLPrinter.print(m1)
+    debug(printSql)
+    val m2 = SQLParser.parse(printSql)
+    debug(m1)
+    try {
+      m1 shouldBe m2
+    } catch {
+      case e: Throwable =>
+        warn(s"model didn't match:\n[original]\n${sql}\n\n${m1}\n\n[printed]\n${printSql}\n\n${m2}")
+        throw e
+    }
   }
 
-  "SQLParser" should {
-    "parse SQL" in {
-      parse("select * from a") // Query(Seq(AllColumns(None)), false, Some(Table(QName("a"))))
-      parse("select * from a where time > 10")
-      parse("select * from a where time < 10")
-      parse("select * from a where time <= 10")
-      parse("select * from a where id = 'xxxx'")
-      parse("select * from a where time >= 10 and time < 20")
-      parse("select * from a where id is null")
-      parse("select * from a where id is not null")
-      parse("select * from a where flag = true")
-      parse("select * from a where flag = false")
-      parse("select x, y from a")
-      parse("select x from a where val > 0.5")
-      parse("select `x` from a")
-      parse("""select "x" from a""")
-      parse("select category, count(*) from a group by 1")
-      parse("select category, count(*) from a group by category")
-      parse("select * from a order by 1")
-      parse("select * from a order by 1 desc")
-      parse("select * from a order by 1 asc")
-      parse("select * from a order by 1 nulls first")
-      parse("select * from a order by 1 nulls last")
-      parse("select * from a limit 100")
+  "parse standard queries" taggedAs working in {
+    SQLBenchmark.standardQueries.foreach { sql =>
+      roundtrip(sql)
     }
+  }
 
-    "parse joins" taggedAs ("join") in {
-      parse("select * from a, b")
-      parse("select * from a join b on a.id = b.id")
-      parse("select * from a join b using (id)")
-      parse("select * from a left join b on a.id = b.id")
+  "parse TPC-H" in {
+    SQLBenchmark.tpcH.foreach { sql =>
+      roundtrip(sql)
     }
+  }
 
-    "parse expressions" taggedAs working in {
-      parse("select 1")
-      parse("select 1 + 2")
-      parse("select true")
-      parse("select true or false")
-
-      parse("select NULL")
-      parse("select ARRAY[1, 2]")
-      parse("select interval '1' year")
-      parse("select interval '1' month")
-      parse("select interval '1' day")
-      parse("select interval - '1' month")
-      parse("select interval '1' hour")
-      parse("select interval '1' minute")
-      parse("select interval '1' second")
-      parse("select data '2012-08-08' + interval '2' day")
-      parse("select case a when 1 then 'one' end")
-      parse("select case a when 1 then 'one' when 2 then 'two' else 'many' end")
-      parse("select case when a=1 then 'one' when a=2 then 'two' else 'many' end")
-
-      parse("select cast(1 as double)")
-      parse("select try_cast(1 as double)")
-      parse("select count(*)")
-      parse("select count(distinct a)")
-
-      parse("select time '01:00'")
-      parse("select timestamp '2012-08-08 01:00'")
-      parse("select date '2018-08-08'")
-      parse("select decimal '1000000000001'")
-      parse("select char 'a'")
-      parse("select binary '00'")
-
-      parse("select ?")
-
-      parse("select 'a'")
-      parse("select `a`")
-      parse("select \"a\"")
-
-      parse("select rank() over (partition by a order by b desc range between unbounded preceding  and current row)")
-      parse("select rank() over (partition by a order by b desc range between current row and unbounded following)")
-
-      parse("select rank() over (partition by a order by b desc rows between unbounded preceding  and current row)")
-      parse("select rank() over (partition by a order by b desc rows between current row and unbounded following)")
-      parse("select rank() over (partition by a order by b desc rows between current row and 1 following)")
-      parse("select rank() over (partition by a order by b desc rows between current row and 1 preceding)")
-      parse("select rank() over (partition by a order by b desc)")
-      parse("""select * from (select * from t) as t(a, "b", `c`)""")
-      parse("""with t(a, "b", `c`) as (select 1, 2, 3) select * from t""")
-
-      parse("select * from (select 1 limit 1) as a")
-      parse("select * from (a right join b on a.id = b.id) as c")
-    }
-
-    "parse tpc-h queries" taggedAs ("tpc-h") in {
-      SQLBenchmark.tpcH.foreach { sql =>
-        parse(sql)
-      }
-    }
-
-    "parse tpc-ds queries" taggedAs ("tpc-ds") in {
-      SQLBenchmark.tpcDS.foreach { sql =>
-        parse(sql)
-      }
+  "parse TPC-DS" in {
+    SQLBenchmark.tpcDS.foreach { sql =>
+      roundtrip(sql)
     }
   }
 }
