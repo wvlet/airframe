@@ -111,7 +111,7 @@
 - sql: |
     select `a`
 - sql: |
-    select \"a\"
+    select "a"
 - sql: |
     select rank() over (partition by a order by b desc range between unbounded preceding and current row)
 - sql: |

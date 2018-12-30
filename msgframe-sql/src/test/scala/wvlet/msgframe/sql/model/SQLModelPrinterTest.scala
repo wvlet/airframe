@@ -23,6 +23,7 @@ import wvlet.msgframe.sql.parser.SQLParser
 class SQLModelPrinterTest extends AirframeSpec {
 
   def roundtrip(sql: String): Unit = {
+    debug(sql)
     val m1 = SQLParser.parse(sql)
     debug(m1)
     val printSql = SQLModelPrinter.print(m1)

@@ -119,15 +119,16 @@ object SQLModelPrinter extends LogSupport {
         val r = printRelation(relation)
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
-          case Table(x) => s"${r} AS ${alias}${c}"
-          case _        => s"(${r}) AS ${alias}${c}"
+          case Table(x)                 => s"${r} AS ${alias}${c}"
+          case ParenthesizedRelation(x) => s"${r} AS ${alias}${c}"
+          case _                        => s"(${r}) AS ${alias}${c}"
         }
       case Join(joinType, left, right, cond) =>
         val l = printRelation(left)
         val r = printRelation(right)
         val c = cond match {
           case NaturalJoin        => ""
-          case JoinUsing(columns) => s" USING ${columns.mkString(", ")}"
+          case JoinUsing(columns) => s" USING (${columns.mkString(", ")})"
           case JoinOn(expr)       => s" ON ${printExpression(expr)}"
         }
         joinType match {
@@ -316,6 +317,10 @@ object SQLModelPrinter extends LogSupport {
       case ColumnDefLike(table, includeProperties) =>
         val inc = if (includeProperties) "INCLUDING" else "EXCLUDING"
         s"LIKE ${print(table)} ${inc} PROPERTIES"
+      case ArrayConstructor(values) =>
+        s"ARRAY[${values.map(print).mkString(", ")}]"
+      case Parameter(index) =>
+        "?"
       case other => unknown(other)
     }
   }

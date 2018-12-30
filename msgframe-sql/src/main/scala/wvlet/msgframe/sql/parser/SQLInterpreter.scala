@@ -522,7 +522,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitDecimalLiteral(ctx: DecimalLiteralContext): SQLModel = {
-    DoubleLiteral(ctx.getText.toDouble)
+    DecimalLiteral(ctx.getText)
   }
 
   override def visitIntegerLiteral(ctx: IntegerLiteralContext): SQLModel = {
