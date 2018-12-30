@@ -22,7 +22,16 @@ object SQLModelPrinter extends LogSupport {
       case r: Relation   => printRelation(r)
       case d: DDL        => printDDL(d)
       case e: Expression => printExpression(e)
-      case other         => unknown(other)
+      case InsertInto(table, aliases, query) =>
+        val b = Seq.newBuilder[String]
+        b += "INSERT INTO"
+        b += print(table)
+        aliases.map { x =>
+          b += s"(${x.map(print(_)).mkString(", ")})"
+        }
+        b += print(query)
+        b.result().mkString(" ")
+      case other => unknown(other)
     }
   }
 

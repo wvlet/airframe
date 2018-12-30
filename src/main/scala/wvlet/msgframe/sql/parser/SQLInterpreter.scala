@@ -743,4 +743,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     DropTable(table, ifExists)
   }
 
+  override def visitInsertInto(ctx: InsertIntoContext): SQLModel = {
+    val table = visitQualifiedName(ctx.qualifiedName())
+    val aliases = Option(ctx.columnAliases())
+      .map(x => x.identifier().asScala)
+      .map(x => x.map(visitIdentifier(_)))
+    val query = visitQuery(ctx.query())
+    InsertInto(table, aliases, query)
+  }
+
 }
