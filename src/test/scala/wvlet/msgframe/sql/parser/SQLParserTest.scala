@@ -21,14 +21,20 @@ import wvlet.msgframe.sql.SQLBenchmark
   */
 class SQLParserTest extends AirframeSpec {
 
+  /**
+    * sql 1 -> model 1 -> sql 2 -> model 2
+    *
+    * model 1 should be equivalent to model 2
+    *
+    */
   def roundtrip(sql: String): Unit = {
-    debug(sql)
+    debug(s"roundtrip test:\n${sql}")
     val m1 = SQLParser.parse(sql)
     debug(m1)
     val printSql = SQLPrinter.print(m1)
-    debug(printSql)
+    trace(printSql)
     val m2 = SQLParser.parse(printSql)
-    debug(m1)
+    trace(m1)
     try {
       m1 shouldBe m2
     } catch {
