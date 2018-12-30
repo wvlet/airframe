@@ -98,6 +98,12 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("alter table a rename column c0 to c1")
     roundtrip("alter table a drop column c0")
     roundtrip("alter table a add column cx bigint")
+
+    roundtrip("create view a as select 1")
+    roundtrip("create or replace view a as select 1")
+
+    roundtrip("drop view a")
+    roundtrip("drop view if exists a")
   }
 
   "print TPC-H SQL" in {
