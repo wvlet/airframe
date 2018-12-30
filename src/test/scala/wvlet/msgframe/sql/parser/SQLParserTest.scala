@@ -13,8 +13,11 @@
  */
 package wvlet.msgframe.sql.parser
 
+import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
+
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
+import wvlet.msgframe.sql.model.ModelTreePrinter
 
 /**
   *
@@ -30,6 +33,13 @@ class SQLParserTest extends AirframeSpec {
   def roundtrip(sql: String): Unit = {
     debug(s"roundtrip test:\n${sql}")
     val m1 = SQLParser.parse(sql)
+    val b  = new StringWriter()
+    val p  = new PrintWriter(b)
+    val s  = ModelTreePrinter.print(m1, p, level = 0)
+    p.close()
+    val planTree = b.toString
+    debug(planTree)
+
     debug(m1)
     val printSql = SQLPrinter.print(m1)
     trace(printSql)
