@@ -139,6 +139,8 @@ object SQLModelPrinter extends LogSupport {
           s += "CASCADE"
         }
         s.result().mkString(" ")
+      case RenameSchema(from, to) =>
+        s"ALTER SCHEMA ${from} RENAME TO ${to}"
     }
   }
 
