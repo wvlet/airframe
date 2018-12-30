@@ -13,8 +13,10 @@ object SQLBenchmark {
 
   case class TestQuery(sql: String)
 
+  private val RESOURCE_PATH = "msgframe-sql/src/test/resources/wvlet/msgframe/sql"
+
   def standardQueries: Seq[String] = {
-    val yaml = YamlReader.loadYamlList("msgframe-sql/src/test/resources/wvlet/msgframe/sql/standard/queries.yml")
+    val yaml = YamlReader.loadYamlList(s"${RESOURCE_PATH}/standard/queries.yml")
 
     yaml
       .map { y =>
@@ -29,7 +31,7 @@ object SQLBenchmark {
   }
 
   def tpcDS: Seq[String] = {
-    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-ds")
+    val dir = new File(s"${RESOURCE_PATH}/tpc-ds")
     val sqls = for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
       IOUtil.readAsString(f.getPath)
     }
@@ -40,7 +42,7 @@ object SQLBenchmark {
   }
 
   def tpcH: Seq[String] = {
-    val dir = new File("msgframe-sql/src/test/resources/wvlet/msgframe/sql/tpc-h")
+    val dir = new File(s"${RESOURCE_PATH}/tpc-h")
     for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
       IOUtil.readAsString(f.getPath)
     }
