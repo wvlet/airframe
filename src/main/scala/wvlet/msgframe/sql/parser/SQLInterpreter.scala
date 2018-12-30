@@ -722,7 +722,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
       .getOrElse {
         val l              = ctx.likeClause()
         val tableName      = visitQualifiedName(l.qualifiedName())
-        val includingProps = Option(l.INCLUDING()).map(x => true).getOrElse(false)
+        val includingProps = Option(l.EXCLUDING()).map(x => false).getOrElse(true)
         ColumnDefLike(tableName, includingProps)
       }
   }
