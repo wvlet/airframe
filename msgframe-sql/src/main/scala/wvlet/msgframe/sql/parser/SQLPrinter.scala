@@ -1,12 +1,12 @@
-package wvlet.msgframe.sql.model
-
+package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
+import wvlet.msgframe.sql.model.SQLModel
 import wvlet.msgframe.sql.model.SQLModel._
 
 /**
   * Print SQLModel classes As SQL
   */
-object SQLModelPrinter extends LogSupport {
+object SQLPrinter extends LogSupport {
 
   private def unknown(e: SQLModel): String = {
     if (e != null) {
