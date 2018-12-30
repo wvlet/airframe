@@ -726,6 +726,6 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitType(ctx: TypeContext): ColumnType = {
-    ctx.
+    ColumnType(ctx.getText)
   }
 }
