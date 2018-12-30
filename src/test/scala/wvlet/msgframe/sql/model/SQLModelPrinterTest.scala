@@ -55,7 +55,7 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("select 'a' || 'b'")
   }
 
-  "print DDL" taggedAs working in {
+  "print schema DDL" in {
     roundtrip("create schema a")
     roundtrip("create schema if not exists a")
     roundtrip("create schema if not exists a with (p1=v1)")
@@ -65,6 +65,13 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("drop schema if exists a")
     roundtrip("drop schema if exists a cascade")
     roundtrip("drop schema a restrict")
+
+    roundtrip("alter schema a rename to b")
+  }
+
+  "print table DDL" taggedAs working in {
+    roundtrip("create table a (id bigint)")
+    roundtrip("create table a (id bigint, name varchar)")
   }
 
   "print TPC-H SQL" in {

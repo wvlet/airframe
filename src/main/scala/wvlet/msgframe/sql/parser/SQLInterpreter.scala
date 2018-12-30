@@ -695,4 +695,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     DropSchema(schemaName, ifExists, cascade)
   }
 
+  override def visitRenameSchema(ctx: RenameSchemaContext): SQLModel = {
+    val schemaName = visitQualifiedName(ctx.qualifiedName())
+    val renameTo   = visitIdentifier(ctx.identifier())
+    RenameSchema(schemaName, renameTo)
+  }
+
 }
