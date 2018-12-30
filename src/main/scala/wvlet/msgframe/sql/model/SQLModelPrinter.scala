@@ -17,19 +17,30 @@ object SQLModelPrinter extends LogSupport {
     }
   }
 
+  private def seqBuilder = Seq.newBuilder[String]
+
   def print(m: SQLModel): String = {
     m match {
       case r: Relation   => printRelation(r)
       case d: DDL        => printDDL(d)
       case e: Expression => printExpression(e)
       case InsertInto(table, aliases, query) =>
-        val b = Seq.newBuilder[String]
+        val b = seqBuilder
         b += "INSERT INTO"
         b += print(table)
         aliases.map { x =>
           b += s"(${x.map(print(_)).mkString(", ")})"
         }
         b += print(query)
+        b.result().mkString(" ")
+      case Delete(table, condOpt) =>
+        val b = seqBuilder
+        b += "DELETE FROM"
+        b += print(table)
+        condOpt.map { x =>
+          b += "WHERE"
+          b += print(x)
+        }
         b.result().mkString(" ")
       case other => unknown(other)
     }
