@@ -145,6 +145,15 @@ object SQLModelPrinter extends LogSupport {
         val e     = if (ifNotExists) " IF NOT EXISTS " else ""
         val elems = tableElements.map(x => print(x)).mkString(", ")
         s"CREATE TABLE ${e}${name} (${elems})"
+      case CreateTableAs(name, ifNotExists, columnAliases, query) =>
+        val e = if (ifNotExists) " IF NOT EXISTS " else ""
+        val aliases =
+          columnAliases
+            .map { x =>
+              s"(${x.map(printExpression(_)).mkString(", ")})"
+            }
+            .getOrElse("")
+        s"CREATE TABLE ${e}${name}${aliases} AS ${print(query)}"
     }
   }
 
