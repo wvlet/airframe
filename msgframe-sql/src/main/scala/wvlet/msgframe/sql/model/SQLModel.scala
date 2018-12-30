@@ -472,9 +472,10 @@ object SQLModel {
   case class RenameSchema(schema: QName, renameTo: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(schema, renameTo)
   }
-  case class CreateTable(table: QName, ifNotExists: Boolean, columnAliases: Option[Seq[Identifier]]) extends DDL {
-    override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty)
+  case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table) ++ tableElems
   }
+
   case class CreateTableAs(table: QName,
                            ifNotEotExists: Boolean,
                            columnAliases: Option[Seq[Identifier]],
@@ -508,11 +509,15 @@ object SQLModel {
   case class AddColumn(table: QName, columns: Seq[ColumnDef]) extends DDL {
     override def children: Seq[SQLModel] = Seq(table) ++ columns
   }
-  case class ColumnDef(columnName: Identifier, tpe: ColumnType) extends Expression {
+
+  sealed trait TableElement extends Expression
+  case class ColumnDef(columnName: Identifier, tpe: ColumnType) extends TableElement {
     override def children: Seq[SQLModel] = Seq(columnName, tpe)
   }
   trait ColumnType extends Expression
-
+  case class ColumnDefLike(tableName: QName, includeProperties: Boolean) extends UnaryNode with TableElement {
+    override def child = tableName
+  }
   case class CreateView(viewName: QName, replace: Boolean, query: Relation) extends DDL {
     override def children: Seq[SQLModel] = Seq(viewName, query)
   }
