@@ -752,4 +752,12 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     InsertInto(table, aliases, query)
   }
 
+  override def visitDelete(ctx: DeleteContext): SQLModel = {
+    val table = visitQualifiedName(ctx.qualifiedName())
+    val cond = Option(ctx.booleanExpression()).map { x =>
+      expression(x)
+    }
+    Delete(table, cond)
+  }
+
 }
