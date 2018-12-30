@@ -13,7 +13,7 @@
  */
 package wvlet.msgframe.sql.parser
 
-import org.antlr.v4.runtime.{CharStreams, CommonTokenStream, Token}
+import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
 import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model.SQLModel
 
@@ -22,10 +22,33 @@ import wvlet.msgframe.sql.model.SQLModel
   */
 object SQLParser extends LogSupport {
 
+  private val lexerErrorListener = new BaseErrorListener {
+    override def syntaxError(recognizer: Recognizer[_, _],
+                             offendingSymbol: Any,
+                             line: Int,
+                             charPositionInLine: Int,
+                             msg: String,
+                             e: RecognitionException): Unit = {
+      throw new SQLParseError(msg, line, charPositionInLine, e)
+    }
+  }
+
   def parse(sql: String): SQLModel = {
     trace(s"parse: ${sql}")
     val parser = new SqlBaseParser(tokenStream(sql))
-    val ctx    = parser.singleStatement()
+
+    // Do not drop mismatched token
+    parser.setErrorHandler(new DefaultErrorStrategy {
+      override def recoverInline(recognizer: Parser): Token =
+        if (nextTokensContext == null) {
+          throw new InputMismatchException(recognizer)
+        } else {
+          throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)
+        }
+    })
+    parser.addErrorListener(lexerErrorListener)
+
+    val ctx = parser.singleStatement()
     trace(ctx.toStringTree(parser))
     val interpreter = new SQLInterpreter
     interpreter.interpret(ctx)
@@ -41,3 +64,6 @@ object SQLParser extends LogSupport {
     SqlBaseParser.VOCABULARY.getDisplayName(t.getType)
   }
 }
+
+class SQLParseError(message: String, val line: Int, val pos: Int, cause: RecognitionException)
+    extends Exception(s"Parse error at line:${line}, pos:${pos}. ${message}", cause) {}
