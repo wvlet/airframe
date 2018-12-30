@@ -154,6 +154,14 @@ object SQLModelPrinter extends LogSupport {
             }
             .getOrElse("")
         s"CREATE TABLE ${e}${name}${aliases} AS ${print(query)}"
+      case DropTable(table, ifExists) =>
+        val b = Seq.newBuilder[String]
+        b += "DROP TABLE"
+        if (ifExists) {
+          b += "IF EXISTS"
+        }
+        b += print(table)
+        b.result().mkString(" ")
     }
   }
 
