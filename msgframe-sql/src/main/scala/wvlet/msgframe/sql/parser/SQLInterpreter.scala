@@ -736,4 +736,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   override def visitType(ctx: TypeContext): ColumnType = {
     ColumnType(ctx.getText)
   }
+
+  override def visitDropTable(ctx: DropTableContext): SQLModel = {
+    val table    = visitQualifiedName(ctx.qualifiedName())
+    val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    DropTable(table, ifExists)
+  }
+
 }

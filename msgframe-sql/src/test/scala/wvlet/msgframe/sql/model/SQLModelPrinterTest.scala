@@ -79,6 +79,10 @@ class SQLModelPrinterTest extends AirframeSpec {
 
     roundtrip("create table a as select 1")
     roundtrip("create table a as (select 1)")
+    roundtrip("create table a(c1, c2) as select 1, 2")
+
+    roundtrip("drop table a")
+    roundtrip("drop table if exists a")
   }
 
   "print TPC-H SQL" in {
