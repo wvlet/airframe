@@ -21,7 +21,7 @@ object SQLBenchmark {
         val msgpack = YamlReader.toMsgPack(y)
         val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
         codec.unpackMsgPack(msgpack).map { x =>
-          x.sql
+          x.sql.trim
         }
       }
       .filter(_.isDefined)
