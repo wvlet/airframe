@@ -292,8 +292,12 @@ object SQLModelPrinter extends LogSupport {
         s"${k} = ${v}"
       case ColumnDef(name, tpe) =>
         s"${printExpression(name)} ${printExpression(tpe)}"
-      case ColumnType(tpe) => tpe
-      case other           => unknown(other)
+      case ColumnType(tpe) =>
+        tpe
+      case ColumnDefLike(table, includeProperties) =>
+        val inc = if (includeProperties) "INCLUDING" else "EXCLUDING"
+        s"LIKE ${print(table)} ${inc} PROPERTIES"
+      case other => unknown(other)
     }
   }
   def printLiteral(l: Literal): String = {
