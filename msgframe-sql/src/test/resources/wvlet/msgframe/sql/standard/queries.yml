@@ -1,0 +1,232 @@
+- sql: |
+    select * from a
+- sql: |
+    select * from a where time > 10
+- sql: |
+    select * from a where time < 10
+- sql: |
+    select * from a where time <= 10
+- sql: |
+    select * from a where id = 'xxxx'
+- sql: |
+    select * from a where time >= 10 and time < 20
+- sql: |
+    select * from a where id is null
+- sql: |
+    select * from a where id is not null
+- sql: |
+    select * from a where flag = true
+- sql: |
+    select * from a where flag = false
+- sql: |
+    select x, y from a
+- sql: |
+    select x from a where val > 0.5
+- sql: |
+    select `x` from a
+- sql: |
+    select "x" from a
+- sql: |
+    select category, count(*) from a group by 1
+- sql: |
+    select category, count(*) from a group by category
+- sql: |
+    select * from a order by 1
+- sql: |
+    select * from a order by 1 desc
+- sql: |
+    select * from a order by 1 asc
+- sql: |
+    select * from a order by 1 nulls first
+- sql: |
+    select * from a order by 1 nulls last
+- sql: |
+    select * from a limit 100
+- sql: |
+    select * from a, b
+- sql: |
+    select * from a join b on a.id = b.id
+- sql: |
+    select * from a join b using (id)
+- sql: |
+    select * from a left join b on a.id = b.id
+- sql: |
+    select 1
+- sql: |
+    select 1 + 2
+- sql: |
+    select true
+- sql: |
+    select true or false
+- sql: |
+    select NULL
+- sql: |
+    select ARRAY[1, 2]
+- sql: |
+    select interval '1' year
+- sql: |
+    select interval '1' month
+- sql: |
+    select interval '1' day
+- sql: |
+    select interval - '1' month
+- sql: |
+    select interval '1' hour
+- sql: |
+    select interval '1' minute
+- sql: |
+    select interval '1' second
+- sql: |
+    select data '2012-08-08' + interval '2' day
+- sql: |
+    select case a when 1 then 'one' end
+- sql: |
+    select case a when 1 then 'one' when 2 then 'two' else 'many' end
+- sql: |
+    select case when a=1 then 'one' when a=2 then 'two' else 'many' end
+- sql: |
+    select cast(1 as double)
+- sql: |
+    select try_cast(1 as double)
+- sql: |
+    select count(*)
+- sql: |
+    select count(distinct a)
+- sql: |
+    select time '01:00'
+- sql: |
+    select timestamp '2012-08-08 01:00'
+- sql: |
+    select date '2018-08-08'
+- sql: |
+    select decimal '1000000000001'
+- sql: |
+    select char 'a'
+- sql: |
+    select binary '00'
+- sql: |
+    select ?
+- sql: |
+    select 'a'
+- sql: |
+    select `a`
+- sql: |
+    select \"a\"
+- sql: |
+    select rank() over (partition by a order by b desc range between unbounded preceding and current row)
+- sql: |
+    select rank() over (partition by a order by b desc range between current row and unbounded following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between unbounded preceding and current row)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and unbounded following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and 1 following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and 1 preceding)
+- sql: |
+    select rank() over (partition by a order by b desc)
+- sql: |
+    select * from (select * from t) as t(a, "b", `c`)
+- sql: |
+    with t(a, "b", `c`) as (select 1, 2, 3) select * from t
+- sql: |
+    select * from (select 1 limit 1) as a
+- sql: |
+    select * from (a right join b on a.id = b.id) as c
+- sql: |
+    select 1
+- sql: |
+    select * from T
+- sql: |
+    select distinct * from T
+- sql: |
+    select * from T where a = 10
+- sql: |
+    select * from T where a = 10 limit 1
+- sql: |
+    select a, b, c from t where time <= 1000
+- sql: |
+    select a, b, c from t where c = 'leo' and td_interval(time, '-1d')
+- sql: |
+    select cast(1 as varchar)
+- sql: |
+    select try_cast(1 as varchar)
+- sql: |
+    select cast(1 as varchar) as a
+- sql: |
+    select 1 + 2
+- sql: |
+    select 1 - 2
+- sql: |
+    select 1 * 2
+- sql: |
+    select 1 / 2
+- sql: |
+    select 1 * (2 + 4)
+- sql: |
+    select 'a' || 'b'
+- sql: |
+    create schema a
+- sql: |
+    create schema if not exists a
+- sql: |
+    create schema if not exists a with (p1=v1)
+- sql: |
+    create schema if not exists a with (p1=v1, p2=v2)
+- sql: |
+    drop schema a
+- sql: |
+    drop schema if exists a
+- sql: |
+    drop schema if exists a cascade
+- sql: |
+    drop schema a restrict
+- sql: |
+    alter schema a rename to b
+- sql: |
+    create table a (id bigint)
+- sql: |
+    create table if not exists a (id bigint)
+- sql: |
+    create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)
+- sql: |
+    create table a (like b)
+- sql: |
+    create table a (like b including properties)
+- sql: |
+    create table a (like b excluding properties)
+- sql: |
+    create table a as select 1
+- sql: |
+    create table a as (select 1)
+- sql: |
+    create table a(c1, c2) as select 1, 2
+- sql: |
+    drop table a
+- sql: |
+    drop table if exists a
+- sql: |
+    insert into a select 1
+- sql: |
+    insert into a(c1) select 1
+- sql: |
+    delete from a
+- sql: |
+    delete from a where id = 1
+- sql: |
+    alter table a rename to b
+- sql: |
+    alter table a rename column c0 to c1
+- sql: |
+    alter table a drop column c0
+- sql: |
+    alter table a add column cx bigint
+- sql: |
+    create view a as select 1
+- sql: |
+    create or replace view a as select 1
+- sql: |
+    drop view a
+- sql: |
+    drop view if exists a

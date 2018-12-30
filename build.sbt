@@ -170,6 +170,7 @@ lazy val sql =
       libraryDependencies ++= Seq(
         "org.wvlet.airframe" %% "airframe-msgpack" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-surface" % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-config"  % AIRFRAME_VERSION,
         // Include Spark just as a reference
         "org.apache.spark" %% "spark-sql" % "2.4.0" % "test",
         airframeSpec
