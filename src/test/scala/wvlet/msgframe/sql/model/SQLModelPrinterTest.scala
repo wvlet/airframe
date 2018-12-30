@@ -23,12 +23,12 @@ import wvlet.msgframe.sql.parser.SQLParser
 class SQLModelPrinterTest extends AirframeSpec {
 
   def roundtrip(sql: String): Unit = {
-    val m1       = SQLParser.parse(sql)
-    val printSql = SQLModelPrinter.print(m1)
-    debug(sql)
+    val m1 = SQLParser.parse(sql)
     debug(m1)
+    val printSql = SQLModelPrinter.print(m1)
     debug(printSql)
     val m2 = SQLParser.parse(printSql)
+    debug(m1)
     try {
       m1 shouldBe m2
     } catch {
@@ -86,6 +86,9 @@ class SQLModelPrinterTest extends AirframeSpec {
 
     roundtrip("insert into a select 1")
     roundtrip("insert into a(c1) select 1")
+
+    roundtrip("delete from a")
+    roundtrip("delete from a where id = 1")
   }
 
   "print TPC-H SQL" in {
