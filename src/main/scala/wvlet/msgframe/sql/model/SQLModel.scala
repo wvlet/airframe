@@ -506,8 +506,8 @@ object SQLModel {
   case class DropColumn(table: QName, column: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(table, column)
   }
-  case class AddColumn(table: QName, columns: Seq[ColumnDef]) extends DDL {
-    override def children: Seq[SQLModel] = Seq(table) ++ columns
+  case class AddColumn(table: QName, column: ColumnDef) extends DDL {
+    override def children: Seq[SQLModel] = Seq(table, column)
   }
 
   sealed trait TableElement extends Expression
