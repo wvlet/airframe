@@ -141,6 +141,10 @@ object SQLModelPrinter extends LogSupport {
         s.result().mkString(" ")
       case RenameSchema(from, to) =>
         s"ALTER SCHEMA ${from} RENAME TO ${to}"
+      case CreateTable(name, ifNotExists, tableElements) =>
+        val e     = if (ifNotExists) " IF NOT EXISTS " else ""
+        val elems = tableElements.map(x => print(x)).mkString(", ")
+        s"CREATE TABLE ${e}${name} (${elems})"
     }
   }
 
