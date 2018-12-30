@@ -72,7 +72,7 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("alter schema a rename to b")
   }
 
-  "print table DDL" taggedAs working in {
+  "print table DDL" in {
     roundtrip("create table a (id bigint)")
     roundtrip("create table if not exists a (id bigint)")
     roundtrip("create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)")
@@ -104,6 +104,12 @@ class SQLModelPrinterTest extends AirframeSpec {
 
     roundtrip("drop view a")
     roundtrip("drop view if exists a")
+  }
+
+  "print standard queries" taggedAs working in {
+    SQLBenchmark.standardQueries.foreach { sql =>
+      roundtrip(sql)
+    }
   }
 
   "print TPC-H SQL" in {
