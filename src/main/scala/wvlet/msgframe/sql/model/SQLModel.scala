@@ -514,7 +514,8 @@ object SQLModel {
   case class ColumnDef(columnName: Identifier, tpe: ColumnType) extends TableElement {
     override def children: Seq[SQLModel] = Seq(columnName, tpe)
   }
-  trait ColumnType extends Expression
+  case class ColumnType(tpe: String) extends Expression with LeafNode
+
   case class ColumnDefLike(tableName: QName, includeProperties: Boolean) extends UnaryNode with TableElement {
     override def child = tableName
   }

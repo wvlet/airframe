@@ -72,7 +72,7 @@ class SQLModelPrinterTest extends AirframeSpec {
   "print table DDL" taggedAs working in {
     roundtrip("create table a (id bigint)")
     roundtrip("create table if not exists a (id bigint)")
-    roundtrip("create table a (id bigint, name varchar)")
+    roundtrip("create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)")
   }
 
   "print TPC-H SQL" in {
