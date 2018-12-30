@@ -218,8 +218,13 @@ object SQLModel {
   }
 
   sealed trait NullOrdering
-  case object NullIsFirst    extends NullOrdering
-  case object NullIsLast     extends NullOrdering
+  case object NullIsFirst extends NullOrdering {
+    override def toString = "NULLS FIRST"
+  }
+  case object NullIsLast extends NullOrdering {
+    override def toString = "NULLS LAST"
+  }
+
   case object UndefinedOrder extends NullOrdering
 
   // Window functions
@@ -405,10 +410,10 @@ object SQLModel {
     override def toString = s"TIMESTAMP '${value}'"
   }
   case class DecimalLiteral(value: String) extends Literal {
-    override def toString = value
+    override def toString = s"DECIMAL '${value}'"
   }
   case class CharLiteral(value: String) extends Literal {
-    override def toString = value
+    override def toString = s"CHAR '${value}'"
   }
   case class DoubleLiteral(value: Double) extends Literal {
     override def toString = value.toString
