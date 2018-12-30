@@ -784,4 +784,18 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val coldef = visitColumnDefinition(ctx.column)
     AddColumn(table, coldef)
   }
+
+  override def visitCreateView(ctx: CreateViewContext): SQLModel = {
+    val viewName = visitQualifiedName(ctx.qualifiedName())
+    val replace  = Option(ctx.REPLACE()).map(x => true).getOrElse(false)
+    val query    = visitQuery(ctx.query())
+    CreateView(viewName, replace, query)
+  }
+
+  override def visitDropView(ctx: DropViewContext): SQLModel = {
+    val viewName = visitQualifiedName(ctx.qualifiedName())
+    val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    DropView(viewName, ifExists)
+  }
+
 }

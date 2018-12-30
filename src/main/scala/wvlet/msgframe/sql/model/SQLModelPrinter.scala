@@ -212,6 +212,25 @@ object SQLModelPrinter extends LogSupport {
         b += "ADD COLUMN"
         b += print(colDef)
         b.result().mkString(" ")
+      case CreateView(name, replace, query) =>
+        val b = seqBuilder
+        b += "CREATE"
+        if (replace) {
+          b += "OR REPLACE"
+        }
+        b += "VIEW"
+        b += print(name)
+        b += "AS"
+        b += print(query)
+        b.result().mkString(" ")
+      case DropView(name, ifExists) =>
+        val b = seqBuilder
+        b += "DROP VIEW"
+        if (ifExists) {
+          b += "IF EXISTS"
+        }
+        b += print(name)
+        b.result().mkString(" ")
     }
   }
 
