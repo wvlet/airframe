@@ -89,6 +89,11 @@ class SQLModelPrinterTest extends AirframeSpec {
 
     roundtrip("delete from a")
     roundtrip("delete from a where id = 1")
+
+    roundtrip("alter table a rename to b")
+    roundtrip("alter table a rename column c0 to c1")
+    roundtrip("alter table a drop column c0")
+    roundtrip("alter table a add column cx bigint")
   }
 
   "print TPC-H SQL" in {
