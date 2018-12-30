@@ -25,7 +25,10 @@ class SQLModelPrinterTest extends AirframeSpec {
   def roundtrip(sql: String): Unit = {
     val m1       = SQLParser.parse(sql)
     val printSql = SQLModelPrinter.print(m1)
-    val m2       = SQLParser.parse(printSql)
+    debug(sql)
+    debug(m1)
+    debug(printSql)
+    val m2 = SQLParser.parse(printSql)
     try {
       m1 shouldBe m2
     } catch {
@@ -73,6 +76,9 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("create table a (id bigint)")
     roundtrip("create table if not exists a (id bigint)")
     roundtrip("create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)")
+
+    roundtrip("create table a as select 1")
+    roundtrip("create table a as (select 1)")
   }
 
   "print TPC-H SQL" in {

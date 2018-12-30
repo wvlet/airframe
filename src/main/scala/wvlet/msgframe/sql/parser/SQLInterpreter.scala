@@ -708,6 +708,14 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     CreateTable(tableName, ifNotExists, tableElements)
   }
 
+  override def visitCreateTableAsSelect(ctx: CreateTableAsSelectContext): SQLModel = {
+    val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
+    val tableName     = visitQualifiedName(ctx.qualifiedName())
+    val columnAliases = Option(ctx.columnAliases()).map(_.identifier().asScala.map(visitIdentifier(_)))
+    val q             = visitQuery(ctx.query())
+    CreateTableAs(tableName, ifNotExists, columnAliases, q)
+  }
+
   override def visitTableElement(ctx: TableElementContext): TableElement = {
     Option(ctx.columnDefinition())
       .map(x => visitColumnDefinition(x))
