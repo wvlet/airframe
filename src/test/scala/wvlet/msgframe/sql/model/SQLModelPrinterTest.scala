@@ -77,6 +77,10 @@ class SQLModelPrinterTest extends AirframeSpec {
     roundtrip("create table if not exists a (id bigint)")
     roundtrip("create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)")
 
+    roundtrip("create table a (like b)")
+    roundtrip("create table a (like b including properties)")
+    roundtrip("create table a (like b excluding properties)")
+
     roundtrip("create table a as select 1")
     roundtrip("create table a as (select 1)")
     roundtrip("create table a(c1, c2) as select 1, 2")
