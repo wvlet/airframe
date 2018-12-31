@@ -12,25 +12,26 @@
  * limitations under the License.
  */
 
-package wvlet.msgframe.sql.model
+package wvlet.msgframe.sql.analyzer
+
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
 
 /**
   *
   */
-class QuerySigTest extends AirframeSpec {
+class QuerySignatureTest extends AirframeSpec {
 
   "Find input/output tables" in {
-    for (sql <- SQLBenchmark.allQueries) {
-      val g = QuerySig.findInputOutputTableGraph(sql)
+    SQLBenchmark.allQueries.foreach { sql =>
+      val g = TableGraph.of(sql)
       debug(g)
     }
   }
 
   "Generate signature" in {
     SQLBenchmark.allQueries.foreach { sql =>
-      val s = QuerySig.sig(sql)
+      val s = QuerySignature.of(sql)
       debug(s)
     }
   }

@@ -17,7 +17,7 @@ import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
 
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
-import wvlet.msgframe.sql.model.ModelTreePrinter
+import wvlet.msgframe.sql.model.LogicalPlanPrinter
 
 /**
   *
@@ -35,13 +35,13 @@ class SQLParserTest extends AirframeSpec {
     val m1 = SQLParser.parse(sql)
     val b  = new StringWriter()
     val p  = new PrintWriter(b)
-    val s  = ModelTreePrinter.print(m1, p, level = 0)
+    val s  = LogicalPlanPrinter.print(m1, p, level = 0)
     p.close()
     val planTree = b.toString
     debug(planTree)
 
     debug(m1)
-    val printSql = SQLPrinter.print(m1)
+    val printSql = SQLGenerator.print(m1)
     debug(printSql)
     val m2 = SQLParser.parse(printSql)
     trace(m1)

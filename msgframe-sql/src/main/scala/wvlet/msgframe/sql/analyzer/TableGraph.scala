@@ -12,15 +12,26 @@
  * limitations under the License.
  */
 
-package wvlet.msgframe.sql.model
+package wvlet.msgframe.sql.analyzer
+import wvlet.msgframe.sql.analyzer.InOutTableFinder.TableScanContext
+import wvlet.msgframe.sql.model.LogicalPlan
+import wvlet.msgframe.sql.parser.SQLParser
 
 /**
   * Graph for representing table input and output dependencies
   */
-object QueryGraph {
+object TableGraph {
+  val empty = Graph(Set.empty, Set.empty)
 
-  trait Node {
-    def name: String
+  def of(sql: String): Graph = {
+    val p = SQLParser.parse(sql)
+    of(p)
+  }
+
+  def of(p: LogicalPlan): Graph = {
+    val finder = new InOutTableFinder
+    finder.process(p, TableScanContext(Some(Terminal)))
+    finder.graph
   }
 
   case object Terminal extends Node {
@@ -37,38 +48,4 @@ object QueryGraph {
     override def toString = s"!${name}"
   }
 
-  case class Edge(src: Node, dest: Node) {
-    override def toString = s"${src}->${dest}"
-  }
-
-  case class Graph(nodes: Set[Node], edges: Set[Edge]) {
-    def +(n: Node): Graph = Graph(nodes + n, edges)
-    def +(e: Edge): Graph = {
-      val s = findNode(e.src)
-      val d = findNode(e.dest)
-      Graph(nodes + s + d, edges + Edge(s, d))
-    }
-
-    def findNode(n: Node): Node = {
-      nodes.find(_.name == n.name).getOrElse(n)
-    }
-
-    override def toString = {
-      s"""nodes: ${nodes.mkString(", ")}
-         |edges: ${edges.mkString(", ")}""".stripMargin
-    }
-  }
-
-  case object EdgeOrdering extends Ordering[Edge] {
-    override def compare(x: Edge, y: Edge): Int = {
-      val diff = x.src.name.compareTo(y.src.name)
-      if (diff != 0) {
-        diff
-      } else {
-        x.dest.name.compareTo(y.dest.name)
-      }
-    }
-  }
-
-  val emptyGraph = Graph(Set.empty, Set.empty)
 }
