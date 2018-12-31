@@ -198,6 +198,8 @@ object SQLPrinter extends LogSupport {
           case CrossJoin      => s"${l} CROSS JOIN ${r}${c}"
           case ImplicitJoin   => s"${l}, ${r}${c}"
         }
+      case Values(exprs) =>
+        s"(VALUES ${exprs.map(printExpression _).mkString(", ")})"
       case other => unknown(other)
     }
   }
