@@ -164,8 +164,6 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): SQLModel = {
 
-    val inputRelation: Option[Relation] = fromClause(ctx)
-
     val filter: Option[Expression] = {
       if (ctx.where == null)
         None
@@ -174,6 +172,17 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
           .map(visit(_))
           .collectFirst { case e: Expression => e }
       }
+    }
+
+    val inputRelation: Relation = (fromClause(ctx), filter) match {
+      case (Some(r), Some(f)) =>
+        Filter(r, f)
+      case (Some(r), None) =>
+        r
+      case (None, Some(f)) =>
+        Filter(EmptyRelation, f)
+      case _ =>
+        EmptyRelation
     }
 
     val selectItem: Seq[SelectItem] = ctx
@@ -186,12 +195,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
         // No aggregation
         // TODO distinct check
         val distinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
-        Select(distinct, selectItem, inputRelation, filter)
+
+        Project(inputRelation, distinct, selectItem)
       } else {
         // aggregation
         val gb = ctx.groupBy()
         assert(gb != null)
-        if (inputRelation.isEmpty) {
+        if (inputRelation == EmptyRelation) {
           throw new IllegalArgumentException(s"group by statement requires input relation")
         }
 
@@ -206,7 +216,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
 
         // having
         val having = Option(ctx.having).map(expression(_))
-        Aggregate(selectItem, inputRelation, filter, groupByKeys, having)
+        Aggregate(inputRelation, selectItem, groupByKeys, having)
       }
     }
 

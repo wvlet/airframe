@@ -42,7 +42,7 @@ class SQLParserTest extends AirframeSpec {
 
     debug(m1)
     val printSql = SQLPrinter.print(m1)
-    trace(printSql)
+    debug(printSql)
     val m2 = SQLParser.parse(printSql)
     trace(m1)
     try {
@@ -54,8 +54,14 @@ class SQLParserTest extends AirframeSpec {
     }
   }
 
-  "parse standard queries" taggedAs working in {
-    SQLBenchmark.standardQueries.foreach { sql =>
+  "parse selection queries" taggedAs working in {
+    SQLBenchmark.selection.foreach { sql =>
+      roundtrip(sql)
+    }
+  }
+
+  "parse DDL queries" in {
+    SQLBenchmark.ddl.foreach { sql =>
       roundtrip(sql)
     }
   }
