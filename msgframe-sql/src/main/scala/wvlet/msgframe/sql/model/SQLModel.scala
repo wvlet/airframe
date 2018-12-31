@@ -97,7 +97,9 @@ object SQLModel {
 
   case class Values(rows: Seq[Expression]) extends Relation {
     override def children: Seq[SQLModel] = rows
-    override def sig: String             = "V"
+    override def sig: String = {
+      s"V[${rows.length}]"
+    }
   }
   case class Table(name: QName) extends Relation with LeafNode {
     override def sig: String = "T"

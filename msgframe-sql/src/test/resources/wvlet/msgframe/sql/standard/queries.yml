@@ -51,6 +51,10 @@
 - sql: |
     select * from a left join b on a.id = b.id
 - sql: |
+    select * from a full outer join b on a.id = b.id
+- sql: |
+    select * from a cross join b
+- sql: |
     select 1
 - sql: |
     select 1 + 2
@@ -168,3 +172,6 @@
     select 'a' || 'b'
 - sql: |
     select 1 where 1 != 0
+- sql: |
+    select * from (values 1)
+
