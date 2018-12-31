@@ -15,8 +15,8 @@ object SQLBenchmark {
 
   private val RESOURCE_PATH = "msgframe-sql/src/test/resources/wvlet/msgframe/sql"
 
-  def standardQueries: Seq[String] = {
-    val yaml = YamlReader.loadYamlList(s"${RESOURCE_PATH}/standard/queries.yml")
+  private def readSQLFromYaml(path: String): Seq[String] = {
+    val yaml = YamlReader.loadYamlList(path)
 
     yaml
       .map { y =>
@@ -28,6 +28,18 @@ object SQLBenchmark {
       }
       .filter(_.isDefined)
       .flatten
+  }
+
+  def standardQueries: Seq[String] = {
+    selection ++ ddl
+  }
+
+  def selection: Seq[String] = {
+    readSQLFromYaml(s"${RESOURCE_PATH}/standard/queries.yml")
+  }
+
+  def ddl: Seq[String] = {
+    readSQLFromYaml(s"${RESOURCE_PATH}/standard/ddl.yml")
   }
 
   def tpcDS: Seq[String] = {
