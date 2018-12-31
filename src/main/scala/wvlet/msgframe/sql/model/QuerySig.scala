@@ -42,12 +42,12 @@ object QuerySig extends LogSupport {
         case InsertInto(table, _, query) =>
           val target = TargetTable(table.toString)
           g += target
-          process(table, context.withOutput(target))
-        case With(_, queries) =>
-          for (query <- queries) {
+          process(query, context.withOutput(target))
+        case Query(withQuery, body) =>
+          for (query <- withQuery.queries) {
             val ref = Alias(query.name.toString)
             g += ref
-            process(query, context.withOutput(ref))
+            process(body, context.withOutput(ref))
           }
         case DropTable(table, _) =>
           val target = TargetTable(table.toString)
