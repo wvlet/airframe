@@ -75,9 +75,7 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation extends SQLModel {
-    def isEmptyRelation: Boolean = false
-  }
+  sealed trait Relation extends SQLModel
 
   sealed trait UnaryRelation extends Relation {
     def inputRelation: Relation
@@ -112,9 +110,7 @@ object SQLModel {
     override def children: Seq[SQLModel] = Seq(in)
   }
 
-  case object EmptyRelation extends Relation with LeafNode {
-    override def isEmptyRelation: Boolean = true
-  }
+  case object EmptyRelation extends Relation with LeafNode
 
   case class Project(in: Relation, isDistinct: Boolean, selectItems: Seq[SelectItem]) extends UnaryRelation {
     override def inputRelation           = in
