@@ -18,7 +18,9 @@ import wvlet.airframe.surface.Surface
 /**
   *
   */
-object SQLSchema {
+object Catalog {
+  case class Database(name: String)
+
   sealed trait Schema
   case class AnonSchema(columns: Seq[Column])                extends Schema
   case class TableSchema(name: String, columns: Seq[Column]) extends Schema

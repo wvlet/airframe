@@ -15,10 +15,10 @@ package wvlet.msgframe.sql.parser
 
 import org.antlr.v4.runtime.{DefaultErrorStrategy, RecognitionException, _}
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.SQLModel
+import wvlet.msgframe.sql.model.LogicalPlan
 
 /**
-  * SQL -> Token -> ANTLR parse tree -> SQLModel
+  * SQL -> Token -> ANTLR parse tree -> LogicalPlan
   */
 object SQLParser extends LogSupport {
 
@@ -33,7 +33,7 @@ object SQLParser extends LogSupport {
     }
   }
 
-  def parse(sql: String): SQLModel = {
+  def parse(sql: String): LogicalPlan = {
     trace(s"parse: ${sql}")
     val parser = new SqlBaseParser(tokenStream(sql))
 
