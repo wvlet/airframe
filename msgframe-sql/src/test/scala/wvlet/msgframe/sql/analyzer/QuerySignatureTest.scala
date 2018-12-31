@@ -16,6 +16,7 @@ package wvlet.msgframe.sql.analyzer
 
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
+import wvlet.msgframe.sql.parser.SQLParser
 
 /**
   *
@@ -34,5 +35,14 @@ class QuerySignatureTest extends AirframeSpec {
       val s = QuerySignature.of(sql)
       debug(s)
     }
+  }
+
+  "parse q72.sql" taggedAs (working) in {
+    val sql = SQLBenchmark.tpcDS_("q72")
+    debug(sql)
+    val p = SQLParser.parse(sql)
+    debug(p)
+    val sig = QuerySignature.of(sql)
+    debug(sig)
   }
 }
