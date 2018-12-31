@@ -17,6 +17,7 @@ import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
 
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
+import wvlet.msgframe.sql.analyzer.QuerySignature
 import wvlet.msgframe.sql.model.LogicalPlanPrinter
 
 /**
@@ -52,6 +53,17 @@ class SQLParserTest extends AirframeSpec {
         warn(s"model didn't match:\n[original]\n${sql}\n\n${m1}\n\n[printed]\n${printSql}\n\n${m2}")
         throw e
     }
+
+    val sig1 = QuerySignature.of(sql)
+    val sig2 = QuerySignature.of(printSql)
+    try {
+      sig1 shouldBe sig2
+    } catch {
+      case e: Throwable =>
+        warn(s"signature didn't match:\n[original]\n${sql}\n\n${sig1}\n\n[printed]\n${printSql}\n\n${sig2}")
+        throw e
+    }
+
   }
 
   "parse selection queries" taggedAs working in {
