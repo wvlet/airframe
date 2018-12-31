@@ -59,6 +59,7 @@ object SQLPrinter extends LogSupport {
     }
   }
   private def findFromClause(in: Relation): Option[Relation] = {
+    // Look for FROM clause candidates inside Project/Aggregate/Filter nodes
     in match {
       case Project(in, _, _) =>
         findFromClause(in)
@@ -74,6 +75,7 @@ object SQLPrinter extends LogSupport {
   }
 
   private def findWhereClause(in: Relation): Option[Expression] = {
+    // We need to terminate traversal at Project/Aggregate node because these will create another SELECT statement.
     in match {
       case Project(_, _, _) =>
         None
