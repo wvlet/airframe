@@ -15,10 +15,10 @@ package wvlet.msgframe.sql.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
-import wvlet.msgframe.sql.model.SQLModel._
+import wvlet.msgframe.sql.model.LogicalPlan._
 import wvlet.msgframe.sql.parser.SqlBaseParser._
 import wvlet.log.{LogSupport, Logger}
-import wvlet.msgframe.sql.model.SQLModel
+import wvlet.msgframe.sql.model.LogicalPlan
 
 object SQLInterpreter {
   private[parser] def unquote(s: String): String = {
@@ -29,7 +29,7 @@ object SQLInterpreter {
 /**
   * ANTLR parse tree -> SQL model classes
   */
-class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
+class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
   import SQLInterpreter._
   import scala.collection.JavaConverters._
 
@@ -44,18 +44,18 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     new IllegalArgumentException("Unknown parser context: " + ctx.toStringTree(parserRules))
   }
 
-  def interpret(ctx: ParserRuleContext): SQLModel = {
+  def interpret(ctx: ParserRuleContext): LogicalPlan = {
     trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
     trace(m)
     m
   }
 
-  override def visitSingleStatement(ctx: SingleStatementContext): SQLModel = {
+  override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = {
     visit(ctx.statement())
   }
 
-  override def visitStatementDefault(ctx: StatementDefaultContext): SQLModel = {
+  override def visitStatementDefault(ctx: StatementDefaultContext): LogicalPlan = {
     visit(ctx.query())
   }
 
@@ -89,11 +89,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     visit(ctx).asInstanceOf[Identifier]
   }
 
-  override def visitInlineTable(ctx: InlineTableContext): SQLModel = {
+  override def visitInlineTable(ctx: InlineTableContext): LogicalPlan = {
     Values(ctx.expression().asScala.map(expression _))
   }
 
-  override def visitSetOperation(ctx: SetOperationContext): SQLModel = {
+  override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = {
 
     val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
     val isDistinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
@@ -108,7 +108,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitQueryNoWith(ctx: QueryNoWithContext): SQLModel = {
+  override def visitQueryNoWith(ctx: QueryNoWithContext): LogicalPlan = {
     val inputRelation = visit(ctx.queryTerm()).asInstanceOf[Relation]
     // TODO
 
@@ -150,23 +150,23 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     val nullOrdering = Option(ctx.nullOrdering).map { x =>
       x.getType match {
         case SqlBaseParser.FIRST =>
-          SQLModel.NullIsFirst
+          LogicalPlan.NullIsFirst
         case SqlBaseParser.LAST =>
-          SQLModel.NullIsLast
+          LogicalPlan.NullIsLast
       }
     }
     SortItem(key, ordering, nullOrdering)
   }
 
-  override def visitQueryTermDefault(ctx: QueryTermDefaultContext): SQLModel = {
+  override def visitQueryTermDefault(ctx: QueryTermDefaultContext): LogicalPlan = {
     visit(ctx.queryPrimary())
   }
 
-  override def visitQueryPrimaryDefault(ctx: QueryPrimaryDefaultContext): SQLModel = {
+  override def visitQueryPrimaryDefault(ctx: QueryPrimaryDefaultContext): LogicalPlan = {
     visit(ctx.querySpecification())
   }
 
-  override def visitQuerySpecification(ctx: QuerySpecificationContext): SQLModel = {
+  override def visitQuerySpecification(ctx: QuerySpecificationContext): LogicalPlan = {
     val filter: Option[Expression] = {
       if (ctx.where == null)
         None
@@ -270,7 +270,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitJoinRelation(ctx: JoinRelationContext): SQLModel = {
+  override def visitJoinRelation(ctx: JoinRelationContext): LogicalPlan = {
     val tmpJoinType = ctx.joinType() match {
       case null                     => None
       case jt if jt.LEFT() != null  => Some(LeftOuterJoin)
@@ -303,7 +303,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     QName(ctx.identifier().asScala.map(_.getText).toSeq)
   }
 
-  override def visitDereference(ctx: DereferenceContext): SQLModel = {
+  override def visitDereference(ctx: DereferenceContext): LogicalPlan = {
     QName(s"${ctx.base.getText}.${ctx.fieldName.getText}")
   }
 
@@ -318,7 +318,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     SingleColumn(expression(ctx.expression()), alias)
   }
 
-  override def visitExpression(ctx: ExpressionContext): SQLModel = {
+  override def visitExpression(ctx: ExpressionContext): LogicalPlan = {
     trace(s"expr: ${print(ctx)}")
     val b: BooleanExpressionContext = ctx.booleanExpression()
     b match {
@@ -344,7 +344,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitLogicalNot(ctx: LogicalNotContext): SQLModel = {
+  override def visitLogicalNot(ctx: LogicalNotContext): LogicalPlan = {
     Not(expression(ctx.booleanExpression()))
   }
 
@@ -430,7 +430,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     SubQueryExpression(visitQuery(ctx.query()))
   }
 
-  override def visitSubquery(ctx: SubqueryContext): SQLModel = {
+  override def visitSubquery(ctx: SubqueryContext): LogicalPlan = {
     visitQueryNoWith(ctx.queryNoWith())
   }
 
@@ -466,7 +466,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitLogicalBinary(ctx: LogicalBinaryContext): SQLModel = {
+  override def visitLogicalBinary(ctx: LogicalBinaryContext): LogicalPlan = {
     val left  = expression(ctx.left)
     val right = expression(ctx.right)
     ctx.operator.getType match {
@@ -477,7 +477,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): SQLModel = {
+  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): LogicalPlan = {
     val left  = expression(ctx.left)
     val right = expression(ctx.right)
     val binaryExprType: BinaryExprType =
@@ -518,7 +518,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     Exists(SubQueryExpression(visitQuery(ctx.query())))
   }
 
-  override def visitBooleanLiteral(ctx: BooleanLiteralContext): SQLModel = {
+  override def visitBooleanLiteral(ctx: BooleanLiteralContext): LogicalPlan = {
     if (ctx.booleanValue().TRUE() != null) {
       TrueLiteral
     } else {
@@ -526,23 +526,23 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitNumericLiteral(ctx: NumericLiteralContext): SQLModel = {
+  override def visitNumericLiteral(ctx: NumericLiteralContext): LogicalPlan = {
     visit(ctx.number())
   }
 
-  override def visitDoubleLiteral(ctx: DoubleLiteralContext): SQLModel = {
+  override def visitDoubleLiteral(ctx: DoubleLiteralContext): LogicalPlan = {
     DoubleLiteral(ctx.getText.toDouble)
   }
 
-  override def visitDecimalLiteral(ctx: DecimalLiteralContext): SQLModel = {
+  override def visitDecimalLiteral(ctx: DecimalLiteralContext): LogicalPlan = {
     DecimalLiteral(ctx.getText)
   }
 
-  override def visitIntegerLiteral(ctx: IntegerLiteralContext): SQLModel = {
+  override def visitIntegerLiteral(ctx: IntegerLiteralContext): LogicalPlan = {
     LongLiteral(ctx.getText.toInt)
   }
 
-  override def visitStringLiteral(ctx: StringLiteralContext): SQLModel = {
+  override def visitStringLiteral(ctx: StringLiteralContext): LogicalPlan = {
     val text = ctx.str().getText.replaceAll("(^'|'$)", "")
     StringLiteral(text)
   }
@@ -617,11 +617,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitBoundedFrame(ctx: BoundedFrameContext): SQLModel = {
+  override def visitBoundedFrame(ctx: BoundedFrameContext): LogicalPlan = {
     super.visitBoundedFrame(ctx)
   }
 
-  override def visitFunctionCall(ctx: FunctionCallContext): SQLModel = {
+  override def visitFunctionCall(ctx: FunctionCallContext): LogicalPlan = {
     val name = QName(ctx.qualifiedName().getText)
     val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
       expression(f.booleanExpression())
@@ -648,9 +648,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     }
   }
 
-  override def visitNullLiteral(ctx: NullLiteralContext): SQLModel = NullLiteral
+  override def visitNullLiteral(ctx: NullLiteralContext): LogicalPlan = NullLiteral
 
-  override def visitInterval(ctx: IntervalContext): SQLModel = {
+  override def visitInterval(ctx: IntervalContext): LogicalPlan = {
     val sign = if (ctx.MINUS() != null) {
       Negative
     } else {
@@ -688,7 +688,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     ArrayConstructor(elems)
   }
 
-  override def visitCreateSchema(ctx: CreateSchemaContext): SQLModel = {
+  override def visitCreateSchema(ctx: CreateSchemaContext): LogicalPlan = {
     val schemaName  = visitQualifiedName(ctx.qualifiedName())
     val ifNotExists = Option(ctx.EXISTS()).map(_ => true).getOrElse(false)
     val props = Option(ctx.properties())
@@ -700,7 +700,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     CreateSchema(schemaName, ifNotExists, props)
   }
 
-  override def visitDropSchema(ctx: DropSchemaContext): SQLModel = {
+  override def visitDropSchema(ctx: DropSchemaContext): LogicalPlan = {
     val schemaName = visitQualifiedName(ctx.qualifiedName())
     val ifExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     val cascade =
@@ -708,20 +708,20 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     DropSchema(schemaName, ifExists, cascade)
   }
 
-  override def visitRenameSchema(ctx: RenameSchemaContext): SQLModel = {
+  override def visitRenameSchema(ctx: RenameSchemaContext): LogicalPlan = {
     val schemaName = visitQualifiedName(ctx.qualifiedName())
     val renameTo   = visitIdentifier(ctx.identifier())
     RenameSchema(schemaName, renameTo)
   }
 
-  override def visitCreateTable(ctx: CreateTableContext): SQLModel = {
+  override def visitCreateTable(ctx: CreateTableContext): LogicalPlan = {
     val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     val tableName     = visitQualifiedName(ctx.qualifiedName())
     val tableElements = ctx.tableElement().asScala.map(x => visitTableElement(x))
     CreateTable(tableName, ifNotExists, tableElements)
   }
 
-  override def visitCreateTableAsSelect(ctx: CreateTableAsSelectContext): SQLModel = {
+  override def visitCreateTableAsSelect(ctx: CreateTableAsSelectContext): LogicalPlan = {
     val ifNotExists   = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     val tableName     = visitQualifiedName(ctx.qualifiedName())
     val columnAliases = Option(ctx.columnAliases()).map(_.identifier().asScala.map(visitIdentifier(_)))
@@ -750,13 +750,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     ColumnType(ctx.getText)
   }
 
-  override def visitDropTable(ctx: DropTableContext): SQLModel = {
+  override def visitDropTable(ctx: DropTableContext): LogicalPlan = {
     val table    = visitQualifiedName(ctx.qualifiedName())
     val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     DropTable(table, ifExists)
   }
 
-  override def visitInsertInto(ctx: InsertIntoContext): SQLModel = {
+  override def visitInsertInto(ctx: InsertIntoContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.qualifiedName())
     val aliases = Option(ctx.columnAliases())
       .map(x => x.identifier().asScala)
@@ -765,7 +765,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     InsertInto(table, aliases, query)
   }
 
-  override def visitDelete(ctx: DeleteContext): SQLModel = {
+  override def visitDelete(ctx: DeleteContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.qualifiedName())
     val cond = Option(ctx.booleanExpression()).map { x =>
       expression(x)
@@ -773,39 +773,39 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     Delete(table, cond)
   }
 
-  override def visitRenameTable(ctx: RenameTableContext): SQLModel = {
+  override def visitRenameTable(ctx: RenameTableContext): LogicalPlan = {
     val from = visitQualifiedName(ctx.qualifiedName(0))
     val to   = visitQualifiedName(ctx.qualifiedName(1))
     RenameTable(from, to)
   }
 
-  override def visitRenameColumn(ctx: RenameColumnContext): SQLModel = {
+  override def visitRenameColumn(ctx: RenameColumnContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.tableName)
     val from  = visitIdentifier(ctx.from)
     val to    = visitIdentifier(ctx.to)
     RenameColumn(table, from, to)
   }
 
-  override def visitDropColumn(ctx: DropColumnContext): SQLModel = {
+  override def visitDropColumn(ctx: DropColumnContext): LogicalPlan = {
     val table = visitQualifiedName(ctx.tableName)
     val c     = visitIdentifier(ctx.column)
     DropColumn(table, c)
   }
 
-  override def visitAddColumn(ctx: AddColumnContext): SQLModel = {
+  override def visitAddColumn(ctx: AddColumnContext): LogicalPlan = {
     val table  = visitQualifiedName(ctx.tableName)
     val coldef = visitColumnDefinition(ctx.column)
     AddColumn(table, coldef)
   }
 
-  override def visitCreateView(ctx: CreateViewContext): SQLModel = {
+  override def visitCreateView(ctx: CreateViewContext): LogicalPlan = {
     val viewName = visitQualifiedName(ctx.qualifiedName())
     val replace  = Option(ctx.REPLACE()).map(x => true).getOrElse(false)
     val query    = visitQuery(ctx.query())
     CreateView(viewName, replace, query)
   }
 
-  override def visitDropView(ctx: DropViewContext): SQLModel = {
+  override def visitDropView(ctx: DropViewContext): LogicalPlan = {
     val viewName = visitQualifiedName(ctx.qualifiedName())
     val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     DropView(viewName, ifExists)

@@ -14,15 +14,15 @@
 
 package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.SQLModel
-import wvlet.msgframe.sql.model.SQLModel._
+import wvlet.msgframe.sql.model.LogicalPlan
+import wvlet.msgframe.sql.model.LogicalPlan._
 
 /**
-  * Print SQLModel classes As SQL
+  * Print LogicalPlans As SQL statements
   */
-object SQLPrinter extends LogSupport {
+object SQLGenerator extends LogSupport {
 
-  private def unknown(e: SQLModel): String = {
+  private def unknown(e: LogicalPlan): String = {
     if (e != null) {
       warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
       e.toString
@@ -33,7 +33,7 @@ object SQLPrinter extends LogSupport {
 
   private def seqBuilder = Seq.newBuilder[String]
 
-  def print(m: SQLModel): String = {
+  def print(m: LogicalPlan): String = {
     m match {
       case r: Relation   => printRelation(r)
       case d: DDL        => printDDL(d)
