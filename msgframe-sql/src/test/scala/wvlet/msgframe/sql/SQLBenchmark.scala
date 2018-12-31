@@ -30,6 +30,10 @@ object SQLBenchmark {
       .flatten
   }
 
+  def allQueries: Seq[String] = {
+    standardQueries ++ tpcH ++ tpcDS
+  }
+
   def standardQueries: Seq[String] = {
     selection ++ ddl
   }

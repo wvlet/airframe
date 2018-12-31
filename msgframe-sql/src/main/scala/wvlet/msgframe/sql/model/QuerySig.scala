@@ -17,6 +17,13 @@ object QuerySig extends LogSupport {
     finder.graph
   }
 
+  def sig(sql: String): String = {
+    SQLParser.parse(sql) match {
+      case m: SQLSig => m.sig
+      case other     => "Unknown"
+    }
+  }
+
   case class TableScanContext(target: Option[QueryGraph.Node] = None) {
     def withOutput(node: QueryGraph.Node) = TableScanContext(Some(node))
   }
