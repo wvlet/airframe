@@ -89,6 +89,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
     visit(ctx).asInstanceOf[Identifier]
   }
 
+  override def visitInlineTable(ctx: InlineTableContext): SQLModel = {
+    Values(ctx.expression().asScala.map(expression _))
+  }
+
   override def visitSetOperation(ctx: SetOperationContext): SQLModel = {
 
     val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
@@ -163,7 +167,6 @@ class SQLInterpreter extends SqlBaseBaseVisitor[SQLModel] with LogSupport {
   }
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): SQLModel = {
-
     val filter: Option[Expression] = {
       if (ctx.where == null)
         None
