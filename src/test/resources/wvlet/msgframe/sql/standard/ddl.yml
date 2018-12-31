@@ -1,0 +1,64 @@
+- sql: |
+    create schema a
+- sql: |
+    create schema if not exists a
+- sql: |
+    create schema if not exists a with (p1=v1)
+- sql: |
+    create schema if not exists a with (p1=v1, p2=v2)
+- sql: |
+    drop schema a
+- sql: |
+    drop schema if exists a
+- sql: |
+    drop schema if exists a cascade
+- sql: |
+    drop schema a restrict
+- sql: |
+    alter schema a rename to b
+- sql: |
+    create table a (id bigint)
+- sql: |
+    create table if not exists a (id bigint)
+- sql: |
+    create table a (id bigint, name varchar, arr ARRAY<bigint>, map MAP<bigint, varchar>)
+- sql: |
+    create table a (like b)
+- sql: |
+    create table a (like b including properties)
+- sql: |
+    create table a (like b excluding properties)
+- sql: |
+    create table a as select 1
+- sql: |
+    create table a as (select 1)
+- sql: |
+    create table a(c1, c2) as select 1, 2
+- sql: |
+    drop table a
+- sql: |
+    drop table if exists a
+- sql: |
+    insert into a select 1
+- sql: |
+    insert into a(c1) select 1
+- sql: |
+    delete from a
+- sql: |
+    delete from a where id = 1
+- sql: |
+    alter table a rename to b
+- sql: |
+    alter table a rename column c0 to c1
+- sql: |
+    alter table a drop column c0
+- sql: |
+    alter table a add column cx bigint
+- sql: |
+    create view a as select 1
+- sql: |
+    create or replace view a as select 1
+- sql: |
+    drop view a
+- sql: |
+    drop view if exists a

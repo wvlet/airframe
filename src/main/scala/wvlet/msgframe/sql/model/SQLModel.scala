@@ -20,6 +20,7 @@ import wvlet.msgframe.sql.model.SQLModel.Expression
 trait SQLModel {
   def modelName = this.getClass.getSimpleName
   def children: Seq[SQLModel]
+
 }
 
 /**
@@ -85,13 +86,18 @@ object SQLModel {
   }
   case class Table(name: QName)  extends Relation with LeafNode
   case class RawSQL(sql: String) extends Relation with LeafNode
-  //case class Filter(in: Relation, filterExpr: Expression)                                         extends Relation
+
   case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation with UnaryNode {
     override def child: SQLModel = in
   }
   case class Limit(in: Relation, limit: Int) extends Relation with UnaryNode {
     override def child: SQLModel = in
   }
+
+  case class Filter(child: Relation, filterExpr: Expression)        extends Relation with UnaryNode
+  case class Project(child: Relation, selectItems: Seq[SelectItem]) extends Relation with UnaryNode
+
+  // TODO Split this into Filter + Project
   case class Select(isDistinct: Boolean = false,
                     selectItems: Seq[SelectItem],
                     in: Option[Relation],
