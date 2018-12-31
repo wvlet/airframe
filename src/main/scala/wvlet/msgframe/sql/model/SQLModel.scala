@@ -20,7 +20,10 @@ import wvlet.msgframe.sql.model.SQLModel.Expression
 trait SQLModel {
   def modelName = this.getClass.getSimpleName
   def children: Seq[SQLModel]
+}
 
+trait SQLSig {
+  def sig: String
 }
 
 /**
@@ -75,7 +78,7 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation extends SQLModel
+  sealed trait Relation extends SQLModel with SQLSig
 
   sealed trait UnaryRelation extends Relation {
     def inputRelation: Relation
@@ -83,38 +86,62 @@ object SQLModel {
 
   case class ParenthesizedRelation(child: Relation) extends UnaryRelation with UnaryNode {
     override def inputRelation = child
+    override def sig: String   = child.sig
   }
   case class AliasedRelation(child: Relation, alias: String, columnNames: Option[Seq[String]])
       extends UnaryRelation
       with UnaryNode {
     override def inputRelation = child
+    override def sig: String   = child.sig
   }
 
   case class Values(rows: Seq[Expression]) extends Relation {
     override def children: Seq[SQLModel] = rows
+    override def sig: String             = "V"
   }
-  case class Table(name: QName)  extends Relation with LeafNode
-  case class RawSQL(sql: String) extends Relation with LeafNode
+  case class Table(name: QName) extends Relation with LeafNode {
+    override def sig: String = "T"
+  }
+  case class RawSQL(sql: String) extends Relation with LeafNode {
+    override def sig: String = "Q"
+  }
   case class Sort(in: Relation, orderBy: Seq[SortItem]) extends UnaryRelation with UnaryNode {
     override def inputRelation   = in
     override def child: SQLModel = in
+    override def sig: String     = s"O[${orderBy.length}](${in.sig})"
   }
 
   case class Limit(in: Relation, limit: Int) extends UnaryRelation with UnaryNode {
     override def inputRelation   = in
     override def child: SQLModel = in
+    override def sig: String     = s"L(${in.sig})"
   }
 
   case class Filter(in: Relation, filterExpr: Expression) extends UnaryRelation {
     override def inputRelation           = in
     override def children: Seq[SQLModel] = Seq(in)
+    override def sig: String             = s"F(${in.sig})"
   }
 
-  case object EmptyRelation extends Relation with LeafNode
+  case object EmptyRelation extends Relation with LeafNode {
+    override def sig = ""
+  }
+
+  private def isSelectAll(selectItems: Seq[SelectItem]): Boolean = {
+    selectItems.exists {
+      case AllColumns(x) => true
+      case _             => false
+    }
+  }
 
   case class Project(in: Relation, isDistinct: Boolean, selectItems: Seq[SelectItem]) extends UnaryRelation {
     override def inputRelation           = in
     override def children: Seq[SQLModel] = Seq(in)
+    override def sig: String = {
+      val prefix = if (isDistinct) "distinct " else ""
+      val proj   = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
+      s"P[${prefix}${proj}](${in.sig})"
+    }
   }
 
   case class Aggregate(in: Relation,
@@ -134,6 +161,11 @@ object SQLModel {
       b.result()
     }
 
+    override def sig: String = {
+      val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
+      s"A[${proj},${groupingKeys.length}](${in.sig})"
+    }
+
     override def toString =
       s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in})"
   }
@@ -147,35 +179,46 @@ object SQLModel {
       b += body
       b.result()
     }
-  }
 
+    override def sig: String = {
+      val wq = for (q <- withQuery.queries) yield {
+        s"${q.query.sig}"
+      }
+      val wq_s = wq.mkString(",")
+
+      s"W[${wq_s}](${body.sig})"
+    }
+  }
+  case class With(recursive: Boolean, queries: Seq[WithQuery]) extends SQLModel {
+    override def children: Seq[SQLModel] = queries.flatMap(_.children)
+  }
   case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]])
       extends SQLModel
       with UnaryNode {
     override def child: SQLModel = query
   }
-  case class With(recursive: Boolean, queries: Seq[WithQuery]) extends SQLModel {
-    override def children: Seq[SQLModel] = queries.flatMap(_.children)
-  }
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation {
     override def children: Seq[SQLModel] = Seq(left, right, cond)
+    override def sig: String = {
+      s"${joinType.symbol}(${left.sig},${right.sig})"
+    }
   }
-  sealed trait JoinType
+  sealed abstract class JoinType(val symbol: String)
   // Exact match (= equi join)
-  case object InnerJoin extends JoinType
+  case object InnerJoin extends JoinType("J")
   // Joins for preserving left table entries
-  case object LeftOuterJoin extends JoinType
+  case object LeftOuterJoin extends JoinType("LJ")
   // Joins for preserving right table entries
-  case object RightOuterJoin extends JoinType
+  case object RightOuterJoin extends JoinType("RJ")
   // Joins for preserving both table entries
-  case object FullOuterJoin extends JoinType
+  case object FullOuterJoin extends JoinType("FJ")
   // Cartesian product of two tables
-  case object CrossJoin extends JoinType
+  case object CrossJoin extends JoinType("CJ")
   // From clause contains only table names, and
   // Where clause specifies join criteria
-  case object ImplicitJoin extends JoinType
+  case object ImplicitJoin extends JoinType("J")
 
   sealed trait JoinCriteria extends Expression
   case object NaturalJoin   extends JoinCriteria with LeafNode
@@ -209,13 +252,27 @@ object SQLModel {
   sealed trait SetOperation extends Relation
   case class Intersect(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
     override def children: Seq[SQLModel] = relations
+    override def sig = {
+      val prefix = if (isDistinct) "IX[distinct]" else "IX"
+      s"${prefix}(${relations.map(_.sig).mkString(",")})"
+    }
   }
-  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryNode
+  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryNode {
+    override def sig = {
+      val prefix = if (isDistinct) "EX[distinct]" else "EX"
+      s"${prefix}(${left.sig},${right.sig})"
+    }
+  }
   case class Union(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
     override def children: Seq[SQLModel] = relations
     override def toString = {
       val name = if (isDistinct) "Union" else "UnionAll"
       s"${name}(${relations.mkString(",")})"
+    }
+    override def sig = {
+      val prefix = if (isDistinct) "U[distinct]" else "U"
+      val in     = relations.map(_.sig).mkString(",")
+      s"${prefix}(${in})"
     }
   }
 
@@ -474,22 +531,26 @@ object SQLModel {
   }
 
   // DDL
-  sealed trait DDL extends SQLModel
+  sealed trait DDL extends SQLModel with SQLSig
   case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
     override def children: Seq[SQLModel] = Seq(schema) ++ properties.getOrElse(Seq.empty)
+    override def sig                     = "CS"
   }
   case class SchemaProperty(key: Identifier, value: Expression) extends Expression {
     override def children: Seq[SQLModel] = Seq(key, value)
   }
   case class DropSchema(schema: QName, ifExists: Boolean, cascade: Boolean) extends DDL with UnaryNode {
     override def child: SQLModel = schema
+    override def sig             = "DS"
   }
 
   case class RenameSchema(schema: QName, renameTo: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(schema, renameTo)
+    override def sig                     = "RS"
   }
   case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
     override def children: Seq[SQLModel] = Seq(table) ++ tableElems
+    override def sig                     = "CT"
   }
 
   case class CreateTableAs(table: QName,
@@ -498,32 +559,42 @@ object SQLModel {
                            query: Relation)
       extends DDL {
     override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty) ++ Seq(query)
+    override def sig                     = s"CT(${query.sig})"
   }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL with UnaryNode {
     override def child: SQLModel = table
+    override def sig             = "DT"
   }
-  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation) extends SQLModel {
+  trait Update extends SQLModel with SQLSig
+
+  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation) extends Update {
     override def children: Seq[SQLModel] = Seq(table) ++ columnAliases.getOrElse(Seq.empty) ++ Seq(query)
+    override def sig                     = s"I(${query.sig})"
   }
-  case class Delete(table: QName, where: Option[Expression]) extends SQLModel {
+  case class Delete(table: QName, where: Option[Expression]) extends Update {
     override def children: Seq[SQLModel] = {
       val b = Seq.newBuilder[SQLModel]
       b += table
       where.map(b += _)
       b.result()
     }
+    override def sig = "D"
   }
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
     override def children: Seq[SQLModel] = Seq(table, renameTo)
+    override def sig                     = "RT"
   }
   case class RenameColumn(table: QName, column: Identifier, renameTo: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(table, column, renameTo)
+    override def sig                     = "RC"
   }
   case class DropColumn(table: QName, column: Identifier) extends DDL {
     override def children: Seq[SQLModel] = Seq(table, column)
+    override def sig                     = "DC"
   }
   case class AddColumn(table: QName, column: ColumnDef) extends DDL {
     override def children: Seq[SQLModel] = Seq(table, column)
+    override def sig                     = "AC"
   }
 
   sealed trait TableElement extends Expression
@@ -537,9 +608,11 @@ object SQLModel {
   }
   case class CreateView(viewName: QName, replace: Boolean, query: Relation) extends DDL {
     override def children: Seq[SQLModel] = Seq(viewName, query)
+    override def sig                     = "CV"
   }
   case class DropView(viewName: QName, ifExists: Boolean) extends DDL with UnaryNode {
     override def child = viewName
+    override def sig   = "DV"
   }
 }
 
