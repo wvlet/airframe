@@ -25,7 +25,7 @@ import wvlet.log.io.IOUtil
   */
 object SQLBenchmark {
 
-  case class TestQuery(sql: String)
+  case class TestQuery(sql: String, name: Option[String])
 
   private val RESOURCE_PATH = "msgframe-sql/src/test/resources/wvlet/msgframe/sql"
 
@@ -69,6 +69,11 @@ object SQLBenchmark {
       // TODO support rollup operator
       !sql.toLowerCase.contains("rollup")
     }
+  }
+
+  def tpcDS_(q: String): String = {
+    val f = new File(s"${RESOURCE_PATH}/tpc-ds/${q}.sql")
+    IOUtil.readAsString(f.getPath)
   }
 
   def tpcH: Seq[String] = {

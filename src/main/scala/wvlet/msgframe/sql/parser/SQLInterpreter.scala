@@ -279,18 +279,18 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
       case _                        => None
     }
 
-    val (joinType, joinCriteria) = Option(ctx.joinCriteria()) match {
+    val (joinType, joinCriteria, right) = Option(ctx.joinCriteria()) match {
       case Some(c) if c.USING() != null =>
-        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText).toSeq))
+        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText).toSeq), ctx.rightRelation)
       case Some(c) if c.booleanExpression() != null =>
-        (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())))
+        (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())), ctx.rightRelation)
       case _ =>
-        (CrossJoin, NaturalJoin)
+        (CrossJoin, NaturalJoin, ctx.right)
     }
-    val l     = visit(ctx.left).asInstanceOf[Relation]
-    val right = Option(ctx.aliasedRelation()).getOrElse(ctx.relation(0))
-    val r     = visit(right).asInstanceOf[Relation]
-    val j     = Join(joinType, l, r, joinCriteria)
+    val l = visit(ctx.left).asInstanceOf[Relation]
+    val r = visit(right).asInstanceOf[Relation]
+
+    val j = Join(joinType, l, r, joinCriteria)
     j
   }
 
