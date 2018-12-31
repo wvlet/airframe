@@ -46,35 +46,92 @@ object SQLPrinter extends LogSupport {
     }
   }
 
+  private def findSelectItems(in: Relation): Option[Seq[SelectItem]] = {
+    in match {
+      case Project(in, isDistinct, selectItems) =>
+        Some(selectItems)
+      case Aggregate(in, selectItems, groupingKeys, having) =>
+        Some(selectItems)
+      case u: UnaryRelation =>
+        findSelectItems(u.inputRelation)
+      case _ =>
+        None
+    }
+  }
+  private def findFromClause(in: Relation): Option[Relation] = {
+    in match {
+      case Project(in, _, _) =>
+        findFromClause(in)
+      case Aggregate(in, _, _, _) =>
+        findFromClause(in)
+      case Filter(in, filter) =>
+        findFromClause(in)
+      case EmptyRelation =>
+        None
+      case other =>
+        Some(other)
+    }
+  }
+
+  private def findWhereClause(in: Relation): Option[Expression] = {
+    in match {
+      case Project(_, _, _) =>
+        None
+      case Aggregate(_, _, _, _) =>
+        None
+      case Filter(in, filterExpr) =>
+        Some(filterExpr)
+      case u: UnaryRelation =>
+        findWhereClause(u.inputRelation)
+      case other =>
+        None
+    }
+  }
+
   def printRelation(r: Relation): String = {
     r match {
-      case Select(distinct, selectItems, in, whereExpr) =>
+      case EmptyRelation          => ""
+      case Filter(in, filterExpr) =>
+        // TODO Need to find whether this is a top level SQL node or not
+        val b = seqBuilder
+        b += "SELECT"
+        findSelectItems(in).map { selectItems =>
+          b += selectItems.map(print).mkString(", ")
+        }
+        findFromClause(in).map { f =>
+          b += "FROM"
+          b += print(f)
+        }
+        b += "WHERE"
+        b += printExpression(filterExpr)
+        b.result().mkString(" ")
+      case Project(in, isDistinct, selectItems) =>
         val b = Seq.newBuilder[String]
         b += "SELECT"
-        if (distinct) {
+        if (isDistinct) {
           b += "DISTINCT"
         }
         b += (selectItems.map(x => print(x)).mkString(", "))
-        in.map { x =>
+        findFromClause(in).map { f =>
           b += "FROM"
-          b += printRelation(x)
+          b += printRelation(f)
         }
-        whereExpr.map { w =>
+        findWhereClause(in).map { f =>
           b += "WHERE"
-          b += printExpression(w)
+          b += printExpression(f)
         }
         b.result().mkString(" ")
-      case Aggregate(selectItems, in, whereExpr, groupingKeys, having) =>
+      case Aggregate(in, selectItems, groupingKeys, having) =>
         val b = Seq.newBuilder[String]
         b += "SELECT"
         b += (selectItems.map(x => print(x)).mkString(", "))
-        in.map { x =>
+        findFromClause(in).map { f =>
           b += "FROM"
-          b += printRelation(x)
+          b += printRelation(f)
         }
-        whereExpr.map { w =>
+        findWhereClause(in).map { f =>
           b += "WHERE"
-          b += printExpression(w)
+          b += printExpression(f)
         }
         b += s"GROUP BY ${groupingKeys.map(x => printExpression(x)).mkString(", ")}"
         having.map { h =>

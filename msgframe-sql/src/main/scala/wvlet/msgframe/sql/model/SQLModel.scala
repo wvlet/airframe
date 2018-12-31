@@ -75,68 +75,76 @@ object SQLModel {
   }
 
   // Operator for ign relations
-  sealed trait Relation                             extends SQLModel
-  case class ParenthesizedRelation(child: Relation) extends Relation with UnaryNode
+  sealed trait Relation extends SQLModel {
+    def isEmptyRelation: Boolean = false
+  }
+
+  sealed trait UnaryRelation extends Relation {
+    def inputRelation: Relation
+  }
+
+  case class ParenthesizedRelation(child: Relation) extends UnaryRelation with UnaryNode {
+    override def inputRelation = child
+  }
   case class AliasedRelation(child: Relation, alias: String, columnNames: Option[Seq[String]])
-      extends Relation
-      with UnaryNode
+      extends UnaryRelation
+      with UnaryNode {
+    override def inputRelation = child
+  }
 
   case class Values(rows: Seq[Expression]) extends Relation {
     override def children: Seq[SQLModel] = rows
   }
   case class Table(name: QName)  extends Relation with LeafNode
   case class RawSQL(sql: String) extends Relation with LeafNode
-
-  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends Relation with UnaryNode {
-    override def child: SQLModel = in
-  }
-  case class Limit(in: Relation, limit: Int) extends Relation with UnaryNode {
+  case class Sort(in: Relation, orderBy: Seq[SortItem]) extends UnaryRelation with UnaryNode {
+    override def inputRelation   = in
     override def child: SQLModel = in
   }
 
-  case class Filter(child: Relation, filterExpr: Expression)        extends Relation with UnaryNode
-  case class Project(child: Relation, selectItems: Seq[SelectItem]) extends Relation with UnaryNode
-
-  // TODO Split this into Filter + Project
-  case class Select(isDistinct: Boolean = false,
-                    selectItems: Seq[SelectItem],
-                    in: Option[Relation],
-                    whereExpr: Option[Expression])
-      extends Relation {
-
-    override def children: Seq[SQLModel] = {
-      val b = Seq.newBuilder[SQLModel]
-      b ++= selectItems
-      in.map(b += _)
-      whereExpr.map(b += _)
-      b.result()
-    }
-
-    override def toString =
-      s"Select[${selectItems.mkString(",")}](${in.getOrElse("None")},distinct:${isDistinct},where:${whereExpr})"
+  case class Limit(in: Relation, limit: Int) extends UnaryRelation with UnaryNode {
+    override def inputRelation   = in
+    override def child: SQLModel = in
   }
-  case class Aggregate(selectItems: Seq[SelectItem],
-                       in: Option[Relation],
-                       whereExpr: Option[Expression],
+
+  case class Filter(in: Relation, filterExpr: Expression) extends UnaryRelation {
+    override def inputRelation           = in
+    override def children: Seq[SQLModel] = Seq(in)
+  }
+
+  case object EmptyRelation extends Relation with LeafNode {
+    override def isEmptyRelation: Boolean = true
+  }
+
+  case class Project(in: Relation, isDistinct: Boolean, selectItems: Seq[SelectItem]) extends UnaryRelation {
+    override def inputRelation           = in
+    override def children: Seq[SQLModel] = Seq(in)
+  }
+
+  case class Aggregate(in: Relation,
+                       selectItems: Seq[SelectItem],
                        groupingKeys: Seq[Expression],
                        having: Option[Expression])
-      extends Relation {
+      extends UnaryRelation {
+
+    override def inputRelation = in
 
     override def children: Seq[SQLModel] = {
       val b = Seq.newBuilder[SQLModel]
       b ++= selectItems
-      in.map(b += _)
-      whereExpr.map(b += _)
+      b += in
       b ++= groupingKeys
       having.map(b += _)
       b.result()
     }
 
     override def toString =
-      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in},where:${whereExpr}))"
+      s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${in})"
   }
 
-  case class Query(withQuery: With, body: Relation) extends Relation {
+  case class Query(withQuery: With, body: Relation) extends UnaryRelation {
+    override def inputRelation = body
+
     override def children: Seq[SQLModel] = {
       val b = Seq.newBuilder[SQLModel]
       b ++= withQuery.children

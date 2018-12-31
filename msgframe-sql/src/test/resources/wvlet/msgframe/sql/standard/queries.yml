@@ -166,3 +166,5 @@
     select 1 * (2 + 4)
 - sql: |
     select 'a' || 'b'
+- sql: |
+    select 1 where 1 != 0
