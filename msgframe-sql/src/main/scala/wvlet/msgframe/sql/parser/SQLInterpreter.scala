@@ -15,10 +15,10 @@ package wvlet.msgframe.sql.parser
 
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
+import wvlet.log.LogSupport
+import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 import wvlet.msgframe.sql.model.LogicalPlan._
 import wvlet.msgframe.sql.parser.SqlBaseParser._
-import wvlet.log.{LogSupport, Logger}
-import wvlet.msgframe.sql.model.LogicalPlan
 
 object SQLInterpreter {
   private[parser] def unquote(s: String): String = {
@@ -29,8 +29,9 @@ object SQLInterpreter {
 /**
   * ANTLR parse tree -> SQL LogicalPlan
   */
-class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
+class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   import SQLInterpreter._
+
   import scala.collection.JavaConverters._
 
   private val parserRules            = SqlBaseParser.ruleNames.toList.asJava
@@ -48,15 +49,15 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     trace(s"interpret: ${print(ctx)}")
     val m = ctx.accept(this)
     trace(m)
-    m
+    m.asInstanceOf[LogicalPlan]
   }
 
   override def visitSingleStatement(ctx: SingleStatementContext): LogicalPlan = {
-    visit(ctx.statement())
+    visit(ctx.statement()).asInstanceOf[LogicalPlan]
   }
 
   override def visitStatementDefault(ctx: StatementDefaultContext): LogicalPlan = {
-    visit(ctx.query())
+    visit(ctx.query()).asInstanceOf[LogicalPlan]
   }
 
   override def visitQuery(ctx: QueryContext): Relation = {
@@ -159,11 +160,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
   }
 
   override def visitQueryTermDefault(ctx: QueryTermDefaultContext): LogicalPlan = {
-    visit(ctx.queryPrimary())
+    visit(ctx.queryPrimary()).asInstanceOf[LogicalPlan]
   }
 
   override def visitQueryPrimaryDefault(ctx: QueryPrimaryDefaultContext): LogicalPlan = {
-    visit(ctx.querySpecification())
+    visit(ctx.querySpecification()).asInstanceOf[LogicalPlan]
   }
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): LogicalPlan = {
@@ -303,7 +304,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     QName(ctx.identifier().asScala.map(_.getText).toSeq)
   }
 
-  override def visitDereference(ctx: DereferenceContext): LogicalPlan = {
+  override def visitDereference(ctx: DereferenceContext): Attribute = {
     UnresolvedAttribute(Seq(ctx.base.getText, ctx.fieldName.getText))
   }
 
@@ -318,7 +319,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     SingleColumn(expression(ctx.expression()), alias)
   }
 
-  override def visitExpression(ctx: ExpressionContext): LogicalPlan = {
+  override def visitExpression(ctx: ExpressionContext): Expression = {
     trace(s"expr: ${print(ctx)}")
     val b: BooleanExpressionContext = ctx.booleanExpression()
     b match {
@@ -340,15 +341,15 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
         visitPredicated(bd.predicated())
       case other =>
         warn(s"Unknown expression: ${other.getClass}")
-        visit(ctx.booleanExpression())
+        visit(ctx.booleanExpression()).asInstanceOf[Expression]
     }
   }
 
-  override def visitLogicalNot(ctx: LogicalNotContext): LogicalPlan = {
+  override def visitLogicalNot(ctx: LogicalNotContext): Expression = {
     Not(expression(ctx.booleanExpression()))
   }
 
-  def expression(ctx: ParserRuleContext): Expression = {
+  private def expression(ctx: ParserRuleContext): Expression = {
     ctx.accept(this).asInstanceOf[Expression]
   }
 
@@ -466,7 +467,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     }
   }
 
-  override def visitLogicalBinary(ctx: LogicalBinaryContext): LogicalPlan = {
+  override def visitLogicalBinary(ctx: LogicalBinaryContext): Expression = {
     val left  = expression(ctx.left)
     val right = expression(ctx.right)
     ctx.operator.getType match {
@@ -477,7 +478,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     }
   }
 
-  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): LogicalPlan = {
+  override def visitArithmeticBinary(ctx: ArithmeticBinaryContext): Expression = {
     val left  = expression(ctx.left)
     val right = expression(ctx.right)
     val binaryExprType: BinaryExprType =
@@ -518,7 +519,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     Exists(SubQueryExpression(visitQuery(ctx.query())))
   }
 
-  override def visitBooleanLiteral(ctx: BooleanLiteralContext): LogicalPlan = {
+  override def visitBooleanLiteral(ctx: BooleanLiteralContext): Literal = {
     if (ctx.booleanValue().TRUE() != null) {
       TrueLiteral
     } else {
@@ -526,23 +527,23 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     }
   }
 
-  override def visitNumericLiteral(ctx: NumericLiteralContext): LogicalPlan = {
-    visit(ctx.number())
+  override def visitNumericLiteral(ctx: NumericLiteralContext): Literal = {
+    visit(ctx.number()).asInstanceOf[Literal]
   }
 
-  override def visitDoubleLiteral(ctx: DoubleLiteralContext): LogicalPlan = {
+  override def visitDoubleLiteral(ctx: DoubleLiteralContext): Literal = {
     DoubleLiteral(ctx.getText.toDouble)
   }
 
-  override def visitDecimalLiteral(ctx: DecimalLiteralContext): LogicalPlan = {
+  override def visitDecimalLiteral(ctx: DecimalLiteralContext): Literal = {
     DecimalLiteral(ctx.getText)
   }
 
-  override def visitIntegerLiteral(ctx: IntegerLiteralContext): LogicalPlan = {
+  override def visitIntegerLiteral(ctx: IntegerLiteralContext): Literal = {
     LongLiteral(ctx.getText.toInt)
   }
 
-  override def visitStringLiteral(ctx: StringLiteralContext): LogicalPlan = {
+  override def visitStringLiteral(ctx: StringLiteralContext): Literal = {
     val text = ctx.str().getText.replaceAll("(^'|'$)", "")
     StringLiteral(text)
   }
@@ -617,11 +618,11 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     }
   }
 
-  override def visitBoundedFrame(ctx: BoundedFrameContext): LogicalPlan = {
-    super.visitBoundedFrame(ctx)
+  override def visitBoundedFrame(ctx: BoundedFrameContext): Expression = {
+    super.visitBoundedFrame(ctx).asInstanceOf[Expression]
   }
 
-  override def visitFunctionCall(ctx: FunctionCallContext): LogicalPlan = {
+  override def visitFunctionCall(ctx: FunctionCallContext): FunctionCall = {
     val name = QName(ctx.qualifiedName().getText)
     val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
       expression(f.booleanExpression())
@@ -648,9 +649,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
     }
   }
 
-  override def visitNullLiteral(ctx: NullLiteralContext): LogicalPlan = NullLiteral
+  override def visitNullLiteral(ctx: NullLiteralContext): Literal = NullLiteral
 
-  override def visitInterval(ctx: IntervalContext): LogicalPlan = {
+  override def visitInterval(ctx: IntervalContext): IntervalLiteral = {
     val sign = if (ctx.MINUS() != null) {
       Negative
     } else {
