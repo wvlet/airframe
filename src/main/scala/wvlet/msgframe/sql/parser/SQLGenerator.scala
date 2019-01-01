@@ -60,26 +60,25 @@ object SQLGenerator extends LogSupport {
   }
 
   private def findSelectItems(in: Relation): Option[Seq[SelectItem]] = {
+    findSelection(in).map(_.selectItems)
+  }
+
+  private def findSelection(in: Relation): Option[Selection] = {
     in match {
-      case Project(in, isDistinct, selectItems) =>
-        Some(selectItems)
-      case Aggregate(in, selectItems, groupingKeys, having) =>
-        Some(selectItems)
+      case p @ Project(in, selectItems) =>
+        Some(p)
+      case a @ Aggregate(in, selectItems, groupingKeys, having) =>
+        Some(a)
       case u: UnaryRelation =>
-        findSelectItems(u.inputRelation)
+        findSelection(u.inputRelation)
       case _ =>
         None
     }
   }
-  private def findFromClause(in: Relation): Option[Relation] = {
+
+  private def findNonEmpty(in: Relation): Option[Relation] = {
     // Look for FROM clause candidates inside Project/Aggregate/Filter nodes
     in match {
-      case Project(in, _, _) =>
-        findFromClause(in)
-      case Aggregate(in, _, _, _) =>
-        findFromClause(in)
-      case Filter(in, filter) =>
-        findFromClause(in)
       case EmptyRelation =>
         None
       case other =>
@@ -87,75 +86,106 @@ object SQLGenerator extends LogSupport {
     }
   }
 
-  private def findWhereClause(in: Relation): Option[Expression] = {
+  private def collectFilterExpression(stack: List[Relation]): Seq[Expression] = {
     // We need to terminate traversal at Project/Aggregate node because these will create another SELECT statement.
-    in match {
-      case Project(_, _, _) =>
-        None
-      case Aggregate(_, _, _, _) =>
-        None
-      case Filter(in, filterExpr) =>
-        Some(filterExpr)
-      case u: UnaryRelation =>
-        findWhereClause(u.inputRelation)
-      case other =>
-        None
+    stack.reverse.collect {
+      case f @ Filter(in, filterExpr) =>
+        filterExpr
     }
   }
 
-  def printRelation(r: Relation): String = {
+  private def printSetOperation(s: SetOperation, context: List[Relation]): String = {
+    val isDistinct = containsDistinctPlan(context)
+    val op = s match {
+      case Union(relations) =>
+        if (isDistinct) "UNION" else "UNION ALL"
+      case Except(left, right) =>
+        if (isDistinct) "EXCEPT" else "EXCEPT ALL"
+      case Intersect(relations) =>
+        if (isDistinct) "INTERSECT" else "INTERSECT ALL"
+    }
+    s.children.map(printRelation).mkString(s" ${op} ")
+  }
+
+  private def containsDistinctPlan(context: List[Relation]): Boolean = {
+    context.exists {
+      case e: Distinct => true
+      case _           => false
+    }
+  }
+
+  private def collectChildFilters(r: Relation): List[Filter] = {
     r match {
-      case EmptyRelation          => ""
-      case Filter(in, filterExpr) =>
-        // TODO Need to find whether this is a top level SQL node or not
-        val b = seqBuilder
-        b += "SELECT"
-        findSelectItems(in).map { selectItems =>
-          b += selectItems.map(printExpression _).mkString(", ")
-        }
-        findFromClause(in).map { f =>
-          b += "FROM"
-          b += print(f)
-        }
-        b += "WHERE"
-        b += printExpression(filterExpr)
-        b.result().mkString(" ")
-      case Project(in, isDistinct, selectItems) =>
-        val b = Seq.newBuilder[String]
-        b += "SELECT"
-        if (isDistinct) {
-          b += "DISTINCT"
-        }
-        b += (selectItems.map(printExpression).mkString(", "))
-        findFromClause(in).map { f =>
-          b += "FROM"
-          b += printRelation(f)
-        }
-        findWhereClause(in).map { f =>
-          b += "WHERE"
-          b += printExpression(f)
-        }
-        b.result().mkString(" ")
-      case Aggregate(in, selectItems, groupingKeys, having) =>
-        val b = Seq.newBuilder[String]
-        b += "SELECT"
-        b += (selectItems.map(printExpression).mkString(", "))
-        findFromClause(in).map { f =>
-          b += "FROM"
-          b += printRelation(f)
-        }
-        findWhereClause(in).map { f =>
-          b += "WHERE"
-          b += printExpression(f)
-        }
+      case f @ Filter(in, _) =>
+        f :: collectChildFilters(in)
+      case other =>
+        Nil
+    }
+  }
+
+  private def printSelection(s: Selection, context: List[Relation]): String = {
+    // We need to pull-up Filter operators from child relations to build WHERE clause
+    // e.g., Selection(in:Filter(Filter( ...)), ...)
+    val childFilters: List[Filter] = collectChildFilters(s.child)
+    val nonFilterChild = if (childFilters.nonEmpty) {
+      childFilters.last.child
+    } else {
+      s.child
+    }
+    val b = Seq.newBuilder[String]
+    b += "SELECT"
+    if (containsDistinctPlan(context)) {
+      b += "DISTINCT"
+    }
+    b += (s.selectItems.map(printExpression).mkString(", "))
+    findNonEmpty(nonFilterChild).map { f =>
+      b += "FROM"
+      b += printRelation(f)
+    }
+
+    val filterSet = s match {
+      case Project(_, _) =>
+        // Merge parent and child Filters
+        collectFilterExpression(context) ++ collectFilterExpression(childFilters)
+      case Aggregate(_, _, _, _) =>
+        // We cannot push down parent Filter
+        collectFilterExpression(childFilters)
+    }
+    if (filterSet.nonEmpty) {
+      b += "WHERE"
+      val cond = filterSet.reduce((f1, f2) => And(f1, f2))
+      b += printExpression(cond)
+    }
+
+    s match {
+      case Aggregate(_, _, groupingKeys, having) =>
         b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
         having.map { h =>
           b += "HAVING"
           b += printExpression(h)
         }
-        b.result().mkString(" ")
+      case _ =>
+    }
+    b.result().mkString(" ")
+  }
+
+  def printRelation(r: Relation): String = printRelation(r, List.empty)
+
+  def printRelation(r: Relation, context: List[Relation] = List.empty): String = {
+    r match {
+      case EmptyRelation => ""
+      case s: SetOperation =>
+        printSetOperation(s, context)
+      case Filter(in, filterExpr) =>
+        printRelation(in, r :: context)
+      case Distinct(in) =>
+        printRelation(in, r :: context)
+      case p @ Project(in, selectItems) =>
+        printSelection(p, context)
+      case a @ Aggregate(in, selectItems, groupingKeys, having) =>
+        printSelection(a, context)
       case Query(withQuery, body) =>
-        val s = Seq.newBuilder[String]
+        val s = seqBuilder
         s += "WITH"
         if (withQuery.recursive) {
           s += "RECURSIVE"
@@ -167,28 +197,23 @@ object SQLGenerator extends LogSupport {
           }.mkString(", ")
         s += printRelation(body)
         s.result().mkString(" ")
-      case Union(relations, isDistinct) =>
-        val op = if (isDistinct) " UNION " else " UNION ALL "
-        relations.map(printRelation(_)).mkString(op)
-      case Except(left, right, distinct) =>
-        val op = if (distinct) " EXCEPT " else " EXCEPT ALL "
-        val l  = printRelation(left)
-        val r  = printRelation(right)
-        s"${l} ${op} ${r}"
-      case Intersect(relations, isDistinct) =>
-        val op = if (isDistinct) " INTERSECT " else " INTERSECT ALL "
-        relations.map(printRelation(_)).mkString(op)
       case Table(t) =>
         printExpression(t)
       case Limit(in, l) =>
-        s"${printRelation(in)} LIMIT ${l}"
+        val s = seqBuilder
+        s += printRelation(in, context)
+        s += s"LIMIT ${l}"
+        s.result().mkString(" ")
       case Sort(in, orderBy) =>
-        val order = orderBy.map(x => printExpression(x)).mkString(", ")
-        s"${printRelation(in)} ORDER BY ${order}"
+        val s = seqBuilder
+        s += printRelation(in, context)
+        s += "ORDER BY"
+        s += orderBy.map(x => printExpression(x)).mkString(", ")
+        s.result().mkString(" ")
       case ParenthesizedRelation(r) =>
-        s"(${printRelation(r)})"
+        s"(${printRelation(r, context)})"
       case AliasedRelation(relation, alias, columnNames) =>
-        val r = printRelation(relation)
+        val r = printRelation(relation, context)
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
           case Table(x)                 => s"${r} AS ${alias}${c}"
