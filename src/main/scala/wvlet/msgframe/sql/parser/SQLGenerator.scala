@@ -14,8 +14,8 @@
 
 package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 import wvlet.msgframe.sql.model.LogicalPlan._
+import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 
 /**
   * Print LogicalPlans As SQL statements
@@ -35,8 +35,6 @@ object SQLGenerator extends LogSupport {
 
   def print(m: LogicalPlan): String = {
     m match {
-      case r: Relation => printRelation(r)
-      case d: DDL      => printDDL(d)
       case InsertInto(table, aliases, query) =>
         val b = seqBuilder
         b += "INSERT INTO"
@@ -55,7 +53,9 @@ object SQLGenerator extends LogSupport {
           b += printExpression(x)
         }
         b.result().mkString(" ")
-      case other => unknown(other)
+      case r: Relation => printRelation(r)
+      case d: DDL      => printDDL(d)
+      case other       => unknown(other)
     }
   }
 
