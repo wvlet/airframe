@@ -17,6 +17,7 @@ import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
 
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
+import wvlet.msgframe.sql.SQLBenchmark.TestQuery
 import wvlet.msgframe.sql.analyzer.QuerySignature
 import wvlet.msgframe.sql.model.LogicalPlanPrinter
 
@@ -31,9 +32,9 @@ class SQLParserTest extends AirframeSpec {
     * model 1 should be equivalent to model 2
     *
     */
-  def roundtrip(sql: String): Unit = {
-    debug(s"roundtrip test:\n${sql}")
-    val m1 = SQLParser.parse(sql)
+  def roundtrip(sql: TestQuery): Unit = {
+    debug(s"roundtrip test ${sql.name}:\n${sql}")
+    val m1 = SQLParser.parse(sql.sql)
     val b  = new StringWriter()
     val p  = new PrintWriter(b)
     val s  = LogicalPlanPrinter.print(m1, p, level = 0)
@@ -54,7 +55,7 @@ class SQLParserTest extends AirframeSpec {
         throw e
     }
 
-    val sig1 = QuerySignature.of(sql)
+    val sig1 = QuerySignature.of(sql.sql)
     val sig2 = QuerySignature.of(printSql)
     try {
       sig1 shouldBe sig2

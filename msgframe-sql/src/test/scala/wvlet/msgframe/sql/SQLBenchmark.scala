@@ -25,11 +25,14 @@ import wvlet.log.io.IOUtil
   */
 object SQLBenchmark {
 
-  case class TestQuery(sql: String, name: Option[String])
+  case class TestQuery(sql: String, path: Option[String]) {
+    override def toString = s"${name}:\n${sql}"
+    def name              = path.getOrElse(s"${sql.substring(0, 20.min(sql.length))}")
+  }
 
   private val RESOURCE_PATH = "msgframe-sql/src/test/resources/wvlet/msgframe/sql"
 
-  private def readSQLFromYaml(path: String): Seq[String] = {
+  private def readSQLFromYaml(path: String): Seq[TestQuery] = {
     val yaml = YamlReader.loadYamlList(path)
 
     yaml
@@ -37,49 +40,50 @@ object SQLBenchmark {
         val msgpack = YamlReader.toMsgPack(y)
         val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
         codec.unpackMsgPack(msgpack).map { x =>
-          x.sql.trim
+          x
         }
       }
       .filter(_.isDefined)
       .flatten
   }
 
-  def allQueries: Seq[String] = {
+  def allQueries: Seq[TestQuery] = {
     standardQueries ++ tpcH ++ tpcDS
   }
 
-  def standardQueries: Seq[String] = {
+  def standardQueries: Seq[TestQuery] = {
     selection ++ ddl
   }
 
-  def selection: Seq[String] = {
+  def selection: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/queries.yml")
   }
 
-  def ddl: Seq[String] = {
+  def ddl: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/ddl.yml")
   }
 
-  def tpcDS: Seq[String] = {
-    val dir = new File(s"${RESOURCE_PATH}/tpc-ds")
-    val sqls = for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
-      IOUtil.readAsString(f.getPath)
-    }
-    sqls.filter { sql =>
-      // TODO support rollup operator
-      !sql.toLowerCase.contains("rollup")
-    }
-  }
-
-  def tpcDS_(q: String): String = {
-    val f = new File(s"${RESOURCE_PATH}/tpc-ds/${q}.sql")
-    IOUtil.readAsString(f.getPath)
-  }
-
-  def tpcH: Seq[String] = {
-    val dir = new File(s"${RESOURCE_PATH}/tpc-h")
+  private def readTestQueries(dir: File): Seq[TestQuery] = {
     for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
-      IOUtil.readAsString(f.getPath)
+      TestQuery(IOUtil.readAsString(f.getPath), Some(f.getName))
     }
+  }
+
+  def tpcDS: Seq[TestQuery] = {
+    val dir = new File(s"${RESOURCE_PATH}/tpc-ds")
+    readTestQueries(dir).filter { x =>
+      // TODO support rollup operator
+      !x.sql.toLowerCase.contains("rollup")
+    }
+  }
+
+  def tpcDS_(q: String): TestQuery = {
+    val f = new File(s"${RESOURCE_PATH}/tpc-ds/${q}.sql")
+    TestQuery(IOUtil.readAsString(f.getPath), Some(f.getName))
+  }
+
+  def tpcH: Seq[TestQuery] = {
+    val dir = new File(s"${RESOURCE_PATH}/tpc-h")
+    readTestQueries(dir)
   }
 }
