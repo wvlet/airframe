@@ -27,7 +27,7 @@ object SQLInterpreter {
 }
 
 /**
-  * ANTLR parse tree -> SQL model classes
+  * ANTLR parse tree -> SQL LogicalPlan
   */
 class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
   import SQLInterpreter._
@@ -304,7 +304,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[LogicalPlan] with LogSupport {
   }
 
   override def visitDereference(ctx: DereferenceContext): LogicalPlan = {
-    QName(s"${ctx.base.getText}.${ctx.fieldName.getText}")
+    UnresolvedAttribute(Seq(ctx.base.getText, ctx.fieldName.getText))
   }
 
   override def visitSelectAll(ctx: SelectAllContext): SelectItem = {
