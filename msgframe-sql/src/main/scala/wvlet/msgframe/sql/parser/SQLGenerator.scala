@@ -15,6 +15,7 @@
 package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model.LogicalPlan._
+import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 
 /**
