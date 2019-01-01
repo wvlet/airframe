@@ -203,7 +203,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         // No aggregation
         // TODO distinct check
         val p        = Project(inputRelation, selectItem)
-        val distinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
+        val distinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(false)
         if (distinct) {
           Distinct(p)
         } else {
