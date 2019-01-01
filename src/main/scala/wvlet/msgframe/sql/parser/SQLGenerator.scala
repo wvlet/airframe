@@ -323,6 +323,8 @@ object SQLGenerator extends LogSupport {
         a.name
       case i: Identifier =>
         i.toString
+      case GroupingKey(k) =>
+        printExpression(k)
       case ParenthesizedExpression(expr) =>
         s"(${printExpression(expr)})"
       case SingleColumn(ex, alias) =>
