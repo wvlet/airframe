@@ -207,7 +207,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = body.outputAttributes
   }
   case class With(recursive: Boolean, queries: Seq[WithQuery]) extends LogicalPlan {
-    override def children: Seq[LogicalPlan]       = queries.flatMap(_.children)
+    override def children: Seq[LogicalPlan]       = queries
     override def inputAttributes: Seq[Attribute]  = ???
     override def outputAttributes: Seq[Attribute] = ???
   }
