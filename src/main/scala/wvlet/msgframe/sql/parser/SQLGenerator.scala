@@ -14,7 +14,7 @@
 
 package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.LogicalPlan
+import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 import wvlet.msgframe.sql.model.LogicalPlan._
 
 /**
@@ -22,7 +22,7 @@ import wvlet.msgframe.sql.model.LogicalPlan._
   */
 object SQLGenerator extends LogSupport {
 
-  private def unknown(e: LogicalPlan): String = {
+  private def unknown(e: Any): String = {
     if (e != null) {
       warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")
       e.toString
@@ -35,25 +35,24 @@ object SQLGenerator extends LogSupport {
 
   def print(m: LogicalPlan): String = {
     m match {
-      case r: Relation   => printRelation(r)
-      case d: DDL        => printDDL(d)
-      case e: Expression => printExpression(e)
+      case r: Relation => printRelation(r)
+      case d: DDL      => printDDL(d)
       case InsertInto(table, aliases, query) =>
         val b = seqBuilder
         b += "INSERT INTO"
-        b += print(table)
+        b += printExpression(table)
         aliases.map { x =>
-          b += s"(${x.map(print(_)).mkString(", ")})"
+          b += s"(${x.map(printExpression).mkString(", ")})"
         }
         b += print(query)
         b.result().mkString(" ")
       case Delete(table, condOpt) =>
         val b = seqBuilder
         b += "DELETE FROM"
-        b += print(table)
+        b += printExpression(table)
         condOpt.map { x =>
           b += "WHERE"
-          b += print(x)
+          b += printExpression(x)
         }
         b.result().mkString(" ")
       case other => unknown(other)
@@ -112,7 +111,7 @@ object SQLGenerator extends LogSupport {
         val b = seqBuilder
         b += "SELECT"
         findSelectItems(in).map { selectItems =>
-          b += selectItems.map(print).mkString(", ")
+          b += selectItems.map(printExpression _).mkString(", ")
         }
         findFromClause(in).map { f =>
           b += "FROM"
@@ -127,7 +126,7 @@ object SQLGenerator extends LogSupport {
         if (isDistinct) {
           b += "DISTINCT"
         }
-        b += (selectItems.map(x => print(x)).mkString(", "))
+        b += (selectItems.map(printExpression).mkString(", "))
         findFromClause(in).map { f =>
           b += "FROM"
           b += printRelation(f)
@@ -140,7 +139,7 @@ object SQLGenerator extends LogSupport {
       case Aggregate(in, selectItems, groupingKeys, having) =>
         val b = Seq.newBuilder[String]
         b += "SELECT"
-        b += (selectItems.map(x => print(x)).mkString(", "))
+        b += (selectItems.map(printExpression).mkString(", "))
         findFromClause(in).map { f =>
           b += "FROM"
           b += printRelation(f)
@@ -149,7 +148,7 @@ object SQLGenerator extends LogSupport {
           b += "WHERE"
           b += printExpression(f)
         }
-        b += s"GROUP BY ${groupingKeys.map(x => printExpression(x)).mkString(", ")}"
+        b += s"GROUP BY ${groupingKeys.map(printExpression).mkString(", ")}"
         having.map { h =>
           b += "HAVING"
           b += printExpression(h)
@@ -222,7 +221,7 @@ object SQLGenerator extends LogSupport {
     e match {
       case CreateSchema(name, ifNotExists, propsOpt) =>
         val e = if (ifNotExists) "IF NOT EXISTS " else ""
-        val w = propsOpt.map(props => s" WITH (${props.map(p => print(p)).mkString(", ")})").getOrElse("")
+        val w = propsOpt.map(props => s" WITH (${props.map(printExpression).mkString(", ")})").getOrElse("")
         s"CREATE SCHEMA ${e}${name}${w}"
       case DropSchema(name, ifExists, cascade) =>
         val s = Seq.newBuilder[String]
@@ -239,14 +238,14 @@ object SQLGenerator extends LogSupport {
         s"ALTER SCHEMA ${from} RENAME TO ${to}"
       case CreateTable(name, ifNotExists, tableElements) =>
         val e     = if (ifNotExists) " IF NOT EXISTS " else ""
-        val elems = tableElements.map(x => print(x)).mkString(", ")
+        val elems = tableElements.map(printExpression).mkString(", ")
         s"CREATE TABLE ${e}${name} (${elems})"
       case CreateTableAs(name, ifNotExists, columnAliases, query) =>
         val e = if (ifNotExists) " IF NOT EXISTS " else ""
         val aliases =
           columnAliases
             .map { x =>
-              s"(${x.map(printExpression(_)).mkString(", ")})"
+              s"(${x.map(printExpression).mkString(", ")})"
             }
             .getOrElse("")
         s"CREATE TABLE ${e}${name}${aliases} AS ${print(query)}"
@@ -256,37 +255,37 @@ object SQLGenerator extends LogSupport {
         if (ifExists) {
           b += "IF EXISTS"
         }
-        b += print(table)
+        b += printExpression(table)
         b.result().mkString(" ")
       case RenameTable(from, to) =>
         val b = seqBuilder
         b += "ALTER TABLE"
-        b += print(from)
+        b += printExpression(from)
         b += "RENAME TO"
-        b += print(to)
+        b += printExpression(to)
         b.result().mkString(" ")
       case RenameColumn(table, from, to) =>
         val b = seqBuilder
         b += "ALTER TABLE"
-        b += print(table)
+        b += printExpression(table)
         b += "RENAME COLUMN"
-        b += print(from)
+        b += printExpression(from)
         b += "TO"
-        b += print(to)
+        b += printExpression(to)
         b.result().mkString(" ")
       case DropColumn(table, col) =>
         val b = seqBuilder
         b += "ALTER TABLE"
-        b += print(table)
+        b += printExpression(table)
         b += "DROP COLUMN"
-        b += print(col)
+        b += printExpression(col)
         b.result().mkString(" ")
       case AddColumn(table, colDef) =>
         val b = seqBuilder
         b += "ALTER TABLE"
-        b += print(table)
+        b += printExpression(table)
         b += "ADD COLUMN"
-        b += print(colDef)
+        b += printExpression(colDef)
         b.result().mkString(" ")
       case CreateView(name, replace, query) =>
         val b = seqBuilder
@@ -295,7 +294,7 @@ object SQLGenerator extends LogSupport {
           b += "OR REPLACE"
         }
         b += "VIEW"
-        b += print(name)
+        b += printExpression(name)
         b += "AS"
         b += print(query)
         b.result().mkString(" ")
@@ -305,7 +304,7 @@ object SQLGenerator extends LogSupport {
         if (ifExists) {
           b += "IF EXISTS"
         }
-        b += print(name)
+        b += printExpression(name)
         b.result().mkString(" ")
     }
   }
@@ -393,9 +392,9 @@ object SQLGenerator extends LogSupport {
         tpe
       case ColumnDefLike(table, includeProperties) =>
         val inc = if (includeProperties) "INCLUDING" else "EXCLUDING"
-        s"LIKE ${print(table)} ${inc} PROPERTIES"
+        s"LIKE ${printExpression(table)} ${inc} PROPERTIES"
       case ArrayConstructor(values) =>
-        s"ARRAY[${values.map(print).mkString(", ")}]"
+        s"ARRAY[${values.map(printExpression).mkString(", ")}]"
       case Parameter(index) =>
         "?"
       case other => unknown(other)
@@ -443,13 +442,13 @@ object SQLGenerator extends LogSupport {
       case NotInSubQuery(a, in) =>
         s"${printExpression(a)} NOT IN (${printRelation(in)})"
       case Like(a, e) =>
-        s"${printExpression(a)} LIKE ${print(e)}"
+        s"${printExpression(a)} LIKE ${printExpression(e)}"
       case NotLike(a, e) =>
-        s"${printExpression(a)} NOT LIKE ${print(e)}"
+        s"${printExpression(a)} NOT LIKE ${printExpression(e)}"
       case DistinctFrom(a, e) =>
-        s"${printExpression(a)} IS DISTINCT FROM ${print(e)}"
+        s"${printExpression(a)} IS DISTINCT FROM ${printExpression(e)}"
       case NotDistinctFrom(a, e) =>
-        s"${printExpression(a)} IS NOT DISTINCT FROM ${print(e)}"
+        s"${printExpression(a)} IS NOT DISTINCT FROM ${printExpression(e)}"
       case other => unknown(other)
     }
   }
