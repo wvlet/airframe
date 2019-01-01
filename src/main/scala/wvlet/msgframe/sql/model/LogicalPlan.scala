@@ -13,8 +13,6 @@
  */
 package wvlet.msgframe.sql.model
 
-import java.util.Locale
-
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
   def modelName = {
     val n = this.getClass.getSimpleName
