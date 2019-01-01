@@ -19,6 +19,10 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
     if (n.endsWith("$")) n.substring(0, n.length - 1) else n
   }
 
+  def printPlan: String = {
+    LogicalPlanPrinter.print(this)
+  }
+
   /**
     * All child nodes of this plan node
     * @return
@@ -116,9 +120,9 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = Nil
   }
 
-  // Deduplicate the input releation
+  // Deduplicate (duplicate elimination) the input releation
   case class Distinct(child: Relation) extends UnaryRelation {
-    override def sig: String                      = s"DD(${child.sig})"
+    override def sig: String                      = s"DE(${child.sig})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
@@ -149,11 +153,15 @@ object LogicalPlan {
     }
   }
 
-  case class Project(child: Relation, isDistinct: Boolean, selectItems: Seq[SelectItem]) extends UnaryRelation {
+  // This node can be a pivot node for generating a SELECT statament
+  sealed trait Selection extends UnaryRelation {
+    def selectItems: Seq[SelectItem]
+  }
+
+  case class Project(child: Relation, selectItems: Seq[SelectItem]) extends UnaryRelation with Selection {
     override def sig: String = {
-      val prefix = if (isDistinct) "distinct " else ""
-      val proj   = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
-      s"P[${prefix}${proj}](${child.sig})"
+      val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
+      s"P[{proj}](${child.sig})"
     }
 
     // TODO
@@ -164,7 +172,8 @@ object LogicalPlan {
                        selectItems: Seq[SelectItem],
                        groupingKeys: Seq[Expression],
                        having: Option[Expression])
-      extends UnaryRelation {
+      extends UnaryRelation
+      with Selection {
 
     override def sig: String = {
       val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
@@ -235,34 +244,33 @@ object LogicalPlan {
   // Where clause specifies join criteria
   case object ImplicitJoin extends JoinType("J")
 
-  sealed trait SetOperation extends Relation
-  case class Intersect(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
-    override def children: Seq[LogicalPlan] = relations
+  sealed trait SetOperation extends Relation {
+    override def children: Seq[Relation]
+  }
+  case class Intersect(relations: Seq[Relation]) extends SetOperation {
+    override def children: Seq[Relation] = relations
     override def sig = {
-      val prefix = if (isDistinct) "IX[distinct]" else "IX"
-      s"${prefix}(${relations.map(_.sig).mkString(",")})"
+      s"IX(${relations.map(_.sig).mkString(",")})"
     }
     override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
     override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
   }
-  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryPlan {
+  case class Except(left: Relation, right: Relation) extends SetOperation {
+    override def children: Seq[Relation] = Seq(left, right)
     override def sig = {
-      val prefix = if (isDistinct) "EX[distinct]" else "EX"
-      s"${prefix}(${left.sig},${right.sig})"
+      s"EX(${left.sig},${right.sig})"
     }
     override def inputAttributes: Seq[Attribute]  = left.inputAttributes
     override def outputAttributes: Seq[Attribute] = left.outputAttributes
   }
-  case class Union(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
-    override def children: Seq[LogicalPlan] = relations
+  case class Union(relations: Seq[Relation]) extends SetOperation {
+    override def children: Seq[Relation] = relations
     override def toString = {
-      val name = if (isDistinct) "Union" else "UnionAll"
-      s"${name}(${relations.mkString(",")})"
+      s"Union(${relations.mkString(",")})"
     }
     override def sig = {
-      val prefix = if (isDistinct) "U[distinct]" else "U"
-      val in     = relations.map(_.sig).mkString(",")
-      s"${prefix}(${in})"
+      val in = relations.map(_.sig).mkString(",")
+      s"U(${in})"
     }
     override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
     override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
