@@ -13,23 +13,45 @@
  */
 
 package wvlet.msgframe.sql.model
-import java.io.PrintWriter
+import java.io.{PrintWriter, StringWriter}
 
 import wvlet.log.LogSupport
+import wvlet.msgframe.sql.model.LogicalPlan.EmptyRelation
 
 /**
   *
   */
 object LogicalPlanPrinter extends LogSupport {
 
-  def print(m: LogicalPlan, out: PrintWriter, level: Int): Unit = {
-    val ws = " " * (level)
+  def print(m: LogicalPlan): String = {
+    val s = new StringWriter()
+    val p = new PrintWriter(s)
+    print(m, p, 0)
+    p.close()
+    s.toString
+  }
 
-    val attr    = m.expressions.map(_.toString).mkString(", ")
-    val attrStr = if (attr.isEmpty) "" else s"[${attr}]"
-    out.println(s"${ws}- ${m.modelName}${attrStr}")
-    for (c <- m.children) {
-      out.println(print(c, out, level + 1))
+  def print(m: LogicalPlan, out: PrintWriter, level: Int): Unit = {
+    m match {
+      case EmptyRelation =>
+      case _ =>
+        val ws = " " * (level)
+
+        val attr = m.expressions.map(_.toString)
+        attr.length match {
+          case 0 =>
+            out.println(s"${ws}[${m.modelName}]")
+          case 1 =>
+            out.println(s"${ws}[${m.modelName}] ${attr.mkString(", ")}")
+          case _ =>
+            out.println(s"${ws}[${m.modelName}]")
+            val attrWs  = " " * (level + 1)
+            val attrStr = attr.map(x => s"${attrWs}- ${x}").mkString("\n")
+            out.println(attrStr)
+        }
+        for (c <- m.children) {
+          print(c, out, level + 1)
+        }
     }
   }
 }

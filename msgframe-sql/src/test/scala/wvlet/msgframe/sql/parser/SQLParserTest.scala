@@ -34,12 +34,8 @@ class SQLParserTest extends AirframeSpec {
     */
   def roundtrip(sql: TestQuery): Unit = {
     debug(s"roundtrip test ${sql.name}:\n${sql}")
-    val m1 = SQLParser.parse(sql.sql)
-    val b  = new StringWriter()
-    val p  = new PrintWriter(b)
-    val s  = LogicalPlanPrinter.print(m1, p, level = 0)
-    p.close()
-    val planTree = b.toString
+    val m1       = SQLParser.parse(sql.sql)
+    val planTree = LogicalPlanPrinter.print(m1)
     debug(planTree)
 
     debug(m1)

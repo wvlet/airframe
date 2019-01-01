@@ -265,7 +265,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
     ctx.identifier() match {
       case i: IdentifierContext =>
-        AliasedRelation(r, i.getText, None)
+        AliasedRelation(r, visitIdentifier(i), None)
       case other =>
         r
     }
@@ -277,6 +277,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
       case jt if jt.LEFT() != null  => Some(LeftOuterJoin)
       case jt if jt.RIGHT() != null => Some(RightOuterJoin)
       case jt if jt.FULL() != null  => Some(FullOuterJoin)
+      case _ if ctx.CROSS() != null => Some(CrossJoin)
       case _                        => None
     }
 
