@@ -25,14 +25,14 @@ class QuerySignatureTest extends AirframeSpec {
 
   "Find input/output tables" in {
     SQLBenchmark.allQueries.foreach { sql =>
-      val g = TableGraph.of(sql)
+      val g = TableGraph.of(sql.sql)
       debug(g)
     }
   }
 
   "Generate signature" in {
     SQLBenchmark.allQueries.foreach { sql =>
-      val s = QuerySignature.of(sql)
+      val s = QuerySignature.of(sql.sql)
       debug(s)
     }
   }
@@ -40,9 +40,9 @@ class QuerySignatureTest extends AirframeSpec {
   "parse q72.sql" taggedAs (working) in {
     val sql = SQLBenchmark.tpcDS_("q72")
     debug(sql)
-    val p = SQLParser.parse(sql)
+    val p = SQLParser.parse(sql.sql)
     debug(p)
-    val sig = QuerySignature.of(sql)
+    val sig = QuerySignature.of(sql.sql)
     debug(sig)
   }
 }
