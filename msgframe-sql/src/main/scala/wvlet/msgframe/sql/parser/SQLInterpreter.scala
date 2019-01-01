@@ -221,8 +221,8 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         val groupByKeys =
           gb.expression()
             .asScala
-            .map {
-              expression(_)
+            .map { x =>
+              GroupingKey(expression(x))
             }
             .toSeq
 
