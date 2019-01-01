@@ -16,8 +16,8 @@ package wvlet.msgframe.sql.parser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan}
 import wvlet.msgframe.sql.model.LogicalPlan._
+import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.parser.SqlBaseParser._
 
 object SQLInterpreter {
@@ -151,9 +151,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     val nullOrdering = Option(ctx.nullOrdering).map { x =>
       x.getType match {
         case SqlBaseParser.FIRST =>
-          LogicalPlan.NullIsFirst
+          NullIsFirst
         case SqlBaseParser.LAST =>
-          LogicalPlan.NullIsLast
+          NullIsLast
       }
     }
     SortItem(key, ordering, nullOrdering)
@@ -283,7 +283,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
     val (joinType, joinCriteria, right) = Option(ctx.joinCriteria()) match {
       case Some(c) if c.USING() != null =>
-        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(_.getText).toSeq), ctx.rightRelation)
+        (tmpJoinType.getOrElse(InnerJoin), JoinUsing(c.identifier().asScala.map(visitIdentifier)), ctx.rightRelation)
       case Some(c) if c.booleanExpression() != null =>
         (tmpJoinType.getOrElse(InnerJoin), JoinOn(expression(c.booleanExpression())), ctx.rightRelation)
       case _ =>
@@ -644,7 +644,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {
     if (ctx.DISTINCT() != null) {
-      Distinct
+      wvlet.msgframe.sql.model.Distinct
     } else {
       All
     }
