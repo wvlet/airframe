@@ -312,6 +312,8 @@ object SQLGenerator extends LogSupport {
 
   def printExpression(e: Expression): String = {
     e match {
+      case a: Attribute =>
+        a.name
       case i: Identifier =>
         i.toString
       case ParenthesizedExpression(expr) =>
