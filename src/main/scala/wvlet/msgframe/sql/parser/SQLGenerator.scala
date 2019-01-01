@@ -59,23 +59,6 @@ object SQLGenerator extends LogSupport {
     }
   }
 
-  private def findSelectItems(in: Relation): Option[Seq[SelectItem]] = {
-    findSelection(in).map(_.selectItems)
-  }
-
-  private def findSelection(in: Relation): Option[Selection] = {
-    in match {
-      case p @ Project(in, selectItems) =>
-        Some(p)
-      case a @ Aggregate(in, selectItems, groupingKeys, having) =>
-        Some(a)
-      case u: UnaryRelation =>
-        findSelection(u.inputRelation)
-      case _ =>
-        None
-    }
-  }
-
   private def findNonEmpty(in: Relation): Option[Relation] = {
     // Look for FROM clause candidates inside Project/Aggregate/Filter nodes
     in match {
@@ -148,7 +131,7 @@ object SQLGenerator extends LogSupport {
         // Merge parent and child Filters
         collectFilterExpression(context) ++ collectFilterExpression(childFilters)
       case Aggregate(_, _, _, _) =>
-        // We cannot push down parent Filter
+        // We cannot push down parent Filters
         collectFilterExpression(childFilters)
     }
     if (filterSet.nonEmpty) {
