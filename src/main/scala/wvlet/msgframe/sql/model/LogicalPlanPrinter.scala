@@ -23,8 +23,11 @@ import wvlet.log.LogSupport
 object LogicalPlanPrinter extends LogSupport {
 
   def print(m: LogicalPlan, out: PrintWriter, level: Int): Unit = {
-    val ws = " " * (level * 2)
-    out.println(s"${ws}- ${m.modelName}")
+    val ws = " " * (level)
+
+    val attr    = m.expressions.map(_.toString).mkString(", ")
+    val attrStr = if (attr.isEmpty) "" else s"[${attr}]"
+    out.println(s"${ws}- ${m.modelName}${attrStr}")
     for (c <- m.children) {
       out.println(print(c, out, level + 1))
     }
