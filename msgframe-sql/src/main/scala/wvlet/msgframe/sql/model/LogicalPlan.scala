@@ -15,7 +15,7 @@ package wvlet.msgframe.sql.model
 
 import java.util.Locale
 
-trait LogicalPlan extends Product {
+trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
   def modelName = {
     val n = this.getClass.getSimpleName
     if (n.endsWith("$")) n.substring(0, n.length - 1) else n
@@ -50,6 +50,24 @@ trait LogicalPlan extends Product {
   def outputAttributes: Seq[Attribute]
 }
 
+trait LeafPlan extends LogicalPlan {
+  override def children: Seq[LogicalPlan]      = Nil
+  override def inputAttributes: Seq[Attribute] = Nil
+}
+
+trait UnaryPlan extends LogicalPlan {
+  def child: LogicalPlan
+  override def children: Seq[LogicalPlan] = child :: Nil
+
+  override def inputAttributes: Seq[Attribute] = child.inputAttributes
+}
+
+trait BinaryPlan extends LogicalPlan {
+  def left: LogicalPlan
+  def right: LogicalPlan
+  override def children: Seq[LogicalPlan] = Seq(left, right)
+}
+
 /**
   *
   */
@@ -67,24 +85,6 @@ trait Attribute extends Expression {
   */
 trait SQLSig {
   def sig: String
-}
-
-trait LeafNode extends LogicalPlan {
-  override def children: Seq[LogicalPlan]      = Seq.empty
-  override def inputAttributes: Seq[Attribute] = Seq.empty
-}
-
-trait UnaryNode extends LogicalPlan {
-  def child: LogicalPlan
-  override def children = child :: Nil
-
-  override def inputAttributes: Seq[Attribute] = child.inputAttributes
-}
-
-trait BinaryNode extends LogicalPlan {
-  def left: LogicalPlan
-  def right: LogicalPlan
-  override def children = Seq(left, right)
 }
 
 /**
@@ -126,7 +126,7 @@ object LogicalPlan {
   // Operator for ign relations
   sealed trait Relation extends LogicalPlan with SQLSig
 
-  sealed trait UnaryRelation extends Relation with UnaryNode {
+  sealed trait UnaryRelation extends Relation with UnaryPlan {
     def inputRelation: Relation = child
     override def child: Relation
   }
@@ -144,18 +144,18 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
-  case class Values(rows: Seq[Expression]) extends Relation with LeafNode {
+  case class Values(rows: Seq[Expression]) extends Relation with LeafPlan {
     override def sig: String = {
       s"V[${rows.length}]"
     }
     override def outputAttributes: Seq[Attribute] = ???
   }
 
-  case class Table(name: QName) extends Relation with LeafNode {
+  case class Table(name: QName) extends Relation with LeafPlan {
     override def sig: String                      = "T"
     override def outputAttributes: Seq[Attribute] = Nil
   }
-  case class RawSQL(sql: String) extends Relation with LeafNode {
+  case class RawSQL(sql: String) extends Relation with LeafPlan {
     override def sig: String                      = "Q"
     override def outputAttributes: Seq[Attribute] = Nil
   }
@@ -181,7 +181,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
-  case object EmptyRelation extends Relation with LeafNode {
+  case object EmptyRelation extends Relation with LeafPlan {
     override def sig                              = ""
     override def outputAttributes: Seq[Attribute] = Nil
   }
@@ -248,7 +248,7 @@ object LogicalPlan {
   }
   case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]])
       extends LogicalPlan
-      with UnaryNode {
+      with UnaryPlan {
     override def child: LogicalPlan               = query
     override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = query.outputAttributes
@@ -307,7 +307,7 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
     override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
   }
-  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryNode {
+  case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryPlan {
     override def sig = {
       val prefix = if (isDistinct) "EX[distinct]" else "EX"
       s"${prefix}(${left.sig},${right.sig})"
@@ -536,7 +536,7 @@ object LogicalPlan {
   case class Cast(expr: Expression, tpe: String, tryCast: Boolean = false) extends Expression
 
   // DDL
-  sealed trait DDL extends LogicalPlan with LeafNode with SQLSig {
+  sealed trait DDL extends LogicalPlan with LeafPlan with SQLSig {
     override def outputAttributes: Seq[Attribute] = Seq.empty
   }
   case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
@@ -577,7 +577,7 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
-  case class Delete(table: QName, where: Option[Expression]) extends Update with LeafNode {
+  case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
     override def sig                              = "D"
     override def inputAttributes: Seq[Attribute]  = Nil
     override def outputAttributes: Seq[Attribute] = Nil
