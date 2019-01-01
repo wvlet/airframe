@@ -170,7 +170,7 @@ object LogicalPlan {
 
   case class Aggregate(child: Relation,
                        selectItems: Seq[SelectItem],
-                       groupingKeys: Seq[Expression],
+                       groupingKeys: Seq[GroupingKey],
                        having: Option[Expression])
       extends UnaryRelation
       with Selection {

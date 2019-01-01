@@ -86,11 +86,11 @@ case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
 sealed trait SelectItem extends Expression
 case class AllColumns(prefix: Option[QName]) extends SelectItem {
   override def children: Seq[Expression] = prefix.toSeq
-  override def toString                  = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
+  override def toString                  = s"SelectItem(${prefix.map(x => s"${x}.*").getOrElse("*")})"
 }
 case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
   override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
-  override def toString                  = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
+  override def toString                  = s"SelectItem(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 }
 
 case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
@@ -356,3 +356,6 @@ case class ColumnType(tpe: String) extends LeafExpression
 case class ColumnDefLike(tableName: QName, includeProperties: Boolean) extends TableElement with UnaryExpression {
   def child = tableName
 }
+
+// Aggregation
+case class GroupingKey(child: Expression) extends UnaryExpression
