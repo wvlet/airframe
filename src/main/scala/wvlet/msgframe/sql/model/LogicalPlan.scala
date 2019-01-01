@@ -16,7 +16,10 @@ package wvlet.msgframe.sql.model
 import java.util.Locale
 
 trait LogicalPlan extends Product {
-  def modelName = this.getClass.getSimpleName
+  def modelName = {
+    val n = this.getClass.getSimpleName
+    if (n.endsWith("$")) n.substring(0, n.length - 1) else n
+  }
 
   /**
     * All child nodes of this plan node
@@ -133,7 +136,8 @@ object LogicalPlan {
     override def inputAttributes: Seq[Attribute]  = child.inputAttributes
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
-  case class AliasedRelation(child: Relation, alias: String, columnNames: Option[Seq[String]]) extends UnaryRelation {
+  case class AliasedRelation(child: Relation, alias: Identifier, columnNames: Option[Seq[String]])
+      extends UnaryRelation {
     override def sig: String = child.sig
 
     override def inputAttributes: Seq[Attribute]  = child.inputAttributes
@@ -252,6 +256,7 @@ object LogicalPlan {
 
   // Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation {
+    override def modelName: String          = joinType.toString
     override def children: Seq[LogicalPlan] = Seq(left, right)
     override def sig: String = {
       s"${joinType.symbol}(${left.sig},${right.sig})"
