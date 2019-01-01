@@ -17,7 +17,6 @@ import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
 import wvlet.msgframe.sql.SQLBenchmark.TestQuery
 import wvlet.msgframe.sql.analyzer.QuerySignature
-import wvlet.msgframe.sql.model.LogicalPlanPrinter
 
 /**
   *
