@@ -30,10 +30,12 @@ trait LogicalPlan extends Product {
     */
   def expressions: Seq[Expression] = {
     def collectExpression(x: Any): Seq[Expression] = {
-      case e: Expression     => e :: Nil
-      case Some(x)           => collectExpression(x)
-      case s: Traversable[_] => s.flatMap(collectExpression)
-      case other             => Nil
+      x match {
+        case e: Expression     => e :: Nil
+        case Some(x)           => collectExpression(x)
+        case s: Traversable[_] => s.flatMap(collectExpression _).toSeq
+        case other             => Nil
+      }
     }
 
     productIterator.flatMap { x =>
@@ -232,17 +234,19 @@ object LogicalPlan {
 
       s"W[${wq_s}](${body.sig})"
     }
+    override def inputAttributes: Seq[Attribute]  = body.inputAttributes
+    override def outputAttributes: Seq[Attribute] = body.outputAttributes
   }
   case class With(recursive: Boolean, queries: Seq[WithQuery]) extends LogicalPlan {
-    override def children: Seq[LogicalPlan] = queries.flatMap(_.children)
+    override def children: Seq[LogicalPlan]       = queries.flatMap(_.children)
     override def inputAttributes: Seq[Attribute]  = ???
     override def outputAttributes: Seq[Attribute] = ???
   }
   case class WithQuery(name: Identifier, query: Relation, columnNames: Option[Seq[Identifier]])
       extends LogicalPlan
       with UnaryNode {
-    override def child: LogicalPlan = query
-    override def inputAttributes: Seq[Attribute] = query.inputAttributes
+    override def child: LogicalPlan               = query
+    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = query.outputAttributes
   }
 
@@ -271,33 +275,22 @@ object LogicalPlan {
   case object ImplicitJoin extends JoinType("J")
 
   sealed trait JoinCriteria extends Expression
-  case object NaturalJoin   extends JoinCriteria with LeafNode
-  case class JoinUsing(columns: Seq[String]) extends JoinCriteria with LeafNode {
+  case object NaturalJoin   extends JoinCriteria
+  case class JoinUsing(columns: Seq[String]) extends JoinCriteria {
     override def toString: String = s"JoinUsing(${columns.mkString(",")})"
   }
-  case class JoinOn(expr: Expression) extends JoinCriteria with UnaryNode {
-    override def child: LogicalPlan = expr
-  }
+  case class JoinOn(expr: Expression) extends JoinCriteria
 
   sealed trait SelectItem extends Expression
-  case class AllColumns(prefix: Option[QName]) extends SelectItem with LeafNode {
+  case class AllColumns(prefix: Option[QName]) extends SelectItem {
     override def toString = s"${prefix.map(x => s"${x}.*").getOrElse("*")}"
   }
   case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
-    override def children: Seq[LogicalPlan] = {
-      val b = Seq.newBuilder[LogicalPlan]
-      b += expr
-      alias.map(b += _)
-      b.result()
-    }
     override def toString = alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")
   }
 
   case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
       extends Expression
-      with UnaryNode {
-    override def child: LogicalPlan = sortKey
-  }
 
   sealed trait SetOperation extends Relation
   case class Intersect(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
@@ -306,12 +299,16 @@ object LogicalPlan {
       val prefix = if (isDistinct) "IX[distinct]" else "IX"
       s"${prefix}(${relations.map(_.sig).mkString(",")})"
     }
+    override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
+    override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
   }
   case class Except(left: Relation, right: Relation, isDistinct: Boolean) extends SetOperation with BinaryNode {
     override def sig = {
       val prefix = if (isDistinct) "EX[distinct]" else "EX"
       s"${prefix}(${left.sig},${right.sig})"
     }
+    override def inputAttributes: Seq[Attribute]  = left.inputAttributes
+    override def outputAttributes: Seq[Attribute] = left.outputAttributes
   }
   case class Union(relations: Seq[Relation], isDistinct: Boolean) extends SetOperation {
     override def children: Seq[LogicalPlan] = relations
@@ -324,6 +321,8 @@ object LogicalPlan {
       val in     = relations.map(_.sig).mkString(",")
       s"${prefix}(${in})"
     }
+    override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
+    override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
   }
 
   // Sort ordering
@@ -346,16 +345,7 @@ object LogicalPlan {
   case object UndefinedOrder extends NullOrdering
 
   // Window functions
-  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame])
-      extends LogicalPlan {
-    override def children: Seq[LogicalPlan] = {
-      val b = Seq.newBuilder[LogicalPlan]
-      b ++= partitionBy
-      b ++= orderBy
-      frame.map(b += _)
-      b.result()
-    }
-  }
+  case class Window(partitionBy: Seq[Expression], orderBy: Seq[SortItem], frame: Option[WindowFrame]) extends Expression
 
   sealed trait FrameType
   case object RangeFrame extends FrameType {
@@ -383,9 +373,7 @@ object LogicalPlan {
     override def toString: String = "CURRENT ROW"
   }
 
-  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound])
-      extends LogicalPlan
-      with LeafNode {
+  case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[FrameBound]) extends Expression {
     override def toString: String = {
       val s = Seq.newBuilder[String]
       s += frameType.toString
@@ -408,20 +396,10 @@ object LogicalPlan {
                           filter: Option[Expression],
                           window: Option[Window])
       extends Expression {
-    override def children: Seq[LogicalPlan] = {
-      val b = Seq.newBuilder[LogicalPlan]
-      b ++= args
-      filter.map(b += _)
-      window.map(b ++= _.children)
-      b.result()
-    }
-
     def functionName: String = name.toString.toLowerCase(Locale.US)
     override def toString    = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"
   }
-  case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression with UnaryNode {
-    override def child: LogicalPlan = body
-  }
+  case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression
 
   class Ref(name: QName) extends Expression
 
@@ -556,21 +534,20 @@ object LogicalPlan {
   sealed trait DDL extends LogicalPlan with LeafNode with SQLSig {
     override def outputAttributes: Seq[Attribute] = Seq.empty
   }
-  case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]])
-      extends DDL {
-    override def sig                              = "CS"
+  case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
+    override def sig = "CS"
 
   }
   case class SchemaProperty(key: Identifier, value: Expression) extends Expression
   case class DropSchema(schema: QName, ifExists: Boolean, cascade: Boolean) extends DDL {
-    override def sig                              = "DS"
+    override def sig = "DS"
   }
 
   case class RenameSchema(schema: QName, renameTo: Identifier) extends DDL {
-    override def sig                              = "RS"
+    override def sig = "RS"
   }
-  case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL with {
-    override def sig                        = "CT"
+  case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
+    override def sig = "CT"
   }
 
   case class CreateTableAs(table: QName,
@@ -578,50 +555,52 @@ object LogicalPlan {
                            columnAliases: Option[Seq[Identifier]],
                            query: Relation)
       extends DDL {
-    override def sig                        = s"CT(${query.sig})"
-    override def inputAttributes: Seq[Attribute] = query.inputAttributes
+    override def sig                              = s"CT(${query.sig})"
+    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL {
-    override def sig                = "DT"
+    override def sig = "DT"
   }
   trait Update extends LogicalPlan with SQLSig
 
-  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation) extends Update with UnaryRelation {
-    override def child : Relation = query
-    override def sig                        = s"I(${query.sig})"
-    override def inputAttributes: Seq[Attribute] = query.inputAttributes
+  case class InsertInto(table: QName, columnAliases: Option[Seq[Identifier]], query: Relation)
+      extends Update
+      with UnaryRelation {
+    override def child: Relation                  = query
+    override def sig                              = s"I(${query.sig})"
+    override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
   case class Delete(table: QName, where: Option[Expression]) extends Update with LeafNode {
-    override def sig = "D"
+    override def sig                              = "D"
     override def inputAttributes: Seq[Attribute]  = Nil
     override def outputAttributes: Seq[Attribute] = Nil
   }
 
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
-    override def sig                        = "RT"
+    override def sig = "RT"
   }
   case class RenameColumn(table: QName, column: Identifier, renameTo: Identifier) extends DDL {
-    override def sig                        = "RC"
+    override def sig = "RC"
   }
   case class DropColumn(table: QName, column: Identifier) extends DDL {
-    override def sig                        = "DC"
+    override def sig = "DC"
   }
   case class AddColumn(table: QName, column: ColumnDef) extends DDL {
-    override def sig                        = "AC"
+    override def sig = "AC"
   }
 
-  sealed trait TableElement extends Expression
+  sealed trait TableElement                                     extends Expression
   case class ColumnDef(columnName: Identifier, tpe: ColumnType) extends TableElement
-  case class ColumnType(tpe: String) extends Expression
+  case class ColumnType(tpe: String)                            extends Expression
 
   case class ColumnDefLike(tableName: QName, includeProperties: Boolean) extends TableElement
   case class CreateView(viewName: QName, replace: Boolean, query: Relation) extends DDL {
-    override def sig                        = "CV"
+    override def sig = "CV"
   }
   case class DropView(viewName: QName, ifExists: Boolean) extends DDL {
-    override def sig   = "DV"
+    override def sig = "DV"
   }
 }
 
