@@ -262,7 +262,8 @@ sealed trait SetQuantifier extends LeafExpression {
 case object All extends SetQuantifier {
   override def isDistinct: Boolean = false
 }
-case object Distinct extends SetQuantifier {
+case object DistinctSet extends SetQuantifier {
+  override def toString: String    = "DISTINCT"
   override def isDistinct: Boolean = true
 }
 

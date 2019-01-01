@@ -13,8 +13,6 @@
  */
 package wvlet.msgframe.sql.parser
 
-import java.io.{ByteArrayOutputStream, PrintWriter, StringWriter}
-
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
 import wvlet.msgframe.sql.SQLBenchmark.TestQuery
@@ -32,32 +30,32 @@ class SQLParserTest extends AirframeSpec {
     * model 1 should be equivalent to model 2
     *
     */
-  def roundtrip(sql: TestQuery): Unit = {
-    debug(s"roundtrip test ${sql.name}:\n${sql}")
-    val m1       = SQLParser.parse(sql.sql)
-    val planTree = LogicalPlanPrinter.print(m1)
-    debug(planTree)
+  def roundtrip(q: TestQuery): Unit = {
+    debug(s"roundtrip test:\n${q.sql}")
+    val m1        = SQLParser.parse(q.sql)
+    val planTree1 = m1.printPlan
+    debug(planTree1)
 
-    debug(m1)
     val printSql = SQLGenerator.print(m1)
     debug(printSql)
-    val m2 = SQLParser.parse(printSql)
-    trace(m1)
+    val m2        = SQLParser.parse(printSql)
+    val planTree2 = m2.printPlan
+    debug(planTree2)
     try {
       m1 shouldBe m2
     } catch {
       case e: Throwable =>
-        warn(s"model didn't match:\n[original]\n${sql}\n\n${m1}\n\n[printed]\n${printSql}\n\n${m2}")
+        warn(s"model didn't match:\n[original]\n${q.sql}\n\n${planTree1}\n\n[printed]\n${printSql}\n\n${planTree2}")
         throw e
     }
 
-    val sig1 = QuerySignature.of(sql.sql)
+    val sig1 = QuerySignature.of(q.sql)
     val sig2 = QuerySignature.of(printSql)
     try {
       sig1 shouldBe sig2
     } catch {
       case e: Throwable =>
-        warn(s"signature didn't match:\n[original]\n${sql}\n\n${sig1}\n\n[printed]\n${printSql}\n\n${sig2}")
+        warn(s"signature didn't match:\n[original]\n${q.sql}\n\n${sig1}\n\n[printed]\n${printSql}\n\n${sig2}")
         throw e
     }
 

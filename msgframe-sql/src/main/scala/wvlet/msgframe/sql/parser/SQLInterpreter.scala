@@ -16,8 +16,8 @@ package wvlet.msgframe.sql.parser
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 import wvlet.log.LogSupport
-import wvlet.msgframe.sql.model.LogicalPlan._
 import wvlet.msgframe.sql.model._
+import wvlet.msgframe.sql.model.LogicalPlan._
 import wvlet.msgframe.sql.parser.SqlBaseParser._
 
 object SQLInterpreter {
@@ -95,17 +95,21 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = {
-
     val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
-    val isDistinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
-    if (ctx.INTERSECT() != null) {
-      Intersect(children, isDistinct)
+    val isDistinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(true)
+    val base = if (ctx.INTERSECT() != null) {
+      Intersect(children)
     } else if (ctx.UNION() != null) {
-      Union(children, isDistinct)
+      Union(children)
     } else if (ctx.EXCEPT() != null) {
-      Except(children(0), children(1), isDistinct)
+      Except(children(0), children(1))
     } else {
       throw unknown(ctx)
+    }
+    if (isDistinct) {
+      Distinct(base)
+    } else {
+      base
     }
   }
 
@@ -198,9 +202,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
       if (ctx.groupBy() == null) {
         // No aggregation
         // TODO distinct check
+        val p        = Project(inputRelation, selectItem)
         val distinct = Option(ctx.setQuantifier()).map(_.DISTINCT() != null).getOrElse(false)
-
-        Project(inputRelation, distinct, selectItem)
+        if (distinct) {
+          Distinct(p)
+        } else {
+          p
+        }
       } else {
         // aggregation
         val gb = ctx.groupBy()
@@ -644,7 +652,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitSetQuantifier(ctx: SetQuantifierContext): SetQuantifier = {
     if (ctx.DISTINCT() != null) {
-      wvlet.msgframe.sql.model.Distinct
+      DistinctSet
     } else {
       All
     }
