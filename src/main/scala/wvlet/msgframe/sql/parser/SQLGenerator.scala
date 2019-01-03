@@ -407,6 +407,8 @@ object SQLGenerator extends LogSupport {
         s"ARRAY[${values.map(printExpression).mkString(", ")}]"
       case Parameter(index) =>
         "?"
+      case l: Literal =>
+        l.toString
       case other => unknown(other)
     }
   }

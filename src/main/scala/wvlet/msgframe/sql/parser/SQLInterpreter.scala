@@ -136,7 +136,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     } else {
       Option(ctx.INTEGER_VALUE())
         .map { limit =>
-          val l = limit.getText.toInt
+          val l = LongLiteral(limit.getText.toLong)
           Limit(withSort, l)
         }
         .getOrElse(withSort)
