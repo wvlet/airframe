@@ -161,7 +161,7 @@ object LogicalPlan {
   case class Project(child: Relation, selectItems: Seq[SelectItem]) extends UnaryRelation with Selection {
     override def sig: String = {
       val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
-      s"P[{proj}](${child.sig})"
+      s"P[${proj}](${child.sig})"
     }
 
     // TODO
