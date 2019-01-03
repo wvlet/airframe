@@ -131,7 +131,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
-  case class Limit(child: Relation, limit: Int) extends UnaryRelation {
+  case class Limit(child: Relation, limit: LongLiteral) extends UnaryRelation {
     override def sig: String                      = s"L(${child.sig})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
