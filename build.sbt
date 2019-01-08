@@ -171,6 +171,8 @@ lazy val sql =
         "org.wvlet.airframe" %% "airframe-msgpack" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-surface" % AIRFRAME_VERSION,
         "org.wvlet.airframe" %% "airframe-config"  % AIRFRAME_VERSION,
+        // For parsing DataType strings
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         // Include Spark just as a reference
         "org.apache.spark" %% "spark-sql" % "2.4.0" % "test",
         airframeSpec
