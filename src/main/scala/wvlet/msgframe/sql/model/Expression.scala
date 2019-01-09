@@ -20,7 +20,36 @@ import wvlet.msgframe.sql.model.LogicalPlan.Relation
 /**
   *
   */
-sealed trait Expression extends TreeNode[Expression]
+sealed trait Expression extends TreeNode[Expression] with Product {
+  def sqlExpr: String = toString()
+
+  def transformExpression(rule: PartialFunction[Expression, Expression]): this.type = {
+    def recursiveTransform(arg: Any): AnyRef = arg match {
+      case e: Expression  => e.transformExpression(rule)
+      case l: LogicalPlan => l.transformExpressions(rule)
+      case Some(x)        => Some(recursiveTransform(x))
+      case s: Seq[_]      => s.map(recursiveTransform _)
+      case other: AnyRef  => other
+      case null           => null
+    }
+
+    val newExpr = if (productArity == 0) {
+      this
+    } else {
+      val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
+
+      // TODO Build this LogicalPlan using Surface
+      val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
+      primaryConstructor.newInstance(newArgs: _*).asInstanceOf[this.type]
+    }
+
+    // Apply the rule to itself
+    rule
+      .applyOrElse(newExpr, { x: Expression =>
+        x
+      }).asInstanceOf[this.type]
+  }
+}
 
 trait LeafExpression extends Expression {
   override def children: Seq[Expression] = Nil
@@ -56,21 +85,28 @@ object QName {
 }
 
 case class UnresolvedAttribute(parts: Seq[String]) extends Attribute {
-  def name = parts.mkString(".")
+  override def toString = s"UnresolvedAttribute(${name})"
+  def name              = parts.mkString(".")
 }
 
-sealed trait Identifier extends LeafExpression
-case class DigitId(value: Int) extends Identifier {
-  override def toString: String = value.toString
+sealed trait Identifier extends LeafExpression {
+  def value: String
+}
+case class DigitId(value: String) extends Identifier {
+  override def sqlExpr          = value
+  override def toString: String = s"Id(${value})"
 }
 case class UnquotedIdentifier(value: String) extends Identifier {
-  override def toString: String = value
+  override def sqlExpr          = value
+  override def toString: String = s"Id(${value})"
 }
 case class BackQuotedIdentifier(value: String) extends Identifier {
-  override def toString = s"`${value}`"
+  override def sqlExpr  = s"`${value}`"
+  override def toString = s"Id(`${value}`)"
 }
 case class QuotedIdentifier(value: String) extends Identifier {
-  override def toString = s""""${value}""""
+  override def sqlExpr  = s""""${value}""""
+  override def toString = s"""Id("${value}")"""
 }
 
 sealed trait JoinCriteria extends Expression
@@ -182,7 +218,7 @@ case class LambdaExpr(body: Expression, args: Seq[String]) extends Expression wi
   def child = body
 }
 
-class Ref(name: QName) extends Expression with LeafExpression
+case class Ref(name: QName) extends Expression with LeafExpression
 
 // Conditional expression
 sealed trait ConditionalExpression                              extends Expression
@@ -270,47 +306,61 @@ case object DistinctSet extends SetQuantifier {
 // Literal
 sealed trait Literal extends Expression
 case object NullLiteral extends Literal with LeafExpression {
-  override def toString: String = "NULL"
+  override def sqlExpr: String  = "NULL"
+  override def toString: String = "Literal(NULL)"
 }
 sealed trait BooleanLiteral extends Literal
 case object TrueLiteral extends BooleanLiteral with LeafExpression {
-  override def toString: String = "TRUE"
+  override def sqlExpr: String  = "TRUE"
+  override def toString: String = "Literal(TRUE)"
 }
 case object FalseLiteral extends BooleanLiteral with LeafExpression {
-  override def toString: String = "FALSE"
+  override def sqlExpr: String  = "FALSE"
+  override def toString: String = "Literal(FALSE)"
 }
 case class StringLiteral(value: String) extends Literal with LeafExpression {
-  override def toString = s"'${value}'"
+  override def sqlExpr: String = s"'${value}'"
+  override def toString        = s"Literal('${value}')"
 }
 case class TimeLiteral(value: String) extends Literal with LeafExpression {
-  override def toString = s"TIME '${value}'"
+  override def sqlExpr  = s"TIME '${value}'"
+  override def toString = s"Literal(TIME '${value}')"
 }
 case class TimestampLiteral(value: String) extends Literal with LeafExpression {
-  override def toString = s"TIMESTAMP '${value}'"
+  override def sqlExpr  = s"TIMESTAMP '${value}'"
+  override def toString = s"Literal(TIMESTAMP '${value}')"
 }
 case class DecimalLiteral(value: String) extends Literal with LeafExpression {
-  override def toString = s"DECIMAL '${value}'"
+  override def sqlExpr  = s"DECIMAL '${value}'"
+  override def toString = s"Literal(DECIMAL '${value}')"
 }
 case class CharLiteral(value: String) extends Literal with LeafExpression {
-  override def toString = s"CHAR '${value}'"
+  override def sqlExpr  = s"CHAR '${value}'"
+  override def toString = s"Literal(CHAR '${value}')"
 }
 case class DoubleLiteral(value: Double) extends Literal with LeafExpression {
-  override def toString = value.toString
+  override def sqlExpr  = value.toString
+  override def toString = s"Literal(${value.toString})"
 }
 case class LongLiteral(value: Long) extends Literal with LeafExpression {
-  override def toString = value.toString
+  override def sqlExpr  = value.toString
+  override def toString = s"Literal(${value.toString})"
 }
 case class IntervalLiteral(value: String, sign: Sign, startField: IntervalField, end: Option[IntervalField])
     extends Literal {
   override def children: Seq[Expression] = Seq(startField) ++ end.toSeq
 
-  override def toString: String = {
+  override def sqlExpr: String = {
     s"INTERVAL ${sign.symbol} '${value}' ${startField}"
+  }
+  override def toString: String = {
+    s"Literal(INTERVAL ${sign.symbol} '${value}' ${startField})"
   }
 }
 
 case class GenericLiteral(tpe: String, value: String) extends Literal with LeafExpression {
-  override def toString = s"${tpe} '${value}'"
+  override def sqlExpr  = s"${tpe} '${value}'"
+  override def toString = s"Literal(${tpe} '${value}')"
 }
 case class BinaryLiteral(binary: String) extends Literal with LeafExpression
 

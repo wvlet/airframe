@@ -568,7 +568,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     QuotedIdentifier(ctx.getText.replaceAll("(^\"|\"$)", ""))
   }
   override def visitDigitIdentifier(ctx: DigitIdentifierContext): Identifier = {
-    DigitId(ctx.getText.toInt)
+    DigitId(ctx.getText)
   }
 
   override def visitOver(ctx: OverContext): Window = {
