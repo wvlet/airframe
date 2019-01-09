@@ -49,6 +49,20 @@ sealed trait Expression extends TreeNode[Expression] with Product {
         x
       }).asInstanceOf[this.type]
   }
+
+  def collectSubExpressions: List[Expression] = {
+    def recursiveCollect(arg: Any): List[Expression] = arg match {
+      case e: Expression  => e :: e.collectSubExpressions
+      case l: LogicalPlan => l.collectExpressions
+      case Some(x)        => recursiveCollect(x)
+      case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
+      case other: AnyRef  => Nil
+      case null           => Nil
+    }
+
+    productIterator.flatMap(recursiveCollect).toList
+  }
+
 }
 
 trait LeafExpression extends Expression {

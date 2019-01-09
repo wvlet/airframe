@@ -13,6 +13,8 @@
  */
 
 package wvlet.msgframe.sql.analyzer
+import java.util.concurrent.atomic.AtomicInteger
+
 import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.parser.{SQLGenerator, SQLParser}
 
@@ -32,21 +34,51 @@ object SQLAnonymizer {
   def anonymize(plan: LogicalPlan): LogicalPlan = {
     // TODO
 
+    val expressions = plan.collectExpressions.distinct
+
+    val dict = createAnonymizationDictionary(expressions)
+
+    val anonymizationRule: PartialFunction[Expression, Expression] = {
+      case x if dict.contains(x) =>
+        dict(x)
+    }
+
     // Target: Identifier, Literal, UnresolvedAttribute, Table
     plan.transformExpressions(anonymizationRule)
   }
 
-  private val anonymizationRule: PartialFunction[Expression, Expression] = {
-    case i: Identifier =>
-      UnquotedIdentifier("?")
-    case s: StringLiteral =>
-      StringLiteral("?")
-    // TODO cover more different literal types
-    case q: QName =>
-      // TODO distinguish table QName and others
-      QName("?")
-    case u: UnresolvedAttribute =>
-      UnresolvedAttribute(u.parts.map(x => "X"))
+  private def createAnonymizationDictionary(list: List[Expression]): Map[Expression, Expression] = {
+    val m = Map.newBuilder[Expression, Expression]
+
+    val identifierTable    = new SymbolTable("i")
+    var stringLiteralTable = new SymbolTable("s")
+    var longLiteralTable   = new SymbolTable("l")
+    var qnameTable         = new SymbolTable(s"t")
+
+    list.collect {
+      case i: Identifier =>
+        m += i -> UnquotedIdentifier(identifierTable.lookup(i.value))
+      case s: StringLiteral =>
+        // TODO understand the context of the expression
+        m += s -> StringLiteral(stringLiteralTable.lookup(s.value))
+      case q: QName =>
+        m += q -> QName(q.parts.map(qnameTable.lookup))
+      case u: UnresolvedAttribute =>
+        m += u -> UnresolvedAttribute(u.parts.map(qnameTable.lookup))
+    }
+
+    m.result()
   }
 
+  private class SymbolTable(prefix: String) {
+    private val count       = new AtomicInteger(0)
+    private val symbolTable = collection.mutable.Map.empty[String, String]
+
+    def lookup(token: String): String = {
+      symbolTable.getOrElseUpdate(token, {
+        val c = count.incrementAndGet()
+        s"${prefix}${c}"
+      })
+    }
+  }
 }
