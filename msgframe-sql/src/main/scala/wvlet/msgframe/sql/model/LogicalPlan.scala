@@ -68,7 +68,6 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
   }
 
   def collectExpressions: List[Expression] = {
-
     def recursiveCollect(arg: Any): List[Expression] = arg match {
       case e: Expression  => e :: e.collectSubExpressions
       case l: LogicalPlan => l.collectExpressions
@@ -79,6 +78,19 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
     }
 
     productIterator.flatMap(recursiveCollect).toList
+  }
+
+  def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {
+    def recursiveTraverse(arg: Any): Unit = arg match {
+      case e: Expression  => e.traverseExpressions(rule)
+      case l: LogicalPlan => l.traverseExpressions(rule)
+      case Some(x)        => recursiveTraverse(x)
+      case s: Seq[_]      => s.foreach(recursiveTraverse _)
+      case other: AnyRef  => Nil
+      case null           => Nil
+    }
+
+    productIterator.foreach(recursiveTraverse)
   }
 
   def inputAttributes: Seq[Attribute]
