@@ -49,11 +49,11 @@ class SQLAnonymizerTest extends AirframeSpec {
     processQueries(SQLBenchmark.standardQueries)
   }
 
-  "anonymize TPC-H" taggedAs working in {
+  "anonymize TPC-H" in {
     processQueries(SQLBenchmark.tpcH)
   }
 
-  "anonymize TPC-DS" in {
+  "anonymize TPC-DS" taggedAs working in {
     processQueries(SQLBenchmark.tpcDS)
   }
 

@@ -167,7 +167,7 @@ object LogicalPlan {
 
   // Deduplicate (duplicate elimination) the input releation
   case class Distinct(child: Relation) extends UnaryRelation {
-    override def sig: String                      = s"DE(${child.sig})"
+    override def sig: String                      = s"E(${child.sig})"
     override def outputAttributes: Seq[Attribute] = child.outputAttributes
   }
 
