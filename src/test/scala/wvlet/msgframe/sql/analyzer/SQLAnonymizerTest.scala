@@ -16,7 +16,7 @@ package wvlet.msgframe.sql.analyzer
 import wvlet.airframe.AirframeSpec
 import wvlet.msgframe.sql.SQLBenchmark
 import wvlet.msgframe.sql.SQLBenchmark.TestQuery
-import wvlet.msgframe.sql.model.Expression
+import wvlet.msgframe.sql.model.{Expression, SQLSig}
 import wvlet.msgframe.sql.parser.{SQLGenerator, SQLParser}
 
 /**
@@ -31,7 +31,10 @@ class SQLAnonymizerTest extends AirframeSpec {
 
     val anonymizedPlan = SQLAnonymizer.anonymize(l, dict)
     debug(anonymizedPlan.printPlan)
-    info(s"anonymized: ${SQLGenerator.print(anonymizedPlan)}")
+    val anonymizedSQL = SQLGenerator.print(anonymizedPlan)
+    info(anonymizedSQL)
+    val sig = QuerySignature.of(anonymizedSQL)
+    info(sig)
   }
 
   def processQueries(input: Seq[TestQuery]): Unit = {
