@@ -29,7 +29,7 @@ class InOutTableFinder {
   def process(m: LogicalPlan, context: TableScanContext): Unit = {
     m match {
       case CreateTableAs(table, _, _, query) =>
-        val target = TargetTable(table.toString)
+        val target = TargetTable(table.sqlExpr)
         g += target
         process(query, context.withOutputTable(target))
       case InsertInto(table, _, query) =>
@@ -38,7 +38,7 @@ class InOutTableFinder {
         process(query, context.withOutputTable(target))
       case Query(withQuery, body) =>
         for (query <- withQuery.queries) {
-          val ref = Alias(query.name.toString)
+          val ref = Alias(query.name.value)
           g += ref
           process(body, context.withOutputTable(ref))
         }
