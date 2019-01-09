@@ -99,7 +99,8 @@ lazy val scaladoc =
     .aggregate(jvmProjects: _*)
 
 lazy val jvmProjects: Seq[ProjectReference] = Seq[ProjectReference](
-  sql
+  sql,
+  main
 )
 
 lazy val projectJVM =
@@ -168,9 +169,10 @@ lazy val sql =
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
       libraryDependencies ++= Seq(
-        "org.wvlet.airframe" %% "airframe-msgpack" % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-surface" % AIRFRAME_VERSION,
-        "org.wvlet.airframe" %% "airframe-config"  % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-msgpack"  % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-surface"  % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-config"   % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-launcher" % AIRFRAME_VERSION,
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         // Include Spark just as a reference
@@ -178,3 +180,21 @@ lazy val sql =
         airframeSpec
       )
     )
+
+lazy val main =
+  project
+    .enablePlugins(PackPlugin)
+    .enablePlugins(BuildInfoPlugin)
+    .in(file("msgframe-main"))
+    .settings(buildSettings)
+    .settings(
+      name := "msgframe-main",
+      description := "command line tools of msgframe",
+      buildInfoPackage := "wvlet.msgframe.main",
+      packMain := Map("msgframe" -> "wvlet.msgframe.main.MsgFrameMain"),
+      libraryDependencies ++= Seq(
+        "org.wvlet.airframe" %% "airframe-launcher" % AIRFRAME_VERSION,
+        "org.wvlet.airframe" %% "airframe-metrics"  % AIRFRAME_VERSION
+      )
+    )
+    .dependsOn(sql)
