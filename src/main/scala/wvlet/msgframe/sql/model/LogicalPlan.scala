@@ -67,6 +67,20 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
     newObj.asInstanceOf[this.type]
   }
 
+  def collectExpressions: List[Expression] = {
+
+    def recursiveCollect(arg: Any): List[Expression] = arg match {
+      case e: Expression  => e :: e.collectSubExpressions
+      case l: LogicalPlan => l.collectExpressions
+      case Some(x)        => recursiveCollect(x)
+      case s: Seq[_]      => s.flatMap(recursiveCollect _).toList
+      case other: AnyRef  => Nil
+      case null           => Nil
+    }
+
+    productIterator.flatMap(recursiveCollect).toList
+  }
+
   def inputAttributes: Seq[Attribute]
   def outputAttributes: Seq[Attribute]
 }
