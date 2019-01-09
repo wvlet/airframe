@@ -632,7 +632,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitFunctionCall(ctx: FunctionCallContext): FunctionCall = {
-    val name = QName(ctx.qualifiedName().getText)
+    val name = ctx.qualifiedName().getText
     val filter: Option[Expression] = Option(ctx.filter()).map { f: FilterContext =>
       expression(f.booleanExpression())
     }

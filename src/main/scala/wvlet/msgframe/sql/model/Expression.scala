@@ -63,6 +63,22 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     productIterator.flatMap(recursiveCollect).toList
   }
 
+  def traverseExpressions[U](rule: PartialFunction[Expression, U]): Unit = {
+    def recursiveTraverse(arg: Any): Unit = arg match {
+      case e: Expression  => e.traverseExpressions(rule)
+      case l: LogicalPlan => l.traverseExpressions(rule)
+      case Some(x)        => recursiveTraverse(x)
+      case s: Seq[_]      => s.foreach(recursiveTraverse _)
+      case other: AnyRef  => Nil
+      case null           => Nil
+    }
+
+    if (rule.isDefinedAt(this)) {
+      rule.apply(this)
+    }
+    productIterator.foreach(recursiveTraverse)
+  }
+
 }
 
 trait LeafExpression extends Expression {
@@ -218,7 +234,7 @@ case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[Fram
 }
 
 // Function
-case class FunctionCall(name: QName,
+case class FunctionCall(name: String,
                         args: Seq[Expression],
                         isDistinct: Boolean,
                         filter: Option[Expression],

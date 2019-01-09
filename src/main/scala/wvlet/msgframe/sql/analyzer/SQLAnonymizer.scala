@@ -19,8 +19,6 @@ import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.parser.{SQLGenerator, SQLParser}
 
-import scala.collection.mutable
-
 class SQLAnonymizer(dict: Map[Expression, Expression]) {
   def run(sql: String): Unit = {
     val plan = SQLParser.parse(sql)
@@ -41,8 +39,7 @@ object SQLAnonymizer extends LogSupport {
 
   def anonymize(sql: String): String = {
     val plan           = SQLParser.parse(sql)
-    val expressions    = plan.collectExpressions.distinct
-    val dict           = new DictBuilder().add(expressions).build
+    val dict           = new DictBuilder().add(plan).build
     val anonymizedPlan = anonymize(plan, dict)
     SQLGenerator.print(anonymizedPlan)
   }
@@ -61,9 +58,8 @@ object SQLAnonymizer extends LogSupport {
     val b = new DictBuilder()
     sql.foreach { x =>
       try {
-        val plan        = SQLParser.parse(x)
-        val expressions = plan.collectExpressions.distinct
-        b.add(expressions)
+        val plan = SQLParser.parse(x)
+        b.add(plan)
       } catch {
         case e: Exception =>
           warn(e)
@@ -81,13 +77,12 @@ object SQLAnonymizer extends LogSupport {
 
     def build = m.result()
 
-    def add(list: Seq[Expression]): this.type = {
+    def add(plan: LogicalPlan): this.type = {
       // Target: Identifier, Literal, UnresolvedAttribute, Table (QName)
-      list.collect {
+      plan.traverseExpressions {
         case i: Identifier =>
           m += i -> UnquotedIdentifier(identifierTable.lookup(i.value))
         case s: StringLiteral =>
-          // TODO understand the context of the expression
           m += s -> StringLiteral(stringLiteralTable.lookup(s.value))
         case q: QName =>
           m += q -> QName(q.parts.map(qnameTable.lookup))
