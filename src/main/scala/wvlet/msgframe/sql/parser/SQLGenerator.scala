@@ -185,7 +185,7 @@ object SQLGenerator extends LogSupport {
       case Limit(in, l) =>
         val s = seqBuilder
         s += printRelation(in, context)
-        s += s"LIMIT ${l}"
+        s += s"LIMIT ${l.sqlExpr}"
         s.result().mkString(" ")
       case Sort(in, orderBy) =>
         val s = seqBuilder
@@ -199,16 +199,16 @@ object SQLGenerator extends LogSupport {
         val r = printRelation(relation, context)
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
-          case Table(x)                 => s"${r} AS ${alias}${c}"
-          case ParenthesizedRelation(x) => s"${r} AS ${alias}${c}"
-          case _                        => s"(${r}) AS ${alias}${c}"
+          case Table(x)                 => s"${r} AS ${alias.sqlExpr}${c}"
+          case ParenthesizedRelation(x) => s"${r} AS ${alias.sqlExpr}${c}"
+          case _                        => s"(${r}) AS ${alias.sqlExpr}${c}"
         }
       case Join(joinType, left, right, cond) =>
         val l = printRelation(left)
         val r = printRelation(right)
         val c = cond match {
           case NaturalJoin        => ""
-          case JoinUsing(columns) => s" USING (${columns.mkString(", ")})"
+          case JoinUsing(columns) => s" USING (${columns.map(_.sqlExpr).mkString(", ")})"
           case JoinOn(expr)       => s" ON ${printExpression(expr)}"
         }
         joinType match {
@@ -230,20 +230,20 @@ object SQLGenerator extends LogSupport {
       case CreateSchema(name, ifNotExists, propsOpt) =>
         val e = if (ifNotExists) "IF NOT EXISTS " else ""
         val w = propsOpt.map(props => s" WITH (${props.map(printExpression).mkString(", ")})").getOrElse("")
-        s"CREATE SCHEMA ${e}${name}${w}"
+        s"CREATE SCHEMA ${e}${name.sqlExpr}${w}"
       case DropSchema(name, ifExists, cascade) =>
         val s = Seq.newBuilder[String]
         s += "DROP SCHEMA"
         if (ifExists) {
           s += "IF EXISTS"
         }
-        s += name.toString
+        s += name.sqlExpr
         if (cascade) {
           s += "CASCADE"
         }
         s.result().mkString(" ")
       case RenameSchema(from, to) =>
-        s"ALTER SCHEMA ${from} RENAME TO ${to}"
+        s"ALTER SCHEMA ${from.sqlExpr} RENAME TO ${to.sqlExpr}"
       case CreateTable(name, ifNotExists, tableElements) =>
         val e     = if (ifNotExists) " IF NOT EXISTS " else ""
         val elems = tableElements.map(printExpression).mkString(", ")
@@ -254,9 +254,8 @@ object SQLGenerator extends LogSupport {
           columnAliases
             .map { x =>
               s"(${x.map(printExpression).mkString(", ")})"
-            }
-            .getOrElse("")
-        s"CREATE TABLE ${e}${name}${aliases} AS ${print(query)}"
+            }.getOrElse("")
+        s"CREATE TABLE ${e}${name.sqlExpr}${aliases} AS ${print(query)}"
       case DropTable(table, ifExists) =>
         val b = Seq.newBuilder[String]
         b += "DROP TABLE"
@@ -322,7 +321,9 @@ object SQLGenerator extends LogSupport {
       case a: Attribute =>
         a.name
       case i: Identifier =>
-        i.toString
+        i.sqlExpr
+      case l: Literal =>
+        l.sqlExpr
       case GroupingKey(k) =>
         printExpression(k)
       case ParenthesizedExpression(expr) =>
@@ -334,8 +335,6 @@ object SQLGenerator extends LogSupport {
           .getOrElse(col)
       case AllColumns(prefix) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
-      case l: Literal =>
-        printLiteral(l)
       case SortItem(key, ordering, nullOrdering) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")
@@ -395,7 +394,7 @@ object SQLGenerator extends LogSupport {
       case w: WindowFrame =>
         w.toString
       case SchemaProperty(k, v) =>
-        s"${k} = ${v}"
+        s"${k.sqlExpr} = ${v.sqlExpr}"
       case ColumnDef(name, tpe) =>
         s"${printExpression(name)} ${printExpression(tpe)}"
       case ColumnType(tpe) =>
@@ -407,13 +406,8 @@ object SQLGenerator extends LogSupport {
         s"ARRAY[${values.map(printExpression).mkString(", ")}]"
       case Parameter(index) =>
         "?"
-      case l: Literal =>
-        l.toString
       case other => unknown(other)
     }
-  }
-  def printLiteral(l: Literal): String = {
-    l.toString
   }
 
   def printConditionalExpression(c: ConditionalExpression): String = {

@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.msgframe.sql.model
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
   def modelName = {
@@ -46,6 +47,24 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
     productIterator.flatMap { x =>
       collectExpression(x)
     }.toSeq
+  }
+
+  def transformExpressions(rule: PartialFunction[Expression, Expression]): this.type = {
+    def recursiveTransform(arg: Any): AnyRef = arg match {
+      case e: Expression  => e.transformExpression(rule)
+      case l: LogicalPlan => l.transformExpressions(rule)
+      case Some(x)        => Some(recursiveTransform(x))
+      case s: Seq[_]      => s.map(recursiveTransform _)
+      case other: AnyRef  => other
+      case null           => null
+    }
+
+    val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
+
+    // TODO Build this LogicalPlan using Surface
+    val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
+    val newObj             = primaryConstructor.newInstance(newArgs: _*)
+    newObj.asInstanceOf[this.type]
   }
 
   def inputAttributes: Seq[Attribute]
