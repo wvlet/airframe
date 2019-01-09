@@ -15,59 +15,87 @@
 package wvlet.msgframe.sql.analyzer
 import java.util.concurrent.atomic.AtomicInteger
 
+import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.parser.{SQLGenerator, SQLParser}
 
-/**
-  *
-  */
-object SQLAnonymizer {
+import scala.collection.mutable
 
-  def anonymize(sql: String): String = {
+class SQLAnonymizer(dict: Map[Expression, Expression]) {
+  def run(sql: String): Unit = {
     val plan = SQLParser.parse(sql)
-
-    val anonymizedPlan = anonymize(plan)
-
-    SQLGenerator.print(anonymizedPlan)
-  }
-
-  def anonymize(plan: LogicalPlan): LogicalPlan = {
-    // TODO
-
-    val expressions = plan.collectExpressions.distinct
-
-    val dict = createAnonymizationDictionary(expressions)
 
     val anonymizationRule: PartialFunction[Expression, Expression] = {
       case x if dict.contains(x) =>
         dict(x)
     }
 
+    plan.transformExpressions(anonymizationRule)
+  }
+}
+
+/**
+  *
+  */
+object SQLAnonymizer extends LogSupport {
+
+  def anonymize(sql: String): String = {
+    val plan           = SQLParser.parse(sql)
+    val expressions    = plan.collectExpressions.distinct
+    val dict           = new DictBuilder().add(expressions).build
+    val anonymizedPlan = anonymize(plan, dict)
+    SQLGenerator.print(anonymizedPlan)
+  }
+
+  def anonymize(plan: LogicalPlan, dict: Map[Expression, Expression]): LogicalPlan = {
+    val anonymizationRule: PartialFunction[Expression, Expression] = {
+      case x if dict.contains(x) =>
+        dict(x)
+    }
     // Target: Identifier, Literal, UnresolvedAttribute, Table
     plan.transformExpressions(anonymizationRule)
   }
 
-  private def createAnonymizationDictionary(list: List[Expression]): Map[Expression, Expression] = {
-    val m = Map.newBuilder[Expression, Expression]
+  def buildAnonymizationDictionary(sql: Seq[String]): Map[Expression, Expression] = {
+    debug(s"Building a token dictionary")
+    val b = new DictBuilder()
+    sql.foreach { x =>
+      try {
+        val plan        = SQLParser.parse(x)
+        val expressions = plan.collectExpressions.distinct
+        b.add(expressions)
+      } catch {
+        case e: Exception =>
+          warn(e)
+      }
+    }
+    b.build
+  }
 
+  private class DictBuilder {
+    val m                  = Map.newBuilder[Expression, Expression]
     val identifierTable    = new SymbolTable("i")
     var stringLiteralTable = new SymbolTable("s")
     var longLiteralTable   = new SymbolTable("l")
     var qnameTable         = new SymbolTable(s"t")
 
-    list.collect {
-      case i: Identifier =>
-        m += i -> UnquotedIdentifier(identifierTable.lookup(i.value))
-      case s: StringLiteral =>
-        // TODO understand the context of the expression
-        m += s -> StringLiteral(stringLiteralTable.lookup(s.value))
-      case q: QName =>
-        m += q -> QName(q.parts.map(qnameTable.lookup))
-      case u: UnresolvedAttribute =>
-        m += u -> UnresolvedAttribute(u.parts.map(qnameTable.lookup))
-    }
+    def build = m.result()
 
-    m.result()
+    def add(list: Seq[Expression]): this.type = {
+      // Target: Identifier, Literal, UnresolvedAttribute, Table (QName)
+      list.collect {
+        case i: Identifier =>
+          m += i -> UnquotedIdentifier(identifierTable.lookup(i.value))
+        case s: StringLiteral =>
+          // TODO understand the context of the expression
+          m += s -> StringLiteral(stringLiteralTable.lookup(s.value))
+        case q: QName =>
+          m += q -> QName(q.parts.map(qnameTable.lookup))
+        case u: UnresolvedAttribute =>
+          m += u -> UnresolvedAttribute(u.parts.map(qnameTable.lookup))
+      }
+      this
+    }
   }
 
   private class SymbolTable(prefix: String) {
