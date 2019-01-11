@@ -70,7 +70,7 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 <p>In-trait injection with <code class="highlighter-rouge">bind[X]</code> is useful to create reusable modules. Note that this only works inside Scala traits:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
-<span class="k">class</span> <span class="nc">Database</span><span class="o">(</span><span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">conn</span><span class="k">:</span><span class="kt">Connection</span><span class="o">)</span>
+<span class="k">class</span> <span class="nc">Database</span><span class="o">(</span><span class="n">conn</span><span class="k">:</span><span class="kt">Connection</span><span class="o">)</span>
 <span class="k">trait</span> <span class="nc">DatabaseService</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">db</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Database</span><span class="o">]</span>
 <span class="o">}</span>
