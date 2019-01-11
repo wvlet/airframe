@@ -8,7 +8,7 @@ title: airframe-log
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-*airframe-log* is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
+*airframe-log* is a library for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
 <p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 
@@ -20,7 +20,7 @@ title: airframe-log
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
 - **Fast and light-weight**
-  - airframe-log uses Scala macros for efficiency; log messages will be instanciated only when the log level is effective. 
+  - airframe-log uses Scala macros for efficiency; log messages will be instantiated only when the log level is effective. 
   - airframe-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
 - **Informative**
   - ANSI colored logging support.
@@ -334,5 +334,5 @@ An wrapper of *slf4j* for Scala. This also uses Scala macros to make logging eff
 method to avoid expensive log message generation. 
 
 - [scribe](https://github.com/outr/scribe):
-A pure-scala logger implementation, which has a similar set of functionality with airframe-log (e.g., macro based code generation, programatically configurable).
+A pure-scala logger implementation, which has a similar set of functionality with airframe-log (e.g., macro based code generation, programmatically configurable).
 As of June 2018, scribe doesn't support runtime log level configurations via JMX nor log.properties file.

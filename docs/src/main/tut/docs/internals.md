@@ -107,7 +107,7 @@ new A extends SessionHolder {
 
 ### Comparison with a naive approach
 
-At first look, the above macro expantion looks quite scarly, however, when calling constructor of `App` you are actually doing similar things:
+At first look, the above macro expansion looks quite scarly, however, when calling constructor of `App` you are actually doing similar things:
 ```
 { 
   val myB = new B {}
@@ -202,7 +202,7 @@ Surface uses Scala macros to embed compile-time type information into the runtim
 
 ### Surface Parameters
 
-Surface also holds object parmeters, so that we can find objects necessary for building `A`:
+Surface also holds object parameters, so that we can find objects necessary for building `A`:
 ```scala
 case class A(b:B, c:C)
 

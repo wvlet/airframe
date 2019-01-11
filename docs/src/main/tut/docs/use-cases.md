@@ -135,7 +135,7 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 
 ## Service Mix-In
 
-A traditional way of building applications is passing necessary servies to a main class:
+A traditional way of building applications is passing necessary services to a main class:
 ```scala
 class YourService(threadPool:ThreadPool, s1:Service1, s2:Service2, ...) {
   ...

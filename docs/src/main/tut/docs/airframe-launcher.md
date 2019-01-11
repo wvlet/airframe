@@ -5,7 +5,7 @@ title: airframe-launcher
 
 # Airframe Launcher
 
-*airframe-laucnher* is a handy command-line programe launcher. 
+*airframe-laucnher* is a handy command-line program launcher. 
 
 ## Usage
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-launcher_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-launcher_2.12/)
@@ -72,11 +72,11 @@ usage: myapp [options]
 - `@command`
   - Defining function or class as a command module. You can specify `description` and (one-line) `usage` of the command in this annotation.
 - `@defaultCommand`
-  - If no sub-command name is given, the function annotated with this annoation will be executed.
+  - If no sub-command name is given, the function annotated with this annotation will be executed.
 
 ## Defining Multiple Sub Commands
 
-You can define a command module (= a set of sub commands) using funcitons in a class.
+You can define a command module (= a set of sub commands) using functions in a class.
 
 Add `@command` annotation to functions in order to define sub commands:
 ```scala
