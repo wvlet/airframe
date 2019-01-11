@@ -73,7 +73,7 @@ In-trait injection with `bind[X]` is useful to create reusable modules. Note tha
 ```scala
 import wvlet.airframe._
 
-class Database(name:String, conn:Connection)
+class Database(conn:Connection)
 trait DatabaseService {
   val db = bind[Database]
 }
