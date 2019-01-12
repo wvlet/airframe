@@ -110,7 +110,7 @@ val a2 = session.build[A] // This is OK
 
 <h3 id="comparison-with-a-naive-approach">Comparison with a naive approach</h3>
 
-<p>At first look, the above macro expantion looks quite scarly, however, when calling constructor of <code class="highlighter-rouge">App</code> you are actually doing similar things:</p>
+<p>At first look, the above macro expansion looks quite scarly, however, when calling constructor of <code class="highlighter-rouge">App</code> you are actually doing similar things:</p>
 <div class="highlighter-rouge"><pre class="highlight"><code><span class="p">{</span><span class="w"> 
   </span><span class="err">val</span><span class="w"> </span><span class="err">myB</span><span class="w"> </span><span class="err">=</span><span class="w"> </span><span class="err">new</span><span class="w"> </span><span class="err">B</span><span class="w"> </span><span class="err">{</span><span class="p">}</span><span class="w">
   </span><span class="err">val</span><span class="w"> </span><span class="err">myA</span><span class="w"> </span><span class="err">=</span><span class="w"> </span><span class="err">new</span><span class="w"> </span><span class="err">A(b</span><span class="w"> </span><span class="err">=</span><span class="w"> </span><span class="err">myB)</span><span class="w"> </span><span class="p">{}</span><span class="w">
@@ -207,7 +207,7 @@ Surface uses Scala macros to embed compile-time type information into the runtim
 
 <h3 id="surface-parameters">Surface Parameters</h3>
 
-<p>Surface also holds object parmeters, so that we can find objects necessary for building <code class="highlighter-rouge">A</code>:</p>
+<p>Surface also holds object parameters, so that we can find objects necessary for building <code class="highlighter-rouge">A</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">case</span> <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="n">b</span><span class="k">:</span><span class="kt">B</span><span class="o">,</span> <span class="n">c</span><span class="k">:</span><span class="kt">C</span><span class="o">)</span>
 
 <span class="c1">// B and C will be necessary to build A

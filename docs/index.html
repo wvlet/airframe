@@ -95,7 +95,7 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 <span class="k">import</span> <span class="nn">BindingExample._</span>
 
 <span class="c1">// Constructor binding
-</span><span class="k">val</span> <span class="n">pc</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span> <span class="c1">// Inject a sigleton of P
+</span><span class="k">val</span> <span class="n">pc</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span> <span class="c1">// Inject a singleton of P
 </span>                    <span class="c1">// (Inject D1, D2 and D3)
 </span>
 <span class="c1">// Provider bindings
@@ -138,8 +138,8 @@ which are available until the session closes.</p>
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ES</span><span class="o">].</span><span class="n">toEagerSingleton</span>     <span class="c1">// ES will be initialized as a singleton at session start time
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D1</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D1</span><span class="o">(</span><span class="mi">1</span><span class="o">))</span>    <span class="c1">// Bind D1 to a concrete instance D1(1)
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D2</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D2</span><span class="o">(</span><span class="mi">2</span><span class="o">))</span>    <span class="c1">// Bind D2 to a concrete instance D2(2)
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D3</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D3</span><span class="o">(</span><span class="mi">3</span><span class="o">))</span>    <span class="c1">// Bind D3 to a cocreete instance D3(3)
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create a singleton P by resolveing D1 from the design
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">D3</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">D3</span><span class="o">(</span><span class="mi">3</span><span class="o">))</span>    <span class="c1">// Bind D3 to a concrete instance D3(3)
+</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Create a singleton P by resolving D1 from the design
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span>  <span class="c1">// Resolve D1 and D2
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toProvider</span><span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span>                   <span class="c1">// Use the given function as a provider
 </span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">].</span><span class="n">toInstanceProvider</span><span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span>       <span class="c1">// Create a new instance using the provider function
@@ -157,7 +157,7 @@ which are available until the session closes.</p>
   <span class="n">design</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">C</span><span class="o">]</span> <span class="c1">// Override binding for A
 </span>
 <span class="c1">// design.newSession.build[A] -&gt; produces B
-// newDesign.newSession.build[A] -&gt; produes C
+// newDesign.newSession.build[A] -&gt; produces C
 </span></code></pre>
 </div>
 
@@ -197,7 +197,7 @@ which are available until the session closes.</p>
 
 <h2 id="life-cycle">Life Cycle</h2>
 
-<p>Server side application often requires resource managemeng (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
+<p>Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
   <span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
@@ -269,7 +269,7 @@ use <code class="highlighter-rouge">Design.withProductionMode</code>:</p>
 
 <h2 id="child-sessions">Child Sessions</h2>
 
-<p>If you need to override a part of the design in a short term, you can use <em>child sessions</em>. Child sessios are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.).</p>
+<p>If you need to override a part of the design in a short term, you can use <em>child sessions</em>. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.).</p>
 
 <p><strong><em>Usage Example</em></strong></p>
 

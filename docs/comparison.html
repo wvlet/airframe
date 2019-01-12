@@ -44,7 +44,7 @@ MacWire ensures all binding types are available at compile time, so if some depe
   </li>
 </ul>
 
-<p>Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is <a href="https://github.com/guardian/frontend">Guardian</a>’s <a href="https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala">frontend code</a>, which lists 30 dependencies, including transitive dependenceis, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.</p>
+<p>Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is <a href="https://github.com/guardian/frontend">Guardian</a>’s <a href="https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala">frontend code</a>, which lists 30 dependencies, including transitive dependencies, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.</p>
 
 <h2 id="pure-scala-approaches">Pure-Scala Approaches</h2>
 
@@ -53,7 +53,7 @@ MacWire ensures all binding types are available at compile time, so if some depe
   <li><a href="https://kubuszok.com/2018/cake-antipattern/">Cake antipattern</a></li>
 </ul>
 
-<p><a href="https://medium.com/@AyacheKhettar/using-cat-data-reader-monad-d70269fc451f">Reader Monad</a> is another design pattern in Scala, which cascades dependency passting using nested functions. But it has some performance overhead and it makes the scope of
+<p><a href="https://medium.com/@AyacheKhettar/using-cat-data-reader-monad-d70269fc451f">Reader Monad</a> is another design pattern in Scala, which cascades dependency passing using nested functions. But it has some performance overhead and it makes the scope of
 dependencies ambiguous.</p>
 
 <p><a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa">Dependency Injection in Functional Programming</a> is one of the best practices of pure-Scala DI, which doesn’t rely on any framework. To manage lifecycle of objects, this approach needs to use IO Monad library like <a href="https://typelevel.org/cats-effect/">Cats Effect</a>.</p>
@@ -112,7 +112,7 @@ dependencies ambiguous.</p>
       <td style="text-align: center">✓</td>
       <td style="text-align: center">✓</td>
       <td style="text-align: center"> </td>
-      <td style="text-align: center">✓ (using <a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2">implicit parmeters</a>)</td>
+      <td style="text-align: center">✓ (using <a href="https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2">implicit parameters</a>)</td>
     </tr>
     <tr>
       <td><a href="index.html#constructor-injection">Constructor injection</a></td>
