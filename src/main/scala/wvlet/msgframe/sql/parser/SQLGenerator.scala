@@ -227,7 +227,7 @@ object SQLGenerator extends LogSupport {
         val b = seqBuilder
         b += s"UNNEST (${cols.map(printExpression).mkString(", ")})"
         if (ord) {
-          b += "WITH ORDINARITY"
+          b += "WITH ORDINALITY"
         }
         b.result().mkString(" ")
       case Lateral(q) =>
