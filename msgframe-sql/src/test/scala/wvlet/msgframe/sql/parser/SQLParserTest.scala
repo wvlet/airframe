@@ -60,13 +60,13 @@ class SQLParserTest extends AirframeSpec {
 
   }
 
-  "parse selection queries" in {
+  "parse selection queries" taggedAs working in {
     SQLBenchmark.selection.foreach { sql =>
       roundtrip(sql)
     }
   }
 
-  "parse DDL queries" taggedAs working in {
+  "parse DDL queries" in {
     SQLBenchmark.ddl.foreach { sql =>
       roundtrip(sql)
     }

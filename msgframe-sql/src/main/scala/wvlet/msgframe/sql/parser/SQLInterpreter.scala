@@ -259,12 +259,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     val r: Relation = ctx.relationPrimary() match {
       case p: ParenthesizedRelationContext =>
         ParenthesizedRelation(visit(p.relation()).asInstanceOf[Relation])
-      //case u: UnnestContext                =>
-//        u.expression().asScala.map(x => expression(x))
+      case u: UnnestContext =>
+        val ord = Option(u.ORDINALITY()).map(x => true).getOrElse(false)
+        Unnest(u.expression().asScala.map(x => expression(x)), withOrdinality = ord)
       case s: SubqueryRelationContext =>
         visitQuery(s.query())
       case l: LateralContext =>
-        visitQuery(l.query())
+        Lateral(visitQuery(l.query()))
       case t: TableNameContext =>
         Table(QName(t.qualifiedName().getText))
       case other =>
