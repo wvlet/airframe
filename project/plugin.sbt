@@ -11,7 +11,7 @@ addSbtPlugin("com.eed3si9n"     % "sbt-buildinfo" % "0.9.0")
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.1")
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "3.1.0")
+addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "3.0.0")
 addSbtPlugin("com.47deg"    % "sbt-microsites" % "0.7.26")
 
 scalacOptions ++= Seq("-deprecation", "-feature")
