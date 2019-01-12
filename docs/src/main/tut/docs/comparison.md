@@ -29,14 +29,14 @@ MacWire ensures all binding types are available at compile time, so if some depe
 
 - [Dagger2](https://github.com/google/dagger) is also a compile-time dependency injection library for Java and Android. Google needed binding hundreds of modules, but Guice only resolves these dependencies at runtime, so binding failures can be found later when the application is running. To resolve this, Dagger2 tries to generate dependency injection code at compile time. [This document](https://google.github.io/dagger/users-guide) is a good read to understand the background of why compile-time DI was necessary.
 
-Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala), which lists 30 dependencies, including transitive dependenceis, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.
+Both of MacWire and Dagger2 requires all of the dependencies should be found in the same scope. There are pros and cons in this approach; A complex example is [Guardian](https://github.com/guardian/frontend)'s [frontend code](https://github.com/guardian/frontend/blob/06b94f88593e68682fb2a03c6d878947f8472d44/admin/app/controllers/AdminControllers.scala), which lists 30 dependencies, including transitive dependencies, in a single trait to resolve dependencies at compile time. In runtime DI, we only need to write direct dependencies.
 
 ## Pure-Scala Approaches
 
 There are several pure-Scala approaches for DI. [Cake Pattern](https://www.cakesolutions.net/teamblogs/2011/12/19/cake-pattern-in-depth) was born around 2010 and introduced the notion of type abstraction and cake composition. But generally speaking cake pattern adds substantial complexity to your program and have many pitfalls as described in the following blog post:
 - [Cake antipattern](https://kubuszok.com/2018/cake-antipattern/)
 
-[Reader Monad](https://medium.com/@AyacheKhettar/using-cat-data-reader-monad-d70269fc451f) is another design pattern in Scala, which cascades dependency passting using nested functions. But it has some performance overhead and it makes the scope of
+[Reader Monad](https://medium.com/@AyacheKhettar/using-cat-data-reader-monad-d70269fc451f) is another design pattern in Scala, which cascades dependency passing using nested functions. But it has some performance overhead and it makes the scope of
 dependencies ambiguous.
 
 [Dependency Injection in Functional Programming](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa) is one of the best practices of pure-Scala DI, which doesn't rely on any framework. To manage lifecycle of objects, this approach needs to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/).
@@ -58,7 +58,7 @@ The chart below shows major features supported in selected DI frameworks. For co
 |-----------------------|:---------:|:--------------------------------:|:-------:|:----------------:|
 | Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual wiring) |
 | Compile-time dependency check    |    |   |  ✓  |  ✓  |
-| Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit parmeters](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
+| Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit parameters](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
 | [Constructor injection](index.html#constructor-injection) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
 | [In-trait injection](index.html#in-trait-injection) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
 | [Life-cycle management](index.html#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |

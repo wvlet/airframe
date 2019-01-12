@@ -132,7 +132,7 @@ val design: Design =
   newDesign
     .bind[X].toInstance(new X)  // Bind type X to a concrete instance
     .bind[Y].toSingleton        // Bind type Y to a singleton object
-    .bind[Z].to[ZImpl]          // Bind type Z to a singletone of ZImpl instance
+    .bind[Z].to[ZImpl]          // Bind type Z to a singleton of ZImpl instance
 ```
 
 Then **build** an instance and use it:

@@ -98,7 +98,7 @@ val a = bind[A]          // Inject A as a singleton
 import BindingExample._
 
 // Constructor binding
-val pc: P = bind[P] // Inject a sigleton of P
+val pc: P = bind[P] // Inject a singleton of P
                     // (Inject D1, D2 and D3)
 
 // Provider bindings
@@ -141,8 +141,8 @@ val design: Design =
   .bind[ES].toEagerSingleton     // ES will be initialized as a singleton at session start time
   .bind[D1].toInstance(D1(1))    // Bind D1 to a concrete instance D1(1)
   .bind[D2].toInstance(D2(2))    // Bind D2 to a concrete instance D2(2)
-  .bind[D3].toInstance(D3(3))    // Bind D3 to a cocreete instance D3(3)
-  .bind[P].toProvider{ d1:D1 => P(d1) } // Create a singleton P by resolveing D1 from the design
+  .bind[D3].toInstance(D3(3))    // Bind D3 to a concrete instance D3(3)
+  .bind[P].toProvider{ d1:D1 => P(d1) } // Create a singleton P by resolving D1 from the design
   .bind[P].toProvider{ (d1:D1, d2:D2) => P(d1, d2) }  // Resolve D1 and D2
   .bind[P].toProvider{ provider _ }                   // Use the given function as a provider
   .bind[P].toInstanceProvider{ d1:D1 => P(d1) }       // Create a new instance using the provider function
@@ -160,7 +160,7 @@ val newDesign: Design =
   design.bind[A].to[C] // Override binding for A
 
 // design.newSession.build[A] -> produces B
-// newDesign.newSession.build[A] -> produes C
+// newDesign.newSession.build[A] -> produces C
 ```
 
 ## Session
@@ -199,7 +199,7 @@ This pattern is useful since you usually need a single entry point for starting 
 
 ## Life Cycle
 
-Server side application often requires resource managemeng (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
+Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
 
 ```scala
 trait MyServerService {
@@ -271,7 +271,7 @@ These annotation are not supported in Scala.js, because it has no run-time refle
 
 ## Child Sessions
 
-If you need to override a part of the design in a short term, you can use _child sessions_. Child sessios are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
+If you need to override a part of the design in a short term, you can use _child sessions_. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
 
 ___Usage Example___
 
