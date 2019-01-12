@@ -201,6 +201,8 @@ object SQLGenerator extends LogSupport {
         relation match {
           case Table(x)                 => s"${r} AS ${alias.sqlExpr}${c}"
           case ParenthesizedRelation(x) => s"${r} AS ${alias.sqlExpr}${c}"
+          case Unnest(_, _)             => s"${r} AS ${alias.sqlExpr}${c}"
+          case Lateral(_)               => s"${r} AS ${alias.sqlExpr}${c}"
           case _                        => s"(${r}) AS ${alias.sqlExpr}${c}"
         }
       case Join(joinType, left, right, cond) =>
@@ -221,6 +223,18 @@ object SQLGenerator extends LogSupport {
         }
       case Values(exprs) =>
         s"(VALUES ${exprs.map(printExpression _).mkString(", ")})"
+      case Unnest(cols, ord) =>
+        val b = seqBuilder
+        b += s"UNNEST (${cols.map(printExpression).mkString(", ")})"
+        if (ord) {
+          b += "WITH ORDINARITY"
+        }
+        b.result().mkString(" ")
+      case Lateral(q) =>
+        val b = seqBuilder
+        b += "LATERAL"
+        b += s"(${printRelation(q)})"
+        b.result().mkString(" ")
       case other => unknown(other)
     }
   }
