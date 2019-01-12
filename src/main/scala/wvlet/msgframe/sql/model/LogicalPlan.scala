@@ -321,6 +321,18 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = relations.head.outputAttributes
   }
 
+  case class Unnest(columns: Seq[Expression], withOrdinality: Boolean) extends Relation {
+    override def children: Seq[LogicalPlan]       = Seq.empty
+    override def inputAttributes: Seq[Attribute]  = ??? // TODO
+    override def outputAttributes: Seq[Attribute] = ??? // TODO
+    override def sig: String                      = s"Un[${columns.length}]"
+  }
+  case class Lateral(query: Relation) extends UnaryRelation {
+    override def child: Relation                  = query
+    override def outputAttributes: Seq[Attribute] = ??? // TODO
+    override def sig: String                      = s"Lt(${query.sig})"
+  }
+
   // DDL
   sealed trait DDL extends LogicalPlan with LeafPlan with SQLSig {
     override def outputAttributes: Seq[Attribute] = Seq.empty
