@@ -43,6 +43,8 @@
 - sql: |
     insert into a(c1) select 1
 - sql: |
+    insert into a values (1, 2), (3, 4)
+- sql: |
     delete from a
 - sql: |
     delete from a where id = 1

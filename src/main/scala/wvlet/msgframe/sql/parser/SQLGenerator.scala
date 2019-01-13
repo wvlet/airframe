@@ -418,6 +418,8 @@ object SQLGenerator extends LogSupport {
         s"LIKE ${printExpression(table)} ${inc} PROPERTIES"
       case ArrayConstructor(values) =>
         s"ARRAY[${values.map(printExpression).mkString(", ")}]"
+      case RowConstructor(values) =>
+        s"(${values.map(printExpression).mkString(", ")})"
       case Parameter(index) =>
         "?"
       case other => unknown(other)
