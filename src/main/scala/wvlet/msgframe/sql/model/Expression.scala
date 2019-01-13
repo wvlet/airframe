@@ -407,6 +407,10 @@ case class ArrayConstructor(values: Seq[Expression]) extends Expression {
   override def children: Seq[Expression] = values
 }
 
+case class RowConstructor(values: Seq[Expression]) extends Expression {
+  override def children: Seq[Expression] = values
+}
+
 abstract sealed class CurrentTimeBase(name: String, precision: Option[Int]) extends LeafExpression
 case class CurrentTime(precision: Option[Int])                              extends CurrentTimeBase("current_time", precision)
 case class CurrentDate(precision: Option[Int])                              extends CurrentTimeBase("current_date", precision)

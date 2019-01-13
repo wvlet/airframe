@@ -94,6 +94,10 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     Values(ctx.expression().asScala.map(expression _))
   }
 
+  override def visitRowConstructor(ctx: RowConstructorContext): RowConstructor = {
+    RowConstructor(ctx.expression().asScala.map(expression _))
+  }
+
   override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = {
     val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
     val isDistinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(true)
