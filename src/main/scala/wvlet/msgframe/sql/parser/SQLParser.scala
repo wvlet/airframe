@@ -18,11 +18,11 @@ import wvlet.log.LogSupport
 import wvlet.msgframe.sql.model.LogicalPlan
 
 /**
-  * SQL -> Token -> ANTLR parse tree -> LogicalPlan
+  * SQL -> Token -> ANTLR parzse tree -> LogicalPlan
   */
 object SQLParser extends LogSupport {
 
-  private val lexerErrorListener = new BaseErrorListener {
+  private def createLexerErrorListener = new BaseErrorListener {
     override def syntaxError(recognizer: Recognizer[_, _],
                              offendingSymbol: Any,
                              line: Int,
@@ -46,7 +46,8 @@ object SQLParser extends LogSupport {
           throw new InputMismatchException(recognizer, nextTokensState, nextTokensContext)
         }
     })
-    parser.addErrorListener(lexerErrorListener)
+    parser.removeErrorListeners()
+    parser.addErrorListener(createLexerErrorListener)
 
     val ctx = parser.singleStatement()
     trace(ctx.toStringTree(parser))

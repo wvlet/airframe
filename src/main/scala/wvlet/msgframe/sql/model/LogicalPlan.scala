@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.msgframe.sql.model
-import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
   def modelName = {
@@ -124,10 +123,13 @@ trait SQLSig {
   def sig: String
 }
 
-/**
-  *
-  */
 object LogicalPlan {
+  private def isSelectAll(selectItems: Seq[SelectItem]): Boolean = {
+    selectItems.exists {
+      case AllColumns(x) => true
+      case _             => false
+    }
+  }
 
   // Relational operator
   sealed trait Relation extends LogicalPlan with SQLSig
@@ -195,14 +197,14 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute]   = Nil
   }
 
-  // This node can be a pivot node for generating a SELECT statament
+// This node can be a pivot node for generating a SELECT statament
   sealed trait Selection extends UnaryRelation {
     def selectItems: Seq[SelectItem]
   }
 
   case class Project(child: Relation, selectItems: Seq[SelectItem]) extends UnaryRelation with Selection {
     override def sig: String = {
-      val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
+      val proj = if (LogicalPlan.isSelectAll(selectItems)) "*" else s"${selectItems.length}"
       s"P[${proj}](${child.sig})"
     }
 
@@ -218,7 +220,7 @@ object LogicalPlan {
       with Selection {
 
     override def sig: String = {
-      val proj = if (isSelectAll(selectItems)) "*" else s"${selectItems.length}"
+      val proj = if (LogicalPlan.isSelectAll(selectItems)) "*" else s"${selectItems.length}"
       s"A[${proj},${groupingKeys.length}](${child.sig})"
     }
 
@@ -261,7 +263,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = query.outputAttributes
   }
 
-  // Joins
+// Joins
   case class Join(joinType: JoinType, left: Relation, right: Relation, cond: JoinCriteria) extends Relation {
     override def modelName: String          = joinType.toString
     override def children: Seq[LogicalPlan] = Seq(left, right)
@@ -272,18 +274,18 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = ???
   }
   sealed abstract class JoinType(val symbol: String)
-  // Exact match (= equi join)
+// Exact match (= equi join)
   case object InnerJoin extends JoinType("J")
-  // Joins for preserving left table entries
+// Joins for preserving left table entries
   case object LeftOuterJoin extends JoinType("LJ")
-  // Joins for preserving right table entries
+// Joins for preserving right table entries
   case object RightOuterJoin extends JoinType("RJ")
-  // Joins for preserving both table entries
+// Joins for preserving both table entries
   case object FullOuterJoin extends JoinType("FJ")
-  // Cartesian product of two tables
+// Cartesian product of two tables
   case object CrossJoin extends JoinType("CJ")
-  // From clause contains only table names, and
-  // Where clause specifies join criteria
+// From clause contains only table names, and
+// Where clause specifies join criteria
   case object ImplicitJoin extends JoinType("J")
 
   sealed trait SetOperation extends Relation {
@@ -330,7 +332,7 @@ object LogicalPlan {
     override def sig: String                      = s"Lt(${query.sig})"
   }
 
-  // DDL
+// DDL
   sealed trait DDL extends LogicalPlan with LeafPlan with SQLSig {
     override def outputAttributes: Seq[Attribute] = Seq.empty
   }

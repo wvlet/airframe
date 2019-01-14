@@ -22,7 +22,7 @@ import wvlet.msgframe.sql.catalog.DataType._
 class DataTypeTest extends AirframeSpec {
 
   def parse(t: String, expected: DataType): Unit = {
-    info(s"parse ${t}")
+    debug(s"parse ${t}")
     val parsed = DataType.parse(t)
     parsed shouldBe Some(expected)
   }

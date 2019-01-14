@@ -99,7 +99,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitSetOperation(ctx: SetOperationContext): LogicalPlan = {
-    val children   = Seq(ctx.left, ctx.right).map(visit(_).asInstanceOf[Relation]).toSeq
+    val children   = Seq(ctx.left, ctx.right).map(x => visit(x).asInstanceOf[Relation]).toSeq
     val isDistinct = Option(ctx.setQuantifier()).map(visitSetQuantifier(_).isDistinct).getOrElse(true)
     val base = if (ctx.INTERSECT() != null) {
       Intersect(children)
