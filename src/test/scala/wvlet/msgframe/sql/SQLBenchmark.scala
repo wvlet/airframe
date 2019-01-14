@@ -86,4 +86,9 @@ object SQLBenchmark {
     val dir = new File(s"${RESOURCE_PATH}/tpc-h")
     readTestQueries(dir)
   }
+
+  lazy val hive: Seq[TestQuery] = {
+    readSQLFromYaml(s"${RESOURCE_PATH}/standard/hive-queries.yml")
+  }
+
 }

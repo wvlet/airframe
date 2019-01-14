@@ -236,6 +236,16 @@ object SQLGenerator extends LogSupport {
         b += "LATERAL"
         b += s"(${printRelation(q)})"
         b.result().mkString(" ")
+      case LateralView(in, exprs, tableAlias, columnAliases) =>
+        val b = seqBuilder
+        b += printRelation(in)
+        b += "LATERAL VIEW explode ("
+        b += exprs.map(printExpression).mkString(", ")
+        b += ")"
+        b += printExpression(tableAlias)
+        b += "AS"
+        b += columnAliases.map(printExpression).mkString(", ")
+        b.result().mkString(" ")
       case other => unknown(other)
     }
   }
