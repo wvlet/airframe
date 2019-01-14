@@ -14,8 +14,8 @@
 
 package wvlet.msgframe.sql.parser
 import wvlet.log.LogSupport
+import wvlet.msgframe.sql.model._
 import wvlet.msgframe.sql.model.LogicalPlan._
-import wvlet.msgframe.sql.model.{Attribute, Expression, LogicalPlan, _}
 
 /**
   * Print LogicalPlans As SQL statements
@@ -42,7 +42,7 @@ object SQLGenerator extends LogSupport {
         aliases.map { x =>
           b += s"(${x.map(printExpression).mkString(", ")})"
         }
-        b += print(query)
+        b += printRelation(query)
         b.result().mkString(" ")
       case Delete(table, condOpt) =>
         val b = seqBuilder
@@ -62,10 +62,8 @@ object SQLGenerator extends LogSupport {
   private def findNonEmpty(in: Relation): Option[Relation] = {
     // Look for FROM clause candidates inside Project/Aggregate/Filter nodes
     in match {
-      case EmptyRelation =>
-        None
-      case other =>
-        Some(other)
+      case EmptyRelation => None
+      case other         => Some(other)
     }
   }
 
@@ -109,18 +107,21 @@ object SQLGenerator extends LogSupport {
   private def printSelection(s: Selection, context: List[Relation]): String = {
     // We need to pull-up Filter operators from child relations to build WHERE clause
     // e.g., Selection(in:Filter(Filter( ...)), ...)
+
     val childFilters: List[Filter] = collectChildFilters(s.child)
     val nonFilterChild = if (childFilters.nonEmpty) {
       childFilters.last.child
     } else {
       s.child
     }
+
     val b = Seq.newBuilder[String]
     b += "SELECT"
     if (containsDistinctPlan(context)) {
       b += "DISTINCT"
     }
     b += (s.selectItems.map(printExpression).mkString(", "))
+
     findNonEmpty(nonFilterChild).map { f =>
       b += "FROM"
       b += printRelation(f)
@@ -156,9 +157,8 @@ object SQLGenerator extends LogSupport {
 
   def printRelation(r: Relation, context: List[Relation] = List.empty): String = {
     r match {
-      case EmptyRelation => ""
       case s: SetOperation =>
-        printSetOperation(s, context)
+        printSetOperation(s, Nil)
       case Filter(in, filterExpr) =>
         printRelation(in, r :: context)
       case Distinct(in) =>
@@ -360,7 +360,6 @@ object SQLGenerator extends LogSupport {
         val wd = window
           .map { w =>
             val s = Seq.newBuilder[String]
-
             if (w.partitionBy.nonEmpty) {
               s += "PARTITION BY"
               s += w.partitionBy.map(x => printExpression(x)).mkString(", ")

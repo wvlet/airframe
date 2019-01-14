@@ -34,9 +34,9 @@ object LogicalPlanPrinter extends LogSupport {
   def print(m: LogicalPlan, out: PrintWriter, level: Int): Unit = {
     m match {
       case EmptyRelation =>
+      // print nothing
       case _ =>
-        val ws = " " * (level)
-
+        val ws   = " " * (level)
         val attr = m.expressions.map(_.toString)
         attr.length match {
           case 0 =>

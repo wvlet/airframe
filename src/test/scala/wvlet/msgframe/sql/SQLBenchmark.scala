@@ -55,11 +55,11 @@ object SQLBenchmark {
     selection ++ ddl
   }
 
-  def selection: Seq[TestQuery] = {
+  lazy val selection: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/queries.yml")
   }
 
-  def ddl: Seq[TestQuery] = {
+  lazy val ddl: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/ddl.yml")
   }
 
@@ -69,7 +69,7 @@ object SQLBenchmark {
     }
   }
 
-  def tpcDS: Seq[TestQuery] = {
+  lazy val tpcDS: Seq[TestQuery] = {
     val dir = new File(s"${RESOURCE_PATH}/tpc-ds")
     readTestQueries(dir).filter { x =>
       // TODO support rollup operator
@@ -82,7 +82,7 @@ object SQLBenchmark {
     TestQuery(IOUtil.readAsString(f.getPath), Some(f.getName))
   }
 
-  def tpcH: Seq[TestQuery] = {
+  lazy val tpcH: Seq[TestQuery] = {
     val dir = new File(s"${RESOURCE_PATH}/tpc-h")
     readTestQueries(dir)
   }
