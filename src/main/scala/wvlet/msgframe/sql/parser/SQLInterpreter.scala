@@ -562,7 +562,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitIntegerLiteral(ctx: IntegerLiteralContext): Literal = {
-    LongLiteral(ctx.getText.toInt)
+    LongLiteral(ctx.getText.toLong)
   }
 
   override def visitStringLiteral(ctx: StringLiteralContext): Literal = {

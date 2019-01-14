@@ -105,6 +105,8 @@
 - sql: |
     select decimal '1000000000001'
 - sql: |
+    select 9223372036854775807
+- sql: |
     select char 'a'
 - sql: |
     select binary '00'
