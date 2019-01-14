@@ -60,7 +60,7 @@ class SQLParserTest extends AirframeSpec {
 
   }
 
-  "parse selection queries" taggedAs working in {
+  "parse selection queries" in {
     SQLBenchmark.selection.foreach { sql =>
       roundtrip(sql)
     }
@@ -80,6 +80,12 @@ class SQLParserTest extends AirframeSpec {
 
   "parse TPC-DS" in {
     SQLBenchmark.tpcDS.foreach { sql =>
+      roundtrip(sql)
+    }
+  }
+
+  "parse hive queries" taggedAs working in {
+    SQLBenchmark.hive.foreach { sql =>
       roundtrip(sql)
     }
   }

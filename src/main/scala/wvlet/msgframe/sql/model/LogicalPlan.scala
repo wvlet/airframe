@@ -331,6 +331,14 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = ??? // TODO
     override def sig: String                      = s"Lt(${query.sig})"
   }
+  case class LateralView(child: Relation,
+                         exprs: Seq[Expression],
+                         tableAlias: Identifier,
+                         columnAliases: Seq[Identifier])
+      extends UnaryRelation {
+    override def outputAttributes: Seq[Attribute] = ??? // TODO
+    override def sig: String                      = s"LV(${child.sig})"
+  }
 
 // DDL
   sealed trait DDL extends LogicalPlan with LeafPlan with SQLSig {

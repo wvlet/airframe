@@ -259,6 +259,14 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     visitAliasedRelation(ctx.aliasedRelation())
   }
 
+  override def visitLateralView(ctx: LateralViewContext): Relation = {
+    val left          = visit(ctx.left).asInstanceOf[Relation]
+    val exprs         = ctx.expression().asScala.map(expression)
+    val tableAlias    = visitIdentifier(ctx.tableAlias)
+    val columnAliases = ctx.identifier().asScala.tail.map(visitIdentifier)
+    LateralView(left, exprs, tableAlias, columnAliases)
+  }
+
   override def visitAliasedRelation(ctx: AliasedRelationContext): Relation = {
     val r: Relation = ctx.relationPrimary() match {
       case p: ParenthesizedRelationContext =>

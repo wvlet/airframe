@@ -205,6 +205,9 @@ relation
       | joinType JOIN rightRelation=relation joinCriteria
       | NATURAL joinType JOIN right=aliasedRelation
       )                                           #joinRelation
+    | left=relation
+      LATERAL VIEW EXPLODE '(' expression (',' expression)* ')' tableAlias=identifier
+      AS identifier (',' identifier)*  #lateralView
     | aliasedRelation                             #relationDefault
     ;
 
@@ -520,6 +523,7 @@ EXCLUDING: 'EXCLUDING';
 EXECUTE: 'EXECUTE';
 EXISTS: 'EXISTS';
 EXPLAIN: 'EXPLAIN';
+EXPLODE: 'EXPLODE';
 EXTRACT: 'EXTRACT';
 FALSE: 'FALSE';
 FILTER: 'FILTER';
