@@ -158,7 +158,8 @@ object SQLGenerator extends LogSupport {
   def printRelation(r: Relation, context: List[Relation] = List.empty): String = {
     r match {
       case s: SetOperation =>
-        printSetOperation(s, Nil)
+        // Need to pass the context to disginguish union/union all, etc.
+        printSetOperation(s, context)
       case Filter(in, filterExpr) =>
         printRelation(in, r :: context)
       case Distinct(in) =>
