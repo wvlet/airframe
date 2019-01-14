@@ -60,8 +60,10 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product {
     }
 
     val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
+    copyInstance(newArgs)
+  }
 
-    // TODO Build this LogicalPlan using Surface
+  protected def copyInstance(newArgs: Seq[AnyRef]): this.type = {
     val primaryConstructor = this.getClass.getDeclaredConstructors()(0)
     val newObj             = primaryConstructor.newInstance(newArgs: _*)
     newObj.asInstanceOf[this.type]
@@ -187,15 +189,10 @@ object LogicalPlan {
   }
 
   case object EmptyRelation extends Relation with LeafPlan {
-    override def sig                              = ""
-    override def outputAttributes: Seq[Attribute] = Nil
-  }
-
-  private def isSelectAll(selectItems: Seq[SelectItem]): Boolean = {
-    selectItems.exists {
-      case AllColumns(x) => true
-      case _             => false
-    }
+    // Need to override this method so as not to create duplicate case object instances
+    override def copyInstance(newArgs: Seq[AnyRef]) = this
+    override def sig                                = ""
+    override def outputAttributes: Seq[Attribute]   = Nil
   }
 
   // This node can be a pivot node for generating a SELECT statament
