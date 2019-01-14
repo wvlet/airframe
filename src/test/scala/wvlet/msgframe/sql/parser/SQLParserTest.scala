@@ -60,33 +60,33 @@ class SQLParserTest extends AirframeSpec {
 
   }
 
-  "parse selection queries" in {
-    SQLBenchmark.selection.foreach { sql =>
+  def roundtrip(s: Seq[TestQuery]): Unit = {
+    s.foreach { sql =>
       roundtrip(sql)
     }
+  }
+
+  "parse selection queries" in {
+    roundtrip(SQLBenchmark.selection)
   }
 
   "parse DDL queries" in {
-    SQLBenchmark.ddl.foreach { sql =>
-      roundtrip(sql)
-    }
+    roundtrip(SQLBenchmark.ddl)
   }
 
   "parse TPC-H" in {
-    SQLBenchmark.tpcH.foreach { sql =>
-      roundtrip(sql)
-    }
+    roundtrip(SQLBenchmark.tpcH)
   }
 
   "parse TPC-DS" in {
-    SQLBenchmark.tpcDS.foreach { sql =>
-      roundtrip(sql)
-    }
+    roundtrip(SQLBenchmark.tpcDS)
   }
 
-  "parse hive queries" taggedAs working in {
-    SQLBenchmark.hive.foreach { sql =>
-      roundtrip(sql)
-    }
+  "parse hive queries" in {
+    roundtrip(SQLBenchmark.hive)
+  }
+
+  "parse private queries" taggedAs working in {
+    roundtrip(SQLBenchmark.privateQueries)
   }
 }

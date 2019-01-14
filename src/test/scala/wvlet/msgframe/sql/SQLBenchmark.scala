@@ -33,18 +33,22 @@ object SQLBenchmark {
   private val RESOURCE_PATH = "msgframe-sql/src/test/resources/wvlet/msgframe/sql"
 
   private def readSQLFromYaml(path: String): Seq[TestQuery] = {
-    val yaml = YamlReader.loadYamlList(path)
+    if (IOUtil.findPath(path).isEmpty) {
+      Seq.empty
+    } else {
+      val yaml = YamlReader.loadYamlList(path)
 
-    yaml
-      .map { y =>
-        val msgpack = YamlReader.toMsgPack(y)
-        val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
-        codec.unpackMsgPack(msgpack).map { x =>
-          x
+      yaml
+        .map { y =>
+          val msgpack = YamlReader.toMsgPack(y)
+          val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
+          codec.unpackMsgPack(msgpack).map { x =>
+            x
+          }
         }
-      }
-      .filter(_.isDefined)
-      .flatten
+        .filter(_.isDefined)
+        .flatten
+    }
   }
 
   def allQueries: Seq[TestQuery] = {
@@ -89,6 +93,10 @@ object SQLBenchmark {
 
   lazy val hive: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/hive-queries.yml")
+  }
+
+  lazy val privateQueries: Seq[TestQuery] = {
+    readSQLFromYaml(s"${RESOURCE_PATH}/private/examples.yml")
   }
 
 }
