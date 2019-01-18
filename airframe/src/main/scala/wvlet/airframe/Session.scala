@@ -138,6 +138,9 @@ object Session extends LogSupport {
   implicit class SessionAccess(session: Session) {
     def get[A](surface: Surface): A                  = session.get[A](surface)
     def getOrElse[A](surface: Surface, obj: => A): A = session.getOrElse[A](surface, obj)
+    def createNewInstanceOf[A](surface: Surface): A  = session.createNewInstanceOf[A](surface)
+    def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A): A =
+      session.createNewInstanceOf[A](surface, traitInstanceFactory)
   }
 
   def getSession(obj: Any): Option[Session] = {
