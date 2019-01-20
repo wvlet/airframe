@@ -13,15 +13,41 @@
  */
 package wvlet.airframe.control
 
+import scala.util.control.NonFatal
+
 /**
   *
   */
 object Control {
-  def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
+  def withResource[R <: AutoCloseable, U](resource: R)(body: R => U): U = {
     try {
       body(resource)
     } finally {
-      resource.close
+      closeQuietly(resource)
     }
   }
+
+  def withResources[R1 <: AutoCloseable, R2 <: AutoCloseable, U](resource1: R1, resource2: R2)(
+      body: (R1, R2) => U): U = {
+    try {
+      body(resource1, resource2)
+    } finally {
+      try {
+        closeQuietly(resource1)
+      } finally {
+        closeQuietly(resource2)
+      }
+    }
+  }
+
+  private def closeQuietly(resource: AutoCloseable): Unit = {
+    if (resource != null) {
+      try {
+        resource.close
+      } catch {
+        case NonFatal(_) => () // ignore closing exception
+      }
+    }
+  }
+
 }

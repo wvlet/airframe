@@ -37,5 +37,26 @@ class ControlTest extends AirframeSpec {
       }
       out.closed shouldBe true
     }
+    "have loan pattern for two resources" in {
+      val in  = new ControlTest.A
+      val out = new ControlTest.A
+      out.closed shouldBe false
+      Control.withResources(in, out) { (i, o) =>
+        // do nothing
+      }
+      in.closed shouldBe true
+      out.closed shouldBe true
+    }
+    "ignore resource closing errors" in {
+      Control.withResource(null) { o =>
+        // do nothing
+      }
+
+      Control.withResource(new AutoCloseable {
+        override def close(): Unit = ???
+      }) { o =>
+        // do nothing
+      }
+    }
   }
 }
