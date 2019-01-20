@@ -32,8 +32,11 @@ object Control {
     try {
       body(resource1, resource2)
     } finally {
-      closeQuietly(resource1)
-      closeQuietly(resource2)
+      try {
+        closeQuietly(resource1)
+      } finally {
+        closeQuietly(resource2)
+      }
     }
   }
 
