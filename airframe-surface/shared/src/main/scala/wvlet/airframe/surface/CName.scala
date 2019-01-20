@@ -66,8 +66,6 @@ object CName {
       varName
     } else {
       def translate(varName: String) = {
-        //var components = Array[String]()
-
         def wikiNameComponents: List[String] = {
           findWikiNameComponent(0)
         }
@@ -140,6 +138,40 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
       case o: CName if canonicalName.equals(o.canonicalName) => true
       case _                                                 => false
     }
+  }
+
+  lazy val snakeCase: String = naturalName.toLowerCase.replace(' ', '_')
+  lazy val dashCase: String  = naturalName.toLowerCase.replace(' ', '-')
+  lazy val upperCamelCase: String = {
+    val sb               = new StringBuilder()
+    var prevIsWhitespace = false
+    naturalName.toLowerCase.map { c =>
+      if (c != ' ') {
+        if (sb.length == 0 || prevIsWhitespace) {
+          sb.append(c.toUpper)
+        } else {
+          sb.append(c)
+        }
+      }
+      prevIsWhitespace = (c == ' ')
+    }
+    sb.toString
+  }
+
+  lazy val lowerCamelCase: String = {
+    val sb               = new StringBuilder()
+    var prevIsWhitespace = false
+    naturalName.toLowerCase.map { c =>
+      if (c != ' ') {
+        if (prevIsWhitespace) {
+          sb.append(c.toUpper)
+        } else {
+          sb.append(c)
+        }
+      }
+      prevIsWhitespace = (c == ' ')
+    }
+    sb.toString
   }
 
 }
