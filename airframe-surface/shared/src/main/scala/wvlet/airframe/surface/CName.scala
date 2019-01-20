@@ -39,15 +39,15 @@ import scala.collection.mutable.WeakHashMap
   */
 object CName {
 
-  private val cnameTable = new WeakHashMap[String, CName]
+  private val cnameTable = newCacheMap[String, CName]
 
   def apply(name: String): CName = {
     cnameTable.getOrElseUpdate(name, new CName(toCanonicalName(name), toNaturalName(name)))
   }
 
   private val paramNameReplacePattern = Pattern.compile("[\\s-_]");
-  private val canonicalNameTable      = new WeakHashMap[String, String]
-  private val naturalNameTable        = new WeakHashMap[String, String]
+  private val canonicalNameTable      = newCacheMap[String, String]
+  private val naturalNameTable        = newCacheMap[String, String]
 
   private def isSplitChar(c: Char)    = c.isUpper || c == '_' || c == '-' || c == ' '
   private def isUpcasePrefix(c: Char) = c.isUpper || c.isDigit

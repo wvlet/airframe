@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.ConcurrentHashMap
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
 /**
   *
@@ -26,4 +27,6 @@ package object surface {
 
   def getCached(fullName: String): Surface =
     surfaceCache.getOrElse(fullName, throw new IllegalArgumentException(s"Surface ${fullName} is not found in cache"))
+
+  def newCacheMap[A, B]: mutable.Map[A, B] = new mutable.HashMap[A, B]()
 }
