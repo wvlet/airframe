@@ -5,6 +5,17 @@ title: Release Notes
 
 # Release Notes
 
+## 0.79
+-  Fix Travis config to releae tagged revisions [[ff1be0b](https://github.com/wvlet/airframe/commit/ff1be0b)]
+-  Enhance loan pattern for AutoCloseable ([#359](https://github.com/wvlet/airframe/issues/359)) [[f971934](https://github.com/wvlet/airframe/commit/f971934)]
+-  Add name conversion functionallity to CName ([#360](https://github.com/wvlet/airframe/issues/360)) [[366caca](https://github.com/wvlet/airframe/commit/366caca)]
+-  Allows to use bindFactory outside of wvlet.airframe package ([#358](https://github.com/wvlet/airframe/issues/358)) [[d8836e4](https://github.com/wvlet/airframe/commit/d8836e4)]
+-  Upgrade to Scala 2.11.12 ([#356](https://github.com/wvlet/airframe/issues/356)) [[bc6b172](https://github.com/wvlet/airframe/commit/bc6b172)]
+-  Fix typo in docs ([#355](https://github.com/wvlet/airframe/issues/355)) [[e2e3776](https://github.com/wvlet/airframe/commit/e2e3776)]
+-  Fix in-trait injection example ([#354](https://github.com/wvlet/airframe/issues/354)) [[bb6fd83](https://github.com/wvlet/airframe/commit/bb6fd83)]
+-  Skip doc/publish builds in PR ([#352](https://github.com/wvlet/airframe/issues/352)) [[d3e6b90](https://github.com/wvlet/airframe/commit/d3e6b90)]
+-  Add roundtrip tests: SQL -> Model -> SQL' -> Model' ([#349](https://github.com/wvlet/airframe/issues/349)) [[7730745](https://github.com/wvlet/airframe/commit/7730745)]
+
 ## 0.78
 -  Add close() to Unpacker interface ([#348](https://github.com/wvlet/airframe/issues/348)) [[88c3749](https://github.com/wvlet/airframe/commit/88c3749)]
 
