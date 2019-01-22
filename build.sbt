@@ -124,7 +124,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   logJVM,
   airframeSpecJVM,
   config,
-  controlJVM,
+  control,
   jmx,
   launcher,
   metricsJVM,
@@ -154,7 +154,6 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   surfaceJS,
   logJS,
   airframeSpecJS,
-  controlJS,
   metricsJS,
   codecJS,
   msgpackJS,
@@ -349,24 +348,17 @@ lazy val config =
     .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", tablet, airframeSpecJVM % "test")
 
 lazy val control =
-  crossProject(JSPlatform, JVMPlatform)
-    .crossType(CrossType.Pure)
+  project
     .in(file("airframe-control"))
     .settings(buildSettings)
     .settings(
       name := "airframe-control",
-      description := "A library for controlling program flows and retrying"
-    )
-    .jvmSettings(
+      description := "A library for controlling program flows and retrying",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .jsSettings(jsBuildSettings)
-    .dependsOn(log, airframeSpec % "test")
-
-lazy val controlJS  = control.js
-lazy val controlJVM = control.jvm
+    .dependsOn(logJVM, airframeSpecJVM % "test")
 
 lazy val jmx =
   project
@@ -389,7 +381,7 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, controlJVM, codecJVM, airframeSpecJVM % "test")
+    .dependsOn(surfaceJVM, control, codecJVM, airframeSpecJVM % "test")
 
 // airframe-log should have minimum dependencies
 lazy val log =

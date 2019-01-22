@@ -1,11 +1,9 @@
 /*
- * Copyright 2012 Taro L. Saito
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,33 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package wvlet.airframe.control
-
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.lang.reflect.Field
 
 import wvlet.log.LogSupport
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.WeakHashMap
 import scala.sys.process.{Process, ProcessLogger}
-
-//--------------------------------------
-//
-// Shell.scala
-// Since: 2012/02/06 10:02
-//
-//--------------------------------------
+import scala.collection.JavaConverters._
 
 /**
   * Launch UNIX (or cygwin) commands from Scala
-  * @author leo
+  *
   */
 object Shell extends LogSupport {
 
-  private def access[U](f: Field)(body: => U): U = {
+  private def withAccessTo[U](f: Field)(body: => U): U = {
     val a = f.isAccessible
     try {
       if (!a)
@@ -146,7 +135,7 @@ object Shell extends LogSupport {
       // If the current OS is *Nix, the class of p is UNIXProcess and its pid can be obtained
       // from pid field by using reflection.
       val f = p.getClass().getDeclaredField("pid")
-      val pid: Int = access(f) {
+      val pid: Int = withAccessTo(f) {
         f.get(p).asInstanceOf[Int]
       }
       pid

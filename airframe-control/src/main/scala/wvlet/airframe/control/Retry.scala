@@ -16,7 +16,7 @@ package wvlet.airframe.control
 import scala.util.{Failure, Random, Success, Try}
 
 /**
-  *
+  * Retry logic implementation helper
   */
 object Retry {
 
@@ -102,7 +102,7 @@ object Retry {
             retryState = RetryContext(context, e, retryCount, maxRetry, nextWait)
             errorHandler(retryState)
             retryWait = retryWaitStrategy.updateWait(retryWait)
-            Compat.sleep(nextWait)
+            Thread.sleep(nextWait)
         }
       }
       result match {
