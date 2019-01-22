@@ -2,9 +2,13 @@ codecov:
   notify:
     require_ci_to_pass: no
 
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+        threshold: 5%
+
 ignore:
   - "**/*Macros.scala"        # Scala Macros coverage cannot be evaluated
   - "**/[\.]?js/src/**.scala" # Scala.js code 
-
-
-
