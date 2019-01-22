@@ -14,8 +14,6 @@
 package wvlet.airframe.canvas
 import java.nio.ByteBuffer
 
-import sun.misc.Unsafe
-
 /**
   * Canvas implementation with Unsafe memory access.
   * This provides native C-code level access performance.
