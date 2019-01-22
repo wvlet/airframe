@@ -27,12 +27,13 @@ abstract class Canvas {
   def readFloat(offset: Long): Float
   def readDouble(offset: Long): Double
 
-  def readBytes(offset: Long, length: Long, dest: Canvas, destOffset: Long): Unit
-  def readBytes(offset: Long, length: Long, dest: Array[Byte], destOffset: Int): Unit
+  def readBytes(offset: Long, dest: Canvas, destOffset: Long, length: Long): Unit
+  def readBytes(offset: Long, dest: Array[Byte], destOffset: Int, length: Int): Unit
   def readBytes(offset: Long, length: Long): Array[Byte] = {
     require(length.isValidInt, s"read length must be less than ${Int.MaxValue}")
-    val b = new Array[Byte](length.toInt)
-    readBytes(offset, length, b, 0)
+    val len = length.toInt
+    val b   = new Array[Byte](len)
+    readBytes(offset, b, 0, len)
     b
   }
 
@@ -50,9 +51,17 @@ abstract class Canvas {
 
 object Canvas {
 
-  def newCanvas(size: Long): Canvas        = ???
+  /**
+    * Create a new canvas backed by a heap byte array
+    * @param size
+    */
+  def newCanvas(size: Int): Canvas = {
+    wrap(new Array[Byte](size))
+  }
+
   def newOffHeapCanvas(size: Long): Canvas = ???
 
-  def wrappedCanvas(arr: Array[Byte], offset: Int, length: Int): Canvas = ???
-  def wrappedCanvas(buf: ByteBuffer): Canvas                            = ???
+  def wrap(arr: Array[Byte]): Canvas                           = wrap(arr, 0, arr.length)
+  def wrap(arr: Array[Byte], offset: Int, length: Int): Canvas = UnsafeCanvas.wrap(arr, offset, length)
+  def wrap(buf: ByteBuffer): Canvas                            = UnsafeCanvas.wrap(buf)
 }

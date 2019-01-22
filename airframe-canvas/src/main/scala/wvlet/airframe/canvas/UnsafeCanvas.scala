@@ -21,7 +21,19 @@ import sun.misc.Unsafe
   * This provides native C-code level access performance.
   *
   */
-final class UnsafeCanvas(base: AnyRef, address: Long, size: Long, reference: ByteBuffer) extends Canvas {
+final class UnsafeCanvas(
+                         // Base ofject for resolving the relative address of the raw byte array.
+                         // If base == null, the address value (the second parameter) will be a raw memory address
+                         private[canvas] val base: AnyRef,
+                         // The head address of the underlying memory. If the base is null, this address is a direct memory address.
+                         // If not, this will be the relative address within an array object (base).
+                         private[cavnas] val address: Long,
+                         // The size of the underlying memory.
+                         private[canvas] val size: Long,
+                         // Reference is used to hold a reference to an object that holds the underlying memory
+                         // so that it cannot be released by GC.
+                         private[canvas] val reference: ByteBuffer)
+    extends Canvas {
   import Unsafe._
 
   override def readByte(offset: Long): Byte = {
@@ -34,9 +46,11 @@ final class UnsafeCanvas(base: AnyRef, address: Long, size: Long, reference: Byt
     unsafe.getShort(base, address + offset)
   }
   override def readInt(offset: Long): Int = {
+    // The data will be read in the platform native endian.
     unsafe.getInt(base, address + offset)
   }
   override def readLong(offset: Long): Long = {
+    // The data will be read in the platform native endian.
     unsafe.getLong(base, address + offset)
   }
   override def readFloat(offset: Long): Float = {
@@ -45,10 +59,15 @@ final class UnsafeCanvas(base: AnyRef, address: Long, size: Long, reference: Byt
   override def readDouble(offset: Long): Double = {
     unsafe.getDouble(base, address + offset)
   }
-  override def readBytes(offset: Long, length: Long, dest: Canvas, destOffset: Long): Unit = {
-    ???
+  override def readBytes(offset: Long, dest: Canvas, destOffset: Long, length: Long): Unit = {
+    dest match {
+      case u: UnsafeCanvas =>
+        unsafe.copyMemory(base, address + offset, u.base, u.address + destOffset, length)
+      case other =>
+        throw new UnsupportedOperationException(s"readBytes from ${other.getClass}")
+    }
   }
-  override def readBytes(offset: Long, length: Long, dest: Array[Byte], destOffset: Int): Unit = {
+  override def readBytes(offset: Long, dest: Array[Byte], destOffset: Int, length: Int): Unit = {
     unsafe.copyMemory(base, address + offset, dest, arrayByteBaseOffset + destOffset, length)
   }
   override def writeByte(offset: Long, v: Byte): Unit = {
@@ -76,27 +95,34 @@ final class UnsafeCanvas(base: AnyRef, address: Long, size: Long, reference: Byt
     unsafe.copyMemory(src, arrayByteBaseOffset + srcOffset, base, address + offset, length)
   }
   override def writeBytes(offset: Long, src: Canvas, srcOffset: Long, length: Long): Unit = {
-    ???
+    src match {
+      case u: UnsafeCanvas =>
+        unsafe.copyMemory(u.base, u.address + srcOffset, base, address + offset, length)
+      case other =>
+        throw new UnsupportedOperationException(s"writeBytes to ${other.getClass}")
+    }
   }
 }
 
-object Unsafe {
-
-  // Fetch theUnsafe object for Oracle and OpenJDK
-  private[canvas] val unsafe = {
-    import java.lang.reflect.Field
-    val field: Field = classOf[Nothing].getDeclaredField("theUnsafe")
-    field.setAccessible(true)
-    field.get(null).asInstanceOf[Unsafe]
+object UnsafeCanvas {
+  def wrap(arr: Array[Byte], offset: Int, length: Int): Canvas = {
+    new UnsafeCanvas(arr, Unsafe.arrayByteBaseOffset + offset, length, null)
+  }
+  def wrap(buf: ByteBuffer): Canvas = {
+    if (buf.isDirect) {
+      new UnsafeCanvas(base = null,
+                       address = DirectBufferAccess.getAddress(buf) + buf.position(),
+                       size = buf.remaining(),
+                       reference = buf)
+    } else if (buf.hasArray) {
+      new UnsafeCanvas(base = buf.array(),
+                       address = Unsafe.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),
+                       size = buf.remaining(),
+                       reference = null)
+    } else {
+      throw new IllegalArgumentException(
+        s"Canvas supports only array-backed ByteBuffer or DirectBuffer: The input buffer is ${buf.getClass}")
+    }
   }
 
-  if (unsafe == null)
-    throw new RuntimeException("Unsafe is unavailable")
-
-  private[canvas] val arrayByteBaseOffset      = unsafe.arrayBaseOffset(classOf[Array[Byte]])
-  private[canvas] val arrayByteIndexScale: Int = unsafe.arrayIndexScale(classOf[Array[Byte]])
-
-  // Make sure the VM thinks bytes are only one byte wide
-  if (arrayByteIndexScale != 1)
-    throw new IllegalStateException("Byte array index scale must be 1, but is " + arrayByteIndexScale)
 }
