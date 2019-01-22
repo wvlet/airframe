@@ -25,14 +25,14 @@ final class UnsafeCanvas(
                          private[canvas] val base: AnyRef,
                          // The head address of the underlying memory. If the base is null, this address is a direct memory address.
                          // If not, this will be the relative address within an array object (base).
-                         private[cavnas] val address: Long,
+                         private[canvas] val address: Long,
                          // The size of the underlying memory.
                          private[canvas] val size: Long,
                          // Reference is used to hold a reference to an object that holds the underlying memory
                          // so that it cannot be released by GC.
                          private[canvas] val reference: ByteBuffer)
     extends Canvas {
-  import Unsafe._
+  import UnsafeUtil._
 
   override def readByte(offset: Long): Byte = {
     unsafe.getByte(base, address + offset)
@@ -104,7 +104,7 @@ final class UnsafeCanvas(
 
 object UnsafeCanvas {
   def wrap(arr: Array[Byte], offset: Int, length: Int): Canvas = {
-    new UnsafeCanvas(arr, Unsafe.arrayByteBaseOffset + offset, length, null)
+    new UnsafeCanvas(arr, UnsafeUtil.arrayByteBaseOffset + offset, length, null)
   }
   def wrap(buf: ByteBuffer): Canvas = {
     if (buf.isDirect) {
@@ -114,7 +114,7 @@ object UnsafeCanvas {
                        reference = buf)
     } else if (buf.hasArray) {
       new UnsafeCanvas(base = buf.array(),
-                       address = Unsafe.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),
+                       address = UnsafeUtil.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),
                        size = buf.remaining(),
                        reference = null)
     } else {

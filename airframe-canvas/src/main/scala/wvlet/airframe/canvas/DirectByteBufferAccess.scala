@@ -17,6 +17,7 @@ package wvlet.airframe.canvas
   *
   */
 import java.lang.reflect.{Constructor, InvocationTargetException, Method}
+import java.nio.ByteBuffer
 
 /**
   * Wraps the difference of access methods to DirectBuffers between Android and others.
@@ -75,7 +76,8 @@ private[canvas] object DirectBufferAccess {
     byteBufferConstructor = directByteBufferConstructor
     directBufferConstructorType = constructorType
     memoryBlockWrapFromJni = mbWrap
-    if (byteBufferConstructor == null) throw new RuntimeException("Constructor of DirectByteBuffer is not found")
+    if (byteBufferConstructor == null)
+      throw new RuntimeException("Constructor of DirectByteBuffer is not found")
     byteBufferConstructor.setAccessible(true)
     mGetAddress = directByteBufferClass.getDeclaredMethod("address")
     mGetAddress.setAccessible(true)
@@ -85,42 +87,32 @@ private[canvas] object DirectBufferAccess {
     mClean.setAccessible(true)
   }
 
-  def getAddress(base: Any): Long =
-    try mGetAddress.invoke(base).asInstanceOf[Long]
-    catch {
-      case e: IllegalAccessException =>
-        throw new RuntimeException(e)
-      case e: InvocationTargetException =>
-        throw new RuntimeException(e)
-    }
+  def getAddress(base: Any): Long = mGetAddress.invoke(base).asInstanceOf[Long]
+
   def clean(base: Any): Unit = {
-    try {
-      val cleaner = mCleaner.invoke(base)
-      mClean.invoke(cleaner)
-    } catch {
-      case e: Throwable =>
-        throw new RuntimeException(e)
-    }
+    val cleaner = mCleaner.invoke(base)
+    mClean.invoke(cleaner)
   }
+
   def isDirectByteBufferInstance(s: Any): Boolean = directByteBufferClass.isInstance(s)
 
-  def newByteBuffer(address: Long, index: Int, length: Int, reference: Nothing): Nothing =
-    try directBufferConstructorType match {
+  def newByteBuffer(address: Long, index: Int, length: Int, reference: AnyRef): ByteBuffer = {
+    val ret: Any = directBufferConstructorType match {
       case ARGS_LONG_INT_REF =>
-        byteBufferConstructor.newInstance(address + index, length, reference).asInstanceOf[Nothing]
+        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length), reference)
       case ARGS_LONG_INT =>
-        byteBufferConstructor.newInstance(address + index, length).asInstanceOf[Nothing]
+        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length))
       case ARGS_INT_INT =>
-        byteBufferConstructor.newInstance(address.toInt + index, length).asInstanceOf[Nothing]
+        byteBufferConstructor.newInstance(Long.box(address.toInt + index), Int.box(length))
       case ARGS_MB_INT_INT =>
         byteBufferConstructor
-          .newInstance(memoryBlockWrapFromJni.invoke(null, address + index, length), length, 0).asInstanceOf[Nothing]
+          .newInstance(memoryBlockWrapFromJni.invoke(null, Long.box(address + index), Int.box(length)),
+                       Int.box(length),
+                       Int.box(0))
       case _ =>
         throw new IllegalStateException("Unexpected value")
-    } catch {
-      case e: Throwable =>
-        // Convert checked exception to unchecked exception
-        throw new RuntimeException(e)
     }
+    ret.asInstanceOf[ByteBuffer]
+  }
 
 }

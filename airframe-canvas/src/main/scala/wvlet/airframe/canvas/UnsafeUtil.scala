@@ -17,12 +17,12 @@ import sun.misc.Unsafe
 /**
   *
   */
-private[canvas] object Unsafe {
+private[canvas] object UnsafeUtil {
 
   // Fetch theUnsafe object for Oracle and OpenJDK
   private[canvas] val unsafe = {
     import java.lang.reflect.Field
-    val field: Field = classOf[Nothing].getDeclaredField("theUnsafe")
+    val field: Field = classOf[Unsafe].getDeclaredField("theUnsafe")
     field.setAccessible(true)
     field.get(null).asInstanceOf[Unsafe]
   }
