@@ -123,6 +123,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   surfaceJVM,
   logJVM,
   airframeSpecJVM,
+  canvas,
   config,
   control,
   jmx,
@@ -332,6 +333,16 @@ lazy val surface =
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
+
+lazy val canvas =
+  project
+    .in(file("airframe-canvas"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-canvas",
+      description := "Airframe off-heap memory library"
+    )
+    .dependsOn(airframeSpecJVM % "test")
 
 lazy val config =
   project
