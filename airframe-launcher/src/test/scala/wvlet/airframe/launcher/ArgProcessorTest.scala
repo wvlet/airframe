@@ -71,6 +71,8 @@ object ArgProcessorTest {
 
   case class SeqArg(@argument args: Seq[String])
   case class SeqOption(@option(prefix = "-p") ports: Seq[Int])
+
+  case class BooleanOption(@option(prefix = "--flag") flag: Option[Boolean] = None)
 }
 
 class ArgProcessorTest extends AirframeSpec {
@@ -145,8 +147,13 @@ class ArgProcessorTest extends AirframeSpec {
     Launcher.of[SeqArg].execute("apple banana").getRootInstance should be(SeqArg(Seq("apple", "banana")))
   }
 
-  "should support multiple same-name options" taggedAs working in {
+  "should support multiple same-name options" in {
     Launcher.of[SeqOption].execute("-p 10").getRootInstance should be(SeqOption(Seq(10)))
     Launcher.of[SeqOption].execute("-p 10 -p 20 -p 30").getRootInstance should be(SeqOption(Seq(10, 20, 30)))
+  }
+
+  "should set Option[Boolean] option" taggedAs working in {
+    Launcher.of[BooleanOption].execute("--flag").getRootInstance shouldBe BooleanOption(Some(true))
+    Launcher.of[BooleanOption].execute("").getRootInstance shouldBe BooleanOption(None)
   }
 }
