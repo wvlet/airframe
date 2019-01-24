@@ -14,6 +14,8 @@
 package wvlet.airframe.fluentd
 import java.time.Instant
 
+import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
+import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
 import wvlet.airframe._
@@ -21,13 +23,41 @@ import wvlet.airframe._
 case class FluencyConfig(
     // Use the extended EventTime timestamps
     // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-    useExtendedEventTime: Boolean = false,
-    fluencyConfig: Fluency.Config = new Fluency.Config()
+    useExtendedEventTime: java.lang.Boolean = false,
+    maxBufferSize: java.lang.Long = null,
+    bufferChunkInitialSize: java.lang.Integer = null,
+    bufferChunkRetentionSize: java.lang.Integer = null,
+    bufferChunkRetentionTimeMillis: java.lang.Integer = null,
+    flushIntervalMillis: java.lang.Integer = null,
+    fileBackupDir: String = null,
+    waitUntilBufferFlushed: java.lang.Integer = null,
+    waitUntilFlusherTerminated: java.lang.Integer = null,
+    jvmHeapBufferMode: java.lang.Boolean = null,
+    errorHandler: ErrorHandler = null,
+    senderMaxRetryCount: java.lang.Integer = null,
+    ackResponseMode: Boolean = false,
+    sslEnabled: Boolean = false
 )
 
 object FluencyClient {
   def newFluency(fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig): Fluency = {
-    Fluency.defaultFluency(fluentdConfig.host, fluentdConfig.port, fluencyConfig.fluencyConfig)
+    val builder = new FluencyBuilderForFluentd()
+
+    builder.setMaxBufferSize(fluencyConfig.maxBufferSize)
+    builder.setBufferChunkInitialSize(fluencyConfig.bufferChunkInitialSize)
+    builder.setBufferChunkRetentionSize(fluencyConfig.bufferChunkRetentionSize)
+    builder.setBufferChunkRetentionTimeMillis(fluencyConfig.bufferChunkRetentionTimeMillis)
+    builder.setFlushIntervalMillis(fluencyConfig.flushIntervalMillis)
+    builder.setFileBackupDir(fluencyConfig.fileBackupDir)
+    builder.setWaitUntilBufferFlushed(fluencyConfig.waitUntilBufferFlushed)
+    builder.setWaitUntilFlusherTerminated(fluencyConfig.waitUntilFlusherTerminated)
+    builder.setJvmHeapBufferMode(fluencyConfig.jvmHeapBufferMode)
+    builder.setErrorHandler(fluencyConfig.errorHandler)
+    builder.setSenderMaxRetryCount(fluencyConfig.senderMaxRetryCount)
+    builder.setAckResponseMode(fluencyConfig.ackResponseMode)
+    builder.setSslEnabled(fluencyConfig.sslEnabled)
+
+    builder.build(fluentdConfig.host, fluentdConfig.port)
   }
 }
 
