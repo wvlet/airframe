@@ -56,18 +56,18 @@ class ControlTest extends AirframeSpec {
       }
     }
     "report resource closing errors" in {
-      class FirstException extends RuntimeException
+      class FirstException  extends RuntimeException
       class SecondException extends RuntimeException
 
-      assertThrows[FirstException]{
+      assertThrows[FirstException] {
         Control.withResource(new AutoCloseable {
-          override def close(): Unit =  throw new FirstException()
+          override def close(): Unit = throw new FirstException()
         }) { o =>
           // do nothing
         }
       }
 
-      assertThrows[SecondException]{
+      assertThrows[SecondException] {
         Control.withResources(
           new AutoCloseable {
             override def close(): Unit = throw new FirstException()
