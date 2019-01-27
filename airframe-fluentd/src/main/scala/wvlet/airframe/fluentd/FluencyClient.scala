@@ -24,6 +24,7 @@ case class FluencyConfig(
     // Use the extended EventTime timestamps
     // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
     useExtendedEventTime: Boolean = false,
+    // Default value of following properties are all Fluency default configuration
     maxBufferSize: Long = 512 * 1024 * 1024,
     bufferChunkInitialSize: Int = 1024 * 1024,
     bufferChunkRetentionSize: Int = 1024 * 1024 * 4,
@@ -70,7 +71,7 @@ object FluencyClient extends LogSupport {
     builder.build(fluentdConfig.host, fluentdConfig.port)
   }
 
-  // Wrap a function to warn missing configuration items
+  // Wrap a function to warn deprecated configuration items
   private def setConfiguration(builder: FluencyBuilderForFluentd,
                                name: String,
                                f: FluencyBuilderForFluentd => Unit): Unit = {
@@ -78,7 +79,7 @@ object FluencyClient extends LogSupport {
       f(builder)
     } catch {
       case _: NoSuchMethodError =>
-        warn(s"$name is no longer supported in Fluency.")
+        warn(s"$name is no longer supported in Fluency you use.")
     }
   }
 }
