@@ -14,6 +14,7 @@
 package wvlet.airframe.fluentd
 import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
 import org.komamitsu.fluency.fluentd.ingester.FluentdIngester
+import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -56,7 +57,7 @@ class FluencyClientTest extends AirframeSpec {
       waitUntilBufferFlushed = 5,
       waitUntilFlusherTerminated = 5,
       jvmHeapBufferMode = true,
-      errorHandler = (e: Throwable) => ???,
+      errorHandler = new ErrorHandler { override def handle(e: Throwable): Unit = ??? },
       senderMaxRetryCount = 8,
       ackResponseMode = true,
       sslEnabled = true
