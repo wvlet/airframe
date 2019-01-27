@@ -47,15 +47,37 @@ class ControlTest extends AirframeSpec {
       in.closed shouldBe true
       out.closed shouldBe true
     }
-    "ignore resource closing errors" in {
+    "not cause error for null resource" in {
       Control.withResource(null) { o =>
         // do nothing
       }
-
-      Control.withResource(new AutoCloseable {
-        override def close(): Unit = ???
-      }) { o =>
+      Control.withResources(null, null) { (i, o) =>
         // do nothing
+      }
+    }
+    "report resource closing errors" in {
+      class FirstException  extends RuntimeException
+      class SecondException extends RuntimeException
+
+      assertThrows[FirstException] {
+        Control.withResource(new AutoCloseable {
+          override def close(): Unit = throw new FirstException()
+        }) { o =>
+          // do nothing
+        }
+      }
+
+      assertThrows[SecondException] {
+        Control.withResources(
+          new AutoCloseable {
+            override def close(): Unit = throw new FirstException()
+          },
+          new AutoCloseable {
+            override def close(): Unit = throw new SecondException()
+          }
+        ) { (i, o) =>
+          // do nothing
+        }
       }
     }
   }
