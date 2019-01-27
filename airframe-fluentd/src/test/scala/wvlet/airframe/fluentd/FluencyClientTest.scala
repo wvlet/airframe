@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
+import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
 import org.komamitsu.fluency.fluentd.ingester.FluentdIngester
-import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import wvlet.airframe.AirframeSpec
 
 /**
@@ -22,26 +22,24 @@ import wvlet.airframe.AirframeSpec
 class FluentcyClientTest extends AirframeSpec {
 
   "should configure Fluency by default" in {
-    val fluentdConfig = FluentdConfig()
-    val fluencyConfig = FluencyConfig()
-    val fluency       = FluencyClient.newFluency(fluentdConfig, fluencyConfig)
+    val fluentdConfig  = FluentdConfig()
+    val fluencyConfig  = FluencyConfig()
+    val fluency        = FluencyClient.newFluency(fluentdConfig, fluencyConfig)
+    val defaultFluency = new FluencyBuilderForFluentd().build()
     try {
-      fluency.getBuffer.getMaxBufferSize shouldBe 512 * 1024 * 1024
-      fluency.getBuffer.getChunkInitialSize shouldBe 1024 * 1024
-      fluency.getBuffer.getChunkRetentionSize shouldBe 1024 * 1024 * 4
-      fluency.getBuffer.getChunkRetentionTimeMillis shouldBe 1000
-      fluency.getFlusher.getFlushIntervalMillis shouldBe 600
-      fluency.getBuffer.getFileBackupDir shouldBe null
-      fluency.getFlusher.getWaitUntilBufferFlushed shouldBe 60
-      fluency.getFlusher.getWaitUntilTerminated shouldBe 60
-      fluency.getBuffer.getJvmHeapBufferMode shouldBe false
-      fluency.getFlusher.getIngester.asInstanceOf[FluentdIngester].isAckResponseMode shouldBe false
-      val senderInfo = fluency.getFlusher.getIngester.getSender.toString
-      senderInfo.indexOf("maxRetryCount=7") shouldBe >(0)
-      senderInfo.indexOf("baseSender=TCPSender") shouldBe >(0)
+      // Fluency.toString returns string representation of Buffer and Flusher settings
+      val config        = fluency.toString.split("@").head
+      val defaultConfig = defaultFluency.toString.split("@").head
+      config shouldBe defaultConfig
+
+      // Check senderMaxRetryCount and sslEnabled
+      val senderConfig        = fluency.getFlusher.getIngester.getSender.toString.split("@").head
+      val defaultSenderConfig = defaultFluency.getFlusher.getIngester.getSender.toString.split("@").head
+      senderConfig shouldBe defaultSenderConfig
 
     } finally {
       fluency.close()
+      defaultFluency.close()
     }
   }
 
@@ -49,19 +47,19 @@ class FluentcyClientTest extends AirframeSpec {
     val fluentdConfig = FluentdConfig()
     val fluencyConfig = FluencyConfig(
       useExtendedEventTime = true,
-      maxBufferSize = Some(1024 * 1024 * 10),
-      bufferChunkInitialSize = Some(1024 * 1024 * 5),
-      bufferChunkRetentionSize = Some(1024 * 1024 * 10),
-      bufferChunkRetentionTimeMillis = Some(5000),
-      flushIntervalMillis = Some(30000),
-      fileBackupDir = Some("./target/FluentcyClientTestTemp"),
-      waitUntilBufferFlushed = Some(5),
-      waitUntilFlusherTerminated = Some(5),
-      jvmHeapBufferMode = Some(true),
-      errorHandler = Some(new ErrorHandler { override def handle(e: Throwable): Unit = ??? }),
-      senderMaxRetryCount = Some(8),
-      ackResponseMode = Some(true),
-      sslEnabled = Some(true)
+      maxBufferSize = 1024 * 1024 * 10,
+      bufferChunkInitialSize = 1024 * 1024 * 5,
+      bufferChunkRetentionSize = 1024 * 1024 * 10,
+      bufferChunkRetentionTimeMillis = 5000,
+      flushIntervalMillis = 30000,
+      fileBackupDir = "./target/FluentcyClientTestTemp",
+      waitUntilBufferFlushed = 5,
+      waitUntilFlusherTerminated = 5,
+      jvmHeapBufferMode = true,
+      errorHandler = (e: Throwable) => ???,
+      senderMaxRetryCount = 8,
+      ackResponseMode = true,
+      sslEnabled = true
     )
     val fluency = FluencyClient.newFluency(fluentdConfig, fluencyConfig)
     try {

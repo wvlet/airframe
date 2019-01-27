@@ -24,64 +24,48 @@ case class FluencyConfig(
     // Use the extended EventTime timestamps
     // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
     useExtendedEventTime: Boolean = false,
-    maxBufferSize: Option[Long] = None,
-    bufferChunkInitialSize: Option[Int] = None,
-    bufferChunkRetentionSize: Option[Int] = None,
-    bufferChunkRetentionTimeMillis: Option[Int] = None,
-    flushIntervalMillis: Option[Int] = None,
-    fileBackupDir: Option[String] = None,
-    waitUntilBufferFlushed: Option[Int] = None,
-    waitUntilFlusherTerminated: Option[Int] = None,
-    jvmHeapBufferMode: Option[Boolean] = None,
-    errorHandler: Option[ErrorHandler] = None,
-    senderMaxRetryCount: Option[Int] = None,
-    ackResponseMode: Option[Boolean] = None,
-    sslEnabled: Option[Boolean] = None
+    maxBufferSize: Long = 512 * 1024 * 1024,
+    bufferChunkInitialSize: Int = 1024 * 1024,
+    bufferChunkRetentionSize: Int = 1024 * 1024 * 4,
+    bufferChunkRetentionTimeMillis: Int = 1000,
+    flushIntervalMillis: Int = 600,
+    fileBackupDir: String = null,
+    waitUntilBufferFlushed: Int = 60,
+    waitUntilFlusherTerminated: Int = 60,
+    jvmHeapBufferMode: Boolean = false,
+    errorHandler: ErrorHandler = null,
+    senderMaxRetryCount: Int = 7,
+    ackResponseMode: Boolean = false,
+    sslEnabled: Boolean = false
 )
 
 object FluencyClient extends LogSupport {
   def newFluency(fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig): Fluency = {
     val builder = new FluencyBuilderForFluentd()
 
-    fluencyConfig.maxBufferSize.foreach { x =>
-      setConfiguration(builder, "maxBufferSize", _.setMaxBufferSize(x))
-    }
-    fluencyConfig.bufferChunkInitialSize.foreach { x =>
-      setConfiguration(builder, "bufferChunkInitialSize", _.setBufferChunkInitialSize(x))
-    }
-    fluencyConfig.bufferChunkRetentionSize.foreach { x =>
-      setConfiguration(builder, "bufferChunkRetentionSize", _.setBufferChunkRetentionSize(x))
-    }
-    fluencyConfig.bufferChunkRetentionTimeMillis.foreach { x =>
-      setConfiguration(builder, "bufferChunkRetentionTimeMillis", _.setBufferChunkRetentionTimeMillis(x))
-    }
-    fluencyConfig.flushIntervalMillis.foreach { x =>
-      setConfiguration(builder, "flushIntervalMillis", _.setFlushIntervalMillis(x))
-    }
-    fluencyConfig.fileBackupDir.foreach { x =>
-      setConfiguration(builder, "fileBackupDir", _.setFileBackupDir(x))
-    }
-    fluencyConfig.waitUntilBufferFlushed.foreach { x =>
-      setConfiguration(builder, "waitUntilBufferFlushed", _.setWaitUntilBufferFlushed(x))
-    }
-    fluencyConfig.waitUntilFlusherTerminated.foreach { x =>
-      setConfiguration(builder, "waitUntilFlusherTerminated", _.setWaitUntilFlusherTerminated(x))
-    }
-    fluencyConfig.jvmHeapBufferMode.foreach { x =>
-      setConfiguration(builder, "jvmHeapBufferMode", _.setJvmHeapBufferMode(x))
-    }
-    fluencyConfig.errorHandler.foreach { x =>
-      setConfiguration(builder, "errorHandler", _.setErrorHandler(x))
-    }
-    fluencyConfig.senderMaxRetryCount.foreach { x =>
-      setConfiguration(builder, "senderMaxRetryCount", _.setSenderMaxRetryCount(x))
-    }
-    fluencyConfig.ackResponseMode.foreach { x =>
-      setConfiguration(builder, "ackResponseMode", _.setAckResponseMode(x))
-    }
-    fluencyConfig.sslEnabled.foreach { x =>
-      setConfiguration(builder, "sslEnabled", _.setSslEnabled(x))
-    }
+    setConfiguration(builder, "maxBufferSize", _.setMaxBufferSize(fluencyConfig.maxBufferSize))
+    setConfiguration(builder,
+                     "bufferChunkInitialSize",
+                     _.setBufferChunkInitialSize(fluencyConfig.bufferChunkInitialSize))
+    setConfiguration(builder,
+                     "bufferChunkRetentionSize",
+                     _.setBufferChunkRetentionSize(fluencyConfig.bufferChunkRetentionSize))
+    setConfiguration(builder,
+                     "bufferChunkRetentionTimeMillis",
+                     _.setBufferChunkRetentionTimeMillis(fluencyConfig.bufferChunkRetentionTimeMillis))
+    setConfiguration(builder, "flushIntervalMillis", _.setFlushIntervalMillis(fluencyConfig.flushIntervalMillis))
+    setConfiguration(builder, "fileBackupDir", _.setFileBackupDir(fluencyConfig.fileBackupDir))
+    setConfiguration(builder,
+                     "waitUntilBufferFlushed",
+                     _.setWaitUntilBufferFlushed(fluencyConfig.waitUntilBufferFlushed))
+    setConfiguration(builder,
+                     "waitUntilFlusherTerminated",
+                     _.setWaitUntilFlusherTerminated(fluencyConfig.waitUntilFlusherTerminated))
+    setConfiguration(builder, "jvmHeapBufferMode", _.setJvmHeapBufferMode(fluencyConfig.jvmHeapBufferMode))
+    setConfiguration(builder, "errorHandler", _.setErrorHandler(fluencyConfig.errorHandler))
+    setConfiguration(builder, "senderMaxRetryCount", _.setSenderMaxRetryCount(fluencyConfig.senderMaxRetryCount))
+    setConfiguration(builder, "ackResponseMode", _.setAckResponseMode(fluencyConfig.ackResponseMode))
+    setConfiguration(builder, "sslEnabled", _.setSslEnabled(fluencyConfig.sslEnabled))
 
     builder.build(fluentdConfig.host, fluentdConfig.port)
   }
