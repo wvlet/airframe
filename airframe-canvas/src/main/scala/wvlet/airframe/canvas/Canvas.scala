@@ -23,7 +23,9 @@ abstract class Canvas {
   def readBoolean(offset: Long): Boolean
   def readShort(offset: Long): Short
   def readInt(offset: Long): Int
+  def readIntBigEndian(offset: Long): Int
   def readLong(offset: Long): Long
+  def readLongBigEndian(offset: Long): Long
   def readFloat(offset: Long): Float
   def readDouble(offset: Long): Double
 
@@ -41,7 +43,9 @@ abstract class Canvas {
   def writeBoolean(offset: Long, v: Boolean): Unit
   def writeShort(offset: Long, v: Short): Unit
   def writeInt(offset: Long, v: Int): Unit
+  def writeIntBigEndian(offset: Long, v: Int): Unit
   def writeLong(offset: Long, v: Long): Unit
+  def writeLongBigEndian(offset: Long, v: Long): Unit
   def writeFloat(offset: Long, v: Float): Unit
   def writeDouble(offset: Long, v: Double): Unit
 

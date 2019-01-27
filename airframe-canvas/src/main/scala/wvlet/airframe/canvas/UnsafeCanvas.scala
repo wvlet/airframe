@@ -47,10 +47,17 @@ final class UnsafeCanvas(
     // The data will be read in the platform native endian.
     unsafe.getInt(base, address + offset)
   }
+  override def readIntBigEndian(offset: Long): Int = {
+    Integer.reverseBytes(readInt(offset))
+  }
   override def readLong(offset: Long): Long = {
     // The data will be read in the platform native endian.
     unsafe.getLong(base, address + offset)
   }
+  override def readLongBigEndian(offset: Long): Long = {
+    java.lang.Long.reverseBytes(readLong(offset))
+  }
+
   override def readFloat(offset: Long): Float = {
     unsafe.getFloat(base, address + offset)
   }
@@ -80,8 +87,14 @@ final class UnsafeCanvas(
   override def writeInt(offset: Long, v: Int): Unit = {
     unsafe.putInt(base, address + offset, v)
   }
+  override def writeIntBigEndian(offset: Long, v: Int): Unit = {
+    unsafe.putInt(base, address + offset, Integer.reverseBytes(v))
+  }
   override def writeLong(offset: Long, v: Long): Unit = {
     unsafe.putLong(base, address + offset, v)
+  }
+  override def writeLongBigEndian(offset: Long, v: Long): Unit = {
+    unsafe.putLong(base, address + offset, java.lang.Long.reverseBytes(v))
   }
   override def writeFloat(offset: Long, v: Float): Unit = {
     unsafe.putFloat(base, address + offset, v)
