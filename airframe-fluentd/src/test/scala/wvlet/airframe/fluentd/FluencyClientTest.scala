@@ -19,7 +19,7 @@ import wvlet.airframe.AirframeSpec
 /**
   *
   */
-class FluentcyClientTest extends AirframeSpec {
+class FluencyClientTest extends AirframeSpec {
 
   "should configure Fluency by default" in {
     val fluentdConfig  = FluentdConfig()
