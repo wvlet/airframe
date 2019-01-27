@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.control
 
-import scala.util.control.NonFatal
-
 /**
   *
   */
@@ -23,7 +21,9 @@ object Control {
     try {
       body(resource)
     } finally {
-      closeQuietly(resource)
+      if (resource != null) {
+        resource.close()
+      }
     }
   }
 
@@ -33,19 +33,13 @@ object Control {
       body(resource1, resource2)
     } finally {
       try {
-        closeQuietly(resource1)
+        if (resource1 != null) {
+          resource1.close()
+        }
       } finally {
-        closeQuietly(resource2)
-      }
-    }
-  }
-
-  private def closeQuietly(resource: AutoCloseable): Unit = {
-    if (resource != null) {
-      try {
-        resource.close
-      } catch {
-        case NonFatal(_) => () // ignore closing exception
+        if (resource2 != null) {
+          resource2.close()
+        }
       }
     }
   }
