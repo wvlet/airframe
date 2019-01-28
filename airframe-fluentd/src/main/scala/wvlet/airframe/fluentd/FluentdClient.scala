@@ -14,16 +14,6 @@
 package wvlet.airframe.fluentd
 import wvlet.airframe._
 
-/**
-  * Fluentd daemon address
-  * @param host
-  * @param port
-  */
-case class FluentdConfig(
-    host: String = "127.0.0.1",
-    port: Int = 24224
-)
-
 case class FluentdTag(
     // A tag prefix prepended to each message
     prefix: String = ""

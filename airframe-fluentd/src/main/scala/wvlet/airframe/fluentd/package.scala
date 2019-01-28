@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import org.komamitsu.fluency.ingester.sender.ErrorHandler
 
 /**
   *
@@ -22,8 +23,30 @@ package object fluentd {
     * A design for using Fluency-backed FluentdClient
     * @return
     */
-  def withFluency =
+  def withFluency(host: String = "127.0.0.1",
+                  port: Int = 24224,
+                  useExtendedEventTime: Boolean = false,
+                  maxBufferSize: Long = 512 * 1024 * 1024,
+                  flushIntervalMillis: Int = 600,
+                  jvmHeapBufferMode: Boolean = true,
+                  ackResponseMode: Boolean = true,
+                  sslEnabled: Boolean = true,
+                  fileBackupDir: String = null,
+                  errorHandler: ErrorHandler = null) =
     newDesign
+      .bind[FluencyClientConfig].toInstance(
+        FluencyClientConfig(
+          host = host,
+          port = port,
+          useExtendedEventTime = useExtendedEventTime,
+          maxBufferSize = maxBufferSize,
+          flushIntervalMillis = flushIntervalMillis,
+          jvmHeapBufferMode = jvmHeapBufferMode,
+          ackResponseMode = ackResponseMode,
+          sslEnabled = sslEnabled,
+          fileBackupDir = fileBackupDir,
+          errorHandler = errorHandler
+        ))
       .bind[FluentdClient].to[FluencyClient]
 
   def withConsoleLogging =
