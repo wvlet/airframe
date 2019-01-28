@@ -20,75 +20,33 @@ import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
 import wvlet.airframe._
 
-case class FluencyConfig(
+case class FluencyClientConfig(
+    host: String = "127.0.0.1",
+    port: Int = 24224,
     // Use the extended EventTime timestamps
     // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
     useExtendedEventTime: Boolean = false,
-    // Default value of following properties are all Fluency default configuration
     maxBufferSize: Long = 512 * 1024 * 1024,
-    bufferChunkInitialSize: Int = 1024 * 1024,
-    bufferChunkRetentionSize: Int = 1024 * 1024 * 4,
-    bufferChunkRetentionTimeMillis: Int = 1000,
     flushIntervalMillis: Int = 600,
+    jvmHeapBufferMode: Boolean = true,
+    ackResponseMode: Boolean = true,
+    sslEnabled: Boolean = true,
     fileBackupDir: String = null,
-    waitUntilBufferFlushed: Int = 60,
-    waitUntilFlusherTerminated: Int = 60,
-    jvmHeapBufferMode: Boolean = false,
-    errorHandler: ErrorHandler = null,
-    senderMaxRetryCount: Int = 7,
-    ackResponseMode: Boolean = false,
-    sslEnabled: Boolean = false
+    errorHandler: ErrorHandler = null
 )
 
-object FluencyClient extends LogSupport {
-  def newFluency(fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig): Fluency = {
-    val builder = new FluencyBuilderForFluentd()
-
-    setConfiguration(builder, "maxBufferSize", _.setMaxBufferSize(fluencyConfig.maxBufferSize))
-    setConfiguration(builder,
-                     "bufferChunkInitialSize",
-                     _.setBufferChunkInitialSize(fluencyConfig.bufferChunkInitialSize))
-    setConfiguration(builder,
-                     "bufferChunkRetentionSize",
-                     _.setBufferChunkRetentionSize(fluencyConfig.bufferChunkRetentionSize))
-    setConfiguration(builder,
-                     "bufferChunkRetentionTimeMillis",
-                     _.setBufferChunkRetentionTimeMillis(fluencyConfig.bufferChunkRetentionTimeMillis))
-    setConfiguration(builder, "flushIntervalMillis", _.setFlushIntervalMillis(fluencyConfig.flushIntervalMillis))
-    setConfiguration(builder, "fileBackupDir", _.setFileBackupDir(fluencyConfig.fileBackupDir))
-    setConfiguration(builder,
-                     "waitUntilBufferFlushed",
-                     _.setWaitUntilBufferFlushed(fluencyConfig.waitUntilBufferFlushed))
-    setConfiguration(builder,
-                     "waitUntilFlusherTerminated",
-                     _.setWaitUntilFlusherTerminated(fluencyConfig.waitUntilFlusherTerminated))
-    setConfiguration(builder, "jvmHeapBufferMode", _.setJvmHeapBufferMode(fluencyConfig.jvmHeapBufferMode))
-    setConfiguration(builder, "errorHandler", _.setErrorHandler(fluencyConfig.errorHandler))
-    setConfiguration(builder, "senderMaxRetryCount", _.setSenderMaxRetryCount(fluencyConfig.senderMaxRetryCount))
-    setConfiguration(builder, "ackResponseMode", _.setAckResponseMode(fluencyConfig.ackResponseMode))
-    setConfiguration(builder, "sslEnabled", _.setSslEnabled(fluencyConfig.sslEnabled))
-
-    builder.build(fluentdConfig.host, fluentdConfig.port)
-  }
-
-  // Wrap a function to warn deprecated configuration items
-  private def setConfiguration(builder: FluencyBuilderForFluentd,
-                               name: String,
-                               f: FluencyBuilderForFluentd => Unit): Unit = {
-    try {
-      f(builder)
-    } catch {
-      case _: NoSuchMethodError =>
-        warn(s"$name is no longer supported in Fluency you use.")
-    }
-  }
-}
-
 trait FluencyClient extends FluentdClient with LogSupport {
-  private val fluentdConfig = bind[FluentdConfig]
-  private val fluencyConfig = bind[FluencyConfig]
-  private val fluency: Fluency = bind { (fluentdConfig: FluentdConfig, fluencyConfig: FluencyConfig) =>
-    FluencyClient.newFluency(fluentdConfig, fluencyConfig)
+  private val fluencyClientConfig = bind[FluencyClientConfig]
+  private val fluency: Fluency = bind { (fluencyClientConfig: FluencyClientConfig) =>
+    val builder = new FluencyBuilderForFluentd()
+    builder.setMaxBufferSize(fluencyClientConfig.maxBufferSize)
+    builder.setFlushIntervalMillis(fluencyClientConfig.flushIntervalMillis)
+    builder.setJvmHeapBufferMode(fluencyClientConfig.jvmHeapBufferMode)
+    builder.setAckResponseMode(fluencyClientConfig.ackResponseMode)
+    builder.setSslEnabled(fluencyClientConfig.sslEnabled)
+    builder.setFileBackupDir(fluencyClientConfig.fileBackupDir)
+    builder.setErrorHandler(fluencyClientConfig.errorHandler)
+    builder.build(fluencyClientConfig.host, fluencyClientConfig.port)
   }.onStart { x =>
       info(s"Starting Fluency")
     }
@@ -104,19 +62,19 @@ trait FluencyClient extends FluentdClient with LogSupport {
 
   private def getEventTime: EventTime = {
     val now       = Instant.now()
-    val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt);
+    val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt)
     eventTime
   }
 
   override protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
-    if (fluencyConfig.useExtendedEventTime) {
+    if (fluencyClientConfig.useExtendedEventTime) {
       fluency.emit(fullTag, getEventTime, toJavaMap(event))
     } else {
       fluency.emit(fullTag, toJavaMap(event))
     }
   }
   override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
-    if (fluencyConfig.useExtendedEventTime) {
+    if (fluencyClientConfig.useExtendedEventTime) {
       fluency.emit(tag, getEventTime, event, 0, event.length)
     } else {
       fluency.emit(tag, event, 0, event.length)

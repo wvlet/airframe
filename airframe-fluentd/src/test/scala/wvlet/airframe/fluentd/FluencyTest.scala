@@ -35,9 +35,9 @@ case class FluencyMetric(id: Int, name: String)
   */
 class FluencyTest extends AirframeSpec {
   val fluentdPort = IOUtil.randomPort
-  val d = fluentd.withFluency
+  val d = fluentd
+    .withFluency(port = fluentdPort)
     .bind[FluentdStandalone].toInstance(new FluentdStandalone(fluentdPort))
-    .bind[FluentdConfig].toInstance(FluentdConfig(port = fluentdPort))
     .noLifeCycleLogging
 
   "should send metrics to fluentd through Fluency" in {
