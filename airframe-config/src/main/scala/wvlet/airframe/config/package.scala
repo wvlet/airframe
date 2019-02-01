@@ -42,16 +42,24 @@ package object config {
     }
 
     def bootstrapWithConfigProcessor(configProcessor: Config => Unit): Design = {
-      configProcessor(getConfig)
+      configProcessor(getConfigOrEmpty)
       d
     }
 
-    private def getConfig: Config = {
+    // Get config binded in the design.
+    def getConfig: Option[Config] = {
       d.getDesignConfig match {
         case dc: DesignOptionsWithConfig =>
-          dc.config
+          Some(dc.config)
         case _ =>
-          Config()
+          None
+      }
+    }
+
+    def getConfigOrEmpty: Config = {
+      getConfig match {
+        case Some(c) => c
+        case None => Config()
       }
     }
 
@@ -65,28 +73,28 @@ package object config {
     }
 
     def withConfigEnv(env: String, defaultEnv: String = "default"): Design = {
-      d.withConfig(getConfig.withEnv(env, defaultEnv))
+      d.withConfig(getConfigOrEmpty.withEnv(env, defaultEnv))
     }
 
     def withConfigPaths(configPaths: Seq[String]): Design = {
-      d.withConfig(getConfig.withConfigPaths(configPaths))
+      d.withConfig(getConfigOrEmpty.withConfigPaths(configPaths))
     }
 
     def bindConfig[A: ru.TypeTag](config: A): Design = {
-      val configHolder = getConfig.register[A](config)
+      val configHolder = getConfigOrEmpty.register[A](config)
       val s            = Surface.of[A]
       d.withConfig(configHolder)
         .bind(s).toInstance(config)
     }
 
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String): Design = {
-      val configHolder = getConfig.registerFromYaml[A](yamlFile)
+      val configHolder = getConfigOrEmpty.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
         .bind(Surface.of[A]).toInstance(configHolder.of[A])
     }
 
     def bindConfigFromYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
-      val configHolder = getConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
+      val configHolder = getConfigOrEmpty.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
       d.withConfig(configHolder)
@@ -99,7 +107,7 @@ package object config {
     def overrideConfigParams(props: Map[String, Any],
                              onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
       val prevConfig   = getConfig
-      val configHolder = getConfig.overrideWith(props, onUnusedProperties)
+      val configHolder = getConfigOrEmpty.overrideWith(props, onUnusedProperties)
       val d2           = d.withConfig(configHolder)
 
       // Override already bounded config instances
