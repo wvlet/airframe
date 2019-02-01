@@ -59,7 +59,7 @@ package object config {
     def getConfigOrEmpty: Config = {
       getConfig match {
         case Some(c) => c
-        case None => Config()
+        case None    => Config()
       }
     }
 
