@@ -14,6 +14,7 @@
 package wvlet.airframe.config
 
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.surface._
 
 object AirframeBootstrapTest {
   case class AppConfig(name: String)
@@ -66,6 +67,17 @@ class AirframeBootstrapTest extends AirframeSpec {
           session.build[AppConfig] shouldBe AppConfig("good morning")
           session.build[App2Config] shouldBe App2Config("scala")
         }
+    }
+
+    "get config" in {
+      module3.noLifeCycleLogging.getConfig match {
+        case Some(c) =>
+          c.getAll.length shouldBe 1
+          c.getAll.head.tpe shouldBe Surface.of[App2Config]
+          c.getAll.head.value shouldBe App2Config("scala")
+        case None =>
+          fail()
+      }
     }
   }
 }
