@@ -42,7 +42,7 @@ package object config {
     }
 
     def bootstrapWithConfigProcessor(configProcessor: Config => Unit): Design = {
-      configProcessor(getConfigOrEmpty)
+      configProcessor(currentConfig)
       d
     }
 
@@ -56,7 +56,7 @@ package object config {
       }
     }
 
-    def getConfigOrEmpty: Config = {
+    def currentConfig: Config = {
       getConfig match {
         case Some(c) => c
         case None    => Config()
@@ -73,28 +73,28 @@ package object config {
     }
 
     def withConfigEnv(env: String, defaultEnv: String = "default"): Design = {
-      d.withConfig(getConfigOrEmpty.withEnv(env, defaultEnv))
+      d.withConfig(currentConfig.withEnv(env, defaultEnv))
     }
 
     def withConfigPaths(configPaths: Seq[String]): Design = {
-      d.withConfig(getConfigOrEmpty.withConfigPaths(configPaths))
+      d.withConfig(currentConfig.withConfigPaths(configPaths))
     }
 
     def bindConfig[A: ru.TypeTag](config: A): Design = {
-      val configHolder = getConfigOrEmpty.register[A](config)
+      val configHolder = currentConfig.register[A](config)
       val s            = Surface.of[A]
       d.withConfig(configHolder)
         .bind(s).toInstance(config)
     }
 
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String): Design = {
-      val configHolder = getConfigOrEmpty.registerFromYaml[A](yamlFile)
+      val configHolder = currentConfig.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
         .bind(Surface.of[A]).toInstance(configHolder.of[A])
     }
 
     def bindConfigFromYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
-      val configHolder = getConfigOrEmpty.registerFromYamlOrElse[A](yamlFile, defaultValue)
+      val configHolder = currentConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
       d.withConfig(configHolder)
@@ -107,7 +107,7 @@ package object config {
     def overrideConfigParams(props: Map[String, Any],
                              onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
       val prevConfig   = getConfig
-      val configHolder = getConfigOrEmpty.overrideWith(props, onUnusedProperties)
+      val configHolder = currentConfig.overrideWith(props, onUnusedProperties)
       val d2           = d.withConfig(configHolder)
 
       // Override already bounded config instances
