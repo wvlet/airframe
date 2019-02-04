@@ -55,6 +55,8 @@ abstract class Canvas {
 
 object Canvas {
 
+  private val defaultCanvasAllocator = new OffHeapMemoryAllocator
+
   /**
     * Create a new canvas backed by a heap byte array
     * @param size
@@ -63,7 +65,10 @@ object Canvas {
     wrap(new Array[Byte](size))
   }
 
-  def newOffHeapCanvas(size: Long): Canvas = ???
+  def newOffHeapCanvas(size: Long): Canvas = {
+    val m = defaultCanvasAllocator.allocate(size)
+    new UnsafeCanvas(null, m.address, m.size, m)
+  }
 
   def wrap(arr: Array[Byte]): Canvas                           = wrap(arr, 0, arr.length)
   def wrap(arr: Array[Byte], offset: Int, length: Int): Canvas = UnsafeCanvas.wrap(arr, offset, length)

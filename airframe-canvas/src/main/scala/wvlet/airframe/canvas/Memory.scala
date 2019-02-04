@@ -35,5 +35,5 @@ case class OffHeapMemory(address: Long, size: Long)                        exten
 case class HeapMemory(private val base: AnyRef, address: Long, size: Long) extends Memory
 
 final class MemoryReference(m: Memory, queue: ReferenceQueue[Memory]) extends PhantomReference[Memory](m, queue) {
-  val address = m.address
+  final val address = m.address
 }

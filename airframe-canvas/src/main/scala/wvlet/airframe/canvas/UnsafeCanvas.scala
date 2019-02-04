@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
   *
   */
 final class UnsafeCanvas(
-                         // Base ofject for resolving the relative address of the raw byte array.
+                         // Base object for resolving the relative address of the raw byte array.
                          // If base == null, the address value (the second parameter) will be a raw memory address
                          private[canvas] val base: AnyRef,
                          // The head address of the underlying memory. If the base is null, this address is a direct memory address.
@@ -30,7 +30,7 @@ final class UnsafeCanvas(
                          private[canvas] val size: Long,
                          // Reference is used to hold a reference to an object that holds the underlying memory
                          // so that it cannot be released by GC.
-                         private[canvas] val reference: ByteBuffer)
+                         private[canvas] val reference: AnyRef)
     extends Canvas {
   import UnsafeUtil._
 

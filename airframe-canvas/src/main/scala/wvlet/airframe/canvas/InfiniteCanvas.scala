@@ -16,4 +16,4 @@ package wvlet.airframe.canvas
 /**
   * TODO: Implement a canvas that has unlimited capacity.
   */
-class InfiniteCanvas {}
+// class InfiniteCanvas {}

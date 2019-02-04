@@ -342,7 +342,7 @@ lazy val canvas =
       name := "airframe-canvas",
       description := "Airframe off-heap memory library"
     )
-    .dependsOn(airframeSpecJVM % "test")
+    .dependsOn(logJVM, airframeSpecJVM % "test")
 
 lazy val config =
   project
