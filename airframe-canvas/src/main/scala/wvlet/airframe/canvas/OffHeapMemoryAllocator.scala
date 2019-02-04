@@ -33,7 +33,7 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
   private val totalAllocatedMemorySize = new AtomicLong(0)
 
   {
-    // Start a off-heap memory collector to release allocated memorys upon GC
+    // Start a off-heap memory collector to release allocated memory upon GC
     val collectorThread = new Thread(new Runnable {
       override def run(): Unit = {
         val ref = classOf[MemoryReference].cast(memoryQueue.remove())
@@ -66,8 +66,11 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
   }
 
   private[canvas] def release(reference: MemoryReference): Unit = {
-    debug(f"Releasing memory at ${reference.address}%x")
-    val address = reference.address
+    releaseMemoryAt(reference.address)
+  }
+
+  private def releaseMemoryAt(address: Long): Unit = {
+    debug(f"Releasing memory at ${address}%x")
     allocatedMemoryAddresses.get(address) match {
       case Some(h) =>
         if (address != 0) {
@@ -76,9 +79,13 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
         }
         allocatedMemoryAddresses.remove(address)
       case None =>
+        warn(f"Unknown allocated memory address: ${address}%x")
     }
-
   }
 
-  override def close(): Unit = {}
+  override def close(): Unit = {
+    for (address <- allocatedMemoryAddresses.keys) {
+      releaseMemoryAt(address)
+    }
+  }
 }
