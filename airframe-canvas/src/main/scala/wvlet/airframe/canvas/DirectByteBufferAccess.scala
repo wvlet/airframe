@@ -17,7 +17,6 @@ package wvlet.airframe.canvas
   *
   */
 import java.lang.reflect.{Constructor, InvocationTargetException, Method}
-import java.nio.ByteBuffer
 
 /**
   * Wraps the difference of access methods to DirectBuffers between Android and others.

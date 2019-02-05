@@ -117,7 +117,7 @@ lazy val scaladoc =
     )
     .aggregate(jvmProjects: _*)
 
-// JVM projects for scala-community build. This should have no tricky setup and support Scala 2.12.
+// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeJVM,
   surfaceJVM,

@@ -113,6 +113,18 @@ final class UnsafeCanvas(
         throw new UnsupportedOperationException(s"writeBytes to ${other.getClass}")
     }
   }
+
+  override def slice(offset: Long, length: Long): Canvas = {
+    if (offset == 0 && length == size) {
+      this
+    } else {
+      if (length > size) {
+        throw new IllegalArgumentException(s"${length} is longer than the Canvas size ${size}")
+      }
+      new UnsafeCanvas(base, address + offset, length, reference);
+    }
+  }
+
   override def release: Unit = {
     if (this.base == null) {
       this.reference match {

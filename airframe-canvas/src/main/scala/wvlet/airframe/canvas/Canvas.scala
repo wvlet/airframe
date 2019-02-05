@@ -57,6 +57,8 @@ abstract class Canvas extends AutoCloseable {
 
   def close(): Unit = release
   def release: Unit
+
+  def slice(offset: Long, length: Long): Canvas
 }
 
 object Canvas {
