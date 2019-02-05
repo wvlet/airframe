@@ -5,6 +5,15 @@ title: Release Notes
 
 # Release Notes
 
+## 0.80
+-  Add ArrayJSONCodec to parse JSON array string ([#375](https://github.com/wvlet/airframe/issues/375)) [[8c624a7](https://github.com/wvlet/airframe/commit/8c624a7)]
+-  Get ConfigHolders directly from Design ([#374](https://github.com/wvlet/airframe/issues/374)) [[da4d3ba](https://github.com/wvlet/airframe/commit/da4d3ba)]
+-  Not ignore resource closing exception in withResource ([#371](https://github.com/wvlet/airframe/issues/371)) [[129868a](https://github.com/wvlet/airframe/commit/129868a)]
+-  airframe-stream is moved to wvlet/msgframe ([#365](https://github.com/wvlet/airframe/issues/365)) [[d150ae8](https://github.com/wvlet/airframe/commit/d150ae8)]
+-  Fixes [#362](https://github.com/wvlet/airframe/issues/362): Set Option[Boolean] with --(option) in airframe-launcher ([#364](https://github.com/wvlet/airframe/issues/364)) [[f383c5e](https://github.com/wvlet/airframe/commit/f383c5e)]
+-  Change airframe-control to a Scala JVM project ([#363](https://github.com/wvlet/airframe/issues/363)) [[5d6632d](https://github.com/wvlet/airframe/commit/5d6632d)]
+-  Set the code coverage test threshold to 80% overall, 5% diff ([#361](https://github.com/wvlet/airframe/issues/361)) [[0519d4b](https://github.com/wvlet/airframe/commit/0519d4b)]
+
 ## 0.79
 -  Fix Travis config to releae tagged revisions [[ff1be0b](https://github.com/wvlet/airframe/commit/ff1be0b)]
 -  Enhance loan pattern for AutoCloseable ([#359](https://github.com/wvlet/airframe/issues/359)) [[f971934](https://github.com/wvlet/airframe/commit/f971934)]
