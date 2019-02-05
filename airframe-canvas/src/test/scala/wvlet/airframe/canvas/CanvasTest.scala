@@ -17,6 +17,7 @@ import java.nio.ByteBuffer
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.control.Control
 
 /**
   *
@@ -89,11 +90,8 @@ class CanvasTest extends AirframeSpec with PropertyChecks {
   val canvasSize = 64
 
   def withCanvas(creator: => Canvas)(body: Canvas => Unit): Unit = {
-    val c = creator
-    try {
+    Control.withResource(creator) { c =>
       body(c)
-    } finally {
-      c.release
     }
   }
 
@@ -135,5 +133,27 @@ class CanvasTest extends AirframeSpec with PropertyChecks {
         checkReadWritePrimitiveValues(c)
       }
     }
+
+    "create slices" in {
+      val c = Canvas.newCanvas(100)
+      for (i <- 0L until c.size) {
+        c.writeByte(i, i.toByte)
+      }
+      c.slice(0, c.size) shouldBe c
+      val c1 = c.slice(10, 20)
+      c1.toByteArray shouldBe c.readBytes(10, 20)
+    }
+
+    "check invalid slice size" in {
+      val c = Canvas.newCanvas(10)
+      intercept[IllegalArgumentException] {
+        c.slice(130, 10)
+      }
+
+      intercept[IllegalArgumentException] {
+        c.slice(0, 20)
+      }
+    }
+
   }
 }

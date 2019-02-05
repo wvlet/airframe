@@ -118,7 +118,7 @@ final class UnsafeCanvas(
     if (offset == 0 && length == size) {
       this
     } else {
-      if (length > size) {
+      if (offset + length > size) {
         throw new IllegalArgumentException(s"${length} is longer than the Canvas size ${size}")
       }
       new UnsafeCanvas(base, address + offset, length, reference);
