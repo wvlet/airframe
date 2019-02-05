@@ -124,6 +124,14 @@ final class UnsafeCanvas(
       new UnsafeCanvas(base, address + offset, length, reference);
     }
   }
+  override def toByteArray: Array[Byte] = {
+    if (!size.isValidInt) {
+      throw new IllegalArgumentException(s"Canvas size ${size} exceeds Array[Byte] size limit")
+    }
+    val b = new Array[Byte](size.toInt)
+    unsafe.copyMemory(base, address, b, arrayByteBaseOffset, size)
+    b
+  }
 
   override def release: Unit = {
     if (this.base == null) {

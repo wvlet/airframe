@@ -59,6 +59,7 @@ abstract class Canvas extends AutoCloseable {
   def release: Unit
 
   def slice(offset: Long, length: Long): Canvas
+  def toByteArray: Array[Byte]
 }
 
 object Canvas {
