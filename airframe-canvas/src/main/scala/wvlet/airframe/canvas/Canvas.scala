@@ -17,7 +17,8 @@ import java.nio.ByteBuffer
 /**
   * Canvas is an abstraction over large memory (heap or off-heap memory) buffer.
   */
-abstract class Canvas {
+abstract class Canvas extends AutoCloseable {
+  def size: Long
 
   def readByte(offset: Long): Byte
   def readBoolean(offset: Long): Boolean
@@ -38,7 +39,6 @@ abstract class Canvas {
     readBytes(offset, b, 0, len)
     b
   }
-
   def writeByte(offset: Long, v: Byte): Unit
   def writeBoolean(offset: Long, v: Boolean): Unit
   def writeShort(offset: Long, v: Short): Unit
@@ -49,13 +49,19 @@ abstract class Canvas {
   def writeFloat(offset: Long, v: Float): Unit
   def writeDouble(offset: Long, v: Double): Unit
 
-  def writeBytes(offset: Long, src: Array[Byte], srcOffset: Int, length: Int)
-  def writeBytes(offset: Long, src: Canvas, srcOffset: Long, length: Long)
+  def writeBytes(offset: Long, src: Array[Byte]): Unit = {
+    writeBytes(offset, src, 0, src.length)
+  }
+  def writeBytes(offset: Long, src: Array[Byte], srcOffset: Int, length: Int): Unit
+  def writeBytes(offset: Long, src: Canvas, srcOffset: Long, length: Long): Unit
+
+  def close(): Unit = release
+  def release: Unit
 }
 
 object Canvas {
 
-  private val defaultCanvasAllocator = new OffHeapMemoryAllocator
+  private[canvas] val defaultCanvasAllocator = new OffHeapMemoryAllocator
 
   /**
     * Create a new canvas backed by a heap byte array

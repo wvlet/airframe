@@ -27,7 +27,7 @@ final class UnsafeCanvas(
                          // If not, this will be the relative address within an array object (base).
                          private[canvas] val address: Long,
                          // The size of the underlying memory.
-                         private[canvas] val size: Long,
+                         val size: Long,
                          // Reference is used to hold a reference to an object that holds the underlying memory
                          // so that it cannot be released by GC.
                          private[canvas] val reference: AnyRef)
@@ -111,6 +111,16 @@ final class UnsafeCanvas(
         unsafe.copyMemory(u.base, u.address + srcOffset, base, address + offset, length)
       case other =>
         throw new UnsupportedOperationException(s"writeBytes to ${other.getClass}")
+    }
+  }
+  override def release: Unit = {
+    if (this.base != null) {
+      this.reference match {
+        case m: Memory =>
+          m.release
+        case _ =>
+        // No need to release
+      }
     }
   }
 }

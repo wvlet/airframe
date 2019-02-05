@@ -340,7 +340,10 @@ lazy val canvas =
     .settings(buildSettings)
     .settings(
       name := "airframe-canvas",
-      description := "Airframe off-heap memory library"
+      description := "Airframe off-heap memory library",
+      libraryDependencies ++= Seq(
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
+      )
     )
     .dependsOn(logJVM, airframeSpecJVM % "test")
 

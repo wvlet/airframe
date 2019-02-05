@@ -29,10 +29,14 @@ sealed abstract class Memory {
     * Memory size
     */
   def size: Long
+
+  def memoryAllocator: OffHeapMemoryAllocator
+  def release
 }
 
-case class OffHeapMemory(address: Long, size: Long)                        extends Memory
-case class HeapMemory(private val base: AnyRef, address: Long, size: Long) extends Memory
+case class OffHeapMemory(address: Long, size: Long, memoryAllocator: OffHeapMemoryAllocator) extends Memory {
+  override def release: Unit = memoryAllocator.release(this)
+}
 
 final class MemoryReference(m: Memory, queue: ReferenceQueue[Memory]) extends PhantomReference[Memory](m, queue) {
   final val address = m.address

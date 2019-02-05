@@ -52,7 +52,7 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
 
   def allocate(size: Long): OffHeapMemory = {
     val address = UnsafeUtil.unsafe.allocateMemory(size)
-    val m       = OffHeapMemory(address, size)
+    val m       = OffHeapMemory(address, size, this)
     register(m)
     m
   }
@@ -63,6 +63,10 @@ class OffHeapMemoryAllocator extends AutoCloseable with LogSupport {
     val holder = MemoryRefHolder(ref, m.size)
     allocatedMemoryAddresses.put(m.address, holder)
     totalAllocatedMemorySize.addAndGet(m.size)
+  }
+
+  private[canvas] def release(m: OffHeapMemory): Unit = {
+    releaseMemoryAt(m.address)
   }
 
   private[canvas] def release(reference: MemoryReference): Unit = {
