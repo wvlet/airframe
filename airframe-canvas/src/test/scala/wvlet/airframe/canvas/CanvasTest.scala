@@ -162,5 +162,20 @@ class CanvasTest extends AirframeSpec with PropertyChecks {
       }
     }
 
+    "copy between Canvases" in {
+      val c1 = Canvas.newCanvas(100)
+      val c2 = Canvas.newCanvas(100)
+
+      for (i <- 0L until c1.size) {
+        c1.writeByte(i, i.toByte)
+      }
+      c1.readBytes(30, c2, 20, 10)
+      c1.readBytes(30, 10) shouldBe c2.readBytes(20, 10)
+
+      val c3 = Canvas.newCanvas(100)
+      c3.writeBytes(0, c1, 50, 5)
+      c3.readBytes(0, 5) shouldBe c1.readBytes(50, 5)
+    }
+
   }
 }
