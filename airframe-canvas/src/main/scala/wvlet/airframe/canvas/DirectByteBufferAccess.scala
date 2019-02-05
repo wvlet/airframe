@@ -18,6 +18,8 @@ package wvlet.airframe.canvas
   */
 import java.lang.reflect.{Constructor, InvocationTargetException, Method}
 
+import scala.util.Try
+
 /**
   * Wraps the difference of access methods to DirectBuffers between Android and others.
   *
@@ -30,9 +32,9 @@ private[canvas] object DirectBufferAccess {
   case object ARGS_INT_INT      extends DirectBufferConstructorType
   case object ARGS_MB_INT_INT   extends DirectBufferConstructorType
 
-  private var mGetAddress: Method = null
-  private var mCleaner: Method    = null
-  private var mClean: Method      = null
+  private var mGetAddress: Method    = null
+  private var mCleaner: Method       = null
+  private var mClean: Option[Method] = None
 
   // TODO We should use MethodHandle for efficiency, but it is not available in JDK6
   private var byteBufferConstructor: Constructor[_]                                       = null
@@ -82,15 +84,19 @@ private[canvas] object DirectBufferAccess {
     mGetAddress.setAccessible(true)
     mCleaner = directByteBufferClass.getDeclaredMethod("cleaner")
     mCleaner.setAccessible(true)
-    mClean = mCleaner.getReturnType.getDeclaredMethod("clean")
-    mClean.setAccessible(true)
+    Try {
+      val cleanMethod = mCleaner.getReturnType.getDeclaredMethod("clean")
+      // In JDK11, java.internal.ref.Cleaner.clean is not accessible
+      cleanMethod.setAccessible(true)
+      mClean = Some(cleanMethod)
+    }
   }
 
   def getAddress(base: Any): Long = mGetAddress.invoke(base).asInstanceOf[Long]
 
   def clean(base: Any): Unit = {
     val cleaner = mCleaner.invoke(base)
-    mClean.invoke(cleaner)
+    mClean.foreach(_.invoke(cleaner))
   }
 //
 //  def isDirectByteBufferInstance(s: Any): Boolean = directByteBufferClass.isInstance(s)
