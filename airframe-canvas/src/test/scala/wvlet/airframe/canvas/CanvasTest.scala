@@ -155,5 +155,12 @@ class CanvasTest extends AirframeSpec with PropertyChecks {
       }
     }
 
+    "check invalid read size" in {
+      val c = Canvas.newCanvas(10)
+      intercept[IllegalArgumentException] {
+        c.readBytes(0, Long.MaxValue)
+      }
+    }
+
   }
 }
