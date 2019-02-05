@@ -117,12 +117,13 @@ lazy val scaladoc =
     )
     .aggregate(jvmProjects: _*)
 
-// JVM projects for scala-community build. This should have no tricky setup and support Scala 2.12.
+// JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeJVM,
   surfaceJVM,
   logJVM,
   airframeSpecJVM,
+  canvas,
   config,
   control,
   jmx,
@@ -332,6 +333,19 @@ lazy val surface =
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
+
+lazy val canvas =
+  project
+    .in(file("airframe-canvas"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-canvas",
+      description := "Airframe off-heap memory library",
+      libraryDependencies ++= Seq(
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
+      )
+    )
+    .dependsOn(logJVM, control % "test", airframeSpecJVM % "test")
 
 lazy val config =
   project
