@@ -32,9 +32,7 @@ import scala.reflect.runtime.{universe => ru}
 sealed trait ArrayJSONCodec[T] {
   protected val codec: MessageCodec[Array[T]]
   def toJSON(v: Array[T]): String = {
-    val packer = MessagePack.newBufferPacker
-    codec.pack(packer, v)
-    val bytes = packer.toByteArray
+    val bytes = codec.toMsgPack(v)
     JSONObjectPrinter.write(MessagePackRecord(bytes))
   }
 
@@ -72,7 +70,7 @@ object ArrayJSONCodec {
   implicit object StringArrayJSONCodec extends ArrayJSONCodec[String] {
     override protected val codec: MessageCodec[Array[String]] = StringArrayCodec
   }
-  def of[A](implicit tt: ru.TypeTag[Array[A]], codec: ArrayJSONCodec[A]): ArrayJSONCodec[A] = {
+  def of[A: ru.TypeTag](implicit codec: ArrayJSONCodec[A]): ArrayJSONCodec[A] = {
     MessageCodec.of[Array[A]] match {
       case _: MessageCodec[Array[A]] => codec
       case _ =>
