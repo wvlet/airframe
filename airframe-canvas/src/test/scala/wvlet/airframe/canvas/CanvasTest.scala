@@ -14,6 +14,7 @@
 package wvlet.airframe.canvas
 import java.nio.ByteBuffer
 
+import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import wvlet.airframe.AirframeSpec
 
@@ -76,6 +77,13 @@ class CanvasTest extends AirframeSpec with PropertyChecks {
         check(v, c, _.writeDouble(offset, v), _.readDouble(offset))
       }
     }
+
+    forAll { (v: Array[Byte]) =>
+      for (offset <- 0L to c.size - v.size) {
+        check(v, c, _.writeBytes(offset, v), _.readBytes(offset, v.size))
+      }
+    }
+
   }
 
   val canvasSize = 64

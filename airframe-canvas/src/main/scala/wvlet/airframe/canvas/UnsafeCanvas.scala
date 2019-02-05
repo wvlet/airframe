@@ -114,10 +114,12 @@ final class UnsafeCanvas(
     }
   }
   override def release: Unit = {
-    if (this.base != null) {
+    if (this.base == null) {
       this.reference match {
         case m: Memory =>
           m.release
+        case d: ByteBuffer if d.isDirect =>
+          DirectBufferAccess.clean(d)
         case _ =>
         // No need to release
       }

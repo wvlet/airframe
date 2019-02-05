@@ -93,26 +93,26 @@ private[canvas] object DirectBufferAccess {
     val cleaner = mCleaner.invoke(base)
     mClean.invoke(cleaner)
   }
-
-  def isDirectByteBufferInstance(s: Any): Boolean = directByteBufferClass.isInstance(s)
-
-  def newByteBuffer(address: Long, index: Int, length: Int, reference: AnyRef): ByteBuffer = {
-    val ret: Any = directBufferConstructorType match {
-      case ARGS_LONG_INT_REF =>
-        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length), reference)
-      case ARGS_LONG_INT =>
-        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length))
-      case ARGS_INT_INT =>
-        byteBufferConstructor.newInstance(Long.box(address.toInt + index), Int.box(length))
-      case ARGS_MB_INT_INT =>
-        byteBufferConstructor
-          .newInstance(memoryBlockWrapFromJni.invoke(null, Long.box(address + index), Int.box(length)),
-                       Int.box(length),
-                       Int.box(0))
-      case _ =>
-        throw new IllegalStateException("Unexpected value")
-    }
-    ret.asInstanceOf[ByteBuffer]
-  }
-
+//
+//  def isDirectByteBufferInstance(s: Any): Boolean = directByteBufferClass.isInstance(s)
+//
+//  def newByteBuffer(address: Long, index: Int, length: Int, reference: AnyRef): ByteBuffer = {
+//    val ret: Any = directBufferConstructorType match {
+//      case ARGS_LONG_INT_REF =>
+//        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length), reference)
+//      case ARGS_LONG_INT =>
+//        byteBufferConstructor.newInstance(Long.box(address + index), Int.box(length))
+//      case ARGS_INT_INT =>
+//        byteBufferConstructor.newInstance(Long.box(address.toInt + index), Int.box(length))
+//      case ARGS_MB_INT_INT =>
+//        byteBufferConstructor
+//          .newInstance(memoryBlockWrapFromJni.invoke(null, Long.box(address + index), Int.box(length)),
+//                       Int.box(length),
+//                       Int.box(0))
+//      case _ =>
+//        throw new IllegalStateException("Unexpected value")
+//    }
+//    ret.asInstanceOf[ByteBuffer]
+//  }
+//
 }
