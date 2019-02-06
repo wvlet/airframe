@@ -118,7 +118,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
 
     val headerHash =
       request.headerMap
-        .filter(x => recorderConfig.requestHeaderFilter(x._1))
+        .filterNot(x => recorderConfig.headerExcludes(x._1))
         .map { x =>
           s"${x._1}:${x._2}".hashCode
         }

@@ -29,7 +29,7 @@ case class HttpRecorderConfig(destUri: String,
                               folder: String = "fixtures",
                               recordTableName: String = "record",
                               private val port: Int = -1,
-                              requestHeaderFilter: String => Boolean = HttpRecorder.defaultHeaderFilter,
+                              headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
   lazy val serverPort = if (port == -1) IOUtil.unusedPort else port
@@ -56,9 +56,9 @@ case class HttpRecorderConfig(destUri: String,
   */
 object HttpRecorder {
 
-  def defaultHeaderFilter(headerName: String): Boolean = {
+  def defaultHeaderExclude: String => Boolean = { headerName =>
     // Ignore Finagle's tracing IDs
-    !headerName.startsWith("X-B3-") && !headerName.startsWith("Finagle-")
+    headerName.startsWith("X-B3-") || headerName.startsWith("Finagle-")
   }
 
   /**
