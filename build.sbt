@@ -145,6 +145,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
+  vcr,
   jsonBenchmark
 )
 
@@ -595,7 +596,7 @@ lazy val vcr =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeMacrosJVMRef, airframeSpecJVM % "test")
+    .dependsOn(codecJVM, finagle, jdbc, airframeMacrosJVMRef, airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
