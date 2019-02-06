@@ -18,9 +18,9 @@ import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
 /**
-  * VCR server
+  * An HTTP request filter for returning VCR recorded responses
   */
-class VCRServer(vcrRecorder: VCRRecorder, fallback: Service[Request, Response]) extends FinagleService {
+class VCRService(vcrRecorder: VCRRecorder, fallback: Service[Request, Response]) extends FinagleService {
 
   override def apply(request: Request): Future[Response] = {
     vcrRecorder.find(request) match {

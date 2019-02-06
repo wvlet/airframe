@@ -37,7 +37,7 @@ object VCR {
     * If no matching response is found, it will send the request to the fallback server, and
     * records the result.
     */
-  def createPassThroughServer(vcrConfig: VCRConfig, fallBackUri: String): Unit = {
+  def createPassThroughServer(vcrConfig: VCRConfig, fallBackUri: String): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new VCRRecorder(vcrConfig)
@@ -51,7 +51,7 @@ object VCR {
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
         .build()
 
-    new FinagleServer(finagleConfig, new VCRServer(recorder, fallBackClient))
+    new FinagleServer(finagleConfig, new VCRService(recorder, fallBackClient))
   }
 
   /**
@@ -59,11 +59,11 @@ object VCR {
     * If no matching record is found, use the given fallBack handler.
     */
   def createReplayOnlyServer(vcrConfig: VCRConfig,
-                             fallBackHandler: Service[Request, Response] = defaultFallBackHandler): Unit = {
+                             fallBackHandler: Service[Request, Response] = defaultFallBackHandler): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new VCRRecorder(vcrConfig)
-    new FinagleServer(finagleConfig, new VCRServer(recorder, fallBackHandler))
+    new FinagleServer(finagleConfig, new VCRService(recorder, fallBackHandler))
   }
 
   def defaultFallBackHandler = {
