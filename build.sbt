@@ -596,7 +596,7 @@ lazy val vcr =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, finagle, jdbc, airframeMacrosJVMRef, airframeSpecJVM % "test")
+    .dependsOn(codecJVM, finagle, jdbc, tablet, airframeMacrosJVMRef, airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
