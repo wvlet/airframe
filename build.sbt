@@ -145,7 +145,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
-  vcr,
+  httpRecorder,
   jsonBenchmark
 )
 
@@ -578,12 +578,12 @@ lazy val finagle =
     )
     .dependsOn(http, airframeMacrosJVMRef, airframeSpecJVM % "test")
 
-lazy val vcr =
+lazy val httpRecorder =
   project
-    .in(file("airframe-vcr"))
+    .in(file("airframe-http-recorder"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-vcr",
+      name := "airframe-http-recorder",
       description := "Http Response Recorder",
       // Finagle doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,

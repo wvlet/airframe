@@ -11,27 +11,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.vcr
+package wvlet.airframe.http.recorder
+
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
 /**
-  * An HTTP request filter for returning VCR recorded responses
+  * An HTTP request filter for recording HTTP responses
   */
-class VCRService(vcrRecorder: VCRRecorder, fallback: Service[Request, Response]) extends FinagleService {
+class RecordingService(recordStore: HttpRecordStore, destination: Service[Request, Response]) extends FinagleService {
 
   override def apply(request: Request): Future[Response] = {
-    vcrRecorder.find(request) match {
+    destination(request).map { response =>
+      // Record the result
+      recordStore.record(request, response)
+      response
+    }
+  }
+}
+
+/**
+  * An HTTP request filter for returning recorded HTTP responses
+  */
+class RecordReplayService(recordStore: HttpRecordStore, fallback: Service[Request, Response]) extends FinagleService {
+
+  override def apply(request: Request): Future[Response] = {
+    recordStore.find(request) match {
+      case Some(record) =>
+        // Replay the recorded response
+        Future.value(record.toResponse)
       case None =>
-        fallback(request).map { response =>
-          // Record the result
-          vcrRecorder.record(request, response)
-          response
-        }
-      case Some(vcr) =>
-        Future.value(vcr.toResponse)
+        fallback(request)
     }
   }
 }
