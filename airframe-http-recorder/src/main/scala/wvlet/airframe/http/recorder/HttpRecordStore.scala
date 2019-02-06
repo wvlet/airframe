@@ -24,7 +24,8 @@ import wvlet.airframe.tablet.obj.ObjectTabletWriter
 case class HttpRecord(session: String,
                       requestHash: Int,
                       method: String,
-                      uri: String,
+                      destHost: String,
+                      path: String,
                       requestHeader: Map[String, String],
                       responseCode: Int,
                       responseHeader: Map[String, String],
@@ -56,6 +57,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
   connectionPool.executeUpdate(SQLObjectMapper.createTableSQLFor[HttpRecord](recordTableName))
   connectionPool.executeUpdate(
     s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
+  // TODO: Detect schema change
 
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
@@ -92,7 +94,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
       recorderConfig.sessionName,
       requestHash = rh,
       method = request.method.toString(),
-      uri = request.uri,
+      destHost = recorderConfig.destHostAndPort,
+      path = request.uri,
       requestHeader = request.headerMap.toMap,
       responseCode = response.statusCode,
       responseHeader = response.headerMap.toMap,
@@ -114,7 +117,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
     */
   def requestHash(request: Request): Int = {
     val content = request.getContentString()
-    val prefix  = s"${request.method.toString().hashCode}:${request.remoteAddress.hashCode}:${content.hashCode}"
+    val prefix  = s"${request.method.toString()}:${recorderConfig.destHostAndPort}${request.uri}:${content.hashCode}"
 
     val headerHash =
       request.headerMap
