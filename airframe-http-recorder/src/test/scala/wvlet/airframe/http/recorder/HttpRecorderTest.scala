@@ -23,8 +23,8 @@ import wvlet.airframe.control.Control
   */
 class HttpRecorderTest extends AirframeSpec {
   "start HTTP recorder" in {
-    val config = HttpRecorderConfig(destUri = "https://www.google.com", sessionName = "google")
-    Control.withResource(HttpRecorder.createRecordingServer(config)) { server =>
+    val recorderConfig = HttpRecorderConfig(destUri = "https://www.google.com", sessionName = "google")
+    Control.withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
       server.start
       val client = Http.client.newService(server.localAddress)
       val response = client(Request("/")).map { response =>

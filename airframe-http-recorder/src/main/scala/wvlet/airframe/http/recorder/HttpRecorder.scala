@@ -28,8 +28,12 @@ case class HttpRecorderConfig(destUri: String,
                               sessionName: String = "default",
                               folder: String = "fixtures",
                               recordTableName: String = "record",
+                              private val port: Int = -1,
                               requestHeaderFilter: String => Boolean = HttpRecorder.defaultHeaderFilter,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
+
+  lazy val serverPort = if (port == -1) IOUtil.unusedPort else port
+
   lazy val destHostAndPort: String = {
     if (destUri.startsWith("http:") || destUri.startsWith("https:")) {
       val uri = URI.create(destUri)
@@ -61,8 +65,7 @@ object HttpRecorder {
     * Creates an HTTP server that will record HTTP responses.
     */
   def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val port          = IOUtil.unusedPort
-    val finagleConfig = FinagleServerConfig(port)
+    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
 
     val destClient =
@@ -83,8 +86,7 @@ object HttpRecorder {
     * If no matching record is found, use the given fallback handler.
     */
   def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val port          = IOUtil.unusedPort
-    val finagleConfig = FinagleServerConfig(port)
+    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
     new FinagleServer(finagleConfig, new RecordReplayService(recorder))
   }
