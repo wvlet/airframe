@@ -18,11 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.twitter.finagle.http.{Request, Response}
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
+import wvlet.log.LogSupport
 
 /**
   * Recorder for HTTP server responses
   */
-class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoCloseable {
+class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boolean = false)
+    extends AutoCloseable
+    with LogSupport {
   private val connectionPool = new SQLiteConnectionPool(DbConfig.ofSQLite(recorderConfig.sqliteFilePath))
 
   private def recordTableName = recorderConfig.recordTableName
@@ -32,6 +35,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
   connectionPool.executeUpdate(
     s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
   // TODO: Detect schema change
+  if (dropSession) {
+    warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
+    connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
+  }
 
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
@@ -64,8 +71,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
   }
 
   def record(request: Request, response: Response): Unit = {
-    val rh   = requestHash(request)
-    val body = if (response.content.isEmpty) None else Some(response.contentString)
+    val rh = requestHash(request)
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -73,9 +79,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
       destHost = recorderConfig.destHostAndPort,
       path = request.uri,
       requestHeader = request.headerMap.toMap,
+      requestBody = request.contentString,
       responseCode = response.statusCode,
       responseHeader = response.headerMap.toMap,
-      requestBody = body,
+      responseBody = response.contentString,
       createdAt = Instant.now()
     )
     connectionPool.withConnection { conn =>

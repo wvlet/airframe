@@ -29,25 +29,28 @@ case class HttpRecord(session: String,
                       destHost: String,
                       path: String,
                       requestHeader: Map[String, String],
+                      requestBody: String,
                       responseCode: Int,
                       responseHeader: Map[String, String],
-                      requestBody: Option[String],
+                      responseBody: String,
                       createdAt: Instant) {
+
+  def summary: String = {
+    s"${method}(${responseCode}) ${destHost}${path}: ${responseBody.substring(0, 30.min(responseBody.size))} ..."
+  }
 
   def toResponse: Response = {
     val r = Response(Status(responseCode))
     responseHeader.foreach { x =>
       r.headerMap.set(x._1, x._2)
     }
-    requestBody.foreach { body =>
-      r.contentString = body
-    }
+    r.contentString = responseBody
     r
   }
 
   def insertInto(tableName: String, conn: Connection): Unit = {
     withResource(conn.prepareStatement(s"""|insert into "${tableName}" values(
-          |?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+          |?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
           |)
       """.stripMargin)) { prep =>
       // TODO Implement this logic in JDBCResultSetCodec
@@ -57,10 +60,11 @@ case class HttpRecord(session: String,
       prep.setString(4, destHost)
       prep.setString(5, path)
       prep.setString(6, JSONCodec.toJson(headerCodec.toMsgPack(requestHeader)))
-      prep.setInt(7, responseCode)
-      prep.setString(8, JSONCodec.toJson(headerCodec.toMsgPack(responseHeader)))
-      prep.setString(9, requestBody.getOrElse(""))
-      prep.setString(10, createdAt.toString)
+      prep.setString(7, requestBody)
+      prep.setInt(8, responseCode)
+      prep.setString(9, JSONCodec.toJson(headerCodec.toMsgPack(responseHeader)))
+      prep.setString(10, responseBody)
+      prep.setString(11, createdAt.toString)
 
       prep.execute()
     }
@@ -79,9 +83,10 @@ object HttpRecord {
        |  destHost string,
        |  path string,
        |  requestHeader string,
+       |  requestBody string,
        |  responseCode int,
        |  responseHeader string,
-       |  requestBody string,
+       |  responseBody string,
        |  createdAt string
        |)
      """.stripMargin
@@ -99,13 +104,11 @@ object HttpRecord {
       destHost = rs.getString(4),
       path = rs.getString(5),
       requestHeader = decodeJsonMap(rs.getString(6)),
-      responseCode = rs.getInt(7),
-      responseHeader = decodeJsonMap(rs.getString(8)),
-      requestBody = {
-        val s = rs.getString(9)
-        if (s.isEmpty) None else Some(s)
-      },
-      createdAt = Instant.parse(rs.getString(10))
+      requestBody = rs.getString(7),
+      responseCode = rs.getInt(8),
+      responseHeader = decodeJsonMap(rs.getString(9)),
+      responseBody = rs.getString(10),
+      createdAt = Instant.parse(rs.getString(11))
     )
   }
 }

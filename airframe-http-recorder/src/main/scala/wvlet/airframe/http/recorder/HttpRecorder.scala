@@ -27,6 +27,8 @@ import wvlet.log.io.IOUtil
 case class HttpRecorderConfig(destUri: String,
                               sessionName: String = "default",
                               folder: String = "fixtures",
+                              // Drop the session records for recording mode
+                              dropSessionIfExists: Boolean = true,
                               recordTableName: String = "record",
                               // Specify the port to use. The default is finding an available port
                               private val port: Int = -1,
@@ -70,7 +72,11 @@ object HttpRecorder {
     */
   def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder      = new HttpRecordStore(recorderConfig)
+    val recorder = new HttpRecordStore(
+      recorderConfig,
+      // Delete the previous recordings for the same sesion name
+      dropSession = recorderConfig.dropSessionIfExists
+    )
 
     val destClient =
       ClientBuilder()

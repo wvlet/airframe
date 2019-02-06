@@ -18,6 +18,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.log.LogSupport
 
 class HttpRecorderServer(recordStore: HttpRecordStore,
                          finagleConfig: FinagleServerConfig,
@@ -47,12 +48,13 @@ class RecordingService(recordStore: HttpRecordStore, destination: Service[Reques
 /**
   * An HTTP request filter for returning recorded HTTP responses
   */
-class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService {
+class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService with LogSupport {
 
   override def apply(request: Request): Future[Response] = {
     recordStore.find(request) match {
       case Some(record) =>
         // Replay the recorded response
+        debug(s"Found a recorded response: ${record.summary}")
         Future.value(record.toResponse)
       case None =>
         recordStore.recorderConfig.fallBackHandler(request)
