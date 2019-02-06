@@ -28,7 +28,10 @@ case class HttpRecorderConfig(destUri: String,
                               sessionName: String = "default",
                               folder: String = "fixtures",
                               recordTableName: String = "record",
+                              // Specify the port to use. The default is finding an available port
                               private val port: Int = -1,
+                              // A filter for customizing HTTP request headers to use for generating database keys.
+                              // For example, we should remove headers that depends on the current time, etc.
                               headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 

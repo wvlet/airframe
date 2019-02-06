@@ -21,29 +21,6 @@ import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.tablet.jdbc.{ResultSetReader, SQLObjectMapper}
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
 
-case class HttpRecord(session: String,
-                      requestHash: Int,
-                      method: String,
-                      destHost: String,
-                      path: String,
-                      requestHeader: Map[String, String],
-                      responseCode: Int,
-                      responseHeader: Map[String, String],
-                      requestBody: Option[String],
-                      createdAt: Instant) {
-
-  def toResponse: Response = {
-    val r = Response(Status(responseCode))
-    responseHeader.foreach { x =>
-      r.headerMap.set(x._1, x._2)
-    }
-    requestBody.foreach { body =>
-      r.contentString = body
-    }
-    r
-  }
-}
-
 /**
   * Recorder for HTTP server responses
   */
@@ -54,7 +31,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
   private def recordTableName = recorderConfig.recordTableName
 
   // Prepare a database table for recording HttpRecord
-  connectionPool.executeUpdate(SQLObjectMapper.createTableSQLFor[HttpRecord](recordTableName))
+  connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
   connectionPool.executeUpdate(
     s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
   // TODO: Detect schema change
@@ -81,9 +58,11 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
         prepare.setInt(3, hitCount)
     } { rs =>
       // TODO: Migrate JDBC ResultSet reader to airframe-codec
-      val reader = new ResultSetReader(rs)
-      val writer = new ObjectTabletWriter[HttpRecord]()
-      reader.pipe(writer).headOption
+      val b = Seq.newBuilder[HttpRecord]
+      while (rs.next()) {
+        b += HttpRecord.read(rs)
+      }
+      b.result().headOption
     }
   }
 
@@ -103,7 +82,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoClosea
       createdAt = Instant.now()
     )
     connectionPool.withConnection { conn =>
-      SQLObjectMapper.insertRecord[HttpRecord](conn, recordTableName, entry)
+      entry.insertInto(recordTableName, conn)
     }
   }
 
