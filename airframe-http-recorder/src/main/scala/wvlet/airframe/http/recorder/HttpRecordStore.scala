@@ -16,17 +16,14 @@ package wvlet.airframe.http.recorder
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.http.{Request, Response}
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
-import wvlet.airframe.tablet.jdbc.{ResultSetReader, SQLObjectMapper}
-import wvlet.airframe.tablet.obj.ObjectTabletWriter
 
 /**
   * Recorder for HTTP server responses
   */
 class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoCloseable {
-  private val connectionPool = new SQLiteConnectionPool(
-    DbConfig.ofSQLite(s"${recorderConfig.folder}/${recorderConfig.sessionName}.sqlite"))
+  private val connectionPool = new SQLiteConnectionPool(DbConfig.ofSQLite(recorderConfig.sqliteFilePath))
 
   private def recordTableName = recorderConfig.recordTableName
 

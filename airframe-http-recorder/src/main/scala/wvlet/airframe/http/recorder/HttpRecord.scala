@@ -21,7 +21,7 @@ import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec
 
 /**
-  *
+  * HTTP response record that will be stored to the database
   */
 case class HttpRecord(session: String,
                       requestHash: Int,

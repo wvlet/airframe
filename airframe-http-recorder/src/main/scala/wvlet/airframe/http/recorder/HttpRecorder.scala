@@ -35,6 +35,7 @@ case class HttpRecorderConfig(destUri: String,
                               headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
+  def sqliteFilePath  = s"${folder}/${sessionName}.sqlite"
   lazy val serverPort = if (port == -1) IOUtil.unusedPort else port
 
   lazy val destHostAndPort: String = {
@@ -81,7 +82,7 @@ object HttpRecorder {
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
         .build()
 
-    new FinagleServer(finagleConfig, new RecordingService(recorder, destClient))
+    new HttpRecorderServer(recorder, finagleConfig, new RecordingService(recorder, destClient))
   }
 
   /**
@@ -91,7 +92,7 @@ object HttpRecorder {
   def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
-    new FinagleServer(finagleConfig, new RecordReplayService(recorder))
+    new HttpRecorderServer(recorder, finagleConfig, new RecordReplayService(recorder))
   }
 
   def defaultFallBackHandler = {
