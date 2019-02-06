@@ -58,10 +58,17 @@ class HttpRecordStore(sessionName: String, recorderConfig: HttpRecordStoreConfig
 
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
+  def resetCounter: Unit = {
+    requestCounter.clear()
+  }
+
   def find(request: Request): Option[HttpRecord] = {
     val requestHash = HttpRecordStore.requestHash(request)
-    val counter     = requestCounter.getOrElseUpdate(requestHash, new AtomicInteger())
-    val hitCount    = counter.getAndIncrement()
+
+    // If there are multiple records for the same request, use the counter to find
+    // n-th request, where n is the access count to the same path
+    val counter  = requestCounter.getOrElseUpdate(requestHash, new AtomicInteger())
+    val hitCount = counter.getAndIncrement()
     connectionPool.queryWith(
       // Get the
       s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {

@@ -30,12 +30,10 @@ object HttpRecorder {
 
   /**
     * Creates an HTTP server that will record HTTP responses.
-    * e is found, it will send the request to the fallback server, and
-    * records the result.
     */
   def createRecordingServer(destUri: String,
-                            recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig(),
-                            sessionName: String = "default"): FinagleServer = {
+                            sessionName: String = "default",
+                            recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig()): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new HttpRecordStore(sessionName, recorderConfig)
@@ -54,11 +52,12 @@ object HttpRecorder {
 
   /**
     * Creates an HTTP server that returns recorded HTTP responses.
-    * If no matching record is found, use the given fallBack handler.
+    * If no matching record is found, use the given fallback handler.
     */
-  def createReplayServer(recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig(),
+  def createReplayServer(sessionName: String = "default",
+                         recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig(),
                          fallBackHandler: Service[Request, Response] = defaultFallBackHandler,
-                         sessionName: String = "default"): FinagleServer = {
+  ): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new HttpRecordStore(sessionName, recorderConfig)
