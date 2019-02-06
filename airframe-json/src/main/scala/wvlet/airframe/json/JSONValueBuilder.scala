@@ -78,6 +78,9 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
   override def addString(s: JSONSource, start: Int, end: Int): Unit = {
     add(JSONString(s.substring(start, end)))
   }
+  override def addUnespacedString(s: String): Unit = {
+    add(JSONString(s))
+  }
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
     val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {

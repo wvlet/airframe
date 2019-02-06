@@ -16,32 +16,48 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.Request
 import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Control
+import wvlet.airframe.control.Control.withResource
 
 /**
   *
   */
 class HttpRecorderTest extends AirframeSpec {
+
+  def orderInsensitveHash(m: Map[String, String]): Int = {
+    m.map { x =>
+        s"${x._1}:${x._2}".hashCode
+      }
+      .reduce { (xor, next) =>
+        xor ^ next
+      }
+  }
+
   "start HTTP recorder" in {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://www.google.com", sessionName = "google")
-    val response = Control.withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
+    val response = withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
       server.start
       val client = Http.client.newService(server.localAddress)
       val response = client(Request("/")).map { response =>
-        info(response)
+        debug(response)
+        response
       }
       Await.result(response)
     }
 
-    val replayResponse = Control.withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+    val replayResponse = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
       server.start
       val client = Http.client.newService(server.localAddress)
       val response = client(Request("/")).map { response =>
-        info(response)
+        debug(response)
+        response
       }
       Await.result(response)
     }
 
+    response.status shouldBe replayResponse.status
+    debug(response.headerMap.map(x => s"${x._1}:${x._2}").mkString("\n"))
+    debug(replayResponse.headerMap.map(x => s"${x._1}:${x._2}").mkString("\n"))
+    orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(replayResponse.headerMap.toMap)
   }
 }
