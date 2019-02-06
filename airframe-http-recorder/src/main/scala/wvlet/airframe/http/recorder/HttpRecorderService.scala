@@ -35,7 +35,7 @@ class RecordingService(recordStore: HttpRecordStore, destination: Service[Reques
 /**
   * An HTTP request filter for returning recorded HTTP responses
   */
-class RecordReplayService(recordStore: HttpRecordStore, fallback: Service[Request, Response]) extends FinagleService {
+class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService {
 
   override def apply(request: Request): Future[Response] = {
     recordStore.find(request) match {
@@ -43,7 +43,7 @@ class RecordReplayService(recordStore: HttpRecordStore, fallback: Service[Reques
         // Replay the recorded response
         Future.value(record.toResponse)
       case None =>
-        fallback(request)
+        recordStore.recorderConfig.fallBackHandler(request)
     }
   }
 }

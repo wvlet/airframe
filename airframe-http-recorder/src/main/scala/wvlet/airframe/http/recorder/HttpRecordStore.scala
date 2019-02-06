@@ -25,14 +25,15 @@ case class HttpRecord(session: String,
                       requestHash: Int,
                       method: String,
                       uri: String,
-                      code: Int,
-                      header: Map[String, String],
+                      requestHeader: Map[String, String],
+                      responseCode: Int,
+                      responseHeader: Map[String, String],
                       requestBody: Option[String],
                       createdAt: Instant) {
 
   def toResponse: Response = {
-    val r = Response(Status(code))
-    header.foreach { x =>
+    val r = Response(Status(responseCode))
+    responseHeader.foreach { x =>
       r.headerMap.set(x._1, x._2)
     }
     requestBody.foreach { body =>
@@ -42,19 +43,19 @@ case class HttpRecord(session: String,
   }
 }
 
-case class HttpRecordStoreConfig(folder: String = "fixtures", recordTableName: String = "record")
-
 /**
   * Recorder for HTTP server responses
   */
-class HttpRecordStore(sessionName: String, recorderConfig: HttpRecordStoreConfig) extends AutoCloseable {
-  private val connectionPool = new SQLiteConnectionPool(DbConfig.ofSQLite(s"${recorderConfig.folder}/${sessionName}"))
+class HttpRecordStore(val recorderConfig: HttpRecorderConfig) extends AutoCloseable {
+  private val connectionPool = new SQLiteConnectionPool(
+    DbConfig.ofSQLite(s"${recorderConfig.folder}/${recorderConfig.sessionName}.sqlite"))
 
   private def recordTableName = recorderConfig.recordTableName
 
   // Prepare a database table for recording HttpRecord
   connectionPool.executeUpdate(SQLObjectMapper.createTableSQLFor[HttpRecord](recordTableName))
-  connectionPool.executeUpdate(s"create index if not exists ${recordTableName}_index (session, requestHash)")
+  connectionPool.executeUpdate(
+    s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
 
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
@@ -63,18 +64,18 @@ class HttpRecordStore(sessionName: String, recorderConfig: HttpRecordStoreConfig
   }
 
   def find(request: Request): Option[HttpRecord] = {
-    val requestHash = HttpRecordStore.requestHash(request)
+    val rh = requestHash(request)
 
     // If there are multiple records for the same request, use the counter to find
     // n-th request, where n is the access count to the same path
-    val counter  = requestCounter.getOrElseUpdate(requestHash, new AtomicInteger())
+    val counter  = requestCounter.getOrElseUpdate(rh, new AtomicInteger())
     val hitCount = counter.getAndIncrement()
     connectionPool.queryWith(
       // Get the
       s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {
       prepare =>
-        prepare.setString(1, sessionName)
-        prepare.setInt(2, requestHash)
+        prepare.setString(1, recorderConfig.sessionName)
+        prepare.setInt(2, rh)
         prepare.setInt(3, hitCount)
     } { rs =>
       // TODO: Migrate JDBC ResultSet reader to airframe-codec
@@ -85,15 +86,16 @@ class HttpRecordStore(sessionName: String, recorderConfig: HttpRecordStoreConfig
   }
 
   def record(request: Request, response: Response): Unit = {
-    val requestHash = HttpRecordStore.requestHash(request)
-    val body        = if (response.content.isEmpty) None else Some(response.contentString)
+    val rh   = requestHash(request)
+    val body = if (response.content.isEmpty) None else Some(response.contentString)
     val entry = HttpRecord(
-      sessionName,
-      requestHash,
+      recorderConfig.sessionName,
+      requestHash = rh,
       method = request.method.toString(),
       uri = request.uri,
-      code = response.statusCode,
-      header = response.headerMap.toMap,
+      requestHeader = request.headerMap.toMap,
+      responseCode = response.statusCode,
+      responseHeader = response.headerMap.toMap,
       requestBody = body,
       createdAt = Instant.now()
     )
@@ -105,9 +107,6 @@ class HttpRecordStore(sessionName: String, recorderConfig: HttpRecordStoreConfig
   override def close(): Unit = {
     connectionPool.stop
   }
-}
-
-object HttpRecordStore {
 
   /**
     * Compute a hash key of the given HTTP request.
@@ -115,17 +114,18 @@ object HttpRecordStore {
     */
   def requestHash(request: Request): Int = {
     val content = request.getContentString()
-    val prefix  = s"${request.method.toString().hashCode}:${request.uri.hashCode}:${content.hashCode}"
+    val prefix  = s"${request.method.toString().hashCode}:${request.remoteAddress.hashCode}:${content.hashCode}"
 
     val headerHash =
       request.headerMap
+        .filter(x => recorderConfig.requestHeaderFilter(x._1))
         .map { x =>
           s"${x._1}:${x._2}".hashCode
         }
         .reduce { (xor, next) =>
           xor ^ next // Take XOR to compute order-insensitive hash values.
         }
-    prefix.hashCode + headerHash
+    prefix.hashCode * 13 + headerHash
   }
 
 }

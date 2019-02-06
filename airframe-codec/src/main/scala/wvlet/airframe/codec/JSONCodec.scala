@@ -68,7 +68,7 @@ object JSONCodec extends MessageCodec[String] {
 
   def toJson(msgpack: Array[Byte]): String = {
     unpackBytes(msgpack).getOrElse {
-      new IllegalArgumentException(s"Failed to read as json")
+      throw new IllegalArgumentException(s"Failed to read as json")
     }
   }
 }

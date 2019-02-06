@@ -596,7 +596,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, finagle, jdbc, tablet, airframeMacrosJVMRef, airframeSpecJVM % "test")
+    .dependsOn(codecJVM, control % "test", finagle, jdbc, tablet, airframeMacrosJVMRef, airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

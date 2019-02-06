@@ -13,13 +13,37 @@
  */
 package wvlet.airframe.http.recorder
 
+import java.net.URI
+
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
 import com.twitter.util.Future
+import javax.net.ssl.SSLContext
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
 import wvlet.log.io.IOUtil
+
+case class HttpRecorderConfig(destUri: String,
+                              sessionName: String = "default",
+                              folder: String = "fixtures",
+                              recordTableName: String = "record",
+                              requestHeaderFilter: String => Boolean = HttpRecorder.defaultHeaderFilter,
+                              fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
+  lazy val destHostAndPort: String = {
+    if (destUri.startsWith("http:") || destUri.startsWith("https:")) {
+      val uri = URI.create(destUri)
+      val port = uri.getScheme match {
+        case "https"                => 443
+        case _ if uri.getPort == -1 => 80
+        case _                      => uri.getPort
+      }
+      s"${uri.getHost}:${port}"
+    } else {
+      destUri
+    }
+  }
+}
 
 /**
   * Creates a proxy server for recording and replaying HTTP responses.
@@ -28,21 +52,25 @@ import wvlet.log.io.IOUtil
   */
 object HttpRecorder {
 
+  def defaultHeaderFilter(headerName: String): Boolean = {
+    // Ignore Finagle's tracing IDs
+    !headerName.startsWith("X-B3-") && !headerName.startsWith("Finagle-")
+  }
+
   /**
     * Creates an HTTP server that will record HTTP responses.
     */
-  def createRecordingServer(destUri: String,
-                            sessionName: String = "default",
-                            recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig()): FinagleServer = {
+  def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
-    val recorder      = new HttpRecordStore(sessionName, recorderConfig)
+    val recorder      = new HttpRecordStore(recorderConfig)
 
     val destClient =
       ClientBuilder()
         .stack(Http.client)
-        .name(s"vcr-proxy")
-        .dest(destUri)
+        .name(s"airframe-http-recorder-proxy")
+        .dest(recorderConfig.destHostAndPort)
+        .tls(SSLContext.getDefault)
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
         .build()
@@ -54,14 +82,11 @@ object HttpRecorder {
     * Creates an HTTP server that returns recorded HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createReplayServer(sessionName: String = "default",
-                         recorderConfig: HttpRecordStoreConfig = HttpRecordStoreConfig(),
-                         fallBackHandler: Service[Request, Response] = defaultFallBackHandler,
-  ): FinagleServer = {
+  def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
-    val recorder      = new HttpRecordStore(sessionName, recorderConfig)
-    new FinagleServer(finagleConfig, new RecordReplayService(recorder, fallBackHandler))
+    val recorder      = new HttpRecordStore(recorderConfig)
+    new FinagleServer(finagleConfig, new RecordReplayService(recorder))
   }
 
   def defaultFallBackHandler = {
