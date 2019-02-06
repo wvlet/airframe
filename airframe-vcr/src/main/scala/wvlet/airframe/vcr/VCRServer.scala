@@ -12,23 +12,26 @@
  * limitations under the License.
  */
 package wvlet.airframe.vcr
-import java.time.Instant
-
+import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
-object VCRServer {}
-
-class VCRServer(vcrRecorder: VCRRecorder, requestKey: Request => String = VCRServer.extractUriAndBody)
-    extends FinagleService {
+/**
+  * VCR server
+  */
+class VCRServer(vcrRecorder: VCRRecorder, fallback: Service[Request, Response]) extends FinagleService {
 
   override def apply(request: Request): Future[Response] = {
-    val key = requestKey(request)
-    vcrRecorder.get(key) match {
+    vcrRecorder.find(request) match {
+      case None =>
+        fallback(request).map { response =>
+          // Record the result
+          vcrRecorder.record(request, response)
+          response
+        }
       case Some(vcr) =>
-      case None      =>
+        Future.value(vcr.toResponse)
     }
   }
 }

@@ -13,8 +13,9 @@
  */
 package wvlet.airframe.vcr
 import java.time.Instant
+import java.util.concurrent.atomic.AtomicInteger
 
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{Request, Response, Status}
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.tablet.jdbc.{ResultSetReader, SQLObjectMapper}
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
@@ -26,30 +27,51 @@ case class VCREntry(session: String,
                     code: Int,
                     header: Map[String, String],
                     requestBody: Option[String],
-                    createdAt: Instant)
+                    createdAt: Instant) {
+
+  def toResponse: Response = {
+    val r = Response(Status(code))
+    header.foreach { x =>
+      r.headerMap.set(x._1, x._2)
+    }
+    requestBody.foreach { body =>
+      r.contentString = body
+    }
+    r
+  }
+}
 
 /**
-  *
+  * Recorder for HTTP server responses
   */
 class VCRRecorder(vcrConfig: VCRConfig) extends AutoCloseable {
   private val connectionPool = new SQLiteConnectionPool(
     DbConfig.ofSQLite(s"${vcrConfig.folder}/${vcrConfig.sessionName}"))
 
-  private val vcrTableName = "vcr"
+  private def vcrTableName = vcrConfig.vcrTableName
 
   // Prepare a database table for recording VCREntry
   connectionPool.executeUpdate(SQLObjectMapper.createTableSQLFor[VCREntry](vcrTableName))
   connectionPool.executeUpdate(s"create index if not exists ${vcrTableName}_index (session, requestHash)")
 
-  def find(request: Request): Seq[VCREntry] = {
+  private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
+
+  def find(request: Request): Option[VCREntry] = {
     val requestHash = VCRRecorder.requestHash(request)
-    connectionPool.queryWith(s"select * from ${vcrTableName} where session = ? and requestHash = ?") { prepare =>
-      prepare.setString(1, vcrConfig.sessionName)
-      prepare.setInt(2, requestHash)
+    val counter     = requestCounter.getOrElseUpdate(requestHash, new AtomicInteger())
+    val hitCount    = counter.getAndIncrement()
+    connectionPool.queryWith(
+      // Get the
+      s"select * from ${vcrTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {
+      prepare =>
+        prepare.setString(1, vcrConfig.sessionName)
+        prepare.setInt(2, requestHash)
+        prepare.setInt(3, hitCount)
     } { rs =>
+      // TODO: Migrate JDBC ResultSet reader to airframe-codec
       val reader = new ResultSetReader(rs)
       val writer = new ObjectTabletWriter[VCREntry]()
-      reader.pipe(writer)
+      reader.pipe(writer).headOption
     }
   }
 

@@ -12,14 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.vcr
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.{Http, Service}
+import com.twitter.finagle.builder.ClientBuilder
+import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.service.RetryPolicy
+import com.twitter.util.Future
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
 import wvlet.log.io.IOUtil
 
 /**
   *
   */
-case class VCRConfig(folder: String = "fixtures", sessionName: String = "default")
+case class VCRConfig(folder: String = "fixtures", sessionName: String = "default", vcrTableName: String = "vcr")
 
 /**
   * Creates a proxy server for recording and replaying HTTP responses.
@@ -30,25 +34,44 @@ object VCR {
 
   /**
     * Creates an HTTP server that returns VCR recorded responses.
-    * If no matching response is found, it falls back to the original server, and
+    * If no matching response is found, it will send the request to the fallback server, and
     * records the result.
     */
   def createPassThroughServer(vcrConfig: VCRConfig, fallBackUri: String): Unit = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new VCRRecorder(vcrConfig)
-    new FinagleServer(finagleConfig, new VCRServer(recorder))
+
+    val fallBackClient =
+      ClientBuilder()
+        .stack(Http.client)
+        .name(s"vcr-proxy")
+        .dest(fallBackUri)
+        .keepAlive(true)
+        .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
+        .build()
+
+    new FinagleServer(finagleConfig, new VCRServer(recorder, fallBackClient))
   }
 
   /**
     * Creates an HTTP server that returns VCR recorded responses.
     * If no matching record is found, use the given fallBack handler.
     */
-  def createReplayOnlyServer(vcrConfig: VCRConfig, fallBackHandler: Request => Response): Unit = {
+  def createReplayOnlyServer(vcrConfig: VCRConfig,
+                             fallBackHandler: Service[Request, Response] = defaultFallBackHandler): Unit = {
     val port          = IOUtil.unusedPort
     val finagleConfig = FinagleServerConfig(port)
     val recorder      = new VCRRecorder(vcrConfig)
-    new FinagleServer(finagleConfig, new VCRServer(recorder))
+    new FinagleServer(finagleConfig, new VCRServer(recorder, fallBackHandler))
+  }
+
+  def defaultFallBackHandler = {
+    Service.mk { request: Request =>
+      val r = Response(Status.NotFound)
+      r.contentString = s"${request.uri} is not found"
+      Future.value(r)
+    }
   }
 
 }
