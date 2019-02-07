@@ -15,7 +15,9 @@ package wvlet.airframe.codec
 
 import java.util
 
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.json.{JSON, JSONParseException}
+import wvlet.airframe.json.JSON.JSONObject
+import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
@@ -126,17 +128,35 @@ object CollectionCodec {
       }
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader
-      val b   = Map.newBuilder[Any, Any]
-      b.sizeHint(len)
-      for (i <- 0 until len) {
-        keyCodec.unpack(u, v)
-        val key = v.getLastValue
-        valueCodec.unpack(u, v)
-        val value = v.getLastValue
-        b += (key -> value)
+      u.getNextFormat.getValueType match {
+        case ValueType.MAP =>
+          val len = u.unpackMapHeader
+          val b   = Map.newBuilder[Any, Any]
+          b.sizeHint(len)
+          for (i <- 0 until len) {
+            keyCodec.unpack(u, v)
+            val key = v.getLastValue
+            valueCodec.unpack(u, v)
+            val value = v.getLastValue
+            b += (key -> value)
+          }
+          v.setObject(b.result())
+        case ValueType.STRING =>
+          // Assume it's a JSON map value
+          val json = u.unpackString
+          try {
+            val msgpack = JSONCodec.toMsgPack(json)
+            this.unpackMsgPack(msgpack).map { x =>
+              v.setObject(x)
+            }
+          } catch {
+            case e: JSONParseException =>
+              v.setError(e)
+          }
+        case _ =>
+          val x = u.skipValue
+          v.setError(new MessageCodecException(INVALID_DATA, this, s"Not a map value: ${x}"))
       }
-      v.setObject(b.result())
     }
   }
 

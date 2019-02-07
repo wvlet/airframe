@@ -19,6 +19,7 @@ import java.time.Instant
 import com.twitter.finagle.http.{Response, Status, Version}
 import com.twitter.io.Buf
 import com.twitter.io.Buf.{ByteArray, ByteBuffer}
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec
@@ -97,7 +98,7 @@ object HttpRecord {
      """.stripMargin
 
   private def decodeJsonMap(json: String): Map[String, String] = {
-    headerCodec.unpackMsgPack(JSONCodec.toMsgPack(json)).getOrElse(Map.empty)
+    headerCodec.unpackMsgPack(StringCodec.toMsgPack(json)).getOrElse(Map.empty)
   }
 
   private[recorder] def read(rs: ResultSet): HttpRecord = {
