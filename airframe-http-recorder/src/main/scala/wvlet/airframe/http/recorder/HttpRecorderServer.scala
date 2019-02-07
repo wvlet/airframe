@@ -38,7 +38,7 @@ class RecordingService(recordStore: HttpRecordStore, destination: Service[Reques
 
   override def apply(request: Request): Future[Response] = {
     // Rewrite the target host for proxying
-    request.host = recordStore.recorderConfig.destHostAndPort
+    request.host = recordStore.recorderConfig.destAddress.hostAndPort
     destination(request).map { response =>
       // Record the result
       recordStore.record(request, response)
@@ -54,7 +54,7 @@ class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService w
 
   override def apply(request: Request): Future[Response] = {
     // Rewrite the target host for proxying
-    request.host = recordStore.recorderConfig.destHostAndPort
+    request.host = recordStore.recorderConfig.destAddress.hostAndPort
     recordStore.findNext(request) match {
       case Some(record) =>
         // Replay the recorded response
