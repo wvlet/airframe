@@ -68,9 +68,4 @@ object JDBCCodec {
     }
   }
 
-  class ResultSetCodec(surface: Surface, rs: ResultSet) extends MessageCodec[ResultSet] {
-
-    override def pack(p: Packer, v: ResultSet): Unit         = {}
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
-  }
 }
