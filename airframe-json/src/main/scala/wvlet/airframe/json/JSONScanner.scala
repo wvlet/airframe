@@ -450,7 +450,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
           scanUtf8(sb)
       }
     }
-    ctx.addUnespacedString(sb.result())
+    ctx.addUnescapedString(sb.result())
   }
 
 //  def scanUtf8_slow: Unit = {
