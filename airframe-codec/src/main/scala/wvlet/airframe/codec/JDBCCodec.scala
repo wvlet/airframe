@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.codec
 
+import java.sql.ResultSet
 import java.{sql, lang => jl}
 
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**

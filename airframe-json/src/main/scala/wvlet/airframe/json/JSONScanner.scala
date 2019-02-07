@@ -118,6 +118,15 @@ object JSONScanner {
       -1
     }
   }
+
+  private[json] final val HexChars: Array[Int] = {
+    val arr = Array.fill(128)(-1)
+    var i   = 0
+    while (i < 10) { arr(i + '0') = i; i += 1 }
+    i = 0
+    while (i < 16) { arr(i + 'a') = 10 + i; arr(i + 'A') = 10 + i; i += 1 }
+    arr
+  }
 }
 
 class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler: JSONHandler[J]) extends LogSupport {
@@ -427,6 +436,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       return
     }
 
+    val sb       = new StringBuilder
     var continue = true
     while (continue) {
       val ch = s(cursor)
@@ -435,12 +445,12 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
           cursor += 1
           continue = false
         case BackSlash =>
-          scanEscape
+          scanEscape(sb)
         case _ =>
-          scanUtf8
+          scanUtf8(sb)
       }
     }
-    ctx.addString(s, stringStart, cursor - 1)
+    ctx.addUnescapedString(sb.result())
   }
 
 //  def scanUtf8_slow: Unit = {
@@ -467,7 +477,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 //    }
 //  }
 
-  def scanUtf8: Unit = {
+  def scanUtf8(sb: StringBuilder): Unit = {
     val ch                = s(cursor)
     val first5bit         = (ch & 0xF8) >> 3
     val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
@@ -475,8 +485,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       val pos     = (ch & 0xF0) >> (4 - 1)
       val mask    = 0x03L << pos
       val utf8len = (utf8CharLenTable & mask) >> pos
+      val start   = cursor
       cursor += 1
       scanUtf8Body(utf8len.toInt)
+      sb.append(s.substring(start, cursor))
     } else {
       throw unexpected("utf8")
     }
@@ -497,30 +509,57 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     }
   }
 
-  private def scanEscape: Unit = {
+  private def scanEscape(sb: StringBuilder): Unit = {
     cursor += 1
-    (s(cursor): @switch) match {
-      case DoubleQuote | BackSlash | Slash | 'b' | 'f' | 'n' | 'r' | 't' =>
+    val ch = s(cursor)
+    (ch: @switch) match {
+      case DoubleQuote =>
+        sb.append('"')
+        cursor += 1
+      case BackSlash =>
+        sb.append('\\')
+        cursor += 1
+      case Slash =>
+        sb.append('/')
+        cursor += 1
+      case 'b' =>
+        sb.append('\b')
+        cursor += 1
+      case 'f' =>
+        sb.append('\f')
+        cursor += 1
+      case 'n' =>
+        sb.append('\n')
+        cursor += 1
+      case 'r' =>
+        sb.append('\r')
+        cursor += 1
+      case 't' =>
+        sb.append('\t')
         cursor += 1
       case 'u' =>
         cursor += 1
-        scanHex(4)
+        val start   = cursor
+        val hexCode = scanHex(4, 0).toChar
+        sb.append(hexCode)
       case _ =>
         throw unexpected("escape")
     }
   }
 
   @tailrec
-  private def scanHex(n: Int): Unit = {
+  private def scanHex(n: Int, code: Int): Int = {
     if (n > 0) {
       val ch = s(cursor)
       if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch >= '0' && ch <= '9')) {
         // OK
         cursor += 1
-        scanHex(n - 1)
+        scanHex(n - 1, (code << 8) | HexChars(ch))
       } else {
         throw unexpected("hex")
       }
+    } else {
+      code
     }
   }
 }

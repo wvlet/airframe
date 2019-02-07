@@ -65,4 +65,10 @@ object JSONCodec extends MessageCodec[String] {
     val json = u.unpackValue.toJson
     v.setString(json)
   }
+
+  def toJson(msgpack: Array[Byte]): String = {
+    unpackBytes(msgpack).getOrElse {
+      throw new IllegalArgumentException(s"Failed to read as json")
+    }
+  }
 }

@@ -145,6 +145,7 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 // JVM projects that cannot be build in Scala 2.13
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
+  httpRecorder,
   jsonBenchmark
 )
 
@@ -283,7 +284,7 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacros % "compile-internal,test-internal", airframeSpec % "test")
+    .dependsOn(surface, airframeMacrosRef, airframeSpec % "test")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -308,6 +309,10 @@ lazy val airframeMacros =
 
 lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
+
+// To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
+lazy val airframeMacrosJVMRef = airframeMacrosJVM % "compile-internal,test-internal"
+lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-internal"
 
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
@@ -358,7 +363,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.18"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", tablet, airframeSpecJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, tablet, airframeSpecJVM % "test")
 
 lazy val control =
   project
@@ -571,7 +576,27 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(http, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
+    .dependsOn(http, airframeMacrosJVMRef, airframeSpecJVM % "test")
+
+lazy val httpRecorder =
+  project
+    .in(file("airframe-http-recorder"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-http-recorder",
+      description := "Http Response Recorder",
+      // Finagle doesn't support Scala 2.13 yet
+      crossScalaVersions := untilScala2_12,
+      libraryDependencies ++= Seq(
+        "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
+        // Redirecting slf4j log in Finagle to airframe-log
+        "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
+      )
+    )
+    .dependsOn(codecJVM, control, finagle, jdbc, tablet, airframeMacrosJVMRef, airframeSpecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -622,4 +647,4 @@ lazy val fluentd =
         "org.xerial" %% "fluentd-standalone" % "1.2.6.1" % "test"
       )
     )
-    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVM % "compile-internal,test-internal", airframeSpecJVM % "test")
+    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airframeSpecJVM % "test")

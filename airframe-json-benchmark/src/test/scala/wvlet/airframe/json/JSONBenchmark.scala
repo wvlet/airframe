@@ -24,7 +24,9 @@ import scala.util.Random
   */
 class JSONBenchmark extends AirframeSpec with Timer {
 
-  def bench(benchName: String, json: String, N: Int = 5, B: Int = 2): Unit = {
+  val repetition = if (inCI) 2 else 10
+
+  def bench(benchName: String, json: String, N: Int = repetition, B: Int = repetition): Unit = {
     val jsonSource = JSONSource.fromString(json)
     time(benchName, repeat = N, blockRepeat = B) {
       block("airframe      ") {

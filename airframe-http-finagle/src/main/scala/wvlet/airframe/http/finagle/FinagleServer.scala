@@ -26,10 +26,13 @@ case class FinagleServerConfig(port: Int)
 /**
   *
   */
-class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService) extends LogSupport {
+class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService)
+    extends LogSupport
+    with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
 
-  def port: Int = finagleConfig.port
+  def localAddress = s"localhost:${port}"
+  def port: Int    = finagleConfig.port
 
   @PostConstruct
   def start {
@@ -41,6 +44,10 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
   def stop = {
     info(s"Stopping the server http://localhost:${finagleConfig.port}")
     server.map(_.close())
+  }
+
+  override def close(): Unit = {
+    stop
   }
 
   def waitServerTermination: Unit = {
