@@ -517,10 +517,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
         sb.append('"')
         cursor += 1
       case BackSlash =>
-        sb.append('/')
+        sb.append('\\')
         cursor += 1
       case Slash =>
-        sb.append('\\')
+        sb.append('/')
         cursor += 1
       case 'b' =>
         sb.append('\b')

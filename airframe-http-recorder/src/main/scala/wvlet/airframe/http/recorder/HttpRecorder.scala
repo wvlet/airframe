@@ -22,6 +22,7 @@ import com.twitter.finagle.service.RetryPolicy
 import com.twitter.util.Future
 import javax.net.ssl.SSLContext
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class HttpRecorderConfig(destUri: String,
@@ -60,7 +61,7 @@ case class HttpRecorderConfig(destUri: String,
   * This is useful for simulate the behavior of Web services, that
   * are too heavy to use in an restricted environment (e.g., CI servers)
   */
-object HttpRecorder {
+object HttpRecorder extends LogSupport {
 
   def defaultHeaderExclude: String => Boolean = { headerName =>
     // Ignore Finagle's tracing IDs
@@ -78,12 +79,14 @@ object HttpRecorder {
       dropSession = recorderConfig.dropSessionIfExists
     )
 
+    debug(s"dest: ${recorderConfig.destHostAndPort}")
     val destClient =
       ClientBuilder()
         .stack(Http.client)
         .name(s"airframe-http-recorder-proxy")
         .dest(recorderConfig.destHostAndPort)
         .tls(SSLContext.getDefault)
+        .noFailureAccrual
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
         .build()

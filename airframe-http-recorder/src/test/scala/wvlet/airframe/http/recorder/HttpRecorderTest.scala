@@ -13,10 +13,11 @@
  */
 package wvlet.airframe.http.recorder
 import com.twitter.finagle.Http
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
+import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
 /**
   *
@@ -32,32 +33,43 @@ class HttpRecorderTest extends AirframeSpec {
       }
   }
 
+  def withClient[U](addr: String)(body: FinagleService => U): U = {
+    val client = Http.client.newService(addr)
+    try {
+      body(client)
+    } finally {
+      client.close()
+    }
+  }
+
   "start HTTP recorder" in {
     val recorderConfig =
-      HttpRecorderConfig(destUri = "https://www.google.com", sessionName = "google")
-    val response = withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
+      HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe")
+    val path = "/airframe/"
+    val response: Response = withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
       server.start
-      val client = Http.client.newService(server.localAddress)
-      val response = client(Request("/")).map { response =>
-        debug(response)
-        response
+      withClient(server.localAddress) { client =>
+        val response = client(Request(path)).map { response =>
+          debug(response)
+          response
+        }
+        Await.result(response)
       }
-      Await.result(response)
     }
 
-    val replayResponse = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+    val replayResponse: Response = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
       server.start
-      val client = Http.client.newService(server.localAddress)
-      val response = client(Request("/")).map { response =>
-        debug(response)
-        response
+      withClient(server.localAddress) { client =>
+        val response = client(Request(path)).map { response =>
+          debug(response)
+          response
+        }
+        Await.result(response)
       }
-      Await.result(response)
     }
 
     response.status shouldBe replayResponse.status
-    debug(response.headerMap.map(x => s"${x._1}:${x._2}").mkString("\n"))
-    debug(replayResponse.headerMap.map(x => s"${x._1}:${x._2}").mkString("\n"))
     orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(replayResponse.headerMap.toMap)
+    response.contentString shouldBe replayResponse.contentString
   }
 }

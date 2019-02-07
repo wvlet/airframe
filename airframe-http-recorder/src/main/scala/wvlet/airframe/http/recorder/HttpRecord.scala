@@ -12,10 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.recorder
+import java.nio.charset.StandardCharsets
 import java.sql.{Connection, ResultSet}
 import java.time.Instant
 
-import com.twitter.finagle.http.{Response, Status}
+import com.twitter.finagle.http.{Response, Status, Version}
+import com.twitter.io.Buf
+import com.twitter.io.Buf.{ByteArray, ByteBuffer}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec
@@ -40,11 +43,13 @@ case class HttpRecord(session: String,
   }
 
   def toResponse: Response = {
-    val r = Response(Status(responseCode))
+    val r        = Response(Version.Http11, Status.fromCode(responseCode))
+    val rawBytes = responseBody.getBytes(StandardCharsets.UTF_8)
+    r.content = Buf.ByteArray.Owned(rawBytes)
+    r.contentLength = rawBytes.length
     responseHeader.foreach { x =>
       r.headerMap.set(x._1, x._2)
     }
-    r.contentString = responseBody
     r
   }
 
