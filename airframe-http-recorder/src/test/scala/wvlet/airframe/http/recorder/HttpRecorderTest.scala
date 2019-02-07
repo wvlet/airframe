@@ -71,5 +71,19 @@ class HttpRecorderTest extends AirframeSpec {
     response.status shouldBe replayResponse.status
     orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(replayResponse.headerMap.toMap)
     response.contentString shouldBe replayResponse.contentString
+
+    // Check non-recorded response
+    val errorResponse = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+      server.start
+      withClient(server.localAddress) { client =>
+        val response = client(Request("/non-recorded-path.html")).map { response =>
+          debug(response)
+          response
+        }
+        Await.result(response)
+      }
+    }
+    // Not found
+    errorResponse.statusCode shouldBe 404
   }
 }
