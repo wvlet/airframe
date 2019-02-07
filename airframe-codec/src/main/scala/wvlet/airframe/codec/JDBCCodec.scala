@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.codec
 
+import java.sql.ResultSet
 import java.{sql, lang => jl}
 
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
@@ -64,5 +66,11 @@ object JDBCCodec {
         u.unpackValue
       }
     }
+  }
+
+  class ResultSetCodec(surface: Surface, rs: ResultSet) extends MessageCodec[ResultSet] {
+
+    override def pack(p: Packer, v: ResultSet): Unit         = {}
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 }

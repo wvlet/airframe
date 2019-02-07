@@ -18,7 +18,6 @@ import java.time.Instant
 
 import com.twitter.finagle.http.{Response, Status, Version}
 import com.twitter.io.Buf
-import com.twitter.io.Buf.{ByteArray, ByteBuffer}
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.control.Control.withResource

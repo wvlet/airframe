@@ -55,7 +55,7 @@ class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService w
   override def apply(request: Request): Future[Response] = {
     // Rewrite the target host for proxying
     request.host = recordStore.recorderConfig.destHostAndPort
-    recordStore.find(request) match {
+    recordStore.findNext(request) match {
       case Some(record) =>
         // Replay the recorded response
         debug(s"Found a recorded response: ${record.summary}")

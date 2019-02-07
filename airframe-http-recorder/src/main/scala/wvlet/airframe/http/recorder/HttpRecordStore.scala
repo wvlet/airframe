@@ -46,7 +46,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     requestCounter.clear()
   }
 
-  def find(request: Request): Option[HttpRecord] = {
+  def findNext(request: Request): Option[HttpRecord] = {
     val rh = requestHash(request)
 
     // If there are multiple records for the same request, use the counter to find
@@ -54,7 +54,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     val counter  = requestCounter.getOrElseUpdate(rh, new AtomicInteger())
     val hitCount = counter.getAndIncrement()
     connectionPool.queryWith(
-      // Get the
+      // Get the next request matching the requestHash
       s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {
       prepare =>
         prepare.setString(1, recorderConfig.sessionName)
@@ -98,7 +98,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     * Compute a hash key of the given HTTP request.
     * This value will be used for DB indexes
     */
-  def requestHash(request: Request): Int = {
+  private def requestHash(request: Request): Int = {
     val content = request.getContentString()
     val prefix  = s"${request.method.toString()}:${recorderConfig.destHostAndPort}${request.uri}:${content.hashCode}"
 

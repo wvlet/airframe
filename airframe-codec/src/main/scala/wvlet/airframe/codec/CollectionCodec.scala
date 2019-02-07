@@ -15,8 +15,7 @@ package wvlet.airframe.codec
 
 import java.util
 
-import wvlet.airframe.json.{JSON, JSONParseException}
-import wvlet.airframe.json.JSON.JSONObject
+import wvlet.airframe.json.JSONParseException
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
 
