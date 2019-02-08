@@ -71,7 +71,7 @@ class JDBCCodecTest extends AirframeSpec {
       //(1 to md.getColumnCount).foreach(i => info(s"${md.getColumnType(i)}: ${md.getColumnTypeName(i)}"))
 
       val codec   = JDBCCodec(rs)
-      val msgpack = codec.packAllRows
+      val msgpack = codec.toMsgPack
       val json    = JSONCodec.toJson(msgpack)
       debug(json)
     }
@@ -119,7 +119,7 @@ class JDBCCodecTest extends AirframeSpec {
 
     withQuery(s"select ${selectItems}") { rs =>
       val codec   = JDBCCodec(rs)
-      val msgpack = codec.packAllRows
+      val msgpack = codec.toMsgPack
       val json    = JSONCodec.toJson(msgpack)
       debug(json)
     }

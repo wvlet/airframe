@@ -12,9 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.sql.{JDBCType, ResultSet, SQLType, Time, Timestamp, Types}
+import java.sql.{ResultSet, Time, Timestamp, Types}
 
-import wvlet.airframe.codec.JDBCCodec.JDBCArrayCodec.debug
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
@@ -26,22 +25,26 @@ object JDBCCodec extends LogSupport {
 
   def apply(rs: ResultSet): ResultSetCodec = new ResultSetCodec(rs)
 
-  class ResultSetCodec(rs: ResultSet) extends MessageCodec[ResultSet] {
+  class ResultSetCodec(rs: ResultSet) {
     private lazy val md                      = rs.getMetaData
     private lazy val columnCount             = md.getColumnCount
     private def columnTypes: IndexedSeq[Int] = (1 to columnCount).map(i => md.getColumnType(i))
     private lazy val columnCodecs: IndexedSeq[JDBCColumnCodec] =
       (1 to columnCount).map(i => toJDBCColumnCodec(md.getColumnType(i), md.getColumnTypeName(i))).toIndexedSeq
 
-    def packAllRows: Array[Byte] = {
+    def toMsgPack: Array[Byte] = {
       val p = MessagePack.newBufferPacker
-      while (rs.next()) {
-        pack(p, rs)
-      }
+      packAllRows(p)
       p.toByteArray
     }
 
-    override def pack(p: Packer, v: ResultSet): Unit = {
+    def packAllRows(p: Packer): Unit = {
+      while (rs.next()) {
+        packRow(p)
+      }
+    }
+
+    def packRow(p: Packer): Unit = {
       p.packArrayHeader(columnCount)
       var col = 1
       while (col <= columnCount) {
@@ -49,9 +52,6 @@ object JDBCCodec extends LogSupport {
         col += 1
       }
     }
-
-    // TODO: We need a pack only MessageCodec interface
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
   def toJDBCColumnCodec(sqlType: Int, typeName: String): JDBCColumnCodec = {
@@ -333,8 +333,8 @@ object JDBCCodec extends LogSupport {
     }
   }
 
-  object JavaSqlArrayCodec extends MessageCodec[java.sql.Array] with LogSupport {
-    override def pack(p: Packer, v: java.sql.Array): Unit = {
+  object JavaSqlArrayCodec extends LogSupport {
+    def pack(p: Packer, v: java.sql.Array): Unit = {
       val arr: AnyRef = v.getArray
       arr match {
         case a: Array[java.lang.String] =>
@@ -363,7 +363,6 @@ object JDBCCodec extends LogSupport {
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
 }

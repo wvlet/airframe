@@ -18,7 +18,7 @@ class ResultSetReader(rs: ResultSet) extends TabletReader with LogSupport {
       None
     } else {
       val p = MessagePack.newBufferPacker
-      codec.pack(p, rs)
+      codec.packRow(p)
       val arr = p.toByteArray
       Some(MessagePackRecord(arr))
     }
