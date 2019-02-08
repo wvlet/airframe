@@ -76,7 +76,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       recorderConfig.sessionName,
       requestHash = rh,
       method = request.method.toString(),
-      destHost = recorderConfig.destHostAndPort,
+      destHost = recorderConfig.destAddress.hostAndPort,
       path = request.uri,
       requestHeader = request.headerMap.toMap,
       requestBody = request.contentString,
@@ -100,7 +100,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     */
   private def requestHash(request: Request): Int = {
     val content = request.getContentString()
-    val prefix  = s"${request.method.toString()}:${recorderConfig.destHostAndPort}${request.uri}:${content.hashCode}"
+    val prefix =
+      s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}"
 
     val headerHash =
       request.headerMap

@@ -86,4 +86,6 @@ class HttpRecorderTest extends AirframeSpec {
     // Not found
     errorResponse.statusCode shouldBe 404
   }
+
+  "switch recoding/replaying" in {}
 }

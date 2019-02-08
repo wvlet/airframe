@@ -21,13 +21,16 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
 import com.twitter.util.Future
 import javax.net.ssl.SSLContext
+import wvlet.airframe.http.ServerAddress
 import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class HttpRecorderConfig(destUri: String,
                               sessionName: String = "default",
-                              folder: String = "fixtures",
+                              expirationTime: String = "1w",
+                              // the folder to store response records
+                              storageFolder: String = "fixtures",
                               // Drop the session records for recording mode
                               dropSessionIfExists: Boolean = true,
                               recordTableName: String = "record",
@@ -38,22 +41,9 @@ case class HttpRecorderConfig(destUri: String,
                               headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
-  def sqliteFilePath  = s"${folder}/${sessionName}.sqlite"
-  lazy val serverPort = if (port == -1) IOUtil.unusedPort else port
-
-  lazy val destHostAndPort: String = {
-    if (destUri.startsWith("http:") || destUri.startsWith("https:")) {
-      val uri = URI.create(destUri)
-      val port = uri.getScheme match {
-        case "https"                => 443
-        case _ if uri.getPort == -1 => 80
-        case _                      => uri.getPort
-      }
-      s"${uri.getHost}:${port}"
-    } else {
-      destUri
-    }
-  }
+  def sqliteFilePath   = s"${storageFolder}/${sessionName}.sqlite"
+  lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
+  lazy val destAddress = ServerAddress(destUri)
 }
 
 /**
@@ -79,12 +69,12 @@ object HttpRecorder extends LogSupport {
       dropSession = recorderConfig.dropSessionIfExists
     )
 
-    debug(s"dest: ${recorderConfig.destHostAndPort}")
+    debug(s"dest: ${recorderConfig.destAddress}")
     val destClient =
       ClientBuilder()
         .stack(Http.client)
         .name(s"airframe-http-recorder-proxy")
-        .dest(recorderConfig.destHostAndPort)
+        .dest(recorderConfig.destAddress.hostAndPort)
         .tls(SSLContext.getDefault)
         .noFailureAccrual
         .keepAlive(true)
