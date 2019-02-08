@@ -44,7 +44,7 @@ class ServerAddressTest extends AirframeSpec {
     (ServerAddress("http://wvlet.org:8080"),
      ServerAddress("wvlet.org", 8080, Some("http")),
      "http://wvlet.org:8080",
-     "wvlet.org:8080"),
+     "wvlet.org:8080")
   )
 
   "parse host and port" in {
