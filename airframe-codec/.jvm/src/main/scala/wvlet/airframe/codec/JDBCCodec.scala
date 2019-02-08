@@ -12,23 +12,34 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.sql.{JDBCType, ResultSet}
+import java.sql.{JDBCType, ResultSet, SQLType, Time, Timestamp, Types}
 
-import wvlet.airframe.codec.JavaSQLTypeCodec.{JavaSqlDateCodec, JavaSqlTimeCodec, JavaSqlTimestampCodec}
+import wvlet.airframe.codec.JDBCCodec.JDBCArrayCodec.debug
 import wvlet.airframe.codec.PrimitiveCodec._
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
 
 /**
   *
   */
-object JDBCCodec {
+object JDBCCodec extends LogSupport {
+
+  def apply(rs: ResultSet): ResultSetCodec = new ResultSetCodec(rs)
 
   class ResultSetCodec(rs: ResultSet) extends MessageCodec[ResultSet] {
-    private lazy val md                                   = rs.getMetaData
-    private val columnCount                               = md.getColumnCount
-    private def columnTypes: IndexedSeq[Int]              = (1 to md.getColumnCount).map(i => md.getColumnType(i))
-    private val columnCodecs: IndexedSeq[JDBCColumnCodec] = columnTypes.map(toJDBCColumnCodec).toIndexedSeq
+    private lazy val md                      = rs.getMetaData
+    private lazy val columnCount             = md.getColumnCount
+    private def columnTypes: IndexedSeq[Int] = (1 to columnCount).map(i => md.getColumnType(i))
+    private lazy val columnCodecs: IndexedSeq[JDBCColumnCodec] =
+      (1 to columnCount).map(i => toJDBCColumnCodec(md.getColumnType(i), md.getColumnTypeName(i))).toIndexedSeq
+
+    def packAllRows: Array[Byte] = {
+      val p = MessagePack.newBufferPacker
+      while (rs.next()) {
+        pack(p, rs)
+      }
+      p.toByteArray
+    }
 
     override def pack(p: Packer, v: ResultSet): Unit = {
       p.packArrayHeader(columnCount)
@@ -43,28 +54,38 @@ object JDBCCodec {
     override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
-  def toJDBCColumnCodec(jdbcType: Int): JDBCColumnCodec = {
-    JDBCType.valueOf(jdbcType) match {
-      case JDBCType.BIT | JDBCType.BOOLEAN      => JDBCBooleanCodec
-      case JDBCType.TINYINT | JDBCType.SMALLINT => JDBCShortCodec
-      case JDBCType.INTEGER                     => JDBCIntCodec
-      case JDBCType.BIGINT                      => JDBCLongCodec
-      case JDBCType.REAL                        => JDBCFloatCodec
-      case JDBCType.FLOAT | JDBCType.DOUBLE     => JDBCDoubleCodec
-      case JDBCType.NUMERIC | JDBCType.DECIMAL  => JDBCStringCodec
-      case JDBCType.CHAR | JDBCType.VARCHAR | JDBCType.LONGNVARCHAR | JDBCType.SQLXML | JDBCType.NCHAR |
-          JDBCType.NVARCHAR | JDBCType.LONGNVARCHAR =>
-        JDBCStringCodec
-      case JDBCType.BLOB | JDBCType.BINARY | JDBCType.VARBINARY | JDBCType.LONGVARBINARY => JDBCBinaryCodec
-      case JDBCType.DATE                                                                 => JDBCDateCodec
-      case JDBCType.TIME | JDBCType.TIME_WITH_TIMEZONE                                   => JDBCTimeCodec
-      case JDBCType.TIMESTAMP | JDBCType.TIMESTAMP_WITH_TIMEZONE                         => JDBCTimestampCodec
-      case JDBCType.ARRAY                                                                => JDBCArrayCodec
-      case JDBCType.JAVA_OBJECT                                                          => JDBCJavaObjectCodec
-      case JDBCType.ROWID                                                                => JDBCRowIdCodec
-      case other                                                                         => throw new UnsupportedOperationException(s"Unsupported JDBC type: ${other}")
+  def toJDBCColumnCodec(sqlType: Int, typeName: String): JDBCColumnCodec = {
+    typeName match {
+      // workaround for sqlite-jdbc, which doesn't support all JDBC types
+      case "DATE"                                   => JDBCDateCodec
+      case "TIME" | "TIME WITH TIME ZONE"           => JDBCTimeCodec
+      case "TIMESTAMP" | "TIMESTAMP WITH TIME ZONE" => JDBCTimestampCodec
+      case x if x.startsWith("DECIMAL")             => JDBCDecimalCodec
+      case "BIT"                                    => JDBCBooleanCodec
+      case _ =>
+        sqlType match {
+          case Types.BIT | Types.BOOLEAN      => JDBCBooleanCodec
+          case Types.TINYINT | Types.SMALLINT => JDBCShortCodec
+          case Types.INTEGER                  => JDBCIntCodec
+          case Types.BIGINT                   => JDBCLongCodec
+          case Types.REAL                     => JDBCFloatCodec
+          case Types.FLOAT | Types.DOUBLE     => JDBCDoubleCodec
+          case Types.NUMERIC | Types.DECIMAL  => JDBCStringCodec
+          case Types.CHAR | Types.VARCHAR | Types.LONGNVARCHAR | Types.SQLXML | Types.NCHAR | Types.NVARCHAR |
+              Types.CLOB | Types.ROWID =>
+            JDBCStringCodec
+          case Types.BLOB | Types.BINARY | Types.VARBINARY | Types.LONGVARBINARY => JDBCBinaryCodec
+          case Types.DATE                                                        => JDBCDateCodec
+          case Types.TIME | Types.TIME_WITH_TIMEZONE                             => JDBCTimeCodec
+          case Types.TIMESTAMP | Types.TIMESTAMP_WITH_TIMEZONE                   => JDBCTimestampCodec
+          case Types.ARRAY                                                       => JDBCArrayCodec
+          case Types.JAVA_OBJECT                                                 => JDBCJavaObjectCodec
+          case Types.NULL                                                        => JDBCNullCodec
+          case other =>
+            warn(s"Unsupported JDBC type: ${other}. Assume string type")
+            JDBCStringCodec
+        }
     }
-
   }
 
   // Base codec for reading data from the specific column in a JDBC ResultSet
@@ -82,6 +103,7 @@ object JDBCCodec {
       }
     }
   }
+
   object JDBCShortCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getShort(colIndex)
@@ -92,6 +114,7 @@ object JDBCCodec {
       }
     }
   }
+
   object JDBCIntCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getInt(colIndex)
@@ -102,6 +125,7 @@ object JDBCCodec {
       }
     }
   }
+
   object JDBCLongCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getLong(colIndex)
@@ -123,6 +147,7 @@ object JDBCCodec {
       }
     }
   }
+
   object JDBCDoubleCodec extends JDBCColumnCodec {
     def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getDouble(colIndex)
@@ -133,6 +158,18 @@ object JDBCCodec {
       }
     }
   }
+
+  object JDBCDecimalCodec extends JDBCColumnCodec {
+    override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
+      val v = rs.getBigDecimal(colIndex)
+      if (rs.wasNull()) {
+        p.packNil
+      } else {
+        BigDecimalCodec.pack(p, v)
+      }
+    }
+  }
+
   object JDBCStringCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       val v = rs.getString(colIndex)
@@ -173,7 +210,7 @@ object JDBCCodec {
       if (rs.wasNull()) {
         p.packNil
       } else {
-        JavaSqlTimeCodec.pack(p, rs.getTime(colIndex))
+        JavaSqlTimeCodec.pack(p, v)
       }
     }
   }
@@ -195,36 +232,7 @@ object JDBCCodec {
       if (rs.wasNull()) {
         p.packNil
       } else {
-        val elemType = v.getBaseType
-        debug(s"elemType:${elemType}, ${java.sql.JDBCType.valueOf(elemType)}")
-        val jdbcType    = java.sql.JDBCType.valueOf(elemType)
-        val arr: AnyRef = v.getArray
-        arr match {
-          case a: Array[java.lang.String] =>
-            StringArrayCodec.pack(p, a)
-          case a: Array[Int] =>
-            IntArrayCodec.pack(p, a)
-          case a: Array[Short] =>
-            ShortArrayCodec.pack(p, a)
-          case a: Array[Long] =>
-            LongArrayCodec.pack(p, a)
-          case a: Array[Char] =>
-            CharArrayCodec.pack(p, a)
-          case a: Array[Byte] =>
-            ByteArrayCodec.pack(p, a)
-          case a: Array[Float] =>
-            FloatArrayCodec.pack(p, a)
-          case a: Array[Double] =>
-            DoubleArrayCodec.pack(p, a)
-          case a: Array[Boolean] =>
-            BooleanArrayCodec.pack(p, a)
-          case a: Array[AnyRef] =>
-            debug(s"element class: ${a.head.getClass}")
-            throw new UnsupportedOperationException(
-              s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
-          case other =>
-            throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
-        }
+        JavaSqlArrayCodec.pack(p, v)
       }
     }
   }
@@ -241,15 +249,121 @@ object JDBCCodec {
     }
   }
 
-  object JDBCRowIdCodec extends JDBCColumnCodec {
+  object JDBCNullCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
-      val v = rs.getRowId(colIndex)
-      if (rs.wasNull()) {
-        p.packNil
-      } else {
-        p.packString(v.toString)
+      p.packNil
+    }
+  }
+
+  object JavaSqlDateCodec extends MessageCodec[java.sql.Date] with LogSupport {
+    override def pack(p: Packer, v: java.sql.Date): Unit = {
+      // Store string representation of java.sql.Date
+      p.packString(v.toString)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.STRING =>
+          v.setObject(java.sql.Date.valueOf(u.unpackString))
+        case ValueType.INTEGER =>
+          // Milliseconds since 1970-01-01
+          val epochMillis = u.unpackLong
+          v.setObject(new java.sql.Date(epochMillis))
+        case other =>
+          v.setError(
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Data from ${other} type"))
       }
     }
+  }
+
+  object JavaSqlTimeCodec extends MessageCodec[java.sql.Time] {
+    override def pack(p: Packer, v: Time): Unit = {
+      p.packString(v.toString)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.STRING =>
+          v.setObject(java.sql.Time.valueOf(u.unpackString))
+        case ValueType.INTEGER =>
+          val epochMillis = u.unpackLong
+          v.setObject(new java.sql.Time(epochMillis))
+        case other =>
+          v.setError(
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type"))
+      }
+    }
+  }
+
+  object JavaSqlTimestampCodec extends MessageCodec[java.sql.Timestamp] {
+    override def pack(p: Packer, v: Timestamp): Unit = {
+      p.packString(v.toString)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.STRING =>
+          v.setObject(java.sql.Timestamp.valueOf(u.unpackString))
+        case ValueType.INTEGER =>
+          val epochMillis = u.unpackLong
+          v.setObject(new java.sql.Timestamp(epochMillis))
+        case other =>
+          v.setError(
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type"))
+      }
+    }
+  }
+
+  object BigDecimalCodec extends MessageCodec[java.math.BigDecimal] {
+    override def pack(p: Packer, v: java.math.BigDecimal): Unit = {
+      p.packString(v.toString)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.STRING =>
+          val s = u.unpackString
+          v.setObject(new java.math.BigDecimal(s))
+        case ValueType.INTEGER =>
+          val l = u.unpackLong
+          v.setObject(java.math.BigDecimal.valueOf(l))
+        case ValueType.FLOAT =>
+          val f = u.unpackDouble
+          v.setObject(java.math.BigDecimal.valueOf(f))
+        case other =>
+          v.setError(
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.math.BigDecimal from ${other} type"))
+      }
+    }
+  }
+
+  object JavaSqlArrayCodec extends MessageCodec[java.sql.Array] with LogSupport {
+    override def pack(p: Packer, v: java.sql.Array): Unit = {
+      val arr: AnyRef = v.getArray
+      arr match {
+        case a: Array[java.lang.String] =>
+          StringArrayCodec.pack(p, a)
+        case a: Array[Int] =>
+          IntArrayCodec.pack(p, a)
+        case a: Array[Short] =>
+          ShortArrayCodec.pack(p, a)
+        case a: Array[Long] =>
+          LongArrayCodec.pack(p, a)
+        case a: Array[Char] =>
+          CharArrayCodec.pack(p, a)
+        case a: Array[Byte] =>
+          ByteArrayCodec.pack(p, a)
+        case a: Array[Float] =>
+          FloatArrayCodec.pack(p, a)
+        case a: Array[Double] =>
+          DoubleArrayCodec.pack(p, a)
+        case a: Array[Boolean] =>
+          BooleanArrayCodec.pack(p, a)
+        case a: Array[AnyRef] =>
+          debug(s"element class: ${a.head.getClass}")
+          throw new UnsupportedOperationException(
+            s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
+        case other =>
+          throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
+      }
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
 }

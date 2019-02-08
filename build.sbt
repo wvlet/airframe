@@ -495,6 +495,12 @@ lazy val codec =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        // For JDBC testing
+        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
+      )
+    )
     .jsSettings(
       jsBuildSettings
     )
