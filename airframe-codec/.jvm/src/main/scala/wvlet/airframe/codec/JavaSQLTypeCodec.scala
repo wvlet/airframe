@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import java.sql.{Time, Timestamp}
+import java.sql.{RowId, Time, Timestamp}
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
 
@@ -77,5 +77,4 @@ object JavaSQLTypeCodec {
       v.setObject(t)
     }
   }
-
 }

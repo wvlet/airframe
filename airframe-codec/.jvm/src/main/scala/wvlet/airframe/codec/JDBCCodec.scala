@@ -15,24 +15,7 @@ package wvlet.airframe.codec
 import java.sql.{JDBCType, ResultSet}
 
 import wvlet.airframe.codec.JavaSQLTypeCodec.{JavaSqlDateCodec, JavaSqlTimeCodec, JavaSqlTimestampCodec}
-import wvlet.airframe.codec.PrimitiveCodec.{
-  BooleanArrayCodec,
-  BooleanCodec,
-  ByteArrayCodec,
-  CharArrayCodec,
-  DoubleArrayCodec,
-  DoubleCodec,
-  FloatArrayCodec,
-  FloatCodec,
-  IntArrayCodec,
-  IntCodec,
-  LongArrayCodec,
-  LongCodec,
-  ShortArrayCodec,
-  ShortCodec,
-  StringArrayCodec,
-  StringCodec
-}
+import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 import wvlet.log.LogSupport
 
@@ -48,17 +31,11 @@ object JDBCCodec {
     private val columnCodecs: IndexedSeq[JDBCColumnCodec] = columnTypes.map(toJDBCColumnCodec).toIndexedSeq
 
     override def pack(p: Packer, v: ResultSet): Unit = {
-      while (rs.next()) {
-        if (rs.wasNull()) {
-          p.packNil
-        } else {
-          p.packArrayHeader(columnCount)
-          var col = 1
-          while (col <= columnCount) {
-            columnCodecs(col - 1).pack(p, rs, col)
-            col += 1
-          }
-        }
+      p.packArrayHeader(columnCount)
+      var col = 1
+      while (col <= columnCount) {
+        columnCodecs(col - 1).pack(p, rs, col)
+        col += 1
       }
     }
 
@@ -68,20 +45,24 @@ object JDBCCodec {
 
   def toJDBCColumnCodec(jdbcType: Int): JDBCColumnCodec = {
     JDBCType.valueOf(jdbcType) match {
-      case JDBCType.BIT | JDBCType.BOOLEAN                                               => JDBCBooleanCodec
-      case JDBCType.TINYINT | JDBCType.SMALLINT                                          => JDBCShortCodec
-      case JDBCType.INTEGER                                                              => JDBCIntCodec
-      case JDBCType.BIGINT                                                               => JDBCLongCodec
-      case JDBCType.REAL                                                                 => JDBCFloatCodec
-      case JDBCType.FLOAT | JDBCType.DOUBLE                                              => JDBCDoubleCodec
-      case JDBCType.NUMERIC | JDBCType.DECIMAL                                           => JDBCStringCodec
-      case JDBCType.CHAR | JDBCType.VARCHAR | JDBCType.LONGNVARCHAR                      => JDBCStringCodec
+      case JDBCType.BIT | JDBCType.BOOLEAN      => JDBCBooleanCodec
+      case JDBCType.TINYINT | JDBCType.SMALLINT => JDBCShortCodec
+      case JDBCType.INTEGER                     => JDBCIntCodec
+      case JDBCType.BIGINT                      => JDBCLongCodec
+      case JDBCType.REAL                        => JDBCFloatCodec
+      case JDBCType.FLOAT | JDBCType.DOUBLE     => JDBCDoubleCodec
+      case JDBCType.NUMERIC | JDBCType.DECIMAL  => JDBCStringCodec
+      case JDBCType.CHAR | JDBCType.VARCHAR | JDBCType.LONGNVARCHAR | JDBCType.SQLXML | JDBCType.NCHAR |
+          JDBCType.NVARCHAR | JDBCType.LONGNVARCHAR =>
+        JDBCStringCodec
       case JDBCType.BLOB | JDBCType.BINARY | JDBCType.VARBINARY | JDBCType.LONGVARBINARY => JDBCBinaryCodec
       case JDBCType.DATE                                                                 => JDBCDateCodec
       case JDBCType.TIME | JDBCType.TIME_WITH_TIMEZONE                                   => JDBCTimeCodec
       case JDBCType.TIMESTAMP | JDBCType.TIMESTAMP_WITH_TIMEZONE                         => JDBCTimestampCodec
       case JDBCType.ARRAY                                                                => JDBCArrayCodec
       case JDBCType.JAVA_OBJECT                                                          => JDBCJavaObjectCodec
+      case JDBCType.ROWID                                                                => JDBCRowIdCodec
+      case other                                                                         => throw new UnsupportedOperationException(s"Unsupported JDBC type: ${other}")
     }
 
   }
@@ -184,6 +165,7 @@ object JDBCCodec {
       }
     }
   }
+
   object JDBCTimeCodec extends JDBCColumnCodec {
     override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
       // Use the string representation of java.sql.Time
@@ -255,6 +237,17 @@ object JDBCCodec {
       } else {
         // Just store the string representation of the object
         StringCodec.pack(p, obj.toString)
+      }
+    }
+  }
+
+  object JDBCRowIdCodec extends JDBCColumnCodec {
+    override def pack(p: Packer, rs: ResultSet, colIndex: Int): Unit = {
+      val v = rs.getRowId(colIndex)
+      if (rs.wasNull()) {
+        p.packNil
+      } else {
+        p.packString(v.toString)
       }
     }
   }
