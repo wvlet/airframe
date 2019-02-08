@@ -25,7 +25,11 @@ case class ServerAddress(host: String,
                          // http or https
                          scheme: Option[String] = None) {
   override def toString: String = hostAndPort
-  def hostAndPort: String       = s"${host}:${port}"
+
+  // Returns host:port string without the protcol scheme like http://, https://
+  def hostAndPort: String = s"${host}:${port}"
+
+  // Returns URI with the protocol schema (if specified)
   def uri: String = {
     val prefix = scheme
       .map { x =>
