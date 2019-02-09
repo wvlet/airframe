@@ -102,5 +102,6 @@ object HttpRecord extends LogSupport {
       .mapMsgPackRows(msgpack => recordCodec.unpackBytes(msgpack))
       .filter(_.isDefined)
       .map(_.get)
+      .toSeq
   }
 }

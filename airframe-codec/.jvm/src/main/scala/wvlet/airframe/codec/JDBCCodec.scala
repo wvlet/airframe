@@ -44,14 +44,17 @@ object JDBCCodec extends LogSupport {
       }
     }
 
-    def mapMsgPackRows[U](f: Array[Byte] => U): Seq[U] = {
-      val b = Seq.newBuilder[U]
-      while (rs.next()) {
+    private class RStoMsgPackIterator[A](f: Array[Byte] => A) extends Iterator[A] {
+      override def hasNext: Boolean = rs.next()
+      override def next(): A = {
         val p = MessagePack.newBufferPacker
         packRow(p)
-        b += f(p.toByteArray)
+        f(p.toByteArray)
       }
-      b.result()
+    }
+
+    def mapMsgPackRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+      new RStoMsgPackIterator[U](f)
     }
 
     def packRow(p: Packer): Unit = {
