@@ -61,12 +61,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
         prepare.setInt(2, rh)
         prepare.setInt(3, hitCount)
     } { rs =>
-      // TODO: Migrate JDBC ResultSet reader to airframe-codec
-      val b = Seq.newBuilder[HttpRecord]
-      while (rs.next()) {
-        b += HttpRecord.read(rs)
-      }
-      b.result().headOption
+      HttpRecord.read(rs).headOption
     }
   }
 

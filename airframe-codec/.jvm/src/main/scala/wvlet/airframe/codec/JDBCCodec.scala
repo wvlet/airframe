@@ -44,6 +44,16 @@ object JDBCCodec extends LogSupport {
       }
     }
 
+    def mapMsgPackRows[U](f: Array[Byte] => U): Seq[U] = {
+      val b = Seq.newBuilder[U]
+      while (rs.next()) {
+        val p = MessagePack.newBufferPacker
+        packRow(p)
+        b += f(p.toByteArray)
+      }
+      b.result()
+    }
+
     def packRow(p: Packer): Unit = {
       p.packArrayHeader(columnCount)
       var col = 1
