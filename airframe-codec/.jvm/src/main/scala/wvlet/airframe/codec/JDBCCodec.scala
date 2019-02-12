@@ -44,6 +44,19 @@ object JDBCCodec extends LogSupport {
       }
     }
 
+    private class RStoMsgPackIterator[A](f: Array[Byte] => A) extends Iterator[A] {
+      override def hasNext: Boolean = rs.next()
+      override def next(): A = {
+        val p = MessagePack.newBufferPacker
+        packRow(p)
+        f(p.toByteArray)
+      }
+    }
+
+    def mapMsgPackRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+      new RStoMsgPackIterator[U](f)
+    }
+
     def packRow(p: Packer): Unit = {
       p.packArrayHeader(columnCount)
       var col = 1

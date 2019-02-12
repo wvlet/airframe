@@ -18,10 +18,10 @@ import java.time.Instant
 
 import com.twitter.finagle.http.{Response, Status, Version}
 import com.twitter.io.Buf
-import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodec}
+import wvlet.airframe.codec._
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.recorder.HttpRecord.headerCodec
+import wvlet.log.LogSupport
 
 /**
   * HTTP response record that will be stored to the database
@@ -76,9 +76,9 @@ case class HttpRecord(session: String,
   }
 }
 
-object HttpRecord {
-  private[recorder] val headerCodec = MessageCodec.of[Map[String, String]]
-
+object HttpRecord extends LogSupport {
+  private[recorder] val headerCodec                               = MessageCodec.of[Map[String, String]]
+  private[recorder] val recordCodec                               = MessageCodec.of[HttpRecord]
   private[recorder] def createTableSQL(tableName: String): String =
     // TODO: Add a method to generate this SQL statement in airframe-codec
     s"""create table if not exists "${tableName}" (
@@ -96,24 +96,12 @@ object HttpRecord {
        |)
      """.stripMargin
 
-  private def decodeJsonMap(json: String): Map[String, String] = {
-    headerCodec.unpackMsgPack(StringCodec.toMsgPack(json)).getOrElse(Map.empty)
-  }
-
-  private[recorder] def read(rs: ResultSet): HttpRecord = {
-    // TODO support reading json values embedded as string in airframe-codec
-    HttpRecord(
-      session = rs.getString(1),
-      requestHash = rs.getInt(2),
-      method = rs.getString(3),
-      destHost = rs.getString(4),
-      path = rs.getString(5),
-      requestHeader = decodeJsonMap(rs.getString(6)),
-      requestBody = rs.getString(7),
-      responseCode = rs.getInt(8),
-      responseHeader = decodeJsonMap(rs.getString(9)),
-      responseBody = rs.getString(10),
-      createdAt = Instant.parse(rs.getString(11))
-    )
+  private[recorder] def read(rs: ResultSet): Seq[HttpRecord] = {
+    val resultSetCodec = JDBCCodec(rs)
+    resultSetCodec
+      .mapMsgPackRows(msgpack => recordCodec.unpackBytes(msgpack))
+      .filter(_.isDefined)
+      .map(_.get)
+      .toSeq
   }
 }
