@@ -34,7 +34,7 @@ ga('send', 'pageview');
             <span class="nd">@option</span><span class="o">(</span><span class="n">prefix</span> <span class="k">=</span> <span class="s">"-p"</span><span class="o">,</span> <span class="n">description</span> <span class="k">=</span> <span class="s">"port number"</span><span class="o">)</span> 
             <span class="n">port</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">8080</span><span class="o">)</span> <span class="o">{</span>
 
-   <span class="nd">@defaultCommand</span>         
+   <span class="nd">@command</span><span class="o">(</span><span class="n">isDefault</span> <span class="k">=</span> <span class="kc">true</span><span class="o">)</span>
    <span class="k">def</span> <span class="n">default</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
      <span class="n">println</span><span class="o">(</span><span class="n">s</span><span class="s">"Hello airframe. port:${port}"</span><span class="o">)</span>
    <span class="o">}</span>
@@ -84,11 +84,7 @@ ga('send', 'pageview');
   <li><code class="highlighter-rouge">@command</code>
     <ul>
       <li>Defining function or class as a command module. You can specify <code class="highlighter-rouge">description</code> and (one-line) <code class="highlighter-rouge">usage</code> of the command in this annotation.</li>
-    </ul>
-  </li>
-  <li><code class="highlighter-rouge">@defaultCommand</code>
-    <ul>
-      <li>If no sub-command name is given, the function annotated with this annotation will be executed.</li>
+      <li>If no sub command name is given, a function annotated with <code class="highlighter-rouge">@command(isDefault = true)</code>  will be executed as the default command.</li>
     </ul>
   </li>
 </ul>
@@ -112,7 +108,7 @@ ga('send', 'pageview');
 <span class="k">class</span> <span class="nc">MyApp</span><span class="o">(</span><span class="n">g</span><span class="k">:</span><span class="kt">GlobalOption</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">LogSupport</span> <span class="o">{</span>
   <span class="nc">Logger</span><span class="o">.</span><span class="n">setDefaultLogLevel</span><span class="o">(</span><span class="n">g</span><span class="o">.</span><span class="n">loglevel</span><span class="o">)</span>
 
-  <span class="nd">@defaultCommand</span>
+  <span class="nd">@command</span><span class="o">(</span><span class="n">isDefault</span> <span class="k">=</span> <span class="kc">true</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">default</span> <span class="o">{</span>
     <span class="n">println</span><span class="o">(</span><span class="s">"Type --help to display the list of commands"</span><span class="o">)</span>
   <span class="o">}</span>
