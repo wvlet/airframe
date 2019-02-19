@@ -288,7 +288,7 @@ object LauncherTest {
 
   @command(usage = "(sub command) [opts]", description = "simple command set")
   class SimpleCommandSet extends LogSupport {
-    @defaultCommand
+    @command(isDefault = true)
     def default: Unit = {
       println(DEFAULT_MESSAGE)
     }

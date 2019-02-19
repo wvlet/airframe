@@ -40,6 +40,7 @@ object Launcher extends LogSupport {
 
   /**
     * Create a new Launcher of the given type
+    *
     * @tparam A
     * @return
     */
@@ -57,6 +58,7 @@ object Launcher extends LogSupport {
 
   /**
     * Create a launcher for a class
+    *
     * @return
     */
   private[launcher] def newCommandLauncher(surface: Surface, name: String, description: String): CommandLauncher = {
@@ -85,7 +87,10 @@ object Launcher extends LogSupport {
       .methodsOf(surface)
       .find { m =>
         import wvlet.airframe.surface.reflect._
-        m.findAnnotationOf[defaultCommand].isDefined
+        m.findAnnotationOf[command] match {
+          case Some(cmd) => cmd.isDefault
+          case None      => false
+        }
       }
       .map { m =>
         { li: LauncherInstance =>
@@ -148,6 +153,7 @@ class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: Comma
 
   /**
     * Set a function to be used when there is no command is specified
+    *
     * @param command
     * @tparam U
     * @return
@@ -174,6 +180,7 @@ class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: Comma
 
   /**
     * Add a sub command module to the launcher
+    *
     * @param subCommandName
     * @param description
     * @tparam A
@@ -190,6 +197,7 @@ class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: Comma
 
 /**
   * Command execution results
+  *
   * @param executedModule
   * @param result
   */

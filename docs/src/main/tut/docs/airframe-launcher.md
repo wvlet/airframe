@@ -30,7 +30,7 @@ class MyApp(@option(prefix = "-h,--help", description = "display help messages",
             @option(prefix = "-p", description = "port number") 
             port: Int = 8080) {
 
-   @defaultCommand         
+   @command(isDefault = true)
    def default: Unit = {
      println(s"Hello airframe. port:${port}")
    }
@@ -68,11 +68,10 @@ usage: myapp [options]
 - `@option` options 
   - You can specify multiple option prefixes (e.g., `-h,--help`) for the same option
 - `@argument`
-  - For mapping non-option arguments. If you want to handle multiple arguments, use `Seq[String]`, `Array[String]` types.  
+  - For mapping non-option arguments. If you want to handle multiple arguments, use `Seq[String]`, `Array[String]` types.
 - `@command`
   - Defining function or class as a command module. You can specify `description` and (one-line) `usage` of the command in this annotation.
-- `@defaultCommand`
-  - If no sub-command name is given, the function annotated with this annotation will be executed.
+  - If no sub command name is given, a function annotated with `@command(isDefault = true)`  will be executed as the default command.
 
 ## Defining Multiple Sub Commands
 
@@ -94,7 +93,7 @@ case class GlobalOption(
 class MyApp(g:GlobalOption) extends LogSupport {
   Logger.setDefaultLogLevel(g.loglevel)
 
-  @defaultCommand
+  @command(isDefault = true)
   def default {
     println("Type --help to display the list of commands")
   }
