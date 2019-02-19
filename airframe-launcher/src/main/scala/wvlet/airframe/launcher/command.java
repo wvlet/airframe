@@ -23,10 +23,9 @@ import java.lang.annotation.Target;
  * Annotation for methods that can be invoked as commands
  *
  * @author leo
- *
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.METHOD })
+@Target({ElementType.METHOD})
 public @interface command {
 
     /**
@@ -36,8 +35,11 @@ public @interface command {
     String description() default "";
 
     /**
+     * If this is true, this command will be used as the default command of this command module.
+     */
+    boolean isDefault() default false;
+    /**
      * One-line usage note e.g. "$ command name (argument)"
-     * @return
      */
     String usage() default "";
 }
