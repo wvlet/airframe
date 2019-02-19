@@ -68,6 +68,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   /**
     * Generates a minimized design by removing overwritten bindings
+    *
     * @return
     */
   def minimize: Design = {
@@ -139,6 +140,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
     * A helper method of creating a new session and an instance of A.
     * This method is useful when you only need to use A as an entry point of your program.
     * After executing the body, the sesion will be closed.
+    *
     * @param body
     * @tparam A
     * @return
@@ -157,6 +159,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
     *
     * With this method, the session will not start automatically. You need to explicitly call
     * session.start and session.shutdown to start/terminate the lifecycle of objects
+    *
     * @return
     */
   def newSession: Session = {
@@ -194,4 +197,7 @@ object Design {
     * Using Vector as a binding holder for performance and serialization reason
     */
   private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
+
+  // Empty design
+  def empty: Design = blanc
 }
