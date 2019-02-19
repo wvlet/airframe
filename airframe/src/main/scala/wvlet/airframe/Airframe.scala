@@ -17,5 +17,5 @@ package wvlet.airframe
   * If importing wvlet.airframe._ is not preferable, Airframe.newDesign can be used.
   */
 object Airframe {
-  def newDesign: Design = Design.blanc
+  def newDesign: Design = Design.empty
 }

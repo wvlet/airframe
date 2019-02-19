@@ -35,7 +35,7 @@ object DesignTest {
   type DevelopmentMessage = Message
   type ProductionString   = String
 
-  val d0 = Design.blanc
+  val d0 = Design.empty
 
   val d1 =
     d0.bind[Message].to[Hello]
@@ -59,7 +59,7 @@ class DesignTest extends AirframeSpec {
 
   "Design" should {
     "be immutable" in {
-      d0 shouldEqual Design.blanc
+      d0 shouldEqual Design.empty
 
       val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
       d2 should not equal (d1)

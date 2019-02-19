@@ -35,7 +35,7 @@ package object airframe extends LogSupport {
     * val d = design.bind[X]
     * </code>
     */
-  def newDesign: Design = Design.blanc
+  def newDesign: Design = Design.empty
 
   /**
     * Create an empty design, which sends life cycle logs to debug log level
@@ -44,6 +44,7 @@ package object airframe extends LogSupport {
 
   /**
     * Inject a singleton of A
+    *
     * @tparam A
     */
   def bind[A]: A = macro bindImpl[A]
