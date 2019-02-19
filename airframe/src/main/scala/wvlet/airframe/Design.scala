@@ -192,12 +192,12 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
 object Design {
 
-  // Empty design
-  val empty: Design = blanc
-
   /**
     * Empty design.
     * Using Vector as a binding holder for performance and serialization reason
     */
   private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
+
+  // Empty design
+  def empty: Design = blanc
 }
