@@ -30,20 +30,18 @@ class JSONCodecTest extends AirframeSpec {
     }
   }
 
-  "JSONCodec" should {
-    "serialize json into msgpack" in {
-      check(
-        """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}""")
-      check("[1]")
-      check("[12342345324234234]")
-      check("[0.12]")
-      check("[\"hello world\"]")
-      check("[true]")
-      check("[false]")
-      check("[null]")
-      check("""[1, 2, 3.0, "apple", true, false]""")
-      check("{}")
-      check("[]")
-    }
+  "serialize json into msgpack" in {
+    check(
+      """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}""")
+    check("[1]")
+    check("[12342345324234234]")
+    check("[0.12]")
+    check("[\"hello world\"]")
+    check("[true]")
+    check("[false]")
+    check("[null]")
+    check("""[1, 2, 3.0, "apple", true, false]""")
+    check("{}")
+    check("[]")
   }
 }
