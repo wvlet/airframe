@@ -5,6 +5,20 @@ title: Release Notes
 
 # Release Notes
 
+## 19.2.0
+- From this version, we will use `YY.MM.(patch)` version numbers. 
+-  Add codecs for airframe-metrics ([#403](https://github.com/wvlet/airframe/issues/403)) [[112d2f6](https://github.com/wvlet/airframe/commit/112d2f6)]
+-  Add MessageCodec.unpackJson ([#402](https://github.com/wvlet/airframe/issues/402)) [[cc0f9b3](https://github.com/wvlet/airframe/commit/cc0f9b3)]
+-  Add Design.empty ([#398](https://github.com/wvlet/airframe/issues/398)) [[bbeaa06](https://github.com/wvlet/airframe/commit/bbeaa06)]
+-  Use @command(isDefault=true) instead of @defaultCommand ([#397](https://github.com/wvlet/airframe/issues/397)) [[55439e5](https://github.com/wvlet/airframe/commit/55439e5)]
+-  Add translucent background logo [[e2b0ac2](https://github.com/wvlet/airframe/commit/e2b0ac2)]
+-  Add codecs for converting JDBC ResultSets to msgpack ([#391](https://github.com/wvlet/airframe/issues/391)) [[9d0f29b](https://github.com/wvlet/airframe/commit/9d0f29b)]
+-  Add ServerAddress for passing host and port data ([#390](https://github.com/wvlet/airframe/issues/390)) [[3b7e083](https://github.com/wvlet/airframe/commit/3b7e083)]
+-  Upgrade to scala.js 0.26 ([#388](https://github.com/wvlet/airframe/issues/388)) [[a415c71](https://github.com/wvlet/airframe/commit/a415c71)]
+-  Add airframe-http-recorder ([#380](https://github.com/wvlet/airframe/issues/380)) [[d34702f](https://github.com/wvlet/airframe/commit/d34702f)]
+-  Upgrade Finagle to 19.1.0 ([#379](https://github.com/wvlet/airframe/issues/379)) [[a211073](https://github.com/wvlet/airframe/commit/a211073)]
+-  Add airframe-canvas, an off-heap memory buffer library ([#367](https://github.com/wvlet/airframe/issues/367)) [[e55a3f4](https://github.com/wvlet/airframe/commit/e55a3f4)]
+
 ## 0.80
 -  Add ArrayJSONCodec to parse JSON array string ([#375](https://github.com/wvlet/airframe/issues/375)) [[8c624a7](https://github.com/wvlet/airframe/commit/8c624a7)]
 -  Get ConfigHolders directly from Design ([#374](https://github.com/wvlet/airframe/issues/374)) [[da4d3ba](https://github.com/wvlet/airframe/commit/da4d3ba)]
