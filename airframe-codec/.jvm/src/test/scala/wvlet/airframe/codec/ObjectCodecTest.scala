@@ -71,15 +71,24 @@ class ObjectCodecTest extends CodecSpec {
     val codec = MessageCodec.of[A3]
 
     {
-      val msgpack = JSONCodec.toMsgPack("""{"opt":null, "str":"hello"}""")
+      val json    = """{"opt":null, "str":"hello"}"""
+      val a3      = A3(None, "hello")
+      val msgpack = JSONCodec.toMsgPack(json)
       val a       = codec.unpackMsgPack(msgpack)
-      a.get shouldBe A3(None, "hello")
+      a shouldBe Some(a3)
+
+      // Helper methos
+      codec.unpackJson(json) shouldBe Some(a3)
     }
 
     {
-      val msgpack = JSONCodec.toMsgPack("""{"opt":"hello", "str":"world"}""")
+      val json    = """{"opt":"hello", "str":"world"}"""
+      val a3      = A3(Some("hello"), "world")
+      val msgpack = JSONCodec.toMsgPack(json)
       val a       = codec.unpackMsgPack(msgpack)
-      a.get shouldBe A3(Some("hello"), "world")
+      a shouldBe Some(a3)
+
+      codec.unpackJson(json) shouldBe Some(a3)
     }
   }
 

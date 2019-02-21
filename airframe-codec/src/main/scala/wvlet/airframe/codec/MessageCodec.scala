@@ -46,6 +46,10 @@ trait MessageCodec[A] {
       Some(v.getLastValue.asInstanceOf[A])
     }
   }
+
+  def unpackJson(json: String): Option[A] = {
+    unpackBytes(JSONCodec.toMsgPack(json))
+  }
 }
 
 trait MessageValueCodec[A] extends MessageCodec[A] {
