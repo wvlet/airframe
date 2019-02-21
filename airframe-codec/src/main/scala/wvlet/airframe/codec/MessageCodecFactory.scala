@@ -18,7 +18,10 @@ object MessageCodecFactory {
   }
 
   def defaultFactory: MessageCodecFactory =
-    new MessageCodecFactory(StandardCodec.standardCodec ++ Compat.platformSpecificCodecs)
+    new MessageCodecFactory(
+      StandardCodec.standardCodec ++
+        MetricsCodec.metricsCodec ++
+        Compat.platformSpecificCodecs)
 
   private[codec] def defaultFinder(factory: MessageCodecFactory,
                                    seenSet: Set[Surface]): PartialFunction[Surface, MessageCodec[_]] = {

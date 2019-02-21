@@ -504,7 +504,7 @@ lazy val codec =
     .jsSettings(
       jsBuildSettings
     )
-    .dependsOn(log, surface, msgpack, json, airframeSpec % "test")
+    .dependsOn(log, surface, msgpack, metrics, json, airframeSpec % "test")
 
 lazy val codecJVM = codec.jvm
 lazy val codecJS  = codec.js
