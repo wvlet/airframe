@@ -35,19 +35,23 @@ package object fluentd {
                   ackResponseMode: Boolean = true,
                   sslEnabled: Boolean = true,
                   fileBackupDir: String = null,
-                  errorHandler: ErrorHandler = null) = {
+                  errorHandler: ErrorHandler = null): Design = {
+
+    // We need to extract this code probably because of a bug of Scala compiler.
+    def newFluency: Fluency = {
+      val builder = new FluencyBuilderForFluentd()
+      builder.setMaxBufferSize(maxBufferSize)
+      builder.setFlushIntervalMillis(flushIntervalMillis)
+      builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+      builder.setAckResponseMode(ackResponseMode)
+      builder.setSslEnabled(sslEnabled)
+      builder.setFileBackupDir(fileBackupDir)
+      builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+      builder.build(host, port)
+    }
+
     newDesign
-      .bind[Fluency].toInstance {
-        val builder = new FluencyBuilderForFluentd()
-        builder.setMaxBufferSize(maxBufferSize)
-        builder.setFlushIntervalMillis(flushIntervalMillis)
-        builder.setJvmHeapBufferMode(jvmHeapBufferMode)
-        builder.setAckResponseMode(ackResponseMode)
-        builder.setSslEnabled(sslEnabled)
-        builder.setFileBackupDir(fileBackupDir)
-        builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-        builder.build(host, port)
-      }
+      .bind[Fluency].toInstance(newFluency)
       .bind[FluentdClient].to[FluencyClient]
   }
 
@@ -59,18 +63,21 @@ package object fluentd {
                        jvmHeapBufferMode: Boolean = true,
                        fileBackupDir: String = null,
                        errorHandler: ErrorHandler = null): Design = {
-    newDesign
-      .bind[Fluency].toInstance {
-        val builder = new FluencyBuilderForTreasureData()
-        builder.setMaxBufferSize(maxBufferSize)
-        builder.setFlushIntervalMillis(flushIntervalMillis)
-        builder.setJvmHeapBufferMode(jvmHeapBufferMode)
-        builder.setFileBackupDir(fileBackupDir)
-        builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-        builder.build(apikey, host)
-      }
-      .bind[FluentdClient].to[FluencyClient]
 
+    // We need to extract this code probably because of a bug of Scala compiler
+    def newFluency: Fluency = {
+      val builder = new FluencyBuilderForTreasureData()
+      builder.setMaxBufferSize(maxBufferSize)
+      builder.setFlushIntervalMillis(flushIntervalMillis)
+      builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+      builder.setFileBackupDir(fileBackupDir)
+      builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+      builder.build(apikey, host)
+    }
+
+    newDesign
+      .bind[Fluency].toInstance(newFluency)
+      .bind[FluentdClient].to[FluencyClient]
   }
 
   def withConsoleLogging =
