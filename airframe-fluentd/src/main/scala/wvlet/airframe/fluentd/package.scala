@@ -12,7 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import org.komamitsu.fluency.Fluency
+import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
 import org.komamitsu.fluency.ingester.sender.ErrorHandler
+import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
 
 /**
   *
@@ -21,33 +24,54 @@ package object fluentd {
 
   /**
     * A design for using Fluency-backed FluentdClient
+    *
     * @return
     */
   def withFluency(host: String = "127.0.0.1",
                   port: Int = 24224,
-                  useExtendedEventTime: Boolean = false,
                   maxBufferSize: Long = 512 * 1024 * 1024,
                   flushIntervalMillis: Int = 600,
                   jvmHeapBufferMode: Boolean = true,
                   ackResponseMode: Boolean = true,
                   sslEnabled: Boolean = true,
                   fileBackupDir: String = null,
-                  errorHandler: ErrorHandler = null) =
+                  errorHandler: ErrorHandler = null) = {
     newDesign
-      .bind[FluencyClientConfig].toInstance(
-        FluencyClientConfig(
-          host = host,
-          port = port,
-          useExtendedEventTime = useExtendedEventTime,
-          maxBufferSize = maxBufferSize,
-          flushIntervalMillis = flushIntervalMillis,
-          jvmHeapBufferMode = jvmHeapBufferMode,
-          ackResponseMode = ackResponseMode,
-          sslEnabled = sslEnabled,
-          fileBackupDir = fileBackupDir,
-          errorHandler = errorHandler
-        ))
+      .bind[Fluency].toInstance {
+        val builder = new FluencyBuilderForFluentd()
+        builder.setMaxBufferSize(maxBufferSize)
+        builder.setFlushIntervalMillis(flushIntervalMillis)
+        builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+        builder.setAckResponseMode(ackResponseMode)
+        builder.setSslEnabled(sslEnabled)
+        builder.setFileBackupDir(fileBackupDir)
+        builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+        builder.build(host, port)
+      }
       .bind[FluentdClient].to[FluencyClient]
+  }
+
+  def withFluencyForTD(apikey: String,
+                       host: String = "api.treasuredata.com",
+                       port: Int = 443,
+                       maxBufferSize: Long = 512 * 1024 * 1024,
+                       flushIntervalMillis: Int = 600,
+                       jvmHeapBufferMode: Boolean = true,
+                       fileBackupDir: String = null,
+                       errorHandler: ErrorHandler = null): Design = {
+    newDesign
+      .bind[Fluency].toInstance {
+        val builder = new FluencyBuilderForTreasureData()
+        builder.setMaxBufferSize(maxBufferSize)
+        builder.setFlushIntervalMillis(flushIntervalMillis)
+        builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+        builder.setFileBackupDir(fileBackupDir)
+        builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+        builder.build(apikey, host)
+      }
+      .bind[FluentdClient].to[FluencyClient]
+
+  }
 
   def withConsoleLogging =
     newDesign

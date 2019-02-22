@@ -14,40 +14,20 @@
 package wvlet.airframe.fluentd
 import java.time.Instant
 
-import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
-import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
 import wvlet.airframe._
 
 case class FluencyClientConfig(
-    host: String = "127.0.0.1",
-    port: Int = 24224,
     // Use the extended EventTime timestamps
     // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
     useExtendedEventTime: Boolean = false,
-    maxBufferSize: Long = 512 * 1024 * 1024,
-    flushIntervalMillis: Int = 600,
-    jvmHeapBufferMode: Boolean = true,
-    ackResponseMode: Boolean = true,
-    sslEnabled: Boolean = true,
-    fileBackupDir: String = null,
-    errorHandler: ErrorHandler = null
 )
 
 trait FluencyClient extends FluentdClient with LogSupport {
   private val fluencyClientConfig = bind[FluencyClientConfig]
-  private val fluency: Fluency = bind { (fluencyClientConfig: FluencyClientConfig) =>
-    val builder = new FluencyBuilderForFluentd()
-    builder.setMaxBufferSize(fluencyClientConfig.maxBufferSize)
-    builder.setFlushIntervalMillis(fluencyClientConfig.flushIntervalMillis)
-    builder.setJvmHeapBufferMode(fluencyClientConfig.jvmHeapBufferMode)
-    builder.setAckResponseMode(fluencyClientConfig.ackResponseMode)
-    builder.setSslEnabled(fluencyClientConfig.sslEnabled)
-    builder.setFileBackupDir(fluencyClientConfig.fileBackupDir)
-    builder.setErrorHandler(fluencyClientConfig.errorHandler)
-    builder.build(fluencyClientConfig.host, fluencyClientConfig.port)
-  }.onStart { x =>
+  private val fluency: Fluency = bind[Fluency]
+    .onStart { x =>
       info(s"Starting Fluency")
     }
     .onShutdown { x =>
