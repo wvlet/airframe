@@ -24,7 +24,7 @@ class FluentdLogger(tagPrefix: Option[String], useExtendedEventTime: Boolean, fl
 
   info(s"Starting Fluency")
 
-  override def withTagPrefix(newTagPrefix: String): this.type = {
+  override def withTagPrefix(newTagPrefix: String): FluentdLogger = {
     new FluentdLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
   }
 

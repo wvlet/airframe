@@ -40,9 +40,9 @@ abstract class MetricLogger(protected val tagPrefix: Option[String] = None) exte
   }
 }
 
-class TypedMetricLogger[T](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
-  def emit(tag: String, event: T): Unit = {
-    fluentdClient.emitMsgPack(tag, codec.toMsgPack(event))
+class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
+  def emit(event: T): Unit = {
+    fluentdClient.emitMsgPack(event.tag, codec.toMsgPack(event))
   }
 }
 
@@ -56,7 +56,7 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) {
 
   private val loggerCache = new ConcurrentHashMap[Surface, TypedMetricLogger[_]]().asScala
 
-  def getTypedLogger[T: ru.TypeTag]: TypedMetricLogger[T] = {
+  def getTypedLogger[T <: TaggedMetric: ru.TypeTag]: TypedMetricLogger[T] = {
     loggerCache
       .getOrElseUpdate(Surface.of[T], {
         val codec = MessageCodec.of[T]
@@ -64,7 +64,7 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) {
       }).asInstanceOf[TypedMetricLogger[T]]
   }
 
-  def getTypedLoggerWithTagPrefix[T: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
+  def getTypedLoggerWithTagPrefix[T <: TaggedMetric: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
     loggerCache
       .getOrElseUpdate(Surface.of[T], {
         val codec = MessageCodec.of[T]
