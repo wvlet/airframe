@@ -18,8 +18,8 @@ import javax.annotation.PreDestroy
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
 
-class FluentdLogger(tagPrefix: Option[String], useExtendedEventTime: Boolean, fluency: Fluency)
-    extends MetricLogger(tagPrefix)
+class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: Boolean, fluency: Fluency)
+    extends MetricLogger
     with LogSupport {
 
   info(s"Starting Fluency")

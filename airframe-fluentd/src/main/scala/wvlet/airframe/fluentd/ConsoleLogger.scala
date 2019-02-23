@@ -18,7 +18,7 @@ import wvlet.log.LogSupport
 /**
   * Fluentd client implementation for debugging. This just emits metrics to the console log
   */
-class ConsoleLogger(tagPrefix: Option[String]) extends MetricLogger(tagPrefix) with LogSupport {
+class ConsoleLogger(val tagPrefix: Option[String] = None) extends MetricLogger with LogSupport {
 
   override def withTagPrefix(newTagPrefix: String): ConsoleLogger = {
     new ConsoleLogger(Some(newTagPrefix))

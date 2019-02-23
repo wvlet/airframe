@@ -17,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.surface.Surface
 
-abstract class MetricLogger(protected val tagPrefix: Option[String] = None) extends AutoCloseable {
+abstract class MetricLogger extends AutoCloseable {
+  protected def tagPrefix: Option[String]
   def withTagPrefix(newTagPrefix: String): MetricLogger
 
   protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
@@ -73,5 +74,5 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) {
   }
 }
 
-class TDLoggerFactory(tdLogger: TDLogger)                extends MetricLoggerFactory(tdLogger)
-class FluentdLoggerFactory(fluentdLogger: FluentdLogger) extends MetricLoggerFactory(fluentdLogger)
+//class TDLoggerFactory(tdLogger: TDLogger)                extends MetricLoggerFactory(tdLogger)
+//class FluentdLoggerFactory(fluentdLogger: FluentdLogger) extends MetricLoggerFactory(fluentdLogger)

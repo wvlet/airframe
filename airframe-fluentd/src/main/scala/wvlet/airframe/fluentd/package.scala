@@ -83,7 +83,7 @@ package object fluentd {
     }
 
     newDesign
-      .bind[TDLogger].toInstance(newFluency)
+      .bind[MetricLogger].toInstance(newFluency)
   }
 
   def withConsoleLogging =

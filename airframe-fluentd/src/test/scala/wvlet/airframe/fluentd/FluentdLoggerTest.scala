@@ -14,6 +14,7 @@
 package wvlet.airframe.fluentd
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe._
+import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
 
 /**
   *
@@ -40,4 +41,31 @@ class FluentdLoggerTest extends AirframeSpec {
       f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
   }
+
+  "generate multiple loggers" in {
+
+    val d =
+      newDesign
+        .bind[Logger1].toInstance(new ConsoleLogger(Some("l1")))
+        .bind[Logger2].toInstance(new ConsoleLogger(Some("l2")))
+
+    d.withSession { s =>
+      val f1 = s.build[LoggerFactory1]
+      val f2 = s.build[LoggerFactory2]
+
+      f1.getLogger.emit("a", Map("value" -> 1))
+      f2.getLogger.emit("a", Map("value" -> 1))
+    }
+
+  }
+}
+
+object FluentdLoggerTest {
+
+  type Logger1 = MetricLogger
+  type Logger2 = MetricLogger
+
+  class LoggerFactory1(l1: Logger1) extends MetricLoggerFactory(l1)
+  class LoggerFactory2(l2: Logger2) extends MetricLoggerFactory(l2)
+
 }
