@@ -12,8 +12,64 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
+import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
+import org.komamitsu.fluency.ingester.sender.ErrorHandler
+import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
+import wvlet.airframe.Design
 
 /**
   *
   */
-object Fluentd {}
+object Fluentd {
+
+  /**
+    * A design for using Fluency-backed FluentdClient
+    *
+    * @return
+    */
+  def newFluentdLogger(host: String = "127.0.0.1",
+                       port: Int = 24224,
+                       // Use the extended EventTime timestamps
+                       // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+                       useExtendedEventTime: Boolean = false,
+                       maxBufferSize: Long = 512 * 1024 * 1024,
+                       flushIntervalMillis: Int = 600,
+                       jvmHeapBufferMode: Boolean = true,
+                       ackResponseMode: Boolean = true,
+                       sslEnabled: Boolean = true,
+                       fileBackupDir: String = null,
+                       errorHandler: ErrorHandler = null): FluentdLogger = {
+    // We need to extract this code probably because of a bug of Scala compiler.
+    val builder = new FluencyBuilderForFluentd()
+    builder.setMaxBufferSize(maxBufferSize)
+    builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+    builder.setAckResponseMode(ackResponseMode)
+    builder.setSslEnabled(sslEnabled)
+    builder.setFileBackupDir(fileBackupDir)
+    builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+    new FluentdLogger(None, useExtendedEventTime, builder.build(host, port))
+  }
+
+  def newTDLogger(apikey: String,
+                  host: String = "api.treasuredata.com",
+                  port: Int = 443,
+                  maxBufferSize: Long = 512 * 1024 * 1024,
+                  flushIntervalMillis: Int = 600,
+                  jvmHeapBufferMode: Boolean = true,
+                  // Use the extended EventTime timestamps
+                  // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+                  useExtededEventTime: Boolean = false,
+                  fileBackupDir: String = null,
+                  errorHandler: ErrorHandler = null): FluentdLogger = {
+
+    val builder = new FluencyBuilderForTreasureData()
+    builder.setMaxBufferSize(maxBufferSize)
+    builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setJvmHeapBufferMode(jvmHeapBufferMode)
+    builder.setFileBackupDir(fileBackupDir)
+    builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
+    builder.build(apikey, host)
+    new FluentdLogger(None, useExtededEventTime, builder.build(apikey, host))
+  }
+}

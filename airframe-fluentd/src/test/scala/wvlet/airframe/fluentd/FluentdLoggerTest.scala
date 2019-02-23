@@ -35,7 +35,7 @@ class FluentdLoggerTest extends AirframeSpec {
 
   "should support console logging" in {
     val d =
-      fluentd.withConsoleLogging.noLifeCycleLogging
+      newDesign.bind[MetricLogger].to[ConsoleLogger]
 
     d.build[MetricLogger] { f =>
       f.emit("data", Map("id" -> 1, "event" -> "GET"))

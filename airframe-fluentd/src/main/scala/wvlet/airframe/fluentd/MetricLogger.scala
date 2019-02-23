@@ -73,6 +73,3 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) {
       }).asInstanceOf[TypedMetricLogger[T]]
   }
 }
-
-//class TDLoggerFactory(tdLogger: TDLogger)                extends MetricLoggerFactory(tdLogger)
-//class FluentdLoggerFactory(fluentdLogger: FluentdLogger) extends MetricLoggerFactory(fluentdLogger)

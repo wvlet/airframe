@@ -24,9 +24,8 @@ package object fluentd {
   type TDLogger = MetricLogger
 
   /**
-    * A design for using Fluency-backed FluentdClient
+    * A MetricLogger design for sending metrics to Fluentd
     *
-    * @return
     */
   def withFluentdLogger(host: String = "127.0.0.1",
                         port: Int = 24224,
@@ -41,23 +40,25 @@ package object fluentd {
                         fileBackupDir: String = null,
                         errorHandler: ErrorHandler = null): Design = {
 
-    // We need to extract this code probably because of a bug of Scala compiler.
-    def newFluency: FluentdLogger = {
-      val builder = new FluencyBuilderForFluentd()
-      builder.setMaxBufferSize(maxBufferSize)
-      builder.setFlushIntervalMillis(flushIntervalMillis)
-      builder.setJvmHeapBufferMode(jvmHeapBufferMode)
-      builder.setAckResponseMode(ackResponseMode)
-      builder.setSslEnabled(sslEnabled)
-      builder.setFileBackupDir(fileBackupDir)
-      builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-      new FluentdLogger(None, useExtendedEventTime, builder.build(host, port))
-    }
-
     newDesign
-      .bind[MetricLogger].toInstance(newFluency)
+      .bind[MetricLogger].toInstance(
+        Fluentd.newFluentdLogger(
+          host,
+          port,
+          useExtendedEventTime,
+          maxBufferSize,
+          flushIntervalMillis,
+          jvmHeapBufferMode,
+          ackResponseMode,
+          sslEnabled,
+          fileBackupDir,
+          errorHandler
+        ))
   }
 
+  /**
+    * A MetricLogger design for sending metrics to TD
+    */
   def withTDLogger(apikey: String,
                    host: String = "api.treasuredata.com",
                    port: Int = 443,
@@ -83,10 +84,23 @@ package object fluentd {
     }
 
     newDesign
-      .bind[MetricLogger].toInstance(newFluency)
+      .bind[MetricLogger].toInstance(
+        Fluentd.newTDLogger(
+          apikey,
+          host,
+          port,
+          maxBufferSize,
+          flushIntervalMillis,
+          jvmHeapBufferMode,
+          useExtededEventTime,
+          fileBackupDir,
+          errorHandler
+        )
+      )
   }
 
-  def withConsoleLogging =
+  def withConsoleLogging: Design = {
     newDesign
       .bind[MetricLogger].to[ConsoleLogger]
+  }
 }
