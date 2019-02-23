@@ -21,7 +21,7 @@ import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
   */
 package object fluentd {
 
-  type TDLogger = FluentdLogger
+  type TDLogger = MetricLogger
 
   /**
     * A design for using Fluency-backed FluentdClient
@@ -42,7 +42,7 @@ package object fluentd {
                         errorHandler: ErrorHandler = null): Design = {
 
     // We need to extract this code probably because of a bug of Scala compiler.
-    def newFluency: FluencyLogger = {
+    def newFluency: FluentdLogger = {
       val builder = new FluencyBuilderForFluentd()
       builder.setMaxBufferSize(maxBufferSize)
       builder.setFlushIntervalMillis(flushIntervalMillis)
@@ -51,11 +51,11 @@ package object fluentd {
       builder.setSslEnabled(sslEnabled)
       builder.setFileBackupDir(fileBackupDir)
       builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-      new FluencyLogger(None, useExtendedEventTime, builder.build(host, port))
+      new FluentdLogger(None, useExtendedEventTime, builder.build(host, port))
     }
 
     newDesign
-      .bind[FluentdLogger].toInstance(newFluency)
+      .bind[MetricLogger].toInstance(newFluency)
   }
 
   def withTDLogger(apikey: String,
@@ -71,7 +71,7 @@ package object fluentd {
                    errorHandler: ErrorHandler = null): Design = {
 
     // We need to extract this code probably because of a bug of Scala compiler
-    def newFluency: FluencyLogger = {
+    def newFluency: FluentdLogger = {
       val builder = new FluencyBuilderForTreasureData()
       builder.setMaxBufferSize(maxBufferSize)
       builder.setFlushIntervalMillis(flushIntervalMillis)
@@ -79,7 +79,7 @@ package object fluentd {
       builder.setFileBackupDir(fileBackupDir)
       builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
       builder.build(apikey, host)
-      new FluencyLogger(None, useExtededEventTime, builder.build(apikey, host))
+      new FluentdLogger(None, useExtededEventTime, builder.build(apikey, host))
     }
 
     newDesign
@@ -88,5 +88,5 @@ package object fluentd {
 
   def withConsoleLogging =
     newDesign
-      .bind[FluentdLogger].to[ConsoleFluentdClient]
+      .bind[MetricLogger].to[ConsoleLogger]
 }

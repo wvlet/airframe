@@ -22,13 +22,11 @@ class FluentdLoggerTest extends AirframeSpec {
 
   "should use Fluency as a Fluentd client" in {
     val d = fluentd
-      .withFluency()
-      .bind[FluentdTag].toInstance(FluentdTag(prefix = "mymetric"))
+      .withFluentdLogger()
       .noLifeCycleLogging
 
-    d.build[FluentdLoggerFactory] { f =>
-      val logger      = f.getFluentdLogger
-      val typedLogger = f.getTypedFluentdLogger[A]
+    d.build[MetricLoggerFactory] { f =>
+      val logger = f.getLogger
     // Just test the client initialization
     // More complete test can be found at FluencyTest
     }
@@ -36,11 +34,9 @@ class FluentdLoggerTest extends AirframeSpec {
 
   "should support console logging" in {
     val d =
-      fluentd.withConsoleLogging
-        .bind[FluentdTag].toInstance(FluentdTag(prefix = "metrics"))
-        .noLifeCycleLogging
+      fluentd.withConsoleLogging.noLifeCycleLogging
 
-    d.build[FluentdLogger] { f =>
+    d.build[MetricLogger] { f =>
       f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
   }

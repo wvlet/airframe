@@ -12,65 +12,55 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import java.util.concurrent.ConcurrentHashMap
+import java.time.Instant
 
-import wvlet.airframe.codec.MessageCodec
-import wvlet.airframe.surface.Surface
+import javax.annotation.PreDestroy
+import org.komamitsu.fluency.{EventTime, Fluency}
+import wvlet.log.LogSupport
 
-abstract class FluentdLogger(protected val tagPrefix: Option[String] = None) extends AutoCloseable {
-  def withTagPrefix(newTagPrefix: String): this.type
+class FluentdLogger(tagPrefix: Option[String], useExtendedEventTime: Boolean, fluency: Fluency)
+    extends MetricLogger(tagPrefix)
+    with LogSupport {
 
-  protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
-  protected def emitRawMsgPack(fullTag: String, event: Array[Byte]): Unit
+  info(s"Starting Fluency")
 
-  def emit(tag: String, event: Map[String, Any]): Unit = {
-    emitRaw(enrichTag(tag), event)
+  override def withTagPrefix(newTagPrefix: String): this.type = {
+    new FluentdLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
   }
 
-  def emitMsgPack(tag: String, event: Array[Byte]): Unit = {
-    emitRawMsgPack(enrichTag(tag), event)
+  @PreDestroy
+  def close: Unit = {
+    info(s"Stopping Fluency")
+    fluency.flush()
+    fluency.close()
   }
 
-  private def enrichTag(tag: String): String = {
-    tagPrefix match {
-      case None => tag
-      case Some(prefix) =>
-        s"${prefix}.${tag}"
+  private def getEventTime: EventTime = {
+    val now       = Instant.now()
+    val eventTime = EventTime.fromEpoch(now.getEpochSecond.toInt, now.getNano.toInt)
+    eventTime
+  }
+
+  override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
+    if (useExtendedEventTime) {
+      fluency.emit(fullTag, getEventTime, toJavaMap(event))
+    } else {
+      fluency.emit(fullTag, toJavaMap(event))
     }
   }
-}
-
-class TDLoggerFacotry(tdLogger: TDLogger) extends FluentdLoggerFactory(tdLogger)
-
-class FluentdLoggerFactory(fluentdClient: FluentdLogger) {
-  def getFluentdLogger: FluentdLogger = fluentdClient
-  def getFluentdLoggerWithTagPrefix(tagPrefix: String): FluentdLogger =
-    fluentdClient.withTagPrefix(tagPrefix)
-
-  import scala.collection.JavaConverters._
-  import scala.reflect.runtime.{universe => ru}
-
-  private val loggerCache = new ConcurrentHashMap[Surface, TypedFluentdLogger[_]]().asScala
-
-  def getTypedFluentdLogger[T: ru.TypeTag]: TypedFluentdLogger[T] = {
-    loggerCache
-      .getOrElseUpdate(Surface.of[T], {
-        val codec = MessageCodec.of[T]
-        new TypedFluentdLogger[T](getFluentdLogger, codec)
-      }).asInstanceOf[TypedFluentdLogger[T]]
+  override def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
+    if (useExtendedEventTime) {
+      fluency.emit(tag, getEventTime, event, 0, event.length)
+    } else {
+      fluency.emit(tag, event, 0, event.length)
+    }
   }
 
-  def getTypedFluentdLoggerWithTagPrefix[T: ru.TypeTag](tagPrefix: String): TypedFluentdLogger[T] = {
-    loggerCache
-      .getOrElseUpdate(Surface.of[T], {
-        val codec = MessageCodec.of[T]
-        new TypedFluentdLogger[T](getFluentdLoggerWithTagPrefix(tagPrefix), codec)
-      }).asInstanceOf[TypedFluentdLogger[T]]
+  private def toJavaMap(event: Map[String, Any]): java.util.Map[String, AnyRef] = {
+    import scala.collection.JavaConverters._
+    (for ((k, v) <- event) yield {
+      k -> v.asInstanceOf[AnyRef]
+    }).asJava
   }
-}
 
-class TypedFluentdLogger[T](fluentdClient: FluentdLogger, codec: MessageCodec[T]) {
-  def emit(tag: String, event: T): Unit = {
-    fluentdClient.emitMsgPack(tag, codec.toMsgPack(event))
-  }
 }
