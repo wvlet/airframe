@@ -14,28 +14,23 @@
 package wvlet.airframe.fluentd
 import java.time.Instant
 
+import javax.annotation.PreDestroy
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
-import wvlet.airframe._
 
-case class FluencyClientConfig(
-    // Use the extended EventTime timestamps
-    // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-    useExtendedEventTime: Boolean = false,
-)
+class FluencyLogger(tagPrefix: Option[String], useExtendedEventTime: Boolean, fluency: Fluency)
+    extends FluentdLogger(tagPrefix)
+    with LogSupport {
 
-trait FluencyClient extends FluentdClient with LogSupport {
-  private val fluencyClientConfig = bind[FluencyClientConfig]
-  private val fluency: Fluency = bind[Fluency]
-    .onStart { x =>
-      info(s"Starting Fluency")
-    }
-    .onShutdown { x =>
-      info(s"Stopping Fluency")
-      close
-    }
+  info(s"Starting Fluency")
 
+  override def withTagPrefix(newTagPrefix: String): FluencyLogger = {
+    new FluencyLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
+  }
+
+  @PreDestroy
   def close: Unit = {
+    info(s"Stopping Fluency")
     fluency.flush()
     fluency.close()
   }
@@ -46,18 +41,26 @@ trait FluencyClient extends FluentdClient with LogSupport {
     eventTime
   }
 
-  override protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
-    if (fluencyClientConfig.useExtendedEventTime) {
+  override def emitRaw(fullTag: String, event: Map[String, Any]): Unit = {
+    if (useExtendedEventTime) {
       fluency.emit(fullTag, getEventTime, toJavaMap(event))
     } else {
       fluency.emit(fullTag, toJavaMap(event))
     }
   }
-  override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
-    if (fluencyClientConfig.useExtendedEventTime) {
+  override def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
+    if (useExtendedEventTime) {
       fluency.emit(tag, getEventTime, event, 0, event.length)
     } else {
       fluency.emit(tag, event, 0, event.length)
     }
   }
+
+  private def toJavaMap(event: Map[String, Any]): java.util.Map[String, AnyRef] = {
+    import scala.collection.JavaConverters._
+    (for ((k, v) <- event) yield {
+      k -> v.asInstanceOf[AnyRef]
+    }).asJava
+  }
+
 }

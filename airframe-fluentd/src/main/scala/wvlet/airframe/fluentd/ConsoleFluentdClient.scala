@@ -18,7 +18,7 @@ import wvlet.log.LogSupport
 /**
   * Fluentd client implementation for debugging. This just emits metrics to the console log
   */
-trait ConsoleFluentdClient extends FluentdClient with LogSupport {
+trait ConsoleFluentdClient extends FluentdLogger with LogSupport {
   override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
     info(s"${tag}: ${event.mkString(", ")}")
   }

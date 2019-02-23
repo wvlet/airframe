@@ -22,7 +22,7 @@ import scala.reflect.runtime.{universe => ru}
 /**
   * Object based metric logger. This automatically converts object into Map type values
   */
-class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: FluentdClient) {
+class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: FluentdLogger) {
   private val packer = MessagePack.newBufferPacker
 
   def emit(metric: A): Unit = {
@@ -42,7 +42,7 @@ class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: Fluent
   * A factory for creating MetricLoggers
   */
 trait MetricLoggerFactory {
-  private val fluentdClient = bind[FluentdClient]
+  private val fluentdClient = bind[FluentdLogger]
   // Use object -> Map value codec
   private val codecFactory = bind[MessageCodecFactory] { MessageCodecFactory.defaultFactory.withObjectMapCodec }
 

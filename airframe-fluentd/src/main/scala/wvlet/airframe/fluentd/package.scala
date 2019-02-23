@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import org.komamitsu.fluency.Fluency
 import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
 import org.komamitsu.fluency.ingester.sender.ErrorHandler
 import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
@@ -22,23 +21,28 @@ import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
   */
 package object fluentd {
 
+  type TDLogger = FluentdLogger
+
   /**
     * A design for using Fluency-backed FluentdClient
     *
     * @return
     */
-  def withFluency(host: String = "127.0.0.1",
-                  port: Int = 24224,
-                  maxBufferSize: Long = 512 * 1024 * 1024,
-                  flushIntervalMillis: Int = 600,
-                  jvmHeapBufferMode: Boolean = true,
-                  ackResponseMode: Boolean = true,
-                  sslEnabled: Boolean = true,
-                  fileBackupDir: String = null,
-                  errorHandler: ErrorHandler = null): Design = {
+  def withFluentdLogger(host: String = "127.0.0.1",
+                        port: Int = 24224,
+                        // Use the extended EventTime timestamps
+                        // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+                        useExtendedEventTime: Boolean = false,
+                        maxBufferSize: Long = 512 * 1024 * 1024,
+                        flushIntervalMillis: Int = 600,
+                        jvmHeapBufferMode: Boolean = true,
+                        ackResponseMode: Boolean = true,
+                        sslEnabled: Boolean = true,
+                        fileBackupDir: String = null,
+                        errorHandler: ErrorHandler = null): Design = {
 
     // We need to extract this code probably because of a bug of Scala compiler.
-    def newFluency: Fluency = {
+    def newFluency: FluencyLogger = {
       val builder = new FluencyBuilderForFluentd()
       builder.setMaxBufferSize(maxBufferSize)
       builder.setFlushIntervalMillis(flushIntervalMillis)
@@ -47,25 +51,27 @@ package object fluentd {
       builder.setSslEnabled(sslEnabled)
       builder.setFileBackupDir(fileBackupDir)
       builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-      builder.build(host, port)
+      new FluencyLogger(None, useExtendedEventTime, builder.build(host, port))
     }
 
     newDesign
-      .bind[Fluency].toInstance(newFluency)
-      .bind[FluentdClient].to[FluencyClient]
+      .bind[FluentdLogger].toInstance(newFluency)
   }
 
-  def withFluencyForTD(apikey: String,
-                       host: String = "api.treasuredata.com",
-                       port: Int = 443,
-                       maxBufferSize: Long = 512 * 1024 * 1024,
-                       flushIntervalMillis: Int = 600,
-                       jvmHeapBufferMode: Boolean = true,
-                       fileBackupDir: String = null,
-                       errorHandler: ErrorHandler = null): Design = {
+  def withTDLogger(apikey: String,
+                   host: String = "api.treasuredata.com",
+                   port: Int = 443,
+                   maxBufferSize: Long = 512 * 1024 * 1024,
+                   flushIntervalMillis: Int = 600,
+                   jvmHeapBufferMode: Boolean = true,
+                   // Use the extended EventTime timestamps
+                   // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+                   useExtededEventTime: Boolean = false,
+                   fileBackupDir: String = null,
+                   errorHandler: ErrorHandler = null): Design = {
 
     // We need to extract this code probably because of a bug of Scala compiler
-    def newFluency: Fluency = {
+    def newFluency: FluencyLogger = {
       val builder = new FluencyBuilderForTreasureData()
       builder.setMaxBufferSize(maxBufferSize)
       builder.setFlushIntervalMillis(flushIntervalMillis)
@@ -73,14 +79,14 @@ package object fluentd {
       builder.setFileBackupDir(fileBackupDir)
       builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
       builder.build(apikey, host)
+      new FluencyLogger(None, useExtededEventTime, builder.build(apikey, host))
     }
 
     newDesign
-      .bind[Fluency].toInstance(newFluency)
-      .bind[FluentdClient].to[FluencyClient]
+      .bind[TDLogger].toInstance(newFluency)
   }
 
   def withConsoleLogging =
     newDesign
-      .bind[FluentdClient].to[ConsoleFluentdClient]
+      .bind[FluentdLogger].to[ConsoleFluentdClient]
 }

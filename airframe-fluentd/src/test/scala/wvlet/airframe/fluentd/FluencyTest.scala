@@ -24,7 +24,7 @@ trait FluentdStandaloneService {
 }
 
 trait MetricLoggingService extends FluentdStandaloneService {
-  val client  = bind[FluentdClient]
+  val client  = bind[FluentdLogger]
   val factory = bind[MetricLoggerFactory]
 }
 
@@ -36,7 +36,7 @@ case class FluencyMetric(id: Int, name: String)
 class FluencyTest extends AirframeSpec {
   val fluentdPort = IOUtil.randomPort
   val d = fluentd
-    .withFluency(port = fluentdPort)
+    .withFluentdLogger(port = fluentdPort)
     .bind[FluentdStandalone].toInstance(new FluentdStandalone(fluentdPort))
     .noLifeCycleLogging
 
