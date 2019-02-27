@@ -22,30 +22,56 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-fluentd" % "(version)"
 libraryDependencies +=  "org.komamitsu" % "fluency-treasuredata" % "2.0.0"
 ```
 
-### Example
+### Sending Data to Fluentd
 
 ```scala
 import wvlet.airframe.fluentd._
 
-case class MyMetric(a:Int, b:String)
+// Define a metric class
+case class MyMetric(a:Int, b:String) extends TaggedMetric {
+  // Used for defining the default tag prefix for this metric 
+  override def metricTag: String = "data.my_metric"
+}
 
-// Using Fluency as the fluentd client
-val d = fluentd.withFluency()
-  // Set a common fluentd metric tag prefix (default = "")
-  .bind[FluentdTag].toInstance(FluentdTag(prefix="data")) 
+// Creating a logger to use the local fluentd (host="localhost", port=24224) 
+val d = fluentd.withFluendLogger()
 
 d.build[MetricLoggerFactory] { f =>
+   val l = f.getTypedLogger[MyMetric]
+   
    // Create a metric logger for MyMetric class
-   val l = f.newMetricLogger[MyMetric](tag = "my_metric")
    l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
    l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
 }
 ```
 
+### Sending Data to Treasure Data
 
-## Customizing Fluency 
+```Scala
+// Creating a logger to use the local fluentd (host="localhost", port=24224) 
+val d = fluentd.withTDLogger(apikey:String = "(Your TD API key)")
 
-### Debugging
+d.build[MetricLoggerFactory] { f =>
+   val l = f.getTypedLogger[MyMetric]
+   
+   // Create a metric logger for MyMetric class
+   l.emit(MyMetric(1, "hello"))   // data.my_metric {"a":1, "b":"hello"}
+   l.emit(MyMetric(2, "fluentd")) // data.my_metric {"a":2, "b":"fluentd"}
+}
+```
+
+### Using Non-Typed Logger
+
+```scala
+val d = fluentd.withFluendLogger()
+
+d.build[MetricLoggerFactory] { f =>
+   val l = f.getLogger
+   l.emit("data.my_metric", Map("a"->1, "b"->"hello"))
+}
+```
+
+## Debugging Metrics
 
 For debugging purpose, use `fluentd.withConsoleLogging` design:
 
@@ -53,11 +79,10 @@ For debugging purpose, use `fluentd.withConsoleLogging` design:
 val d = fluentd.withConsoleLogging // Use a console logger instead of sending logs to Fluentd
 
 d.build[MetricLoggerFactory] { f =>
-   // Create a metric logger for MyMetric class
-   val l = f.newMetricLogger[MyMetric](tag = "my_metric")
+   val l = f.getTypedLogger[MyMetric]
    l.emit(MyMetric(1, "hello"))   // prints data.my_metric: {"a":1, "b":"hello"}
    l.emit(MyMetric(2, "fluentd")) // prints data.my_metric: {"a":2, "b":"fluentd"}
 }
 ```
 
-This is convenient if you have no fluentd process running in your machine. 
+

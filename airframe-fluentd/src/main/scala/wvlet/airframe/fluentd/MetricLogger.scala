@@ -43,7 +43,7 @@ abstract class MetricLogger extends AutoCloseable {
 
 class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
   def emit(event: T): Unit = {
-    fluentdClient.emitMsgPack(event.tag, codec.toMsgPack(event))
+    fluentdClient.emitMsgPack(event.metricTag, codec.toMsgPack(event))
   }
 }
 

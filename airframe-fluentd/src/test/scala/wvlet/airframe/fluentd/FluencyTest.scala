@@ -29,7 +29,7 @@ trait MetricLoggingService extends FluentdStandaloneService {
 }
 
 case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
-  def tag = "fluency_metric"
+  def metricTag = "fluency_metric"
 }
 
 /**

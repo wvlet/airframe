@@ -17,15 +17,15 @@ import java.lang.reflect.InvocationTargetException
 import wvlet.airframe.{AirframeSpec, fluentd}
 
 case class SampleMetric(time: Long, value: String) extends TaggedMetric {
-  def tag = "sample"
+  def metricTag = "sample"
 }
 case class NestedMetric(message: String, data: Seq[Int], opt: Option[String], sample: SampleMetric)
     extends TaggedMetric {
-  def tag = "nested"
+  def metricTag = "nested"
 }
 
 case class ErrorMetric(errorType: String, ex: Exception) extends TaggedMetric {
-  def tag = "error_log"
+  def metricTag = "error_log"
 }
 
 /**

@@ -17,5 +17,5 @@ package wvlet.airframe.fluentd
   * Extend this trait to specify the default tag for the metrics
   */
 trait TaggedMetric {
-  def tag: String
+  def metricTag: String
 }
