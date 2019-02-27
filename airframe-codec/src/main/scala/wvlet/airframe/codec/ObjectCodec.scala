@@ -19,10 +19,15 @@ import wvlet.airframe.surface._
 
 import scala.util.{Failure, Success, Try}
 
+trait PackAsMapSupport[A] { self: MessageCodec[A] =>
+  def packAsMap(p: Packer, v: A): Unit
+}
+
 /**
   * A generic codec for parameter lists:
   * - array form: [v1, v2, ...]
   * - map form: {k1:v1, k2:v2, ..}
+  *
   * @param name
   * @param params
   * @param paramCodec
@@ -160,7 +165,10 @@ class ParamListCodec(name: String,
 /**
   *
   */
-case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) extends MessageCodec[A] with LogSupport {
+case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
+    extends MessageCodec[A]
+    with PackAsMapSupport[A]
+    with LogSupport {
 
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
 
@@ -193,18 +201,21 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]]) ex
 
 /**
   * ObjectCodec for generating map values. This is suited to JSON object generation
+  *
   * @param surface
   * @param paramCodec
   * @tparam A
   */
 case class ObjectMapCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     extends MessageCodec[A]
+    with PackAsMapSupport[A]
     with LogSupport {
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
 
   override def pack(p: Packer, v: A): Unit = {
     paramListCodec.packAsMap(p, v)
   }
+  override def packAsMap(p: Packer, v: A): Unit = pack(p, v)
 
   override def unpack(u: Unpacker, v: MessageHolder): Unit = {
     paramListCodec.unpack(u, v)
