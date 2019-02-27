@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.2.1
+-  airframe-fluentd: Fluency 2.0 based Fluentd interface ([#404](https://github.com/wvlet/airframe/issues/404)) [[bd9d75e](https://github.com/wvlet/airframe/commit/bd9d75e)]
+-  airframe-codec: Add MessageCodec.toJson ([#405](https://github.com/wvlet/airframe/issues/405)) [[8fbdcab](https://github.com/wvlet/airframe/commit/8fbdcab)]
+
 ## 19.2.0
 - From this version, we will use `YY.MM.(patch)` version numbers. 
 -  Add codecs for airframe-metrics ([#403](https://github.com/wvlet/airframe/issues/403)) [[112d2f6](https://github.com/wvlet/airframe/commit/112d2f6)]
