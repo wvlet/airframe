@@ -24,20 +24,22 @@ trait FluentdStandaloneService {
 }
 
 trait MetricLoggingService extends FluentdStandaloneService {
-  val client  = bind[FluentdClient]
+  val client  = bind[MetricLogger]
   val factory = bind[MetricLoggerFactory]
 }
 
-case class FluencyMetric(id: Int, name: String)
+case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
+  def metricTag = "fluency_metric"
+}
 
 /**
   *
   */
 class FluencyTest extends AirframeSpec {
   val fluentdPort = IOUtil.randomPort
-  val d = fluentd.withFluency
+  val d = fluentd
+    .withFluentdLogger(port = fluentdPort)
     .bind[FluentdStandalone].toInstance(new FluentdStandalone(fluentdPort))
-    .bind[FluentdConfig].toInstance(FluentdConfig(port = fluentdPort))
     .noLifeCycleLogging
 
   "should send metrics to fluentd through Fluency" in {
@@ -46,7 +48,7 @@ class FluencyTest extends AirframeSpec {
       f.client.emit("mytag", Map("data" -> "hello"))
 
       // Use object metric logger
-      val l = f.factory.newMetricLogger[FluencyMetric]("fluency_metric")
+      val l = f.factory.getTypedLogger[FluencyMetric]
       l.emit(FluencyMetric(1, "leo"))
     }
   }

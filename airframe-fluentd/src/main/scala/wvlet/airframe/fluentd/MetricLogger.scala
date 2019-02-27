@@ -12,42 +12,64 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
+import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.airframe._
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.surface.Surface
 
-import scala.reflect.runtime.{universe => ru}
+abstract class MetricLogger extends AutoCloseable {
+  protected def tagPrefix: Option[String]
+  def withTagPrefix(newTagPrefix: String): MetricLogger
 
-/**
-  * Object based metric logger. This automatically converts object into Map type values
-  */
-class MetricLogger[A](tag: String, codec: MessageCodec[A], fluentdClient: FluentdClient) {
-  private val packer = MessagePack.newBufferPacker
+  protected def emitRaw(fullTag: String, event: Map[String, Any]): Unit
+  protected def emitRawMsgPack(fullTag: String, event: Array[Byte]): Unit
 
-  def emit(metric: A): Unit = {
-    // packer is non-thread safe
-    synchronized {
-      // Reuse the buffer
-      packer.clear
-      // A -> MessagePack Map value
-      codec.pack(packer, metric)
-      val msgpack = packer.toByteArray
-      fluentdClient.emitMsgPack(tag, msgpack)
+  def emit(tag: String, event: Map[String, Any]): Unit = {
+    emitRaw(enrichTag(tag), event)
+  }
+
+  def emitMsgPack(tag: String, event: Array[Byte]): Unit = {
+    emitRawMsgPack(enrichTag(tag), event)
+  }
+
+  private def enrichTag(tag: String): String = {
+    tagPrefix match {
+      case None => tag
+      case Some(prefix) =>
+        s"${prefix}.${tag}"
     }
   }
 }
 
-/**
-  * A factory for creating MetricLoggers
-  */
-trait MetricLoggerFactory {
-  private val fluentdClient = bind[FluentdClient]
-  // Use object -> Map value codec
-  private val codecFactory = bind[MessageCodecFactory] { MessageCodecFactory.defaultFactory.withObjectMapCodec }
+class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
+  def emit(event: T): Unit = {
+    fluentdClient.emitMsgPack(event.metricTag, codec.toMsgPack(event))
+  }
+}
 
-  def newMetricLogger[A: ru.TypeTag](tag: String): MetricLogger[A] = {
-    val codec = codecFactory.of[A]
-    new MetricLogger(tag, codec, fluentdClient)
+class MetricLoggerFactory(fluentdClient: MetricLogger) {
+  def getLogger: MetricLogger = fluentdClient
+  def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
+    fluentdClient.withTagPrefix(tagPrefix)
+
+  import scala.collection.JavaConverters._
+  import scala.reflect.runtime.{universe => ru}
+
+  private val loggerCache = new ConcurrentHashMap[Surface, TypedMetricLogger[_]]().asScala
+
+  def getTypedLogger[T <: TaggedMetric: ru.TypeTag]: TypedMetricLogger[T] = {
+    loggerCache
+      .getOrElseUpdate(Surface.of[T], {
+        val codec = MessageCodec.of[T]
+        new TypedMetricLogger[T](getLogger, codec)
+      }).asInstanceOf[TypedMetricLogger[T]]
+  }
+
+  def getTypedLoggerWithTagPrefix[T <: TaggedMetric: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
+    loggerCache
+      .getOrElseUpdate(Surface.of[T], {
+        val codec = MessageCodec.of[T]
+        new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
+      }).asInstanceOf[TypedMetricLogger[T]]
   }
 }

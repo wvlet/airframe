@@ -16,10 +16,17 @@ import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.{AirframeSpec, fluentd}
 
-case class SampleMetric(time: Long, value: String)
+case class SampleMetric(time: Long, value: String) extends TaggedMetric {
+  def metricTag = "sample"
+}
 case class NestedMetric(message: String, data: Seq[Int], opt: Option[String], sample: SampleMetric)
+    extends TaggedMetric {
+  def metricTag = "nested"
+}
 
-case class ErrorMetric(errorType: String, ex: Exception)
+case class ErrorMetric(errorType: String, ex: Exception) extends TaggedMetric {
+  def metricTag = "error_log"
+}
 
 /**
   *
@@ -29,7 +36,7 @@ class MetricLoggerTest extends AirframeSpec {
 
   "generate MetricLogger for case classes" in {
     d.build[MetricLoggerFactory] { f =>
-      val l = f.newMetricLogger[SampleMetric](tag = "sample")
+      val l = f.getTypedLogger[SampleMetric]
       l.emit(SampleMetric(100000, "hello"))
       l.emit(SampleMetric(100001, "fluentd"))
     }
@@ -37,7 +44,7 @@ class MetricLoggerTest extends AirframeSpec {
 
   "support nested metrics" in {
     d.build[MetricLoggerFactory] { f =>
-      val l = f.newMetricLogger[NestedMetric](tag = "nested")
+      val l = f.getTypedLogger[NestedMetric]
       l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
       l.emit(
         NestedMetric("test options",
@@ -49,7 +56,7 @@ class MetricLoggerTest extends AirframeSpec {
 
   "support exception stack trace metrics" in {
     d.build[MetricLoggerFactory] { f =>
-      val l = f.newMetricLogger[ErrorMetric](tag = "error_log")
+      val l = f.getTypedLogger[ErrorMetric]
       l.emit(ErrorMetric("illegal_argument", new IllegalArgumentException("invalid input")))
       l.emit(ErrorMetric("remote error", new InvocationTargetException(new IllegalStateException("unknown error"))))
     }

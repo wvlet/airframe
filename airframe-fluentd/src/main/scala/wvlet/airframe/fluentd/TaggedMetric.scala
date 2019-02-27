@@ -12,20 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import org.msgpack.core.MessagePack
-import wvlet.log.LogSupport
 
 /**
-  * Fluentd client implementation for debugging. This just emits metrics to the console log
+  * Extend this trait to specify the default tag for the metrics
   */
-trait ConsoleFluentdClient extends FluentdClient with LogSupport {
-  override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
-    info(s"${tag}: ${event.mkString(", ")}")
-  }
-  override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
-    val unpacker = MessagePack.newDefaultUnpacker(event)
-    val v        = unpacker.unpackValue()
-    unpacker.close()
-    info(s"${tag}: ${v}")
-  }
+trait TaggedMetric {
+  def metricTag: String
 }
