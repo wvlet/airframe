@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import org.komamitsu.fluency.fluentd.FluencyBuilderForFluentd
 import org.komamitsu.fluency.ingester.sender.ErrorHandler
-import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
 
 /**
   *
@@ -29,6 +27,7 @@ package object fluentd {
     */
   def withFluentdLogger(host: String = "127.0.0.1",
                         port: Int = 24224,
+                        tagPrefix: String = "",
                         // Use the extended EventTime timestamps
                         // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
                         useExtendedEventTime: Boolean = false,
@@ -45,6 +44,7 @@ package object fluentd {
         Fluentd.newFluentdLogger(
           host,
           port,
+          tagPrefix,
           useExtendedEventTime,
           maxBufferSize,
           flushIntervalMillis,
@@ -62,6 +62,7 @@ package object fluentd {
   def withTDLogger(apikey: String,
                    host: String = "api.treasuredata.com",
                    port: Int = 443,
+                   tagPrefix: String = "",
                    maxBufferSize: Long = 512 * 1024 * 1024,
                    flushIntervalMillis: Int = 600,
                    jvmHeapBufferMode: Boolean = true,
@@ -71,24 +72,13 @@ package object fluentd {
                    fileBackupDir: String = null,
                    errorHandler: ErrorHandler = null): Design = {
 
-    // We need to extract this code probably because of a bug of Scala compiler
-    def newFluency: FluentdLogger = {
-      val builder = new FluencyBuilderForTreasureData()
-      builder.setMaxBufferSize(maxBufferSize)
-      builder.setFlushIntervalMillis(flushIntervalMillis)
-      builder.setJvmHeapBufferMode(jvmHeapBufferMode)
-      builder.setFileBackupDir(fileBackupDir)
-      builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
-      builder.build(apikey, host)
-      new FluentdLogger(None, useExtededEventTime, builder.build(apikey, host))
-    }
-
     newDesign
       .bind[MetricLogger].toInstance(
         Fluentd.newTDLogger(
           apikey,
           host,
           port,
+          tagPrefix,
           maxBufferSize,
           flushIntervalMillis,
           jvmHeapBufferMode,
