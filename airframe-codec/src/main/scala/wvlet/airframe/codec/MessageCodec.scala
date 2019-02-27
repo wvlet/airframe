@@ -32,6 +32,18 @@ trait MessageCodec[A] {
     packer.toByteArray
   }
 
+  def toJson(v: A): String = {
+    val packer = MessagePack.newBufferPacker
+    this match {
+      case c: PackAsMapSupport[_] =>
+        c.asInstanceOf[PackAsMapSupport[A]].packAsMap(packer, v)
+      case _ =>
+        pack(packer, v)
+    }
+    val msgpack = packer.toByteArray
+    JSONCodec.toJson(msgpack)
+  }
+
   def unpackBytes(msgpack: Array[Byte]): Option[A]                        = unpackMsgPack(msgpack)
   def unpackBytes(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = unpackMsgPack(msgpack, offset, len)
 
