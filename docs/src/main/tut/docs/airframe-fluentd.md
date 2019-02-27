@@ -18,7 +18,7 @@ __build.sbt__
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe-fluentd" % "(version)"
 
-# If you need to emit logs to Treasure Data, add this dependeency as well:
+# If you need to emit logs to Treasure Data, add this dependency as well:
 libraryDependencies +=  "org.komamitsu" % "fluency-treasuredata" % "2.0.0"
 ```
 
