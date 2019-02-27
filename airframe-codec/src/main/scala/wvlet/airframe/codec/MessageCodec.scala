@@ -34,13 +34,13 @@ trait MessageCodec[A] {
 
   def toJson(v: A): String = {
     val packer = MessagePack.newBufferPacker
-    val msgpack = this match {
+    this match {
       case c: PackAsMapSupport[_] =>
         c.asInstanceOf[PackAsMapSupport[A]].packAsMap(packer, v)
-        packer.toByteArray
       case _ =>
-        toMsgPack(v)
+        pack(packer, v)
     }
+    val msgpack = packer.toByteArray
     JSONCodec.toJson(msgpack)
   }
 
