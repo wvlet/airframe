@@ -20,7 +20,7 @@ import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 /**
-  * Offers tiny utilities for parallel execution.
+  * Tiny utilities for parallel execution.
   */
 object Parallel {
 
