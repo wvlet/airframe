@@ -30,9 +30,6 @@ class ParallelTest extends AirframeSpec {
         Thread.sleep(500)
         i * 2
       }
-      val duration = System.currentTimeMillis() - start
-
-      assert(duration > 500 && duration < 1100)
       assert(result == List(2, 4, 6))
     }
 
@@ -44,47 +41,10 @@ class ParallelTest extends AirframeSpec {
         i * 2
       }
 
-      val duration1 = System.currentTimeMillis() - start
-      assert(duration1 < 500)
-
       // wait for completion here
       val list = result.toList
 
-      val duration2 = System.currentTimeMillis() - start
-      assert(duration2 > 1500 && duration2 < 2100)
       assert(list == List(2, 4, 6))
-    }
-
-    "run() in parallel with large source" in {
-      val source = Range(0, 999)
-      val start  = System.currentTimeMillis()
-
-      Parallel.run(source, parallelism = 100) { i =>
-        Thread.sleep(500)
-        i * 2
-      }
-      val duration = System.currentTimeMillis() - start
-
-      assert(duration > 500 && duration < 6000)
-    }
-
-    "iterate() in parallel with large source" in {
-      val source = Range(0, 999)
-      val start  = System.currentTimeMillis()
-
-      val result = Parallel.iterate(source.toIterator, parallelism = 100) { i =>
-        Thread.sleep(500)
-        i * 2
-      }
-
-      val duration1 = System.currentTimeMillis() - start
-      assert(duration1 < 500)
-
-      // wait for completion here
-      val list = result.toList
-
-      val duration2 = System.currentTimeMillis() - start
-      assert(duration2 > 5000 && duration2 < 6000)
     }
 
     "handle errors in run()" in {

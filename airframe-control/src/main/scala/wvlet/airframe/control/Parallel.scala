@@ -20,47 +20,7 @@ import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 /**
-  * Provides tiny utilities for parallelization.
-  *
-  * For example, each element of the source collection can be proceeded in parallel as the following example.
-  *
-  * {{{
-  * val source: Seq[Int] = Seq(1, 2, 3)
-  * val result: Seq[Int] = Parallel.run(source){ i =>
-  *   ...
-  * }
-  * }}}
-  *
-  * Parallelism can be specified as a second parameter. The default value is a number of available processors.
-  *
-  * {{{
-  * val result: Seq[Int] = Parallel.run(source, 100){ i =>
-  *   ...
-  * }
-  * }}}
-  *
-  * You can use `Iterator` instead of `Seq` as a source. This version is useful to handle a very large data.
-  *
-  * {{{
-  * val source: Iterator[Int] = ...
-  * val result: Iterator[Int] = Parallel.iterate(source){ i =>
-  *   ...
-  * }
-  * }}}
-  *
-  * `Parallel` also has a method to run a given function with each element of the source collection periodically and repeatedly.
-  *
-  * {{{
-  * val source: Seq[Int] = Seq(1, 2, 3)
-  *
-  * // Run each element every 10 seconds
-  * val stoppable = Parallel.repeat(source, 10 seconds){ i =>
-  *   ...
-  * }
-  *
-  * // Stop running
-  * stoppable.stop()
-  * }}}
+  * Offers tiny utilities for parallel execution.
   */
 object Parallel {
 
