@@ -88,10 +88,9 @@ object Parallel {
     */
   def run[T, R: ClassTag](source: Seq[T],
                           parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                          timeout: Duration = Duration.Inf
-                         )(f: T => R): Seq[R] = {
+                          timeout: Duration = Duration.Inf)(f: T => R): Seq[R] = {
     val requestQueue = new LinkedBlockingQueue[WithIndexWorker[T, R]](parallelism)
-    val resultArray = new Array[R](source.length)
+    val resultArray  = new Array[R](source.length)
 
     Range(0, parallelism).foreach { _ =>
       val worker = new WithIndexWorker[T, R](requestQueue, resultArray, f)
@@ -103,14 +102,14 @@ object Parallel {
     try {
       // Process all elements of source
       val it = source.zipWithIndex.toIterator
-      while(it.hasNext) {
+      while (it.hasNext) {
         val worker = requestQueue.take()
         worker.message.set(it.next())
         executor.execute(worker)
       }
 
       // Wait for completion
-      while(requestQueue.size() != parallelism){
+      while (requestQueue.size() != parallelism) {
         try {
           Thread.sleep(10)
         } catch {
@@ -141,10 +140,9 @@ object Parallel {
     */
   def iterate[T, R](source: Iterator[T],
                     parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                    timeout: Duration = Duration.Inf
-                   )(f: T => R): Iterator[R] = {
+                    timeout: Duration = Duration.Inf)(f: T => R): Iterator[R] = {
     val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
-    val resultQueue = new LinkedBlockingQueue[Option[R]]()
+    val resultQueue  = new LinkedBlockingQueue[Option[R]]()
 
     Range(0, parallelism).foreach { _ =>
       val worker = new Worker[T, R](requestQueue, resultQueue, f)
@@ -157,14 +155,14 @@ object Parallel {
 
         try {
           // Process all elements of source
-          while(source.hasNext) {
+          while (source.hasNext) {
             val worker = requestQueue.take()
             worker.message.set(source.next())
             executor.execute(worker)
           }
 
           // Wait for completion
-          while(requestQueue.size() != parallelism){
+          while (requestQueue.size() != parallelism) {
             try {
               Thread.sleep(10)
             } catch {
@@ -200,17 +198,17 @@ object Parallel {
     */
   def repeat[T](source: Seq[T], interval: Duration)(f: T => Unit): Stoppable = {
     val requestQueue = new LinkedBlockingQueue[WithIndexWorker[T, Unit]](source.size)
-    val resultArray = new Array[Unit](source.size)
-    val executor = Executors.newFixedThreadPool(source.size)
-    val cancelable = new Stoppable(executor)
+    val resultArray  = new Array[Unit](source.size)
+    val executor     = Executors.newFixedThreadPool(source.size)
+    val cancelable   = new Stoppable(executor)
 
     Range(0, source.size).foreach { _ =>
       val repeatedFunction = (arg: T) => {
-        while(!cancelable.isStopped){
+        while (!cancelable.isStopped) {
           val start = System.currentTimeMillis()
           f(arg)
           val duration = System.currentTimeMillis() - start
-          val wait = math.max(0, interval.toMillis - duration)
+          val wait     = math.max(0, interval.toMillis - duration)
           try {
             Thread.sleep(wait)
           } catch {
@@ -223,17 +221,18 @@ object Parallel {
       requestQueue.put(worker)
     }
 
-    source.zipWithIndex.foreach { case (e, i) =>
-      val worker = requestQueue.take()
-      worker.message.set(e, i)
-      executor.execute(worker)
+    source.zipWithIndex.foreach {
+      case (e, i) =>
+        val worker = requestQueue.take()
+        worker.message.set(e, i)
+        executor.execute(worker)
     }
 
     cancelable
   }
 
   class Stoppable(executor: ExecutorService) {
-    private val cancelled = new AtomicBoolean(false)
+    private val cancelled  = new AtomicBoolean(false)
     def isStopped: Boolean = cancelled.get()
     def stop(): Unit = {
       executor.shutdownNow()
@@ -241,10 +240,10 @@ object Parallel {
     }
   }
 
-  private[control] class Worker[T, R](
-                                            requestQueue: BlockingQueue[Worker[T, R]],
-                                            resultQueue: BlockingQueue[Option[R]],
-                                            f: T => R) extends Runnable {
+  private[control] class Worker[T, R](requestQueue: BlockingQueue[Worker[T, R]],
+                                      resultQueue: BlockingQueue[Option[R]],
+                                      f: T => R)
+      extends Runnable {
 
     val message: AtomicReference[T] = new AtomicReference[T]()
 
@@ -257,10 +256,10 @@ object Parallel {
     }
   }
 
-  private[control] class WithIndexWorker[T, R](
-                                                     requestQueue: BlockingQueue[WithIndexWorker[T, R]],
-                                                     resultArray: Array[R],
-                                                     f: T => R) extends Runnable {
+  private[control] class WithIndexWorker[T, R](requestQueue: BlockingQueue[WithIndexWorker[T, R]],
+                                               resultArray: Array[R],
+                                               f: T => R)
+      extends Runnable {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
 
@@ -273,6 +272,5 @@ object Parallel {
       }
     }
   }
-
 
 }

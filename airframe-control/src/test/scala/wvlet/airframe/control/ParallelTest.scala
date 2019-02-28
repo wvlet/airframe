@@ -38,8 +38,8 @@ class ParallelTest extends AirframeSpec {
 
     "iterate() in parallel with Iterator" in {
       val source = Seq(1, 2, 3)
-      val start = System.currentTimeMillis()
-      val result = Parallel.iterate(source.toIterator, parallelism = 2){ i =>
+      val start  = System.currentTimeMillis()
+      val result = Parallel.iterate(source.toIterator, parallelism = 2) { i =>
         Thread.sleep(500 * i)
         i * 2
       }
@@ -57,9 +57,9 @@ class ParallelTest extends AirframeSpec {
 
     "run() in parallel with large source" in {
       val source = Range(0, 999)
-      val start = System.currentTimeMillis()
+      val start  = System.currentTimeMillis()
 
-      Parallel.run(source, parallelism = 100){ i =>
+      Parallel.run(source, parallelism = 100) { i =>
         Thread.sleep(500)
         i * 2
       }
@@ -70,9 +70,9 @@ class ParallelTest extends AirframeSpec {
 
     "iterate() in parallel with large source" in {
       val source = Range(0, 999)
-      val start = System.currentTimeMillis()
+      val start  = System.currentTimeMillis()
 
-      val result = Parallel.iterate(source.toIterator, parallelism = 100){ i =>
+      val result = Parallel.iterate(source.toIterator, parallelism = 100) { i =>
         Thread.sleep(500)
         i * 2
       }
@@ -88,12 +88,12 @@ class ParallelTest extends AirframeSpec {
     }
 
     "handle errors in run()" in {
-      val source = Seq(1, 2, 3)
+      val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.run(source, parallelism = 2){ i =>
+      val result = Parallel.run(source, parallelism = 2) { i =>
         Try {
-          if(i == 2){
+          if (i == 2) {
             throw exception
           }
           i * 2
@@ -104,13 +104,13 @@ class ParallelTest extends AirframeSpec {
     }
 
     "handle errors in iterate()" in {
-      val source = Seq(1, 2, 3)
+      val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.iterate(source.toIterator, parallelism = 2){ i =>
+      val result = Parallel.iterate(source.toIterator, parallelism = 2) { i =>
         Try {
           Thread.sleep(500 * i)
-          if(i == 2){
+          if (i == 2) {
             throw exception
           }
           i * 2
@@ -124,9 +124,9 @@ class ParallelTest extends AirframeSpec {
     }
 
     "repeat() and stop()" in {
-      val source = Seq(0, 2, 5)
+      val source  = Seq(0, 2, 5)
       val counter = scala.collection.mutable.HashMap[Int, Int]()
-      val stoppable = Parallel.repeat(source, interval = 1 second){ e =>
+      val stoppable = Parallel.repeat(source, interval = 1 second) { e =>
         counter.update(e, counter.get(e).getOrElse(0) + 1)
         Thread.sleep(e * 1000)
       }
