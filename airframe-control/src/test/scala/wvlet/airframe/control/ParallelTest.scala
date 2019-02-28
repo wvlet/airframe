@@ -26,17 +26,19 @@ class ParallelTest extends AirframeSpec {
     "run() in parallel with Seq" in {
       val source = Seq(1, 2, 3)
       val start  = System.currentTimeMillis()
-      val result = Parallel.run(source, parallelism = 2) { i =>
+      val result = Parallel.run(source, parallelism = 3) { i =>
         Thread.sleep(500)
         i * 2
       }
+      val duration = System.currentTimeMillis() - start
+      assert(duration < 2000)
       assert(result == List(2, 4, 6))
     }
 
     "iterate() in parallel with Iterator" in {
       val source = Seq(1, 2, 3)
       val start  = System.currentTimeMillis()
-      val result = Parallel.iterate(source.toIterator, parallelism = 2) { i =>
+      val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
         Thread.sleep(500 * i)
         i * 2
       }
@@ -44,6 +46,8 @@ class ParallelTest extends AirframeSpec {
       // wait for completion here
       val list = result.toList
 
+      val duration = System.currentTimeMillis() - start
+      assert(duration < 2000)
       assert(list == List(2, 4, 6))
     }
 
@@ -51,7 +55,7 @@ class ParallelTest extends AirframeSpec {
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.run(source, parallelism = 2) { i =>
+      val result = Parallel.run(source, parallelism = 3) { i =>
         Try {
           if (i == 2) {
             throw exception
@@ -67,9 +71,8 @@ class ParallelTest extends AirframeSpec {
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.iterate(source.toIterator, parallelism = 2) { i =>
+      val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
         Try {
-          Thread.sleep(500 * i)
           if (i == 2) {
             throw exception
           }
