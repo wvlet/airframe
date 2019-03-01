@@ -20,7 +20,7 @@ import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 /**
-  * Tiny utilities for parallel execution.
+  * Utilities for parallel execution.
   */
 object Parallel {
 
@@ -39,21 +39,20 @@ object Parallel {
   }
 
   /**
-    * Process all elements of the source by the given function then wait for completion.
+    * Process all elements of the source by the given function then wait for the completion.
     *
     * @param source Source collection
     * @param parallelism Parallelism, the default value is a number of available processors
-    * @param f Function which process each element of the source collection
-    * @return Collection of results
+    * @param f Function which processes each element of the source collection
+    * @return Collection of the results
     */
-  def run[T, R: ClassTag](source: Seq[T],
-                          parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                          timeout: Duration = Duration.Inf)(f: T => R): Seq[R] = {
-    val requestQueue = new LinkedBlockingQueue[WithIndexWorker[T, R]](parallelism)
+  def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
+      f: T => R): Seq[R] = {
+    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
     val resultArray  = new Array[R](source.length)
 
     Range(0, parallelism).foreach { _ =>
-      val worker = new WithIndexWorker[T, R](requestQueue, resultArray, f)
+      val worker = new IndexedWorker[T, R](requestQueue, resultArray, f)
       requestQueue.put(worker)
     }
 
@@ -95,8 +94,8 @@ object Parallel {
     *
     * @param source the source iterator
     * @param parallelism Parallelism, the default value is a number of available processors
-    * @param f Function which process each element of the source collection
-    * @return Iterator of results
+    * @param f Function which processes each element of the source collection
+    * @return Iterator of the results
     */
   def iterate[T, R](source: Iterator[T],
                     parallelism: Int = Runtime.getRuntime.availableProcessors(),
@@ -157,7 +156,7 @@ object Parallel {
     * @return Object to stop execution
     */
   def repeat[T](source: Seq[T], interval: Duration)(f: T => Unit): Stoppable = {
-    val requestQueue = new LinkedBlockingQueue[WithIndexWorker[T, Unit]](source.size)
+    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, Unit]](source.size)
     val resultArray  = new Array[Unit](source.size)
     val executor     = Executors.newFixedThreadPool(source.size)
     val cancelable   = new Stoppable(executor)
@@ -177,7 +176,7 @@ object Parallel {
         }
       }
 
-      val worker = new WithIndexWorker[T, Unit](requestQueue, resultArray, repeatedFunction)
+      val worker = new IndexedWorker[T, Unit](requestQueue, resultArray, repeatedFunction)
       requestQueue.put(worker)
     }
 
@@ -194,7 +193,8 @@ object Parallel {
   class Stoppable(executor: ExecutorService) {
     private val cancelled  = new AtomicBoolean(false)
     def isStopped: Boolean = cancelled.get()
-    def stop(): Unit = {
+
+    def stop: Unit = {
       executor.shutdownNow()
       cancelled.set(true)
     }
@@ -216,9 +216,9 @@ object Parallel {
     }
   }
 
-  private[control] class WithIndexWorker[T, R](requestQueue: BlockingQueue[WithIndexWorker[T, R]],
-                                               resultArray: Array[R],
-                                               f: T => R)
+  private[control] class IndexedWorker[T, R](requestQueue: BlockingQueue[IndexedWorker[T, R]],
+                                             resultArray: Array[R],
+                                             f: T => R)
       extends Runnable {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()

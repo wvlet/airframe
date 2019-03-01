@@ -76,5 +76,5 @@ val stoppable = Parallel.repeat(source, interval = 10 seconds){ i =>
 }
 
 // Stop running
-stoppable.stop()
+stoppable.stop
 ```
