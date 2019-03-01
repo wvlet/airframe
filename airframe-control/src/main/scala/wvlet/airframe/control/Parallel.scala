@@ -146,60 +146,60 @@ object Parallel {
     new ResultIterator[R](resultQueue)
   }
 
-  /**
-    * Run the given function with each element of the source periodically and repeatedly.
-    * Execution can be stopped by the returned Stoppable object.
-    *
-    * @param source Source collection
-    * @param interval Interval of execution of an element
-    * @param f Function which process each element of the source collection
-    * @return Object to stop execution
-    */
-  def repeat[T](source: Seq[T], interval: Duration)(f: T => Unit): Stoppable = {
-    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, Unit]](source.size)
-    val resultArray  = new Array[Unit](source.size)
-    val executor     = Executors.newFixedThreadPool(source.size)
-    val cancelable   = new Stoppable(executor)
-
-    Range(0, source.size).foreach { _ =>
-      val repeatedFunction = (arg: T) => {
-        while (!cancelable.isStopped) {
-          // Use nanotime to make it independent from the system clock time
-          val startNano = System.nanoTime()
-          f(arg)
-          val durationNanos = System.nanoTime() - startNano
-          val wait          = math.max(0, interval.toMillis - TimeUnit.NANOSECONDS.toMillis(durationNanos))
-          try {
-            Thread.sleep(wait)
-          } catch {
-            case _: InterruptedException => ()
-          }
-        }
-      }
-
-      val worker = new IndexedWorker[T, Unit](requestQueue, resultArray, repeatedFunction)
-      requestQueue.put(worker)
-    }
-
-    source.zipWithIndex.foreach {
-      case (e, i) =>
-        val worker = requestQueue.take()
-        worker.message.set(e, i)
-        executor.execute(worker)
-    }
-
-    cancelable
-  }
-
-  class Stoppable(executor: ExecutorService) {
-    private val cancelled  = new AtomicBoolean(false)
-    def isStopped: Boolean = cancelled.get()
-
-    def stop: Unit = {
-      executor.shutdownNow()
-      cancelled.set(true)
-    }
-  }
+//  /**
+//    * Run the given function with each element of the source periodically and repeatedly.
+//    * Execution can be stopped by the returned Stoppable object.
+//    *
+//    * @param source Source collection
+//    * @param interval Interval of execution of an element
+//    * @param f Function which process each element of the source collection
+//    * @return Object to stop execution
+//    */
+//  def repeat[T](source: Seq[T], interval: Duration, ticker: Ticker = Ticker.systemTicker)(f: T => Unit): Stoppable = {
+//    val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, Unit]](source.size)
+//    val resultArray  = new Array[Unit](source.size)
+//    val executor     = Executors.newFixedThreadPool(source.size)
+//    val cancelable   = new Stoppable(executor)
+//
+//    Range(0, source.size).foreach { _ =>
+//      val repeatedFunction = (arg: T) => {
+//        while (!cancelable.isStopped) {
+//          // Use nanotime to make it independent from the system clock time
+//          val startNano = ticker.read
+//          f(arg)
+//          val durationNanos = ticker.read - startNano
+//          val wait          = math.max(0, interval.toMillis - TimeUnit.NANOSECONDS.toMillis(durationNanos))
+//          try {
+//            Thread.sleep(wait)
+//          } catch {
+//            case _: InterruptedException => ()
+//          }
+//        }
+//      }
+//
+//      val worker = new IndexedWorker[T, Unit](requestQueue, resultArray, repeatedFunction)
+//      requestQueue.put(worker)
+//    }
+//
+//    source.zipWithIndex.foreach {
+//      case (e, i) =>
+//        val worker = requestQueue.take()
+//        worker.message.set(e, i)
+//        executor.execute(worker)
+//    }
+//
+//    cancelable
+//  }
+//
+//  class Stoppable(executor: ExecutorService) {
+//    private val cancelled  = new AtomicBoolean(false)
+//    def isStopped: Boolean = cancelled.get()
+//
+//    def stop: Unit = {
+//      executor.shutdownNow()
+//      cancelled.set(true)
+//    }
+//  }
 
   private[control] class Worker[T, R](requestQueue: BlockingQueue[Worker[T, R]],
                                       resultQueue: BlockingQueue[Option[R]],
