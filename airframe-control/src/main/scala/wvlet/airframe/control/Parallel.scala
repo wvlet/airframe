@@ -164,10 +164,11 @@ object Parallel {
     Range(0, source.size).foreach { _ =>
       val repeatedFunction = (arg: T) => {
         while (!cancelable.isStopped) {
-          val start = System.currentTimeMillis()
+          // Use nanotime to make it independent from the system clock time
+          val startNano = System.nanoTime()
           f(arg)
-          val duration = System.currentTimeMillis() - start
-          val wait     = math.max(0, interval.toMillis - duration)
+          val durationNanos = System.nanoTime() - startNano
+          val wait          = math.max(0, interval.toMillis - TimeUnit.NANOSECONDS.toMillis(durationNanos))
           try {
             Thread.sleep(wait)
           } catch {
