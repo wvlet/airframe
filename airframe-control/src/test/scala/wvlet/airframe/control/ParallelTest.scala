@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.control
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import wvlet.airframe.AirframeSpec
 
 import scala.language.postfixOps
@@ -26,29 +28,40 @@ class ParallelTest extends AirframeSpec {
     "run() in parallel with Seq" in {
       val source = Seq(1, 2, 3)
       val start  = System.currentTimeMillis()
+
+      val counter     = new AtomicInteger(0)
+      val currentTime = System.currentTimeMillis()
+      val startTime   = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
       val result = Parallel.run(source, parallelism = 3) { i =>
-        Thread.sleep(500)
+        // Record the current time
+        startTime(i - 1) = System.currentTimeMillis()
+        counter.incrementAndGet()
+        while (counter.get() < 3) {
+          Thread.sleep(0)
+        }
         i * 2
       }
-      val duration = System.currentTimeMillis() - start
-      assert(duration < 2000)
+      val endTime = System.currentTimeMillis()
+      assert(startTime.forall(_ <= endTime))
       assert(result == List(2, 4, 6))
     }
 
     "iterate() in parallel with Iterator" in {
-      val source = Seq(1, 2, 3)
-      val start  = System.currentTimeMillis()
+      val source    = Seq(1, 2, 3)
+      val start     = System.currentTimeMillis()
+      val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
       val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
-        Thread.sleep(500 * i)
+        startTime(i - 1) = System.currentTimeMillis()
         i * 2
       }
-
       // wait for completion here
       val list = result.toList
 
-      val duration = System.currentTimeMillis() - start
-      assert(duration < 2000)
-      assert(list == List(2, 4, 6))
+      val endTime = System.currentTimeMillis()
+      assert(startTime.forall(_ <= endTime))
+
+      // The result element order can be shuffled
+      assert(List(2, 4, 6).forall(x => list.contains(x)))
     }
 
     "handle errors in run()" in {
@@ -86,23 +99,33 @@ class ParallelTest extends AirframeSpec {
       assert(list == List(Success(2), Failure(exception), Success(6)))
     }
 
-    "repeat() and stop()" in {
-      val source  = Seq(0, 2, 5)
-      val counter = scala.collection.mutable.HashMap[Int, Int]()
-      val stoppable = Parallel.repeat(source, interval = 1 second) { e =>
-        counter.update(e, counter.get(e).getOrElse(0) + 1)
-        Thread.sleep(e * 1000)
-      }
-
-      Thread.sleep(4900)
-
-      stoppable.stop()
-
-      Thread.sleep(1000)
-
-      assert(counter(0) == 5)
-      assert(counter(2) == 3)
-      assert(counter(5) == 1)
-    }
+//    "repeat() and stop" in {
+//      val source  = Seq(0)
+//
+//      val ticker  = Ticker.manualTicker
+//
+//      var runTime: List[Long] = Nil
+//      val counter  = new AtomicInteger(0)
+//      val stoppable = Parallel.repeat(source, interval = 1 second, ticker = ticker) { e =>
+//        runTime = ticker.read :: runTime
+//        counter.incrementAndGet()
+//      }
+//
+//      ticker.tick(0)
+//      assert(runtime == 0 :: Nil)
+//
+//
+//      ticker.tick(2 * 1000)
+//      ticker.tick(5 * 1000)
+//
+//
+//      ticker.tick(4900)
+//      stoppable.stop
+//      ticker.tick(1000)
+//
+//      assert(counter(0) == 5)
+//      assert(counter(2) == 3)
+//      assert(counter(5) == 1)
+//    }
   }
 }
