@@ -1,9 +1,10 @@
-# airframe-log  [![Gitter Chat][gitter-badge]][gitter-link] [![Build Status](https://travis-ci.org/wvlet/airframe.svg?branch=master)](https://travis-ci.org/wvlet/airframe) [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+airframe-log [![Latest version](https://index.scala-lang.org/wvlet/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org)
+===
 
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/wvlet?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
-airframe-log is a libray for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
+*airframe-log* is a library for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
 <p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
 
@@ -15,7 +16,7 @@ airframe-log is a libray for enhancing your Scala application logging with color
 - **Simple to use**
   - You can start logging by adding `wvlet.log.LogSupport` trait to your code. No need to write `Logger.getLogger(xxx)` anymore.
 - **Fast and light-weight**
-  - airframe-log uses Scala macros for efficiency; log messages will be instanciated only when the log level is effective. 
+  - airframe-log uses Scala macros for efficiency; log messages will be instantiated only when the log level is effective. 
   - airframe-log is just an extension of JVM's built-in `java.util.logging`. So no need exists to add custom binding jars, such as logback-classic as in slf4j.
 - **Informative**
   - ANSI colored logging support.
@@ -27,6 +28,10 @@ airframe-log is a libray for enhancing your Scala application logging with color
 - **Production ready**
   - airframe-log has built-in handlers for log file rotations, asynchronous logging.
   - Scala 2.11, 2.12, Scala.js support
+
+## Resources
+- GitHub: [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log)
+- Blog post: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
  
 ## Usage
 
@@ -62,6 +67,21 @@ import wvlet.log.Logger
 class YourApp {
    private val logger = Logger.of[YourApp]
 }
+```
+
+### Using the default configuration
+
+If your project involves dependencies that set their own java.util.logging configurations, 
+you can force using the default configuration of Airframe Log by calling `wvlet.airframe.log.init`:
+
+```scala
+import wvlet.airframe._
+
+// Initialize with INFO level and SourceCodeLogFormatter
+log.init
+
+// For terminals not supporting ANSI colors
+log.initNoColor
 ```
 
 ### Configuring log levels
@@ -126,7 +146,8 @@ trait Spec extends WordSpec with Matchers with BeforeAndAfterAll with LogSupport
 class YourSpec extends Spec {
    "my application" should {
       "run correctly" in {
-         // ....
+         // show a log message
+         debug("this is debug log")
       }
    }
 }
@@ -151,6 +172,7 @@ This code will show:
 ### Pre-defined log formatters:
 Here is the list of pre-defined log formatters. 
  - **SourceCodeLogFormatter** (with source code location) 
+ - **PlainSourceCodeLogFormatter** (with source code location without ANSI coloring) 
  - **AppLogFormatter** (without source code location)
  - **TSVLogFormatter** (logging in TSV format)
  - **IntelliJLogFormatter** (for debugging using IntelliJ console)
@@ -171,7 +193,7 @@ object CustomLogFormatter extends LogFormatter {
 
 Logger.setDefaultFormatter(CustomLogFormatter)
 ```
-See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.scala):
+See also the examples in [LogFormat.scala](https://github.com/wvlet/airframe/blob/master/airframe-log/shared/src/main/scala/wvlet/log/LogFormat.scala):
 
 ### Using airframe-log in Scala.js
 
@@ -179,9 +201,9 @@ See also the examples in [LogFormat.scala](src/main/scala/wvlet/log/LogFormat.sc
 ```scala
 import wvlet.log._
 
-// This configuration is unnecessary since 0.43
-// Logger.setDefaultHandler(JSConsoleLogHandler())
-
+// This configuration becomes unnecessary since 0.43
+//Logger.setDefaultHandler(new JSConsoleLogHandler)
+  
 class YourAppClass extends LogSupport {
 
   info("hello")
@@ -200,12 +222,19 @@ To configure the log level, use `wvlet.log.setDefaultLogLevel` or `wvlet.log.set
 ### Using with slf4j
 
 If you are using slf4j, just add `slf4j-jdk14` to your dependency. The log messages from slf4j will be sent to wvlet-log:
-```
+```scala
 libraryDependencies += "org.slf4j" % "slf4j-jdk14" % "1.7.21"
 ```
 
 - See also the article, [How to start using wvlet-log with slf4j projects](http://blog.seratch.net/post/150202874933/how-to-start-using-wvlet-log-with-slf4j-projects), written by [@seratch](https://github.com/seratch) (author of skinny-framework, scalikejdbc, etc.)
 
+### Using with log4j
+
+For example, the default logger of Hadoop and Spark is log4j. You can send logs from airframe-log to log4j by adding
+log4j-jul binder:
+```scala
+libraryDependencies += "org.apache.logging.log4j" % "log4j-jul" % "2.6.1",
+```
 
 ### Writing and rotating logs with files 
 
@@ -245,6 +274,23 @@ Note that however AsyncHandler has usually higher overhead than the default hand
 We recommend to use AsyncHandler only if you know the overhead of the log writing is considerably high. 
 LogRotationHandler is already optimized for writing logs to files, so you usually don't need to use AsyncHandler with LogRotationHandler. 
 
+### Clear Existing Logger Configurations
+
+To remove all previous configurations of the logger (e.g., configurations set by third-party libraries), use:
+```scala
+Logger.clearAllHandlers
+
+// Then set your logger configurations
+Logger.setDefaultFormatter(LogFormatter.SourceCodeLogFormatter)
+```
+
+### Changing Log Levels using JMX
+
+To change the log levels outside the JVM process, you can use the JMX interface of `wvlet.log.Logger`.
+
+For example, by using [jconsole](https://docs.oracle.com/javase/8/docs/technotes/guides/management/jconsole.html) you can access the JMX interface and change the log levels:
+![image](../img/airframe-log/jmx.png)
+
 ## Internals
 
 ### Scala macro based logging code generation
@@ -262,19 +308,6 @@ if(logger.isDebugEnabled) {
 ```
 Log message String generation will not happen unless the debug log is effective. 
 Scala macro is also used for finding source code location (LogSource).
-
-### To disable Logging at compile-time
-It is possible to disable the code generation of log statements at compile time.
-Add `scalacOptions += "-Xmacro-settings:wvlet.log.disable.[SUPPRESS_BELOW]"` compiler option to `build.sbt` 
-
-SUPPRESS_BELOW = {`ALL` ||`ERROR` || `WARN` || `INFO` || `DEBUG`}:
-
-e.g. `scalacOptions += "-Xmacro-settings:wvlet.log.disable.INFO"` will suppress DEBUG, TRACE and INFO level log code generation.
-
-Note that `ALL` is just an alias for `ERROR` which will disable all logging.
-
-
-
 
 
 ## Why it uses java.util.logging instead of slf4j?
@@ -295,4 +328,8 @@ An wrapper of *slf4j* for Scala. This also uses Scala macros to make logging eff
 
 - [twitter/util-logging](https://github.com/twitter/util#logging): This is also an wrapper of `java.util.logging` for Scala, but it doesn't use Scala macros, so you need to use an old sprintf style log generation, or `ifDebug(log)` 
 method to avoid expensive log message generation. 
+
+- [scribe](https://github.com/outr/scribe):
+A pure-scala logger implementation, which has a similar set of functionality with airframe-log (e.g., macro based code generation, programmatically configurable).
+As of June 2018, scribe doesn't support runtime log level configurations via JMX nor log.properties file.
 
