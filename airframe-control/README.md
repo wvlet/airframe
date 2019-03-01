@@ -1,6 +1,6 @@
 # Airframe Control
 
-airframe-control is a library for writing control flow easily.
+airframe-control is a library for writing control flow at ease.
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/)
 
@@ -30,6 +30,7 @@ Control.withResources(
 ```
 
 ### Retry
+
 
 ```scala
 import wvlet.airframe.control.Retry
@@ -70,11 +71,4 @@ val result: Iterator[Int] = Parallel.iterate(source, parallelism = 4){ i =>
   ...
 }
 
-// Run each element every 10 seconds
-val stoppable = Parallel.repeat(source, interval = 10 seconds){ i =>
-  ...
-}
-
-// Stop running
-stoppable.stop
 ```
