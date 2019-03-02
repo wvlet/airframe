@@ -5,7 +5,7 @@
 1. Write config classes of your application.
 1. Read YAML files to populate the config objects.
 1. (optional) Override the configuration with Properties.
-1. Read the configuration with `config.of[X]` or bind it with Airframe DI 
+1. Read the configuration with `config.of[X]` or bind it with Airframe DI. 
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/)
 
@@ -19,7 +19,7 @@ Here is the details of the application configuration flow:
 
 1. The application specifies an environment (e.g., `test`, `staging`, `production`, etc) and configuration file paths.
 1. Read a configuration file (YAML) from the paths specified in `configpaths`.
-   - The first YAML file found in the config paths will be read.
+   - The first found YAML file in the config paths will be used.
    - `config.registerFromYaml[A](yaml file)` will create an object `A` from the YAML data.
    - If the YAML file does not contain data for the target environment, it searches for `default` environment instead.
        - If `default` environment is also not found, the provided default object will be used (optional).
@@ -68,8 +68,8 @@ server.password=xxxxxyyyyyy
 
 **Scala code**:
 ```scala
-import wvlet.config.Config
-import wvlet.surface.tag.@@
+import wvlet.airframe.config.Config
+import wvlet.airframe.surface.tag.@@
 
 // Configuration classes can have default values
 // Configuration class name convention: xxxxConfig (xxxx will be the prefix for properties file)
@@ -81,7 +81,7 @@ trait Access
 trait Db
 
 val config = 
-  Config(env="development", configPaths="./config")
+  Config(env="development", configPaths=Seq("./config"))
     .registerFromYaml[LogConfig @@ Access]("access-log.yml")
     .registerFromYaml[LogConfig @@ Db]("db-log.yml")
     .registerFromYaml[ServerConfig]("server.yml")
