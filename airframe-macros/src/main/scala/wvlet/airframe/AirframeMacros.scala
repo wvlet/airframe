@@ -232,7 +232,6 @@ private[wvlet] object AirframeMacros {
   }
 
   def registerTraitFactoryImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     h.registerTraitFactory(t)
@@ -402,26 +401,23 @@ private[wvlet] object AirframeMacros {
     * @return
     */
   def buildImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     new BindHelper[c.type](c).bind(c.prefix.tree, t)
   }
 
   def buildWithSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Expr[A => Any]): c.Tree = {
     import c.universe._
-    import internal._
     val t = implicitly[c.WeakTypeTag[A]].tpe
+    // Bind the code block to a local var to resolve #373
     val e = q"""
-         ${c.prefix}.withSession { x =>
-            val a = x.build[${t}]
-            ${body}(a)
+         {
+           val codeBlock = ${body}
+           (${c.prefix}).withSession { session =>
+              val a = session.build[${t}]
+              codeBlock(a)
+           }
          }
      """
-    val m = showRaw(e)
-    if (m.contains("helloDesign")) {
-      println(showRaw(body))
-      println(showCode(e))
-    }
     e
   }
 
@@ -631,8 +627,9 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import scala.language.higherKinds
     import c.universe._
+
+    import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[I1, A]
     val i1 = t.typeArgs(0) // I1
     val a  = t.typeArgs(1) // A
@@ -645,8 +642,9 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory2Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import scala.language.higherKinds
     import c.universe._
+
+    import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2), A]
     val i1 = t.typeArgs(0) // I1
     val i2 = t.typeArgs(1) // I2
@@ -664,8 +662,9 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory3Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import scala.language.higherKinds
     import c.universe._
+
+    import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3), A]
     val i1 = t.typeArgs(0) // I1
     val i2 = t.typeArgs(1) // I2
@@ -685,8 +684,9 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory4Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import scala.language.higherKinds
     import c.universe._
+
+    import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4), A]
     val i1 = t.typeArgs(0) // I1
     val i2 = t.typeArgs(1) // I2
@@ -708,8 +708,9 @@ private[wvlet] object AirframeMacros {
   }
 
   def bindFactory5Impl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
-    import scala.language.higherKinds
     import c.universe._
+
+    import scala.language.higherKinds
     val t  = implicitly[c.WeakTypeTag[F]].tpe // F = Function[(I1, I2, I3, I4, I4), A]
     val i1 = t.typeArgs(0) // I1
     val i2 = t.typeArgs(1) // I2
