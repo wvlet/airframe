@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.util
 
 import wvlet.airframe.json.JSONParseException
-import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.collection.JavaConverters._
@@ -40,20 +40,35 @@ object CollectionCodec {
                   surface: Surface,
                   elementCodec: MessageCodec[A],
                   newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
-      // Read elements
-      val len = u.unpackArrayHeader
-      val b   = newBuilder
-      b.sizeHint(len)
-      for (i <- 0 until len) {
-        elementCodec.unpack(u, v)
-        if (v.isNull) {
-          // Add default value
-          b += Zero.zeroOf(surface).asInstanceOf[A]
-        } else {
-          b += v.getLastValue.asInstanceOf[A]
-        }
+
+      u.getNextValueType match {
+        case ValueType.ARRAY =>
+          // Read elements
+          val len = u.unpackArrayHeader
+          val b   = newBuilder
+          b.sizeHint(len)
+          for (i <- 0 until len) {
+            elementCodec.unpack(u, v)
+            if (v.isNull) {
+              // Add default value
+              b += Zero.zeroOf(surface).asInstanceOf[A]
+            } else {
+              b += v.getLastValue.asInstanceOf[A]
+            }
+          }
+          v.setObject(b.result())
+        case ValueType.STRING =>
+          // Assumes JSON array
+          val jsonArray = u.unpackString
+          val msgpack   = JSONCodec.toMsgPack(jsonArray)
+          val unpacker  = MessagePack.newUnpacker(msgpack)
+          // Parse again
+          unpack(unpacker, v, surface, elementCodec, newBuilder)
+        case other =>
+          u.skipValue
+          v.setError(
+            new MessageCodecException(INVALID_DATA, elementCodec, s"Unsupported type for Seq[$surface]: ${other}"))
       }
-      v.setObject(b.result())
     }
   }
 
@@ -153,7 +168,7 @@ object CollectionCodec {
               v.setError(e)
           }
         case _ =>
-          val x = u.skipValue
+          val x = u.unpackValue
           v.setError(new MessageCodecException(INVALID_DATA, this, s"Not a map value: ${x}"))
       }
     }
@@ -170,17 +185,35 @@ object CollectionCodec {
       }
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackMapHeader
-      val b   = Map.newBuilder[Any, Any]
-      b.sizeHint(len)
-      for (i <- 0 until len) {
-        keyCodec.unpack(u, v)
-        val key = v.getLastValue
-        valueCodec.unpack(u, v)
-        val value = v.getLastValue
-        b += (key -> value)
+      u.getNextValueType match {
+        case ValueType.MAP =>
+          val len = u.unpackMapHeader
+          val b   = Map.newBuilder[Any, Any]
+          b.sizeHint(len)
+          for (i <- 0 until len) {
+            keyCodec.unpack(u, v)
+            val key = v.getLastValue
+            valueCodec.unpack(u, v)
+            val value = v.getLastValue
+            b += (key -> value)
+          }
+          v.setObject(b.result().asJava)
+        case ValueType.STRING =>
+          // Assume it's a JSON map value
+          val json = u.unpackString
+          try {
+            val msgpack = JSONCodec.toMsgPack(json)
+            this.unpackMsgPack(msgpack).map { x =>
+              v.setObject(x)
+            }
+          } catch {
+            case e: JSONParseException =>
+              v.setError(e)
+          }
+        case _ =>
+          val x = u.unpackValue
+          v.setError(new MessageCodecException(INVALID_DATA, this, s"Not a map value: ${x}"))
       }
-      v.setObject(b.result().asJava)
     }
   }
 
