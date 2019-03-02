@@ -1,12 +1,11 @@
-airframe-config
-===
+# airframe-config
 
-airframe-config enables configure your Scala applications in a simple flow:
+*airframe-config* enables configuring your Scala applications in a simple flow:
 
 1. Write config classes of your application.
 1. Read YAML files to populate the config objects.
 1. (optional) Override the configuration with Properties.
-1. Use it!
+1. Read the configuration with `config.of[X]` or bind it with Airframe DI. 
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/)
 
@@ -19,7 +18,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-config" % "(version)"
 Here is the details of the application configuration flow:
 
 1. The application specifies an environment (e.g., `test`, `staging`, `production`, etc) and configuration file paths.
-1. Read a configuration file (YAML) from `configpath(s)`.
+1. Read a configuration file (YAML) from the paths specified in `configpaths`.
    - The first found YAML file in the config paths will be used.
    - `config.registerFromYaml[A](yaml file)` will create an object `A` from the YAML data.
    - If the YAML file does not contain data for the target environment, it searches for `default` environment instead.
@@ -106,5 +105,43 @@ To see the effective configurations, use `Config.getConfigChanges` method:
 ```scala
 for(change <- config.getConfigChanges) {
   println(s"[${change.key}] default:${change.default}, current:${change.current}")
+}
+```
+
+
+## Using with Airframe
+
+Since Airframe 0.65, binding configurations to design becomes easier.
+By importing `wvlet.airframe.config._`, you can bind configurations to design objects.
+
+Example:
+```scala
+import wvlet.airframe._
+// Import config._ to use bindConfigXXX methods
+import wvlet.airframe.config._
+
+// Load "production" configurations from Yaml files
+val design = 
+  newDesign
+    // Set an environment to use
+    .withConfigEnv(env = "production", defaultEnv = "default")
+    // Load configs from YAML files
+    .bindConfigFromYaml[LogConfig]("access-log.yml")  
+    .bindConfigFromYaml[ServerConfig]("server.yml")
+    // Bind other designs
+    .bind[X].toInstance(...)
+    .bind[Y].toProvider{ ... }
+
+// If you need to override some config parameters, prepare Map[String, Any] objects:
+val properties = Map(
+  "server.host" -> "xxx.xxx.xxx" 
+)
+
+// Override config with property values
+val finalDesign = 
+  design.overrideConfigParams(properties) 
+
+finalDesign.build[X] { x =>
+  // ... start the application 
 }
 ```
