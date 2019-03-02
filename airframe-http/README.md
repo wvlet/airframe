@@ -1,7 +1,3 @@
----
-layout: docs
-title: airframe-http
----
 Airframe HTTP: A lightweight web service builder
 ===
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
