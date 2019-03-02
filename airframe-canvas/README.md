@@ -1,4 +1,4 @@
-airframe-canvas
+Airframe Canvas
 ===
 
 airframe-canvas is a library for managing large off-heap memory (called Canvas) of more than 2G (2^31) size, 

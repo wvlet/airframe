@@ -1,8 +1,3 @@
----
-layout: docs
-title: airframe-launcher
----
-
 # Airframe Launcher
 
 *airframe-laucnher* is a handy command-line program launcher. 
