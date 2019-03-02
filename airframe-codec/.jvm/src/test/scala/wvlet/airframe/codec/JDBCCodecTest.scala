@@ -177,6 +177,17 @@ class JDBCCodecTest extends AirframeSpec {
       JavaSqlArrayCodec.pack(p, MockArray(Seq(1, 2, 3)))
     }
   }
+
+  "ResultSet to JSON maps" taggedAs working in {
+    withQuery("""with a(id, name) as
+                |(select * from (values (1, 'leo'), (2, 'yui')))
+                |select * from a
+                |""".stripMargin) { rs =>
+      val jsonSeq = JDBCCodec(rs).toJsonSeq.toIndexedSeq
+      jsonSeq(0) shouldBe """{"id":1,"name":"leo"}"""
+      jsonSeq(1) shouldBe """{"id":2,"name":"yui"}"""
+    }
+  }
 }
 
 case class MockArray(v: AnyRef) extends java.sql.Array {

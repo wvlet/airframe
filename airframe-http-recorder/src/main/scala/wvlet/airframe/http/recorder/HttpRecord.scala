@@ -99,7 +99,7 @@ object HttpRecord extends LogSupport {
   private[recorder] def read(rs: ResultSet): Seq[HttpRecord] = {
     val resultSetCodec = JDBCCodec(rs)
     resultSetCodec
-      .mapMsgPackRows(msgpack => recordCodec.unpackBytes(msgpack))
+      .mapMsgPackMapRows(msgpack => recordCodec.unpackBytes(msgpack))
       .filter(_.isDefined)
       .map(_.get)
       .toSeq
