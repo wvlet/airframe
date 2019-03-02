@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'fileutils'
-
 PREFIX = 'https://github.com/wvlet/airframe'
 RELEASE_NOTES_FILE = "docs/src/main/tut/docs/release-notes.md"
 
@@ -12,7 +11,8 @@ last_tag = `git describe --tags --abbrev=0`.chomp
 last_version = last_tag.sub("v", "")
 puts "last version: #{last_version}"
 
-print "next version? "
+now = Time.new
+print "next version (e.g., #{now.year-2000}.#{now.month}.x)? "
 next_version = STDIN.gets.chomp
 
 abort("Can't use empty version string") if next_version.empty?
