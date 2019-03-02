@@ -31,36 +31,87 @@ object JDBCCodec extends LogSupport {
     private def columnTypes: IndexedSeq[Int] = (1 to columnCount).map(i => md.getColumnType(i))
     private lazy val columnCodecs: IndexedSeq[JDBCColumnCodec] =
       (1 to columnCount).map(i => toJDBCColumnCodec(md.getColumnType(i), md.getColumnTypeName(i))).toIndexedSeq
+    private lazy val columnNames = (1 to columnCount).map(i => md.getColumnName(i))
 
+    /**
+      * Encode the all ResultSet rows as MsgPack map values
+      */
     def toMsgPack: Array[Byte] = {
       val p = MessagePack.newBufferPacker
-      packAllRows(p)
+      packAllRowsAsMap(p)
       p.toByteArray
     }
 
-    def packAllRows(p: Packer): Unit = {
-      while (rs.next()) {
-        packRow(p)
+    /**
+      * Encode the all ResultSet rows as JSON object values
+      */
+    def toJsonSeq: TraversableOnce[String] = {
+      mapMsgPackMapRows { msgpack =>
+        JSONCodec.toJson(msgpack)
       }
     }
 
-    private class RStoMsgPackIterator[A](f: Array[Byte] => A) extends Iterator[A] {
+    /**
+      * Pack the all ResultSet rows as MsgPack array values
+      */
+    def packAllRowsAsArray(p: Packer): Unit = {
+      while (rs.next()) {
+        packRowAsArray(p)
+      }
+    }
+
+    /**
+      * pack the all ResultSet rows as MsgPack map values
+      */
+    def packAllRowsAsMap(p: Packer): Unit = {
+      while (rs.next()) {
+        packRowAsMap(p)
+      }
+    }
+
+    private class RStoMsgPackIterator[A](f: Array[Byte] => A, packer: Packer => Unit) extends Iterator[A] {
       override def hasNext: Boolean = rs.next()
       override def next(): A = {
         val p = MessagePack.newBufferPacker
-        packRow(p)
+        packer(p)
         f(p.toByteArray)
       }
     }
 
-    def mapMsgPackRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
-      new RStoMsgPackIterator[U](f)
+    /**
+      * Create an interator for reading ResultSet as a sequence of MsgPack Map values
+      */
+    def mapMsgPackMapRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+      new RStoMsgPackIterator[U](f, packer = packRowAsMap(_))
     }
 
-    def packRow(p: Packer): Unit = {
+    /**
+      * Create an interator for reading ResultSet as a sequence of MsgPack array values
+      */
+    def mapMsgPackArrayRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+      new RStoMsgPackIterator[U](f, packer = packRowAsArray(_))
+    }
+
+    /**
+      * Read a row from ResultSet and pack as a MsgPack array
+      */
+    def packRowAsArray(p: Packer): Unit = {
       p.packArrayHeader(columnCount)
       var col = 1
       while (col <= columnCount) {
+        columnCodecs(col - 1).pack(p, rs, col)
+        col += 1
+      }
+    }
+
+    /**
+      * Read a row from ResultSet and pack as a MsgPack map
+      */
+    def packRowAsMap(p: Packer): Unit = {
+      p.packMapHeader(columnCount)
+      var col = 1
+      while (col <= columnCount) {
+        p.packString(columnNames(col - 1))
         columnCodecs(col - 1).pack(p, rs, col)
         col += 1
       }
@@ -346,7 +397,7 @@ object JDBCCodec extends LogSupport {
     }
   }
 
-  object JavaSqlArrayCodec extends LogSupport {
+  object JavaSqlArrayCodec extends MessageCodec[java.sql.Array] with LogSupport {
     def pack(p: Packer, v: java.sql.Array): Unit = {
       val arr: AnyRef = v.getArray
       arr match {
@@ -369,13 +420,13 @@ object JDBCCodec extends LogSupport {
         case a: Array[Boolean] =>
           BooleanArrayCodec.pack(p, a)
         case a: Array[AnyRef] =>
-          debug(s"element class: ${a.head.getClass}")
           throw new UnsupportedOperationException(
             s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
         case other =>
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }
     }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
 
 }
