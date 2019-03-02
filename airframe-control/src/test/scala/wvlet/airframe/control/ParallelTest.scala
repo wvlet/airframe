@@ -68,35 +68,33 @@ class ParallelTest extends AirframeSpec {
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.run(source, parallelism = 3) { i =>
-        Try {
-          if (i == 2) {
-            throw exception
+      val result = Parallel
+        .run(source, parallelism = 3) { i =>
+          Try {
+            if (i == 2) {
+              throw exception
+            }
+            i * 2
           }
-          i * 2
-        }
-      }
+        }.toList
 
-      assert(result == List(Success(2), Failure(exception), Success(6)))
+      assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
     }
 
     "handle errors in iterate()" in {
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
-      val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
-        Try {
-          if (i == 2) {
-            throw exception
+      val result = Parallel
+        .iterate(source.toIterator, parallelism = 3) { i =>
+          Try {
+            if (i == 2) {
+              throw exception
+            }
+            i * 2
           }
-          i * 2
-        }
-      }
-
-      // wait for completion here
-      val list = result.toList
-
-      assert(list == List(Success(2), Failure(exception), Success(6)))
+        }.toList
+      assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
     }
 
 //    "repeat() and stop" in {
