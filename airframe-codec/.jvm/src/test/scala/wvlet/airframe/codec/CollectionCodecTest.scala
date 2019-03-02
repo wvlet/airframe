@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 import scala.collection.JavaConverters._
@@ -37,6 +38,25 @@ class CollectionCodecTest extends CodecSpec {
       roundtrip(Surface.of[Seq[Int]], Seq(1, 2, 3), DataType.ANY)
       roundtrip(Surface.of[List[Int]], List(1, 2, 3), DataType.ANY)
     }
+
+    "support JSON Array" in {
+      val codec   = MessageCodec.of[Seq[Int]]
+      val msgpack = MessagePack.newBufferPacker.packString("[1, 2, 3]").toByteArray
+      codec.unpackMsgPack(msgpack) shouldBe Some(Seq(1, 2, 3))
+    }
+
+    "support JSON Map" in {
+      val codec   = MessageCodec.of[Map[String, Int]]
+      val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
+      codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2))
+    }
+
+    "support JSON Map to java.util.Map" in {
+      val codec   = MessageCodec.of[java.util.Map[String, Int]]
+      val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
+      codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
+    }
+
   }
 
 }
