@@ -1,5 +1,4 @@
-airframe-fluentd
-=====  
+# airframe-fluentd
 
 airframe-fluentd is a logging library for sending metrics to [Fluentd](https://www.fluentd.org/) or 
 [Treasure Data](https://www.treasuredata.com/)

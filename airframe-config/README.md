@@ -1,5 +1,4 @@
-airframe-config
-===
+# airframe-config
 
 *airframe-config* enables configuring your Scala applications in a simple flow:
 

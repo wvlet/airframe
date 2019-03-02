@@ -1,4 +1,6 @@
-import sbtcrossproject.{crossProject, CrossType}
+import sbt.internal.io.Source
+import sbt.internal.util.ManagedLogger
+import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0-M5"
@@ -240,6 +242,15 @@ lazy val docs =
         "gray-dark"       -> "#453E46",
         "gray"            -> "#534F54"
       ),
+      resourceGenerators in Tut += Def.task {
+        // Copy source docs since Tut accepts only a single source directory
+        val sourceDir = (sourceDirectory in Compile).value / "tut"
+        IO.copyDirectory(sourceDir, tutSourceDirectory.value)
+
+        // Generate airframe-xxx.md files from airframe-xxx/README.md
+        generateModuleDoc(tutSourceDirectory.value, streams.value.log)
+      }.taskValue,
+      tutSourceDirectory := (managedResourceDirectories in Tut).value.head,
       watchSources += new sbt.internal.io.Source(
         sourceDirectory.value,
         new FileFilter {
@@ -249,6 +260,36 @@ lazy val docs =
       )
     )
     .enablePlugins(MicrositesPlugin)
+
+def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
+  val baseDir = file(".")
+  val readmeFiles =
+    baseDir
+      .listFiles()
+      .filter(x => x.isDirectory && x.name.startsWith("airframe"))
+      .map(x => x / "README.md")
+      .filter(_.exists())
+
+  logger.info("Generating module doc files")
+  readmeFiles.flatMap { f =>
+    f.relativeTo(baseDir).map { x =>
+      val moduleName     = x.getParent
+      val targetFileName = targetDir / "docs" / s"${moduleName}.md"
+      logger.info(s"${targetFileName.relativeTo(baseDir).getOrElse(targetFileName.getName)}")
+
+      val originalReadme = IO.read(f)
+      val content =
+        s"""---
+           |layout: docs
+           |title: ${moduleName}
+           |---
+           |${originalReadme}""".stripMargin
+
+      IO.write(targetFileName, content)
+      targetFileName
+    }
+  }
+}
 
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
