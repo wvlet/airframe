@@ -15,6 +15,8 @@
 
 Airframe https://wvlet.org/airframe is a collection of lightweight building blocks for Scala.
 
+<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
+
 - [Getting Started](https://wvlet.org/airframe/)
 
 ## Resources

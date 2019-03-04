@@ -8,7 +8,9 @@ technologies:
 ---
 # Airframe
 
-Airframe is a collection of lightweight libraries useful for building full-fledged applications in Scala.
+Airframe is a collection of [lightweight libraries](docs/utils.html) useful for building full-fledged applications in Scala.
+
+<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
 - [Logging](docs/airframe-log.html) (airframe-log)
 - [Configuration](docs/airframe-config.html) (airframe-config)
@@ -27,7 +29,7 @@ Airframe is a collection of lightweight libraries useful for building full-fledg
 - [Runtime monitoring via JMX](docs/airframe-jmx.html) (airframe-jmx)
 - [Human-readable data and time units](docs/airframe-metrics.html) (airframe-metrics)
 - [Object shape inspector (Surface)](docs/airframe-surface.html) (airframe-surface)
-- [Other Utilities](https://wvlet.org/airframe/docs/utils.html)
+- [Other Utilities](docs/utils.html)
    - A collection of useful Scala libraries that can be used with Airframe.
 
 ## Resources
