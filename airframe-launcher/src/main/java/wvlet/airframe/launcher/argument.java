@@ -19,27 +19,21 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+
 /**
- * Annotation for methods that can be invoked as commands
- *
- * @author leo
+ * CommandTrait-line argument with no option prefix such as "-" or "--"
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface command {
+@Target({ElementType.FIELD, ElementType.METHOD})
+public @interface argument {
 
     /**
-     * Description of the option, used to generate a help message of this
-     * command-line options.
+     * Name of this argument. If nothing is given, field name is used;
+     */
+    String name() default "";
+
+    /**
+     * Description of this argument
      */
     String description() default "";
-
-    /**
-     * If this is true, this command will be used as the default command of this command module.
-     */
-    boolean isDefault() default false;
-    /**
-     * One-line usage note e.g. "$ command name (argument)"
-     */
-    String usage() default "";
 }

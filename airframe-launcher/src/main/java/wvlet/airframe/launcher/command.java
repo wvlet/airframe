@@ -20,29 +20,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for specifying command-line options.
- *
- * @author leo
- *
+ * Annotation for methods that can be invoked as commands
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
-public @interface option {
-
-    /**
-     * Comma-separated list of option prefixes. For example, "-h,--help" handles option "-h" and
-     * "--help". If no prefix is specified, this parameter is handled as a nested option.
-     */
-    String prefix() default "";
+@Target({ElementType.METHOD})
+public @interface command {
 
     /**
      * Description of the option, used to generate a help message of this
-     * command-line option.
+     * command-line options.
      */
     String description() default "";
 
     /**
-     * If this option is used as a switch to display help messages of commands, set this value to true.
+     * If this is true, this command will be used as the default command of this command module.
      */
-    boolean isHelp() default false;
+    boolean isDefault() default false;
+    /**
+     * One-line usage note e.g. "$ command name (argument)"
+     */
+    String usage() default "";
 }
