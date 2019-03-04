@@ -19,24 +19,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-
 /**
- * CommandTrait-line argument with no option prefix such as "-" or "--"
- *
- * @author leo
- *
+ * Annotation for specifying command-line options.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD, ElementType.METHOD })
-public @interface argument {
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+public @interface option {
 
     /**
-     * Name of this argument. If nothing is given, field name is used;
+     * Comma-separated list of option prefixes. For example, "-h,--help" handles option "-h" and
+     * "--help". If no prefix is specified, this parameter is handled as a nested option.
      */
-    String name() default "";
+    String prefix() default "";
 
     /**
-     * Description of this argument
+     * Description of the option, used to generate a help message of this
+     * command-line option.
      */
     String description() default "";
+
+    /**
+     * If this option is used as a switch to display help messages of commands, set this value to true.
+     */
+    boolean isHelp() default false;
 }
