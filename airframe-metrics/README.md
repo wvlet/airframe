@@ -1,7 +1,7 @@
-Airframe Metrics
+airframe-metrics
 ====
 
-*airframe-metrics* is a library for using human-readable representations of time, data byte size, etc.
+*airframe-metrics* is a library for human-readable representations of time, data byte size, etc.
 
 
 ## Usage
