@@ -1,11 +1,12 @@
-# Airframe HTTP: A lightweight web service builder
+airframe-http
+====
 
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-surface_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
 
-airframe-http is a library for creating HTTP web services.
-- **airframe-http-finagle**: Finagle as a backend HTTP server
+airframe-http is a library for creating HTTP web servers at ease.
+**airframe-http-finagle** is an extention of airframe-http to use Finagle as a backend HTTP server.
 
-Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
+- Blog article: [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
 
 # airframe-http-finagle
 
@@ -56,6 +57,14 @@ trait MyApi {
   @Endpoint(method = HttpMethod.GET, path = "/info_f")
   def getInfoFuture(request: HttpRequest[Request]): Future[ServerInfo] = {
     Future.value(ServerInfo("1.0", request.userAgent))
+  }
+  
+  // It is also possible to return a custom HTTP responses
+  @EndPoint(method = HttpMethod.GET, path = "/custom_response")
+  def customResponse: Response = {
+    val response = Reponse()
+    response.contentString = "hello airframe-http"
+    response
   }
 }
 ```

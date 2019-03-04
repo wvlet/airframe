@@ -1,9 +1,7 @@
-Airframe JDBC
+airframe-jdbc
 ====
 
-A reusable JDBC connection pool implementation with Airframe. 
-
-- [Source code](https://github.com/wvlet/airframe/tree/master/airframe-jdbc)
+airframe-jdbc is a reusable JDBC connection pool implementation with Airframe. 
 
 Currently we are supporting these databases:
 
