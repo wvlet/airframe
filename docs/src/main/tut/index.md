@@ -8,9 +8,11 @@ technologies:
 ---
 # Airframe
 
-Airframe is a collection of [lightweight libraries](docs/utils.html) useful for building full-fledged applications in Scala.
-
+<center>
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
+</center>
+
+Airframe is a collection of [lightweight building blocks](docs/utils.html) for Scala.
 
 - [Logging](docs/airframe-log.html) (airframe-log)
 - [Configuration](docs/airframe-config.html) (airframe-config)
