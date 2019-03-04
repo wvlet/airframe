@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 19.3.0
+-  [#413](https://github.com/wvlet/airframe/issues/413): Add a workaround for bind[X].toInstance(...) compilation error [[9d0da31](https://github.com/wvlet/airframe/commit/9d0da31)]
+-  Fixes [#373](https://github.com/wvlet/airframe/issues/373) Resolve build[X] compilation error in Scala 2.12 [[31c929c](https://github.com/wvlet/airframe/commit/31c929c)]
+-  Support reading String as JSON array or map ([#411](https://github.com/wvlet/airframe/issues/411)) [[b5e4956](https://github.com/wvlet/airframe/commit/b5e4956)]
+-  Add ResultSetCodec.toJsonSeq ([#409](https://github.com/wvlet/airframe/issues/409)) [[61c9627](https://github.com/wvlet/airframe/commit/61c9627)]
+-  airframe-control: Add a simple library Parallel for parallel execution ([#406](https://github.com/wvlet/airframe/issues/406)) [[e04166e](https://github.com/wvlet/airframe/commit/e04166e)]
+
 ## 19.2.1
 -  airframe-fluentd: Fluency 2.0 based Fluentd interface ([#404](https://github.com/wvlet/airframe/issues/404)) [[bd9d75e](https://github.com/wvlet/airframe/commit/bd9d75e)]
 -  airframe-codec: Add MessageCodec.toJson ([#405](https://github.com/wvlet/airframe/issues/405)) [[8fbdcab](https://github.com/wvlet/airframe/commit/8fbdcab)]
