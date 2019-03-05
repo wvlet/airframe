@@ -31,9 +31,16 @@ class Router(val routes: Seq[Route]) {
     routes
       .find { r =>
         r.method == request.method &&
-        r.pathComponents.length == request.pathComponents.length &&
-        request.path.startsWith(r.pathPrefix)
+        checkPath(request.pathComponents, r.pathComponents)
       }
+  }
+
+  private def checkPath(requestPathComponents: Seq[String], routePathComponents: Seq[String]): Boolean = {
+    if(requestPathComponents.length == routePathComponents.length){
+      requestPathComponents.zip(routePathComponents).forall { case (requestPathComponent, routePathComponent) =>
+        routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
+      }
+    } else false
   }
 
   /**
@@ -81,13 +88,6 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       .substring(1)
       .split("/")
       .toIndexedSeq
-  }
-
-  lazy val pathPrefix: String = {
-    "/" +
-      pathComponents
-        .takeWhile(!_.startsWith(":"))
-        .mkString("/")
   }
 
   def returnTypeSurface: Surface = methodSurface.returnType

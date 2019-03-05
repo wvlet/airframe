@@ -122,6 +122,36 @@ class RouterTest extends AirframeSpec {
 
         ret.get.asInstanceOf[ControllerExample.User].name shouldBe "aina"
       }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/scala/users")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe ControllerExample.Group("scala", Seq(ControllerExample.User("10", "leo")))
+      }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/scala/user/11")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe ControllerExample.Group("scala", Seq(ControllerExample.User("11", "leo")))
+      }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/conflict/users")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe ControllerExample.Group("xxx", Seq(ControllerExample.User("10", "leo")))
+      }
     }
   }
 }

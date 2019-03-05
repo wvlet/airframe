@@ -20,6 +20,7 @@ import wvlet.log.LogSupport
 object ControllerExample {
   case class User(id: String, name: String)
   case class CreateUserRequest(name: String)
+  case class Group(name: String, users: Seq[User])
 }
 
 /**
@@ -54,6 +55,28 @@ trait ControllerExample extends LogSupport {
     info(s"id: ${id}, ${httpRequest.contentString}")
     httpRequest.contentString
   }
+
+  @Endpoint(path = "/:group/users", method = HttpMethod.GET)
+  def groupUsers(group: String): Group = {
+    val g = Group(group, Seq(User("10", "leo")))
+    info(s"get ${g}")
+    g
+  }
+
+  @Endpoint(path = "/:group/user/:id", method = HttpMethod.GET)
+  def groupUser(group: String, id: String): Group = {
+    val g = Group(group, Seq(User(id, "leo")))
+    info(s"get ${g}")
+    g
+  }
+
+  @Endpoint(path = "/conflict/users", method = HttpMethod.GET)
+  def conflictPath(): Group = {
+    val g = Group("xxx", Seq(User("10", "leo")))
+    info(s"get ${g}")
+    g
+  }
+
 }
 
 trait InvalidService {
