@@ -36,9 +36,10 @@ class Router(val routes: Seq[Route]) {
   }
 
   private def checkPath(requestPathComponents: Seq[String], routePathComponents: Seq[String]): Boolean = {
-    if(requestPathComponents.length == routePathComponents.length){
-      requestPathComponents.zip(routePathComponents).forall { case (requestPathComponent, routePathComponent) =>
-        routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
+    if (requestPathComponents.length == routePathComponents.length) {
+      requestPathComponents.zip(routePathComponents).forall {
+        case (requestPathComponent, routePathComponent) =>
+          routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
       }
     } else false
   }
