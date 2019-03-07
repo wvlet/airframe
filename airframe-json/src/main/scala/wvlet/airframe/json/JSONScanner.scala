@@ -232,9 +232,11 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       rscan(state, stack)
     } else if (state == DATA) {
       if (ch == LSquare) {
-        scanArray(stack)
+        cursor += 1
+        rscan(ARRAY_START, stack.head.arrayContext(s, cursor - 1) :: stack)
       } else if (ch == LBracket) {
-        scanObject(stack)
+        cursor += 1
+        rscan(OBJECT_START, stack.head.objectContext(s, cursor - 1) :: stack)
       } else {
         val ctx = stack.head
         if ((ch >= '0' && ch <= '9') || ch == '-') {
