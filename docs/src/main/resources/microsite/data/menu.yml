@@ -41,14 +41,22 @@ options:
         url: docs/airframe-jdbc.html
       - title: airframe-jmx
         url: docs/airframe-jmx.html
+      - title: airframe-json
+        url: docs/airframe-json.html
       - title: airframe-launcher
         url: docs/airframe-launcher.html
       - title: airframe-log
         url: docs/airframe-log.html
       - title: airframe-metrics
         url: docs/airframe-metrics.html
+      - title: airframe-msgpack
+        url: docs/airframe-msgpack.html
       - title: airframe-surface
         url: docs/airframe-surface.html
+      - title: airframe-spec
+        url: docs/airframe-spec.html
+      - title: airframe-tablet
+        url: docs/airframe-tablet.html
   - title: Airframe Internals
     url: docs/internals.html
   - title: Release Notes
