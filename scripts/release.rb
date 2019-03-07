@@ -12,10 +12,18 @@ last_version = last_tag.sub("v", "")
 puts "last version: #{last_version}"
 
 now = Time.new
-print "next version (e.g., #{now.year-2000}.#{now.month}.x)? "
-next_version = STDIN.gets.chomp
+(year, month, patch) = last_version.split('.').map{|x| x.to_i}
 
-abort("Can't use empty version string") if next_version.empty?
+if year == now.year-2000 && month == now.month
+  patch = patch + 1
+else
+  patch = 0
+end
+default_version = "#{now.year-2000}.#{now.month}.#{patch}"
+print "next version (default: #{default_version})? "
+next_version = STDIN.gets.chomp 
+
+next_version = default_version if next_version.empty?
 
 logs = `git log #{last_tag}..HEAD --pretty=format:'%h %s'`
 logs = logs.gsub(/\#([0-9]+)/, "[#\\1](#{PREFIX}/issues/\\1)")
