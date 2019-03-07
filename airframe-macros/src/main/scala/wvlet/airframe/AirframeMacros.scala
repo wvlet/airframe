@@ -103,7 +103,10 @@ private[wvlet] object AirframeMacros {
     }
 
     /**
-      * Register a factory for generating a trait that embeds the current session
+      * Register a factory for generating a trait that can embed the current session.
+      * This step is necessary for instantiating trait, which has no default constructor.
+      *
+      * This method will return the surface of t
       */
     def registerTraitFactory(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
@@ -118,13 +121,6 @@ private[wvlet] object AirframeMacros {
       } else {
         q"""{${surfaceOf(t)}}"""
       }
-    }
-
-    def withFactoryRegistration(t: c.Type, body: c.Tree): c.Tree = {
-      q"""
-        ${registerTraitFactory(t)}
-        ${body}
-        """
     }
 
     def surfaceOf(t: c.Type): c.Tree = {
@@ -241,12 +237,10 @@ private[wvlet] object AirframeMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
-    h.withFactoryRegistration(t,
-                              q"""{
-         val d = ${c.prefix}
-         d.bind(${h.surfaceOf(t)}).asInstanceOf[wvlet.airframe.Binder[$t]]
-        }
-        """)
+    q"""{
+         val __surface = ${h.registerTraitFactory(t)}
+         ${c.prefix}.bind(__surface).asInstanceOf[wvlet.airframe.Binder[$t]]
+    }"""
   }
 
   def designRemoveImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -263,46 +257,43 @@ private[wvlet] object AirframeMacros {
 
   def binderToImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t    = implicitly[c.WeakTypeTag[B]].tpe
-    val h    = new BindHelper[c.type](c)
-    val core = q""" {
-      val self = ${c.prefix.tree}
-      val to = ${h.surfaceOf(t)}
+    val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
+    q""" {
+      val self = ${c.prefix}
+      val to = ${h.registerTraitFactory(t)}
       self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to))
     }"""
-    h.withFactoryRegistration(t, core)
   }
 
   def binderToSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t    = implicitly[c.WeakTypeTag[B]].tpe
-    val h    = new BindHelper[c.type](c)
-    val core = q""" {
+    val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
+    q""" {
       val self = ${c.prefix.tree}
-      val to = ${h.surfaceOf(t)}
+      val to = ${h.registerTraitFactory(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
     }"""
-    h.withFactoryRegistration(t, core)
   }
 
   def binderToEagerSingletonOfImpl[B: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
-    val t    = implicitly[c.WeakTypeTag[B]].tpe
-    val h    = new BindHelper[c.type](c)
-    val core = q""" {
+    val t = implicitly[c.WeakTypeTag[B]].tpe
+    val h = new BindHelper[c.type](c)
+    q""" {
       val self = ${c.prefix.tree}
-      val to = ${h.surfaceOf(t)}
+      val to = ${h.registerTraitFactory(t)}
       if(self.from == to) {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
       self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
     }"""
-    h.withFactoryRegistration(t, core)
   }
 
   def bindToProvider1[D1: c.WeakTypeTag](c: sm.Context)(factory: c.Tree): c.Tree = {

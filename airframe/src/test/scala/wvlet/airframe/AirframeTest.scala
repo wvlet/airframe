@@ -555,7 +555,7 @@ class AirframeTest extends AirframeSpec {
       val d = newDesign
         .bind[ConfigA].toInstance(ConfigA(param2 = 1))
         .bind[ConfigB].toInstance(ConfigB())
-    }
 
+    }
   }
 }
