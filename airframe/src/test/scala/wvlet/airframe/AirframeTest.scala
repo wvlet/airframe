@@ -547,5 +547,15 @@ class AirframeTest extends AirframeSpec {
       }
       warn(caught.getMessage)
     }
+
+    case class ConfigA(param1: Int = 0, param2: Int = 0)
+    case class ConfigB()
+
+    "not cause compilation error" in {
+      val d = newDesign
+        .bind[ConfigA].toInstance(ConfigA(param2 = 1))
+        .bind[ConfigB].toInstance(ConfigB())
+    }
+
   }
 }
