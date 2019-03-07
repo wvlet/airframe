@@ -7,9 +7,7 @@ title: Release Notes
 
 ## 19.3.1
 -  airframe-http: Allow more flexible http path routing ([#418](https://github.com/wvlet/airframe/issues/418)) [[76b7995](https://github.com/wvlet/airframe/commit/76b7995)]
--  Adjust texts [[71cea45](https://github.com/wvlet/airframe/commit/71cea45)]
 -  Add airframe overview illustration [[3cbdb45](https://github.com/wvlet/airframe/commit/3cbdb45)]
--  Fix doc title [[633072a](https://github.com/wvlet/airframe/commit/633072a)]
 -  Add README for modules ([#416](https://github.com/wvlet/airframe/issues/416)) [[93e1b89](https://github.com/wvlet/airframe/commit/93e1b89)]
 -  Move launcher annotations to Java src folder to reduce compiler warnings [[ce58f6e](https://github.com/wvlet/airframe/commit/ce58f6e)]
 
@@ -48,15 +46,10 @@ title: Release Notes
 -  Set the code coverage test threshold to 80% overall, 5% diff ([#361](https://github.com/wvlet/airframe/issues/361)) [[0519d4b](https://github.com/wvlet/airframe/commit/0519d4b)]
 
 ## 0.79
--  Fix Travis config to releae tagged revisions [[ff1be0b](https://github.com/wvlet/airframe/commit/ff1be0b)]
 -  Enhance loan pattern for AutoCloseable ([#359](https://github.com/wvlet/airframe/issues/359)) [[f971934](https://github.com/wvlet/airframe/commit/f971934)]
 -  Add name conversion functionallity to CName ([#360](https://github.com/wvlet/airframe/issues/360)) [[366caca](https://github.com/wvlet/airframe/commit/366caca)]
--  Allows to use bindFactory outside of wvlet.airframe package ([#358](https://github.com/wvlet/airframe/issues/358)) [[d8836e4](https://github.com/wvlet/airframe/commit/d8836e4)]
+-  Allows using bindFactory outside of wvlet.airframe package ([#358](https://github.com/wvlet/airframe/issues/358)) [[d8836e4](https://github.com/wvlet/airframe/commit/d8836e4)]
 -  Upgrade to Scala 2.11.12 ([#356](https://github.com/wvlet/airframe/issues/356)) [[bc6b172](https://github.com/wvlet/airframe/commit/bc6b172)]
--  Fix typo in docs ([#355](https://github.com/wvlet/airframe/issues/355)) [[e2e3776](https://github.com/wvlet/airframe/commit/e2e3776)]
--  Fix in-trait injection example ([#354](https://github.com/wvlet/airframe/issues/354)) [[bb6fd83](https://github.com/wvlet/airframe/commit/bb6fd83)]
--  Skip doc/publish builds in PR ([#352](https://github.com/wvlet/airframe/issues/352)) [[d3e6b90](https://github.com/wvlet/airframe/commit/d3e6b90)]
--  Add roundtrip tests: SQL -> Model -> SQL' -> Model' ([#349](https://github.com/wvlet/airframe/issues/349)) [[7730745](https://github.com/wvlet/airframe/commit/7730745)]
 
 ## 0.78
 -  Add close() to Unpacker interface ([#348](https://github.com/wvlet/airframe/issues/348)) [[88c3749](https://github.com/wvlet/airframe/commit/88c3749)]
