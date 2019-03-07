@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.3.2
+-  airframe: Fix compilation error of bind[X].toInstance when using scope-local objects ([#423](https://github.com/wvlet/airframe/issues/423)) [[4840a93](https://github.com/wvlet/airframe/commit/4840a93)]
+-  airframe-json: Fix StackOverflowError when parsing large arrays of JSONObjects ([#421](https://github.com/wvlet/airframe/issues/421)) [[1ef5a02](https://github.com/wvlet/airframe/commit/1ef5a02)]
+
 ## 19.3.1
 -  airframe-http: Allow more flexible http path routing ([#418](https://github.com/wvlet/airframe/issues/418)) [[76b7995](https://github.com/wvlet/airframe/commit/76b7995)]
 -  Add airframe overview illustration [[3cbdb45](https://github.com/wvlet/airframe/commit/3cbdb45)]
