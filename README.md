@@ -17,13 +17,11 @@ Airframe https://wvlet.org/airframe is a collection of [lightweight building blo
 
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
-- [Getting Started](https://wvlet.org/airframe/)
+- [Airframe Home](https://wvlet.org/airframe/)
 
 ## Resources
 
 - [Documentation](https://wvlet.org/airframe/docs)
-  - [Documentation Source](https://github.com/wvlet/airframe/tree/master/docs/src/main/tut/docs)
-- [Airframe Modules](https://wvlet.org/airframe/docs/utils.html)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 
 
