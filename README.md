@@ -13,7 +13,7 @@
 
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-badge-light.png" alt="logo" width="300px"></p>
 
-Airframe https://wvlet.org/airframe is a collection of [lightweight building blocks](https://wvlet.org/airframe/docs/utils.html) for Scala.
+Airframe https://wvlet.org/airframe is a collection of [lightweight building blocks](https://wvlet.org/airframe/docs/) for Scala.
 
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
