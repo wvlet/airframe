@@ -6,13 +6,13 @@ options:
     url: docs/airframe.html
     nested_options:
       - title: Bind
-        url: docs/index.html#bind
+        url: docs/airframe.html#bind
       - title: Design
-        url: docs/index.html#design
+        url: docs/airframe.html#design
       - title: Session
-        url: docs/index.html#session
+        url: docs/airframe.html#session
       - title: Life Cycle
-        url: docs/index.html#life-cycle
+        url: docs/airframe.html#life-cycle
       - title: Use Cases
         url: docs/use-cases.html
       - title: Advanced Binding Types
