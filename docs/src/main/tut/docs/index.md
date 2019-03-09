@@ -8,6 +8,10 @@ title: Airframe Modules
 Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/).
 For Scala 2.12.6 or later, Java 11 is also supported.
 
+<center>
+<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
+</center>
+
 - [airframe](airframe.html)
   - Scala-friendly dependency injection library.
 - [ariframe-canvas](airframe-canvas.html)
