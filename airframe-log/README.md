@@ -6,11 +6,11 @@ airframe-log [![Latest version](https://index.scala-lang.org/wvlet/airframe/late
 
 *airframe-log* is a library for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
-<p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/formatters.png" alt="screenshot" style="max-width:100%;"></p>
+![image](../img/airframe-log/formatters.png)
 
 [Scala.js](https://www.scala-js.org/) is also supported:
 
-<p align="center"><img src="https://github.com/wvlet/log/raw/master/docs/images/scalajs-formatters.png" alt="screenshot" style="max-width:100%;"></p>
+![image](../img/airframe-log/scalajs-formatters.png)
 
 ## Features
 - **Simple to use**
