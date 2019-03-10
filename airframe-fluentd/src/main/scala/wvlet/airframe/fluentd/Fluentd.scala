@@ -36,7 +36,7 @@ object Fluentd {
                        flushIntervalMillis: Int = 600,
                        jvmHeapBufferMode: Boolean = true,
                        ackResponseMode: Boolean = true,
-                       sslEnabled: Boolean = true,
+                       sslEnabled: Boolean = false,
                        fileBackupDir: String = null,
                        errorHandler: ErrorHandler = null): FluentdLogger = {
     // We need to extract this code probably because of a bug of Scala compiler.

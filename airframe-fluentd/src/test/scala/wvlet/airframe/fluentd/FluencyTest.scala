@@ -12,10 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe.{AirframeSpec, bind}
-import xerial.fluentd.FluentdStandalone
-import wvlet.airframe._
+import wvlet.airframe.{AirframeSpec, bind, _}
 import wvlet.log.io.IOUtil
+import xerial.fluentd.FluentdStandalone
 
 trait FluentdStandaloneService {
   val fluentdServer = bind[FluentdStandalone]
@@ -24,7 +23,6 @@ trait FluentdStandaloneService {
 }
 
 trait MetricLoggingService extends FluentdStandaloneService {
-  val client  = bind[MetricLogger]
   val factory = bind[MetricLoggerFactory]
 }
 
@@ -45,7 +43,7 @@ class FluencyTest extends AirframeSpec {
   "should send metrics to fluentd through Fluency" in {
     d.build[MetricLoggingService] { f =>
       // Use a regular emit method
-      f.client.emit("mytag", Map("data" -> "hello"))
+      f.factory.getLogger.emit("mytag", Map("data" -> "hello"))
 
       // Use object metric logger
       val l = f.factory.getTypedLogger[FluencyMetric]
