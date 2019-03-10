@@ -29,7 +29,7 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
   }
 
   @PreDestroy
-  def close: Unit = {
+  def close(): Unit = {
     info(s"Stopping Fluency")
     fluency.flush()
     fluency.close()

@@ -45,7 +45,8 @@ object Fluentd {
     builder.setFlushIntervalMillis(flushIntervalMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)
     builder.setAckResponseMode(ackResponseMode)
-    builder.setSslEnabled(sslEnabled)
+    // Removed this config setting as it breaks the records even if it is set to true or false
+    //builder.setSslEnabled(sslEnabled)
     builder.setFileBackupDir(fileBackupDir)
     builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
     new FluentdLogger(if (tagPrefix.isEmpty) None else Some(tagPrefix), useExtendedEventTime, builder.build(host, port))
