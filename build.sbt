@@ -692,3 +692,24 @@ lazy val fluentd =
       )
     )
     .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airframeSpecJVM % "test")
+
+lazy val sql =
+  project
+    .enablePlugins(Antlr4Plugin)
+    .in(file("airframe-sql"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-sql",
+      description := "SQL parser & analyzer",
+      antlr4Version in Antlr4 := "4.7.2",
+      antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
+      antlr4GenListener in Antlr4 := true,
+      antlr4GenVisitor in Antlr4 := true,
+      libraryDependencies ++= Seq(
+        // For parsing DataType strings
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
+        // Include Spark just as a reference implementation
+        "org.apache.spark" %% "spark-sql" % "2.4.0" % "test"
+      )
+    )
+    .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airframeSpecJVM % "test")
