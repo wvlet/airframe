@@ -1,32 +1,47 @@
-Airframe
+airframe-di
 ===
 
-Airframe (airframe-di) is a dependency injection library tailored to Scala, that is useful for isolating various concerns in programing and enables
-you to focus on the most important application logic. Dependencies mean service objects that are necesary for running your applications.  
+Airframe is a dependency injection library tailored to Scala. This is useful for isolating various concerns in programing
+in order to focus on the most important application logic. 
 
 For example, when writing an application, the following programming concerns are often unrelated to the core logic:
 - How to build service objects.
-- How to configure services objects.
+- How to configure services.
 - How to manage life cycle of service objects.
+
+Airframe DI helps building service objects on your behalf and manages their lifecycles
+so that you can focus on writing logic that uses only direct dependencies:
 
 ![image](../img/airframe/build-service-objects.png)
 
-Airframe DI helps building service objects on your behalf and manages their lifecycles
-so that you can focus on writing logic that uses only direct dependencies.
+In the following example, you only need to think about DBClient and FluentdLogger to write service A and B (left), even though the entire
+code involves other indirect dependencies (right):
 
 ![image](../img/airframe/code-example.png)
 
-In this example, you only need to think about DBClient and FluentdLogger to write service A and B (left), even though the entire
-code involves other indirect dependencies (right).
+## Features
+
+Major features of Airframe DI include:
+
+- Simple usage. Only need to include `import wvlet.airframe._` to use Airframe.
+- Designs are immutable, so you can create new designs safely based on existing designs.
+- Supporting Scala traits for dependency injection, which was not available in other frameworks.
+- Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.
+- Supporting Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/).
+- Supporting Java 11.
+
+## History of Dependency Injection
 
 Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
 Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
-While Google's [Guice](https://github.com/google/guice) is designed for injecting Java objects (e.g., using class constructors or providers),
- Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.
--  [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
+In Java we can use Google's [Guice](https://github.com/google/guice), but its syntax is not suited to Scala,
+ so we redesigned it for Scala so that we can naturally use Scala's syntax (trait and types) with DI.
+
+For more detailed comparison, see the following summary: 
+- [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
 
-# Quick Start
+# Airframe Quick Start
 
 ## sbt
 [sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
@@ -94,18 +109,9 @@ Airframe builds an instance of `App` based on the binding rules specified in the
 This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `session.build[App]`.
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
-## Airframe DI Features
+-------
 
-Major features of Airframe DI include:
-
-- Simple usage. Only need to include `import wvlet.airframe._` to use Airframe.
-- Designs are immutable, so you can create new designs safely based on existing designs.
-- Supporting Scala traits for dependency injection, which was not available in other frameworks.
-- Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.
-- Supporting Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/).
-- Supporting Java11.
-
-# Airframe Essentials
+# Airframe Usage
 
 ## Bind
 

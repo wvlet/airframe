@@ -1,12 +1,11 @@
 ---
 layout: docs
-title: Airframe Modules
+title: Airframe Overview
 ---
 
-## Airframe Modules
+## Airframe Overview
 
-Airframe is available for Scala 2.13, 2.12, 2.11, and [Scala.js](https://www.scala-js.org/).
-For Scala 2.12.6 or later, Java 11 is also supported.
+Airframe has several modules for kick starting your application development in Scala.
 
 <center>
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
@@ -49,15 +48,21 @@ For Scala 2.12.6 or later, Java 11 is also supported.
 - [airframe-tablet](airframe-tablet.html)
   - Table-structured data (e.g., CSV, TSV, JDBC ResultSet) reader/writer.
 
-## Resources
-- [Release Notes](release-notes.html)
-- [Source Code (GitHub)](https://github.com/wvlet/airframe)
-- [Use Cases](use-cases.html)
-   - Configuring applications, managing resources, service mix-in, etc.
+
+We also have developed sbt plugins for packaging and publishing your projects:
+
+- [sbt-pack](https://github.com/xerial/sbt-pack)
+  - A sbt plugin for creating a distributable package or [docker image](https://github.com/xerial/sbt-pack#building-a-docker-image-file-with-sbt-pack)
+  of your program.
+
+- [sbt-sonatype](https://github.com/xerial/sbt-sonatype)
+  - A sbt plugin for publishing Scala/Java projects to the Maven central.
+  - Enables [a single command release](https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin) of your project.
+
 
 ## Usage
 
-Airframe is a collection of Scala libraries. You can include one or more of them to your dependencies:
+Include as many dependencies as you need into your `libraryDependencies` in __build.sbt__ file.
 
 [sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
 [sindex-link]: https://index.scala-lang.org/wvlet/airframe
@@ -65,6 +70,8 @@ Airframe is a collection of Scala libraries. You can include one or more of them
 [central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 
 [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link] [![Scaladoc](https://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-scaladoc_2.12.svg?label=scaladoc)](https://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-scaladoc_2.12)
+
+- [Release Notes](release-notes.html)
 
 **build.sbt**
 ```scala
@@ -102,8 +109,4 @@ libraryDependencies ++= Seq(
 )
 ```
 
-
-## What's Next
-
-Read how to use [Airframe DI](airframe.html).
 

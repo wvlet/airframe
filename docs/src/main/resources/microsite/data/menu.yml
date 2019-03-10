@@ -1,5 +1,5 @@
 options:
-  - title: Airframe Modules
+  - title: Airframe Overview
     url: docs/index.html
     menu_section: intro
   - title: Airframe DI
