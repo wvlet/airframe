@@ -26,6 +26,7 @@ options:
       - title: Airframe Internals
         url: docs/internals.html
   - title: Airframe Modules
+    url: docs/index.html
     menu_section: utilities
     nested_options:
       - title: airframe-canvas
