@@ -45,6 +45,8 @@ Airframe has several modules for kick starting your application development in S
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
 - [airframe-spec](airframe-spec.html)
   - A simple base trait for using ScalaTest.
+- [airframe-sql](airframe-sql.html)
+  - SQL parser
 - [airframe-tablet](airframe-tablet.html)
   - Table-structured data (e.g., CSV, TSV, JDBC ResultSet) reader/writer.
 

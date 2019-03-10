@@ -61,5 +61,7 @@ options:
         url: docs/airframe-surface.html
       - title: airframe-spec
         url: docs/airframe-spec.html
+      - title: airframe-sql
+        url: docs/airframe-sql.html
       - title: airframe-tablet
         url: docs/airframe-tablet.html
