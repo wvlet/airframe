@@ -6,37 +6,54 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 
 ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
-      </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Modules</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="airframe">Airframe</h1>
+      </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Overview</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="airframe-di">airframe-di</h1>
 
-<p>Airframe (airframe-di) is a dependency injection library tailored to Scala, that is useful for isolating various concerns in programing and enables
-you to focus on the most important application logic. Dependencies mean service objects that are necesary for running your applications.</p>
+<p>Airframe is a dependency injection library tailored to Scala. This is useful for isolating various concerns in programing
+in order to focus on the most important application logic.</p>
 
 <p>For example, when writing an application, the following programming concerns are often unrelated to the core logic:</p>
 <ul>
   <li>How to build service objects.</li>
-  <li>How to configure services objects.</li>
+  <li>How to configure services.</li>
   <li>How to manage life cycle of service objects.</li>
 </ul>
 
+<p>Airframe DI helps building service objects on your behalf and manages their lifecycles
+so that you can focus on writing logic that uses only direct dependencies:</p>
+
 <p><img src="../img/airframe/build-service-objects.png" alt="image" /></p>
 
-<p>Airframe DI helps building service objects on your behalf and manages their lifecycles
-so that you can focus on writing logic that uses only direct dependencies.</p>
+<p>In the following example, you only need to think about DBClient and FluentdLogger to write service A and B (left), even though the entire
+code involves other indirect dependencies (right):</p>
 
 <p><img src="../img/airframe/code-example.png" alt="image" /></p>
 
-<p>In this example, you only need to think about DBClient and FluentdLogger to write service A and B (left), even though the entire
-code involves other indirect dependencies (right).</p>
+<h2 id="features">Features</h2>
+
+<p>Major features of Airframe DI include:</p>
+
+<ul>
+  <li>Simple usage. Only need to include <code class="highlighter-rouge">import wvlet.airframe._</code> to use Airframe.</li>
+  <li>Designs are immutable, so you can create new designs safely based on existing designs.</li>
+  <li>Supporting Scala traits for dependency injection, which was not available in other frameworks.</li>
+  <li>Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.</li>
+  <li>Supporting Scala 2.11, 2.12, 2.13, and <a href="https://www.scala-js.org/">Scala.js</a>.</li>
+  <li>Supporting Java 11.</li>
+</ul>
+
+<h2 id="history-of-dependency-injection">History of Dependency Injection</h2>
 
 <p>Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation;
 Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
-While Google’s <a href="https://github.com/google/guice">Guice</a> is designed for injecting Java objects (e.g., using class constructors or providers),
- Airframe redesigned it for Scala to so that we can enjoy the flexibilities of Scala traits and DI at the same time.</p>
+In Java we can use Google’s <a href="https://github.com/google/guice">Guice</a>, but its syntax is not suited to Scala,
+ so we redesigned it for Scala so that we can naturally use Scala’s syntax (trait and types) with DI.</p>
+
+<p>For more detailed comparison, see the following summary:</p>
 <ul>
   <li><a href="https://wvlet.org/airframe/docs/comparison.html">DI Framework Comparison</a>. Comparing Airframe with Google Guice, Macwire, Dagger2, etc.</li>
 </ul>
 
-<h1 id="quick-start">Quick Start</h1>
+<h1 id="airframe-quick-start">Airframe Quick Start</h1>
 
 <h2 id="sbt">sbt</h2>
 
@@ -100,20 +117,9 @@ While Google’s <a href="https://github.com/google/guice">Guice</a> is designed
 <p>This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing <code class="highlighter-rouge">new App(new X, new Y(...), new Z(...), ...)</code> in both of your main and test codes, and just calling <code class="highlighter-rouge">session.build[App]</code>.
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.</p>
 
-<h2 id="airframe-di-features">Airframe DI Features</h2>
+<hr />
 
-<p>Major features of Airframe DI include:</p>
-
-<ul>
-  <li>Simple usage. Only need to include <code class="highlighter-rouge">import wvlet.airframe._</code> to use Airframe.</li>
-  <li>Designs are immutable, so you can create new designs safely based on existing designs.</li>
-  <li>Supporting Scala traits for dependency injection, which was not available in other frameworks.</li>
-  <li>Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.</li>
-  <li>Supporting Scala 2.11, 2.12, 2.13, and <a href="https://www.scala-js.org/">Scala.js</a>.</li>
-  <li>Supporting Java11.</li>
-</ul>
-
-<h1 id="airframe-essentials">Airframe Essentials</h1>
+<h1 id="airframe-usage">Airframe Usage</h1>
 
 <h2 id="bind">Bind</h2>
 
