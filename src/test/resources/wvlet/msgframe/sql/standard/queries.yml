@@ -1,0 +1,188 @@
+- sql: |
+    select * from a
+- sql: |
+    select * from a where time > 10
+- sql: |
+    select * from a where time < 10
+- sql: |
+    select * from a where time <= 10
+- sql: |
+    select * from a where id = 'xxxx'
+- sql: |
+    select * from a where time >= 10 and time < 20
+- sql: |
+    select * from a where id is null
+- sql: |
+    select * from a where id is not null
+- sql: |
+    select * from a where flag = true
+- sql: |
+    select * from a where flag = false
+- sql: |
+    select x, y from a
+- sql: |
+    select x from a where val > 0.5
+- sql: |
+    select `x` from a
+- sql: |
+    select "x" from a
+- sql: |
+    select category, count(*) from a group by 1
+- sql: |
+    select category, count(*) from a group by category
+- sql: |
+    select * from a order by 1
+- sql: |
+    select * from a order by 1 desc
+- sql: |
+    select * from a order by 1 asc
+- sql: |
+    select * from a order by 1 nulls first
+- sql: |
+    select * from a order by 1 nulls last
+- sql: |
+    select * from a limit 100
+- sql: |
+    select * from a, b
+- sql: |
+    select * from a join b on a.id = b.id
+- sql: |
+    select * from a join b using (id)
+- sql: |
+    select * from a left join b on a.id = b.id
+- sql: |
+    select * from a full outer join b on a.id = b.id
+- sql: |
+    select * from a cross join b
+- sql: |
+    select 1
+- sql: |
+    select 1 + 2
+- sql: |
+    select true
+- sql: |
+    select true or false
+- sql: |
+    select NULL
+- sql: |
+    select ARRAY[1, 2]
+- sql: |
+    select interval '1' year
+- sql: |
+    select interval '1' month
+- sql: |
+    select interval '1' day
+- sql: |
+    select interval - '1' month
+- sql: |
+    select interval '1' hour
+- sql: |
+    select interval '1' minute
+- sql: |
+    select interval '1' second
+- sql: |
+    select data '2012-08-08' + interval '2' day
+- sql: |
+    select case a when 1 then 'one' end
+- sql: |
+    select case a when 1 then 'one' when 2 then 'two' else 'many' end
+- sql: |
+    select case when a=1 then 'one' when a=2 then 'two' else 'many' end
+- sql: |
+    select cast(1 as double)
+- sql: |
+    select try_cast(1 as double)
+- sql: |
+    select count(*)
+- sql: |
+    select count(distinct a)
+- sql: |
+    select time '01:00'
+- sql: |
+    select timestamp '2012-08-08 01:00'
+- sql: |
+    select date '2018-08-08'
+- sql: |
+    select decimal '1000000000001'
+- sql: |
+    select 9223372036854775807
+- sql: |
+    select char 'a'
+- sql: |
+    select binary '00'
+- sql: |
+    select ?
+- sql: |
+    select 'a'
+- sql: |
+    select `a`
+- sql: |
+    select "a"
+- sql: |
+    select rank() over (partition by a order by b desc range between unbounded preceding and current row)
+- sql: |
+    select rank() over (partition by a order by b desc range between current row and unbounded following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between unbounded preceding and current row)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and unbounded following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and 1 following)
+- sql: |
+    select rank() over (partition by a order by b desc rows between current row and 1 preceding)
+- sql: |
+    select rank() over (partition by a order by b desc)
+- sql: |
+    select * from (select * from t) as t(a, "b", `c`)
+- sql: |
+    with t(a, "b", `c`) as (select 1, 2, 3) select * from t
+- sql: |
+    select * from (select 1 limit 1) as a
+- sql: |
+    select * from (a right join b on a.id = b.id) as c
+- sql: |
+    select 1
+- sql: |
+    select * from T
+- sql: |
+    select distinct * from T
+- sql: |
+    select * from T where a = 10
+- sql: |
+    select * from T where a = 10 limit 1
+- sql: |
+    select a, b, c from t where time <= 1000
+- sql: |
+    select a, b, c from t where c = 'leo' and td_interval(time, '-1d')
+- sql: |
+    select cast(1 as varchar)
+- sql: |
+    select try_cast(1 as varchar)
+- sql: |
+    select cast(1 as varchar) as a
+- sql: |
+    select 1 + 2
+- sql: |
+    select 1 - 2
+- sql: |
+    select 1 * 2
+- sql: |
+    select 1 / 2
+- sql: |
+    select 1 * (2 + 4)
+- sql: |
+    select 'a' || 'b'
+- sql: |
+    select 1 where 1 != 0
+- sql: |
+    select * from (values 1)
+- sql: |
+    select a1, c1 from a cross join unnest(c) as t(c1)
+- sql: |
+      select a1, c1 from a cross join unnest(c) with ordinality as t(c1)
+- sql: |
+    select * from a, lateral (select * from b where b.id = a.b_id) ss
+- sql: |
+      select 1 union all select 2
+- sql: |
+      select 1 union select 2
