@@ -14,8 +14,10 @@
 package wvlet.airframe.fluentd
 import java.util.concurrent.ConcurrentHashMap
 
+import javax.annotation.PreDestroy
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 abstract class MetricLogger extends AutoCloseable {
   protected def tagPrefix: Option[String]
@@ -39,6 +41,9 @@ abstract class MetricLogger extends AutoCloseable {
         s"${prefix}.${tag}"
     }
   }
+
+  @PreDestroy
+  override def close(): Unit
 }
 
 class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
@@ -47,7 +52,7 @@ class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: M
   }
 }
 
-class MetricLoggerFactory(fluentdClient: MetricLogger) {
+class MetricLoggerFactory(fluentdClient: MetricLogger) extends LogSupport {
   def getLogger: MetricLogger = fluentdClient
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
     fluentdClient.withTagPrefix(tagPrefix)
@@ -71,5 +76,11 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) {
         val codec = MessageCodec.of[T]
         new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
       }).asInstanceOf[TypedMetricLogger[T]]
+  }
+
+  @PreDestroy
+  def shutdown: Unit = {
+    info(s"Closing MetricLoggerFactory")
+    fluentdClient.close()
   }
 }
