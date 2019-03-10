@@ -36,7 +36,7 @@ object Fluentd {
                        flushIntervalMillis: Int = 600,
                        jvmHeapBufferMode: Boolean = true,
                        ackResponseMode: Boolean = true,
-                       sslEnabled: Boolean = true,
+                       sslEnabled: Boolean = false,
                        fileBackupDir: String = null,
                        errorHandler: ErrorHandler = null): FluentdLogger = {
     // We need to extract this code probably because of a bug of Scala compiler.
@@ -45,8 +45,7 @@ object Fluentd {
     builder.setFlushIntervalMillis(flushIntervalMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)
     builder.setAckResponseMode(ackResponseMode)
-    // Removed this config setting as it breaks the records even if it is set to true or false
-    //builder.setSslEnabled(sslEnabled)
+    builder.setSslEnabled(sslEnabled)
     builder.setFileBackupDir(fileBackupDir)
     builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
     new FluentdLogger(if (tagPrefix.isEmpty) None else Some(tagPrefix), useExtendedEventTime, builder.build(host, port))
