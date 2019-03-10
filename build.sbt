@@ -135,8 +135,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   tablet,
   msgpackJVM,
   http,
-  jsonJVM,
-  sql
+  jsonJVM
 )
 
 // JVM projects that supports Scala 2.13
@@ -149,7 +148,8 @@ lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[Proj
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
   httpRecorder,
-  jsonBenchmark
+  jsonBenchmark,
+  sql
 )
 
 // Scala.js builds is only for Scala 2.12
