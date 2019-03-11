@@ -114,3 +114,30 @@ It's possible to customize Finagle. For example, if you need to:
 
 see the examples [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
 
+
+### Adding Finagle Tracer
+
+To customize Finagle server, extend FinagleServerFactory and define your own 
+server factory.
+
+```scala
+trait CustomFinagleServerFactory extends FinagleServerFactory {
+  override def initServer(server: Http.Server): Http.Server = {
+    // Enable tracer for Finagle
+    server.withTracer(ConsoleTracer)
+  }
+}
+
+val design =
+  finagleDefaultDesign
+    // Register http routes
+    .bind[Router].toInstance(router)
+    // Configure port
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080))
+    // Configure Finagle Server
+    .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
+
+design.build[FinagleServer] { server => 
+  // ... 
+}
+``` 

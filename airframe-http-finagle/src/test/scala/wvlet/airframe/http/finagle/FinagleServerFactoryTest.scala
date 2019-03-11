@@ -14,6 +14,7 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.tracing.ConsoleTracer
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http.Router
@@ -69,6 +70,20 @@ class FinagleServerFactoryTest extends AirframeSpec {
         Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
       }
     }
+
+    "allow customize Finagle Http Server" in {
+      val port = IOUtil.unusedPort
+      val d =
+        finagleDefaultDesign
+          .bind[Router].toInstance(router1)
+          .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port))
+          .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
+
+      d.build[FinagleServer] { server =>
+        val client = Http.client.newService(s"localhost:${server.port}")
+        Await.result(client(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
+      }
+    }
   }
 }
 
@@ -82,5 +97,11 @@ trait CustomFinagleServerFactory extends FinagleServerFactory {
         Future.value(r)
       }
     }
+  }
+}
+
+trait CustomFinagleServerFactoryWithTracer extends FinagleServerFactory {
+  override def initServer(server: Http.Server): Http.Server = {
+    server.withTracer(ConsoleTracer)
   }
 }

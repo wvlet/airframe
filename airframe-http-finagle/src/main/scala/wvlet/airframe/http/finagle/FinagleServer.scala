@@ -26,7 +26,11 @@ case class FinagleServerConfig(port: Int)
 /**
   *
   */
-class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService)
+class FinagleServer(finagleConfig: FinagleServerConfig,
+                    finagleService: FinagleService,
+                    initServer: Http.Server => Http.Server = { x =>
+                      x
+                    })
     extends LogSupport
     with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
@@ -37,7 +41,8 @@ class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleS
   @PostConstruct
   def start {
     info(s"Starting a server at http://localhost:${finagleConfig.port}")
-    server = Some(Http.serve(s":${finagleConfig.port}", finagleService))
+    val customServer = initServer(Http.Server())
+    server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))
   }
 
   @PreDestroy
@@ -111,8 +116,18 @@ trait FinagleServerFactory {
     */
   protected def newService(finagleRouter: FinagleRouter) = FinagleServer.defaultService(finagleRouter)
 
+  /**
+    * Override this method to customize Finagle Server configuration.
+    */
+  protected def initServer(server: Http.Server): Http.Server = {
+    // Do nothing by default
+    server
+  }
+
   def newFinagleServer(port: Int, router: Router): FinagleServer = {
     val finagleRouter = new FinagleRouter(router, controllerProvider, responseHandler)
-    new FinagleServer(finagleConfig = FinagleServerConfig(port = port), finagleService = newService(finagleRouter))
+    new FinagleServer(finagleConfig = FinagleServerConfig(port = port),
+                      finagleService = newService(finagleRouter),
+                      initServer = initServer)
   }
 }
