@@ -21,16 +21,14 @@ import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.LogSupport
 import wvlet.airframe._
 
-case class FinagleServerConfig(port: Int)
+case class FinagleServerConfig(port: Int = 8080, router: Router = Router.empty)
 
 /**
   *
   */
 class FinagleServer(finagleConfig: FinagleServerConfig,
                     finagleService: FinagleService,
-                    initServer: Http.Server => Http.Server = { x =>
-                      x
-                    })
+                    initServer: Http.Server => Http.Server = identity)
     extends LogSupport
     with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
@@ -107,9 +105,13 @@ object FinagleServer extends LogSupport {
   }
 }
 
+/**
+  * A factory to create new finagle server
+  */
 trait FinagleServerFactory {
-  private val controllerProvider = bind[ControllerProvider]
-  private val responseHandler    = bind[ResponseHandler[Request, Response]]
+  private val session              = bind[Session]
+  protected val controllerProvider = bind[ControllerProvider]
+  protected val responseHandler    = bind[ResponseHandler[Request, Response]]
 
   /**
     * Override this method to customize finagle service filters
@@ -124,10 +126,17 @@ trait FinagleServerFactory {
     server
   }
 
+  def newFinagleServer(config: FinagleServerConfig): FinagleServer = {
+    val finagleRouter = new FinagleRouter(config.router, controllerProvider, responseHandler)
+    val server =
+      new FinagleServer(finagleConfig = config, finagleService = newService(finagleRouter), initServer = initServer)
+
+    // Register the FinagleServer instance to the seesion to manage its lifecycle with Airframe
+    session.register[FinagleServer](server)
+    server
+  }
+
   def newFinagleServer(port: Int, router: Router): FinagleServer = {
-    val finagleRouter = new FinagleRouter(router, controllerProvider, responseHandler)
-    new FinagleServer(finagleConfig = FinagleServerConfig(port = port),
-                      finagleService = newService(finagleRouter),
-                      initServer = initServer)
+    newFinagleServer(FinagleServerConfig(port = port, router = router))
   }
 }

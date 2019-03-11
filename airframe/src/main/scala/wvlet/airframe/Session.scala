@@ -19,6 +19,7 @@ import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.util.Try
+import scala.reflect.runtime.{universe => ru}
 
 /**
   * Session manages injected objects (e.g., Singleton)
@@ -67,6 +68,11 @@ trait Session extends AutoCloseable {
   private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A): A
 
   def getInstanceOf(surface: Surface): Any
+
+  /**
+    * Register an instance to the session to control the life cycle of the object under this session.
+    */
+  def register[A: ru.TypeTag](instance: A): Unit
 
   /**
     * Create a child session with an additional design.

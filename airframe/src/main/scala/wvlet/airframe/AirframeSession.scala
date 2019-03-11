@@ -22,6 +22,7 @@ import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
 import scala.util.Try
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
@@ -145,6 +146,11 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A): A = {
     debug(s"[${name}] Create dependency [${surface}] (with factory)")
     getInstance(surface, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
+  }
+
+  def register[A: ru.TypeTag](instance: A): Unit = {
+    val surface = Surface.of[A]
+    registerInjectee(surface, instance)
   }
 
   /**

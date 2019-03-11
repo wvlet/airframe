@@ -91,10 +91,8 @@ val router = Router.of[MyApi]
 
 val design =
   finagleDefaultDesign
-    // Register http routes
-    .bind[Router].toInstance(router)
-    // Configure port
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080))
+    // Configure port and routes
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
 
 design.build[FinagleServer] { server =>
   // Finagle http server will start here
@@ -130,14 +128,27 @@ trait CustomFinagleServerFactory extends FinagleServerFactory {
 
 val design =
   finagleDefaultDesign
-    // Register http routes
-    .bind[Router].toInstance(router)
-    // Configure port
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080))
+    // Configure port and routes
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
     // Configure Finagle Server
     .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
 design.build[FinagleServer] { server => 
-  // ... 
+  // The server will start here
 }
 ``` 
+
+
+## Running Multiple Finagle Servers
+
+
+```scala
+import wvlet.airframe.http.finagle._
+
+finagleDefaultDesign.build[FinagleServerFactory] { factory =>
+ factory.newFinagleServer(FinagleServerConfig(port = 8080, router = router1))
+ factory.newFinagleServer(FinagleServerConfig(port = 8081, router = router2))
+ // Two finagle servers will start at port 8081 and 8081
+}
+// Two servers will be stopped after exiting the session
+```

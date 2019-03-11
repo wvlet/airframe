@@ -33,6 +33,9 @@ package object finagle {
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }
+      .bind[FinagleServer].toProvider { (factory: FinagleServerFactory, config: FinagleServerConfig) =>
+        factory.newFinagleServer(config)
+      }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this
