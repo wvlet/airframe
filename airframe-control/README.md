@@ -73,3 +73,15 @@ val result: Iterator[Int] = Parallel.iterate(source, parallelism = 4){ i =>
 }
 
 ```
+
+or
+
+```scala
+import wvlet.airframe.control.parallel._
+
+// This syntax works for both Seq and Iterator
+val result = source.parallelMap(parallelism = 4){
+  ...
+}
+```
+
