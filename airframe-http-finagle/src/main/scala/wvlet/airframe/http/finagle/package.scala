@@ -28,8 +28,6 @@ package object finagle {
 
   def finagleDefaultDesign: Design =
     finagleBaseDesign
-    // Add a default router so that we can instantiate FinagleRouter even when users specify no Router
-      .bind[Router].toInstance(Router.empty)
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }
