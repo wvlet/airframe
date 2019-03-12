@@ -80,7 +80,7 @@ or
 import wvlet.airframe.control.parallel._
 
 // This syntax works for both Seq and Iterator
-val result = source.parallelMap(parallelism = 4){
+val result = source.parallel.withParallelism(4).map { i =>
   ...
 }
 ```
