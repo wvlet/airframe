@@ -11,6 +11,7 @@ technologies:
 Airframe is a collection of [lightweight building blocks](docs/index.html) for kick starting your Scala applicaiton development.
 
 - [Documentation](docs)
+- [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 ## Blog Articles
