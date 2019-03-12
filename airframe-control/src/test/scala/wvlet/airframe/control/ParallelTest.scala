@@ -101,7 +101,7 @@ class ParallelTest extends AirframeSpec {
       import wvlet.airframe.control.parallel._
 
       val source = Seq(1, 2, 3)
-      val result: Seq[Int] = source.parallelMap(parallelism = 2){ x =>
+      val result: Seq[Int] = source.parallelMap(parallelism = 2) { x =>
         x * 2
       }
 
@@ -112,7 +112,7 @@ class ParallelTest extends AirframeSpec {
       import wvlet.airframe.control.parallel._
 
       val source = Seq(1, 2, 3).iterator
-      val result: Iterator[Int] = source.parallelMap(parallelism = 2){ x =>
+      val result: Iterator[Int] = source.parallelMap(parallelism = 2) { x =>
         x * 2
       }
 
