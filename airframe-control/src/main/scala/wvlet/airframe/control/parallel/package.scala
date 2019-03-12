@@ -18,13 +18,14 @@ import scala.reflect.ClassTag
 package object parallel {
 
   implicit class ParallelSeq[T](source: Seq[T]) {
-    def parallelMap[R: ClassTag](parallelism: Int)(f: T => R): Seq[R] = {
+    def parallelMap[R: ClassTag](parallelism: Int = Runtime.getRuntime.availableProcessors())(f: T => R): Seq[R] = {
       Parallel.run(source, parallelism)(f)
     }
   }
 
   implicit class ParallelIterator[T](source: Iterator[T]) {
-    def parallelMap[R: ClassTag](parallelism: Int)(f: T => R): Iterator[R] = {
+    def parallelMap[R: ClassTag](parallelism: Int = Runtime.getRuntime.availableProcessors())(
+        f: T => R): Iterator[R] = {
       Parallel.iterate(source, parallelism)(f)
     }
   }
