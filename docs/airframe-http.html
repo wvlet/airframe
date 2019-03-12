@@ -99,10 +99,8 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <span class="k">val</span> <span class="n">design</span> <span class="k">=</span>
   <span class="n">finagleDefaultDesign</span>
-    <span class="c1">// Register http routes
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Router</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">router</span><span class="o">)</span>
-    <span class="c1">// Configure port
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">))</span>
+    <span class="c1">// Configure port and routes
+</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">))</span>
 
 <span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
   <span class="c1">// Finagle http server will start here
@@ -124,6 +122,43 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <p>see the examples <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
 
+<h3 id="adding-finagle-tracer">Adding Finagle Tracer</h3>
+
+<p>To customize Finagle server, extend FinagleServerFactory and define your own 
+server factory.</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomFinagleServerFactory</span> <span class="k">extends</span> <span class="nc">FinagleServerFactory</span> <span class="o">{</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="n">initServer</span><span class="o">(</span><span class="n">server</span><span class="k">:</span> <span class="kt">Http.Server</span><span class="o">)</span><span class="k">:</span> <span class="kt">Http.Server</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="c1">// Enable tracer for Finagle
+</span>    <span class="n">server</span><span class="o">.</span><span class="n">withTracer</span><span class="o">(</span><span class="nc">ConsoleTracer</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">val</span> <span class="n">design</span> <span class="k">=</span>
+  <span class="n">finagleDefaultDesign</span>
+    <span class="c1">// Configure port and routes
+</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">))</span>
+    <span class="c1">// Configure Finagle Server
+</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
+
+<span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span> 
+  <span class="c1">// The server will start here
+</span><span class="o">}</span>
+</code></pre>
+</div>
+
+<h2 id="running-multiple-finagle-servers">Running Multiple Finagle Servers</h2>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
+
+<span class="n">finagleDefaultDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
+ <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
+ <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
+ <span class="c1">// Two finagle servers will start at port 8081 and 8081
+</span><span class="o">}</span>
+<span class="c1">// Two servers will be stopped after exiting the session
+</span></code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
