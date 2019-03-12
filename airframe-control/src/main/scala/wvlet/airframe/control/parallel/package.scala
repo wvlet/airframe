@@ -17,17 +17,38 @@ import scala.reflect.ClassTag
 
 package object parallel {
 
-  implicit class ParallelSeq[T](source: Seq[T]) {
-    def parallelMap[R: ClassTag](parallelism: Int = Runtime.getRuntime.availableProcessors())(f: T => R): Seq[R] = {
-      Parallel.run(source, parallelism)(f)
-    }
+  implicit class ToParallelSeq[T](source: Seq[T]) {
+    def parallel: ParallelSeq[T] = ParallelSeq(source)
   }
 
-  implicit class ParallelIterator[T](source: Iterator[T]) {
-    def parallelMap[R: ClassTag](parallelism: Int = Runtime.getRuntime.availableProcessors())(
-        f: T => R): Iterator[R] = {
-      Parallel.iterate(source, parallelism)(f)
+  implicit class ToParallelIterator[T](source: Iterator[T]) {
+    def parallel: ParallelIterator[T] = ParallelIterator(source)
+  }
+
+  case class ParallelSeq[T](private val source: Seq[T],
+                            private val parallelism: Int = Runtime.getRuntime.availableProcessors()) {
+
+    def withParallelism(parallelism: Int): ParallelSeq[T] = {
+      copy(parallelism = parallelism)
     }
+
+    def map[R: ClassTag](f: T => R): Seq[R] = {
+      Parallel.run(source, parallelism = parallelism)(f)
+    }
+
+  }
+
+  case class ParallelIterator[T](private val source: Iterator[T],
+                                 private val parallelism: Int = Runtime.getRuntime.availableProcessors()) {
+
+    def withParallelism(parallelism: Int): ParallelIterator[T] = {
+      copy(parallelism = parallelism)
+    }
+
+    def map[R: ClassTag](f: T => R): Iterator[R] = {
+      Parallel.iterate(source, parallelism = parallelism)(f)
+    }
+
   }
 
 }
