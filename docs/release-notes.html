@@ -10,8 +10,11 @@ ga('send', 'pageview');
 
 <h2 id="1933">19.3.3</h2>
 <ul>
-  <li>airframe-http-finagle: Support adding tracing to FinagleServer (<a href="https://github.com/wvlet/airframe/issues/430">#430</a>) [<a href="https://github.com/wvlet/airframe/commit/1ab7281">1ab7281</a>]</li>
-  <li>With this version <code class="highlighter-rouge">Router</code> needs to be included in <code class="highlighter-rouge">FinagleServerConfig(port, router)</code> instead of using <code class="highlighter-rouge">bind[Router]</code></li>
+  <li>airframe-http-finagle: Support adding tracing to FinagleServer (<a href="https://github.com/wvlet/airframe/issues/430">#430</a>) [<a href="https://github.com/wvlet/airframe/commit/1ab7281">1ab7281</a>]
+    <ul>
+      <li>Since this version <code class="highlighter-rouge">Router</code> needs to be included in <code class="highlighter-rouge">FinagleServerConfig(port, router)</code> instead of using <code class="highlighter-rouge">bind[Router]</code></li>
+    </ul>
+  </li>
   <li>airframe-fluentd: Upgrade to Fluency 2.1.0 and disable SSL by default (<a href="https://github.com/wvlet/airframe/issues/428">#428</a>) [<a href="https://github.com/wvlet/airframe/commit/bb3498e">bb3498e</a>]</li>
   <li>airframe-sql: A new module for SQL parsier and logical query plan models</li>
 </ul>
