@@ -7,7 +7,7 @@ title: Release Notes
 
 ## 19.3.3
 -  airframe-http-finagle: Support adding tracing to FinagleServer ([#430](https://github.com/wvlet/airframe/issues/430)) [[1ab7281](https://github.com/wvlet/airframe/commit/1ab7281)]
-  - With this version `Router` needs to be included in `FinagleServerConfig(port, router)` instead of using `bind[Router]`
+   - Since this version `Router` needs to be included in `FinagleServerConfig(port, router)` instead of using `bind[Router]`
 -  airframe-fluentd: Upgrade to Fluency 2.1.0 and disable SSL by default ([#428](https://github.com/wvlet/airframe/issues/428)) [[bb3498e](https://github.com/wvlet/airframe/commit/bb3498e)]
 -  airframe-sql: A new module for SQL parsier and logical query plan models
 
