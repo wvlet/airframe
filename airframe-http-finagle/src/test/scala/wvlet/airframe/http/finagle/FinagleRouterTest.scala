@@ -63,8 +63,7 @@ class FinagleRouterTest extends AirframeSpec {
 
   val d =
     finagleDefaultDesign
-      .bind[Router].toInstance(router)
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port, router = router))
 
   "FinagleRouter" should {
 

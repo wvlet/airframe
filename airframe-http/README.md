@@ -91,10 +91,8 @@ val router = Router.of[MyApi]
 
 val design =
   finagleDefaultDesign
-    // Register http routes
-    .bind[Router].toInstance(router)
-    // Configure port
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080))
+    // Configure port and routes
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
 
 design.build[FinagleServer] { server =>
   // Finagle http server will start here
@@ -114,3 +112,43 @@ It's possible to customize Finagle. For example, if you need to:
 
 see the examples [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
 
+
+### Adding Finagle Tracer
+
+To customize Finagle server, extend FinagleServerFactory and define your own 
+server factory.
+
+```scala
+trait CustomFinagleServerFactory extends FinagleServerFactory {
+  override def initServer(server: Http.Server): Http.Server = {
+    // Enable tracer for Finagle
+    server.withTracer(ConsoleTracer)
+  }
+}
+
+val design =
+  finagleDefaultDesign
+    // Configure port and routes
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
+    // Configure Finagle Server
+    .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
+
+design.build[FinagleServer] { server => 
+  // The server will start here
+}
+``` 
+
+
+## Running Multiple Finagle Servers
+
+
+```scala
+import wvlet.airframe.http.finagle._
+
+finagleDefaultDesign.build[FinagleServerFactory] { factory =>
+ factory.newFinagleServer(FinagleServerConfig(port = 8080, router = router1))
+ factory.newFinagleServer(FinagleServerConfig(port = 8081, router = router2))
+ // Two finagle servers will start at port 8081 and 8081
+}
+// Two servers will be stopped after exiting the session
+```
