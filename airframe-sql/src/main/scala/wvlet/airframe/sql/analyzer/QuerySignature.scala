@@ -31,13 +31,7 @@ object QuerySignature extends LogSupport {
     val plan  = SQLParser.parse(sql)
     val g     = TableGraph.of(plan)
     val inout = printEdges(g)
-    val sig = plan match {
-      case t: Table if config.embedTableNames =>
-        t.name.toString
-      case s: SQLSig =>
-        s.sig(config)
-      case other => "Unknown"
-    }
+    val sig   = plan.sig(config)
     s"${sig} ${inout}"
   }
 

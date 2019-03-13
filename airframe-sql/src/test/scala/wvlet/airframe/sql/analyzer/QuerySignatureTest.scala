@@ -48,14 +48,14 @@ class QuerySignatureTest extends AirframeSpec {
   }
 
   val embedTableNames = QuerySignatureConfig(embedTableNames = true)
-  "embed table names" taggedAs working in {
+  "embed table names" in {
     val plan = SQLParser.parse("select * from tbl")
 
     plan.sig(embedTableNames) shouldBe "P[*](tbl)"
     plan.sig(QuerySignatureConfig(embedTableNames = false)) shouldBe "P[*](T)"
   }
 
-  "embed table names to CTAS" taggedAs working in {
+  "embed table names to CTAS" in {
     SQLParser.parse("insert into tbl select * from a").sig(embedTableNames) shouldBe "I(tbl,P[*](a))"
     SQLParser.parse("drop table tbl").sig(embedTableNames) shouldBe "DT(tbl)"
     SQLParser.parse("create table tbl (id int)").sig(embedTableNames) shouldBe "CT(tbl)"
