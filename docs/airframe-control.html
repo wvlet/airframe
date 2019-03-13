@@ -78,6 +78,18 @@ ga('send', 'pageview');
 
 </code></pre>
 </div>
+
+<p>or</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.parallel._</span>
+
+<span class="c1">// This syntax works for both Seq and Iterator
+</span><span class="k">val</span> <span class="n">result</span> <span class="k">=</span> <span class="n">source</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">withParallelism</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">map</span> <span class="o">{</span> <span class="n">i</span> <span class="k">=&gt;</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
