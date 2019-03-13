@@ -16,6 +16,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.sql.SQLBenchmark
+import wvlet.airframe.sql.model.SQLSig
 import wvlet.airframe.sql.parser.SQLParser
 
 /**
@@ -44,5 +45,30 @@ class QuerySignatureTest extends AirframeSpec {
     debug(p)
     val sig = QuerySignature.of(sql.sql)
     debug(sig)
+  }
+
+  val embedTableNames = QuerySignatureConfig(embedTableNames = true)
+  "embed table names" taggedAs working in {
+    val plan = SQLParser.parse("select * from tbl")
+
+    plan.sig(embedTableNames) shouldBe "P[*](tbl)"
+    plan.sig(QuerySignatureConfig(embedTableNames = false)) shouldBe "P[*](T)"
+  }
+
+  "embed table names to CTAS" taggedAs working in {
+    SQLParser.parse("insert into tbl select * from a").sig(embedTableNames) shouldBe "I(tbl,P[*](a))"
+    SQLParser.parse("drop table tbl").sig(embedTableNames) shouldBe "DT(tbl)"
+    SQLParser.parse("create table tbl (id int)").sig(embedTableNames) shouldBe "CT(tbl)"
+
+    SQLParser.parse("insert into tbl select * from a").sig() shouldBe "I(T,P[*](T))"
+    SQLParser.parse("drop table tbl").sig() shouldBe "DT(T)"
+    SQLParser.parse("create table tbl (id int)").sig() shouldBe "CT(T)"
+  }
+
+  "embed table names for all queries" in {
+    SQLBenchmark.allQueries.foreach { x =>
+      val plan = SQLParser.parse(x.sql)
+      val sig  = plan.sig(QuerySignatureConfig(embedTableNames = true))
+    }
   }
 }
