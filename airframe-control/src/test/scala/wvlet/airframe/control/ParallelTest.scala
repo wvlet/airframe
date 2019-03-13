@@ -97,6 +97,29 @@ class ParallelTest extends AirframeSpec {
       assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
     }
 
+    "be run for Seq using syntax sugar" in {
+      import wvlet.airframe.control.parallel._
+
+      val source = Seq(1, 2, 3)
+      val result: Seq[Int] = source.parallel.withParallelism(2).map { x =>
+        x * 2
+      }
+
+      assert(result == List(2, 4, 6))
+    }
+
+    "be run for Iterator using syntax sugar" in {
+      import wvlet.airframe.control.parallel._
+
+      val source = Seq(1, 2, 3).iterator
+      val result: Iterator[Int] = source.parallel.withParallelism(2).map { x =>
+        x * 2
+      }
+
+      val list = result.toList
+      assert(List(2, 4, 6).forall(x => list.contains(x)))
+    }
+
 //    "repeat() and stop" in {
 //      val source  = Seq(0)
 //
