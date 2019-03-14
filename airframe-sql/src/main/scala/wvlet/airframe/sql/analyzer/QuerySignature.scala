@@ -13,24 +13,26 @@
  */
 
 package wvlet.airframe.sql.analyzer
+import wvlet.airframe.sql.model.LogicalPlan.Table
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.SQLSig
 import wvlet.airframe.sql.parser.SQLParser
+
+case class QuerySignatureConfig(
+    embedTableNames: Boolean = false
+)
 
 /**
   *
   */
 object QuerySignature extends LogSupport {
 
-  def of(sql: String): String = {
+  def of(sql: String, config: QuerySignatureConfig = QuerySignatureConfig()): String = {
     val plan  = SQLParser.parse(sql)
     val g     = TableGraph.of(plan)
     val inout = printEdges(g)
-    plan match {
-      case s: SQLSig =>
-        s"${s.sig} ${inout}"
-      case other => "Unknown"
-    }
+    val sig   = plan.sig(config)
+    s"${sig} ${inout}"
   }
 
   def normalizeTableName(name: String): String = {
