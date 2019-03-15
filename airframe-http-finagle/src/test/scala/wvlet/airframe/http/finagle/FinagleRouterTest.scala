@@ -62,7 +62,7 @@ class FinagleRouterTest extends AirframeSpec {
   val router = Router.of[MyApi]
 
   val d =
-    finagleDefaultDesign
+    finagleDefaultDesign.noLifeCycleLogging
       .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port, router = router))
 
   "FinagleRouter" should {
@@ -113,5 +113,12 @@ class FinagleRouterTest extends AirframeSpec {
         }
       }
     }
+
+    "support production mode" in {
+      d.withProductionMode.build[FinagleServer] { server =>
+        // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
+      }
+    }
+
   }
 }
