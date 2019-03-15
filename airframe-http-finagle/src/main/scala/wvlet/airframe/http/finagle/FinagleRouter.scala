@@ -17,14 +17,14 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
+import wvlet.airframe.http.{ControllerProvider, ResponseHandler}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 /**
   * A filter for dispatching http requests to the predefined routes with Finagle
   */
-class FinagleRouter(router: Router,
+class FinagleRouter(config: FinagleServerConfig,
                     controllerProvider: ControllerProvider,
                     responseHandler: ResponseHandler[Request, Response])
     extends SimpleFilter[Request, Response]
@@ -32,7 +32,7 @@ class FinagleRouter(router: Router,
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // Find a route matching to the request
-    router.findRoute(request) match {
+    config.router.findRoute(request) match {
       case Some(route) =>
         // Find a corresponding controller
         controllerProvider.findController(route.controllerSurface) match {
