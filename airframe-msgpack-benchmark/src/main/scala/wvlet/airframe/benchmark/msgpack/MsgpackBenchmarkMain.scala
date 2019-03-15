@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.benchmark.msgpack
+import org.openjdk.jmh.results.format.{ResultFormat, ResultFormatType}
 import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.OptionsBuilder
 import wvlet.airframe.launcher.{Launcher, command, option}
@@ -34,12 +35,21 @@ object MsgpackBenchmarkMain {
 
 class MsgpackBenchmarkMain(
     @option(prefix = "-h,--help", description = "display help message", isHelp = true)
-    displayHelp: Boolean)
-    extends LogSupport {
+    displayHelp: Boolean,
+    @option(prefix = "-rf", description = "Result format: text, csv, scsv, json, latex")
+    resultFormat: Option[String] = None,
+    @option(prefix = "-o", description = "Result output file name")
+    resultOutput: Option[String] = None
+) extends LogSupport {
 
   @command(isDefault = true)
   def default = {
     info("Type --help to see the list of sub commands")
+  }
+
+  @command(description = "Run a benchmark quickly")
+  def bench_quick = {
+    bench(iteration = 1, warmupIteration = 0, forkCount = 1)
   }
 
   @command(description = "Run a benchmark")
@@ -49,13 +59,21 @@ class MsgpackBenchmarkMain(
             warmupIteration: Int = 5,
             @option(prefix = "-f,--fork-count", description = "Fork Count (default: 5)")
             forkCount: Int = 5) {
-    val opt = new OptionsBuilder()
+    info(s"Starting the benchmark")
+    var opt = new OptionsBuilder()
       .forks(forkCount)
       .measurementIterations(iteration)
       .warmupIterations(warmupIteration)
       .include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
-      .build()
 
-    new Runner(opt).run()
+    resultFormat.map { rf =>
+      opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase()))
+    }
+
+    resultOutput.map { out =>
+      opt = opt.result(out)
+    }
+
+    new Runner(opt.build()).run()
   }
 }
