@@ -682,11 +682,18 @@ val JMH_VERSION = "1.12"
 lazy val msgpackBenchmark =
   project
     .in(file("airframe-msgpack-benchmark"))
+    // Necessary for generating /META-INF/BenchmarkList
     .enablePlugins(JmhPlugin)
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
     .settings(
       packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
+      // Generate JMH benchmark cord before packaging and testing
+      pack := pack.dependsOn(compile in Jmh).value,
+      compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
+      // Need to fork JVM so that sbt can set the classpass properly for running JMH
+      fork in Test := true,
+      fork in run := true,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
@@ -694,7 +701,7 @@ lazy val msgpackBenchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
       )
     )
-    .dependsOn(msgpackJVM, launcher)
+    .dependsOn(msgpackJVM, launcher, airframeSpecJVM % "test")
 
 lazy val fluentd =
   project
