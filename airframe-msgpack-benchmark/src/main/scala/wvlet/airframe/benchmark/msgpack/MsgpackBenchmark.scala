@@ -22,33 +22,37 @@ import scala.util.Random
 
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 class MsgpackBenchmark {
 
+  @Setup
+  def init: Unit = {
+    // Initialize data
+    val i  = MsgpackData.intArray
+    val im = MsgpackData.msgpackIntArray
+  }
+
   @Benchmark
-  def packInt: Array[Byte] = {
+  def packInt: Unit = {
     val packer = MessagePack.newBufferPacker
     MsgpackData.intArray.foreach { x =>
       packer.packInt(x)
     }
-    packer.toByteArray
   }
 
   @Benchmark
-  def unpackInt: Seq[Int] = {
+  def unpackInt: Unit = {
     val unpacker = MessagePack.newUnpacker(MsgpackData.msgpackIntArray)
-    val b        = Seq.newBuilder[Int]
     while (unpacker.hasNext) {
-      b += unpacker.unpackInt
+      unpacker.unpackInt
     }
-    b.result()
   }
 }
 
 object MsgpackData {
   val r = new Random(0) // Use a fixed seed
 
-  lazy val intArray = (0 to 100000).map(x => r.nextInt()).toIndexedSeq
+  lazy val intArray = (0 to 1000).map(x => r.nextInt()).toIndexedSeq
   lazy val msgpackIntArray = {
     val packer = MessagePack.newBufferPacker
     intArray.foreach(packer.packInt(_))
