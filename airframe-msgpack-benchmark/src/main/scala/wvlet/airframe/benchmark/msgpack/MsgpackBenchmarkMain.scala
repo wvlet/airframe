@@ -66,7 +66,7 @@ class MsgpackBenchmarkMain(
       .forks(forkCount)
       .measurementIterations(iteration)
       .warmupIterations(warmupIteration)
-      .include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
+    //.include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
 
     resultFormat.map { rf =>
       opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase()))

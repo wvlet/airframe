@@ -15,47 +15,100 @@ package wvlet.airframe.benchmark.msgpack
 
 import java.util.concurrent.TimeUnit
 
+import org.msgpack.core.MessageUnpacker
 import org.openjdk.jmh.annotations._
-import wvlet.airframe.msgpack.spi.{BufferPacker, MessagePack, Unpacker}
+import org.openjdk.jmh.infra.Blackhole
+import wvlet.airframe.msgpack.spi.{BufferPacker, MessagePack, Packer, Unpacker}
 
 import scala.util.Random
 
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class MsgpackBenchmark {
-
-  @Setup
-  def init: Unit = {
-    // Initialize data
-    val i  = MsgpackData.intArray
-    val im = MsgpackData.msgpackIntArray
-  }
-
+class PackBenchmark extends MsgpackData {
   @Benchmark
-  def packInt: Unit = {
+  def packInt = {
     val packer = MessagePack.newBufferPacker
-    MsgpackData.intArray.foreach { x =>
+    intArray.foreach { x =>
       packer.packInt(x)
-    }
-  }
-
-  @Benchmark
-  def unpackInt: Unit = {
-    val unpacker = MessagePack.newUnpacker(MsgpackData.msgpackIntArray)
-    while (unpacker.hasNext) {
-      unpacker.unpackInt
     }
   }
 }
 
-object MsgpackData {
-  val r = new Random(0) // Use a fixed seed
+abstract class UnpackBenchmark extends MsgpackData {
+  protected def initUnpacker(byte: Array[Byte])
+  protected def hasNext: Boolean
+  protected def unpackInt: Int
+  protected def unpackFloat: Float
+  protected def unpackBoolean: Boolean
 
-  lazy val intArray = (0 to 1000).map(x => r.nextInt()).toIndexedSeq
-  lazy val msgpackIntArray = {
+  @Benchmark
+  def intArray(blackhole: Blackhole) = {
+    initUnpacker(msgpackIntArray)
+    while (hasNext) {
+      blackhole.consume(unpackInt)
+    }
+  }
+
+  @Benchmark
+  def floatArray(blackhole: Blackhole) = {
+    initUnpacker(msgpackFloatArray)
+    while (hasNext) {
+      blackhole.consume(unpackFloat)
+    }
+  }
+
+  @Benchmark
+  def booleanArray(blackhole: Blackhole) = {
+    initUnpacker(msgpackBooleaArray)
+    while (hasNext) {
+      blackhole.consume(unpackBoolean)
+    }
+  }
+}
+@State(Scope.Thread)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class AirframeMsgpack extends UnpackBenchmark {
+  private var unpacker: Unpacker = _
+  protected override def initUnpacker(byte: Array[Byte]): Unit = {
+    unpacker = MessagePack.newUnpacker(byte)
+  }
+  protected override def hasNext: Boolean       = unpacker.hasNext
+  protected override def unpackInt: Int         = unpacker.unpackInt
+  protected override def unpackFloat: Float     = unpacker.unpackFloat
+  protected override def unpackBoolean: Boolean = unpacker.unpackBoolean
+}
+
+@State(Scope.Thread)
+@BenchmarkMode(Array(Mode.Throughput))
+@OutputTimeUnit(TimeUnit.SECONDS)
+class MessagePackJava extends UnpackBenchmark {
+  private var unpacker: MessageUnpacker = _
+  protected override def initUnpacker(byte: Array[Byte]): Unit = {
+    unpacker = org.msgpack.core.MessagePack.newDefaultUnpacker(byte)
+  }
+  protected override def hasNext: Boolean       = unpacker.hasNext
+  protected override def unpackInt: Int         = unpacker.unpackInt()
+  protected override def unpackFloat: Float     = unpacker.unpackFloat()
+  protected override def unpackBoolean: Boolean = unpacker.unpackBoolean()
+}
+
+class MsgpackData {
+  private val r = new Random(0) // Use a fixed seed
+
+  private def prepare[A](in: Seq[A], unpack: (Packer, A) => Unit): Array[Byte] = {
     val packer = MessagePack.newBufferPacker
-    intArray.foreach(packer.packInt(_))
+    in.foreach(x => unpack(packer, x))
     packer.toByteArray
   }
+
+  lazy val intArray   = (0 to 1000).map(x => r.nextInt()).toIndexedSeq
+  val msgpackIntArray = prepare[Int](intArray, _.packInt(_))
+
+  lazy val floatArray   = (0 to 1000).map(x => r.nextFloat()).toIndexedSeq
+  val msgpackFloatArray = prepare[Float](floatArray, _.packFloat(_))
+
+  lazy val booleanArray  = (0 to 1000).map(x => r.nextBoolean()).toIndexedSeq
+  val msgpackBooleaArray = prepare[Boolean](booleanArray, _.packBoolean(_))
 }
