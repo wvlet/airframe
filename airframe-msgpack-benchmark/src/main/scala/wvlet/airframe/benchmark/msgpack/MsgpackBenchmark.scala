@@ -34,27 +34,4 @@ class MsgpackBenchmark {
 
   @Benchmark
   def measureRight: Int = x + y
-
-  /*
-   * The following tests emulate the naive looping.
-   * This is the Caliper-style benchmark.
-   */
-  private def reps(reps: Int): Int = {
-    var s = 0
-    var i = 0
-    while (i < reps) {
-      s += (x + y)
-      i += 1
-    }
-    s
-  }
-
-  /*
-   * We would like to measure this with different repetitions count.
-   * Special annotation is used to get the individual operation cost.
-   */
-
-  @Benchmark
-  @OperationsPerInvocation(1)
-  def measureWrong_1: Int = reps(1)
 }
