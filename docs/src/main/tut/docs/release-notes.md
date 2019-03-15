@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 19.3.4
+-  airframe-http-finagle: Fixes [#432](https://github.com/wvlet/airframe/issues/432): Router should be given from FinagleServerConfig ([#433](https://github.com/wvlet/airframe/issues/433)) [[a6a0687](https://github.com/wvlet/airframe/commit/a6a0687)]
+-  airframe-sql: Embed table names into query signatures ([#431](https://github.com/wvlet/airframe/issues/431)) [[37e8f7a](https://github.com/wvlet/airframe/commit/37e8f7a)]
+-  airframe-control: Implicit classes for parallel map syntax sugar ([#429](https://github.com/wvlet/airframe/issues/429)) [[09dd9d8](https://github.com/wvlet/airframe/commit/09dd9d8)]
+
 ## 19.3.3
 -  airframe-http-finagle: Support adding tracing to FinagleServer ([#430](https://github.com/wvlet/airframe/issues/430)) [[1ab7281](https://github.com/wvlet/airframe/commit/1ab7281)]
    - Since this version `Router` needs to be included in `FinagleServerConfig(port, router)` instead of using `bind[Router]`
