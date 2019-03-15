@@ -24,12 +24,14 @@ import wvlet.log.LogSupport
 object MsgpackBenchmarkMain {
   wvlet.airframe.log.init
 
+  private def launcher = Launcher.of[MsgpackBenchmarkMain]
+
   def main(argLine: String): Unit = {
-    Launcher.of[MsgpackBenchmarkMain].execute(argLine)
+    launcher.execute(argLine)
   }
 
   def main(args: Array[String]): Unit = {
-    Launcher.of[MsgpackBenchmarkMain].execute(args)
+    launcher.execute(args)
   }
 }
 

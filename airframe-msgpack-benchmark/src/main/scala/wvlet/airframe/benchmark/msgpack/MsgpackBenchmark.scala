@@ -16,22 +16,42 @@ package wvlet.airframe.benchmark.msgpack
 import java.util.concurrent.TimeUnit
 
 import org.openjdk.jmh.annotations._
+import wvlet.airframe.msgpack.spi.{BufferPacker, MessagePack, Unpacker}
+
+import scala.util.Random
 
 @State(Scope.Thread)
-@BenchmarkMode(Array(Mode.AverageTime))
+@BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 class MsgpackBenchmark {
-  /*
-   * Suppose we want to measure how much it takes to sum two integers:
-   */
-
-  val x = 1
-  val y = 2
-
-  /*
-   * This is what you do with JMH.
-   */
 
   @Benchmark
-  def measureRight: Int = x + y
+  def packInt: Array[Byte] = {
+    val packer = MessagePack.newBufferPacker
+    MsgpackData.intArray.foreach { x =>
+      packer.packInt(x)
+    }
+    packer.toByteArray
+  }
+
+  @Benchmark
+  def unpackInt: Seq[Int] = {
+    val unpacker = MessagePack.newUnpacker(MsgpackData.msgpackIntArray)
+    val b        = Seq.newBuilder[Int]
+    while (unpacker.hasNext) {
+      b += unpacker.unpackInt
+    }
+    b.result()
+  }
+}
+
+object MsgpackData {
+  val r = new Random(0) // Use a fixed seed
+
+  lazy val intArray = (0 to 100000).map(x => r.nextInt()).toIndexedSeq
+  lazy val msgpackIntArray = {
+    val packer = MessagePack.newBufferPacker
+    intArray.foreach(packer.packInt(_))
+    packer.toByteArray
+  }
 }

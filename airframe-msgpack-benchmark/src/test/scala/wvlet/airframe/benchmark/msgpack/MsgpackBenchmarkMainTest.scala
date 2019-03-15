@@ -19,6 +19,6 @@ import wvlet.airframe.AirframeSpec
   */
 class MsgpackBenchmarkMainTest extends AirframeSpec {
   "run benchmark" in {
-    MsgpackBenchmarkMain.main("bench -i 1 -w 1 -f 1")
+    MsgpackBenchmarkMain.main("bench-quick")
   }
 }
