@@ -15,4 +15,8 @@ addSbtPlugin("com.47deg"    % "sbt-microsites" % "0.7.26")
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.1")
 
+// For JMH benchmark
+addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.3.4")
+addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.12")
+
 scalacOptions ++= Seq("-deprecation", "-feature")

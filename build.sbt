@@ -11,6 +11,7 @@ val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.6-SNAP4"
 val SCALACHECK_VERSION              = "1.14.0"
+val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 val SLF4J_VERSION                   = "1.7.25"
@@ -514,7 +515,7 @@ lazy val msgpack =
       )
     )
     .jvmSettings(
-      libraryDependencies += "org.msgpack" % "msgpack-core" % "0.8.16"
+      libraryDependencies += "org.msgpack" % "msgpack-core" % MSGPACK_VERSION
     )
     .jsSettings(
       jsBuildSettings,
@@ -675,6 +676,21 @@ lazy val jsonBenchmark =
       )
     )
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
+
+lazy val msgpackBenchmark =
+  project
+    .in(file("airframe-msgpack-benchmark"))
+    .enablePlugins(JmhPlugin)
+    .enablePlugins(PackPlugin)
+    .settings(buildSettings)
+    .settings(
+      packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
+      libraryDependencies ++= Seq(
+        "org.msgpack"     % "msgpack-core" % MSGPACK_VERSION,
+        "org.openjdk.jmh" % "jmh-core"     % "1.12"
+      )
+    )
+    .dependsOn(msgpackJVM, launcher)
 
 lazy val fluentd =
   project
