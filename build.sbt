@@ -701,7 +701,7 @@ lazy val msgpackBenchmark =
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
       )
     )
-    .dependsOn(msgpackJVM, launcher, airframeSpecJVM % "test")
+    .dependsOn(msgpackJVM, metricsJVM, launcher, airframeSpecJVM % "test")
 
 lazy val fluentd =
   project

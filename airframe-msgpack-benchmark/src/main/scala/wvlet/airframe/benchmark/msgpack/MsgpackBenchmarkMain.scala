@@ -14,7 +14,7 @@
 package wvlet.airframe.benchmark.msgpack
 import org.openjdk.jmh.results.format.{ResultFormat, ResultFormatType}
 import org.openjdk.jmh.runner.Runner
-import org.openjdk.jmh.runner.options.OptionsBuilder
+import org.openjdk.jmh.runner.options.{OptionsBuilder, TimeValue}
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.log.LogSupport
 
@@ -66,6 +66,8 @@ class MsgpackBenchmarkMain(
       .forks(forkCount)
       .measurementIterations(iteration)
       .warmupIterations(warmupIteration)
+      .warmupTime(TimeValue.milliseconds(100))
+      .measurementTime(TimeValue.milliseconds(100))
     //.include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
 
     resultFormat.map { rf =>
