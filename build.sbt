@@ -677,6 +677,8 @@ lazy val jsonBenchmark =
     )
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
 
+val JMH_VERSION = "1.12"
+
 lazy val msgpackBenchmark =
   project
     .in(file("airframe-msgpack-benchmark"))
@@ -686,8 +688,10 @@ lazy val msgpackBenchmark =
     .settings(
       packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
       libraryDependencies ++= Seq(
-        "org.msgpack"     % "msgpack-core" % MSGPACK_VERSION,
-        "org.openjdk.jmh" % "jmh-core"     % "1.12"
+        "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
+        "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
+        "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
+        "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
       )
     )
     .dependsOn(msgpackJVM, launcher)

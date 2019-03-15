@@ -25,7 +25,6 @@ object MsgpackBenchmarkMain {
     wvlet.airframe.log.init
     Launcher.of[MsgpackBenchmarkMain].execute(args)
   }
-
 }
 
 class MsgpackBenchmarkMain(
@@ -39,11 +38,16 @@ class MsgpackBenchmarkMain(
   }
 
   @command(description = "Run a benchmark")
-  def bench(
-      @option(prefix = "-f,--fork-count", description = "Fork Count (default: 5)")
-      forkCount: Int = 5) {
+  def bench(@option(prefix = "-i,--iteration", description = "The number of iteration (default: 5)")
+            iteration: Int = 5,
+            @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
+            warmupIteration: Int = 5,
+            @option(prefix = "-f,--fork-count", description = "Fork Count (default: 5)")
+            forkCount: Int = 5) {
     val opt = new OptionsBuilder()
       .forks(forkCount)
+      .measurementIterations(iteration)
+      .warmupIterations(warmupIteration)
       .include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
       .build()
 
