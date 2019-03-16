@@ -15,6 +15,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.metrics.{DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface.{Surface, Zero}
 
 /**
   *
@@ -42,6 +43,11 @@ class MetricsCodecTest extends AirframeSpec {
       p.packInt(1000)
       codec.unpackMsgPack(p.toByteArray) shouldBe Some(DataSize(1000))
     }
+  }
+
+  "support Zero.of[DataSize]" in {
+    val z = Zero.zeroOf(Surface.of[DataSize])
+    z shouldBe DataSize(0)
   }
 
   "support ElapsedTime" in {

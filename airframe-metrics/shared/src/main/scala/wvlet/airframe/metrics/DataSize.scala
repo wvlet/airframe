@@ -14,6 +14,7 @@
 package wvlet.airframe.metrics
 
 import wvlet.airframe.metrics.DataSize._
+import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
@@ -78,6 +79,9 @@ case class DataSize(value: Double, unit: DataSizeUnit) extends Comparable[DataSi
 }
 
 object DataSize {
+  Zero.register(Surface.of[DataSizeUnit], BYTE)
+  Zero.register(Surface.of[DataSize], DataSize(0, BYTE))
+
   private[metrics] def checkState(preCondition: Boolean, errorMessage: String): Unit = {
     if (!preCondition) {
       throw new IllegalStateException(errorMessage)
@@ -93,7 +97,7 @@ object DataSize {
 
   private val dataSizePattern = """^\s*(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s*$""".r("num", "unit")
 
-  sealed class DataSizeUnit private[metrics] (val factor: Long = 1L, val unitString: String = "B")
+  sealed class DataSizeUnit private[metrics] (val factor: Long, val unitString: String)
   case object BYTE     extends DataSizeUnit(1L, "B")
   case object KILOBYTE extends DataSizeUnit(1L << 10, "kB")
   case object MEGABYTE extends DataSizeUnit(1L << 20, "MB")
@@ -128,3 +132,5 @@ object DataSize {
     }
   }
 }
+
+object DataSizeUnit {}
