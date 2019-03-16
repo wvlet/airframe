@@ -46,5 +46,13 @@ class StandardCodecTest extends CodecSpec {
       val v = codec.unpackMsgPack(p.toByteArray)
       v shouldBe empty
     }
+
+    "support case-insensitive enum match" in {
+      val p     = MessagePack.newBufferPacker
+      val codec = MessageCodec.of[TestEnum]
+      p.packString("Running")
+      codec.unpackMsgPack(p.toByteArray) shouldBe Some(TestEnum.RUNNING)
+
+    }
   }
 }
