@@ -678,6 +678,7 @@ lazy val jsonBenchmark =
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
 
 val JMH_VERSION = "1.12"
+import xerial.sbt.pack.PackPlugin._
 
 lazy val msgpackBenchmark =
   project
@@ -687,6 +688,7 @@ lazy val msgpackBenchmark =
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
     .settings(
+      name := "airframe-msgpack-benchmark",
       packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Jmh).value,
@@ -699,7 +701,8 @@ lazy val msgpackBenchmark =
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
-      )
+      ),
+      publishPackArchiveTgz
     )
     .dependsOn(msgpackJVM, metricsJVM, launcher, airframeSpecJVM % "test")
 
