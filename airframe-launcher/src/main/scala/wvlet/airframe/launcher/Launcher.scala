@@ -126,7 +126,7 @@ object Launcher extends LogSupport {
       s"${m.name} ${argLine}"
     }
 
-    val li = LauncherInfo(m.name, description, usage)
+    val li = LauncherInfo(m.name, description, usage, command.isDefault)
     new CommandLauncher(li, parser, Seq.empty, None)
   }
 }
@@ -209,7 +209,7 @@ case class LauncherResult(launcherStack: List[LauncherInstance], result: Option[
 }
 case class LauncherInstance(launcher: CommandLauncher, instance: Any)
 
-case class LauncherInfo(name: String, description: String, usage: String)
+case class LauncherInfo(name: String, description: String, usage: String, isDefault: Boolean = false)
 
 /**
   * Command launcher.
@@ -297,7 +297,7 @@ class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
       description = l.description,
       options = schema.options,
       globalOptions = globalOptions,
-      subCommands = l.subCommands
+      subCommands = l.subCommands.filterNot(x => x.launcherInfo.isDefault)
     )
 
     print(help)

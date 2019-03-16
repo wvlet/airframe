@@ -23,8 +23,8 @@ package wvlet.airframe.launcher
 
 import java.io.ByteArrayOutputStream
 
-import wvlet.log.{LogLevel, LogSupport, Logger}
 import wvlet.airframe.AirframeSpec
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 /**
   * @author leo
@@ -120,6 +120,7 @@ class LauncherTest extends AirframeSpec {
       help should (include("say hello"))
       help should (include("world"))
       help should (include("say world"))
+      help should not(include("default"))
     }
 
     "run default command" in {
