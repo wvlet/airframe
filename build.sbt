@@ -11,6 +11,7 @@ val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.6-SNAP4"
 val SCALACHECK_VERSION              = "1.14.0"
+val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
 val SQLITE_JDBC_VERSION             = "3.21.0.1"
 val SLF4J_VERSION                   = "1.7.25"
@@ -135,7 +136,8 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   tablet,
   msgpackJVM,
   http,
-  jsonJVM
+  jsonJVM,
+  msgpackBenchmark
 )
 
 // JVM projects that supports Scala 2.13
@@ -514,7 +516,7 @@ lazy val msgpack =
       )
     )
     .jvmSettings(
-      libraryDependencies += "org.msgpack" % "msgpack-core" % "0.8.16"
+      libraryDependencies += "org.msgpack" % "msgpack-core" % MSGPACK_VERSION
     )
     .jsSettings(
       jsBuildSettings,
@@ -675,6 +677,35 @@ lazy val jsonBenchmark =
       )
     )
     .dependsOn(jsonJVM, airframeSpecJVM % "test")
+
+val JMH_VERSION = "1.12"
+import xerial.sbt.pack.PackPlugin._
+
+lazy val msgpackBenchmark =
+  project
+    .in(file("airframe-msgpack-benchmark"))
+    // Necessary for generating /META-INF/BenchmarkList
+    .enablePlugins(JmhPlugin)
+    .enablePlugins(PackPlugin)
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-msgpack-benchmark",
+      packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
+      // Generate JMH benchmark cord before packaging and testing
+      pack := pack.dependsOn(compile in Jmh).value,
+      compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
+      // Need to fork JVM so that sbt can set the classpass properly for running JMH
+      fork in Test := true,
+      fork in run := true,
+      libraryDependencies ++= Seq(
+        "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
+        "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
+        "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
+        "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
+      ),
+      publishPackArchiveTgz
+    )
+    .dependsOn(msgpackJVM, metricsJVM, launcher, airframeSpecJVM % "test")
 
 lazy val fluentd =
   project
