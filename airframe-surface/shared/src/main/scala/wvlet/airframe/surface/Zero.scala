@@ -14,6 +14,8 @@
 
 package wvlet.airframe.surface
 
+import java.util.concurrent.ConcurrentHashMap
+
 import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
@@ -22,6 +24,16 @@ import scala.reflect.ClassTag
   * Create a default instance (zero) from Surface
   */
 object Zero extends LogSupport {
+
+  import scala.collection.JavaConverters._
+  private val preregisteredZeroInstance = new ConcurrentHashMap[Surface, Any]().asScala
+
+  /**
+    * Register a zero instnce for the given type
+    */
+  def register(surface: Surface, zero: Any): Unit = {
+    preregisteredZeroInstance += surface -> zero
+  }
 
   type ZeroValueFactory = PartialFunction[Surface, Any]
   type SurfaceFilter    = PartialFunction[Surface, Surface]
@@ -44,6 +56,11 @@ object Zero extends LogSupport {
     case Primitive.Byte    => 0.toByte
     case Primitive.Short   => 0.toShort
     case Primitive.Char    => 0.toChar
+  }
+
+  private def zeroOfRegisteredTypes: ZeroValueFactory = {
+    case t if preregisteredZeroInstance.contains(t) =>
+      preregisteredZeroInstance(t)
   }
 
   private def zeroOfArray: ZeroValueFactory = {
@@ -95,12 +112,12 @@ object Zero extends LogSupport {
   }
 
   private def fallBack: ZeroValueFactory = {
-    case other =>
-      null
+    case _ => null
   }
 
   private val factory: ZeroValueFactory =
     zeroOfPrimitives orElse
+      zeroOfRegisteredTypes orElse
       zeroOfArray orElse
       zeroOfTuple orElse
       zeroOfSpecialType orElse
