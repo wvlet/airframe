@@ -91,7 +91,7 @@ object HttpRecorder extends LogSupport {
   def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
-    new HttpRecorderServer(recorder, finagleConfig, new RecordReplayService(recorder))
+    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
   }
 
   def defaultFallBackHandler = {

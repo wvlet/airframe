@@ -50,7 +50,7 @@ class RecordingService(recordStore: HttpRecordStore, destination: Service[Reques
 /**
   * An HTTP request filter for returning recorded HTTP responses
   */
-class RecordReplayService(recordStore: HttpRecordStore) extends FinagleService with LogSupport {
+class ReplayService(recordStore: HttpRecordStore) extends FinagleService with LogSupport {
 
   override def apply(request: Request): Future[Response] = {
     // Rewrite the target host for proxying
