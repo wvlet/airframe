@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi.{IntegerOverflowException, Packer, Unpacker, ValueType}
-
+import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.{Primitive, Surface}
 
 import scala.util.Try
@@ -25,15 +24,17 @@ import scala.util.Try
 object PrimitiveCodec {
 
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
-    Primitive.Int     -> IntCodec,
-    Primitive.Long    -> LongCodec,
-    Primitive.Float   -> FloatCodec,
-    Primitive.Double  -> DoubleCodec,
-    Primitive.Boolean -> BooleanCodec,
-    Primitive.String  -> StringCodec,
-    Primitive.Byte    -> ByteCodec,
-    Primitive.Short   -> ShortCodec,
-    Primitive.Char    -> CharCodec
+    Primitive.Int       -> IntCodec,
+    Primitive.Long      -> LongCodec,
+    Primitive.Float     -> FloatCodec,
+    Primitive.Double    -> DoubleCodec,
+    Primitive.Boolean   -> BooleanCodec,
+    Primitive.String    -> StringCodec,
+    Primitive.Byte      -> ByteCodec,
+    Primitive.Short     -> ShortCodec,
+    Primitive.Char      -> CharCodec,
+    Surface.of[Value]   -> ValueCodec,
+    Surface.of[MsgPack] -> ByteArrayCodec
   )
 
   val primitiveArrayCodec = Map(
@@ -132,8 +133,11 @@ object PrimitiveCodec {
         case ValueType.STRING =>
           read {
             val s = u.unpackString
-            if (s.length == 1) s.charAt(0)
-            else s.toDouble.toChar
+            if (s.length == 1) {
+              s.charAt(0)
+            } else {
+              s.toDouble.toChar
+            }
           }
         case ValueType.BOOLEAN =>
           read(u.unpackBoolean.toChar)
@@ -640,9 +644,16 @@ object PrimitiveCodec {
       p.addPayload(v)
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
-      val len = u.unpackBinaryHeader
-      val b   = u.readPayload(len)
-      v.setObject(b)
+      u.getNextValueType match {
+        case ValueType.BINARY =>
+          val len = u.unpackBinaryHeader
+          val b   = u.readPayload(len)
+          v.setObject(b)
+        case _ =>
+          // Set MessagePack binary
+          val value = u.unpackValue
+          v.setObject(value.toMsgpack)
+      }
     }
   }
 
@@ -670,4 +681,16 @@ object PrimitiveCodec {
     }
   }
 
+  /**
+    * MessagePack value codec
+    */
+  object ValueCodec extends MessageCodec[Value] {
+    override def pack(p: Packer, v: Value): Unit = {
+      p.packValue(v)
+    }
+
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      v.setObject(u.unpackValue)
+    }
+  }
 }
