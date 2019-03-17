@@ -31,10 +31,17 @@ trait Value {
 
   /**
     * Write the value to target Packer
+    *
     * @param packer
     * @return
     */
   def writeTo(packer: Packer): Unit
+
+  def toMsgpack: Array[Byte] = {
+    val p = MessagePack.newBufferPacker
+    writeTo(p)
+    p.toByteArray
+  }
 }
 
 object Value {
@@ -60,11 +67,17 @@ object Value {
     def isValidInt: Boolean
     def isValidLong: Boolean
     def mostSuccinctMessageFormat: MessageFormat = {
-      if (isValidByte) MessageFormat.INT8
-      else if (isValidShort) MessageFormat.INT16
-      else if (isValidInt) MessageFormat.INT32
-      else if (isValidLong) MessageFormat.INT64
-      else MessageFormat.UINT64
+      if (isValidByte) {
+        MessageFormat.INT8
+      } else if (isValidShort) {
+        MessageFormat.INT16
+      } else if (isValidInt) {
+        MessageFormat.INT32
+      } else if (isValidLong) {
+        MessageFormat.INT64
+      } else {
+        MessageFormat.UINT64
+      }
     }
   }
 
@@ -245,30 +258,36 @@ object Value {
     var i = 0
     while (i < string.length) {
       val ch = string.charAt(i)
-      if (ch < 0x20) ch match {
-        case '\n' =>
-          sb.append("\\n")
-        case '\r' =>
-          sb.append("\\r")
-        case '\t' =>
-          sb.append("\\t")
-        case '\f' =>
-          sb.append("\\f")
-        case '\b' =>
-          sb.append("\\b")
-        case _ =>
-          // control chars
-          escapeChar(sb, ch)
-      } else if (ch <= 0x7f) ch match {
-        case '\\' =>
-          sb.append("\\\\")
-        case '"' =>
-          sb.append("\\\"")
-        case _ =>
-          sb.append(ch)
+      if (ch < 0x20) {
+        ch match {
+          case '\n' =>
+            sb.append("\\n")
+          case '\r' =>
+            sb.append("\\r")
+          case '\t' =>
+            sb.append("\\t")
+          case '\f' =>
+            sb.append("\\f")
+          case '\b' =>
+            sb.append("\\b")
+          case _ =>
+            // control chars
+            escapeChar(sb, ch)
+        }
+      } else if (ch <= 0x7f) {
+        ch match {
+          case '\\' =>
+            sb.append("\\\\")
+          case '"' =>
+            sb.append("\\\"")
+          case _ =>
+            sb.append(ch)
+        }
       } else if (ch >= 0xd800 && ch <= 0xdfff) { // surrogates
         escapeChar(sb, ch)
-      } else sb.append(ch)
+      } else {
+        sb.append(ch)
+      }
 
       i += 1
     }
