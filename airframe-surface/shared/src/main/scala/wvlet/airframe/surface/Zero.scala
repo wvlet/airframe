@@ -58,7 +58,7 @@ object Zero extends LogSupport {
     case Primitive.Char    => 0.toChar
   }
 
-  private def zeroOfRegisteredTyeps: ZeroValueFactory = {
+  private def zeroOfRegisteredTypes: ZeroValueFactory = {
     case t if preregisteredZeroInstance.contains(t) =>
       preregisteredZeroInstance(t)
   }
@@ -117,7 +117,7 @@ object Zero extends LogSupport {
 
   private val factory: ZeroValueFactory =
     zeroOfPrimitives orElse
-      zeroOfRegisteredTyeps orElse
+      zeroOfRegisteredTypes orElse
       zeroOfArray orElse
       zeroOfTuple orElse
       zeroOfSpecialType orElse
