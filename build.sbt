@@ -1,5 +1,3 @@
-import sbt.internal.io.Source
-import sbt.internal.util.ManagedLogger
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_12 = "2.12.8"
@@ -602,7 +600,7 @@ lazy val http =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, surfaceJVM, jsonJVM, codecJVM, airframeSpecJVM % "test")
 
-val FINAGLE_VERSION = "19.3.0"
+val FINAGLE_VERSION = "19.2.0"
 lazy val finagle =
   project
     .in(file("airframe-http-finagle"))

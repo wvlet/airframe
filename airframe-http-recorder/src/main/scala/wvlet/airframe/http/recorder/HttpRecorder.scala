@@ -49,7 +49,7 @@ case class HttpRecorderConfig(destUri: String,
 /**
   * Creates a proxy server for recording and replaying HTTP responses.
   * This is useful for simulate the behavior of Web services, that
-  * are too heavy to use in an restricted environment (e.g., CI servers)
+  * are usually too heavy to use in an restricted environment (e.g., CI servers)
   */
 object HttpRecorder extends LogSupport {
 
@@ -91,7 +91,7 @@ object HttpRecorder extends LogSupport {
   def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
-    new HttpRecorderServer(recorder, finagleConfig, new RecordReplayService(recorder))
+    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
   }
 
   def defaultFallBackHandler = {
