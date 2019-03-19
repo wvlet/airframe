@@ -114,7 +114,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @param request
     * @return
     */
-  def buildControllerMethodArgs[A](request: HttpRequest[A]): Seq[Any] = {
+  def buildControllerMethodArgs[A](controller: Any, request: HttpRequest[A]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams = request.query ++ extractPathParams(request)
 
@@ -158,7 +158,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                   argCodec.unpackMsgPack(msgpack)
                 } else {
                   // Return the method default argument if exists
-                  arg.getDefaultValue
+                  arg.getMethodArgDefaultValue(controller)
                 }
             }
             // If mapping fails, use the zero value
@@ -175,7 +175,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
 
   def call[A](controllerProvider: ControllerProvider, request: HttpRequest[A]): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
-      call(controller, buildControllerMethodArgs(request))
+      call(controller, buildControllerMethodArgs(controller, request))
     }
   }
 }

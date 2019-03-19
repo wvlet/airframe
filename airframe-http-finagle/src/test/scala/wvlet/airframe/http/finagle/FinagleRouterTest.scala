@@ -15,7 +15,6 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.Request
-import com.twitter.io.Buf
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
@@ -60,6 +59,12 @@ trait MyApi extends LogSupport {
   def rawString(body: String): String = {
     body
   }
+
+  @Endpoint(path = "/v1/json_api_default")
+  def jsonApiDefault(request: RichRequest = RichRequest(100, "dummy")): Future[String] = {
+    Future.value(request.toString)
+  }
+
 }
 
 /**
@@ -111,12 +116,28 @@ class FinagleRouterTest extends AirframeSpec {
         json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
       }
 
-      // JSON requests
+      // JSON request
       {
         val request = Request("/v1/json_api")
         request.contentString = """{"id":10, "name":"leo"}"""
         val ret = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(10,leo)"""
+      }
+
+      // JSON request with explicit JSON content type
+      {
+        val request = Request("/v1/json_api")
+        request.contentString = """{"id":10, "name":"leo"}"""
+        request.setContentTypeJson()
+        val ret = Await.result(client(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
+      }
+
+      // Use the default argument
+      {
+        val request = Request("/v1/json_api_default")
+        val ret     = Await.result(client(request).map(_.contentString))
+        ret shouldBe """RichRequest(100,dummy)"""
       }
 
       // Msgpack body

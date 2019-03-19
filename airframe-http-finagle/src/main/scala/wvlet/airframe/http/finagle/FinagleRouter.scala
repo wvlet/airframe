@@ -38,7 +38,7 @@ class FinagleRouter(config: FinagleServerConfig,
         controllerProvider.findController(route.controllerSurface) match {
           case Some(controller) =>
             // Call the method in this controller
-            val args   = route.buildControllerMethodArgs(request)
+            val args   = route.buildControllerMethodArgs(controller, request)
             val result = route.call(controller, args)
 
             route.returnTypeSurface.rawType match {
