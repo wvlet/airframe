@@ -144,21 +144,22 @@ class FinagleRouterTest extends AirframeSpec {
         val request = Request("/v1/json_api_default")
         val ret     = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(100,dummy)"""
-        // JSON requests
-        {
-          val request = Request("/v1/json_api")
-          request.contentString = """{"id":10, "name":"leo"}"""
-          val ret = Await.result(client(request).map(_.contentString))
-          ret shouldBe """RichRequest(10,leo)"""
-        }
+      }
 
-        // Error test
-        {
-          warn("Exception response test")
-          val request = Request("/v1/error")
-          val ret     = Await.result(client(request))
-          ret.statusCode shouldBe 500
-        }
+      // JSON requests
+      {
+        val request = Request("/v1/json_api")
+        request.contentString = """{"id":10, "name":"leo"}"""
+        val ret = Await.result(client(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
+      }
+
+      // Error test
+      {
+        warn("Exception response test")
+        val request = Request("/v1/error")
+        val ret     = Await.result(client(request))
+        ret.statusCode shouldBe 500
       }
 
       // Msgpack body
