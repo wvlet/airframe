@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
+import java.lang.reflect.InvocationTargetException
+
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.{Await, Future}
@@ -20,6 +22,8 @@ import wvlet.airframe._
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.log.LogSupport
+
+import scala.annotation.tailrec
 
 case class FinagleServerConfig(port: Int = 8080, router: Router = Router.empty)
 
@@ -69,14 +73,26 @@ object FinagleServer extends LogSupport {
   }
 
   /**
-    * A simple error handler for wrapping exceptions as InternalServerError (500)
+    * A simple error handler for wrapping exceptions as InternalServerError (500).
+    * We do not return the exception as is because it may contain internal information.
     */
   def defaultErrorHandler = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       service(request).rescue {
         case e: Throwable =>
-          logger.warn(e.getMessage)
-          logger.trace(e)
+          // Resolve the cause of the exception
+          @tailrec
+          def getCause(x: Throwable): Throwable = {
+            x match {
+              case i: InvocationTargetException if i.getTargetException != null =>
+                getCause(i.getTargetException)
+              case _ =>
+                x
+            }
+          }
+
+          val ex = getCause(e)
+          logger.warn(ex)
           Future.value(Response(Status.InternalServerError))
       }
     }
