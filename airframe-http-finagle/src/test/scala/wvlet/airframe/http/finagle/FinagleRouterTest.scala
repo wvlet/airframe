@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.lang.reflect.InvocationTargetException
+
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.Request
 import com.twitter.io.Buf.ByteArray
@@ -65,6 +67,10 @@ trait MyApi extends LogSupport {
     Future.value(request.toString)
   }
 
+  @Endpoint(path = "/v1/error")
+  def throw_ex: String = {
+    throw new InvocationTargetException(new IllegalArgumentException("test error"))
+  }
 }
 
 /**
@@ -138,6 +144,21 @@ class FinagleRouterTest extends AirframeSpec {
         val request = Request("/v1/json_api_default")
         val ret     = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(100,dummy)"""
+        // JSON requests
+        {
+          val request = Request("/v1/json_api")
+          request.contentString = """{"id":10, "name":"leo"}"""
+          val ret = Await.result(client(request).map(_.contentString))
+          ret shouldBe """RichRequest(10,leo)"""
+        }
+
+        // Error test
+        {
+          warn("Exception response test")
+          val request = Request("/v1/error")
+          val ret     = Await.result(client(request))
+          ret.statusCode shouldBe 500
+        }
       }
 
       // Msgpack body
