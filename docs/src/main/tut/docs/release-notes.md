@@ -5,6 +5,18 @@ title: Release Notes
 
 # Release Notes
 
+## 19.3.5
+-  airframe-http: Accept: application/x-msgpack response support ([#448](https://github.com/wvlet/airframe/issues/448)) [[ccb55b7](https://github.com/wvlet/airframe/commit/ccb55b7)]
+-  airframe-http: Support non-JSON content body ([#446](https://github.com/wvlet/airframe/issues/446)) [[f351916](https://github.com/wvlet/airframe/commit/f351916)]
+-  airframe-http: Show the cause of an exception cause upon an internal server error ([#447](https://github.com/wvlet/airframe/issues/447)) [[52a6b02](https://github.com/wvlet/airframe/commit/52a6b02)]
+-  airframe-jdbc: Upgrade sqlite-jdbc to 3.27.2 for upsert support ([#445](https://github.com/wvlet/airframe/issues/445)) [[b7f3a57](https://github.com/wvlet/airframe/commit/b7f3a57)]
+-  airframe-http-finagle: Upgrade to Finagle 19.2.0 ([#442](https://github.com/wvlet/airframe/issues/442)) [[f6d3941](https://github.com/wvlet/airframe/commit/f6d3941)]
+-  airframe-code: Support MsgPack type parameter codec ([#441](https://github.com/wvlet/airframe/issues/441)) [[5923aac](https://github.com/wvlet/airframe/commit/5923aac)]
+-  airframe-surface: Add Zero.register(surface, A) ([#440](https://github.com/wvlet/airframe/issues/440)) [[f16002f](https://github.com/wvlet/airframe/commit/f16002f)]
+-  airframe-codec: [#437](https://github.com/wvlet/airframe/issues/437) Case-insensitive enum mapping ([#439](https://github.com/wvlet/airframe/issues/439)) [[5b26e5a](https://github.com/wvlet/airframe/commit/5b26e5a)]
+-  airframe-launcher: Fixes [#435](https://github.com/wvlet/airframe/issues/435). Hide the default command from the help message ([#438](https://github.com/wvlet/airframe/issues/438)) [[bcdd154](https://github.com/wvlet/airframe/commit/bcdd154)]
+-  airframe-msgpack: Add a msgpack benchmark using JMH ([#437](https://github.com/wvlet/airframe/issues/437)) [[e5f8526](https://github.com/wvlet/airframe/commit/e5f8526)]
+
 ## 19.3.4
 -  airframe-http-finagle: Fixes [#432](https://github.com/wvlet/airframe/issues/432): Router should be given from FinagleServerConfig ([#433](https://github.com/wvlet/airframe/issues/433)) [[a6a0687](https://github.com/wvlet/airframe/commit/a6a0687)]
 -  airframe-sql: Embed table names into query signatures ([#431](https://github.com/wvlet/airframe/issues/431)) [[37e8f7a](https://github.com/wvlet/airframe/commit/37e8f7a)]
