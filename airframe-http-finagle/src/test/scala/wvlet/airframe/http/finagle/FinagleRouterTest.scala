@@ -24,7 +24,6 @@ import wvlet.airframe.codec.JSONCodec
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)
 case class RichNestedInfo(serverType: String)
@@ -77,18 +76,12 @@ trait MyApi extends LogSupport {
   *
   */
 class FinagleRouterTest extends AirframeSpec {
-  val port = IOUtil.unusedPort
-
-  val router = Router.of[MyApi]
-
-  val d =
-    finagleDefaultDesign.noLifeCycleLogging
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port, router = router))
+  val d = newFinagleServerDesign(Router.of[MyApi]).noLifeCycleLogging
 
   "Support function arg mappings" in {
     d.build[FinagleServer] { server =>
       val client = Http.client
-        .newService(s"localhost:${port}")
+        .newService(server.localAddress)
       val f1 = client(Request("/v1/info")).map { response =>
         debug(response.contentString)
       }

@@ -15,6 +15,7 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Service, SimpleFilter}
+import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler}
@@ -91,7 +92,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
       case _ =>
         // Convert the response object into JSON
         val rs = mapCodecFactory.of(responseSurface)
-        val bytes: Array[Byte] = rs match {
+        val msgpack: Array[Byte] = rs match {
           case m: MessageCodec[_] =>
             m.asInstanceOf[MessageCodec[A]].toMsgPack(a)
           case _ =>
@@ -99,15 +100,22 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         }
 
         // TODO return application/msgpack content type
-        val json = JSONCodec.unpackMsgPack(bytes)
-        json match {
-          case Some(j) =>
-            val res = Response(Status.Ok)
-            res.setContentTypeJson()
-            res.setContentString(json.get)
-            res
-          case None =>
-            Response(Status.InternalServerError)
+        if (request.accept.contains("application/x-msgpack")) {
+          val res = Response(Status.Ok)
+          res.contentType = "application/x-msgpack"
+          res.content = ByteArray.Owned(msgpack)
+          res
+        } else {
+          val json = JSONCodec.unpackMsgPack(msgpack)
+          json match {
+            case Some(j) =>
+              val res = Response(Status.Ok)
+              res.setContentTypeJson()
+              res.setContentString(json.get)
+              res
+            case None =>
+              Response(Status.InternalServerError)
+          }
         }
     }
   }
