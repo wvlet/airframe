@@ -48,6 +48,7 @@ package object finagle {
       raw.content.write(b, 0)
       b
     }
+    override def contentType: Option[String] = raw.contentType
   }
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {
