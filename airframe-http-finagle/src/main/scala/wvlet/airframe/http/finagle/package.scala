@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import com.twitter.finagle.http
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.log.io.IOUtil
 
 /**
   *
@@ -34,6 +35,14 @@ package object finagle {
       .bind[FinagleServer].toProvider { (factory: FinagleServerFactory, config: FinagleServerConfig) =>
         factory.newFinagleServer(config)
       }
+
+  /**
+    * Create a new design for FinagleServer using a random port (if not given)
+    */
+  def newFinagleServerDesign(router: Router, port: Int = IOUtil.randomPort): Design = {
+    finagleDefaultDesign
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = router))
+  }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
     def asAirframeHttpRequest: HttpRequest[http.Request] = this

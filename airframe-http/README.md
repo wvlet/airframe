@@ -89,10 +89,7 @@ import com.twitter.finagle.http.Request
 // You can add more routes by using `.add[X]` method.
 val router = Router.of[MyApi]
 
-val design =
-  finagleDefaultDesign
-    // Configure port and routes
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
+val design = newFinagleServerDesign(router, port = 8080)
 
 design.build[FinagleServer] { server =>
   // Finagle http server will start here
