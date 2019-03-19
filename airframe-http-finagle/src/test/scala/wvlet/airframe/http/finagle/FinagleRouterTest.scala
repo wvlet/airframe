@@ -81,7 +81,7 @@ class FinagleRouterTest extends AirframeSpec {
   "Support function arg mappings" in {
     d.build[FinagleServer] { server =>
       val client = Http.client
-        .newService(s"localhost:${port}")
+        .newService(server.localAddress)
       val f1 = client(Request("/v1/info")).map { response =>
         debug(response.contentString)
       }
