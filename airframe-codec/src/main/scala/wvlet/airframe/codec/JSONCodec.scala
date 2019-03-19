@@ -28,12 +28,16 @@ object JSONCodec extends MessageCodec[String] {
   }
 
   def toMsgPack(jsonBytes: Array[Byte]): Array[Byte] = {
+    toMsgPack(JSON.parse(jsonBytes))
+  }
+
+  def toMsgPack(jsonValue: JSONValue): Array[Byte] = {
     val packer = MessagePack.newBufferPacker
-    packJsonValue(packer, JSON.parse(jsonBytes))
+    packJsonValue(packer, jsonValue)
     packer.toByteArray
   }
 
-  private def packJsonValue(p: Packer, v: JSONValue): Unit = {
+  def packJsonValue(p: Packer, v: JSONValue): Unit = {
     import wvlet.airframe.json.JSON._
     v match {
       case JSONObject(map) =>

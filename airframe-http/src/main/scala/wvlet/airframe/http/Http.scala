@@ -21,6 +21,7 @@ trait HttpRequest[Req] {
   def query: Map[String, String]
   def contentString: String
   def contentBytes: Array[Byte]
+  def contentType: Option[String]
   lazy val pathComponents: IndexedSeq[String] = {
     path.replaceFirst("/", "").split("/").toIndexedSeq
   }
@@ -35,6 +36,7 @@ case class SimpleHttpRequest(method: HttpMethod,
   override def contentBytes: Array[Byte] = {
     contentString.getBytes(StandardCharsets.UTF_8)
   }
+  def contentType: Option[String]       = None
   override def toRaw: SimpleHttpRequest = this
 }
 

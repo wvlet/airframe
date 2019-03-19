@@ -15,14 +15,17 @@ package wvlet.airframe.http
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
+import wvlet.airframe.json.JSON
 import wvlet.airframe.surface.reflect._
 import wvlet.airframe.surface.{MethodSurface, Surface, Zero}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
+import scala.util.Try
 
 /**
   * Provides mapping from HTTP requests to controller methods (= Route)
+  *
   * @param routes
   */
 class Router(val routes: Seq[Route]) {
@@ -41,7 +44,9 @@ class Router(val routes: Seq[Route]) {
         case (requestPathComponent, routePathComponent) =>
           routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
       }
-    } else false
+    } else {
+      false
+    }
   }
 
   /**
@@ -105,6 +110,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
 
   /**
     * Find a corresponding controller and call the matching methods
+    *
     * @param request
     * @return
     */
@@ -124,14 +130,31 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
-                // String parameter to the method argument
+                // Pass the String parameter to the method argument
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
-                // Build from the content body
+                // Build the parameter from the content body
                 val contentBytes = request.contentBytes
+
                 if (contentBytes.nonEmpty) {
-                  // JSON -> msgpack -> argument
-                  val msgpack = JSONCodec.toMsgPack(contentBytes)
+                  val msgpack =
+                    request.contentType.map(_.split(";")(0)) match {
+                      case Some("application/x-msgpack") =>
+                        contentBytes
+                      case Some("application/json") =>
+                        // JSON -> msgpack
+                        JSONCodec.toMsgPack(JSON.parse(contentBytes))
+                      case _ =>
+                        // Try parsing as JSON first
+                        Try(JSON.parse(contentBytes))
+                          .map { jsonValue =>
+                            JSONCodec.toMsgPack(jsonValue)
+                          }
+                          .getOrElse {
+                            // If parsing as JSON fails, treat the content body as a regular string
+                            StringCodec.toMsgPack(request.contentString)
+                          }
+                    }
                   argCodec.unpackMsgPack(msgpack)
                 } else {
                   // Return the method default argument if exists
