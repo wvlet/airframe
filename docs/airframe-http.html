@@ -97,10 +97,7 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 // You can add more routes by using `.add[X]` method.
 </span><span class="k">val</span> <span class="n">router</span> <span class="k">=</span> <span class="nc">Router</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">design</span> <span class="k">=</span>
-  <span class="n">finagleDefaultDesign</span>
-    <span class="c1">// Configure port and routes
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
 
 <span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
   <span class="c1">// Finagle http server will start here
