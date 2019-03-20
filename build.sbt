@@ -140,19 +140,19 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
 // JVM projects that supports Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   jdbc,
-  fluentd,
-  msgpackBenchmark
+  fluentd
 )
 
-// JVM projects that cannot be build in Scala 2.13
+// JVM projects excluded from Scala 2.13 build
 lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
   httpRecorder,
+  sql,
   jsonBenchmark,
-  sql
+  msgpackBenchmark
 )
 
-// Scala.js builds is only for Scala 2.12
+// Scala.js build is only for Scala 2.12
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
