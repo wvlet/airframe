@@ -8,7 +8,7 @@ title: Release Notes
 ## 19.3.5
 -  airframe-http: Accept: application/x-msgpack response support ([#448](https://github.com/wvlet/airframe/issues/448)) [[ccb55b7](https://github.com/wvlet/airframe/commit/ccb55b7)]
 -  airframe-http: Support non-JSON content body ([#446](https://github.com/wvlet/airframe/issues/446)) [[f351916](https://github.com/wvlet/airframe/commit/f351916)]
--  airframe-http: Show the cause of an exception cause upon an internal server error ([#447](https://github.com/wvlet/airframe/issues/447)) [[52a6b02](https://github.com/wvlet/airframe/commit/52a6b02)]
+-  airframe-http: Show the cause of an exception upon an internal server error ([#447](https://github.com/wvlet/airframe/issues/447)) [[52a6b02](https://github.com/wvlet/airframe/commit/52a6b02)]
 -  airframe-http-finagle: Upgrade to Finagle 19.2.0 ([#442](https://github.com/wvlet/airframe/issues/442)) [[f6d3941](https://github.com/wvlet/airframe/commit/f6d3941)]
 -  airframe-codec: Support MsgPack type (= Array[Byte]) codec ([#441](https://github.com/wvlet/airframe/issues/441)) [[5923aac](https://github.com/wvlet/airframe/commit/5923aac)]
 -  airframe-codec: [#437](https://github.com/wvlet/airframe/issues/437) Case-insensitive enum mapping ([#439](https://github.com/wvlet/airframe/issues/439)) [[5b26e5a](https://github.com/wvlet/airframe/commit/5b26e5a)]
