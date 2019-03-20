@@ -10,11 +10,22 @@ ga('send', 'pageview');
 
 <p><em>airframe-log</em> is a library for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:</p>
 
-<p><img src="../img/airframe-log/formatters.png" alt="image" /></p>
+<p><img src="https://wvlet.org/airframe/img/airframe-log/formatters.png" alt="image" /></p>
 
 <p><a href="https://www.scala-js.org/">Scala.js</a> is also supported:</p>
 
-<p><img src="../img/airframe-log/scalajs-formatters.png" alt="image" /></p>
+<p><img src="https://wvlet.org/airframe/img/airframe-log/scalajs-formatters.png" alt="image" /></p>
+
+<h2 id="usage">Usage</h2>
+
+<p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg" alt="Maven Central" /></a></p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+
+<span class="c1">// For Scala.js (Since airframe-log 1.2)
+</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre>
+</div>
 
 <h2 id="features">Features</h2>
 <ul>
@@ -55,17 +66,6 @@ ga('send', 'pageview');
   <li>GitHub: <a href="https://github.com/wvlet/airframe/tree/master/airframe-log">airframe-log</a></li>
   <li>Blog post: <a href="https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc">Airframe Log: A Modern Logging Library for Scala</a></li>
 </ul>
-
-<h2 id="usage">Usage</h2>
-
-<p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg" alt="Maven Central" /></a></p>
-
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-
-<span class="c1">// For Scala.js (Since airframe-log 1.2)
-</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
 
 <h3 id="using-logsupport-trait">Using LogSupport trait</h3>
 

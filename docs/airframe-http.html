@@ -156,6 +156,25 @@ server factory.</p>
 <span class="c1">// Two servers will be stopped after exiting the session
 </span></code></pre>
 </div>
+
+<h2 id="shutting-down-finagle-server">Shutting Down Finagle Server</h2>
+
+<p>Closing Airframe session</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.http._</span>
+
+<span class="k">trait</span> <span class="nc">YourApi</span> <span class="o">{</span>
+   <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>
+
+   <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/v1/shutdown"</span><span class="o">,</span> <span class="n">method</span><span class="k">=</span><span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">DELETE</span><span class="o">)</span>
+   <span class="k">def</span> <span class="n">shutdown</span> <span class="o">{</span>
+     <span class="c1">// Closing the current session will terminate the FinagleServer too.
+</span>     <span class="n">session</span><span class="o">.</span><span class="n">shutdown</span>
+   <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
