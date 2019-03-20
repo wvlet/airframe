@@ -77,6 +77,18 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 Mapping between JSON values and Scala objects will be handled automatically.
 
+
+### MessagePack Support
+
+If an HTTP POST request has `Content-Type: application/x-msgpack` header, airframe-http
+will read the content body of the request as [MessagePack](https://msgpack.org) data, and bind it to the method arguments using
+[airframe-codec](https://wvlet.org/airframe/docs/airframe-codec.html).
+
+If an HTTP request has `Accept: application/x-msgpack` header, the response body will be
+encoded with MessagePack format. This is useful for reducing the response size and
+sending data to the client as is. For example, JSON cannot represent precise double values and binary data
+without some transformations. With MessagePack, you can send the data to the client more naturally.
+
 ## Starting A Finagle HTTP Server
 
 To start a server, add airframe bindings based on `finagleDefaultDesign`:
@@ -107,13 +119,12 @@ It's possible to customize Finagle. For example, if you need to:
 - Customize Finagle filters, or
 - Start multiple Finagle HTTP servers with different configurations
 
-see the examples [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
-
+See also the examples in [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
 
 ### Adding Finagle Tracer
 
 To customize Finagle server, extend FinagleServerFactory and define your own 
-server factory.
+server factory:
 
 ```scala
 trait CustomFinagleServerFactory extends FinagleServerFactory {
@@ -123,22 +134,19 @@ trait CustomFinagleServerFactory extends FinagleServerFactory {
   }
 }
 
-val design =
-  finagleDefaultDesign
-    // Configure port and routes
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = 8080, router = router))
+val design = newFinagleServerDesign(router = router, port = 8080)
     // Configure Finagle Server
     .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
 design.build[FinagleServer] { server => 
-  // The server will start here
+  // The customized server will start here
 }
-``` 
+```
 
 
-## Running Multiple Finagle Servers
+### Running Multiple Finagle Servers
 
-
+Create a FinagleServerFactory, and call `newFinagleServer(FinagleServerConfig)`:
 ```scala
 import wvlet.airframe.http.finagle._
 
@@ -151,18 +159,19 @@ finagleDefaultDesign.build[FinagleServerFactory] { factory =>
 ```
 
 
-## Shutting Down Finagle Server
+### Shutting Down Finagle Server
 
-Closing Airframe session  
+Closing the current Airframe session will terminate the finagle server as well:
 
 ```scala
 import wvlet.airframe._
 import wvlet.airframe.http._
 
 trait YourApi {
+   // Bind the current session
    private val session = bind[Session]
 
-   @Endpoint(path="/v1/shutdown", method=HttpMethod.DELETE)
+   @Endpoint(path="/v1/shutdown", method=HttpMethod.POST)
    def shutdown {
      // Closing the current session will terminate the FinagleServer too.
      session.shutdown
