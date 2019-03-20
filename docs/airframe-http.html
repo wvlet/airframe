@@ -86,9 +86,21 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <p>Mapping between JSON values and Scala objects will be handled automatically.</p>
 
+<h3 id="messagepack-support">MessagePack Support</h3>
+
+<p>If an HTTP POST request has <code class="highlighter-rouge">Content-Type: application/x-msgpack</code> header, airframe-http
+will read the content body of the request as <a href="https://msgpack.org">MessagePack</a> data, and bind it to the method arguments using
+<a href="https://wvlet.org/airframe/docs/airframe-codec.html">airframe-codec</a>,
+which will manage data type conversions (e.g, from msgpack into Int or objects) automatically.</p>
+
+<p>If an HTTP request has <code class="highlighter-rouge">Accept: application/x-msgpack</code> header, the response body will be
+encoded with MessagePack format. This is useful for reducing the response size and
+sending data to the client as is. For example, JSON cannot represent precise double values and binary data
+without some transformations. With MessagePack, you can send the data to the client more naturally.</p>
+
 <h2 id="starting-a-finagle-http-server">Starting A Finagle HTTP Server</h2>
 
-<p>To start a server, add airframe bindings based on <code class="highlighter-rouge">finagleDefaultDesign</code>:</p>
+<p>To start a server, create a finagle server design with <code class="highlighter-rouge">newFinagleServerDesign(router, port)</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 <span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
@@ -117,12 +129,12 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
   <li>Start multiple Finagle HTTP servers with different configurations</li>
 </ul>
 
-<p>see the examples <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
+<p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
 
 <h3 id="adding-finagle-tracer">Adding Finagle Tracer</h3>
 
 <p>To customize Finagle server, extend FinagleServerFactory and define your own 
-server factory.</p>
+server factory:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomFinagleServerFactory</span> <span class="k">extends</span> <span class="nc">FinagleServerFactory</span> <span class="o">{</span>
   <span class="k">override</span> <span class="k">def</span> <span class="n">initServer</span><span class="o">(</span><span class="n">server</span><span class="k">:</span> <span class="kt">Http.Server</span><span class="o">)</span><span class="k">:</span> <span class="kt">Http.Server</span> <span class="o">=</span> <span class="o">{</span>
@@ -131,21 +143,19 @@ server factory.</p>
   <span class="o">}</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">design</span> <span class="k">=</span>
-  <span class="n">finagleDefaultDesign</span>
-    <span class="c1">// Configure port and routes
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">))</span>
+<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
     <span class="c1">// Configure Finagle Server
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
 
 <span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span> 
-  <span class="c1">// The server will start here
+  <span class="c1">// The customized server will start here
 </span><span class="o">}</span>
 </code></pre>
 </div>
 
-<h2 id="running-multiple-finagle-servers">Running Multiple Finagle Servers</h2>
+<h3 id="running-multiple-finagle-servers">Running Multiple Finagle Servers</h3>
 
+<p>Create a FinagleServerFactory, and call <code class="highlighter-rouge">newFinagleServer(FinagleServerConfig)</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
 <span class="n">finagleDefaultDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
@@ -157,17 +167,18 @@ server factory.</p>
 </span></code></pre>
 </div>
 
-<h2 id="shutting-down-finagle-server">Shutting Down Finagle Server</h2>
+<h3 id="shutting-down-finagle-server">Shutting Down Finagle Server</h3>
 
-<p>Closing Airframe session</p>
+<p>Closing the current Airframe session will terminate the finagle server as well:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http._</span>
 
 <span class="k">trait</span> <span class="nc">YourApi</span> <span class="o">{</span>
-   <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>
+   <span class="c1">// Bind the current session
+</span>   <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>
 
-   <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/v1/shutdown"</span><span class="o">,</span> <span class="n">method</span><span class="k">=</span><span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">DELETE</span><span class="o">)</span>
+   <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/v1/shutdown"</span><span class="o">,</span> <span class="n">method</span><span class="k">=</span><span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">POST</span><span class="o">)</span>
    <span class="k">def</span> <span class="n">shutdown</span> <span class="o">{</span>
      <span class="c1">// Closing the current session will terminate the FinagleServer too.
 </span>     <span class="n">session</span><span class="o">.</span><span class="n">shutdown</span>
