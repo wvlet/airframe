@@ -82,7 +82,8 @@ Mapping between JSON values and Scala objects will be handled automatically.
 
 If an HTTP POST request has `Content-Type: application/x-msgpack` header, airframe-http
 will read the content body of the request as [MessagePack](https://msgpack.org) data, and bind it to the method arguments using
-[airframe-codec](https://wvlet.org/airframe/docs/airframe-codec.html).
+[airframe-codec](https://wvlet.org/airframe/docs/airframe-codec.html),
+which will manage data type conversions (e.g, from msgpack into Int or objects) automatically.
 
 If an HTTP request has `Accept: application/x-msgpack` header, the response body will be
 encoded with MessagePack format. This is useful for reducing the response size and
@@ -91,7 +92,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 ## Starting A Finagle HTTP Server
 
-To start a server, add airframe bindings based on `finagleDefaultDesign`:
+To start a server, create a finagle server design with `newFinagleServerDesign(router, port)`:
 ```scala
 import wvlet.airframe._
 import wvlet.airframe.http.finagle._
