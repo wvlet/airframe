@@ -6,6 +6,13 @@ This is useful for testing HTTP server interactions in an environment with limit
 
 ## Usage
 
+**build.sbt**
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-recorder_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-recorder_2.12/)
+```scala
+libraryDependencies += "org.wvlet.airframe" %% "airframe-http-recorder" %% (version)
+```
+
 ```scala
 import wvlet.airframe.http.recorder._
 import wvlet.airframe.control.Control._
@@ -30,5 +37,5 @@ withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
 
 
 ## Related Projects
-- https://github.com/vcr/vcr (for Ruby)
-- https://github.com/betamaxteam/betamax (no longer maintained)
+- [VCR](https://github.com/vcr/vcr) (for Ruby)
+- [Betamax](https://github.com/betamaxteam/betamax) (no longer maintained)

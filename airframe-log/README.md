@@ -6,11 +6,22 @@ airframe-log [![Latest version](https://index.scala-lang.org/wvlet/airframe/late
 
 *airframe-log* is a library for enhancing your Scala application logging with colors and source code locations. Here are examples of pre-defined LogFormatters in airframe-log:
 
-![image](../img/airframe-log/formatters.png)
+![image](https://wvlet.org/airframe/img/airframe-log/formatters.png)
 
 [Scala.js](https://www.scala-js.org/) is also supported:
 
-![image](../img/airframe-log/scalajs-formatters.png)
+![image](https://wvlet.org/airframe/img/airframe-log/scalajs-formatters.png)
+
+## Usage
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/)
+
+```scala
+libraryDependencies += "org.wvlet.airframe" %% "airframe-log" % "(version)"
+
+// For Scala.js (Since airframe-log 1.2)
+libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % "(version)"
+```
 
 ## Features
 - **Simple to use**
@@ -33,16 +44,6 @@ airframe-log [![Latest version](https://index.scala-lang.org/wvlet/airframe/late
 - GitHub: [airframe-log](https://github.com/wvlet/airframe/tree/master/airframe-log)
 - Blog post: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/@taroleo/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc)
  
-## Usage
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-log_2.12/)
-
-```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-log" % "(version)"
-
-// For Scala.js (Since airframe-log 1.2)
-libraryDependencies += "org.wvlet.airframe" %%% "airframe-log" % "(version)"
-```
 
 ### Using LogSupport trait
 

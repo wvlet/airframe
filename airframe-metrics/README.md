@@ -47,7 +47,7 @@ e.toMillis // 3600000
 ```
 
 
-## Relative Time Window
+## Relative Time Windows
 
 When writing data processing programs of time-series data, we usually don't care about the exact date. Rather we use *relative* time windows from the current time, such as today, last 7 days, last 6 hours, last month, etc.
 `TimeWindow` class in airframe-metrics enables specifying such time windows using a human-friendly string format.

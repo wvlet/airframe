@@ -1,49 +1,21 @@
-airframe-di
+Airframe
 ===
 
-Airframe is a dependency injection library tailored to Scala. This is useful for isolating various concerns in programing
+Airframe is a dependency injection library tailored to Scala, which is useful for isolating various concerns in your programing
 in order to focus on the most important application logic. 
 
-For example, when writing an application, the following programming concerns are often unrelated to the core logic:
-- How to build service objects.
-- How to configure services.
-- How to manage life cycle of service objects.
-
-Airframe DI helps building service objects on your behalf and manages their lifecycles
-so that you can focus on writing logic that uses only direct dependencies:
-
-![image](../img/airframe/build-service-objects.png)
-
-In the following example, you only need to think about DBClient and FluentdLogger to write service A and B (left), even though the entire
-code involves other indirect dependencies (right):
-
-![image](../img/airframe/code-example.png)
-
-## Features
-
-Major features of Airframe DI include:
-
-- Simple usage. Only need to include `import wvlet.airframe._` to use Airframe.
-- Designs are immutable, so you can create new designs safely based on existing designs.
-- Supporting Scala traits for dependency injection, which was not available in other frameworks.
-- Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.
-- Supporting Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/).
-- Supporting Java 11.
-
-## History of Dependency Injection
+## What is Dependency Injection?
 
 Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
 Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
 In Java we can use Google's [Guice](https://github.com/google/guice), but its syntax is not suited to Scala,
  so we redesigned it for Scala so that we can naturally use Scala's syntax (trait and types) with DI.
 
-For more detailed comparison, see the following summary: 
 - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
 
-# Airframe Quick Start
+## Quick Start
 
-## sbt
 [sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
 [sindex-link]: https://index.scala-lang.org/wvlet/airframe
 [central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
@@ -61,7 +33,7 @@ And import `wvlet.airframe._` in your Scala code:
 import wvlet.airframe._
 ```
 
-## .scalafmt.conf
+### .scalafmt.conf
 If you are using [scalafmt](https://scalameta.org/scalafmt/) for code formatting, add the following option to your `.scalafmt.conf`:
 ```
 optIn.breaksInsideChains = true
@@ -74,7 +46,7 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
-## Basic Usage
+### Basic Usage
 
 First, **bind** objects to your code with `bind[X]`:
 ```scala
@@ -109,7 +81,42 @@ Airframe builds an instance of `App` based on the binding rules specified in the
 This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `session.build[App]`.
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
--------
+## Isolating Service Logic and Design
+
+When writing an application, there are several concerns that are often unrelated to the core applcation logic, such as:
+- How to build service objects.
+- How to configure services.
+- How to manage life cycle of service objects.
+
+Airframe DI allows separating these how-tos for building service objects and managing their lifecycles into `Design` objects 
+so that you can focus on logic that uses only direct dependencies. 
+
+For example, when writing service A and B, you should be able to focus only on DBClient and FluentdLogger, even though the entire
+code involves other indirect dependencies like ConnectionPool, HttpClient, DB, etc.:
+
+![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
+
+By injecting dependencies using `bind[X]` syntax (left), we can isolate the logic for constructing service objects (right):
+
+![image](https://wvlet.org/airframe/img/airframe/code-example.png)
+
+It is also possible to use constructor injection instead of using trait:
+
+```scala
+class A(dbClient:DBClient, fluentdClient:FluentdClient) {
+   //...
+}
+```
+
+## Airframe Features
+
+- Simple usage. Only need to include `import wvlet.airframe._` to use Airframe.
+- Designs are immutable, so you can create new designs safely based on existing designs.
+- Supporting Scala traits for dependency injection, which was not available in other frameworks.
+- Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.
+- Supporting Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/).
+- Supporting Java 11.
+
 
 # Airframe Usage
 
@@ -118,7 +125,7 @@ Airframe can integrate the flexibility of Scala traits and dependency injection 
 In Airframe, you can use two types of dependency injections: __constructor injection__ or
 __in-trait injection__:
  
-![image](../img/airframe/injection-types.png)
+![image](https://wvlet.org/airframe/img/airframe/injection-types.png)
  
 ### Constructor Injection
 Constructor injection is the most natural form of injection.
@@ -236,15 +243,23 @@ If you define multiple bindings to the same type (e.g., P), the last binding wil
 
 Design objects are immutable, so you can safely override bindings without modifying the original design:
 ```scala
+import wvlet.airframe._
+
 val design: Design =
   newDesign.bind[A].to[B] // bind A to B
 
 val newDesign: Design =
   design.bind[A].to[C] // Override binding for A
 
-// design.newSession.build[A] -> produces B
-// newDesign.newSession.build[A] -> produces C
+design.build[A] { x => ... } // -> x will be B
+newDesign.build[A] { x => ... } // -> x will be C
 ```
+
+Design supports `+` operator to combine multiple designs at ease:
+```scala
+val newDesign = d1 + d2 // d2 will override the bindings in d1 
+```
+`+` operator is not commutative because of the override.
 
 ## Session
 
@@ -319,6 +334,8 @@ design
     // Do something with X
   }
 ```
+
+To initialize `X` eagerly, `X` must be found in the design or used in the other dependencies defined in the design.
 
 ### Suppress Life Cycle Logging
 

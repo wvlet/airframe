@@ -149,3 +149,23 @@ finagleDefaultDesign.build[FinagleServerFactory] { factory =>
 }
 // Two servers will be stopped after exiting the session
 ```
+
+
+## Shutting Down Finagle Server
+
+Closing Airframe session  
+
+```scala
+import wvlet.airframe._
+import wvlet.airframe.http._
+
+trait YourApi {
+   private val session = bind[Session]
+
+   @Endpoint(path="/v1/shutdown", method=HttpMethod.DELETE)
+   def shutdown {
+     // Closing the current session will terminate the FinagleServer too.
+     session.shutdown
+   }
+}
+```
