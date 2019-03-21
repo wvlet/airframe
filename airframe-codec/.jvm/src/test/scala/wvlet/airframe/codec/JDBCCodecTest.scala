@@ -181,7 +181,7 @@ class JDBCCodecTest extends AirframeSpec {
   "ResultSet to JSON maps" taggedAs working in {
     withQuery("""with a(id, name) as
                 |(select * from (values (1, 'leo'), (2, 'yui')))
-                |select * from a
+                |select * from a order by id asc
                 |""".stripMargin) { rs =>
       val jsonSeq = JDBCCodec(rs).toJsonSeq.toIndexedSeq
       jsonSeq(0) shouldBe """{"id":1,"name":"leo"}"""
