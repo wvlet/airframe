@@ -50,16 +50,16 @@ ga('send', 'pageview');
 
 <h3 id="injecting-session">Injecting Session</h3>
 
-<p>To create an instance of <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code> inside <code class="highlighter-rouge">App</code>, we need to pass the instance of Session while building objects to pass the concrete instance of B. But trait definition of <code class="highlighter-rouge">App</code> nor <code class="highlighter-rouge">A</code> doesn’t know anything about the session, so when building <code class="highlighter-rouge">B</code> inside <code class="highlighter-rouge">A</code> there should be no way to resolve the instance of <code class="highlighter-rouge">B</code> defined in the sesison.</p>
+<p>To create instances of <code class="highlighter-rouge">A</code> and <code class="highlighter-rouge">B</code> inside <code class="highlighter-rouge">App</code>, we need to pass the concrete instance of B though the session instance. But trait definitions of <code class="highlighter-rouge">App</code> and <code class="highlighter-rouge">A</code> don’t know anything about the session, so we need a way to resolve the instance of <code class="highlighter-rouge">B</code>.</p>
 
-<p>To properly pass the instance of <code class="highlighter-rouge">B</code>, we need to pass a reference to the Session. A trick is inside the implementation of <code class="highlighter-rouge">build</code> and <code class="highlighter-rouge">bind</code>. Let’s look at how <code class="highlighter-rouge">session.build[App]</code> will work when creating an instance of <code class="highlighter-rouge">App</code>.</p>
+<p>To do so, Airframe will pass a reference to the Session while building <code class="highlighter-rouge">App</code>, <code class="highlighter-rouge">A</code>, and <code class="highlighter-rouge">B</code>. A trick is inside the implementation of <code class="highlighter-rouge">build</code> and <code class="highlighter-rouge">bind</code>. Let’s look at how <code class="highlighter-rouge">session.build[App]</code> will work when creating an instance of <code class="highlighter-rouge">App</code>.</p>
 
 <p>Here is the code for building an App:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span> <span class="o">(</span><span class="n">original</span> <span class="n">code</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
 </code></pre>
 </div>
 
-<p>Airframe expends this code into this form:</p>
+<p>Airframe expands this code into this form at compile-time:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">app</span><span class="k">:</span> <span class="kt">App</span> <span class="o">=</span> <span class="o">{</span>
   <span class="c1">// Extends SessionHolder to pass Session object
 </span>  <span class="k">new</span> <span class="nc">App</span> <span class="k">extends</span> <span class="nc">SessionHolder</span> <span class="o">{</span>
@@ -88,7 +88,7 @@ ga('send', 'pageview');
 
 <p>To generate the above code, Airframe is using <a href="http://docs.scala-lang.org/overviews/macros/overview.html">Scala Macros</a>. You can find the actual macro definitions in <a href="https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala">AirframeMacros.scala</a></p>
 
-<p>The active session should be found when <code class="highlighter-rouge">bind[X]</code> is called. So if you try to instantiate A without using <code class="highlighter-rouge">session.build[A]</code>, <code class="highlighter-rouge">MISSING_SESSION</code> runtime-error will be thrown:</p>
+<p>When <code class="highlighter-rouge">bind[X]</code> is called, the active session must be found. So if you try to instantiate A without using <code class="highlighter-rouge">session.build[A]</code>, <code class="highlighter-rouge">MISSING_SESSION</code> runtime-error will be thrown:</p>
 <div class="highlighter-rouge"><pre class="highlight"><code>val a1 = new A // MISSING_SESSION error will be thrown at run-time
 
 val a2 = session.build[A] // This is OK
