@@ -53,7 +53,7 @@ matrix:
     - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
     - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
   - env: SCALA_VERSION=2.13.0-M5 PROJECT=projectJVM2_13
-    jdk: openjdk8
+    jdk: openjdk11
     # Install fluentd
     install:
     - rvm use 2.2.5 --install --fuzzy
