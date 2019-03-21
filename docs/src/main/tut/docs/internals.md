@@ -47,16 +47,16 @@ This code builds an instance of `App` using a concrete instance of `B` stored in
 
 ### Injecting Session
 
-To create an instance of `A` and `B` inside `App`, we need to pass the instance of Session while building objects to pass the concrete instance of B. But trait definition of `App` nor `A` doesn't know anything about the session, so when building `B` inside `A` there should be no way to resolve the instance of `B` defined in the sesison.
+To create instances of `A` and `B` inside `App`, we need to pass the concrete instance of B though the session instance. But trait definitions of `App` and `A` don't know anything about the session, so we need a way to resolve the instance of `B`.
 
-To properly pass the instance of `B`, we need to pass a reference to the Session. A trick is inside the implementation of `build` and `bind`. Let's look at how `session.build[App]` will work when creating an instance of `App`.
+To do so, Airframe will pass a reference to the Session while building `App`, `A`, and `B`. A trick is inside the implementation of `build` and `bind`. Let's look at how `session.build[App]` will work when creating an instance of `App`.
 
 Here is the code for building an App:
 ```scala
-val app = session.build[App] (original code)
+val app = session.build[App]
 ```
 
-Airframe expends this code into this form:
+Airframe expands this code into this form at compile-time:
 ```scala
 val app: App = {
   // Extends SessionHolder to pass Session object
@@ -85,7 +85,7 @@ val app: App = {
 
 To generate the above code, Airframe is using [Scala Macros](http://docs.scala-lang.org/overviews/macros/overview.html). You can find the actual macro definitions in [AirframeMacros.scala](https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala)
 
-The active session should be found when `bind[X]` is called. So if you try to instantiate A without using `session.build[A]`, `MISSING_SESSION` runtime-error will be thrown:
+When `bind[X]` is called, the active session must be found. So if you try to instantiate A without using `session.build[A]`, `MISSING_SESSION` runtime-error will be thrown:
 ```
 val a1 = new A // MISSING_SESSION error will be thrown at run-time
 
