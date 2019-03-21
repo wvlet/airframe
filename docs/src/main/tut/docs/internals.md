@@ -9,7 +9,7 @@ This page describes the internals of Airframe for developers who are interested 
 
 ## Session 
 
-Session in Airframe is a holder of instances and binding rules. Airframe is designed to simplify complex object instantiation like:
+A Session in Airframe is a holder of instances and binding rules. Airframe is designed to simplify the instantiation of complex objects like:
 ```scala
 new App(a = new A(b = new B), ...)
 ```
@@ -19,7 +19,7 @@ into this form:
 session.build[App]
 ```
 
-so that Airframe (DI framework) can take care of object instantiation by automatically finding how to build `App`, `A`, `B`, etc.
+In this code Airframe DI will take care of the object instantiation by automatically finding how to build `App`, and its dependencies `A`, `B`, etc.
 
 ### Example
 
@@ -39,39 +39,40 @@ trait A {
 val session =
   newDesign
   .bind[B].toInstance(new B(...))
-  .newSesion // Session holds the above instance of B
+  .newSesion // Creates a session thats holds the above instance of B
  
 val app = session.build[App]
 ```
-This code builds an instance of `App` using a concrete instance of `B` stored in Session.
+This code builds an instance of `App` using a concrete instance of `B` stored in the session.
 
 ### Injecting Session
 
-To create an instance of `A` and `B` inside `App`, we need to pass the instance of Session while building objects because the session holds an instance of B.
-But trait `App` nor `A` doesn't know anything about the session.
+To create an instance of `A` and `B` inside `App`, we need to pass the instance of Session while building objects to pass the concrete instance of B. But trait definition of `App` nor `A` doesn't know anything about the session, so when building `B` inside `A` there should be no way to resolve the instance of `B` defined in the sesison.
 
-How do we pass a reference to the Session? A trick is inside `build` and `bind`.
+To properly pass the instance of `B`, we need to pass a reference to the Session. A trick is inside the implementation of `build` and `bind`. Let's look at how `session.build[App]` will work when creating an instance of `App`.
 
-Let's look at how `session.build[App]` will work when creating an instance of `App`.
-Airframe expands this code as follows at compile-time:
-
+Here is the code for building an App:
 ```scala
-// val app = session.build[App] (original code)
+val app = session.build[App] (original code)
+```
+
+Airframe expends this code into this form:
+```scala
 val app: App = {
   // Extends SessionHolder to pass Session object
   new App extends SessionHolder {
     // Inject a reference to the current session
     def airframeSession = session
 
-    // val a = bind[A] (original code)
+    // val a = bind[A] (original code inside App)
     // If type A is instantiatable trait (non abstract type)
     val a: A = {
-      // Trying to find a session (through SessionHolder trait).
+      // Trying to find a session (using SessionHolder.airframeSession).
       // If no session is found, MISSING_SESSION exception will be thrown
       val session = wvlet.airframe.Session.findSession(this)
       val binder: Session => A = (sesssion: Session =>
         // Register a code for instantiating A 
-        session.getOrElseUpdate(Surface[A],
+        session.getOrElseUpdate(Surface.of[A],
 	  (new A with SessionHolder { def airframeSession = session }).asInstanceOf[A]
         )
       )
@@ -91,15 +92,13 @@ val a1 = new A // MISSING_SESSION error will be thrown at run-time
 val a2 = session.build[A] // This is OK
 ```
 
-In the above macro-expanded code, `A` will be instantiated with SessionHolder trait, which has `airframeSession` definition.
-
-So `bind[B]` inside trait `A` will be expanded similarry:
+In the above code, `A` will be instantiated with SessionHolder trait, which has `airframeSession` definition. `bind[B]` inside trait `A` will be expanded liks this similarly:
 ```scala
 new A extends SessionHolder {
   // (original code) val b = bind[B]
   val b: B = {
     val session = findSession(this)
-    val binder = session..getOrElseUpdate(Surface[B], (session:Session => new B with SessionHolder { ... } ))
+    val binder = session..getOrElseUpdate(Surface.of[B], (session:Session => new B with SessionHolder { ... } ))
     binder(session)
   }
 }
@@ -107,7 +106,10 @@ new A extends SessionHolder {
 
 ### Comparison with a naive approach
 
-At first look, the above macro expansion looks quite scarly, however, when calling constructor of `App` you are actually doing similar things:
+The above macro-generated code looks quite scarly at first glance. 
+However, if you write similar code by yourself, you will end up doing almost the same thing with Session.
+
+For example, consider building `App` trait using a custom `B` instance:
 ```
 { 
   val myB = new B {}
@@ -118,9 +120,9 @@ At first look, the above macro expansion looks quite scarly, however, when calli
 // What if a and b hold resources (e.g., network connection, database connection, etc.), that need to be released later?
 ```
 
-To manage life cycle of A and B, you eventually needs to store the object references somewhere:
+To manage life cycle of A and B, you eventually needs to store the object references somewhere like this:
 ```
-// Assume storing objects in a Map
+// Assume storing objects in a Map-backed session
 val session = Map[Class[_], AnyRef]()
 
 session += classOf[B] -> new B {}
@@ -140,12 +142,12 @@ session.objects.foreach { x=>
 
 ```
 As we have seen in the example of [Service Mix-in](use-cases.html#service-mix-in), if we need to manage hundreds of services,
-manually writing such object management codes will be cumbersome tasks. 
+manually writing such object management functions will be cumbersome. Airframe helps you to oraganize building service objects. 
 
 
 ## Instantiation Methods
 
-When `bind[X]` is used, according to the type of `X` different codes will be generated:
+When `bind[X]` is used, according to the type of `X` different code can be generated:
 
 - If `X` is a non-abstract trait, the generated code will be like the above.
 - If `X` is a non-abstract class that has a primary constructor, Airframe inject dependencies to the constructor arguments: 
@@ -168,7 +170,7 @@ session.get(Surface.of[X])
 
 ## Suface
 
-Airframe uses `Surface[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
+Airframe uses `Surface.of[X]` as identifiers of object types. [Surface](https://github.com/wvlet/airframe/tree/master/surface) is an object type inspection library.
 
 Here are some examples of Surface:
 ```scala
@@ -184,14 +186,16 @@ type MyInt = Int
 Surface.of[MyInt] // MyInt:=Int
 ```
 
-Scala is a JVM language so at the byte-code level all of generics type parameters will be removed (type erasure).
+Surface treats type aliases (e.g., MyInt) and Int as different types. This provides flexibilities in binding different objects to the same type. For example, you can define MyInt1, MyInt2, ... Google Guice doesn's support this kind of bindings to the same types.
+
+Scala is a JVM language, so at the byte-code level, all of generics type parameters will be removed because of type erasure.
 That means, we cannot distinguish between `Seq[Int]` and `Seq[_]` within the byte code; These types are the same type `Seq[AnyRef]` in the byte code:
 ```
 Seq[Int] => Seq[AnyRef]
 Seq[_] => Seq[AnyRef]
 ```
+Surface knows the detailed type parameters like `Seq[Int]` and `Seq[_]`, so it can distinguish these two `Seq` types.
 
-Similarly the above type alias `MyInt` and `Int` will be the same types.
 
 To provide detailed type information only available at compile-time, Surface uses runtime-reflecation, which can pass compile-type type information such as 
  function argument names, generic types, etc., to the runtime environment. Surface extensively uses `scala.reflect.runtime.universe.Type` 
