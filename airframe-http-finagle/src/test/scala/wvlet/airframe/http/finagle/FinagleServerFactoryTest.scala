@@ -28,8 +28,8 @@ class FinagleServerFactoryTest extends AirframeSpec {
   val p1 = IOUtil.unusedPort
   val p2 = IOUtil.unusedPort
 
-  val router1 = Router.of[MyApi]
-  val router2 = Router.of[MyApi]
+  val router1 = Router.add[MyApi]
+  val router2 = Router.add[MyApi]
 
   "FinagleServerFactory" should {
     "start multiple FinagleServers" in {
