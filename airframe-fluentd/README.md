@@ -26,7 +26,7 @@ import wvlet.airframe.fluentd._
 // Define a metric class
 case class MyMetric(a:Int, b:String) extends TaggedMetric {
   // Used for defining the default tag prefix for this metric.
-  // (tagPrefix).(metricTag) will be used as fluentd tag
+  // (tagPrefix).(metricTag) will be used as fluentd tag. 
   override def metricTag: String = "my_metric"
 }
 
@@ -46,7 +46,15 @@ d.build[MetricLoggerFactory] { f =>
 ### Sending Data to Treasure Data
 
 ```Scala
-// Creating a logger to use the local fluentd (host="localhost", port=24224) 
+import wvlet.airframe.fluentd._
+
+// Define a metric class
+case class MyMetric(a:Int, b:String) extends TaggedMetric {
+  // Specify the table name to store this metric
+  override def metricTag: String = "my_metric"
+}
+
+// Creating a logger to send log data to Treasure Data Stream Import API:
 val d = fluentd.withTDLogger(apikey = "(Your TD API key)",
   tagPrefix = "(database name to store logs)"
 )
