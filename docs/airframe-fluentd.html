@@ -34,7 +34,7 @@ ga('send', 'pageview');
 <span class="c1">// Define a metric class
 </span><span class="k">case</span> <span class="k">class</span> <span class="nc">MyMetric</span><span class="o">(</span><span class="n">a</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">b</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">TaggedMetric</span> <span class="o">{</span>
   <span class="c1">// Used for defining the default tag prefix for this metric.
-</span>  <span class="c1">// (tagPrefix).(metricTag) will be used as fluentd tag
+</span>  <span class="c1">// (tagPrefix).(metricTag) will be used as fluentd tag. 
 </span>  <span class="k">override</span> <span class="k">def</span> <span class="n">metricTag</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="s">"my_metric"</span>
 <span class="o">}</span>
 
@@ -54,7 +54,15 @@ ga('send', 'pageview');
 
 <h3 id="sending-data-to-treasure-data">Sending Data to Treasure Data</h3>
 
-<pre><code class="language-Scala">// Creating a logger to use the local fluentd (host="localhost", port=24224) 
+<pre><code class="language-Scala">import wvlet.airframe.fluentd._
+
+// Define a metric class
+case class MyMetric(a:Int, b:String) extends TaggedMetric {
+  // Specify the table name to store this metric
+  override def metricTag: String = "my_metric"
+}
+
+// Creating a logger to send log data to Treasure Data Stream Import API:
 val d = fluentd.withTDLogger(apikey = "(Your TD API key)",
   tagPrefix = "(database name to store logs)"
 )
