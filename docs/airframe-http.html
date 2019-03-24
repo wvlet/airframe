@@ -107,7 +107,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 <span class="c1">// Define API routes. This will read all @Endpoint annotations in MyApi
 // You can add more routes by using `.add[X]` method.
-</span><span class="k">val</span> <span class="n">router</span> <span class="k">=</span> <span class="nc">Router</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
+</span><span class="k">val</span> <span class="n">router</span> <span class="k">=</span> <span class="nc">Router</span><span class="o">.</span><span class="n">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
 <span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
 
