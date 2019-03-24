@@ -48,7 +48,7 @@ class RouterTest extends AirframeSpec {
 
     "combination of multiple controllers" in {
       val r = Router
-        .of[ControllerExample]
+        .add[ControllerExample]
         .add[PrefixExample]
 
       r.routes.find(_.path == "/user/:id") shouldBe defined

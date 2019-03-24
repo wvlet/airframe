@@ -58,6 +58,7 @@ class Router(val routes: Seq[Route]) {
 object Router extends LogSupport {
   def empty: Router = Router()
   def of[Controller]: Router = macro RouterMacros.of[Controller]
+  def add[Controller]: Router = macro RouterMacros.of[Controller]
   def apply(): Router = new Router(Seq.empty)
 
   def add(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {

@@ -100,7 +100,7 @@ import com.twitter.finagle.http.Request
 
 // Define API routes. This will read all @Endpoint annotations in MyApi
 // You can add more routes by using `.add[X]` method.
-val router = Router.of[MyApi]
+val router = Router.add[MyApi]
 
 val design = newFinagleServerDesign(router, port = 8080)
 

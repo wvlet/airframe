@@ -76,7 +76,14 @@ trait MyApi extends LogSupport {
   *
   */
 class FinagleRouterTest extends AirframeSpec {
-  val d = newFinagleServerDesign(Router.of[MyApi]).noLifeCycleLogging
+
+  "support Router.of[X] and Router.add[X]" in {
+    // sanity test
+    val r1 = Router.add[MyApi]
+    val r2 = Router.of[MyApi]
+  }
+
+  val d = newFinagleServerDesign(Router.add[MyApi]).noLifeCycleLogging
 
   "Support function arg mappings" in {
     d.build[FinagleServer] { server =>
