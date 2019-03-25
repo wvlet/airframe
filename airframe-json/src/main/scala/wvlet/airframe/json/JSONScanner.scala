@@ -62,6 +62,12 @@ object JSONScanner {
     scanner.scan
   }
 
+  // Scan any json value
+  def scanAny[J](s: JSONSource, ctx: JSONContext[J]): J = {
+    val scanner = new JSONScanner(s, ctx)
+    scanner.scanAny(ctx)
+  }
+
   // 2-bit vector of utf8 character length table
   // Using the first 4-bits of an utf8 string
   private[json] final val utf8CharLenTable: Long = {
@@ -162,10 +168,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
                         f"Found '${String.valueOf(char.toChar)}' 0x${char}%02x. expected: ${expected}")
   }
 
-  def scan[J]: Unit = {
+  def scan: Unit = {
     try {
       skipWhiteSpaces
-      s(cursor) match {
+      (s(cursor): @switch) match {
         case LBracket =>
           cursor += 1
           rscan(OBJECT_START, handler.objectContext(s, cursor - 1) :: Nil)
@@ -190,33 +196,33 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     rscan(ARRAY_START, stack.head.arrayContext(s, cursor - 1) :: stack)
   }
 
-  final def scanValue: Unit = {
+  final def scanAny(ctx: JSONContext[J]): J = {
+    skipWhiteSpaces
     (s(cursor): @switch) match {
-      case WS | WS_T | WS_R =>
-        cursor += 1
-        scanValue
-      case WS_N =>
-        cursor += 1
-        line += 1
-        lineStartPos = cursor
-        scanValue
       case DoubleQuote =>
-        scanString(handler.singleContext(s, cursor))
+        scanString(ctx)
       case LBracket =>
-        scanObject(handler.singleContext(s, cursor) :: Nil)
+        val objectCtx = ctx.objectContext(s, cursor)
+        cursor += 1
+        rscan(OBJECT_START, objectCtx :: Nil)
+        ctx.add(objectCtx.result)
       case LSquare =>
-        scanArray(handler.singleContext(s, cursor) :: Nil)
+        val arrayCtx = ctx.arrayContext(s, cursor)
+        cursor += 1
+        rscan(ARRAY_START, arrayCtx :: Nil)
+        ctx.add(arrayCtx.result)
       case '-' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
-        scanNumber(handler.singleContext(s, cursor))
+        scanNumber(ctx)
       case 't' =>
-        scanTrue(handler.singleContext(s, cursor))
+        scanTrue(ctx)
       case 'f' =>
-        scanFalse(handler.singleContext(s, cursor))
+        scanFalse(ctx)
       case 'n' =>
-        scanNull(handler.singleContext(s, cursor))
+        scanNull(ctx)
       case _ =>
-        throw unexpected("object or array")
+        throw unexpected("unknown json token")
     }
+    ctx.result
   }
 
   @tailrec
@@ -310,6 +316,14 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     }
   }
 
+  private def cursorChar: Byte = {
+    if (cursor < s.length) {
+      s(cursor)
+    } else {
+      -1
+    }
+  }
+
   private def scanNumber(ctx: JSONContext[J]): Unit = {
     val numberStart = cursor
 
@@ -325,7 +339,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     } else if ('1' <= ch && ch <= '9') {
       while ('0' <= ch && ch <= '9') {
         cursor += 1
-        ch = s(cursor)
+        ch = cursorChar
       }
     } else {
       throw unexpected("digits")
@@ -340,7 +354,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       if ('0' <= ch && ch <= '9') {
         while ('0' <= ch && ch <= '9') {
           cursor += 1
-          ch = s(cursor)
+          ch = cursorChar
         }
       } else {
         throw unexpected("digist")
@@ -360,7 +374,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       if ('0' <= ch && ch <= '9') {
         while ('0' <= ch && ch <= '9') {
           cursor += 1
-          ch = s(cursor)
+          ch = cursorChar
         }
       } else {
         throw unexpected("digits")
@@ -374,7 +388,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   }
 
   private def ensure(length: Int): Unit = {
-    if (cursor + length >= s.length) {
+    if (cursor + length > s.length) {
       throw new UnexpectedEOF(line,
                               cursor - lineStartPos,
                               cursor,

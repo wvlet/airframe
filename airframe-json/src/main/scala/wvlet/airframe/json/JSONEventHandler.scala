@@ -21,14 +21,18 @@ trait JSONHandler[Expr] {
 
 /**
   * A facade to build json ASTs while scanning json with JSONScanner
+  *
   * @tparam Expr
   */
 trait JSONContext[Expr] extends JSONHandler[Expr] {
   def result: Expr
   def isObjectContext: Boolean
   private[json] final def endScannerState: Int = {
-    if (isObjectContext) JSONScanner.OBJECT_END
-    else JSONScanner.ARRAY_END
+    if (isObjectContext) {
+      JSONScanner.OBJECT_END
+    } else {
+      JSONScanner.ARRAY_END
+    }
   }
 
   def add(v: Expr): Unit

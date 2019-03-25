@@ -14,7 +14,7 @@
 package wvlet.airframe.json
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.json.JSON.JSONValue
+import wvlet.airframe.json.JSON._
 
 /**
   *
@@ -35,6 +35,16 @@ class JSONParserTest extends AirframeSpec {
     "parse large array of objects" in {
       val json = (for (_ <- 0 to 10000) yield "{}").mkString("[", ",", "]")
       parse(json)
+    }
+
+    "parse any json values" in {
+      val v = JSON.parseAny("null")
+      v shouldBe JSONNull
+      JSON.parseAny("1") shouldBe JSONLong(1L)
+      JSON.parseAny("1.23") shouldBe JSONDouble(1.23)
+      JSON.parseAny("[]") shouldBe JSONArray(IndexedSeq.empty)
+      JSON.parseAny("[1, 2]") shouldBe JSONArray(IndexedSeq(JSONLong(1L), JSONLong(2L)))
+      JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
     }
   }
 }

@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.json
 
+import wvlet.airframe.json.JSON.JSONValue
 import wvlet.log.LogSupport
 
 /**
@@ -20,20 +21,50 @@ import wvlet.log.LogSupport
   */
 object JSON extends LogSupport {
 
+  /**
+    * Parse JSON object or array
+    */
   def parse(s: String): JSONValue = {
     parse(JSONSource.fromString(s))
   }
+
+  /**
+    * Parse JSON object or array
+    */
   def parse(s: Array[Byte]): JSONValue = {
     parse(JSONSource.fromBytes(s))
   }
-  def parse(s: Array[Byte], offset: Int, length: Int): JSONValue = {
-    parse(JSONSource.fromBytes(s, offset, length))
-  }
+
+  /**
+    * Parse JSON object or array
+    */
   def parse(s: JSONSource): JSONValue = {
     val b = new JSONValueBuilder().singleContext(s, 0)
     JSONScanner.scan(s, b)
     val j = b.result
     j
+  }
+
+  /**
+    * Parse any json values including null
+    */
+  def parseAny(s: String): JSONValue = {
+    parseAny(JSONSource.fromString(s))
+  }
+
+  /**
+    * Parse any json values including null
+    */
+  def parseAny(s: Array[Byte]): JSONValue = {
+    parseAny(JSONSource.fromBytes(s))
+  }
+
+  /**
+    * Parse any json values including null
+    */
+  def parseAny(s: JSONSource): JSONValue = {
+    val b = new JSONValueBuilder().singleContext(s, 0)
+    JSONScanner.scanAny(s, b)
   }
 
   sealed trait JSONValue {

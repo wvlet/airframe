@@ -81,13 +81,13 @@ class JSONScannerTest extends AirframeSpec {
         scan("{")
       }
       intercept[UnexpectedEOF] {
-        scan("""[tru]""") // too small boolean
+        scan("""[tru""") // too small boolean
       }
       intercept[UnexpectedEOF] {
-        scan("""[fa]""") // too small boolean
+        scan("""[fa""") // too small boolean
       }
       intercept[UnexpectedEOF] {
-        scan("""[nul]""") // insufficient null token
+        scan("""[nul""") // insufficient null token
       }
     }
 
