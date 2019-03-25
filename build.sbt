@@ -65,10 +65,6 @@ val buildSettings = Seq[Setting[_]](
   ),
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
-  ),
-  // Use sonatype resolvers
-  resolvers ++= Seq(
-    Resolver.sonatypeRepo("releases")
   )
 )
 
