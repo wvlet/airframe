@@ -38,25 +38,11 @@ object JSON extends LogSupport {
   /**
     * Parse JSON object or array
     */
-  def parse(s: Array[Byte], offset: Int, length: Int): JSONValue = {
-    parse(JSONSource.fromBytes(s, offset, length))
-  }
-
-  /**
-    * Parse JSON object or array
-    */
   def parse(s: JSONSource): JSONValue = {
     val b = new JSONValueBuilder().singleContext(s, 0)
     JSONScanner.scan(s, b)
     val j = b.result
     j
-  }
-
-  /**
-    * Parse any json values including null
-    */
-  def parseAny(s: Array[Byte]): JSONValue = {
-    parseAny(JSONSource.fromBytes(s))
   }
 
   /**
@@ -69,8 +55,8 @@ object JSON extends LogSupport {
   /**
     * Parse any json values including null
     */
-  def parseAny(s: Array[Byte], offset: Int, length: Int): JSONValue = {
-    parseAny(JSONSource.fromBytes(s, offset, length))
+  def parseAny(s: Array[Byte]): JSONValue = {
+    parseAny(JSONSource.fromBytes(s))
   }
 
   /**

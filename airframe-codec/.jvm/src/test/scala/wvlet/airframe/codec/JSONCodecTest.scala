@@ -24,7 +24,7 @@ class JSONCodecTest extends AirframeSpec {
     val b = JSONCodec.toMsgPack(json)
     JSONCodec.unpackMsgPack(b) match {
       case Some(parsedJson) =>
-        JSON.parse(parsedJson) shouldBe JSON.parse(json)
+        JSON.parseAny(parsedJson) shouldBe JSON.parseAny(json)
       case None =>
         fail(s"Failed to ser/de ${json}")
     }
@@ -43,5 +43,14 @@ class JSONCodecTest extends AirframeSpec {
     check("""[1, 2, 3.0, "apple", true, false]""")
     check("{}")
     check("[]")
+  }
+
+  "serialize non-array/object json values" in {
+    check("true")
+    check("null")
+    check("false")
+    check("1")
+    check("1.0e1")
+    check("1.234")
   }
 }
