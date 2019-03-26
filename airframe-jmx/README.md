@@ -39,8 +39,7 @@ class SampleMBean {
 
 // Register the MBean to make it visible from JMX interface
 val mbean = new SampleMBean
-val agent = new JMXAgent(new JMXConfig())
-agent.register[SampleMBean](mbean)
+JMXAgent.defaultAgent.register[SampleMBean](mbean)
 ```
 
 ## Nested parameters

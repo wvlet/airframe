@@ -25,7 +25,7 @@ class JMXAgentTest extends AirframeSpec {
   "JMXAgent" should {
     "find jmx registry" in {
       if (!JMXUtil.isAtLeastJava9) {
-        val agent = new JMXAgent(new JMXConfig())
+        val agent = JMXAgent.defaultAgent
         agent.withConnector { connector =>
           val connection = connector.getMBeanServerConnection()
           connection.getMBeanCount.toInt shouldBe >(0)

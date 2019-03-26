@@ -29,6 +29,8 @@ case class JMXConfig(registryPort: Option[Int] = None, rmiPort: Option[Int] = No
   */
 object JMXAgent extends LogSupport {
   def start(registryPort: Int) = new JMXAgent(JMXConfig(registryPort = Some(registryPort)))
+
+  lazy val defaultAgent: JMXAgent = new JMXAgent(new JMXConfig())
 }
 
 trait JMXMBeanServerService {
