@@ -607,7 +607,7 @@ lazy val finagle =
       // Finagle doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
-        "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
+        "com.twitter" %% "finagle-http"        % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4-http" % FINAGLE_VERSION,
         "com.twitter" %% "finagle-netty4"      % FINAGLE_VERSION,
         "com.twitter" %% "finagle-core"        % FINAGLE_VERSION,
