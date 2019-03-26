@@ -30,7 +30,7 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
   def register[A: ru.WeakTypeTag](obj: A): Unit = {
     val cl          = obj.getClass
     val packageName = cl.getPackage.getName
-    val name        = s"${packageName}:name=${cl.getSimpleName}"
+    val name        = s"${packageName}:name=${JMXRegistry.getSimpleClassName(cl)}"
     register(name, obj)
   }
 
@@ -40,8 +40,12 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
 
   def register[A: ru.WeakTypeTag](objectName: ObjectName, obj: A): Unit = {
     val mbean = JMXMBean.of(obj)
-    mbeanServer.registerMBean(mbean, objectName)
     synchronized {
+      if (mbeanServer.isRegistered(objectName)) {
+        // Avoid the duplicate registration
+        mbeanServer.unregisterMBean(objectName)
+      }
+      mbeanServer.registerMBean(mbean, objectName)
       registeredMBean += objectName
     }
     debug(s"Registered mbean: ${mbean}")
@@ -62,4 +66,38 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
       }
     }
   }
+}
+
+object JMXRegistry {
+
+  /*
+   * Cleanup Scala-specific class names, which cannot be registered as JMX entries
+   */
+  private[jmx] def getSimpleClassName(cl: Class[_]): String = {
+    var name = cl.getName
+
+    if (name.endsWith("$")) {
+      // Remove trailing $ of Scala Object name
+      name = name.substring(0, name.length - 1)
+    }
+
+    // When class is an anonymous trait
+    if (name.contains("$anon$")) {
+      import collection.JavaConverters._
+      val interfaces = cl.getInterfaces
+      if (interfaces != null && interfaces.length > 0) {
+        // Use the first interface name instead of the anonymous name
+        name = interfaces(0).getName
+      }
+    }
+
+    // Extract the leaf logger name
+    val dotPos = name.lastIndexOf(".")
+    if (dotPos == -1) {
+      name
+    } else {
+      name.substring(dotPos + 1)
+    }
+  }
+
 }
