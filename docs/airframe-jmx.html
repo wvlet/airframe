@@ -46,8 +46,7 @@ use <code class="highlighter-rouge">jconsole</code> program to access JMX parame
 
 <span class="c1">// Register the MBean to make it visible from JMX interface
 </span><span class="k">val</span> <span class="n">mbean</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">SampleMBean</span>
-<span class="k">val</span> <span class="n">agent</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">JMXAgent</span><span class="o">(</span><span class="k">new</span> <span class="nc">JMXConfig</span><span class="o">())</span>
-<span class="n">agent</span><span class="o">.</span><span class="n">register</span><span class="o">[</span><span class="kt">SampleMBean</span><span class="o">](</span><span class="n">mbean</span><span class="o">)</span>
+<span class="nc">JMXAgent</span><span class="o">.</span><span class="n">defaultAgent</span><span class="o">.</span><span class="n">register</span><span class="o">[</span><span class="kt">SampleMBean</span><span class="o">](</span><span class="n">mbean</span><span class="o">)</span>
 </code></pre>
 </div>
 
