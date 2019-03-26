@@ -14,6 +14,7 @@
 package wvlet.airframe.jmx
 
 import wvlet.airframe.AirframeSpec
+import wvlet.log.LogSupport
 
 import scala.util.Random
 
@@ -35,6 +36,9 @@ class NestedMBean {
 }
 
 case class Stat(@JMX count: Int, @JMX state: String)
+
+trait MyJMXApp extends LogSupport {}
+object MyJMXAppObj
 
 /**
   *
@@ -85,6 +89,16 @@ class JMXRegistryTest extends AirframeSpec {
         agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
         agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
       }
+    }
+
+    "avoid double registration" in {
+      val f = new FieldMBean(1, "apple")
+      agent.register(f)
+      agent.register(f)
+    }
+
+    "support complex trait name" in {
+      agent.register[MyJMXApp](new MyJMXApp {})
     }
 
   }
