@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 19.3.7
+-  airframe-jmx: Add the default JMXAgent([#465](https://github.com/wvlet/airframe/issues/465)) [[f9937e5](https://github.com/wvlet/airframe/commit/f9937e5)]
+-  airframe-jmx: Fix the registration of Scala-specific class names ([#461](https://github.com/wvlet/airframe/issues/461)) [[f853bf0](https://github.com/wvlet/airframe/commit/f853bf0)]
+-  airframe-http: Remove the unnecessary finatra dependency ([#464](https://github.com/wvlet/airframe/issues/464)) [[681b006](https://github.com/wvlet/airframe/commit/681b006)]
+
 ## 19.3.6
 -  airframe-json: Add JSON.parseAny(json) ([#458](https://github.com/wvlet/airframe/issues/458)) [[bce0589](https://github.com/wvlet/airframe/commit/bce0589)]
 -  airframe-http: Support Router.add[X].add[Y]... syntax ([#456](https://github.com/wvlet/airframe/issues/456)) [[0ec6430](https://github.com/wvlet/airframe/commit/0ec6430)]
