@@ -27,6 +27,8 @@ Usage is simple: Add `@JMX` annotation to variables or methods you want to see i
 
 ## Registering JMX parameters
 ```scala
+import wvlet.airframe.jmx._
+
 @JMX(description = "A example MBean object")
 class SampleMBean {
   @JMX(description = "free memory size")
@@ -34,14 +36,16 @@ class SampleMBean {
     Runtime.getRuntime.freeMemory()
   }
 }
-```
 
-```scala
-case class FieldMBean(@JMX a: Int, @JMX b: String)
+// Register the MBean to make it visible from JMX interface
+val mbean = new SampleMBean
+val agent = new JMXAgent(new JMXConfig())
+agent.register[SampleMBean](mbean)
 ```
 
 ## Nested parameters
 
+To report nested parameters, add `@JMX` to parameters as well:
 ```scala
 class NestedMBean {
   @JMX(description = "nested stat")
@@ -70,4 +74,33 @@ For convenience, you can start JMXRegistry inside your program:
 
 ```scala
 wvlet.airframe.jmx.JMXAgent.start(registryPort=7199)
+```
+
+## Using airframe-jmx with Airframe DI
+
+```scala
+import wvlet.airframe._
+import wvlet.airframe.jmx._
+
+case class MyAppStats(
+  @JMX(description = "application access count")
+  accessCount:Int
+)
+
+@JMX(description = "My application")
+trait MyApp { self =>
+
+  bind[JMXAgent].onStart { agent =>
+    // Register MyApp to JMX registry when starting the application
+    agent.register[MyApp](self)
+  }
+
+  private var accessCount: Long = 0
+
+  @JMX(description = "application stats")
+  def stats: MyAppStats = {
+    MyAppStats(accessCount)
+  }
+}
+
 ```
