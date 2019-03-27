@@ -18,6 +18,8 @@ package wvlet.airframe
   */
 package object http {
 
-  def httpDefaultDesign = newDesign.bind[ControllerProvider].toSingletonOf[ControllerProviderFromSession]
+  def httpDefaultDesign =
+    newDesign
+      .bind[ControllerProvider].to[ControllerProviderFromSession]
 
 }
