@@ -152,6 +152,16 @@ class RouterTest extends AirframeSpec {
 
         ret.get shouldBe ControllerExample.Group("xxx", Seq(ControllerExample.User("10", "leo")))
       }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/resource/long/path")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe "long/path"
+      }
     }
   }
 }

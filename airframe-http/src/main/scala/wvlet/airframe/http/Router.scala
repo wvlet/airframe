@@ -30,13 +30,10 @@ class Router(val routes: Seq[Route]) {
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
-  def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
-    routes
-      .find { r =>
-        r.method == request.method &&
-        Router.checkPath(request.pathComponents, r.pathComponents)
-      }
-  }
+  /**
+    * Find a route mathing the given request
+    */
+  def findRoute[Req](request: HttpRequest[Req]): Option[Route] = RouteFinder.defaultRouteFinder(request, routes)
 }
 
 object Router extends LogSupport {
@@ -64,16 +61,5 @@ object Router extends LogSupport {
         }
 
     new Router(r.routes ++ newRoutes)
-  }
-
-  private[http] def checkPath(requestPathComponents: Seq[String], routePathComponents: Seq[String]): Boolean = {
-    if (requestPathComponents.length == routePathComponents.length) {
-      requestPathComponents.zip(routePathComponents).forall {
-        case (requestPathComponent, routePathComponent) =>
-          routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
-      }
-    } else {
-      false
-    }
   }
 }

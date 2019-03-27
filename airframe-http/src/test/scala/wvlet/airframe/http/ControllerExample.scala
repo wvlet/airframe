@@ -77,6 +77,10 @@ trait ControllerExample extends LogSupport {
     g
   }
 
+  @Endpoint(path = "/resource/*path", method = HttpMethod.GET)
+  def get(path: String): String = {
+    path
+  }
 }
 
 trait InvalidService {
