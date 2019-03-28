@@ -30,10 +30,8 @@ class Router(val routes: Seq[Route]) {
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
-  /**
-    * Find a route mathing the given request
-    */
-  def findRoute[Req](request: HttpRequest[Req]): Option[Route] = RouteFinder.defaultRouteFinder(request, routes)
+  protected lazy val routeFinder: RouteFinder                  = RouteFinder.build(routes)
+  def findRoute[Req](request: HttpRequest[Req]): Option[Route] = routeFinder.findRoute(request)
 }
 
 object Router extends LogSupport {
