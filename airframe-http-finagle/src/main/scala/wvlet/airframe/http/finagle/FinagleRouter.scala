@@ -31,11 +31,9 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private val routeFinder = config.router.build
-
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // Find a route matching to the request
-    routeFinder.findRoute(request) match {
+    config.router.findRoute(request) match {
       case Some(route) =>
         // Find a corresponding controller
         controllerProvider.findController(route.controllerSurface) match {

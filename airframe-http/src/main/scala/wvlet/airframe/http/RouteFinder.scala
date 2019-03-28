@@ -64,45 +64,97 @@ object RouteFinder {
 
   class FastRouteFinder(routes: Seq[Route]) extends RouteFinder {
 
-    process(routes, 0)
-
     def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
       RouteFinder.defaultRouteFinder(request, routes)
     }
   }
 
-  private def process(lst: Seq[Route], pathIndex: Int): Unit = {
+  private def process(lst: Seq[Route], pathIndex: Int): Seq[List[PathMapping]] = {
     lst.map { r =>
-      toPathMapping(r, 0)
+      toPathMapping(r, 0, 1)
     }
+
   }
 
-  class NFA {
-    private var currentStates: Set[Int] = Set(0)
-
-    def transit(x: String): Unit = {}
+  sealed trait PathMapping {
+    def id: Int
+  }
+  case class VariableMapping(id: Int, route: Route, varName: String)     extends PathMapping
+  case class PathSequenceMapping(id: Int, route: Route, varName: String) extends PathMapping
+  case class ConstantPathMapping(id: Int, route: Route, name: String)    extends PathMapping
+  case object Terminal extends PathMapping {
+    def id = 0
   }
 
-  sealed trait PathMapping
-  case class VariableMapping(route: Route, varName: String)     extends PathMapping
-  case class PathSequenceMapping(route: Route, varName: String) extends PathMapping
-  case class ConstantPathMapping(route: Route, name: String)    extends PathMapping
-
-  private def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
+  private def toPathMapping(r: Route, pathIndex: Int, numStates: Int): List[PathMapping] = {
     if (r.pathComponents.length >= pathIndex) {
       Nil
     } else {
       r.pathComponents(pathIndex) match {
         case x if x.startsWith(":") =>
-          VariableMapping(r, x.substring(1)) :: toPathMapping(r, pathIndex + 1)
+          VariableMapping(numStates, r, x.substring(1)) :: toPathMapping(r, pathIndex + 1, numStates + 1)
         case x if x.startsWith("*") =>
           if (r.pathComponents.length != pathIndex - 1) {
             throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
           }
-          PathSequenceMapping(r, x.substring(1)) :: toPathMapping(r, pathIndex + 1)
+          PathSequenceMapping(numStates, r, x.substring(1)) :: toPathMapping(r, pathIndex + 1, numStates + 1)
         case x =>
-          ConstantPathMapping(r, x) :: toPathMapping(r, pathIndex + 1)
+          ConstantPathMapping(numStates, r, x) :: toPathMapping(r, pathIndex + 1, numStates + 1)
       }
+    }
+  }
+
+  private def buildNFA(routes: Seq[Route]): NFA = {
+    val pathMapping = process(routes, 0)
+    val tokenTable: Map[String, Int] = pathMapping.flatten
+      .collect {
+        case ConstantPathMapping(_, _, name) => name
+      }
+      .zipWithIndex
+      .map {
+        case (s, i) => s -> (i + 1)
+      }.toMap[String, Int]
+
+    val states = pathMapping.flatten.map(_.id).max
+    val numStates = pathMapping.
+    val numTokens = tokenTable.size + 1
+
+
+    for (t <- 0 until numTokens) yield {}
+
+    val numStates = pathMapping.map(_.length).sum
+
+    val matrix = Array.fill(tokenTable.size + 1, numStates)(0)
+    new NFA(tokenTable, matrix)
+  }
+
+  /**
+    * r1: /v1/config
+    *
+    * -1: match to r1
+    * 0: N/A
+    * 1: init
+    *
+    * token  | 0 | 1 | 2
+    * -------------------
+    *   *    | 0 | 0 | 0
+    *   v1   | 0 | 2 | 0
+    *  config| 0 | 0 |-1
+    *
+    */
+  class NFA(tokenTable: Map[String, Int], transitionMatrix: Array[Array[Int]]) {
+    def tokenId(s: String): Int = {
+      tokenTable.getOrElse(s, 0)
+    }
+
+    def nextStates(currentState: Int, input: String): Seq[Int] = {}
+  }
+
+  class NFAState(nfa: NFA) {
+    private var states = Set(0)
+
+    def transit(s: String): Unit = {
+      nfa.tokenId(s)
     }
   }
 
