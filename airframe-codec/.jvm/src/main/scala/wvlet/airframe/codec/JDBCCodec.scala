@@ -70,10 +70,22 @@ object JDBCCodec extends LogSupport {
     }
 
     private class RStoMsgPackIterator[A](f: Array[Byte] => A, packer: Packer => Unit) extends Iterator[A] {
-      override def hasNext: Boolean = rs.next()
+      private var hasNextElem: Option[Boolean] = None
+      override def hasNext: Boolean = {
+        hasNextElem match {
+          case Some(x) => x
+          case None =>
+            val x = rs.next()
+            hasNextElem = Some(x)
+            x
+        }
+      }
+
       override def next(): A = {
+        // TODO Optimize it by resetting the internal buffer of Packer
         val p = MessagePack.newBufferPacker
         packer(p)
+        hasNextElem = None
         f(p.toByteArray)
       }
     }
