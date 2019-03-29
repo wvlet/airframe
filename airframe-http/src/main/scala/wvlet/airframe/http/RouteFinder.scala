@@ -78,23 +78,27 @@ object RouteFinder extends LogSupport {
   }
 
   sealed trait PathMapping {
-    def isTerminal: Boolean = false
+    // Matched route
+    def route: Option[Route]
+    def isTerminal: Boolean = route.isDefined
   }
-  case object Init extends PathMapping
-  case class VariableMapping(route: Route, varName: String, override val isTerminal: Boolean) extends PathMapping {
+  case object Init extends PathMapping {
+    override def route: Option[Route] = None
+  }
+  case class VariableMapping(varName: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
       val t = s"/$$${varName}"
-      if (isTerminal) s"[[${t}]]" else t
+      if (isTerminal) s"!${t}" else t
     }
   }
-  case class ConstantPathMapping(route: Route, name: String, override val isTerminal: Boolean) extends PathMapping {
+  case class ConstantPathMapping(name: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
       val t = s"/${name}"
-      if (isTerminal) s"[[${t}]]" else t
+      if (isTerminal) s"!${t}" else t
     }
   }
-  case class PathSequenceMapping(route: Route, varName: String) extends PathMapping {
-    override def toString: String    = s"[[*${varName}]]"
+  case class PathSequenceMapping(varName: String, route: Option[Route]) extends PathMapping {
+    override def toString: String    = s"!*${varName}"
     override def isTerminal: Boolean = true
   }
 
@@ -218,14 +222,14 @@ object RouteFinder extends LogSupport {
         val isTerminal = pathIndex == r.pathComponents.length - 1
         r.pathComponents(pathIndex) match {
           case x if x.startsWith(":") =>
-            VariableMapping(r, x.substring(1), isTerminal) :: toPathMapping(r, pathIndex + 1)
+            VariableMapping(x.substring(1), if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
           case x if x.startsWith("*") =>
             if (!isTerminal) {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
-            PathSequenceMapping(r, x.substring(1)) :: toPathMapping(r, pathIndex + 1)
+            PathSequenceMapping(x.substring(1), Some(r)) :: toPathMapping(r, pathIndex + 1)
           case x =>
-            ConstantPathMapping(r, x, isTerminal) :: toPathMapping(r, pathIndex + 1)
+            ConstantPathMapping(x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
         }
       }
     }
@@ -238,7 +242,7 @@ object RouteFinder extends LogSupport {
         val pair   = it.toIndexedSeq
         val (a, b) = (pair(0), pair(1))
         b match {
-          case ConstantPathMapping(_, token, _) =>
+          case ConstantPathMapping(token, _) =>
             g.addEdge(a, token, b)
           case PathSequenceMapping(_, _) =>
             g.addDefaultEdge(a, b)
