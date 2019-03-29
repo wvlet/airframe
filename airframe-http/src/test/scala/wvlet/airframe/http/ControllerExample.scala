@@ -84,7 +84,7 @@ trait ControllerExample extends LogSupport {
 
   @Endpoint(path = "/v1/config/info", method = HttpMethod.GET)
   def getInfo(path: String): String = {
-    path
+    "hello"
   }
 }
 

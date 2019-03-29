@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import com.sun.org.apache.xpath.internal.axes.PathComponent
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
@@ -20,7 +21,7 @@ import scala.collection.mutable
   * HttpRequest -> Route finder
   */
 trait RouteFinder {
-  def findRoute[Req](request: HttpRequest[Req]): Option[Route]
+  def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch]
 }
 
 object RouteFinder extends LogSupport {
@@ -58,7 +59,7 @@ object RouteFinder extends LogSupport {
       }
     }
 
-    def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
+    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
       routesByMethod.get(request.method).flatMap { nextRouter =>
         nextRouter.findRoute(request)
       }
@@ -69,59 +70,82 @@ object RouteFinder extends LogSupport {
 
     private val dfa = {
       val g = buildNFA(routes)
-      info(g)
+      trace(g)
       g.toDFA
     }
-    warn(dfa)
-    def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
+    debug(dfa)
+
+    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
       var currentState = 0
-      var i            = 0
+      var pathIndex    = 0
       val pc           = request.pathComponents
 
       var foundRoute: Option[Route] = None
-      var deadEnd                   = false
+      var toContinue                = true
 
-      while (foundRoute.isEmpty && !deadEnd && i < pc.length) {
-        val token = pc(i)
-        i += 1
+      var params = Map.empty[String, String]
+
+      // Traverse the path components and transit the DFA state
+      while ((toContinue || foundRoute.isEmpty) && pathIndex < pc.length) {
+        val token = pc(pathIndex)
+        pathIndex += 1
         dfa.nextActions(currentState, token) match {
           case Some((actions, nextStateId)) =>
-            warn(s"${currentState} -> ${token} -> ${nextStateId}")
+            trace(s"${currentState} -> ${token} -> ${nextStateId}")
             currentState = nextStateId
+            actions.foreach { action =>
+              params = action.updateMatch(params, token)
+            }
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route
+              // Continue matching for PathSequenceMapping
+              toContinue = actions.head.isRepeat
             }
           case None =>
-            deadEnd = true
+            toContinue = false
         }
       }
-      foundRoute
+      debug(params.mkString(", "))
+      foundRoute.map(r => RouteMatch(r, params.toMap))
     }
   }
 
   sealed trait PathMapping {
     // Matched route
     def route: Option[Route]
-    def isTerminal: Boolean = route.isDefined
+    def isTerminal: Boolean                                                             = route.isDefined
+    def isRepeat: Boolean                                                               = false
+    def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = m
   }
   case object Init extends PathMapping {
     override def route: Option[Route] = None
   }
   case class VariableMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
-      val t = s"/$$${varName}[${index}]"
+      val t = s"[${index}]/$$${varName}"
       if (isTerminal) s"!${t}" else t
+    }
+    override def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = {
+      m + (varName -> pathComponent)
     }
   }
   case class ConstantPathMapping(index: Int, name: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
-      val t = s"/${name}[${index}]"
+      val t = s"[${index}]/${name}"
       if (isTerminal) s"!${t}" else t
     }
   }
-  case class PathSequenceMapping(varName: String, route: Option[Route]) extends PathMapping {
-    override def toString: String    = s"!*${varName}"
+  case class PathSequenceMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
+    override def toString: String    = s"![${index}]/*${varName}"
     override def isTerminal: Boolean = true
+    override def isRepeat: Boolean   = true
+    override def updateMatch(m: Map[String, String], pathComponent: String): Map[String, String] = {
+      val paramValue = m.get(varName) match {
+        case Some(x) => s"${x}/${pathComponent}"
+        case None    => pathComponent
+      }
+      m + (varName -> paramValue)
+    }
   }
 
   private val anyToken: String = "<*>"
@@ -133,6 +157,7 @@ object RouteFinder extends LogSupport {
                      transitions: Seq[(State, String, State)]) {
 
     // (currentStateId, tokenId) -> (nextState, nextStateId)
+    // TODO: Use Array for lookup
     private val transitionTable: Map[(Int, Int), (State, Int)] = {
       transitions.map { x =>
         val stateId     = stateTable(x._1)
@@ -202,7 +227,6 @@ object RouteFinder extends LogSupport {
 
       // Build a state table. Reversing the list here to make Set(Init) to 0th state
       val stateTable = knownStates.reverse.zipWithIndex.toMap
-      logger.info(stateTable.mkString("\n"))
       val tokenTable = knownTokens.reverse.zipWithIndex.toMap
       val transitions = (for ((state, edges) <- stateTransitionTable) yield {
         {
@@ -260,7 +284,7 @@ object RouteFinder extends LogSupport {
             if (!isTerminal) {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
-            PathSequenceMapping(x.substring(1), Some(r)) :: toPathMapping(r, pathIndex + 1)
+            PathSequenceMapping(pathIndex, x.substring(1), Some(r)) :: toPathMapping(r, pathIndex + 1)
           case x =>
             ConstantPathMapping(pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
         }
@@ -277,7 +301,7 @@ object RouteFinder extends LogSupport {
         b match {
           case ConstantPathMapping(_, token, _) =>
             g.addEdge(a, token, b)
-          case PathSequenceMapping(_, _) =>
+          case PathSequenceMapping(_, _, _) =>
             g.addDefaultEdge(a, b)
             // Add self-cycle edge for keep reading as sequence of paths
             g.addDefaultEdge(b, b)

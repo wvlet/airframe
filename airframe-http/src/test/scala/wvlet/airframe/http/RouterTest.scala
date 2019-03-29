@@ -154,7 +154,7 @@ class RouterTest extends AirframeSpec {
       }
 
       {
-        val req = SimpleHttpRequest(HttpMethod.GET, "/resource/long/path")
+        val req = SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/long/path")
         val ret =
           router
             .findRoute(req)
@@ -162,6 +162,17 @@ class RouterTest extends AirframeSpec {
 
         ret.get shouldBe "long/path"
       }
+
+      {
+        val req = SimpleHttpRequest(HttpMethod.GET, "/v1/config/info")
+        val ret =
+          router
+            .findRoute(req)
+            .flatMap(_.call(serviceProvider, req))
+
+        ret.get shouldBe "hello"
+      }
+
     }
   }
 }
