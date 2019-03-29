@@ -67,13 +67,34 @@ object RouteFinder extends LogSupport {
 
   class FastRouteFinder(routes: Seq[Route]) extends RouteFinder with LogSupport {
 
-    val g = buildNFA(routes)
-    info(g)
-    val dfa = g.toDFA
+    private val dfa = {
+      val g = buildNFA(routes)
+      info(g)
+      g.toDFA
+    }
     info(dfa)
-
     def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
-      RouteFinder.defaultRouteFinder(request, routes)
+      var currentState = 0
+      var i            = 0
+      val pc           = request.pathComponents
+
+      var foundRoute: Option[Route] = None
+      var deadEnd                   = false
+
+      while (foundRoute.isEmpty && !deadEnd && i < pc.length) {
+        val token = pc(i)
+        i += 1
+        dfa.nextActions(currentState, token) match {
+          case Some((actions, nextStateId)) =>
+            currentState = nextStateId
+            if (actions.size == 1 && actions.head.isTerminal) {
+              foundRoute = actions.head.route
+            }
+          case None =>
+            deadEnd = true
+        }
+      }
+      foundRoute
     }
   }
 
