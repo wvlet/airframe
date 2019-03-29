@@ -102,7 +102,30 @@ object RouteFinder extends LogSupport {
 
   type State = Set[PathMapping]
 
-  class PathGraphDFA(stateTable: Map[State, Int], tokenTable: Map[String, Int], transitionTable: Seq[(Int, Int, Int)]) {}
+  class PathGraphDFA(stateTable: Map[State, Int],
+                     tokenTable: Map[String, Int],
+                     transitions: Seq[(State, String, State)]) {
+
+    // (currentStateId, tokenId) -> (nextState, nextStateId)
+    private val transitionTable: Map[(Int, Int), (State, Int)] = {
+      transitions.map { x =>
+        val stateId     = stateTable(x._1)
+        val tokenId     = tokenTable(x._2)
+        val nextStateId = stateTable(x._3)
+        (stateId, tokenId) -> (x._3, nextStateId)
+      }.toMap
+    }
+
+    override def toString: String = {
+      transitionTable.mkString("\n")
+    }
+
+    // Return (next state, next state id)
+    def nextActions(current: Int, token: String): Option[(State, Int)] = {
+      val tokenId = tokenTable.getOrElse(token, 0)
+      transitionTable.get((current, tokenId))
+    }
+  }
 
   class PathGraph(edgeTable: Map[PathMapping, Map[String, Seq[PathMapping]]]) {
     override def toString(): String = {
@@ -154,16 +177,12 @@ object RouteFinder extends LogSupport {
       // Build a state table. Reversing the list here to make Set(Init) to 0th state
       val stateTable = knownStates.reverse.zipWithIndex.toMap
       val tokenTable = knownTokens.reverse.zipWithIndex.toMap
-      logger.info(tokenTable.mkString(", "))
-      logger.info(stateTable.mkString("\n"))
       val transitions = (for ((state, edges) <- stateTransitionTable) yield {
         {
-          val stateId = stateTable(state)
           for ((token, nextState) <- edges) yield {
             val nextStateId = stateTable(nextState)
             val tokenId     = tokenTable(token)
-            logger.info(s"${stateId} - ${token}(${tokenId}) -> ${nextStateId}")
-            (stateId, tokenId, nextStateId)
+            (state, token, nextState)
           }
         }.toSeq
       }).flatten.toSeq
