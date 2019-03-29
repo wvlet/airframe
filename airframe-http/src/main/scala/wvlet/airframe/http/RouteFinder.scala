@@ -100,9 +100,9 @@ object RouteFinder extends LogSupport {
 
   private val anyToken: String = "<*>"
 
-  class PathGraphDFA() {}
-
   type State = Set[PathMapping]
+
+  class PathGraphDFA(stateTable: Map[State, Int], tokenTable: Map[String, Int], transitionTable: Seq[(Int, Int, Int)]) {}
 
   class PathGraph(edgeTable: Map[PathMapping, Map[String, Seq[PathMapping]]]) {
     override def toString(): String = {
@@ -156,17 +156,19 @@ object RouteFinder extends LogSupport {
       val tokenTable = knownTokens.reverse.zipWithIndex.toMap
       logger.info(tokenTable.mkString(", "))
       logger.info(stateTable.mkString("\n"))
-      val transitions = for ((state, edges) <- stateTransitionTable) yield {
-        val stateId = stateTable(state)
-        for ((token, nextState) <- edges) yield {
-          val nextStateId = stateTable(nextState)
-          val tokenId     = tokenTable(token)
-          logger.info(s"${stateId} - ${token}(${tokenId}) -> ${nextStateId}")
-          (stateId, tokenId, nextStateId)
-        }
-      }
+      val transitions = (for ((state, edges) <- stateTransitionTable) yield {
+        {
+          val stateId = stateTable(state)
+          for ((token, nextState) <- edges) yield {
+            val nextStateId = stateTable(nextState)
+            val tokenId     = tokenTable(token)
+            logger.info(s"${stateId} - ${token}(${tokenId}) -> ${nextStateId}")
+            (stateId, tokenId, nextStateId)
+          }
+        }.toSeq
+      }).flatten.toSeq
 
-      new PathGraphDFA()
+      new PathGraphDFA(stateTable, tokenTable, transitions)
     }
   }
 
