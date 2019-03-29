@@ -55,9 +55,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @param request
     * @return
     */
-  def buildControllerMethodArgs[A](controller: Any, request: HttpRequest[A]): Seq[Any] = {
+  def buildControllerMethodArgs[A](controller: Any, request: HttpRequest[A], params: Map[String, String]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = request.query ++ extractPathParams(request)
+    val requestParams = request.query ++ params
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -114,9 +114,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     methodSurface.call(controller, methodArgs: _*)
   }
 
-  def call[A](controllerProvider: ControllerProvider, request: HttpRequest[A]): Option[Any] = {
+  def call[A](controllerProvider: ControllerProvider,
+              request: HttpRequest[A],
+              params: Map[String, String]): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
-      call(controller, buildControllerMethodArgs(controller, request))
+      call(controller, buildControllerMethodArgs(controller, request, params))
     }
   }
 }

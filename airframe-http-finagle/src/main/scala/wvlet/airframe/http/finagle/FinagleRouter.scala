@@ -33,14 +33,14 @@ class FinagleRouter(config: FinagleServerConfig,
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // Find a route matching to the request
-    config.router.findRoute(request) match {
+    config.router.findRouteMatch(request) match {
       case Some(routeMatch) =>
         val route = routeMatch.route
         // Find a corresponding controller
         controllerProvider.findController(route.controllerSurface) match {
           case Some(controller) =>
             // Call the method in this controller
-            val args   = route.buildControllerMethodArgs(controller, request)
+            val args   = route.buildControllerMethodArgs(controller, request, routeMatch.params)
             val result = route.call(controller, args)
 
             route.returnTypeSurface.rawType match {

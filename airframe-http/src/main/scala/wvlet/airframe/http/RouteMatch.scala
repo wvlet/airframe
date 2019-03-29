@@ -16,4 +16,8 @@ package wvlet.airframe.http
 /**
   *
   */
-case class RouteMatch(route: Route, params: Map[String, String]) {}
+case class RouteMatch(route: Route, params: Map[String, String]) {
+  def call[Req](controlllerProvider: ControllerProvider, request: HttpRequest[Req]): Option[Any] = {
+    route.call(controlllerProvider, request, params)
+  }
+}
