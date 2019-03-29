@@ -125,16 +125,19 @@ object RouteFinder extends LogSupport {
 
     def toDFA: PathGraphDFA = {
       // Convert NFA to DFA
-
-      val initState: State         = Set(Init)
-      var knownStates: List[State] = initState :: Nil
-      val stateTransitionTable     = mutable.Map.empty[State, Map[String, State]]
+      val initState: State          = Set(Init)
+      var knownStates: List[State]  = initState :: Nil
+      var knownTokens: List[String] = anyToken :: Nil
+      val stateTransitionTable      = mutable.Map.empty[State, Map[String, State]]
 
       var remaining: List[State] = initState :: Nil
       while (remaining.nonEmpty) {
         val current = remaining.head
         remaining = remaining.tail
         val tokenToNextState = for (state <- current; token <- possibleTokensAt(state)) yield {
+          if (!knownTokens.contains(token)) {
+            knownTokens = token :: knownTokens
+          }
           token -> nextStates(state, token)
         }
         for ((token, nextStateList) <- tokenToNextState.groupBy(_._1)) {
@@ -148,14 +151,18 @@ object RouteFinder extends LogSupport {
         }
       }
 
-      // Build state table
+      // Build a state table. Reversing the list here to make Set(Init) to 0th state
       val stateTable = knownStates.reverse.zipWithIndex.toMap
+      val tokenTable = knownTokens.reverse.zipWithIndex.toMap
+      logger.info(tokenTable.mkString(", "))
       logger.info(stateTable.mkString("\n"))
-      for ((state, tokenTable) <- stateTransitionTable) {
+      val transitions = for ((state, edges) <- stateTransitionTable) yield {
         val stateId = stateTable(state)
-        for ((token, nextState) <- tokenTable) {
+        for ((token, nextState) <- edges) yield {
           val nextStateId = stateTable(nextState)
-          logger.info(s"${stateId} - ${token} -> ${nextStateId}")
+          val tokenId     = tokenTable(token)
+          logger.info(s"${stateId} - ${token}(${tokenId}) -> ${nextStateId}")
+          (stateId, tokenId, nextStateId)
         }
       }
 
@@ -182,6 +189,7 @@ object RouteFinder extends LogSupport {
   }
 
   private def buildNFA(routes: Seq[Route]): PathGraph = {
+    // Convert http path pattens (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {
         Nil
@@ -201,7 +209,7 @@ object RouteFinder extends LogSupport {
       }
     }
 
-    // Build graph
+    // Build NFA of path patterns
     val g = new PathGraphBuilder
     for (r <- routes) {
       val pathMappings = Init :: toPathMapping(r, 0)
@@ -213,6 +221,7 @@ object RouteFinder extends LogSupport {
             g.addEdge(a, token, b)
           case PathSequenceMapping(_, _) =>
             g.addDefaultEdge(a, b)
+            // Add self-cycle edge for keep reading as sequence of paths
             g.addDefaultEdge(b, b)
           case _ =>
             g.addDefaultEdge(a, b)
