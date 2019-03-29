@@ -40,16 +40,6 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
   def returnTypeSurface: Surface = methodSurface.returnType
 
   /**
-    * Extracting path parameter values. For example, /user/:id with /user/1 gives { id -> 1 }
-    */
-  private def extractPathParams[A](request: HttpRequest[A]): Map[String, String] = {
-    val pathParams = (for ((elem, actual) <- pathComponents.zip(request.pathComponents) if elem.startsWith(":")) yield {
-      elem.substring(1) -> actual
-    }).toMap[String, String]
-    pathParams
-  }
-
-  /**
     * Find a corresponding controller and call the matching methods
     *
     * @param request

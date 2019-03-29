@@ -152,6 +152,7 @@ object RouteFinder extends LogSupport {
 
   type State = Set[PathMapping]
 
+  // DFA
   class PathGraphDFA(stateTable: Map[State, Int],
                      tokenTable: Map[String, Int],
                      transitions: Seq[(State, String, State)]) {
@@ -178,6 +179,7 @@ object RouteFinder extends LogSupport {
     }
   }
 
+  // NFA of state transition
   class PathGraph(edgeTable: Map[PathMapping, Map[String, Seq[PathMapping]]]) {
     override def toString(): String = {
       val s = Seq.newBuilder[String]
@@ -197,13 +199,24 @@ object RouteFinder extends LogSupport {
       edgeTable.get(current).flatMap(_.get(token)).getOrElse(Seq.empty)
     }
 
+    // Convert NFA to DFA
     def toDFA: PathGraphDFA = {
-      // Convert NFA to DFA
-      val initState: State          = Set(Init)
+      val initState: State = Set(Init)
+      // knownStates, knownTokens will be used for assigning integer IDs.
       var knownStates: List[State]  = initState :: Nil
       var knownTokens: List[String] = anyToken :: Nil
       val stateTransitionTable      = mutable.Map.empty[State, Map[String, State]]
 
+      // NFA: (PathMapping, token) -> Seq[PathMapping]
+      // DFA: (State, token) -> State where State is Set[PathMapping]
+
+      // This code is following a standard procedure for converting NFA into DFA.
+      // Starting from an initial state {s0}, then traverse all possible next states in NFA {s_a, s_b, ...},
+      // then make this set a new state of DFA.
+      //
+      // initial state {s0} -> s_i: {all possible next states in NFA}
+      // s_i -> s_{i+1} {s_x, s_y, ....}
+      // ...
       var remaining: List[State] = initState :: Nil
       while (remaining.nonEmpty) {
         val current = remaining.head
@@ -250,7 +263,8 @@ object RouteFinder extends LogSupport {
     }
   }
 
-  class PathGraphBuilder {
+  // Build a graph for (state: PathMapping, token:String) -> nextStates:Seq[PathMapping]
+  private[http] class PathGraphBuilder {
     private val edgeTable: mutable.Map[PathMapping, Map[String, Seq[PathMapping]]] = mutable.Map.empty
 
     def addEdge(current: PathMapping, token: String, next: PathMapping): Unit = {
