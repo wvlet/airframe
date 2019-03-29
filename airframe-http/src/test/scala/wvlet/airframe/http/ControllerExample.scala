@@ -77,8 +77,13 @@ trait ControllerExample extends LogSupport {
     g
   }
 
-  @Endpoint(path = "/resource/*path", method = HttpMethod.GET)
-  def get(path: String): String = {
+  @Endpoint(path = "/v1/config/entry/*path", method = HttpMethod.GET)
+  def getEntry(path: String): String = {
+    path
+  }
+
+  @Endpoint(path = "/v1/config/info", method = HttpMethod.GET)
+  def getInfo(path: String): String = {
     path
   }
 }
