@@ -15,10 +15,13 @@ package wvlet.airframe.http
 
 object Automaton {
 
-  def emptyNFA[Node, Token]: Automaton[Node, Token] = new Automaton(Set.empty, Set.empty)
+  def empty[Node, Token]: Automaton[Node, Token] = new Automaton(Set.empty, Set.empty)
 
   case class Edge[Node, Token](src: Node, token: Token, dest: Node)
 
+  /**
+    * Immutable Automaton implementation. Adding nodes or edges will create a new Automaton instance
+    */
   class Automaton[Node, Token](nodes: Set[Node], edges: Set[Edge[Node, Token]]) {
     type NodeSet = Set[Node]
 
@@ -40,18 +43,36 @@ object Automaton {
         .map(e => e.dest)
     }
 
+    /**
+      *  Converting NFA to DFA
+      *
+      *   NFA: (Node, Token) -> Seq[Node]  (multiple next nodes can be found for a given token)
+      *   DFA: State = Seq[Node]
+      *     (State, Token) -> State        (only a single state can be found for a given token)
+      *
+      * @param init initial node to start
+      */
     def toNFA(init: Node): Automaton[NodeSet, Token] = {
+      // This code is following a standard procedure for converting NFA into DFA.
+      //  1. Add the initial node set {s} (= current node set) to the queue
+      //  2. Pick a node set from the queue.
+      //  3. Traverse all possible next states from the current node set in NFA {s_a, s_b, ...} (= next state)
+      //  4. If the next state appeared for the first time, add this to the queue
+      //  5. Repeat 2. until the queue becomes empty
+
       val initState: Set[Node] = Set(init)
 
       var knownNodeSets: List[NodeSet] = initState :: Nil
-      var nfa                          = Automaton.emptyNFA[NodeSet, Token]
+      var nfa                          = Automaton.empty[NodeSet, Token]
+
+      nfa.addNode(initState)
 
       var remaining: List[NodeSet] = initState :: Nil
       while (remaining.nonEmpty) {
         val currentNodeSet = remaining.head
         remaining = remaining.tail
         val tokenToNextNodes = for (node <- currentNodeSet; edge <- outEdgesFrom(node)) yield {
-          // token -> {s_2, s_5, ...}
+          // token -> { next possible states, ... }
           edge.token -> nextNodes(node, edge.token)
         }
 
@@ -62,12 +83,24 @@ object Automaton {
             remaining = nextNodeSet :: remaining
             knownNodeSets = nextNodeSet :: knownNodeSets
           }
+          // Add: {current node sets} -> token -> {next possible node sets}
           nfa = nfa.addEdge(currentNodeSet, token, nextNodeSet)
         }
       }
 
       nfa
     }
+
+    def toGraph: Graph[Node, Token] = {
+      val nodeTable  = nodes.zipWithIndex.toMap
+      val tokenTable = edges.map(_.token).zipWithIndex.toMap
+      val intEdges = edges.map { e =>
+        Edge(nodeTable(e.src), tokenTable(e.token), nodeTable(e.dest))
+      }
+      new Graph(nodeTable, tokenTable, intEdges)
+    }
   }
+
+  case class Graph[Node, Token](nodeTable: Map[Node, Int], tokenTable: Map[Token, Int], edges: Set[Edge[Int, Int]]) {}
 
 }

@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 import com.sun.org.apache.xpath.internal.axes.PathComponent
+import wvlet.airframe.http.Automaton.Graph
 import wvlet.log.LogSupport
 
 import scala.collection.mutable
@@ -282,7 +283,7 @@ object RouteFinder extends LogSupport {
     }
   }
 
-  private def buildNFA(routes: Seq[Route]): PathGraph = {
+  private def buildPathGraph(routes: Seq[Route]): Graph[Set[PathMapping], String] = {
     // Convert http path pattens (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {
@@ -306,7 +307,7 @@ object RouteFinder extends LogSupport {
     }
 
     // Build NFA of path patterns
-    val g = new PathGraphBuilder
+    var g = Automaton.empty[PathMapping, String]
     for (r <- routes) {
       val pathMappings = Init :: toPathMapping(r, 0)
       for (it <- pathMappings.sliding(2)) {
@@ -314,17 +315,17 @@ object RouteFinder extends LogSupport {
         val (a, b) = (pair(0), pair(1))
         b match {
           case ConstantPathMapping(_, token, _) =>
-            g.addEdge(a, token, b)
+            g = g.addEdge(a, token, b)
           case PathSequenceMapping(_, _, _) =>
-            g.addDefaultEdge(a, b)
+            g = g.addEdge(a, anyToken, b)
             // Add self-cycle edge for keep reading as sequence of paths
-            g.addDefaultEdge(b, b)
+            g = g.addEdge(b, anyToken, b)
           case _ =>
-            g.addDefaultEdge(a, b)
+            g = g.addEdge(a, anyToken, b)
         }
       }
     }
-    g.build
+    g.toNFA(Init).toGraph
   }
 
 }
