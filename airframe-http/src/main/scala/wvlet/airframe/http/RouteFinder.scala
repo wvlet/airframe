@@ -72,7 +72,7 @@ object RouteFinder extends LogSupport {
       info(g)
       g.toDFA
     }
-    info(dfa)
+    warn(dfa)
     def findRoute[Req](request: HttpRequest[Req]): Option[Route] = {
       var currentState = 0
       var i            = 0
@@ -86,6 +86,7 @@ object RouteFinder extends LogSupport {
         i += 1
         dfa.nextActions(currentState, token) match {
           case Some((actions, nextStateId)) =>
+            warn(s"${currentState} -> ${token} -> ${nextStateId}")
             currentState = nextStateId
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route
@@ -106,15 +107,15 @@ object RouteFinder extends LogSupport {
   case object Init extends PathMapping {
     override def route: Option[Route] = None
   }
-  case class VariableMapping(varName: String, route: Option[Route]) extends PathMapping {
+  case class VariableMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
-      val t = s"/$$${varName}"
+      val t = s"/$$${varName}[${index}]"
       if (isTerminal) s"!${t}" else t
     }
   }
-  case class ConstantPathMapping(name: String, route: Option[Route]) extends PathMapping {
+  case class ConstantPathMapping(index: Int, name: String, route: Option[Route]) extends PathMapping {
     override def toString: String = {
-      val t = s"/${name}"
+      val t = s"/${name}[${index}]"
       if (isTerminal) s"!${t}" else t
     }
   }
@@ -201,6 +202,7 @@ object RouteFinder extends LogSupport {
 
       // Build a state table. Reversing the list here to make Set(Init) to 0th state
       val stateTable = knownStates.reverse.zipWithIndex.toMap
+      logger.info(stateTable.mkString("\n"))
       val tokenTable = knownTokens.reverse.zipWithIndex.toMap
       val transitions = (for ((state, edges) <- stateTransitionTable) yield {
         {
@@ -211,6 +213,14 @@ object RouteFinder extends LogSupport {
           }
         }.toSeq
       }).flatten.toSeq
+
+      stateTable.foreach {
+        case (states, stateId) =>
+          if (states.size > 1 && states.forall(_.isTerminal)) {
+            throw new IllegalStateException(
+              s"Ambiguous HTTP routes are found:\n${states.flatMap(_.route).map(x => s"- ${x.path}").mkString("\n")}")
+          }
+      }
 
       new PathGraphDFA(stateTable, tokenTable, transitions)
     }
@@ -243,14 +253,16 @@ object RouteFinder extends LogSupport {
         val isTerminal = pathIndex == r.pathComponents.length - 1
         r.pathComponents(pathIndex) match {
           case x if x.startsWith(":") =>
-            VariableMapping(x.substring(1), if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
+            VariableMapping(pathIndex, x.substring(1), if (isTerminal) Some(r) else None) :: toPathMapping(
+              r,
+              pathIndex + 1)
           case x if x.startsWith("*") =>
             if (!isTerminal) {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
             PathSequenceMapping(x.substring(1), Some(r)) :: toPathMapping(r, pathIndex + 1)
           case x =>
-            ConstantPathMapping(x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
+            ConstantPathMapping(pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
         }
       }
     }
@@ -263,7 +275,7 @@ object RouteFinder extends LogSupport {
         val pair   = it.toIndexedSeq
         val (a, b) = (pair(0), pair(1))
         b match {
-          case ConstantPathMapping(token, _) =>
+          case ConstantPathMapping(_, token, _) =>
             g.addEdge(a, token, b)
           case PathSequenceMapping(_, _) =>
             g.addDefaultEdge(a, b)
