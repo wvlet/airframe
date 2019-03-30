@@ -309,6 +309,8 @@ lazy val airframe =
       )
     )
     .jvmSettings(
+      // Workaround for https://github.com/scala/scala/pull/7624
+      fork in Test := (scalaVersion.value.startsWith("2.13.")),
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar
