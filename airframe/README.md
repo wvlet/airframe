@@ -1,15 +1,11 @@
 Airframe
 ===
 
-Airframe is a dependency injection library tailored to Scala, which is useful for isolating various concerns in your programing
-in order to focus on the most important application logic. 
+Airframe is a dependency injection library tailored to Scala, which is useful for isolating various concerns in your programing in order to focus on the most important application logic. 
 
 ## What is Dependency Injection?
 
-Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation;
-Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf.
-In Java we can use Google's [Guice](https://github.com/google/guice), but its syntax is not suited to Scala,
- so we redesigned it for Scala so that we can naturally use Scala's syntax (trait and types) with DI.
+Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf. In Java we can use Google's [Guice](https://github.com/google/guice), but its syntax is not suited to Scala, so we redesigned it for Scala so that we can naturally use Scala's syntax (trait and types) with DI.
 
 - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
@@ -79,34 +75,33 @@ design.build[App]{ app =>
 Airframe builds an instance of `App` based on the binding rules specified in the *design* object. That means when writing applications, you only need to care about how to use objects (*bind*), rather than how to build them, because design objects already knows how to provide necessary objects to build your classes.
 
 This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `session.build[App]`.
+
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
 ## Isolating Service Logic and Design
 
-When writing an application, there are several concerns that are often unrelated to the core applcation logic, such as:
+When writing an application, these concerns below are often unrelated to the core applcation logic:
 - How to build service objects.
 - How to configure services.
 - How to manage life cycle of service objects.
 
-Airframe DI allows separating these how-tos for building service objects and managing their lifecycles into `Design` objects 
-so that you can focus on logic that uses only direct dependencies. 
-
-For example, when writing service A and B, you should be able to focus only on DBClient and FluentdLogger, even though the entire
-code involves other indirect dependencies like ConnectionPool, HttpClient, DB, etc.:
+Airframe DI allows separating these how-tos and the management of object lifecycles using `Design`. For example, when writing service A and B in the following figure, you should be able to focus only direct dependencies. In this example DBClient and FluentdLogger are the direct dependency of A and B. When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc.:
 
 ![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
 
-By injecting dependencies using `bind[X]` syntax (left), we can isolate the logic for constructing service objects (right):
+By injecting dependencies using `bind[A]` and `bind[B]` (left), we can effectively forget about indirect dependencies from A and B to isolate the core application logic from constructing service objects (right):
 
 ![image](https://wvlet.org/airframe/img/airframe/code-example.png)
 
-It is also possible to use constructor injection instead of using trait:
+
+If you prefer not using airframe-specific sytax, it is also possible to use constructor injection:
 
 ```scala
 class A(dbClient:DBClient, fluentdClient:FluentdClient) {
    //...
 }
 ```
+Airframe will constrct A using DBClient and FlutendClient defined in Design.
 
 ## Airframe Features
 
