@@ -89,7 +89,7 @@ Airframe DI allows separating these how-tos and the management of object lifecyc
 
 ![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
 
-By injecting dependencies using `bind[A]` and `bind[B]` (left), we can effectively forget about indirect dependencies from A and B to isolate the core application logic from constructing service objects (right):
+By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about indirect dependencies in order to isolate the core application logic from constructing service objects (right):
 
 ![image](https://wvlet.org/airframe/img/airframe/code-example.png)
 
