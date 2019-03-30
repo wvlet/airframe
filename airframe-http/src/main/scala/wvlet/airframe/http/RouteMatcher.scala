@@ -15,14 +15,20 @@ package wvlet.airframe.http
 import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
+case class RouteMatch(route: Route, params: Map[String, String]) {
+  def call[Req](controlllerProvider: ControllerProvider, request: HttpRequest[Req]): Option[Any] = {
+    route.call(controlllerProvider, request, params)
+  }
+}
+
 /**
-  * HttpRequest -> Route finder
+  * Find a matching route (RouteMatch) from a given HttpRequest
   */
-trait RouteFinder {
+trait RouteMatcher {
   def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch]
 }
 
-object RouteFinder extends LogSupport {
+object RouteMatcher extends LogSupport {
 
   def defaultRouteFinder[Req](request: HttpRequest[Req], routes: Seq[Route]) = {
     routes
@@ -43,17 +49,17 @@ object RouteFinder extends LogSupport {
     }
   }
 
-  def build(routes: Seq[Route]): RouteFinder = {
-    new RouteFinderGroups(routes)
+  def build(routes: Seq[Route]): RouteMatcher = {
+    new RouteMatcherGroups(routes)
   }
 
   /**
-    * RouteFinders grouped by HTTP method types
+    * RouteMatcher set grouped by HTTP method types
     */
-  class RouteFinderGroups(routes: Seq[Route]) extends RouteFinder {
-    private val routesByMethod: Map[HttpMethod, RouteFinder] = {
+  class RouteMatcherGroups(routes: Seq[Route]) extends RouteMatcher {
+    private val routesByMethod: Map[HttpMethod, RouteMatcher] = {
       for ((method, lst) <- routes.groupBy(_.method)) yield {
-        method -> new FastRouteFinder(lst)
+        method -> new FastRouteMatcher(lst)
       }
     }
 
@@ -64,10 +70,17 @@ object RouteFinder extends LogSupport {
     }
   }
 
-  class FastRouteFinder(routes: Seq[Route]) extends RouteFinder with LogSupport {
+  class FastRouteMatcher(routes: Seq[Route]) extends RouteMatcher with LogSupport {
 
     private val dfa = buildPathDFA(routes)
     debug(dfa)
+
+    dfa.nodeTable
+      .map(_._1).foreach(state =>
+        if (state.size > 1 && state.forall(_.isTerminal)) {
+          throw new IllegalArgumentException(
+            s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} ")
+      })
 
     def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
       var currentState = dfa.initStateId
@@ -190,7 +203,7 @@ object RouteFinder extends LogSupport {
         }
       }
     }
-    // Convert the NFA into DFA
+    // Convert the NFA into DFA to uniquely determine the next state in the automation.
     g.toDFA(Init, defaultToken = anyToken)
   }
 

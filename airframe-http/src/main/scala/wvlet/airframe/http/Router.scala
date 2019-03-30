@@ -30,7 +30,7 @@ class Router(val routes: Seq[Route]) {
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
-  protected lazy val routeFinder: RouteFinder                       = RouteFinder.build(routes)
+  protected lazy val routeFinder: RouteMatcher                      = RouteMatcher.build(routes)
   def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = routeFinder.findRoute(request)
 }
 
