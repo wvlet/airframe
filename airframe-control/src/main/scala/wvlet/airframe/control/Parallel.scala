@@ -13,8 +13,11 @@
  */
 package wvlet.airframe.control
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent._
+
+import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
@@ -22,7 +25,7 @@ import scala.reflect.ClassTag
 /**
   * Utilities for parallel execution.
   */
-object Parallel {
+object Parallel extends LogSupport {
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
 
@@ -48,11 +51,15 @@ object Parallel {
     */
   def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
       f: T => R): Seq[R] = {
+
+    val uuid = UUID.randomUUID.toString
+    trace(s"$uuid - Begin Parallel.run (parallelism = ${parallelism})")
+
     val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
     val resultArray  = new Array[R](source.length)
 
-    Range(0, parallelism).foreach { _ =>
-      val worker = new IndexedWorker[T, R](requestQueue, resultArray, f)
+    Range(0, parallelism).foreach { i =>
+      val worker = new IndexedWorker[T, R](uuid, i.toString, requestQueue, resultArray, f)
       requestQueue.put(worker)
     }
 
@@ -100,11 +107,15 @@ object Parallel {
   def iterate[T, R](source: Iterator[T],
                     parallelism: Int = Runtime.getRuntime.availableProcessors(),
                     timeout: Duration = Duration.Inf)(f: T => R): Iterator[R] = {
+
+    val uuid = UUID.randomUUID.toString
+    trace(s"$uuid - Begin Parallel.iterate (parallelism = ${parallelism})")
+
     val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
     val resultQueue  = new LinkedBlockingQueue[Option[R]]()
 
-    Range(0, parallelism).foreach { _ =>
-      val worker = new Worker[T, R](requestQueue, resultQueue, f)
+    Range(0, parallelism).foreach { i =>
+      val worker = new Worker[T, R](uuid, i.toString, requestQueue, resultQueue, f)
       requestQueue.put(worker)
     }
 
@@ -201,35 +212,51 @@ object Parallel {
 //    }
 //  }
 
-  private[control] class Worker[T, R](requestQueue: BlockingQueue[Worker[T, R]],
+  private[control] class Worker[T, R](executionId: String,
+                                      workerId: String,
+                                      requestQueue: BlockingQueue[Worker[T, R]],
                                       resultQueue: BlockingQueue[Option[R]],
                                       f: T => R)
-      extends Runnable {
+      extends Runnable with LogSupport {
 
     val message: AtomicReference[T] = new AtomicReference[T]()
 
     override def run: Unit = {
+      trace(s"$executionId - Begin worker-$workerId")
       try {
         resultQueue.put(Some(f(message.get())))
+      } catch {
+        case e: Exception =>
+          warn(s"$executionId - Error worker-$workerId", e)
+          throw e
       } finally {
         requestQueue.put(this)
+        trace(s"$executionId - End worker-$workerId")
       }
     }
   }
 
-  private[control] class IndexedWorker[T, R](requestQueue: BlockingQueue[IndexedWorker[T, R]],
+  private[control] class IndexedWorker[T, R](executionId: String,
+                                             workerId: String,
+                                             requestQueue: BlockingQueue[IndexedWorker[T, R]],
                                              resultArray: Array[R],
                                              f: T => R)
-      extends Runnable {
+      extends Runnable with LogSupport {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
 
     override def run: Unit = {
+      trace(s"$executionId - Begin worker-$workerId")
       try {
         val (m, i) = message.get()
         resultArray(i) = f(m)
+      } catch {
+        case e: Exception =>
+          warn(s"$executionId - Error worker-$workerId", e)
+          throw e
       } finally {
         requestQueue.put(this)
+        trace(s"$executionId - End worker-$workerId")
       }
     }
   }
