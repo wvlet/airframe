@@ -70,7 +70,7 @@ object RouteFinder extends LogSupport {
     debug(dfa)
 
     def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
-      var currentState = 0
+      var currentState = dfa.initStateId
       var pathIndex    = 0
       val pc           = request.pathComponents
 
@@ -90,6 +90,7 @@ object RouteFinder extends LogSupport {
             // Update variable bindings here
             actions.foreach { action =>
               params = action.updateMatch(params, token)
+              debug(s"update param: ${params.mkString(", ")}")
             }
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route

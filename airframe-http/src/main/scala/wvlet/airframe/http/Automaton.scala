@@ -91,7 +91,7 @@ object Automaton {
       // Build DFA
       val nodeTable  = dfa.nodes.zipWithIndex.toMap
       val tokenTable = (dfa.edges.map(_.token) + defaultToken).zipWithIndex.toMap
-      new DFA(nodeTable, tokenTable, dfa.edges, defaultToken)
+      new DFA(nodeTable, tokenTable, dfa.edges, initState, defaultToken)
     }
   }
 
@@ -100,7 +100,10 @@ object Automaton {
   case class DFA[Node, Token](nodeTable: Map[Node, Int],
                               tokenTable: Map[Token, Int],
                               edges: Set[Edge[Node, Token]],
+                              init: Node,
                               defaultToken: Token) {
+
+    val initStateId = nodeTable(init)
 
     // (currentStateId, tokenId) -> (nextState, nextStateId)
     // TODO: Use Array for faster lookup
