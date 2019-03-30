@@ -90,7 +90,6 @@ object RouteFinder extends LogSupport {
             // Update variable bindings here
             actions.foreach { action =>
               params = action.updateMatch(params, token)
-              debug(s"update param: ${params.mkString(", ")}")
             }
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route
