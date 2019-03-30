@@ -19,7 +19,7 @@ import wvlet.log.LogSupport
 
 object ControllerExample {
   case class User(id: String, name: String)
-  case class CreateUserRequest(name: String)
+  case class CreateUserRequest(id: String, name: String)
   case class Group(name: String, users: Seq[User])
 }
 
@@ -40,7 +40,7 @@ trait ControllerExample extends LogSupport {
   @Endpoint(path = "/user", method = HttpMethod.POST)
   def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
-    val newUser = User(UUID.randomUUID().toString, createUserRequest.name)
+    val newUser = User(createUserRequest.id, createUserRequest.name)
     info(s"create user: ${newUser}, create request:${createUserRequest}")
     newUser
   }
