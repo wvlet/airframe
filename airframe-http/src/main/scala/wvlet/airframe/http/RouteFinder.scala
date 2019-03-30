@@ -12,11 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import com.sun.org.apache.xpath.internal.axes.PathComponent
-import wvlet.airframe.http.Automaton.Graph
+import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
-
-import scala.collection.mutable
 
 /**
   * HttpRequest -> Route finder
@@ -69,11 +66,7 @@ object RouteFinder extends LogSupport {
 
   class FastRouteFinder(routes: Seq[Route]) extends RouteFinder with LogSupport {
 
-    private val dfa = {
-      val g = buildNFA(routes)
-      trace(g)
-      g.toDFA
-    }
+    private val dfa = buildPathDFA(routes)
     debug(dfa)
 
     def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
@@ -90,8 +83,8 @@ object RouteFinder extends LogSupport {
       while ((toContinue || foundRoute.isEmpty) && pathIndex < pc.length) {
         val token = pc(pathIndex)
         pathIndex += 1
-        dfa.nextActions(currentState, token) match {
-          case Some((actions, nextStateId)) =>
+        dfa.nextNode(currentState, token) match {
+          case Some(NextNode(actions, nextStateId)) =>
             trace(s"${currentState} -> ${token} -> ${nextStateId}")
             currentState = nextStateId
             actions.foreach { action =>
@@ -151,139 +144,7 @@ object RouteFinder extends LogSupport {
 
   private val anyToken: String = "<*>"
 
-  type State = Set[PathMapping]
-
-  // DFA
-  class PathGraphDFA(stateTable: Map[State, Int],
-                     tokenTable: Map[String, Int],
-                     transitions: Seq[(State, String, State)]) {
-
-    // (currentStateId, tokenId) -> (nextState, nextStateId)
-    // TODO: Use Array for lookup
-    private val transitionTable: Map[(Int, Int), (State, Int)] = {
-      transitions.map { x =>
-        val stateId     = stateTable(x._1)
-        val tokenId     = tokenTable(x._2)
-        val nextStateId = stateTable(x._3)
-        (stateId, tokenId) -> (x._3, nextStateId)
-      }.toMap
-    }
-
-    override def toString: String = {
-      transitionTable.mkString("\n")
-    }
-
-    // Return (next state, next state id)
-    def nextActions(current: Int, token: String): Option[(State, Int)] = {
-      val tokenId = tokenTable.getOrElse(token, 0)
-      transitionTable.get((current, tokenId))
-    }
-  }
-
-  // NFA of state transition
-  class PathGraph(edgeTable: Map[PathMapping, Map[String, Seq[PathMapping]]]) {
-    override def toString(): String = {
-      val s = Seq.newBuilder[String]
-      for (src <- edgeTable.keys) {
-        for ((token, dest) <- edgeTable(src)) {
-          s += s"[${src}]: ${token} -> ${dest.mkString(", ")}"
-        }
-      }
-      s.result().mkString("\n")
-    }
-
-    def possibleTokensAt(state: PathMapping): Seq[String] = {
-      edgeTable.getOrElse(state, Map.empty).keys.toSeq
-    }
-
-    def nextStates(current: PathMapping, token: String): Seq[PathMapping] = {
-      edgeTable.get(current).flatMap(_.get(token)).getOrElse(Seq.empty)
-    }
-
-    // Convert NFA to DFA
-    def toDFA: PathGraphDFA = {
-      val initState: State = Set(Init)
-      // knownStates, knownTokens will be used for assigning integer IDs.
-      var knownStates: List[State]  = initState :: Nil
-      var knownTokens: List[String] = anyToken :: Nil
-      val stateTransitionTable      = mutable.Map.empty[State, Map[String, State]]
-
-      // NFA: (PathMapping, token) -> Seq[PathMapping]
-      // DFA: (State, token) -> State where State is Set[PathMapping]
-
-      // This code is following a standard procedure for converting NFA into DFA.
-      // Starting from an initial state {s0}, then traverse all possible next states in NFA {s_a, s_b, ...},
-      // then make this set a new state of DFA.
-      //
-      // initial state {s0} -> s_i: {all possible next states in NFA}
-      // s_i -> s_{i+1} {s_x, s_y, ....}
-      // ...
-      var remaining: List[State] = initState :: Nil
-      while (remaining.nonEmpty) {
-        val current = remaining.head
-        remaining = remaining.tail
-        val tokenToNextState = for (state <- current; token <- possibleTokensAt(state)) yield {
-          if (!knownTokens.contains(token)) {
-            knownTokens = token :: knownTokens
-          }
-          token -> nextStates(state, token)
-        }
-        for ((token, nextStateList) <- tokenToNextState.groupBy(_._1)) {
-          val m         = stateTransitionTable.getOrElse(current, Map.empty)
-          val nextState = nextStateList.map(_._2).flatten.toSet
-          if (!knownStates.contains(nextState)) {
-            remaining = nextState :: remaining
-            knownStates = nextState :: knownStates
-          }
-          stateTransitionTable.put(current, m + (token -> nextState))
-        }
-      }
-
-      // Build a state table. Reversing the list here to make Set(Init) to 0th state
-      val stateTable = knownStates.reverse.zipWithIndex.toMap
-      val tokenTable = knownTokens.reverse.zipWithIndex.toMap
-      val transitions = (for ((state, edges) <- stateTransitionTable) yield {
-        {
-          for ((token, nextState) <- edges) yield {
-            val nextStateId = stateTable(nextState)
-            val tokenId     = tokenTable(token)
-            (state, token, nextState)
-          }
-        }.toSeq
-      }).flatten.toSeq
-
-      stateTable.foreach {
-        case (states, stateId) =>
-          if (states.size > 1 && states.forall(_.isTerminal)) {
-            throw new IllegalStateException(
-              s"Ambiguous HTTP routes are found:\n${states.flatMap(_.route).map(x => s"- ${x.path}").mkString("\n")}")
-          }
-      }
-
-      new PathGraphDFA(stateTable, tokenTable, transitions)
-    }
-  }
-
-  // Build a graph for (state: PathMapping, token:String) -> nextStates:Seq[PathMapping]
-  private[http] class PathGraphBuilder {
-    private val edgeTable: mutable.Map[PathMapping, Map[String, Seq[PathMapping]]] = mutable.Map.empty
-
-    def addEdge(current: PathMapping, token: String, next: PathMapping): Unit = {
-      val transitionTable: Map[String, Seq[PathMapping]] = edgeTable.getOrElse(current, Map.empty)
-      val nextStates                                     = transitionTable.getOrElse(token, Seq.empty) :+ next
-      edgeTable.put(current, transitionTable + (token -> nextStates))
-    }
-
-    def addDefaultEdge(current: PathMapping, next: PathMapping): Unit = {
-      addEdge(current, anyToken, next)
-    }
-
-    def build: PathGraph = {
-      new PathGraph(edgeTable.toMap)
-    }
-  }
-
-  private def buildPathGraph(routes: Seq[Route]): Graph[Set[PathMapping], String] = {
+  private def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
     // Convert http path pattens (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {
@@ -325,7 +186,8 @@ object RouteFinder extends LogSupport {
         }
       }
     }
-    g.toNFA(Init).toGraph
+    // Convert NFA -> DFA -> Graph
+    g.toDFA(Init, defaultToken = anyToken)
   }
 
 }

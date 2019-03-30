@@ -22,7 +22,7 @@ object Automaton {
   /**
     * Immutable Automaton implementation. Adding nodes or edges will create a new Automaton instance
     */
-  class Automaton[Node, Token](nodes: Set[Node], edges: Set[Edge[Node, Token]]) {
+  class Automaton[Node, Token](val nodes: Set[Node], val edges: Set[Edge[Node, Token]]) {
     type NodeSet = Set[Node]
 
     def addNode(n: Node): Automaton[Node, Token] = {
@@ -52,7 +52,7 @@ object Automaton {
       *
       * @param init initial node to start
       */
-    def toNFA(init: Node): Automaton[NodeSet, Token] = {
+    def toDFA(init: Node, defaultToken: Token): DFA[NodeSet, Token] = {
       // This code is following a standard procedure for converting NFA into DFA.
       //  1. Add the initial node set {s} (= current node set) to the queue
       //  2. Pick a node set from the queue.
@@ -63,9 +63,9 @@ object Automaton {
       val initState: Set[Node] = Set(init)
 
       var knownNodeSets: List[NodeSet] = initState :: Nil
-      var nfa                          = Automaton.empty[NodeSet, Token]
+      var dfa                          = Automaton.empty[NodeSet, Token]
 
-      nfa.addNode(initState)
+      dfa.addNode(initState)
 
       var remaining: List[NodeSet] = initState :: Nil
       while (remaining.nonEmpty) {
@@ -84,23 +84,47 @@ object Automaton {
             knownNodeSets = nextNodeSet :: knownNodeSets
           }
           // Add: {current node sets} -> token -> {next possible node sets}
-          nfa = nfa.addEdge(currentNodeSet, token, nextNodeSet)
+          dfa = dfa.addEdge(currentNodeSet, token, nextNodeSet)
         }
       }
 
-      nfa
-    }
-
-    def toGraph: Graph[Node, Token] = {
-      val nodeTable  = nodes.zipWithIndex.toMap
-      val tokenTable = edges.map(_.token).zipWithIndex.toMap
-      val intEdges = edges.map { e =>
-        Edge(nodeTable(e.src), tokenTable(e.token), nodeTable(e.dest))
-      }
-      new Graph(nodeTable, tokenTable, intEdges)
+      // Build DFA
+      val nodeTable  = dfa.nodes.zipWithIndex.toMap
+      val tokenTable = (dfa.edges.map(_.token) + defaultToken).zipWithIndex.toMap
+      new DFA(nodeTable, tokenTable, dfa.edges, defaultToken)
     }
   }
 
-  case class Graph[Node, Token](nodeTable: Map[Node, Int], tokenTable: Map[Token, Int], edges: Set[Edge[Int, Int]]) {}
+  case class NextNode[Node](node: Node, nodeId: Int)
+
+  case class DFA[Node, Token](nodeTable: Map[Node, Int],
+                              tokenTable: Map[Token, Int],
+                              edges: Set[Edge[Node, Token]],
+                              defaultToken: Token) {
+
+    // (currentStateId, tokenId) -> (nextState, nextStateId)
+    // TODO: Use Array for faster lookup
+    private val transitionTable: Map[(Int, Int), NextNode[Node]] = {
+      edges.map { x =>
+        (nodeTable(x.src), tokenTable(x.token)) -> NextNode[Node](x.dest, nodeTable(x.dest))
+      }.toMap
+    }
+
+    override def toString: String = {
+      val s = Seq.newBuilder[String]
+      s += "[nodes]"
+      s += nodeTable.map(x => s"${x._2}: ${x._1}").mkString("\n")
+      s += "\n[tokens]"
+      s += tokenTable.map(x => s"${x._2}: ${x._1}").mkString("\n")
+      s += "\n[edges]"
+      s += transitionTable.mkString("\n")
+      s.result().mkString("\n")
+    }
+
+    def nextNode(currentState: Int, token: Token): Option[NextNode[Node]] = {
+      val tokenId = tokenTable.getOrElse(token, tokenTable(defaultToken))
+      transitionTable.get((currentState, tokenId))
+    }
+  }
 
 }
