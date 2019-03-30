@@ -62,7 +62,7 @@ class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stag
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-case class Design(designOptions: DesignOptions, private[airframe] val binding: IndexedSeq[Binding]) extends LogSupport {
+case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
 
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
@@ -86,7 +86,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: I
       minimizedList = b :: minimizedList
     }
 
-    Design(designOptions, minimizedList.reverse.toIndexedSeq)
+    Design(designOptions, minimizedList.reverse.toVector)
   }
 
   def add(other: Design): Design = {
@@ -196,7 +196,7 @@ object Design {
     * Empty design.
     * Using Vector as a binding holder for performance and serialization reason
     */
-  private[airframe] val blanc: Design = new Design(new DesignOptions(), IndexedSeq.empty)
+  private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
 
   // Empty design
   def empty: Design = blanc
