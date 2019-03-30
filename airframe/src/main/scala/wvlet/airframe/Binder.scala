@@ -23,7 +23,7 @@ import wvlet.airframe.surface.Surface
 import scala.language.experimental.macros
 
 object Binder {
-  sealed trait Binding {
+  sealed trait Binding extends Serializable {
     def forSingleton: Boolean = false
     def from: Surface
   }
@@ -97,12 +97,14 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
 
   /**
     * Bind a singleton instance of B to A
+    *
     * @tparam B
     */
   def to[B <: A]: Design = macro binderToSingletonOfImpl[B]
 
   /**
     * Bind an instance of B to A
+    *
     * @tparam B
     * @return
     */
@@ -122,6 +124,7 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
 
   /**
     * Bind an instance lazily (no singleton). This is used internally for implementing bindFactory[I1 => A]
+    *
     * @param any
     * @return
     */
