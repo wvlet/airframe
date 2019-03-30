@@ -14,6 +14,7 @@
 package wvlet.log
 
 import java.io.{File, FileReader}
+import java.net.URL
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
@@ -22,6 +23,7 @@ import wvlet.log.LogLevelScanner.ScannerState
 import wvlet.log.io.{IOUtil, Resource}
 import wvlet.log.io.IOUtil._
 
+import scala.annotation.tailrec
 import scala.concurrent.duration.Duration
 
 object LogLevelScanner {
@@ -41,7 +43,7 @@ object LogLevelScanner {
   }
 
   val DEFAULT_LOGLEVEL_FILE_CANDIDATES = {
-    Seq("log-test.properties", "log.properties")
+    List("log-test.properties", "log.properties")
   }
 
   /**
@@ -57,7 +59,7 @@ object LogLevelScanner {
     * @param loglevelFileCandidates
     */
   def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
-    LogLevelScanner.scan(loglevelFileCandidates, None)
+    LogLevelScanner.scan(loglevelFileCandidates.toList, None)
   }
 
   /**
@@ -98,9 +100,23 @@ object LogLevelScanner {
     * @param lastScannedMillis
     * @return updated last scanned millis
     */
-  private[log] def scan(logLevelFileCandidates: Seq[String], lastScannedMillis: Option[Long]): Option[Long] = {
+  private[log] def scan(logLevelFileCandidates: List[String], lastScannedMillis: Option[Long]): Option[Long] = {
+
+    @tailrec
+    def findLogLevelFile(candidates: List[String]): Option[URL] = {
+      if (candidates.isEmpty) {
+        None
+      } else {
+        Resource.find(candidates.head) match {
+          case x @ Some(_) => x
+          case None =>
+            findLogLevelFile(candidates.tail)
+        }
+      }
+    }
+
     try {
-      val logFileURL = logLevelFileCandidates.toStream.flatMap(f => Resource.find(f)).headOption
+      val logFileURL = findLogLevelFile(logLevelFileCandidates)
       logFileURL
         .map { url =>
           url.getProtocol match {
@@ -143,13 +159,13 @@ object LogLevelScanner {
 
 }
 
-case class LogLevelScannerConfig(logLevelFileCandidates: Seq[String],
+case class LogLevelScannerConfig(logLevelFileCandidates: List[String],
                                  scanInterval: Duration = Duration(1, TimeUnit.MINUTES))
 
 import wvlet.log.LogLevelScanner._
 
 private[log] class LogLevelScanner extends Guard { scanner =>
-  private val config: AtomicReference[LogLevelScannerConfig] = new AtomicReference(LogLevelScannerConfig(Seq.empty))
+  private val config: AtomicReference[LogLevelScannerConfig] = new AtomicReference(LogLevelScannerConfig(List.empty))
   private val configChanged                                  = newCondition
   private[log] val scanCount                                 = new AtomicLong(0)
 
