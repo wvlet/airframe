@@ -86,6 +86,38 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 <p>Mapping between JSON values and Scala objects will be handled automatically.</p>
 
+<h3 id="path-parameter-types">Path Parameter Types</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>pattern</th>
+      <th>description</th>
+      <th>example</th>
+      <th>input example</th>
+      <th>binding</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>:arg</td>
+      <td>single match</td>
+      <td>/v1/user/:id</td>
+      <td>/v1/user/1</td>
+      <td>id = 1</td>
+    </tr>
+    <tr>
+      <td>*arg</td>
+      <td>tail match</td>
+      <td>/v1/entry/*key</td>
+      <td>/v1/entry/config/version</td>
+      <td>key = config/version</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><code class="highlighter-rouge">*arg</code> can be used only at the end of the path.</p>
+
 <h3 id="messagepack-support">MessagePack Support</h3>
 
 <p>If an HTTP POST request has <code class="highlighter-rouge">Content-Type: application/x-msgpack</code> header, airframe-http
