@@ -30,33 +30,14 @@ trait RouteMatcher {
 
 object RouteMatcher extends LogSupport {
 
-  def defaultRouteFinder[Req](request: HttpRequest[Req], routes: Seq[Route]) = {
-    routes
-      .find { r =>
-        r.method == request.method &&
-        checkPath(request.pathComponents, r.pathComponents)
-      }
-  }
-
-  private[http] def checkPath(requestPathComponents: Seq[String], routePathComponents: Seq[String]): Boolean = {
-    if (requestPathComponents.length == routePathComponents.length) {
-      requestPathComponents.zip(routePathComponents).forall {
-        case (requestPathComponent, routePathComponent) =>
-          routePathComponent.startsWith(":") || routePathComponent == requestPathComponent
-      }
-    } else {
-      false
-    }
-  }
-
   def build(routes: Seq[Route]): RouteMatcher = {
-    new RouteMatcherGroups(routes)
+    new RouteMatcherByHttpMethodTypes(routes)
   }
 
   /**
-    * RouteMatcher set grouped by HTTP method types
+    * A set of RouteMatchers for different HTTP method types
     */
-  class RouteMatcherGroups(routes: Seq[Route]) extends RouteMatcher {
+  class RouteMatcherByHttpMethodTypes(routes: Seq[Route]) extends RouteMatcher {
     private val routesByMethod: Map[HttpMethod, RouteMatcher] = {
       for ((method, lst) <- routes.groupBy(_.method)) yield {
         method -> new FastRouteMatcher(lst)
@@ -70,6 +51,9 @@ object RouteMatcher extends LogSupport {
     }
   }
 
+  /**
+    * DFA-based RouterMatcher
+    */
   class FastRouteMatcher(routes: Seq[Route]) extends RouteMatcher with LogSupport {
 
     private val dfa = buildPathDFA(routes)
@@ -121,6 +105,9 @@ object RouteMatcher extends LogSupport {
     }
   }
 
+  /**
+    * Define an operation when matching path component is found (e.g., binding path components to matching path variables)
+    */
   sealed trait PathMapping {
     // Matched route
     def route: Option[Route]
@@ -146,6 +133,10 @@ object RouteMatcher extends LogSupport {
       if (isTerminal) s"!${t}" else t
     }
   }
+
+  /**
+    * Matching the tail of path components to a single variable
+    */
   case class PathSequenceMapping(index: Int, varName: String, route: Option[Route]) extends PathMapping {
     override def toString: String    = s"![${index}]/*${varName}"
     override def isTerminal: Boolean = true
