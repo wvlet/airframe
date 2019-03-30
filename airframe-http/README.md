@@ -77,6 +77,15 @@ GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 
 Mapping between JSON values and Scala objects will be handled automatically.
 
+### Path Parameter Types
+
+
+| pattern | description|  example |   input example | binding | 
+|---------|------------|----------|-------------|-------|
+| :arg  | single match | /v1/user/:id  |  /v1/user/1 | id = 1 |
+| *arg  | tail match | /v1/entry/*key  | /v1/entry/config/version | key = config/version |
+
+`*arg` can be used only at the end of the path.
 
 ### MessagePack Support
 
