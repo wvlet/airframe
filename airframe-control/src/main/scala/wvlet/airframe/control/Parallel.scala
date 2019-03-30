@@ -14,18 +14,34 @@
 package wvlet.airframe.control
 
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 import java.util.concurrent._
 
+import wvlet.airframe.jmx.{JMX, JMXAgent}
 import wvlet.log.LogSupport
 
-import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 /**
   * Utilities for parallel execution.
   */
 object Parallel extends LogSupport {
+
+  class ParallelExecutionStats(
+      @JMX
+      val executionId: String,
+      @JMX
+      val parallelism: Int,
+      @JMX
+      val total: String,
+      requestQueue: LinkedBlockingQueue[_],
+      counter: AtomicLong
+  ) {
+    @JMX
+    def runningWorkers: Int = parallelism - requestQueue.size()
+    @JMX
+    def count: Long = counter.longValue()
+  }
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
 
@@ -49,21 +65,27 @@ object Parallel extends LogSupport {
     * @param f Function which processes each element of the source collection
     * @return Collection of the results
     */
-  def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
+  def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors(), jmxAgent: Option[JMXAgent] = None)(
       f: T => R): Seq[R] = {
 
-    val uuid = UUID.randomUUID.toString
-    trace(s"$uuid - Begin Parallel.run (parallelism = ${parallelism})")
+    val executionId = UUID.randomUUID.toString
+    trace(s"$executionId - Begin Parallel.run (parallelism = ${parallelism})")
 
     val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
     val resultArray  = new Array[R](source.length)
 
     Range(0, parallelism).foreach { i =>
-      val worker = new IndexedWorker[T, R](uuid, i.toString, requestQueue, resultArray, f)
+      val worker = new IndexedWorker[T, R](executionId, i.toString, requestQueue, resultArray, f)
       requestQueue.put(worker)
     }
 
     val executor = Executors.newFixedThreadPool(parallelism)
+    val counter = new AtomicLong(0)
+
+    jmxAgent.foreach { jmxAgent =>
+      val stats = new ParallelExecutionStats(executionId, parallelism, source.size.toString, requestQueue, counter)
+      jmxAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
+    }
 
     try {
       // Process all elements of source
@@ -72,6 +94,7 @@ object Parallel extends LogSupport {
         val worker = requestQueue.take()
         worker.message.set(it.next())
         executor.execute(worker)
+        counter.incrementAndGet()
       }
 
       // Wait for completion
@@ -92,6 +115,7 @@ object Parallel extends LogSupport {
       // Cleanup
       executor.shutdown()
       requestQueue.clear()
+      jmxAgent.foreach(_.unregister(s"wvlet.airframe.control.Parallel:name=$executionId"))
     }
   }
 
@@ -106,22 +130,28 @@ object Parallel extends LogSupport {
     */
   def iterate[T, R](source: Iterator[T],
                     parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                    timeout: Duration = Duration.Inf)(f: T => R): Iterator[R] = {
+                    jmxAgent: Option[JMXAgent] = None)(f: T => R): Iterator[R] = {
 
-    val uuid = UUID.randomUUID.toString
-    trace(s"$uuid - Begin Parallel.iterate (parallelism = ${parallelism})")
+    val executionId = UUID.randomUUID.toString
+    trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
 
     val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
     val resultQueue  = new LinkedBlockingQueue[Option[R]]()
 
     Range(0, parallelism).foreach { i =>
-      val worker = new Worker[T, R](uuid, i.toString, requestQueue, resultQueue, f)
+      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, f)
       requestQueue.put(worker)
     }
 
     new Thread {
       override def run(): Unit = {
         val executor = Executors.newFixedThreadPool(parallelism)
+        val counter = new AtomicLong(0)
+
+        jmxAgent.foreach { jmxAgent =>
+          val stats = new ParallelExecutionStats(executionId, parallelism, "unknown", requestQueue, counter)
+          jmxAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
+        }
 
         try {
           // Process all elements of source
@@ -129,6 +159,7 @@ object Parallel extends LogSupport {
             val worker = requestQueue.take()
             worker.message.set(source.next())
             executor.execute(worker)
+            counter.incrementAndGet()
           }
 
           // Wait for completion
@@ -150,6 +181,7 @@ object Parallel extends LogSupport {
           // Cleanup
           executor.shutdown()
           requestQueue.clear()
+          jmxAgent.foreach(_.unregister(s"wvlet.airframe.control.Parallel:name=$executionId"))
         }
       }
     }.start()
