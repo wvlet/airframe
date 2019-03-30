@@ -77,7 +77,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.setLogLevel(LogLevel.WARN)
       l.getLogLevel shouldBe LogLevel.WARN
 
-      withScanner(LogLevelScannerConfig(Seq("wvlet/log/custom-log.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+      withScanner(LogLevelScannerConfig(List("wvlet/log/custom-log.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
         l.getLogLevel shouldBe LogLevel.ERROR
       }
     }
@@ -87,7 +87,7 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
       l.setLogLevel(LogLevel.TRACE)
 
       withScanner(
-        LogLevelScannerConfig(Seq("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+        LogLevelScannerConfig(List("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
         // Should ignore unknown log level string
         l.getLogLevel shouldBe LogLevel.TRACE
       }
