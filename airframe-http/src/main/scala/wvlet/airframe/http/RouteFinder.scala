@@ -87,6 +87,7 @@ object RouteFinder extends LogSupport {
           case Some(NextNode(actions, nextStateId)) =>
             trace(s"${currentState} -> ${token} -> ${nextStateId}")
             currentState = nextStateId
+            // Update variable bindings here
             actions.foreach { action =>
               params = action.updateMatch(params, token)
             }
@@ -99,8 +100,11 @@ object RouteFinder extends LogSupport {
             toContinue = false
         }
       }
-      debug(params.mkString(", "))
-      foundRoute.map(r => RouteMatch(r, params.toMap))
+
+      foundRoute.map { r =>
+        debug(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
+        RouteMatch(r, params.toMap)
+      }
     }
   }
 
@@ -167,7 +171,7 @@ object RouteFinder extends LogSupport {
       }
     }
 
-    // Build NFA of path patterns
+    // Build an NFA of path patterns
     var g = Automaton.empty[PathMapping, String]
     for (r <- routes) {
       val pathMappings = Init :: toPathMapping(r, 0)
@@ -186,7 +190,7 @@ object RouteFinder extends LogSupport {
         }
       }
     }
-    // Convert NFA -> DFA -> Graph
+    // Convert the NFA into DFA
     g.toDFA(Init, defaultToken = anyToken)
   }
 
