@@ -53,20 +53,22 @@ object Automaton {
       * @param init initial node to start
       */
     def toDFA(init: Node, defaultToken: Token): DFA[NodeSet, Token] = {
-      // This code is following a standard procedure for converting NFA into DFA.
+      // This code is following a standard procedure for converting NFA into DFA:
       //  1. Add the initial node set {s} (= current node set) to the queue
       //  2. Pick a node set from the queue.
-      //  3. Traverse all possible next states from the current node set in NFA {s_a, s_b, ...} (= next state)
-      //  4. If the next state appeared for the first time, add this to the queue
-      //  5. Repeat 2. until the queue becomes empty
+      //  3. Traverse all possible next states (= the next node set) from the current node set.
+      //  4. If the next node set is appeared for the first time, add this to the queue.
+      //  5. Repeat 2. until the queue becomes empty.
 
       val initState: Set[Node] = Set(init)
 
       var knownNodeSets: List[NodeSet] = initState :: Nil
       var dfa                          = Automaton.empty[NodeSet, Token]
 
-      dfa.addNode(initState)
+      // Register the initState to the DFA
+      dfa = dfa.addNode(initState)
 
+      // Traverse all possible states from the initState
       var remaining: List[NodeSet] = initState :: Nil
       while (remaining.nonEmpty) {
         val currentNodeSet = remaining.head
@@ -106,7 +108,7 @@ object Automaton {
     val initStateId = nodeTable(init)
 
     // (currentStateId, tokenId) -> (nextState, nextStateId)
-    // TODO: Use Array for faster lookup
+    // TODO: Use array-lookup for faster lookup
     private val transitionTable: Map[(Int, Int), NextNode[Node]] = {
       edges.map { x =>
         (nodeTable(x.src), tokenTable(x.token)) -> NextNode[Node](x.dest, nodeTable(x.dest))

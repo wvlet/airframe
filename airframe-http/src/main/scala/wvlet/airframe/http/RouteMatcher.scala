@@ -90,10 +90,11 @@ object RouteMatcher extends LogSupport {
             }
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route
-              // Continue matching for PathSequenceMapping
+              // Continue the matching for PathSequenceMapping
               toContinue = actions.head.isRepeat
             }
           case None =>
+            // Deadend in the DFA
             toContinue = false
         }
       }
