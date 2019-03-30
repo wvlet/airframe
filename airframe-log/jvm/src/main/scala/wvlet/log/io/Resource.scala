@@ -25,6 +25,8 @@ import java.lang.reflect.Modifier
 import java.net.{URL, URLClassLoader}
 import java.util.jar.JarFile
 
+import scala.annotation.tailrec
+
 /**
   * Extend this trait to add support your class for reading resources
   */
@@ -75,24 +77,18 @@ object Resource {
 
   }
 
-  /**
-    * @return Stream of class loaders in the path from the specified class loader to the root class loader
-    */
-  private def classLoaders(cl: ClassLoader): Stream[URLClassLoader] = {
-    def stream(c: ClassLoader): Stream[URLClassLoader] = {
-      c match {
-        case null              => Stream.empty
-        case u: URLClassLoader => u #:: stream(c.getParent)
-        case _                 => stream(c.getParent)
-      }
-    }
-    stream(cl)
-  }
+  private def currentClassLoader = Thread.currentThread().getContextClassLoader
 
   /**
-    * @return Stream of class loaders in the path from current class loader to the root class loader
+    * Return a URLClassLoader if the given ClassLoader or its parent has the URLClassLoader
     */
-  private def classLoaders: Stream[ClassLoader] = classLoaders(Thread.currentThread.getContextClassLoader)
+  private def findNextURLClassLoader(cl: ClassLoader): Option[URLClassLoader] = {
+    cl match {
+      case u: URLClassLoader => Some(u)
+      case null              => None
+      case other             => findNextURLClassLoader(other.getParent)
+    }
+  }
 
   private def resolveResourcePath(packageName: String, resourceFileName: String) = {
     val path: String = packagePath(packageName)
@@ -131,11 +127,22 @@ object Resource {
     */
   def find(packageName: String, resourceFileName: String): Option[URL] = {
     val resourcePath = resolveResourcePath(packageName, resourceFileName)
-    val r = classLoaders.map(_.getResource(resourcePath)).collectFirst {
-      case path: URL => path
+
+    @tailrec
+    def loop(cl: ClassLoader): Option[URL] = {
+      findNextURLClassLoader(cl) match {
+        case Some(urlClassLoader) =>
+          urlClassLoader.getResource(resourcePath) match {
+            case path: URL =>
+              Some(path)
+            case _ =>
+              loop(urlClassLoader.getParent)
+          }
+        case None => None
+      }
     }
 
-    r orElse Option(this.getClass.getResource(resourcePath))
+    loop(currentClassLoader) orElse Option(this.getClass.getResource(resourcePath))
   }
 
   /**
@@ -328,12 +335,22 @@ object Resource {
   def findResourceURLs(cl: ClassLoader, name: String): Seq[URL] = {
     val path = packagePath(name)
     val b    = Seq.newBuilder[URL]
-    for (c: URLClassLoader <- classLoaders(cl)) {
-      val e = c.findResources(path)
-      while (e.hasMoreElements) {
-        b += e.nextElement
+
+    @tailrec
+    def loop(cl: ClassLoader): Unit = {
+      findNextURLClassLoader(cl) match {
+        case Some(urlClassLoader) =>
+          val e = urlClassLoader.findResources(path)
+          while (e.hasMoreElements) {
+            b += e.nextElement
+          }
+          loop(urlClassLoader.getParent)
+        case None =>
+        // Do nothing
       }
     }
+
+    loop(currentClassLoader)
     b.result
   }
 
