@@ -11,10 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.example
 
-import java.util.UUID
-
+import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 import wvlet.log.LogSupport
 
 object ControllerExample {
