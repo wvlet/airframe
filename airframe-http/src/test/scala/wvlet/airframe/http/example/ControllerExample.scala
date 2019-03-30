@@ -11,15 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.example
 
-import java.util.UUID
-
+import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 import wvlet.log.LogSupport
 
 object ControllerExample {
   case class User(id: String, name: String)
-  case class CreateUserRequest(name: String)
+  case class CreateUserRequest(id: String, name: String)
   case class Group(name: String, users: Seq[User])
 }
 
@@ -40,7 +39,7 @@ trait ControllerExample extends LogSupport {
   @Endpoint(path = "/user", method = HttpMethod.POST)
   def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
-    val newUser = User(UUID.randomUUID().toString, createUserRequest.name)
+    val newUser = User(createUserRequest.id, createUserRequest.name)
     info(s"create user: ${newUser}, create request:${createUserRequest}")
     newUser
   }
@@ -77,6 +76,15 @@ trait ControllerExample extends LogSupport {
     g
   }
 
+  @Endpoint(path = "/v1/config/entry/*path", method = HttpMethod.GET)
+  def getEntry(path: String): String = {
+    path
+  }
+
+  @Endpoint(path = "/v1/config/info", method = HttpMethod.GET)
+  def getInfo(path: String): String = {
+    "hello"
+  }
 }
 
 trait InvalidService {

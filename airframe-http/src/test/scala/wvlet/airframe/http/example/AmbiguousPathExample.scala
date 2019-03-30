@@ -11,15 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.http.example
+import wvlet.airframe.http.Endpoint
 
 /**
   *
   */
-package object http {
-
-  def httpDefaultDesign =
-    newDesign
-      .bind[ControllerProvider].to[ControllerProviderFromSession]
-
+trait AmbiguousPathExample {
+  @Endpoint(path = "/v1/:key")
+  def get: Unit = {}
+  @Endpoint(path = "/v1/*path")
+  def path: Unit = {}
 }
