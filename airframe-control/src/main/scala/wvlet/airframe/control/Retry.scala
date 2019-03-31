@@ -13,62 +13,64 @@
  */
 package wvlet.airframe.control
 
+import wvlet.log.LogSupport
+
 import scala.util.{Failure, Random, Success, Try}
 
 /**
   * Retry logic implementation helper
   */
-object Retry {
+object Retry extends LogSupport {
 
-  def withBackOff[C](maxRetry: Int = 3,
-                     initialIntervalMillis: Int = 100,
-                     maxIntervalMillis: Int = 15000,
-                     multiplier: Double = 1.5): Retry.Retryer[C] = {
+  def withBackOff(maxRetry: Int = 3,
+                  initialIntervalMillis: Int = 100,
+                  maxIntervalMillis: Int = 15000,
+                  multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry[C](maxRetry, new ExponentialBackOff(config))
+    withRetry(maxRetry, new ExponentialBackOff(config))
   }
 
-  def withJitter[C](maxRetry: Int = 3,
-                    initialIntervalMillis: Int = 100,
-                    maxIntervalMillis: Int = 15000,
-                    multiplier: Double = 1.5): Retry.Retryer[C] = {
+  def withJitter(maxRetry: Int = 3,
+                 initialIntervalMillis: Int = 100,
+                 maxIntervalMillis: Int = 15000,
+                 multiplier: Double = 1.5): Retry.Retryer = {
     val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry[C](maxRetry, new Jitter(config))
+    withRetry(maxRetry, new Jitter(config))
   }
 
-  def withRetry[C](maxRetry: Int = 3, retryWaitStrategy: RetryWaitStrategy): Retryer[C] = {
-    Retryer[C](None, maxRetry, retryWaitStrategy)
+  def withRetry(maxRetry: Int = 3, retryWaitStrategy: RetryWaitStrategy): Retryer = {
+    Retryer(maxRetry, retryWaitStrategy)
   }
 
-  case class MaxRetryException(retryState: RetryContext[_]) extends Exception(retryState.lastError)
-  case class RetryContext[C](context: Option[C],
-                             lastError: Throwable,
-                             retryCount: Int,
-                             maxRetry: Int,
-                             nextWaitMillis: Int) {
-    def getContext: Option[C] = context
-  }
+  case class MaxRetryException(retryState: RetryContext) extends Exception(retryState.lastError)
+  case class RetryContext(lastError: Throwable, retryCount: Int, maxRetry: Int, nextWaitMillis: Int) {}
 
-  private def RETRY_ALL: RetryContext[_] => Unit = { e: RetryContext[_] =>
+  private def RETRY_ALL: RetryContext => Unit = { e: RetryContext =>
     // Do nothing
   }
+  private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
+    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
+  }
+
   private val NOT_STARTED = new IllegalStateException("Not started")
 
-  case class Retryer[C](context: Option[C] = None,
-                        maxRetry: Int,
-                        retryWaitStrategy: RetryWaitStrategy,
-                        errorHandler: RetryContext[C] => Any = RETRY_ALL) {
+  case class Retryer(maxRetry: Int,
+                     retryWaitStrategy: RetryWaitStrategy,
+                     errorHandler: RetryContext => Any = RETRY_ALL,
+                     beforeRetry: RetryContext => Any = REPORT_RETRY_COUNT) {
 
-    def withContext(contextObject: C): Retryer[C] = {
-      Retryer(Option(contextObject), maxRetry, retryWaitStrategy, errorHandler)
-    }
-
-    def retryOnError[U](customHandler: PartialFunction[Throwable, U]): Retryer[C] = {
+    /**
+      * Add a partial function that accepts exceptions that need to be retried.
+      *
+      * @param handlerForRetryableError
+      * @tparam U
+      * @return
+      */
+    def retryOn[U](handlerForRetryableError: PartialFunction[Throwable, U]): Retryer = {
       Retryer(
-        context,
         maxRetry,
-        retryWaitStrategy, { s: RetryContext[C] =>
-          customHandler.applyOrElse(s.lastError, { x: Throwable =>
+        retryWaitStrategy, { s: RetryContext =>
+          handlerForRetryableError.applyOrElse(s.lastError, { x: Throwable =>
             x match {
               case e: Throwable =>
                 // Rethrow unhandled exceptions
@@ -79,18 +81,26 @@ object Retry {
       )
     }
 
-    def retryOn[U](errorHandler: RetryContext[C] => U): Retryer[C] =
-      Retryer(context, maxRetry, retryWaitStrategy, errorHandler)
+    /**
+      * Set a detailed error handler upon Exception. If the given exception is not retryable,
+      * just rethrow the exception. Otherwise, consume the exception.
+      *
+      * @param errorHandler
+      * @tparam U
+      * @return
+      */
+    def withErrorHandler[U](errorHandler: RetryContext => U): Retryer =
+      Retryer(maxRetry, retryWaitStrategy, errorHandler, beforeRetry)
 
-    def runWithContext[A](context: C)(body: => A): A = {
-      withContext(context).run(body)
+    def beforeRetry[U](handler: RetryContext => U): Retryer = {
+      Retryer(maxRetry, retryWaitStrategy, errorHandler, handler)
     }
 
     def run[A](body: => A): A = {
-      var result: Option[A]           = None
-      var retryCount                  = 0
-      var retryWait                   = retryWaitStrategy.retryConfig.initialIntervalMillis
-      var retryState: RetryContext[C] = RetryContext(context, NOT_STARTED, 0, maxRetry, retryWait)
+      var result: Option[A]        = None
+      var retryCount               = 0
+      var retryWait                = retryWaitStrategy.retryConfig.initialIntervalMillis
+      var retryState: RetryContext = RetryContext(NOT_STARTED, 0, maxRetry, retryWait)
 
       while (result.isEmpty && retryCount < maxRetry) {
         Try(body) match {
@@ -99,9 +109,10 @@ object Retry {
           case Failure(e) =>
             retryCount += 1
             val nextWait = retryWaitStrategy.adjustWait(retryWait)
-            retryState = RetryContext(context, e, retryCount, maxRetry, nextWait)
+            retryState = RetryContext(e, retryCount, maxRetry, nextWait)
             errorHandler(retryState)
             retryWait = retryWaitStrategy.updateWait(retryWait)
+            beforeRetry(retryState)
             Thread.sleep(nextWait)
         }
       }
