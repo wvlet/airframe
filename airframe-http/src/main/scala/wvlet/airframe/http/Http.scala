@@ -40,4 +40,10 @@ case class SimpleHttpRequest(method: HttpMethod,
   override def toRaw: SimpleHttpRequest = this
 }
 
-trait HttpResponse {}
+trait HttpResponse[Resp] {
+  def statusCode: Int
+  def contentString: String
+  def contentBytes: Array[Byte]
+  def contentType: Option[String]
+  def toRaw: Resp
+}
