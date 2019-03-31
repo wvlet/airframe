@@ -4,9 +4,9 @@ Airframe DI
 Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying building objects; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
 Airframe DI has three major features:
-- Bind: Inject necessary objects to your service without hand wiring.
-- Design: Allow switching the application implementation at runtime.
-- Session: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
+- **Bind**: Inject necessary objects to your service without hand wiring.
+- **Design**: Allow switching the application implementation at runtime.
+- **Session**: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
 
 Airframe DI enables isolating the the application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
 
@@ -17,9 +17,9 @@ Airframe DI enables isolating the the application logic and service design. This
 - Managing differently configured singletons.
 - etc., ...
 
-Airframe is available for Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/), and ready for JDK11.
+Airframe is available for Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/). Airframe also supports JDK11.
 
-In Scala we have various approaches for dependency injection: [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
+In Scala we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
 
 - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html): Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
