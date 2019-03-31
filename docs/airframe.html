@@ -108,7 +108,7 @@ ga('send', 'pageview');
 
 <h3 id="constructor-injection">Constructor Injection</h3>
 <p>Constructor injection is the most natural form of injection.
-When <code class="highlighter-rouge">session.build[A]</code> is called, Airframe will find the primary constructor of <code class="highlighter-rouge">A</code> and 
+When <code class="highlighter-rouge">design.build[A]</code> is called, Airframe will find the primary constructor of <code class="highlighter-rouge">A</code> and 
 its arguments, then creates a new instance of <code class="highlighter-rouge">A</code> by finding dependencies from a <em>Design</em>.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
@@ -131,7 +131,7 @@ its arguments, then creates a new instance of <code class="highlighter-rouge">A<
 </div>
 
 <h3 id="in-trait-injection">In-Trait Injection</h3>
-<p>If you need to bind dependencies, use in-trait injection with <code class="highlighter-rouge">bind[X]</code> syntax:</p>
+<p>If you need to bind dependencies within Scala traits, use in-trait injection with <code class="highlighter-rouge">bind[X]</code> syntax:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">AppConfig</span><span class="o">(</span><span class="n">appName</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
@@ -189,8 +189,8 @@ class A {
 </code></pre>
 </div>
 
-<p>By default all injections generates singleton objects,
-which are available until the session closes.</p>
+<p>By default all injections generates singleton objects that are alive until closing the current session.
+These singleton objects are managed inside the current session object.</p>
 
 <p>If you need to create a new instance for each binding, use <code class="highlighter-rouge">bindFactory[I =&gt; X]</code>.</p>
 
@@ -243,7 +243,7 @@ which are available until the session closes.</p>
 </span></code></pre>
 </div>
 
-<h3 id="design-is-immutable">Design is immutable</h3>
+<h3 id="design-is-immutable">Design is Immutable</h3>
 <p>Design objects are immutable, so you can safely override bindings without modifying the original design:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
