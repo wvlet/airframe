@@ -1,7 +1,7 @@
 Airframe DI
 ===
 
-Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying building objects; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
+Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
 Airframe DI has three major features:
 - **Bind**: Inject necessary objects to your service without hand wiring.
@@ -56,7 +56,7 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
-# Usage
+### Basic Usage
 
 First, **bind** objects to your code with `bind[X]`:
 ```scala
@@ -88,7 +88,7 @@ design.build[App]{ app =>
 
 Airframe builds an instance of `App` based on the binding rules specified in the *design* object. That means when writing applications, you only need to care about how to use objects (*bind*), rather than how to build them, because design objects already knows how to provide necessary objects to build your classes.
 
-This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `session.build[App]`.
+This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `design.build[App]`.
 
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
@@ -125,11 +125,13 @@ d.build[MyApp]{ app: MyApp =>
 ```
 
 ### In-Trait Injection
-In-trait injection with `bind[X]` is useful to create reusable modules. 
+If you need to bind dependencies, use in-trait injection with `bind[X]` syntax:
 ```scala
 import wvlet.airframe._
 
 case class AppConfig(appName:String)
+
+// In-trait injection
 trait MyApp {
   val config = bind[AppConfig]
 }
@@ -144,7 +146,7 @@ d.build[MyApp] { app: MyApp =>
 // Session will be closed here
 ```
 
-Note that `bind[X]` only works inside Scala traits:
+Note that `bind[X]` works only inside Scala traits:
 ```Scala
 // [DON'T DO THIS] You can't use bind[X] inside classes:
 class A {
@@ -154,7 +156,7 @@ class A {
 
 ### Binding Types
 
-The following examples show basic binding types available in Airframe:
+The following examples show the basic binding types available in Airframe:
 ```scala
 val a = bind[A]          // Inject A as a singleton
 
@@ -212,8 +214,32 @@ val design: Design =
   .bind[P].toEagerSingletonProvider{ d1:D1 => P(d1) } // Create an eager singleton using the provider function
 ```
 
-If you define multiple bindings to the same type (e.g., P), the last binding will be used. 
+If you define multiple bindings to the same type (e.g., P), the last binding will be used.
 
+
+### Singleton Bindings
+If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design: 
+
+```scala
+import wvlet.airframe._
+
+trait X {
+  val y = bind[Y]
+}
+trait Y {
+  val z = bind[Z]
+}
+case class Z(port:Int)
+
+val design: Design =
+  newDesign
+    // Binding X and Y toSingleton is unnecessary as singleton binding is the default behavior.
+    //.bind[X].toSingleton
+    //.bind[Y].toSingleton
+    .bind[Z].toInstance(port = 8080)  // Z has no default instance, so we should bind it manually.
+```
+
+### Design is immutable
 Design objects are immutable, so you can safely override bindings without modifying the original design:
 ```scala
 import wvlet.airframe._
@@ -228,11 +254,12 @@ design.build[A] { x => ... } // -> x will be B
 newDesign.build[A] { x => ... } // -> x will be C
 ```
 
-Design supports `+` operator to combine multiple designs at ease:
+Design supports `+` (add) operator to combine multiple designs at ease:
 ```scala
 val newDesign = d1 + d2 // d2 will override the bindings in d1 
 ```
-`+` operator is not commutative because of the override.
+`+` operator is not commutative because of this override, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
+
 
 ## Session
 
@@ -342,7 +369,34 @@ trait MyService {
 
 These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class. 
 
-## Child Sessions
+### Finding The Current Session
+
+You may need to find the current session to manage lifecycles of manually created instances.
+In this case, you can bind Airframe's Session with `bind[Session]` and register newly created instances to the session:
+
+```scala
+import wvlet.airframe._
+
+class MyDB(name:String) {
+  private val conn = newConnection(name)
+    .onShutdown{ x => x.close() }
+}
+
+trait MyApp {
+  private val session = bind[Session]
+
+  def openDB(name:String): MyDB = {
+    val db = new MyDB(name)
+     // Adding MyDB instance to the current session so that
+     // MyDB connection can be closed when the session terminates.
+    session.register(db)
+    db
+  }
+}
+```
+
+
+### Child Sessions
 
 If you need to override a part of the design in a short term, you can use _child sessions_. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
 
