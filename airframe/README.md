@@ -1,13 +1,27 @@
-Airframe
+Airframe DI
 ===
 
-Airframe is a dependency injection library tailored to Scala, which is useful for isolating various concerns in your programing in order to focus on the most important application logic. 
+Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying building objects; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
-## What is Dependency Injection?
+Airframe DI has three major features:
+- Bind: Inject necessary objects to your service without hand wiring.
+- Design: Allow switching the application implementation at runtime.
+- Session: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
 
-Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of enumerating necessary objects (dependencies) within constructor arguments, DI framework builds objects on your behalf. In Java we can use Google's [Guice](https://github.com/google/guice), but its syntax is not suited to Scala, so we redesigned it for Scala so that we can naturally use Scala's syntax (trait and types) with DI.
+Airframe DI enables isolating the the application logic and service design. This abstraction addresses the common patterns in writing applications, such as:
 
-- [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html). Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
+- Switching the implementation between production and test/debug code.
+- Minimizing the service implementation for the ease of testing.
+- Configuring applications using config objects.
+- Managing resources like database/network connections, threads, etc. .
+- Managing differently configured singletons.
+- etc., ...
+
+Airframe is available for Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/), and ready for JDK11.
+
+In Scala we have various approaches for dependency injection: [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
+
+- [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html): Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
 
 ## Quick Start
@@ -19,7 +33,7 @@ Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injec
 
 [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
-To use Airframe, add the following dependency to your **build.sbt**:
+To use Airframe DI, add the following dependency to your **build.sbt**:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 ```
@@ -42,7 +56,7 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
-### Basic Usage
+# Usage
 
 First, **bind** objects to your code with `bind[X]`:
 ```scala
@@ -78,42 +92,6 @@ This separation of object bindings and their design (assembly) is also useful fo
 
 Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
-## Isolating Service Logic and Design
-
-When writing an application, these concerns below are often unrelated to the core applcation logic:
-- How to build service objects.
-- How to configure services.
-- How to manage life cycle of service objects.
-
-Airframe DI allows separating these how-tos and the management of object lifecycles using `Design`. For example, when writing service A and B in the following figure, you should be able to focus only direct dependencies. In this example DBClient and FluentdLogger are the direct dependency of A and B. When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc.:
-
-![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
-
-By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about indirect dependencies in order to isolate the core application logic from constructing service objects (right):
-
-![image](https://wvlet.org/airframe/img/airframe/code-example.png)
-
-
-If you prefer not using airframe-specific sytax, it is also possible to use constructor injection:
-
-```scala
-class A(dbClient:DBClient, fluentdClient:FluentdClient) {
-   //...
-}
-```
-Airframe will constrct A using DBClient and FlutendClient defined in Design.
-
-## Airframe Features
-
-- Simple usage. Only need to include `import wvlet.airframe._` to use Airframe.
-- Designs are immutable, so you can create new designs safely based on existing designs.
-- Supporting Scala traits for dependency injection, which was not available in other frameworks.
-- Built-in life cycle management of objects (onInit, onStart, onShutdown, etc.) through sessions.
-- Supporting Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/).
-- Supporting Java 11.
-
-
-# Airframe Usage
 
 ## Bind
 
@@ -405,6 +383,22 @@ When building an object `X` in a child session, it will follow these rules:
 for instantiating `P1` and `A1`.
 - Lifecycle hooks for `X` will be registered to the owner sessions of the target objects.
 For example, if `X` is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.
+
+
+## Designing Applications with Airframe
+
+When writing an application, these concerns below are often unrelated to the core applcation logic:
+- How to build service objects.
+- How to configure services.
+- How to manage life cycle of service objects.
+
+Airframe allows separating these concerns into `Design`. For example, when writing service A and B in the following figure, you should be able to focus only direct dependencies. In this example DBClient and FluentdLogger are the direct dependencies of A and B. 
+
+![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
+
+When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc. By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about there indirect dependencies (right): 
+
+![image](https://wvlet.org/airframe/img/airframe/code-example.png)
 
 
 ## What's Next
