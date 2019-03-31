@@ -43,8 +43,10 @@ object HttpClient extends LogSupport {
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     warn(s"Request failed: ${ctx.lastError.getMessage}")
-    defaultHttpExceptionHandler().applyOrElse(ctx.lastError, {
-      case e: Throwable => throw e
+    defaultHttpExceptionHandler().applyOrElse(ctx.lastError, { x: Throwable =>
+      x match {
+        case _ => throw x
+      }
     })
   }
 
@@ -79,11 +81,11 @@ object HttpClient extends LogSupport {
 
   def defaultClientErrorHandler(ex: HttpClientException): Unit = {
     ex.status match {
-      case HttpStatus.TooManyRequests =>
+      case HttpStatus.TooManyRequests_429 =>
       // e.g., Server might return this code when busy. 429 should be retryable in general
-      case HttpStatus.Gone =>
+      case HttpStatus.Gone_410 =>
       // e.g., Server might have failed to process the request
-      case HttpStatus.ClientClosedRequest =>
+      case HttpStatus.ClientClosedRequest_499 =>
       // e.g., client-side might have closed the connection.
       case other =>
         throw ex // Non-retryable error
@@ -93,7 +95,7 @@ object HttpClient extends LogSupport {
   def defaultBeforeRetryAction(ctx: RetryContext): Unit = {
     val extraWaitMillis =
       ctx.lastError match {
-        case e: HttpClientException if e.status == HttpStatus.ServiceUnavailable =>
+        case e: HttpClientException if e.status == HttpStatus.ServiceUnavailable_503 =>
           // Server is busy (e.g., S3 slow down). We need to reduce the request rate.
           (ctx.nextWaitMillis * 0.5).toLong // Add an extra wait
         case _ =>
