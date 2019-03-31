@@ -65,7 +65,7 @@ object Parallel extends LogSupport {
     * @param f Function which processes each element of the source collection
     * @return Collection of the results
     */
-  def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors(), jmxAgent: Option[JMXAgent] = None)(
+  def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
       f: T => R): Seq[R] = {
 
     val executionId = UUID.randomUUID.toString
@@ -82,10 +82,8 @@ object Parallel extends LogSupport {
     val executor = Executors.newFixedThreadPool(parallelism)
     val counter = new AtomicLong(0)
 
-    jmxAgent.foreach { jmxAgent =>
-      val stats = new ParallelExecutionStats(executionId, parallelism, source.size.toString, requestQueue, counter)
-      jmxAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
-    }
+    val stats = new ParallelExecutionStats(executionId, parallelism, source.size.toString, requestQueue, counter)
+    JMXAgent.defaultAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
 
     try {
       // Process all elements of source
@@ -115,7 +113,7 @@ object Parallel extends LogSupport {
       // Cleanup
       executor.shutdown()
       requestQueue.clear()
-      jmxAgent.foreach(_.unregister(s"wvlet.airframe.control.Parallel:name=$executionId"))
+      JMXAgent.defaultAgent.unregister(s"wvlet.airframe.control.Parallel:name=$executionId")
     }
   }
 
@@ -148,10 +146,8 @@ object Parallel extends LogSupport {
         val executor = Executors.newFixedThreadPool(parallelism)
         val counter = new AtomicLong(0)
 
-        jmxAgent.foreach { jmxAgent =>
-          val stats = new ParallelExecutionStats(executionId, parallelism, "unknown", requestQueue, counter)
-          jmxAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
-        }
+        val stats = new ParallelExecutionStats(executionId, parallelism, "unknown", requestQueue, counter)
+        JMXAgent.defaultAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
 
         try {
           // Process all elements of source
@@ -181,7 +177,7 @@ object Parallel extends LogSupport {
           // Cleanup
           executor.shutdown()
           requestQueue.clear()
-          jmxAgent.foreach(_.unregister(s"wvlet.airframe.control.Parallel:name=$executionId"))
+          JMXAgent.defaultAgent.unregister(s"wvlet.airframe.control.Parallel:name=$executionId")
         }
       }
     }.start()
