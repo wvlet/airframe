@@ -77,7 +77,8 @@ object Retry extends LogSupport {
                 throw e
             }
           })
-        }
+        },
+        beforeRetry
       )
     }
 
