@@ -28,19 +28,27 @@ import scala.reflect.ClassTag
 object Parallel extends LogSupport {
 
   class ParallelExecutionStats(
-      @JMX
+      @JMX(description = "Identity of the execution")
       val executionId: String,
-      @JMX
+      @JMX(description = "Number of worker threads used for the execution")
       val parallelism: Int,
-      @JMX
-      val total: String,
+      @JMX(description = "Number of total elements")
+      val totalElements: String,
       requestQueue: LinkedBlockingQueue[_],
       counter: AtomicLong
   ) {
-    @JMX
+    @JMX(description = "Number of running workers for the execution right now")
     def runningWorkers: Int = parallelism - requestQueue.size()
-    @JMX
-    def count: Long = counter.longValue()
+    @JMX(description = "Number of fetched elements")
+    def fetchedElements: Long = counter.longValue()
+    @JMX(description = "Number of remaining elements")
+    def remainingElements: String = {
+      if(totalElements == "unknown"){
+        "unknown"
+      } else {
+        (totalElements.toLong - counter.longValue()).toString
+      }
+    }
   }
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
