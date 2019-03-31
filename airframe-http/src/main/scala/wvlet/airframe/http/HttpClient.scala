@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 import java.io.{EOFException, IOException}
+import java.lang.reflect.InvocationTargetException
 import java.net._
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
@@ -33,47 +34,79 @@ class HttpClientException(val status: HttpStatus, cause: Option[Exception]) exte
 
 object HttpClient extends LogSupport {
 
-  def httpClientRetryer(isRetryableClientException: HttpClientException => Boolean): Retryer = {
+  def defaultRetryer: Retryer = {
     Retry
       .withBackOff(maxRetry = 10)
-      .withErrorHandler { ctx: RetryContext =>
-        warn(s"Request failed: ${ctx.lastError.getMessage}")
-        ctx.lastError match {
-          case e: HttpClientException =>
-            e.status match {
-              case HttpStatus.TooManyRequests => // TOO_MANY_REQUESTS
-              // e.g., AWS S3 will not return this code, but 429 should be retryable in general
-              case HttpStatus.ServiceUnavailable => // SERVICE_UNAVAILABLE
-                // S3 slow down. We need to reduce the request rate.
-                Thread.sleep((ctx.nextWaitMillis * 0.5).toLong) // Add an additional wait
-              case s if s.isServerError => // 5xx
-              // We should retry on any server side errors
-              case s if s.isClientError && isRetryableClientException(e) =>
-              // OK to retry for some specific 400 errors
-              case other =>
-                // Throw an exception upon non recoverable errors
-                throw e
-            }
-          case e: TimeoutException =>
-          // Just retry upon timeout
-          case ex: IOException =>
-            // InputStreamResponseListner may wrap the error with IOException
-            handleExecutionException(ex)
-          case ex: ExecutionException =>
-            handleExecutionException(ex)
-          case other =>
-            // We canot retry when an unknown exception is thrown
-            throw other
-        }
-      }
-      .beforeRetry { ctx =>
-        warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Retry the request in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
-      }
+      .withErrorHandler(defaultErrorHandler)
+      .beforeRetry(defaultBeforeRetryAction)
   }
 
-  def handleExecutionException(ex: Exception): Unit = {
-    // Other types of exception that happen inside jetty client
-    ex.getCause match {
+  def defaultErrorHandler(ctx: RetryContext): Unit = {
+    warn(s"Request failed: ${ctx.lastError.getMessage}")
+    defaultHttpExceptionHandler().applyOrElse(ctx.lastError, {
+      case e: Throwable => throw e
+    })
+  }
+
+  def defaultHttpExceptionHandler(
+      clientErrorHandler: HttpClientException => Unit = defaultClientErrorHandler,
+      executionFailureHandler: Throwable => Unit = defaultExecutionFailureHandler): PartialFunction[Throwable, Unit] = {
+    case e: HttpClientException =>
+      e.status match {
+        case s if s.isServerError => // 5xx
+        // We should retry on any server side errors
+        case s if s.isClientError => // 4xx
+          // OK to retry for some specific 400 errors
+          clientErrorHandler(e)
+        case other =>
+          // Throw an exception upon non recoverable errors
+          throw e
+      }
+    case e: TimeoutException =>
+    // Just retry upon timeout
+    case ex: IOException =>
+      // Timeout, SSL related exception,
+      // InputStreamResponseListner of Jetty may wrap the error with IOException
+      executionFailureHandler(ex)
+    case ex: ExecutionException =>
+      executionFailureHandler(ex)
+    case ex: InvocationTargetException =>
+      executionFailureHandler(ex)
+    case other =>
+      // We canot retry when an unknown exception is thrown
+      throw other
+  }
+
+  def defaultClientErrorHandler(ex: HttpClientException): Unit = {
+    ex.status match {
+      case HttpStatus.TooManyRequests =>
+      // e.g., Server might return this code when busy. 429 should be retryable in general
+      case HttpStatus.Gone =>
+      // e.g., Server might have failed to process the request
+      case HttpStatus.ClientClosedRequest =>
+      // e.g., client-side might have closed the connection.
+      case other =>
+        throw ex // Non-retryable error
+    }
+  }
+
+  def defaultBeforeRetryAction(ctx: RetryContext): Unit = {
+    val extraWaitMillis =
+      ctx.lastError match {
+        case e: HttpClientException if e.status == HttpStatus.ServiceUnavailable =>
+          // Server is busy (e.g., S3 slow down). We need to reduce the request rate.
+          (ctx.nextWaitMillis * 0.5).toLong // Add an extra wait
+        case _ =>
+          0
+      }
+    val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
+    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
+    Thread.sleep(extraWaitMillis)
+  }
+
+  def defaultExecutionFailureHandler(ex: Throwable): Unit = {
+    // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
+    ex match {
       case e: java.lang.InterruptedException =>
       // Retryable when the http client thread execution is interrupted.
       case e: ProtocolException => // Retryable
@@ -98,10 +131,13 @@ object HttpClient extends LogSupport {
           case other                          =>
           // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
         }
+      case e: InvocationTargetException =>
+        defaultExecutionFailureHandler(e.getTargetException)
+      case other if ex.getCause != null =>
+        // Trace the true cause
+        defaultExecutionFailureHandler(ex.getCause)
       case other =>
         throw ex
     }
-
   }
-
 }
