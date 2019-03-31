@@ -102,7 +102,7 @@ __in-trait injection__:
  
 ### Constructor Injection
 Constructor injection is the most natural form of injection.
-When `session.build[A]` is called, Airframe will find the primary constructor of `A` and 
+When `design.build[A]` is called, Airframe will find the primary constructor of `A` and 
 its arguments, then creates a new instance of `A` by finding dependencies from a _Design_.
 
 ```scala
@@ -125,7 +125,7 @@ d.build[MyApp]{ app: MyApp =>
 ```
 
 ### In-Trait Injection
-If you need to bind dependencies, use in-trait injection with `bind[X]` syntax:
+If you need to bind dependencies within Scala traits, use in-trait injection with `bind[X]` syntax:
 ```scala
 import wvlet.airframe._
 
@@ -184,8 +184,8 @@ object BindingExample {
 }
 ```
 
-By default all injections generates singleton objects,
-which are available until the session closes.
+By default all injections generates singleton objects that are alive until closing the current session.
+These singleton objects are managed inside the current session object.
 
 If you need to create a new instance for each binding, use `bindFactory[I => X]`.
 
@@ -218,7 +218,7 @@ If you define multiple bindings to the same type (e.g., P), the last binding wil
 
 
 ### Singleton Bindings
-If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design: 
+If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design:
 
 ```scala
 import wvlet.airframe._
@@ -239,7 +239,7 @@ val design: Design =
     .bind[Z].toInstance(port = 8080)  // Z has no default instance, so we should bind it manually.
 ```
 
-### Design is immutable
+### Design is Immutable
 Design objects are immutable, so you can safely override bindings without modifying the original design:
 ```scala
 import wvlet.airframe._
