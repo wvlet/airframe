@@ -22,13 +22,6 @@ import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
 import wvlet.log.LogSupport
 
-class HttpClientException(val status: HttpStatus, message: String, cause: Throwable) extends Exception(message, cause) {
-  def this(status: HttpStatus) = this(status, status.toString, null)
-  def this(status: HttpStatus, message: String) = this(status, s"${status} ${message}", null)
-  def this(status: HttpStatus, cause: Throwable) = this(status, s"${status} ${cause.getMessage}", cause)
-  def statusCode: Int = status.code
-}
-
 object HttpClient extends LogSupport {
 
   def defaultRetryer: Retryer = {
@@ -82,7 +75,7 @@ object HttpClient extends LogSupport {
     "Idle connections will be closed".r
   )
 
-  private def retryableClientError(m: String): Boolean = {
+  private def retryableClientErrorMessage(m: String): Boolean = {
     retriable400ErrorMessage.find { pattern =>
       pattern.findFirstIn(m).isDefined
     }.isDefined
@@ -90,7 +83,7 @@ object HttpClient extends LogSupport {
 
   def defaultClientErrorHandler(ex: HttpClientException): Unit = {
     ex.status match {
-      case HttpStatus.BadRequest_400 if retryableClientError(ex.getMessage) =>
+      case HttpStatus.BadRequest_400 if retryableClientErrorMessage(ex.getMessage) =>
       // Some 400 errors can be caused by a client side error
       case HttpStatus.TooManyRequests_429 =>
       // e.g., Server might return this code when busy. 429 should be retryable in general
