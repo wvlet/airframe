@@ -156,7 +156,7 @@ object RouteMatcher extends LogSupport {
 
   private val anyToken: String = "<*>"
 
-  private def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
+  private[http] def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
     // Convert http path pattens (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {

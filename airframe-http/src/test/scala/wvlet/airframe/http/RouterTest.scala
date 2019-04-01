@@ -134,4 +134,11 @@ class RouterTest extends AirframeSpec {
     m2 shouldBe defined
     m2.get.route.path shouldBe "/v1/config/app"
   }
+
+  "build DFA" in {
+    // Test DFA builder
+    val r   = Router.add[ControllerExample]
+    val dfa = RouteMatcher.buildPathDFA(r.routes)
+    info(dfa.toString)
+  }
 }
