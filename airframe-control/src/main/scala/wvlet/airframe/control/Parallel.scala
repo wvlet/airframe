@@ -43,7 +43,7 @@ object Parallel extends LogSupport {
     def fetchedElements: Long = counter.longValue()
     @JMX(description = "Number of remaining elements")
     def remainingElements: String = {
-      if(totalElements == "unknown"){
+      if (totalElements == "unknown") {
         "unknown"
       } else {
         (totalElements.toLong - counter.longValue()).toString
@@ -88,7 +88,7 @@ object Parallel extends LogSupport {
     }
 
     val executor = Executors.newFixedThreadPool(parallelism)
-    val counter = new AtomicLong(0)
+    val counter  = new AtomicLong(0)
 
     val stats = new ParallelExecutionStats(executionId, parallelism, source.size.toString, requestQueue, counter)
     JMXAgent.defaultAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
@@ -152,7 +152,7 @@ object Parallel extends LogSupport {
     new Thread {
       override def run(): Unit = {
         val executor = Executors.newFixedThreadPool(parallelism)
-        val counter = new AtomicLong(0)
+        val counter  = new AtomicLong(0)
 
         val stats = new ParallelExecutionStats(executionId, parallelism, "unknown", requestQueue, counter)
         JMXAgent.defaultAgent.register(s"wvlet.airframe.control.Parallel:name=$executionId", stats)
@@ -253,7 +253,8 @@ object Parallel extends LogSupport {
                                       requestQueue: BlockingQueue[Worker[T, R]],
                                       resultQueue: BlockingQueue[Option[R]],
                                       f: T => R)
-      extends Runnable with LogSupport {
+      extends Runnable
+      with LogSupport {
 
     val message: AtomicReference[T] = new AtomicReference[T]()
 
@@ -277,7 +278,8 @@ object Parallel extends LogSupport {
                                              requestQueue: BlockingQueue[IndexedWorker[T, R]],
                                              resultArray: Array[R],
                                              f: T => R)
-      extends Runnable with LogSupport {
+      extends Runnable
+      with LogSupport {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
 
