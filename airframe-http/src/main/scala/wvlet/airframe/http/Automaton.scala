@@ -114,6 +114,7 @@ object Automaton {
         (nodeTable(x.src), tokenTable(x.token)) -> NextNode[Node](x.dest, nodeTable(x.dest))
       }.toMap
     }
+    private val tokenIdTable = tokenTable.map(x => x._2 -> x._1).toMap
 
     override def toString: String = {
       val s = Seq.newBuilder[String]
@@ -122,7 +123,9 @@ object Automaton {
       s += "\n[tokens]"
       s += tokenTable.map(x => s"${x._2}: ${x._1}").mkString("\n")
       s += "\n[edges]"
-      s += transitionTable.mkString("\n")
+      s += transitionTable
+        .map { case ((state, token), next) => s"${state}: ${tokenIdTable(token)} -> ${next.nodeId}: ${next.node}" }.mkString(
+          "\n")
       s.result().mkString("\n")
     }
 
