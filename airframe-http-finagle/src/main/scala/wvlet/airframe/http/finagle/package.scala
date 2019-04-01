@@ -62,11 +62,15 @@ package object finagle {
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {
     method match {
-      case http.Method.Get    => HttpMethod.GET
-      case http.Method.Post   => HttpMethod.POST
-      case http.Method.Put    => HttpMethod.PUT
-      case http.Method.Delete => HttpMethod.DELETE
-      case other              => throw new IllegalArgumentException(s"Unsupported method: ${method}")
+      case http.Method.Get     => HttpMethod.GET
+      case http.Method.Post    => HttpMethod.POST
+      case http.Method.Put     => HttpMethod.PUT
+      case http.Method.Patch   => HttpMethod.PATCH
+      case http.Method.Delete  => HttpMethod.DELETE
+      case http.Method.Options => HttpMethod.OPTIONS
+      case http.Method.Head    => HttpMethod.HEAD
+      case http.Method.Trace   => HttpMethod.TRACE
+      case other               => throw new IllegalArgumentException(s"Unsupported method: ${method}")
     }
   }
 }

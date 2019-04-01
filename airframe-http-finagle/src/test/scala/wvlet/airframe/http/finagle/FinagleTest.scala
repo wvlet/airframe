@@ -26,7 +26,14 @@ class FinagleTest extends AirframeSpec {
     "provide facade of http requests" in {
       import wvlet.airframe.http.finagle._
 
-      Seq(http.Method.Get, http.Method.Post, http.Method.Delete, http.Method.Put)
+      Seq(http.Method.Get,
+          http.Method.Post,
+          http.Method.Delete,
+          http.Method.Put,
+          http.Method.Patch,
+          http.Method.Head,
+          http.Method.Options,
+          http.Method.Trace)
         .foreach { m =>
           val req = http.Request(m, "/hello")
           req.setContentString("hello finagle")

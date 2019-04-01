@@ -14,10 +14,13 @@
 
 package wvlet.airframe.http;
 
-public enum HttpMethod
-{
+public enum HttpMethod {
     GET,
     POST,
     DELETE,
-    PUT;
+    PUT,
+    PATCH,
+    OPTIONS,
+    TRACE,
+    HEAD;
 }
