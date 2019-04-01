@@ -57,7 +57,7 @@ object Retry extends LogSupport {
   case class Retryer(maxRetry: Int,
                      retryWaitStrategy: RetryWaitStrategy,
                      errorHandler: RetryContext => Any = RETRY_ALL,
-                     beforeRetry: RetryContext => Any = REPORT_RETRY_COUNT) {
+                     beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
 
     /**
       * Add a partial function that accepts exceptions that need to be retried.
@@ -78,7 +78,7 @@ object Retry extends LogSupport {
             }
           })
         },
-        beforeRetry
+        beforeRetryAction
       )
     }
 
@@ -91,7 +91,7 @@ object Retry extends LogSupport {
       * @return
       */
     def withErrorHandler[U](errorHandler: RetryContext => U): Retryer =
-      Retryer(maxRetry, retryWaitStrategy, errorHandler, beforeRetry)
+      Retryer(maxRetry, retryWaitStrategy, errorHandler, beforeRetryAction)
 
     def beforeRetry[U](handler: RetryContext => U): Retryer = {
       Retryer(maxRetry, retryWaitStrategy, errorHandler, handler)
@@ -113,12 +113,13 @@ object Retry extends LogSupport {
             retryState = RetryContext(e, retryCount, maxRetry, nextWait)
             errorHandler(retryState)
             retryWait = retryWaitStrategy.updateWait(retryWait)
-            beforeRetry(retryState)
+            beforeRetryAction(retryState)
             Thread.sleep(nextWait)
         }
       }
       result match {
-        case Some(a) => a
+        case Some(a) =>
+          a
         case None =>
           throw MaxRetryException(retryState)
       }
