@@ -27,18 +27,25 @@ class HttpStatus(val code: Int) {
       case _               => "Unknown Status"
     }
 
-  def isUnknownState: Boolean  = code < 100 || code >= 600
-  def isInformational: Boolean = 100 <= code && code < 200
-  def isSuccessful: Boolean    = 200 <= code && code < 300
-  def isRedirection: Boolean   = 300 <= code && code < 400
-  def isClientError: Boolean   = 400 <= code && code < 500
-  def isServerError: Boolean   = 500 <= code && code < 600
+  def isUnknownState: Boolean  = HttpStatus.isUnknownState(code)
+  def isInformational: Boolean = HttpStatus.isInformational(code)
+  def isSuccessful: Boolean    = HttpStatus.isSuccessful(code)
+  def isRedirection: Boolean   = HttpStatus.isRedirection(code)
+  def isClientError: Boolean   = HttpStatus.isClientError(code)
+  def isServerError: Boolean   = HttpStatus.isServerError(code)
 }
 
 /**
   *
   */
 object HttpStatus {
+
+  def isUnknownState(code: Int)           = code < 100 || code >= 600
+  def isInformational(code: Int): Boolean = 100 <= code && code < 200
+  def isSuccessful(code: Int): Boolean    = 200 <= code && code < 300
+  def isRedirection(code: Int): Boolean   = 300 <= code && code < 400
+  def isClientError(code: Int): Boolean   = 400 <= code && code < 500
+  def isServerError(code: Int): Boolean   = 500 <= code && code < 600
 
   def ofCode(code: Int): HttpStatus = {
     statusTable.getOrElse(code, new HttpStatus(code))

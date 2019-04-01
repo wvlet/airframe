@@ -23,5 +23,18 @@ class HttpStatusTest extends AirframeSpec {
       x.toString
       HttpStatus.ofCode(x.code) == x
     }
+
+    (100 to 600).foreach { code =>
+      val s = HttpStatus.ofCode(code)
+      s.reason // sanity test
+
+      // Status code check
+      s.isUnknownState shouldBe (code < 100 || code >= 600)
+      s.isInformational shouldBe (100 <= code && code < 200)
+      s.isSuccessful shouldBe (200 <= code && code < 300)
+      s.isRedirection shouldBe (300 <= code && code < 400)
+      s.isClientError shouldBe (400 <= code && code < 500)
+      s.isServerError shouldBe (500 <= code && code < 600)
+    }
   }
 }
