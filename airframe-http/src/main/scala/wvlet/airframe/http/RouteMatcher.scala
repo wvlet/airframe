@@ -40,7 +40,7 @@ object RouteMatcher extends LogSupport {
   class RouteMatcherByHttpMethodTypes(routes: Seq[Route]) extends RouteMatcher {
     private val routesByMethod: Map[HttpMethod, RouteMatcher] = {
       for ((method, lst) <- routes.groupBy(_.method)) yield {
-        method -> new FastRouteMatcher(lst)
+        method -> new FastRouteMatcher(method, lst)
       }
     }
 
@@ -54,10 +54,9 @@ object RouteMatcher extends LogSupport {
   /**
     * DFA-based RouterMatcher
     */
-  class FastRouteMatcher(routes: Seq[Route]) extends RouteMatcher with LogSupport {
-
+  class FastRouteMatcher(targetMethod: HttpMethod, routes: Seq[Route]) extends RouteMatcher with LogSupport {
     private val dfa = buildPathDFA(routes)
-    debug(dfa)
+    debug(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 
     dfa.nodeTable
       .map(_._1).foreach(state =>
@@ -88,13 +87,14 @@ object RouteMatcher extends LogSupport {
             actions.foreach { action =>
               params = action.updateMatch(params, token)
             }
+
             if (actions.size == 1 && actions.head.isTerminal) {
               foundRoute = actions.head.route
               // Continue the matching for PathSequenceMapping
               toContinue = actions.head.isRepeat
             }
           case None =>
-            // Deadend in the DFA
+            // Dead-end in the DFA
             toContinue = false
         }
       }

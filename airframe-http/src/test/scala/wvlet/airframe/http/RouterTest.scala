@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.http.example.{AmbiguousPathExample, ControllerExample, InvalidService, PrefixExample}
+import wvlet.airframe.http.example._
 import wvlet.airframe.http.example.ControllerExample.User
 import wvlet.airframe.surface.Surface
 
@@ -115,12 +115,23 @@ class RouterTest extends AirframeSpec {
     call(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"), "hello")
   }
 
-  "find ambigious path patterns" in {
+  "find ambiguous path patterns" in {
     val r = Router.add[AmbiguousPathExample]
     warn(s"Ambiguous HTTP path pattern test")
     val ex = intercept[Throwable] {
       r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1"))
     }
     warn(ex.getMessage)
+  }
+
+  "find methods with the same prefix" in {
+    val r  = Router.add[SharedPathPrefix]
+    val m1 = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config"))
+    m1 shouldBe defined
+    m1.get.route.path shouldBe "/v1/config"
+
+    val m2 = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/app"))
+    m2 shouldBe defined
+    m2.get.route.path shouldBe "/v1/config/app"
   }
 }
