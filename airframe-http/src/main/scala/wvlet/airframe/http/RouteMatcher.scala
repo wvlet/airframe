@@ -88,10 +88,13 @@ object RouteMatcher extends LogSupport {
               params = action.updateMatch(params, token)
             }
 
-            if (actions.size == 1 && actions.head.isTerminal) {
-              foundRoute = actions.head.route
-              // Continue the matching for PathSequenceMapping
-              toContinue = actions.head.isRepeat
+            // Try to find a match at the last path component
+            if (pathIndex == pc.length) {
+              actions.find(_.isTerminal).map { matchedAction =>
+                foundRoute = matchedAction.route
+                // Continue the matching for PathSequenceMapping
+                toContinue = false
+              }
             }
           case None =>
             // Dead-end in the DFA
