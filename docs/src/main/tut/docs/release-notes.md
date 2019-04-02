@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 19.4.0
+-  airframe-http: Fix shared http path prefix match ([#483](https://github.com/wvlet/airframe/issues/483)) [[a0cb0b0](https://github.com/wvlet/airframe/commit/a0cb0b0)]
+-  airframe-http: NFA-based fast HTTP route mapping ([#469](https://github.com/wvlet/airframe/issues/469)) [[27d2193](https://github.com/wvlet/airframe/commit/27d2193)]
+-  airframe-jmx: Fix JMX methods extraction ([#480](https://github.com/wvlet/airframe/issues/480)) [[6c9e628](https://github.com/wvlet/airframe/commit/6c9e628)]
+-  airframe-codec: Make hasNext idempotent as a workaround for https://github.com/scala/bug/issues/11453 ([#471](https://github.com/wvlet/airframe/issues/471)) [[6c542eb](https://github.com/wvlet/airframe/commit/6c542eb)]
+-  internal: Remove Stream[X] usage for Scala 2.13.0 compatibility ([#477](https://github.com/wvlet/airframe/issues/477)) [[d92426f](https://github.com/wvlet/airframe/commit/d92426f)]
+
 ## 19.3.7
 -  airframe-jmx: Add the default JMXAgent([#465](https://github.com/wvlet/airframe/issues/465)) [[f9937e5](https://github.com/wvlet/airframe/commit/f9937e5)]
 -  airframe-jmx: Fix the registration of Scala-specific class names ([#461](https://github.com/wvlet/airframe/issues/461)) [[f853bf0](https://github.com/wvlet/airframe/commit/f853bf0)]
