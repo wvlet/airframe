@@ -13,12 +13,12 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.json.JSON
+import wvlet.airframe.json.{JSON, Json}
 import wvlet.airframe.json.JSON._
 import wvlet.airframe.msgpack.spi._
 
 /**
-  *
+  * Codec for JSON String
   */
 object JSONCodec extends MessageCodec[String] {
 
@@ -74,6 +74,15 @@ object JSONCodec extends MessageCodec[String] {
     unpackBytes(msgpack).getOrElse {
       throw new IllegalArgumentException(s"Failed to read as json")
     }
+  }
+}
+
+object RawJsonCodec extends MessageCodec[Json] {
+  override def pack(p: Packer, v: Json): Unit = {
+    JSONCodec.pack(p, v)
+  }
+  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    JSONCodec.unpack(u, v)
   }
 }
 

@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.json.JSON.JSONValue
+import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.{Primitive, Surface}
 
@@ -24,17 +26,21 @@ import scala.util.Try
 object PrimitiveCodec {
 
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
-    Primitive.Int       -> IntCodec,
-    Primitive.Long      -> LongCodec,
-    Primitive.Float     -> FloatCodec,
-    Primitive.Double    -> DoubleCodec,
-    Primitive.Boolean   -> BooleanCodec,
-    Primitive.String    -> StringCodec,
-    Primitive.Byte      -> ByteCodec,
-    Primitive.Short     -> ShortCodec,
-    Primitive.Char      -> CharCodec,
+    Primitive.Int     -> IntCodec,
+    Primitive.Long    -> LongCodec,
+    Primitive.Float   -> FloatCodec,
+    Primitive.Double  -> DoubleCodec,
+    Primitive.Boolean -> BooleanCodec,
+    Primitive.String  -> StringCodec,
+    Primitive.Byte    -> ByteCodec,
+    Primitive.Short   -> ShortCodec,
+    Primitive.Char    -> CharCodec,
+    // MessagePack types
     Surface.of[Value]   -> ValueCodec,
-    Surface.of[MsgPack] -> ByteArrayCodec
+    Surface.of[MsgPack] -> ByteArrayCodec,
+    // JSON types
+    Surface.of[JSONValue] -> JSONValueCodec,
+    Surface.of[Json]      -> RawJsonCodec
   )
 
   val primitiveArrayCodec = Map(
