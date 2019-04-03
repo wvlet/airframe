@@ -46,7 +46,7 @@ case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadB
   }
 
   def hasCapacity(position: Int, byteLength: Int): Boolean = {
-    position + byteLength < size
+    position + byteLength <= size
   }
 
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {

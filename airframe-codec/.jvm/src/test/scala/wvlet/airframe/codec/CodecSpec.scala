@@ -32,6 +32,9 @@ trait CodecSpec extends AirframeSpec {
     val unpacker = MessagePack.newUnpacker(packer.toByteArray)
     codec.unpack(unpacker, h)
 
+    h.getError.map { e =>
+      warn(e)
+    }
     h.isNull shouldBe false
     h.hasError shouldBe false
     h.getDataType shouldBe expectedType

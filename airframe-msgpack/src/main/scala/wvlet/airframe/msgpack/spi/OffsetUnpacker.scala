@@ -483,19 +483,19 @@ object OffsetUnpacker {
     cursor.readByte match {
       case Code.FIXEXT1 =>
         val tpe = cursor.readByte
-        ExtTypeHeader(tpe, 1);
+        ExtTypeHeader(tpe, 1)
       case Code.FIXEXT2 =>
         val tpe = cursor.readByte
-        ExtTypeHeader(tpe, 2);
+        ExtTypeHeader(tpe, 2)
       case Code.FIXEXT4 =>
         val tpe = cursor.readByte
-        ExtTypeHeader(tpe, 4);
+        ExtTypeHeader(tpe, 4)
       case Code.FIXEXT8 =>
         val tpe = cursor.readByte
-        ExtTypeHeader(tpe, 8);
+        ExtTypeHeader(tpe, 8)
       case Code.FIXEXT16 =>
         val tpe = cursor.readByte
-        ExtTypeHeader(tpe, 16);
+        ExtTypeHeader(tpe, 16)
       case Code.EXT8 =>
         val u8  = cursor.readByte
         val len = u8 & 0xff
