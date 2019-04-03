@@ -14,8 +14,8 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.json.JSON
-import wvlet.airframe.json.JSON.JSONValue
-import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
+import wvlet.airframe.json.JSON._
+import wvlet.airframe.msgpack.spi._
 
 /**
   *
@@ -74,5 +74,54 @@ object JSONCodec extends MessageCodec[String] {
     unpackBytes(msgpack).getOrElse {
       throw new IllegalArgumentException(s"Failed to read as json")
     }
+  }
+}
+
+/**
+  * Codec for JSONValue
+  */
+object JSONValueCodec extends MessageCodec[JSONValue] {
+  override def pack(p: Packer, v: JSONValue): Unit = {
+    JSONCodec.packJsonValue(p, v)
+  }
+
+  def unpackJson(u: Unpacker): JSONValue = {
+    u.getNextValueType match {
+      case ValueType.NIL =>
+        u.unpackNil
+        JSONNull
+      case ValueType.STRING =>
+        JSONString(u.unpackString)
+      case ValueType.FLOAT =>
+        JSONDouble(u.unpackDouble)
+      case ValueType.INTEGER =>
+        JSONLong(u.unpackLong)
+      case ValueType.BOOLEAN =>
+        JSONBoolean(u.unpackBoolean)
+      case ValueType.EXTENSION =>
+        JSONString(u.unpackValue.toString)
+      case ValueType.BINARY =>
+        JSONString(u.unpackValue.toJson)
+      case ValueType.ARRAY =>
+        val len = u.unpackArrayHeader
+        val b   = IndexedSeq.newBuilder[JSONValue]
+        for (i <- 0 until len) {
+          b += unpackJson(u)
+        }
+        JSONArray(b.result())
+      case ValueType.MAP =>
+        val len = u.unpackMapHeader
+        val b   = Seq.newBuilder[(String, JSONValue)]
+        for (i <- 0 until len) yield {
+          val key = u.unpackString
+          b += key -> unpackJson(u)
+        }
+        JSONObject(b.result())
+    }
+  }
+
+  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    val jsonValue = unpackJson(u)
+    v.setObject(jsonValue)
   }
 }

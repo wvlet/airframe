@@ -17,6 +17,7 @@ import java.time.Instant
 
 import org.msgpack.core.{MessageIntegerOverflowException, MessageUnpacker}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
+import wvlet.airframe.msgpack.spi.Value.{ExtensionValue, TimestampValue}
 import wvlet.airframe.msgpack.spi._
 
 import scala.collection.immutable.ListMap
@@ -50,6 +51,7 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
 
   /**
     * Convert MessagePack exceptions into msgpack SPI's one
+    *
     * @param body
     * @tparam A
     * @return
@@ -114,14 +116,14 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
   }
 
   override def unpackTimestamp: Instant = {
-    // TODO usg airframe-msgpack directly
     val extHeader = unpacker.unpackExtensionTypeHeader()
-    val buf       = ByteArrayBuffer.newBuffer(15)
-    val cursor    = WriteCursor(buf, 0)
-    OffsetPacker.packExtTypeHeader(cursor, ExtTypeHeader(extHeader.getType, extHeader.getLength))
-    val data = unpacker.readPayload(extHeader.getLength)
-    cursor.writeBytes(data)
-    OffsetUnpacker.unpackTimestamp(ReadCursor(buf, 0))
+    unpackTimestamp(ExtTypeHeader(extHeader.getType, extHeader.getLength))
+  }
+
+  override def unpackTimestamp(extTypeHeader: ExtTypeHeader): Instant = {
+    val buf  = new Array[Byte](extTypeHeader.byteLength)
+    val data = unpacker.readPayload(buf)
+    OffsetUnpacker.unpackTimestamp(extTypeHeader, ReadCursor(ByteArrayBuffer(buf), 0))
   }
 
   override def unpackArrayHeader: Int = {
@@ -134,6 +136,16 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
     val extHeader = unpacker.unpackExtensionTypeHeader()
     ExtTypeHeader(extHeader.getType, extHeader.getLength)
   }
+
+  override def unpackExtValue(extTypeHeader: ExtTypeHeader): Value = {
+    if (extTypeHeader.extType == -1) {
+      TimestampValue(unpackTimestamp(extTypeHeader))
+    } else {
+      val extBytes = unpacker.readPayload(extTypeHeader.byteLength)
+      ExtensionValue(extTypeHeader.extType, extBytes)
+    }
+  }
+
   override def unpackRawStringHeader: Int = {
     unpacker.unpackRawStringHeader()
   }

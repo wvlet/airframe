@@ -19,7 +19,6 @@ import java.time.Instant
 import java.util
 
 import wvlet.airframe.msgpack.spi.MessageException._
-import wvlet.log.LogTimestampFormatter
 
 /**
   *
@@ -212,7 +211,7 @@ object Value {
 
   case class TimestampValue(v: Instant) extends Value {
     override def toJson: String = {
-      LogTimestampFormatter.formatTimestamp(v.toEpochMilli)
+      v.toString
     }
     override def valueType: ValueType = ValueType.EXTENSION // ValueType.TIMESTAMP
     override def writeTo(packer: Packer): Unit = {

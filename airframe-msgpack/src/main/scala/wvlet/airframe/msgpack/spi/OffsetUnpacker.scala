@@ -18,9 +18,8 @@ import java.nio.charset.StandardCharsets
 import java.time.Instant
 
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
+import wvlet.airframe.msgpack.spi.MessageException._
 import wvlet.airframe.msgpack.spi.Value._
-
-import MessageException._
 
 /**
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadByteLength]] method.
@@ -52,13 +51,7 @@ object OffsetUnpacker {
         BinaryValue(data)
       case ValueType.EXTENSION =>
         val extHeader = unpackExtTypeHeader(cursor)
-        if (extHeader.extType == Code.EXT_TIMESTAMP) {
-          val instant = unpackTimestampInternal(extHeader, cursor)
-          TimestampValue(instant)
-        } else {
-          val extData = readPayload(cursor, extHeader.byteLength)
-          ExtensionValue(extHeader.extType, extData)
-        }
+        unpackExt(extHeader, cursor)
       case ValueType.ARRAY =>
         val arrayLength = unpackArrayHeader(cursor)
         val arr         = IndexedSeq.newBuilder[Value]
@@ -82,6 +75,16 @@ object OffsetUnpacker {
           i += 1
         }
         MapValue(map.result)
+    }
+  }
+
+  def unpackExt(extHeader: ExtTypeHeader, cursor: ReadCursor): Value = {
+    if (extHeader.extType == Code.EXT_TIMESTAMP) {
+      val instant = unpackTimestamp(extHeader, cursor)
+      TimestampValue(instant)
+    } else {
+      val extData = readPayload(cursor, extHeader.byteLength)
+      ExtensionValue(extHeader.extType, extData)
     }
   }
 
@@ -519,11 +522,11 @@ object OffsetUnpacker {
 
   def unpackTimestamp(cursor: ReadCursor): Instant = {
     val extTypeHeader = unpackExtTypeHeader(cursor)
-    val instant       = unpackTimestampInternal(extTypeHeader, cursor)
+    val instant       = unpackTimestamp(extTypeHeader, cursor)
     instant
   }
 
-  private[airframe] def unpackTimestampInternal(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
+  def unpackTimestamp(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
     if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
       cursor.resetCursor
       throw unexpected(ValueType.EXTENSION, extTypeHeader.extType)
