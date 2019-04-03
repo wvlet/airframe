@@ -11,17 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
-import wvlet.airframe.json.JSON.JSONValue
+package wvlet.airframe.json
+import wvlet.airframe.AirframeSpec
 
 /**
   *
   */
-package object json {
-  // Alias to encode msgpack into JSON strings with airframe-codec
-  type Json = String
-
-  implicit class RichJson(val json: Json) extends AnyVal {
-    def toJSONValue: JSONValue = JSON.parseAny(json)
+class JSONTest extends AirframeSpec {
+  "support toJSONValue" in {
+    val json: Json = """{"id":1}"""
+    json.toJSONValue shouldBe JSON.parse(json)
   }
 }
