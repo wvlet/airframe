@@ -14,21 +14,30 @@
 package wvlet.airframe.examples
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.examples.codec.Codec_01_SerDe
-import wvlet.airframe.examples.di.{DI_01_HelloAirframe, DI_02_ConstructorInjection, DI_03_InTraitInjection}
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
+import wvlet.log.io.Resource
 
 /**
   *
   */
 class ExamplesSpec extends AirframeSpec {
 
+  def runAll(packageName: String): Unit = {
+    for {
+      cl  <- Resource.findClasses(s"wvlet.airframe.examples.${packageName}", classOf[App]).sortBy(_.getSimpleName)
+      app <- ReflectTypeUtil.companionObject(cl)
+    } {
+      info(s"Running ${app.getClass.getSimpleName.replaceAll("\\$", "")}")
+
+      app.asInstanceOf[App].main(Array.empty)
+    }
+  }
+
   "codec examples" taggedAs ("codec") in {
-    Codec_01_SerDe.main(Array.empty)
+    runAll("codec")
   }
 
   "di examples" taggedAs ("di") in {
-    DI_01_HelloAirframe.main(Array.empty)
-    DI_02_ConstructorInjection.main(Array.empty)
-    DI_03_InTraitInjection.main(Array.empty)
+    runAll("di")
   }
 }
