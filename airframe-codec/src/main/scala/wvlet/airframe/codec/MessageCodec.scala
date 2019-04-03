@@ -27,7 +27,7 @@ trait MessageCodec[A] {
   def pack(v: A): MsgPack = toMsgPack(v)
 
   /**
-    * Converting the input MessagePack into an object. If teh conversion fails,
+    * Converting the input MessagePack into an object. If the conversion fails,
     * throw an IllegalArgumentException
     */
   def unpack(msgpack: MsgPack): A = {

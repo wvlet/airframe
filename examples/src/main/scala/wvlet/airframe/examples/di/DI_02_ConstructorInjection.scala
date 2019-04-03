@@ -33,7 +33,7 @@ object DI_02_ConstructorInjection extends App {
 
   // Build MyApp with Default Config
   d.build[MyApp] { app =>
-    app.run
+    app.run // port = 8080
   }
 
   // Bind a custom config
@@ -42,7 +42,7 @@ object DI_02_ConstructorInjection extends App {
 
   // Build MyApp with the custom config
   d2.build[MyApp] { app =>
-    app.run
+    app.run // port = 10010
   }
 
 }
