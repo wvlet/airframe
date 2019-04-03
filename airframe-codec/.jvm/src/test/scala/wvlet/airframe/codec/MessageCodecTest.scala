@@ -27,6 +27,19 @@ class MessageCodecTest extends AirframeSpec {
       debug(l)
     }
 
+    "throw an error for invalid data" in {
+      val s = MessageCodec.of[String]
+      intercept[Exception] {
+        s.unpack(Array.emptyByteArray)
+      }
+    }
+
+    "throw an IllegalArgumentException for invalid input" in {
+      val s = MessageCodec.of[Seq[String]]
+      intercept[IllegalArgumentException] {
+        s.unpack(JSONCodec.toMsgPack("{}"))
+      }
+    }
   }
 
 }

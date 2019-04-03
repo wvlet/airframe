@@ -33,13 +33,22 @@ trait MessageCodec[A] {
   def unpack(msgpack: MsgPack): A = {
     val unpacker = MessagePack.newUnpacker(msgpack)
     val v        = new MessageHolder
-    unpack(unpacker, v)
+    try {
+      unpack(unpacker, v)
+    } catch {
+      case e: Throwable => throw unpackError(e)
+    }
     v.getError match {
       case Some(err) =>
-        throw new IllegalArgumentException(s"Failed to read the input msgpack data as ${this}", err)
+        throw unpackError(err)
       case None =>
         v.getLastValue.asInstanceOf[A]
     }
+
+  }
+
+  private def unpackError(e: Throwable): Throwable = {
+    new IllegalArgumentException(s"Failed to read the input msgpack data as ${this}", e)
   }
 
   def pack(p: Packer, v: A): Unit
