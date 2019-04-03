@@ -14,7 +14,8 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.json.JSON
+import wvlet.airframe.codec.JSONCodecTest.WithRawJSON
+import wvlet.airframe.json.{JSON, Json}
 
 /**
   *
@@ -53,4 +54,30 @@ class JSONCodecTest extends AirframeSpec {
     check("1.0e1")
     check("1.234")
   }
+
+  val json1      = """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}"""
+  val json1Value = JSON.parse(json1)
+
+  "support JSONValue mapping" in {
+    val msgpackOfJson1 = JSONValueCodec.toMsgPack(json1Value)
+    JSONValueCodec.unpackMsgPack(msgpackOfJson1) shouldBe Some(json1Value)
+  }
+
+  "support raw json mapping" in {
+    val codec = MessageCodec.of[WithRawJSON]
+    // JSON -> msgpack -> WithRawJSON
+    val obj = codec.unpackJson(s"""{"json":${json1}}""")
+    obj shouldBe defined
+    val v = obj.get
+    JSON.parse(v.json) shouldBe json1Value
+
+    // WithRawJSON -> msgpack -> WithRawJSON
+    val msgpack = codec.toMsgPack(v)
+    codec.unpackMsgPack(msgpack) shouldBe Some(v)
+  }
+
+}
+
+object JSONCodecTest {
+  case class WithRawJSON(json: Json)
 }

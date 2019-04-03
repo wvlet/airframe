@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.json
 
-import wvlet.airframe.json.JSON.JSONValue
 import wvlet.log.LogSupport
 
 /**

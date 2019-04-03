@@ -22,13 +22,15 @@ import wvlet.airframe.surface.Surface
   */
 class JavaTimeCodecTest extends CodecSpec {
   "support Java Instant" in {
-    val now     = Instant.now()
+
     val timeStr = "2018-05-26T21:10:29.858818Z"
     val i       = Instant.parse(timeStr)
     roundtrip(Surface.of[Instant], i)
 
     roundtrip(Surface.of[Instant], Instant.ofEpochMilli(0))
     roundtrip(Surface.of[Instant], Instant.ofEpochMilli(14000000))
+
+    val now = Instant.now()
     roundtrip(Surface.of[Instant], now)
 
     val codec = MessageCodec.of[Seq[Instant]]

@@ -39,10 +39,12 @@ trait Unpacker extends AutoCloseable {
   def unpackDouble: Double
   def unpackString: String
   def unpackTimestamp: Instant
+  def unpackTimestamp(extTypeHeader: ExtTypeHeader): Instant
 
   def unpackArrayHeader: Int
   def unpackMapHeader: Int
   def unpackExtTypeHeader: ExtTypeHeader
+  def unpackExtValue(extTypeHeader: ExtTypeHeader): Value
   def unpackRawStringHeader: Int
   def unpackBinaryHeader: Int
 
