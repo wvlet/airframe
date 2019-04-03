@@ -145,7 +145,8 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   httpRecorder,
   sql,
   jsonBenchmark,
-  msgpackBenchmark
+  msgpackBenchmark,
+  examples
 )
 
 // Scala.js build is only for Scala 2.12
@@ -741,3 +742,17 @@ lazy val sql =
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airframeSpecJVM % "test")
+
+lazy val examples =
+  project
+    .in(file("examples"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      name := "airframe-examples",
+      description := "Airframe examples",
+      crossScalaVersions := untilScala2_12,
+      libraryDependencies ++= Seq(
+        )
+    )
+    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVM, launcher, jmx, jdbc, tablet, airframeSpecJVM % "test")

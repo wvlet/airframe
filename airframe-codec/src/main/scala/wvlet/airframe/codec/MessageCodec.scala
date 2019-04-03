@@ -13,13 +13,44 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, Value}
+import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.Surface
 
 import scala.util.{Failure, Success, Try}
 import scala.language.experimental.macros
 
 trait MessageCodec[A] {
+
+  /**
+    * Converting the object into MessagePack (= Array[Byte])
+    */
+  def pack(v: A): MsgPack = toMsgPack(v)
+
+  /**
+    * Converting the input MessagePack into an object. If the conversion fails,
+    * throw an IllegalArgumentException
+    */
+  def unpack(msgpack: MsgPack): A = {
+    val unpacker = MessagePack.newUnpacker(msgpack)
+    val v        = new MessageHolder
+    try {
+      unpack(unpacker, v)
+    } catch {
+      case e: Throwable => throw unpackError(e)
+    }
+    v.getError match {
+      case Some(err) =>
+        throw unpackError(err)
+      case None =>
+        v.getLastValue.asInstanceOf[A]
+    }
+
+  }
+
+  private def unpackError(e: Throwable): Throwable = {
+    new IllegalArgumentException(s"Failed to read the input msgpack data as ${this}", e)
+  }
+
   def pack(p: Packer, v: A): Unit
   def unpack(u: Unpacker, v: MessageHolder): Unit
 
@@ -65,16 +96,16 @@ trait MessageCodec[A] {
 }
 
 trait MessageValueCodec[A] extends MessageCodec[A] {
-  def pack(v: A): Value
-  def unpack(v: Value): A
+  def packValue(v: A): Value
+  def unpackValue(v: Value): A
 
   override def pack(p: Packer, v: A): Unit = {
-    p.packValue(pack(v))
+    p.packValue(packValue(v))
   }
 
   override def unpack(u: Unpacker, v: MessageHolder): Unit = {
     val vl = u.unpackValue
-    Try(unpack(vl)) match {
+    Try(unpackValue(vl)) match {
       case Success(x) =>
         // TODO tell the value type of the object to MessageHolder
         // We cannot use MessageValueCodec for primitive types, which uses v.getInt, v.getString, etc.

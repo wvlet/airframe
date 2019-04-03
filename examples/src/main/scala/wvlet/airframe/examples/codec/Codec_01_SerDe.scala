@@ -11,22 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
-
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.codec.PrimitiveCodec.LongCodec
+package wvlet.airframe.examples.codec
+import wvlet.airframe.codec.MessageCodec
+import wvlet.log.LogSupport
 
 /**
-  *
+  * Serialization/Deserialization example
   */
-class MessageCodecTest extends AirframeSpec {
-  "MessageCodec" should {
+object Codec_01_SerDe extends App with LogSupport {
 
-    "have surface" in {
-      val l = LongCodec.surface
-      debug(l)
-    }
+  case class Person(id: Int, name: String)
 
-  }
+  // Creating a codec for Person class
+  val personCodec = MessageCodec.of[Person]
 
+  // [Serialization] Converting the Person object into MessagePack
+  val msgpack = personCodec.pack(Person(1, "leo"))
+
+  // [Deserialization] Unpack MessagePack into Person object
+  val person = personCodec.unpack(msgpack)
+  info(person)
 }
