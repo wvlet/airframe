@@ -32,10 +32,14 @@ object Parallel extends LogSupport {
   class ParallelExecutionStats(
       @JMX(description = "Total number of worker threads")
       val totalThreads: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Number of running workers")
-      val runningWorkersCounter: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Number of started tasks")
-      val startedTasksCounter: AtomicLong = new AtomicLong(0)
+      @JMX(description = "Total number of running workers")
+      val runningWorkers: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Accumulated total number of started tasks")
+      val startedTasks: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Accumulated total number of finished tasks")
+      val finishedTasks: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Accumulated total number of failed tasks")
+      val failedTasks: AtomicLong = new AtomicLong(0)
   )
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
@@ -84,7 +88,6 @@ object Parallel extends LogSupport {
         val worker = requestQueue.take()
         worker.message.set(it.next())
         executor.execute(worker)
-        jmxStats.startedTasksCounter.incrementAndGet()
       }
 
       // Wait for completion
@@ -144,7 +147,6 @@ object Parallel extends LogSupport {
             val worker = requestQueue.take()
             worker.message.set(source.next())
             executor.execute(worker)
-            jmxStats.startedTasksCounter.incrementAndGet()
           }
 
           // Wait for completion
@@ -241,17 +243,20 @@ object Parallel extends LogSupport {
 
     override def run: Unit = {
       trace(s"$executionId - Begin worker-$workerId")
-      Parallel.jmxStats.runningWorkersCounter.incrementAndGet()
+      Parallel.jmxStats.runningWorkers.incrementAndGet()
+      jmxStats.startedTasks.incrementAndGet()
       try {
         resultQueue.put(Some(f(message.get())))
       } catch {
         case e: Exception =>
           warn(s"$executionId - Error worker-$workerId", e)
+          jmxStats.failedTasks.incrementAndGet()
           throw e
       } finally {
         requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
-        Parallel.jmxStats.runningWorkersCounter.decrementAndGet()
+        jmxStats.finishedTasks.incrementAndGet()
+        Parallel.jmxStats.runningWorkers.decrementAndGet()
       }
     }
   }
@@ -268,18 +273,21 @@ object Parallel extends LogSupport {
 
     override def run: Unit = {
       trace(s"$executionId - Begin worker-$workerId")
-      Parallel.jmxStats.runningWorkersCounter.incrementAndGet()
+      Parallel.jmxStats.runningWorkers.incrementAndGet()
+      jmxStats.startedTasks.incrementAndGet()
       try {
         val (m, i) = message.get()
         resultArray(i) = f(m)
       } catch {
         case e: Exception =>
           warn(s"$executionId - Error worker-$workerId", e)
+          jmxStats.failedTasks.incrementAndGet()
           throw e
       } finally {
         requestQueue.put(this)
         trace(s"$executionId - End worker-$workerId")
-        Parallel.jmxStats.runningWorkersCounter.decrementAndGet()
+        jmxStats.finishedTasks.incrementAndGet()
+        Parallel.jmxStats.runningWorkers.decrementAndGet()
       }
     }
   }
