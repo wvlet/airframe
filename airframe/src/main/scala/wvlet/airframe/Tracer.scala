@@ -15,24 +15,40 @@ package wvlet.airframe
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import Tracer._
+
 /**
   *
   */
-trait Tracer {
-  def onInitStart: Unit
-  def onInitEnd: Unit
+trait Tracer extends LogSupport {
+  def report(event: TraceEvent): Unit
 
-  def onGetInstance(s: Surface): Unit
+  def onSessionInitStart(session: Session): Unit = {
+    report(SessionInitStart(session))
+  }
+  def onSessionInitEnd(session: Session): Unit = {
+    report(SessionInitEnd(session))
+  }
+
+  def onGetInstance(surface: Surface): Unit = {
+    report(GetInstance(surface))
+  }
+}
+
+trait TraceEvent
+
+object Tracer {
+  case class SessionInitStart(session: Session) extends TraceEvent
+  case class SessionInitEnd(session: Session)   extends TraceEvent
+  case class SessionStart(session: Session)     extends TraceEvent
+
+  case class GetInstance(s: Surface) extends TraceEvent
 }
 
 object DefaultTracer extends Tracer with LogSupport {
-  override def onInitStart: Unit = {
-    warn("Initialize bindings")
+
+  override def report(event: TraceEvent): Unit = {
+    warn(event)
   }
-  override def onInitEnd: Unit = {
-    warn("Completed the initialization")
-  }
-  override def onGetInstance(s: Surface): Unit = {
-    warn(s"getInstance: ${s}")
-  }
+
 }

@@ -122,14 +122,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     if (production) {
       debug(s"[${name}] Eagerly initializing singletons in production mode")
     }
-    tracer.onInitStart
+    tracer.onSessionInitStart(this)
     design.binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstanceOf(from)
       case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
         getInstanceOf(factory.from)
     }
-    tracer.onInitEnd
+    tracer.onSessionInitEnd(this)
     debug(s"[${name}] Completed the initialization")
   }
 
