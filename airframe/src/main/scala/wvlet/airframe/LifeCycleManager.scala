@@ -49,7 +49,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
 
   private[airframe] def setSession(s: AirframeSession): Unit = {
     session = s
-    tracer = s.design.getDesignConfig.tracer
+    tracer = session.tracer
   }
 
   def sessionName: String = session.name

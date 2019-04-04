@@ -65,8 +65,8 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
   def withTracer(newTracer: Tracer): DesignOptions = withOption(tracerKey, newTracer)
   def noTracer: DesignOptions                      = noOption(tracerKey)
 
-  def tracer: Tracer = {
-    options.getOrElse(tracerKey, DefaultTracer).asInstanceOf[Tracer]
+  def getTracer: Option[Tracer] = {
+    options.get(tracerKey).map(_.asInstanceOf[Tracer])
   }
 
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
@@ -170,6 +170,10 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   private[airframe] def noOption[A](key: String): Design = {
     new Design(designOptions.noOption(key), binding)
+  }
+
+  private[airframe] def getTracer: Option[Tracer] = {
+    designOptions.getTracer
   }
 
   /**

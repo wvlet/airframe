@@ -43,7 +43,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     s"Design contains duplicate entries: [${design.binding.groupBy(_.from).map(_._2).filter(_.length > 1).mkString(", ")}]"
   )
 
-  private val tracer = design.designOptions.tracer
+  private[airframe] val tracer: Tracer = {
+    // Find a tracer from parent
+    parent
+      .map(_.tracer)
+      .getOrElse(new DefaultTracer)
+  }
 
   // Build a lookup table for all bindings in the design
   private lazy val bindingTable: Map[Surface, Binding] = {

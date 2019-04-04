@@ -44,25 +44,33 @@ class LookupTable[Row, Col, V] extends Iterable[(Row, Map[Col, V])] {
   *
   */
 class AirframeStats extends LogSupport {
+
+  // TODO: This tracer will keep holding stats for a long time,
+  // so if an application creates a lot of child sessions, storing stats for each session
+  // will consume a lot of memory
+
   // Use session id as a key so as not to hold the Session reference
+  private val injectCountTable = new LookupTable[String, Surface, AtomicInteger]()
 
-  private val accessCountTable = new LookupTable[String, Surface, AtomicInteger]()
-
-  def incrementAccessCount(session: Session, surface: Surface): Unit = {
-    val counter = accessCountTable.getOrElseUpdate(session.name, surface, new AtomicInteger(0))
+  private[airframe] def incrementInjectCount(session: Session, surface: Surface): Unit = {
+    val counter = injectCountTable.getOrElseUpdate(session.name, surface, new AtomicInteger(0))
     counter.incrementAndGet()
   }
 
-  def reportStats: Unit = {
+  override def toString: String = {
+    statsReport
+  }
+
+  def statsReport: String = {
     val b = Seq.newBuilder[String]
-    for (sessionName <- accessCountTable.rowKeys) {
+    for (sessionName <- injectCountTable.rowKeys) {
       b += s"[${sessionName}]"
-      for ((surface, counter) <- accessCountTable.row(sessionName).toSeq.sortBy(_._2.get()).reverse) {
-        b += s"${counter.get()}: ${surface}"
+      for ((surface, counter) <- injectCountTable.row(sessionName).toSeq.sortBy(_._2.get()).reverse) {
+        b += s"[${surface}] injected:${counter.get}"
       }
     }
     val report = b.result().mkString("\n")
-    info(report)
+    report
   }
 
 }
