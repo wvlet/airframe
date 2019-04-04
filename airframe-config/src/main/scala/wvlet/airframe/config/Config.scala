@@ -17,10 +17,10 @@ import java.io.{File, FileInputStream, FileNotFoundException}
 import java.util.Properties
 
 import PropertiesConfig.ConfigKey
+import wvlet.airframe.Design
 import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
-
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.ClassTag
@@ -83,6 +83,7 @@ import wvlet.airframe.config.Config._
 
 case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHolder])
     extends Iterable[ConfigHolder]
+    with Design.AdditiveDesignOption[Config]
     with LogSupport {
 
   // Customization
@@ -141,8 +142,11 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   }
 
   def +(h: ConfigHolder): Config = Config(env, this.holder + (h.tpe -> h))
-  def ++(other: Config): Config = {
+  def +(other: Config): Config = {
     Config(env, this.holder ++ other.holder)
+  }
+  override private[airframe] def addAsDesignOption[Config1 >: Config](other: Config1): Config1 = {
+    Config(env, this.holder ++ other.asInstanceOf[Config].holder)
   }
 
   def register[ConfigType: ru.TypeTag](config: ConfigType): Config = {
@@ -152,6 +156,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
 
   /**
     * Register the default value of the object as configuration
+    *
     * @tparam ConfigType
     * @return
     */

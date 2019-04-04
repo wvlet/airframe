@@ -138,7 +138,7 @@ class ConfigTest extends AirframeSpec {
     "create a new config based on existing one" in {
       val config = Config(env = "default", configPaths = configPaths).registerFromYaml[SampleConfig]("myconfig.yml")
 
-      val config2 = Config(env = "production", configPaths = configPaths) ++ config
+      val config2 = Config(env = "production", configPaths = configPaths) + config
 
       val c2 = config2.of[SampleConfig]
       c2.id shouldBe 1
