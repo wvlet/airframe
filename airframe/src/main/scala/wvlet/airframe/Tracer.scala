@@ -12,8 +12,27 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   *
   */
-class Tracer {}
+trait Tracer {
+  def onInitStart: Unit
+  def onInitEnd: Unit
+
+  def onGetInstance(s: Surface): Unit
+}
+
+object DefaultTracer extends Tracer with LogSupport {
+  override def onInitStart: Unit = {
+    warn("Initialize bindings")
+  }
+  override def onInitEnd: Unit = {
+    warn("Completed the initialization")
+  }
+  override def onGetInstance(s: Surface): Unit = {
+    warn(s"getInstance: ${s}")
+  }
+}

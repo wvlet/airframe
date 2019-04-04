@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 import scala.language.experimental.macros
 
 /**
-  * Design configs. This cannot be a case class for extending as DesignOptionsWithConfig at airframe-config.
+  * Design configs
   */
 case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
                          stage: Stage = Stage.DEVELOPMENT,
@@ -60,8 +60,14 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
     new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT, options)
   }
 
-  def withTracer(newTracer: Tracer): DesignOptions = withOption("tracer", newTracer)
-  def noTracer: DesignOptions                      = noOption("tracer")
+  private def tracerKey = "tracer"
+
+  def withTracer(newTracer: Tracer): DesignOptions = withOption(tracerKey, newTracer)
+  def noTracer: DesignOptions                      = noOption(tracerKey)
+
+  def tracer: Tracer = {
+    options.getOrElse(tracerKey, DefaultTracer).asInstanceOf[Tracer]
+  }
 
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
     new DesignOptions(enabledLifeCycleLogging, stage, options + (key -> value))

@@ -43,6 +43,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     s"Design contains duplicate entries: [${design.binding.groupBy(_.from).map(_._2).filter(_.length > 1).mkString(", ")}]"
   )
 
+  private val tracer = design.designOptions.tracer
+
   // Build a lookup table for all bindings in the design
   private lazy val bindingTable: Map[Surface, Binding] = {
     val b = Seq.newBuilder[(Surface, Binding)]
@@ -120,12 +122,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     if (production) {
       debug(s"[${name}] Eagerly initializing singletons in production mode")
     }
+    tracer.onInitStart
     design.binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstanceOf(from)
       case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
         getInstanceOf(factory.from)
     }
+    tracer.onInitEnd
     debug(s"[${name}] Completed the initialization")
   }
 
@@ -187,6 +191,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
+    tracer.onGetInstance(t)
+
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
