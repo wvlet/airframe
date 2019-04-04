@@ -37,9 +37,7 @@ object Parallel extends LogSupport {
       @JMX(description = "Accumulated total number of started tasks")
       val startedTasks: AtomicLong = new AtomicLong(0),
       @JMX(description = "Accumulated total number of finished tasks")
-      val finishedTasks: AtomicLong = new AtomicLong(0),
-      @JMX(description = "Accumulated total number of failed tasks")
-      val failedTasks: AtomicLong = new AtomicLong(0)
+      val finishedTasks: AtomicLong = new AtomicLong(0)
   )
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
@@ -250,7 +248,6 @@ object Parallel extends LogSupport {
       } catch {
         case e: Exception =>
           warn(s"$executionId - Error worker-$workerId", e)
-          jmxStats.failedTasks.incrementAndGet()
           throw e
       } finally {
         requestQueue.put(this)
@@ -281,7 +278,6 @@ object Parallel extends LogSupport {
       } catch {
         case e: Exception =>
           warn(s"$executionId - Error worker-$workerId", e)
-          jmxStats.failedTasks.incrementAndGet()
           throw e
       } finally {
         requestQueue.put(this)
