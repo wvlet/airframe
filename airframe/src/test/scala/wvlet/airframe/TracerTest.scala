@@ -12,13 +12,19 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import wvlet.log.LogSupport
 
 object TracerTest {
 
   trait B
 
-  trait A {
+  trait A extends LogSupport {
     val b = bind[B]
+      .onInject(x => info("inject"))
+      .onInit(x => info("init"))
+      .onStart(x => info("start"))
+      .beforeShutdown(x => info("befoer shutdown"))
+      .onShutdown(x => info("shutdown"))
   }
 
 }

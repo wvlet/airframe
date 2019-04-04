@@ -163,6 +163,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Inject [${t}]: ${injectee}")
+    tracer.onInject(t, injectee)
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
@@ -191,7 +192,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
-    tracer.onGetInstance(t)
+    tracer.onGetBinding(t)
 
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {

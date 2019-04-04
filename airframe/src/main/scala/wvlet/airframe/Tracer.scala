@@ -15,7 +15,7 @@ package wvlet.airframe
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import Tracer._
+import TraceEvent._
 
 /**
   *
@@ -30,19 +30,62 @@ trait Tracer extends LogSupport {
     report(SessionInitEnd(session))
   }
 
-  def onGetInstance(surface: Surface): Unit = {
-    report(GetInstance(surface))
+  def onGetBinding(surface: Surface): Unit = {
+    report(GetBinding(surface))
+  }
+
+  def onInject(surface: Surface, injectee: Any) = {
+    report(Inject(surface, injectee))
+  }
+
+  def onInitInstance(injectee: Injectee): Unit = {
+    report(InitInstance(injectee))
+  }
+
+  def onStartInstance(injectee: Injectee): Unit = {
+    report(StartInstance(injectee))
+  }
+
+  def beforeShutdownInstance(injectee: Injectee): Unit = {
+    report(BeforeShutdownInstance(injectee))
+  }
+
+  def onShutdownInstance(injectee: Injectee): Unit = {
+    report(ShutdownInstance(injectee))
+  }
+
+  def onSessionStart(session: Session) {
+    report(SessionStart(session))
+  }
+
+  def beforeSessionShutdown(session: Session): Unit = {
+    report(SessionBeforeShutdown(session))
+  }
+
+  def onSessionShutdown(session: Session): Unit = {
+    report(SessionShutdown(session))
+  }
+  def onSessionEnd(session: Session): Unit = {
+    report(SessionEnd(session))
   }
 }
 
-trait TraceEvent
+sealed trait TraceEvent
 
-object Tracer {
-  case class SessionInitStart(session: Session) extends TraceEvent
-  case class SessionInitEnd(session: Session)   extends TraceEvent
-  case class SessionStart(session: Session)     extends TraceEvent
+object TraceEvent {
+  case class SessionInitStart(session: Session)      extends TraceEvent
+  case class SessionInitEnd(session: Session)        extends TraceEvent
+  case class SessionStart(session: Session)          extends TraceEvent
+  case class SessionBeforeShutdown(session: Session) extends TraceEvent
+  case class SessionShutdown(session: Session)       extends TraceEvent
+  case class SessionEnd(session: Session)            extends TraceEvent
 
-  case class GetInstance(s: Surface) extends TraceEvent
+  case class GetBinding(s: Surface)                     extends TraceEvent
+  case class Inject(s: Surface, any: Any)               extends TraceEvent
+  case class InitInstance(injectee: Injectee)           extends TraceEvent
+  case class StartInstance(injectee: Injectee)          extends TraceEvent
+  case class BeforeShutdownInstance(injectee: Injectee) extends TraceEvent
+  case class ShutdownInstance(injectee: Injectee)       extends TraceEvent
 }
 
 object DefaultTracer extends Tracer with LogSupport {
