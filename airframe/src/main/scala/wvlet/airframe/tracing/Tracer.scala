@@ -31,9 +31,13 @@ trait Tracer extends LogSupport {
     report(SessionInitEnd(session))
   }
 
-  private[airframe] def onGetBinding(session: Session, surface: Surface): Unit = {
+  private[airframe] def onGetBindingStart(session: Session, surface: Surface): Unit = {
     stats.incrementGetBindingCount(session, surface)
-    report(GetBinding(session, surface))
+    report(GetBindingStart(session, surface))
+  }
+
+  private[airframe] def onGetBindingEnd(session: Session, surface: Surface): Unit = {
+    report(GetBindingEnd(session, surface))
   }
 
   private[airframe] def onInject(session: Session, surface: Surface, injectee: Any) = {
@@ -90,7 +94,8 @@ object TraceEvent {
   case class SessionShutdown(session: Session)       extends TraceEvent
   case class SessionEnd(session: Session)            extends TraceEvent
 
-  case class GetBinding(session: Session, s: Surface)                     extends TraceEvent
+  case class GetBindingStart(session: Session, s: Surface)                extends TraceEvent
+  case class GetBindingEnd(session: Session, s: Surface)                  extends TraceEvent
   case class InjectInstance(session: Session, s: Surface, any: Any)       extends TraceEvent
   case class InitInstance(session: Session, injectee: Injectee)           extends TraceEvent
   case class StartInstance(session: Session, injectee: Injectee)          extends TraceEvent

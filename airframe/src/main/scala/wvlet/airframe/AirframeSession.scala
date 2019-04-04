@@ -199,7 +199,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
-    tracer.onGetBinding(this, t)
+    tracer.onGetBindingStart(this, t)
 
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
@@ -267,6 +267,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
             registerInjectee(t, contextSession.buildInstance(t, contextSession, seen, defaultValue)))
         }
       }
+
+    tracer.onGetBindingEnd(this, t)
 
     result.asInstanceOf[AnyRef]
   }
