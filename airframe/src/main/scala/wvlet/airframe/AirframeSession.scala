@@ -48,6 +48,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     // Find a tracer from parent
     parent
       .map(_.tracer)
+      .orElse(design.getTracer)
       .getOrElse(new DefaultTracer)
   }
 

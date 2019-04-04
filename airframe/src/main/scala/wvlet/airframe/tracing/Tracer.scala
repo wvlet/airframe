@@ -79,6 +79,7 @@ trait Tracer extends LogSupport {
 
 sealed trait TraceEvent {
   val eventTimeMillis = System.currentTimeMillis()
+  val threadId        = Thread.currentThread().getId
 }
 
 object TraceEvent {
