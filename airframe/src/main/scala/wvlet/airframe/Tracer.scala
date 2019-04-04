@@ -12,16 +12,20 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
-
 import TraceEvent._
 
 /**
   *
   */
 trait Tracer extends LogSupport {
-  def report(event: TraceEvent): Unit
+  protected val stats = new AirframeStats()
+
+  protected def report(event: TraceEvent): Unit
 
   private[airframe] def onSessionInitStart(session: Session): Unit = {
     report(SessionInitStart(session))
@@ -31,6 +35,7 @@ trait Tracer extends LogSupport {
   }
 
   private[airframe] def onGetBinding(session: Session, surface: Surface): Unit = {
+    stats.incrementAccessCount(session, surface)
     report(GetBinding(session, surface))
   }
 
@@ -67,14 +72,13 @@ trait Tracer extends LogSupport {
   }
   private[airframe] def onSessionEnd(session: Session): Unit = {
     report(SessionEnd(session))
+    stats.reportStats
   }
 }
 
 sealed trait TraceEvent {
   val eventTimeMillis = System.currentTimeMillis()
 }
-
-class DIStatistcs {}
 
 object TraceEvent {
   case class SessionInitStart(session: Session)      extends TraceEvent
@@ -94,7 +98,7 @@ object TraceEvent {
 
 object DefaultTracer extends Tracer with LogSupport {
 
-  override def report(event: TraceEvent): Unit = {
+  override protected def report(event: TraceEvent): Unit = {
     trace(event)
   }
 
