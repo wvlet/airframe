@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
 
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -45,15 +45,19 @@ class LookupTable[Row, Col, V] extends Iterable[(Row, Map[Col, V])] {
   */
 class AirframeStats extends LogSupport {
 
-  // TODO: This tracer will keep holding stats for a long time,
-  // so if an application creates a lot of child sessions, storing stats for each session
-  // will consume a lot of memory
-
-  // Use session id as a key so as not to hold the Session reference
-  private val injectCountTable = new LookupTable[String, Surface, AtomicInteger]()
+  // This will holds the stat data while the session is active.
+  // To avoid holding too many stats for applications that create many child sessions,
+  // we will just store the aggregated stats.
+  private val injectCountTable = new ConcurrentHashMap[Surface, AtomicLong]().asScala
+  private val bindCountTable   = new ConcurrentHashMap[Surface, AtomicLong]().asScala
 
   private[airframe] def incrementInjectCount(session: Session, surface: Surface): Unit = {
-    val counter = injectCountTable.getOrElseUpdate(session.name, surface, new AtomicInteger(0))
+    val counter = injectCountTable.getOrElseUpdate(surface, new AtomicLong(0))
+    counter.incrementAndGet()
+  }
+
+  private[airframe] def incrementGetBindingCount(session: Session, surface: Surface): Unit = {
+    val counter = bindCountTable.getOrElseUpdate(surface, new AtomicLong(0))
     counter.incrementAndGet()
   }
 
@@ -63,14 +67,49 @@ class AirframeStats extends LogSupport {
 
   def statsReport: String = {
     val b = Seq.newBuilder[String]
-    for (sessionName <- injectCountTable.rowKeys) {
-      b += s"[${sessionName}]"
-      for ((surface, counter) <- injectCountTable.row(sessionName).toSeq.sortBy(_._2.get()).reverse) {
-        b += s"[${surface}] injected:${counter.get}"
-      }
+    for ((surface, counter) <- injectCountTable.toSeq.sortBy(_._2.get()).reverse) {
+      b += s"[${surface}] injected:${counter.get}"
     }
     val report = b.result().mkString("\n")
     report
+  }
+
+  def getBindCount(surface: Surface): Long = {
+    bindCountTable.get(surface).map(_.get()).getOrElse(0)
+  }
+
+  def coverageReport(d: Design): String = {
+    var bindingCount     = 0
+    var usedBindingCount = 0
+    val unusedBindings   = Seq.newBuilder[Surface]
+    for (b <- d.binding) yield {
+      bindingCount += 1
+      val surface   = b.from
+      val bindCount = getBindCount(surface)
+      if (bindCount > 0) {
+        usedBindingCount += 1
+      } else {
+        unusedBindings += surface
+      }
+    }
+    val coverage =
+      if (bindingCount == 0) {
+        1.0
+      } else {
+        usedBindingCount.toDouble / bindingCount
+      }
+
+    val report = Seq.newBuilder[String]
+
+    report += f"design coverage: ${coverage * 100}%.1f%%"
+    val unusedBindingList = unusedBindings.result()
+    if (unusedBindingList.nonEmpty) {
+      report += "[Unused Bindings]"
+      unusedBindingList.map { x =>
+        report += x.toString
+      }
+    }
+    report.result().mkString("\n")
   }
 
 }

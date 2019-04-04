@@ -30,11 +30,12 @@ trait Tracer extends LogSupport {
   }
 
   private[airframe] def onGetBinding(session: Session, surface: Surface): Unit = {
-    stats.incrementInjectCount(session, surface)
+    stats.incrementGetBindingCount(session, surface)
     report(GetBinding(session, surface))
   }
 
   private[airframe] def onInject(session: Session, surface: Surface, injectee: Any) = {
+    stats.incrementInjectCount(session, surface)
     report(InjectInstance(session, surface, injectee))
   }
 
@@ -67,11 +68,11 @@ trait Tracer extends LogSupport {
   }
   private[airframe] def onSessionEnd(session: Session): Unit = {
     report(SessionEnd(session))
-    reportStats(stats)
+    reportStats(session, stats)
   }
 
   protected def report(event: TraceEvent): Unit
-  protected def reportStats(stats: AirframeStats): Unit
+  protected def reportStats(session: Session, stats: AirframeStats): Unit
 }
 
 sealed trait TraceEvent {
@@ -99,7 +100,8 @@ class DefaultTracer extends Tracer with LogSupport {
   override protected def report(event: TraceEvent): Unit = {
     trace(event)
   }
-  override protected def reportStats(stats: AirframeStats): Unit = {
-    warn(stats)
+  override protected def reportStats(session: Session, stats: AirframeStats): Unit = {
+    trace(stats)
+    trace(stats.coverageReport(session.design))
   }
 }
