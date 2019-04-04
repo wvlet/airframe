@@ -11,34 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.tracing
+
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.atomic.{AtomicInteger, AtomicLong}
+import java.util.concurrent.atomic.AtomicLong
 
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.{Design, Session}
 import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
-
-// A table to lookup V from a pair of Row and Col
-class LookupTable[Row, Col, V] extends Iterable[(Row, Map[Col, V])] {
-  private val table = new ConcurrentHashMap[Row, scala.collection.concurrent.Map[Col, V]].asScala
-
-  def getOrElseUpdate(row: Row, col: Col, defaultValue: V): V = {
-    val m = table.getOrElseUpdate(row, new ConcurrentHashMap[Col, V]().asScala)
-    m.getOrElseUpdate(col, defaultValue)
-  }
-
-  def rowKeys: Iterable[Row] = {
-    table.keys
-  }
-
-  def row(rowKey: Row): Map[Col, V] = {
-    table.get(rowKey).map(_.toMap).getOrElse(Map.empty)
-  }
-
-  override def iterator: Iterator[(Row, Map[Col, V])] = table.map(x => (x._1, x._2.toMap)).iterator
-}
 
 /**
   *

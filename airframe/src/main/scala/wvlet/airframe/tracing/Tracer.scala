@@ -11,9 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
-import wvlet.airframe.TraceEvent._
+package wvlet.airframe.tracing
+
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.TraceEvent._
+import wvlet.airframe.{Injectee, Session}
 import wvlet.log.LogSupport
 
 /**

@@ -16,6 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.Binder.Binding
 import wvlet.airframe.Design.AdditiveDesignOption
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.Tracer
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros

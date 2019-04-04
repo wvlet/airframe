@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.Tracer
 import wvlet.log.{LogSupport, Logger}
 
 sealed trait LifeCycleStage

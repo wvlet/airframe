@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.{DefaultTracer, Tracer}
 import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
