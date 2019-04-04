@@ -44,8 +44,8 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   }
 
   // Session and tracer will be available later
-  private var session: AirframeSession = _
-  private[airframe] var tracer: Tracer = _
+  private[airframe] var session: AirframeSession = _
+  private[airframe] var tracer: Tracer           = _
 
   private[airframe] def setSession(s: AirframeSession): Unit = {
     session = s
@@ -102,7 +102,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
     addHook(h) { l =>
       if (l.initHookHolder.isFirstRegistration(h)) {
         debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
-        tracer.onInitInstance(h.injectee)
+        tracer.onInitInstance(session, h.injectee)
         h.execute
       } else {
         trace(s"[${l.sessionName}] ${h.injectee} is already initialized")
@@ -126,7 +126,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
           val s = l.state.get
           if (s == STARTED) {
             // If a session is already started, run the start hook immediately
-            tracer.onStartInstance(h.injectee)
+            tracer.onStartInstance(session, h.injectee)
             h.execute
           }
         }
@@ -239,7 +239,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     // beforeShutdown
     for (h <- lifeCycleManager.preShutdownHooks.reverse) {
       trace(s"Calling pre-shutdown hook: $h")
-      lifeCycleManager.tracer.beforeShutdownInstance(h.injectee)
+      lifeCycleManager.tracer.beforeShutdownInstance(lifeCycleManager.session, h.injectee)
       h.execute
     }
 
@@ -250,7 +250,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     }
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
-      lifeCycleManager.tracer.onShutdownInstance(h.injectee)
+      lifeCycleManager.tracer.onShutdownInstance(lifeCycleManager.session, h.injectee)
       h.execute
     }
   }
