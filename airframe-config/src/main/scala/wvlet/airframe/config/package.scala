@@ -48,12 +48,7 @@ package object config {
 
     // Get config binded in the design.
     def getConfig: Option[Config] = {
-      d.getDesignConfig match {
-        case dc: DesignOptionsWithConfig =>
-          Some(dc.config)
-        case _ =>
-          None
-      }
+      d.getDesignConfig.options.get("config").map(_.asInstanceOf[Config])
     }
 
     def currentConfig: Config = {
@@ -64,12 +59,7 @@ package object config {
     }
 
     def withConfig(c: Config): Design = {
-      d.designOptions match {
-        case dc: DesignOptionsWithConfig =>
-          Design(dc.withConfig(c), d.binding)
-        case other =>
-          Design(new DesignOptionsWithConfig(other.enabledLifeCycleLogging, other.stage, c), d.binding)
-      }
+      d.withOption("config", c)
     }
 
     def withConfigEnv(env: String, defaultEnv: String = "default"): Design = {

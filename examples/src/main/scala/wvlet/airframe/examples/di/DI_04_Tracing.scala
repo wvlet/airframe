@@ -11,11 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.examples.di
+import wvlet.airframe.tracing.ChromeTracer
 
 /**
-  * If importing wvlet.airframe._ is not preferable, Airframe.newDesign can be used.
+  *
   */
-object Airframe {
-  def newDesign: Design = Design.empty
+object DI_04_Tracing extends App {
+  import wvlet.airframe._
+
+  case class MyAppConfig(port: Int = 8080)
+
+  trait MyApp {
+    val config = bind[MyAppConfig]
+  }
+
+  val d = newDesign
+    .withTracer(ChromeTracer.newTracer("target/trace.json"))
+
+  // DI tracing report will be stored in target/trace.json
+  // You can open this file with Google Chrome. Open chrome://tracing, and load the json file.
+  d.build[MyApp] { app =>
+    //
+  }
+
 }

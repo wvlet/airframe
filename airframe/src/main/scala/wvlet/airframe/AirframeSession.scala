@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
@@ -42,6 +43,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     design.binding.map(_.from).distinct.length == design.binding.length,
     s"Design contains duplicate entries: [${design.binding.groupBy(_.from).map(_._2).filter(_.length > 1).mkString(", ")}]"
   )
+  protected val stats: DIStats =
+    parent
+      .map(_.stats)
+      .orElse {
+        design.getStats
+      }
+      .getOrElse(new DIStats())
+
+  private[airframe] val tracer: Tracer = {
+    // Find a tracer from parent
+    parent
+      .map(_.tracer)
+      .orElse(design.getTracer) // or tracer in the current design
+      .getOrElse(DefaultTracer) // or the default tracer
+  }
 
   // Build a lookup table for all bindings in the design
   private lazy val bindingTable: Map[Surface, Binding] = {
@@ -67,8 +83,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     singletonHolder.get(t)
   }
 
+  def sessionId: Long = hashCode()
+
   def name: String = sessionName.getOrElse {
-    val current = f"session:${hashCode()}%x"
+    val current = f"session:${sessionId}%x"
     parent
       .map { p =>
         f"${p.name} -> ${current}"
@@ -120,12 +138,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     if (production) {
       debug(s"[${name}] Eagerly initializing singletons in production mode")
     }
+    tracer.onSessionInitStart(this)
     design.binding.collect {
       case s @ SingletonBinding(from, to, eager) if production || eager =>
         getInstanceOf(from)
       case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
         getInstanceOf(factory.from)
     }
+    tracer.onSessionInitEnd(this)
     debug(s"[${name}] Completed the initialization")
   }
 
@@ -158,13 +178,18 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
-    debug(s"[${name}] Inject [${t}]: ${injectee}")
+    debug(s"[${name}] Init [${t}]: ${injectee}")
+
+    stats.incrementInitCount(this, t)
+    tracer.onInitInstanceStart(this, t, injectee)
+
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
         error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
         throw e
     }
+    tracer.onInitInstanceEnd(this, t, injectee)
     injectee.asInstanceOf[AnyRef]
   }
 
@@ -187,6 +212,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
+
+    stats.observe(t)
+    tracer.onInjectStart(this, t)
+
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
       error(s"Found cyclic dependencies: ${seen}")
@@ -253,6 +282,9 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
             registerInjectee(t, contextSession.buildInstance(t, contextSession, seen, defaultValue)))
         }
       }
+
+    tracer.onInjectEnd(this, t)
+    stats.incrementInjectCount(this, t)
 
     result.asInstanceOf[AnyRef]
   }

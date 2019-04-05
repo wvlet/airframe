@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.Tracer
 import wvlet.log.{LogSupport, Logger}
 
 sealed trait LifeCycleStage
@@ -43,9 +44,13 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
     eventHandler.onInit(this, t, injectee)
   }
 
-  private var session: AirframeSession = _
+  // Session and tracer will be available later
+  private[airframe] var session: AirframeSession = _
+  private[airframe] var tracer: Tracer           = _
+
   private[airframe] def setSession(s: AirframeSession): Unit = {
     session = s
+    tracer = session.tracer
   }
 
   def sessionName: String = session.name
@@ -55,6 +60,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
       throw new IllegalStateException(s"LifeCycle is already starting")
     }
 
+    tracer.onSessionStart(session)
     eventHandler.beforeStart(this)
     // Run start hooks in the registration order
     state.set(STARTED)
@@ -64,10 +70,15 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
   def shutdown: Unit = {
     if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
         || state.compareAndSet(STARTING, STOPPING)) {
+
+      tracer.beforeSessionShutdown(session)
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
       state.set(STOPPED)
+
+      tracer.onSessionShutdown(session)
       eventHandler.afterShutdown(this)
+      tracer.onSessionEnd(session)
     }
   }
 
@@ -115,6 +126,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
           val s = l.state.get
           if (s == STARTED) {
             // If a session is already started, run the start hook immediately
+            tracer.onStartInstance(session, h.injectee)
             h.execute
           }
         }
@@ -227,6 +239,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     // beforeShutdown
     for (h <- lifeCycleManager.preShutdownHooks.reverse) {
       trace(s"Calling pre-shutdown hook: $h")
+      lifeCycleManager.tracer.beforeShutdownInstance(lifeCycleManager.session, h.injectee)
       h.execute
     }
 
@@ -237,6 +250,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     }
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
+      lifeCycleManager.tracer.onShutdownInstance(lifeCycleManager.session, h.injectee)
       h.execute
     }
   }

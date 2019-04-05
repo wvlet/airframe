@@ -401,7 +401,7 @@ private[wvlet] object AirframeMacros {
   def buildWithSession[A: c.WeakTypeTag](c: sm.Context)(body: c.Expr[A => Any]): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    // Bind the code block to a local var to resolve #373
+    // Bind the code block to a local variable to resolve the issue #373
     val e = q"""
          {
            val codeBlock = ${body}

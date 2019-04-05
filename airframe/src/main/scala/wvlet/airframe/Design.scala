@@ -14,46 +14,63 @@
 package wvlet.airframe
 
 import wvlet.airframe.Binder.Binding
+import wvlet.airframe.Design.AdditiveDesignOption
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
+import Design._
 
-class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stage = Stage.DEVELOPMENT)
+/**
+  * Design configs
+  */
+case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
+                         stage: Stage = Stage.DEVELOPMENT,
+                         options: Map[String, Any] = Map.empty)
     extends Serializable {
   def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten
-    new DesignOptions(other.enabledLifeCycleLogging, other.stage)
+    new DesignOptions(other.enabledLifeCycleLogging, other.stage, defaultOptionMerger(options, other.options))
+  }
+
+  private def defaultOptionMerger(a: Map[String, Any], b: Map[String, Any]): Map[String, Any] = {
+    a.foldLeft(b) { (m, keyValue) =>
+      val (key, value) = keyValue
+      (m.get(key), value) match {
+        case (Some(v1: AdditiveDesignOption[_]), v2: AdditiveDesignOption[_]) =>
+          m + (key -> v1.addAsDesignOption(v2))
+        case _ =>
+          m + keyValue
+      }
+    }
   }
 
   def withLifeCycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = true, stage)
+    new DesignOptions(enabledLifeCycleLogging = true, stage, options)
   }
   def noLifecycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = false, stage)
+    new DesignOptions(enabledLifeCycleLogging = false, stage, options)
   }
 
   def withProductionMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Stage.PRODUCTION)
+    new DesignOptions(enabledLifeCycleLogging, Stage.PRODUCTION, options)
   }
 
   def withLazyMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT)
+    new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT, options)
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[DesignOptions]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: DesignOptions =>
-      (that canEqual this) &&
-        enabledLifeCycleLogging == that.enabledLifeCycleLogging &&
-        stage == that.stage
-    case _ => false
+  private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging, stage, options + (key -> value))
   }
 
-  override def hashCode(): Int = {
-    val state = Seq(enabledLifeCycleLogging, stage)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  private[airframe] def noOption[A](key: String): DesignOptions = {
+    new DesignOptions(enabledLifeCycleLogging, stage, options - key)
+  }
+
+  private[airframe] def getOption[A](key: String): Option[A] = {
+    options.get(key).map(_.asInstanceOf[A])
   }
 }
 
@@ -63,7 +80,6 @@ class DesignOptions(val enabledLifeCycleLogging: Boolean = true, val stage: Stag
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
 case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
-
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**
@@ -137,6 +153,41 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
   }
 
   /**
+    * Use a custom binding tracer
+    */
+  def withTracer(t: Tracer): Design = {
+    withOption(tracerOptionKey, t)
+  }
+
+  def noTracer: Design = {
+    noOption(tracerOptionKey)
+  }
+
+  def withStats(stats: DIStats): Design = {
+    withOption(statsOptionKey, stats)
+  }
+
+  def noStats: Design = {
+    noOption(statsOptionKey)
+  }
+
+  private[airframe] def withOption[A](key: String, value: A): Design = {
+    new Design(designOptions.withOption(key, value), binding)
+  }
+
+  private[airframe] def noOption[A](key: String): Design = {
+    new Design(designOptions.noOption(key), binding)
+  }
+
+  private[airframe] def getTracer: Option[Tracer] = {
+    designOptions.getOption[Tracer](tracerOptionKey)
+  }
+
+  private[airframe] def getStats: Option[DIStats] = {
+    designOptions.getOption[DIStats](statsOptionKey)
+  }
+
+  /**
     * A helper method of creating a new session and an instance of A.
     * This method is useful when you only need to use A as an entry point of your program.
     * After executing the body, the sesion will be closed.
@@ -200,4 +251,14 @@ object Design {
 
   // Empty design
   def empty: Design = blanc
+
+  // Create a new Design
+  def newDesign: Design = blanc
+
+  private[airframe] trait AdditiveDesignOption[+A] {
+    private[airframe] def addAsDesignOption[A1 >: A](other: A1): A1
+  }
+
+  private[airframe] def tracerOptionKey = "tracer"
+  private[airframe] def statsOptionKey  = "stats"
 }
