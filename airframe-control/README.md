@@ -86,3 +86,9 @@ val result = source.parallel.withParallelism(4).map { i =>
 }
 ```
 
+You can monitor metrics of parallel execution via JMX using [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx).
+
+```
+JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
+```
+

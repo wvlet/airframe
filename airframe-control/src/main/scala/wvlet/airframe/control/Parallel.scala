@@ -13,16 +13,32 @@
  */
 package wvlet.airframe.control
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.UUID
+import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 import java.util.concurrent._
 
-import scala.concurrent.duration.Duration
+import wvlet.airframe.jmx.{JMX, JMXAgent}
+import wvlet.log.LogSupport
+
 import scala.reflect.ClassTag
 
 /**
   * Utilities for parallel execution.
   */
-object Parallel {
+object Parallel extends LogSupport {
+
+  val jmxStats = new ParallelExecutionStats()
+
+  class ParallelExecutionStats(
+      @JMX(description = "Total number of worker threads")
+      val totalThreads: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Total number of running workers")
+      val runningWorkers: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Accumulated total number of started tasks")
+      val startedTasks: AtomicLong = new AtomicLong(0),
+      @JMX(description = "Accumulated total number of finished tasks")
+      val finishedTasks: AtomicLong = new AtomicLong(0)
+  )
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
 
@@ -48,15 +64,20 @@ object Parallel {
     */
   def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
       f: T => R): Seq[R] = {
+
+    val executionId = UUID.randomUUID.toString
+    trace(s"$executionId - Begin Parallel.run (parallelism = ${parallelism})")
+
     val requestQueue = new LinkedBlockingQueue[IndexedWorker[T, R]](parallelism)
     val resultArray  = new Array[R](source.length)
 
-    Range(0, parallelism).foreach { _ =>
-      val worker = new IndexedWorker[T, R](requestQueue, resultArray, f)
+    Range(0, parallelism).foreach { i =>
+      val worker = new IndexedWorker[T, R](executionId, i.toString, requestQueue, resultArray, f)
       requestQueue.put(worker)
     }
 
     val executor = Executors.newFixedThreadPool(parallelism)
+    jmxStats.totalThreads.addAndGet(parallelism)
 
     try {
       // Process all elements of source
@@ -85,6 +106,7 @@ object Parallel {
       // Cleanup
       executor.shutdown()
       requestQueue.clear()
+      jmxStats.totalThreads.addAndGet(parallelism * -1)
     }
   }
 
@@ -99,18 +121,23 @@ object Parallel {
     */
   def iterate[T, R](source: Iterator[T],
                     parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                    timeout: Duration = Duration.Inf)(f: T => R): Iterator[R] = {
+                    jmxAgent: Option[JMXAgent] = None)(f: T => R): Iterator[R] = {
+
+    val executionId = UUID.randomUUID.toString
+    trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
+
     val requestQueue = new LinkedBlockingQueue[Worker[T, R]](parallelism)
     val resultQueue  = new LinkedBlockingQueue[Option[R]]()
 
-    Range(0, parallelism).foreach { _ =>
-      val worker = new Worker[T, R](requestQueue, resultQueue, f)
+    Range(0, parallelism).foreach { i =>
+      val worker = new Worker[T, R](executionId, i.toString, requestQueue, resultQueue, f)
       requestQueue.put(worker)
     }
 
     new Thread {
       override def run(): Unit = {
         val executor = Executors.newFixedThreadPool(parallelism)
+        jmxStats.totalThreads.addAndGet(parallelism)
 
         try {
           // Process all elements of source
@@ -139,6 +166,7 @@ object Parallel {
           // Cleanup
           executor.shutdown()
           requestQueue.clear()
+          jmxStats.totalThreads.addAndGet(parallelism * -1)
         }
       }
     }.start()
@@ -201,35 +229,61 @@ object Parallel {
 //    }
 //  }
 
-  private[control] class Worker[T, R](requestQueue: BlockingQueue[Worker[T, R]],
+  private[control] class Worker[T, R](executionId: String,
+                                      workerId: String,
+                                      requestQueue: BlockingQueue[Worker[T, R]],
                                       resultQueue: BlockingQueue[Option[R]],
                                       f: T => R)
-      extends Runnable {
+      extends Runnable
+      with LogSupport {
 
     val message: AtomicReference[T] = new AtomicReference[T]()
 
     override def run: Unit = {
+      trace(s"$executionId - Begin worker-$workerId")
+      Parallel.jmxStats.runningWorkers.incrementAndGet()
+      jmxStats.startedTasks.incrementAndGet()
       try {
         resultQueue.put(Some(f(message.get())))
+      } catch {
+        case e: Exception =>
+          warn(s"$executionId - Error worker-$workerId", e)
+          throw e
       } finally {
         requestQueue.put(this)
+        trace(s"$executionId - End worker-$workerId")
+        jmxStats.finishedTasks.incrementAndGet()
+        Parallel.jmxStats.runningWorkers.decrementAndGet()
       }
     }
   }
 
-  private[control] class IndexedWorker[T, R](requestQueue: BlockingQueue[IndexedWorker[T, R]],
+  private[control] class IndexedWorker[T, R](executionId: String,
+                                             workerId: String,
+                                             requestQueue: BlockingQueue[IndexedWorker[T, R]],
                                              resultArray: Array[R],
                                              f: T => R)
-      extends Runnable {
+      extends Runnable
+      with LogSupport {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
 
     override def run: Unit = {
+      trace(s"$executionId - Begin worker-$workerId")
+      Parallel.jmxStats.runningWorkers.incrementAndGet()
+      jmxStats.startedTasks.incrementAndGet()
       try {
         val (m, i) = message.get()
         resultArray(i) = f(m)
+      } catch {
+        case e: Exception =>
+          warn(s"$executionId - Error worker-$workerId", e)
+          throw e
       } finally {
         requestQueue.put(this)
+        trace(s"$executionId - End worker-$workerId")
+        jmxStats.finishedTasks.incrementAndGet()
+        Parallel.jmxStats.runningWorkers.decrementAndGet()
       }
     }
   }

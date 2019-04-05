@@ -26,12 +26,12 @@ class ParallelTest extends AirframeSpec {
 
   "Parallel" should {
     "run() in parallel with Seq" in {
-      val source = Seq(1, 2, 3)
-      val start  = System.currentTimeMillis()
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
 
-      val counter     = new AtomicInteger(0)
-      val currentTime = System.currentTimeMillis()
-      val startTime   = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
+      val source    = Seq(1, 2, 3)
+      val counter   = new AtomicInteger(0)
+      val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
       val result = Parallel.run(source, parallelism = 3) { i =>
         // Record the current time
         startTime(i - 1) = System.currentTimeMillis()
@@ -44,11 +44,16 @@ class ParallelTest extends AirframeSpec {
       val endTime = System.currentTimeMillis()
       assert(startTime.forall(_ <= endTime))
       assert(result == List(2, 4, 6))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
     "iterate() in parallel with Iterator" in {
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
+
       val source    = Seq(1, 2, 3)
-      val start     = System.currentTimeMillis()
       val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
       val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
         startTime(i - 1) = System.currentTimeMillis()
@@ -62,9 +67,15 @@ class ParallelTest extends AirframeSpec {
 
       // The result element order can be shuffled
       assert(List(2, 4, 6).forall(x => list.contains(x)))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
     "handle errors in run()" in {
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
+
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
@@ -79,9 +90,15 @@ class ParallelTest extends AirframeSpec {
         }.toList
 
       assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
     "handle errors in iterate()" in {
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
+
       val source    = Seq(1, 2, 3)
       val exception = new RuntimeException("failure")
 
@@ -94,11 +111,18 @@ class ParallelTest extends AirframeSpec {
             i * 2
           }
         }.toList
+
       assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
     "be run for Seq using syntax sugar" in {
       import wvlet.airframe.control.parallel._
+
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
 
       val source = Seq(1, 2, 3)
       val result: Seq[Int] = source.parallel.withParallelism(2).map { x =>
@@ -106,10 +130,16 @@ class ParallelTest extends AirframeSpec {
       }
 
       assert(result == List(2, 4, 6))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
     "be run for Iterator using syntax sugar" in {
       import wvlet.airframe.control.parallel._
+
+      Parallel.jmxStats.startedTasks.set(0)
+      Parallel.jmxStats.finishedTasks.set(0)
 
       val source = Seq(1, 2, 3).iterator
       val result: Iterator[Int] = source.parallel.withParallelism(2).map { x =>
@@ -118,6 +148,9 @@ class ParallelTest extends AirframeSpec {
 
       val list = result.toList
       assert(List(2, 4, 6).forall(x => list.contains(x)))
+
+      assert(Parallel.jmxStats.startedTasks.get() == 3)
+      assert(Parallel.jmxStats.finishedTasks.get() == 3)
     }
 
 //    "repeat() and stop" in {
