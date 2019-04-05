@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.tracing
 
-import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -55,7 +54,7 @@ case class DIStatsReport(
 }
 
 /**
-  *
+  * DI statistics
   */
 class DIStats extends LogSupport with Serializable {
 

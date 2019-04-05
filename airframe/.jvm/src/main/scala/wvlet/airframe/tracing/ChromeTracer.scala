@@ -137,6 +137,12 @@ class ChromeTracer(s: OutputStream) extends Tracer {
 }
 
 object ChromeTracer {
+
+  /**
+    * Create a chrome tracing format tracer to save the data to the given file
+    *
+    * @return
+    */
   def newTracer(fileName: String): ChromeTracer = {
     new ChromeTracer(new BufferedOutputStream(new FileOutputStream(fileName)))
   }
