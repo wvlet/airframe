@@ -18,8 +18,10 @@ import wvlet.airframe.tracing.ChromeTracer._
 import wvlet.airframe.tracing.TraceEvent._
 
 /**
-  * Trace that produces DI events in Trace Event Format of Google Chrome:
+  * Tracer for producing DI events in Trace Event Format (JSON):
   * https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
+  *
+  * This can be viewed with Google Chrome using chrome://tracing
   */
 class ChromeTracer(s: OutputStream) extends Tracer {
   private val out = new PrintWriter(s)
@@ -111,7 +113,6 @@ class ChromeTracer(s: OutputStream) extends Tracer {
         out.flush()
       case _ =>
     }
-
   }
 }
 
@@ -131,6 +132,8 @@ object ChromeTracer {
     * args: Any arguments provided for the event. Some of the event types have required argument fields, otherwise, you can put any information you wish in here. The arguments are displayed in Trace Viewer when you view an event in the analysis section.
     */
   case class Event(name: String, cat: String, ph: String, ts: Long, pid: Long, tid: Long, args: String = "{}") {
+    // Do not use airframe-json or codec here to avoid introducing extra dependencies.
+    // airframe-di should have minimum dependencies (only airframe-log is included)
     def toJson: String =
       s"""{"name":"${name}","cat":"${cat}","ph":"${ph}","ts":${ts},"pid":${pid},"tid":${tid},"args":${args}}"""
   }

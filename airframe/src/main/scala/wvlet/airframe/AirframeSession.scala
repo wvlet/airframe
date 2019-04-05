@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.{AirframeStats, DefaultTracer, Tracer}
+import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
@@ -43,10 +43,13 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     design.binding.map(_.from).distinct.length == design.binding.length,
     s"Design contains duplicate entries: [${design.binding.groupBy(_.from).map(_._2).filter(_.length > 1).mkString(", ")}]"
   )
-  protected val stats: AirframeStats =
+  protected val stats: DIStats =
     parent
       .map(_.stats)
-      .getOrElse(new AirframeStats())
+      .orElse {
+        design.getStats
+      }
+      .getOrElse(new DIStats())
 
   private[airframe] val tracer: Tracer = {
     // Find a tracer from parent

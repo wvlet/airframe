@@ -22,10 +22,40 @@ import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
 
+case class DIStatsReport(
+    coverage: Double,
+    injectCount: Map[Surface, Long],
+    getCount: Map[Surface, Long],
+    unusedTypes: Seq[Surface]
+) {
+
+  override def toString: String = {
+    val report = Seq.newBuilder[String]
+
+    // Coverage report
+    report += "[coverage]"
+    report += f"design coverage: ${coverage * 100}%.1f%%"
+    if (unusedTypes.nonEmpty) {
+      report += "[unused types]"
+      unusedTypes.map { x =>
+        report += x.toString
+      }
+    }
+    // Access stat report
+    report += "[access stats]"
+    val allTypes = injectCount.keySet ++ getCount.keySet
+    for (s <- allTypes) {
+      report += s"[${s}] inject:${injectCount.getOrElse(s, 0)}, get:${getCount.getOrElse(s, 0)}"
+    }
+
+    report.result().mkString("\n")
+  }
+}
+
 /**
   *
   */
-class AirframeStats extends LogSupport {
+class DIStats extends LogSupport with Serializable {
 
   // This will holds the stat data while the session is active.
   // To avoid holding too many stats for applications that create many child sessions,
@@ -60,11 +90,11 @@ class AirframeStats extends LogSupport {
     bindCountTable.get(surface).map(_.get()).getOrElse(0)
   }
 
-  def coverageReport(d: Design): String = {
+  def coverageReportFor(design: Design): DIStatsReport = {
     var bindingCount     = 0
     var usedBindingCount = 0
     val unusedBindings   = Seq.newBuilder[Surface]
-    for (b <- d.binding) yield {
+    for (b <- design.binding) yield {
       bindingCount += 1
       val surface   = b.from
       val bindCount = getBindCount(surface)
@@ -80,18 +110,12 @@ class AirframeStats extends LogSupport {
       } else {
         usedBindingCount.toDouble / bindingCount
       }
-
-    val report = Seq.newBuilder[String]
-
-    report += f"design coverage: ${coverage * 100}%.1f%%"
-    val unusedBindingList = unusedBindings.result()
-    if (unusedBindingList.nonEmpty) {
-      report += "[Unused Bindings]"
-      unusedBindingList.map { x =>
-        report += x.toString
-      }
-    }
-    report.result().mkString("\n")
+    DIStatsReport(
+      coverage = coverage,
+      injectCount = injectCountTable.map(x => x._1 -> x._2.get()).toMap,
+      getCount = bindCountTable.map(x => x._1      -> x._2.get()).toMap,
+      unusedTypes = unusedBindings.result(),
+    )
   }
 
 }

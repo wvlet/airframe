@@ -16,11 +16,10 @@ package wvlet.airframe
 import wvlet.airframe.Binder.Binding
 import wvlet.airframe.Design.AdditiveDesignOption
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.Tracer
+import wvlet.airframe.tracing.{DIStats, Tracer}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
-
 import Design._
 
 /**
@@ -30,7 +29,6 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
                          stage: Stage = Stage.DEVELOPMENT,
                          options: Map[String, Any] = Map.empty)
     extends Serializable {
-
   def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten
     new DesignOptions(other.enabledLifeCycleLogging, other.stage, defaultOptionMerger(options, other.options))
@@ -82,7 +80,6 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
 case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
-
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**
@@ -166,6 +163,14 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
     noOption(tracerOptionKey)
   }
 
+  def withStats(stats: DIStats): Design = {
+    withOption(statsOptionKey, stats)
+  }
+
+  def noStats: Design = {
+    noOption(statsOptionKey)
+  }
+
   private[airframe] def withOption[A](key: String, value: A): Design = {
     new Design(designOptions.withOption(key, value), binding)
   }
@@ -176,6 +181,10 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   private[airframe] def getTracer: Option[Tracer] = {
     designOptions.getOption[Tracer](tracerOptionKey)
+  }
+
+  private[airframe] def getStats: Option[DIStats] = {
+    designOptions.getOption[DIStats](statsOptionKey)
   }
 
   /**
@@ -251,4 +260,5 @@ object Design {
   }
 
   private[airframe] def tracerOptionKey = "tracer"
+  private[airframe] def statsOptionKey  = "stats"
 }

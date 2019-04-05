@@ -134,7 +134,6 @@ class DesignTest extends AirframeSpec {
     "set/unset options" in {
       val d = Design.newDesign
       d.withTracer(DefaultTracer).noTracer
-
     }
   }
 }

@@ -56,7 +56,7 @@ class SessionBuilder(design: Design,
   }
 
   def create: Session = {
-    // Remove duplicate bindings in the deisgn
+    // Remove duplicate bindings in the design
     val d = design.minimize
     // Combine the lifecycle logger and event handlers
     val lifeCycleLogger =

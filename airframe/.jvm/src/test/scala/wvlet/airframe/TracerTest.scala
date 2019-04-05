@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.airframe.tracing.ChromeTracer
+import wvlet.airframe.tracing.{ChromeTracer, DIStats}
 import wvlet.log.LogSupport
 
 object TracerTest {
@@ -27,6 +27,7 @@ object TracerTest {
 
   trait B {
     val c = bind[C]
+    val e = bind[E]
   }
 
   trait A extends LogSupport {
@@ -47,15 +48,27 @@ class TracerTest extends AirframeSpec {
 
   import TracerTest._
 
-  "trace events" in {
-
+  "should trace events" in {
     val d = newDesign
       .withTracer(ChromeTracer.newTracer("target/trace.json"))
 
     d.build[A] { a =>
       //
     }
-
   }
 
+  "should report design coverage" in {
+    val stats = new DIStats()
+    val d = newDesign
+      .bind[A].toSingleton
+      .bind[B].toSingleton
+      .withStats(stats) // Set stats
+
+    d.build[A] { a =>
+      //
+    }
+
+    val report = stats.coverageReportFor(d)
+    info(report)
+  }
 }
