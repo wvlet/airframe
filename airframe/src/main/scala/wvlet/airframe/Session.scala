@@ -32,6 +32,11 @@ trait Session extends AutoCloseable {
   def name: String
 
   /**
+    * Id of the sesion (= object hash id)
+    */
+  def sessionId: Long
+
+  /**
     * Reference to the design used for creating this session.
     */
   def design: Design

@@ -52,8 +52,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     // Find a tracer from parent
     parent
       .map(_.tracer)
-      .orElse(design.getTracer)
-      .getOrElse(new DefaultTracer)
+      .orElse(design.getTracer) // or tracer in the current design
+      .getOrElse(DefaultTracer) // or the default tracer
   }
 
   // Build a lookup table for all bindings in the design
@@ -80,8 +80,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     singletonHolder.get(t)
   }
 
+  def sessionId: Long = hashCode()
+
   def name: String = sessionName.getOrElse {
-    val current = f"session:${hashCode()}%x"
+    val current = f"session:${sessionId}%x"
     parent
       .map { p =>
         f"${p.name} -> ${current}"

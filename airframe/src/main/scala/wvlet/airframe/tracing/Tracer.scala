@@ -19,9 +19,11 @@ import wvlet.airframe.{Injectee, Session}
 import wvlet.log.LogSupport
 
 /**
-  *
+  * A base Tracer implementation for tracking DI events
   */
 trait Tracer extends LogSupport {
+  // Report tracing events
+  protected def report(event: TraceEvent): Unit
 
   private[airframe] def onSessionInitStart(session: Session): Unit = {
     report(SessionInitStart(session))
@@ -39,7 +41,6 @@ trait Tracer extends LogSupport {
   }
 
   private[airframe] def onInject(session: Session, surface: Surface, injectee: Any) = {
-
     report(InjectInstance(session, surface, injectee))
   }
 
@@ -73,34 +74,9 @@ trait Tracer extends LogSupport {
   private[airframe] def onSessionEnd(session: Session): Unit = {
     report(SessionEnd(session))
   }
-
-  protected def report(event: TraceEvent): Unit
 }
 
-sealed trait TraceEvent {
-  val eventTimeMillis = System.currentTimeMillis()
-  val threadId        = Thread.currentThread().getId
-}
-
-object TraceEvent {
-  case class SessionInitStart(session: Session)      extends TraceEvent
-  case class SessionInitEnd(session: Session)        extends TraceEvent
-  case class SessionStart(session: Session)          extends TraceEvent
-  case class SessionBeforeShutdown(session: Session) extends TraceEvent
-  case class SessionShutdown(session: Session)       extends TraceEvent
-  case class SessionEnd(session: Session)            extends TraceEvent
-
-  case class GetBindingStart(session: Session, s: Surface)                extends TraceEvent
-  case class GetBindingEnd(session: Session, s: Surface)                  extends TraceEvent
-  case class InjectInstance(session: Session, s: Surface, any: Any)       extends TraceEvent
-  case class InitInstance(session: Session, injectee: Injectee)           extends TraceEvent
-  case class StartInstance(session: Session, injectee: Injectee)          extends TraceEvent
-  case class BeforeShutdownInstance(session: Session, injectee: Injectee) extends TraceEvent
-  case class ShutdownInstance(session: Session, injectee: Injectee)       extends TraceEvent
-}
-
-class DefaultTracer extends Tracer with LogSupport {
-
+object DefaultTracer extends Tracer with LogSupport {
   override protected def report(event: TraceEvent): Unit = {
     trace(event)
   }

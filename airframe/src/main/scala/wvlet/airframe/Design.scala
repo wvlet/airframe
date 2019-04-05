@@ -21,6 +21,8 @@ import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 
+import Design._
+
 /**
   * Design configs
   */
@@ -61,21 +63,16 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
     new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT, options)
   }
 
-  private def tracerKey = "tracer"
-
-  def withTracer(newTracer: Tracer): DesignOptions = withOption(tracerKey, newTracer)
-  def noTracer: DesignOptions                      = noOption(tracerKey)
-
-  def getTracer: Option[Tracer] = {
-    options.get(tracerKey).map(_.asInstanceOf[Tracer])
-  }
-
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
     new DesignOptions(enabledLifeCycleLogging, stage, options + (key -> value))
   }
 
   private[airframe] def noOption[A](key: String): DesignOptions = {
     new DesignOptions(enabledLifeCycleLogging, stage, options - key)
+  }
+
+  private[airframe] def getOption[A](key: String): Option[A] = {
+    options.get(key).map(_.asInstanceOf[A])
   }
 }
 
@@ -162,7 +159,11 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
     * Use a custom binding tracer
     */
   def withTracer(t: Tracer): Design = {
-    new Design(designOptions.withTracer(t), binding)
+    withOption(tracerOptionKey, t)
+  }
+
+  def noTracer: Design = {
+    noOption(tracerOptionKey)
   }
 
   private[airframe] def withOption[A](key: String, value: A): Design = {
@@ -174,7 +175,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
   }
 
   private[airframe] def getTracer: Option[Tracer] = {
-    designOptions.getTracer
+    designOptions.getOption[Tracer](tracerOptionKey)
   }
 
   /**
@@ -242,7 +243,12 @@ object Design {
   // Empty design
   def empty: Design = blanc
 
+  // Create a new Design
+  def newDesign: Design = blanc
+
   private[airframe] trait AdditiveDesignOption[+A] {
     private[airframe] def addAsDesignOption[A1 >: A](other: A1): A1
   }
+
+  private[airframe] def tracerOptionKey = "tracer"
 }

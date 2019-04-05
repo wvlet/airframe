@@ -14,6 +14,7 @@
 package wvlet.airframe
 import wvlet.airframe.Alias.{HelloRef, StringHello}
 import wvlet.airframe.surface.Surface
+import wvlet.airframe.tracing.DefaultTracer
 
 trait Message
 case class Hello(message: String) extends Message
@@ -128,6 +129,12 @@ class DesignTest extends AirframeSpec {
         .withSession { session =>
           // Do nothing
         }
+    }
+
+    "set/unset options" in {
+      val d = Design.newDesign
+      d.withTracer(DefaultTracer).noTracer
+
     }
   }
 }

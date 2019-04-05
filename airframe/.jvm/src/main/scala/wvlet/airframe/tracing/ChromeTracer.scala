@@ -34,16 +34,19 @@ class ChromeTracer(s: OutputStream) extends Tracer {
 
   override protected def report(event: TraceEvent): Unit = {
     trace(event)
+
+    // Using SessionID as process ID
     event match {
       case SessionInitStart(session) =>
         emit(
           Event(
-            name = s"${session.name}",
-            cat = "session",
-            ph = "B",
+            name = "process_name",
+            cat = "metadata",
+            ph = "M",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId,
+            args = s"""{"name":"${session.name}"}"""
           ))
         emit(
           Event(
@@ -51,8 +54,8 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             cat = "session",
             ph = "B",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId
           ))
       case SessionInitEnd(session) =>
         emit(
@@ -61,8 +64,8 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             cat = "session",
             ph = "E",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId
           ))
       case GetBindingStart(session, s) =>
         emit(
@@ -71,8 +74,8 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             cat = "inject",
             ph = "B",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId
           ))
       case GetBindingEnd(session, s) =>
         emit(
@@ -81,19 +84,19 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             cat = "inject",
             ph = "E",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId
           ))
       case SessionStart(session) =>
-//        emit(dd
-//          Event(
-//            name = s"${session.name}",
-//            cat = "session",
-//            ph = "B",
-//            ts = event.eventTimeMillis,
-//            pid = 0, // TODO
-//            tid = event.threadId // TODO
-//          ))
+        emit(
+          Event(
+            name = s"${session.name}",
+            cat = "session",
+            ph = "B",
+            ts = event.eventTimeMillis,
+            pid = session.sessionId,
+            tid = event.threadId
+          ))
       case SessionEnd(session) =>
         emit(
           Event(
@@ -101,8 +104,8 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             cat = "session",
             ph = "E",
             ts = event.eventTimeMillis,
-            pid = 0, // TODO
-            tid = event.threadId // TODO
+            pid = session.sessionId,
+            tid = event.threadId
           ))
         //out.println("]")
         out.flush()

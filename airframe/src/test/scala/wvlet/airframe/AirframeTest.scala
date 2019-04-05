@@ -265,13 +265,14 @@ class AirframeTest extends AirframeSpec {
 
   "Airframe" should {
 
-    "be able to use wvlet.airframe.Airframe to define a new design" in {
-      val d = wvlet.airframe.Airframe.newDesign
+    "be able to use wvlet.airframe.Design to define a new design" in {
+      val d = Design.newDesign
 
       // For test coverage
       d.withLifeCycleLogging.noLifeCycleLogging
         .withSession { session =>
-          }
+          // do nothing
+        }
     }
 
     "create a design" in {
