@@ -83,20 +83,7 @@ class DIStats extends LogSupport with Serializable {
     counter.incrementAndGet()
   }
 
-  override def toString: String = {
-    statsReport
-  }
-
-  def statsReport: String = {
-    val b = Seq.newBuilder[String]
-    for ((surface, counter) <- injectCountTable.toSeq.sortBy(_._2.get()).reverse) {
-      b += s"[${surface}] injected:${counter.get}"
-    }
-    val report = b.result().mkString("\n")
-    report
-  }
-
-  def getInjectCount(surface: Surface): Long = {
+  private def getInjectCount(surface: Surface): Long = {
     injectCountTable.get(surface).map(_.get()).getOrElse(0)
   }
 

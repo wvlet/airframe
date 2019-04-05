@@ -69,6 +69,7 @@ class TracerTest extends AirframeSpec {
       .bind[E].toSingleton
       .bind[F].toSingleton
       .bind[G].toLazyInstance(new G {})
+      .noStats // just for test coverage
       .withStats(stats) // Set stats
 
     d.build[A] { a =>
