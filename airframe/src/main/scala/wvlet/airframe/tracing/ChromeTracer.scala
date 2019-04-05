@@ -14,9 +14,8 @@
 package wvlet.airframe.tracing
 import java.io._
 
-import wvlet.airframe.Session
+import wvlet.airframe.tracing.ChromeTracer._
 import wvlet.airframe.tracing.TraceEvent._
-import ChromeTracer._
 
 /**
   * Trace that produces DI events in Trace Event Format of Google Chrome:
@@ -34,7 +33,7 @@ class ChromeTracer(s: OutputStream) extends Tracer {
   }
 
   override protected def report(event: TraceEvent): Unit = {
-    warn(event)
+    trace(event)
     event match {
       case SessionInitStart(session) =>
         emit(
@@ -111,7 +110,6 @@ class ChromeTracer(s: OutputStream) extends Tracer {
     }
 
   }
-  override protected def reportStats(session: Session, stats: AirframeStats): Unit = {}
 }
 
 object ChromeTracer {

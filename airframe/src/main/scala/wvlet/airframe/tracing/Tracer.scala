@@ -22,7 +22,6 @@ import wvlet.log.LogSupport
   *
   */
 trait Tracer extends LogSupport {
-  protected val stats = new AirframeStats()
 
   private[airframe] def onSessionInitStart(session: Session): Unit = {
     report(SessionInitStart(session))
@@ -32,7 +31,6 @@ trait Tracer extends LogSupport {
   }
 
   private[airframe] def onGetBindingStart(session: Session, surface: Surface): Unit = {
-    stats.incrementGetBindingCount(session, surface)
     report(GetBindingStart(session, surface))
   }
 
@@ -41,7 +39,7 @@ trait Tracer extends LogSupport {
   }
 
   private[airframe] def onInject(session: Session, surface: Surface, injectee: Any) = {
-    stats.incrementInjectCount(session, surface)
+
     report(InjectInstance(session, surface, injectee))
   }
 
@@ -74,11 +72,9 @@ trait Tracer extends LogSupport {
   }
   private[airframe] def onSessionEnd(session: Session): Unit = {
     report(SessionEnd(session))
-    reportStats(session, stats)
   }
 
   protected def report(event: TraceEvent): Unit
-  protected def reportStats(session: Session, stats: AirframeStats): Unit
 }
 
 sealed trait TraceEvent {
@@ -107,9 +103,5 @@ class DefaultTracer extends Tracer with LogSupport {
 
   override protected def report(event: TraceEvent): Unit = {
     trace(event)
-  }
-  override protected def reportStats(session: Session, stats: AirframeStats): Unit = {
-    trace(stats)
-    trace(stats.coverageReport(session.design))
   }
 }

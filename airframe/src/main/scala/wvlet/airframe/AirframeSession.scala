@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.tracing.{DefaultTracer, Tracer}
+import wvlet.airframe.tracing.{AirframeStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
 
 import scala.collection.JavaConverters._
@@ -43,6 +43,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     design.binding.map(_.from).distinct.length == design.binding.length,
     s"Design contains duplicate entries: [${design.binding.groupBy(_.from).map(_._2).filter(_.length > 1).mkString(", ")}]"
   )
+  protected val stats: AirframeStats =
+    parent
+      .map(_.stats)
+      .getOrElse(new AirframeStats())
 
   private[airframe] val tracer: Tracer = {
     // Find a tracer from parent
@@ -170,7 +174,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
     debug(s"[${name}] Inject [${t}]: ${injectee}")
+
+    stats.incrementInjectCount(this, t)
     tracer.onInject(this, t, injectee)
+
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
@@ -199,6 +206,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     create: Boolean, // true for factory binding
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
+
+    stats.incrementGetBindingCount(this, t)
     tracer.onGetBindingStart(this, t)
 
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
