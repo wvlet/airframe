@@ -90,6 +90,12 @@ ga('send', 'pageview');
 </code></pre>
 </div>
 
+<p>You can monitor metrics of parallel execution via JMX using <a href="https://github.com/wvlet/airframe/tree/master/airframe-jmx">airframe-jmx</a>.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
+</code></pre>
+</div>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
