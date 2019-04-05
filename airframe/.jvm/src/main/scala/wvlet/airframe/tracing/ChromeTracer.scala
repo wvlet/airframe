@@ -52,8 +52,8 @@ class ChromeTracer(s: OutputStream) extends Tracer {
           ))
         emit(
           Event(
-            name = s"${session.name} init",
-            cat = "session",
+            name = s"${session.name}",
+            cat = "session,init",
             ph = "B",
             ts = event.eventTimeMillis,
             pid = session.sessionId,
@@ -62,14 +62,14 @@ class ChromeTracer(s: OutputStream) extends Tracer {
       case SessionInitEnd(session) =>
         emit(
           Event(
-            name = s"${session.name} init",
-            cat = "session",
+            name = s"${session.name}",
+            cat = "session,init",
             ph = "E",
             ts = event.eventTimeMillis,
             pid = session.sessionId,
             tid = event.threadId
           ))
-      case GetBindingStart(session, s) =>
+      case InjectStart(session, s) =>
         emit(
           Event(
             name = s"${s.name}",
@@ -79,11 +79,31 @@ class ChromeTracer(s: OutputStream) extends Tracer {
             pid = session.sessionId,
             tid = event.threadId
           ))
-      case GetBindingEnd(session, s) =>
+      case InjectEnd(session, s) =>
         emit(
           Event(
             name = s"${s.name}",
             cat = "inject",
+            ph = "E",
+            ts = event.eventTimeMillis,
+            pid = session.sessionId,
+            tid = event.threadId
+          ))
+      case InitInstanceStart(session, s, _) =>
+        emit(
+          Event(
+            name = s"${s.name}",
+            cat = "init",
+            ph = "B",
+            ts = event.eventTimeMillis,
+            pid = session.sessionId,
+            tid = event.threadId
+          ))
+      case InitInstanceEnd(session, s, _) =>
+        emit(
+          Event(
+            name = s"${s.name}",
+            cat = "init",
             ph = "E",
             ts = event.eventTimeMillis,
             pid = session.sessionId,

@@ -32,20 +32,19 @@ trait Tracer extends LogSupport {
     report(SessionInitEnd(session))
   }
 
-  private[airframe] def onGetBindingStart(session: Session, surface: Surface): Unit = {
-    report(GetBindingStart(session, surface))
+  private[airframe] def onInjectStart(session: Session, surface: Surface): Unit = {
+    report(InjectStart(session, surface))
   }
 
-  private[airframe] def onGetBindingEnd(session: Session, surface: Surface): Unit = {
-    report(GetBindingEnd(session, surface))
+  private[airframe] def onInjectEnd(session: Session, surface: Surface): Unit = {
+    report(InjectEnd(session, surface))
   }
 
-  private[airframe] def onInject(session: Session, surface: Surface, injectee: Any) = {
-    report(InjectInstance(session, surface, injectee))
+  private[airframe] def onInitInstanceStart(session: Session, surface: Surface, injectee: Any): Unit = {
+    report(InitInstanceStart(session, surface, injectee))
   }
-
-  private[airframe] def onInitInstance(session: Session, injectee: Injectee): Unit = {
-    report(InitInstance(session, injectee))
+  private[airframe] def onInitInstanceEnd(session: Session, surface: Surface, injectee: Any): Unit = {
+    report(InitInstanceEnd(session, surface, injectee))
   }
 
   private[airframe] def onStartInstance(session: Session, injectee: Injectee): Unit = {

@@ -103,7 +103,6 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
     addHook(h) { l =>
       if (l.initHookHolder.isFirstRegistration(h)) {
         debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
-        tracer.onInitInstance(session, h.injectee)
         h.execute
       } else {
         trace(s"[${l.sessionName}] ${h.injectee} is already initialized")

@@ -178,10 +178,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
   private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
-    debug(s"[${name}] Inject [${t}]: ${injectee}")
+    debug(s"[${name}] Init [${t}]: ${injectee}")
 
-    stats.incrementInjectCount(this, t)
-    tracer.onInject(this, t, injectee)
+    stats.incrementInitCount(this, t)
+    tracer.onInitInstanceStart(this, t, injectee)
 
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
@@ -189,6 +189,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
         throw e
     }
+    tracer.onInitInstanceEnd(this, t, injectee)
     injectee.asInstanceOf[AnyRef]
   }
 
@@ -212,8 +213,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                                     seen: List[Surface],
                                     defaultValue: Option[() => Any] = None): AnyRef = {
 
-    stats.incrementGetBindingCount(this, t)
-    tracer.onGetBindingStart(this, t)
+    stats.observe(t)
+    tracer.onInjectStart(this, t)
 
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
@@ -282,7 +283,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         }
       }
 
-    tracer.onGetBindingEnd(this, t)
+    tracer.onInjectEnd(this, t)
+    stats.incrementInjectCount(this, t)
 
     result.asInstanceOf[AnyRef]
   }

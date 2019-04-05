@@ -31,11 +31,11 @@ object TraceEvent {
   case class SessionShutdown(session: Session)       extends TraceEvent
   case class SessionEnd(session: Session)            extends TraceEvent
 
-  case class GetBindingStart(session: Session, s: Surface)                extends TraceEvent
-  case class GetBindingEnd(session: Session, s: Surface)                  extends TraceEvent
-  case class InjectInstance(session: Session, s: Surface, any: Any)       extends TraceEvent
-  case class InitInstance(session: Session, injectee: Injectee)           extends TraceEvent
-  case class StartInstance(session: Session, injectee: Injectee)          extends TraceEvent
-  case class BeforeShutdownInstance(session: Session, injectee: Injectee) extends TraceEvent
-  case class ShutdownInstance(session: Session, injectee: Injectee)       extends TraceEvent
+  case class InjectStart(session: Session, s: Surface)                      extends TraceEvent
+  case class InjectEnd(session: Session, s: Surface)                        extends TraceEvent
+  case class InitInstanceStart(session: Session, s: Surface, injectee: Any) extends TraceEvent
+  case class InitInstanceEnd(session: Session, s: Surface, injectee: Any)   extends TraceEvent
+  case class StartInstance(session: Session, injectee: Injectee)            extends TraceEvent
+  case class BeforeShutdownInstance(session: Session, injectee: Injectee)   extends TraceEvent
+  case class ShutdownInstance(session: Session, injectee: Injectee)         extends TraceEvent
 }

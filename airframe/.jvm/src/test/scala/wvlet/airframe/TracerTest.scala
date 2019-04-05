@@ -15,28 +15,32 @@ package wvlet.airframe
 import wvlet.airframe.tracing.{ChromeTracer, DIStats}
 import wvlet.log.LogSupport
 
-object TracerTest {
+object TracerTest extends LogSupport {
 
   trait D
   trait E
+  trait F
+  trait G
 
   trait C {
     val d = bind[D]
     val e = bind[E]
+    val g = bind[G]
   }
 
   trait B {
     val c = bind[C]
     val e = bind[E]
+    val g = bind[G]
   }
 
   trait A extends LogSupport {
     val b = bind[B]
-      .onInject(x => info("inject"))
-      .onInit(x => info("init"))
-      .onStart(x => info("start"))
-      .beforeShutdown(x => info("befoer shutdown"))
-      .onShutdown(x => info("shutdown"))
+      .onInject(x => debug("inject"))
+      .onInit(x => debug("init"))
+      .onStart(x => debug("start"))
+      .beforeShutdown(x => debug("befoer shutdown"))
+      .onShutdown(x => debug("shutdown"))
   }
 
 }
@@ -49,7 +53,7 @@ class TracerTest extends AirframeSpec {
   import TracerTest._
 
   "should trace events" in {
-    val d = newDesign
+    val d = newDesign.noLifeCycleLogging
       .withTracer(ChromeTracer.newTracer("target/trace.json"))
 
     d.build[A] { a =>
@@ -59,9 +63,12 @@ class TracerTest extends AirframeSpec {
 
   "should report design coverage" in {
     val stats = new DIStats()
-    val d = newDesign
+    val d = newDesign.noLifeCycleLogging
       .bind[A].toSingleton
       .bind[B].toSingleton
+      .bind[E].toSingleton
+      .bind[F].toSingleton
+      .bind[G].toLazyInstance(new G {})
       .withStats(stats) // Set stats
 
     d.build[A] { a =>

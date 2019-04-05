@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.tracing
 
+import java.util
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -24,8 +25,9 @@ import scala.collection.JavaConverters._
 
 case class DIStatsReport(
     coverage: Double,
+    observedTypes: Seq[Surface],
+    initCount: Map[Surface, Long],
     injectCount: Map[Surface, Long],
-    getCount: Map[Surface, Long],
     unusedTypes: Seq[Surface]
 ) {
 
@@ -43,9 +45,9 @@ case class DIStatsReport(
     }
     // Access stat report
     report += "[access stats]"
-    val allTypes = injectCount.keySet ++ getCount.keySet
-    for (s <- allTypes) {
-      report += s"[${s}] inject:${injectCount.getOrElse(s, 0)}, get:${getCount.getOrElse(s, 0)}"
+    val allTypes = injectCount.keySet ++ initCount.keySet
+    for (s <- observedTypes) {
+      report += s"[${s}] init:${initCount.getOrElse(s, 0)}, inject:${injectCount.getOrElse(s, 0)}"
     }
 
     report.result().mkString("\n")
@@ -61,15 +63,24 @@ class DIStats extends LogSupport with Serializable {
   // To avoid holding too many stats for applications that create many child sessions,
   // we will just store the aggregated stats.
   private val injectCountTable = new ConcurrentHashMap[Surface, AtomicLong]().asScala
-  private val bindCountTable   = new ConcurrentHashMap[Surface, AtomicLong]().asScala
+  private val initCountTable   = new ConcurrentHashMap[Surface, AtomicLong]().asScala
+
+  private val baseNano  = System.nanoTime()
+  private val firstSeen = new ConcurrentHashMap[Surface, Long]().asScala
+
+  private[airframe] def observe(s: Surface): Unit = {
+    firstSeen.getOrElseUpdate(s, System.nanoTime() - baseNano)
+  }
 
   private[airframe] def incrementInjectCount(session: Session, surface: Surface): Unit = {
+    observe(surface)
     val counter = injectCountTable.getOrElseUpdate(surface, new AtomicLong(0))
     counter.incrementAndGet()
   }
 
-  private[airframe] def incrementGetBindingCount(session: Session, surface: Surface): Unit = {
-    val counter = bindCountTable.getOrElseUpdate(surface, new AtomicLong(0))
+  private[airframe] def incrementInitCount(session: Session, surface: Surface): Unit = {
+    observe(surface)
+    val counter = initCountTable.getOrElseUpdate(surface, new AtomicLong(0))
     counter.incrementAndGet()
   }
 
@@ -86,8 +97,8 @@ class DIStats extends LogSupport with Serializable {
     report
   }
 
-  def getBindCount(surface: Surface): Long = {
-    bindCountTable.get(surface).map(_.get()).getOrElse(0)
+  def getInjectCount(surface: Surface): Long = {
+    injectCountTable.get(surface).map(_.get()).getOrElse(0)
   }
 
   def coverageReportFor(design: Design): DIStatsReport = {
@@ -96,9 +107,9 @@ class DIStats extends LogSupport with Serializable {
     val unusedBindings   = Seq.newBuilder[Surface]
     for (b <- design.binding) yield {
       bindingCount += 1
-      val surface   = b.from
-      val bindCount = getBindCount(surface)
-      if (bindCount > 0) {
+      val surface     = b.from
+      val injectCount = getInjectCount(surface)
+      if (injectCount > 0) {
         usedBindingCount += 1
       } else {
         unusedBindings += surface
@@ -112,8 +123,9 @@ class DIStats extends LogSupport with Serializable {
       }
     DIStatsReport(
       coverage = coverage,
+      observedTypes = firstSeen.toSeq.sortBy(_._2).map(_._1).toSeq,
+      initCount = initCountTable.map(x => x._1     -> x._2.get()).toMap,
       injectCount = injectCountTable.map(x => x._1 -> x._2.get()).toMap,
-      getCount = bindCountTable.map(x => x._1      -> x._2.get()).toMap,
       unusedTypes = unusedBindings.result(),
     )
   }
