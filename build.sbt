@@ -461,7 +461,7 @@ lazy val log =
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % "0.6.27"
+        "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
       )
     )
 
