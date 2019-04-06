@@ -436,6 +436,8 @@ lazy val launcher =
     .settings(
       name := "airframe-launcher",
       description := "Command-line program launcher",
+      // https://github.com/scala/scala-parser-combinators/issues/197
+      fork in Test := scalaVersion.value.startsWith("2.11."),
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
@@ -733,6 +735,8 @@ lazy val sql =
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
+      // https://github.com/scala/scala-parser-combinators/issues/197
+      fork in Test := scalaVersion.value.startsWith("2.11."),
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
