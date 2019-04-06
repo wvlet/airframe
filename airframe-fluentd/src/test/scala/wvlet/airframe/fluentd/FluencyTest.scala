@@ -12,17 +12,63 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe.{AirframeSpec, bind, _}
-import wvlet.log.io.IOUtil
-import xerial.fluentd.FluentdStandalone
+import java.io.BufferedInputStream
+import java.net.ServerSocket
+import java.util.concurrent.atomic.AtomicBoolean
 
-trait FluentdStandaloneService {
-  val fluentdServer = bind[FluentdStandalone]
-    .onStart(_.startAndAwait)
-    .onShutdown(_.stop)
+import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
+import wvlet.airframe.{AirframeSpec, bind, _}
+import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
+
+case class MockFluentdConfig(port: Int)
+
+trait MockFluentd extends LogSupport {
+  lazy val socket = bind { config: MockFluentdConfig =>
+    new ServerSocket(config.port)
+  }
+
+  val shutdown = new AtomicBoolean(false)
+
+  val t = new Thread(new Runnable {
+    override def run(): Unit = {
+      val clientSocket = socket.accept()
+      val out          = clientSocket.getOutputStream
+      val in           = new BufferedInputStream(clientSocket.getInputStream)
+
+      while (!shutdown.get()) {
+        var b            = new Array[Byte](8192)
+        var totalReadLen = 0
+        var readLen      = in.read(b)
+        while (readLen != -1) {
+          val nextReadLen = in.read(b, totalReadLen, readLen)
+          totalReadLen += readLen
+          readLen = nextReadLen
+        }
+        if (totalReadLen > 0) {
+          val v = ValueCodec.unpackMsgPack(b, 0, totalReadLen)
+          logger.info(s"Received event: ${v}")
+        }
+      }
+    }
+  })
+
+  @PostConstruct
+  def start: Unit = {
+    t.start()
+  }
+
+  @PreDestroy
+  def stop: Unit = {
+    shutdown.set(true)
+    socket.close()
+    t.interrupt()
+  }
+
 }
 
-trait MetricLoggingService extends FluentdStandaloneService {
+trait MetricLoggingService extends MockFluentd {
   val factory = bind[MetricLoggerFactory]
 }
 
@@ -36,8 +82,11 @@ case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
 class FluencyTest extends AirframeSpec {
   val fluentdPort = IOUtil.randomPort
   val d = fluentd
-    .withFluentdLogger(port = fluentdPort)
-    .bind[FluentdStandalone].toInstance(new FluentdStandalone(fluentdPort))
+    .withFluentdLogger(port = fluentdPort,
+                       // Do not send ack for simplicity
+                       ackResponseMode = false)
+    .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
+    .bind[MockFluentd].toEagerSingleton
     .noLifeCycleLogging
 
   "should send metrics to fluentd through Fluency" in {

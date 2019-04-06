@@ -147,6 +147,7 @@ object PackerImpl {
       case BigIntegerValue(v)         => v8.ValueFactory.newInteger(v)
       case DoubleValue(v)             => v8.ValueFactory.newFloat(v)
       case StringValue(v)             => v8.ValueFactory.newString(v)
+      case BinaryValue(v)             => v8.ValueFactory.newBinary(v)
       case ExtensionValue(extType, v) => v8.ValueFactory.newExtension(extType, v)
       case TimestampValue(v) => {
         val extBytes = timeStampExtBytes(v.getEpochSecond, v.getNano)
