@@ -1,16 +1,16 @@
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_12 = "2.12.8"
-val SCALA_2_13 = "2.13.0-M5"
+val SCALA_2_13 = "2.13.0-RC1"
 val SCALA_2_11 = "2.11.12"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
-val SCALATEST_VERSION               = "3.1.0-RC1"
+val SCALATEST_VERSION               = "3.0.8-RC2"
 val SCALACHECK_VERSION              = "1.14.0"
 val MSGPACK_VERSION                 = "0.8.16"
-val SCALA_PARSER_COMBINATOR_VERSION = "1.1.1"
+val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
 
@@ -291,7 +291,7 @@ def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
 
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
-    Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.1.2")
+    Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
   } else {
     Seq.empty
   }
@@ -461,7 +461,7 @@ lazy val log =
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % "0.1.4"
+        "org.scala-js" %%% "scalajs-java-logging" % "0.6.27"
       )
     )
 
