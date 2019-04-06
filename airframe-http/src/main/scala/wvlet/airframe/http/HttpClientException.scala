@@ -29,6 +29,9 @@ class HttpClientException(val status: HttpStatus, message: String, cause: Throwa
   def statusCode: Int = status.code
 }
 
+/**
+  * Common retry patterns for HTTP client exceptions
+  */
 object HttpClientException {
 
   def defaultHttpExceptionHandler(
