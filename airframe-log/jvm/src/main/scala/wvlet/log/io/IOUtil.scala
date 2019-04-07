@@ -14,7 +14,7 @@
 package wvlet.log.io
 
 import java.io._
-import java.net.ServerSocket
+import java.net.{ServerSocket, URL}
 import java.nio.charset.StandardCharsets
 
 /**
@@ -63,13 +63,24 @@ object IOUtil {
     }
   }
 
+  def readAsString(url: URL): String = {
+    withResource(url.openStream()) { in =>
+      readAsString(in)
+    }
+  }
+
   def readAsString(resourcePath: String): String = {
     require(resourcePath != null, s"resourcePath is null")
-    val file = findPath(new File(resourcePath))
-    if (file.isEmpty) {
-      throw new FileNotFoundException(s"Not found ${resourcePath}")
-    }
-    readAsString(new FileInputStream(file.get))
+    Resource
+      .find(resourcePath)
+      .map(readAsString(_))
+      .getOrElse {
+        val file = findPath(new File(resourcePath))
+        if (file.isEmpty) {
+          throw new FileNotFoundException(s"Not found ${resourcePath}")
+        }
+        readAsString(new FileInputStream(file.get))
+      }
   }
 
   def readAsString(in: InputStream): String = {

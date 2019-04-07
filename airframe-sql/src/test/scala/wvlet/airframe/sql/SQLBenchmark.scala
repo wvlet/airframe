@@ -14,11 +14,9 @@
 
 package wvlet.airframe.sql
 
-import java.io.File
-
 import wvlet.airframe.codec.MessageCodecFactory
 import wvlet.airframe.config.YamlReader
-import wvlet.log.io.IOUtil
+import wvlet.log.io.{IOUtil, Resource}
 
 /**
   *
@@ -30,25 +28,25 @@ object SQLBenchmark {
     def name              = path.getOrElse(s"${sql.substring(0, 20.min(sql.length))}")
   }
 
-  private val RESOURCE_PATH = "airframe-sql/src/test/resources/wvlet/airframe/sql"
+  private val RESOURCE_PATH = "/wvlet/airframe/sql"
 
   private def readSQLFromYaml(path: String): Seq[TestQuery] = {
-    if (IOUtil.findPath(path).isEmpty) {
-      Seq.empty
-    } else {
-      val yaml = YamlReader.loadYamlList(path)
-
-      yaml
-        .map { y =>
-          val msgpack = YamlReader.toMsgPack(y)
-          val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
-          codec.unpackMsgPack(msgpack).map { x =>
-            x
+    Resource
+      .find(path)
+      .map { url =>
+        val yaml = YamlReader.loadYamlList(url)
+        yaml
+          .map { y =>
+            val msgpack = YamlReader.toMsgPack(y)
+            val codec   = MessageCodecFactory.defaultFactory.of[TestQuery]
+            codec.unpackMsgPack(msgpack).map { x =>
+              x
+            }
           }
-        }
-        .filter(_.isDefined)
-        .flatten
-    }
+          .filter(_.isDefined)
+          .flatten
+      }
+      .getOrElse(Seq.empty)
   }
 
   def allQueries: Seq[TestQuery] = {
@@ -67,28 +65,26 @@ object SQLBenchmark {
     readSQLFromYaml(s"${RESOURCE_PATH}/standard/ddl.yml")
   }
 
-  private def readTestQueries(dir: File): Seq[TestQuery] = {
-    for (f <- dir.listFiles() if f.getName.endsWith(".sql")) yield {
-      TestQuery(IOUtil.readAsString(f.getPath), Some(f.getName))
+  private def readTestQueries(path: String): Seq[TestQuery] = {
+    for (f <- Resource.listResources(path) if f.logicalPath.endsWith(".sql")) yield {
+      TestQuery(IOUtil.readAsString(f.url), Some(f.logicalPath))
     }
   }
 
   lazy val tpcDS: Seq[TestQuery] = {
-    val dir = new File(s"${RESOURCE_PATH}/tpc-ds")
-    readTestQueries(dir).filter { x =>
+    readTestQueries(s"${RESOURCE_PATH}/tpc-ds").filter { x =>
       // TODO support rollup operator
       !x.sql.toLowerCase.contains("rollup")
     }
   }
 
   def tpcDS_(q: String): TestQuery = {
-    val f = new File(s"${RESOURCE_PATH}/tpc-ds/${q}.sql")
-    TestQuery(IOUtil.readAsString(f.getPath), Some(f.getName))
+    val path = s"${RESOURCE_PATH}/tpc-ds/${q}.sql"
+    TestQuery(IOUtil.readAsString(path), Some(q))
   }
 
   lazy val tpcH: Seq[TestQuery] = {
-    val dir = new File(s"${RESOURCE_PATH}/tpc-h")
-    readTestQueries(dir)
+    readTestQueries(s"${RESOURCE_PATH}/tpc-h")
   }
 
   lazy val hive: Seq[TestQuery] = {
