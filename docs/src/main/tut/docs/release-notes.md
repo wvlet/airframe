@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.4.1
+-  Add Scala 2.13.0-RC1 support. ([#487](https://github.com/wvlet/airframe/issues/487)) [[3eb68a8](https://github.com/wvlet/airframe/commit/3eb68a8)]
+-  airframe: Support DI tracing and coverage stats ([#486](https://github.com/wvlet/airframe/issues/486)) [[143c629](https://github.com/wvlet/airframe/commit/143c629)]
+-  airframe-control: Add trace logs and JMX monitoring to Parallel ([#481](https://github.com/wvlet/airframe/issues/481)) [[29141a5](https://github.com/wvlet/airframe/commit/29141a5)]
+-  airframe-codec: Support JSONValue, Json (raw json string)  ([#484](https://github.com/wvlet/airframe/issues/484)) [[70022a4](https://github.com/wvlet/airframe/commit/70022a4)]
+-  Add airframe code [examples ([#485](https://github.com/wvlet/airframe/issues/485)) [[2e585b9](https://github.com/wvlet/airframe/commit/2e585b9)]
+-  internal: Replace fluentd-standalone to MockFluentd ([#488](https://github.com/wvlet/airframe/issues/488)) [[fd7d075](https://github.com/wvlet/airframe/commit/fd7d075)]
+
 ## 19.4.0
 -  airframe-http: Fix shared http path prefix match ([#483](https://github.com/wvlet/airframe/issues/483)) [[a0cb0b0](https://github.com/wvlet/airframe/commit/a0cb0b0)]
 -  airframe-http: NFA-based fast HTTP route mapping ([#469](https://github.com/wvlet/airframe/issues/469)) [[27d2193](https://github.com/wvlet/airframe/commit/27d2193)]
