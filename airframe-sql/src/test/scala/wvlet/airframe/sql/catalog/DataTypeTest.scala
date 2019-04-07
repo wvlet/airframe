@@ -40,7 +40,7 @@ class DataTypeTest extends AirSpec {
     parse("decimal(10,2)", DecimalType(10, 2))
     parse("decimal(34,0)", DecimalType(34, 0))
     parse("decimal(34, 0)", DecimalType(34, 0))
-    parse("json", JSONType)
+    parse("json", JsonType)
     parse("binary", BinaryType)
     parse("timestamp", TimestampType)
     parse("array[int]", ArrayType(LongType))

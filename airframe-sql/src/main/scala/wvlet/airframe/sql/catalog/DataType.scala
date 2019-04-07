@@ -42,7 +42,7 @@ object DataType extends LogSupport {
   case class DecimalType(precision: Int, scale: Int) extends DataType(s"decimal(${precision},${scale})") {
     override def baseTypeName: String = "decimal"
   }
-  case object JSONType                     extends DataType("json")
+  case object JsonType                     extends DataType("json")
   case object BinaryType                   extends DataType("binary")
   case object TimestampType                extends DataType("timestamp")
   case class ArrayType(elemType: DataType) extends DataType(s"array[${elemType.typeName}]")
@@ -58,7 +58,7 @@ object DataType extends LogSupport {
       case "byte" | "char" | "short" | "int" | "long" => LongType
       case "float" | "double"                         => DoubleType
       case "boolean"                                  => BooleanType
-      case "json"                                     => JSONType
+      case "json"                                     => JsonType
       case "binary"                                   => BinaryType
       case "timestamp"                                => TimestampType
       case _ =>
