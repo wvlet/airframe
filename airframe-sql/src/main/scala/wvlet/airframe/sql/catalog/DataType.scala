@@ -18,18 +18,13 @@ import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType}
 
 import scala.util.parsing.combinator.RegexParsers
 
-/**
-  *
-  */
-case class Table(name: String, schema: Seq[NamedType])
-case class DbTable(db: String, table: String, schema: Seq[NamedType])
-case class NamedType(name: String, dataType: DataType) {
-  def typeName: String = s"${name}:${dataType}"
-}
-
 abstract class DataType(val typeName: String) {
   def baseTypeName: String      = typeName
   override def toString: String = typeName
+}
+
+case class NamedType(name: String, dataType: DataType) {
+  def typeName: String = s"${name}:${dataType}"
 }
 
 object DataType extends LogSupport {
