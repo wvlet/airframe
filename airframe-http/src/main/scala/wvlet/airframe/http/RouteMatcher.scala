@@ -16,7 +16,7 @@ import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req](controlllerProvider: ControllerProvider, request: HttpRequest[Req]): Option[Any] = {
+  def call[Req: HttpRequestAdapter](controlllerProvider: ControllerProvider, request: Req): Option[Any] = {
     route.call(controlllerProvider, request, params)
   }
 }
@@ -25,7 +25,7 @@ case class RouteMatch(route: Route, params: Map[String, String]) {
   * Find a matching route (RouteMatch) from a given HttpRequest
   */
 trait RouteMatcher {
-  def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch]
+  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch]
 }
 
 object RouteMatcher extends LogSupport {
@@ -44,9 +44,9 @@ object RouteMatcher extends LogSupport {
       }
     }
 
-    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
-      routesByMethod.get(request.method).flatMap { nextRouter =>
-        nextRouter.findRoute(request)
+    def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
+      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter =>
+        nextRouter.findRoute(request)(tp)
       }
     }
   }
@@ -65,10 +65,10 @@ object RouteMatcher extends LogSupport {
             s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} ")
       })
 
-    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
+    def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
       var currentState = dfa.initStateId
       var pathIndex    = 0
-      val pc           = request.pathComponents
+      val pc           = tp.pathComponentsOf(request)
 
       var foundRoute: Option[Route] = None
       var toContinue                = true

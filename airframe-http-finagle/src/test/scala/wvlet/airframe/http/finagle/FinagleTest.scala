@@ -39,7 +39,7 @@ class FinagleTest extends AirframeSpec {
         val req = http.Request(m, "/hello")
         req.setContentString("hello finagle")
         req.setContentTypeJson()
-        val r = req.asAirframeHttpRequest
+        val r = req.toHttpRequest
         r.method shouldBe toHttpMethod(m)
         r.path shouldBe "/hello"
         r.query shouldBe Map.empty
@@ -55,7 +55,7 @@ class FinagleTest extends AirframeSpec {
     orig.setContentString("hello world")
     orig.setContentTypeJson()
 
-    val r = orig.asAirframeHttpResponse
+    val r = orig.toHttpResponse
 
     r.status shouldBe HttpStatus.Forbidden_403
     r.statusCode shouldBe 403

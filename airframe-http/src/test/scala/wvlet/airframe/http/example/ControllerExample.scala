@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.example
 
-import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
+import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest, HttpRequestAdapter}
 import wvlet.log.LogSupport
 
 object ControllerExample {

@@ -45,15 +45,16 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @param request
     * @return
     */
-  def buildControllerMethodArgs[A](controller: Any, request: HttpRequest[A], params: Map[String, String]): Seq[Any] = {
+  def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
+      implicit tc: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = request.query ++ params
+    val requestParams = tc.queryOf(request) ++ params
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
       for (arg <- methodSurface.args) yield {
         arg.surface.rawType match {
-          case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
+          case cl if classOf[HttpRequestAdapter[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
             request
           case _ =>
@@ -65,11 +66,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
                 // Build the parameter from the content body
-                val contentBytes = request.contentBytes
+                val contentBytes = tc.contentBytesOf(request)
 
                 if (contentBytes.nonEmpty) {
                   val msgpack =
-                    request.contentType.map(_.split(";")(0)) match {
+                    tc.contentTypeOf(request).map(_.split(";")(0)) match {
                       case Some("application/x-msgpack") =>
                         contentBytes
                       case Some("application/json") =>
@@ -83,7 +84,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                           }
                           .getOrElse {
                             // If parsing as JSON fails, treat the content body as a regular string
-                            StringCodec.toMsgPack(request.contentString)
+                            StringCodec.toMsgPack(tc.contentStringOf(request))
                           }
                     }
                   argCodec.unpackMsgPack(msgpack)
@@ -104,9 +105,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     methodSurface.call(controller, methodArgs: _*)
   }
 
-  def call[A](controllerProvider: ControllerProvider,
-              request: HttpRequest[A],
-              params: Map[String, String]): Option[Any] = {
+  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
+                                    request: Req,
+                                    params: Map[String, String]): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
       call(controller, buildControllerMethodArgs(controller, request, params))
     }

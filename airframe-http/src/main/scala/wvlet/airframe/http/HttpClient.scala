@@ -25,7 +25,7 @@ import scala.language.higherKinds
   * @tparam Rep
   */
 trait HttpClient[F[_], Req, Rep] {
-  def request(req: HttpRequest[Req]): F[HttpResponse[Rep]]
+  def request(req: Req)(implicit ev: HttpRequestAdapter[Req]): F[Rep]
 }
 
 object HttpClient extends LogSupport {

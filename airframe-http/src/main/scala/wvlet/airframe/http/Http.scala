@@ -13,38 +13,90 @@
  */
 package wvlet.airframe.http
 
-import java.nio.charset.StandardCharsets
+import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
+
+/**
+  * Type class to bridge the original requests
+  *
+  * @tparam Req
+  */
+trait HttpRequestAdapter[Req] {
+  def methodOf(request: Req): HttpMethod
+  def pathOf(request: Req): String
+  def queryOf(request: Req): Map[String, String]
+  def contentStringOf(request: Req): String
+  def contentBytesOf(request: Req): Array[Byte]
+  def contentTypeOf(request: Req): Option[String]
+  def pathComponentsOf(request: Req): IndexedSeq[String] = {
+    pathOf(request).replaceFirst("/", "").split("/").toIndexedSeq
+  }
+  def httpRequestOf(request: Req): HttpRequest[Req]
+}
 
 trait HttpRequest[Req] {
-  def method: HttpMethod
-  def path: String
-  def query: Map[String, String]
-  def contentString: String
-  def contentBytes: Array[Byte]
-  def contentType: Option[String]
-  lazy val pathComponents: IndexedSeq[String] = {
+  protected def adapter: HttpRequestAdapter[Req]
+
+  def method: HttpMethod          = adapter.methodOf(toRaw)
+  def path: String                = adapter.pathOf(toRaw)
+  def query: Map[String, String]  = adapter.queryOf(toRaw)
+  def contentString: String       = adapter.contentStringOf(toRaw)
+  def contentBytes: Array[Byte]   = adapter.contentBytesOf(toRaw)
+  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
+  def pathComponents: IndexedSeq[String] = {
     path.replaceFirst("/", "").split("/").toIndexedSeq
   }
+  def toHttpRequest: HttpRequest[Req] = adapter.httpRequestOf(toRaw)
   def toRaw: Req
 }
 
-case class SimpleHttpRequest(method: HttpMethod,
-                             path: String,
-                             query: Map[String, String] = Map.empty,
-                             contentString: String = "")
-    extends HttpRequest[SimpleHttpRequest] {
-  override def contentBytes: Array[Byte] = {
-    contentString.getBytes(StandardCharsets.UTF_8)
-  }
-  def contentType: Option[String]       = None
-  override def toRaw: SimpleHttpRequest = this
+/**
+  * Type class to bridge the original response type and HttpResponse
+  *
+  * @tparam Resp
+  */
+trait HttpResponseAdapter[Resp] {
+  def statusOf(resp: Resp): HttpStatus = HttpStatus.ofCode(statusCodeOf(resp))
+  def statusCodeOf(resp: Resp): Int
+  def contentStringOf(resp: Resp): String
+  def contentBytesOf(resp: Resp): Array[Byte]
+  def contentTypeOf(resp: Resp): Option[String]
+  def httpResponseOf(resp: Resp): HttpResponse[Resp]
 }
 
 trait HttpResponse[Resp] {
-  def status: HttpStatus = HttpStatus.ofCode(statusCode)
-  def statusCode: Int
-  def contentString: String
-  def contentBytes: Array[Byte]
-  def contentType: Option[String]
+  protected def adapter: HttpResponseAdapter[Resp]
+
+  def status: HttpStatus          = adapter.statusOf(toRaw)
+  def statusCode: Int             = adapter.statusCodeOf(toRaw)
+  def contentString: String       = adapter.contentStringOf(toRaw)
+  def contentBytes: Array[Byte]   = adapter.contentBytesOf(toRaw)
+  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
+
+  def toHttpResponse: HttpResponse[Resp] = adapter.httpResponseOf(toRaw)
   def toRaw: Resp
+}
+
+case class SimpleHttpRequest(override val method: HttpMethod,
+                             override val path: String,
+                             override val query: Map[String, String] = Map.empty,
+                             override val contentString: String = "")
+    extends HttpRequest[SimpleHttpRequest] {
+
+  override protected def adapter: HttpRequestAdapter[SimpleHttpRequest] = SimpleHttpRequestAdapter
+  override def toRaw: SimpleHttpRequest                                 = this
+}
+
+object SimpleHttpRequest {
+  implicit object SimpleHttpRequestAdapter extends HttpRequestAdapter[SimpleHttpRequest] {
+    override def methodOf(request: SimpleHttpRequest): HttpMethod          = request.method
+    override def pathOf(request: SimpleHttpRequest): String                = request.path
+    override def queryOf(request: SimpleHttpRequest): Map[String, String]  = request.query
+    override def contentStringOf(request: SimpleHttpRequest): String       = request.contentString
+    override def contentBytesOf(request: SimpleHttpRequest): Array[Byte]   = request.contentBytes
+    override def contentTypeOf(request: SimpleHttpRequest): Option[String] = request.contentType
+    override def httpRequestOf(request: SimpleHttpRequest): HttpRequest[SimpleHttpRequest] = {
+      request
+    }
+  }
+
 }

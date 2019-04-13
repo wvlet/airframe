@@ -14,7 +14,7 @@
 package wvlet.airframe.http
 
 import com.twitter.finagle.http
-import com.twitter.finagle.http.Response
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.io.Buf.ByteArray
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
@@ -47,38 +47,47 @@ package object finagle {
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
-    def asAirframeHttpRequest: HttpRequest[http.Request] = this
-    override def toRaw                                   = raw
-    override def method: HttpMethod                      = toHttpMethod(raw.method)
-    override def path: String                            = raw.path
-    override def query: Map[String, String]              = raw.params
-    override def contentString: String                   = raw.contentString
-    override def contentBytes: Array[Byte] = {
-      val size = raw.content.length
-      val b    = new Array[Byte](size)
-      raw.content.write(b, 0)
+    override protected def adapter: HttpRequestAdapter[Request] = FinagleHttpRequestAdapter
+    override def toRaw: Request                                 = raw
+  }
+
+  implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
+    override def methodOf(request: Request): HttpMethod         = toHttpMethod(request.method)
+    override def pathOf(request: Request): String               = request.path
+    override def queryOf(request: Request): Map[String, String] = request.params
+    override def contentStringOf(request: Request): String      = request.contentString
+    override def contentBytesOf(request: Request): Array[Byte] = {
+      val content = request.content
+      val size    = content.length
+      val b       = new Array[Byte](size)
+      content.write(b, 0)
       b
     }
-    override def contentType: Option[String] = raw.contentType
+    override def contentTypeOf(request: Request): Option[String]       = request.contentType
+    override def httpRequestOf(request: Request): HttpRequest[Request] = FinagleHttpRequest(request)
   }
 
   implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {
-    def asAirframeHttpResponse: HttpResponse[http.Response] = this
-    override def statusCode: Int                            = raw.statusCode
-    override def contentString: String                      = raw.contentString
-    override def contentBytes: Array[Byte] = {
-      val c = raw.content
-      raw.content match {
+    override protected def adapter: HttpResponseAdapter[Response] = FinagleHttpResponseAdapter
+    override def toRaw: Response                                  = raw
+  }
+
+  implicit object FinagleHttpResponseAdapter extends HttpResponseAdapter[http.Response] {
+    override def statusCodeOf(res: http.Response): Int       = res.statusCode
+    override def contentStringOf(res: http.Response): String = res.contentString
+    override def contentBytesOf(res: http.Response): Array[Byte] = {
+      val c = res.content
+      c match {
         case b: ByteArray =>
           ByteArray.Owned.extract(b)
         case _ =>
           val buf = new Array[Byte](c.length)
-          raw.content.write(buf, 0)
+          c.write(buf, 0)
           buf
       }
     }
-    override def contentType: Option[String] = raw.contentType
-    override def toRaw: Response             = raw
+    override def contentTypeOf(res: http.Response): Option[String]      = res.contentType
+    override def httpResponseOf(resp: Response): HttpResponse[Response] = FinagleHttpResponse(resp)
   }
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {

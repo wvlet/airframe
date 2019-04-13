@@ -22,6 +22,12 @@ import scala.util.{Failure, Random, Success, Try}
   */
 object Retry extends LogSupport {
 
+  /**
+    * Classify the code results to Successful or Failed
+    */
+  type ResultClassifier    = PartialFunction[Any, ResultClass]
+  type ExceptionClassifier = PartialFunction[Throwable, Failed]
+
   def withBackOff(maxRetry: Int = 3,
                   initialIntervalMillis: Int = 100,
                   maxIntervalMillis: Int = 15000,

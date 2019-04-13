@@ -18,6 +18,8 @@ import java.net._
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
+import wvlet.airframe.control.{Failed, NonRetryableError, ResultClass, RetryableError}
+import wvlet.airframe.control.Retry.ExceptionClassifier
 
 /**
   *
@@ -34,22 +36,28 @@ class HttpClientException(val status: HttpStatus, message: String, cause: Throwa
   */
 object HttpClientException {
 
+//  def defaultResponseHandler[Res](implicit res: HttpResponse[Res]): PartialFunction[Res, ResultClass] = {
+//    case e if res.statusOf(e).isServerError =>
+//  }
+
   def defaultHttpExceptionHandler(
-      clientErrorHandler: HttpClientException => Unit = defaultClientErrorHandler,
-      executionFailureHandler: Throwable => Unit = defaultExecutionFailureHandler): PartialFunction[Throwable, Unit] = {
+      clientErrorHandler: HttpClientException => Failed = defaultClientErrorHandler,
+      executionFailureHandler: Throwable => Failed = defaultExecutionFailureHandler): ExceptionClassifier = {
     case e: HttpClientException =>
       e.status match {
         case s if s.isServerError => // 5xx
-        // We should retry on any server side errors
+          // We should retry on any server side errors
+          RetryableError
         case s if s.isClientError => // 4xx
           // OK to retry for some specific 400 errors
           clientErrorHandler(e)
         case other =>
           // Throw an exception upon non recoverable errors
-          throw e
+          NonRetryableError(e)
       }
     case e: TimeoutException =>
-    // Just retry upon timeout
+      // Just retry upon timeout
+      RetryableError
     case ex: IOException =>
       // Timeout, SSL related exception,
       // InputStreamResponseListner of Jetty may wrap the error with IOException
@@ -60,7 +68,7 @@ object HttpClientException {
       executionFailureHandler(ex)
     case other =>
       // We canot retry when an unknown exception is thrown
-      throw other
+      NonRetryableError(other)
   }
 
   private val retriable400ErrorMessage = Seq(
@@ -75,47 +83,53 @@ object HttpClientException {
     }.isDefined
   }
 
-  def defaultClientErrorHandler(ex: HttpClientException): Unit = {
+  def defaultClientErrorHandler(ex: HttpClientException): Failed = {
     ex.status match {
       case HttpStatus.BadRequest_400 if retryableClientErrorMessage(ex.getMessage) =>
-      // Some 400 errors can be caused by a client side error
+        // Some 400 errors can be caused by a client side error
+        RetryableError
       case HttpStatus.TooManyRequests_429 =>
-      // e.g., Server might return this code when busy. 429 should be retryable in general
+        // e.g., Server might return this code when busy. 429 should be retryable in general
+        RetryableError
       case HttpStatus.Gone_410 =>
-      // e.g., Server might have failed to process the request
+        // e.g., Server might have failed to process the request
+        RetryableError
       case HttpStatus.ClientClosedRequest_499 =>
-      // e.g., client-side might have closed the connection.
+        // e.g., client-side might have closed the connection.
+        RetryableError
       case other =>
-        throw ex // Non-retryable error
+        NonRetryableError(ex) // Non-retryable error
     }
   }
 
-  def defaultExecutionFailureHandler(ex: Throwable): Unit = {
+  def defaultExecutionFailureHandler(ex: Throwable): Failed = {
     // Other types of exception that can happen inside HTTP clients (e.g., Jetty)
     ex match {
       case e: java.lang.InterruptedException =>
-      // Retryable when the http client thread execution is interrupted.
-      case e: ProtocolException => // Retryable
-      case e: ConnectException  => // Retryable
-      case e: EOFException      => // Retryable
-      case e: TimeoutException  => // Retryable
-      case e: SocketException => // Retryable
+        // Retryable when the http client thread execution is interrupted.
+        RetryableError
+      case e: ProtocolException => RetryableError
+      case e: ConnectException  => RetryableError
+      case e: EOFException      => RetryableError
+      case e: TimeoutException  => RetryableError
+      case e: SocketException =>
         e match {
-          case se: BindException            => // Retryable
-          case se: ConnectException         => // Retryable
-          case se: NoRouteToHostException   => // Retryable
-          case se: PortUnreachableException => // Retryable
+          case se: BindException            => RetryableError
+          case se: ConnectException         => RetryableError
+          case se: NoRouteToHostException   => RetryableError
+          case se: PortUnreachableException => RetryableError
           case other =>
-            throw ex
+            NonRetryableError(other)
         }
       case e: SSLException =>
         e match {
           // Deterministic SSL exceptions are not retryable
-          case se: SSLHandshakeException      => throw ex
-          case se: SSLKeyException            => throw ex
-          case s3: SSLPeerUnverifiedException => throw ex
+          case se: SSLHandshakeException      => NonRetryableError(ex)
+          case se: SSLKeyException            => NonRetryableError(ex)
+          case s3: SSLPeerUnverifiedException => NonRetryableError(ex)
           case other                          =>
-          // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
+            // SSLProtocolException and uncategorized SSL exceptions (SSLException) such as unexpected_message may be retryable
+            RetryableError
         }
       case e: InvocationTargetException =>
         defaultExecutionFailureHandler(e.getTargetException)
@@ -123,7 +137,7 @@ object HttpClientException {
         // Trace the true cause
         defaultExecutionFailureHandler(ex.getCause)
       case other =>
-        throw ex
+        NonRetryableError(other)
     }
   }
 

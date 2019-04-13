@@ -15,17 +15,18 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.{Http, http}
 import com.twitter.util.Future
-import wvlet.airframe.http.{HttpClient, HttpRequest, HttpResponse, ServerAddress}
+import wvlet.airframe.http.{HttpClient, HttpRequestAdapter, HttpResponseAdapter, ServerAddress}
 
 case class FinagleClientConfig(address: ServerAddress)
 
 class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
 
-  private val client = Http.newService(config.address.hostAndPort)
+  private val client =
+    Http.client
+      .newService(config.address.hostAndPort)
 
-  override def request(req: HttpRequest[http.Request]): Future[HttpResponse[http.Response]] = {
-
-    client(req.toRaw).map(res => FinagleHttpResponse(res))
+  override def request(request: http.Request)(implicit ev: HttpRequestAdapter[http.Request]): Future[http.Response] = {
+    client(request)
   }
 
 }
