@@ -38,10 +38,7 @@ object HttpClient extends LogSupport {
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     warn(s"Request failed: ${ctx.lastError.getMessage}")
-    HttpClientException
-      .retryOnHttpClientException().applyOrElse(ctx.lastError, { e: Throwable =>
-        ResultClass.NonRetryableFailure
-      }) match {
+    HttpClientException.defaultClientExceptionClassifier(ctx.lastError) match {
       case ResultClass.Failed(retryable) =>
         if (!retryable) {
           throw ctx.lastError

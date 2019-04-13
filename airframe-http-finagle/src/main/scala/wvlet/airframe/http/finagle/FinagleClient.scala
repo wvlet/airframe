@@ -13,16 +13,26 @@
  */
 package wvlet.airframe.http.finagle
 
+import com.twitter.finagle.http.Response
+import com.twitter.finagle.service.{ReqRep, ResponseClass}
 import com.twitter.finagle.{Http, http}
-import com.twitter.util.Future
-import wvlet.airframe.http.{HttpClient, HttpRequestAdapter, HttpResponseAdapter, ServerAddress}
+import com.twitter.util.{Future, Return, Throw}
+import wvlet.airframe.control.ResultClass
+import wvlet.airframe.control.ResultClass.{Failed, Successful}
+import wvlet.airframe.http.{HttpClient, HttpClientException, HttpRequestAdapter, HttpResponseAdapter, ServerAddress}
 
 case class FinagleClientConfig(address: ServerAddress)
 
 class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
-
+  import FinagleClient._
   private val client =
     Http.client
+      .withResponseClassifier {
+        case ReqRep(_, Return(r: Response)) =>
+          toFinagleResponseClassifier(HttpClientException.defaultResponseClassifier(r))
+        case ReqRep(_, Throw(ex)) =>
+          toFinagleResponseClassifier(HttpClientException.defaultClientExceptionClassifier(ex))
+      }
       .newService(config.address.hostAndPort)
 
   override def request(request: http.Request)(implicit ev: HttpRequestAdapter[http.Request]): Future[http.Response] = {
@@ -40,4 +50,16 @@ object FinagleClient {
     new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort)))
   }
 
+  private[finagle] def toFinagleResponseClassifier(cls: ResultClass): ResponseClass = {
+    cls match {
+      case Successful =>
+        ResponseClass.Success
+      case Failed(isRetryable) =>
+        if (isRetryable) {
+          ResponseClass.RetryableFailure
+        } else {
+          ResponseClass.NonRetryableFailure
+        }
+    }
+  }
 }

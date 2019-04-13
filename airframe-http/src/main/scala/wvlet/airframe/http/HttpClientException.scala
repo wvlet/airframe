@@ -67,8 +67,7 @@ object HttpClientException {
       }
   }
 
-  def retryOnHttpClientException(
-      executionFailureHandler: Throwable => Failed = defaultExecutionFailureClassifier): ExceptionClassifier = {
+  def defaultClientExceptionClassifier: Throwable => Failed = {
     case e: HttpClientException =>
       e.status match {
         // OK to retry for some specific 400 errors
@@ -84,11 +83,11 @@ object HttpClientException {
     case ex: IOException =>
       // Timeout, SSL related exception,
       // InputStreamResponseListner of Jetty may wrap the error with IOException
-      executionFailureHandler(ex)
+      defaultExecutionFailureClassifier(ex)
     case ex: ExecutionException =>
-      executionFailureHandler(ex)
+      defaultExecutionFailureClassifier(ex)
     case ex: InvocationTargetException =>
-      executionFailureHandler(ex)
+      defaultExecutionFailureClassifier(ex)
     case other =>
       // We canot retry when an unknown exception is thrown
       NonRetryableFailure
