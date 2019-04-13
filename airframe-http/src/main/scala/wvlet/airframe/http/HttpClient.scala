@@ -16,12 +16,19 @@ import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
 import wvlet.airframe.http.HttpClientException.defaultHttpExceptionHandler
 import wvlet.log.LogSupport
+import scala.language.higherKinds
 
-class HttpClient
+/**
+  *
+  * @tparam F An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
+  * @tparam Req
+  * @tparam Rep
+  */
+trait HttpClient[F[_], Req, Rep] {
+  def request(req: HttpRequest[Req]): F[HttpResponse[Rep]]
+}
 
 object HttpClient extends LogSupport {
-  def newClient: HttpClient = ???
-
   def defaultRetryer: Retryer = {
     Retry
       .withBackOff(maxRetry = 10)

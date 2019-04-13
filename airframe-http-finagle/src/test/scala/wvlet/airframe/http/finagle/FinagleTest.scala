@@ -16,37 +16,52 @@ package wvlet.airframe.http.finagle
 import java.nio.charset.StandardCharsets
 
 import com.twitter.finagle.http
+import com.twitter.finagle.http.Status
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.http.HttpStatus
 
 /**
   *
   */
 class FinagleTest extends AirframeSpec {
-  "airframe-finagle package" should {
-    "provide facade of http requests" in {
-      import wvlet.airframe.http.finagle._
+  import wvlet.airframe.http.finagle._
 
-      Seq(http.Method.Get,
-          http.Method.Post,
-          http.Method.Delete,
-          http.Method.Put,
-          http.Method.Patch,
-          http.Method.Head,
-          http.Method.Options,
-          http.Method.Trace)
-        .foreach { m =>
-          val req = http.Request(m, "/hello")
-          req.setContentString("hello finagle")
-          req.setContentTypeJson()
-          val r = req.asAirframeHttpRequest
-          r.method shouldBe toHttpMethod(m)
-          r.path shouldBe "/hello"
-          r.query shouldBe Map.empty
-          r.contentString shouldBe "hello finagle"
-          r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
-          r.contentType shouldBe Some("application/json;charset=utf-8")
-          r.toRaw shouldBe req
-        }
-    }
+  "provide facade of http requests" in {
+    Seq(http.Method.Get,
+        http.Method.Post,
+        http.Method.Delete,
+        http.Method.Put,
+        http.Method.Patch,
+        http.Method.Head,
+        http.Method.Options,
+        http.Method.Trace)
+      .foreach { m =>
+        val req = http.Request(m, "/hello")
+        req.setContentString("hello finagle")
+        req.setContentTypeJson()
+        val r = req.asAirframeHttpRequest
+        r.method shouldBe toHttpMethod(m)
+        r.path shouldBe "/hello"
+        r.query shouldBe Map.empty
+        r.contentString shouldBe "hello finagle"
+        r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
+        r.contentType shouldBe Some("application/json;charset=utf-8")
+        r.toRaw shouldBe req
+      }
+  }
+
+  "provide facade of http responses" in {
+    val orig = http.Response(Status.Forbidden)
+    orig.setContentString("hello world")
+    orig.setContentTypeJson()
+
+    val r = orig.asAirframeHttpResponse
+
+    r.status shouldBe HttpStatus.Forbidden_403
+    r.statusCode shouldBe 403
+    r.contentString shouldBe "hello world"
+    r.contentType shouldBe Some("application/json;charset=utf-8")
+    r.contentBytes shouldBe "hello world".getBytes(StandardCharsets.UTF_8)
+    r.toRaw shouldBe theSameInstanceAs(orig)
   }
 }

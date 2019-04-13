@@ -41,6 +41,7 @@ case class SimpleHttpRequest(method: HttpMethod,
 }
 
 trait HttpResponse[Resp] {
+  def status: HttpStatus = HttpStatus.ofCode(statusCode)
   def statusCode: Int
   def contentString: String
   def contentBytes: Array[Byte]

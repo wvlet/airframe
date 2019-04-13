@@ -14,6 +14,8 @@
 package wvlet.airframe.http
 
 import com.twitter.finagle.http
+import com.twitter.finagle.http.Response
+import com.twitter.io.Buf.ByteArray
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -58,6 +60,25 @@ package object finagle {
       b
     }
     override def contentType: Option[String] = raw.contentType
+  }
+
+  implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {
+    def asAirframeHttpResponse: HttpResponse[http.Response] = this
+    override def statusCode: Int                            = raw.statusCode
+    override def contentString: String                      = raw.contentString
+    override def contentBytes: Array[Byte] = {
+      val c = raw.content
+      raw.content match {
+        case b: ByteArray =>
+          ByteArray.Owned.extract(b)
+        case _ =>
+          val buf = new Array[Byte](c.length)
+          raw.content.write(buf, 0)
+          buf
+      }
+    }
+    override def contentType: Option[String] = raw.contentType
+    override def toRaw: Response             = raw
   }
 
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {
