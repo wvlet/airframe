@@ -34,6 +34,9 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
     client(request)
   }
 
+  def close: Unit = {
+    client.close()
+  }
 }
 
 /**

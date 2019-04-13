@@ -24,7 +24,7 @@ import scala.language.higherKinds
   * @tparam Req
   * @tparam Rep
   */
-trait HttpClient[F[_], Req, Rep] {
+trait HttpClient[F[_], Req, Rep] extends AutoCloseable {
   def request(req: Req)(implicit ev: HttpRequestAdapter[Req]): F[Rep]
 }
 
