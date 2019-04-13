@@ -14,25 +14,20 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.Response
-import com.twitter.finagle.service.{ReqRep, ResponseClass}
+import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util.{Future, Return, Throw}
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Successful}
 import wvlet.airframe.http.{HttpClient, HttpClientException, HttpRequestAdapter, HttpResponseAdapter, ServerAddress}
 
-case class FinagleClientConfig(address: ServerAddress)
+case class FinagleClientConfig(address: ServerAddress,
+                               responseClassifier: ResponseClassifier = FinagleClient.defaultResponseClassifier)
 
 class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
-  import FinagleClient._
   private val client =
     Http.client
-      .withResponseClassifier {
-        case ReqRep(_, Return(r: Response)) =>
-          toFinagleResponseClassifier(HttpClientException.defaultResponseClassifier(r))
-        case ReqRep(_, Throw(ex)) =>
-          toFinagleResponseClassifier(HttpClientException.defaultClientExceptionClassifier(ex))
-      }
+      .withResponseClassifier(config.responseClassifier)
       .newService(config.address.hostAndPort)
 
   override def request(request: http.Request)(implicit ev: HttpRequestAdapter[http.Request]): Future[http.Response] = {
@@ -48,6 +43,20 @@ object FinagleClient {
 
   def newClient(hostAndPort: String): FinagleClient = {
     new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort)))
+  }
+
+  def baseResponseClassifier: ResponseClassifier = {
+    case ReqRep(_, Return(r: Response)) =>
+      toFinagleResponseClassifier(HttpClientException.defaultResponseClassifier(r))
+    case ReqRep(_, Throw(ex)) =>
+      toFinagleResponseClassifier(HttpClientException.defaultClientExceptionClassifier(ex))
+  }
+
+  def defaultResponseClassifier: ResponseClassifier = {
+    ResponseClassifier.RetryOnChannelClosed orElse
+      ResponseClassifier.RetryOnTimeout orElse
+      ResponseClassifier.RetryOnWriteExceptions orElse
+      baseResponseClassifier
   }
 
   private[finagle] def toFinagleResponseClassifier(cls: ResultClass): ResponseClass = {
