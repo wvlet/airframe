@@ -12,10 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
-import wvlet.airframe.http.HttpClientException.defaultHttpExceptionHandler
+import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.log.LogSupport
+
 import scala.language.higherKinds
 
 /**
@@ -38,11 +38,15 @@ object HttpClient extends LogSupport {
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     warn(s"Request failed: ${ctx.lastError.getMessage}")
-    defaultHttpExceptionHandler().applyOrElse(ctx.lastError, { x: Throwable =>
-      x match {
-        case _ => throw x
-      }
-    })
+    HttpClientException
+      .retryOnHttpClientException().applyOrElse(ctx.lastError, { e: Throwable =>
+        ResultClass.NonRetryableFailure
+      }) match {
+      case ResultClass.Failed(retryable) =>
+        if (!retryable) {
+          throw ctx.lastError
+        }
+    }
   }
 
   def defaultBeforeRetryAction(ctx: RetryContext): Unit = {

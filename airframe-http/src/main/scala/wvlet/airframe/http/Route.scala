@@ -46,9 +46,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @return
     */
   def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
-      implicit tc: HttpRequestAdapter[Req]): Seq[Any] = {
+      implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = tc.queryOf(request) ++ params
+    val requestParams = adapter.queryOf(request) ++ params
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -56,7 +56,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
         arg.surface.rawType match {
           case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
-            tc.httpRequestOf(request)
+            adapter.httpRequestOf(request)
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
@@ -66,11 +66,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
                 // Build the parameter from the content body
-                val contentBytes = tc.contentBytesOf(request)
+                val contentBytes = adapter.contentBytesOf(request)
 
                 if (contentBytes.nonEmpty) {
                   val msgpack =
-                    tc.contentTypeOf(request).map(_.split(";")(0)) match {
+                    adapter.contentTypeOf(request).map(_.split(";")(0)) match {
                       case Some("application/x-msgpack") =>
                         contentBytes
                       case Some("application/json") =>
@@ -84,7 +84,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                           }
                           .getOrElse {
                             // If parsing as JSON fails, treat the content body as a regular string
-                            StringCodec.toMsgPack(tc.contentStringOf(request))
+                            StringCodec.toMsgPack(adapter.contentStringOf(request))
                           }
                     }
                   argCodec.unpackMsgPack(msgpack)

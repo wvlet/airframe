@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.control
 
+import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}

@@ -18,14 +18,18 @@ package wvlet.airframe.control
   */
 sealed trait ResultClass
 
-/**
-  * A label for successful code execution results
-  */
-case object Successful extends ResultClass
+object ResultClass {
 
-/**
-  * A lable a failed code execution
-  */
-sealed class Failed(val isRetryable: Boolean) extends ResultClass
-case object RetryableError                    extends Failed(isRetryable = true)
-case class NonRetryableError(e: Throwable)    extends Failed(isRetryable = false)
+  /**
+    * A label for successful code execution results
+    */
+  case object Successful extends ResultClass
+
+  /**
+    * A label a failed code execution
+    */
+  case class Failed(val isRetryable: Boolean) extends ResultClass
+
+  val RetryableFailure    = Failed(isRetryable = true)
+  val NonRetryableFailure = Failed(isRetryable = false)
+}
