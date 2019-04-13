@@ -54,9 +54,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     val methodArgs: Seq[Any] =
       for (arg <- methodSurface.args) yield {
         arg.surface.rawType match {
-          case cl if classOf[HttpRequestAdapter[_]].isAssignableFrom(cl) =>
+          case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
-            request
+            tc.httpRequestOf(request)
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)

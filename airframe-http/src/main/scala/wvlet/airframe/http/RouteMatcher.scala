@@ -16,8 +16,8 @@ import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req: HttpRequestAdapter](controlllerProvider: ControllerProvider, request: Req): Option[Any] = {
-    route.call(controlllerProvider, request, params)
+  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
+    route.call(controllerProvider, request, params)
   }
 }
 

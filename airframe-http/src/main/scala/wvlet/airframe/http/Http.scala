@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import java.nio.charset.StandardCharsets
+
 import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
 
 /**
@@ -83,6 +85,8 @@ case class SimpleHttpRequest(override val method: HttpMethod,
     extends HttpRequest[SimpleHttpRequest] {
 
   override protected def adapter: HttpRequestAdapter[SimpleHttpRequest] = SimpleHttpRequestAdapter
+  override def contentBytes: Array[Byte]                                = contentString.getBytes(StandardCharsets.UTF_8)
+  override def contentType                                              = None
   override def toRaw: SimpleHttpRequest                                 = this
 }
 
