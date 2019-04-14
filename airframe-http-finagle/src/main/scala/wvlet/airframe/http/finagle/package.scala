@@ -97,7 +97,7 @@ package object finagle {
     HttpMethod.PATCH   -> http.Method.Patch,
     HttpMethod.DELETE  -> http.Method.Delete,
     HttpMethod.OPTIONS -> http.Method.Options,
-    HttpMethod.HEAD    -> http.Method.Options,
+    HttpMethod.HEAD    -> http.Method.Head,
     HttpMethod.TRACE   -> http.Method.Trace
   )
   private val httpMethodMappingReverse = httpMethodMapping.map(x => x._2 -> x._1).toMap
