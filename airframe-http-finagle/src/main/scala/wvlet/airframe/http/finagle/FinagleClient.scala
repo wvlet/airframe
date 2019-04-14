@@ -59,10 +59,7 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
     Request(toFinagleHttpMethod(method), path)
   }
 
-  override def await(req: Request): Response = {
-    awaitF(send(req))
-  }
-  override protected def awaitF[A](f: Future[A]): A = {
+  override private[http] def awaitF[A](f: Future[A]): A = {
     Await.result(f, config.timeout)
   }
 
@@ -103,6 +100,9 @@ object FinagleClient {
 
   def newClient(hostAndPort: String): FinagleClient = {
     new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort)))
+  }
+  def newSyncClient(hostAndPort: String) = {
+    new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort))).syncClient
   }
 
   def baseResponseClassifier: ResponseClassifier = {

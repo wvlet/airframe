@@ -12,15 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import java.util.concurrent.TimeUnit
-
-import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
 import wvlet.airframe.control.{ResultClass, Retry}
-import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
-import scala.concurrent.duration.Duration
 import scala.language.higherKinds
 import scala.reflect.runtime.{universe => ru}
 
@@ -35,29 +30,44 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
   protected def responseAdapter: HttpResponseAdapter[Resp]
 
   def send(req: Req): F[Resp]
-  def await(req: Req): Resp
 
   protected def newRequest(method: HttpMethod, path: String): Req
 
-  protected def awaitF[A](f: F[A]): A
+  private[http] def awaitF[A](f: F[A]): A
 
   def get[A: ru.TypeTag](path: String): F[A]
-  def getAwait[A: ru.TypeTag](path: String): A = awaitF(get[A](path))
-
   def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def postAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(post[A, R](path, data))
-
   def delete[R: ru.TypeTag](path: String): F[R]
-  def deleteAwait[R: ru.TypeTag](path: String): R = awaitF(delete[R](path))
-
   def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def deleteAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(delete[A, R](path, data))
-
   def put[R: ru.TypeTag](path: String): F[R]
-  def putAwait[R: ru.TypeTag](path: String): R = awaitF(put[R](path))
-
   def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def putAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(put[A, R](path, data))
+
+  def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
+}
+
+/**
+  * HttpClient that awaits responses.
+  *
+  * @param asyncClient
+  * @tparam F
+  * @tparam Req
+  * @tparam Resp
+  */
+class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) extends AutoCloseable {
+  protected def awaitF[A](f: F[A]): A = asyncClient.awaitF(f)
+
+  def send(req: Req): Resp = awaitF(asyncClient.send(req))
+
+  def get[A: ru.TypeTag](path: String): A                            = awaitF(asyncClient.get[A](path))
+  def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R   = awaitF(asyncClient.post[A, R](path, data))
+  def delete[R: ru.TypeTag](path: String): R                         = awaitF(asyncClient.delete[R](path))
+  def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(asyncClient.delete[A, R](path, data))
+  def put[R: ru.TypeTag](path: String): R                            = awaitF(asyncClient.put[R](path))
+  def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R    = awaitF(asyncClient.put[A, R](path, data))
+
+  override def close(): Unit = {
+    asyncClient.close()
+  }
 }
 
 object HttpClient extends LogSupport {

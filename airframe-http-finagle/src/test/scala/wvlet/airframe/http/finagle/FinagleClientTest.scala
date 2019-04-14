@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.Request
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, Router}
@@ -39,12 +38,10 @@ class FinagleClientTest extends AirframeSpec {
       .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = r))
 
     d.build[FinagleServer] { server =>
-      withResource(FinagleClient.newClient(s"localhost:${port}")) { client =>
-        info(client.getAwait[String]("/hello"))
-        info(client.getAwait[String]("/hello"))
+      withResource(FinagleClient.newSyncClient(s"localhost:${port}")) { client =>
+        info(client.get[String]("/hello"))
+        info(client.get[String]("/hello"))
       }
     }
-
   }
-
 }
