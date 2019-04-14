@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.util.concurrent.TimeUnit
+
 import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
@@ -33,7 +35,7 @@ import wvlet.airframe.http.{
 import scala.reflect.runtime.{universe => ru}
 
 case class FinagleClientConfig(address: ServerAddress,
-                               timeout: Duration,
+                               timeout: Duration = Duration(90, TimeUnit.SECONDS),
                                responseClassifier: ResponseClassifier = FinagleClient.defaultResponseClassifier)
 
 class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
@@ -58,9 +60,9 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
   }
 
   override def await(req: Request): Response = {
-    await(send(req))
+    awaitF(send(req))
   }
-  override protected def await[A](f: Future[A]): A = {
+  override protected def awaitF[A](f: Future[A]): A = {
     Await.result(f, config.timeout)
   }
 

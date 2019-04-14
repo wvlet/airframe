@@ -39,24 +39,25 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   protected def newRequest(method: HttpMethod, path: String): Req
 
-  protected def await[A](f: F[A]): A
+  protected def awaitF[A](f: F[A]): A
+
   def get[A: ru.TypeTag](path: String): F[A]
-  def getAwait[A: ru.TypeTag](path: String): A = await(get(path))
+  def getAwait[A: ru.TypeTag](path: String): A = awaitF(get[A](path))
 
   def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def postAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = await(post(path, data))
+  def postAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(post[A, R](path, data))
 
   def delete[R: ru.TypeTag](path: String): F[R]
-  def deleteAwait[R: ru.TypeTag](path: String): F[R] = await(delete(path))
+  def deleteAwait[R: ru.TypeTag](path: String): R = awaitF(delete[R](path))
 
   def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def deleteAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R] = await(delete(path, data))
+  def deleteAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(delete[A, R](path, data))
 
   def put[R: ru.TypeTag](path: String): F[R]
-  def putAwait[R: ru.TypeTag](path: String, data: R): R = await(put(path, data))
+  def putAwait[R: ru.TypeTag](path: String): R = awaitF(put[R](path))
 
   def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def putAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = await(put(path, data))
+  def putAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(put[A, R](path, data))
 }
 
 object HttpClient extends LogSupport {

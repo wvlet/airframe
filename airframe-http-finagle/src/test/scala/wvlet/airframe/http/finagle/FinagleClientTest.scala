@@ -40,8 +40,8 @@ class FinagleClientTest extends AirframeSpec {
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newClient(s"localhost:${port}")) { client =>
-        info(client.await(Request("/hello")).contentString)
-        info(client.await(Request("/hello")).contentString)
+        info(client.getAwait[String]("/hello"))
+        info(client.getAwait[String]("/hello"))
       }
     }
 
