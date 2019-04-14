@@ -36,7 +36,7 @@ class HttpStatus(val code: Int) {
 }
 
 /**
-  *
+  * HTTP status code collection.
   */
 object HttpStatus {
 

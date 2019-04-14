@@ -13,15 +13,27 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.Response
+import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
-import com.twitter.util.{Future, Return, Throw}
+import com.twitter.util.{Await, Duration, Future, Return, Throw}
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Successful}
-import wvlet.airframe.http.{HttpClient, HttpClientException, HttpRequestAdapter, HttpResponseAdapter, ServerAddress}
+import wvlet.airframe.http.{
+  HttpClient,
+  HttpClientException,
+  HttpMethod,
+  HttpRequestAdapter,
+  HttpResponseAdapter,
+  HttpResponseCodec,
+  ServerAddress
+}
+
+import scala.reflect.runtime.{universe => ru}
 
 case class FinagleClientConfig(address: ServerAddress,
+                               timeout: Duration,
                                responseClassifier: ResponseClassifier = FinagleClient.defaultResponseClassifier)
 
 class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
@@ -30,12 +42,55 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
       .withResponseClassifier(config.responseClassifier)
       .newService(config.address.hostAndPort)
 
-  override def request(request: http.Request)(implicit ev: HttpRequestAdapter[http.Request]): Future[http.Response] = {
-    client(request)
+  override def send(req: http.Request): Future[http.Response] = {
+    client(req)
   }
 
   def close: Unit = {
     client.close()
+  }
+  override protected def requestAdapter: HttpRequestAdapter[Request]    = FinagleHttpRequestAdapter
+  override protected def responseAdapter: HttpResponseAdapter[Response] = FinagleHttpResponseAdapter
+
+  override protected def newRequest(method: HttpMethod, path: String): Request = {
+    // TODO add additional http headers
+    Request(toFinagleHttpMethod(method), path)
+  }
+
+  override def await(req: Request): Response = {
+    await(send(req))
+  }
+  override protected def await[A](f: Future[A]): A = {
+    Await.result(f, config.timeout)
+  }
+
+  private val responseCodec = new HttpResponseCodec[Response]
+
+  private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
+    val codec = MessageCodec.of[A]
+    response.map { r =>
+      val msgpack = responseCodec.toMsgPack(r)
+      codec.unpack(msgpack)
+    }
+  }
+
+  override def get[A: ru.TypeTag](path: String): Future[A] = {
+    convert[A](send(newRequest(HttpMethod.GET, path)))
+  }
+  override def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
+    convert[R](send(newRequest(HttpMethod.POST, path)))
+  }
+  override def delete[R: ru.TypeTag](path: String): Future[R] = {
+    convert[R](send(newRequest(HttpMethod.DELETE, path)))
+  }
+  override def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
+    convert[R](send(newRequest(HttpMethod.DELETE, path)))
+  }
+  override def put[R: ru.TypeTag](path: String): Future[R] = {
+    convert[R](send(newRequest(HttpMethod.PUT, path)))
+  }
+  override def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
+    convert[R](send(newRequest(HttpMethod.PUT, path)))
   }
 }
 

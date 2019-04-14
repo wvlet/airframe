@@ -90,17 +90,23 @@ package object finagle {
     override def httpResponseOf(resp: Response): HttpResponse[Response] = FinagleHttpResponse(resp)
   }
 
+  private val httpMethodMapping = Map(
+    HttpMethod.GET     -> http.Method.Get,
+    HttpMethod.POST    -> http.Method.Post,
+    HttpMethod.PUT     -> http.Method.Put,
+    HttpMethod.PATCH   -> http.Method.Patch,
+    HttpMethod.DELETE  -> http.Method.Delete,
+    HttpMethod.OPTIONS -> http.Method.Options,
+    HttpMethod.HEAD    -> http.Method.Options,
+    HttpMethod.TRACE   -> http.Method.Trace
+  )
+  private val httpMethodMappingReverse = httpMethodMapping.map(x => x._2 -> x._1).toMap
+
   private[finagle] def toHttpMethod(method: http.Method): HttpMethod = {
-    method match {
-      case http.Method.Get     => HttpMethod.GET
-      case http.Method.Post    => HttpMethod.POST
-      case http.Method.Put     => HttpMethod.PUT
-      case http.Method.Patch   => HttpMethod.PATCH
-      case http.Method.Delete  => HttpMethod.DELETE
-      case http.Method.Options => HttpMethod.OPTIONS
-      case http.Method.Head    => HttpMethod.HEAD
-      case http.Method.Trace   => HttpMethod.TRACE
-      case other               => throw new IllegalArgumentException(s"Unsupported method: ${method}")
-    }
+    httpMethodMappingReverse.getOrElse(method, throw new IllegalArgumentException(s"Unsupported method: ${method}"))
+  }
+
+  private[finagle] def toFinagleHttpMethod(method: HttpMethod): http.Method = {
+    httpMethodMapping.getOrElse(method, throw new IllegalArgumentException(s"Unsupported method: ${method}"))
   }
 }

@@ -14,7 +14,6 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.Request
-import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, Router}
@@ -41,10 +40,8 @@ class FinagleClientTest extends AirframeSpec {
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newClient(s"localhost:${port}")) { client =>
-        val r = client.request(Request("/hello")).map { resp =>
-          resp.contentString
-        }
-        info(Await.result(r))
+        info(client.await(Request("/hello")).contentString)
+        info(client.await(Request("/hello")).contentString)
       }
     }
 

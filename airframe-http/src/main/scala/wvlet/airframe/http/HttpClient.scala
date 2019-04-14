@@ -12,20 +12,51 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import java.util.concurrent.TimeUnit
+
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
 import wvlet.airframe.control.{ResultClass, Retry}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
+import scala.concurrent.duration.Duration
 import scala.language.higherKinds
+import scala.reflect.runtime.{universe => ru}
 
 /**
   *
   * @tparam F An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
   * @tparam Req
-  * @tparam Rep
+  * @tparam Resp
   */
-trait HttpClient[F[_], Req, Rep] extends AutoCloseable {
-  def request(req: Req)(implicit ev: HttpRequestAdapter[Req]): F[Rep]
+trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
+  protected def requestAdapter: HttpRequestAdapter[Req]
+  protected def responseAdapter: HttpResponseAdapter[Resp]
+
+  def send(req: Req): F[Resp]
+  def await(req: Req): Resp
+
+  protected def newRequest(method: HttpMethod, path: String): Req
+
+  protected def await[A](f: F[A]): A
+  def get[A: ru.TypeTag](path: String): F[A]
+  def getAwait[A: ru.TypeTag](path: String): A = await(get(path))
+
+  def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
+  def postAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = await(post(path, data))
+
+  def delete[R: ru.TypeTag](path: String): F[R]
+  def deleteAwait[R: ru.TypeTag](path: String): F[R] = await(delete(path))
+
+  def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
+  def deleteAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R] = await(delete(path, data))
+
+  def put[R: ru.TypeTag](path: String): F[R]
+  def putAwait[R: ru.TypeTag](path: String, data: R): R = await(put(path, data))
+
+  def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
+  def putAwait[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = await(put(path, data))
 }
 
 object HttpClient extends LogSupport {
