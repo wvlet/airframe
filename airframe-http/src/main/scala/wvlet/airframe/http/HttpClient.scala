@@ -20,6 +20,7 @@ import scala.language.higherKinds
 import scala.reflect.runtime.{universe => ru}
 
 /**
+  * Asynchrnous Http Client
   *
   * @tparam F An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
   * @tparam Req
@@ -49,7 +50,7 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 }
 
 /**
-  * HttpClient that awaits responses.
+  * A synchronous HttpClient that awaits responses.
   *
   * @param asyncClient
   * @tparam F

@@ -78,7 +78,7 @@ class RouterTest extends AirframeSpec {
     r4.get.route.method shouldBe HttpMethod.DELETE
   }
 
-  "call registered methods" taggedAs working in {
+  "call registered methods" in {
     val router = Router.of[ControllerExample]
 
     val s = new ControllerExample {}

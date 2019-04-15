@@ -13,7 +13,9 @@
  */
 package wvlet.airframe.http.finagle
 
+import com.twitter.finagle.http.Request
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.log.io.IOUtil
@@ -61,6 +63,11 @@ class FinagleClientTest extends AirframeSpec {
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
+        // Sending an implementation specific Request type
+        val json = client.send(Request("/user/1")).contentString
+        MessageCodec.of[User].unpackJson(json) shouldBe Some(User(1, "leo"))
+
+        // Using HTTP request wrappers
         client.get[User]("/user/1") shouldBe User(1, "leo")
 
         client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo"))
