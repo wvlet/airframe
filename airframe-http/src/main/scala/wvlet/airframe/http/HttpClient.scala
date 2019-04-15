@@ -36,9 +36,14 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
   private[http] def awaitF[A](f: F[A]): A
 
   def get[Resource: ru.TypeTag](resourcePath: String): F[Resource]
+  def list[OperationResponse: ru.TypeTag](resourcePath: String): F[OperationResponse]
   def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
+  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
+                                                                resource: Resource): F[OperationResponse]
   def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
-  def delete[Resource: ru.TypeTag](resourcePath: String): F[Resource]
+  def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
+                                                               resource: Resource): F[OperationResponse]
+  def delete[OperationResponse: ru.TypeTag](resourcePath: String): F[OperationResponse]
 
   def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
 }
@@ -56,13 +61,32 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
   def send(req: Req): Resp = awaitF(asyncClient.send(req))
 
-  def get[Resource: ru.TypeTag](resourcePath: String): Resource = awaitF(asyncClient.get[Resource](resourcePath))
-  def post[Resource: ru.TypeTag](resorucePath: String, resource: Resource): Resource =
+  def get[Resource: ru.TypeTag](resourcePath: String): Resource = {
+    awaitF(asyncClient.get[Resource](resourcePath))
+  }
+  def list[OperationResponse: ru.TypeTag](resourcePath: String): OperationResponse = {
+    awaitF(asyncClient.list[OperationResponse](resourcePath))
+  }
+
+  def post[Resource: ru.TypeTag](resorucePath: String, resource: Resource): Resource = {
     awaitF(asyncClient.post[Resource](resorucePath, resource))
-  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource =
+  }
+  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resorucePath: String,
+                                                                resource: Resource): OperationResponse = {
+    awaitF(asyncClient.post[Resource, OperationResponse](resorucePath, resource))
+  }
+
+  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource = {
     awaitF(asyncClient.put[Resource](resourcePath, resource))
-  def delete[Resource: ru.TypeTag](resourcePath: String): Resource =
-    awaitF(asyncClient.delete[Resource](resourcePath))
+  }
+  def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
+                                                               resource: Resource): OperationResponse = {
+    awaitF(asyncClient.put[Resource, OperationResponse](resourcePath, resource))
+  }
+
+  def delete[OperationResponse: ru.TypeTag](resourcePath: String): OperationResponse = {
+    awaitF(asyncClient.delete[OperationResponse](resourcePath))
+  }
 
   override def close(): Unit = {
     asyncClient.close()

@@ -49,15 +49,13 @@ trait FinagleClientTestApi {
 class FinagleClientTest extends AirframeSpec {
 
   "create client" in {
-    val port = IOUtil.randomPort
-
     val r = Router.add[FinagleClientTestApi]
     val d = finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = r))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = IOUtil.randomPort, router = r))
       .noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
-      withResource(FinagleClient.newSyncClient(s"localhost:${port}")) { client =>
+      withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
         client.get[User]("/user/1") shouldBe User(1, "leo")
         client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
         client.delete[User]("/user/1") shouldBe User(1, "leo")

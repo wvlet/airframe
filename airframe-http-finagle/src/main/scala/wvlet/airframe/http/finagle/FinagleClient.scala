@@ -76,12 +76,23 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
   override def get[Resource: ru.TypeTag](resourcePath: String): Future[Resource] = {
     convert[Resource](send(newRequest(HttpMethod.GET, resourcePath)))
   }
+  override def list[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath)))
+  }
 
   override def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
     val r = newRequest(HttpMethod.POST, resourcePath)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
+  }
+  override def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.POST, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[OperationResponse](send(r))
   }
 
   override def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
@@ -90,9 +101,17 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
   }
+  override def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[OperationResponse](send(r))
+  }
 
-  override def delete[UpdatedResource: ru.TypeTag](resourcePath: String): Future[UpdatedResource] = {
-    convert[UpdatedResource](send(newRequest(HttpMethod.DELETE, resourcePath)))
+  override def delete[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath)))
   }
 
 }
