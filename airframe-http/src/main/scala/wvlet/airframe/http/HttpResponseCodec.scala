@@ -30,8 +30,13 @@ class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResp
         // JSON -> MsgPack
         JSONCodec.pack(p, v.contentString)
       case _ =>
-        // JSON -> MsgPack
-        JSONCodec.pack(p, v.contentString)
+        val content = v.contentString
+        if (content.startsWith("{") || content.startsWith("[")) {
+          // JSON -> MsgPack
+          JSONCodec.pack(p, v.contentString)
+        } else {
+          p.packString(content)
+        }
     }
   }
   override def unpack(u: Unpacker, v: MessageHolder): Unit = ???

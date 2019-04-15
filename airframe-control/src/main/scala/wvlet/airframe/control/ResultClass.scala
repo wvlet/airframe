@@ -32,4 +32,8 @@ object ResultClass {
 
   val RetryableFailure    = Failed(isRetryable = true)
   val NonRetryableFailure = Failed(isRetryable = false)
+
+  val AlwaysSuccess: Any => ResultClass = { x: Any =>
+    Successful
+  }
 }

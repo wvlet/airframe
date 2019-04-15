@@ -43,10 +43,8 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
   def close: Unit = {
     client.close()
   }
-  override protected def requestAdapter: HttpRequestAdapter[Request]    = FinagleHttpRequestAdapter
-  override protected def responseAdapter: HttpResponseAdapter[Response] = FinagleHttpResponseAdapter
 
-  override protected def newRequest(method: HttpMethod, path: String): Request = {
+  private def newRequest(method: HttpMethod, path: String): Request = {
     // TODO add additional http headers
     Request(toFinagleHttpMethod(method), path)
   }
@@ -130,9 +128,9 @@ object FinagleClient {
 
   def baseResponseClassifier: ResponseClassifier = {
     case ReqRep(_, Return(r: Response)) =>
-      toFinagleResponseClassifier(HttpClientException.defaultResponseClassifier(r))
+      toFinagleResponseClassifier(HttpClientException.classifyHttpResponse(r))
     case ReqRep(_, Throw(ex)) =>
-      toFinagleResponseClassifier(HttpClientException.defaultClientExceptionClassifier(ex))
+      toFinagleResponseClassifier(HttpClientException.classifyExecutionFailure(ex))
   }
 
   def defaultResponseClassifier: ResponseClassifier = {

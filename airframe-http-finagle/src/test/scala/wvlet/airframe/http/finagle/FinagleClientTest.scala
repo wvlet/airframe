@@ -15,7 +15,6 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.Request
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.log.io.IOUtil
@@ -23,6 +22,12 @@ import wvlet.log.io.IOUtil
 case class User(id: Int, name: String)
 
 trait FinagleClientTestApi {
+
+  @Endpoint(method = HttpMethod.GET, path = "/")
+  def info: String = {
+    "Ok"
+  }
+
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
   def get(id: Int): User = {
     User(id, "leo")
@@ -40,7 +45,7 @@ trait FinagleClientTestApi {
 
   @Endpoint(method = HttpMethod.DELETE, path = "/user/:id")
   def delete(id: Int): User = {
-    User(id, "leo")
+    User(id, "xxx")
   }
 
   @Endpoint(method = HttpMethod.PUT, path = "/user")
@@ -64,8 +69,8 @@ class FinagleClientTest extends AirframeSpec {
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
         // Sending an implementation specific Request type
-        val json = client.send(Request("/user/1")).contentString
-        MessageCodec.of[User].unpackJson(json) shouldBe Some(User(1, "leo"))
+        val ret = client.send(Request("/")).contentString
+        ret shouldBe "Ok"
 
         // Using HTTP request wrappers
         client.get[User]("/user/1") shouldBe User(1, "leo")
@@ -78,7 +83,7 @@ class FinagleClientTest extends AirframeSpec {
         client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
         client.put[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
 
-        client.delete[User]("/user/1") shouldBe User(1, "leo")
+        client.delete[User]("/user/1") shouldBe User(1, "xxx")
       }
     }
   }

@@ -20,20 +20,22 @@ import scala.language.higherKinds
 import scala.reflect.runtime.{universe => ru}
 
 /**
-  * Asynchrnous Http Client
+  * Asynchronous HTTP Client interface
   *
   * @tparam F An abstraction for Future type (e.g., Resolves the differences between Twitter Future, Scala Future, etc.)
   * @tparam Req
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
-  protected def requestAdapter: HttpRequestAdapter[Req]
-  protected def responseAdapter: HttpResponseAdapter[Resp]
-
   def send(req: Req): F[Resp]
 
-  protected def newRequest(method: HttpMethod, path: String): Req
-
+  /**
+    * Await the response and extract the return value
+    *
+    * @param f
+    * @tparam A
+    * @return
+    */
   private[http] def awaitF[A](f: F[A]): A
 
   def get[Resource: ru.TypeTag](resourcePath: String): F[Resource]
@@ -104,7 +106,7 @@ object HttpClient extends LogSupport {
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     warn(s"Request failed: ${ctx.lastError.getMessage}")
-    HttpClientException.defaultClientExceptionClassifier(ctx.lastError) match {
+    HttpClientException.classifyExecutionFailure(ctx.lastError) match {
       case ResultClass.Failed(retryable) =>
         if (!retryable) {
           throw ctx.lastError
