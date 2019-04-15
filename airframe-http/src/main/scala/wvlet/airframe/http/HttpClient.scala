@@ -35,12 +35,10 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   private[http] def awaitF[A](f: F[A]): A
 
-  def get[A: ru.TypeTag](path: String): F[A]
-  def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def delete[R: ru.TypeTag](path: String): F[R]
-  def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
-  def put[R: ru.TypeTag](path: String): F[R]
-  def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): F[R]
+  def get[Resource: ru.TypeTag](resourcePath: String): F[Resource]
+  def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
+  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
+  def delete[Resource: ru.TypeTag](resourcePath: String): F[Resource]
 
   def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
 }
@@ -58,12 +56,13 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
   def send(req: Req): Resp = awaitF(asyncClient.send(req))
 
-  def get[A: ru.TypeTag](path: String): A                            = awaitF(asyncClient.get[A](path))
-  def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R   = awaitF(asyncClient.post[A, R](path, data))
-  def delete[R: ru.TypeTag](path: String): R                         = awaitF(asyncClient.delete[R](path))
-  def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R = awaitF(asyncClient.delete[A, R](path, data))
-  def put[R: ru.TypeTag](path: String): R                            = awaitF(asyncClient.put[R](path))
-  def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): R    = awaitF(asyncClient.put[A, R](path, data))
+  def get[Resource: ru.TypeTag](resourcePath: String): Resource = awaitF(asyncClient.get[Resource](resourcePath))
+  def post[Resource: ru.TypeTag](resorucePath: String, resource: Resource): Resource =
+    awaitF(asyncClient.post[Resource](resorucePath, resource))
+  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource =
+    awaitF(asyncClient.put[Resource](resourcePath, resource))
+  def delete[Resource: ru.TypeTag](resourcePath: String): Resource =
+    awaitF(asyncClient.delete[Resource](resourcePath))
 
   override def close(): Unit = {
     asyncClient.close()

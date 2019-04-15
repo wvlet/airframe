@@ -15,22 +15,14 @@ package wvlet.airframe.http.finagle
 
 import java.util.concurrent.TimeUnit
 
-import com.twitter.finagle.http.{Method, Request, Response}
+import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
-import com.twitter.util.{Await, Duration, Future, Return, Throw}
-import wvlet.airframe.codec.MessageCodec
+import com.twitter.util._
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Successful}
-import wvlet.airframe.http.{
-  HttpClient,
-  HttpClientException,
-  HttpMethod,
-  HttpRequestAdapter,
-  HttpResponseAdapter,
-  HttpResponseCodec,
-  ServerAddress
-}
+import wvlet.airframe.http._
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -63,6 +55,7 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
     Await.result(f, config.timeout)
   }
 
+  private val codecFactory  = MessageCodecFactory.defaultFactory.withObjectMapCodec
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
@@ -73,24 +66,35 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
     }
   }
 
-  override def get[A: ru.TypeTag](path: String): Future[A] = {
-    convert[A](send(newRequest(HttpMethod.GET, path)))
+  private def toJson[Resource: ru.TypeTag](resource: Resource): String = {
+    val resourceCodec = codecFactory.of[Resource]
+    // TODO: Support non-json content body
+    val json = resourceCodec.toJson(resource)
+    json
   }
-  override def post[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
-    convert[R](send(newRequest(HttpMethod.POST, path)))
+
+  override def get[Resource: ru.TypeTag](resourcePath: String): Future[Resource] = {
+    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath)))
   }
-  override def delete[R: ru.TypeTag](path: String): Future[R] = {
-    convert[R](send(newRequest(HttpMethod.DELETE, path)))
+
+  override def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
+    val r = newRequest(HttpMethod.POST, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[Resource](send(r))
   }
-  override def delete[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
-    convert[R](send(newRequest(HttpMethod.DELETE, path)))
+
+  override def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[Resource](send(r))
   }
-  override def put[R: ru.TypeTag](path: String): Future[R] = {
-    convert[R](send(newRequest(HttpMethod.PUT, path)))
+
+  override def delete[UpdatedResource: ru.TypeTag](resourcePath: String): Future[UpdatedResource] = {
+    convert[UpdatedResource](send(newRequest(HttpMethod.DELETE, resourcePath)))
   }
-  override def put[A: ru.TypeTag, R: ru.TypeTag](path: String, data: A): Future[R] = {
-    convert[R](send(newRequest(HttpMethod.PUT, path)))
-  }
+
 }
 
 /**

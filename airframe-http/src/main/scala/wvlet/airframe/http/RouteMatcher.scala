@@ -56,7 +56,7 @@ object RouteMatcher extends LogSupport {
     */
   class FastRouteMatcher(targetMethod: HttpMethod, routes: Seq[Route]) extends RouteMatcher with LogSupport {
     private val dfa = buildPathDFA(routes)
-    debug(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
+    trace(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 
     dfa.nodeTable
       .map(_._1).foreach(state =>
@@ -103,7 +103,7 @@ object RouteMatcher extends LogSupport {
       }
 
       foundRoute.map { r =>
-        debug(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
+        trace(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
         RouteMatch(r, params.toMap)
       }
     }

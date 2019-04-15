@@ -15,14 +15,32 @@ package wvlet.airframe.http.finagle
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
 import wvlet.log.io.IOUtil
 
+case class User(id: Int, name: String)
+
 trait FinagleClientTestApi {
-  @Endpoint(path = "/hello")
-  def hello: String = {
-    "hello"
+  @Endpoint(path = "/user/:id")
+  def get(id: Int): User = {
+    User(id, "leo")
   }
+
+  @Endpoint(method = HttpMethod.POST, path = "/user")
+  def create(newUser: User): User = {
+    newUser
+  }
+
+  @Endpoint(method = HttpMethod.DELETE, path = "/user/:id")
+  def delete(id: Int): User = {
+    User(id, "leo")
+  }
+
+  @Endpoint(method = HttpMethod.PUT, path = "/user")
+  def put(updatedUser: User): User = {
+    updatedUser
+  }
+
 }
 
 /**
@@ -36,11 +54,14 @@ class FinagleClientTest extends AirframeSpec {
     val r = Router.add[FinagleClientTestApi]
     val d = finagleDefaultDesign
       .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = r))
+      .noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(s"localhost:${port}")) { client =>
-        info(client.get[String]("/hello"))
-        info(client.get[String]("/hello"))
+        client.get[User]("/user/1") shouldBe User(1, "leo")
+        client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
+        client.delete[User]("/user/1") shouldBe User(1, "leo")
+        client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
       }
     }
   }
