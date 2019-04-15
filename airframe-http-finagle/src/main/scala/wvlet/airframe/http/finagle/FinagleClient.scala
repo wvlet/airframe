@@ -21,7 +21,7 @@ import com.twitter.finagle.{Http, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ResultClass
-import wvlet.airframe.control.ResultClass.{Failed, Successful}
+import wvlet.airframe.control.ResultClass.{Failed, Succeeded}
 import wvlet.airframe.http._
 
 import scala.reflect.runtime.{universe => ru}
@@ -36,7 +36,9 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
       .withResponseClassifier(config.responseClassifier)
       .newService(config.address.hostAndPort)
 
-  override def send(req: http.Request): Future[http.Response] = {
+  override protected val retryer = HttpClient.defaultRetryer[http.Response]()
+
+  override protected def sendImpl(req: http.Request): Future[http.Response] = {
     client(req)
   }
 
@@ -142,9 +144,9 @@ object FinagleClient {
 
   private[finagle] def toFinagleResponseClassifier(cls: ResultClass): ResponseClass = {
     cls match {
-      case Successful =>
+      case Succeeded =>
         ResponseClass.Success
-      case Failed(isRetryable) =>
+      case Failed(isRetryable, _) =>
         if (isRetryable) {
           ResponseClass.RetryableFailure
         } else {

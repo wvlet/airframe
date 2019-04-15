@@ -60,11 +60,15 @@ object Retry extends LogSupport {
     warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
   }
 
+  private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
+    throw e
+  }
+
   private val NOT_STARTED = new IllegalStateException("Not started")
 
   case class Retryer(maxRetry: Int,
                      retryWaitStrategy: RetryWaitStrategy,
-                     resultClassifier: Any => ResultClass = ResultClass.AlwaysSuccess,
+                     resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
                      errorHandler: RetryContext => Any = RETRY_ALL,
                      beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
 
@@ -79,18 +83,21 @@ object Retry extends LogSupport {
       Retryer(
         maxRetry,
         retryWaitStrategy,
-        resultClassifier, { s: RetryContext =>
-          handlerForRetryableError.applyOrElse(s.lastError, { x: Throwable =>
-            // Rethrow all unknown exceptions
-            throw x
-          })
+        resultClassifier,
+        errorHandler = { s: RetryContext =>
+          // Rethrow all unhandled exceptions
+          handlerForRetryableError.applyOrElse(s.lastError, RETHROW_ALL)
         },
         beforeRetryAction
       )
     }
 
-    def withResultClassifier(newResultClassifier: Any => ResultClass): Retryer = {
-      Retryer(maxRetry, retryWaitStrategy, newResultClassifier, errorHandler, beforeRetryAction)
+    def withResultClassifier[U](newResultClassifier: U => ResultClass): Retryer = {
+      Retryer(maxRetry,
+              retryWaitStrategy,
+              newResultClassifier.asInstanceOf[Any => ResultClass],
+              errorHandler,
+              beforeRetryAction)
     }
 
     /**
@@ -115,11 +122,13 @@ object Retry extends LogSupport {
       var retryState: RetryContext = RetryContext(NOT_STARTED, 0, maxRetry, retryWait)
 
       while (result.isEmpty && retryCount < maxRetry) {
-        def retry(errorType: Throwable)(codeBlock: => Unit): Unit = {
+        def retry(errorType: Throwable, handleError: Boolean): Unit = {
           retryCount += 1
           val nextWait = retryWaitStrategy.adjustWait(retryWait)
           retryState = RetryContext(errorType, retryCount, maxRetry, nextWait)
-          codeBlock
+          if (handleError) {
+            errorHandler(retryState)
+          }
           retryWait = retryWaitStrategy.updateWait(retryWait)
           beforeRetryAction(retryState)
           Thread.sleep(nextWait)
@@ -127,21 +136,20 @@ object Retry extends LogSupport {
 
         Try(body) match {
           case Success(a) =>
+            // Test whether the code block execution is successeded or failed
             resultClassifier(a) match {
-              case ResultClass.Successful =>
-                // OK
+              case ResultClass.Succeeded =>
+                // OK. Exit the loop
                 result = Some(a)
-              case ResultClass.Failed(isRetryable) if isRetryable == true =>
-                retry(ExecutionFailure(a)) {
-                  // do nothing
-                }
-              case ResultClass.Failed(isRetryable) if isRetryable == false =>
-                throw ExecutionFailure(a)
+              case ResultClass.Failed(isRetryable, cause) if isRetryable == true =>
+                // Retryable error
+                retry(cause, handleError = false)
+              case ResultClass.Failed(isRetryable, cause) if isRetryable == false =>
+                // Non-retryable error
+                throw cause
             }
           case Failure(e) =>
-            retry(e) {
-              errorHandler(retryState)
-            }
+            retry(e, handleError = true)
         }
       }
       result match {

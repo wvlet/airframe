@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{RetryContext, Retryer}
-import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -27,7 +27,19 @@ import scala.reflect.runtime.{universe => ru}
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
-  def send(req: Req): F[Resp]
+  protected val retryer: Retryer
+
+  /**
+    * Send the request.
+    */
+  def send(req: Req): F[Resp] = {
+    // Retry upon failed responses
+    retryer.run {
+      sendImpl(req)
+    }
+  }
+
+  protected def sendImpl(req: Req): F[Resp]
 
   /**
     * Await the response and extract the return value
@@ -97,20 +109,19 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 }
 
 object HttpClient extends LogSupport {
-  def defaultRetryer: Retryer = {
+  def defaultRetryer[Resp: HttpResponseAdapter](maxRetry: Int = 10): Retryer = {
     Retry
-      .withBackOff(maxRetry = 10)
+      .withBackOff(maxRetry = maxRetry)
+//      .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
       .withErrorHandler(defaultErrorHandler)
       .beforeRetry(defaultBeforeRetryAction)
   }
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     warn(s"Request failed: ${ctx.lastError.getMessage}")
-    HttpClientException.classifyExecutionFailure(ctx.lastError) match {
-      case ResultClass.Failed(retryable) =>
-        if (!retryable) {
-          throw ctx.lastError
-        }
+    val failureType = HttpClientException.classifyExecutionFailure(ctx.lastError)
+    if (!failureType.isRetryable) {
+      throw failureType.cause
     }
   }
 

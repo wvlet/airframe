@@ -23,17 +23,17 @@ object ResultClass {
   /**
     * A label for successful code execution results
     */
-  case object Successful extends ResultClass
+  case object Succeeded extends ResultClass
 
   /**
     * A label a failed code execution
     */
-  case class Failed(val isRetryable: Boolean) extends ResultClass
+  case class Failed(val isRetryable: Boolean, cause: Throwable) extends ResultClass
 
-  val RetryableFailure    = Failed(isRetryable = true)
-  val NonRetryableFailure = Failed(isRetryable = false)
+  def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
+  def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
 
-  val AlwaysSuccess: Any => ResultClass = { x: Any =>
-    Successful
+  val AlwaysSucceed: Any => ResultClass = { x: Any =>
+    Succeeded
   }
 }
