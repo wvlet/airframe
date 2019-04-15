@@ -21,9 +21,14 @@ import wvlet.log.io.IOUtil
 case class User(id: Int, name: String)
 
 trait FinagleClientTestApi {
-  @Endpoint(path = "/user/:id")
+  @Endpoint(method = HttpMethod.GET, path = "/user/:id")
   def get(id: Int): User = {
     User(id, "leo")
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/user")
+  def list: Seq[User] = {
+    Seq(User(1, "leo"))
   }
 
   @Endpoint(method = HttpMethod.POST, path = "/user")
@@ -57,9 +62,16 @@ class FinagleClientTest extends AirframeSpec {
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
         client.get[User]("/user/1") shouldBe User(1, "leo")
+
+        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo"))
+
         client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
-        client.delete[User]("/user/1") shouldBe User(1, "leo")
+        client.post[User, User]("/user", User(2, "yui")) shouldBe User(2, "yui")
+
         client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
+        client.put[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
+
+        client.delete[User]("/user/1") shouldBe User(1, "leo")
       }
     }
   }
