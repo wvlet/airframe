@@ -60,24 +60,28 @@ class FinagleRetryFilter(retryer: RetryContext, timer: Timer = DefaultTimer)
           rep
         case ResultClass.Failed(isRetryable, cause) => {
           if (retryContext.canContinue && isRetryable) {
-            schedule(retryContext.nextWaitMillis.millis) {
-              Future
-                .value {
-                  // Update the retry count
-                  retryContext.nextRetry(cause)
-                }.flatMap { nextRetryContext =>
+            Future
+              .value {
+                // Update the retry count
+                retryContext.nextRetry(cause)
+              }.flatMap { nextRetryContext =>
+                // Wait until the next retry
+                schedule(retryContext.nextWaitMillis.millis) {
+                  // Run the same request again
                   dispatch(nextRetryContext, request, service)
                 }
-            }
+              }
           } else {
             // No more retry.
             x match {
               case Throw(e) =>
+                warn(e)
+                // Create an error response
                 val r = Response(Status.BadRequest)
                 r.setContentString(cause.getMessage)
                 Future.value(r)
               case Return(r) =>
-                // Just return the last response
+                // Just return the last failed response
                 rep
             }
           }

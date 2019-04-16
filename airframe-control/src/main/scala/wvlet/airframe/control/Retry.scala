@@ -45,7 +45,7 @@ object Retry extends LogSupport {
   }
 
   private val defaultRetryContext: RetryContext = {
-    val retryConfig = RetryConfig()
+    val retryConfig = RetryPolicyConfig()
     RetryContext(
       context = None,
       lastError = NOT_STARTED,
@@ -64,22 +64,19 @@ object Retry extends LogSupport {
 
   case object NOT_STARTED extends Exception("Code is not executed")
 
-  // Return this class at the beforeRetryAction to add extra weight time.
+  // Return this class at the beforeRetryAction to add extra wait time.
   case class AddExtraRetryWait(extraWaitMillis: Int)
 
-  private def REPORT_FAILURE: RetryContext => Unit = { ctx: RetryContext =>
-    warn(s"Execution failed: ${ctx.lastError}")
-  }
-
   private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
-    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
+    warn(
+      f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
   }
 
   case class RetryContext(context: Option[Any],
                           lastError: Throwable,
                           retryCount: Int,
                           maxRetry: Int,
-                          retryWaitStrategy: RetryWaitStrategy,
+                          retryWaitStrategy: RetryPolicy,
                           nextWaitMillis: Int,
                           baseWaitMillis: Int,
                           resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
@@ -101,8 +98,8 @@ object Retry extends LogSupport {
           "context"        -> context,
           "lastError"      -> NOT_STARTED,
           "retryCount"     -> 0,
-          "nextWaitMillis" -> retryWaitStrategy.retryConfig.initialIntervalMillis,
-          "baseWaitMillis" -> retryWaitStrategy.retryConfig.initialIntervalMillis
+          "nextWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
+          "baseWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis
         ))
     }
 
@@ -121,8 +118,8 @@ object Retry extends LogSupport {
         Map(
           "lastError"      -> retryReason,
           "retryCount"     -> (retryCount + 1),
-          "nextWaitMillis" -> retryWaitStrategy.adjustWait(baseWaitMillis),
-          "baseWaitMillis" -> retryWaitStrategy.updateWait(nextWaitMillis)
+          "nextWaitMillis" -> retryWaitStrategy.nextWait(baseWaitMillis),
+          "baseWaitMillis" -> retryWaitStrategy.updateBaseWait(baseWaitMillis)
         ))
       beforeRetryAction(nextRetry) match {
         case AddExtraRetryWait(extraWaitMillis) =>
@@ -136,7 +133,7 @@ object Retry extends LogSupport {
       partialUpdate(Map("nextWaitMillis" -> (this.nextWaitMillis + extraWaitMillis)))
     }
 
-    def withRetryWaitStrategy(newRetryWaitStrategy: RetryWaitStrategy): RetryContext = {
+    def withRetryWaitStrategy(newRetryWaitStrategy: RetryPolicy): RetryContext = {
       partialUpdate(Map("retryWaitStrategy" -> newRetryWaitStrategy))
     }
 
@@ -147,14 +144,14 @@ object Retry extends LogSupport {
     def withBackOff(initialIntervalMillis: Int = 100,
                     maxIntervalMillis: Int = 15000,
                     multiplier: Double = 1.5): RetryContext = {
-      val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+      val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       partialUpdate(Map("retryWaitStrategy" -> new ExponentialBackOff(config)))
     }
 
     def withJitter(initialIntervalMillis: Int = 100,
                    maxIntervalMillis: Int = 15000,
                    multiplier: Double = 1.5): RetryContext = {
-      val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+      val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       partialUpdate(Map("retryWaitStrategy" -> new Jitter(config)))
     }
 
@@ -221,6 +218,7 @@ object Retry extends LogSupport {
           case ResultClass.Failed(isRetryable, cause) if isRetryable =>
             // Retryable error
             retryContext = retryContext.nextRetry(cause)
+            // Wait until the next retry
             Thread.sleep(retryContext.nextWaitMillis)
           case ResultClass.Failed(isRetryable, cause) if !isRetryable =>
             // Non-retryable error. Exit the loop by throwing the exception
@@ -243,33 +241,35 @@ object Retry extends LogSupport {
 
   case class Retryer(initRetryContext: RetryContext) extends LogSupport {}
 
-  case class RetryConfig(initialIntervalMillis: Int = 100, maxIntervalMillis: Int = 15000, multiplier: Double = 1.5) {
+  case class RetryPolicyConfig(initialIntervalMillis: Int = 100,
+                               maxIntervalMillis: Int = 15000,
+                               multiplier: Double = 1.5) {
     require(initialIntervalMillis >= 0)
     require(maxIntervalMillis >= 0)
     require(multiplier >= 0)
   }
 
-  trait RetryWaitStrategy {
-    def retryConfig: RetryConfig
-    def updateWait(waitMillis: Int): Int
-    def adjustWait(waitMillis: Int): Int
+  trait RetryPolicy {
+    def retryPolicyConfig: RetryPolicyConfig
+    def updateBaseWait(waitMillis: Int): Int
+    def nextWait(baseWaitMillis: Int): Int
   }
 
-  class ExponentialBackOff(val retryConfig: RetryConfig) extends RetryWaitStrategy {
-    override def updateWait(waitMillis: Int): Int = {
-      math.round(waitMillis * retryConfig.multiplier).toInt.min(retryConfig.maxIntervalMillis)
+  class ExponentialBackOff(val retryPolicyConfig: RetryPolicyConfig) extends RetryPolicy {
+    override def updateBaseWait(waitMillis: Int): Int = {
+      math.round(waitMillis * retryPolicyConfig.multiplier).toInt.min(retryPolicyConfig.maxIntervalMillis)
     }
-    override def adjustWait(waitMillis: Int): Int = {
-      waitMillis
+    override def nextWait(baseWaitMillis: Int): Int = {
+      baseWaitMillis
     }
   }
 
-  class Jitter(val retryConfig: RetryConfig, rand: Random = new Random()) extends RetryWaitStrategy {
-    override def updateWait(waitMillis: Int): Int = {
-      math.round(waitMillis * retryConfig.multiplier).toInt.min(retryConfig.maxIntervalMillis)
+  class Jitter(val retryPolicyConfig: RetryPolicyConfig, rand: Random = new Random()) extends RetryPolicy {
+    override def updateBaseWait(waitMillis: Int): Int = {
+      math.round(waitMillis * retryPolicyConfig.multiplier).toInt.min(retryPolicyConfig.maxIntervalMillis)
     }
-    override def adjustWait(waitMillis: Int): Int = {
-      (waitMillis.toDouble * rand.nextDouble()).round.toInt
+    override def nextWait(baseWaitMillis: Int): Int = {
+      (baseWaitMillis.toDouble * rand.nextDouble()).round.toInt
     }
   }
 }

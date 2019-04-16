@@ -25,9 +25,9 @@ import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 
-case class FinagleClientConfig(initClient: Http.Client => Http.Client = identity,
+case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
-                               retryer: RetryContext = HttpClient.defaultHttpClientRetryer[http.Request, http.Response])
+                               retryer: RetryContext = FinagleClient.defaultRetryer)
 
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
@@ -125,11 +125,14 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   */
 object FinagleClient extends LogSupport {
 
-  def defaultConfig: FinagleClientConfig = FinagleClientConfig(
-    initClient = { x: Http.Client =>
-      x.withSessionQualifier.noFailureAccrual
-    }
-  )
+  def defaultConfig: FinagleClientConfig = FinagleClientConfig()
+
+  def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
+    x.withSessionQualifier.noFailureAccrual
+  }
+  def defaultRetryer: RetryContext = {
+    HttpClient.defaultHttpClientRetryer[http.Request, http.Response]
+  }
 
   def newClient(hostAndPort: String, config: FinagleClientConfig = defaultConfig): FinagleClient = {
     new FinagleClient(address = ServerAddress(hostAndPort), config)

@@ -86,10 +86,10 @@ class RetryTest extends AirframeSpec {
       .withJitter()
       .withBackOff(initialIntervalMillis = 3)
 
-    r.retryWaitStrategy.retryConfig.initialIntervalMillis shouldBe 3
+    r.retryWaitStrategy.retryPolicyConfig.initialIntervalMillis shouldBe 3
 
     val j = r.withJitter(initialIntervalMillis = 20)
-    j.retryWaitStrategy.retryConfig.initialIntervalMillis shouldBe 20
+    j.retryWaitStrategy.retryPolicyConfig.initialIntervalMillis shouldBe 20
 
     val m = j.withMaxRetry(100)
     m.maxRetry shouldBe 100
