@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import java.nio.charset.StandardCharsets
 
 import wvlet.airframe.http.SimpleHttpRequest.SimpleHttpRequestAdapter
+import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
 
 /**
   * Type class to bridge the original requests
@@ -102,5 +103,23 @@ object SimpleHttpRequest {
       request
     }
   }
+}
 
+case class SimpleHttpResponse(override val status: HttpStatus,
+                              override val contentString: String = "",
+                              override val contentType: Option[String] = None)
+    extends HttpResponse[SimpleHttpResponse] {
+  override protected def adapter: HttpResponseAdapter[SimpleHttpResponse] = SimpleHttpResponseAdapter
+  override def toRaw: SimpleHttpResponse                                  = this
+}
+
+object SimpleHttpResponse {
+  implicit object SimpleHttpResponseAdapter extends HttpResponseAdapter[SimpleHttpResponse] {
+    override def statusCodeOf(resp: SimpleHttpResponse): Int       = resp.status.code
+    override def contentStringOf(resp: SimpleHttpResponse): String = resp.contentString
+    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte] =
+      resp.contentString.getBytes(StandardCharsets.UTF_8)
+    override def contentTypeOf(resp: SimpleHttpResponse): Option[String]                    = resp.contentType
+    override def httpResponseOf(resp: SimpleHttpResponse): HttpResponse[SimpleHttpResponse] = resp
+  }
 }

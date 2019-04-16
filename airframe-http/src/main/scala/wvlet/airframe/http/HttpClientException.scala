@@ -20,6 +20,7 @@ import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
+import wvlet.log.LogSupport
 
 /**
   *
@@ -34,15 +35,15 @@ class HttpClientException(val status: HttpStatus, message: String, cause: Throwa
 /**
   * Common classifiers for HTTP client responses and exceptions in order to retry HTTP requests.
   */
-object HttpClientException {
+object HttpClientException extends LogSupport {
 
   private def clientError[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
-    if (content.isEmpty) {
+    if (content == null || content.isEmpty) {
       new HttpClientException(status)
     } else {
-      new HttpClientException(status, s"${status} Request failed:\n${content}")
+      new HttpClientException(status, s"Request failed: ${content}")
     }
   }
 
@@ -102,7 +103,7 @@ object HttpClientException {
     * @param e
     * @return
     */
-  def clasifyHttpClientException(e: Throwable): Failed = {
+  def classifyHttpClientException(e: Throwable): Failed = {
     (ioExceptionClassifier orElse
       executionFailureClassifier).applyOrElse(e, nonRetryable)
   }

@@ -19,56 +19,82 @@ import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.control.Retry
 
 /**
   *
   */
 class HttpClientTest extends AirframeSpec {
-
-  trait RetryTestBase {
-    val retryer    = HttpClient.defaultRetryer
+  import HttpClient._
+  abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
+    val retryer =
+      Retry
+        .withBackOff(initialIntervalMillis = 0)
+        .withHttpClientRetry[SimpleHttpResponse]
     var retryCount = 0
     var execCount  = 0
 
-    def throwError: Nothing
+    def body: SimpleHttpResponse
 
     def run = {
       retryer.run {
-        if (retryCount == 0) {
+        if (execCount > 0) {
           retryCount += 1
-          throwError
         }
         execCount += 1
+        val ret = if (retryCount == 0) {
+          body
+        } else {
+          SimpleHttpResponse(HttpStatus.Ok_200)
+        }
+        ret
       }
     }
-  }
 
-  trait RetryTest extends RetryTestBase {
-    run
-    retryCount shouldBe 1
-    execCount shouldBe 1
-  }
-
-  trait NonRetryTest extends RetryTestBase {
     try {
       run
     } catch {
       case e: Throwable =>
     } finally {
-      retryCount shouldBe 1
-      execCount shouldBe 0
+      retryCount shouldBe expectedRetryCount
+      execCount shouldBe expectedExecCount
+    }
+  }
+
+  "retry on failed http requests" in {
+    val retryableResponses: Seq[SimpleHttpResponse] = Seq(
+      SimpleHttpResponse(HttpStatus.ServiceUnavailable_503),
+      SimpleHttpResponse(HttpStatus.TooManyRequests_429),
+      SimpleHttpResponse(HttpStatus.InternalServerError_500),
+      SimpleHttpResponse(
+        HttpStatus.BadRequest_400,
+        "Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed."
+      )
+    )
+    retryableResponses.foreach { r =>
+      new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
+        override def body = r
+      }
+    }
+  }
+  "never retry on deterministic http request failrues" in {
+    val nonRetryableResponses: Seq[SimpleHttpResponse] = Seq(
+      SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"),
+      SimpleHttpResponse(HttpStatus.Unauthorized_401, "permission deniend"),
+      SimpleHttpResponse(HttpStatus.Forbidden_403, "forbidden"),
+      SimpleHttpResponse(HttpStatus.NotFound_404, "not found"),
+      SimpleHttpResponse(HttpStatus.Conflict_409, "conflict"),
+    )
+
+    nonRetryableResponses.foreach { r =>
+      new RetryTest(expectedRetryCount = 0, expectedExecCount = 1) {
+        def body = r
+      }
     }
   }
 
   "retry on non-deterministic failures" in {
     val retryableExceptions: Seq[Throwable] = Seq(
-      new HttpClientException(HttpStatus.ServiceUnavailable_503),
-      new HttpClientException(HttpStatus.TooManyRequests_429),
-      new HttpClientException(HttpStatus.InternalServerError_500),
-      new HttpClientException(
-        HttpStatus.BadRequest_400,
-        "Your socket connection to the server was not read from or written to within the timeout period. Idle connections will be closed."
-      ),
       new TimeoutException("timeout"),
       new ExecutionException(new InterruptedException("exception")),
       new ExecutionException(new ProtocolException("protocol exception")),
@@ -83,30 +109,24 @@ class HttpClientTest extends AirframeSpec {
     )
 
     retryableExceptions.foreach { e =>
-      new RetryTest {
-        def throwError = throw e
+      new RetryTest(expectedRetryCount = 1, expectedExecCount = 2) {
+        override def body = throw e
       }
     }
-
   }
 
   "never retry on deterministic failures" in {
     val nonRetryableExceptions: Seq[Throwable] = Seq(
-      new HttpClientException(HttpStatus.BadRequest_400, "bad request"),
-      new HttpClientException(HttpStatus.Unauthorized_401, "permission deniend"),
-      new HttpClientException(HttpStatus.Forbidden_403, "forbidden"),
-      new HttpClientException(HttpStatus.NotFound_404, "not found"),
-      new HttpClientException(HttpStatus.Conflict_409, "conflict"),
       new ExecutionException(new SSLHandshakeException("exception")),
       new ExecutionException(new SSLKeyException("exception")),
       new ExecutionException(new SSLPeerUnverifiedException("exception")),
-      new IllegalArgumentException("exception"),
+      new IllegalArgumentException("illegal argument exception"),
       new InvocationTargetException(new IllegalArgumentException("reflection call-site error"))
     )
 
     nonRetryableExceptions.foreach { e =>
-      new NonRetryTest {
-        def throwError = throw e
+      new RetryTest(expectedRetryCount = 0, expectedExecCount = 1) {
+        def body = throw e
       }
     }
   }

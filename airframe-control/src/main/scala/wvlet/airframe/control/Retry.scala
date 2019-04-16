@@ -70,7 +70,8 @@ object Retry extends LogSupport {
                      retryWaitStrategy: RetryWaitStrategy,
                      resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
                      errorHandler: RetryContext => Any = RETRY_ALL,
-                     beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
+                     beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT)
+      extends LogSupport {
 
     /**
       * Add a partial function that accepts exceptions that need to be retried.

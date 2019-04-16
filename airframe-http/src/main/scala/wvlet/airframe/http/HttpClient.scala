@@ -109,17 +109,22 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 }
 
 object HttpClient extends LogSupport {
-  def defaultRetryer[Resp: HttpResponseAdapter](maxRetry: Int = 10): Retryer = {
-    Retry
-      .withBackOff(maxRetry = maxRetry)
-//      .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
-      .withErrorHandler(defaultErrorHandler)
-      .beforeRetry(defaultBeforeRetryAction)
+
+  implicit class HttpClientRetryer(val r: Retryer) extends AnyVal {
+    def withDefaultHttpClientRetry: Retryer = {
+      r.withErrorHandler(defaultErrorHandler)
+        .beforeRetry(defaultBeforeRetryAction)
+    }
+
+    def withHttpClientRetry[Resp: HttpResponseAdapter]: Retryer = {
+      r.withDefaultHttpClientRetry
+        .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
+    }
   }
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
-    warn(s"Request failed: ${ctx.lastError.getMessage}")
     val failureType = HttpClientException.classifyExecutionFailure(ctx.lastError)
+    warn(s"Request failed: ${failureType.cause}")
     if (!failureType.isRetryable) {
       throw failureType.cause
     }
@@ -135,7 +140,8 @@ object HttpClient extends LogSupport {
           0
       }
     val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
-    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
+    warn(
+      f"[${ctx.retryCount}/${ctx.maxRetry}] ${ctx.lastError.getMessage} Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
     Thread.sleep(extraWaitMillis)
   }
 
