@@ -50,12 +50,29 @@ object Retry extends LogSupport {
   }
 
   case class MaxRetryException(retryState: RetryContext) extends Exception(retryState.lastError)
-  case class ExecutionFailure(result: Any)               extends Exception("Unsuccessful result")
+  case class RetryableFailure(e: Throwable)              extends Exception(e)
   case class RetryContext(context: Option[Any],
                           lastError: Throwable,
                           retryCount: Int,
                           maxRetry: Int,
-                          nextWaitMillis: Int) {}
+                          retryWaitStrategy: RetryWaitStrategy,
+                          nextWaitMillis: Int,
+                          baseWaitMillis: Int) {
+
+    def canContinue: Boolean = {
+      retryCount < maxRetry
+    }
+
+    def update(e: Throwable): RetryContext = {
+      RetryContext(context,
+                   e,
+                   retryCount + 1,
+                   maxRetry,
+                   retryWaitStrategy,
+                   retryWaitStrategy.adjustWait(baseWaitMillis),
+                   retryWaitStrategy.updateWait(nextWaitMillis))
+    }
+  }
 
   private def RETRY_ALL: RetryContext => Unit = { e: RetryContext =>
     // Do nothing
@@ -147,26 +164,29 @@ object Retry extends LogSupport {
     }
 
     def runWithContext[A](context: Any)(body: => A): A = {
-      runInternal(Some(context))(body)
+      runInternal(Option(context))(body)
     }
 
     protected def runInternal[A](context: Option[Any])(body: => A): A = {
-      var result: Option[A]        = None
-      var retryCount               = 0
-      var retryWait                = retryWaitStrategy.retryConfig.initialIntervalMillis
-      var retryState: RetryContext = RetryContext(context, NOT_STARTED, 0, maxRetry, retryWait)
+      var result: Option[A] = None
+      var retryContext: RetryContext = RetryContext(
+        context,
+        NOT_STARTED,
+        0,
+        maxRetry,
+        retryWaitStrategy,
+        retryWaitStrategy.retryConfig.initialIntervalMillis,
+        retryWaitStrategy.retryConfig.initialIntervalMillis
+      )
 
-      while (result.isEmpty && retryCount < maxRetry) {
+      while (result.isEmpty && retryContext.canContinue) {
         def retry(errorType: Throwable, handleError: Boolean): Unit = {
-          retryCount += 1
-          val nextWait = retryWaitStrategy.adjustWait(retryWait)
-          retryState = RetryContext(context, errorType, retryCount, maxRetry, nextWait)
+          retryContext = retryContext.update(errorType)
           if (handleError) {
-            errorHandler(retryState)
+            errorHandler(retryContext)
           }
-          retryWait = retryWaitStrategy.updateWait(retryWait)
-          beforeRetryAction(retryState)
-          Thread.sleep(nextWait)
+          beforeRetryAction(retryContext)
+          Thread.sleep(retryContext.nextWaitMillis)
         }
 
         Try(body) match {
@@ -183,6 +203,8 @@ object Retry extends LogSupport {
                 // Non-retryable error
                 throw cause
             }
+          case Failure(RetryableFailure(e)) =>
+            retry(e, handleError = false)
           case Failure(e) =>
             retry(e, handleError = true)
         }
@@ -191,8 +213,20 @@ object Retry extends LogSupport {
         case Some(a) =>
           a
         case None =>
-          throw MaxRetryException(retryState)
+          throw MaxRetryException(retryContext)
       }
+    }
+
+    def newRetryContext(context: Option[Any]): RetryContext = {
+      RetryContext(
+        context,
+        NOT_STARTED,
+        0,
+        maxRetry,
+        retryWaitStrategy,
+        retryWaitStrategy.retryConfig.initialIntervalMillis,
+        retryWaitStrategy.retryConfig.initialIntervalMillis
+      )
     }
   }
 

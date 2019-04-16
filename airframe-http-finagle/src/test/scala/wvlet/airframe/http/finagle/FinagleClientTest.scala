@@ -17,11 +17,12 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class User(id: Int, name: String)
 
-trait FinagleClientTestApi {
+trait FinagleClientTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.GET, path = "/")
   def info: String = {
@@ -55,7 +56,8 @@ trait FinagleClientTestApi {
 
   @Endpoint(method = HttpMethod.GET, path = "/busy")
   def busy: Response = {
-    Response(Status.Forbidden)
+    warn("called busy")
+    Response(Status.InternalServerError)
   }
 }
 

@@ -20,8 +20,8 @@ import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded}
-import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
@@ -34,12 +34,19 @@ case class FinagleClientConfig(address: ServerAddress,
 class FinagleClient(config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
     with LogSupport {
-  private val client =
-    Http.client
-      .withResponseClassifier(config.responseClassifier)
-      .newService(config.address.hostAndPort)
 
-  override protected val retryer = HttpClient.defaultHttpClientRetryer
+  override protected lazy val retryer = HttpClient.defaultHttpClientRetryerFor[http.Response]
+
+  private val retryFilter = new FinagleRetryFilter(retryer)
+
+  private val client = {
+    retryFilter andThen
+      Http.client.newService(config.address.hostAndPort)
+  }
+
+  override def send(req: Request): Future[Response] = {
+    sendImpl(req)
+  }
 
   override protected def sendImpl(req: http.Request): Future[http.Response] = {
     client(req)
@@ -124,7 +131,7 @@ class FinagleClient(config: FinagleClientConfig)
 /**
   *
   */
-object FinagleClient {
+object FinagleClient extends LogSupport {
 
   def newClient(hostAndPort: String): FinagleClient = {
     new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort)))
@@ -148,6 +155,7 @@ object FinagleClient {
   }
 
   private[finagle] def toFinagleResponseClassifier(cls: ResultClass): ResponseClass = {
+    warn(cls)
     cls match {
       case Succeeded =>
         ResponseClass.Success

@@ -28,7 +28,7 @@ object ResultClass {
   /**
     * A label a failed code execution
     */
-  case class Failed(val isRetryable: Boolean, cause: Throwable) extends ResultClass
+  case class Failed(isRetryable: Boolean, cause: Throwable) extends ResultClass
 
   def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
   def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
