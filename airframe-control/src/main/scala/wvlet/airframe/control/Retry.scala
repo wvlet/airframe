@@ -51,7 +51,11 @@ object Retry extends LogSupport {
 
   case class MaxRetryException(retryState: RetryContext) extends Exception(retryState.lastError)
   case class ExecutionFailure(result: Any)               extends Exception("Unsuccessful result")
-  case class RetryContext(lastError: Throwable, retryCount: Int, maxRetry: Int, nextWaitMillis: Int) {}
+  case class RetryContext(context: Option[Any],
+                          lastError: Throwable,
+                          retryCount: Int,
+                          maxRetry: Int,
+                          nextWaitMillis: Int) {}
 
   private def RETRY_ALL: RetryContext => Unit = { e: RetryContext =>
     // Do nothing
@@ -139,16 +143,24 @@ object Retry extends LogSupport {
     }
 
     def run[A](body: => A): A = {
+      runInternal(None)(body)
+    }
+
+    def runWithContext[A](context: Any)(body: => A): A = {
+      runInternal(Some(context))(body)
+    }
+
+    protected def runInternal[A](context: Option[Any])(body: => A): A = {
       var result: Option[A]        = None
       var retryCount               = 0
       var retryWait                = retryWaitStrategy.retryConfig.initialIntervalMillis
-      var retryState: RetryContext = RetryContext(NOT_STARTED, 0, maxRetry, retryWait)
+      var retryState: RetryContext = RetryContext(context, NOT_STARTED, 0, maxRetry, retryWait)
 
       while (result.isEmpty && retryCount < maxRetry) {
         def retry(errorType: Throwable, handleError: Boolean): Unit = {
           retryCount += 1
           val nextWait = retryWaitStrategy.adjustWait(retryWait)
-          retryState = RetryContext(errorType, retryCount, maxRetry, nextWait)
+          retryState = RetryContext(context, errorType, retryCount, maxRetry, nextWait)
           if (handleError) {
             errorHandler(retryState)
           }

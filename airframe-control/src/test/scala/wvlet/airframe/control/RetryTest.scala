@@ -14,7 +14,7 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Retry.MaxRetryException
+import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 
 /**
   *
@@ -92,5 +92,25 @@ class RetryTest extends AirframeSpec {
 
     val m = j.withMaxRetry(100)
     m.maxRetry shouldBe 100
+  }
+
+  "pass the execution context" in {
+    val r = Retry.withBackOff(initialIntervalMillis = 0)
+
+    var count   = 0
+    var checked = false
+    r.withErrorHandler { ctx: RetryContext =>
+        ctx.context shouldBe Some("hello world")
+        checked = true
+      }
+      .runWithContext("hello world") {
+        if (count == 0) {
+          count += 1
+          throw new Exception()
+        }
+      }
+
+    count shouldBe 1
+    checked shouldBe true
   }
 }

@@ -23,6 +23,7 @@ import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded}
 import wvlet.airframe.control.{ResultClass, Retry}
 import wvlet.airframe.http._
+import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -30,7 +31,9 @@ case class FinagleClientConfig(address: ServerAddress,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
                                responseClassifier: ResponseClassifier = FinagleClient.defaultResponseClassifier)
 
-class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http.Request, http.Response] {
+class FinagleClient(config: FinagleClientConfig)
+    extends HttpClient[Future, http.Request, http.Response]
+    with LogSupport {
   private val client =
     Http.client
       .withResponseClassifier(config.responseClassifier)
@@ -52,7 +55,9 @@ class FinagleClient(config: FinagleClientConfig) extends HttpClient[Future, http
   }
 
   override private[http] def awaitF[A](f: Future[A]): A = {
-    Await.result(f, config.timeout)
+    val r = Await.result(f, config.timeout)
+    trace(r)
+    r
   }
 
   private val codecFactory  = MessageCodecFactory.defaultFactory.withObjectMapCodec

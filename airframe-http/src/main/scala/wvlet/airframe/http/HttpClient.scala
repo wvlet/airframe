@@ -34,7 +34,7 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
     */
   def send(req: Req): F[Resp] = {
     // Retry upon failed responses
-    retryer.run {
+    retryer.runWithContext(req) {
       sendImpl(req)
     }
   }
@@ -124,7 +124,14 @@ object HttpClient extends LogSupport {
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
     val failureType = HttpClientException.classifyExecutionFailure(ctx.lastError)
-    warn(s"Request failed: ${failureType.cause}")
+
+    ctx.context match {
+      case Some(request) =>
+        warn(s"Request ${request} failed: ${failureType.cause}")
+      case _ =>
+        warn(s"Request failed: ${failureType.cause}")
+    }
+
     if (!failureType.isRetryable) {
       throw failureType.cause
     }

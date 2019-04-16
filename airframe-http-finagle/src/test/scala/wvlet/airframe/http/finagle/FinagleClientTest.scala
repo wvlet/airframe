@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Request, Response, Status}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
@@ -53,6 +53,10 @@ trait FinagleClientTestApi {
     updatedUser
   }
 
+  @Endpoint(method = HttpMethod.GET, path = "/busy")
+  def busy: Response = {
+    Response(Status.Forbidden)
+  }
 }
 
 /**
@@ -60,11 +64,12 @@ trait FinagleClientTestApi {
   */
 class FinagleClientTest extends AirframeSpec {
 
+  val r = Router.add[FinagleClientTestApi]
+  val d = finagleDefaultDesign
+    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = IOUtil.randomPort, router = r))
+    .noLifeCycleLogging
+
   "create client" in {
-    val r = Router.add[FinagleClientTestApi]
-    val d = finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = IOUtil.randomPort, router = r))
-      .noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
@@ -87,4 +92,13 @@ class FinagleClientTest extends AirframeSpec {
       }
     }
   }
+
+  "fail request" taggedAs working in {
+    d.build[FinagleServer] { server =>
+      withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
+        client.send(Request("/busy"))
+      }
+    }
+  }
+
 }
