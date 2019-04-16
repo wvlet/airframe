@@ -36,4 +36,9 @@ object ResultClass {
   val AlwaysSucceed: Any => ResultClass = { x: Any =>
     Succeeded
   }
+
+  val AlwaysRetry: Throwable => ResultClass = { e: Throwable =>
+    retryableFailure(e)
+  }
+
 }

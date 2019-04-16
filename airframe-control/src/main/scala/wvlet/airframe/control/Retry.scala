@@ -14,6 +14,7 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.control.ResultClass.Failed
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}
@@ -32,32 +33,69 @@ object Retry extends LogSupport {
   def withBackOff(maxRetry: Int = 3,
                   initialIntervalMillis: Int = 100,
                   maxIntervalMillis: Int = 15000,
-                  multiplier: Double = 1.5): Retry.Retryer = {
-    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry(maxRetry, new ExponentialBackOff(config))
+                  multiplier: Double = 1.5): RetryContext = {
+    defaultRetryContext.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
   }
 
   def withJitter(maxRetry: Int = 3,
                  initialIntervalMillis: Int = 100,
                  maxIntervalMillis: Int = 15000,
-                 multiplier: Double = 1.5): Retry.Retryer = {
-    val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-    withRetry(maxRetry, new Jitter(config))
+                 multiplier: Double = 1.5): RetryContext = {
+    defaultRetryContext.withMaxRetry(maxRetry).withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
   }
 
-  def withRetry(maxRetry: Int = 3, retryWaitStrategy: RetryWaitStrategy): Retryer = {
-    Retryer(maxRetry, retryWaitStrategy)
+  private val defaultRetryContext: RetryContext = {
+    val retryConfig = RetryConfig()
+    RetryContext(
+      context = None,
+      lastError = NOT_STARTED,
+      retryCount = 0,
+      maxRetry = 3,
+      retryWaitStrategy = new ExponentialBackOff(retryConfig),
+      nextWaitMillis = retryConfig.initialIntervalMillis,
+      baseWaitMillis = retryConfig.initialIntervalMillis
+    )
   }
 
   case class MaxRetryException(retryState: RetryContext) extends Exception(retryState.lastError)
-  case class RetryableFailure(e: Throwable)              extends Exception(e)
+
+  // Throw this to force retry the execution
+  case class RetryableFailure(e: Throwable) extends Exception(e)
+
+  private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
+    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
+  }
+
   case class RetryContext(context: Option[Any],
                           lastError: Throwable,
                           retryCount: Int,
                           maxRetry: Int,
                           retryWaitStrategy: RetryWaitStrategy,
                           nextWaitMillis: Int,
-                          baseWaitMillis: Int) {
+                          baseWaitMillis: Int,
+                          resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
+                          errorClassifier: Throwable => ResultClass = ResultClass.AlwaysRetry,
+                          beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
+
+    private def partialUpdate(newParam: Map[String, Any]): RetryContext = {
+      val surface = Surface.of[RetryContext]
+      val updatedParams = surface.params.map { p =>
+        // Overwrite RetryContext parameters if given
+        newParam.getOrElse(p.name, p.get(this))
+      }
+      surface.objectFactory.get.newInstance(updatedParams).asInstanceOf[RetryContext]
+    }
+
+    def reset(context: Option[Any] = None): RetryContext = {
+      partialUpdate(
+        Map(
+          "context"        -> context,
+          "lastError"      -> NOT_STARTED,
+          "retryCount"     -> 0,
+          "nextWaitMillis" -> retryWaitStrategy.retryConfig.initialIntervalMillis,
+          "baseWaitMillis" -> retryWaitStrategy.retryConfig.initialIntervalMillis
+        ))
+    }
 
     def canContinue: Boolean = {
       retryCount < maxRetry
@@ -70,99 +108,67 @@ object Retry extends LogSupport {
       * @return the next retry context
       */
     def update(retryReason: Throwable): RetryContext = {
-      RetryContext(context,
-                   retryReason,
-                   retryCount + 1,
-                   maxRetry,
-                   retryWaitStrategy,
-                   retryWaitStrategy.adjustWait(baseWaitMillis),
-                   retryWaitStrategy.updateWait(nextWaitMillis))
-    }
-  }
-
-  private def RETRY_ALL: RetryContext => Unit = { e: RetryContext =>
-    // Do nothing
-  }
-  private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
-    warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
-  }
-
-  private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
-    throw e
-  }
-
-  private val NOT_STARTED = new IllegalStateException("Not started")
-
-  case class Retryer(maxRetry: Int,
-                     retryWaitStrategy: RetryWaitStrategy,
-                     resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
-                     errorHandler: RetryContext => Any = RETRY_ALL,
-                     beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT)
-      extends LogSupport {
-
-    def withRetryWaitStrategy(newRetryWaitStrategy: RetryWaitStrategy): Retryer = {
-      Retryer(maxRetry, newRetryWaitStrategy, resultClassifier, errorHandler, beforeRetryAction)
+      partialUpdate(
+        Map(
+          "lastError"      -> retryReason,
+          "retryCount"     -> (retryCount + 1),
+          "nextWaitMillis" -> retryWaitStrategy.adjustWait(baseWaitMillis),
+          "baseWaitMillis" -> retryWaitStrategy.updateWait(nextWaitMillis)
+        ))
     }
 
-    def withMaxRetry(newMaxRetry: Int): Retryer = {
-      Retryer(newMaxRetry, retryWaitStrategy, resultClassifier, errorHandler, beforeRetryAction)
+    def withRetryWaitStrategy(newRetryWaitStrategy: RetryWaitStrategy): RetryContext = {
+      partialUpdate(Map("retryWaitStrategy" -> newRetryWaitStrategy))
+    }
+
+    def withMaxRetry(newMaxRetry: Int): RetryContext = {
+      partialUpdate(Map("maxRetry" -> newMaxRetry))
     }
 
     def withBackOff(initialIntervalMillis: Int = 100,
                     maxIntervalMillis: Int = 15000,
-                    multiplier: Double = 1.5): Retryer = {
+                    multiplier: Double = 1.5): RetryContext = {
       val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-      withRetryWaitStrategy(new ExponentialBackOff(config))
+      partialUpdate(Map("retryWaitStrategy" -> new ExponentialBackOff(config)))
     }
 
     def withJitter(initialIntervalMillis: Int = 100,
                    maxIntervalMillis: Int = 15000,
-                   multiplier: Double = 1.5): Retry.Retryer = {
+                   multiplier: Double = 1.5): RetryContext = {
       val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-      withRetryWaitStrategy(new Jitter(config))
+      partialUpdate(Map("retryWaitStrategy" -> new Jitter(config)))
     }
 
-    /**
-      * Add a partial function that accepts exceptions that need to be retried.
-      *
-      * @param handlerForRetryableError
-      * @tparam U
-      * @return
-      */
-    def retryOn[U](handlerForRetryableError: PartialFunction[Throwable, U]): Retryer = {
-      Retryer(
-        maxRetry,
-        retryWaitStrategy,
-        resultClassifier,
-        errorHandler = { s: RetryContext =>
-          // Rethrow all unhandled exceptions
-          handlerForRetryableError.applyOrElse(s.lastError, RETHROW_ALL)
-        },
-        beforeRetryAction
-      )
-    }
-
-    def withResultClassifier[U](newResultClassifier: U => ResultClass): Retryer = {
-      Retryer(maxRetry,
-              retryWaitStrategy,
-              newResultClassifier.asInstanceOf[Any => ResultClass],
-              errorHandler,
-              beforeRetryAction)
+    def withResultClassifier[U](newResultClassifier: U => ResultClass): RetryContext = {
+      partialUpdate(
+        Map(
+          "resultClassifier" -> newResultClassifier.asInstanceOf[Any => ResultClass]
+        ))
     }
 
     /**
       * Set a detailed error handler upon Exception. If the given exception is not retryable,
       * just rethrow the exception. Otherwise, consume the exception.
+      */
+    def withErrorClassifier[U](errorClassifier: Throwable => U): RetryContext = {
+      partialUpdate(Map("errorClassifier" -> errorClassifier))
+    }
+
+    def beforeRetry[U](handler: RetryContext => U): RetryContext = {
+      partialUpdate(Map("beforeRetryAction" -> handler))
+    }
+
+    /**
+      * Add a partial function that accepts exceptions that need to be retried.
       *
-      * @param errorHandler
+      * @param errorClassifier
       * @tparam U
       * @return
       */
-    def withErrorHandler[U](errorHandler: RetryContext => U): Retryer =
-      Retryer(maxRetry, retryWaitStrategy, resultClassifier, errorHandler, beforeRetryAction)
-
-    def beforeRetry[U](handler: RetryContext => U): Retryer = {
-      Retryer(maxRetry, retryWaitStrategy, resultClassifier, errorHandler, handler)
+    def retryOn[U](errorClassifier: PartialFunction[Throwable, Failed]): RetryContext = {
+      partialUpdate(Map("errorClassifier" -> { e: Throwable =>
+        errorClassifier.applyOrElse(e, RETHROW_ALL)
+      }))
     }
 
     def run[A](body: => A): A = {
@@ -175,38 +181,39 @@ object Retry extends LogSupport {
 
     protected def runInternal[A](context: Option[Any])(body: => A): A = {
       var result: Option[A]          = None
-      var retryContext: RetryContext = newRetryContext(context)
+      var retryContext: RetryContext = reset(context)
+
+      def retry(errorType: Throwable): Unit = {
+        retryContext = retryContext.update(errorType)
+        beforeRetryAction(retryContext)
+        Thread.sleep(retryContext.nextWaitMillis)
+      }
 
       while (result.isEmpty && retryContext.canContinue) {
-        def retry(errorType: Throwable, handleError: Boolean): Unit = {
-          retryContext = retryContext.update(errorType)
-          if (handleError) {
-            errorHandler(retryContext)
-          }
-          beforeRetryAction(retryContext)
-          Thread.sleep(retryContext.nextWaitMillis)
+        val ret = Try(body)
+        val resultClass = ret match {
+          case Success(x) =>
+            // Test whether the code block execution is successeded or failed
+            resultClassifier(x)
+          case Failure(RetryableFailure(e)) =>
+            ResultClass.retryableFailure(e)
+          case Failure(e) =>
+            errorClassifier(e)
         }
 
-        Try(body) match {
-          case Success(a) =>
-            // Test whether the code block execution is successeded or failed
-            resultClassifier(a) match {
-              case ResultClass.Succeeded =>
-                // OK. Exit the loop
-                result = Some(a)
-              case ResultClass.Failed(isRetryable, cause) if isRetryable == true =>
-                // Retryable error
-                retry(cause, handleError = false)
-              case ResultClass.Failed(isRetryable, cause) if isRetryable == false =>
-                // Non-retryable error
-                throw cause
-            }
-          case Failure(RetryableFailure(e)) =>
-            retry(e, handleError = false)
-          case Failure(e) =>
-            retry(e, handleError = true)
+        resultClass match {
+          case ResultClass.Succeeded =>
+            // OK. Exit the loop
+            result = Some(ret.get)
+          case ResultClass.Failed(isRetryable, cause) if isRetryable =>
+            // Retryable error
+            retry(cause)
+          case ResultClass.Failed(isRetryable, cause) if !isRetryable =>
+            // Non-retryable error. Exit the loop by throwing the exception
+            throw cause
         }
       }
+
       result match {
         case Some(a) =>
           a
@@ -215,18 +222,15 @@ object Retry extends LogSupport {
       }
     }
 
-    def newRetryContext(context: Option[Any]): RetryContext = {
-      RetryContext(
-        context,
-        NOT_STARTED,
-        0,
-        maxRetry,
-        retryWaitStrategy,
-        retryWaitStrategy.retryConfig.initialIntervalMillis,
-        retryWaitStrategy.retryConfig.initialIntervalMillis
-      )
-    }
   }
+
+  private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
+    throw e
+  }
+
+  private val NOT_STARTED = new IllegalStateException("Not started")
+
+  case class Retryer(initRetryContext: RetryContext) extends LogSupport {}
 
   case class RetryConfig(initialIntervalMillis: Int = 100, maxIntervalMillis: Int = 15000, multiplier: Double = 1.5) {
     require(initialIntervalMillis >= 0)

@@ -102,16 +102,12 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
 object HttpClient extends LogSupport {
 
-  def defaultHttpClientRetryer: Retryer = {
+  def defaultHttpClientRetryer[Resp: HttpResponseAdapter]: RetryContext = {
     Retry
       .withBackOff(maxRetry = 10)
-      .withErrorHandler(defaultErrorHandler)
-      .beforeRetry(defaultBeforeRetryAction)
-  }
-
-  def defaultHttpClientRetryerFor[Resp: HttpResponseAdapter]: Retryer = {
-    defaultHttpClientRetryer
       .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
+      .withErrorClassifier(HttpClientException.classifyExecutionFailure)
+      .beforeRetry(defaultBeforeRetryAction)
   }
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {

@@ -68,6 +68,7 @@ class RetryTest extends AirframeSpec {
         .retryOn {
           case e: IllegalStateException =>
             warn(e.getMessage)
+            ResultClass.retryableFailure(e)
         }
         .run {
           logger.info("hello retry")
@@ -99,7 +100,7 @@ class RetryTest extends AirframeSpec {
 
     var count   = 0
     var checked = false
-    r.withErrorHandler { ctx: RetryContext =>
+    r.beforeRetry { ctx: RetryContext =>
         ctx.context shouldBe Some("hello world")
         checked = true
       }

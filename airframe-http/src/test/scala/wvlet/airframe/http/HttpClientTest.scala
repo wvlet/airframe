@@ -26,7 +26,7 @@ import wvlet.airframe.AirframeSpec
 class HttpClientTest extends AirframeSpec {
   import HttpClient._
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
-    val retryer = defaultHttpClientRetryerFor[SimpleHttpResponse]
+    val retryer = defaultHttpClientRetryer[SimpleHttpResponse]
       .withBackOff(initialIntervalMillis = 0)
     var retryCount = 0
     var execCount  = 0
