@@ -27,19 +27,11 @@ import scala.reflect.runtime.{universe => ru}
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
-  protected val retryer: Retryer
 
   /**
     * Send an HTTP request.
     */
-  def send(req: Req): F[Resp] = {
-    // Retry upon failed responses
-    retryer.runWithContext(req) {
-      sendImpl(req)
-    }
-  }
-
-  protected def sendImpl(req: Req): F[Resp]
+  def send(req: Req): F[Resp]
 
   /**
     * Await the response and extract the return value

@@ -16,39 +16,31 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.TimeUnit
 
 import com.twitter.finagle.http.{Request, Response}
-import com.twitter.finagle.service.{ReqRep, ResponseClass, ResponseClassifier}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.control.ResultClass
-import wvlet.airframe.control.ResultClass.{Failed, Succeeded}
+import wvlet.airframe.control.Retry.Retryer
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
 
-case class FinagleClientConfig(address: ServerAddress,
+case class FinagleClientConfig(initClient: Http.Client => Http.Client = identity,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
-                               responseClassifier: ResponseClassifier = FinagleClient.defaultResponseClassifier)
+                               retryer: Retryer = HttpClient.defaultHttpClientRetryerFor[http.Response])
 
-class FinagleClient(config: FinagleClientConfig)
+class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
     with LogSupport {
 
-  override protected lazy val retryer = HttpClient.defaultHttpClientRetryerFor[http.Response]
-
-  private val retryFilter = new FinagleRetryFilter(retryer)
-
   private val client = {
-    retryFilter andThen
-      Http.client.newService(config.address.hostAndPort)
+    val retryFilter   = new FinagleRetryFilter(config.retryer)
+    val finagleClient = config.initClient(Http.client).newService(address.hostAndPort)
+
+    retryFilter andThen finagleClient
   }
 
   override def send(req: Request): Future[Response] = {
-    sendImpl(req)
-  }
-
-  override protected def sendImpl(req: http.Request): Future[http.Response] = {
     client(req)
   }
 
@@ -133,38 +125,18 @@ class FinagleClient(config: FinagleClientConfig)
   */
 object FinagleClient extends LogSupport {
 
-  def newClient(hostAndPort: String): FinagleClient = {
-    new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort)))
-  }
-  def newSyncClient(hostAndPort: String) = {
-    new FinagleClient(FinagleClientConfig(address = ServerAddress(hostAndPort))).syncClient
-  }
-
-  def baseResponseClassifier: ResponseClassifier = {
-    case ReqRep(_, Return(r: Response)) =>
-      toFinagleResponseClassifier(HttpClientException.classifyHttpResponse(r))
-    case ReqRep(_, Throw(ex)) =>
-      toFinagleResponseClassifier(HttpClientException.classifyExecutionFailure(ex))
-  }
-
-  def defaultResponseClassifier: ResponseClassifier = {
-    ResponseClassifier.RetryOnChannelClosed orElse
-      ResponseClassifier.RetryOnTimeout orElse
-      ResponseClassifier.RetryOnWriteExceptions orElse
-      baseResponseClassifier
-  }
-
-  private[finagle] def toFinagleResponseClassifier(cls: ResultClass): ResponseClass = {
-    warn(cls)
-    cls match {
-      case Succeeded =>
-        ResponseClass.Success
-      case Failed(isRetryable, _) =>
-        if (isRetryable) {
-          ResponseClass.RetryableFailure
-        } else {
-          ResponseClass.NonRetryableFailure
-        }
+  def defaultConfig: FinagleClientConfig = FinagleClientConfig(
+    initClient = { x: Http.Client =>
+      x.withSessionQualifier.noFailureAccrual
     }
+  )
+
+  def newClient(hostAndPort: String, config: FinagleClientConfig = defaultConfig): FinagleClient = {
+    new FinagleClient(address = ServerAddress(hostAndPort), config)
+  }
+  def newSyncClient(
+      hostAndPort: String,
+      config: FinagleClientConfig = defaultConfig): HttpSyncClient[Future, http.Request, http.Response] = {
+    new FinagleClient(address = ServerAddress(hostAndPort), config).syncClient
   }
 }

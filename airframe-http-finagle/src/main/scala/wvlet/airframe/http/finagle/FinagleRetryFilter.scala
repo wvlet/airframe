@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.util.DefaultTimer
 import com.twitter.finagle.{Service, SimpleFilter, http}
 import com.twitter.util._
@@ -23,7 +23,7 @@ import wvlet.airframe.http.HttpClientException
 import wvlet.log.LogSupport
 
 /**
-  *
+  * A filter for integrating Airframe Retry and Finagle
   */
 class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
     extends SimpleFilter[http.Request, http.Response]
@@ -47,6 +47,7 @@ class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
                        service: Service[Request, Response]): Future[Response] = {
     val rep = service(request)
     rep.transform { x =>
+      // TODO Use error handler defiend in RetryContext
       val classifier = x match {
         case Throw(e) =>
           HttpClientException.classifyExecutionFailure(e)
@@ -62,7 +63,9 @@ class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
             schedule(retryContext.nextWaitMillis.millis) {
               Future
                 .value {
+                  // Update the retry count
                   val rc = retryContext.update(cause)
+                  // TODO: RetryContext should run this inside update(cause)
                   retryer.beforeRetryAction(rc)
                   rc
                 }.flatMap { nextRetryContext =>
@@ -70,8 +73,16 @@ class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
                 }
             }
           } else {
-            // TODO: What error response is good here?
-            Future(Response())
+            // No more retry.
+            x match {
+              case Throw(e) =>
+                val r = Response(Status.BadRequest)
+                r.setContentString(cause.getMessage)
+                Future.value(r)
+              case Return(r) =>
+                // Just return the last response
+                rep
+            }
           }
         }
       }
