@@ -100,8 +100,6 @@ class FinagleClientTest extends AirframeSpec {
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
         val resp = client.send(Request("/busy"))
         info(resp)
-        val resp2 = client.send(Request("/busy"))
-        info(resp2)
       }
     }
   }

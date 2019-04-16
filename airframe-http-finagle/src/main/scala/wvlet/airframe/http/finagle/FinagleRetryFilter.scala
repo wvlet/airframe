@@ -25,7 +25,7 @@ import wvlet.log.LogSupport
 /**
   * A filter for integrating Airframe Retry and Finagle
   */
-class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
+class FinagleRetryFilter(retryer: RetryContext, timer: Timer = DefaultTimer)
     extends SimpleFilter[http.Request, http.Response]
     with LogSupport {
   import com.twitter.conversions.DurationOps._
@@ -64,10 +64,7 @@ class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
               Future
                 .value {
                   // Update the retry count
-                  val rc = retryContext.update(cause)
-                  // TODO: RetryContext should run this inside update(cause)
-                  retryer.beforeRetryAction(rc)
-                  rc
+                  retryContext.nextRetry(cause)
                 }.flatMap { nextRetryContext =>
                   dispatch(nextRetryContext, request, service)
                 }
@@ -90,7 +87,7 @@ class FinagleRetryFilter(retryer: Retryer, timer: Timer = DefaultTimer)
   }
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-    val retryContext = retryer.newRetryContext(Option(request))
+    val retryContext = retryer.init(Option(request))
     dispatch(retryContext, request, service)
   }
 }

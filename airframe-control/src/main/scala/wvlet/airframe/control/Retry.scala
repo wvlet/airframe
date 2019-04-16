@@ -62,6 +62,15 @@ object Retry extends LogSupport {
   // Throw this to force retry the execution
   case class RetryableFailure(e: Throwable) extends Exception(e)
 
+  case object NOT_STARTED extends Exception("Code is not executed")
+
+  // Return this class at the beforeRetryAction to add extra weight time.
+  case class AddExtraRetryWait(extraWaitMillis: Int)
+
+  private def REPORT_FAILURE: RetryContext => Unit = { ctx: RetryContext =>
+    warn(s"Execution failed: ${ctx.lastError}")
+  }
+
   private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
     warn(f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
   }
@@ -86,7 +95,7 @@ object Retry extends LogSupport {
       surface.objectFactory.get.newInstance(updatedParams).asInstanceOf[RetryContext]
     }
 
-    def reset(context: Option[Any] = None): RetryContext = {
+    def init(context: Option[Any] = None): RetryContext = {
       partialUpdate(
         Map(
           "context"        -> context,
@@ -107,14 +116,24 @@ object Retry extends LogSupport {
       * @param retryReason
       * @return the next retry context
       */
-    def update(retryReason: Throwable): RetryContext = {
-      partialUpdate(
+    def nextRetry(retryReason: Throwable): RetryContext = {
+      val nextRetry = partialUpdate(
         Map(
           "lastError"      -> retryReason,
           "retryCount"     -> (retryCount + 1),
           "nextWaitMillis" -> retryWaitStrategy.adjustWait(baseWaitMillis),
           "baseWaitMillis" -> retryWaitStrategy.updateWait(nextWaitMillis)
         ))
+      beforeRetryAction(nextRetry) match {
+        case AddExtraRetryWait(extraWaitMillis) =>
+          nextRetry.withExtraWaitMillis(extraWaitMillis)
+        case _ =>
+          nextRetry
+      }
+    }
+
+    def withExtraWaitMillis(extraWaitMillis: Int): RetryContext = {
+      partialUpdate(Map("nextWaitMillis" -> (this.nextWaitMillis + extraWaitMillis)))
     }
 
     def withRetryWaitStrategy(newRetryWaitStrategy: RetryWaitStrategy): RetryContext = {
@@ -181,13 +200,7 @@ object Retry extends LogSupport {
 
     protected def runInternal[A](context: Option[Any])(body: => A): A = {
       var result: Option[A]          = None
-      var retryContext: RetryContext = reset(context)
-
-      def retry(errorType: Throwable): Unit = {
-        retryContext = retryContext.update(errorType)
-        beforeRetryAction(retryContext)
-        Thread.sleep(retryContext.nextWaitMillis)
-      }
+      var retryContext: RetryContext = init(context)
 
       while (result.isEmpty && retryContext.canContinue) {
         val ret = Try(body)
@@ -207,7 +220,8 @@ object Retry extends LogSupport {
             result = Some(ret.get)
           case ResultClass.Failed(isRetryable, cause) if isRetryable =>
             // Retryable error
-            retry(cause)
+            retryContext = retryContext.nextRetry(cause)
+            Thread.sleep(retryContext.nextWaitMillis)
           case ResultClass.Failed(isRetryable, cause) if !isRetryable =>
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
@@ -221,14 +235,11 @@ object Retry extends LogSupport {
           throw MaxRetryException(retryContext)
       }
     }
-
   }
 
   private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
     throw e
   }
-
-  private val NOT_STARTED = new IllegalStateException("Not started")
 
   case class Retryer(initRetryContext: RetryContext) extends LogSupport {}
 

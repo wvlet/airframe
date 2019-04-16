@@ -13,10 +13,11 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.control.Retry
-import wvlet.airframe.control.Retry.{RetryContext, Retryer}
+import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext, Retryer}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
+import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 /**
@@ -102,30 +103,27 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
 object HttpClient extends LogSupport {
 
-  def defaultHttpClientRetryer[Resp: HttpResponseAdapter]: RetryContext = {
+  def defaultHttpClientRetryer[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
     Retry
       .withBackOff(maxRetry = 10)
       .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
       .withErrorClassifier(HttpClientException.classifyExecutionFailure)
-      .beforeRetry(defaultBeforeRetryAction)
+      .beforeRetry(defaultBeforeRetryAction[Req])
   }
 
-  def defaultErrorHandler(ctx: RetryContext): Unit = {
-    val failureType = HttpClientException.classifyExecutionFailure(ctx.lastError)
+  def defaultBeforeRetryAction[Req: HttpRequestAdapter: ClassTag](ctx: RetryContext): Any = {
+    val cls = implicitly[ClassTag[Req]].runtimeClass
 
-    ctx.context match {
-      case Some(request) =>
-        warn(s"Request ${request} failed: ${failureType.cause}")
+    val errorMessage = ctx.context match {
+      case Some(r) if cls.isAssignableFrom(r.getClass) =>
+        val adapter = implicitly[HttpRequestAdapter[Req]]
+        val req     = r.asInstanceOf[Req]
+        val path    = adapter.pathOf(req)
+        s"Request to ${path} is failed: ${ctx.lastError.getMessage}"
       case _ =>
-        warn(s"Request failed: ${failureType.cause}")
+        s"Request is failed: ${ctx.lastError.getMessage}"
     }
 
-    if (!failureType.isRetryable) {
-      throw failureType.cause
-    }
-  }
-
-  def defaultBeforeRetryAction(ctx: RetryContext): Unit = {
     val extraWaitMillis =
       ctx.lastError match {
         case e: HttpClientException if e.status == HttpStatus.ServiceUnavailable_503 =>
@@ -136,8 +134,8 @@ object HttpClient extends LogSupport {
       }
     val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
     warn(
-      f"[${ctx.retryCount}/${ctx.maxRetry}] ${ctx.lastError.getMessage} Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
-    Thread.sleep(extraWaitMillis)
+      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
+    AddExtraRetryWait(extraWaitMillis.toInt)
   }
 
 }

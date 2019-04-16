@@ -19,7 +19,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.control.Retry.Retryer
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
@@ -27,7 +27,7 @@ import scala.reflect.runtime.{universe => ru}
 
 case class FinagleClientConfig(initClient: Http.Client => Http.Client = identity,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
-                               retryer: Retryer = HttpClient.defaultHttpClientRetryerFor[http.Response])
+                               retryer: RetryContext = HttpClient.defaultHttpClientRetryer[http.Request, http.Response])
 
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
