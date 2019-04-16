@@ -80,7 +80,7 @@ class HttpClientTest extends AirframeSpec {
       SimpleHttpResponse(HttpStatus.Unauthorized_401, "permission deniend"),
       SimpleHttpResponse(HttpStatus.Forbidden_403, "forbidden"),
       SimpleHttpResponse(HttpStatus.NotFound_404, "not found"),
-      SimpleHttpResponse(HttpStatus.Conflict_409, "conflict"),
+      SimpleHttpResponse(HttpStatus.Conflict_409, "conflict")
     )
 
     nonRetryableResponses.foreach { r =>
