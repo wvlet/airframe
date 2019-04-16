@@ -39,16 +39,14 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod          = adapter.methodOf(toRaw)
-  def path: String                = adapter.pathOf(toRaw)
-  def query: Map[String, String]  = adapter.queryOf(toRaw)
-  def contentString: String       = adapter.contentStringOf(toRaw)
-  def contentBytes: Array[Byte]   = adapter.contentBytesOf(toRaw)
-  def contentType: Option[String] = adapter.contentTypeOf(toRaw)
-  def pathComponents: IndexedSeq[String] = {
-    path.replaceFirst("/", "").split("/").toIndexedSeq
-  }
-  def toHttpRequest: HttpRequest[Req] = adapter.httpRequestOf(toRaw)
+  def method: HttpMethod                 = adapter.methodOf(toRaw)
+  def path: String                       = adapter.pathOf(toRaw)
+  def query: Map[String, String]         = adapter.queryOf(toRaw)
+  def contentString: String              = adapter.contentStringOf(toRaw)
+  def contentBytes: Array[Byte]          = adapter.contentBytesOf(toRaw)
+  def contentType: Option[String]        = adapter.contentTypeOf(toRaw)
+  def pathComponents: IndexedSeq[String] = adapter.pathComponentsOf(toRaw)
+  def toHttpRequest: HttpRequest[Req]    = adapter.httpRequestOf(toRaw)
   def toRaw: Req
 }
 

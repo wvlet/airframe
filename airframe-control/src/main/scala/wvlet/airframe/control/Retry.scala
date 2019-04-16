@@ -63,9 +63,15 @@ object Retry extends LogSupport {
       retryCount < maxRetry
     }
 
-    def update(e: Throwable): RetryContext = {
+    /**
+      * Update the retry context, including retry count, last error, next wait time, etc.
+      *
+      * @param retryReason
+      * @return the next retry context
+      */
+    def update(retryReason: Throwable): RetryContext = {
       RetryContext(context,
-                   e,
+                   retryReason,
                    retryCount + 1,
                    maxRetry,
                    retryWaitStrategy,
@@ -168,16 +174,8 @@ object Retry extends LogSupport {
     }
 
     protected def runInternal[A](context: Option[Any])(body: => A): A = {
-      var result: Option[A] = None
-      var retryContext: RetryContext = RetryContext(
-        context,
-        NOT_STARTED,
-        0,
-        maxRetry,
-        retryWaitStrategy,
-        retryWaitStrategy.retryConfig.initialIntervalMillis,
-        retryWaitStrategy.retryConfig.initialIntervalMillis
-      )
+      var result: Option[A]          = None
+      var retryContext: RetryContext = newRetryContext(context)
 
       while (result.isEmpty && retryContext.canContinue) {
         def retry(errorType: Throwable, handleError: Boolean): Unit = {
