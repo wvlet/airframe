@@ -73,6 +73,28 @@ object Retry extends LogSupport {
                      beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT)
       extends LogSupport {
 
+    def withRetryWaitStrategy(newRetryWaitStrategy: RetryWaitStrategy): Retryer = {
+      Retryer(maxRetry, newRetryWaitStrategy, resultClassifier, errorHandler, beforeRetryAction)
+    }
+
+    def withMaxRetry(newMaxRetry: Int): Retryer = {
+      Retryer(newMaxRetry, retryWaitStrategy, resultClassifier, errorHandler, beforeRetryAction)
+    }
+
+    def withBackOff(initialIntervalMillis: Int = 100,
+                    maxIntervalMillis: Int = 15000,
+                    multiplier: Double = 1.5): Retryer = {
+      val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+      withRetryWaitStrategy(new ExponentialBackOff(config))
+    }
+
+    def withJitter(initialIntervalMillis: Int = 100,
+                   maxIntervalMillis: Int = 15000,
+                   multiplier: Double = 1.5): Retry.Retryer = {
+      val config = RetryConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
+      withRetryWaitStrategy(new Jitter(config))
+    }
+
     /**
       * Add a partial function that accepts exceptions that need to be retried.
       *

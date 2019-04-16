@@ -19,7 +19,6 @@ import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Retry
 
 /**
   *
@@ -27,10 +26,8 @@ import wvlet.airframe.control.Retry
 class HttpClientTest extends AirframeSpec {
   import HttpClient._
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
-    val retryer =
-      Retry
-        .withBackOff(initialIntervalMillis = 0)
-        .withHttpClientRetry[SimpleHttpResponse]
+    val retryer = defaultHttpClientRetryerFor[SimpleHttpResponse]
+      .withBackOff(initialIntervalMillis = 0)
     var retryCount = 0
     var execCount  = 0
 

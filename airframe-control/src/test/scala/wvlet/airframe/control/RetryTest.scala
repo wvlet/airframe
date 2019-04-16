@@ -79,4 +79,18 @@ class RetryTest extends AirframeSpec {
     e.retryState.retryCount shouldBe 3
     e.retryState.lastError shouldBe a[IllegalStateException]
   }
+
+  "change retry wait strategy" in {
+    val r = Retry
+      .withJitter()
+      .withBackOff(initialIntervalMillis = 3)
+
+    r.retryWaitStrategy.retryConfig.initialIntervalMillis shouldBe 3
+
+    val j = r.withJitter(initialIntervalMillis = 20)
+    j.retryWaitStrategy.retryConfig.initialIntervalMillis shouldBe 20
+
+    val m = j.withMaxRetry(100)
+    m.maxRetry shouldBe 100
+  }
 }

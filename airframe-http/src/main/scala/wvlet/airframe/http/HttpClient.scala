@@ -30,7 +30,7 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
   protected val retryer: Retryer
 
   /**
-    * Send the request.
+    * Send an HTTP request.
     */
   def send(req: Req): F[Resp] = {
     // Retry upon failed responses
@@ -110,16 +110,16 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
 object HttpClient extends LogSupport {
 
-  implicit class HttpClientRetryer(val r: Retryer) extends AnyVal {
-    def withDefaultHttpClientRetry: Retryer = {
-      r.withErrorHandler(defaultErrorHandler)
-        .beforeRetry(defaultBeforeRetryAction)
-    }
+  def defaultHttpClientRetryer: Retryer = {
+    Retry
+      .withBackOff(maxRetry = 10)
+      .withErrorHandler(defaultErrorHandler)
+      .beforeRetry(defaultBeforeRetryAction)
+  }
 
-    def withHttpClientRetry[Resp: HttpResponseAdapter]: Retryer = {
-      r.withDefaultHttpClientRetry
-        .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
-    }
+  def defaultHttpClientRetryerFor[Resp: HttpResponseAdapter]: Retryer = {
+    defaultHttpClientRetryer
+      .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])
   }
 
   def defaultErrorHandler(ctx: RetryContext): Unit = {
