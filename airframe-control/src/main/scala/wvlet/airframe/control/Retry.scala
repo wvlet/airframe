@@ -24,12 +24,6 @@ import scala.util.{Failure, Random, Success, Try}
   */
 object Retry extends LogSupport {
 
-  /**
-    * Classify the code results to Successful or Failed
-    */
-  type ResultClassifier    = PartialFunction[Any, ResultClass]
-  type ExceptionClassifier = PartialFunction[Throwable, Failed]
-
   def withBackOff(maxRetry: Int = 3,
                   initialIntervalMillis: Int = 100,
                   maxIntervalMillis: Int = 15000,
@@ -79,8 +73,8 @@ object Retry extends LogSupport {
                           retryWaitStrategy: RetryPolicy,
                           nextWaitMillis: Int,
                           baseWaitMillis: Int,
-                          resultClassifier: Any => ResultClass = ResultClass.AlwaysSucceed,
-                          errorClassifier: Throwable => ResultClass = ResultClass.AlwaysRetry,
+                          resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
+                          errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
                           beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
 
     private def partialUpdate(newParam: Map[String, Any]): RetryContext = {
@@ -122,7 +116,7 @@ object Retry extends LogSupport {
           "baseWaitMillis" -> retryWaitStrategy.updateBaseWait(baseWaitMillis)
         ))
       beforeRetryAction(nextRetry) match {
-        case AddExtraRetryWait(extraWaitMillis) =>
+        case AddExtraRetryWait(extraWaitMillis) if extraWaitMillis > 0 =>
           nextRetry.withExtraWaitMillis(extraWaitMillis)
         case _ =>
           nextRetry
@@ -238,8 +232,6 @@ object Retry extends LogSupport {
   private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
     throw e
   }
-
-  case class Retryer(initRetryContext: RetryContext) extends LogSupport {}
 
   case class RetryPolicyConfig(initialIntervalMillis: Int = 100,
                                maxIntervalMillis: Int = 15000,

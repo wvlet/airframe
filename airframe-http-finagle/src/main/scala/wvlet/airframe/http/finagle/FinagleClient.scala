@@ -27,14 +27,14 @@ import scala.reflect.runtime.{universe => ru}
 
 case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
-                               retryer: RetryContext = FinagleClient.defaultRetryer)
+                               retry: RetryContext = FinagleClient.defaultRetry)
 
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
     with LogSupport {
 
-  private val client = {
-    val retryFilter   = new FinagleRetryFilter(config.retryer)
+  private[this] val client = {
+    val retryFilter   = new FinagleRetryFilter(config.retry)
     val finagleClient = config.initClient(Http.client).newService(address.hostAndPort)
 
     retryFilter andThen finagleClient
@@ -130,8 +130,8 @@ object FinagleClient extends LogSupport {
   def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
     x.withSessionQualifier.noFailureAccrual
   }
-  def defaultRetryer: RetryContext = {
-    HttpClient.defaultHttpClientRetryer[http.Request, http.Response]
+  def defaultRetry: RetryContext = {
+    HttpClient.defaultHttpClientRetry[http.Request, http.Response]
   }
 
   def newClient(hostAndPort: String, config: FinagleClientConfig = defaultConfig): FinagleClient = {

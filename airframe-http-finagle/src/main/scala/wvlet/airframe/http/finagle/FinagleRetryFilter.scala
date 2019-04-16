@@ -18,14 +18,13 @@ import com.twitter.finagle.util.DefaultTimer
 import com.twitter.finagle.{Service, SimpleFilter, http}
 import com.twitter.util._
 import wvlet.airframe.control.ResultClass
-import wvlet.airframe.control.Retry.{RetryContext, Retryer}
-import wvlet.airframe.http.HttpClientException
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
 
 /**
   * A filter for integrating Airframe Retry and Finagle
   */
-class FinagleRetryFilter(retryer: RetryContext, timer: Timer = DefaultTimer)
+class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
     extends SimpleFilter[http.Request, http.Response]
     with LogSupport {
   import com.twitter.conversions.DurationOps._
@@ -47,12 +46,11 @@ class FinagleRetryFilter(retryer: RetryContext, timer: Timer = DefaultTimer)
                        service: Service[Request, Response]): Future[Response] = {
     val rep = service(request)
     rep.transform { x =>
-      // TODO Use error handler defiend in RetryContext
       val classifier = x match {
         case Throw(e) =>
-          HttpClientException.classifyExecutionFailure(e)
+          retryContext.errorClassifier(e)
         case Return(r) =>
-          HttpClientException.classifyHttpResponse[http.Response](r)
+          retryContext.resultClassifier(r)
       }
 
       classifier match {
@@ -91,7 +89,7 @@ class FinagleRetryFilter(retryer: RetryContext, timer: Timer = DefaultTimer)
   }
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-    val retryContext = retryer.init(Option(request))
+    val retryContext = retry.init(Option(request))
     dispatch(retryContext, request, service)
   }
 }

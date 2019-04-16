@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.control.Retry
-import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext, Retryer}
+import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext}
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -103,7 +103,7 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
 object HttpClient extends LogSupport {
 
-  def defaultHttpClientRetryer[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
+  def defaultHttpClientRetry[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
     Retry
       .withBackOff(maxRetry = 10)
       .withResultClassifier(HttpClientException.classifyHttpResponse[Resp])

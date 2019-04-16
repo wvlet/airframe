@@ -98,11 +98,11 @@ class FinagleClientTest extends AirframeSpec {
   "fail request" in {
     d.build[FinagleServer] { server =>
       withResource(
-        FinagleClient.newSyncClient(
-          server.localAddress,
-          config = FinagleClientConfig(retryer = FinagleClient.defaultRetryer.withMaxRetry(3)))) { client =>
-        val resp = client.send(Request("/busy"))
-        info(resp)
+        FinagleClient.newSyncClient(server.localAddress,
+                                    config = FinagleClientConfig(retry = FinagleClient.defaultRetry.withMaxRetry(3)))) {
+        client =>
+          val resp = client.send(Request("/busy"))
+          info(resp)
       }
     }
   }

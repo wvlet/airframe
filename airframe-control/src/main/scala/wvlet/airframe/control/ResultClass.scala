@@ -21,23 +21,23 @@ sealed trait ResultClass
 object ResultClass {
 
   /**
-    * A label for successful code execution results
+    * A label for the successful code execution result
     */
   case object Succeeded extends ResultClass
 
   /**
-    * A label a failed code execution
+    * A label for the failed code execution result
     */
   case class Failed(isRetryable: Boolean, cause: Throwable) extends ResultClass
 
   def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
   def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
 
-  val AlwaysSucceed: Any => ResultClass = { x: Any =>
+  val ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
     Succeeded
   }
 
-  val AlwaysRetry: Throwable => ResultClass = { e: Throwable =>
+  val ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
     retryableFailure(e)
   }
 
