@@ -43,8 +43,7 @@ case class HttpClientMaxRetryException(retryContext: RetryContext, cause: Throwa
             HttpStatus.Unknown_000
         }
       },
-      message =
-        s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${retryContext.lastError.getMessage}",
+      message = s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${cause.getMessage}",
       cause
     )
 
