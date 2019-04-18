@@ -45,9 +45,10 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @param request
     * @return
     */
-  def buildControllerMethodArgs[A](controller: Any, request: HttpRequest[A], params: Map[String, String]): Seq[Any] = {
+  def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
+      implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = request.query ++ params
+    val requestParams = adapter.queryOf(request) ++ params
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -55,7 +56,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
         arg.surface.rawType match {
           case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
-            request
+            adapter.httpRequestOf(request)
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
@@ -65,11 +66,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
                 // Build the parameter from the content body
-                val contentBytes = request.contentBytes
+                val contentBytes = adapter.contentBytesOf(request)
 
                 if (contentBytes.nonEmpty) {
                   val msgpack =
-                    request.contentType.map(_.split(";")(0)) match {
+                    adapter.contentTypeOf(request).map(_.split(";")(0)) match {
                       case Some("application/x-msgpack") =>
                         contentBytes
                       case Some("application/json") =>
@@ -83,7 +84,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                           }
                           .getOrElse {
                             // If parsing as JSON fails, treat the content body as a regular string
-                            StringCodec.toMsgPack(request.contentString)
+                            StringCodec.toMsgPack(adapter.contentStringOf(request))
                           }
                     }
                   argCodec.unpackMsgPack(msgpack)
@@ -104,9 +105,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     methodSurface.call(controller, methodArgs: _*)
   }
 
-  def call[A](controllerProvider: ControllerProvider,
-              request: HttpRequest[A],
-              params: Map[String, String]): Option[Any] = {
+  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
+                                    request: Req,
+                                    params: Map[String, String]): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
       call(controller, buildControllerMethodArgs(controller, request, params))
     }

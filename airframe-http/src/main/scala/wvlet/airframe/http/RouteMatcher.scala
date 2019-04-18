@@ -16,8 +16,8 @@ import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req](controlllerProvider: ControllerProvider, request: HttpRequest[Req]): Option[Any] = {
-    route.call(controlllerProvider, request, params)
+  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
+    route.call(controllerProvider, request, params)
   }
 }
 
@@ -25,7 +25,7 @@ case class RouteMatch(route: Route, params: Map[String, String]) {
   * Find a matching route (RouteMatch) from a given HttpRequest
   */
 trait RouteMatcher {
-  def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch]
+  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch]
 }
 
 object RouteMatcher extends LogSupport {
@@ -44,9 +44,9 @@ object RouteMatcher extends LogSupport {
       }
     }
 
-    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
-      routesByMethod.get(request.method).flatMap { nextRouter =>
-        nextRouter.findRoute(request)
+    def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
+      routesByMethod.get(tp.methodOf(request)).flatMap { nextRouter =>
+        nextRouter.findRoute(request)(tp)
       }
     }
   }
@@ -56,7 +56,7 @@ object RouteMatcher extends LogSupport {
     */
   class FastRouteMatcher(targetMethod: HttpMethod, routes: Seq[Route]) extends RouteMatcher with LogSupport {
     private val dfa = buildPathDFA(routes)
-    debug(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
+    trace(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 
     dfa.nodeTable
       .map(_._1).foreach(state =>
@@ -65,10 +65,10 @@ object RouteMatcher extends LogSupport {
             s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} ")
       })
 
-    def findRoute[Req](request: HttpRequest[Req]): Option[RouteMatch] = {
+    def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
       var currentState = dfa.initStateId
       var pathIndex    = 0
-      val pc           = request.pathComponents
+      val pc           = tp.pathComponentsOf(request)
 
       var foundRoute: Option[Route] = None
       var toContinue                = true
@@ -103,7 +103,7 @@ object RouteMatcher extends LogSupport {
       }
 
       foundRoute.map { r =>
-        debug(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
+        trace(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
         RouteMatch(r, params.toMap)
       }
     }
