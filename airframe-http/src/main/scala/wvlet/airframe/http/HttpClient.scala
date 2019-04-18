@@ -76,12 +76,12 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
     awaitF(asyncClient.list[OperationResponse](resourcePath))
   }
 
-  def post[Resource: ru.TypeTag](resorucePath: String, resource: Resource): Resource = {
-    awaitF(asyncClient.post[Resource](resorucePath, resource))
+  def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource = {
+    awaitF(asyncClient.post[Resource](resourcePath, resource))
   }
-  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resorucePath: String,
+  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
                                                                 resource: Resource): OperationResponse = {
-    awaitF(asyncClient.post[Resource, OperationResponse](resorucePath, resource))
+    awaitF(asyncClient.post[Resource, OperationResponse](resourcePath, resource))
   }
 
   def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource = {
