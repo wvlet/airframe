@@ -99,6 +99,9 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
 
   def inputAttributes: Seq[Attribute]
   def outputAttributes: Seq[Attribute]
+
+  lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
+  def resolvedChildren: Boolean = children.forall(_.resolved)
 }
 
 trait LeafPlan extends LogicalPlan {
@@ -172,6 +175,7 @@ object LogicalPlan {
       }
     }
     override def outputAttributes: Seq[Attribute] = Nil
+    override lazy val resolved: Boolean           = false
   }
   case class RawSQL(sql: String) extends Relation with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = "Q"

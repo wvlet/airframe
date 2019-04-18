@@ -78,6 +78,10 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     }
     productIterator.foreach(recursiveTraverse)
   }
+
+  lazy val resolved: Boolean    = resolvedChildren
+  def resolvedChildren: Boolean = children.forall(_.resolved) && resolvedInputs
+  def resolvedInputs: Boolean   = true
 }
 
 trait LeafExpression extends Expression {
@@ -152,6 +156,7 @@ sealed trait SelectItem extends Expression
 case class AllColumns(prefix: Option[QName]) extends SelectItem {
   override def children: Seq[Expression] = prefix.toSeq
   override def toString                  = s"SelectItem(${prefix.map(x => s"${x}.*").getOrElse("*")})"
+  override lazy val resolved             = false
 }
 case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
   override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq

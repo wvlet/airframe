@@ -13,9 +13,30 @@
  */
 package wvlet.airframe.sql.catalog
 
+import wvlet.airframe.sql.model.QName
+
 object Catalog {
 
-  case class Table(name: String, schema: Seq[NamedType])
+  case class TableSchema(columns: Seq[NamedType])
+  case class Table(name: String, schema: TableSchema)
   case class DbTable(db: String, table: Table)
+
+  case class Catalog(databases: Seq[DbTable]) {
+
+    def findTable(database: String, tableName: String): Option[DbTable] = {
+      databases.find(x => x.db == database && x.table.name == tableName)
+    }
+
+    def findFromQName(contextDatabase: String, qname: QName): Option[DbTable] = {
+      qname.parts match {
+        case connetor :: db :: tbl =>
+          findTable(db, tbl.mkString("."))
+        case db :: tbl =>
+          findTable(db, tbl.mkString("."))
+        case _ =>
+          findTable(contextDatabase, qname.toString)
+      }
+    }
+  }
 
 }
