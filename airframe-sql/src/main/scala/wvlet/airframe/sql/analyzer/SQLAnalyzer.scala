@@ -28,7 +28,7 @@ case class TableNotFound(name: String)            extends AnalysisException(s"Ta
   */
 object SQLAnalyzer extends LogSupport {
 
-  type Rule = (LogicalPlan, AnalysisContext) => LogicalPlan
+  type Rule = (AnalysisContext) => PartialFunction[LogicalPlan, LogicalPlan]
 
   val rules: List[Rule] =
     TypeResolver.resolveTable _ :: Nil
@@ -44,9 +44,11 @@ object SQLAnalyzer extends LogSupport {
       warn(s"Not resolved ${plan}")
       val context = AnalysisContext(database = "", catalog = catalog)
 
-      val newPlan = rules.foldLeft(plan) { (t, rule) =>
-        rule.apply(t, context)
+      val newPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
+        val r = rule.apply(context)
+        targetPlan.transform(r)
       }
+      warn(s"new plan :${newPlan}")
       newPlan
     }
   }
@@ -57,18 +59,15 @@ object SQLAnalyzer extends LogSupport {
 
 object TypeResolver extends LogSupport {
 
-  def resolveTable(plan: LogicalPlan, context: AnalysisContext): LogicalPlan = {
-    plan match {
-      case LogicalPlan.Table(qname) =>
-        context.catalog.findFromQName(context.database, qname) match {
-          case Some(dbTable) =>
-            warn(s"Found ${dbTable}")
-            plan
-          case None =>
-            throw new TableNotFound(qname.toString)
-        }
-      case _ => plan
-    }
+  def resolveTable(context: AnalysisContext): PartialFunction[LogicalPlan, LogicalPlan] = {
+    case plan @ LogicalPlan.Table(qname) =>
+      context.catalog.findFromQName(context.database, qname) match {
+        case Some(dbTable) =>
+          warn(s"Found ${dbTable}")
+          plan
+        case None =>
+          throw new TableNotFound(qname.toString)
+      }
   }
 
 }

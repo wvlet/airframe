@@ -51,7 +51,30 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }.toSeq
   }
 
-  def transformExpressions(rule: PartialFunction[Expression, Expression]): this.type = {
+  def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {
+    def recursiveTransform(arg: Any): AnyRef = arg match {
+      case e: Expression  => e
+      case l: LogicalPlan => f(l)
+      case Some(x)        => Some(recursiveTransform(x))
+      case s: Seq[_]      => s.map(recursiveTransform _)
+      case other: AnyRef  => other
+      case null           => null
+    }
+
+    val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
+    copyInstance(newArgs)
+  }
+
+  def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
+    if (newNode.eq(this)) {
+      mapChildren(_.transform(rule))
+    } else {
+      newNode.mapChildren(_.transform(rule))
+    }
+  }
+
+  def transformExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
     def recursiveTransform(arg: Any): AnyRef = arg match {
       case e: Expression  => e.transformExpression(rule)
       case l: LogicalPlan => l.transformExpressions(rule)
