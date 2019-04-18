@@ -18,7 +18,8 @@ import com.twitter.finagle.util.DefaultTimer
 import com.twitter.finagle.{Service, SimpleFilter, http}
 import com.twitter.util._
 import wvlet.airframe.control.ResultClass
-import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
+import wvlet.airframe.http.{HttpClientException, HttpClientMaxRetryException}
 import wvlet.log.LogSupport
 
 /**
@@ -57,7 +58,13 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
         case ResultClass.Succeeded =>
           rep
         case ResultClass.Failed(isRetryable, cause) => {
-          if (retryContext.canContinue && isRetryable) {
+          if (!retryContext.canContinue) {
+            // Reached the max retry
+            throw new HttpClientMaxRetryException(retryContext, cause)
+          } else if (!isRetryable) {
+            // Non-retryable failure
+            throw cause
+          } else {
             Future
               .value {
                 // Update the retry count
@@ -69,19 +76,6 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
                   dispatch(nextRetryContext, request, service)
                 }
               }
-          } else {
-            // No more retry.
-            x match {
-              case Throw(e) =>
-                warn(e)
-                // Create an error response
-                val r = Response(Status.BadRequest)
-                r.setContentString(cause.getMessage)
-                Future.value(r)
-              case Return(r) =>
-                // Just return the last failed response
-                rep
-            }
           }
         }
       }

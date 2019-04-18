@@ -134,7 +134,7 @@ object HttpClient extends LogSupport {
       }
     val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
     warn(
-      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.2f sec.")
+      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec.")
     AddExtraRetryWait(extraWaitMillis.toInt)
   }
 

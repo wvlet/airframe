@@ -51,7 +51,10 @@ object Retry extends LogSupport {
     )
   }
 
-  case class MaxRetryException(retryState: RetryContext) extends Exception(retryState.lastError)
+  case class MaxRetryException(retryContext: RetryContext)
+      extends Exception(
+        s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${retryContext.lastError.getMessage}",
+        retryContext.lastError)
 
   // Throw this to force retry the execution
   case class RetryableFailure(e: Throwable) extends Exception(e)

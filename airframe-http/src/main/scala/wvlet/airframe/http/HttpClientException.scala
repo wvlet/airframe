@@ -20,6 +20,7 @@ import java.util.concurrent.{ExecutionException, TimeoutException}
 import javax.net.ssl.{SSLException, SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
 import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
 
 /**
@@ -32,12 +33,27 @@ class HttpClientException(val status: HttpStatus, message: String, cause: Throwa
   def statusCode: Int = status.code
 }
 
+case class HttpClientMaxRetryException(retryContext: RetryContext, cause: Throwable)
+    extends HttpClientException(
+      status = {
+        cause match {
+          case e: HttpClientException =>
+            e.status
+          case _ =>
+            HttpStatus.Unknown_000
+        }
+      },
+      message =
+        s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${retryContext.lastError.getMessage}",
+      cause
+    )
+
 /**
   * Common classifiers for HTTP client responses and exceptions in order to retry HTTP requests.
   */
 object HttpClientException extends LogSupport {
 
-  private def clientError[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
+  private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
     if (content == null || content.isEmpty) {
@@ -62,26 +78,26 @@ object HttpClientException extends LogSupport {
         Succeeded
       case s if s.isServerError =>
         // We should retry on any server side errors
-        retryableFailure(clientError(response))
+        retryableFailure(requestFailure(response))
       case s if s.isClientError => // 4xx
         s match {
           case HttpStatus.BadRequest_400 if isRetryable400ErrorMessage(adapter.contentStringOf(response)) =>
             // Some 400 errors can be caused by a client side error
-            retryableFailure(clientError(response))
+            retryableFailure(requestFailure(response))
           case HttpStatus.Gone_410 =>
             // e.g., Server might have failed to process the request
-            retryableFailure(clientError(response))
+            retryableFailure(requestFailure(response))
           case HttpStatus.TooManyRequests_429 =>
             // e.g., Server might return this code when busy. 429 should be retryable in general
-            retryableFailure(clientError(response))
+            retryableFailure(requestFailure(response))
           case HttpStatus.ClientClosedRequest_499 =>
             // e.g., client-side might have closed the connection.
-            retryableFailure(clientError(response))
+            retryableFailure(requestFailure(response))
           case _ =>
-            nonRetryableFailure(clientError(response))
+            nonRetryableFailure(requestFailure(response))
         }
       case _ =>
-        nonRetryableFailure(clientError(response))
+        nonRetryableFailure(requestFailure(response))
     }
   }
 

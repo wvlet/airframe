@@ -76,9 +76,9 @@ class RetryTest extends AirframeSpec {
         }
     }
 
-    e.retryState.maxRetry shouldBe 3
-    e.retryState.retryCount shouldBe 3
-    e.retryState.lastError shouldBe a[IllegalStateException]
+    e.retryContext.maxRetry shouldBe 3
+    e.retryContext.retryCount shouldBe 3
+    e.retryContext.lastError shouldBe a[IllegalStateException]
   }
 
   "change retry wait strategy" in {

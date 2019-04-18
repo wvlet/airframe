@@ -51,6 +51,8 @@ object HttpStatus {
     statusTable.getOrElse(code, new HttpStatus(code))
   }
 
+  // Unknown status
+  case object Unknown_000                       extends HttpStatus(0)
   case object Continue_100                      extends HttpStatus(100)
   case object SwitchingProtocols_101            extends HttpStatus(101)
   case object Processing_102                    extends HttpStatus(102)
@@ -111,6 +113,7 @@ object HttpStatus {
   case object NetworkAuthenticationRequired_511 extends HttpStatus(511)
 
   private val reasons: Map[HttpStatus, String] = Map(
+    Unknown_000                       -> "Unknown",
     Continue_100                      -> "Continue",
     SwitchingProtocols_101            -> "Switching Protocols",
     Processing_102                    -> "Processing",

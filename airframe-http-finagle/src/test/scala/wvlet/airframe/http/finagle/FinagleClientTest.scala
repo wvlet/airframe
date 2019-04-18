@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response, Status}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
-import wvlet.airframe.http.{Endpoint, HttpMethod, Router}
+import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -56,8 +56,13 @@ trait FinagleClientTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.GET, path = "/busy")
   def busy: Response = {
-    warn("called busy")
+    trace("called busy method")
     Response(Status.InternalServerError)
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/forbidden")
+  def forbidden: Response = {
+    Response(Status.Forbidden)
   }
 }
 
@@ -98,21 +103,41 @@ class FinagleClientTest extends AirframeSpec {
   "fail request" in {
     d.build[FinagleServer] { server =>
       withResource(
-        FinagleClient.newSyncClient(server.localAddress,
-                                    config = FinagleClientConfig(retry = FinagleClient.defaultRetry.withMaxRetry(3)))) {
-        client =>
-          val resp = client.send(Request("/busy"))
-          info(resp)
+        FinagleClient.newSyncClient(
+          server.localAddress,
+          config = FinagleClientConfig(
+            retry = FinagleClient.defaultRetry.withMaxRetry(3).withBackOff(initialIntervalMillis = 1)))) { client =>
+        warn(s"Starting http client failure tests")
+
+        {
+          // Test max retry failure
+          val ex = intercept[HttpClientMaxRetryException] {
+            val resp = client.get[String]("/busy")
+          }
+          warn(ex.getMessage)
+          ex.retryContext.retryCount shouldBe 3
+          ex.retryContext.maxRetry shouldBe 3
+          val cause = ex.retryContext.lastError.asInstanceOf[HttpClientException]
+          cause.status shouldBe HttpStatus.InternalServerError_500
+        }
+
+        {
+          // Non retryable response
+          val cause = intercept[HttpClientException] {
+            client.get[String]("/forbidden")
+          }
+          warn(cause.getMessage)
+          cause.status shouldBe HttpStatus.Forbidden_403
+        }
       }
     }
   }
 
-  "support https request" taggedAs working in {
+  "support https request" in {
     withResource(FinagleClient.newSyncClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)
       page should include("<html")
     }
   }
-
 }
