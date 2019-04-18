@@ -13,11 +13,10 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, warn}
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.AnalysisContext
 import wvlet.airframe.sql.catalog.Catalog.Catalog
-import wvlet.airframe.sql.model.LogicalPlan
-import wvlet.airframe.sql.model.LogicalPlan.Table
-import wvlet.airframe.sql.parser.{SQLInterpreter, SQLParser}
+import wvlet.airframe.sql.model.{LogicalPlan, TableScan}
+import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
 abstract class AnalysisException(message: String) extends Exception(message)
@@ -33,19 +32,20 @@ object SQLAnalyzer extends LogSupport {
   val rules: List[Rule] =
     TypeResolver.resolveTable _ :: Nil
 
-  def analyze(sql: String, catalog: Catalog): LogicalPlan = {
-    analyze(SQLParser.parse(sql), catalog)
+  def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
+    analyze(SQLParser.parse(sql), database, catalog)
   }
 
-  def analyze(plan: LogicalPlan, catalog: Catalog): LogicalPlan = {
+  def analyze(plan: LogicalPlan, database: String, catalog: Catalog): LogicalPlan = {
     if (plan.resolved) {
       plan
     } else {
       warn(s"Not resolved ${plan}")
-      val context = AnalysisContext(database = "", catalog = catalog)
+      val context = AnalysisContext(database = database, catalog = catalog)
 
       val newPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(context)
+        // Recursively transform the tree
         targetPlan.transform(r)
       }
       warn(s"new plan :${newPlan}")
@@ -64,7 +64,7 @@ object TypeResolver extends LogSupport {
       context.catalog.findFromQName(context.database, qname) match {
         case Some(dbTable) =>
           warn(s"Found ${dbTable}")
-          plan
+          TableScan(qname, dbTable)
         case None =>
           throw new TableNotFound(qname.toString)
       }

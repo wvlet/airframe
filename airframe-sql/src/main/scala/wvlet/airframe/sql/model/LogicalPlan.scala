@@ -52,17 +52,28 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
   }
 
   def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {
+    var changed = false
     def recursiveTransform(arg: Any): AnyRef = arg match {
-      case e: Expression  => e
-      case l: LogicalPlan => f(l)
-      case Some(x)        => Some(recursiveTransform(x))
-      case s: Seq[_]      => s.map(recursiveTransform _)
-      case other: AnyRef  => other
-      case null           => null
+      case e: Expression => e
+      case l: LogicalPlan => {
+        val newPlan = f(l)
+        if (!newPlan.eq(l)) {
+          changed = true
+        }
+        newPlan
+      }
+      case Some(x)       => Some(recursiveTransform(x))
+      case s: Seq[_]     => s.map(recursiveTransform _)
+      case other: AnyRef => other
+      case null          => null
     }
 
     val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
-    copyInstance(newArgs)
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
   }
 
   def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
@@ -161,7 +172,7 @@ object LogicalPlan {
   }
 
   // Relational operator
-  sealed trait Relation extends LogicalPlan with SQLSig
+  trait Relation extends LogicalPlan with SQLSig
 
   // A relation that takes a single input relation
   sealed trait UnaryRelation extends Relation with UnaryPlan {

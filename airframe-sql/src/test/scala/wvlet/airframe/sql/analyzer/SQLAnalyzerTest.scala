@@ -29,7 +29,7 @@ class SQLAnalyzerTest extends AirframeSpec {
     Catalog(Seq(DbTable("public", tbl)))
 
   "resolve input/output types" in {
-    SQLAnalyzer.analyze("select id, name from a", catalog)
+    SQLAnalyzer.analyze("select id, name from a", "public", catalog)
   }
 
 }
