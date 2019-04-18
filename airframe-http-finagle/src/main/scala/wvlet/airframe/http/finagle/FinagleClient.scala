@@ -34,10 +34,17 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     with LogSupport {
 
   private[this] val client = {
-    val retryFilter   = new FinagleRetryFilter(config.retry)
-    val finagleClient = config.initClient(Http.client).newService(address.hostAndPort)
+    val retryFilter                = new FinagleRetryFilter(config.retry)
+    var finagleClient: Http.Client = config.initClient(Http.client)
 
-    retryFilter andThen finagleClient
+    address.scheme.map {
+      case "https" =>
+        // Set TLS for http (443) connection
+        finagleClient = finagleClient.withTls(address.host)
+      case _ =>
+    }
+
+    retryFilter andThen finagleClient.newService(address.hostAndPort)
   }
 
   override def send(req: Request): Future[Response] = {

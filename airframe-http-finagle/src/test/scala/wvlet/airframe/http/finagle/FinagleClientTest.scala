@@ -107,4 +107,12 @@ class FinagleClientTest extends AirframeSpec {
     }
   }
 
+  "support https request" taggedAs working in {
+    withResource(FinagleClient.newSyncClient("https://wvlet.org")) { client =>
+      val page = client.get[String]("/airframe/")
+      trace(page)
+      page should include("<html")
+    }
+  }
+
 }
