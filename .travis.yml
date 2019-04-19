@@ -50,6 +50,7 @@ matrix:
         - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
     - env: SCALA_VERSION=2.13.0-RC1 PROJECT=projectJVM2_13
       jdk: openjdk11
+      dist: xenial
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
@@ -64,6 +65,7 @@ matrix:
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
       jdk: openjdk11
+      dist: xenial
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
