@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.4.2
+-  airframe-http: Add HttpClient ([#482](https://github.com/wvlet/airframe/issues/482)) [[4bb9463](https://github.com/wvlet/airframe/commit/4bb9463)]
+-  airframe-control: Simplified Retry interfaces so that it can be used to control as an independent module. 
+
 ## 19.4.1
 -  Add Scala 2.13.0-RC1 support. ([#487](https://github.com/wvlet/airframe/issues/487)) [[3eb68a8](https://github.com/wvlet/airframe/commit/3eb68a8)]
 -  airframe: Support DI tracing and coverage stats ([#486](https://github.com/wvlet/airframe/issues/486)) [[143c629](https://github.com/wvlet/airframe/commit/143c629)]
