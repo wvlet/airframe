@@ -15,7 +15,7 @@ package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.sql.analyzer.SQLAnalyzer.AnalysisContext
 import wvlet.airframe.sql.catalog.Catalog.Catalog
-import wvlet.airframe.sql.model.{LogicalPlan, TableScan}
+import wvlet.airframe.sql.model.{LogicalPlan, LogicalPlanPrinter, TableScan}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
@@ -33,6 +33,7 @@ object SQLAnalyzer extends LogSupport {
     TypeResolver.resolveTable _ :: Nil
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
+    debug(s"analyze:\n${sql}")
     analyze(SQLParser.parse(sql), database, catalog)
   }
 
@@ -48,7 +49,7 @@ object SQLAnalyzer extends LogSupport {
         // Recursively transform the tree
         targetPlan.transform(r)
       }
-      warn(s"new plan :${newPlan}")
+      warn(s"new plan:\n${LogicalPlanPrinter.print(newPlan)}")
       newPlan
     }
   }

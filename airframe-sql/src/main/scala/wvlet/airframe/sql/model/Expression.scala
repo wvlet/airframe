@@ -15,6 +15,7 @@
 package wvlet.airframe.sql.model
 import java.util.Locale
 
+import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
@@ -117,9 +118,13 @@ object QName {
   }
 }
 
-case class UnresolvedAttribute(parts: Seq[String]) extends Attribute {
-  override def toString = s"UnresolvedAttribute(${name})"
-  def name: String      = parts.mkString(".")
+case class UnresolvedAttribute(name: String) extends Attribute {
+  override def toString      = s"UnresolvedAttribute(${name})"
+  override lazy val resolved = false
+}
+
+case class TypedAttribute(name: String, dataType: DataType) extends Attribute {
+  override def toString = s"${name}:${dataType}"
 }
 
 sealed trait Identifier extends LeafExpression {
@@ -152,15 +157,19 @@ case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
   override def child: Expression = expr
 }
 
-sealed trait SelectItem extends Expression
+sealed trait SelectItem extends Expression {
+  def toAttribute: Attribute
+}
 case class AllColumns(prefix: Option[QName]) extends SelectItem {
   override def children: Seq[Expression] = prefix.toSeq
   override def toString                  = s"SelectItem(${prefix.map(x => s"${x}.*").getOrElse("*")})"
   override lazy val resolved             = false
+  override def toAttribute: Attribute    = UnresolvedAttribute(s"${prefix.map(x => s"${x}.").getOrElse("")}*")
 }
 case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
   override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
   override def toString                  = s"SelectItem(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
+  override def toAttribute: Attribute    = UnresolvedAttribute(alias.getOrElse(expr).toString)
 }
 
 case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])

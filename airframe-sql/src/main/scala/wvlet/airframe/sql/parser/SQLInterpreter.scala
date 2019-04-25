@@ -177,9 +177,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): LogicalPlan = {
     val filter: Option[Expression] = {
-      if (ctx.where == null)
+      if (ctx.where == null) {
         None
-      else {
+      } else {
         Option(ctx.where)
           .map(visit(_))
           .collectFirst { case e: Expression => e }
@@ -327,7 +327,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitDereference(ctx: DereferenceContext): Attribute = {
-    UnresolvedAttribute(Seq(ctx.base.getText, ctx.fieldName.getText))
+    UnresolvedAttribute(s"${ctx.base.getText}.${ctx.fieldName.getText}")
   }
 
   override def visitSelectAll(ctx: SelectAllContext): SelectItem = {

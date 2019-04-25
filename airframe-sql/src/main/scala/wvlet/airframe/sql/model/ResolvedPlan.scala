@@ -27,8 +27,12 @@ case class TableScan(name: QName, table: DbTable) extends Relation with LeafPlan
     *
     * @return
     */
-  override def inputAttributes: Seq[Attribute]  = Nil
-  override def outputAttributes: Seq[Attribute] = Nil
+  override def inputAttributes: Seq[Attribute] = {
+    table.table.schema.columns.map { c =>
+      TypedAttribute(c.name, c.dataType)
+    }
+  }
+  override def outputAttributes: Seq[Attribute] = inputAttributes
   override def sig(config: QuerySignatureConfig): String = {
     if (config.embedTableNames) {
       name.toString

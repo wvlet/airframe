@@ -256,7 +256,9 @@ object LogicalPlan {
     }
 
     // TODO
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = {
+      selectItems.map(_.toAttribute)
+    }
   }
 
   case class Aggregate(
