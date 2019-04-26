@@ -131,9 +131,12 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     productIterator.foreach(recursiveTraverse)
   }
 
+  // Input attributes (column names) of the relation
   def inputAttributes: Seq[Attribute]
+  // Output attributes (column names) of the relation
   def outputAttributes: Seq[Attribute]
 
+  // True if all input attributes are resolved.
   lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
   def resolvedChildren: Boolean = children.forall(_.resolved)
 }
