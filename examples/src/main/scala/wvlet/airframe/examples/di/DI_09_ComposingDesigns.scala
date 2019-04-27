@@ -27,18 +27,18 @@ object DI_09_ComposingDesigns extends App with LogSupport {
     .bind[String].toInstance("Hello!")
 
   val d2 = newSilentDesign
-    .bind[String].toInstance("Good night!")
+    .bind[String].toInstance("Good Night!")
 
   // Combining designs
   val d3 = d1 + d2
 
   d3.withSession { session =>
     val i = session.build[Int]    // 10
-    val s = session.build[String] // Good night
+    val s = session.build[String] // Good Night!
     info(s"${i} ${s}")
   }
 
-  // Adding design is not commutative because of override of the same type
+  // Adding designs is not commutative because preceding bindings for the same types will be overwritten.
   val d4 = d2 + d1
   d4.withSession { session =>
     val i = session.build[Int]    // 10
