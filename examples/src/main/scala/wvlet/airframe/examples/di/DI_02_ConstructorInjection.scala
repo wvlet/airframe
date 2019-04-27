@@ -15,7 +15,9 @@ package wvlet.airframe.examples.di
 import wvlet.log.LogSupport
 
 /**
+  * An example of using constructor injection.
   *
+  * This pattern is useful if you do not want to include the dependency to Airframe to some classes.
   */
 object DI_02_ConstructorInjection extends App {
 
@@ -29,7 +31,7 @@ object DI_02_ConstructorInjection extends App {
     }
   }
 
-  val d = newDesign
+  val d = newDesign.noLifeCycleLogging // Disable lifecycle logging
 
   // Build MyApp with Default Config
   d.build[MyApp] { app =>
@@ -42,7 +44,7 @@ object DI_02_ConstructorInjection extends App {
 
   // Build MyApp with the custom config
   d2.build[MyApp] { app =>
-    app.run // port = 10010
+    app.run // Shows MyApp with MyAppConfig(10010)
   }
 
 }

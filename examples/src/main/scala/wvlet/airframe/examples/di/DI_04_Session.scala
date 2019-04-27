@@ -12,32 +12,29 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
-import wvlet.log.LogSupport
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * An example of manually creating a session
   */
-object DI_01_HelloAirframe extends App {
+object DI_04_Session extends App {
 
   import wvlet.airframe._
 
-  case class MyAppConfig(name: String)
+  trait MyApp
 
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
-
-    def run = {
-      info(s"Hello ${config.name}!")
-    }
-  }
-
-  // Create an empty design
   val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
 
-  // Building MyApp using the design
-  d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+  d.withSession { session => // Session will start here
+    // Build a new service using DI
+    session.build[MyApp]
   }
+  // Session will be closed here
+
+  // Suppress startup/shutdown log messages by using debug log levels.
+  val d2 = d.noLifeCycleLogging
+
+  d2.build[MyApp] { myapp =>
+    //
+  }
+
 }

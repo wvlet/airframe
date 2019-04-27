@@ -12,32 +12,27 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
+
 import wvlet.log.LogSupport
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * If you need to terminate a session explicitly (e.g., via REST call), bind[Session] is useful.
   */
-object DI_01_HelloAirframe extends App {
+object DI_20_BindSession extends App {
 
   import wvlet.airframe._
 
-  case class MyAppConfig(name: String)
+  trait MyApi extends LogSupport {
+    private val session = bind[Session]
 
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
-
-    def run = {
-      info(s"Hello ${config.name}!")
+    def shutdown = {
+      warn(s"shutdown is called")
+      session.shutdown
     }
   }
 
-  // Create an empty design
-  val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
-
-  // Building MyApp using the design
-  d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+  newDesign.build[MyApi] { api =>
+    api.shutdown
   }
+
 }

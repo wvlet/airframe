@@ -12,32 +12,37 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
+
 import wvlet.log.LogSupport
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * To reuse same type data for different purposes, use type aliases.
+  * Airframe treats type aliases with different names as different types when binding dependencies.
   */
-object DI_01_HelloAirframe extends App {
+object DI_10_TypeAliasBinding extends App {
 
   import wvlet.airframe._
 
-  case class MyAppConfig(name: String)
+  case class DbConfig(db: String)
+
+  // Define type aliases of DbConfig
+  type LogDbConfig  = DbConfig
+  type ChatDbConfig = DbConfig
 
   trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
+    val logDbConfig  = bind[LogDbConfig]
+    val chatDbConfig = bind[ChatDbConfig]
 
-    def run = {
-      info(s"Hello ${config.name}!")
+    def run {
+      info(s"logdb: ${logDbConfig}, chatdb: ${chatDbConfig}")
     }
   }
 
-  // Create an empty design
-  val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
+  val d = newSilentDesign
+    .bind[LogDbConfig].toInstance(DbConfig("log"))
+    .bind[ChatDbConfig].toInstance(DbConfig("chat"))
 
-  // Building MyApp using the design
   d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+    app.run
   }
 }
