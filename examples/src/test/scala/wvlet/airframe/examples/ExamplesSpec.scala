@@ -27,7 +27,7 @@ class ExamplesSpec extends AirframeSpec {
       cl  <- Resource.findClasses(s"wvlet.airframe.examples.${packageName}", classOf[App]).sortBy(_.getSimpleName)
       app <- ReflectTypeUtil.companionObject(cl)
     } {
-      info(s"Running ${app.getClass.getSimpleName.replaceAll("\\$", "")}")
+      warn(s"Running ${app.getClass.getSimpleName.replaceAll("\\$", "")}")
 
       app.asInstanceOf[App].main(Array.empty)
     }

@@ -12,43 +12,37 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
-import wvlet.airframe.tracing.DIStats
+
+import javax.annotation.PostConstruct
+import wvlet.log.LogSupport
 
 /**
   *
   */
-object DI_05_Stats extends App {
+object DI_11_ProductionMode extends App with LogSupport {
 
   import wvlet.airframe._
-  trait A {
-    val b = bind[B]
-  }
-  trait B
-  trait C
 
-  val stats = new DIStats()
-  val d = newDesign.noLifeCycleLogging
-    .bind[A].toSingleton
-    .bind[B].toSingleton
-    .bind[C].toSingleton
-    .withStats(stats) // Set stats
-
-  d.build[A] { a =>
-    //
+  trait MyService extends LogSupport {
+    @PostConstruct
+    def init: Unit = {
+      info("initialized")
+    }
   }
 
-  val report = stats.coverageReportFor(d)
+  trait MyApp {}
 
-  /***
-    * Show the design coverage and access stats.
-    *
-    * [coverage]
-    * design coverage: 66.7%
-    * [unused types]
-    * C
-    * [access stats]
-    * [A] init:1, inject:1
-    * [B] init:1, inject:1
-    */
-  println(report)
+  val d = newSilentDesign
+    .bind[MyService].toSingleton // To eagerly initialize the service, you must bind it to the design
+
+  info(s"Production mode")
+  d.withProductionMode.build[MyApp] { app =>
+    // MyService is already initialized
+  }
+
+  info(s"Lazy mode")
+  d.build[MyApp] { app =>
+    // MyService will not be initialized here
+  }
+
 }

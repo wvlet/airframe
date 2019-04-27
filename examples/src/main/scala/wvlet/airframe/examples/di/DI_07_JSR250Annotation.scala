@@ -12,32 +12,34 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
+
+import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.log.LogSupport
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * To add lifecycle hooks, JSR250 annotations (@PostConstruct, @PreDestroy) can be used too.
+  *
+  * This is useful if you need to define lifecycle management hooks as methods in your trait.
   */
-object DI_01_HelloAirframe extends App {
+object DI_07_JSR250Annotation extends App {
 
-  import wvlet.airframe._
+  trait MyService extends LogSupport {
+    @PostConstruct
+    def start = {
+      info(s"starting the service")
+    }
 
-  case class MyAppConfig(name: String)
-
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
-
-    def run = {
-      info(s"Hello ${config.name}!")
+    @PreDestroy
+    def stop = {
+      info(s"stopping the service")
     }
   }
 
-  // Create an empty design
-  val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
+  import wvlet.airframe._
 
-  // Building MyApp using the design
-  d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+  newSilentDesign.build[MyService] { service =>
+    // PostConstrct method will be called here
   }
+  // PreDestroy method will be called
+
 }

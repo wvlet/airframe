@@ -12,32 +12,48 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
+
 import wvlet.log.LogSupport
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * To switch the implementation, override the binding in the design
   */
-object DI_01_HelloAirframe extends App {
+object DI_08_OverrideBinding extends App {
 
   import wvlet.airframe._
 
-  case class MyAppConfig(name: String)
+  trait DB extends LogSupport {
+    def query(sql: String): Unit = {
+      info(s"Execute: ${sql}")
+    }
 
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
+  }
 
-    def run = {
-      info(s"Hello ${config.name}!")
+  trait MockDB extends DB {
+    override def query(sql: String): Unit = {
+      info(s"Dryrun: ${sql}")
     }
   }
 
-  // Create an empty design
-  val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
+  trait MyApp extends LogSupport {
+    private val db = bind[DB]
 
-  // Building MyApp using the design
-  d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+    def run {
+      db.query("select 1")
+    }
+  }
+
+  val coreDesign = newSilentDesign
+
+  coreDesign.build[MyApp] { app =>
+    app.run
+  }
+
+  // Switch the implementation of DB to MockDB
+  val testDesign = coreDesign
+    .bind[DB].to[MockDB]
+
+  testDesign.build[MyApp] { app =>
+    app.run
   }
 }

@@ -32,7 +32,7 @@ object DI_03_InTraitInjection extends App {
     }
   }
 
-  val d = newDesign
+  val d = newDesign.noLifeCycleLogging
 
   // Build MyApp with Default Config
   d.build[MyApp] { app =>

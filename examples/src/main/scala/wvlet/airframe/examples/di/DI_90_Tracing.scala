@@ -12,32 +12,30 @@
  * limitations under the License.
  */
 package wvlet.airframe.examples.di
-import wvlet.log.LogSupport
+import wvlet.airframe.tracing.ChromeTracer
 
 /**
-  * A basic example of three-step DI: Bind - Design - Build
+  * You can generate a tracing data of your dependency injection.
+  *
+  * Trace Event Format: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
+  *
   */
-object DI_01_HelloAirframe extends App {
-
+object DI_90_Tracing extends App {
   import wvlet.airframe._
 
-  case class MyAppConfig(name: String)
+  case class MyAppConfig(port: Int = 8080)
 
-  trait MyApp extends LogSupport {
-    // Bind a configuration
-    private val config = bind[MyAppConfig]
-
-    def run = {
-      info(s"Hello ${config.name}!")
-    }
+  trait MyApp {
+    val config = bind[MyAppConfig]
   }
 
-  // Create an empty design
-  val d = newDesign
-    .bind[MyAppConfig].toInstance(MyAppConfig(name = "Airframe"))
+  val d = newSilentDesign
+    .withTracer(ChromeTracer.newTracer("target/trace.json"))
 
-  // Building MyApp using the design
+  // DI tracing report will be stored in target/trace.json
+  // You can open this file with Google Chrome. Open chrome://tracing, and load the json file.
   d.build[MyApp] { app =>
-    app.run // Hello Airframe! will be shown
+    //
   }
+
 }
