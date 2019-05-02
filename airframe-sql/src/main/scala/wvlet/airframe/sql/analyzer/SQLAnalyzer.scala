@@ -13,10 +13,10 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContext, OptimizerRule, PlanRewriter, Rule}
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContext, PlanRewriter}
 import wvlet.airframe.sql.catalog.Catalog.Catalog
-import wvlet.airframe.sql.model.LogicalPlan.Project
-import wvlet.airframe.sql.model.{Attribute, LogicalPlan, LogicalPlanPrinter, TableScan}
+import wvlet.airframe.sql.model.LogicalPlan.{Project, Relation}
+import wvlet.airframe.sql.model._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
@@ -36,7 +36,8 @@ object SQLAnalyzer extends LogSupport {
     TypeResolver.resolveTable _ :: Nil
 
   val optimizerRules: List[OptimizerRule] = {
-    Optimizer.pruneProjectionColumns _ :: Nil
+    Optimizer.pruneColumns _ ::
+      Nil
   }
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
@@ -70,7 +71,8 @@ object SQLAnalyzer extends LogSupport {
   }
 
   case class AnalysisContext(database: String, catalog: Catalog)
-  case class OptimizerContext(attributes: Set[Attribute])
+
+  case class OptimizerContext(inputAttributes: Set[Attribute])
 
 }
 
@@ -91,17 +93,32 @@ object TypeResolver extends LogSupport {
 
 object Optimizer extends LogSupport {
 
-  def pruneProjectionColumns(context: OptimizerContext): PlanRewriter = {
-    case p @ Project(child, selectItems) =>
-      selectItems.map { x =>
-        warn(x)
-      }
-      p
+  def extractInputs(expressions: Seq[Expression]): Set[Attribute] = {
+    expressions.map { x =>
+      warn(x)
+    }
+
+    // TODO
+    Set.empty
   }
 
-  def pruneTableScanColumns(context: OptimizerContext): PlanRewriter = {
-    case t @ TableScan(name, table, columns) =>
-      t
+  def pruneColumns(context: OptimizerContext): PlanRewriter = {
+    case p @ Project(child, selectItems) =>
+      val newContext = OptimizerContext(extractInputs(selectItems))
+      Project(pruneRelationColumns(child, newContext), selectItems)
+    case r: Relation =>
+      pruneRelationColumns(r, context)
+  }
+
+  def pruneRelationColumns(relation: Relation, context: OptimizerContext): Relation = {
+    relation match {
+      case t @ TableScan(name, table, columns) =>
+        val accessedColumns = columns.filter { col =>
+          context.inputAttributes.exists(x => x.name == col)
+        }
+        TableScan(name, table, accessedColumns)
+      case _ => relation
+    }
   }
 
 }
