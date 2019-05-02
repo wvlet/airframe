@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContext}
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContext, OptimizerRule, PlanRewriter, Rule}
 import wvlet.airframe.sql.catalog.Catalog.Catalog
 import wvlet.airframe.sql.model.LogicalPlan.Project
 import wvlet.airframe.sql.model.{Attribute, LogicalPlan, LogicalPlanPrinter, TableScan}
@@ -28,14 +28,15 @@ case class TableNotFound(name: String)            extends AnalysisException(s"Ta
   */
 object SQLAnalyzer extends LogSupport {
 
-  type Rule          = (AnalysisContext) => PartialFunction[LogicalPlan, LogicalPlan]
-  type OptimizerRule = (OptimizerContext) => PartialFunction[LogicalPlan, LogicalPlan]
+  type PlanRewriter  = PartialFunction[LogicalPlan, LogicalPlan]
+  type Rule          = (AnalysisContext) => PlanRewriter
+  type OptimizerRule = (OptimizerContext) => PlanRewriter
 
   val rules: List[Rule] =
     TypeResolver.resolveTable _ :: Nil
 
   val optimizerRules: List[OptimizerRule] = {
-    Optimizer.pushdownProjection _ :: Nil
+    Optimizer.pruneProjectionColumns _ :: Nil
   }
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
@@ -75,7 +76,7 @@ object SQLAnalyzer extends LogSupport {
 
 object TypeResolver extends LogSupport {
 
-  def resolveTable(context: AnalysisContext): PartialFunction[LogicalPlan, LogicalPlan] = {
+  def resolveTable(context: AnalysisContext): PlanRewriter = {
     case plan @ LogicalPlan.Table(qname) =>
       context.catalog.findFromQName(context.database, qname) match {
         case Some(dbTable) =>
@@ -90,12 +91,17 @@ object TypeResolver extends LogSupport {
 
 object Optimizer extends LogSupport {
 
-  def pushdownProjection(context: OptimizerContext): PartialFunction[LogicalPlan, LogicalPlan] = {
+  def pruneProjectionColumns(context: OptimizerContext): PlanRewriter = {
     case p @ Project(child, selectItems) =>
       selectItems.map { x =>
-        //warn(x)
+        warn(x)
       }
       p
+  }
+
+  def pruneTableScanColumns(context: OptimizerContext): PlanRewriter = {
+    case t @ TableScan(name, table, columns) =>
+      t
   }
 
 }
