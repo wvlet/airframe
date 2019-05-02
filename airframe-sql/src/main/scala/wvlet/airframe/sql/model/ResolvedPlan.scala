@@ -20,7 +20,7 @@ import wvlet.airframe.sql.model.LogicalPlan.Relation
 /**
   *
   */
-case class TableScan(name: QName, table: DbTable) extends Relation with LeafPlan {
+case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends Relation with LeafPlan {
 
   /**
     * All child nodes of this plan node
@@ -28,8 +28,10 @@ case class TableScan(name: QName, table: DbTable) extends Relation with LeafPlan
     * @return
     */
   override def inputAttributes: Seq[Attribute] = {
-    table.table.schema.columns.map { c =>
-      TypedAttribute(c.name, c.dataType)
+    columns.flatMap { col =>
+      table.schema.columns.find(_.name == col).map { c =>
+        TypedAttribute(c.name, c.dataType)
+      }
     }
   }
   override def outputAttributes: Seq[Attribute] = inputAttributes

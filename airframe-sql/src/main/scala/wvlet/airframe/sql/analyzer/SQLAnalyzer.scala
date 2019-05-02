@@ -13,9 +13,10 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.AnalysisContext
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContext}
 import wvlet.airframe.sql.catalog.Catalog.Catalog
-import wvlet.airframe.sql.model.{LogicalPlan, LogicalPlanPrinter, TableScan}
+import wvlet.airframe.sql.model.LogicalPlan.Project
+import wvlet.airframe.sql.model.{Attribute, LogicalPlan, LogicalPlanPrinter, TableScan}
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
@@ -27,10 +28,15 @@ case class TableNotFound(name: String)            extends AnalysisException(s"Ta
   */
 object SQLAnalyzer extends LogSupport {
 
-  type Rule = (AnalysisContext) => PartialFunction[LogicalPlan, LogicalPlan]
+  type Rule          = (AnalysisContext) => PartialFunction[LogicalPlan, LogicalPlan]
+  type OptimizerRule = (OptimizerContext) => PartialFunction[LogicalPlan, LogicalPlan]
 
   val rules: List[Rule] =
     TypeResolver.resolveTable _ :: Nil
+
+  val optimizerRules: List[OptimizerRule] = {
+    Optimizer.pushdownProjection _ :: Nil
+  }
 
   def analyze(sql: String, database: String, catalog: Catalog): LogicalPlan = {
     debug(s"analyze:\n${sql}")
@@ -42,19 +48,28 @@ object SQLAnalyzer extends LogSupport {
       plan
     } else {
       warn(s"Not resolved ${plan}")
-      val context = AnalysisContext(database = database, catalog = catalog)
+      val analysysContext = AnalysisContext(database = database, catalog = catalog)
 
       val newPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
-        val r = rule.apply(context)
+        val r = rule.apply(analysysContext)
         // Recursively transform the tree
         targetPlan.transform(r)
       }
-      warn(s"new plan:\n${LogicalPlanPrinter.print(newPlan)}")
-      newPlan
+
+      val optimizerContext = OptimizerContext(Set.empty)
+      val optimizedPlan = optimizerRules.foldLeft(newPlan) { (targetPlan, rule) =>
+        val r = rule.apply(optimizerContext)
+        // Recursively transform the tree
+        targetPlan.transform(r)
+      }
+
+      warn(s"new plan:\n${LogicalPlanPrinter.print(optimizedPlan)}")
+      optimizedPlan
     }
   }
 
   case class AnalysisContext(database: String, catalog: Catalog)
+  case class OptimizerContext(attributes: Set[Attribute])
 
 }
 
@@ -65,10 +80,22 @@ object TypeResolver extends LogSupport {
       context.catalog.findFromQName(context.database, qname) match {
         case Some(dbTable) =>
           warn(s"Found ${dbTable}")
-          TableScan(qname, dbTable)
+          TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
         case None =>
           throw new TableNotFound(qname.toString)
       }
+  }
+
+}
+
+object Optimizer extends LogSupport {
+
+  def pushdownProjection(context: OptimizerContext): PartialFunction[LogicalPlan, LogicalPlan] = {
+    case p @ Project(child, selectItems) =>
+      selectItems.map { x =>
+        //warn(x)
+      }
+      p
   }
 
 }

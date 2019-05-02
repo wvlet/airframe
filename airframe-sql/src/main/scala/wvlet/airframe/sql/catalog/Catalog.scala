@@ -18,13 +18,12 @@ import wvlet.airframe.sql.model.QName
 object Catalog {
 
   case class TableSchema(columns: Seq[NamedType])
-  case class Table(name: String, schema: TableSchema)
-  case class DbTable(db: String, table: Table)
+  case class DbTable(db: Option[String], name: String, schema: TableSchema)
 
   case class Catalog(databases: Seq[DbTable]) {
 
     def findTable(database: String, tableName: String): Option[DbTable] = {
-      databases.find(x => x.db == database && x.table.name == tableName)
+      databases.find(x => x.db == Some(database) && x.name == tableName)
     }
 
     def findFromQName(contextDatabase: String, qname: QName): Option[DbTable] = {

@@ -14,7 +14,7 @@
 package wvlet.airframe.sql.analyzer
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.sql.catalog.Catalog.{Catalog, DbTable, Table, TableSchema}
+import wvlet.airframe.sql.catalog.Catalog.{Catalog, DbTable, TableSchema}
 import wvlet.airframe.sql.catalog.{DataType, NamedType}
 
 /**
@@ -23,14 +23,15 @@ import wvlet.airframe.sql.catalog.{DataType, NamedType}
 class SQLAnalyzerTest extends AirframeSpec {
 
   val tbl =
-    Table("a",
-          TableSchema(
-            Seq(NamedType("id", DataType.LongType),
-                NamedType("name", DataType.StringType),
-                NamedType("address", DataType.StringType))))
+    DbTable(Some("public"),
+            "a",
+            TableSchema(
+              Seq(NamedType("id", DataType.LongType),
+                  NamedType("name", DataType.StringType),
+                  NamedType("address", DataType.StringType))))
 
   val catalog =
-    Catalog(Seq(DbTable("public", tbl)))
+    Catalog(Seq(tbl))
 
   "resolve input/output types" in {
     SQLAnalyzer.analyze("select id, name from a", "public", catalog)
