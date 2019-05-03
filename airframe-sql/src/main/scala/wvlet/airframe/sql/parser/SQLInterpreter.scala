@@ -197,9 +197,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         EmptyRelation
     }
 
-    val selectItem: Seq[SelectItem] = ctx
+    val selectItem: Seq[Attribute] = ctx
       .selectItem().asScala.map { x =>
-        visit(x).asInstanceOf[SelectItem]
+        visit(x).asInstanceOf[Attribute]
       }.toSeq
 
     val withAggregation = {
@@ -279,7 +279,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
       case l: LateralContext =>
         Lateral(visitQuery(l.query()))
       case t: TableNameContext =>
-        Table(QName(t.qualifiedName().getText))
+        TableRef(QName(t.qualifiedName().getText))
       case other =>
         throw unknown(other)
     }
@@ -317,9 +317,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     j
   }
 
-  override def visitTableName(ctx: TableNameContext): Table = {
+  override def visitTableName(ctx: TableNameContext): TableRef = {
     val tableName = visitQualifiedName(ctx.qualifiedName())
-    Table(tableName)
+    TableRef(tableName)
   }
 
   override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
@@ -330,13 +330,13 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     UnresolvedAttribute(s"${ctx.base.getText}.${ctx.fieldName.getText}")
   }
 
-  override def visitSelectAll(ctx: SelectAllContext): SelectItem = {
+  override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
     ctx.qualifiedName()
     AllColumns(None)
   }
 
-  override def visitSelectSingle(ctx: SelectSingleContext): SelectItem = {
+  override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
     val alias = Option(ctx.AS()).map(x => expression(ctx.identifier()))
     SingleColumn(expression(ctx.expression()), alias)
   }

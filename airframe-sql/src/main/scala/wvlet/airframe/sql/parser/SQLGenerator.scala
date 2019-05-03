@@ -180,7 +180,7 @@ object SQLGenerator extends LogSupport {
           }.mkString(", ")
         s += printRelation(body)
         s.result().mkString(" ")
-      case Table(t) =>
+      case TableRef(t) =>
         printExpression(t)
       case Limit(in, l) =>
         val s = seqBuilder
@@ -199,7 +199,7 @@ object SQLGenerator extends LogSupport {
         val r = printRelation(relation, context)
         val c = columnNames.map(x => s"(${x.mkString(", ")})").getOrElse("")
         relation match {
-          case Table(x)                 => s"${r} AS ${alias.sqlExpr}${c}"
+          case TableRef(x)              => s"${r} AS ${alias.sqlExpr}${c}"
           case ParenthesizedRelation(x) => s"${r} AS ${alias.sqlExpr}${c}"
           case Unnest(_, _)             => s"${r} AS ${alias.sqlExpr}${c}"
           case Lateral(_)               => s"${r} AS ${alias.sqlExpr}${c}"
@@ -342,8 +342,6 @@ object SQLGenerator extends LogSupport {
 
   def printExpression(e: Expression): String = {
     e match {
-      case a: Attribute =>
-        a.name
       case i: Identifier =>
         i.sqlExpr
       case l: Literal =>
@@ -359,6 +357,8 @@ object SQLGenerator extends LogSupport {
           .getOrElse(col)
       case AllColumns(prefix) =>
         prefix.map(p => s"${p}.*").getOrElse("*")
+      case a: Attribute =>
+        a.name
       case SortItem(key, ordering, nullOrdering) =>
         val k  = printExpression(key)
         val o  = ordering.map(x => s" ${x}").getOrElse("")

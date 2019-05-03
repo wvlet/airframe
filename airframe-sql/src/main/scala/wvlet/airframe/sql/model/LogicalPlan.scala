@@ -167,7 +167,7 @@ trait SQLSig {
 }
 
 object LogicalPlan {
-  private def isSelectAll(selectItems: Seq[SelectItem]): Boolean = {
+  private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {
       case AllColumns(x) => true
       case _             => false
@@ -203,7 +203,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = ???
   }
 
-  case class Table(name: QName) extends Relation with LeafPlan {
+  case class TableRef(name: QName) extends Relation with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = {
       if (config.embedTableNames) {
         name.toString
@@ -249,10 +249,10 @@ object LogicalPlan {
 
 // This node can be a pivot node for generating a SELECT statament
   sealed trait Selection extends UnaryRelation {
-    def selectItems: Seq[SelectItem]
+    def selectItems: Seq[Attribute]
   }
 
-  case class Project(child: Relation, selectItems: Seq[SelectItem]) extends UnaryRelation with Selection {
+  case class Project(child: Relation, selectItems: Seq[Attribute]) extends UnaryRelation with Selection {
     override def sig(config: QuerySignatureConfig): String = {
       val proj = if (LogicalPlan.isSelectAll(selectItems)) "*" else s"${selectItems.length}"
       s"P[${proj}](${child.sig(config)})"
@@ -260,13 +260,13 @@ object LogicalPlan {
 
     // TODO
     override def outputAttributes: Seq[Attribute] = {
-      selectItems.map(_.toAttribute)
+      selectItems
     }
   }
 
   case class Aggregate(
       child: Relation,
-      selectItems: Seq[SelectItem],
+      selectItems: Seq[Attribute],
       groupingKeys: Seq[GroupingKey],
       having: Option[Expression]
   ) extends UnaryRelation
@@ -412,7 +412,7 @@ object LogicalPlan {
   }
   case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"CT(${Table(table).sig(config)})"
+      s"CT(${TableRef(table).sig(config)})"
     }
   }
 
@@ -422,13 +422,13 @@ object LogicalPlan {
       columnAliases: Option[Seq[Identifier]],
       query: Relation
   ) extends DDL {
-    override def sig(config: QuerySignatureConfig) = s"CT(${Table(table).sig(config)},${query.sig(config)})"
+    override def sig(config: QuerySignatureConfig) = s"CT(${TableRef(table).sig(config)},${query.sig(config)})"
     override def inputAttributes: Seq[Attribute]   = query.inputAttributes
     override def outputAttributes: Seq[Attribute]  = Nil
   }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"DT(${Table(table).sig(config)})"
+      s"DT(${TableRef(table).sig(config)})"
     }
   }
   trait Update extends LogicalPlan with SQLSig
@@ -438,14 +438,15 @@ object LogicalPlan {
       with UnaryRelation {
     override def child: Relation = query
     override def sig(config: QuerySignatureConfig): String = {
-      s"I(${Table(table).sig(config)},${query.sig(config)})"
+      s"I(${TableRef(table).sig(config)},${query.sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
+
   case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = {
-      s"D(${Table(table).sig(config)})"
+      s"D(${TableRef(table).sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = Nil
     override def outputAttributes: Seq[Attribute] = Nil
@@ -453,7 +454,7 @@ object LogicalPlan {
 
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"RT(${Table(table).sig(config)})"
+      s"RT(${TableRef(table).sig(config)})"
     }
   }
   case class RenameColumn(table: QName, column: Identifier, renameTo: Identifier) extends DDL {

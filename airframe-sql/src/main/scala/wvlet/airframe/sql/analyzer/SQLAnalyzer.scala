@@ -33,7 +33,9 @@ object SQLAnalyzer extends LogSupport {
   type OptimizerRule = (OptimizerContext) => PlanRewriter
 
   val rules: List[Rule] =
-    TypeResolver.resolveTable _ :: Nil
+    TypeResolver.resolveTableRef _ ::
+      TypeResolver.resolveColumns _ ::
+      Nil
 
   val optimizerRules: List[OptimizerRule] = {
     Optimizer.pruneColumns _ ::
@@ -78,8 +80,11 @@ object SQLAnalyzer extends LogSupport {
 
 object TypeResolver extends LogSupport {
 
-  def resolveTable(context: AnalysisContext): PlanRewriter = {
-    case plan @ LogicalPlan.Table(qname) =>
+  /**
+    * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
+    */
+  def resolveTableRef(context: AnalysisContext): PlanRewriter = {
+    case plan @ LogicalPlan.TableRef(qname) =>
       context.catalog.findFromQName(context.database, qname) match {
         case Some(dbTable) =>
           warn(s"Found ${dbTable}")
@@ -89,22 +94,45 @@ object TypeResolver extends LogSupport {
       }
   }
 
+  def resolveColumns(context: AnalysisContext): PlanRewriter = {
+    case p @ Project(child, columns) =>
+      val inputAttributes = child.inputAttributes
+      val resolvedColumns = Seq.newBuilder[Attribute]
+      columns.map {
+        case a: AllColumns =>
+          // TODO check (prefix).* to resolve attributes
+          resolvedColumns ++= inputAttributes
+        case SingleColumn(expr, None) =>
+          val resolvedExpr = resolveExpression(expr)
+          SingleColumn(resolvedExpr, None)
+        case other =>
+          resolvedColumns += other
+      }
+
+      Project(child, resolvedColumns.result())
+  }
+
+  def resolveExpression(expr: Expression): Expression = {
+    expr match {
+      case _ => expr
+    }
+  }
+
 }
 
 object Optimizer extends LogSupport {
 
   def extractInputs(expressions: Seq[Expression]): Set[Attribute] = {
-    expressions.map { x =>
-      warn(x)
+    val newAttributes: Seq[Attribute] = expressions.collect {
+      case s: Attribute =>
+        s
     }
-
-    // TODO
-    Set.empty
+    newAttributes.toSet
   }
 
   def pruneColumns(context: OptimizerContext): PlanRewriter = {
     case p @ Project(child, selectItems) =>
-      val newContext = OptimizerContext(extractInputs(selectItems))
+      val newContext = OptimizerContext(selectItems.toSet)
       Project(pruneRelationColumns(child, newContext), selectItems)
     case r: Relation =>
       pruneRelationColumns(r, context)

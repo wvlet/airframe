@@ -47,7 +47,7 @@ class InOutTableFinder {
         g += target
       case RenameTable(from, to) =>
         g += Edge(SourceTable(from.toString), TargetTable(to.toString))
-      case Table(name) =>
+      case TableRef(name) =>
         val src = SourceTable(name.toString)
         context.target match {
           case Some(x) =>

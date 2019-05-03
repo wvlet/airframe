@@ -15,6 +15,7 @@ package wvlet.airframe.sql.model
 
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 import wvlet.airframe.sql.catalog.Catalog.DbTable
+import wvlet.airframe.sql.catalog.DataType
 import wvlet.airframe.sql.model.LogicalPlan.Relation
 
 /**
@@ -30,7 +31,7 @@ case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends 
   override def inputAttributes: Seq[Attribute] = {
     columns.flatMap { col =>
       table.schema.columns.find(_.name == col).map { c =>
-        TypedAttribute(c.name, c.dataType)
+        ResolvedAttribute(c.name, c.dataType)
       }
     }
   }
@@ -43,5 +44,15 @@ case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends 
     }
   }
 
+  override lazy val resolved = true
+}
+
+case class ResolvedAttribute(name: String, dataType: DataType) extends Attribute {
+  override def toString      = s"${name}:${dataType}"
+  override lazy val resolved = true
+}
+
+case class ResolvedAlias(alias: String, name: String, dataType: DataType) extends Attribute {
+  override def toString      = s"${name}:${dataType} as ${alias}"
   override lazy val resolved = true
 }

@@ -123,10 +123,6 @@ case class UnresolvedAttribute(name: String) extends Attribute {
   override lazy val resolved = false
 }
 
-case class TypedAttribute(name: String, dataType: DataType) extends Attribute {
-  override def toString = s"${name}:${dataType}"
-}
-
 sealed trait Identifier extends LeafExpression {
   def value: String
 }
@@ -157,19 +153,16 @@ case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
   override def child: Expression = expr
 }
 
-sealed trait SelectItem extends Expression {
-  def toAttribute: Attribute
-}
-case class AllColumns(prefix: Option[QName]) extends SelectItem {
+case class AllColumns(prefix: Option[QName]) extends Attribute {
+  override def name: String              = prefix.map(x => s"${x}.*").getOrElse("*")
   override def children: Seq[Expression] = prefix.toSeq
-  override def toString                  = s"SelectItem(${prefix.map(x => s"${x}.*").getOrElse("*")})"
+  override def toString                  = s"Attribute(${name})"
   override lazy val resolved             = false
-  override def toAttribute: Attribute    = UnresolvedAttribute(s"${prefix.map(x => s"${x}.").getOrElse("")}*")
 }
-case class SingleColumn(expr: Expression, alias: Option[Expression]) extends SelectItem {
+case class SingleColumn(expr: Expression, alias: Option[Expression]) extends Attribute {
+  override def name: String              = alias.getOrElse(expr).toString
   override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
-  override def toString                  = s"SelectItem(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
-  override def toAttribute: Attribute    = UnresolvedAttribute(alias.getOrElse(expr).toString)
+  override def toString                  = s"Attribute(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 }
 
 case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])
