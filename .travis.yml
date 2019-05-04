@@ -54,11 +54,6 @@ matrix:
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
       script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly * -- -l serde"
-    - env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
-      jdk: openjdk8
-      services: postgresql
-      before_script: psql -c 'create database travis_ci_test;' -U postgres
-      script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJS
       jdk: openjdk8
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
