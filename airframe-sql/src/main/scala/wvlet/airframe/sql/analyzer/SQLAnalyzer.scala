@@ -33,6 +33,7 @@ object SQLAnalyzer extends LogSupport {
   type OptimizerRule = (OptimizerContext) => PlanRewriter
 
   val rules: List[Rule] =
+    // First resolve all input table types
     TypeResolver.resolveTableRef _ ::
       TypeResolver.resolveColumns _ ::
       Nil
@@ -51,23 +52,24 @@ object SQLAnalyzer extends LogSupport {
     if (plan.resolved) {
       plan
     } else {
-      warn(s"Not resolved ${plan}")
       val analysysContext = AnalysisContext(database = database, catalog = catalog)
+      debug(s"Unresolved plan:\n${plan.pp}")
 
-      val newPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
+      val resolvedPlan = rules.foldLeft(plan) { (targetPlan, rule) =>
         val r = rule.apply(analysysContext)
         // Recursively transform the tree
         targetPlan.transform(r)
       }
+      debug(s"Resolved plan:\n${resolvedPlan.pp}")
 
       val optimizerContext = OptimizerContext(Set.empty)
-      val optimizedPlan = optimizerRules.foldLeft(newPlan) { (targetPlan, rule) =>
+      val optimizedPlan = optimizerRules.foldLeft(resolvedPlan) { (targetPlan, rule) =>
         val r = rule.apply(optimizerContext)
         // Recursively transform the tree
         targetPlan.transform(r)
       }
 
-      warn(s"new plan:\n${LogicalPlanPrinter.print(optimizedPlan)}")
+      debug(s"new plan:\n${optimizedPlan.pp}")
       optimizedPlan
     }
   }
@@ -78,6 +80,9 @@ object SQLAnalyzer extends LogSupport {
 
 }
 
+/**
+  * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
+  */
 object TypeResolver extends LogSupport {
 
   /**
@@ -103,8 +108,8 @@ object TypeResolver extends LogSupport {
           // TODO check (prefix).* to resolve attributes
           resolvedColumns ++= inputAttributes
         case SingleColumn(expr, None) =>
-          val resolvedExpr = resolveExpression(expr)
-          SingleColumn(resolvedExpr, None)
+          val resolvedExpr = resolveExpression(expr, inputAttributes)
+          resolvedColumns += SingleColumn(resolvedExpr, None)
         case other =>
           resolvedColumns += other
       }
@@ -112,8 +117,15 @@ object TypeResolver extends LogSupport {
       Project(child, resolvedColumns.result())
   }
 
-  def resolveExpression(expr: Expression): Expression = {
+  /**
+    * Resolve untyped expressions
+    */
+  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
     expr match {
+      case i: Identifier =>
+        inputAttributes
+          .find(attr => attr.name == i.value)
+          .getOrElse(i)
       case _ => expr
     }
   }

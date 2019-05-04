@@ -156,13 +156,13 @@ case class JoinOn(expr: Expression) extends JoinCriteria with UnaryExpression {
 case class AllColumns(prefix: Option[QName]) extends Attribute {
   override def name: String              = prefix.map(x => s"${x}.*").getOrElse("*")
   override def children: Seq[Expression] = prefix.toSeq
-  override def toString                  = s"Attribute(${name})"
+  override def toString                  = s"AllColumns(${name})"
   override lazy val resolved             = false
 }
 case class SingleColumn(expr: Expression, alias: Option[Expression]) extends Attribute {
   override def name: String              = alias.getOrElse(expr).toString
   override def children: Seq[Expression] = Seq(expr) ++ alias.toSeq
-  override def toString                  = s"Attribute(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
+  override def toString                  = s"SingleColumn(${alias.map(a => s"${expr} as ${a}").getOrElse(s"${expr}")})"
 }
 
 case class SortItem(sortKey: Expression, ordering: Option[SortOrdering] = None, nullOrdering: Option[NullOrdering])

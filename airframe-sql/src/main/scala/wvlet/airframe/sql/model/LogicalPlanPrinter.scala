@@ -35,16 +35,15 @@ object LogicalPlanPrinter extends LogSupport {
       case EmptyRelation =>
       // print nothing
       case _ =>
-        val ws = " " * (level)
+        val ws = " " * level
 
-        val inputAttr = m.inputAttributes.mkString(", ")
-        val attr      = m.expressions.map(_.toString)
-        val prefix    = s"${ws}[${m.modelName}] <${inputAttr}>"
+        val inputAttr  = m.inputAttributes.mkString(", ")
+        val outputAttr = m.outputAttributes.mkString(", ")
+        val attr       = m.expressions.map(_.toString)
+        val prefix     = s"${ws}[${m.modelName}] (${inputAttr}): (${outputAttr})"
         attr.length match {
           case 0 =>
             out.println(prefix)
-          case 1 =>
-            out.println(s"${prefix} ${attr.mkString(", ")}")
           case _ =>
             out.println(s"${prefix}")
             val attrWs  = " " * (level + 1)

@@ -20,7 +20,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     if (n.endsWith("$")) n.substring(0, n.length - 1) else n
   }
 
-  def printPlan: String = {
+  def pp: String = {
     LogicalPlanPrinter.print(this)
   }
 
