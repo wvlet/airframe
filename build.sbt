@@ -2,9 +2,8 @@ import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0-RC1"
-val SCALA_2_11 = "2.11.12"
 
-val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
+val untilScala2_12      = SCALA_2_12 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8-RC2"
@@ -436,8 +435,6 @@ lazy val launcher =
     .settings(
       name := "airframe-launcher",
       description := "Command-line program launcher",
-      // https://github.com/scala/scala-parser-combinators/issues/197
-      fork in Test := scalaVersion.value.startsWith("2.11."),
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
@@ -735,8 +732,6 @@ lazy val sql =
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
-      // https://github.com/scala/scala-parser-combinators/issues/197
-      fork in Test := scalaVersion.value.startsWith("2.11."),
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
