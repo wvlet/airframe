@@ -17,7 +17,7 @@ Airframe DI enables isolating the the application logic and service design. This
 - Managing differently configured singletons.
 - etc., ...
 
-Airframe is available for Scala 2.11, 2.12, 2.13, and [Scala.js](https://www.scala-js.org/). Airframe also supports JDK11.
+Airframe is available for Scala 2.12, 2.13, and [Scala.js](https://www.scala-js.org/). Airframe also supports JDK11.
 
 In Scala we have various approaches for dependency injection, such as [cake pattern](http://jonasboner.com/real-world-scala-dependency-injection-di/), [Google Guice](https://github.com/google/guice), [Macwire](https://github.com/adamw/macwire), [reader monad](https://softwaremill.com/reader-monad-constructor-dependency-injection-friend-or-foe/), etc. For more detailed comparison, see the following article:
 

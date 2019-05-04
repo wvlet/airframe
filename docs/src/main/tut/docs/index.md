@@ -79,7 +79,7 @@ Include as many dependencies as you need into your `libraryDependencies` in __bu
 ```scala
 val AIRFRAME_VERSION="(version)"
 
-# For Scala 2.11, 2.12, and 2.13
+# For Scala 2.12, and 2.13
 libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
   "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
