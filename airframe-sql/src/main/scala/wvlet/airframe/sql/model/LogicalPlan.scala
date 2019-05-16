@@ -279,8 +279,7 @@ object LogicalPlan {
     override def toString =
       s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${child})"
 
-    // TODO
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = selectItems
   }
 
   case class Query(withQuery: With, body: Relation) extends Relation {

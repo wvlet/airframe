@@ -107,9 +107,9 @@ object TypeResolver extends LogSupport {
         case a: AllColumns =>
           // TODO check (prefix).* to resolve attributes
           resolvedColumns ++= inputAttributes
-        case SingleColumn(expr, None) =>
+        case SingleColumn(expr, alias) =>
           val resolvedExpr = resolveExpression(expr, inputAttributes)
-          resolvedColumns += SingleColumn(resolvedExpr, None)
+          resolvedColumns += SingleColumn(resolvedExpr, alias)
         case other =>
           resolvedColumns += other
       }

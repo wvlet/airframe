@@ -51,8 +51,3 @@ case class ResolvedAttribute(name: String, dataType: DataType) extends Attribute
   override def toString      = s"${name}:${dataType}"
   override lazy val resolved = true
 }
-
-case class ResolvedAlias(alias: String, name: String, dataType: DataType) extends Attribute {
-  override def toString      = s"${name}:${dataType} as ${alias}"
-  override lazy val resolved = true
-}
