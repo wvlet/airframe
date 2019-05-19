@@ -42,7 +42,7 @@ matrix:
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
-      jdk: openjdk11
+      jdk: openjdk8
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script:
@@ -60,7 +60,7 @@ matrix:
     - env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
       # Build Scala 2.11 support only for master and releases	
       if: (branch = master OR tag IS present) AND type != pull_request
-      jdk: openjdk11
+      jdk: openjdk8
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
