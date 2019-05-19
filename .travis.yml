@@ -17,10 +17,10 @@ language: scala
 matrix:
   include:
     - env: PROJECT=code-format
-      jdk: openjdk8
+      jdk: openjdk11
       script: ./scalafmt --test
     - env: PROJECT=docs
-      jdk: openjdk8
+      jdk: openjdk11
       if: (branch = master OR tag IS present) AND type != pull_request
       before_install:
         - export PATH=${PATH}:./vendor/bundle
@@ -38,11 +38,11 @@ matrix:
           cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
     - env: PROJECT=publish
       if: (branch = master OR tag IS present) AND type != pull_request
-      jdk: openjdk8
+      jdk: openjdk11
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
-      jdk: openjdk8
+      jdk: openjdk11
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script:
@@ -55,17 +55,12 @@ matrix:
       # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
       script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly * -- -l serde"
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJS
-      jdk: openjdk8
-      script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
-    - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
       jdk: openjdk11
-      services: postgresql
-      before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
       # Build Scala 2.11 support only for master and releases	
       if: (branch = master OR tag IS present) AND type != pull_request
-      jdk: openjdk8
+      jdk: openjdk11
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
