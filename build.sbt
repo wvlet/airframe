@@ -1,9 +1,10 @@
 import sbtcrossproject.{CrossType, crossProject}
 
+val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0-RC1"
 
-val untilScala2_12      = SCALA_2_12 :: Nil
+val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8-RC2"
