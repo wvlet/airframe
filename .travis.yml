@@ -55,7 +55,7 @@ matrix:
       # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
       script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly * -- -l serde"
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJS
-      jdk: openjdk11
+      jdk: openjdk8  # Scala.js 0.6.27 didn't work with jdk11
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
       # Build Scala 2.11 support only for master and releases	
