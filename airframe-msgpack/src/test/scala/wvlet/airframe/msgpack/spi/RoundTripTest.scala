@@ -19,14 +19,14 @@ import java.time.Instant
 
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 
 /**
   *
   */
-class RoundTripTest extends AirframeSpec with PropertyChecks {
+class RoundTripTest extends AirframeSpec with ScalaCheckPropertyChecks {
 
   val buf = ByteArrayBuffer.newBuffer(1024)
 

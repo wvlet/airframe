@@ -16,14 +16,14 @@ package wvlet.airframe.codec
 import java.math.BigInteger
 
 import org.scalacheck.Arbitrary
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 
 /**
   *
   */
-class PrimitiveCodecTest extends CodecSpec with GeneratorDrivenPropertyChecks {
+class PrimitiveCodecTest extends CodecSpec with ScalaCheckDrivenPropertyChecks {
   import scala.collection.JavaConverters._
 
   def roundTripTest[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
