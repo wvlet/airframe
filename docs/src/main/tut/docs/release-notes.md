@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.5.1
+-  Support Scala 2.13.0-RC2 ([#500](https://github.com/wvlet/airframe/issues/500)) [[7c3b329](https://github.com/wvlet/airframe/commit/7c3b329)]
+-  Recover Scala 2.11 build as Spark 2.4.x still uses this Scala version for a while. ([#498](https://github.com/wvlet/airframe/issues/498)) [[30561c7](https://github.com/wvlet/airframe/commit/30561c7)]
+
 ## 19.5.0
 
 -  The first release of the new Reiwa era! 
