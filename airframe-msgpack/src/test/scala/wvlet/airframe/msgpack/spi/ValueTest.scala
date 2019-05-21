@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
 
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi.Value._
@@ -23,7 +23,7 @@ import wvlet.airframe.msgpack.spi.Value._
 /**
   *
   */
-class ValueTest extends AirframeSpec with PropertyChecks {
+class ValueTest extends AirframeSpec with ScalaCheckPropertyChecks {
 
   private def rankOf(mf: MessageFormat): Int = {
     val order =
@@ -169,9 +169,9 @@ class ValueTest extends AirframeSpec with PropertyChecks {
     }
 
     "check appropriate range for integers" in {
+      import java.lang.{Byte, Short}
+
       import ValueFactory._
-      import java.lang.Byte
-      import java.lang.Short
 
       newInteger(Byte.MAX_VALUE).asByte shouldBe Byte.MAX_VALUE
       newInteger(Byte.MIN_VALUE).asByte shouldBe Byte.MIN_VALUE

@@ -15,14 +15,14 @@ package wvlet.airframe.canvas
 import java.nio.ByteBuffer
 
 import org.scalacheck.Gen
-import org.scalatest.prop.PropertyChecks
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control
 
 /**
   *
   */
-class CanvasTest extends AirframeSpec with PropertyChecks {
+class CanvasTest extends AirframeSpec with ScalaCheckPropertyChecks {
 
   def check[A](v: A, canvas: Canvas, writer: Canvas => Unit, reader: Canvas => A): Unit = {
     writer(canvas)
