@@ -33,11 +33,28 @@ class ExamplesSpec extends AirframeSpec {
     }
   }
 
-  "codec examples" taggedAs ("codec") in {
+  "codec examples" taggedAs ("ex-codec") in {
     runAll("codec")
   }
 
-  "di examples" taggedAs ("di") in {
+  "di examples" taggedAs ("ex-di") in {
     runAll("di")
   }
+
+  "control examples" taggedAs ("ex-control") in {
+    runAll("control")
+  }
+
+  "http examples" taggedAs ("ex-http") in {
+    runAll("http")
+  }
+
+  "launcher examples" taggedAs ("ex-launcher") in {
+    runAll("launcher")
+  }
+
+  "log examples" taggedAs ("ex-log") in {
+    runAll("log")
+  }
+
 }
