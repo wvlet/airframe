@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter
 
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -50,6 +51,7 @@ object TimeParser extends LogSupport {
   }
 
   def parseZonedDateTime(s: String): Option[TimeParseResult] = {
+    @tailrec
     def loop(lst: List[DateTimeFormatter]): Option[TimeParseResult] = {
       if (lst.isEmpty) {
         None
