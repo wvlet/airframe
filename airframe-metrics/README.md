@@ -81,7 +81,7 @@ DURATION := (+ | -)?(INTEGER)(UNIT)
 UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
-RANGE    := (DURATION) (/ (OFFSET))?
+RANGE    := (OFFSET) (/ (OFFSET))*
 DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
 ```
 
@@ -113,5 +113,8 @@ Here are several examples of relative time window strings when the current time 
 |`-1h/2017-01-23 01:00:00`| last hour from the given offset (hour) | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1h/2017-01-23 01:23:45`| last hour from the given offset (hour) | `2017-01-23 00:00:00-0700` | `2017-01-23 01:00:00-0700`|
 |`-1M/2017-01-23 01:23:45`| last month from the given offset (hour) | `2016-12-01 00:00:00-0700` | `2017-01-01 00:00:00-0700`|
+|`2017-01-23/2017-01-25`| exact date range | `2017-01-23 00:00:00-0700` | `2017-01-25 00:00:00-0700`|
+|`2017-01-23 01:23:45/2017-01-25 01:23:45`| exact time range | `2017-01-23 01:23:45-0700` | `2017-01-25 1:23:45-0700`|
+|`2016-01-01/0d`| exact start time to a given offset | `2016-01-01 00:00:00-0700` | `2016-06-26 00:00:00-0700`|
 |`0M/2017-01-23)`| from beginning of the month to a given offset | `2017-01-01 00:00:00-0700` | `2017-01-23 00:00:00-0700`|
 |`+1M/2017-01-23 01:23:45)`| from a given offset to end of the month | `2017-01-23 01:23:45-0700` | `2017-02-01 00:00:00-0700`|

@@ -205,16 +205,34 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
     val pattern = s"^([^/]+)(/(.*))?".r("duration", "sep", "offset")
     pattern.findFirstMatchIn(str) match {
       case Some(m) =>
-        val d        = m.group("duration")
-        val duration = TimeVector(d)
-        m.group("offset") match {
-          case null =>
-            // When offset is not given, use the truncated time
-            val context = duration.unit.truncate(now)
-            duration.timeWindowFrom(context)
-          case offsetStr =>
-            val offset = parseOffset(offsetStr, duration.unit)
-            duration.timeWindowFrom(offset)
+        val d = m.group("duration")
+
+        // Check the exact start date first
+        TimeParser.parseTimeAndUnit(d, zone) match {
+          case Some(exactStartTime) =>
+            // When exact start datetime is specified
+            val offset = m.group("offset") match {
+              case null =>
+                // When the offset is not given, use the start date + time unit as the end point
+                val thisUnit = TimeVector(-1, 1, exactStartTime.unit)
+                thisUnit.timeWindowFrom(exactStartTime.dateTime).end
+              case offsetStr =>
+                // [start date, offset time)
+                parseOffset(offsetStr, TimeWindowUnit.Second)
+            }
+            TimeWindow(exactStartTime.dateTime, offset)
+          case None =>
+            // Check relative time ranges
+            val duration = TimeVector(d)
+            m.group("offset") match {
+              case null =>
+                // When offset is not given, use the truncated time
+                val context = duration.unit.truncate(now)
+                duration.timeWindowFrom(context)
+              case offsetStr =>
+                val offset = parseOffset(offsetStr, duration.unit)
+                duration.timeWindowFrom(offset)
+            }
         }
       case None =>
         throw new IllegalArgumentException(s"TimeRange.of(${str})")
