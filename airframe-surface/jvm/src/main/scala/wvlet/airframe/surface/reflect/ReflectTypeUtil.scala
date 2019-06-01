@@ -42,7 +42,8 @@ object ReflectTypeUtil extends LogSupport {
       val companionCls = if (clName.endsWith("$")) {
         cl
       } else {
-        Class.forName(clName + "$")
+        val cl = Thread.currentThread().getContextClassLoader
+        Class.forName(clName + "$", true, cl)
       }
       val module       = companionCls.getField("MODULE$")
       val companionObj = module.get(null)

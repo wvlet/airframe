@@ -29,15 +29,20 @@ import scala.util.{Failure, Success, Try}
   */
 object JMXUtil extends LogSupport {
 
+  private def findClass(name: String): Class[_] = {
+    val cl = Thread.currentThread().getContextClassLoader
+    Class.forName(name, true, cl)
+  }
+
   implicit class WithReflection(className: String) {
     def invokeStaticMethod(methodName: String): Unit = {
-      Try(Class.forName(className).getDeclaredMethod(methodName))
+      Try(findClass(className).getDeclaredMethod(methodName))
         .map(m => m.invoke(null))
         .recoverWith { case e: Throwable => throw e }
     }
 
     def getStaticField[R](name: String): Option[R] = {
-      Class.forName(className).getDeclaredFields.find(_.getName == name).flatMap { field =>
+      findClass(className).getDeclaredFields.find(_.getName == name).flatMap { field =>
         val isAccessible = field.isAccessible
         try {
           field.setAccessible(true)
