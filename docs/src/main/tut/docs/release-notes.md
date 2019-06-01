@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.6.0
+-  surface: Use context class loader to fix sbt/sbt[#4760](https://github.com/wvlet/airframe/issues/4760) ([#506](https://github.com/wvlet/airframe/issues/506)) [[f5d9dd8](https://github.com/wvlet/airframe/commit/f5d9dd8)]
+-  metrics: Support exact start dates in TimeWindow ([#505](https://github.com/wvlet/airframe/issues/505)) [[23a91b9](https://github.com/wvlet/airframe/commit/23a91b9)]
+
 ## 19.5.2
 -  Upgrade to Scala 2.13.0-RC3 ([#503](https://github.com/wvlet/airframe/issues/503)) [[4c54d79](https://github.com/wvlet/airframe/commit/4c54d79)]
 -  Add more airframe examples ([#502](https://github.com/wvlet/airframe/issues/502)) [[2b4b06a](https://github.com/wvlet/airframe/commit/2b4b06a)]
