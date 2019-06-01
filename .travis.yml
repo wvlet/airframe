@@ -38,7 +38,7 @@ matrix:
           cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
     - env: PROJECT=publish
       if: (branch = master OR tag IS present) AND type != pull_request
-      jdk: openjdk11
+      jdk: openjdk8
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
