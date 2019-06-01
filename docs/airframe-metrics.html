@@ -84,7 +84,7 @@ Values with (or without)<code class="highlighter-rouge">-</code> sign means the 
 UNIT     := s | m | h | d | w | M | q | y
 
 OFFSET   := DURATION | DATE_TIME
-RANGE    := (DURATION) (/ (OFFSET))?
+RANGE    := (OFFSET) (/ (OFFSET))*
 DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
 </code></pre>
 </div>
@@ -234,6 +234,24 @@ DATE_TIME := yyyy-MM-dd( HH:mm:ss(.ZZZ|' ' z)?)?
       <td>last month from the given offset (hour)</td>
       <td><code class="highlighter-rouge">2016-12-01 00:00:00-0700</code></td>
       <td><code class="highlighter-rouge">2017-01-01 00:00:00-0700</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">2017-01-23/2017-01-25</code></td>
+      <td>exact date range</td>
+      <td><code class="highlighter-rouge">2017-01-23 00:00:00-0700</code></td>
+      <td><code class="highlighter-rouge">2017-01-25 00:00:00-0700</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">2017-01-23 01:23:45/2017-01-25 01:23:45</code></td>
+      <td>exact time range</td>
+      <td><code class="highlighter-rouge">2017-01-23 01:23:45-0700</code></td>
+      <td><code class="highlighter-rouge">2017-01-25 1:23:45-0700</code></td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">2016-01-01/0d</code></td>
+      <td>exact start time to a given offset</td>
+      <td><code class="highlighter-rouge">2016-01-01 00:00:00-0700</code></td>
+      <td><code class="highlighter-rouge">2016-06-26 00:00:00-0700</code></td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">0M/2017-01-23)</code></td>
