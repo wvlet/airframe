@@ -36,7 +36,8 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
     val jdbcUrl = s"jdbc:sqlite:${config.database}"
     info(s"Opening ${jdbcUrl}")
     // We need to explicitly load sqlite-jdbc to cope with SBT's peculiar class loader
-    Class.forName("org.sqlite.JDBC")
+    val cl = Thread.currentThread().getContextClassLoader
+    Class.forName("org.sqlite.JDBC", true, cl)
     val conn = DriverManager.getConnection(jdbcUrl)
     conn.setAutoCommit(true)
     conn
