@@ -34,6 +34,8 @@ object Fluentd {
                        useExtendedEventTime: Boolean = false,
                        maxBufferSize: Long = 512 * 1024 * 1024,
                        flushIntervalMillis: Int = 600,
+                       bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+                       bufferChunkRetentionTimeMillis: Int = 1000,
                        jvmHeapBufferMode: Boolean = true,
                        ackResponseMode: Boolean = true,
                        sslEnabled: Boolean = false,
@@ -43,6 +45,8 @@ object Fluentd {
     val builder = new FluencyBuilderForFluentd()
     builder.setMaxBufferSize(maxBufferSize)
     builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setBufferChunkRetentionSize(bufferChunkRetentionSize)
+    builder.setBufferChunkRetentionTimeMillis(bufferChunkRetentionTimeMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)
     builder.setAckResponseMode(ackResponseMode)
     builder.setSslEnabled(sslEnabled)
@@ -57,6 +61,8 @@ object Fluentd {
                   tagPrefix: String = "",
                   maxBufferSize: Long = 512 * 1024 * 1024,
                   flushIntervalMillis: Int = 600,
+                  bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+                  bufferChunkRetentionTimeMillis: Int = 1000,
                   jvmHeapBufferMode: Boolean = true,
                   // Use the extended EventTime timestamps
                   // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
@@ -67,6 +73,8 @@ object Fluentd {
     val builder = new FluencyBuilderForTreasureData()
     builder.setMaxBufferSize(maxBufferSize)
     builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setBufferChunkRetentionSize(bufferChunkRetentionSize)
+    builder.setBufferChunkRetentionTimeMillis(bufferChunkRetentionTimeMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)
     builder.setFileBackupDir(fileBackupDir)
     builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
