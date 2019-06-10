@@ -26,12 +26,16 @@ object AddShutdownHook extends LifeCycleEventHandler {
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
     registered.incrementAndGet()
-    sys.addShutdownHook {
-      lifeCycleManager.shutdown
 
-      if (registered.decrementAndGet() <= 0) {
-        // Resetting the logger when all lifecycle have terminated
-        AirframeLogManager.resetFinally
+    // A workaround for https://github.com/sbt/sbt/issues/4794 (user class will not be visible at sbt shutdown)
+    if (!sys.props.get("AIRFRAME_SPEC").isDefined) {
+      sys.addShutdownHook {
+        lifeCycleManager.shutdown
+
+        if (registered.decrementAndGet() <= 0) {
+          // Resetting the logger when all lifecycle have terminated
+          AirframeLogManager.resetFinally
+        }
       }
     }
   }
