@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.6.1
+-  Upgrade to Scala 2.13.0 ([#508](https://github.com/wvlet/airframe/issues/508)) [[8f6729d](https://github.com/wvlet/airframe/commit/8f6729d)]
+-  airframe-fluentd: Bump to Fluency 2.3.2 ([#507](https://github.com/wvlet/airframe/issues/507)) [[1339ec5](https://github.com/wvlet/airframe/commit/1339ec5)]
+
 ## 19.6.0
 -  surface: Use context class loader to fix [sbt/sbt#4760](https://github.com/sbt/sbt/issues/4760) ([#506](https://github.com/wvlet/airframe/issues/506)) [[f5d9dd8](https://github.com/wvlet/airframe/commit/f5d9dd8)]
 -  metrics: Support exact start dates in TimeWindow ([#505](https://github.com/wvlet/airframe/issues/505)) [[23a91b9](https://github.com/wvlet/airframe/commit/23a91b9)]
