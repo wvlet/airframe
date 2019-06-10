@@ -20,7 +20,7 @@ import javax.management.{Attribute, JMX, ObjectName}
   *
   */
 class LoggerJMXTest extends Spec {
-  "LoggerJXM" should {
+  "LoggerJMX" should {
     "be registered" in {
       // Initialize a logger
       val l = Logger.rootLogger
