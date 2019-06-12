@@ -456,6 +456,7 @@ lazy val log =
       )
     )
     .jvmSettings(
+      Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
     )
     .jsSettings(
