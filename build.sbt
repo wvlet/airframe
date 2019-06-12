@@ -426,7 +426,7 @@ lazy val jmx =
     .settings(
       name := "airframe-jmx",
       // Workaround for https://github.com/sbt/sbt/issues/4795
-      Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
+      Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.Flat,
       description := "A library for exposing Scala object data through JMX"
     )
     .dependsOn(surfaceJVM, airframeSpecJVM % "test")
