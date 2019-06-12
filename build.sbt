@@ -52,7 +52,6 @@ val buildSettings = Seq[Setting[_]](
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
-  logBuffered in Test := false,
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
@@ -310,8 +309,9 @@ lazy val airframe =
       )
     )
     .jvmSettings(
-      // Workaround for https://github.com/scala/scala/pull/7624
-      fork in Test := (scalaVersion.value.startsWith("2.13.")),
+      // Workaround for https://github.com/scala/scala/pull/7624 in Scala 2.13, and also
+      // testing shtudown hooks requires consistent application lifecycle between sbt and JVM https://github.com/sbt/sbt/issues/4794
+      fork in Test := scalaBinaryVersion.value == "2.13",
       // include the macro classes and resources in the main jar
       mappings in (Compile, packageBin) ++= mappings.in(airframeMacrosJVM, Compile, packageBin).value,
       // include the macro sources in the main source jar

@@ -14,13 +14,13 @@
 package wvlet.log
 import java.lang.management.ManagementFactory
 
-import javax.management.{Attribute, JMX, ObjectName}
+import javax.management.{Attribute, ObjectName}
 
 /**
   *
   */
 class LoggerJMXTest extends Spec {
-  "LoggerJXM" should {
+  "LoggerJMX" should {
     "be registered" in {
       // Initialize a logger
       val l = Logger.rootLogger
