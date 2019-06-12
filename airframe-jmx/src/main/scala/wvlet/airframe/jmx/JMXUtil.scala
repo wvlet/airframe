@@ -104,7 +104,7 @@ object JMXUtil extends LogSupport {
   private[jmx] def startAndGetAgentURL(config: JMXConfig): String = {
     Try(startAgent(config)) match {
       case Success(x) =>
-        info(s"Started JMX agent at localhost:${x.port}")
+        debug(s"Started JMX agent at localhost:${x.port}")
         s"service:jmx:rmi:///jndi/rmi://localhost:${x.port}/jmxrmi"
       case Failure(e) =>
         warn(e)
