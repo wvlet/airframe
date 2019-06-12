@@ -13,30 +13,48 @@
  */
 package wvlet.airframe
 
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
-
 import wvlet.log.AirframeLogManager
+
+import scala.collection.mutable
+import scala.sys.ShutdownHookThread
 
 /**
   *
   */
 object AddShutdownHook extends LifeCycleEventHandler {
 
-  private val registered = new AtomicInteger(0)
+  private val shutdownHooks = new mutable.WeakHashMap[LifeCycleManager, ShutdownHookThread]()
 
-  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    registered.incrementAndGet()
-
-    // A workaround for https://github.com/sbt/sbt/issues/4794 (user class will not be visible at sbt shutdown)
-    if (!sys.props.get("AIRFRAME_SPEC").isDefined) {
-      sys.addShutdownHook {
-        lifeCycleManager.shutdown
-
-        if (registered.decrementAndGet() <= 0) {
-          // Resetting the logger when all lifecycle have terminated
-          AirframeLogManager.resetFinally
-        }
+  private def removeShutdownHooksFor(lifeCycleManager: LifeCycleManager): Unit = {
+    synchronized {
+      shutdownHooks.get(lifeCycleManager).map { h =>
+        // Properly unregister shutdown hooks
+        // This will be a workaround for sbt-1.3.0-RC2 https://github.com/sbt/sbt/issues/4794 (user class will not be visible at sbt shutdown)
+        h.remove()
+        shutdownHooks.remove(lifeCycleManager)
       }
     }
+  }
+
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    val shutdownHookThread = sys.addShutdownHook {
+      lifeCycleManager.shutdown
+
+      removeShutdownHooksFor(lifeCycleManager)
+      if (shutdownHooks.isEmpty) {
+        // Resetting the logger when all lifecycle have terminated
+        AirframeLogManager.resetFinally
+      }
+    }
+
+    // Remember the shutdown hooks registered
+    synchronized {
+      shutdownHooks.put(lifeCycleManager, shutdownHookThread)
+    }
+  }
+
+  override def afterShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    // Unregister shutdown hooks
+    removeShutdownHooksFor(lifeCycleManager)
   }
 }
