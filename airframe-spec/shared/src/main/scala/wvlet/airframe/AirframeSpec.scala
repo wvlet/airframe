@@ -41,8 +41,6 @@ trait AirframeSpec
 
   implicit def toTag(s: String) = Tag(s)
   override def run(testName: Option[String], args: Args): Status = {
-    sys.props.put("AIRFRAME_SPEC", "true")
-
     // Add source code location to the debug logs
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
 

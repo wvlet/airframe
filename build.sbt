@@ -458,6 +458,7 @@ lazy val log =
       )
     )
     .jvmSettings(
+      // Workaround for https://github.com/sbt/sbt/issues/4795
       Test / classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
     )
