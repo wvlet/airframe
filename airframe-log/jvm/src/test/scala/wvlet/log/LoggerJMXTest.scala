@@ -14,7 +14,7 @@
 package wvlet.log
 import java.lang.management.ManagementFactory
 
-import javax.management.{Attribute, JMX, ObjectName}
+import javax.management.{Attribute, ObjectName}
 
 /**
   *
