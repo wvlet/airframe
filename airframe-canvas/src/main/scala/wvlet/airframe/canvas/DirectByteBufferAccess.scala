@@ -65,8 +65,7 @@ private[canvas] object DirectBufferAccess {
               constructorType = ARGS_INT_INT
             } catch {
               case e2: NoSuchMethodException =>
-                val cl     = Thread.currentThread().getContextClassLoader
-                val aClass = Class.forName("java.nio.MemoryBlock", true, cl)
+                val aClass = Class.forName("java.nio.MemoryBlock")
                 mbWrap = aClass.getDeclaredMethod("wrapFromJni", classOf[Int], classOf[Long])
                 mbWrap.setAccessible(true)
                 directByteBufferConstructor =
@@ -78,9 +77,8 @@ private[canvas] object DirectBufferAccess {
     byteBufferConstructor = directByteBufferConstructor
     directBufferConstructorType = constructorType
     memoryBlockWrapFromJni = mbWrap
-    if (byteBufferConstructor == null) {
+    if (byteBufferConstructor == null)
       throw new RuntimeException("Constructor of DirectByteBuffer is not found")
-    }
     byteBufferConstructor.setAccessible(true)
     mGetAddress = directByteBufferClass.getDeclaredMethod("address")
     mGetAddress.setAccessible(true)
