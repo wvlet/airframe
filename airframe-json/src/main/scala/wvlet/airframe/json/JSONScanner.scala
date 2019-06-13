@@ -140,12 +140,12 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   private[this] var lineStartPos: Int = 0
   private[this] var line: Int         = 0
 
-  import JSONToken._
   import JSONScanner._
+  import JSONToken._
 
   private def skipWhiteSpaces: Unit = {
     var toContinue = true
-    while (toContinue) {
+    while (toContinue && cursor < s.length) {
       val ch = s(cursor)
       (ch: @switch) match {
         case WS | WS_T | WS_R =>
@@ -198,6 +198,9 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   final def scanAny(ctx: JSONContext[J]): J = {
     skipWhiteSpaces
+    if (cursor >= s.length) {
+      throw new UnexpectedEOF(line, cursor - lineStartPos, cursor, "Unexpected EOF")
+    }
     (s(cursor): @switch) match {
       case DoubleQuote =>
         scanString(ctx)

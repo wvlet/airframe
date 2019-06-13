@@ -40,6 +40,16 @@ class MessageCodecTest extends AirframeSpec {
         s.unpack(JSONCodec.toMsgPack("{}"))
       }
     }
+
+    "unpack empty json" in {
+      val codec = MessageCodec.of[Seq[String]]
+      codec.unpackJson("")
+    }
+
+    "unpack empty msgapack" in {
+      val codec = MessageCodec.of[Seq[String]]
+      codec.unpackMsgPack(Array.emptyByteArray)
+    }
   }
 
 }
