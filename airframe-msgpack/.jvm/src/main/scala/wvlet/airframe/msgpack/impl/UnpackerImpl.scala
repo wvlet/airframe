@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.impl
 import java.math.BigInteger
 import java.time.Instant
 
-import org.msgpack.core.{MessageIntegerOverflowException, MessageUnpacker}
+import org.msgpack.core.{MessageInsufficientBufferException, MessageIntegerOverflowException, MessageUnpacker}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi.Value.{ExtensionValue, TimestampValue}
 import wvlet.airframe.msgpack.spi._
@@ -35,8 +35,13 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
     unpacker.hasNext
   }
   override def getNextFormat: MessageFormat = {
-    val mf = unpacker.getNextFormat
-    UnpackerImpl.conversionTable(mf)
+    try {
+      val mf = unpacker.getNextFormat
+      UnpackerImpl.conversionTable(mf)
+    } catch {
+      case e: MessageInsufficientBufferException =>
+        throw InsufficientBufferException(unpacker.getTotalReadBytes, 1)
+    }
   }
   override def getNextValueType: ValueType = {
     getNextFormat.valueType

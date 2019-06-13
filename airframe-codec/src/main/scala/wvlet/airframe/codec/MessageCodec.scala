@@ -13,13 +13,15 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.json.UnexpectedEOF
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
-import scala.util.{Failure, Success, Try}
 import scala.language.experimental.macros
+import scala.util.{Failure, Success, Try}
 
-trait MessageCodec[A] {
+trait MessageCodec[A] extends LogSupport {
 
   /**
     * Converting the object into MessagePack (= Array[Byte])
@@ -82,16 +84,29 @@ trait MessageCodec[A] {
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
     val unpacker = MessagePack.newUnpacker(msgpack, offset, len)
     val v        = new MessageHolder
-    unpack(unpacker, v)
-    if (v.isNull) {
-      None
-    } else {
-      Some(v.getLastValue.asInstanceOf[A])
+    try {
+      unpack(unpacker, v)
+      if (v.isNull) {
+        None
+      } else {
+        Some(v.getLastValue.asInstanceOf[A])
+      }
+    } catch {
+      case e: InsufficientBufferException =>
+        warn(e.getMessage)
+        None
     }
   }
 
   def unpackJson(json: String): Option[A] = {
-    unpackBytes(JSONCodec.toMsgPack(json))
+    try {
+      val msgpack = JSONCodec.toMsgPack(json)
+      unpackBytes(msgpack)
+    } catch {
+      case e: UnexpectedEOF =>
+        warn(s"${e.getMessage} in json: ${json}")
+        None
+    }
   }
 }
 
