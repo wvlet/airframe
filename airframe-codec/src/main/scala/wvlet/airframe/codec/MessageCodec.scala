@@ -20,6 +20,7 @@ import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.util.{Failure, Success, Try}
+import scala.reflect.runtime.universe._
 
 trait MessageCodec[A] extends LogSupport {
 
@@ -134,4 +135,12 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
 object MessageCodec {
   def of[A]: MessageCodec[A] = macro CodecMacros.codecOf[A]
   def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.ofSurface(s)
+
+  def fromJson[T: TypeTag](json: String): T = {
+    ofSurface(Surface.of[T]).asInstanceOf[MessageCodec[T]].unpackJson(json).get
+  }
+
+  def toJson[T: TypeTag](obj: T): String = {
+    ofSurface(Surface.of[T]).asInstanceOf[MessageCodec[T]].toJson(obj)
+  }
 }

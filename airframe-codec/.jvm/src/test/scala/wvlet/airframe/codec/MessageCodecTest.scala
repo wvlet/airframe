@@ -14,6 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.codec.MessageCodecTest.ExtractTest
 import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 
 /**
@@ -50,6 +51,21 @@ class MessageCodecTest extends AirframeSpec {
       val codec = MessageCodec.of[Seq[String]]
       codec.unpackMsgPack(Array.emptyByteArray)
     }
+
+    "convert JSON to Scala object" in {
+      val obj = MessageCodec.fromJson[ExtractTest](
+        """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}""")
+      assert(obj == ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), ""))
+    }
+
+    "convert Scala object to JSON" in {
+      val json = MessageCodec.toJson(ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), null))
+      assert(json == """{"id":1,"name":"leo","flag":true,"number":0.01,"arr":[0,1,2],"nil":null}""")
+    }
   }
 
+}
+
+object MessageCodecTest {
+  case class ExtractTest(id: Int, name: String, flag: Boolean, number: Double, arr: Seq[Int], nil: String)
 }
