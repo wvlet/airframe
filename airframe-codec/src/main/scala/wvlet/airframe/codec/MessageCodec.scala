@@ -19,6 +19,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
+import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] extends LogSupport {
@@ -94,18 +95,32 @@ trait MessageCodec[A] extends LogSupport {
     } catch {
       case e: InsufficientBufferException =>
         warn(e.getMessage)
+        trace(e)
         None
     }
   }
 
   def unpackJson(json: String): Option[A] = {
     try {
-      val msgpack = JSONCodec.toMsgPack(json)
-      unpackBytes(msgpack)
+      Some(fromJson(json))
     } catch {
       case e: UnexpectedEOF =>
         warn(s"${e.getMessage} in json: ${json}")
         None
+    }
+  }
+
+  def fromJson(json: String): A = {
+    val msgpack  = JSONCodec.toMsgPack(json)
+    val unpacker = MessagePack.newUnpacker(msgpack)
+    val v        = new MessageHolder
+    unpack(unpacker, v)
+    if (v.hasError) {
+      throw v.getError.get
+    } else if (v.isNull) {
+      throw new MessageCodecException[A](INVALID_DATA, this, s"Invalid JSON data for ${this}:\n${json}")
+    } else {
+      v.getLastValue.asInstanceOf[A]
     }
   }
 }
@@ -134,4 +149,12 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
 object MessageCodec {
   def of[A]: MessageCodec[A] = macro CodecMacros.codecOf[A]
   def ofSurface(s: Surface): MessageCodec[_] = MessageCodecFactory.defaultFactory.ofSurface(s)
+
+  def fromJson[A: TypeTag](json: String): A = {
+    MessageCodecFactory.defaultFactory.fromJson[A](json)
+  }
+
+  def toJson[A: TypeTag](obj: A): String = {
+    MessageCodecFactory.defaultFactory.toJson[A](obj)
+  }
 }
