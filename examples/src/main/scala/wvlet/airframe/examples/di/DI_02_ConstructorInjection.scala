@@ -26,7 +26,7 @@ object DI_02_ConstructorInjection extends App {
   case class MyAppConfig(port: Int = 8080)
   // Use Constructor Injection
   class MyApp(config: MyAppConfig) extends LogSupport {
-    def run {
+    def run: Unit = {
       info(s"MyApp with ${config}")
     }
   }

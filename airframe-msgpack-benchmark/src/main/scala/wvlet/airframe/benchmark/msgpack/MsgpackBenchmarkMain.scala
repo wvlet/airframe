@@ -65,7 +65,7 @@ class MsgpackBenchmarkMain(
             @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
             warmupIteration: Int = 5,
             @option(prefix = "-f,--fork-count", description = "Fork Count (default: 5)")
-            forkCount: Int = 5) {
+            forkCount: Int = 5): Unit = {
     info(s"Starting the benchmark")
     var opt = new OptionsBuilder()
       .forks(forkCount)

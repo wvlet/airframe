@@ -59,7 +59,7 @@ trait Tracer extends LogSupport {
     report(ShutdownInstance(session, injectee))
   }
 
-  private[airframe] def onSessionStart(session: Session) {
+  private[airframe] def onSessionStart(session: Session): Unit = {
     report(SessionStart(session))
   }
 

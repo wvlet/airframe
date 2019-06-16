@@ -38,7 +38,7 @@ object DI_08_OverrideBinding extends App {
   trait MyApp extends LogSupport {
     private val db = bind[DB]
 
-    def run {
+    def run: Unit = {
       db.query("select 1")
     }
   }
