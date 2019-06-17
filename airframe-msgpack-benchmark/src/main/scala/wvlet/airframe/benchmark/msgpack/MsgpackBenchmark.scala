@@ -36,7 +36,7 @@ class PackBenchmark extends MsgpackData {
 }
 
 abstract class UnpackBenchmark extends MsgpackData {
-  protected def initUnpacker(byte: Array[Byte])
+  protected def initUnpacker(byte: Array[Byte]): Unit
   protected def hasNext: Boolean
   protected def unpackInt: Int
   protected def unpackFloat: Float

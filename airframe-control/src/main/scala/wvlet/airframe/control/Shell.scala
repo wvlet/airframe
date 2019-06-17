@@ -109,7 +109,7 @@ object Shell extends LogSupport {
     * @param host
     * @param cmdLine
     */
-  def launchRemoteDaemon(host: String, cmdLine: String) {
+  def launchRemoteDaemon(host: String, cmdLine: String): Unit = {
     execRemote(host, s"$cmdLine < /dev/null > /dev/null &")
   }
 

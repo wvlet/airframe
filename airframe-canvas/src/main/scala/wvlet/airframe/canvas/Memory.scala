@@ -31,7 +31,7 @@ sealed abstract class Memory {
   def size: Long
 
   def memoryAllocator: OffHeapMemoryAllocator
-  def release
+  def release: Unit
 }
 
 case class OffHeapMemory(address: Long, size: Long, memoryAllocator: OffHeapMemoryAllocator) extends Memory {

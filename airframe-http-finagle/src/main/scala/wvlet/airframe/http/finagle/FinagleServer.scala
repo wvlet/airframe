@@ -41,7 +41,7 @@ class FinagleServer(finagleConfig: FinagleServerConfig,
   def port: Int    = finagleConfig.port
 
   @PostConstruct
-  def start {
+  def start: Unit = {
     info(s"Starting a server at http://localhost:${finagleConfig.port}")
     val customServer = initServer(Http.Server())
     server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))

@@ -33,7 +33,7 @@ object DI_10_TypeAliasBinding extends App {
     val logDbConfig  = bind[LogDbConfig]
     val chatDbConfig = bind[ChatDbConfig]
 
-    def run {
+    def run: Unit = {
       info(s"logdb: ${logDbConfig}, chatdb: ${chatDbConfig}")
     }
   }
