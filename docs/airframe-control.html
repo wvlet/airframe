@@ -40,19 +40,20 @@ ga('send', 'pageview');
 <h3 id="retry">Retry</h3>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.TimeoutException</span>
 
 <span class="c1">// Backoff retry
 </span><span class="k">val</span> <span class="n">r</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span>
   <span class="nc">Retry</span>
     <span class="o">.</span><span class="n">withBackOff</span><span class="o">(</span><span class="n">maxRetry</span> <span class="k">=</span> <span class="mi">3</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">retryOn</span> <span class="o">{</span> <span class="n">s</span><span class="k">:</span> <span class="kt">RetryContext</span><span class="o">[</span><span class="k">_</span><span class="o">]</span> <span class="k">=&gt;</span>
-      <span class="n">warn</span><span class="o">(</span><span class="n">s</span><span class="s">"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis"</span><span class="o">)</span>
+    <span class="o">.</span><span class="n">retryOn</span> <span class="o">{</span> 
+       <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">TimeoutException</span> <span class="o">=&gt;</span> <span class="nc">Retry</span><span class="o">.</span><span class="n">retryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
     <span class="o">}</span>
     <span class="o">.</span><span class="n">run</span> <span class="o">{</span>
       <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">"hello retry"</span><span class="o">)</span>
       <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="k">throw</span> <span class="k">new</span> <span class="nc">IllegalStateException</span><span class="o">(</span><span class="s">"retry test"</span><span class="o">)</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nc">TimeoutException</span><span class="o">(</span><span class="s">"retry test"</span><span class="o">)</span>
       <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
         <span class="s">"success"</span>
       <span class="o">}</span>
