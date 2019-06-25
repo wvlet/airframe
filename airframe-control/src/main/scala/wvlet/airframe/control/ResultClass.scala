@@ -30,8 +30,8 @@ object ResultClass {
     */
   case class Failed(isRetryable: Boolean, cause: Throwable) extends ResultClass
 
-  def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
-  def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
+  def retryableFailure(e: Throwable)    = Retry.retryableFailure(e)
+  def nonRetryableFailure(e: Throwable) = Retry.nonRetryableFailure(e)
 
   val ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
     Succeeded

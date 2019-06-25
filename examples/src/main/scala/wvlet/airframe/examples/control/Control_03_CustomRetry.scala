@@ -13,23 +13,32 @@
  */
 package wvlet.airframe.examples.control
 
-import scala.concurrent.TimeoutException
+import java.util.concurrent.TimeoutException
+
+import wvlet.airframe.control.Retry
+import wvlet.log.LogSupport
 
 /**
   *
   */
-object Control_01_Retry extends App {
+class Control_03_CustomRetry extends LogSupport {
 
-  import wvlet.airframe.control.Retry
+  val withRetry =
+    Retry
+      .withJitter()
+      .retryOn {
+        case e: IllegalArgumentException =>
+          Retry.nonRetryableFailure(e)
+        case e: TimeoutException =>
+          Retry.retryableFailure(e)
+      }
 
-  Retry
-    .withBackOff(maxRetry = 3)
-    .retryOn {
-      case e: TimeoutException =>
-        Retry.retryableFailure(e)
-    }
-    .run {
-      // body
-    }
+  withRetry.run {
+    debug("Hello Retry!")
+  }
+
+  withRetry.run {
+    debug("Retryer can be reused for other runs")
+  }
 
 }

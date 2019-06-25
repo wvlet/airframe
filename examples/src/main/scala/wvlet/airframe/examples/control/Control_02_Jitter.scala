@@ -16,14 +16,15 @@ package wvlet.airframe.examples.control
 import scala.concurrent.TimeoutException
 
 /**
-  *
+  * Adding randomness to the retry interval of exponential backoff is good to spread out
+  * retry interval timings. See also https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
   */
-object Control_01_Retry extends App {
+class Control_02_Jitter {
 
   import wvlet.airframe.control.Retry
 
   Retry
-    .withBackOff(maxRetry = 3)
+    .withJitter(maxRetry = 3) // It will wait nextWaitMillis * rand() upon retry
     .retryOn {
       case e: TimeoutException =>
         Retry.retryableFailure(e)
