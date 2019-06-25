@@ -24,6 +24,9 @@ import scala.util.{Failure, Random, Success, Try}
   */
 object Retry extends LogSupport {
 
+  def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
+  def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
+
   def withBackOff(maxRetry: Int = 3,
                   initialIntervalMillis: Int = 100,
                   maxIntervalMillis: Int = 15000,

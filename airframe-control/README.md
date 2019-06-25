@@ -36,19 +36,20 @@ Control.withResources(
 
 ```scala
 import wvlet.airframe.control.Retry
+import java.util.concurrent.TimeoutException
 
 // Backoff retry
 val r: String =
   Retry
     .withBackOff(maxRetry = 3)
-    .retryOn { s: RetryContext[_] =>
-      warn(s"[${s.retryCount}/${s.maxRetry}] ${s.lastError.getMessage}. Retrying in ${s.nextWaitMillis} millis")
+    .retryOn { 
+       case e: TimeoutException => Retry.retryableFailure(e)
     }
     .run {
       logger.info("hello retry")
       if (count < 2) {
         count += 1
-        throw new IllegalStateException("retry test")
+        throw new TimeoutException("retry test")
       } else {
         "success"
       }
