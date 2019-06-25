@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 /**
   *
   */
-class Control_03_CustomRetry extends LogSupport {
+object Control_03_CustomRetry extends LogSupport {
 
   val withRetry =
     Retry
