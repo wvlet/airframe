@@ -265,7 +265,7 @@ class ConfigTest extends AirframeSpec {
           unused = Some(p)
         })
 
-      unused shouldBe 'defined
+      unused shouldBe Symbol("defined")
       unused.get.size shouldBe 1
       unused.get.keySet should contain("sample@appscope.message")
     }

@@ -30,11 +30,11 @@ class IOUtilTest extends Spec {
 
     "find a file" in {
       val buildSbt = IOUtil.findPath("build.sbt")
-      buildSbt shouldBe 'defined
+      buildSbt shouldBe Symbol("defined")
       buildSbt.get.getPath shouldBe "build.sbt"
 
       val notFound = IOUtil.findPath("non-existing-file-path.xxxxxxx")
-      notFound shouldBe 'empty
+      notFound shouldBe Symbol("empty")
     }
 
     "read file as a String" in {
