@@ -70,16 +70,21 @@ object HttpRecorder extends LogSupport {
     )
 
     debug(s"dest: ${recorderConfig.destAddress}")
-    val destClient =
+    val clientBuilder =
       ClientBuilder()
         .stack(Http.client)
         .name(s"airframe-http-recorder-proxy")
         .dest(recorderConfig.destAddress.hostAndPort)
-        .tls(SSLContext.getDefault)
         .noFailureAccrual
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
-        .build()
+
+
+    val destClient = (if(recorderConfig.destAddress.port == 443) {
+      clientBuilder.tls(SSLContext.getDefault)
+    } else {
+      clientBuilder
+    }).build()
 
     new HttpRecorderServer(recorder, finagleConfig, new RecordingService(recorder, destClient))
   }
