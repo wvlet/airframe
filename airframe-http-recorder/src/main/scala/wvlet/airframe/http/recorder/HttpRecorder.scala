@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.http.recorder
 
-import java.net.URI
-
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.http.{Request, Response, Status}
@@ -79,12 +77,11 @@ object HttpRecorder extends LogSupport {
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
 
-
-    val destClient = (if(recorderConfig.destAddress.port == 443) {
-      clientBuilder.tls(SSLContext.getDefault)
-    } else {
-      clientBuilder
-    }).build()
+    val destClient = (if (recorderConfig.destAddress.port == 443) {
+                        clientBuilder.tls(SSLContext.getDefault)
+                      } else {
+                        clientBuilder
+                      }).build()
 
     new HttpRecorderServer(recorder, finagleConfig, new RecordingService(recorder, destClient))
   }
@@ -96,6 +93,23 @@ object HttpRecorder extends LogSupport {
   def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
     val recorder      = new HttpRecordStore(recorderConfig)
+    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
+  }
+
+  /**
+    * Creates an HTTP server that returns programmed HTTP responses.
+    * If no matching record is found, use the given fallback handler.
+    */
+  def createProgrammableServer(programmer: HttpRecordStore => Unit): FinagleServer = {
+    val recorderConfig = HttpRecorderConfig("localhost")
+    val finagleConfig  = FinagleServerConfig(recorderConfig.serverPort)
+    val recorder = new HttpRecordStore(recorderConfig, true) {
+      override def requestHash(request: Request): Int = {
+        val content = request.getContentString()
+        s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}".hashCode
+      }
+    }
+    programmer(recorder)
     new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
   }
 
