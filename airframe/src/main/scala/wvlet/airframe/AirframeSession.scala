@@ -65,13 +65,16 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = Surface.of[Session]
     val sessionBinding =
-      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true)
+      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true, None)
     b += sessionSurface -> sessionBinding
 
     // Add a reference to the design
     val designSurface = Surface.of[Design]
     val designBinding =
-      ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]), true, true)
+      ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]),
+                      true,
+                      true,
+                      None)
     b += designSurface -> designBinding
 
     // Add user-defined bindings
@@ -140,9 +143,9 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     }
     tracer.onSessionInitStart(this)
     design.binding.collect {
-      case s @ SingletonBinding(from, to, eager) if production || eager =>
+      case s @ SingletonBinding(from, to, eager, _) if production || eager =>
         getInstanceOf(from)
-      case ProviderBinding(factory, provideSingleton, eager) if production || eager =>
+      case ProviderBinding(factory, provideSingleton, eager, _) if production || eager =>
         getInstanceOf(factory.from)
     }
     tracer.onSessionInitEnd(this)
@@ -238,21 +241,21 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case Some(b) =>
           val result =
             b match {
-              case ClassBinding(from, to) =>
+              case ClassBinding(from, to, _) =>
                 trace(s"[${name}] Found a class binding from ${from} to ${to}")
                 registerInjectee(from, contextSession.getInstance(to, contextSession, create, t :: seen))
-              case sb @ SingletonBinding(from, to, eager) if from != to =>
+              case sb @ SingletonBinding(from, to, eager, _) if from != to =>
                 trace(s"[${name}] Found a singleton binding: ${from} => ${to}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from,
                                    contextSession.getInstance(to, contextSession, create, t :: seen, defaultValue)))
-              case sb @ SingletonBinding(from, to, eager) if from == to =>
+              case sb @ SingletonBinding(from, to, eager, _) if from == to =>
                 trace(s"[${name}] Found a singleton binding: ${from}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from, contextSession.buildInstance(to, contextSession, seen, defaultValue)))
-              case p @ ProviderBinding(factory, provideSingleton, eager) =>
+              case p @ ProviderBinding(factory, provideSingleton, eager, _) =>
                 trace(s"[${name}] Found a provider for ${p.from}: ${p}")
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {

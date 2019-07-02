@@ -133,7 +133,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            val d1 = ${registerTraitFactory(ev1)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}, self.loc))
         }
         """
     }
@@ -148,7 +148,7 @@ private[wvlet] object AirframeMacros {
            val d1 = ${registerTraitFactory(ev1)}
            val d2 = ${registerTraitFactory(ev2)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}, self.loc))
         }
         """
     }
@@ -165,7 +165,7 @@ private[wvlet] object AirframeMacros {
            val d2 = ${registerTraitFactory(ev2)}
            val d3 = ${registerTraitFactory(ev3)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}, self.loc))
         }
         """
     }
@@ -185,7 +185,7 @@ private[wvlet] object AirframeMacros {
            val d3 = ${registerTraitFactory(ev3)}
            val d4 = ${registerTraitFactory(ev4)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}, self.loc))
         }
         """
     }
@@ -207,7 +207,7 @@ private[wvlet] object AirframeMacros {
            val d4 = ${registerTraitFactory(ev4)}
            val d5 = ${registerTraitFactory(ev5)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}, self.loc))
         }
         """
     }
@@ -233,13 +233,19 @@ private[wvlet] object AirframeMacros {
     h.registerTraitFactory(t)
   }
 
+  def source(c: sm.Context) = {
+    import c.universe._
+    val pos = c.enclosingPosition
+    q"wvlet.airframe.BindLoc(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+  }
+
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
          val __surface = ${h.registerTraitFactory(t)}
-         ${c.prefix}.bind(__surface).asInstanceOf[wvlet.airframe.Binder[$t]]
+         new wvlet.airframe.Binder(${c.prefix}, __surface, Some(${source(c)})).asInstanceOf[wvlet.airframe.Binder[$t]]
     }"""
   }
 
@@ -262,7 +268,7 @@ private[wvlet] object AirframeMacros {
     q""" {
       val self = ${c.prefix}
       val to = ${h.registerTraitFactory(t)}
-      self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to))
+      self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to, self.loc))
     }"""
   }
 
@@ -277,7 +283,7 @@ private[wvlet] object AirframeMacros {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
-      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false))
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false, self.loc))
     }"""
   }
 
@@ -292,7 +298,7 @@ private[wvlet] object AirframeMacros {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
-      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true))
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true, self.loc))
     }"""
   }
 

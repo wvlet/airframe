@@ -115,7 +115,7 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   def bind(t: Surface): Binder[Any] = {
     trace(s"bind($t) ${t.isAlias}")
-    val b = new Binder[Any](this, t)
+    val b = new Binder[Any](this, t, None)
     b
   }
 
