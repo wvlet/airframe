@@ -26,10 +26,11 @@ object AirframeException {
     override def getMessage: String =
       s"[$getCode] Session is not found inside ${cl}. You may need to define ${cl} as a trait or to use constructor injection."
   }
-  case class CYCLIC_DEPENDENCY(deps: Set[Surface]) extends AirframeException {
-    override def getMessage: String = s"[$getCode] ${deps.mkString(" <- ")}"
+  case class CYCLIC_DEPENDENCY(deps: List[Surface], sourceCode: SourceCode) extends AirframeException {
+    override def getMessage: String = s"[$getCode] ${deps.reverse.mkString(" -> ")} at ${sourceCode}"
   }
-  case class MISSING_DEPENDENCY(stack: List[Surface]) extends AirframeException {
-    override def getMessage: String = s"[$getCode] Binding for ${stack.head} is not found: ${stack.mkString(" <- ")}"
+  case class MISSING_DEPENDENCY(stack: List[Surface], sourceCode: SourceCode) extends AirframeException {
+    override def getMessage: String =
+      s"[$getCode] Binding for ${stack.head} at ${sourceCode} is not found: ${stack.mkString(" <- ")}"
   }
 }

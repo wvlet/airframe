@@ -63,7 +63,6 @@ trait Session extends AutoCloseable {
   /**
     * Internal method for building an instance of type A, or if no binding is found, use the given trait instance factory
     *
-    * @param obj
     * @tparam A
     * @return
     */
@@ -73,7 +72,7 @@ trait Session extends AutoCloseable {
   private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(
       implicit sourceCode: SourceCode): A
 
-  def getInstanceOf(surface: Surface): Any
+  def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any
 
   /**
     * Register an instance to the session to control the life cycle of the object under this session.

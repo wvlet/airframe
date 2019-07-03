@@ -31,7 +31,7 @@ object Binder {
   }
   case class ClassBinding(from: Surface, to: Surface, sourceCode: SourceCode) extends Binding {
     if (from == to) {
-      throw new CYCLIC_DEPENDENCY(Set(to))
+      throw new CYCLIC_DEPENDENCY(List(to), sourceCode)
     }
   }
   case class SingletonBinding(from: Surface, to: Surface, isEager: Boolean, sourceCode: SourceCode) extends Binding {
