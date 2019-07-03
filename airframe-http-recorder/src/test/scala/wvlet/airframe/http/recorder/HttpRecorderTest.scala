@@ -12,8 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.recorder
+
 import com.twitter.finagle.Http
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
@@ -88,4 +89,31 @@ class HttpRecorderTest extends AirframeSpec {
   }
 
   "switch recoding/replaying" in {}
+
+  "programmable server" in {
+    val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
+      val request = Request("/index.html")
+
+      val response = Response()
+      response.setContentString("Hello World!")
+
+      recorder.record(request, response)
+
+    }) { server =>
+      server.start
+      withClient(server.localAddress) { client =>
+        val request = Request("/index.html")
+
+        val response = client(request).map { response =>
+          debug(response)
+          response
+        }
+        Await.result(response)
+      }
+    }
+
+    response.status shouldBe Status.Ok
+    response.contentString shouldBe "Hello World!"
+  }
+
 }

@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.0
+-  airframe-http-recorder: Programmable HTTP mock server ([#529](https://github.com/wvlet/airframe/issues/529)) [[f33cdba](https://github.com/wvlet/airframe/commit/f33cdba)]
+  -  HTTP support in http-recorder ([#527](https://github.com/wvlet/airframe/issues/527)) [[4365522](https://github.com/wvlet/airframe/commit/4365522)]
+-  airframe-control: Add Retry.retryable/nonRetryableFailure method ([#524](https://github.com/wvlet/airframe/issues/524)) [[4a7744b](https://github.com/wvlet/airframe/commit/4a7744b)]
+-  airframe-codec: Add convenient methods to convert JSON <-> Scala object ([#519](https://github.com/wvlet/airframe/issues/519)) [[0c6bd55](https://github.com/wvlet/airframe/commit/0c6bd55)]
+-  airframe-codec: [#513](https://github.com/wvlet/airframe/issues/513): Handle empty inputs at unpackJson and unpackMsgPack ([#514](https://github.com/wvlet/airframe/issues/514)) [[99d9cc6](https://github.com/wvlet/airframe/commit/99d9cc6)]
+-  internal: Upgrade to sbt-1.3.0-RC2 ([#510](https://github.com/wvlet/airframe/issues/510)) [[3583430](https://github.com/wvlet/airframe/commit/3583430)]
+
 ## 19.6.1
 -  Upgrade to Scala 2.13.0 ([#508](https://github.com/wvlet/airframe/issues/508)) [[8f6729d](https://github.com/wvlet/airframe/commit/8f6729d)]
 -  airframe-fluentd: Bump to Fluency 2.3.2 ([#507](https://github.com/wvlet/airframe/issues/507)) [[1339ec5](https://github.com/wvlet/airframe/commit/1339ec5)]

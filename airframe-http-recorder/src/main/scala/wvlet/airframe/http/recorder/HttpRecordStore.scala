@@ -93,21 +93,22 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     * Compute a hash key of the given HTTP request.
     * This value will be used for DB indexes
     */
-  private def requestHash(request: Request): Int = {
+  protected def requestHash(request: Request): Int = {
     val content = request.getContentString()
     val prefix =
       s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}"
 
-    val headerHash =
-      request.headerMap
-        .filterNot(x => recorderConfig.headerExcludes(x._1))
-        .map { x =>
-          s"${x._1}:${x._2}".hashCode
-        }
-        .reduce { (xor, next) =>
-          xor ^ next // Take XOR to compute order-insensitive hash values.
-        }
-    prefix.hashCode * 13 + headerHash
+    request.headerMap.filterNot(x => recorderConfig.headerExcludes(x._1)) match {
+      case headers if headers.isEmpty => prefix.hashCode * 13
+      case headers =>
+        val headerHash = headers
+          .map { x =>
+            s"${x._1}:${x._2}".hashCode
+          }.reduce { (xor, next) =>
+            xor ^ next // Take XOR to compute order-insensitive hash values.
+          }
+        prefix.hashCode * 13 + headerHash
+    }
   }
 
 }
