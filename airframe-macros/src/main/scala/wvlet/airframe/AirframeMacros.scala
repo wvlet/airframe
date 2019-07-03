@@ -728,8 +728,6 @@ private[wvlet] object AirframeMacros {
 
   def sourceCode(c: sm.Context): c.Tree = {
     import c.universe._
-
-    import c.universe._
     c.internal.enclosingOwner
     val pos = c.enclosingPosition
     q"wvlet.airframe.SourceCode(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
