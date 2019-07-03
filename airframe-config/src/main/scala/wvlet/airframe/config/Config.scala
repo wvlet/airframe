@@ -202,8 +202,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     }
   }
 
-  def registerFromYamlOrElse[ConfigType: ru.TypeTag: ClassTag](yamlFile: String,
-                                                               defaultValue: => ConfigType): Config = {
+  def registerFromYamlOrElse[ConfigType: ru.TypeTag](yamlFile: String, defaultValue: => ConfigType): Config = {
     val tpe    = Surface.of[ConfigType]
     val config = loadFromYaml[ConfigType](yamlFile, onMissingFile = Some(defaultValue))
     this + ConfigHolder(tpe, config.get)

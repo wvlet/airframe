@@ -113,9 +113,9 @@ case class Design(designOptions: DesignOptions, private[airframe] val binding: V
 
   def bind[A]: Binder[A] = macro AirframeMacros.designBindImpl[A]
 
-  def bind(t: Surface): Binder[Any] = {
+  def bind(t: Surface, sourceCode: SourceCode): Binder[Any] = {
     trace(s"bind($t) ${t.isAlias}")
-    val b = new Binder[Any](this, t, None)
+    val b = new Binder[Any](this, t, sourceCode)
     b
   }
 

@@ -33,7 +33,7 @@ class ConfigPackageTest extends AirframeSpec {
         .bindConfig[DefaultConfig](DefaultConfig(10, "aina"))
         .bindConfigFromYaml[ClassConfig]("classes.yml")
         // Specifying non exising yaml file
-        .bindConfigFromYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
+        .bindConfigFromYamlOrDefault[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
         // Switching env
         .withConfigEnv(env = "staging")
         .bindConfigFromYaml[SampleConfig @@ AppTag]("myconfig.yml")

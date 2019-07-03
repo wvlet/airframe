@@ -133,7 +133,7 @@ private[wvlet] object AirframeMacros {
            val self = ${c.prefix.tree}
            val d1 = ${registerTraitFactory(ev1)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}, self.loc))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1), ${factory}), ${singleton}, ${eager}, self.sourceCode))
         }
         """
     }
@@ -148,7 +148,7 @@ private[wvlet] object AirframeMacros {
            val d1 = ${registerTraitFactory(ev1)}
            val d2 = ${registerTraitFactory(ev2)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}, self.loc))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2), ${factory}), ${singleton}, ${eager}, self.sourceCode))
         }
         """
     }
@@ -165,7 +165,7 @@ private[wvlet] object AirframeMacros {
            val d2 = ${registerTraitFactory(ev2)}
            val d3 = ${registerTraitFactory(ev3)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}, self.loc))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3), ${factory}), ${singleton}, ${eager}, self.sourceCode))
         }
         """
     }
@@ -185,7 +185,7 @@ private[wvlet] object AirframeMacros {
            val d3 = ${registerTraitFactory(ev3)}
            val d4 = ${registerTraitFactory(ev4)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}, self.loc))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4), ${factory}), ${singleton}, ${eager}, self.sourceCode))
         }
         """
     }
@@ -207,7 +207,7 @@ private[wvlet] object AirframeMacros {
            val d4 = ${registerTraitFactory(ev4)}
            val d5 = ${registerTraitFactory(ev5)}
            import wvlet.airframe.Binder._
-           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}, self.loc))
+           self.design.addBinding(ProviderBinding(DependencyFactory(self.from, Seq(d1, d2, d3, d4, d5), ${factory}), ${singleton}, ${eager}, self.sourceCode))
         }
         """
     }
@@ -233,19 +233,13 @@ private[wvlet] object AirframeMacros {
     h.registerTraitFactory(t)
   }
 
-  def source(c: sm.Context) = {
-    import c.universe._
-    val pos = c.enclosingPosition
-    q"wvlet.airframe.BindLoc(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
-  }
-
   def designBindImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     val h = new BindHelper[c.type](c)
     q"""{
          val __surface = ${h.registerTraitFactory(t)}
-         new wvlet.airframe.Binder(${c.prefix}, __surface, Some(${source(c)})).asInstanceOf[wvlet.airframe.Binder[$t]]
+         new wvlet.airframe.Binder(${c.prefix}, __surface, ${sourceCode(c)}).asInstanceOf[wvlet.airframe.Binder[$t]]
     }"""
   }
 
@@ -268,7 +262,7 @@ private[wvlet] object AirframeMacros {
     q""" {
       val self = ${c.prefix}
       val to = ${h.registerTraitFactory(t)}
-      self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to, self.loc))
+      self.design.addBinding(wvlet.airframe.Binder.ClassBinding(self.from, to, self.sourceCode))
     }"""
   }
 
@@ -283,7 +277,7 @@ private[wvlet] object AirframeMacros {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
-      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false, self.loc))
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, false, self.sourceCode))
     }"""
   }
 
@@ -298,7 +292,7 @@ private[wvlet] object AirframeMacros {
          wvlet.log.Logger("wvlet.airframe.Binder").warn("Binding to the same type is not allowed: " + to.toString)
          throw new wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY(Set(to))
       }
-      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true, self.loc))
+      self.design.addBinding(wvlet.airframe.Binder.SingletonBinding(self.from, to, true, self.sourceCode))
     }"""
   }
 
@@ -634,7 +628,7 @@ private[wvlet] object AirframeMacros {
     val a  = t.typeArgs(1) // A
     val h  = new BindHelper[c.type](c)
     q"""{ i1: ${i1} =>
-          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind(${h.surfaceOf(i1)}).toLazyInstance(i1))
+          val session = ${h.findSession}.newSharedChildSession(wvlet.airframe.newDesign.bind[${i1}].toLazyInstance(i1))
           ${h.createNewInstanceOf(a)}(session)
         }
       """
@@ -652,8 +646,8 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
+           .bind[${i1}].toLazyInstance(i1)
+           .bind[${i2}].toLazyInstance(i2)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -673,9 +667,9 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
+           .bind[$i1].toLazyInstance(i1)
+           .bind[$i2].toLazyInstance(i2)
+           .bind[$i3].toLazyInstance(i3)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -696,10 +690,10 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
-           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
+           .bind[$i1].toLazyInstance(i1)
+           .bind[$i2].toLazyInstance(i2)
+           .bind[$i3].toLazyInstance(i3)
+           .bind[$i4].toLazyInstance(i4)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
@@ -721,14 +715,24 @@ private[wvlet] object AirframeMacros {
     q"""{ (i1: ${i1}, i2: ${i2}, i3:${i3}, i4:${i4}, i5:${i5}) =>
          val session = ${h.findSession}.newSharedChildSession(
            wvlet.airframe.newDesign
-           .bind(${h.surfaceOf(i1)}).toLazyInstance(i1)
-           .bind(${h.surfaceOf(i2)}).toLazyInstance(i2)
-           .bind(${h.surfaceOf(i3)}).toLazyInstance(i3)
-           .bind(${h.surfaceOf(i4)}).toLazyInstance(i4)
-           .bind(${h.surfaceOf(i5)}).toLazyInstance(i5)
+           .bind[$i1].toLazyInstance(i1)
+           .bind[$i2].toLazyInstance(i2)
+           .bind[$i3].toLazyInstance(i3)
+           .bind[$i4].toLazyInstance(i4)
+           .bind[$i5].toLazyInstance(i5)
          )
          ${h.createNewInstanceOf(a)}(session)
         }
       """
   }
+
+  def sourceCode(c: sm.Context): c.Tree = {
+    import c.universe._
+
+    import c.universe._
+    c.internal.enclosingOwner
+    val pos = c.enclosingPosition
+    q"wvlet.airframe.SourceCode(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+  }
+
 }

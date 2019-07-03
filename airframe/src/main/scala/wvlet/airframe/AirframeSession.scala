@@ -65,7 +65,10 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = Surface.of[Session]
     val sessionBinding =
-      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]), true, true, None)
+      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]),
+                      true,
+                      true,
+                      implicitly[SourceCode])
     b += sessionSurface -> sessionBinding
 
     // Add a reference to the design
@@ -74,7 +77,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
       ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]),
                       true,
                       true,
-                      None)
+                      implicitly[SourceCode])
     b += designSurface -> designBinding
 
     // Add user-defined bindings

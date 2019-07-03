@@ -16,8 +16,8 @@ package wvlet
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeMacros._
-import wvlet.log.{LogSupport, Logger}
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import scala.language.implicitConversions
