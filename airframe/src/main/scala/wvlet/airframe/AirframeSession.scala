@@ -225,7 +225,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
 
     trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
     if (seen.contains(t)) {
-      error(s"Found cyclic dependencies: ${seen}")
+      error(s"Found cyclic dependencies: ${seen} at ${sourceCode}")
       throw new CYCLIC_DEPENDENCY(seen, sourceCode)
     }
 
@@ -246,23 +246,23 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           val result =
             b match {
               case ClassBinding(from, to, sourceCode) =>
-                trace(s"[${name}] Found a class binding from ${from} to ${to} (${sourceCode})")
+                trace(s"[${name}] Found a class binding from ${from} to ${to}, defined at ${sourceCode}")
                 registerInjectee(from, contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen))
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from != to =>
-                trace(s"[${name}] Found a singleton binding: ${from} => ${to} (${sourceCode})")
+                trace(s"[${name}] Found a singleton binding: ${from} => ${to}, defined at ${sourceCode}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(
                     from,
                     contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen, defaultValue)))
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from == to =>
-                trace(s"[${name}] Found a singleton binding: ${from} (${sourceCode})")
+                trace(s"[${name}] Found a singleton binding: ${from}, defined at ${sourceCode}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from,
                                    contextSession.buildInstance(to, sourceCode, contextSession, seen, defaultValue)))
               case p @ ProviderBinding(factory, provideSingleton, eager, sourceCode) =>
-                trace(s"[${name}] Found a provider for ${p.from}: ${p} (${sourceCode})")
+                trace(s"[${name}] Found a provider for ${p.from}: ${p}, defined at ${sourceCode}")
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {
                     contextSession.getInstance(d, sourceCode, contextSession, false, t :: seen)
