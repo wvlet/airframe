@@ -17,25 +17,31 @@ import java.util.UUID
 
 import wvlet.airframe.AirframeException.CYCLIC_DEPENDENCY
 import wvlet.airframe.AirframeMacros._
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 
 object Binder {
+
   sealed trait Binding extends Serializable {
     def forSingleton: Boolean = false
     def from: Surface
+    def sourceCode: SourceCode
   }
-  case class ClassBinding(from: Surface, to: Surface) extends Binding {
+  case class ClassBinding(from: Surface, to: Surface, sourceCode: SourceCode) extends Binding {
     if (from == to) {
-      throw new CYCLIC_DEPENDENCY(Set(to))
+      throw new CYCLIC_DEPENDENCY(List(to), sourceCode)
     }
   }
-  case class SingletonBinding(from: Surface, to: Surface, isEager: Boolean) extends Binding {
+  case class SingletonBinding(from: Surface, to: Surface, isEager: Boolean, sourceCode: SourceCode) extends Binding {
     override def forSingleton: Boolean = true
   }
-  case class ProviderBinding(factory: DependencyFactory, provideSingleton: Boolean, eager: Boolean) extends Binding {
+  case class ProviderBinding(factory: DependencyFactory,
+                             provideSingleton: Boolean,
+                             eager: Boolean,
+                             sourceCode: SourceCode)
+      extends Binding {
     assert(!eager || (eager && provideSingleton))
     def from: Surface                  = factory.from
     override def forSingleton: Boolean = provideSingleton
@@ -93,7 +99,7 @@ import wvlet.airframe.Binder._
 /**
   *
   */
-class Binder[A](val design: Design, val from: Surface) extends LogSupport {
+class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCode) extends LogSupport {
 
   /**
     * Bind a singleton instance of B to A
@@ -119,7 +125,8 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     */
   def toInstance(any: => A): Design = {
     trace(s"binder toInstance: ${from}")
-    design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true))
+    design.addBinding(
+      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true, sourceCode))
   }
 
   /**
@@ -130,7 +137,8 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
     */
   def toLazyInstance(any: => A): Design = {
     trace(s"binder toLazyInstance: ${from}")
-    design.addBinding(ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false))
+    design.addBinding(
+      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false, sourceCode))
   }
 
   def toSingletonOf[B <: A]: Design = macro binderToSingletonOfImpl[B]
@@ -138,11 +146,11 @@ class Binder[A](val design: Design, val from: Surface) extends LogSupport {
   def toEagerSingletonOf[B <: A]: Design = macro binderToEagerSingletonOfImpl[B]
 
   def toSingleton: Design = {
-    design.addBinding(SingletonBinding(from, from, false))
+    design.addBinding(SingletonBinding(from, from, false, sourceCode))
   }
 
   def toEagerSingleton: Design = {
-    design.addBinding(SingletonBinding(from, from, true))
+    design.addBinding(SingletonBinding(from, from, true, sourceCode))
   }
 
   def toInstanceProvider[D1](factory: D1 => A): Design = macro bindToProvider1[D1]

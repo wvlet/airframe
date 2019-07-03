@@ -18,7 +18,7 @@ import wvlet.airframe.config.Config.REPORT_UNUSED_PROPERTIES
 import wvlet.airframe.surface.Surface
 import wvlet.log.Logger
 
-import scala.reflect.ClassTag
+import scala.language.experimental.macros
 
 /**
   *
@@ -70,39 +70,41 @@ package object config {
       d.withConfig(currentConfig.withConfigPaths(configPaths))
     }
 
-    def bindConfig[A: ru.TypeTag](config: A): Design = {
+    def bindConfig[A: ru.TypeTag](config: A)(implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.register[A](config)
       val s            = Surface.of[A]
       d.withConfig(configHolder)
-        .bind(s).toInstance(config)
+        .bind(s)(sourceCode).toInstance(config)
     }
 
-    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String): Design = {
+    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
-        .bind(Surface.of[A]).toInstance(configHolder.of[A])
+        .bind(Surface.of[A])(sourceCode).toInstance(configHolder.of[A])
     }
 
-    def bindConfigFromYaml[A: ru.TypeTag: ClassTag](yamlFile: String, defaultValue: => A): Design = {
+    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(
+        implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
       d.withConfig(configHolder)
-        .bind(s).toInstance(newConfig)
+        .bind(s)(sourceCode).toInstance(newConfig)
     }
 
     /**
       * Override a subset of the configuration parameters, registered to the design.
       */
-    def overrideConfigParams(props: Map[String, Any],
-                             onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
+    def overrideConfigParams(
+        props: Map[String, Any],
+        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES)(implicit sourceCode: SourceCode): Design = {
       val prevConfig   = getConfig
       val configHolder = currentConfig.overrideWith(props, onUnusedProperties)
       val d2           = d.withConfig(configHolder)
 
       // Override already bounded config instances
       val d3 = configHolder.getAll.foldLeft(d2) { (d: Design, c: ConfigHolder) =>
-        d.bind(c.tpe).toInstance(c.value)
+        d.bind(c.tpe)(sourceCode).toInstance(c.value)
       }
       d3
     }
