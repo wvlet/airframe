@@ -83,7 +83,7 @@ package object config {
         .bind(Surface.of[A], sourceCode).toInstance(configHolder.of[A])
     }
 
-    def bindConfigFromYamlOrDefault[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(
+    def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(
         implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = Surface.of[A]
