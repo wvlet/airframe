@@ -58,7 +58,7 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def get[A](surface: Surface): A
+  private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A
 
   /**
     * Internal method for building an instance of type A, or if no binding is found, use the given trait instance factory
@@ -67,10 +67,11 @@ trait Session extends AutoCloseable {
     * @tparam A
     * @return
     */
-  private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A): A
+  private[airframe] def getOrElse[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A
 
-  private[airframe] def createNewInstanceOf[A](surface: Surface): A
-  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A): A
+  private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
+  private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(
+      implicit sourceCode: SourceCode): A
 
   def getInstanceOf(surface: Surface): Any
 
@@ -147,11 +148,13 @@ object Session extends LogSupport {
     * @param session
     */
   implicit class SessionAccess(session: Session) {
-    def get[A](surface: Surface): A                  = session.get[A](surface)
-    def getOrElse[A](surface: Surface, obj: => A): A = session.getOrElse[A](surface, obj)
-    def createNewInstanceOf[A](surface: Surface): A  = session.createNewInstanceOf[A](surface)
-    def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A): A =
-      session.createNewInstanceOf[A](surface, traitInstanceFactory)
+    def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = session.get[A](surface)(sourceCode)
+    def getOrElse[A](surface: Surface, obj: => A)(implicit sourceCode: SourceCode): A =
+      session.getOrElse[A](surface, obj)(sourceCode)
+    def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A =
+      session.createNewInstanceOf[A](surface)(sourceCode)
+    def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(implicit sourceCode: SourceCode): A =
+      session.createNewInstanceOf[A](surface, traitInstanceFactory)(sourceCode)
   }
 
   def getSession(obj: Any): Option[Session] = {

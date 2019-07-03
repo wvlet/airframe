@@ -155,22 +155,22 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     debug(s"[${name}] Completed the initialization")
   }
 
-  private[airframe] def get[A](surface: Surface): A = {
-    debug(s"[${name}] Get dependency [${surface}]")
+  private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
+    debug(s"[${name}] Get dependency [${surface}] at ${sourceCode}")
     getInstance(surface, this, create = false, List.empty).asInstanceOf[A]
   }
 
-  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A): A = {
-    debug(s"[${name}] Get dependency [${surface}] (or create with factory)")
+  private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
+    debug(s"[${name}] Get dependency [${surface}] (or create with factory) at ${sourceCode}")
     getInstance(surface, this, create = false, List.empty, Some(() => objectFactory)).asInstanceOf[A]
   }
 
-  private[airframe] def createNewInstanceOf[A](surface: Surface): A = {
-    debug(s"[${name}] Create dependency [${surface}]")
+  private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
+    debug(s"[${name}] Create dependency [${surface}] at ${sourceCode}")
     getInstance(surface, this, create = true, List.empty).asInstanceOf[A]
   }
-  private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A): A = {
-    debug(s"[${name}] Create dependency [${surface}] (with factory)")
+  private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A)(implicit sourceCode: SourceCode): A = {
+    debug(s"[${name}] Create dependency [${surface}] (with factory) at ${sourceCode}")
     getInstance(surface, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
@@ -244,22 +244,22 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         case Some(b) =>
           val result =
             b match {
-              case ClassBinding(from, to, _) =>
-                trace(s"[${name}] Found a class binding from ${from} to ${to}")
+              case ClassBinding(from, to, sourceCode) =>
+                trace(s"[${name}] Found a class binding from ${from} to ${to} (${sourceCode})")
                 registerInjectee(from, contextSession.getInstance(to, contextSession, create, t :: seen))
-              case sb @ SingletonBinding(from, to, eager, _) if from != to =>
-                trace(s"[${name}] Found a singleton binding: ${from} => ${to}")
+              case sb @ SingletonBinding(from, to, eager, sourceCode) if from != to =>
+                trace(s"[${name}] Found a singleton binding: ${from} => ${to} (${sourceCode})")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from,
                                    contextSession.getInstance(to, contextSession, create, t :: seen, defaultValue)))
-              case sb @ SingletonBinding(from, to, eager, _) if from == to =>
-                trace(s"[${name}] Found a singleton binding: ${from}")
+              case sb @ SingletonBinding(from, to, eager, sourceCode) if from == to =>
+                trace(s"[${name}] Found a singleton binding: ${from} (${sourceCode})")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(from, contextSession.buildInstance(to, contextSession, seen, defaultValue)))
-              case p @ ProviderBinding(factory, provideSingleton, eager, _) =>
-                trace(s"[${name}] Found a provider for ${p.from}: ${p}")
+              case p @ ProviderBinding(factory, provideSingleton, eager, sourceCode) =>
+                trace(s"[${name}] Found a provider for ${p.from}: ${p} (${sourceCode})")
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {
                     contextSession.getInstance(d, contextSession, false, t :: seen)

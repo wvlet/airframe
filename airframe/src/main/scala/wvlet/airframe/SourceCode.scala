@@ -17,7 +17,9 @@ import scala.language.experimental.macros
 /**
   * Source code location
   */
-case class SourceCode(filePath: String, fileName: String, line: Int, col: Int)
+case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
+  override def toString = s"${fileName}:${line}"
+}
 
 object SourceCode {
   def apply()(implicit code: SourceCode) = code
