@@ -13,12 +13,10 @@
  */
 package wvlet.airframe.http.recorder
 
-import java.net.URI
-
-import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
+import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
 import javax.net.ssl.SSLContext
 import wvlet.airframe.http.ServerAddress
