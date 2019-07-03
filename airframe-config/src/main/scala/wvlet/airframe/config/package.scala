@@ -74,13 +74,13 @@ package object config {
       val configHolder = currentConfig.register[A](config)
       val s            = Surface.of[A]
       d.withConfig(configHolder)
-        .bind(s, sourceCode).toInstance(config)
+        .bind(s)(sourceCode).toInstance(config)
     }
 
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String)(implicit sourceCode: SourceCode): Design = {
       val configHolder = currentConfig.registerFromYaml[A](yamlFile)
       d.withConfig(configHolder)
-        .bind(Surface.of[A], sourceCode).toInstance(configHolder.of[A])
+        .bind(Surface.of[A])(sourceCode).toInstance(configHolder.of[A])
     }
 
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(
@@ -89,7 +89,7 @@ package object config {
       val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
       d.withConfig(configHolder)
-        .bind(s, sourceCode).toInstance(newConfig)
+        .bind(s)(sourceCode).toInstance(newConfig)
     }
 
     /**
@@ -104,7 +104,7 @@ package object config {
 
       // Override already bounded config instances
       val d3 = configHolder.getAll.foldLeft(d2) { (d: Design, c: ConfigHolder) =>
-        d.bind(c.tpe, sourceCode).toInstance(c.value)
+        d.bind(c.tpe)(sourceCode).toInstance(c.value)
       }
       d3
     }
