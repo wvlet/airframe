@@ -26,6 +26,7 @@ import wvlet.log.LogSupport
 import scala.reflect.runtime.{universe => ru}
 
 case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
+                               requestFilter: http.Request => http.Request = identity,
                                timeout: Duration = Duration(90, TimeUnit.SECONDS),
                                retry: RetryContext = FinagleClient.defaultRetry)
 
@@ -55,9 +56,10 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     client.close()
   }
 
-  private def newRequest(method: HttpMethod, path: String): Request = {
+  def newRequest(method: HttpMethod, path: String): Request = {
     // TODO add additional http headers
-    Request(toFinagleHttpMethod(method), path)
+    val req = Request(toFinagleHttpMethod(method), path)
+    config.requestFilter(req)
   }
 
   override private[http] def awaitF[A](f: Future[A]): A = {
