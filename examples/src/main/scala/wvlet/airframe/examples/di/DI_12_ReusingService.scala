@@ -31,7 +31,7 @@ object DI_12_ReusingService extends App {
   trait DB extends LogSupport {
     def query(sql: String) = {}
     def connect: Unit = {
-      info(s"connected")
+      info("connected")
     }
     def close(): Unit = {
       info("closed")
@@ -40,7 +40,7 @@ object DI_12_ReusingService extends App {
   trait HttpClient extends LogSupport {
     def send(request: String) = {}
     def connect: Unit = {
-      info(s"connected")
+      info("connected")
     }
     def close(): Unit = {
       info("closed")

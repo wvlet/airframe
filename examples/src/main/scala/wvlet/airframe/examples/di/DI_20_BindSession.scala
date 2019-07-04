@@ -26,7 +26,7 @@ object DI_20_BindSession extends App {
     private val session = bind[Session]
 
     def shutdown = {
-      warn(s"shutdown is called")
+      warn("shutdown is called")
       session.shutdown
     }
   }

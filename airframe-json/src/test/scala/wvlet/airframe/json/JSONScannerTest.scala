@@ -42,7 +42,7 @@ class JSONScannerTest extends AirframeSpec {
       scan("[true, false, null]")
       scan("""{"elem":[0, 1], "data":{"id":"0x0x", "val":0.1234}}""")
 
-      scan(s"""["\\u0fA9\\u0123", "\\u0123"]""")
+      scan("""["\\u0fA9\\u0123", "\\u0123"]""")
     }
 
     "throw unexpected error" in {

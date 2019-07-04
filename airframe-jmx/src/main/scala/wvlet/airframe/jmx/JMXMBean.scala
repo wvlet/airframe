@@ -64,7 +64,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 //    }
   }
   override def invoke(actionName: String, params: Array[AnyRef], signature: Array[String]): AnyRef = {
-    throw new UnsupportedOperationException(s"JMXMBean.invoke is not supported")
+    throw new UnsupportedOperationException("JMXMBean.invoke is not supported")
   }
 }
 

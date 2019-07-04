@@ -22,7 +22,7 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
     extends MetricLogger
     with LogSupport {
 
-  debug(s"Starting Fluency")
+  debug("Starting Fluency")
 
   override def withTagPrefix(newTagPrefix: String): FluentdLogger = {
     new FluentdLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
@@ -30,7 +30,7 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
 
   @PreDestroy
   def close(): Unit = {
-    debug(s"Stopping Fluency")
+    debug("Stopping Fluency")
     fluency.flush()
     fluency.close()
   }

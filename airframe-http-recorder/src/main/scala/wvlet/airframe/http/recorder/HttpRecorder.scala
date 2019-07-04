@@ -73,7 +73,7 @@ object HttpRecorder extends LogSupport {
     val destClient =
       ClientBuilder()
         .stack(Http.client)
-        .name(s"airframe-http-recorder-proxy")
+        .name("airframe-http-recorder-proxy")
         .dest(recorderConfig.destAddress.hostAndPort)
         .tls(SSLContext.getDefault)
         .noFailureAccrual

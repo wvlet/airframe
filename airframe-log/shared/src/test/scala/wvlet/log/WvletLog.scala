@@ -38,18 +38,18 @@ class WvletLog extends Spec with LogSupport {
       logger.setLogLevel(LogLevel.ALL)
 
       info("Hello wvlet-log!")
-      debug(s"wvlet-log adds fancy logging to your Scala applications.")
+      debug("wvlet-log adds fancy logging to your Scala applications.")
       trace("You can see the source code location here ==>")
       error("That makes easy to track your application behavior")
       logger.setFormatter(IntelliJLogFormatter)
-      warn(s"And also, customizing log format is easy")
+      warn("And also, customizing log format is easy")
       info("This is the log format suited to IntelliJ IDEA")
       debug("This format adds links to the source code ->")
       logger.setFormatter(SourceCodeLogFormatter)
-      info(s"wvlet-log uses Scala macro to output log messages only when necessary")
+      info("wvlet-log uses Scala macro to output log messages only when necessary")
       error("And also it can show the stack trace", new Exception("Test message"))
-      info(s"Usage is simple")
-      warn(s"Just add wvlet.log.LogSupport trait to your application")
+      info("Usage is simple")
+      warn("Just add wvlet.log.LogSupport trait to your application")
     }
 
     "show log format examples" in {

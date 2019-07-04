@@ -57,7 +57,7 @@ class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler
 
   def start: Unit = {
     if (!state.compareAndSet(INIT, STARTING)) {
-      throw new IllegalStateException(s"LifeCycle is already starting")
+      throw new IllegalStateException("LifeCycle is already starting")
     }
 
     tracer.onSessionStart(session)

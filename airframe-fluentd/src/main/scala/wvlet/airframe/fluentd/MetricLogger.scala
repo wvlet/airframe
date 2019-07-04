@@ -80,7 +80,7 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) extends LogSupport {
 
   @PreDestroy
   def shutdown: Unit = {
-    debug(s"Closing MetricLoggerFactory")
+    debug("Closing MetricLoggerFactory")
     fluentdClient.close()
   }
 }

@@ -26,12 +26,12 @@ object DI_07_JSR250Annotation extends App {
   trait MyService extends LogSupport {
     @PostConstruct
     def start = {
-      info(s"starting the service")
+      info("starting the service")
     }
 
     @PreDestroy
     def stop = {
-      info(s"stopping the service")
+      info("stopping the service")
     }
   }
 
