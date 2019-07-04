@@ -13,6 +13,8 @@ This is useful for testing HTTP server interactions in an environment with limit
 libraryDependencies += "org.wvlet.airframe" %% "airframe-http-recorder" %% (version)
 ```
 
+### Record & Replay
+
 ```scala
 import wvlet.airframe.http.recorder._
 import wvlet.airframe.control.Control._
@@ -32,6 +34,24 @@ withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
   server.start
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will return the recorded responses 
+}
+```
+
+### Programmable
+
+```scala
+val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
+  // Program server responses instead of recodring
+  val request = Request("/index.html")
+  val response = Response()
+  response.setContentString("Hello World!")
+  
+  recorder.record(request, response)
+  
+}) { server =>
+  server.start
+  val addr = server.localAddress // "localhost:(port number)"
+  // Requests to the local server will return the programmed responses
 }
 ```
 
