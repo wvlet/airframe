@@ -54,7 +54,7 @@ object SQLAnonymizer extends LogSupport {
   }
 
   def buildAnonymizationDictionary(sql: Seq[String]): Map[Expression, Expression] = {
-    debug(s"Building a token dictionary")
+    debug("Building a token dictionary")
     val b = new DictBuilder()
     sql.foreach { x =>
       try {
@@ -73,7 +73,7 @@ object SQLAnonymizer extends LogSupport {
     val identifierTable    = new SymbolTable("i")
     var stringLiteralTable = new SymbolTable("s")
     var longLiteralTable   = new SymbolTable("l")
-    var qnameTable         = new SymbolTable(s"t")
+    var qnameTable         = new SymbolTable("t")
 
     def build = m.result()
 

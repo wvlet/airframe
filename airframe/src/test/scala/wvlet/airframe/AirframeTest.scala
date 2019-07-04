@@ -190,7 +190,7 @@ object ServiceMixinExample {
   }
 
   trait NonAbstractModule extends LogSupport {
-    info(s"This should be built")
+    info("This should be built")
   }
 
   object SingletonOfNonAbstractModules extends NonAbstractModule {
@@ -325,7 +325,7 @@ class AirframeTest extends AirframeSpec {
     }
 
     "forbid binding to the same type" in {
-      warn(s"Running cyclic dependency check test")
+      warn("Running cyclic dependency check test")
       val ex = intercept[CYCLIC_DEPENDENCY] {
         val d = newDesign
           .bind[Printer].to[Printer]
@@ -352,7 +352,7 @@ class AirframeTest extends AirframeSpec {
       // This will be shown as compilation error in Surface
       pending
 //      val c = newDesign.newSession
-//      warn(s"Running cyclic dependency test: A->B->A")
+//      warn("Running cyclic dependency test: A->B->A")
 //
 //      val caught = intercept[CYCLIC_DEPENDENCY] {
 //        c.build[HasCycle]
@@ -364,7 +364,7 @@ class AirframeTest extends AirframeSpec {
 
     "detect missing dependencies" in {
       val d = newDesign
-      warn(s"Running missing dependency check")
+      warn("Running missing dependency check")
       val caught = intercept[MISSING_DEPENDENCY] {
         d.newSession.build[MissingDep]
       }

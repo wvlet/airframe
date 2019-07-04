@@ -117,7 +117,7 @@ class RouterTest extends AirframeSpec {
 
   "find ambiguous path patterns" in {
     val r = Router.add[AmbiguousPathExample]
-    warn(s"Ambiguous HTTP path pattern test")
+    warn("Ambiguous HTTP path pattern test")
     val ex = intercept[Throwable] {
       r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1"))
     }

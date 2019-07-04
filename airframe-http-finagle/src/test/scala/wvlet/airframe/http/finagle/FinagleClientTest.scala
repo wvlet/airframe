@@ -107,7 +107,7 @@ class FinagleClientTest extends AirframeSpec {
           server.localAddress,
           config = FinagleClientConfig(
             retry = FinagleClient.defaultRetry.withMaxRetry(3).withBackOff(initialIntervalMillis = 1)))) { client =>
-        warn(s"Starting http client failure tests")
+        warn("Starting http client failure tests")
 
         {
           // Test max retry failure

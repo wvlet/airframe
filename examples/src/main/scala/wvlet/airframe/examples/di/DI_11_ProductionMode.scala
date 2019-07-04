@@ -35,12 +35,12 @@ object DI_11_ProductionMode extends App with LogSupport {
   val d = newSilentDesign
     .bind[MyService].toSingleton // To eagerly initialize the service, you must bind it to the design
 
-  info(s"Production mode")
+  info("Production mode")
   d.withProductionMode.build[MyApp] { app =>
     // MyService is already initialized
   }
 
-  info(s"Lazy mode")
+  info("Lazy mode")
   d.build[MyApp] { app =>
     // MyService will not be initialized here
   }

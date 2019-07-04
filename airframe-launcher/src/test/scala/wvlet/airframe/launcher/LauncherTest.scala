@@ -315,7 +315,7 @@ object LauncherTest {
 
     @command(description = "exception test")
     def errorTest: Unit = {
-      throw new IllegalArgumentException(s"error test")
+      throw new IllegalArgumentException("error test")
     }
   }
 

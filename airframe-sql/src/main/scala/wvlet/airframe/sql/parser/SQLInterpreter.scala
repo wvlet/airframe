@@ -218,7 +218,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         val gb = ctx.groupBy()
         assert(gb != null)
         if (inputRelation == EmptyRelation) {
-          throw new IllegalArgumentException(s"group by statement requires input relation")
+          throw new IllegalArgumentException("group by statement requires input relation")
         }
 
         // group by
