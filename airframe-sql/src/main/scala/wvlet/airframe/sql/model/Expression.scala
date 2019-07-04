@@ -116,18 +116,18 @@ object QName {
 
 case class UnresolvedAttribute(parts: Seq[String]) extends Attribute {
   override def toString = s"UnresolvedAttribute(${name})"
-  def name: String = parts.mkString(".")
+  def name: String      = parts.mkString(".")
 }
 
 sealed trait Identifier extends LeafExpression {
   def value: String
 }
 case class DigitId(value: String) extends Identifier {
-  override def sqlExpr: String = value
+  override def sqlExpr: String  = value
   override def toString: String = s"Id(${value})"
 }
 case class UnquotedIdentifier(value: String) extends Identifier {
-  override def sqlExpr: String = value
+  override def sqlExpr: String  = value
   override def toString: String = s"Id(${value})"
 }
 case class BackQuotedIdentifier(value: String) extends Identifier {

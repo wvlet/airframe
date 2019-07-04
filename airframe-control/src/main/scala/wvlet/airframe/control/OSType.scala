@@ -29,8 +29,8 @@ import scala.sys.process.Process
   */
 object OS {
   def isWindows: Boolean = getType == OSType.Windows
-  def isMac: Boolean = getType == OSType.Mac
-  def isLinux: Boolean = getType == OSType.Linux
+  def isMac: Boolean     = getType == OSType.Mac
+  def isLinux: Boolean   = getType == OSType.Linux
   lazy val isCygwin: Boolean = {
     Shell.findCommand("uname") match {
       case Some(uname) => Process(uname).!!.startsWith("CYGWIN")

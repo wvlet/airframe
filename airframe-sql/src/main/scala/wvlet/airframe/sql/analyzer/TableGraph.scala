@@ -36,7 +36,7 @@ object TableGraph {
 
   case object Terminal extends Node {
     override def toString: String = name
-    def name              = "#"
+    def name                      = "#"
   }
   case class Alias(name: String) extends Node {
     override def toString = s"&${name}"

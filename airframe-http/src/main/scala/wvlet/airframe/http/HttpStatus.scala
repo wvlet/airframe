@@ -40,7 +40,7 @@ class HttpStatus(val code: Int) {
   */
 object HttpStatus {
 
-  def isUnknownState(code: Int): Boolean = code < 100 || code >= 600
+  def isUnknownState(code: Int): Boolean  = code < 100 || code >= 600
   def isInformational(code: Int): Boolean = 100 <= code && code < 200
   def isSuccessful(code: Int): Boolean    = 200 <= code && code < 300
   def isRedirection(code: Int): Boolean   = 300 <= code && code < 400
