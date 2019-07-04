@@ -15,7 +15,7 @@ package wvlet.airframe.sql.model
 import wvlet.airframe.sql.analyzer.QuerySignatureConfig
 
 trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
-  def modelName = {
+  def modelName: String = {
     val n = this.getClass.getSimpleName
     if (n.endsWith("$")) n.substring(0, n.length - 1) else n
   }
@@ -304,7 +304,7 @@ object LogicalPlan {
   }
   case class Intersect(relations: Seq[Relation]) extends SetOperation {
     override def children: Seq[Relation] = relations
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"IX(${relations.map(_.sig(config)).mkString(",")})"
     }
     override def inputAttributes: Seq[Attribute]  = relations.head.inputAttributes
@@ -312,7 +312,7 @@ object LogicalPlan {
   }
   case class Except(left: Relation, right: Relation) extends SetOperation {
     override def children: Seq[Relation] = Seq(left, right)
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"EX(${left.sig(config)},${right.sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = left.inputAttributes
@@ -323,7 +323,7 @@ object LogicalPlan {
     override def toString = {
       s"Union(${relations.mkString(",")})"
     }
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       val in = relations.map(_.sig(config)).mkString(",")
       s"U(${in})"
     }
@@ -368,7 +368,7 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig) = "RS"
   }
   case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"CT(${Table(table).sig(config)})"
     }
   }
@@ -383,7 +383,7 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute]  = Nil
   }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL {
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"DT(${Table(table).sig(config)})"
     }
   }
@@ -393,14 +393,14 @@ object LogicalPlan {
       extends Update
       with UnaryRelation {
     override def child: Relation = query
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"I(${Table(table).sig(config)},${query.sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
   case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"D(${Table(table).sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = Nil
@@ -408,7 +408,7 @@ object LogicalPlan {
   }
 
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
-    override def sig(config: QuerySignatureConfig) = {
+    override def sig(config: QuerySignatureConfig): String = {
       s"RT(${Table(table).sig(config)})"
     }
   }

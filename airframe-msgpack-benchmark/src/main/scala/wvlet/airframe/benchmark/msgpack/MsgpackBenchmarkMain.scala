@@ -50,12 +50,12 @@ class MsgpackBenchmarkMain(
 ) extends LogSupport {
 
   @command(isDefault = true)
-  def default = {
+  def default: Unit = {
     info("Type --help to see the list of sub commands")
   }
 
   @command(description = "Run a benchmark quickly")
-  def bench_quick = {
+  def bench_quick: Unit = {
     bench(iteration = 1, warmupIteration = 0, forkCount = 1)
   }
 

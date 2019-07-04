@@ -150,7 +150,7 @@ object HelpMessagePrinter extends LogSupport {
         optDscr.map(_._2.length).max
       }
 
-    def genDescription(opt: CLOption) = {
+    def genDescription(opt: CLOption): String = {
       opt.annot.description()
     }
 

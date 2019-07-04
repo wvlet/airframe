@@ -105,7 +105,7 @@ case class ParenthesizedExpression(child: Expression) extends UnaryExpression
 
 // Qualified name (QName), such as table and column names
 case class QName(parts: Seq[String]) extends LeafExpression {
-  override def toString = parts.mkString(".")
+  override def toString: String = parts.mkString(".")
 }
 object QName {
   def apply(s: String): QName = {
@@ -116,18 +116,18 @@ object QName {
 
 case class UnresolvedAttribute(parts: Seq[String]) extends Attribute {
   override def toString = s"UnresolvedAttribute(${name})"
-  def name              = parts.mkString(".")
+  def name: String = parts.mkString(".")
 }
 
 sealed trait Identifier extends LeafExpression {
   def value: String
 }
 case class DigitId(value: String) extends Identifier {
-  override def sqlExpr          = value
+  override def sqlExpr: String = value
   override def toString: String = s"Id(${value})"
 }
 case class UnquotedIdentifier(value: String) extends Identifier {
-  override def sqlExpr          = value
+  override def sqlExpr: String = value
   override def toString: String = s"Id(${value})"
 }
 case class BackQuotedIdentifier(value: String) extends Identifier {

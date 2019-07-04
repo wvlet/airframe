@@ -49,7 +49,7 @@ sealed trait OptionSchema extends LogSupport {
     if (args.isDefinedAt(argIndex)) Some(args(argIndex)) else None
   }
 
-  override def toString = "options:[%s], args:[%s]".format(options.mkString(", "), args.mkString(", "))
+  override def toString: String = "options:[%s], args:[%s]".format(options.mkString(", "), args.mkString(", "))
 }
 
 object ClassOptionSchema extends LogSupport {
