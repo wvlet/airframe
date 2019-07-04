@@ -28,17 +28,17 @@ import scala.sys.process.Process
   * @author leo
   */
 object OS {
-  def isWindows = getType == OSType.Windows
-  def isMac     = getType == OSType.Mac
-  def isLinux   = getType == OSType.Linux
-  lazy val isCygwin = {
+  def isWindows: Boolean = getType == OSType.Windows
+  def isMac: Boolean     = getType == OSType.Mac
+  def isLinux: Boolean   = getType == OSType.Linux
+  lazy val isCygwin: Boolean = {
     Shell.findCommand("uname") match {
       case Some(uname) => Process(uname).!!.startsWith("CYGWIN")
       case None        => false
     }
   }
 
-  def isUnix = {}
+  def isUnix: Unit = {}
 
   val getType: OSType = {
     val osName: String = System.getProperty("os.name", "unknown").toLowerCase

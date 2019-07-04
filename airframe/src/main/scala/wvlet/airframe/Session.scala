@@ -172,7 +172,7 @@ object Session extends LogSupport {
     }
   }
 
-  private def isSessionType(c: Class[_]) = {
+  private def isSessionType(c: Class[_]): Boolean = {
     classOf[wvlet.airframe.Session].isAssignableFrom(c)
   }
 

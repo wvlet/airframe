@@ -242,7 +242,7 @@ object Shell extends LogSupport {
   /**
     * Return OS-dependent program name. (e.g., sh in Unix, sh.exe in Windows)
     */
-  def progName(p: String) = {
+  def progName(p: String): String = {
     if (OS.isWindows)
       p + ".exe"
     else
@@ -279,7 +279,7 @@ object Shell extends LogSupport {
     // If JAVA_HOME is not defined, use java.home system property
     val e: Option[String] = env("JAVA_HOME") orElse sysProp("java.home")
 
-    def resolveCygpath(p: String) = {
+    def resolveCygpath(p: String): String = {
       if (OS.isWindows) {
         // If the path is for Cygwin environment
         val m = """/cygdrive/(\w)(/.*)""".r.findFirstMatchIn(p)
@@ -299,7 +299,7 @@ object Shell extends LogSupport {
   def findJavaCommand(javaCmdName: String = "java"): Option[String] = {
 
     def search: Option[String] = {
-      def javaBin(java_home: String) = java_home + "/bin/" + Shell.progName(javaCmdName)
+      def javaBin(java_home: String): String = java_home + "/bin/" + Shell.progName(javaCmdName)
 
       def hasJavaCommand(java_home: String): Boolean = {
         val java_path = new File(javaBin(java_home))

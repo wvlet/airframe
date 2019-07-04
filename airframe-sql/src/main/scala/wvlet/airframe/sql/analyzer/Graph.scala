@@ -37,7 +37,7 @@ case class Graph(nodes: Set[Node], edges: Set[Edge]) {
     nodes.find(_.name == n.name).getOrElse(n)
   }
 
-  override def toString = {
+  override def toString: String = {
     s"""nodes: ${nodes.mkString(", ")}
        |edges: ${edges.mkString(", ")}""".stripMargin
   }

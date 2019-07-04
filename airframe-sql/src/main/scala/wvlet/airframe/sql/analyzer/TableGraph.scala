@@ -35,14 +35,14 @@ object TableGraph {
   }
 
   case object Terminal extends Node {
-    override def toString = name
-    def name              = "#"
+    override def toString: String = name
+    def name                      = "#"
   }
   case class Alias(name: String) extends Node {
     override def toString = s"&${name}"
   }
   case class SourceTable(name: String) extends Node {
-    override def toString = name
+    override def toString: String = name
   }
   case class TargetTable(name: String) extends Node {
     override def toString = s"!${name}"
