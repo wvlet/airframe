@@ -20,16 +20,19 @@ case class PathEntry(scope: String, key: String)
 /**
   *
   */
-@Endpoint(path = "/v1/config")
 trait LongPathExample {
 
-  @Endpoint(path = "/entry", method = HttpMethod.GET)
+  // Adding this entry to check *key match in /v1/config/entry/:scope/*key if the key contains `clusters` tokien
+  @Endpoint(path = "/v1/clusters")
+  def getClusters = {}
+
+  @Endpoint(path = "/v1/config/entry", method = HttpMethod.GET)
   def getAll(): Unit = {}
 
-  @Endpoint(path = "/entry/:scope", method = HttpMethod.GET)
+  @Endpoint(path = "/v1/config/entry/:scope", method = HttpMethod.GET)
   def getAllInScope(scope: String): Unit = {}
 
-  @Endpoint(path = "/entry/:scope/*key", method = HttpMethod.GET)
+  @Endpoint(path = "/v1/config/entry/:scope/*key", method = HttpMethod.GET)
   def get(scope: String, key: String): PathEntry = {
     PathEntry(scope, key)
   }

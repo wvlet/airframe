@@ -22,7 +22,7 @@ import wvlet.airframe.http.example.LongPathExample
 class LongPathTest extends AirframeSpec {
 
   "match long paths" in {
-    val r = Router.of[LongPathExample]
+    val r = Router.add[LongPathExample]
 
     {
       val m = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry"))
