@@ -130,8 +130,14 @@ object Automaton {
     }
 
     def nextNode(currentState: Int, token: Token): Option[NextNode[Node]] = {
-      val tokenId = tokenTable.getOrElse(token, tokenTable(defaultToken))
-      transitionTable.get((currentState, tokenId))
+      tokenTable
+        .get(token).flatMap { tokenId =>
+          // Check the exact match token
+          transitionTable.get((currentState, tokenId))
+        }.orElse {
+          // Check the wildcard token
+          transitionTable.get((currentState, tokenTable(defaultToken)))
+        }
     }
   }
 

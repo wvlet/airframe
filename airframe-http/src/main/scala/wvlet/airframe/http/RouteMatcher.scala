@@ -81,7 +81,7 @@ object RouteMatcher extends LogSupport {
         pathIndex += 1
         dfa.nextNode(currentState, token) match {
           case Some(NextNode(actions, nextStateId)) =>
-            trace(s"${currentState} -> ${token} -> ${nextStateId}")
+            trace(s"path index:${pathIndex}/${pc.length}, transition: ${currentState} -> ${token} -> ${nextStateId}")
             currentState = nextStateId
             // Update variable bindings here
             actions.foreach { action =>
