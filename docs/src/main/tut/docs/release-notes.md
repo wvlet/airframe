@@ -5,6 +5,15 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.1
+-  airframe-http: Fix routing when common token is present in the path ([#535](https://github.com/wvlet/airframe/issues/535)) [[abdea65](https://github.com/wvlet/airframe/commit/abdea65)]
+-  Add example of programmable http-recorder ([#532](https://github.com/wvlet/airframe/issues/532)) [[cbab375](https://github.com/wvlet/airframe/commit/cbab375)]
+-  fix type annotation syntax ([#534](https://github.com/wvlet/airframe/issues/534)) [[1b3daa1](https://github.com/wvlet/airframe/commit/1b3daa1)]
+-  remove unused string interpolations ([#533](https://github.com/wvlet/airframe/issues/533)) [[a2267ac](https://github.com/wvlet/airframe/commit/a2267ac)]
+-  airframe-http-finagle: Upgrade to Finagle 19.6.0 to support chunked reader [[61a0316](https://github.com/wvlet/airframe/commit/61a0316)]
+-  airframe-http-client: Add requestFilter [[c32ba1e](https://github.com/wvlet/airframe/commit/c32ba1e)]
+-  airframe-di: Show binding line numbers ([#530](https://github.com/wvlet/airframe/issues/530)) [[a136907](https://github.com/wvlet/airframe/commit/a136907)]
+
 ## 19.7.0
 -  airframe-http-recorder: Programmable HTTP mock server ([#529](https://github.com/wvlet/airframe/issues/529)) [[f33cdba](https://github.com/wvlet/airframe/commit/f33cdba)]
   -  HTTP support in http-recorder ([#527](https://github.com/wvlet/airframe/issues/527)) [[4365522](https://github.com/wvlet/airframe/commit/4365522)]
