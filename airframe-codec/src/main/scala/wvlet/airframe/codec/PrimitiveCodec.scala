@@ -717,6 +717,7 @@ object PrimitiveCodec {
   object AnyCodec extends MessageCodec[Any] {
     override def pack(p: Packer, v: Any): Unit = {
       v match {
+        case null => p.packNil
         // Primitive types
         case v: String    => StringCodec.pack(p, v)
         case v: Boolean   => BooleanCodec.pack(p, v)
