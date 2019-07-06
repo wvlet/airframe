@@ -457,7 +457,7 @@ lazy val log =
     )
     .jvmSettings(
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3"),
-      fork in Test := true
+      classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
     )
     .jsSettings(
       jsBuildSettings,
