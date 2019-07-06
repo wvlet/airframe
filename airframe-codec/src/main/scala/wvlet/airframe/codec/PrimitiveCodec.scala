@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.codec
 
+import java.time.Instant
+
 import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
 import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
@@ -43,7 +45,8 @@ object PrimitiveCodec {
     Surface.of[MsgPack] -> ByteArrayCodec,
     // JSON types
     Surface.of[JSONValue] -> JSONValueCodec,
-    Surface.of[Json]      -> RawJsonCodec
+    Surface.of[Json]      -> RawJsonCodec,
+    Surface.of[Any]       -> AnyCodec
   )
 
   val primitiveArrayCodec = Map(
@@ -706,6 +709,10 @@ object PrimitiveCodec {
   /**
     * Codec for Any values. This only supports very basic types to enable
     * packing/unpacking collections like Seq[Any], Map[Any, Any] at ease.
+    *
+    * Another option to implement AnyCodec is packing pairs of (type, value), but
+    * we will not take this approach as this will require many bytes to fully encode
+    * type names.
     */
   object AnyCodec extends MessageCodec[Any] {
     override def pack(p: Packer, v: Any): Unit = {
@@ -720,11 +727,9 @@ object PrimitiveCodec {
         case v: Byte      => ByteCodec.pack(p, v)
         case v: Short     => ShortCodec.pack(p, v)
         case v: Char      => CharCodec.pack(p, v)
-        case v: Json      => JSONCodec.pack(p, v)
         case v: JSONValue => JSONValueCodec.pack(p, v)
         case v: Value     => ValueCodec.pack(p, v)
-        case v: MsgPack   => ByteArrayCodec.pack(p, v)
-
+        case v: Instant   => p.packTimestamp(v)
         // Arrays
         case v: Array[String]  => StringArrayCodec.pack(p, v)
         case v: Array[Boolean] => BooleanArrayCodec.pack(p, v)
