@@ -13,14 +13,10 @@
  */
 package wvlet.airframe.codec
 
-import java.io.{File, PrintWriter, StringWriter}
+import java.io.{PrintWriter, StringWriter}
 
 import wvlet.airframe.msgpack.spi._
-
 import wvlet.airframe.surface.Surface
-import wvlet.log.LogSupport
-
-import scala.util.{Success, Try}
 
 /**
   * Standard codec collection

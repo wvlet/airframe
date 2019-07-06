@@ -13,8 +13,13 @@
  */
 package wvlet.airframe.codec
 
+import java.time.Instant
+
+import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
+import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
+import wvlet.airframe.msgpack.spi.Value.ExtensionValue
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.{Primitive, Surface}
 
@@ -40,7 +45,8 @@ object PrimitiveCodec {
     Surface.of[MsgPack] -> ByteArrayCodec,
     // JSON types
     Surface.of[JSONValue] -> JSONValueCodec,
-    Surface.of[Json]      -> RawJsonCodec
+    Surface.of[Json]      -> RawJsonCodec,
+    Surface.of[Any]       -> AnyCodec
   )
 
   val primitiveArrayCodec = Map(
@@ -697,6 +703,124 @@ object PrimitiveCodec {
 
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       v.setObject(u.unpackValue)
+    }
+  }
+
+  /**
+    * Codec for Any values. This only supports very basic types to enable
+    * packing/unpacking collections like Seq[Any], Map[Any, Any] at ease.
+    *
+    * Another option to implement AnyCodec is packing pairs of (type, value), but
+    * we will not take this approach as this will require many bytes to fully encode
+    * type names.
+    */
+  object AnyCodec extends MessageCodec[Any] {
+    override def pack(p: Packer, v: Any): Unit = {
+      v match {
+        case null => p.packNil
+        // Primitive types
+        case v: String    => StringCodec.pack(p, v)
+        case v: Boolean   => BooleanCodec.pack(p, v)
+        case v: Int       => IntCodec.pack(p, v)
+        case v: Long      => LongCodec.pack(p, v)
+        case v: Float     => FloatCodec.pack(p, v)
+        case v: Double    => DoubleCodec.pack(p, v)
+        case v: Byte      => ByteCodec.pack(p, v)
+        case v: Short     => ShortCodec.pack(p, v)
+        case v: Char      => CharCodec.pack(p, v)
+        case v: JSONValue => JSONValueCodec.pack(p, v)
+        case v: Value     => ValueCodec.pack(p, v)
+        case v: Instant   => p.packTimestamp(v)
+        // Arrays
+        case v: Array[String]  => StringArrayCodec.pack(p, v)
+        case v: Array[Boolean] => BooleanArrayCodec.pack(p, v)
+        case v: Array[Int]     => IntArrayCodec.pack(p, v)
+        case v: Array[Long]    => LongArrayCodec.pack(p, v)
+        case v: Array[Float]   => FloatArrayCodec.pack(p, v)
+        case v: Array[Double]  => DoubleArrayCodec.pack(p, v)
+        case v: Array[Byte]    => ByteArrayCodec.pack(p, v)
+        case v: Array[Short]   => ShortArrayCodec.pack(p, v)
+        case v: Array[Char]    => CharArrayCodec.pack(p, v)
+        case v: Array[_] =>
+          p.packArrayHeader(v.length)
+          for (x <- v) {
+            pack(p, x)
+          }
+        // Collections
+        case v: Option[_] =>
+          if (v.isEmpty) {
+            p.packNil
+          } else {
+            pack(p, v.get)
+          }
+        case v: Seq[_] =>
+          p.packArrayHeader(v.length)
+          for (x <- v) {
+            pack(p, x)
+          }
+        case m: Map[_, _] =>
+          p.packMapHeader(m.size)
+          for ((k, v) <- m) {
+            pack(p, k)
+            pack(p, v)
+          }
+        case v: Throwable =>
+          ThrowableCodec.pack(p, v)
+        case _ =>
+          // Pack as string for unknown types
+          StringCodec.pack(p, v.toString)
+      }
+    }
+
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.NIL =>
+          v.setNull
+        case ValueType.BOOLEAN =>
+          v.setBoolean(u.unpackBoolean)
+        case ValueType.INTEGER =>
+          v.setLong(u.unpackLong)
+        case ValueType.FLOAT =>
+          v.setDouble(u.unpackDouble)
+        case ValueType.STRING =>
+          v.setString(u.unpackString)
+        case ValueType.BINARY =>
+          val len = u.unpackBinaryHeader
+          v.setObject(u.readPayload(len))
+        case ValueType.ARRAY =>
+          val len = u.unpackArrayHeader
+          val b   = Seq.newBuilder[Any]
+          b.sizeHint(len)
+          (0 until len).foreach { i =>
+            unpack(u, v)
+            if (v.isNull) {
+              b += null // or report error?
+            } else {
+              b += v.getLastValue
+            }
+          }
+          v.setObject(b.result())
+        case ValueType.MAP =>
+          val len = u.unpackMapHeader
+          val b   = Map.newBuilder[Any, Any]
+          b.sizeHint(len)
+          for (i <- 0 until len) {
+            unpack(u, v)
+            val key = v.getLastValue
+            unpack(u, v)
+            val value = v.getLastValue
+            b += (key -> value)
+          }
+          v.setObject(b.result())
+        case ValueType.EXTENSION =>
+          val ext = u.unpackExtTypeHeader
+          if (ext.extType == -1) {
+            v.setObject(u.unpackTimestamp(ext))
+          } else {
+            val extBody = u.readPayload(ext.byteLength)
+            v.setObject(ExtensionValue(ext.extType, extBody))
+          }
+      }
     }
   }
 }

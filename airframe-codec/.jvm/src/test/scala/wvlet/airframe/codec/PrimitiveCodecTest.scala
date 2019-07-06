@@ -14,10 +14,15 @@
 package wvlet.airframe.codec
 
 import java.math.BigInteger
+import java.time.Instant
 
 import org.scalacheck.Arbitrary
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.json.JSON.JSONString
+import wvlet.airframe.json.Json
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 
 /**
@@ -314,6 +319,90 @@ class PrimitiveCodecTest extends CodecSpec with ScalaCheckDrivenPropertyChecks {
       seq.get shouldBe expected
     }
 
+    "read Any values" in {
+      val input: Seq[Any] = Seq(
+        "hello",
+        true,
+        10,
+        100L,
+        10.0f,
+        12345.01,
+        10.toByte,
+        12.toShort,
+        20.toChar,
+        JSONString("hello"),
+        StringValue("value"),
+        Instant.ofEpochMilli(100),
+        Some("hello opt"),
+        None
+      )
+
+      val codec   = MessageCodec.of[Any]
+      val msgpack = codec.toMsgPack(input)
+
+      // Some type conversion happens as there is no explicit type data in Any
+      val result = codec.unpackMsgPack(msgpack)
+      result.get shouldBe Seq(
+        "hello",
+        true,
+        10L,
+        100L,
+        10.0,
+        12345.01,
+        10L,
+        12L,
+        20L,
+        "hello",
+        "value",
+        Instant.ofEpochMilli(100),
+        "hello opt",
+        null
+      )
+    }
+
+    "read collection of Any values" in {
+      val codec = MessageCodec.of[Any]
+
+      // Byte array
+      val v = codec.unpackMsgPack(codec.toMsgPack(Array[Byte](1, 2))).get
+      v shouldBe Array[Byte](1, 2)
+
+      // The other type arrays
+      val input: Seq[Any] = Seq(
+        Array("a", "b"),
+        Array(1, 2),
+        Array(true, false),
+        Array(1L, 2L),
+        Array(1.0f, 2.0f),
+        Array(1.0, 2.0),
+        Array(1.toShort, 2.toShort),
+        Array('a', 'b'),
+        Array(1, "a", true),
+        Map(1 -> "a", "2" -> "b")
+      )
+
+      val msgpack = codec.toMsgPack(input)
+
+      val result = codec.unpackMsgPack(msgpack)
+      result.get shouldBe Seq(
+        Seq("a", "b"),
+        Seq(1L, 2L),
+        Seq(true, false),
+        Seq(1L, 2L),
+        Seq(1.0, 2.0),
+        Seq(1.0, 2.0),
+        Seq(1L, 2L),
+        Seq('a'.toLong, 'b'.toLong),
+        Seq(1L, "a", true),
+        Map(1 -> "a", "2" -> "b")
+      )
+    }
+
+    "pack throwable object passed as Any" in {
+      val codec = MessageCodec.of[Any]
+      val json  = codec.toJson(new IllegalArgumentException("error"))
+      json should include("java.lang.IllegalArgumentException")
+    }
   }
 
 }
