@@ -76,5 +76,9 @@ package object json {
         jsonValue.value
       }
     }
+
+    def value: Any = {
+      jsonValues.head.value
+    }
   }
 }
