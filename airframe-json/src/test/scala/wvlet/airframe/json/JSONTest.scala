@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.json
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.json.JSON.{JSONArray, JSONLong, JSONNumber, JSONObject}
 
 /**
   *
@@ -21,5 +22,27 @@ class JSONTest extends AirframeSpec {
   "support toJSONValue" in {
     val json: Json = """{"id":1}"""
     json.toJSONValue shouldBe JSON.parse(json)
+  }
+
+  "JSONObject.get() and JSONArray.apply()" in {
+    val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
+    val jsonValue  = JSON.parse(json)
+
+    val id = for {
+      users <- jsonValue.asInstanceOf[JSONObject].get("user")
+      user  <- Some(users.asInstanceOf[JSONArray](0))
+      id    <- user.asInstanceOf[JSONObject].get("id")
+    } yield id.asInstanceOf[JSONLong].v
+
+    id shouldBe Some(1)
+  }
+
+  "JSON DSL" in {
+    val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
+    val jsonValue  = JSON.parse(json)
+
+    val id = (jsonValue / "user" / "id")(0).value
+
+    id shouldBe 1
   }
 }

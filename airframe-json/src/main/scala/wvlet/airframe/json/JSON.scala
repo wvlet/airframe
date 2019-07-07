@@ -118,6 +118,12 @@ object JSON extends LogSupport {
       s.append("}")
       s.result()
     }
+    def get(name: String): Option[JSONValue] = {
+      v.collectFirst {
+        case (key, value) if key == name =>
+          value
+      }
+    }
   }
   final case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
     override def toJSON: String = {
@@ -126,6 +132,10 @@ object JSON extends LogSupport {
       s.append(v.map(x => x.toJSON).mkString(","))
       s.append("]")
       s.result()
+    }
+
+    def apply(i: Int): JSONValue = {
+      v.apply(i)
     }
   }
 
