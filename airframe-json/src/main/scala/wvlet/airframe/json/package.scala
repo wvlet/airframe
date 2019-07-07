@@ -34,8 +34,8 @@ package object json {
     def toJSONValue: JSONValue = JSON.parseAny(json)
   }
 
-  implicit class JSONValueOps(jsonValue: JSONValue) {
-    def \(name: String): Seq[JSONValue] = {
+  implicit class JSONValueOps(val jsonValue: JSONValue) extends AnyVal {
+    def /(name: String): Seq[JSONValue] = {
       jsonValue match {
         case jsonObject: JSONObject =>
           jsonObject.v.collect {
@@ -45,7 +45,7 @@ package object json {
         case jsonArray: JSONArray =>
           jsonArray.v.flatMap {
             case value =>
-              value \ name
+              value / name
           }
         case _ => Nil
       }
@@ -64,10 +64,10 @@ package object json {
     }
   }
 
-  implicit class JSONValueSeqOps(jsonValues: Seq[JSONValue]) {
-    def \(name: String): Seq[JSONValue] = {
+  implicit class JSONValueSeqOps(val jsonValues: Seq[JSONValue]) extends AnyVal {
+    def /(name: String): Seq[JSONValue] = {
       jsonValues.flatMap { jsonValue =>
-        jsonValue \ name
+        jsonValue / name
       }
     }
 

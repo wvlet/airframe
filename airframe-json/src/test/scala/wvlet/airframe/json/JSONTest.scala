@@ -41,7 +41,7 @@ class JSONTest extends AirframeSpec {
     val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
     val jsonValue  = JSON.parse(json)
 
-    val id = (jsonValue \ "user" \ "id")(0).value
+    val id = (jsonValue / "user" / "id")(0).value
 
     id shouldBe 1
   }
