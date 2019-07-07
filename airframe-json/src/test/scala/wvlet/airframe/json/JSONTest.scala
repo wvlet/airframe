@@ -38,11 +38,16 @@ class JSONTest extends AirframeSpec {
   }
 
   "JSON DSL" in {
-    val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
+    val json: Json = """{"user": [{ "id": 1, "name": "a" }, { "id": 2, "name": "b" }]}"""
     val jsonValue  = JSON.parse(json)
 
     val id = (jsonValue / "user" / "id")(0).value
-
     id shouldBe 1
+
+    val name = (jsonValue / "user" / "name")(1).value
+    name shouldBe "b"
+
+    val users = (jsonValue / "user").value
+    users shouldBe Seq(Map("id" -> 1, "name" -> "a"), Map("id" -> 2, "name" -> "b"))
   }
 }
