@@ -23,7 +23,7 @@ import scala.language.experimental.macros
   *
   * @param routes
   */
-class Router(val routes: Seq[Route]) {
+class Router(val routes: Seq[Route], beforeFilter: Option[HttpFilter] = None) {
 
   /**
     * Add methods annotated with @Endpoint to the routing table
@@ -32,6 +32,14 @@ class Router(val routes: Seq[Route]) {
 
   protected lazy val routeFinder: RouteMatcher                             = RouteMatcher.build(routes)
   def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeFinder.findRoute(request)
+
+  def withBeforeFilter(newBeforeFilter: HttpFilter): Router = {
+    new Router(routes,
+               beforeFilter
+                 .map { prev =>
+                   newBeforeFilter.andThen(newBeforeFilter)
+                 }.orElse(Some(newBeforeFilter)))
+  }
 }
 
 object Router extends LogSupport {
@@ -40,7 +48,7 @@ object Router extends LogSupport {
   def add[Controller]: Router = macro RouterMacros.of[Controller]
   def apply(): Router = new Router(Seq.empty)
 
-  def add(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
+  def addInternal(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
     import wvlet.airframe.surface.reflect._
 

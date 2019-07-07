@@ -52,10 +52,11 @@ package object finagle {
   }
 
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
-    override def methodOf(request: Request): HttpMethod         = toHttpMethod(request.method)
-    override def pathOf(request: Request): String               = request.path
-    override def queryOf(request: Request): Map[String, String] = request.params
-    override def contentStringOf(request: Request): String      = request.contentString
+    override def methodOf(request: Request): HttpMethod          = toHttpMethod(request.method)
+    override def pathOf(request: Request): String                = request.path
+    override def headerOf(request: Request): Map[String, String] = request.headerMap.toMap
+    override def queryOf(request: Request): Map[String, String]  = request.params
+    override def contentStringOf(request: Request): String       = request.contentString
     override def contentBytesOf(request: Request): Array[Byte] = {
       val content = request.content
       val size    = content.length
