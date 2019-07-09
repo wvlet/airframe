@@ -15,7 +15,7 @@ package wvlet.airframe.fluentd
 import java.util.concurrent.ConcurrentHashMap
 
 import javax.annotation.PreDestroy
-import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -65,7 +65,8 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) extends LogSupport {
   def getTypedLogger[T <: TaggedMetric: ru.TypeTag]: TypedMetricLogger[T] = {
     loggerCache
       .getOrElseUpdate(Surface.of[T], {
-        val codec = MessageCodec.of[T]
+        // Ensure to serialize as map type of MessagePack
+        val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
         new TypedMetricLogger[T](getLogger, codec)
       }).asInstanceOf[TypedMetricLogger[T]]
   }
@@ -73,7 +74,8 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) extends LogSupport {
   def getTypedLoggerWithTagPrefix[T <: TaggedMetric: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
     loggerCache
       .getOrElseUpdate(Surface.of[T], {
-        val codec = MessageCodec.of[T]
+        // Ensure to serialize as map type of MessagePack 
+        val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
         new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
       }).asInstanceOf[TypedMetricLogger[T]]
   }
