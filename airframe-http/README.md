@@ -13,7 +13,7 @@ airframe-http is a library for creating HTTP web servers at ease.
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/)
 [![Scaladoc](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc)](http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12)
 ```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-http-finagle" %% (version)
+libraryDependencies += "org.wvlet.airframe" %% "airframe-http-finagle" % (version)
 ```
 
 ## Defining HTTP Endpoints
