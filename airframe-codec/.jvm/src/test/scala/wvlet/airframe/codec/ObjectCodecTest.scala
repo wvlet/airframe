@@ -14,6 +14,7 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.codec.ObjectCodecTest._
+import wvlet.airframe.msgpack.spi.MessageFormat.FIXMAP
 import wvlet.airframe.msgpack.spi.MessagePack
 
 /**
@@ -85,6 +86,18 @@ class ObjectCodecTest extends CodecSpec {
     }
   }
 
+  "write as map type message pack" in {
+    val codec    = MessageCodec.of[A3]
+    val a3       = A3(Some("optValue"), "strValue")
+    val msgpack  = codec.toMsgPack(a3)
+    val unpacker = MessagePack.newUnpacker(msgpack)
+    // The written message pack should be FIXMAP type for A3 class
+    unpacker.getNextFormat shouldBe FIXMAP
+
+    // Succeed to unpack to object.
+    val a = codec.unpackMsgPack(msgpack)
+    a shouldBe Some(a3)
+  }
 }
 
 object ObjectCodecTest {

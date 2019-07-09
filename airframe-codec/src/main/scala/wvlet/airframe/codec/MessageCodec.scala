@@ -62,7 +62,12 @@ trait MessageCodec[A] extends LogSupport {
 
   def toMsgPack(v: A): Array[Byte] = {
     val packer = MessagePack.newBufferPacker
-    pack(packer, v)
+    this match {
+      case c: PackAsMapSupport[_] =>
+        c.asInstanceOf[PackAsMapSupport[A]].packAsMap(packer, v)
+      case _ =>
+        pack(packer, v)
+    }
     packer.toByteArray
   }
 
