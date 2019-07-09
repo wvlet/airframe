@@ -28,7 +28,7 @@ import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 object MyApi {
   case class User(name: String)
   case class NewUserRequest(name:String)
-  case class ServerInfo(version:String, ua:String)
+  case class ServerInfo(version:String, ua:Option[String])
 }
 
 // [Optional] Specify a common prefix for all endpoints
@@ -47,14 +47,14 @@ trait MyApi {
   // To read http request headers, add a method argument of HttpRequest[Request] type
   @Endpoint(method = HttpMethod.GET, path = "/info")
   def getInfo(request: HttpRequest[Request]): ServerInfo = {
-    ServerInfo("1.0", request.userAgent)
+    ServerInfo("1.0", request.toRaw.userAgent)
   }
 
   // Returning Future[X] is also possible.
   // This style is convenient when you need to call another service that returns Future response.
   @Endpoint(method = HttpMethod.GET, path = "/info_f")
   def getInfoFuture(request: HttpRequest[Request]): Future[ServerInfo] = {
-    Future.value(ServerInfo("1.0", request.userAgent))
+    Future.value(ServerInfo("1.0", request.toRaw.userAgent))
   }
   
   // It is also possible to return a custom HTTP responses
