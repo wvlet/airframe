@@ -11,18 +11,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http.example
+package wvlet.airframe.http.finagle
 
+import com.twitter.finagle.Http
+import com.twitter.finagle.http.{Request, Response}
+import com.twitter.util.Await
+import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http._
 
 /**
   *
   */
 trait FilterExample {
+
   @Endpoint(path = "/auth")
-  def needsAuth: String = {
+  def needsAuth(request: Request): String = {
     "passed"
   }
+}
+
+trait NoAuth {
+  @Endpoint(path = "/noauth")
+  def get = "hello"
 }
 
 object AuthFilterExample extends HttpFilter {
@@ -34,4 +44,39 @@ object AuthFilterExample extends HttpFilter {
         requestContext.respond(SimpleHttpResponse(HttpStatus.Forbidden_403, "auth failure"))
     }
   }
+}
+
+object BadRequestFilter extends HttpFilter {
+  override def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+    requestContext.respond()
+  }
+}
+
+/**
+  *
+  */
+class HttpFilterTest extends AirframeSpec {
+
+  "apply filter before the route" in {
+    val routeWithAuth: Router =
+      AuthFilterExample andThen
+        Router.add[FilterExample]
+
+    val router =
+      Router
+        .add[NoAuth]
+        .add(routeWithAuth)
+
+    val d = newFinagleServerDesign(router).noLifeCycleLogging
+
+    d.build[FinagleServer] { server =>
+      val address = server.localAddress
+
+      val client = Http.client.newService(address)
+
+      Await.result(client(Request("/auth")))
+    }
+
+  }
+
 }

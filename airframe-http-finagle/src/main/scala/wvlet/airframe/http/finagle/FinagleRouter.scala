@@ -18,7 +18,17 @@ import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{ControllerProvider, ResponseHandler}
+import wvlet.airframe.http.HttpRequestContext.{NextRoute, RedirectTo, Respond}
+import wvlet.airframe.http.{
+  ControllerProvider,
+  DispatchResult,
+  HttpFilter,
+  HttpRequestContext,
+  HttpStatus,
+  ResponseHandler,
+  RouteMatch,
+  SimpleHttpResponse
+}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -31,45 +41,75 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
+  private def processFilter(filter: HttpFilter,
+                            request: Request,
+                            requestContext: HttpRequestContext): DispatchResult = {
+    filter.apply(request.toHttpRequest, requestContext)
+  }
+
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+    // TODO Extract this logic into airframe-http
+
     // Find a route matching to the request
     config.router.findRoute(request) match {
       case Some(routeMatch) =>
-        val route = routeMatch.route
-        // Find a corresponding controller
-        controllerProvider.findController(route.controllerSurface) match {
-          case Some(controller) =>
-            // Call the method in this controller
-            val args   = route.buildControllerMethodArgs(controller, request, routeMatch.params)
-            val result = route.call(controller, args)
-
-            route.returnTypeSurface.rawType match {
-              // When a return type is Future[X]
-              case f if classOf[Future[_]].isAssignableFrom(f) =>
-                // Check the type of X
-                val futureValueSurface = route.returnTypeSurface.typeArgs(0)
-                futureValueSurface.rawType match {
-                  // If X is Response type, return as is
-                  case vc if classOf[Response].isAssignableFrom(vc) =>
-                    result.asInstanceOf[Future[Response]]
-                  case other =>
-                    // If X is other type, convert X into an HttpResponse
-                    result.asInstanceOf[Future[_]].map { r =>
-                      responseHandler.toHttpResponse(request, futureValueSurface, r)
-                    }
-                }
-              case _ =>
-                // If the route returns non future value, convert it into Future response
-                Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
-            }
-          case None =>
-            Future.exception(new IllegalStateException(s"Controller ${route.controllerSurface} is not found"))
+        // Process filter
+        val requestContext = new HttpRequestContext()
+        val dispatchResult = config.router.beforeFilter.map { filter =>
+          processFilter(filter, request, requestContext)
+        }
+        dispatchResult match {
+          case Some(RedirectTo(newPath)) =>
+            val resp = Response(request)
+            resp.statusCode = HttpStatus.TemporaryRedirect_307.code
+            resp.location = newPath
+            Future.value(resp)
+          case Some(Respond(response)) =>
+            Future.value(responseHandler.toHttpResponse(request, routeMatch.route.returnTypeSurface, response))
+          case other =>
+            processRoute(routeMatch, request, service)
         }
       case None =>
         // No route is found
         service(request)
     }
   }
+
+  private def processRoute(routeMatch: RouteMatch,
+                           request: Request,
+                           service: Service[Request, Response]): Future[Response] = {
+    val route = routeMatch.route
+    // Find a corresponding controller
+    controllerProvider.findController(route.controllerSurface) match {
+      case Some(controller) =>
+        // Call the method in this controller
+        val args   = route.buildControllerMethodArgs(controller, request, routeMatch.params)
+        val result = route.call(controller, args)
+
+        route.returnTypeSurface.rawType match {
+          // When a return type is Future[X]
+          case f if classOf[Future[_]].isAssignableFrom(f) =>
+            // Check the type of X
+            val futureValueSurface = route.returnTypeSurface.typeArgs(0)
+            futureValueSurface.rawType match {
+              // If X is Response type, return as is
+              case vc if classOf[Response].isAssignableFrom(vc) =>
+                result.asInstanceOf[Future[Response]]
+              case other =>
+                // If X is other type, convert X into an HttpResponse
+                result.asInstanceOf[Future[_]].map { r =>
+                  responseHandler.toHttpResponse(request, futureValueSurface, r)
+                }
+            }
+          case _ =>
+            // If the route returns non future value, convert it into Future response
+            Future.value(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
+        }
+      case None =>
+        Future.exception(new IllegalStateException(s"Controller ${route.controllerSurface} is not found"))
+    }
+  }
+
 }
 
 /**
@@ -86,6 +126,14 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
       case r: Response =>
         // Return the response as is
         r
+      case r: SimpleHttpResponse =>
+        val resp = Response(request)
+        resp.statusCode = r.statusCode
+        resp.contentString = r.contentString
+        r.contentType.map { c =>
+          resp.contentType = c
+        }
+        resp
       case s: String =>
         val r = Response()
         r.contentString = s

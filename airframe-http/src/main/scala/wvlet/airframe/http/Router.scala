@@ -23,12 +23,14 @@ import scala.language.experimental.macros
   *
   * @param routes
   */
-class Router(val routes: Seq[Route], beforeFilter: Option[HttpFilter] = None) {
+class Router(val routes: Seq[Route], val beforeFilter: Option[HttpFilter] = None) {
 
   /**
     * Add methods annotated with @Endpoint to the routing table
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
+
+  def add(r: Router): Router = ???
 
   protected lazy val routeFinder: RouteMatcher                             = RouteMatcher.build(routes)
   def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeFinder.findRoute(request)
