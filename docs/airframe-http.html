@@ -36,7 +36,7 @@ ga('send', 'pageview');
 <span class="k">object</span> <span class="nc">MyApi</span> <span class="o">{</span>
   <span class="k">case</span> <span class="k">class</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span>
   <span class="k">case</span> <span class="k">class</span> <span class="nc">NewUserRequest</span><span class="o">(</span><span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
-  <span class="k">case</span> <span class="k">class</span> <span class="nc">ServerInfo</span><span class="o">(</span><span class="n">version</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">ua</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
+  <span class="k">case</span> <span class="k">class</span> <span class="nc">ServerInfo</span><span class="o">(</span><span class="n">version</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">ua</span><span class="k">:</span><span class="kt">Option</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span>
 <span class="o">}</span>
 
 <span class="c1">// [Optional] Specify a common prefix for all endpoints
@@ -55,14 +55,14 @@ ga('send', 'pageview');
   <span class="c1">// To read http request headers, add a method argument of HttpRequest[Request] type
 </span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">getInfo</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">ServerInfo</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">userAgent</span><span class="o">)</span>
+    <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">toRaw</span><span class="o">.</span><span class="n">userAgent</span><span class="o">)</span>
   <span class="o">}</span>
 
   <span class="c1">// Returning Future[X] is also possible.
 </span>  <span class="c1">// This style is convenient when you need to call another service that returns Future response.
 </span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info_f"</span><span class="o">)</span>
   <span class="k">def</span> <span class="n">getInfoFuture</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">ServerInfo</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="nc">Future</span><span class="o">.</span><span class="n">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">userAgent</span><span class="o">))</span>
+    <span class="nc">Future</span><span class="o">.</span><span class="n">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">toRaw</span><span class="o">.</span><span class="n">userAgent</span><span class="o">))</span>
   <span class="o">}</span>
   
   <span class="c1">// It is also possible to return a custom HTTP responses
