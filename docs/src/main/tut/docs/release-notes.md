@@ -5,6 +5,15 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.2
+-  Use map type MessagePack for ObjectCodec ([#541](https://github.com/wvlet/airframe/issues/541)) [[0ffbcf1](https://github.com/wvlet/airframe/commit/0ffbcf1)]
+-  Fixed compile errors ([#543](https://github.com/wvlet/airframe/issues/543)) [[e480e94](https://github.com/wvlet/airframe/commit/e480e94)]
+-  Fix typo `%%` -> `%` ([#542](https://github.com/wvlet/airframe/issues/542)) [[0f6d1f9](https://github.com/wvlet/airframe/commit/0f6d1f9)]
+-  airframe-json: Seq[JSONValue].value ([#539](https://github.com/wvlet/airframe/issues/539)) [[b86f1f8](https://github.com/wvlet/airframe/commit/b86f1f8)]
+-  airframe-json: DSL for JSON extraction ([#538](https://github.com/wvlet/airframe/issues/538)) [[21a6204](https://github.com/wvlet/airframe/commit/21a6204)]
+-  Workaround for sbt 1.3.0-RC2 class loader issue for JMX test ([#537](https://github.com/wvlet/airframe/issues/537)) [[a031ea7](https://github.com/wvlet/airframe/commit/a031ea7)]
+-  AnyCodec ([#536](https://github.com/wvlet/airframe/issues/536)) [[5cb1944](https://github.com/wvlet/airframe/commit/5cb1944)]
+
 ## 19.7.1
 -  airframe-http: Fix routing when common token is present in the path ([#535](https://github.com/wvlet/airframe/issues/535)) [[abdea65](https://github.com/wvlet/airframe/commit/abdea65)]
 -  Add example of programmable http-recorder ([#532](https://github.com/wvlet/airframe/issues/532)) [[cbab375](https://github.com/wvlet/airframe/commit/cbab375)]
