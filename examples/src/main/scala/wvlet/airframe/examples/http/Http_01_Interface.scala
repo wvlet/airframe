@@ -15,6 +15,7 @@ package wvlet.airframe.examples.http
 
 import wvlet.airframe.http.finagle.{FinagleServer, finagleDefaultDesign, newFinagleServerDesign}
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router, finagle}
+import wvlet.log.LogSupport
 
 /**
   *
@@ -23,13 +24,12 @@ object Http_01_Interface extends App {
 
   case class User(id: String, name: String)
 
-  trait MyApp {
+  trait MyApp extends LogSupport {
     @Endpoint(method = HttpMethod.GET, path = "/user/:id")
     def getUser(id: String): User = {
-      lookup(id)
+      info(s"lookup user: ${id}")
+      User(id, "xxx")
     }
-
-    protected def lookup(id: String): User
   }
 
   val router = Router.add[MyApp]
@@ -37,7 +37,9 @@ object Http_01_Interface extends App {
 
   design.build[FinagleServer] { server =>
     val serverAddress = server.localAddress
-  // Access to the server
+
+  // Wait server termination
+  // server.waitServerTermination
   }
 
 }
