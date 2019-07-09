@@ -95,7 +95,7 @@ class ObjectCodecTest extends CodecSpec {
     unpacker.getNextFormat shouldBe FIXMAP
 
     // Succeed to pack to object
-    val a       = codec.unpackMsgPack(msgpack)
+    val a = codec.unpackMsgPack(msgpack)
     a shouldBe Some(a3)
   }
 }
