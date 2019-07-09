@@ -64,20 +64,24 @@ class MetricLoggerFactory(fluentdClient: MetricLogger) extends LogSupport {
 
   def getTypedLogger[T <: TaggedMetric: ru.TypeTag]: TypedMetricLogger[T] = {
     loggerCache
-      .getOrElseUpdate(Surface.of[T], {
-        // Ensure to serialize as map type of MessagePack
-        val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
-        new TypedMetricLogger[T](getLogger, codec)
-      }).asInstanceOf[TypedMetricLogger[T]]
+      .getOrElseUpdate(
+        Surface.of[T], {
+          // Ensure to serialize as map type of MessagePack
+          val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
+          new TypedMetricLogger[T](getLogger, codec)
+        }
+      ).asInstanceOf[TypedMetricLogger[T]]
   }
 
   def getTypedLoggerWithTagPrefix[T <: TaggedMetric: ru.TypeTag](tagPrefix: String): TypedMetricLogger[T] = {
     loggerCache
-      .getOrElseUpdate(Surface.of[T], {
-        // Ensure to serialize as map type of MessagePack 
-        val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
-        new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
-      }).asInstanceOf[TypedMetricLogger[T]]
+      .getOrElseUpdate(
+        Surface.of[T], {
+          // Ensure to serialize as map type of MessagePack
+          val codec = MessageCodecFactory.defaultFactory.withObjectMapCodec.of[T]
+          new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
+        }
+      ).asInstanceOf[TypedMetricLogger[T]]
   }
 
   @PreDestroy
