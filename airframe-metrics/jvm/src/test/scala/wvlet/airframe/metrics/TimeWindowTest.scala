@@ -205,14 +205,19 @@ class TimeWindowTest extends AirframeSpec {
     }
 
     "calculate time ranges" in {
-      assert(t.parse("tomorrow"))
-      assert(t.parse("yesterday"))
+      assert(t.parse("nextYear"))
+      assert(t.parse("lastYear"))
       def assert(t: TimeWindow): Unit = {
-        t.between(ChronoUnit.YEARS) shouldBe 0L
-        t.between(ChronoUnit.WEEKS) shouldBe 0L
-        t.between(ChronoUnit.DAYS) shouldBe 1L
-        t.between(ChronoUnit.HOURS) shouldBe 24L
-        t.between(ChronoUnit.MINUTES) shouldBe 24L * 60L
+        t.howMany(ChronoUnit.YEARS) shouldBe 1L
+        t.yearDiff shouldBe 1L
+        t.howMany(ChronoUnit.WEEKS) shouldBe 52L
+        t.weekDiff shouldBe 52L
+        t.howMany(ChronoUnit.DAYS) shouldBe 365L
+        t.dateDiff shouldBe 365L
+        t.howMany(ChronoUnit.HOURS) shouldBe 365L * 24L
+        t.hourDiff shouldBe 365L * 24L
+        t.howMany(ChronoUnit.MINUTES) shouldBe 365L * 24L * 60L
+        t.minuteDiff shouldBe 365L * 24L * 60L
       }
     }
 
