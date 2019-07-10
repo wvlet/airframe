@@ -14,6 +14,7 @@
 package wvlet.airframe.metrics
 
 import java.time.ZoneOffset
+import java.time.temporal.ChronoUnit
 import java.util.TimeZone
 
 import org.scalatest.exceptions.TestFailedException
@@ -201,6 +202,23 @@ class TimeWindowTest extends AirframeSpec {
       parse("2017-01-23 00:23:00/2017-01-24", "[2017-01-23 00:23:00-0700,2017-01-24 00:00:00-0700)")
       parse("2016-06-26 01:23:15/now", "[2016-06-26 01:23:15-0700,2016-06-26 01:23:45-0700)")
       parse("2016-05-15 01:23:15/0M", "[2016-05-15 01:23:15-0700,2016-06-01 00:00:00-0700)")
+    }
+
+    "support time diff methods" in {
+      assert(t.parse("nextYear"))
+      assert(t.parse("lastYear"))
+      def assert(t: TimeWindow): Unit = {
+        t.howMany(ChronoUnit.YEARS) shouldBe 1L
+        t.yearDiff shouldBe 1L
+        t.howMany(ChronoUnit.WEEKS) shouldBe 52L
+        t.weekDiff shouldBe 52L
+        t.howMany(ChronoUnit.DAYS) shouldBe 365L
+        t.dateDiff shouldBe 365L
+        t.howMany(ChronoUnit.HOURS) shouldBe 365L * 24L
+        t.hourDiff shouldBe 365L * 24L
+        t.howMany(ChronoUnit.MINUTES) shouldBe 365L * 24L * 60L
+        t.minuteDiff shouldBe 365L * 24L * 60L
+      }
     }
 
     "split time windows" in {
