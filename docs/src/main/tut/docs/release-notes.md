@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.3
+-  airframe-metrics: Add TimeWindow.howMany(unit), minutesDiff, etc. ([#545](https://github.com/wvlet/airframe/issues/545)) [[77f7be9](https://github.com/wvlet/airframe/commit/77f7be9)]
+
 ## 19.7.2
 -  Use map type MessagePack for ObjectCodec ([#541](https://github.com/wvlet/airframe/issues/541)) [[0ffbcf1](https://github.com/wvlet/airframe/commit/0ffbcf1)]
 -  Fixed compile errors ([#543](https://github.com/wvlet/airframe/issues/543)) [[e480e94](https://github.com/wvlet/airframe/commit/e480e94)]
