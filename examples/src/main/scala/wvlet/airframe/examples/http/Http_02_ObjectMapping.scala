@@ -39,7 +39,7 @@ object Http_02_ObjectMapping extends App with LogSupport {
       AppInfo("myapp")
     }
 
-    @Endpoint(method = HttpMethod.GET, path = "/v1/list/:resourceName")
+    @Endpoint(method = HttpMethod.GET, path = "/v1/list/")
     def list(listRequest: ListRequest): ListResponse = {
       ListResponse(
         name = listRequest.name,
