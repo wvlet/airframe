@@ -204,7 +204,7 @@ class TimeWindowTest extends AirframeSpec {
       parse("2016-05-15 01:23:15/0M", "[2016-05-15 01:23:15-0700,2016-06-01 00:00:00-0700)")
     }
 
-    "calculate time ranges" in {
+    "support time diff methods" in {
       assert(t.parse("nextYear"))
       assert(t.parse("lastYear"))
       def assert(t: TimeWindow): Unit = {
