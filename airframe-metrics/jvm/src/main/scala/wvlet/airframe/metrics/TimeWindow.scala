@@ -92,8 +92,9 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
     }
   }
 
-  def plus(n: Long, unit: ChronoUnit)  = TimeWindow(start.plus(n, unit), end.plus(n, unit))
-  def minus(n: Long, unit: ChronoUnit) = plus(-n, unit)
+  def plus(n: Long, unit: ChronoUnit): TimeWindow  = TimeWindow(start.plus(n, unit), end.plus(n, unit))
+  def minus(n: Long, unit: ChronoUnit): TimeWindow = plus(-n, unit)
+  def between(unit: ChronoUnit): Long              = unit.between(start, end)
 
   def intersectsWith(other: TimeWindow): Boolean = {
     start.compareTo(other.end) < 0 && end.compareTo(other.start) > 0
