@@ -55,7 +55,7 @@ class JSONBenchmark extends AirframeSpec with Timer {
 
   lazy val twitterJson = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
 
-  "JSONScannerBenchmarhk" should {
+  "JSONScannerBenchmark" should {
     "parse twitter.json" taggedAs ("comparison") in {
       bench("twitter.json", twitterJson)
     }
