@@ -95,7 +95,7 @@ object JSONScanner {
   }
 
   private[json] final val whiteSpaceBitVector: Array[Long] = {
-    var b = new Array[Long](256 / 64)
+    val b = new Array[Long](256 / 64)
     for (i <- 0 until 256) {
       import JSONToken._
       i match {
@@ -139,6 +139,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   private[this] var cursor: Int       = 0
   private[this] var lineStartPos: Int = 0
   private[this] var line: Int         = 0
+  private[this] val sb                = new StringBuilder()
 
   import JSONScanner._
   import JSONToken._
@@ -187,16 +188,16 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     }
   }
 
-  final def scanObject(stack: List[JSONContext[J]]): Unit = {
+  private final def scanObject(stack: List[JSONContext[J]]): Unit = {
     cursor += 1
     rscan(OBJECT_START, stack.head.objectContext(s, cursor - 1) :: stack)
   }
-  final def scanArray(stack: List[JSONContext[J]]): Unit = {
+  private final def scanArray(stack: List[JSONContext[J]]): Unit = {
     cursor += 1
     rscan(ARRAY_START, stack.head.arrayContext(s, cursor - 1) :: stack)
   }
 
-  final def scanAny(ctx: JSONContext[J]): J = {
+  private final def scanAny(ctx: JSONContext[J]): J = {
     skipWhiteSpaces
     if (cursor >= s.length) {
       throw new UnexpectedEOF(line, cursor - lineStartPos, cursor, "Unexpected EOF")
@@ -230,7 +231,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   @tailrec
   private final def rscan(state: Int, stack: List[JSONContext[J]]): Unit = {
-    var ch = s(cursor)
+    val ch = s(cursor)
     if (ch == WS_N) {
       cursor += 1
       line += 1
@@ -446,6 +447,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   }
 
   private final def scanString(ctx: JSONContext[J]): Unit = {
+    sb.clear()
     cursor += 1
     val stringStart = cursor
     val k           = scanSimpleString
@@ -455,7 +457,6 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       return
     }
 
-    val sb       = new StringBuilder
     var continue = true
     while (continue) {
       val ch = s(cursor)
@@ -496,10 +497,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 //    }
 //  }
 
-  def scanUtf8(sb: StringBuilder): Unit = {
+  private def scanUtf8(sb: StringBuilder): Unit = {
     val ch                = s(cursor)
     val first5bit         = (ch & 0xF8) >> 3
-    val isValidUtf8Header = (validUtf8BitVector & (1L << first5bit))
+    val isValidUtf8Header = validUtf8BitVector & (1L << first5bit)
     if (isValidUtf8Header != 0L) {
       val pos     = (ch & 0xF0) >> (4 - 1)
       val mask    = 0x03L << pos
