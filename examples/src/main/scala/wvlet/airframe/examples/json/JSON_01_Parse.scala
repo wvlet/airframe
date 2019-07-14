@@ -11,25 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.examples.log
-
-import wvlet.airframe.examples.log.Log_01_LogSupport.name
-import wvlet.log.LogSupport
+package wvlet.airframe.examples.json
 
 /**
   *
   */
-object Log_01_LogSupport extends App {
+object JSON_01_Parse extends App {
 
-  import wvlet.log.LogSupport
+  import wvlet.airframe.json.JSON
 
-  val name = "airframe-log"
-
-  MyApp
-}
-
-object MyApp extends LogSupport {
-  info(s"Hello ${name}!")
-  warn("This is a warning message")
-  debug("Debug messages will not be shown by default")
+  val j    = JSON.parse("""{"id":1, "name":"leo"}""")
+  val id   = (j / "id").value
+  val name = (j / "name").value
 }

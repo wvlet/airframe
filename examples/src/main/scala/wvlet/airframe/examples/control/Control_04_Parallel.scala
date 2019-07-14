@@ -11,25 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.examples.log
+package wvlet.airframe.examples.control
 
-import wvlet.airframe.examples.log.Log_01_LogSupport.name
-import wvlet.log.LogSupport
+import wvlet.airframe.control.Parallel
 
 /**
   *
   */
-object Log_01_LogSupport extends App {
+object Control_04_Parallel extends App {
 
-  import wvlet.log.LogSupport
-
-  val name = "airframe-log"
-
-  MyApp
-}
-
-object MyApp extends LogSupport {
-  info(s"Hello ${name}!")
-  warn("This is a warning message")
-  debug("Debug messages will not be shown by default")
+  Parallel.run(source = 1 until 100, parallelism = 10) { i =>
+    i * 2
+  }
 }
