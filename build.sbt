@@ -755,4 +755,13 @@ lazy val examples =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(codecJVM, airframeJVM, config, airframeMacrosJVM, launcher, jmx, jdbc, tablet, finagle, airframeSpecJVM % "test")
+    .dependsOn(codecJVM,
+               airframeJVM,
+               config,
+               airframeMacrosJVM,
+               launcher,
+               jmx,
+               jdbc,
+               tablet,
+               finagle,
+               airframeSpecJVM % "test")

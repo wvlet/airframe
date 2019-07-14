@@ -20,7 +20,7 @@ import PropertiesConfig.ConfigKey
 import wvlet.airframe.Design
 import wvlet.airframe.config.YamlReader.loadMapOf
 import wvlet.log.LogSupport
-import wvlet.log.io.IOUtil
+import wvlet.log.io.{IOUtil, Resource}
 import wvlet.airframe.surface.{Surface, Zero}
 
 import scala.reflect.ClassTag
@@ -257,6 +257,8 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
   }
 
   private def findConfigFile(name: String): Option[String] = {
-    env.configPaths.map(p => new File(p, name)).find(_.exists()).map(_.getPath)
+    env.configPaths.map(p => new File(p, name)).find(_.exists()).map(_.getPath).orElse {
+      Resource.find(name).map(x => name)
+    }
   }
 }
