@@ -76,6 +76,15 @@ class RouterTest extends AirframeSpec {
     debug(r4)
     r4 shouldBe defined
     r4.get.route.method shouldBe HttpMethod.DELETE
+
+    val r5 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"))
+    debug(r5)
+    r5 shouldBe defined
+    r5.get.route.method shouldBe HttpMethod.GET
+
+    val r6 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/xxxx/info"))
+    debug(r6)
+    r6 shouldNot be(defined)
   }
 
   "call registered methods" in {
