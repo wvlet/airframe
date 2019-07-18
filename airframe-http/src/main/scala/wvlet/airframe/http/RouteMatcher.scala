@@ -76,7 +76,7 @@ object RouteMatcher extends LogSupport {
       var params = Map.empty[String, String]
 
       // Traverse the path components and transit the DFA state
-      while ((toContinue || foundRoute.isEmpty) && pathIndex < pc.length) {
+      while (toContinue && pathIndex < pc.length) {
         val token = pc(pathIndex)
         pathIndex += 1
         dfa.nextNode(currentState, token) match {
