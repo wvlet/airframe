@@ -30,6 +30,14 @@ trait HttpFilter {
 object HttpFilter {
   import wvlet.airframe.http.HttpRequestContext._
 
+  def empty: HttpFilter = EmptyFilter
+
+  case object EmptyFilter extends HttpFilter {
+    def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+      requestContext.nextRoute
+    }
+  }
+
   case class AndThen(prev: HttpFilter, next: HttpFilter) extends HttpFilter {
     def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
       prev.apply(req, requestContext) match {

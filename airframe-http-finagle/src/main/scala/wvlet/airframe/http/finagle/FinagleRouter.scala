@@ -26,6 +26,7 @@ import wvlet.airframe.http.{
   HttpRequestContext,
   HttpStatus,
   ResponseHandler,
+  RouteFilter,
   RouteMatch,
   SimpleHttpResponse
 }
@@ -41,10 +42,10 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private def processFilter(filter: HttpFilter,
+  private def processFilter(filter: RouteFilter,
                             request: Request,
                             requestContext: HttpRequestContext): DispatchResult = {
-    filter.apply(request.toHttpRequest, requestContext)
+    filter.beforeFilter(request.toHttpRequest, requestContext)
   }
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
@@ -55,9 +56,10 @@ class FinagleRouter(config: FinagleServerConfig,
       case Some(routeMatch) =>
         // Process filter
         val requestContext = new HttpRequestContext()
-        val dispatchResult = config.router.beforeFilter.map { filter =>
-          processFilter(filter, request, requestContext)
+        val dispatchResult = routeMatch.route.getRouter.map { r =>
+          processFilter(r.filter, request, requestContext)
         }
+
         dispatchResult match {
           case Some(RedirectTo(newPath)) =>
             val resp = Response(request)

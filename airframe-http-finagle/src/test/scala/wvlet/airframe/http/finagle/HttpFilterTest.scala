@@ -23,7 +23,6 @@ import wvlet.airframe.http._
   *
   */
 trait FilterExample {
-
   @Endpoint(path = "/auth")
   def needsAuth(request: Request): String = {
     "passed"
@@ -48,7 +47,7 @@ object AuthFilterExample extends HttpFilter {
 
 object BadRequestFilter extends HttpFilter {
   override def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-    requestContext.respond()
+    requestContext.respond(SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"))
   }
 }
 
@@ -65,7 +64,7 @@ class HttpFilterTest extends AirframeSpec {
     val router =
       Router
         .add[NoAuth]
-        .add(routeWithAuth)
+    //.add(routeWithAuth)
 
     val d = newFinagleServerDesign(router).noLifeCycleLogging
 
@@ -74,9 +73,16 @@ class HttpFilterTest extends AirframeSpec {
 
       val client = Http.client.newService(address)
 
-      Await.result(client(Request("/auth")))
-    }
+      {
+        val r = Await.result(client(Request("/auth")))
+        info(r)
+      }
 
+      {
+        val r = Await.result(client(Request("/noauth")))
+        info(r)
+      }
+    }
   }
 
 }

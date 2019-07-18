@@ -24,17 +24,27 @@ import scala.util.Try
 /**
   * A mapping from an HTTP route to a method with Endpoint annotation
   */
-case class Route(controllerSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
+case class Route(private var router: Option[Router],
+                 controllerSurface: Surface,
+                 method: HttpMethod,
+                 path: String,
+                 methodSurface: ReflectMethodSurface)
     extends LogSupport {
   require(
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
+
+  def getRouter: Option[Router] = router
 
   val pathComponents: IndexedSeq[String] = {
     path
       .substring(1)
       .split("/")
       .toIndexedSeq
+  }
+
+  def setRouter(r: Router): Unit = {
+    router = Some(r)
   }
 
   def returnTypeSurface: Surface = methodSurface.returnType
