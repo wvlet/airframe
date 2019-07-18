@@ -16,7 +16,7 @@ package wvlet.airframe.json
 import wvlet.airframe.json.JSON._
 import wvlet.log.LogSupport
 
-import scala.util.Try
+import scala.collection.mutable
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
@@ -38,8 +38,8 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def objectContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] var key: String = null
-      private[this] val list        = Seq.newBuilder[(String, JSONValue)]
+      private[this] var key: String = _
+      private[this] val list        = mutable.ArrayBuffer.empty[(String, JSONValue)]
       override def closeContext(s: JSONSource, end: Int): Unit = {
         self.add(result)
       }
@@ -48,27 +48,27 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
         if (key == null) {
           key = v.toString
         } else {
-          list += key -> v
+          list.append(key -> v)
           key = null
         }
       }
       override def result: JSONValue = {
-        JSONObject(list.result())
+        JSONObject(list.toSeq)
       }
     }
 
   override def arrayContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] val list                = IndexedSeq.newBuilder[JSONValue]
+      private[this] val list                = mutable.ArrayBuffer.empty[JSONValue]
       override def isObjectContext: Boolean = false
       override def closeContext(s: JSONSource, end: Int): Unit = {
         self.add(result)
       }
       override def add(v: JSONValue): Unit = {
-        list += v
+        list.append(v)
       }
       override def result: JSONValue = {
-        JSONArray(list.result())
+        JSONArray(list.toSeq)
       }
     }
 
@@ -81,15 +81,11 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
   override def addUnescapedString(s: String): Unit = {
     add(JSONString(s))
   }
-  override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
-    val v = s.substring(start, end)
-    val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {
-      JSONDouble(v.toDouble)
-    } else {
-      Try(JSONLong(v.toLong)).recover {
-        case e: NumberFormatException =>
-          JSONDouble(v.toDouble)
-      }.get
+  override def addNumber(s: String): Unit = {
+    val num = try {
+      JSONLong(s.toLong)
+    } catch {
+      case _: Exception => JSONDouble(s.toDouble)
     }
     add(num)
   }

@@ -67,16 +67,17 @@ object JSON extends LogSupport {
   }
 
   sealed trait JSONValue {
-    override def toString = toJSON
+    override def toString: String = toJSON
     def toJSON: String
+    def append(sb: StringBuilderExt): Unit = sb.append(toJSON)
   }
 
   final case object JSONNull extends JSONValue {
-    override def toJSON: String = "null"
+    override val toJSON: String = "null"
   }
 
-  final case class JSONBoolean(val v: Boolean) extends JSONValue {
-    override def toJSON: String = if (v) "true" else "false"
+  final case class JSONBoolean(v: Boolean) extends JSONValue {
+    override val toJSON: String = if (v) "true" else "false"
   }
 
   val JSONTrue  = JSONBoolean(true)
@@ -90,33 +91,40 @@ object JSON extends LogSupport {
     override def toJSON: String = v.toString
   }
   final case class JSONString(v: String) extends JSONValue {
-    override def toString = v
+    override def toString: String = v
+    override def append(sb: StringBuilderExt): Unit = {
+      sb.append("\"")
+      appendQuoteJSONString(v, sb)
+      sb.append("\"")
+    }
     override def toJSON: String = {
-      val s = new StringBuilder(v.length + 2)
-      s.append("\"")
-      s.append(quoteJSONString(v))
-      s.append("\"")
-      s.result()
+      val sb = new StringBuilderExt()
+      sb.append("\"")
+      appendQuoteJSONString(v, sb)
+      sb.append("\"")
+      sb.getAndReset()
     }
   }
 
   final case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
     override def toJSON: String = {
-      val s = new StringBuilder
-      s.append("{")
-      s.append {
-        v.map {
-            case (k, v: JSONValue) =>
-              val ss = new StringBuilder
-              ss.append("\"")
-              ss.append(quoteJSONString(k))
-              ss.append("\":")
-              ss.append(v.toJSON)
-              ss.result()
-          }.mkString(",")
+      val sb = new StringBuilderExt
+      append(sb)
+      sb.result()
+    }
+    override def append(sb: StringBuilderExt): Unit = {
+      sb.append("{")
+      v.foreach {
+        case (k, v: JSONValue) =>
+          sb.append("\"")
+          sb.append(quoteJSONString(k))
+          sb.append("\":")
+          v.append(sb)
+          sb.append(",")
       }
-      s.append("}")
-      s.result()
+      // remove last comma
+      if (v.nonEmpty) sb.removeLast()
+      sb.append("}")
     }
     def get(name: String): Option[JSONValue] = {
       v.collectFirst {
@@ -125,15 +133,22 @@ object JSON extends LogSupport {
       }
     }
   }
-  final case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
+  final case class JSONArray(v: Seq[JSONValue]) extends JSONValue {
     override def toJSON: String = {
-      val s = new StringBuilder
-      s.append("[")
-      s.append(v.map(x => x.toJSON).mkString(","))
-      s.append("]")
-      s.result()
+      val sb = new StringBuilderExt
+      append(sb)
+      sb.result()
     }
-
+    override def append(sb: StringBuilderExt): Unit = {
+      sb.append("[")
+      v.foreach { x =>
+        x.append(sb)
+        sb.append(",")
+      }
+      // remove last comma
+      if (v.nonEmpty) sb.removeLast()
+      sb.append("]")
+    }
     def apply(i: Int): JSONValue = {
       v.apply(i)
     }
@@ -144,25 +159,36 @@ object JSON extends LogSupport {
     * for JSON output.
     */
   def quoteJSONString(s: String): String = {
+    val sb = new StringBuilderExt
+    appendQuoteJSONString(s, sb)
+    sb.result()
+  }
+
+  def appendQuoteJSONString(s: String, sb: StringBuilderExt): Unit = {
     s.map {
-      case '"'  => "\\\""
-      case '\\' => "\\\\"
-//      case '/'  => "\\/" We don't need to escape forward slashes
-      case '\b' => "\\b"
-      case '\f' => "\\f"
-      case '\n' => "\\n"
-      case '\r' => "\\r"
-      case '\t' => "\\t"
-      /* We'll unicode escape any control characters. These include:
-       * 0x0 -> 0x1f  : ASCII Control (C0 Control Codes)
-       * 0x7f         : ASCII DELETE
-       * 0x80 -> 0x9f : C1 Control Codes
-       *
-       * Per RFC4627, section 2.5, we're not technically required to
-       * encode the C1 codes, but we do to be safe.
-       */
-      case c if ((c >= '\u0000' && c <= '\u001f') || (c >= '\u007f' && c <= '\u009f')) => "\\u%04x".format(c.toInt)
-      case c                                                                           => c
-    }.mkString
+        case '"'  => "\\\""
+        case '\\' => "\\\\"
+        //      case '/'  => "\\/" We don't need to escape forward slashes
+        case '\b' => "\\b"
+        case '\f' => "\\f"
+        case '\n' => "\\n"
+        case '\r' => "\\r"
+        case '\t' => "\\t"
+        /* We'll unicode escape any control characters. These include:
+         * 0x0 -> 0x1f  : ASCII Control (C0 Control Codes)
+         * 0x7f         : ASCII DELETE
+         * 0x80 -> 0x9f : C1 Control Codes
+         *
+         * Per RFC4627, section 2.5, we're not technically required to
+         * encode the C1 codes, but we do to be safe.
+         */
+        case c if (c >= '\u0000' && c <= '\u001f') || (c >= '\u007f' && c <= '\u009f') => "\\u%04x".format(c.toInt)
+        case c                                                                         => c
+      }.foreach {
+        case v: Char =>
+          sb.append(v)
+        case _ =>
+      }
+
   }
 }
