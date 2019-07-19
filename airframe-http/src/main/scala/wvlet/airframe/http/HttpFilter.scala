@@ -15,15 +15,21 @@ package wvlet.airframe.http
 
 import scala.language.higherKinds
 
+/**
+  * A filter operation interface before handling HTTP request response
+  */
 trait HttpFilter {
-  def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult
+  def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+    requestContext.nextRoute
+  }
+  def afterFilter(request: HttpRequest[_],
+                  response: HttpResponse[_],
+                  requestContext: HttpRequestContext): DispatchResult = {
+    requestContext.respond(response)
+  }
 
   def andThen(nextFilter: HttpFilter): HttpFilter = {
     HttpFilter.AndThen(this, nextFilter)
-  }
-
-  def andThen(router: Router): Router = {
-    router.withBeforeFilter(this)
   }
 }
 
@@ -32,18 +38,30 @@ object HttpFilter {
 
   def empty: HttpFilter = EmptyFilter
 
-  case object EmptyFilter extends HttpFilter {
-    def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-      requestContext.nextRoute
-    }
-  }
+  case object EmptyFilter extends HttpFilter
 
   case class AndThen(prev: HttpFilter, next: HttpFilter) extends HttpFilter {
-    def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-      prev.apply(req, requestContext) match {
+    override def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+      prev.beforeFilter(req, requestContext) match {
         case NextRoute =>
-          next.apply(req, requestContext)
-        case other => other
+          next.beforeFilter(req, requestContext)
+        case other =>
+          next.beforeFilter(req, requestContext)
+          other
+      }
+    }
+
+    override def afterFilter(request: HttpRequest[_],
+                             response: HttpResponse[_],
+                             requestContext: HttpRequestContext): DispatchResult = {
+      next.afterFilter(request, response, requestContext) match {
+        case NextRoute =>
+          prev.afterFilter(request, response, requestContext)
+        case Respond(newResponse) =>
+          prev.afterFilter(request, newResponse, requestContext)
+        case other =>
+          prev.afterFilter(request, response, requestContext)
+          other
       }
     }
   }

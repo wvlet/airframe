@@ -26,7 +26,6 @@ import wvlet.airframe.http.{
   HttpRequestContext,
   HttpStatus,
   ResponseHandler,
-  RouteFilter,
   RouteMatch,
   SimpleHttpResponse
 }
@@ -42,11 +41,9 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private def processFilter(filter: RouteFilter,
+  private def processFilter(filter: HttpFilter,
                             request: Request,
-                            requestContext: HttpRequestContext): DispatchResult = {
-    filter.beforeFilter(request.toHttpRequest, requestContext)
-  }
+                            requestContext: HttpRequestContext): DispatchResult = {}
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // TODO Extract this logic into airframe-http
@@ -56,11 +53,12 @@ class FinagleRouter(config: FinagleServerConfig,
       case Some(routeMatch) =>
         // Process filter
         val requestContext = new HttpRequestContext()
-        val dispatchResult = routeMatch.route.getRouter.map { r =>
-          processFilter(r.filter, request, requestContext)
+        val router         = routeMatch.route.getRouter
+        val dispatchResult = router.map { r =>
+          r.filter.beforeFilter(request.toHttpRequest, requestContext)
         }
 
-        dispatchResult match {
+        val resp = dispatchResult match {
           case Some(RedirectTo(newPath)) =>
             val resp = Response(request)
             resp.statusCode = HttpStatus.TemporaryRedirect_307.code
@@ -71,10 +69,30 @@ class FinagleRouter(config: FinagleServerConfig,
           case other =>
             processRoute(routeMatch, request, service)
         }
+
+        router
+          .map { r =>
+            resp.map { x =>
+              r.filter.afterFilter(request, x, requestContext) match {
+                case Respond(newResponse) =>
+                  newResponse.toHttpResponse
+//              case RedirectTo(newPath) =>
+//                val newResp = Response(request)
+//                newResp.statusCode = HttpStatus.TemporaryRedirect_307.code
+//                newResp.location = newPath
+//                newResp
+//              case other =>
+//                x
+              }
+            }
+          }.getOrElse {
+            resp
+          }
       case None =>
         // No route is found
         service(request)
     }
+
   }
 
   private def processRoute(routeMatch: RouteMatch,

@@ -23,15 +23,14 @@ import scala.language.experimental.macros
   * Router defines mappings from HTTP requests to Routes.
   *
   * Router can be nested
-  *   - (P1) Router1 + filter1
-  *      - (C1) Router2 + filter2
-  *      - (C2) Router3 + filter3
-  *   - (P2) Router4 + filter 4
+  *   - Router1 (parent filter)
+  *      - Router2
+  *      - Router3
+  *   - Router4
   *
-  *  When the request is routed to (C1), it will apply the matching filters in the following order:
-  *    - filter1
-  *    - filter2
-  *  Then, route the request to a (C1) in Router2.
+  *  When the request is routed to Route2, it will apply the method in each Router:
+  *    - Router1.apply
+  *    - Router2.apply
   */
 trait Router {
 
@@ -56,17 +55,16 @@ trait Router {
   def add[Controller]: Router = macro RouterMacros.add[Controller]
   def add(r: Router): Router = new RouterSeq(Seq(this, r))
 
+  private[http] def filter: HttpFilter = HttpFilter.empty
+
+  def andThen(r: Router): Router  = ???
+  def andThen[Controller]: Router = ???
+
   /**
     * A request filter that will be applied before routing the request to the target method
     */
-  def filter: RouteFilter
-
-  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch]
-
-  /**
-    * Add a request filter before processing the request
-    */
-  def withBeforeFilter(newBeforeFilter: HttpFilter): Router
+  private lazy val routeMatcher                                            = RouteMatcher.build(routes)
+  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
 }
 
 object Router extends LogSupport {
@@ -75,6 +73,7 @@ object Router extends LogSupport {
 
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
+  def filter[Filter <: HttpFilter]: Router = macro RouterMacros.newFilter[Filter]
 
   def addInternal(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
@@ -87,7 +86,7 @@ object Router extends LogSupport {
         .map(_.path())
         .getOrElse("")
 
-    // Add methods annotatted with @Endpoint
+    // Add methods annotated with @Endpoint
     val newRoutes =
       controllerMethodSurfaces
         .map(m => (m, m.findAnnotationOf[Endpoint]))
@@ -96,22 +95,21 @@ object Router extends LogSupport {
             Route(None, controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
-    new RouterSeq(Seq(r, new RouterLeaf(newRoutes, RouteFilter.empty)))
+    new RouterSeq(Seq(r, new RouterLeaf(newRoutes)))
   }
 
-  class RouterSeq(routers: Seq[Router], val filter: RouteFilter = RouteFilter.empty) extends Router {
-    routers.foreach(_.setParent(this))
+  def addFilterInternal(r: Router, filterSurface: Surface): Router = {}
 
-    private lazy val routeMatcher                                            = RouteMatcher.build(routes)
-    def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
-
+  /**
+    * A sequence of multiple Routers
+    */
+  class RouterSeq(routers: Seq[Router]) extends Router {
     def routes: Seq[Route] = routers.flatMap(_.routes)
+  }
 
-    def withBeforeFilter(newBeforeFilter: HttpFilter) = {
-      val r = new RouterSeq(routers, filter.withBeforeFilter(newBeforeFilter))
-      parent.map(r.setParent(_))
-      r
-    }
+  class BeforeFilter(child: Router, protected override val filter: HttpFilter) extends Router {
+    child.setParent(this)
+    def routes: Seq[Route] = child.routes
   }
 
   /**
@@ -119,17 +117,8 @@ object Router extends LogSupport {
     *
     * @param routes
     */
-  class RouterLeaf(val routes: Seq[Route], val filter: RouteFilter = RouteFilter.empty) extends Router {
+  class RouterLeaf(val routes: Seq[Route]) extends Router {
     routes.foreach(_.setRouter(this))
-
-    protected lazy val routerMatcher: RouteMatcher                           = RouteMatcher.build(routes)
-    def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routerMatcher.findRoute(request)
-
-    def withBeforeFilter(newBeforeFilter: HttpFilter): Router = {
-      val r = new RouterLeaf(routes, filter.withBeforeFilter(newBeforeFilter))
-      parent.map(r.setParent(_))
-      r
-    }
   }
 
 }

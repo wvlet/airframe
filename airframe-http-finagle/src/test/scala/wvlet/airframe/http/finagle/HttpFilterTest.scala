@@ -34,7 +34,7 @@ trait NoAuth {
   def get = "hello"
 }
 
-object AuthFilterExample extends HttpFilter {
+trait AuthFilterExample extends HttpFilter {
   def apply(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
     request.header.get("Authorization") match {
       case Some("valid-user") =>
@@ -58,13 +58,14 @@ class HttpFilterTest extends AirframeSpec {
 
   "apply filter before the route" in {
     val routeWithAuth: Router =
-      AuthFilterExample andThen
-        Router.add[FilterExample]
+      Router
+        .filter[AuthFilterExample]
+        .andThen[FilterExample]
 
     val router =
       Router
         .add[NoAuth]
-    //.add(routeWithAuth)
+        .add(routeWithAuth)
 
     val d = newFinagleServerDesign(router).noLifeCycleLogging
 
