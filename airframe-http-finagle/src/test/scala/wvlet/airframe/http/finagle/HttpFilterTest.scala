@@ -35,7 +35,7 @@ trait NoAuth {
 }
 
 trait AuthFilterExample extends HttpFilter {
-  def apply(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+  override def beforeFilter(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
     request.header.get("Authorization") match {
       case Some("valid-user") =>
         requestContext.nextRoute
@@ -46,7 +46,7 @@ trait AuthFilterExample extends HttpFilter {
 }
 
 object BadRequestFilter extends HttpFilter {
-  override def apply(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+  override def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
     requestContext.respond(SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"))
   }
 }

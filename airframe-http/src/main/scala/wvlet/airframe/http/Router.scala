@@ -55,7 +55,7 @@ trait Router {
   def add[Controller]: Router = macro RouterMacros.add[Controller]
   def add(r: Router): Router = new RouterSeq(Seq(this, r))
 
-  private[http] def filter: HttpFilter = HttpFilter.empty
+  private[http] def getFilterSurface: Option[Surface] = None
 
   def andThen(r: Router): Router  = ???
   def andThen[Controller]: Router = ???
@@ -98,7 +98,7 @@ object Router extends LogSupport {
     new RouterSeq(Seq(r, new RouterLeaf(newRoutes)))
   }
 
-  def addFilterInternal(r: Router, filterSurface: Surface): Router = {}
+  //def addFilterInternal(r: Router, filterSurface: Surface): Router = {}
 
   /**
     * A sequence of multiple Routers
@@ -107,9 +107,11 @@ object Router extends LogSupport {
     def routes: Seq[Route] = routers.flatMap(_.routes)
   }
 
-  class BeforeFilter(child: Router, protected override val filter: HttpFilter) extends Router {
-    child.setParent(this)
-    def routes: Seq[Route] = child.routes
+  class RouterWithFilter(child: Option[Router], filterSurface: Surface) extends Router {
+    child.map(_.setParent(this))
+    def routes: Seq[Route] = child.map(_.routes).getOrElse(Seq.empty)
+
+    override def getFilterSurface: Option[Surface] = Some(filterSurface)
   }
 
   /**

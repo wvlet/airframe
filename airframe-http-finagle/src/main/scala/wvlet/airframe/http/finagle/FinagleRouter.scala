@@ -18,17 +18,8 @@ import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.HttpRequestContext.{NextRoute, RedirectTo, Respond}
-import wvlet.airframe.http.{
-  ControllerProvider,
-  DispatchResult,
-  HttpFilter,
-  HttpRequestContext,
-  HttpStatus,
-  ResponseHandler,
-  RouteMatch,
-  SimpleHttpResponse
-}
+import wvlet.airframe.http.HttpRequestContext.{RedirectTo, Respond}
+import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
@@ -41,10 +32,6 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private def processFilter(filter: HttpFilter,
-                            request: Request,
-                            requestContext: HttpRequestContext): DispatchResult = {}
-
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // TODO Extract this logic into airframe-http
 
@@ -54,9 +41,9 @@ class FinagleRouter(config: FinagleServerConfig,
         // Process filter
         val requestContext = new HttpRequestContext()
         val router         = routeMatch.route.getRouter
-        val dispatchResult = router.map { r =>
-          r.filter.beforeFilter(request.toHttpRequest, requestContext)
-        }
+        val filter =
+          router.flatMap(_.getFilterSurface).map(controllerProvider.findController(_).asInstanceOf[HttpFilter])
+        val dispatchResult = filter.map(_.beforeFilter(request.toHttpRequest, requestContext))
 
         val resp = dispatchResult match {
           case Some(RedirectTo(newPath)) =>
@@ -70,24 +57,25 @@ class FinagleRouter(config: FinagleServerConfig,
             processRoute(routeMatch, request, service)
         }
 
-        router
-          .map { r =>
+        router match {
+          case Some(r) =>
             resp.map { x =>
-              r.filter.afterFilter(request, x, requestContext) match {
-                case Respond(newResponse) =>
-                  newResponse.toHttpResponse
-//              case RedirectTo(newPath) =>
-//                val newResp = Response(request)
-//                newResp.statusCode = HttpStatus.TemporaryRedirect_307.code
-//                newResp.location = newPath
-//                newResp
-//              case other =>
-//                x
+              filter.map(_.afterFilter(request, x, requestContext)) match {
+                case Some(Respond(newResponse)) =>
+                  // TODO more safe cast
+                  newResponse.asInstanceOf[HttpResponse[Response]].toRaw
+                case Some(RedirectTo(newPath)) =>
+                  val newResp = Response(request)
+                  newResp.statusCode = HttpStatus.TemporaryRedirect_307.code
+                  newResp.location = newPath
+                  newResp
+                case other =>
+                  x
               }
             }
-          }.getOrElse {
+          case None =>
             resp
-          }
+        }
       case None =>
         // No route is found
         service(request)
@@ -141,6 +129,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
 
+  // TODO: Extract this logic into airframe-http
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
       case r: Response =>

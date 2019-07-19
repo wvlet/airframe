@@ -51,7 +51,8 @@ object RouterMacros {
 
     q"""
        {
-         wvlet.airframe.http.Router().filter[${t}]
+          wvlet.airframe.registerTraitFactory[${t}]
+          new wvlet.airframe.http.Router.RouterWithFilter(None, wvlet.airframe.surface.Surface.of[${t}])
        }
      """
   }

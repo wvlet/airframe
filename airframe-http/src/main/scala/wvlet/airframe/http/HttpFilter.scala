@@ -16,18 +16,23 @@ package wvlet.airframe.http
 import scala.language.higherKinds
 
 /**
-  * A filter operation interface before handling HTTP request response
+  * A filter interface to define actions before/after handling HTTP requests
   */
 trait HttpFilter {
+  // A filter applied before processing the request
   def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
     requestContext.nextRoute
   }
+
+  // A filter applied after processing the request
   def afterFilter(request: HttpRequest[_],
                   response: HttpResponse[_],
                   requestContext: HttpRequestContext): DispatchResult = {
     requestContext.respond(response)
   }
 
+  // Inject another filter:
+  // current before filter -> next before filter -> next after filter -> current after filter
   def andThen(nextFilter: HttpFilter): HttpFilter = {
     HttpFilter.AndThen(this, nextFilter)
   }
@@ -67,6 +72,9 @@ object HttpFilter {
   }
 }
 
+/***
+  * Used for telling the next action to Router
+  */
 class HttpRequestContext {
   import HttpRequestContext._
 
