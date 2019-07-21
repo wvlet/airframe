@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.4
+-  airframe-log: GraalVM support ([#549](https://github.com/wvlet/airframe/issues/549)) [[df8b408](https://github.com/wvlet/airframe/commit/df8b408)]
+-  airframe-http: Fix over routing in airframe-http ([#547](https://github.com/wvlet/airframe/issues/547)) [[4eb6245](https://github.com/wvlet/airframe/commit/4eb6245)]
+-  airframe-config: Allow reading config files from classpath, and add more examples ([#544](https://github.com/wvlet/airframe/issues/544)) [[697b04e](https://github.com/wvlet/airframe/commit/697b04e)]
+-  airframe-json: Reuse StringBuilder [#381](https://github.com/wvlet/airframe/issues/381) ([#546](https://github.com/wvlet/airframe/issues/546)) [[04bd01f](https://github.com/wvlet/airframe/commit/04bd01f)]
+
 ## 19.7.3
 -  airframe-metrics: Add TimeWindow.howMany(unit), minutesDiff, etc. ([#545](https://github.com/wvlet/airframe/issues/545)) [[77f7be9](https://github.com/wvlet/airframe/commit/77f7be9)]
 
