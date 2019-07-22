@@ -27,9 +27,12 @@ object RouterMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
-    q"""{
-       wvlet.airframe.http.Router().add[${t}]
-      }"""
+    q"""
+       {
+         wvlet.airframe.registerTraitFactory[${t}]
+         wvlet.airframe.http.Router.empty.add[${t}]
+       }
+       """
   }
 
   def add[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -51,7 +54,7 @@ object RouterMacros {
     q"""
        {
           wvlet.airframe.registerTraitFactory[${t}]
-          wvlet.airframe.http.Router().withFilter(wvlet.airframe.surface.Surface.of[${t}])
+          new wvlet.airframe.http.Router(filterSurface = Some(wvlet.airframe.surface.Surface.of[${t}]))
        }
      """
   }
@@ -62,8 +65,7 @@ object RouterMacros {
 
     q"""
        {
-           val r = wvlet.airframe.http.Router.of[${t}]
-           ${c.prefix}.andThen(r)
+           ${c.prefix}.andThen(wvlet.airframe.http.Router.add[${t}])
        }
      """
   }

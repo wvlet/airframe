@@ -65,6 +65,7 @@ object BadRequestFilter extends HttpFilter {
 class HttpFilterTest extends AirframeSpec {
 
   "apply filter before the route" in {
+
     val router =
       Router
         .filter[LogFilterExample]
@@ -74,6 +75,8 @@ class HttpFilterTest extends AirframeSpec {
             Router.add[NoAuth]
           )
         )
+
+    debug(router)
 
     val d = newFinagleServerDesign(router).noLifeCycleLogging
 

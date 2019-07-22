@@ -31,39 +31,44 @@ import scala.language.experimental.macros
   *    - Router1.apply
   *    - Router2.apply
   */
-trait Router {
+class Router(val parent: Option[Router] = None,
+             val surface: Option[Surface] = None,
+             val children: Seq[Router] = Seq.empty,
+             val localRoutes: Seq[Route] = Seq.empty,
+             val filterSurface: Option[Surface] = None)
+    extends LogSupport {
+
+  override def toString: String = print(0)
+
+  private def print(indentLevel: Int): String = {
+    val s = Seq.newBuilder[String]
+
+    val ws = " " * (indentLevel * 2)
+    s += s"${ws}- Router[${surface.orElse(filterSurface).getOrElse("")}]"
+
+    for (r <- localRoutes) {
+      s += s"${ws}  + ${r}"
+    }
+    for (c <- children) {
+      s += c.print(indentLevel + 1)
+    }
+    s.result().mkString("\n")
+  }
+
+  def routes: Seq[Route] = {
+    localRoutes ++ children.flatMap(_.routes)
+  }
 
   /**
-    * We usually need to set a parent Router later after creating its child Router instance
+    * A request filter that will be applied before routing the request to the target method
     */
-  //private var _parent: Option[Router] = None
-  //private var _children: Seq[Router]  = Seq.empty
-
-  def routes: Seq[Route]
-
-  /**
-    * A parent router if exists
-    */
-  def parent: Option[Router]
-  def children: Seq[Router]
-
-  def withParent(r: Router): Router
-  def withFilter(filterSurface: Surface): Router
+  private lazy val routeMatcher                                            = RouteMatcher.build(routes)
+  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
 
   /**
     * Add methods annotated with @Endpoint to the routing table
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
-
-  /**
-    * Add a child and and return a new Router with this child node
-    *
-    * @param childRouter
-    * @return
-    */
-  def addChild(childRouter: Router): Router
-
-  def filterSurface: Option[Surface]
 
   def andThen(next: Router): Router = {
     if (this.children.nonEmpty) {
@@ -74,19 +79,37 @@ trait Router {
   def andThen[Controller]: Router = macro RouterMacros.andThen[Controller]
 
   /**
-    * A request filter that will be applied before routing the request to the target method
+    * Add a child and and return a new Router with this child node
+    *
+    * @param childRouter
+    * @return
     */
-  private lazy val routeMatcher                                            = RouteMatcher.build(routes)
-  def findRoute[Req: HttpRequestAdapter](request: Req): Option[RouteMatch] = routeMatcher.findRoute(request)
+  def addChild(childRouter: Router): Router = {
+    info(s"addChild: ${childRouter.surface}[${childRouter.filterSurface}] to ${this.surface}[${this.filterSurface}]")
+    new Router(parent, surface, children :+ childRouter.withParent(this), localRoutes, filterSurface)
+  }
+
+  def withParent(newParent: Router): Router = {
+    new Router(Some(newParent), surface, children.map(x => x.withParent(newParent)), localRoutes, filterSurface)
+  }
+
+  def withFilter(newFilterSurface: Surface): Router = {
+    new Router(parent, surface, children, localRoutes, Some(newFilterSurface))
+  }
+
+  def isEmpty = this eq Router.empty
 }
 
 object Router extends LogSupport {
-  def empty: Router   = Router()
-  def apply(): Router = RouterNode()
+  val empty: Router   = new Router()
+  def apply(): Router = empty
 
   def apply(children: Router*): Router = {
-    val n = new RouterNode()
-    children.fold(n)((prev, child) => prev.addChild(child))
+    if (children == null) {
+      empty
+    } else {
+      children.fold(empty)((prev, child) => prev.addChild(child))
+    }
   }
 
   def of[Controller]: Router = macro RouterMacros.of[Controller]
@@ -114,29 +137,16 @@ object Router extends LogSupport {
             Route(None, controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
-    Router(r, new RouterNode(surface = Some(controllerSurface), routes = newRoutes))
-  }
-
-  case class RouterNode(parent: Option[Router] = None,
-                        surface: Option[Surface] = None,
-                        children: Seq[Router] = Seq.empty,
-                        routes: Seq[Route] = Seq.empty,
-                        override val filterSurface: Option[Surface] = None)
-      extends Router {
-
-    override def toString: String = s"Router[${surface.getOrElse("")}]"
-
-    override def addChild(childRouter: Router): Router = {
-      new RouterNode(parent, surface, children :+ childRouter.withParent(this), routes, filterSurface)
+    val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
+    if (r.isEmpty) {
+      newRouter
+    } else {
+      r.parent match {
+        case Some(p) =>
+          p.addChild(newRouter)
+        case None =>
+          Router.apply(r, newRouter)
+      }
     }
-
-    def withParent(newParent: Router): Router = {
-      new RouterNode(Some(newParent), surface, children, routes, filterSurface)
-    }
-
-    def withFilter(newFilterSurface: Surface): Router = {
-      new RouterNode(parent, surface, children, routes, Some(newFilterSurface))
-    }
-
   }
 }

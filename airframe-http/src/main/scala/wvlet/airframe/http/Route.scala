@@ -34,6 +34,10 @@ case class Route(private var router: Option[Router],
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
 
+  override def toString =
+    s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
+      .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
+
   def getRouter: Option[Router] = router
 
   val pathComponents: IndexedSeq[String] = {
