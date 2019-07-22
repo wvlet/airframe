@@ -24,11 +24,7 @@ import scala.util.Try
 /**
   * A mapping from an HTTP route to a method with Endpoint annotation
   */
-case class Route(private var router: Option[Router],
-                 controllerSurface: Surface,
-                 method: HttpMethod,
-                 path: String,
-                 methodSurface: ReflectMethodSurface)
+case class Route(controllerSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
     extends LogSupport {
   require(
     path.startsWith("/"),
@@ -38,19 +34,17 @@ case class Route(private var router: Option[Router],
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
       .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
 
-  def getRouter: Option[Router] = router
-
   val pathComponents: IndexedSeq[String] = {
     path
       .substring(1)
       .split("/")
       .toIndexedSeq
   }
-
-  def setRouter(r: Router): Unit = {
-    router = Some(r)
-  }
-
+//  def getRouter: Option[Router] = router
+//  def setRouter(r: Router): Unit = {
+//    router = Some(r)
+//  }
+//
   def returnTypeSurface: Surface = methodSurface.returnType
 
   /**

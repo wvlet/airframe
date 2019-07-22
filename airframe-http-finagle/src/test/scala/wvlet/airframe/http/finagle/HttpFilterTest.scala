@@ -18,6 +18,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http._
+import wvlet.log.LogSupport
 
 /**
   *
@@ -34,16 +35,33 @@ trait NoAuth {
   def get = "hello"
 }
 
+class LogStore extends LogSupport {
+
+  var log = Seq.empty[String]
+
+  def add(path: String): Unit = {
+    warn(s"visit: ${path}")
+    log :+= path
+  }
+}
+
 trait LogFilterExample extends HttpFilter {
+  import wvlet.airframe._
+
+  private val logStore = bind[LogStore]
+
   override def afterFilter(request: HttpRequest[_],
                            response: HttpResponse[_],
                            requestContext: HttpRequestContext): DispatchResult = {
+    logStore.add(request.path)
     requestContext.respond(response)
   }
 }
 
-trait AuthFilterExample extends HttpFilter {
+trait AuthFilterExample extends HttpFilter with LogSupport {
   override def beforeFilter(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
+    warn(s"visit auth filter: ${request} ")
+
     request.header.get("Authorization") match {
       case Some("valid-user") =>
         requestContext.nextRoute
@@ -78,7 +96,11 @@ class HttpFilterTest extends AirframeSpec {
 
     debug(router)
 
-    val d = newFinagleServerDesign(router).noLifeCycleLogging
+    val myLogStore = new LogStore
+
+    val d = newFinagleServerDesign(router)
+      .bind[LogStore].toInstance(myLogStore)
+      .noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
       val address = server.localAddress

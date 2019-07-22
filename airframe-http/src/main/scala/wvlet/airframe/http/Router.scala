@@ -31,12 +31,16 @@ import scala.language.experimental.macros
   *    - Router1.apply
   *    - Router2.apply
   */
-class Router(val parent: Option[Router] = None,
+class Router(private var _parent: Option[Router] = None,
              val surface: Option[Surface] = None,
              val children: Seq[Router] = Seq.empty,
              val localRoutes: Seq[Route] = Seq.empty,
-             val filterSurface: Option[Surface] = None)
-    extends LogSupport {
+             val filterSurface: Option[Surface] = None) {
+
+  def parent: Option[Router] = _parent
+  def setParent(p: Router): Unit = {
+    _parent = Some(p)
+  }
 
   override def toString: String = print(0)
 
@@ -57,6 +61,24 @@ class Router(val parent: Option[Router] = None,
 
   def routes: Seq[Route] = {
     localRoutes ++ children.flatMap(_.routes)
+  }
+
+  def descendantsAndSelf: Seq[Router] = {
+    val lst = Seq.newBuilder[Router]
+    lst += this
+    for (c <- children) {
+      lst ++= c.descendantsAndSelf
+    }
+    lst.result()
+  }
+
+  def ancestorsAndSelf: Seq[Router] = {
+    val lst = Seq.newBuilder[Router]
+    for (p <- parent) {
+      lst ++= p.ancestorsAndSelf
+    }
+    lst += this
+    lst.result()
   }
 
   /**
@@ -85,16 +107,15 @@ class Router(val parent: Option[Router] = None,
     * @return
     */
   def addChild(childRouter: Router): Router = {
-    info(s"addChild: ${childRouter.surface}[${childRouter.filterSurface}] to ${this.surface}[${this.filterSurface}]")
-    new Router(parent, surface, children :+ childRouter.withParent(this), localRoutes, filterSurface)
-  }
-
-  def withParent(newParent: Router): Router = {
-    new Router(Some(newParent), surface, children.map(x => x.withParent(newParent)), localRoutes, filterSurface)
+    val newRoute = new Router(parent, surface, children :+ childRouter, localRoutes, filterSurface)
+    newRoute.children.foreach(_.setParent(newRoute))
+    newRoute
   }
 
   def withFilter(newFilterSurface: Surface): Router = {
-    new Router(parent, surface, children, localRoutes, Some(newFilterSurface))
+    val newRoute = new Router(parent, surface, children, localRoutes, Some(newFilterSurface))
+    newRoute.children.foreach(_.setParent(newRoute))
+    newRoute
   }
 
   def isEmpty = this eq Router.empty
@@ -134,7 +155,7 @@ object Router extends LogSupport {
         .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
-            Route(None, controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+            Route(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)

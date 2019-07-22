@@ -32,6 +32,28 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
+  private val filterMap = {
+    val m = Map.newBuilder[Route, HttpFilter]
+    for (router <- config.router.descendantsAndSelf; route <- router.localRoutes) {
+      val parentFilters = router.ancestorsAndSelf.map(_.filterSurface).filter(_.isDefined).map(_.get)
+
+      warn(s"filters for ${router.surface}: ${parentFilters.mkString(" -> ")}")
+
+      val concreteFilters =
+        parentFilters
+          .map(controllerProvider.findController)
+          .filter(_.isDefined)
+          .map(_.get.asInstanceOf[HttpFilter])
+
+      if (concreteFilters.nonEmpty) {
+        for (r <- router.localRoutes) {
+          m += r -> concreteFilters.reduce((a, b) => a.andThen(b))
+        }
+      }
+    }
+    m.result()
+  }
+
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // TODO Extract this logic into airframe-http
 
@@ -40,9 +62,7 @@ class FinagleRouter(config: FinagleServerConfig,
       case Some(routeMatch) =>
         // Process filter
         val requestContext = new HttpRequestContext()
-        val router         = routeMatch.route.getRouter
-        val filter =
-          router.flatMap(_.filterSurface).map(controllerProvider.findController(_).asInstanceOf[HttpFilter])
+        val filter         = filterMap.get(routeMatch.route)
         val dispatchResult = filter.map(_.beforeFilter(request.toHttpRequest, requestContext))
 
         val resp = dispatchResult match {
@@ -57,14 +77,14 @@ class FinagleRouter(config: FinagleServerConfig,
             processRoute(routeMatch, request, service)
         }
 
-        router match {
-          case Some(r) =>
+        filter match {
+          case Some(f) =>
             resp.map { x =>
-              filter.map(_.afterFilter(request, x, requestContext)) match {
-                case Some(Respond(newResponse)) =>
+              f.afterFilter(request, x, requestContext) match {
+                case Respond(newResponse) =>
                   // TODO more safe cast
                   newResponse.asInstanceOf[HttpResponse[Response]].toRaw
-                case Some(RedirectTo(newPath)) =>
+                case RedirectTo(newPath) =>
                   val newResp = Response(request)
                   newResp.statusCode = HttpStatus.TemporaryRedirect_307.code
                   newResp.location = newPath
