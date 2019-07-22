@@ -32,27 +32,31 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private val filterMap = {
+  private def buildFilterMap(r: Router, parentFilter: Option[HttpFilter]): Map[Route, HttpFilter] = {
+    val localFilterOpt: Option[HttpFilter] =
+      r.filterSurface
+        .map(fs => controllerProvider.findController(fs))
+        .filter(_.isDefined)
+        .map(_.get.asInstanceOf[HttpFilter])
+
+    val currentFilterOpt: Option[HttpFilter] = (parentFilter, localFilterOpt) match {
+      case (Some(p), Some(l)) => Some(p.andThen(l))
+      case (Some(p), None)    => Some(p)
+      case (None, Some(l))    => Some(l)
+      case (None, None)       => None
+    }
+
     val m = Map.newBuilder[Route, HttpFilter]
-    for (router <- config.router.descendantsAndSelf; route <- router.localRoutes) {
-      val parentFilters = router.ancestorsAndSelf.map(_.filterSurface).filter(_.isDefined).map(_.get)
-
-      warn(s"filters for ${router.surface}: ${parentFilters.mkString(" -> ")}")
-
-      val concreteFilters =
-        parentFilters
-          .map(controllerProvider.findController)
-          .filter(_.isDefined)
-          .map(_.get.asInstanceOf[HttpFilter])
-
-      if (concreteFilters.nonEmpty) {
-        for (r <- router.localRoutes) {
-          m += r -> concreteFilters.reduce((a, b) => a.andThen(b))
-        }
-      }
+    for (filter <- currentFilterOpt; route <- r.localRoutes) {
+      m += (route -> filter)
+    }
+    for (c <- r.children) {
+      m ++= buildFilterMap(c, currentFilterOpt)
     }
     m.result()
   }
+
+  private val filterMap: Map[Route, HttpFilter] = buildFilterMap(config.router, None)
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // TODO Extract this logic into airframe-http

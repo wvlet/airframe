@@ -31,20 +31,19 @@ import scala.language.experimental.macros
   *    - Router1.apply
   *    - Router2.apply
   */
-class Router(private var _parent: Option[Router] = None,
-             val surface: Option[Surface] = None,
-             val children: Seq[Router] = Seq.empty,
-             val localRoutes: Seq[Route] = Seq.empty,
-             val filterSurface: Option[Surface] = None) {
+case class Router(surface: Option[Surface] = None,
+                  children: Seq[Router] = Seq.empty,
+                  localRoutes: Seq[Route] = Seq.empty,
+                  filterSurface: Option[Surface] = None) {
+  def isEmpty = this eq Router.empty
 
-  def parent: Option[Router] = _parent
-  def setParent(p: Router): Unit = {
-    _parent = Some(p)
+  def routes: Seq[Route] = {
+    localRoutes ++ children.flatMap(_.routes)
   }
 
-  override def toString: String = print(0)
+  override def toString: String = printNode(0)
 
-  private def print(indentLevel: Int): String = {
+  private def printNode(indentLevel: Int): String = {
     val s = Seq.newBuilder[String]
 
     val ws = " " * (indentLevel * 2)
@@ -54,31 +53,9 @@ class Router(private var _parent: Option[Router] = None,
       s += s"${ws}  + ${r}"
     }
     for (c <- children) {
-      s += c.print(indentLevel + 1)
+      s += c.printNode(indentLevel + 1)
     }
     s.result().mkString("\n")
-  }
-
-  def routes: Seq[Route] = {
-    localRoutes ++ children.flatMap(_.routes)
-  }
-
-  def descendantsAndSelf: Seq[Router] = {
-    val lst = Seq.newBuilder[Router]
-    lst += this
-    for (c <- children) {
-      lst ++= c.descendantsAndSelf
-    }
-    lst.result()
-  }
-
-  def ancestorsAndSelf: Seq[Router] = {
-    val lst = Seq.newBuilder[Router]
-    for (p <- parent) {
-      lst ++= p.ancestorsAndSelf
-    }
-    lst += this
-    lst.result()
   }
 
   /**
@@ -107,18 +84,12 @@ class Router(private var _parent: Option[Router] = None,
     * @return
     */
   def addChild(childRouter: Router): Router = {
-    val newRoute = new Router(parent, surface, children :+ childRouter, localRoutes, filterSurface)
-    newRoute.children.foreach(_.setParent(newRoute))
-    newRoute
+    new Router(surface, children :+ childRouter, localRoutes, filterSurface)
   }
 
   def withFilter(newFilterSurface: Surface): Router = {
-    val newRoute = new Router(parent, surface, children, localRoutes, Some(newFilterSurface))
-    newRoute.children.foreach(_.setParent(newRoute))
-    newRoute
+    new Router(surface, children, localRoutes, Some(newFilterSurface))
   }
-
-  def isEmpty = this eq Router.empty
 }
 
 object Router extends LogSupport {
@@ -162,12 +133,7 @@ object Router extends LogSupport {
     if (r.isEmpty) {
       newRouter
     } else {
-      r.parent match {
-        case Some(p) =>
-          p.addChild(newRouter)
-        case None =>
-          Router.apply(r, newRouter)
-      }
+      Router.apply(r, newRouter)
     }
   }
 }
