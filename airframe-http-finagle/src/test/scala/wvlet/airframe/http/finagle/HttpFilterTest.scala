@@ -39,9 +39,11 @@ class LogStore extends LogSupport {
 
   var log = Seq.empty[String]
 
-  def add(path: String): Unit = {
-    debug(s"visit: ${path}")
-    log :+= path
+  def lastLog: Option[String] = log.lastOption
+
+  def add(message: String): Unit = {
+    debug(s"response log: ${message}")
+    log :+= message
   }
 }
 
@@ -53,7 +55,7 @@ trait LogFilterExample extends HttpFilter {
   override def afterFilter(request: HttpRequest[_],
                            response: HttpResponse[_],
                            requestContext: HttpRequestContext): DispatchResult = {
-    logStore.add(request.path)
+    logStore.add(s"${response.statusCode} ${request.path}")
     requestContext.respond(response)
   }
 }
@@ -111,6 +113,7 @@ class HttpFilterTest extends AirframeSpec {
         val r = Await.result(client(Request("/auth")))
         debug(r)
         r.statusCode shouldBe 403
+        myLogStore.lastLog shouldBe Some("403 /auth")
       }
 
       {
@@ -120,13 +123,16 @@ class HttpFilterTest extends AirframeSpec {
         debug(r)
         r.statusCode shouldBe 200
         r.contentString shouldBe "passed"
+        myLogStore.lastLog shouldBe Some("200 /auth")
       }
 
       {
         val r = Await.result(client(Request("/noauth")))
-        info(r)
+        debug(r)
         r.statusCode shouldBe 200
         r.contentString shouldBe "hello"
+
+        myLogStore.lastLog shouldBe Some("200 /noauth")
       }
     }
   }
