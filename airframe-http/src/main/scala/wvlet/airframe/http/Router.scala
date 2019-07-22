@@ -90,26 +90,11 @@ case class Router(surface: Option[Surface] = None,
   def withFilter(newFilterSurface: Surface): Router = {
     new Router(surface, children, localRoutes, Some(newFilterSurface))
   }
-}
 
-object Router extends LogSupport {
-  val empty: Router   = new Router()
-  def apply(): Router = empty
-
-  def apply(children: Router*): Router = {
-    if (children == null) {
-      empty
-    } else {
-      children.fold(empty)((prev, child) => prev.addChild(child))
-    }
-  }
-
-  def of[Controller]: Router = macro RouterMacros.of[Controller]
-  def add[Controller]: Router = macro RouterMacros.of[Controller]
-
-  def filter[Filter <: HttpFilter]: Router = macro RouterMacros.newFilter[Filter]
-
-  def addInternal(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
+  /**
+    * Internal only method for adding the surface of the controller
+    */
+  def addInternal(controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
     import wvlet.airframe.surface.reflect._
 
@@ -130,12 +115,30 @@ object Router extends LogSupport {
         }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
-    if (r.isEmpty) {
+    if (this.isEmpty) {
       newRouter
     } else {
-      Router.apply(r, newRouter)
+      Router.apply(this, newRouter)
     }
   }
+}
+
+object Router extends LogSupport {
+  val empty: Router   = new Router()
+  def apply(): Router = empty
+
+  def apply(children: Router*): Router = {
+    if (children == null) {
+      empty
+    } else {
+      children.fold(empty)((prev, child) => prev.addChild(child))
+    }
+  }
+
+  def of[Controller]: Router = macro RouterMacros.of[Controller]
+  def add[Controller]: Router = macro RouterMacros.of[Controller]
+
+  def filter[Filter <: HttpFilter]: Router = macro RouterMacros.newFilter[Filter]
 
   /**
     * Traverse the Router tree and build HttpFilter for each local Route

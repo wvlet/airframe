@@ -42,7 +42,7 @@ object RouterMacros {
     q"""
        {
          wvlet.airframe.registerTraitFactory[${t}]
-         wvlet.airframe.http.Router.addInternal(${c.prefix}, wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+         ${c.prefix}.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
        }
      """
   }
