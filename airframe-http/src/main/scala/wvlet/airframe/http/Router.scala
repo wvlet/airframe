@@ -28,8 +28,11 @@ import scala.language.experimental.macros
   *   - Router4
   *
   *  When the request is routed to Route2, it will apply the method in each Router:
-  *    - Router1.apply
-  *    - Router2.apply
+  *    - Router1.beforeFilter
+  *    - Router2.beforeFilter
+  *    - Router2.process
+  *    - Router2.afterFilter
+  *    - Router1.afterFilter
   */
 case class Router(surface: Option[Surface] = None,
                   children: Seq[Router] = Seq.empty,
