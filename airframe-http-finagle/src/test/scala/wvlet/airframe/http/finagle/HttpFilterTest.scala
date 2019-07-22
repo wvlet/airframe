@@ -22,7 +22,7 @@ import wvlet.airframe.http._
 /**
   *
   */
-trait FilterExample {
+trait SampleApp {
   @Endpoint(path = "/auth")
   def needsAuth(request: Request): String = {
     "passed"
@@ -32,6 +32,14 @@ trait FilterExample {
 trait NoAuth {
   @Endpoint(path = "/noauth")
   def get = "hello"
+}
+
+trait LogFilterExample extends HttpFilter {
+  override def afterFilter(request: HttpRequest[_],
+                           response: HttpResponse[_],
+                           requestContext: HttpRequestContext): DispatchResult = {
+    requestContext.respond(response)
+  }
 }
 
 trait AuthFilterExample extends HttpFilter {
@@ -57,15 +65,15 @@ object BadRequestFilter extends HttpFilter {
 class HttpFilterTest extends AirframeSpec {
 
   "apply filter before the route" in {
-    val routeWithAuth: Router =
-      Router
-        .filter[AuthFilterExample]
-        .andThen[FilterExample]
-
     val router =
       Router
-        .add[NoAuth]
-        .add(routeWithAuth)
+        .filter[LogFilterExample]
+        .andThen(
+          Router(
+            Router.filter[AuthFilterExample].andThen[SampleApp],
+            Router.add[NoAuth]
+          )
+        )
 
     val d = newFinagleServerDesign(router).noLifeCycleLogging
 

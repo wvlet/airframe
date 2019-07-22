@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.Router.RouterSeq
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -34,31 +33,45 @@ import scala.language.experimental.macros
   */
 trait Router {
 
-  def routes: Seq[Route]
-
   /**
     * We usually need to set a parent Router later after creating its child Router instance
     */
-  private var _parent: Option[Router] = None
+  //private var _parent: Option[Router] = None
+  //private var _children: Seq[Router]  = Seq.empty
+
+  def routes: Seq[Route]
 
   /**
     * A parent router if exists
     */
-  def parent: Option[Router] = _parent
-  def setParent(r: Router): Unit = {
-    _parent = Some(r)
-  }
+  def parent: Option[Router]
+  def children: Seq[Router]
+
+  def withParent(r: Router): Router
+  def withFilter(filterSurface: Surface): Router
 
   /**
     * Add methods annotated with @Endpoint to the routing table
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
-  def add(r: Router): Router = new RouterSeq(Seq(this, r))
 
-  private[http] def getFilterSurface: Option[Surface] = None
+  /**
+    * Add a child and and return a new Router with this child node
+    *
+    * @param childRouter
+    * @return
+    */
+  def addChild(childRouter: Router): Router
 
-  def andThen(r: Router): Router  = ???
-  def andThen[Controller]: Router = ???
+  def filterSurface: Option[Surface]
+
+  def andThen(next: Router): Router = {
+    if (this.children.nonEmpty) {
+      throw new IllegalStateException(s"The router ${this.toString} already has a child")
+    }
+    this.addChild(next)
+  }
+  def andThen[Controller]: Router = macro RouterMacros.andThen[Controller]
 
   /**
     * A request filter that will be applied before routing the request to the target method
@@ -69,17 +82,23 @@ trait Router {
 
 object Router extends LogSupport {
   def empty: Router   = Router()
-  def apply(): Router = new RouterLeaf(Seq.empty)
+  def apply(): Router = RouterNode()
+
+  def apply(children: Router*): Router = {
+    val n = new RouterNode()
+    children.fold(n)((prev, child) => prev.addChild(child))
+  }
 
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
+
   def filter[Filter <: HttpFilter]: Router = macro RouterMacros.newFilter[Filter]
 
   def addInternal(r: Router, controllerSurface: Surface, controllerMethodSurfaces: Seq[MethodSurface]): Router = {
     // Import ReflectSurface to find method annotations (Endpoint)
     import wvlet.airframe.surface.reflect._
 
-    // Get the common prefix of Endpoints
+    // Get a common prefix of Endpoints if exists
     val prefixPath =
       controllerSurface
         .findAnnotationOf[Endpoint]
@@ -95,32 +114,29 @@ object Router extends LogSupport {
             Route(None, controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
-    new RouterSeq(Seq(r, new RouterLeaf(newRoutes)))
+    Router(r, new RouterNode(surface = Some(controllerSurface), routes = newRoutes))
   }
 
-  //def addFilterInternal(r: Router, filterSurface: Surface): Router = {}
+  case class RouterNode(parent: Option[Router] = None,
+                        surface: Option[Surface] = None,
+                        children: Seq[Router] = Seq.empty,
+                        routes: Seq[Route] = Seq.empty,
+                        override val filterSurface: Option[Surface] = None)
+      extends Router {
 
-  /**
-    * A sequence of multiple Routers
-    */
-  class RouterSeq(routers: Seq[Router]) extends Router {
-    def routes: Seq[Route] = routers.flatMap(_.routes)
+    override def toString: String = s"Router[${surface.getOrElse("")}]"
+
+    override def addChild(childRouter: Router): Router = {
+      new RouterNode(parent, surface, children :+ childRouter.withParent(this), routes, filterSurface)
+    }
+
+    def withParent(newParent: Router): Router = {
+      new RouterNode(Some(newParent), surface, children, routes, filterSurface)
+    }
+
+    def withFilter(newFilterSurface: Surface): Router = {
+      new RouterNode(parent, surface, children, routes, Some(newFilterSurface))
+    }
+
   }
-
-  class RouterWithFilter(child: Option[Router], filterSurface: Surface) extends Router {
-    child.map(_.setParent(this))
-    def routes: Seq[Route] = child.map(_.routes).getOrElse(Seq.empty)
-
-    override def getFilterSurface: Option[Surface] = Some(filterSurface)
-  }
-
-  /**
-    * A leaf router for providing mappings from HTTP requests to controller methods.
-    *
-    * @param routes
-    */
-  class RouterLeaf(val routes: Seq[Route]) extends Router {
-    routes.foreach(_.setRouter(this))
-  }
-
 }

@@ -42,7 +42,7 @@ class FinagleRouter(config: FinagleServerConfig,
         val requestContext = new HttpRequestContext()
         val router         = routeMatch.route.getRouter
         val filter =
-          router.flatMap(_.getFilterSurface).map(controllerProvider.findController(_).asInstanceOf[HttpFilter])
+          router.flatMap(_.filterSurface).map(controllerProvider.findController(_).asInstanceOf[HttpFilter])
         val dispatchResult = filter.map(_.beforeFilter(request.toHttpRequest, requestContext))
 
         val resp = dispatchResult match {

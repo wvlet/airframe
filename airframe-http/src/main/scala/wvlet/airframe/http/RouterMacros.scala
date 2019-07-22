@@ -26,11 +26,10 @@ object RouterMacros {
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"""
-       {
-          wvlet.airframe.http.Router().add[${t}]
-       }
-      """
+
+    q"""{
+       wvlet.airframe.http.Router().add[${t}]
+      }"""
   }
 
   def add[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -52,20 +51,21 @@ object RouterMacros {
     q"""
        {
           wvlet.airframe.registerTraitFactory[${t}]
-          new wvlet.airframe.http.Router.RouterWithFilter(None, wvlet.airframe.surface.Surface.of[${t}])
+          wvlet.airframe.http.Router().withFilter(wvlet.airframe.surface.Surface.of[${t}])
        }
      """
   }
 
-  def filter[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+  def andThen[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
 
     q"""
        {
-         wvlet.airframe.registerTraitFactory[${t}]
-         wvlet.airframe.http.Router.addInternal(${c.prefix}, wvlet.airframe.surface.Surface.of[${t}])
+           val r = wvlet.airframe.http.Router.of[${t}]
+           ${c.prefix}.andThen(r)
        }
      """
   }
+
 }
