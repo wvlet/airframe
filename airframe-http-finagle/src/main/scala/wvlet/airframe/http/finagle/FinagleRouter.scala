@@ -32,31 +32,7 @@ class FinagleRouter(config: FinagleServerConfig,
     extends SimpleFilter[Request, Response]
     with LogSupport {
 
-  private def buildFilterMap(r: Router, parentFilter: Option[HttpFilter]): Map[Route, HttpFilter] = {
-    val localFilterOpt: Option[HttpFilter] =
-      r.filterSurface
-        .map(fs => controllerProvider.findController(fs))
-        .filter(_.isDefined)
-        .map(_.get.asInstanceOf[HttpFilter])
-
-    val currentFilterOpt: Option[HttpFilter] = (parentFilter, localFilterOpt) match {
-      case (Some(p), Some(l)) => Some(p.andThen(l))
-      case (Some(p), None)    => Some(p)
-      case (None, Some(l))    => Some(l)
-      case (None, None)       => None
-    }
-
-    val m = Map.newBuilder[Route, HttpFilter]
-    for (filter <- currentFilterOpt; route <- r.localRoutes) {
-      m += (route -> filter)
-    }
-    for (c <- r.children) {
-      m ++= buildFilterMap(c, currentFilterOpt)
-    }
-    m.result()
-  }
-
-  private val filterMap: Map[Route, HttpFilter] = buildFilterMap(config.router, None)
+  private val filterMap: Map[Route, HttpFilter] = Router.buildFilterMap(config.router, None, controllerProvider)
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // TODO Extract this logic into airframe-http
