@@ -50,7 +50,7 @@ class FinagleServer(finagleConfig: FinagleServerConfig,
   @PreDestroy
   def stop = {
     info(s"Stopping the server http://localhost:${finagleConfig.port}")
-    server.map { _.close() }
+    server.map(_.close())
   }
 
   override def close(): Unit = {

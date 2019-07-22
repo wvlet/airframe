@@ -40,7 +40,7 @@ class LogStore extends LogSupport {
   var log = Seq.empty[String]
 
   def add(path: String): Unit = {
-    warn(s"visit: ${path}")
+    debug(s"visit: ${path}")
     log :+= path
   }
 }
@@ -60,7 +60,7 @@ trait LogFilterExample extends HttpFilter {
 
 trait AuthFilterExample extends HttpFilter with LogSupport {
   override def beforeFilter(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-    warn(s"visit auth filter: ${request} ")
+    debug(s"visit auth filter: ${request} ")
 
     request.header.get("Authorization") match {
       case Some("valid-user") =>
@@ -109,12 +109,24 @@ class HttpFilterTest extends AirframeSpec {
 
       {
         val r = Await.result(client(Request("/auth")))
-        info(r)
+        debug(r)
+        r.statusCode shouldBe 403
+      }
+
+      {
+        val req = Request("/auth")
+        req.authorization = "valid-user"
+        val r = Await.result(client(req))
+        debug(r)
+        r.statusCode shouldBe 200
+        r.contentString shouldBe "passed"
       }
 
       {
         val r = Await.result(client(Request("/noauth")))
         info(r)
+        r.statusCode shouldBe 200
+        r.contentString shouldBe "hello"
       }
     }
   }

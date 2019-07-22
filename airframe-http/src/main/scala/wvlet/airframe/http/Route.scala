@@ -40,11 +40,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       .split("/")
       .toIndexedSeq
   }
-//  def getRouter: Option[Router] = router
-//  def setRouter(r: Router): Unit = {
-//    router = Some(r)
-//  }
-//
+
   def returnTypeSurface: Surface = methodSurface.returnType
 
   /**
