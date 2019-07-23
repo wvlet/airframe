@@ -26,7 +26,8 @@ import wvlet.log.io.IOUtil
   */
 package object finagle {
 
-  type FinagleFilter = HttpFilter[Request, Response, Future]
+  type FinagleFilter  = HttpFilter[Request, Response, Future]
+  type FinagleContext = HttpContext[Request, Response, Future]
 
   private def finagleBaseDesign: Design =
     httpDefaultDesign

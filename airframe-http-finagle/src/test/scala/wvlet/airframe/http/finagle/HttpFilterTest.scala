@@ -36,9 +36,7 @@ trait NoAuth {
 }
 
 class LogStore extends LogSupport {
-
-  var log = Seq.empty[String]
-
+  var log                     = Seq.empty[String]
   def lastLog: Option[String] = log.lastOption
 
   def add(message: String): Unit = {
@@ -49,11 +47,9 @@ class LogStore extends LogSupport {
 
 trait LogFilterExample extends FinagleFilter {
   import wvlet.airframe._
-
   private val logStore = bind[LogStore]
 
-  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-
+  override def apply(request: Request, context: FinagleContext): Future[Response] = {
     context(request).map { response =>
       logStore.add(s"${response.statusCode} ${request.path}")
       response
@@ -62,10 +58,8 @@ trait LogFilterExample extends FinagleFilter {
 }
 
 trait AuthFilterExample extends FinagleFilter with LogSupport {
-  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-
+  override def apply(request: Request, context: FinagleContext): Future[Response] = {
     debug(s"visit auth filter: ${request} ")
-
     request.header.get("Authorization") match {
       case Some("valid-user") =>
         context(request)
@@ -76,8 +70,7 @@ trait AuthFilterExample extends FinagleFilter with LogSupport {
 }
 
 object BadRequestFilter extends FinagleFilter {
-
-  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+  override def apply(request: Request, context: FinagleContext): Future[Response] = {
     val resp = Response(Version.Http11, Status.BadRequest)
     resp.contentString = "bad requet"
     Future.value(resp)
