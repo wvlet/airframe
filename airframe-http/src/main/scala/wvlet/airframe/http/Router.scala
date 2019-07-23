@@ -22,17 +22,17 @@ import scala.language.experimental.macros
   * Router defines mappings from HTTP requests to Routes.
   *
   * Router can be nested
-  *   - Router1 (parent filter)
-  *      - Router2
-  *      - Router3
-  *   - Router4
+  *   - Router1 with Filter1
+  *      - Router2: endpoints e1, e2
+  *      - Router3: endpoints e3 with Filter2
+  *   - Router4: endpoints e4
   *
-  *  When the request is routed to Route2, it will apply the method in each Router:
-  *    - Router1.beforeFilter
-  *    - Router2.beforeFilter
-  *    - Router2.process
-  *    - Router2.afterFilter
-  *    - Router1.afterFilter
+  * From this router definition, the backend HTTP server specific implementation will build a mapping table like this:
+  *   e1 -> Filter1 andThen process(e1)
+  *   e2 -> Filter1 andThen process(e2)
+  *   e3 -> Filter1 andThen Filter2 andThen process(e3)
+  *   e4 -> process(e4)
+  *
   */
 case class Router(surface: Option[Surface] = None,
                   children: Seq[Router] = Seq.empty,
