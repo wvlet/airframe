@@ -141,35 +141,6 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  def filter[Filter <: HttpFilter]: Router = macro RouterMacros.newFilter[Filter]
-
-  /**
-    * Traverse the Router tree and build HttpFilter for each local Route
-    */
-  def buildFilterMap(r: Router,
-                     parentFilter: Option[HttpFilter],
-                     controllerProvider: ControllerProvider): Map[Route, HttpFilter] = {
-    val localFilterOpt: Option[HttpFilter] =
-      r.filterSurface
-        .map(fs => controllerProvider.findController(fs))
-        .filter(_.isDefined)
-        .map(_.get.asInstanceOf[HttpFilter])
-
-    val currentFilterOpt: Option[HttpFilter] = (parentFilter, localFilterOpt) match {
-      case (Some(p), Some(l)) => Some(p.andThen(l))
-      case (Some(p), None)    => Some(p)
-      case (None, Some(l))    => Some(l)
-      case (None, None)       => None
-    }
-
-    val m = Map.newBuilder[Route, HttpFilter]
-    for (filter <- currentFilterOpt; route <- r.localRoutes) {
-      m += (route -> filter)
-    }
-    for (c <- r.children) {
-      m ++= buildFilterMap(c, currentFilterOpt, controllerProvider)
-    }
-    m.result()
-  }
+  def filter[Filter]: Router = macro RouterMacros.newFilter[Filter]
 
 }

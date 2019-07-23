@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import com.twitter.finagle.http
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.io.Buf.ByteArray
+import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -24,6 +25,8 @@ import wvlet.log.io.IOUtil
   *
   */
 package object finagle {
+
+  type FinagleFilter = HttpFilter[Request, Response, Future]
 
   private def finagleBaseDesign: Design =
     httpDefaultDesign

@@ -14,8 +14,8 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.Http
-import com.twitter.finagle.http.{Request, Response}
-import com.twitter.util.Await
+import com.twitter.finagle.http.{Request, Response, Status, Version}
+import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
@@ -47,35 +47,40 @@ class LogStore extends LogSupport {
   }
 }
 
-trait LogFilterExample extends HttpFilter {
+trait LogFilterExample extends FinagleFilter {
   import wvlet.airframe._
 
   private val logStore = bind[LogStore]
 
-  override def afterFilter(request: HttpRequest[_],
-                           response: HttpResponse[_],
-                           requestContext: HttpRequestContext): DispatchResult = {
-    logStore.add(s"${response.statusCode} ${request.path}")
-    requestContext.respond(response)
-  }
-}
+  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
 
-trait AuthFilterExample extends HttpFilter with LogSupport {
-  override def beforeFilter(request: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-    debug(s"visit auth filter: ${request} ")
-
-    request.header.get("Authorization") match {
-      case Some("valid-user") =>
-        requestContext.nextRoute
-      case _ =>
-        requestContext.respond(SimpleHttpResponse(HttpStatus.Forbidden_403, "auth failure"))
+    context(request).map { response =>
+      logStore.add(s"${response.statusCode} ${request.path}")
+      response
     }
   }
 }
 
-object BadRequestFilter extends HttpFilter {
-  override def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-    requestContext.respond(SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"))
+trait AuthFilterExample extends FinagleFilter with LogSupport {
+  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+
+    debug(s"visit auth filter: ${request} ")
+
+    request.header.get("Authorization") match {
+      case Some("valid-user") =>
+        context(request)
+      case _ =>
+        Future.value(Response(Version.Http11, Status.Forbidden))
+    }
+  }
+}
+
+object BadRequestFilter extends FinagleFilter {
+
+  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+    val resp = Response(Version.Http11, Status.BadRequest)
+    resp.contentString = "bad requet"
+    Future.value(resp)
   }
 }
 

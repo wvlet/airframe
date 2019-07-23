@@ -13,82 +13,52 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.HttpFilter.Identity
+
 import scala.language.higherKinds
 
 /**
-  * A filter interface to define actions before/after handling HTTP requests
+  * A filter interface to define actions for handling HTTP requests and responses
   */
-trait HttpFilter {
-  // A filter applied before processing the request
-  def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-    requestContext.nextRoute
-  }
+trait HttpFilter[Req, Resp, F[_]] { self =>
+  def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp]
 
-  // A filter applied after processing the request
-  def afterFilter(request: HttpRequest[_],
-                  response: HttpResponse[_],
-                  requestContext: HttpRequestContext): DispatchResult = {
-    requestContext.respond(response)
-  }
-
-  // Inject another filter:
-  // current before filter -> next before filter -> next after filter -> current after filter
-  def andThen(nextFilter: HttpFilter): HttpFilter = {
+  // Add another filter:
+  def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F] = {
     HttpFilter.AndThen(this, nextFilter)
+  }
+
+  private[http] def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F] = {
+    new HttpContext[Req, Resp, F] {
+      override def apply(request: Req): F[Resp] = {
+        self.apply(request, context)
+      }
+    }
   }
 }
 
 object HttpFilter {
-  import wvlet.airframe.http.HttpRequestContext._
-
-  def empty: HttpFilter = EmptyFilter
-
-  case object EmptyFilter extends HttpFilter
-
-  case class AndThen(prev: HttpFilter, next: HttpFilter) extends HttpFilter {
-    override def beforeFilter(req: HttpRequest[_], requestContext: HttpRequestContext): DispatchResult = {
-      prev.beforeFilter(req, requestContext) match {
-        case NextRoute =>
-          next.beforeFilter(req, requestContext)
-        case other =>
-          next.beforeFilter(req, requestContext)
-          other
-      }
+  class Identity[Req, Resp, F[_]]() extends HttpFilter[Req, Resp, F] {
+    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
+      context(request)
     }
 
-    override def afterFilter(request: HttpRequest[_],
-                             response: HttpResponse[_],
-                             requestContext: HttpRequestContext): DispatchResult = {
-      next.afterFilter(request, response, requestContext) match {
-        case NextRoute =>
-          prev.afterFilter(request, response, requestContext)
-        case Respond(newResponse) =>
-          prev.afterFilter(request, newResponse, requestContext)
-        case other =>
-          prev.afterFilter(request, response, requestContext)
-          other
-      }
+    override def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F] = {
+      nextFilter
+    }
+  }
+
+  case class AndThen[Req, Resp, F[_]](prev: HttpFilter[Req, Resp, F], next: HttpFilter[Req, Resp, F])
+      extends HttpFilter[Req, Resp, F] {
+    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
+      prev.apply(request, next.andThen(context))
     }
   }
 }
 
 /***
-  * Used for telling the next action to Router
+  * Used for passing the subsequent actions to HttpFilter
   */
-class HttpRequestContext {
-  import HttpRequestContext._
-
-  def redirectTo(path: String): DispatchResult           = RedirectTo(path)
-  def respond(response: HttpResponse[_]): DispatchResult = Respond(response)
-  def respond[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): DispatchResult =
-    Respond(adapter.httpResponseOf(response))
-  def nextRoute: DispatchResult = NextRoute
-}
-
-sealed trait DispatchResult
-
-object HttpRequestContext {
-  case class RedirectTo(path: String)           extends DispatchResult
-  case class Respond(response: HttpResponse[_]) extends DispatchResult
-  case object NextRoute                         extends DispatchResult
+trait HttpContext[Req, Resp, F[_]] {
+  def apply(request: Req): F[Resp]
 }
