@@ -53,6 +53,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams: Map[String, String] = adapter.queryOf(request) ++ params
+    lazy val queryParamMsgpack             = Route.stringMapCodec.toMsgPack(requestParams)
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -73,7 +74,6 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
               case None =>
                 if (adapter.methodOf(request) == HttpMethod.GET) {
                   // Build the method argument instance from the query strings for GET requests
-                  val queryParamMsgpack = MessageCodec.of[Map[String, String]].toMsgPack(requestParams)
                   argCodec.unpackMsgPack(queryParamMsgpack)
                 } else {
                   // Build the method argument instance from the content body for non GET requests
@@ -124,4 +124,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       call(controller, buildControllerMethodArgs(controller, request, params))
     }
   }
+}
+
+object Route {
+  private[Route] val stringMapCodec = MessageCodec.of[Map[String, String]]
 }
