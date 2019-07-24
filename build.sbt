@@ -608,6 +608,8 @@ lazy val finagle =
     .settings(
       name := "airframe-http-finagle",
       description := "REST API binding for Finagle",
+      // A workaround for the dealy of slf4j-jdk14 log flush after sbt class loader is detached
+      fork in Test := true,
       // Finagle doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(

@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import com.twitter.finagle.http
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.io.Buf.ByteArray
+import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -24,6 +25,9 @@ import wvlet.log.io.IOUtil
   *
   */
 package object finagle {
+
+  type FinagleFilter  = HttpFilter[Request, Response, Future]
+  type FinagleContext = HttpContext[Request, Response, Future]
 
   private def finagleBaseDesign: Design =
     httpDefaultDesign
@@ -52,10 +56,11 @@ package object finagle {
   }
 
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
-    override def methodOf(request: Request): HttpMethod         = toHttpMethod(request.method)
-    override def pathOf(request: Request): String               = request.path
-    override def queryOf(request: Request): Map[String, String] = request.params
-    override def contentStringOf(request: Request): String      = request.contentString
+    override def methodOf(request: Request): HttpMethod          = toHttpMethod(request.method)
+    override def pathOf(request: Request): String                = request.path
+    override def headerOf(request: Request): Map[String, String] = request.headerMap.toMap
+    override def queryOf(request: Request): Map[String, String]  = request.params
+    override def contentStringOf(request: Request): String       = request.contentString
     override def contentBytesOf(request: Request): Array[Byte] = {
       val content = request.content
       val size    = content.length

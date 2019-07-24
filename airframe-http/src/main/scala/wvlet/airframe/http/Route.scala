@@ -30,6 +30,10 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
 
+  override def toString =
+    s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
+      .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
+
   val pathComponents: IndexedSeq[String] = {
     path
       .substring(1)
