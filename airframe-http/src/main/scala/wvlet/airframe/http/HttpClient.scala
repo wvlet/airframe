@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import java.net.URLEncoder
+
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext}
 import wvlet.log.LogSupport
@@ -44,6 +46,14 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
   private[http] def awaitF[A](f: F[A]): A
 
   def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): F[Resource]
+
+  /**
+    * Send a get request using the ResourceRequest. ResourceRequest parameters will be expanded as URL query strings
+    */
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                     resourceRequest: ResourceRequest,
+                                                                     requestFilter: Req => Req = identity): F[Resource]
+
   def list[OperationResponse: ru.TypeTag](resourcePath: String,
                                           requestFilter: Req => Req = identity): F[OperationResponse]
   def post[Resource: ru.TypeTag](resourcePath: String,
@@ -81,6 +91,11 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 
   def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): Resource = {
     awaitF(asyncClient.get[Resource](resourcePath, requestFilter))
+  }
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                     resourceRequest: ResourceRequest,
+                                                                     requestFilter: Req => Req = identity): Resource = {
+    awaitF(asyncClient.getResource[ResourceRequest, Resource](resourcePath, resourceRequest, requestFilter))
   }
   def list[OperationResponse: ru.TypeTag](resourcePath: String,
                                           requestFilter: Req => Req = identity): OperationResponse = {
@@ -156,6 +171,10 @@ object HttpClient extends LogSupport {
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec.")
     AddExtraRetryWait(extraWaitMillis.toInt)
+  }
+
+  def urlEncode(s: String): String = {
+    URLEncoder.encode(s, "UTF-8")
   }
 
 }

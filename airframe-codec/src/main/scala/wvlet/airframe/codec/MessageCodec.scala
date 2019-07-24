@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.codec
 
+import wvlet.airframe.json.JSON.{JSONObject, JSONValue}
 import wvlet.airframe.json.UnexpectedEOF
 import wvlet.airframe.msgpack.spi._
 import wvlet.airframe.surface.Surface
@@ -71,7 +72,7 @@ trait MessageCodec[A] extends LogSupport {
     packer.toByteArray
   }
 
-  def toJson(v: A): String = {
+  private def toMsgpackMap(v: A): MsgPack = {
     val packer = MessagePack.newBufferPacker
     this match {
       case c: PackAsMapSupport[_] =>
@@ -79,8 +80,19 @@ trait MessageCodec[A] extends LogSupport {
       case _ =>
         pack(packer, v)
     }
-    val msgpack = packer.toByteArray
-    JSONCodec.toJson(msgpack)
+    packer.toByteArray
+  }
+
+  def toJson(v: A): String = {
+    JSONCodec.toJson(toMsgpackMap(v))
+  }
+
+  def toJSONObject(v: A): JSONObject = {
+    JSONValueCodec.unpackMsgPack(toMsgpackMap(v)) match {
+      case Some(j @ JSONObject(o)) => j
+      case _ =>
+        throw new IllegalArgumentException(s"Failed to read as JSONObject: ${v}")
+    }
   }
 
   def unpackBytes(msgpack: Array[Byte]): Option[A]                        = unpackMsgPack(msgpack)
