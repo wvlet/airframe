@@ -56,6 +56,11 @@ trait MyApi extends LogSupport {
     Future.value(request.toString)
   }
 
+  @Endpoint(method = HttpMethod.GET, path = "/v1/json_api")
+  def jsonApiForGet(request: RichRequest): Future[String] = {
+    Future.value(request.toString)
+  }
+
   @Endpoint(method = HttpMethod.POST, path = "/v1/raw_string_arg")
   def rawString(body: String): String = {
     body
@@ -147,6 +152,14 @@ class FinagleRouterTest extends AirframeSpec {
         request.method = Method.Post
         val ret = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(100,dummy)"""
+      }
+
+      // GET requests with query parameters
+      {
+        val request = Request("/v1/json_api?id=10&name=leo")
+        request.method = Method.Get
+        val ret = Await.result(client(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
       }
 
       // JSON requests with POST
