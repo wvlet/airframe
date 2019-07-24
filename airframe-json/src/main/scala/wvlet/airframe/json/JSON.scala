@@ -38,10 +38,9 @@ object JSON extends LogSupport {
     * Parse JSON object or array
     */
   def parse(s: JSONSource): JSONValue = {
-    val b = new JSONValueBuilder().singleContext(s, 0)
+    val b = new JSONValueBuilder().singleContext()
     JSONScanner.scan(s, b)
-    val j = b.result
-    j
+    b.result
   }
 
   /**
@@ -62,8 +61,7 @@ object JSON extends LogSupport {
     * Parse any json values including null
     */
   def parseAny(s: JSONSource): JSONValue = {
-    val b = new JSONValueBuilder().singleContext(s, 0)
-    JSONScanner.scanAny(s, b)
+    JSONScanner.scanAny(s, new JSONValueBuilder().singleContext())
   }
 
   sealed trait JSONValue {

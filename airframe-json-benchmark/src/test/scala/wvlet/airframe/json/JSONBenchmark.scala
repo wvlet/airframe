@@ -14,9 +14,10 @@
 package wvlet.airframe.json
 
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.json.JSON.{JSONArray, JSONString}
+import wvlet.airframe.json.JSON.{JSONArray, JSONString, JSONValue}
 import wvlet.log.io.{IOUtil, Timer}
 
+import scala.collection.mutable._
 import scala.util.Random
 
 /**
@@ -24,7 +25,7 @@ import scala.util.Random
   */
 class JSONBenchmark extends AirframeSpec with Timer {
 
-  val repetition = if (inCI) 2 else 10
+  val repetition = if (inCI) 2 else 5
 
   def bench(benchName: String, json: String, N: Int = repetition, B: Int = repetition): Unit = {
     val jsonSource = JSONSource.fromString(json)
@@ -68,16 +69,19 @@ class JSONBenchmark extends AirframeSpec with Timer {
     "parse string arrays" taggedAs ("string-array") in {
       // Extract JSON strings from twitter.json
       val j = JSON.parse(twitterJson)
-      val b = IndexedSeq.newBuilder[JSONString]
-      JSONTraverser.traverse(j, new JSONVisitor {
-        override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
-          b += JSONString(k)
+      val b = new ListBuffer[JSONValue]
+      JSONTraverser.traverse(
+        j,
+        new JSONVisitor {
+          override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
+            b.append(JSONString(k))
+          }
+          override def visitString(v: JSON.JSONString): Unit = {
+            b += v
+          }
         }
-        override def visitString(v: JSON.JSONString): Unit = {
-          b += v
-        }
-      })
-      val jsonArray = JSONArray(b.result()).toJSON
+      )
+      val jsonArray = JSONArray(b).toJSON
       bench("string array", jsonArray)
     }
   }

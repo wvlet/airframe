@@ -16,32 +16,33 @@ package wvlet.airframe.json
 import wvlet.airframe.json.JSON._
 import wvlet.log.LogSupport
 
-import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def result: JSONValue                           = null
   override def isObjectContext: Boolean                    = false
-  override def closeContext(s: JSONSource, end: Int): Unit = {}
+  override def closeContext(): Unit = {}
   def add(v: JSONValue): Unit                              = {}
 
-  override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def singleContext(): JSONContext[JSONValue] =
     new JSONValueBuilder {
       private[this] var holder: JSONValue                      = _
       override def isObjectContext                             = false
-      override def closeContext(s: JSONSource, end: Int): Unit = {}
+      override def closeContext(): Unit = {}
       override def add(v: JSONValue): Unit = {
         holder = v
       }
       override def result: JSONValue = holder
     }
 
-  override def objectContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def objectContext(): JSONContext[JSONValue] =
     new JSONValueBuilder {
       private[this] var key: String = _
-      private[this] val list        = mutable.ArrayBuffer.empty[(String, JSONValue)]
-      override def closeContext(s: JSONSource, end: Int): Unit = {
-        self.add(result)
+      private[this] val list        = new ListBuffer[(String, JSONValue)]()
+      private[this] val value       = JSONObject(list)
+      override def closeContext(): Unit = {
+        self.add(value)
       }
       override def isObjectContext: Boolean = true
       override def add(v: JSONValue): Unit = {
@@ -52,24 +53,21 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
           key = null
         }
       }
-      override def result: JSONValue = {
-        JSONObject(list.toSeq)
-      }
+      override def result: JSONValue = value
     }
 
-  override def arrayContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def arrayContext(): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] val list                = mutable.ArrayBuffer.empty[JSONValue]
+      private[this] val list                = new ListBuffer[JSONValue]()
+      private[this] val value               = JSONArray(list)
       override def isObjectContext: Boolean = false
-      override def closeContext(s: JSONSource, end: Int): Unit = {
-        self.add(result)
+      override def closeContext(): Unit = {
+        self.add(value)
       }
       override def add(v: JSONValue): Unit = {
         list.append(v)
       }
-      override def result: JSONValue = {
-        JSONArray(list.toSeq)
-      }
+      override def result: JSONValue = value
     }
 
   override def addNull(s: JSONSource, start: Int, end: Int): Unit = {
