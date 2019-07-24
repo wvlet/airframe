@@ -72,11 +72,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
                 if (adapter.methodOf(request) == HttpMethod.GET) {
-                  // Build the method argument instance from the query strings
+                  // Build the method argument instance from the query strings for GET requests
                   val queryParamMsgpack = MessageCodec.of[Map[String, String]].toMsgPack(requestParams)
                   argCodec.unpackMsgPack(queryParamMsgpack)
                 } else {
-                  // Build the method argument instance from the content body
+                  // Build the method argument instance from the content body for non GET requests
                   val contentBytes = adapter.contentBytesOf(request)
 
                   if (contentBytes.nonEmpty) {
