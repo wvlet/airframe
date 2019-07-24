@@ -18,9 +18,11 @@ import java.util.concurrent.TimeUnit
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.codec.{JSONValueCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
@@ -93,6 +95,33 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
                                          requestFilter: Request => Request = identity): Future[Resource] = {
     convert[Resource](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
+
+  override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                              resourceRequest: ResourceRequest,
+                                                                              requestFilter: Request => Request =
+                                                                                identity): Future[Resource] = {
+
+    // Read resource as JSON
+    val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
+    val queryParams: Seq[String] =
+      resourceRequestJsonValue.v.map {
+        case (k, j @ JSONArray(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
+        case (k, j @ JSONObject(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
+        case (k, other) =>
+          s"${urlEncode(k)}=${urlEncode(other.toString)}"
+      }
+
+    // Build query strings
+    val pathWithQueryParam = new StringBuilder
+    pathWithQueryParam.append(resourcePath)
+    pathWithQueryParam.append("?")
+    pathWithQueryParam.append(queryParams.mkString("&"))
+
+    convert[Resource](send(newRequest(HttpMethod.GET, pathWithQueryParam.result(), requestFilter)))
+  }
+
   override def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
       requestFilter: Request => Request = identity): Future[OperationResponse] = {

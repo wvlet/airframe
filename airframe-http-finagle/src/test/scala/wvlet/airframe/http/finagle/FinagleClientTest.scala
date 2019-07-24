@@ -24,6 +24,8 @@ case class User(id: Int, name: String, requestId: String) {
   def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
 }
 
+case class UserRequest(id: Int, name: String)
+
 trait FinagleClientTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.GET, path = "/")
@@ -38,6 +40,16 @@ trait FinagleClientTestApi extends LogSupport {
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
   def get(id: Int, request: Request): User = {
     User(id, "leo", getRequestId(request))
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/user/info")
+  def getResource(id: Int, name: String, request: Request): User = {
+    User(id, name, getRequestId(request))
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/user/info2")
+  def getResource(query: UserRequest, request: Request): User = {
+    User(query.id, query.name, getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user")
@@ -97,6 +109,8 @@ class FinagleClientTest extends AirframeSpec {
 
         // Using HTTP request wrappers
         client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
+        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
         client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
 
         client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
@@ -109,7 +123,15 @@ class FinagleClientTest extends AirframeSpec {
 
         // Using a custom HTTP header
         client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
+        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
+                                                                                                               "kai",
+                                                                                                               "10")
+        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
+                                                                                                                "kai",
+                                                                                                                "10")
+
         client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
+
         client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
         client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
 
