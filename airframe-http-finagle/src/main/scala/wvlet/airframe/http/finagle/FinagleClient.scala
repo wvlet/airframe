@@ -57,9 +57,10 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   def newRequest(method: HttpMethod, path: String, additionalRequestFilter: Request => Request = identity): Request = {
-    // TODO add additional http headers
     var req = Request(toFinagleHttpMethod(method), path)
+    // Add common http headers
     req = config.requestFilter(req)
+    // Add additional http headers
     req = additionalRequestFilter(req)
     req
   }
