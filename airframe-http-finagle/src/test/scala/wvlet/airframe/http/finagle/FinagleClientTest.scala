@@ -20,7 +20,9 @@ import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-case class User(id: Int, name: String)
+case class User(id: Int, name: String, requestId: String) {
+  def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
+}
 
 trait FinagleClientTestApi extends LogSupport {
 
@@ -29,29 +31,33 @@ trait FinagleClientTestApi extends LogSupport {
     "Ok"
   }
 
+  private def getRequestId(request: Request): String = {
+    request.header.getOrElse("X-Request-Id", "N/A")
+  }
+
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
   def get(id: Int, request: Request): User = {
-    User(id, request.header.getOrElse("X-User", "leo"))
+    User(id, "leo", getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user")
-  def list: Seq[User] = {
-    Seq(User(1, "leo"))
+  def list(request: Request): Seq[User] = {
+    Seq(User(1, "leo", getRequestId(request)))
   }
 
   @Endpoint(method = HttpMethod.POST, path = "/user")
-  def create(newUser: User): User = {
-    newUser
+  def create(newUser: User, request: Request): User = {
+    newUser.withRequestId(getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.DELETE, path = "/user/:id")
-  def delete(id: Int): User = {
-    User(id, "xxx")
+  def delete(id: Int, request: Request): User = {
+    User(id, "xxx", getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.PUT, path = "/user")
-  def put(updatedUser: User): User = {
-    updatedUser
+  def put(updatedUser: User, request: Request): User = {
+    updatedUser.withRequestId(getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/busy")
@@ -78,6 +84,11 @@ class FinagleClientTest extends AirframeSpec {
 
   "create client" in {
 
+    def addRequestId(request: Request): Request = {
+      request.headerMap.put("X-Request-Id", "10")
+      request
+    }
+
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
         // Sending an implementation specific Request type
@@ -85,21 +96,27 @@ class FinagleClientTest extends AirframeSpec {
         ret shouldBe "Ok"
 
         // Using HTTP request wrappers
-        client.get[User]("/user/1") shouldBe User(1, "leo")
+        client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
+        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
+
+        client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+        client.postOps[User, User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+
+        client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+        client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+
+        client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
+
         // Using a custom HTTP header
-        client.get[User]("/user/1", { x: Request =>
-          x.headerMap.put("X-User", "kai"); x
-        }) shouldBe User(1, "kai")
+        client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
+        client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
+        client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+        client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
 
-        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo"))
+        client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+        client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
 
-        client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
-        client.postOps[User, User]("/user", User(2, "yui")) shouldBe User(2, "yui")
-
-        client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
-        client.putOps[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
-
-        client.delete[User]("/user/1") shouldBe User(1, "xxx")
+        client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
       }
     }
   }
