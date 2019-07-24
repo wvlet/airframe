@@ -56,10 +56,13 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     client.close()
   }
 
-  def newRequest(method: HttpMethod, path: String): Request = {
-    // TODO add additional http headers
-    val req = Request(toFinagleHttpMethod(method), path)
-    config.requestFilter(req)
+  def newRequest(method: HttpMethod, path: String, additionalRequestFilter: Request => Request = identity): Request = {
+    var req = Request(toFinagleHttpMethod(method), path)
+    // Add common http headers
+    req = config.requestFilter(req)
+    // Add additional http headers
+    req = additionalRequestFilter(req)
+    req
   }
 
   override private[http] def awaitF[A](f: Future[A]): A = {
@@ -86,45 +89,56 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     json
   }
 
-  override def get[Resource: ru.TypeTag](resourcePath: String): Future[Resource] = {
-    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath)))
+  override def get[Resource: ru.TypeTag](resourcePath: String,
+                                         requestFilter: Request => Request = identity): Future[Resource] = {
+    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
-  override def list[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath)))
+  override def list[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
 
-  override def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
+  override def post[Resource: ru.TypeTag](resourcePath: String,
+                                          resource: Resource,
+                                          requestFilter: Request => Request = identity): Future[Resource] = {
+    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
   }
-  override def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+  override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
-      resource: Resource): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
+      resource: Resource,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r))
   }
 
-  override def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
+  override def put[Resource: ru.TypeTag](resourcePath: String,
+                                         resource: Resource,
+                                         requestFilter: Request => Request = identity): Future[Resource] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
   }
-  override def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+  override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
-      resource: Resource): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
+      resource: Resource,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r))
   }
 
-  override def delete[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath)))
+  override def delete[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath, requestFilter)))
   }
 
 }

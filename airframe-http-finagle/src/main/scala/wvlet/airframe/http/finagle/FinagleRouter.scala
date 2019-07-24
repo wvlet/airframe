@@ -100,7 +100,7 @@ object FinagleRouter {
     override def apply(request: Request): Future[Response] = {
       val route = routeMatch.route
       // Call the method in this controller
-      val args   = route.buildControllerMethodArgs(controller, request, routeMatch.params)
+      val args   = route.buildControllerMethodArgs[Request](controller, request, routeMatch.params)
       val result = route.call(controller, args)
 
       route.returnTypeSurface.rawType match {

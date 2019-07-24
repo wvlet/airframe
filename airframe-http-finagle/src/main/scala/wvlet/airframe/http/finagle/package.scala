@@ -70,6 +70,7 @@ package object finagle {
     }
     override def contentTypeOf(request: Request): Option[String]       = request.contentType
     override def httpRequestOf(request: Request): HttpRequest[Request] = FinagleHttpRequest(request)
+    override def requestType: Class[Request]                           = classOf[Request]
   }
 
   implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {
