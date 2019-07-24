@@ -61,6 +61,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
           case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
             adapter.httpRequestOf(request)
+          case cl if adapter.requestType.isAssignableFrom(cl) =>
+            request
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)

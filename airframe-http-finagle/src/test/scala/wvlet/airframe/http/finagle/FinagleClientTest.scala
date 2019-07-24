@@ -30,8 +30,8 @@ trait FinagleClientTestApi extends LogSupport {
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
-  def get(id: Int): User = {
-    User(id, "leo")
+  def get(id: Int, request: Request): User = {
+    User(id, request.header.getOrElse("X-User", "leo"))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user")
@@ -86,14 +86,18 @@ class FinagleClientTest extends AirframeSpec {
 
         // Using HTTP request wrappers
         client.get[User]("/user/1") shouldBe User(1, "leo")
+        // Using a custom HTTP header
+        client.get[User]("/user/1", { x: Request =>
+          x.headerMap.put("X-User", "kai"); x
+        }) shouldBe User(1, "kai")
 
         client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo"))
 
         client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
-        client.post[User, User]("/user", User(2, "yui")) shouldBe User(2, "yui")
+        client.postOps[User, User]("/user", User(2, "yui")) shouldBe User(2, "yui")
 
         client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
-        client.put[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
+        client.putOps[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
 
         client.delete[User]("/user/1") shouldBe User(1, "xxx")
       }

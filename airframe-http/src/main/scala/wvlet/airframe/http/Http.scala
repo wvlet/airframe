@@ -24,6 +24,8 @@ import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
   * @tparam Req
   */
 trait HttpRequestAdapter[Req] {
+  def requestType: Class[Req]
+
   def methodOf(request: Req): HttpMethod
   def pathOf(request: Req): String
   def queryOf(request: Req): Map[String, String]
@@ -105,6 +107,7 @@ object SimpleHttpRequest {
     override def httpRequestOf(request: SimpleHttpRequest): HttpRequest[SimpleHttpRequest] = {
       request
     }
+    override def requestType: Class[SimpleHttpRequest] = classOf[SimpleHttpRequest]
   }
 }
 
