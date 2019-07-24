@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{Surface, Zero}
@@ -52,7 +52,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
   def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
       implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = adapter.queryOf(request) ++ params
+    val requestParams: Map[String, String] = adapter.queryOf(request) ++ params
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -71,32 +71,38 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 // Pass the String parameter to the method argument
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
-                // Build the parameter from the content body
-                val contentBytes = adapter.contentBytesOf(request)
-
-                if (contentBytes.nonEmpty) {
-                  val msgpack =
-                    adapter.contentTypeOf(request).map(_.split(";")(0)) match {
-                      case Some("application/x-msgpack") =>
-                        contentBytes
-                      case Some("application/json") =>
-                        // JSON -> msgpack
-                        JSONCodec.toMsgPack(JSON.parse(contentBytes))
-                      case _ =>
-                        // Try parsing as JSON first
-                        Try(JSON.parse(contentBytes))
-                          .map { jsonValue =>
-                            JSONCodec.toMsgPack(jsonValue)
-                          }
-                          .getOrElse {
-                            // If parsing as JSON fails, treat the content body as a regular string
-                            StringCodec.toMsgPack(adapter.contentStringOf(request))
-                          }
-                    }
-                  argCodec.unpackMsgPack(msgpack)
+                if (adapter.methodOf(request) == HttpMethod.GET) {
+                  // Build the method argument instance from the query strings
+                  val queryParamMsgpack = MessageCodec.of[Map[String, String]].toMsgPack(requestParams)
+                  argCodec.unpackMsgPack(queryParamMsgpack)
                 } else {
-                  // Return the method default argument if exists
-                  arg.getMethodArgDefaultValue(controller)
+                  // Build the method argument instance from the content body
+                  val contentBytes = adapter.contentBytesOf(request)
+
+                  if (contentBytes.nonEmpty) {
+                    val msgpack =
+                      adapter.contentTypeOf(request).map(_.split(";")(0)) match {
+                        case Some("application/x-msgpack") =>
+                          contentBytes
+                        case Some("application/json") =>
+                          // JSON -> msgpack
+                          JSONCodec.toMsgPack(JSON.parse(contentBytes))
+                        case _ =>
+                          // Try parsing as JSON first
+                          Try(JSON.parse(contentBytes))
+                            .map { jsonValue =>
+                              JSONCodec.toMsgPack(jsonValue)
+                            }
+                            .getOrElse {
+                              // If parsing as JSON fails, treat the content body as a regular string
+                              StringCodec.toMsgPack(adapter.contentStringOf(request))
+                            }
+                      }
+                    argCodec.unpackMsgPack(msgpack)
+                  } else {
+                    // Return the method default argument if exists
+                    arg.getMethodArgDefaultValue(controller)
+                  }
                 }
             }
             // If mapping fails, use the zero value

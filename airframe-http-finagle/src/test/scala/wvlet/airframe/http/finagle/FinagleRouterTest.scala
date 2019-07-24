@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
 import com.twitter.finagle.Http
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Method, Request}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
@@ -51,17 +51,17 @@ trait MyApi extends LogSupport {
   }
 
   // An example to map JSON requests to objects
-  @Endpoint(path = "/v1/json_api")
+  @Endpoint(method = HttpMethod.POST, path = "/v1/json_api")
   def jsonApi(request: RichRequest): Future[String] = {
     Future.value(request.toString)
   }
 
-  @Endpoint(path = "/v1/raw_string_arg")
+  @Endpoint(method = HttpMethod.POST, path = "/v1/raw_string_arg")
   def rawString(body: String): String = {
     body
   }
 
-  @Endpoint(path = "/v1/json_api_default")
+  @Endpoint(method = HttpMethod.POST, path = "/v1/json_api_default")
   def jsonApiDefault(request: RichRequest = RichRequest(100, "dummy")): Future[String] = {
     Future.value(request.toString)
   }
@@ -122,17 +122,19 @@ class FinagleRouterTest extends AirframeSpec {
         json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
       }
 
-      // JSON request
+      // JSON POST request
       {
         val request = Request("/v1/json_api")
+        request.method = Method.Post
         request.contentString = """{"id":10, "name":"leo"}"""
         val ret = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(10,leo)"""
       }
 
-      // JSON request with explicit JSON content type
+      // JSON POST request with explicit JSON content type
       {
         val request = Request("/v1/json_api")
+        request.method = Method.Post
         request.contentString = """{"id":10, "name":"leo"}"""
         request.setContentTypeJson()
         val ret = Await.result(client(request).map(_.contentString))
@@ -142,13 +144,15 @@ class FinagleRouterTest extends AirframeSpec {
       // Use the default argument
       {
         val request = Request("/v1/json_api_default")
-        val ret     = Await.result(client(request).map(_.contentString))
+        request.method = Method.Post
+        val ret = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(100,dummy)"""
       }
 
-      // JSON requests
+      // JSON requests with POST
       {
         val request = Request("/v1/json_api")
+        request.method = Method.Post
         request.contentString = """{"id":10, "name":"leo"}"""
         val ret = Await.result(client(request).map(_.contentString))
         ret shouldBe """RichRequest(10,leo)"""
@@ -165,6 +169,7 @@ class FinagleRouterTest extends AirframeSpec {
       // Msgpack body
       {
         val request = Request("/v1/json_api")
+        request.method = Method.Post
         val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
         request.content = ByteArray.Owned(msgpack)
         request.contentType = "application/x-msgpack"
@@ -175,6 +180,7 @@ class FinagleRouterTest extends AirframeSpec {
       // Raw string arg
       {
         val request = Request("/v1/raw_string_arg")
+        request.method = Method.Post
         request.contentString = "1.0"
         Await.result(client(request).map(_.contentString)) shouldBe "1.0"
       }
@@ -182,6 +188,7 @@ class FinagleRouterTest extends AirframeSpec {
       // Receive MessagePack
       {
         val request = Request("/v1/raw_string_arg")
+        request.method = Method.Post
         request.contentType = "application/x-msgpack"
         val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
         request.content = ByteArray.Owned(msgpack)
