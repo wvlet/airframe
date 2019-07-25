@@ -82,6 +82,14 @@ trait FinagleClientTestApi extends LogSupport {
   def forbidden: Response = {
     Response(Status.Forbidden)
   }
+
+  @Endpoint(method = HttpMethod.GET, path = "/response")
+  def rawResponse: Response = {
+    val r = Response(Status.Ok)
+    r.setContentString("raw response")
+    r
+  }
+
 }
 
 /**
@@ -120,6 +128,9 @@ class FinagleClientTest extends AirframeSpec {
         client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
 
         client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
+
+        // Get a response as is
+        client.get[Response]("/response").contentString shouldBe "raw response"
 
         // Using a custom HTTP header
         client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
