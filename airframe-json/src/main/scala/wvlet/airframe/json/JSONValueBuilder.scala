@@ -20,16 +20,16 @@ import scala.collection.mutable.ListBuffer
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
-  override def result: JSONValue                           = null
-  override def isObjectContext: Boolean                    = false
-  override def closeContext(): Unit = {}
-  def add(v: JSONValue): Unit                              = {}
+  override def result: JSONValue        = null
+  override def isObjectContext: Boolean = false
+  override def closeContext(): Unit     = {}
+  def add(v: JSONValue): Unit           = {}
 
   override def singleContext(): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] var holder: JSONValue                      = _
-      override def isObjectContext                             = false
-      override def closeContext(): Unit = {}
+      private[this] var holder: JSONValue = _
+      override def isObjectContext        = false
+      override def closeContext(): Unit   = {}
       override def add(v: JSONValue): Unit = {
         holder = v
       }
