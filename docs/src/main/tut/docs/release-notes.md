@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.5
+-  airframe-http: Support reading raw response as is ([#553](https://github.com/wvlet/airframe/issues/553)) [[1ccedae](https://github.com/wvlet/airframe/commit/1ccedae)]
+-  airframe-http-client: Add getResource for GET with query strings ([#552](https://github.com/wvlet/airframe/issues/552)) [[fd5849c](https://github.com/wvlet/airframe/commit/fd5849c)]
+-  airframe-http-client: Support customizing http requests [#550](https://github.com/wvlet/airframe/issues/550) ([#551](https://github.com/wvlet/airframe/issues/551)) [[1542beb](https://github.com/wvlet/airframe/commit/1542beb)]
+-  airframe-http: Add HttpFilter support to Router ([#540](https://github.com/wvlet/airframe/issues/540)) [[1cb7096](https://github.com/wvlet/airframe/commit/1cb7096)]
+
 ## 19.7.4
 -  airframe-log: GraalVM support ([#549](https://github.com/wvlet/airframe/issues/549)) [[df8b408](https://github.com/wvlet/airframe/commit/df8b408)]
 -  airframe-http: Fix over routing in airframe-http ([#547](https://github.com/wvlet/airframe/issues/547)) [[4eb6245](https://github.com/wvlet/airframe/commit/4eb6245)]
