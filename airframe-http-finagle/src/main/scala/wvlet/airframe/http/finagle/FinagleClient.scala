@@ -77,10 +77,16 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
-    val codec = MessageCodec.of[A]
-    response.map { r =>
-      val msgpack = responseCodec.toMsgPack(r)
-      codec.unpack(msgpack)
+    if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {
+      // Can return the response as is
+      response.asInstanceOf[Future[A]]
+    } else {
+      // Need a conversion
+      val codec = MessageCodec.of[A]
+      response.map { r =>
+        val msgpack = responseCodec.toMsgPack(r)
+        codec.unpack(msgpack)
+      }
     }
   }
 
