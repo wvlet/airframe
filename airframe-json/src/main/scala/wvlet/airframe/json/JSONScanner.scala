@@ -16,6 +16,7 @@ package wvlet.airframe.json
 import wvlet.log.LogSupport
 
 import scala.annotation.{switch, tailrec}
+import scala.collection.mutable._
 
 object JSONToken {
 
@@ -134,10 +135,12 @@ object JSONScanner {
 }
 
 class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler: JSONHandler[J]) extends LogSupport {
-  private[this] var cursor: Int       = 0
-  private[this] var lineStartPos: Int = 0
-  private[this] var line: Int         = 0
-  private[this] val sb                = new StringBuilderExt
+  private[this] var cursor: Int                                         = 0
+  private[this] var lineStartPos: Int                                   = 0
+  private[this] var line: Int                                           = 0
+  private[this] val sb                                                  = new StringBuilderExt
+  private[this] implicit val objectJsonBuffer: ArrayBuffer[(String, J)] = new ArrayBuffer[(String, J)]
+  private[this] implicit val arrayJsonBuffer: ArrayBuffer[J]            = new ArrayBuffer[J]
 
   import JSONScanner._
   import JSONToken._

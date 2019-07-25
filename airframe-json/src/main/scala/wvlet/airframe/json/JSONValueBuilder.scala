@@ -16,7 +16,7 @@ package wvlet.airframe.json
 import wvlet.airframe.json.JSON._
 import wvlet.log.LogSupport
 
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable._
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
@@ -36,38 +36,36 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
       override def result: JSONValue = holder
     }
 
-  override def objectContext(): JSONContext[JSONValue] =
+  override def objectContext()(implicit buffer: ArrayBuffer[(String, JSONValue)]): JSONContext[JSONValue] =
     new JSONValueBuilder {
       private[this] var key: String = _
-      private[this] val list        = new ListBuffer[(String, JSONValue)]()
-      private[this] val value       = JSONObject(list)
+      buffer.clear()
       override def closeContext(): Unit = {
-        self.add(value)
+        self.add(result)
       }
       override def isObjectContext: Boolean = true
       override def add(v: JSONValue): Unit = {
         if (key == null) {
           key = v.toString
         } else {
-          list.append(key -> v)
+          buffer.append(key -> v)
           key = null
         }
       }
-      override def result: JSONValue = value
+      override def result: JSONValue = JSONObject(buffer.toList)
     }
 
-  override def arrayContext(): JSONContext[JSONValue] =
+  override def arrayContext()(implicit buffer: ArrayBuffer[JSONValue]): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] val list                = new ListBuffer[JSONValue]()
-      private[this] val value               = JSONArray(list)
+      buffer.clear()
       override def isObjectContext: Boolean = false
       override def closeContext(): Unit = {
-        self.add(value)
+        self.add(result)
       }
       override def add(v: JSONValue): Unit = {
-        list.append(v)
+        buffer.append(v)
       }
-      override def result: JSONValue = value
+      override def result: JSONValue = JSONArray(buffer.toList)
     }
 
   override def addNull(s: JSONSource, start: Int, end: Int): Unit = {

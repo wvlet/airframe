@@ -15,14 +15,17 @@ package wvlet.airframe.json
 
 import wvlet.log.LogSupport
 
+import scala.collection.mutable._
+
 /**
   *
   */
 class NullJSONContext(isObject: Boolean) extends JSONContext[Unit] with LogSupport {
-  override def isObjectContext: Boolean           = isObject
-  override def objectContext(): JSONContext[Unit] = new NullJSONContext(true)
-  override def arrayContext(): JSONContext[Unit]  = new NullJSONContext(false)
-  override def closeContext(): Unit               = {}
+  override def isObjectContext: Boolean = isObject
+  override def objectContext()(implicit buffer: ArrayBuffer[(String, Unit)]): JSONContext[Unit] =
+    new NullJSONContext(true)
+  override def arrayContext()(implicit buffer: ArrayBuffer[Unit]): JSONContext[Unit] = new NullJSONContext(false)
+  override def closeContext(): Unit                                                  = {}
 
   override def add(v: Unit): Unit                                                = {}
   override def singleContext(): JSONContext[Unit]                                = new NullJSONContext(false)
