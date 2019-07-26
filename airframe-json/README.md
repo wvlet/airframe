@@ -15,7 +15,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-json" % "(version)"
 ```scala
 import wvlet.airframe.json.JSON
 
-// Returns a JSON value object of the input JSOn string 
+// Returns a JSON value object of the input JSON string 
 val jsonValue = JSON.parse("""{"id":1, "name":"leo"}""")
 ```
 
