@@ -25,7 +25,7 @@ Here is the details of the application configuration flow:
        - If `default` environment is also not found, the provided default object will be used (optional).
 1. (optional) Provide additional configurations (e.g., confidential information such as password, apikey, etc.)
    - Read these configurations in a secure manner and create a `Properties` object.
-   - Override your configurations with `config.overideWithPropertie(Properties)`.
+   - Override your configurations with `config.overrideWithProperties(Properties)`.
 1. Get the configuration with `config.of[A]`
 
 
