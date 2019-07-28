@@ -94,9 +94,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     * This value will be used for DB indexes
     */
   protected def requestHash(request: Request): Int = {
-    val content = request.getContentString()
-    val prefix =
-      s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}"
+    val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
 
     request.headerMap.filterNot(x => recorderConfig.headerExcludes(x._1)) match {
       case headers if headers.isEmpty => prefix.hashCode * 13
