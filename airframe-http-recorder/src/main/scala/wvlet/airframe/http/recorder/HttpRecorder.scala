@@ -85,8 +85,7 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
     * actually send the request to the destination server and record the response.
     */
-  def createRecorderProxyServer(recorderConfig: HttpRecorderConfig,
-                                dropExistingSession: Boolean = false): FinagleServer = {
+  def createRecorderProxy(recorderConfig: HttpRecorderConfig, dropExistingSession: Boolean = false): FinagleServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     new HttpRecorderServer(recorder, HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
   }

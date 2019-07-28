@@ -96,7 +96,7 @@ class HttpRecorderTest extends AirframeSpec {
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
 
     // Recording
-    withResource(HttpRecorder.createRecorderProxyServer(recorderConfig, dropExistingSession = true)) { server =>
+    withResource(HttpRecorder.createRecorderProxy(recorderConfig, dropExistingSession = true)) { server =>
       server.start
       withClient(server.localAddress) { client =>
         val request = Request("/airframe/")
@@ -110,7 +110,7 @@ class HttpRecorderTest extends AirframeSpec {
     // Replaying
     val replayConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
-    withResource(HttpRecorder.createRecorderProxyServer(replayConfig)) { server =>
+    withResource(HttpRecorder.createRecorderProxy(replayConfig)) { server =>
       server.start
       withClient(server.localAddress) { client =>
         val request = Request("/airframe/")

@@ -24,7 +24,7 @@ val recorderConfig =
 
 // Create a proxy server that will record responses for matching requests,
 // and make actual requests the destination for non-recorded requests.
-withResource(HttpRecorder.createRecorderProxyServer(recorderConfig)) { server =>
+withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
   server.start
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will be recorded
