@@ -53,6 +53,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     // n-th request, where n is the access count to the same path
     val counter  = requestCounter.getOrElseUpdate(rh, new AtomicInteger())
     val hitCount = counter.getAndIncrement()
+    trace(s"findNext: request hash: ${rh} for ${request}, hitCount: ${hitCount}")
     connectionPool.queryWith(
       // Get the next request matching the requestHash
       s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {

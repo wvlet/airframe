@@ -46,18 +46,19 @@ object HttpRecorderServer {
     * A request filter for replaying responses for known requests, and sending the
     * requests to the destination server for unknown requests.
     */
-  def newPathThroughService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
+  def newRecordProxyService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
     new ReplayFilter(recordStore) andThen new RecordingFilter(recordStore) andThen destClient
   }
 
   /**
     * An HTTP request filter for recording HTTP responses
     */
-  class RecordingFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] {
+  class RecordingFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] with LogSupport {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       // Rewrite the target host for proxying
       request.host = recordStore.recorderConfig.destAddress.hostAndPort
       service(request).map { response =>
+        trace(s"Recording the response for ${request}")
         // Record the result
         recordStore.record(request, response)
         // Return the original response
@@ -76,9 +77,13 @@ object HttpRecorderServer {
       recordStore.findNext(request) match {
         case Some(record) =>
           // Replay the recorded response
-          debug(s"Found a recorded response: ${record.summary}")
-          Future.value(record.toResponse)
+          trace(s"Found a recorded response: ${record.summary}")
+          val r = record.toResponse
+          // Add an HTTP header to indicate that the response is a recorded one
+          r.headerMap.put("X-Airframe-Record-Time", record.createdAt.toString)
+          Future.value(r)
         case None =>
+          trace(s"No recording is found for ${request}")
           // Fallback to the default handler
           service(request)
       }

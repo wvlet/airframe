@@ -29,8 +29,6 @@ case class HttpRecorderConfig(destUri: String,
                               expirationTime: String = "1w",
                               // the folder to store response records
                               storageFolder: String = "fixtures",
-                              // Drop the session records for recording mode
-                              dropSessionIfExists: Boolean = true,
                               recordTableName: String = "record",
                               // Specify the port to use. The default is finding an available port
                               private val port: Int = -1,
@@ -74,37 +72,38 @@ object HttpRecorder extends LogSupport {
      }).build()
   }
 
-  private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig): HttpRecordStore = {
+  private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
     val recorder = new HttpRecordStore(
       recorderConfig,
       // Delete the previous recordings for the same session name
-      dropSession = recorderConfig.dropSessionIfExists
+      dropSession = dropSession
     )
     recorder
   }
 
   /**
+    * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
+    * actually send the request to the destination server and record the response.
+    */
+  def createRecorderProxyServer(recorderConfig: HttpRecorderConfig,
+                                dropExistingSession: Boolean = false): FinagleServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
+    new HttpRecorderServer(recorder, HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+  }
+
+  /**
     * Creates an HTTP server that will record HTTP responses.
     */
-  def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val recorder = newRecordStoreForRecording(recorderConfig)
+  def createRecordOnlyServer(recorderConfig: HttpRecorderConfig, dropExistingSession: Boolean = true): FinagleServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
   }
 
   /**
-    * Creates an HTTP service that will return recorded responses. If no record is found, it will
-    * actually send the request to the destination server and record the response.
-    */
-  def createPathThroughServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val recorder = newRecordStoreForRecording(recorderConfig)
-    new HttpRecorderServer(recorder, HttpRecorderServer.newPathThroughService(recorder, newDestClient(recorderConfig)))
-  }
-
-  /**
-    * Creates an HTTP server that returns recorded HTTP responses.
+    * Creates an HTTP server that returns only recorded HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
+  def createReplayOnlyServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val recorder = new HttpRecordStore(recorderConfig)
     new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
   }

@@ -47,18 +47,19 @@ class HttpRecorderTest extends AirframeSpec {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
-    val response: Response = withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
-      server.start
-      withClient(server.localAddress) { client =>
-        val response = client(Request(path)).map { response =>
-          debug(response)
-          response
+    val response: Response =
+      withResource(HttpRecorder.createRecordOnlyServer(recorderConfig, dropExistingSession = true)) { server =>
+        server.start
+        withClient(server.localAddress) { client =>
+          val response = client(Request(path)).map { response =>
+            debug(response)
+            response
+          }
+          Await.result(response)
         }
-        Await.result(response)
       }
-    }
 
-    val replayResponse: Response = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+    val replayResponse: Response = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
       server.start
       withClient(server.localAddress) { client =>
         val response = client(Request(path)).map { response =>
@@ -70,11 +71,13 @@ class HttpRecorderTest extends AirframeSpec {
     }
 
     response.status shouldBe replayResponse.status
-    orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(replayResponse.headerMap.toMap)
+    replayResponse.headerMap.get("X-Airframe-Record-Time") shouldBe defined
+    orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(
+      replayResponse.headerMap.toMap - "X-Airframe-Record-Time")
     response.contentString shouldBe replayResponse.contentString
 
     // Check non-recorded response
-    val errorResponse = withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+    val errorResponse = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
       server.start
       withClient(server.localAddress) { client =>
         val response = client(Request("/non-recorded-path.html")).map { response =>
@@ -88,7 +91,37 @@ class HttpRecorderTest extends AirframeSpec {
     errorResponse.statusCode shouldBe 404
   }
 
-  "switch recoding/replaying" in {}
+  "switch recoding/replaying" taggedAs ("path-through") in {
+    val recorderConfig =
+      HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
+
+    // Recording
+    withResource(HttpRecorder.createRecorderProxyServer(recorderConfig, dropExistingSession = true)) { server =>
+      server.start
+      withClient(server.localAddress) { client =>
+        val request = Request("/airframe/")
+        val r1      = Await.result(client(request))
+        r1.headerMap.get("X-Airframe-Record-Time") shouldBe empty
+        val r2 = Await.result(client(request))
+        r2.headerMap.get("X-Airframe-Record-Time") shouldBe empty
+      }
+    }
+
+    // Replaying
+    val replayConfig =
+      HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
+    withResource(HttpRecorder.createRecorderProxyServer(replayConfig)) { server =>
+      server.start
+      withClient(server.localAddress) { client =>
+        val request = Request("/airframe/")
+        val r1      = Await.result(client(request))
+        val r2      = Await.result(client(request))
+        r1.headerMap.get("X-Airframe-Record-Time") shouldBe defined
+        r2.headerMap.get("X-Airframe-Record-Time") shouldBe defined
+      }
+    }
+
+  }
 
   "programmable server" in {
     val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
