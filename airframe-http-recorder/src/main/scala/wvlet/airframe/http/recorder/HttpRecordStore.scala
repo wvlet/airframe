@@ -69,13 +69,17 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
   def record(request: Request, response: Response): Unit = {
     val rh = requestHash(request)
+
+    val httpHeadersForRecording =
+      filterHeaders(request, recorderConfig.lowerCaseHeaderExcludePrefixes ++ Seq("authorization"))
+
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
       method = request.method.toString(),
       destHost = recorderConfig.destAddress.hostAndPort,
       path = request.uri,
-      requestHeader = request.headerMap.toMap,
+      requestHeader = httpHeadersForRecording,
       requestBody = request.contentString,
       responseCode = response.statusCode,
       responseHeader = response.headerMap.toMap,
@@ -91,6 +95,13 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     connectionPool.stop
   }
 
+  private def filterHeaders(request: Request, excludePrefixes: Seq[String]): Map[String, String] = {
+    request.headerMap.toSeq.filterNot { x =>
+      val key = x._1.toLowerCase(Locale.ENGLISH)
+      excludePrefixes.exists(ex => key.startsWith(ex))
+    }.toMap
+  }
+
   /**
     * Compute a hash key of the given HTTP request.
     * This value will be used for DB indexes
@@ -98,10 +109,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   protected def requestHash(request: Request): Int = {
     val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
 
-    val httpHeadersForHash = request.headerMap.toSeq.filterNot { x =>
-      val key = x._1.toLowerCase(Locale.ENGLISH)
-      recorderConfig.lowerCaseHeaderExcludePrefixes.exists(ex => key.startsWith(ex))
-    }
+    val httpHeadersForHash = filterHeaders(request, recorderConfig.lowerCaseHeaderExcludePrefixes)
 
     httpHeadersForHash match {
       case headers if headers.isEmpty => prefix.hashCode * 13
