@@ -67,11 +67,12 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     }
   }
 
+  private val defaultExcludeRequestHeaders = recorderConfig.lowerCaseHeaderExcludePrefixes ++ Seq("authorization")
+
   def record(request: Request, response: Response): Unit = {
     val rh = requestHash(request)
 
-    val httpHeadersForRecording =
-      filterHeaders(request, recorderConfig.lowerCaseHeaderExcludePrefixes ++ Seq("authorization"))
+    val httpHeadersForRecording = filterHeaders(request, defaultExcludeRequestHeaders)
 
     val entry = HttpRecord(
       recorderConfig.sessionName,
