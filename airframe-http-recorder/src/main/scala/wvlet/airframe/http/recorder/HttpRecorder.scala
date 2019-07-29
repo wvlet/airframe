@@ -36,12 +36,14 @@ case class HttpRecorderConfig(destUri: String,
                               private val port: Int = -1,
                               // A filter for customizing HTTP request headers to use for generating database keys.
                               // For example, we should remove headers that depends on the current time, etc.
-                              headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
+                              excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
   def sqliteFilePath   = s"${storageFolder}/${sessionName}.sqlite"
   lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
   lazy val destAddress = ServerAddress(destUri)
+
+  lazy val lowerCaseHeaderExcludePrefixes: Seq[String] = excludeHeaderPrefixes.map(_.toLowerCase(Locale.ENGLISH))
 }
 
 /**
@@ -51,11 +53,8 @@ case class HttpRecorderConfig(destUri: String,
   */
 object HttpRecorder extends LogSupport {
 
-  def defaultHeaderExclude: String => Boolean = { headerName =>
-    // Ignore Finagle's tracing IDs
-    val hl = headerName.toLowerCase(Locale.ENGLISH)
-    hl.startsWith("x-b3-") || hl.startsWith("finagle-")
-  }
+  // Ignore Finagle's tracing IDs.
+  def defaultExcludeHeaderPrefixes: Seq[String] = Seq("x-b3-", "finagle-")
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")

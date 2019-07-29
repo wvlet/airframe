@@ -98,7 +98,12 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   protected def requestHash(request: Request): Int = {
     val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
 
-    request.headerMap.filterNot(x => recorderConfig.headerExcludes(x._1)) match {
+    val httpHeadersForHash = request.headerMap.toSeq.filterNot { x =>
+      val key = x._1.toLowerCase(Locale.ENGLISH)
+      recorderConfig.lowerCaseHeaderExcludePrefixes.exists(ex => key.startsWith(ex))
+    }
+
+    httpHeadersForHash match {
       case headers if headers.isEmpty => prefix.hashCode * 13
       case headers =>
         val headerHash = headers
