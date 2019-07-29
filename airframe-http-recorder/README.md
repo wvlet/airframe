@@ -22,24 +22,37 @@ import wvlet.airframe.control.Control._
 val recorderConfig = 
   HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe")
 
-// Create a proxy server for recording server responses
-withResource(HttpRecorder.createRecordingServer(recorderConfig)) { server =>
+// Create a proxy server that will record responses for matching requests,
+// and make actual requests the destination for non-recorded requests.
+withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
   server.start
   val addr = server.localAddress // "localhost:(port number)"
-  // Requests to the local server will be recorded 
+  // Requests to the local server will be recorded
+}
+
+
+// Create a proxy server only for recording server responses
+withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
+  server.start
+  val addr = server.localAddress // "localhost:(port number)"
+  // Requests to the local server will be recorded
 }
 
 // Create a replay server that returns recorded responses for matching requests 
-withResource(HttpRecorder.createReplayServer(recorderConfig)) { server =>
+withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
   server.start
   val addr = server.localAddress // "localhost:(port number)"
-  // Requests to the local server will return the recorded responses 
+  // Requests to the local server will return the recorded responses
 }
 ```
 
 ### Programmable
 
 ```scala
+import wvlet.airframe.http.recorder._
+import wvlet.airframe.control.Control._
+import com.twitter.finagle.http.{Request,Response}
+
 val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
   // Program server responses instead of recodring
   val request = Request("/index.html")

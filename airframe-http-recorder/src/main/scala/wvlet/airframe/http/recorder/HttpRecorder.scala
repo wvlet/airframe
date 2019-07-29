@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
@@ -21,7 +20,7 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
 import javax.net.ssl.SSLContext
 import wvlet.airframe.http.ServerAddress
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -30,8 +29,6 @@ case class HttpRecorderConfig(destUri: String,
                               expirationTime: String = "1w",
                               // the folder to store response records
                               storageFolder: String = "fixtures",
-                              // Drop the session records for recording mode
-                              dropSessionIfExists: Boolean = true,
                               recordTableName: String = "record",
                               // Specify the port to use. The default is finding an available port
                               private val port: Int = -1,
@@ -57,17 +54,7 @@ object HttpRecorder extends LogSupport {
     headerName.startsWith("X-B3-") || headerName.startsWith("Finagle-")
   }
 
-  /**
-    * Creates an HTTP server that will record HTTP responses.
-    */
-  def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder = new HttpRecordStore(
-      recorderConfig,
-      // Delete the previous recordings for the same sesion name
-      dropSession = recorderConfig.dropSessionIfExists
-    )
-
+  private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")
     val clientBuilder =
       ClientBuilder()
@@ -78,23 +65,46 @@ object HttpRecorder extends LogSupport {
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
 
-    val destClient = (if (recorderConfig.destAddress.port == 443) {
-                        clientBuilder.tls(SSLContext.getDefault)
-                      } else {
-                        clientBuilder
-                      }).build()
+    (if (recorderConfig.destAddress.port == 443) {
+       clientBuilder.tls(SSLContext.getDefault)
+     } else {
+       clientBuilder
+     }).build()
+  }
 
-    new HttpRecorderServer(recorder, finagleConfig, new RecordingService(recorder, destClient))
+  private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
+    val recorder = new HttpRecordStore(
+      recorderConfig,
+      // Delete the previous recordings for the same session name
+      dropSession = dropSession
+    )
+    recorder
   }
 
   /**
-    * Creates an HTTP server that returns recorded HTTP responses.
+    * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
+    * actually send the request to the destination server and record the response.
+    */
+  def createRecorderProxy(recorderConfig: HttpRecorderConfig, dropExistingSession: Boolean = false): FinagleServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
+    new HttpRecorderServer(recorder, HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+  }
+
+  /**
+    * Creates an HTTP server that will record HTTP responses.
+    */
+  def createRecordOnlyServer(recorderConfig: HttpRecorderConfig, dropExistingSession: Boolean = true): FinagleServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
+    new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
+  }
+
+  /**
+    * Creates an HTTP server that returns only recorded HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder      = new HttpRecordStore(recorderConfig)
-    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
+  def createReplayOnlyServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
+    val recorder = new HttpRecordStore(recorderConfig)
+    new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
   }
 
   /**
@@ -103,15 +113,13 @@ object HttpRecorder extends LogSupport {
     */
   def createProgrammableServer(programmer: HttpRecordStore => Unit): FinagleServer = {
     val recorderConfig = HttpRecorderConfig("localhost")
-    val finagleConfig  = FinagleServerConfig(recorderConfig.serverPort)
     val recorder = new HttpRecordStore(recorderConfig, true) {
       override def requestHash(request: Request): Int = {
-        val content = request.getContentString()
-        s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}".hashCode
+        computeRequestHash(request, recorderConfig)
       }
     }
     programmer(recorder)
-    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
+    new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
   }
 
   def defaultFallBackHandler = {
@@ -120,6 +128,10 @@ object HttpRecorder extends LogSupport {
       r.contentString = s"${request.uri} is not found"
       Future.value(r)
     }
+  }
+
+  private[recorder] def computeRequestHash(request: Request, recorderConfig: HttpRecorderConfig): Int = {
+    s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${request.contentString.hashCode}".hashCode
   }
 
 }

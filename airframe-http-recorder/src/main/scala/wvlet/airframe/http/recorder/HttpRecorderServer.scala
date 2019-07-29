@@ -13,17 +13,18 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.Service
+import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.finagle.{FinagleFilter, FinagleServer, FinagleServerConfig}
 import wvlet.log.LogSupport
 
-class HttpRecorderServer(recordStore: HttpRecordStore,
-                         finagleConfig: FinagleServerConfig,
-                         finagleService: FinagleService)
-    extends FinagleServer(finagleConfig, finagleService) {
+/**
+  * A FinagleServer wrapper to close HttpRecordStore when the server terminates
+  */
+class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
+    extends FinagleServer(FinagleServerConfig(recordStore.recorderConfig.serverPort), finagleService) {
 
   override def close(): Unit = {
     super.close()
@@ -31,37 +32,67 @@ class HttpRecorderServer(recordStore: HttpRecordStore,
   }
 }
 
-/**
-  * An HTTP request filter for recording HTTP responses
-  */
-class RecordingService(recordStore: HttpRecordStore, destination: Service[Request, Response]) extends FinagleService {
+object HttpRecorderServer {
 
-  override def apply(request: Request): Future[Response] = {
-    // Rewrite the target host for proxying
-    request.host = recordStore.recorderConfig.destAddress.hostAndPort
-    destination(request).map { response =>
-      // Record the result
-      recordStore.record(request, response)
-      response
+  def newRecordingService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
+    new RecordingFilter(recordStore) andThen destClient
+  }
+
+  def newReplayService(recordStore: HttpRecordStore): FinagleService = {
+    new ReplayFilter(recordStore) andThen new FallbackService(recordStore)
+  }
+
+  /**
+    * A request filter for replaying responses for known requests, and sending the
+    * requests to the destination server for unknown requests.
+    */
+  def newRecordProxyService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
+    new ReplayFilter(recordStore) andThen new RecordingFilter(recordStore) andThen destClient
+  }
+
+  /**
+    * An HTTP request filter for recording HTTP responses
+    */
+  class RecordingFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] with LogSupport {
+    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+      // Rewrite the target host for proxying
+      request.host = recordStore.recorderConfig.destAddress.hostAndPort
+      service(request).map { response =>
+        trace(s"Recording the response for ${request}")
+        // Record the result
+        recordStore.record(request, response)
+        // Return the original response
+        response
+      }
     }
   }
-}
 
-/**
-  * An HTTP request filter for returning recorded HTTP responses
-  */
-class ReplayService(recordStore: HttpRecordStore) extends FinagleService with LogSupport {
+  /**
+    * An HTTP request filter for returning recorded HTTP responses
+    */
+  class ReplayFilter(recordStore: HttpRecordStore) extends SimpleFilter[Request, Response] with LogSupport {
+    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+      // Rewrite the target host for proxying
+      request.host = recordStore.recorderConfig.destAddress.hostAndPort
+      recordStore.findNext(request) match {
+        case Some(record) =>
+          // Replay the recorded response
+          trace(s"Found a recorded response: ${record.summary}")
+          val r = record.toResponse
+          // Add an HTTP header to indicate that the response is a recorded one
+          r.headerMap.put("X-Airframe-Record-Time", record.createdAt.toString)
+          Future.value(r)
+        case None =>
+          trace(s"No recording is found for ${request}")
+          // Fallback to the default handler
+          service(request)
+      }
+    }
+  }
 
-  override def apply(request: Request): Future[Response] = {
-    // Rewrite the target host for proxying
-    request.host = recordStore.recorderConfig.destAddress.hostAndPort
-    recordStore.findNext(request) match {
-      case Some(record) =>
-        // Replay the recorded response
-        debug(s"Found a recorded response: ${record.summary}")
-        Future.value(record.toResponse)
-      case None =>
-        recordStore.recorderConfig.fallBackHandler(request)
+  class FallbackService(recordStore: HttpRecordStore) extends Service[Request, Response] {
+    override def apply(request: Request): Future[Response] = {
+      recordStore.recorderConfig.fallBackHandler(request)
     }
   }
 }
