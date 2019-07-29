@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http.recorder
 
+import java.util.Locale
+
 import com.twitter.finagle.builder.ClientBuilder
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
@@ -51,7 +53,8 @@ object HttpRecorder extends LogSupport {
 
   def defaultHeaderExclude: String => Boolean = { headerName =>
     // Ignore Finagle's tracing IDs
-    headerName.startsWith("X-B3-") || headerName.startsWith("Finagle-")
+    val hl = headerName.toLowerCase(Locale.ENGLISH)
+    hl.startsWith("x-b3-") || hl.startsWith("finagle-")
   }
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
