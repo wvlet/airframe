@@ -330,15 +330,15 @@ lazy val airframe =
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
 
-// Airframe depends on Airframe Macros, so we needed to split the project
+// Airframe DI needs to call macro methods, so we needed to split the project into DI and DI macros.
 lazy val airframeMacros =
   crossProject(JVMPlatform, JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-macros"))
+    .in(file("airframe-di-macros"))
     .settings(buildSettings)
     .settings(
       buildSettings,
-      name := "airframe-macros",
+      name := "airframe-di-macros",
       description := "Macros for Airframe",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
