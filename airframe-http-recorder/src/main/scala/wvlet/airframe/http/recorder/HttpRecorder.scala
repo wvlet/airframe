@@ -54,7 +54,7 @@ case class HttpRecorderConfig(destUri: String,
 object HttpRecorder extends LogSupport {
 
   // Ignore Finagle's tracing IDs.
-  def defaultExcludeHeaderPrefixes: Seq[String] = Seq("x-b3-", "finagle-")
+  def defaultExcludeHeaderPrefixes: Seq[String] = Seq("date", "x-b3-", "finagle-")
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")
