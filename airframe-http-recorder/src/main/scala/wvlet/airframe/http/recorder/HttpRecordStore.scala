@@ -14,6 +14,7 @@
 package wvlet.airframe.http.recorder
 
 import java.time.Instant
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.twitter.finagle.http.{Request, Response}
@@ -97,17 +98,21 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   protected def requestHash(request: Request): Int = {
     val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
 
-    request.headerMap.filterNot(x => recorderConfig.headerExcludes(x._1)) match {
+    val httpHeadersForHash = request.headerMap.toSeq.filterNot { x =>
+      val key = x._1.toLowerCase(Locale.ENGLISH)
+      recorderConfig.lowerCaseHeaderExcludePrefixes.exists(ex => key.startsWith(ex))
+    }
+
+    httpHeadersForHash match {
       case headers if headers.isEmpty => prefix.hashCode * 13
       case headers =>
         val headerHash = headers
           .map { x =>
-            s"${x._1}:${x._2}".hashCode
+            s"${x._1.toLowerCase(Locale.ENGLISH)}:${x._2}".hashCode
           }.reduce { (xor, next) =>
             xor ^ next // Take XOR to compute order-insensitive hash values.
           }
         prefix.hashCode * 13 + headerHash
     }
   }
-
 }
