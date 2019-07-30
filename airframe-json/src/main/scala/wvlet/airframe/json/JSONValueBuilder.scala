@@ -90,7 +90,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
         BigInt(v) match {
           case i if Long.MaxValue < i => JSONBigInt(i)
           case i if Long.MinValue > i => JSONBigInt(i)
-          case i                      => JSONLong(i.longValue())
+          case i                      => JSONLong(i.longValue)
         }
       } catch {
         case _: NumberFormatException =>
