@@ -45,9 +45,9 @@ package object finagle {
   /**
     * Create a new design for FinagleServer using a random port (if not given)
     */
-  def newFinagleServerDesign(router: Router, port: Int = IOUtil.randomPort): Design = {
+  def newFinagleServerDesign(name: String = "default", port: Int = IOUtil.randomPort, router: Router): Design = {
     finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = router))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(name = name, port = port, router = router))
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {

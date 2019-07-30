@@ -13,18 +13,18 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.finagle.{FinagleFilter, FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
 import wvlet.log.LogSupport
 
 /**
   * A FinagleServer wrapper to close HttpRecordStore when the server terminates
   */
 class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
-    extends FinagleServer(FinagleServerConfig(recordStore.recorderConfig.serverPort), finagleService) {
+    extends FinagleServer(FinagleServerConfig("http-recorder", recordStore.recorderConfig.serverPort), finagleService) {
 
   override def close(): Unit = {
     super.close()

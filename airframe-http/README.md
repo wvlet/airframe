@@ -144,7 +144,7 @@ trait CustomFinagleServerFactory extends FinagleServerFactory {
   }
 }
 
-val design = newFinagleServerDesign(router = router, port = 8080)
+val design = newFinagleServerDesign(name = "my server", router = router, port = 8080)
     // Configure Finagle Server
     .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
@@ -161,8 +161,8 @@ Create a FinagleServerFactory, and call `newFinagleServer(FinagleServerConfig)`:
 import wvlet.airframe.http.finagle._
 
 finagleDefaultDesign.build[FinagleServerFactory] { factory =>
- factory.newFinagleServer(FinagleServerConfig(port = 8080, router = router1))
- factory.newFinagleServer(FinagleServerConfig(port = 8081, router = router2))
+ factory.newFinagleServer(FinagleServerConfig(name = "server1", port = 8080, router = router1))
+ factory.newFinagleServer(FinagleServerConfig(name = "server2", port = 8081, router = router2))
  // Two finagle servers will start at port 8081 and 8081
 }
 // Two servers will be stopped after exiting the session

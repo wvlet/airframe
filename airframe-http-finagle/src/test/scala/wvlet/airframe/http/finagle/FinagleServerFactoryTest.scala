@@ -33,8 +33,8 @@ class FinagleServerFactoryTest extends AirframeSpec {
 
   "FinagleServerFactory" should {
     "start multiple FinagleServers" in {
-      val serverConfig1 = FinagleServerConfig(p1, router1)
-      val serverConfig2 = FinagleServerConfig(p2, router2)
+      val serverConfig1 = FinagleServerConfig(name = "server1", port = p1, router = router1)
+      val serverConfig2 = FinagleServerConfig(name = "server2", port = p2, router = router2)
 
       finagleDefaultDesign.build[FinagleServerFactory] { factory =>
         val server1 = factory.newFinagleServer(serverConfig1)
@@ -49,10 +49,8 @@ class FinagleServerFactoryTest extends AirframeSpec {
     }
 
     "allow customize services" in {
-      val p3 = IOUtil.unusedPort
       val d2 =
         finagleDefaultDesign
-          .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = p3))
           .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
       d2.build[FinagleServer] { server =>
@@ -62,14 +60,12 @@ class FinagleServerFactoryTest extends AirframeSpec {
     }
 
     "allow customize Finagle Http Server" in {
-      val port = IOUtil.unusedPort
       val d =
         finagleDefaultDesign
-          .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port))
           .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
 
       d.build[FinagleServer] { server =>
-        val client = Http.client.newService(s"localhost:${server.port}")
+        val client = Http.client.newService(server.localAddress)
         Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server with tracer"
       }
     }
