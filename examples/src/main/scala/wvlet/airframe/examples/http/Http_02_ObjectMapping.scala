@@ -66,7 +66,7 @@ object Http_02_ObjectMapping extends App with LogSupport {
   }
 
   val router = Router.add[MyApp]
-  val design = finagle.newFinagleServerDesign(router)
+  val design = finagle.newFinagleServerDesign(name = "myapp", router = router)
 
   design.build[FinagleServer] { server =>
     withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>

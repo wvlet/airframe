@@ -33,7 +33,7 @@ object Http_01_Interface extends App {
   }
 
   val router = Router.add[MyApp]
-  val design = newFinagleServerDesign(router, port = 8080)
+  val design = newFinagleServerDesign(name = "myapp", port = 8080, router = router)
 
   design.build[FinagleServer] { server =>
     val serverAddress = server.localAddress
