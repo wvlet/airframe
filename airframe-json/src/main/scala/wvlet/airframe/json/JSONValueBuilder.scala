@@ -86,10 +86,16 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
     val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {
       JSONDouble(v.toDouble)
     } else {
-      Try(JSONLong(v.toLong)).recover {
-        case e: NumberFormatException =>
+      try {
+        BigInt(v) match {
+          case i if Long.MaxValue < i => JSONBigInt(i)
+          case i if Long.MinValue > i => JSONBigInt(i)
+          case i                      => JSONLong(i.longValue())
+        }
+      } catch {
+        case _: NumberFormatException =>
           JSONDouble(v.toDouble)
-      }.get
+      }
     }
     add(num)
   }

@@ -89,6 +89,9 @@ object JSON extends LogSupport {
   final case class JSONLong(v: Long) extends JSONNumber {
     override def toJSON: String = v.toString
   }
+  final case class JSONBigInt(v: BigInt) extends JSONNumber {
+    override def toJSON: String = v.toString
+  }
   final case class JSONString(v: String) extends JSONValue {
     override def toString = v
     override def toJSON: String = {

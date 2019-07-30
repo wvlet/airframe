@@ -46,5 +46,16 @@ class JSONParserTest extends AirframeSpec {
       JSON.parseAny("[1, 2]") shouldBe JSONArray(IndexedSeq(JSONLong(1L), JSONLong(2L)))
       JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
     }
+
+    "parse numeric json values" in {
+      JSON.parseAny(Long.MaxValue.toString) shouldBe JSONLong(Long.MaxValue)
+      JSON.parseAny(Long.MinValue.toString) shouldBe JSONLong(Long.MinValue)
+
+      JSON.parseAny("9223372036854775808") shouldBe JSONBigInt(BigInt("9223372036854775808"))
+      JSON.parseAny("-9223372036854775809") shouldBe JSONBigInt(BigInt("-9223372036854775809"))
+
+      JSON.parseAny(Double.MaxValue.toString) shouldBe JSONDouble(Double.MaxValue)
+      JSON.parseAny(Double.MinValue.toString) shouldBe JSONDouble(Double.MinValue)
+    }
   }
 }
