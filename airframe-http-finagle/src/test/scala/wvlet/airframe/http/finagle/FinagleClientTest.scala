@@ -99,7 +99,8 @@ class FinagleClientTest extends AirframeSpec {
 
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = IOUtil.randomPort, router = r))
+    .bind[FinagleServerConfig].toInstance(
+      FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r))
     .noLifeCycleLogging
 
   "create client" in {

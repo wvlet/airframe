@@ -98,7 +98,7 @@ class HttpFilterTest extends AirframeSpec {
 
     val myLogStore = new LogStore
 
-    val d = newFinagleServerDesign(router)
+    val d = newFinagleServerDesign(name = "filter-test", router = router)
       .bind[LogStore].toInstance(myLogStore)
       .noLifeCycleLogging
 

@@ -22,10 +22,11 @@ import wvlet.airframe._
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
 import wvlet.log.LogSupport
+import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
 
-case class FinagleServerConfig(port: Int = 8080, router: Router = Router.empty)
+case class FinagleServerConfig(name: String = "default", port: Int = IOUtil.unusedPort, router: Router = Router.empty)
 
 /**
   *
@@ -42,14 +43,14 @@ class FinagleServer(finagleConfig: FinagleServerConfig,
 
   @PostConstruct
   def start: Unit = {
-    info(s"Starting a server at http://localhost:${finagleConfig.port}")
+    info(s"Starting ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
     val customServer = initServer(Http.Server())
     server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))
   }
 
   @PreDestroy
   def stop = {
-    info(s"Stopping the server http://localhost:${finagleConfig.port}")
+    info(s"Stopping ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
     server.map(_.close())
   }
 
@@ -152,7 +153,7 @@ trait FinagleServerFactory {
     server
   }
 
-  def newFinagleServer(port: Int, router: Router): FinagleServer = {
-    newFinagleServer(FinagleServerConfig(port = port, router = router))
+  def newFinagleServer(name: String, port: Int, router: Router): FinagleServer = {
+    newFinagleServer(FinagleServerConfig(name = name, port = port, router = router))
   }
 }

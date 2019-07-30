@@ -23,7 +23,7 @@ import wvlet.airframe.AirframeSpec
 import wvlet.airframe.codec.JSONCodec
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.log.LogSupport
+import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)
 case class RichNestedInfo(serverType: String)
@@ -88,7 +88,7 @@ class FinagleRouterTest extends AirframeSpec {
     val r2 = Router.of[MyApi]
   }
 
-  val d = newFinagleServerDesign(Router.add[MyApi]).noLifeCycleLogging
+  val d = newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
 
   "Support function arg mappings" in {
     d.build[FinagleServer] { server =>
@@ -174,9 +174,16 @@ class FinagleRouterTest extends AirframeSpec {
       // Error test
       {
         warn("Exception response test")
-        val request = Request("/v1/error")
-        val ret     = Await.result(client(request))
-        ret.statusCode shouldBe 500
+        val l  = Logger.of[FinagleServer]
+        val lv = l.getLogLevel
+        l.setLogLevel(LogLevel.ERROR)
+        try {
+          val request = Request("/v1/error")
+          val ret     = Await.result(client(request))
+          ret.statusCode shouldBe 500
+        } finally {
+          l.setLogLevel(lv)
+        }
       }
 
       // Msgpack body
