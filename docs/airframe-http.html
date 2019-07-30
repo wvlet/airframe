@@ -175,7 +175,7 @@ server factory:</p>
   <span class="o">}</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my server"</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
     <span class="c1">// Configure Finagle Server
 </span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
 
@@ -191,8 +191,8 @@ server factory:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
 <span class="n">finagleDefaultDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
- <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
- <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
+ <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server1"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
+ <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server2"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
  <span class="c1">// Two finagle servers will start at port 8081 and 8081
 </span><span class="o">}</span>
 <span class="c1">// Two servers will be stopped after exiting the session
