@@ -16,8 +16,6 @@ package wvlet.airframe.json
 import wvlet.airframe.json.JSON._
 import wvlet.log.LogSupport
 
-import scala.util.Try
-
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
   override def result: JSONValue                           = null
