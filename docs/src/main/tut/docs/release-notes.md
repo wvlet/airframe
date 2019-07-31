@@ -5,6 +5,16 @@ title: Release Notes
 
 # Release Notes
 
+## 19.7.6
+-  airframe-http-recorder: [#559](https://github.com/wvlet/airframe/issues/559) Support expiration ([#567](https://github.com/wvlet/airframe/issues/567)) [[32a0224](https://github.com/wvlet/airframe/commit/32a0224)]
+-  airframe-http: Allow setting FinagleServer name ([#566](https://github.com/wvlet/airframe/issues/566)) [[3f810f1](https://github.com/wvlet/airframe/commit/3f810f1)]
+-  airframe-http: Return the last failed response with HttpClientException ([#565](https://github.com/wvlet/airframe/issues/565)) [[2099555](https://github.com/wvlet/airframe/commit/2099555)]
+-  airframe-http-recorder: Exclude unnecessary request headers from records ([#563](https://github.com/wvlet/airframe/issues/563)) [[2246316](https://github.com/wvlet/airframe/commit/2246316)]
+-  airframe-http-recorder: Exclude Date header from request hash ([#562](https://github.com/wvlet/airframe/issues/562)) [[8b75221](https://github.com/wvlet/airframe/commit/8b75221)]
+-  airframe-http-recorder: Use case-insensitive request hashing ([#561](https://github.com/wvlet/airframe/issues/561)) [[20467a6](https://github.com/wvlet/airframe/commit/20467a6)]
+-  airframe-http-recorder: Add createRecorderProxy ([#557](https://github.com/wvlet/airframe/issues/557)) [[bbba4db](https://github.com/wvlet/airframe/commit/bbba4db)]
+-  Rename airframe-macros to airframe-di-macros ([#560](https://github.com/wvlet/airframe/issues/560)) [[9a6e871](https://github.com/wvlet/airframe/commit/9a6e871)]
+
 ## 19.7.5
 -  airframe-http: Support reading raw response as is ([#553](https://github.com/wvlet/airframe/issues/553)) [[1ccedae](https://github.com/wvlet/airframe/commit/1ccedae)]
 -  airframe-http-client: Add getResource for GET with query strings ([#552](https://github.com/wvlet/airframe/issues/552)) [[fd5849c](https://github.com/wvlet/airframe/commit/fd5849c)]
