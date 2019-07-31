@@ -149,4 +149,25 @@ class HttpRecorderTest extends AirframeSpec {
     response.contentString shouldBe "Hello World!"
   }
 
+  "delete expired records" in {
+    val recorderConfig =
+      HttpRecorderConfig(destUri = "https://wvlet.org",
+                         sessionName = "airframe",
+                         // Expire immediately
+                         expirationTime = "1s")
+
+    val path = "/airframe/"
+    withResource(new HttpRecordStore(recorderConfig, dropSession = true)) { store =>
+      store.numRecordsInSession shouldBe 0
+      store.record(Request("/airframe"), Response())
+      store.numRecordsInSession shouldBe 1
+    }
+
+    // Wait until expiration
+    Thread.sleep(1000)
+    withResource(new HttpRecordStore(recorderConfig)) { store =>
+      store.numRecordsInSession shouldBe 0
+    }
+  }
+
 }
