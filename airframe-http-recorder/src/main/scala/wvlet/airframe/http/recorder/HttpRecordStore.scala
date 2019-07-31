@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.twitter.finagle.http.{Request, Response}
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
+import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
 
 /**
@@ -41,10 +42,37 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
   }
 
+  cleanupExpiredRecords
+
+  private def cleanupExpiredRecords: Unit = {
+    val duration = TimeWindow.withUTC.parse(recorderConfig.expirationTime)
+    val diffSec  = duration.endUnixTime - duration.startUnixTime
+
+    val deletedRows = connectionPool.executeUpdate(
+      s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}' and strftime('%s', 'now') - strftime('%s', createdAt) >= ${diffSec}"
+    )
+
+    if (deletedRows > 0) {
+      warn(
+        s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}")
+    }
+  }
+
   private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
   def resetCounter: Unit = {
     requestCounter.clear()
+  }
+
+  def numRecordsInSession: Long = {
+    connectionPool.executeQuery(
+      s"select count(1) cnt from ${recordTableName} where session = '${recorderConfig.sessionName}'") { rs =>
+      if (rs.next()) {
+        rs.getLong(1)
+      } else {
+        0L
+      }
+    }
   }
 
   def findNext(request: Request): Option[HttpRecord] = {
