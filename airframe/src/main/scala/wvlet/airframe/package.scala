@@ -99,7 +99,7 @@ package object airframe extends LogSupport {
   // For internal use to hold caches of factories of trait with a session
   def registerTraitFactory[A]: Surface = macro registerTraitFactoryImpl[A]
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
   def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
     trace(s"Adding factory of ${s}")

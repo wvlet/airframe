@@ -17,6 +17,7 @@ import java.sql.{ResultSet, Time, Timestamp, Types}
 import wvlet.airframe.codec.PrimitiveCodec._
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.log.LogSupport
+import scala.collection.compat._
 
 /**
   *
@@ -45,7 +46,7 @@ object JDBCCodec extends LogSupport {
     /**
       * Encode the all ResultSet rows as JSON object values
       */
-    def toJsonSeq: TraversableOnce[String] = {
+    def toJsonSeq: IterableOnce[String] = {
       mapMsgPackMapRows { msgpack =>
         JSONCodec.toJson(msgpack)
       }
@@ -93,14 +94,14 @@ object JDBCCodec extends LogSupport {
     /**
       * Create an interator for reading ResultSet as a sequence of MsgPack Map values
       */
-    def mapMsgPackMapRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+    def mapMsgPackMapRows[U](f: Array[Byte] => U): IterableOnce[U] = {
       new RStoMsgPackIterator[U](f, packer = packRowAsMap(_))
     }
 
     /**
       * Create an interator for reading ResultSet as a sequence of MsgPack array values
       */
-    def mapMsgPackArrayRows[U](f: Array[Byte] => U): TraversableOnce[U] = {
+    def mapMsgPackArrayRows[U](f: Array[Byte] => U): IterableOnce[U] = {
       new RStoMsgPackIterator[U](f, packer = packRowAsArray(_))
     }
 

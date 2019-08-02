@@ -193,7 +193,7 @@ object UnpackerImpl {
   import org.msgpack.{value => v8}
   import wvlet.airframe.msgpack.spi.Value._
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   def fromMsgPackV8Value(v: v8.Value): Value = {
     v match {

@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 import wvlet.log.LogSupport
 import wvlet.airframe.surface._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
 
 /**

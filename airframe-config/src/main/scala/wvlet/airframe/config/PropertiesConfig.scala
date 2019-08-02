@@ -86,7 +86,7 @@ object PropertiesConfig extends LogSupport {
 
   def overrideWithProperties(config: Config, props: Properties, onUnusedProperties: Properties => Unit): Config = {
     val overrides: Seq[ConfigProperty] = {
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       val b = Seq.newBuilder[ConfigProperty]
       for ((k, v) <- props.asScala) yield {
         val key = configKeyOf(k)

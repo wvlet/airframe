@@ -55,7 +55,7 @@ class ParallelTest extends AirframeSpec {
 
       val source    = Seq(1, 2, 3)
       val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
-      val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
+      val result = Parallel.iterate(source.iterator, parallelism = 3) { i =>
         startTime(i - 1) = System.currentTimeMillis()
         i * 2
       }
@@ -103,7 +103,7 @@ class ParallelTest extends AirframeSpec {
       val exception = new RuntimeException("failure")
 
       val result = Parallel
-        .iterate(source.toIterator, parallelism = 3) { i =>
+        .iterate(source.iterator, parallelism = 3) { i =>
           Try {
             if (i == 2) {
               throw exception

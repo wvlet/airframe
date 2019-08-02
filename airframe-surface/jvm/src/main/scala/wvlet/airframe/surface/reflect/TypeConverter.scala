@@ -22,7 +22,7 @@ import wvlet.airframe.surface.{Primitive, Surface, Zero}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   *

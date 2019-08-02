@@ -29,7 +29,7 @@ import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
   *
   */
 class PrimitiveCodecTest extends CodecSpec with ScalaCheckDrivenPropertyChecks {
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   def roundTripTest[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T]): Unit = {
     forAll { (v: T) =>
