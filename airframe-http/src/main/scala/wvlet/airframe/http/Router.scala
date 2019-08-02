@@ -141,6 +141,6 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  def filter[Filter]: Router = macro RouterMacros.newFilter[Filter]
+  def filter[Filter <: HttpFilterType]: Router = macro RouterMacros.newFilter[Filter]
 
 }

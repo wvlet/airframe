@@ -14,44 +14,37 @@
 package wvlet.airframe.http
 
 import scala.language.higherKinds
+import scala.util.control.NonFatal
+
+private[http] trait HttpFilterType
 
 /**
   * A filter interface to define actions for handling HTTP requests and responses
   */
-trait HttpFilter[Req, Resp, F[_]] { self =>
+trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
+
+  // Wrap an exception and returns F[Exception]
+  protected def wrapException(e: Throwable): F[Resp]
+
+  /**
+    * Implementations of HttpFilter must wrap an exception occurred in the filter.apply(request, context) with F[_]
+    */
+  protected def rescue(body: => F[Resp]): F[Resp] = {
+    try {
+      body
+    } catch {
+      case NonFatal(e) => wrapException(e)
+    }
+  }
+
+  // Implementation to process the request. If this filter doesn't return any response, pass the request to the context(request)
   def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp]
 
   // Add another filter:
-  def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F] = {
-    HttpFilter.AndThen(this, nextFilter)
-  }
+  def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F]
 
-  private[http] def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F] = {
-    new HttpContext[Req, Resp, F] {
-      override def apply(request: Req): F[Resp] = {
-        self.apply(request, context)
-      }
-    }
-  }
-}
-
-object HttpFilter {
-  class Identity[Req, Resp, F[_]]() extends HttpFilter[Req, Resp, F] {
-    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
-      context(request)
-    }
-
-    override def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F] = {
-      nextFilter
-    }
-  }
-
-  case class AndThen[Req, Resp, F[_]](prev: HttpFilter[Req, Resp, F], next: HttpFilter[Req, Resp, F])
-      extends HttpFilter[Req, Resp, F] {
-    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
-      prev.apply(request, next.andThen(context))
-    }
-  }
+  // End the filter chain with the given HttpContext
+  def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F]
 }
 
 /***

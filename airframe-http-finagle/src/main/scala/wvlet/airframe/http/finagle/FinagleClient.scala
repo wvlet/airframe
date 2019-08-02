@@ -26,6 +26,7 @@ import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
+import scala.util.control.NonFatal
 
 case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
                                requestFilter: http.Request => http.Request = identity,
@@ -51,7 +52,25 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   override def send(req: Request): Future[Response] = {
-    client(req)
+    client.apply(req)
+  }
+
+  private def toRawUnsafe(resp: HttpResponse[_]): Response = {
+    resp.asInstanceOf[HttpResponse[Response]].toRaw
+  }
+
+  override def sendSafe(req: Request): Future[Response] = {
+    try {
+      client.apply(req).rescue {
+        case e: HttpClientException =>
+          Future.value(toRawUnsafe(e.response))
+      }
+    } catch {
+      case e: HttpClientException =>
+        Future.value(toRawUnsafe(e.response))
+      case NonFatal(e) =>
+        Future.exception(e)
+    }
   }
 
   def close: Unit = {
@@ -67,6 +86,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     req
   }
 
+  /**
+    * Await the result of Future[A]. It will throw an exception if some error happens
+    */
   override private[http] def awaitF[A](f: Future[A]): A = {
     val r = Await.result(f, config.timeout)
     trace(r)
@@ -83,10 +105,11 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     } else {
       // Need a conversion
       val codec = MessageCodec.of[A]
-      response.map { r =>
-        val msgpack = responseCodec.toMsgPack(r)
-        codec.unpack(msgpack)
-      }
+      response
+        .map { r =>
+          val msgpack = responseCodec.toMsgPack(r)
+          codec.unpack(msgpack)
+        }
     }
   }
 
