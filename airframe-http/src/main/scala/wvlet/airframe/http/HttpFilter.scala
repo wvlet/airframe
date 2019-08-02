@@ -35,11 +35,13 @@ trait HttpFilter[Req, Resp, F[_]] { self =>
     }
   }
 
+  // Implementation to process the request. If this filter doesn't return any response, pass the request to the context(request)
   def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp]
 
   // Add another filter:
   def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F]
 
+  // End the filter chain with the given HttpContext
   def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F]
 }
 

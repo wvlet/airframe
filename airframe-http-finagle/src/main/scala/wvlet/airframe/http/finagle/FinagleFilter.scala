@@ -20,19 +20,21 @@ import wvlet.log.LogSupport
 
 import scala.util.control.NonFatal
 
+/**
+  * An wrapper of HttpFilter for Finagle backend implementation
+  */
 abstract class FinagleFilter extends HttpFilter[Request, Response, Future] {
   override def wrapException(e: Throwable): Future[Response] = {
     Future.exception(e)
   }
 
   override def andThen(nextFilter: HttpFilter[Request, Response, Future]): FinagleFilter = {
-    FinagleFilter.FinagleAndThen(this, nextFilter)
+    FinagleFilter.AndThen(this, nextFilter)
   }
 
   override def andThen(context: HttpContext[Request, Response, Future]): HttpContext[Request, Response, Future] = {
     FinagleFilter.AndThenHttpContext(this, context)
   }
-
 }
 
 object FinagleFilter {
@@ -52,7 +54,7 @@ object FinagleFilter {
     }
   }
 
-  private case class FinagleAndThen(prev: FinagleFilter, next: HttpFilter[Request, Response, Future])
+  private case class AndThen(prev: FinagleFilter, next: HttpFilter[Request, Response, Future])
       extends FinagleFilter
       with LogSupport {
     override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
