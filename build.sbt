@@ -363,9 +363,10 @@ lazy val surface =
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect"  % scalaVersion.value,
-        "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-        "org.scalatest"  %%% "scalatest"    % SCALATEST_VERSION % "test"
+        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
+        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
+        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
+        "org.scalatest"          %%% "scalatest"               % SCALATEST_VERSION % "test"
       )
     )
     .jvmSettings(
@@ -451,8 +452,9 @@ lazy val log =
       name := "airframe-log",
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided",
-        "org.scalatest"  %%% "scalatest"   % SCALATEST_VERSION  % "test"
+        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
+        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided",
+        "org.scalatest"          %%% "scalatest"               % SCALATEST_VERSION % "test"
       )
     )
     .jvmSettings(

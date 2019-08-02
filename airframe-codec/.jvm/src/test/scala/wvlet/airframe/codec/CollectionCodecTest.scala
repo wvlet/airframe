@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   *

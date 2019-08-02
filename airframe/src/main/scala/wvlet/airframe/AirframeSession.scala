@@ -21,7 +21,7 @@ import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 import scala.reflect.runtime.{universe => ru}
 

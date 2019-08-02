@@ -163,6 +163,7 @@ class ValueTest extends AirframeSpec with ScalaCheckPropertyChecks {
       def sanitize(s: String): Seq[String] = {
         s.replaceAll("""[\{\}\[\]\"]""", "")
           .split("[,:]")
+          .toIndexedSeq
           .sorted
       }
       sanitize(a) shouldBe sanitize(b)

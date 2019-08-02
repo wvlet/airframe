@@ -22,6 +22,7 @@ import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
+import scala.language.existentials
 
 /**
   *

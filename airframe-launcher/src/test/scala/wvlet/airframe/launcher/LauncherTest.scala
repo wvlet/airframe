@@ -232,7 +232,7 @@ class LauncherTest extends AirframeSpec {
       f.arg should be(None)
 
       val f2 = Launcher.execute[OptArg]("hello")
-      f2.arg should be('defined)
+      f2.arg shouldBe defined
       f2.arg.get should be("hello")
     }
 

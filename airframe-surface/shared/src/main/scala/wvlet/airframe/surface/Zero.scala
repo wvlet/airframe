@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
   */
 object Zero extends LogSupport {
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
   private val preregisteredZeroInstance = new ConcurrentHashMap[Surface, Any]().asScala
 
   /**

@@ -59,7 +59,7 @@ class MetricLoggerFactory(fluentdClient: MetricLogger,
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
     fluentdClient.withTagPrefix(tagPrefix)
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
   import scala.reflect.runtime.{universe => ru}
 
   private val loggerCache = new ConcurrentHashMap[Surface, TypedMetricLogger[_]]().asScala

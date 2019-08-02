@@ -186,12 +186,12 @@ class RoundTripTest extends AirframeSpec with ScalaCheckPropertyChecks {
       rawRoundtrip(null) { (cursor, v) =>
         OffsetPacker.packNil(cursor)
       } { cursor =>
-        OffsetUnpacker.unpackNil(_); null
+        OffsetUnpacker.unpackNil(cursor); null
       }
       rawRoundtrip(null) { (cursor, v) =>
         OffsetPacker.packNil(cursor)
       } { cursor =>
-        OffsetUnpacker.tryUnpackNil(_); null
+        OffsetUnpacker.tryUnpackNil(cursor); null
       }
     }
 

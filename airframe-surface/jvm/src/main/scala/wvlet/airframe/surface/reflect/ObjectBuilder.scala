@@ -18,7 +18,7 @@ import wvlet.airframe.surface._
 import wvlet.airframe.surface.reflect.ReflectTypeUtil._
 import wvlet.log.LogSupport
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials

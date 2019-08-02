@@ -32,7 +32,7 @@ object SQLInterpreter {
 class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   import SQLInterpreter._
 
-  import scala.collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   private val parserRules            = SqlBaseParser.ruleNames.toList.asJava
   private var parameterPosition: Int = 0

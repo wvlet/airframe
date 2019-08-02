@@ -20,6 +20,7 @@ import wvlet.airframe.AirframeSpec
 import wvlet.airframe.codec.JDBCCodec._
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.log.io.IOUtil.withResource
+import scala.collection.compat._
 
 /**
   *
@@ -183,7 +184,7 @@ class JDBCCodecTest extends AirframeSpec {
                 |(select * from (values (1, 'leo'), (2, 'yui')))
                 |select * from a order by id asc
                 |""".stripMargin) { rs =>
-      val jsonSeq = JDBCCodec(rs).toJsonSeq.toIndexedSeq
+      val jsonSeq = JDBCCodec(rs).toJsonSeq.iterator.toIndexedSeq
       jsonSeq(0) shouldBe """{"id":1,"name":"leo"}"""
       jsonSeq(1) shouldBe """{"id":2,"name":"yui"}"""
     }

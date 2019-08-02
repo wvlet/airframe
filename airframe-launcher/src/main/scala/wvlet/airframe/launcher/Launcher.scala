@@ -351,7 +351,7 @@ class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
           val subCommandName = result.unusedArgument.head
           findSubCommand(subCommandName) match {
             case Some(subCommand) =>
-              subCommand.execute(launcherConfig, nextStack, result.unusedArgument.tail, showHelpMessage)
+              subCommand.execute(launcherConfig, nextStack, result.unusedArgument.tail.toIndexedSeq, showHelpMessage)
             case None =>
               throw new IllegalArgumentException(s"Unknown sub command: ${subCommandName}")
           }
