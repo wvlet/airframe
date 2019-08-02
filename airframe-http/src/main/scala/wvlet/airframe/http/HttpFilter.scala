@@ -16,7 +16,7 @@ package wvlet.airframe.http
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
-private[http] trait HttpFilterType
+trait HttpFilterType
 
 /**
   * A filter interface to define actions for handling HTTP requests and responses

@@ -17,7 +17,6 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Request, Response, Status, Version}
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.AirframeSpec
-import wvlet.airframe.control.Retry
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -110,10 +109,10 @@ class HttpFilterTest extends AirframeSpec {
 
     val router =
       Router
-        .filter[LogFilterExample]
+        .add[LogFilterExample]
         .andThen(
           Router(
-            Router.filter[AuthFilterExample].andThen[SampleApp],
+            Router.add[AuthFilterExample].andThen[SampleApp],
             Router.add[NoAuth]
           )
         )
@@ -162,7 +161,7 @@ class HttpFilterTest extends AirframeSpec {
   "handle errors in context" in {
     val router =
       Router
-        .filter[ExceptionHandleFilter]
+        .add[ExceptionHandleFilter]
         .andThen[SampleApp]
 
     val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
@@ -179,12 +178,11 @@ class HttpFilterTest extends AirframeSpec {
   "handle errors in filter" taggedAs ("filter-ex") in {
     val router =
       Router
-        .filter[ExceptionHandleFilter]
-        .andThen(
-          Router
-            .filter[ExceptionTestFilter]
-            .andThen[SampleApp]
-        )
+        .add[ExceptionHandleFilter]
+        .andThen[ExceptionTestFilter]
+        .andThen[SampleApp]
+
+    debug(router)
 
     val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
 
@@ -196,5 +194,4 @@ class HttpFilterTest extends AirframeSpec {
       }
     }
   }
-
 }
