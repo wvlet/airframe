@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.lang.reflect.InvocationTargetException
+
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
@@ -31,7 +33,7 @@ class FinagleRouter(config: FinagleServerConfig,
 
   // A table for Route -> matching HttpFilter
   private val filterTable: Map[Route, RouteFilter] =
-    FinagleRouter.buildRouteFilters(config.router, FinagleRouter.identityFilter, controllerProvider)
+    FinagleRouter.buildRouteFilters(config.router, FinagleFilter.Identity, controllerProvider)
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     // Find a route matching to the request
@@ -49,9 +51,6 @@ class FinagleRouter(config: FinagleServerConfig,
 }
 
 object FinagleRouter {
-
-  case object Identity extends HttpFilter.Identity[Request, Response, Future]
-  def identityFilter = Identity
 
   case class RouteFilter(filter: FinagleFilter, controller: Any)
 
@@ -100,8 +99,14 @@ object FinagleRouter {
     override def apply(request: Request): Future[Response] = {
       val route = routeMatch.route
       // Call the method in this controller
-      val args   = route.buildControllerMethodArgs[Request](controller, request, routeMatch.params)
-      val result = route.call(controller, args)
+      val args = route.buildControllerMethodArgs[Request](controller, request, routeMatch.params)
+      val result = try {
+        route.call(controller, args)
+      } catch {
+        case e: InvocationTargetException =>
+          // Return the exception from the target method
+          throw e.getTargetException
+      }
 
       route.returnTypeSurface.rawType match {
         // When a return type is Future[X]
