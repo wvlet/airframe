@@ -73,11 +73,16 @@ case class Router(surface: Option[Surface] = None,
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
   def andThen(next: Router): Router = {
-    if (this.children.nonEmpty) {
-      throw new IllegalStateException(s"The router ${this.toString} already has a child")
+    this.children.size match {
+      case 0 =>
+        this.addChild(next)
+      case 1 =>
+        new Router(surface, Seq(children(0).andThen(next)), localRoutes, filterSurface)
+      case _ =>
+        throw new IllegalStateException(s"The router ${this.toString} already has multiple child routers")
     }
-    this.addChild(next)
   }
+
   def andThen[Controller]: Router = macro RouterMacros.andThen[Controller]
 
   /**
@@ -141,6 +146,7 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  def filter[Filter <: HttpFilterType]: Router = macro RouterMacros.newFilter[Filter]
+  @deprecated(message = "Use Router.add or Router.of instead", since = "19.8.0")
+  def filter[Filter <: HttpFilterType]: Router = macro RouterMacros.of[Filter]
 
 }
