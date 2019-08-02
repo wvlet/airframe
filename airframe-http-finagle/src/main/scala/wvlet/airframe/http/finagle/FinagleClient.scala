@@ -51,7 +51,23 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   override def send(req: Request): Future[Response] = {
-    client(req)
+    client.apply(req)
+  }
+
+  private def toRawUnsafe(resp: HttpResponse[_]): Response = {
+    resp.asInstanceOf[HttpResponse[Response]].toRaw
+  }
+
+  override def sendSafe(req: Request): Future[Response] = {
+    try {
+      client.apply(req).rescue {
+        case e: HttpClientException =>
+          Future.value(toRawUnsafe(e.response))
+      }
+    } catch {
+      case e: HttpClientException =>
+        Future.value(toRawUnsafe(e.response))
+    }
   }
 
   def close: Unit = {

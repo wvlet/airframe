@@ -69,5 +69,4 @@ object RouterMacros {
        }
      """
   }
-
 }

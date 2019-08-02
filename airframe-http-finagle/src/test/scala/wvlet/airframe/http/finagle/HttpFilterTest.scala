@@ -85,7 +85,6 @@ object BadRequestFilter extends FinagleFilter {
 }
 
 class ExceptionHandleFilter extends FinagleFilter with LogSupport {
-
   override def apply(request: Request, context: FinagleContext): Future[Response] = {
     context(request).rescue {
       case e: Throwable =>
@@ -93,6 +92,12 @@ class ExceptionHandleFilter extends FinagleFilter with LogSupport {
         r.contentString = e.getMessage
         Future.value(r)
     }
+  }
+}
+
+class ExceptionTestFilter extends FinagleFilter {
+  override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+    throw new IllegalStateException("test-error")
   }
 }
 
@@ -154,7 +159,7 @@ class HttpFilterTest extends AirframeSpec {
     }
   }
 
-  "handle errors in filter" taggedAs ("filter-ex") in {
+  "handle errors in context" in {
     val router =
       Router
         .filter[ExceptionHandleFilter]
@@ -163,12 +168,31 @@ class HttpFilterTest extends AirframeSpec {
     val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
-      IOUtil.withResource(FinagleClient.newSyncClient(server.localAddress,
-                                                      FinagleClientConfig(retry = Retry.withBackOff(maxRetry = 0)))) {
-        client =>
-          val r = client.send(Request("/exception?arg=error-test"))
-          r.statusCode shouldBe Status.BadRequest.code
-          r.contentString shouldBe "error-test"
+      IOUtil.withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
+        val r = client.sendSafe(Request("/exception?arg=error-test"))
+        r.statusCode shouldBe Status.BadRequest.code
+        r.contentString shouldBe "error-test"
+      }
+    }
+  }
+
+  "handle errors in filter" taggedAs ("filter-ex") in {
+    val router =
+      Router
+        .filter[ExceptionHandleFilter]
+        .andThen(
+          Router
+            .filter[ExceptionTestFilter]
+            .andThen[SampleApp]
+        )
+
+    val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
+
+    d.build[FinagleServer] { server =>
+      IOUtil.withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
+        val r = client.sendSafe(Request("/auth"))
+        r.statusCode shouldBe Status.BadRequest.code
+        r.contentString shouldBe "test-error"
       }
     }
   }

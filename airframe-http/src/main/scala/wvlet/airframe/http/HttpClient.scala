@@ -32,9 +32,17 @@ import scala.reflect.runtime.{universe => ru}
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   /**
-    * Send an HTTP request.
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    *
+    * @throws HttpClientMaxRetryException if max retry reaches
+    * @throws HttpClientException for non-retryable error is happend
     */
   def send(req: Req): F[Resp]
+
+  /**
+    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    */
+  def sendSafe(req: Req): F[Resp]
 
   /**
     * Await the response and extract the return value
@@ -87,7 +95,18 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) extends AutoCloseable {
   protected def awaitF[A](f: F[A]): A = asyncClient.awaitF(f)
 
+  /**
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    *
+    * @throws HttpClientMaxRetryException if max retry reaches
+    * @throws HttpClientException for non-retryable error is happend
+    */
   def send(req: Req): Resp = awaitF(asyncClient.send(req))
+
+  /**
+    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    */
+  def sendSafe(req: Req): Resp = awaitF(asyncClient.sendSafe(req))
 
   def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): Resource = {
     awaitF(asyncClient.get[Resource](resourcePath, requestFilter))

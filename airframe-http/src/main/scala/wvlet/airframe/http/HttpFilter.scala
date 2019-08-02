@@ -16,10 +16,12 @@ package wvlet.airframe.http
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
+private[http] trait HttpFilterType
+
 /**
   * A filter interface to define actions for handling HTTP requests and responses
   */
-trait HttpFilter[Req, Resp, F[_]] { self =>
+trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
 
   // Wrap an exception and returns F[Exception]
   protected def wrapException(e: Throwable): F[Resp]
