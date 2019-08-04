@@ -13,36 +13,72 @@
  */
 package wvlet.airframe.benchmark.json
 
-import wvlet.airframe.json.{JSON, JSONScanner, JSONSource, NullJSONContext}
-import wvlet.log.io.Timer
+import wvlet.airframe.json.JSON.{JSONArray, JSONString}
+import wvlet.airframe.json.{JSON, JSONScanner, JSONSource, JSONTraverser, JSONVisitor, NullJSONContext}
+import wvlet.log.io.{IOUtil, Timer}
+
+import scala.util.Random
 
 /**
   *
   */
 object JSONBenchmark extends Timer {
 
-  def bench(benchName: String, json: String, N: Int, B: Int): Unit = {
+  val twitterJson = IOUtil.readAsString("twitter.json")
+
+  def twitterJson(N: Int = 10, B: Int = 10): Unit = {
+    bench("twitter.json", twitterJson, N = N, B = N)
+  }
+
+  def booleanArrayBench(N: Int = 10, B: Int = 10): Unit = {
+    val jsonArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
+    bench("boolean array", jsonArray, N = N, B = B)
+  }
+
+  def stringArrayBench(N: Int = 10, B: Int = 10): Unit = {
+    // Extract JSON strings from twitter.json
+    val j = JSON.parse(twitterJson)
+    val b = IndexedSeq.newBuilder[JSONString]
+    JSONTraverser.traverse(j, new JSONVisitor {
+      override def visitKeyValue(k: String, v: JSON.JSONValue): Unit = {
+        b += JSONString(k)
+      }
+      override def visitString(v: JSON.JSONString): Unit = {
+        b += v
+      }
+    })
+    val jsonArray = JSONArray(b.result()).toJSON
+    bench("string array", jsonArray, N = N, B = B)
+  }
+
+  def runAll(N: Int = 10, B: Int = 10): Unit = {
+    twitterJson(N, B)
+    booleanArrayBench(N, B)
+    stringArrayBench(N, B)
+  }
+
+  private def bench(benchName: String, json: String, N: Int, B: Int): Unit = {
     val jsonSource = JSONSource.fromString(json)
     time(benchName, repeat = N, blockRepeat = B) {
-      block("airframe      ") {
-        JSON.parse(jsonSource)
-      }
-      block("airframe scan ") {
+      block("airframe scan-only") {
         JSONScanner.scan(jsonSource, new NullJSONContext(isObject = true))
       }
-      block("circe         ") {
+      block("airframe          ") {
+        JSON.parse(jsonSource)
+      }
+      block("circe             ") {
         io.circe.parser.parse(json)
       }
-      block("jawn          ") {
+      block("jawn              ") {
         new io.circe.jawn.JawnParser().parse(json)
       }
-      block("json4s-jackson") {
+      block("json4s-jackson    ") {
         org.json4s.jackson.JsonMethods.parse(json)
       }
-      block("json4s-native ") {
+      block("json4s-native     ") {
         org.json4s.native.JsonMethods.parse(json)
       }
-      block("uJson         ") {
+      block("uJson             ") {
         ujson.read(json)
       }
     }

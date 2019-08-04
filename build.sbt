@@ -675,11 +675,17 @@ lazy val benchmark =
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Jmh).value,
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
+      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
+      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
+      classDirectory in Jmh := (classDirectory in Compile).value,
+      dependencyClasspath in Jmh := (dependencyClasspath in Compile).value,
+      resourceDirectories in Test ++= (resourceDirectories in Jmh).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       fork in test := true,
       fork in run := true,
-      baseDirectory in run := file("."),
-      baseDirectory in test := file("."),
+      classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars,
+      //baseDirectory in run := file("."),
+      //baseDirectory in test := file("."),
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,

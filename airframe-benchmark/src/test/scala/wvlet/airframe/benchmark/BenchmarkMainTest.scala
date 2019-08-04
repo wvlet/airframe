@@ -19,7 +19,12 @@ import wvlet.airframe.AirframeSpec
   *
   */
 class BenchmarkMainTest extends AirframeSpec {
-  "run benchmark" in {
+  "run benchmark" taggedAs ("msgpack") in {
     BenchmarkMain.main("bench-quick")
+  }
+
+  "run JSON benchmark" taggedAs ("json") in {
+    val repetition = if (inCI) 2 else 10
+    BenchmarkMain.main(s"json -n ${repetition} -b ${repetition}")
   }
 }

@@ -16,6 +16,7 @@ package wvlet.airframe.benchmark
 import org.openjdk.jmh.results.format.ResultFormatType
 import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.{OptionsBuilder, TimeValue}
+import wvlet.airframe.benchmark.json.JSONBenchmark
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.log.LogSupport
@@ -86,4 +87,14 @@ class BenchmarkMain(
 
     new Runner(opt.build()).run()
   }
+
+  @command(description = "Run JSON benchmark")
+  def json(@option(prefix = "-n", description = "The number of iteration (default: 10)")
+           iteration: Int = 10,
+           @option(prefix = "-b", description = "The number of block iteration (default: 10)")
+           blockIteration: Int = 10,
+  ): Unit = {
+    JSONBenchmark.runAll(N = iteration, B = iteration)
+  }
+
 }
