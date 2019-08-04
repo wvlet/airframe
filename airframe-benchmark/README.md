@@ -82,7 +82,7 @@ $ ./sbt
 > benchmark/testOnly * -- -n json
 
 # Run benchmark for measuring JSON parse time:
-> benchmark/testOnly * -- -n json-time
+> benchmark/testOnly * -- -n json-perf
 
 # Run Msgpack benchmark:
 > benchmark/testOnly * -- -n msgpack

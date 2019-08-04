@@ -32,7 +32,7 @@ class BenchmarkMainTest extends AirframeSpec {
     BenchmarkMain.main(s"bench-quick -F 0 json")
   }
 
-  "run JSON elapsed-time benchmark" taggedAs ("json-time") in {
+  "run JSON elapsed-time benchmark" taggedAs ("json-perf") in {
     BenchmarkMain.main(s"json-perf -n ${iteration} -b ${iteration}")
   }
 }
