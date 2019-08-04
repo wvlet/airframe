@@ -34,6 +34,6 @@ class BenchmarkMainTest extends AirframeSpec {
   }
 
   "run JSON elapsed-time benchmark" taggedAs ("json-time") in {
-    BenchmarkMain.main(s"json -n ${iteration} -b ${iteration}")
+    BenchmarkMain.main(s"json-perf -n ${iteration} -b ${iteration}")
   }
 }

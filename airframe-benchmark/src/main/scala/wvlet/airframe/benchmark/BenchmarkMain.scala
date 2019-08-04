@@ -45,8 +45,6 @@ class BenchmarkMain(
     resultFormat: Option[String] = None,
     @option(prefix = "-o", description = "Result output file name")
     resultOutput: Option[String] = None,
-    @option(prefix = "-mt", description = "measurement time (default: 0.1s)")
-    measurementTime: ElapsedTime = ElapsedTime.parse("0.1s"),
     @option(prefix = "-wt", description = "warmup time (default: 0.1s)")
     warmupTime: ElapsedTime = ElapsedTime.parse("0.1s")
 ) extends LogSupport {
@@ -58,8 +56,10 @@ class BenchmarkMain(
 
   @command(description = "Run a benchmark quickly")
   def bench_quick(
-      @option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
+      @option(prefix = "-i,--iteration", description = "The number of iteration (default: 1)")
       iteration: Int = 1,
+      @option(prefix = "-mt", description = "measurement time (default: 0.1s)")
+      measurementTime: ElapsedTime = ElapsedTime.parse("0.1s"),
       @option(prefix = "-F,--fork-count", description = "Fork Count (default: 0)")
       forkCount: Int = 1,
       @argument(description = "Target benchmark suite to run: json, msgpack")
@@ -71,9 +71,11 @@ class BenchmarkMain(
   @command(description = "Run a benchmark")
   def bench(@option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
             iteration: Int = 10,
-            @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
-            warmupIteration: Int = 5,
-            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 5)")
+            @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 3)")
+            warmupIteration: Int = 3,
+            @option(prefix = "-mt", description = "measurement time (default: 1s)")
+            measurementTime: ElapsedTime = ElapsedTime.parse("1s"),
+            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 3)")
             forkCount: Int = 3,
             @argument(description = "Target benchmark suite to run: json, msgpack")
             targetPackage: Option[String] = None): Unit = {
@@ -84,7 +86,7 @@ class BenchmarkMain(
       .warmupIterations(warmupIteration)
       .warmupTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
       .measurementTime(TimeValue.milliseconds(warmupTime.toMillis.toLong))
-      .include(targetPackage.map(x => s".*${x}.*").getOrElse("*"))
+      .include(targetPackage.map(x => s".*${x}.*").getOrElse(".*"))
 
     resultFormat.map { rf =>
       opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase()))
@@ -97,11 +99,11 @@ class BenchmarkMain(
     new Runner(opt.build()).run()
   }
 
-  @command(description = "Run JSON benchmark")
-  def json(@option(prefix = "-n", description = "The number of iteration (default: 10)")
-           iteration: Int = 10,
-           @option(prefix = "-b", description = "The number of block iteration (default: 10)")
-           blockIteration: Int = 10,
+  @command(description = "Run JSON performance benchmark")
+  def json_perf(@option(prefix = "-n", description = "The number of iteration (default: 10)")
+                iteration: Int = 10,
+                @option(prefix = "-b", description = "The number of block iteration (default: 10)")
+                blockIteration: Int = 10,
   ): Unit = {
     JSONBenchmark.runAll(N = iteration, B = iteration)
   }

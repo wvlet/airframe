@@ -1,8 +1,7 @@
 airframe-msgpack-benchmark
 ===
 
-MessagePack benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
-
+Airframe benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
 
 
 ## How To Build
@@ -19,7 +18,7 @@ $ ./sbt
 ```
 $ cd airframe-benchmark
 # In another terminal, run this command. The result will be written to a json file: 
-$ ./target/pack/bin/airframe-benchmark bench -f json
+$ ./target/pack/bin/airframe-benchmark bench msgpack -f json
 
 ...
 
@@ -46,27 +45,25 @@ PackBenchmark.packInt                thrpt   50  105945.238 ±  2251.499  ops/s
 ### Usage
 ```
 $ airframe-benchmark bench --help
-usage: bench
+usage: bench [targetPackage]
   Run a benchmark
 
 [global options]
- -h, --help             display help message
- -f [RESULTFORMAT]      Result format: text, csv, scsv, json, latex
- -o [RESULTOUTPUT]      Result output file name
- -mt:[MEASUREMENTTIME]  measurement time (default: 0.1s)
- -wt:[WARMUPTIME]       warmup time (default: 0.1s)
+ -h, --help         display help message
+ -f [RESULTFORMAT]  Result format: text, csv, scsv, json, latex
+ -o [RESULTOUTPUT]  Result output file name
+ -wt:[WARMUPTIME]   warmup time (default: 0.1s)
 [options]
  -i, --iteration:[ITERATION]     The number of iteration (default: 10)
- -w, --warmup:[WARMUPITERATION]  The number of warm-up iteration (default: 5)
- -f, --fork-count:[FORKCOUNT]    Fork Count (default: 5)
+ -w, --warmup:[WARMUPITERATION]  The number of warm-up iteration (default: 3)
+ -mt:[MEASUREMENTTIME]           measurement time (default: 1s)
 ```
 
 ### Download
 
 - [Initial version](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-msgpack-benchmark_2.12/19.3.4+12-0a821f46+20190315-1700-SNAPSHOT/airframe-msgpack-benchmark_2.12-19.3.4+12-0a821f46+20190315-1700-SNAPSHOT.tar.gz)
 - Download this archive, and unpack it with `tar xvfz`
-- Moved to the unpacked folder, then run `./bin/airframe-msgpack-benchmark bench`
-
+- Moved to the unpacked folder, then run `./bin/airframe-benchmark bench msgpack`
 
 # For Developers
 

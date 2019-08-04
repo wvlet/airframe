@@ -673,7 +673,7 @@ lazy val benchmark =
       name := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Generate JMH benchmark cord before packaging and testing
-      pack := pack.dependsOn(compile in Jmh).value,
+      pack := pack.dependsOn(compile in Test).value,
       sourceDirectory in Jmh := (sourceDirectory in Compile).value,
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
