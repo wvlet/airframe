@@ -685,10 +685,8 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        //"org.json4s"  %% "json4s-native"  % "3.5.4",
-        "org.json4s" %% "json4s-jackson" % "3.5.4",
-        "io.circe"   %% "circe-parser"   % "0.9.3"
-        //"com.lihaoyi" %% "ujson"          % "0.6.6"
+        "org.json4s" %% "json4s-jackson" % "3.6.7",
+        "io.circe"   %% "circe-parser"   % "0.11.1"
       ),
       publishPackArchiveTgz
     )
