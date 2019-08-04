@@ -77,7 +77,7 @@ class BenchmarkMain(
       .warmupIterations(warmupIteration)
       .warmupTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
       .measurementTime(TimeValue.milliseconds(warmupTime.toMillis.toLong))
-    //.include(".*" + classOf[MsgpackBenchmark].getSimpleName + ".*")
+//      .include(".*" + classOf[].getSimpleName + ".*")
 
     resultFormat.map { rf =>
       opt = opt.resultFormat(ResultFormatType.valueOf(rf.toUpperCase()))
