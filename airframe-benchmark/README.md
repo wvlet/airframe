@@ -1,4 +1,4 @@
-airframe-msgpack-benchmark
+airframe-benchmark
 ===
 
 Airframe benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
