@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark
+package wvlet.airframe.benchmark.json
 
 import java.util.concurrent.TimeUnit
 
@@ -68,6 +68,7 @@ abstract class JSONBenchmark {
     blackhole.consume(JSONBenchmark.uJsonParse(json))
   }
 }
+
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)

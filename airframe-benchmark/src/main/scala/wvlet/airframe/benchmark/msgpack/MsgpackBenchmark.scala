@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark
+package wvlet.airframe.benchmark.msgpack
 
 import java.util.concurrent.TimeUnit
 
