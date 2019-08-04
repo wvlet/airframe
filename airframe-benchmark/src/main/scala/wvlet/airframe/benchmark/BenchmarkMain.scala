@@ -84,8 +84,8 @@ class BenchmarkMain(
       .forks(forkCount)
       .measurementIterations(iteration)
       .warmupIterations(warmupIteration)
-      .warmupTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
-      .measurementTime(TimeValue.milliseconds(warmupTime.toMillis.toLong))
+      .warmupTime(TimeValue.milliseconds(warmupTime.toMillis.toLong))
+      .measurementTime(TimeValue.milliseconds(measurementTime.toMillis.toLong))
       .include(targetPackage.map(x => s".*${x}.*").getOrElse(".*"))
 
     resultFormat.map { rf =>
