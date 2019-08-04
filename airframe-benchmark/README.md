@@ -4,6 +4,21 @@ airframe-msgpack-benchmark
 MessagePack benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
 
 
+## Running Benchmark While Developing Airframe
+
+```
+$ ./sbt
+
+# Run JSON benchmark:
+> benchmark/testOnly * -- -n json
+
+# Run Msgpack benchmark:
+> benchmark/testOnly * -- -n msgpack
+
+# Run all JMH benchmarks:
+> benchmark/run bench-quick
+```
+
 ## How To Build
 ```
 $ ./sbt
@@ -12,6 +27,7 @@ $ ./sbt
 # To install this program to $HOME/local/bin, run:
 > benchmark/packInstall
 ```
+
 
 ### Running the benchmark
 ```

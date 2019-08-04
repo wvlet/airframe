@@ -659,7 +659,7 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-val JMH_VERSION = "1.12"
+val JMH_VERSION = "1.21"
 import xerial.sbt.pack.PackPlugin._
 
 lazy val benchmark =
@@ -674,18 +674,10 @@ lazy val benchmark =
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Jmh).value,
+      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
-      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
-      sourceDirectory in Jmh := (sourceDirectory in Compile).value,
-      classDirectory in Jmh := (classDirectory in Compile).value,
-      dependencyClasspath in Jmh := (dependencyClasspath in Compile).value,
-      resourceDirectories in Test ++= (resourceDirectories in Jmh).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
-      fork in test := true,
       fork in run := true,
-      classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars,
-      //baseDirectory in run := file("."),
-      //baseDirectory in test := file("."),
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
@@ -693,11 +685,10 @@ lazy val benchmark =
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
         // Used only for json benchmark
-        "org.json4s" %% "json4s-native"  % "3.5.4",
-        "org.json4s" %% "json4s-jackson" % "3.5.4",
-        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
-        "io.circe"    %% "circe-parser" % "0.9.3",
-        "com.lihaoyi" %% "ujson"        % "0.6.6"
+        "org.json4s"  %% "json4s-native"  % "3.5.4",
+        "org.json4s"  %% "json4s-jackson" % "3.5.4",
+        "io.circe"    %% "circe-parser"   % "0.9.3",
+        "com.lihaoyi" %% "ujson"          % "0.6.6"
       ),
       publishPackArchiveTgz
     )

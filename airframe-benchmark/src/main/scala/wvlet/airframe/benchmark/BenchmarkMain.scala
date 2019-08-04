@@ -16,7 +16,6 @@ package wvlet.airframe.benchmark
 import org.openjdk.jmh.results.format.ResultFormatType
 import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.{OptionsBuilder, TimeValue}
-import wvlet.airframe.benchmark.json.JSONBenchmark
 import wvlet.airframe.launcher.{Launcher, command, option}
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.log.LogSupport
@@ -57,8 +56,11 @@ class BenchmarkMain(
   }
 
   @command(description = "Run a benchmark quickly")
-  def bench_quick: Unit = {
-    bench(iteration = 1, warmupIteration = 0, forkCount = 1)
+  def bench_quick(
+      @option(prefix = "-F,--fork-count", description = "Fork Count (default: 0)")
+      forkCount: Int = 1
+  ): Unit = {
+    bench(iteration = 1, warmupIteration = 0, forkCount = forkCount)
   }
 
   @command(description = "Run a benchmark")
@@ -66,7 +68,7 @@ class BenchmarkMain(
             iteration: Int = 10,
             @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
             warmupIteration: Int = 5,
-            @option(prefix = "-f,--fork-count", description = "Fork Count (default: 5)")
+            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 5)")
             forkCount: Int = 5): Unit = {
     info("Starting the benchmark")
     var opt = new OptionsBuilder()

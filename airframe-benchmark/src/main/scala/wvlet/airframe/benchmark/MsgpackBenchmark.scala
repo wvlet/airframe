@@ -11,14 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.msgpack
+package wvlet.airframe.benchmark
 
 import java.util.concurrent.TimeUnit
 
 import org.msgpack.core.MessageUnpacker
 import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
-import wvlet.airframe.msgpack.spi.{BufferPacker, MessagePack, Packer, Unpacker}
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker}
 
 import scala.util.Random
 

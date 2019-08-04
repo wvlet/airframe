@@ -20,7 +20,9 @@ import wvlet.airframe.AirframeSpec
   */
 class BenchmarkMainTest extends AirframeSpec {
   "run benchmark" taggedAs ("msgpack") in {
-    BenchmarkMain.main("bench-quick")
+    // Need to run without forking the JVM process as sbt cannot pass proper classpath and causes
+    // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error
+    BenchmarkMain.main("bench-quick -F 0")
   }
 
   "run JSON benchmark" taggedAs ("json") in {
