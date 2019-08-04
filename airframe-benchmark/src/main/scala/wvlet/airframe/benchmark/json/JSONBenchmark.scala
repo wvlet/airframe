@@ -24,67 +24,78 @@ import wvlet.log.io.{IOUtil, Timer}
 import scala.util.Random
 
 abstract class JSONParseBenchmark {
-  protected def parse(json: String): Unit
+  protected val json: String
 
   @Benchmark
   @Group("json_parse")
-  def twitter(blackhole: Blackhole): Unit = {
-    blackhole.consume(parse(JSONBenchmark.twitterJson))
+  def airframe(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.airframeParse(json))
   }
 
   @Benchmark
   @Group("json_parse")
-  def booleanArray(blackhole: Blackhole): Unit = {
-    blackhole.consume(parse(JSONBenchmark.jsonBooleanArray))
+  def circe(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.circeParse(json))
   }
 
   @Benchmark
   @Group("json_parse")
-  def stringArray(blackhole: Blackhole): Unit = {
-    blackhole.consume(parse(JSONBenchmark.jsonStringArray))
+  def jawn(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.jawnParse(json))
+  }
+
+  @Benchmark
+  @Group("json_parse")
+  def json4sJackson(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.json4sJacksonParse(json))
+  }
+
+  @Benchmark
+  @Group("json_parse")
+  def json4sNative(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.json4sNativeParse(json))
+  }
+
+  @Benchmark
+  @Group("json_parse")
+  def uJson(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONBenchmark.uJsonParse(json))
   }
 }
 
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class AirframeBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.airframeParse(json)
+class TwitterJSON extends JSONParseBenchmark {
+  override protected val json: String = JSONBenchmark.twitterJson
 }
 
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class CirceBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.circeParse(json)
+class BooleanArray extends JSONParseBenchmark {
+  override protected val json: String = JSONBenchmark.jsonBooleanArray
 }
 
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class JawnBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.jawnParse(json)
+class StringArray extends JSONParseBenchmark {
+  override protected val json: String = JSONBenchmark.jsonStringArray
 }
 
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class Json4sJacksonBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.json4sJacksonParse(json)
+class LongArray extends JSONParseBenchmark {
+  override protected val json: String = JSONBenchmark.jsonIntArray
 }
 
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class Json4sNativeBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.json4sNativeParse(json)
-}
-
-@State(Scope.Group)
-@BenchmarkMode(Array(Mode.Throughput))
-@OutputTimeUnit(TimeUnit.SECONDS)
-class uJsonBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.uJsonParse(json)
+class DoubleArray extends JSONParseBenchmark {
+  override protected val json: String = JSONBenchmark.jsonDoubleArray
 }
 
 /**
@@ -94,6 +105,8 @@ object JSONBenchmark extends Timer {
 
   def twitterJson      = IOUtil.readAsString("twitter.json")
   def jsonBooleanArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
+  def jsonIntArray     = s"[${(0 until 10000).map(_ => Random.nextLong()).mkString(",")}]"
+  def jsonDoubleArray  = s"[${(0 until 10000).map(_ => Random.nextDouble()).mkString(",")}]"
   def jsonStringArray = {
     // Extract JSON strings from twitter.json
     val j = JSON.parse(twitterJson)
@@ -110,22 +123,12 @@ object JSONBenchmark extends Timer {
     jsonArray
   }
 
-  def twitterJson(N: Int = 10, B: Int = 10): Unit = {
-    bench("twitter.json", twitterJson, N = N, B = N)
-  }
-
-  def booleanArrayBench(N: Int = 10, B: Int = 10): Unit = {
-    bench("boolean array", jsonBooleanArray, N = N, B = B)
-  }
-
-  def stringArrayBench(N: Int = 10, B: Int = 10): Unit = {
-    bench("string array", jsonStringArray, N = N, B = B)
-  }
-
   def runAll(N: Int = 10, B: Int = 10): Unit = {
-    twitterJson(N, B)
-    booleanArrayBench(N, B)
-    stringArrayBench(N, B)
+    bench("twitter.json", twitterJson, N = N, B = N)
+    bench("boolean array", jsonBooleanArray, N = N, B = B)
+    bench("int array", jsonIntArray, N = N, B = B)
+    bench("double array", jsonDoubleArray, N = N, B = B)
+    bench("string array", jsonStringArray, N = N, B = B)
   }
 
   def airframeScanOnly(json: String): Unit = {
