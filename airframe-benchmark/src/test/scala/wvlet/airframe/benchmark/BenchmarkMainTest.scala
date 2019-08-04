@@ -26,10 +26,12 @@ class BenchmarkMainTest extends AirframeSpec {
 
   "run msgpack benchmark" taggedAs ("msgpack") in {
     BenchmarkMain.main(s"bench-quick -F 0 msgpack")
+    warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
   "run json benchmark" taggedAs ("json") in {
     BenchmarkMain.main(s"bench-quick -F 0 json")
+    warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
   "run JSON elapsed-time benchmark" taggedAs ("json-perf") in {

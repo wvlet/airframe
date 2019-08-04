@@ -58,8 +58,8 @@ class BenchmarkMain(
   def bench_quick(
       @option(prefix = "-i,--iteration", description = "The number of iteration (default: 1)")
       iteration: Int = 1,
-      @option(prefix = "-mt", description = "measurement time (default: 0.3s)")
-      measurementTime: ElapsedTime = ElapsedTime.parse("0.3s"),
+      @option(prefix = "-mt", description = "measurement time (default: 0.25s)")
+      measurementTime: ElapsedTime = ElapsedTime.parse("0.25s"),
       @option(prefix = "-F,--fork-count", description = "Fork Count (default: 0)")
       forkCount: Int = 0,
       @argument(description = "Target benchmark suite to run: json, msgpack")
@@ -79,7 +79,7 @@ class BenchmarkMain(
             warmupIteration: Int = 3,
             @option(prefix = "-mt", description = "measurement time (default: 1s)")
             measurementTime: ElapsedTime = ElapsedTime.parse("0.5s"),
-            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 2)")
+            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 1)")
             forkCount: Int = 1,
             @argument(description = "Target benchmark suite to run: json, msgpack")
             targetPackage: Option[String] = None): Unit = {
