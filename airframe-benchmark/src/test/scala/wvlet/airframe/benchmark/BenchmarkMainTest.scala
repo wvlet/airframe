@@ -19,18 +19,17 @@ import wvlet.airframe.AirframeSpec
   *
   */
 class BenchmarkMainTest extends AirframeSpec {
-  private val iteration = if (inCI) 1 else 5
+  private val iteration = if (inCI) 1 else 10
+
+  // Need to run without forking the JVM process (-F 0) as sbt cannot pass proper classpath and causes
+  // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error
 
   "run msgpack benchmark" taggedAs ("msgpack") in {
-    // Need to run without forking the JVM process as sbt cannot pass proper classpath and causes
-    // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error
-    BenchmarkMain.main(s"bench-quick -i ${iteration} -F 0 msgpack")
+    BenchmarkMain.main(s"bench-quick -F 0 msgpack")
   }
 
   "run json benchmark" taggedAs ("json") in {
-    // Need to run without forking the JVM process as sbt cannot pass proper classpath and causes
-    // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error
-    BenchmarkMain.main(s"bench-quick -i ${iteration} -F 0 json")
+    BenchmarkMain.main(s"bench-quick -F 0 json")
   }
 
   "run JSON elapsed-time benchmark" taggedAs ("json-time") in {

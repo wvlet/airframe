@@ -4,22 +4,25 @@ airframe-msgpack-benchmark
 Airframe benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
 
 
-## How To Build
-```
-$ ./sbt
-> benchmark/pack
+### Download
 
-# To install this program to $HOME/local/bin, run:
-> benchmark/packInstall
-```
-
+- Download the latest tar.gz package from [here](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-benchmark_2.12/)
+- Download this archive, and unpack it with `tar xvfz`
+- Moved to the unpacked folder, then run `./bin/airframe-benchmark bench msgpack`
 
 ### Running the benchmark
 ```
 $ cd airframe-benchmark
-# In another terminal, run this command. The result will be written to a json file: 
-$ ./target/pack/bin/airframe-benchmark bench msgpack -f json
 
+# Run MessagePack benchmark
+$ ./bin/airframe-benchmark bench msgpack
+
+# Run JSON benchmark
+$ ./bin/airframe-benchmark bench json
+
+# Run MessagePack benchmaark and write the results to a json file
+# Run MessagePack benchmark
+$ ./bin/airframe-benchmark bench msgpack -f json
 ...
 
 # Run complete. Total time: 00:00:31
@@ -42,7 +45,7 @@ MessagePackJava.unpack:intArray      thrpt   50  121146.462 ±  3870.203  ops/s
 PackBenchmark.packInt                thrpt   50  105945.238 ±  2251.499  ops/s
 ```
 
-### Usage
+### General Usage
 ```
 $ airframe-benchmark bench --help
 usage: bench [targetPackage]
@@ -59,11 +62,14 @@ usage: bench [targetPackage]
  -mt:[MEASUREMENTTIME]           measurement time (default: 1s)
 ```
 
-### Download
+## Building The Benchmark Runner
+```
+$ ./sbt
+> benchmark/pack
 
-- [Initial version](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-msgpack-benchmark_2.12/19.3.4+12-0a821f46+20190315-1700-SNAPSHOT/airframe-msgpack-benchmark_2.12-19.3.4+12-0a821f46+20190315-1700-SNAPSHOT.tar.gz)
-- Download this archive, and unpack it with `tar xvfz`
-- Moved to the unpacked folder, then run `./bin/airframe-benchmark bench msgpack`
+# To install this program to $HOME/local/bin, run:
+> benchmark/packInstall
+```
 
 # For Developers
 
