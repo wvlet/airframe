@@ -55,13 +55,6 @@ class AirframeBenchmark extends JSONParseBenchmark {
 @State(Scope.Group)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
-class AirframeScanBenchmark extends JSONParseBenchmark {
-  override protected def parse(json: String): Unit = JSONBenchmark.airframeScanOnly(json)
-}
-
-@State(Scope.Group)
-@BenchmarkMode(Array(Mode.Throughput))
-@OutputTimeUnit(TimeUnit.SECONDS)
 class CirceBenchmark extends JSONParseBenchmark {
   override protected def parse(json: String): Unit = JSONBenchmark.circeParse(json)
 }

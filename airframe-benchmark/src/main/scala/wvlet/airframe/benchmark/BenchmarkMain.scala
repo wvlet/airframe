@@ -70,13 +70,13 @@ class BenchmarkMain(
 
   @command(description = "Run a benchmark")
   def bench(@option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
-            iteration: Int = 10,
+            iteration: Int = 5,
             @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 3)")
-            warmupIteration: Int = 3,
+            warmupIteration: Int = 5,
             @option(prefix = "-mt", description = "measurement time (default: 1s)")
             measurementTime: ElapsedTime = ElapsedTime.parse("1s"),
             @option(prefix = "-F,--fork-count", description = "Fork Count (default: 3)")
-            forkCount: Int = 3,
+            forkCount: Int = 2,
             @argument(description = "Target benchmark suite to run: json, msgpack")
             targetPackage: Option[String] = None): Unit = {
     info("Starting the benchmark")
