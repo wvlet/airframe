@@ -74,7 +74,7 @@ class BenchmarkMain(
             @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
             warmupIteration: Int = 5,
             @option(prefix = "-F,--fork-count", description = "Fork Count (default: 5)")
-            forkCount: Int = 5,
+            forkCount: Int = 3,
             @argument(description = "Target benchmark suite to run: json, msgpack")
             targetPackage: Option[String] = None): Unit = {
     info("Starting the benchmark")

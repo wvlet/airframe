@@ -19,7 +19,7 @@ import wvlet.airframe.AirframeSpec
   *
   */
 class BenchmarkMainTest extends AirframeSpec {
-  private val iteration = if (inCI) 1 else 10
+  private val iteration = if (inCI) 1 else 5
 
   "run msgpack benchmark" taggedAs ("msgpack") in {
     // Need to run without forking the JVM process as sbt cannot pass proper classpath and causes

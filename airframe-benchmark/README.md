@@ -4,20 +4,6 @@ airframe-msgpack-benchmark
 MessagePack benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
 
 
-## Running Benchmark While Developing Airframe
-
-```
-$ ./sbt
-
-# Run JSON benchmark:
-> benchmark/testOnly * -- -n json
-
-# Run Msgpack benchmark:
-> benchmark/testOnly * -- -n msgpack
-
-# Run all JMH benchmarks:
-> benchmark/run bench-quick
-```
 
 ## How To Build
 ```
@@ -80,3 +66,24 @@ usage: bench
 - [Initial version](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-msgpack-benchmark_2.12/19.3.4+12-0a821f46+20190315-1700-SNAPSHOT/airframe-msgpack-benchmark_2.12-19.3.4+12-0a821f46+20190315-1700-SNAPSHOT.tar.gz)
 - Download this archive, and unpack it with `tar xvfz`
 - Moved to the unpacked folder, then run `./bin/airframe-msgpack-benchmark bench`
+
+
+# For Developers
+
+## Running Benchmark While Developing Airframe
+
+```
+$ ./sbt
+
+# Run JSON benchmark:
+> benchmark/testOnly * -- -n json
+
+# Run benchmark for measuring JSON parse time:
+> benchmark/testOnly * -- -n json-time
+
+# Run Msgpack benchmark:
+> benchmark/testOnly * -- -n msgpack
+
+# Run all JMH benchmarks:
+> benchmark/run bench-quick
+```
