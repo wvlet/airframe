@@ -678,7 +678,7 @@ lazy val benchmark =
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
       fork in run := true,
-      crossScalaVersions := untilScala2_12,
+      crossScalaVersions := Seq(SCALA_2_12),
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
