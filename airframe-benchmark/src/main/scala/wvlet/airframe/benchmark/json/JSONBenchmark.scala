@@ -19,6 +19,7 @@ import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.airframe.json.{JSON, JSONSource, JSONTraverser, JSONVisitor, NullJSONContext}
+import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Timer}
 
 import scala.util.Random
@@ -27,71 +28,50 @@ abstract class JSONParseBenchmark {
   protected val json: String
 
   @Benchmark
-  @Group("json_parse")
   def airframe(blackhole: Blackhole): Unit = {
     blackhole.consume(JSONBenchmark.airframeParse(json))
   }
 
   @Benchmark
-  @Group("json_parse")
   def circe(blackhole: Blackhole): Unit = {
     blackhole.consume(JSONBenchmark.circeParse(json))
   }
 
   @Benchmark
-  @Group("json_parse")
-  def jawn(blackhole: Blackhole): Unit = {
-    blackhole.consume(JSONBenchmark.jawnParse(json))
-  }
-
-  @Benchmark
-  @Group("json_parse")
   def json4sJackson(blackhole: Blackhole): Unit = {
     blackhole.consume(JSONBenchmark.json4sJacksonParse(json))
   }
-
-  @Benchmark
-  @Group("json_parse")
-  def json4sNative(blackhole: Blackhole): Unit = {
-    blackhole.consume(JSONBenchmark.json4sNativeParse(json))
-  }
-
-  @Benchmark
-  @Group("json_parse")
-  def uJson(blackhole: Blackhole): Unit = {
-    blackhole.consume(JSONBenchmark.uJsonParse(json))
-  }
 }
 
-@State(Scope.Group)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class TwitterJSON extends JSONParseBenchmark {
   override protected val json: String = JSONBenchmark.twitterJson
 }
 
-@State(Scope.Group)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class BooleanArray extends JSONParseBenchmark {
   override protected val json: String = JSONBenchmark.jsonBooleanArray
 }
 
-@State(Scope.Group)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class StringArray extends JSONParseBenchmark {
   override protected val json: String = JSONBenchmark.jsonStringArray
 }
 
-@State(Scope.Group)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class LongArray extends JSONParseBenchmark {
   override protected val json: String = JSONBenchmark.jsonIntArray
 }
 
-@State(Scope.Group)
+@State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.Throughput))
 @OutputTimeUnit(TimeUnit.SECONDS)
 class DoubleArray extends JSONParseBenchmark {
@@ -144,24 +124,11 @@ object JSONBenchmark extends Timer {
     io.circe.parser.parse(json)
   }
 
-  def jawnParse(json: String): Unit = {
-    new io.circe.jawn.JawnParser().parse(json)
-  }
-
   def json4sJacksonParse(json: String): Unit = {
     org.json4s.jackson.JsonMethods.parse(json)
   }
 
-  def json4sNativeParse(json: String): Unit = {
-    org.json4s.native.JsonMethods.parse(json)
-  }
-
-  def uJsonParse(json: String): Unit = {
-    ujson.read(json)
-  }
-
   private def bench(benchName: String, json: String, N: Int, B: Int): Unit = {
-    val jsonSource = JSONSource.fromString(json)
     time(benchName, repeat = N, blockRepeat = B) {
       block("airframe scan-only") {
         airframeScanOnly(json)
@@ -172,17 +139,8 @@ object JSONBenchmark extends Timer {
       block("circe             ") {
         circeParse(json)
       }
-      block("jawn              ") {
-        jawnParse(json)
-      }
       block("json4s-jackson    ") {
         json4sJacksonParse(json)
-      }
-      block("json4s-native     ") {
-        json4sNativeParse(json)
-      }
-      block("uJson             ") {
-        uJsonParse(json)
       }
     }
   }

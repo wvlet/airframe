@@ -58,25 +58,29 @@ class BenchmarkMain(
   def bench_quick(
       @option(prefix = "-i,--iteration", description = "The number of iteration (default: 1)")
       iteration: Int = 1,
-      @option(prefix = "-mt", description = "measurement time (default: 0.1s)")
-      measurementTime: ElapsedTime = ElapsedTime.parse("0.1s"),
+      @option(prefix = "-mt", description = "measurement time (default: 0.3s)")
+      measurementTime: ElapsedTime = ElapsedTime.parse("0.3s"),
       @option(prefix = "-F,--fork-count", description = "Fork Count (default: 0)")
       forkCount: Int = 0,
       @argument(description = "Target benchmark suite to run: json, msgpack")
       targetPackage: Option[String] = None
   ): Unit = {
-    bench(iteration = iteration, warmupIteration = 0, forkCount = forkCount, targetPackage = targetPackage)
+    bench(iteration = iteration,
+          warmupIteration = 0,
+          measurementTime = measurementTime,
+          forkCount = forkCount,
+          targetPackage = targetPackage)
   }
 
   @command(description = "Run a benchmark")
   def bench(@option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
-            iteration: Int = 5,
+            iteration: Int = 10,
             @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
-            warmupIteration: Int = 5,
+            warmupIteration: Int = 3,
             @option(prefix = "-mt", description = "measurement time (default: 1s)")
-            measurementTime: ElapsedTime = ElapsedTime.parse("1s"),
+            measurementTime: ElapsedTime = ElapsedTime.parse("0.5s"),
             @option(prefix = "-F,--fork-count", description = "Fork Count (default: 2)")
-            forkCount: Int = 2,
+            forkCount: Int = 1,
             @argument(description = "Target benchmark suite to run: json, msgpack")
             targetPackage: Option[String] = None): Unit = {
     info("Starting the benchmark")
