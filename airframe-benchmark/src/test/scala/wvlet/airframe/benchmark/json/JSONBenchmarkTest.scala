@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.json
+package wvlet.airframe.benchmark.json
 
 import wvlet.airframe.AirframeSpec
+import wvlet.airframe.json.{JSON, JSONTraverser, JSONVisitor}
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.log.io.{IOUtil, Timer}
 
@@ -22,47 +23,21 @@ import scala.util.Random
 /**
   *
   */
-class JSONBenchmark extends AirframeSpec with Timer {
+class JSONBenchmarkTest extends AirframeSpec with Timer {
 
+  import JSONBenchmark._
   val repetition = if (inCI) 2 else 10
 
-  def bench(benchName: String, json: String, N: Int = repetition, B: Int = repetition): Unit = {
-    val jsonSource = JSONSource.fromString(json)
-    time(benchName, repeat = N, blockRepeat = B) {
-      block("airframe      ") {
-        JSON.parse(jsonSource)
-      }
-      block("airframe scan ") {
-        JSONScanner.scan(jsonSource)
-      }
-      block("circe         ") {
-        io.circe.parser.parse(json)
-      }
-      block("jawn          ") {
-        new io.circe.jawn.JawnParser().parse(json)
-      }
-      block("json4s-jackson") {
-        org.json4s.jackson.JsonMethods.parse(json)
-      }
-      block("json4s-native ") {
-        org.json4s.native.JsonMethods.parse(json)
-      }
-      block("uJson         ") {
-        ujson.read(json)
-      }
-    }
-  }
-
-  lazy val twitterJson = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+  lazy val twitterJson = IOUtil.readAsString("airframe-benchmark/src/test/resources/twitter.json")
 
   "JSONScannerBenchmark" should {
     "parse twitter.json" taggedAs ("comparison") in {
-      bench("twitter.json", twitterJson)
+      bench("twitter.json", twitterJson, N = repetition, B = repetition)
     }
 
     "parse boolen arrays" taggedAs ("boolean-array") in {
       val jsonArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
-      bench("boolean array", jsonArray)
+      bench("boolean array", jsonArray, N = repetition, B = repetition)
     }
 
     "parse string arrays" taggedAs ("string-array") in {
@@ -78,7 +53,7 @@ class JSONBenchmark extends AirframeSpec with Timer {
         }
       })
       val jsonArray = JSONArray(b.result()).toJSON
-      bench("string array", jsonArray)
+      bench("string array", jsonArray, N = repetition, B = repetition)
     }
   }
 

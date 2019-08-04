@@ -143,8 +143,7 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   finagle,
   httpRecorder,
   sql,
-  jsonBenchmark,
-  msgpackBenchmark,
+  benchmark,
   examples
 )
 
@@ -660,54 +659,43 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-lazy val jsonBenchmark =
-  project
-    .in(file("airframe-json-benchmark"))
-    .settings(buildSettings)
-    .settings(noPublish)
-    .settings(
-      name := "airframe-json-benchmark",
-      description := "JSON parser benchmark",
-      crossScalaVersions := untilScala2_12,
-      libraryDependencies ++= Seq(
-        // Used only for benchmark purpose
-        "org.json4s" %% "json4s-native"  % "3.5.4",
-        "org.json4s" %% "json4s-jackson" % "3.5.4",
-        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
-        "io.circe"    %% "circe-parser" % "0.9.3",
-        "com.lihaoyi" %% "ujson"        % "0.6.6"
-      )
-    )
-    .dependsOn(jsonJVM, airframeSpecJVM % "test")
-
 val JMH_VERSION = "1.12"
 import xerial.sbt.pack.PackPlugin._
 
-lazy val msgpackBenchmark =
+lazy val benchmark =
   project
-    .in(file("airframe-msgpack-benchmark"))
+    .in(file("airframe-benchmark"))
     // Necessary for generating /META-INF/BenchmarkList
     .enablePlugins(JmhPlugin)
     .enablePlugins(PackPlugin)
     .settings(buildSettings)
     .settings(
-      name := "airframe-msgpack-benchmark",
-      packMain := Map("airframe-msgpack-benchmark" -> "wvlet.airframe.benchmark.msgpack.MsgpackBenchmarkMain"),
+      name := "airframe-benchmark",
+      packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Jmh).value,
       compile in Test := ((compile in Test).dependsOn(compile in Jmh)).value,
       // Need to fork JVM so that sbt can set the classpass properly for running JMH
-      fork in Test := true,
+      fork in test := true,
       fork in run := true,
+      baseDirectory in run := file("."),
+      baseDirectory in test := file("."),
+      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "org.msgpack"     % "msgpack-core"             % MSGPACK_VERSION,
         "org.openjdk.jmh" % "jmh-core"                 % JMH_VERSION,
         "org.openjdk.jmh" % "jmh-generator-bytecode"   % JMH_VERSION,
-        "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION
+        "org.openjdk.jmh" % "jmh-generator-reflection" % JMH_VERSION,
+        // Used only for json benchmark
+        "org.json4s" %% "json4s-native"  % "3.5.4",
+        "org.json4s" %% "json4s-jackson" % "3.5.4",
+        //"org.spire-math" %% "jawn-ast"       % "0.13.0",
+        "io.circe"    %% "circe-parser" % "0.9.3",
+        "com.lihaoyi" %% "ujson"        % "0.6.6"
       ),
       publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, metricsJVM, launcher, airframeSpecJVM % "test")
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, airframeSpecJVM % "test")
 
 lazy val fluentd =
   project

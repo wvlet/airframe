@@ -11,8 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.msgpack
-import org.openjdk.jmh.results.format.{ResultFormat, ResultFormatType}
+package wvlet.airframe.benchmark
+
+import org.openjdk.jmh.results.format.ResultFormatType
 import org.openjdk.jmh.runner.Runner
 import org.openjdk.jmh.runner.options.{OptionsBuilder, TimeValue}
 import wvlet.airframe.launcher.{Launcher, command, option}
@@ -22,10 +23,10 @@ import wvlet.log.LogSupport
 /**
   *
   */
-object MsgpackBenchmarkMain {
+object BenchmarkMain {
   wvlet.airframe.log.init
 
-  private def launcher = Launcher.of[MsgpackBenchmarkMain]
+  private def launcher = Launcher.of[BenchmarkMain]
 
   def main(argLine: String): Unit = {
     launcher.execute(argLine)
@@ -36,7 +37,7 @@ object MsgpackBenchmarkMain {
   }
 }
 
-class MsgpackBenchmarkMain(
+class BenchmarkMain(
     @option(prefix = "-h,--help", description = "display help message", isHelp = true)
     displayHelp: Boolean,
     @option(prefix = "-f", description = "Result format: text, csv, scsv, json, latex")

@@ -7,17 +7,17 @@ MessagePack benchmark program based on [JMH](https://openjdk.java.net/projects/c
 ## How To Build
 ```
 $ ./sbt
-> msgpackBenchmark/pack
+> benchmark/pack
 
 # To install this program to $HOME/local/bin, run:
-> msgpackBenchmark/packInstall
+> benchmark/packInstall
 ```
 
 ### Running the benchmark
 ```
-$ cd airframe-msgpack-benchmark/target/pack
+$ cd airframe-benchmark
 # In another terminal, run this command. The result will be written to a json file: 
-$ ./bin/airframe-msgpack-benchmark bench -f json
+$ ./target/pack/bin/airframe-benchmark bench -f json
 
 ...
 
@@ -43,7 +43,7 @@ PackBenchmark.packInt                thrpt   50  105945.238 ±  2251.499  ops/s
 
 ### Usage
 ```
-$ airframe-msgpack-benchmark bench --help
+$ airframe-benchmark bench --help
 usage: bench
   Run a benchmark
 

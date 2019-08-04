@@ -11,14 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.benchmark.msgpack
+package wvlet.airframe.benchmark
+
 import wvlet.airframe.AirframeSpec
 
 /**
   *
   */
-class MsgpackBenchmarkMainTest extends AirframeSpec {
+class BenchmarkMainTest extends AirframeSpec {
   "run benchmark" in {
-    MsgpackBenchmarkMain.main("bench-quick")
+    BenchmarkMain.main("bench-quick")
   }
 }
