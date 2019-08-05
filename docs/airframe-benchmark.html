@@ -10,16 +10,26 @@ ga('send', 'pageview');
 
 <p>Airframe benchmark program based on <a href="https://openjdk.java.net/projects/code-tools/jmh/">JMH</a>.</p>
 
+<p>This module has two objectives:</p>
+<ul>
+  <li>Measure the machine throughput to see CPU performance.</li>
+  <li>Provide a guideline to eliminate overheads in airframe-json/msgpack modules 
+by comparing them with the standard msgpack/json processing libraries.</li>
+</ul>
+
 <h3 id="download">Download</h3>
 
 <ul>
   <li>Download the latest tar.gz package from <a href="https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-benchmark_2.12/">here</a></li>
   <li>Download this archive, and unpack it with <code class="highlighter-rouge">tar xvfz</code></li>
-  <li>Moved to the unpacked folder, then run <code class="highlighter-rouge">./bin/airframe-benchmark bench msgpack</code></li>
+  <li>Move to the unpacked folder, then run <code class="highlighter-rouge">./bin/airframe-benchmark bench (msgpack or json)</code></li>
 </ul>
 
 <h3 id="running-the-benchmark">Running the benchmark</h3>
 <div class="highlighter-rouge"><pre class="highlight"><code>$ cd airframe-benchmark
+
+# Run benchmark quickly
+$ ./bin/airframe-benchmark bench-quick (msgpack or json)
 
 # Run MessagePack benchmark
 $ ./bin/airframe-benchmark bench msgpack
@@ -70,18 +80,9 @@ usage: bench [targetPackage]
 </code></pre>
 </div>
 
-<h2 id="building-the-benchmark-runner">Building The Benchmark Runner</h2>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ ./sbt
-&gt; benchmark/pack
-
-# To install this program to $HOME/local/bin, run:
-&gt; benchmark/packInstall
-</code></pre>
-</div>
-
 <h1 id="for-developers">For Developers</h1>
 
-<h2 id="running-benchmark-while-developing-airframe">Running Benchmark While Developing Airframe</h2>
+<h2 id="running-the-benchmark-while-developing-airframe">Running THe Benchmark While Developing Airframe</h2>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>$ ./sbt
 
@@ -96,6 +97,15 @@ usage: bench [targetPackage]
 
 # Run all JMH benchmarks:
 &gt; benchmark/run bench-quick
+</code></pre>
+</div>
+
+<h2 id="building-the-benchmark-runner">Building The Benchmark Runner</h2>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ ./sbt
+&gt; benchmark/pack
+
+# To install this program to $HOME/local/bin, run:
+&gt; benchmark/packInstall
 </code></pre>
 </div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
