@@ -15,6 +15,7 @@ package wvlet.airframe.json
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON._
+import wvlet.airframe.msgpack.spi.IntegerOverflowException
 
 /**
   *
@@ -30,7 +31,7 @@ class JSONParserTest extends AirframeSpec {
   "JSONParser" should {
     "parser json string" in {
       parse("{}")
-      parse("""{"id":1, "name":"leo", "value":0.1, "num":10000000000000000000000000}""")
+      parse("""{"id":1, "name":"leo", "value":0.1, "num":1000}""")
     }
     "parse large array of objects" in {
       val json = (for (_ <- 0 to 10000) yield "{}").mkString("[", ",", "]")
@@ -45,6 +46,23 @@ class JSONParserTest extends AirframeSpec {
       JSON.parseAny("[]") shouldBe JSONArray(IndexedSeq.empty)
       JSON.parseAny("[1, 2]") shouldBe JSONArray(IndexedSeq(JSONLong(1L), JSONLong(2L)))
       JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
+    }
+
+    "parse numeric json values" in {
+      JSON.parseAny(Long.MaxValue.toString) shouldBe JSONLong(Long.MaxValue)
+      JSON.parseAny(Long.MinValue.toString) shouldBe JSONLong(Long.MinValue)
+
+      JSON.parseAny(Double.MaxValue.toString) shouldBe JSONDouble(Double.MaxValue)
+      JSON.parseAny(Double.MinValue.toString) shouldBe JSONDouble(Double.MinValue)
+    }
+
+    "throw IntegerOverflowException error" in {
+      intercept[IntegerOverflowException] {
+        JSON.parseAny("9223372036854775808")
+      }
+      intercept[IntegerOverflowException] {
+        JSON.parseAny("-9223372036854775809")
+      }
     }
   }
 }
