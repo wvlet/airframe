@@ -14,7 +14,6 @@
 package wvlet.airframe
 import wvlet.airframe.json.JSON.{
   JSONArray,
-  JSONBigInt,
   JSONBoolean,
   JSONDouble,
   JSONLong,
@@ -57,7 +56,6 @@ package object json {
         case JSONNull       => null
         case JSONDouble(x)  => x
         case JSONLong(x)    => x
-        case JSONBigInt(x)  => x
         case JSONString(x)  => x
         case JSONBoolean(x) => x
         case JSONArray(x)   => x.map(_.value)

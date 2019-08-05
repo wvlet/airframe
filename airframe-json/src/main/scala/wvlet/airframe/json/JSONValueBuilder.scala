@@ -14,9 +14,9 @@
 package wvlet.airframe.json
 
 import wvlet.airframe.json.JSON._
-import wvlet.log.LogSupport
+import wvlet.airframe.msgpack.spi._
 
-import scala.util.Try
+import wvlet.log.LogSupport
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
@@ -87,14 +87,11 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
       JSONDouble(v.toDouble)
     } else {
       try {
-        BigInt(v) match {
-          case i if Long.MaxValue < i => JSONBigInt(i)
-          case i if Long.MinValue > i => JSONBigInt(i)
-          case i                      => JSONLong(i.longValue())
-        }
+        JSONLong(v.toLong)
       } catch {
         case _: NumberFormatException =>
-          JSONDouble(v.toDouble)
+          // JSON is not suited to representing scientific values.
+          throw IntegerOverflowException(BigInt(v).bigInteger)
       }
     }
     add(num)
