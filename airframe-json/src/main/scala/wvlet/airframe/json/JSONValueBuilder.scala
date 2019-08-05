@@ -14,7 +14,6 @@
 package wvlet.airframe.json
 
 import wvlet.airframe.json.JSON._
-import wvlet.airframe.msgpack.spi._
 
 import wvlet.log.LogSupport
 
@@ -91,7 +90,7 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
       } catch {
         case _: NumberFormatException =>
           // JSON is not suited to representing scientific values.
-          throw IntegerOverflowException(BigInt(v).bigInteger)
+          throw IntegerOverflow(BigInt(v).bigInteger)
       }
     }
     add(num)

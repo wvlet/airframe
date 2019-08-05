@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.json
 
+import java.math.BigInteger
+
 /**
   *
   */
@@ -23,5 +25,5 @@ class UnexpectedToken(line: Int, column: Int, pos: Int, message: String)
 class UnexpectedEOF(line: Int, column: Int, pos: Int, message: String)
     extends JSONParseException(s"line:${line}, column:${column}: ${message}")
 
-// TODO: unused as of 0.66
-class InvalidJSONObject(message: String) extends JSONParseException(message)
+case class IntegerOverflow(bigInteger: BigInteger)
+    extends JSONParseException(s"Too large integer for JSONLong: ${bigInteger.toString}")
