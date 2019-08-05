@@ -15,7 +15,6 @@ package wvlet.airframe.json
 
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON._
-import wvlet.airframe.msgpack.spi.IntegerOverflowException
 
 /**
   *
@@ -57,10 +56,10 @@ class JSONParserTest extends AirframeSpec {
     }
 
     "throw IntegerOverflowException error" in {
-      intercept[IntegerOverflowException] {
+      intercept[IntegerOverflow] {
         JSON.parseAny("9223372036854775808")
       }
-      intercept[IntegerOverflowException] {
+      intercept[IntegerOverflow] {
         JSON.parseAny("-9223372036854775809")
       }
     }

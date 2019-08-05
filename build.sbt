@@ -654,7 +654,7 @@ lazy val json =
       description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, msgpack, airframeSpec % "test")
+    .dependsOn(log, airframeSpec % "test")
 
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
