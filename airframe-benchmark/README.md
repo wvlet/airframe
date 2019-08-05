@@ -3,16 +3,23 @@ airframe-benchmark
 
 Airframe benchmark program based on [JMH](https://openjdk.java.net/projects/code-tools/jmh/).
 
+This module has two objectives:
+- Measure the machine throughput to see CPU performance.
+- Provide a guideline to eliminate overheads in airframe-json/msgpack modules 
+by comparing them with the standard msgpack/json processing libraries. 
 
 ### Download
 
 - Download the latest tar.gz package from [here](https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-benchmark_2.12/)
 - Download this archive, and unpack it with `tar xvfz`
-- Moved to the unpacked folder, then run `./bin/airframe-benchmark bench msgpack`
+- Move to the unpacked folder, then run `./bin/airframe-benchmark bench (msgpack or json)`
 
 ### Running the benchmark
 ```
 $ cd airframe-benchmark
+
+# Run benchmark quickly
+$ ./bin/airframe-benchmark bench-quick (msgpack or json)
 
 # Run MessagePack benchmark
 $ ./bin/airframe-benchmark bench msgpack
@@ -62,18 +69,10 @@ usage: bench [targetPackage]
  -mt:[MEASUREMENTTIME]           measurement time (default: 1s)
 ```
 
-## Building The Benchmark Runner
-```
-$ ./sbt
-> benchmark/pack
-
-# To install this program to $HOME/local/bin, run:
-> benchmark/packInstall
-```
 
 # For Developers
 
-## Running Benchmark While Developing Airframe
+## Running THe Benchmark While Developing Airframe
 
 ```
 $ ./sbt
@@ -89,4 +88,13 @@ $ ./sbt
 
 # Run all JMH benchmarks:
 > benchmark/run bench-quick
+```
+
+## Building The Benchmark Runner
+```
+$ ./sbt
+> benchmark/pack
+
+# To install this program to $HOME/local/bin, run:
+> benchmark/packInstall
 ```
