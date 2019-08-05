@@ -107,8 +107,7 @@ class BenchmarkMain(
   def json_perf(@option(prefix = "-n", description = "The number of iteration (default: 10)")
                 iteration: Int = 10,
                 @option(prefix = "-b", description = "The number of block iteration (default: 10)")
-                blockIteration: Int = 10,
-  ): Unit = {
+                blockIteration: Int = 10): Unit = {
     JSONBenchmark.runAll(N = iteration, B = iteration)
   }
 
