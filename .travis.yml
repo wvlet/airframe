@@ -41,7 +41,7 @@ matrix:
       jdk: openjdk8
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-    - env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
+    - env: SCALA_VERSION=2.12.9 PROJECT=projectJVM
       jdk: openjdk8
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
@@ -54,7 +54,7 @@ matrix:
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       # Exclude design serialization tests due to bug https://github.com/scala/bug/issues/11192
       script: ./sbt ++$SCALA_VERSION "${PROJECT}/testOnly * -- -l serde"
-    - env: SCALA_VERSION=2.12.8 PROJECT=projectJS
+    - env: SCALA_VERSION=2.12.9 PROJECT=projectJS
       jdk: openjdk8  # Scala.js 0.6.27 didn't work with jdk11
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
