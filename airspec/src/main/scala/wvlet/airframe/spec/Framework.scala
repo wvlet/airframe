@@ -11,20 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.runner
+package wvlet.airframe.spec
+
 import sbt.testing
 import sbt.testing.{Fingerprint, SubclassFingerprint}
-import wvlet.airframe.spec.runner.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
-import wvlet.log.{LogSupport, Logger}
+import wvlet.airframe.spec.runner.AirSpecRunner
+import wvlet.log.LogSupport
 
 /**
   *
   */
 class Framework extends sbt.testing.Framework with LogSupport {
+  import Framework._
   override def name(): String                     = "airspec"
   override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
-    Runner.newRunner(args, remoteArgs, testClassLoader)
+    AirSpecRunner.newRunner(args, remoteArgs, testClassLoader)
   }
 }
 

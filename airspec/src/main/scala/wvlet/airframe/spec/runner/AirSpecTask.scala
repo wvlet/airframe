@@ -14,7 +14,7 @@
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, Task, TaskDef}
 import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.runner.Framework.AirSpecObjectFingerPrint
+import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{LogSupport, Logger}
@@ -22,13 +22,13 @@ import wvlet.log.{LogSupport, Logger}
 /**
   *
   */
-class AirTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
+class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
   override def tags(): Array[String] = Array.empty
   override def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[Task] = {
     debug(s"executing task: ${taskDef}")
 
-    AirTask.withLogScanner {
+    AirSpecTask.withLogScanner {
       try {
         val className = taskDef.fullyQualifiedName()
         val cls       = classLoader.loadClass(className)
@@ -56,7 +56,7 @@ class AirTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends s
   }
 }
 
-object AirTask {
+object AirSpecTask {
 
   private def withLogScanner[U](block: => U): U = {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)

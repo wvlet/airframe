@@ -763,6 +763,6 @@ lazy val airspec =
       libraryDependencies ++= Seq(
         "org.scala-sbt" % "test-interface" % "1.0"
       ),
-      testFrameworks += new TestFramework("wvlet.airframe.spec.runner.Framework")
+      testFrameworks += new TestFramework("wvlet.airframe.spec.Framework")
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef)
