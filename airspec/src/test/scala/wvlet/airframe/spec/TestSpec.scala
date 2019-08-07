@@ -13,8 +13,10 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.Design
 import wvlet.airframe.spec.spi.AirSpec
 import wvlet.log.LogSupport
+import wvlet.airframe._
 
 /**
   *
@@ -22,11 +24,19 @@ import wvlet.log.LogSupport
 class TestSpec extends AirSpec with LogSupport {
   info("test spec")
 
-  def hello: String = {
-    "hello"
+  override def design: Design =
+    newDesign
+      .bind[String].toInstance("my message")
+
+  def hello(m: String): Unit = {
+    info(m)
+    assert(m == "my message")
   }
 }
 
-object TestObjSpec extends AirSpec {
-  def objectMethod: String = "hello companion methods"
+object TestObjSpec extends AirSpec with LogSupport {
+  def objectMethod: String = {
+    info("hello companion methods")
+    "hello obj"
+  }
 }

@@ -42,8 +42,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
         testObj match {
           case Some(as: AirSpec) =>
-            debug(s"surface: ${as.surface}")
-            debug(s"ms: ${as.methodSurfaces.mkString("\n")}")
+            AirSpecTask.runSpec(as)
           case other =>
             warn(s"${other.getClass}")
         }
@@ -56,7 +55,19 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   }
 }
 
-object AirSpecTask {
+object AirSpecTask extends LogSupport {
+
+  private def runSpec(spec: AirSpec): Unit = {
+    spec.design.noLifeCycleLogging.withSession { session =>
+      for (m <- spec.testMethods) {
+        val args: Seq[Any] = for (p <- m.args) yield {
+          session.getInstanceOf(p.surface)
+        }
+        debug(s"Running ${m.name}(${args.mkString(",")})")
+        m.call(spec, args: _*)
+      }
+    }
+  }
 
   private def withLogScanner[U](block: => U): U = {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)

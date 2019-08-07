@@ -16,11 +16,12 @@ package wvlet.airframe.spec.spi
 import wvlet.airframe.Design
 import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
 import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.log.LogSupport
 
 /**
   * A base trait for defining unit tests using airspec
   */
-trait AirSpec {
+trait AirSpec extends LogSupport with Asserts {
   private[spec] def surface: Surface = {
     ReflectSurfaceFactory.ofClass(this.getClass)
   }
@@ -28,5 +29,9 @@ trait AirSpec {
     ReflectSurfaceFactory.methodsOfClass(this.getClass)
   }
 
-  protected def design: Design = Design.empty.noLifeCycleLogging
+  def design: Design = Design.empty.noLifeCycleLogging
+
+  private[spec] def testMethods: Seq[MethodSurface] = {
+    methodSurfaces.filter(_.isPublic)
+  }
 }
