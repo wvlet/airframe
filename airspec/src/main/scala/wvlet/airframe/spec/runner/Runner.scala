@@ -23,7 +23,9 @@ class Runner(val args: Array[String], val remoteArgs: Array[String], classLoader
     with LogSupport {
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs.map { t =>
-      new AirSpecTask(t, classLoader)
+      info(t)
+
+      new AirTask(t, classLoader)
     }
   }
 

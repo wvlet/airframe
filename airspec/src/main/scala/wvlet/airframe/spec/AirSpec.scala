@@ -13,7 +13,19 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
+import wvlet.airframe.surface.{MethodSurface, Surface}
+
 /**
   * A base trait for defining unit tests using airspec
   */
-trait AirSpec {}
+trait AirSpec {
+  private[spec] def surface: Surface = {
+    val tpe = scala.reflect.runtime.currentMirror.classSymbol(this.getClass).toType
+    ReflectSurfaceFactory.ofType(tpe)
+  }
+  private[spec] def methodSurfaces: Seq[MethodSurface] = {
+    val tpe = scala.reflect.runtime.currentMirror.classSymbol(this.getClass).toType
+    ReflectSurfaceFactory.methodsOfType(tpe)
+  }
+}

@@ -18,7 +18,10 @@ import wvlet.log.LogSupport
 /**
   *
   */
-object TestSpec extends AirSpec with LogSupport {
-
+class TestSpec extends AirSpec with LogSupport {
   info("test spec")
+
+  def hello: String = {
+    "hello"
+  }
 }
