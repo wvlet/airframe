@@ -113,8 +113,8 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP server that returns programmed HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createProgrammableServer(programmer: HttpRecordStore => Unit): FinagleServer = {
-    val recorderConfig = HttpRecorderConfig("localhost")
+  def createProgrammableServer(recorderConfig: HttpRecorderConfig = HttpRecorderConfig(destUri = "localhost"))(
+      programmer: HttpRecordStore => Unit): FinagleServer = {
     val recorder = new HttpRecordStore(recorderConfig, true) {
       override def requestHash(request: Request): Int = {
         computeRequestHash(request, recorderConfig)

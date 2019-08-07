@@ -53,7 +53,8 @@ import wvlet.airframe.http.recorder._
 import wvlet.airframe.control.Control._
 import com.twitter.finagle.http.{Request,Response}
 
-val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
+val recorderConfig = HttpRecorderConfig(destUri = "localhost")
+val response = withResource(HttpRecorder.createProgrammableServer(recorderConfig) { recorder =>
   // Program server responses instead of recodring
   val request = Request("/index.html")
   val response = Response()
