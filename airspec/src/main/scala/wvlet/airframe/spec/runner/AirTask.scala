@@ -12,11 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import sbt.testing.{EventHandler, Logger, Task, TaskDef}
+import sbt.testing.{EventHandler, Task, TaskDef}
 import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.spec.runner.Framework.AirSpecObjectFingerPrint
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
-import wvlet.log.LogSupport
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
+import wvlet.log.{LogSupport, Logger}
 
 /**
   *
@@ -24,31 +25,49 @@ import wvlet.log.LogSupport
 class AirTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
   override def tags(): Array[String] = Array.empty
-  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-    info(s"executing task: ${taskDef}")
+  override def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[Task] = {
+    debug(s"executing task: ${taskDef}")
 
-    try {
-      val className = taskDef.fullyQualifiedName()
-      val cls       = classLoader.loadClass(className)
+    AirTask.withLogScanner {
+      try {
+        val className = taskDef.fullyQualifiedName()
+        val cls       = classLoader.loadClass(className)
 
-      val testObj = taskDef.fingerprint() match {
-        case AirSpecObjectFingerPrint =>
-          ReflectTypeUtil.companionObject(cls)
-        case _ =>
-          Some(cls.newInstance())
+        val testObj = taskDef.fingerprint() match {
+          case AirSpecObjectFingerPrint =>
+            ReflectTypeUtil.companionObject(cls)
+          case _ =>
+            Some(cls.newInstance())
+        }
+
+        testObj match {
+          case Some(as: AirSpec) =>
+            debug(s"surface: ${as.surface}")
+            debug(s"ms: ${as.methodSurfaces.mkString("\n")}")
+          case other =>
+            warn(s"${other.getClass}")
+        }
+      } catch {
+        case e: Throwable =>
+          warn(e)
       }
-
-      testObj match {
-        case Some(as: AirSpec) =>
-          info(s"surface: ${as.surface}")
-          info(s"ms: ${as.methodSurfaces.mkString("\n")}")
-        case other =>
-          warn(s"${other.getClass}")
-      }
-    } catch {
-      case e: Throwable =>
-        warn(e)
+      Array.empty
     }
-    Array.empty
   }
+}
+
+object AirTask {
+
+  private def withLogScanner[U](block: => U): U = {
+    Logger.setDefaultFormatter(SourceCodeLogFormatter)
+
+    // Periodically scan log level file
+    Logger.scheduleLogLevelScan
+    try {
+      block
+    } finally {
+      Logger.stopScheduledLogLevelScan
+    }
+  }
+
 }

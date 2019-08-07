@@ -37,6 +37,8 @@ class Runner(val args: Array[String], val remoteArgs: Array[String], classLoader
 
 object Runner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): Runner = {
+    debug(s"args: ${args.mkString(", ")}")
+    debug(s"remote args: ${args.mkString(", ")}")
     new Runner(args, remoteArgs, testClassLoader)
   }
 }
