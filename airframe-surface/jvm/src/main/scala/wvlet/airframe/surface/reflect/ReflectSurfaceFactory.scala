@@ -48,6 +48,10 @@ object ReflectSurfaceFactory extends LogSupport {
   def ofType(tpe: ru.Type): Surface = {
     apply(tpe)
   }
+  def ofClass(cls: Class[_]): Surface = {
+    val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
+    ofType(tpe)
+  }
   def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
   def get(name: String): Surface = {
@@ -99,6 +103,11 @@ object ReflectSurfaceFactory extends LogSupport {
     methodSurfaceCache.getOrElseUpdate(fullTypeNameOf(tpe), {
       new SurfaceFinder().createMethodSurfaceOf(tpe)
     })
+  }
+
+  def methodsOfClass(cls: Class[_]): Seq[MethodSurface] = {
+    val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
+    methodsOfType(tpe)
   }
 
   private[surface] def mirror = ru.runtimeMirror(Thread.currentThread.getContextClassLoader)

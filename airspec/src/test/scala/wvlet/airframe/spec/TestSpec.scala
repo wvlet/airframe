@@ -25,3 +25,7 @@ class TestSpec extends AirSpec with LogSupport {
     "hello"
   }
 }
+
+object TestObjSpec extends AirSpec {
+  def objectMethod: String = "hello companion methods"
+}
