@@ -13,16 +13,34 @@
  */
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, Logger, Task, TaskDef}
+import wvlet.airframe.spec.AirSpec
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport
 
 /**
   *
   */
-class AirSpecTask(inputTaskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
+class AirTask(inputTaskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
+
   override def tags(): Array[String] = Array.empty
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     info(s"executing task: ${taskDef}")
 
+    try {
+      val className = inputTaskDef.fullyQualifiedName()
+      val cls       = classLoader.loadClass(className)
+      val instance  = cls.newInstance()
+      instance match {
+        case as: AirSpec =>
+          info(s"surface: ${as.surface}")
+          info(s"ms: ${as.methodSurfaces.mkString("\n")}")
+        case other =>
+          warn(s"${other.getClass}")
+      }
+    } catch {
+      case e: Throwable =>
+        warn(e)
+    }
     Array.empty
   }
 
