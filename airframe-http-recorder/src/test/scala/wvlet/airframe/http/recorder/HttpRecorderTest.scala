@@ -123,17 +123,16 @@ class HttpRecorderTest extends AirframeSpec {
 
   }
 
-  "programmable server" in {
-    val response = withResource(HttpRecorder.createProgrammableServer() { recorder =>
-      val request = Request("/index.html")
+  "programmable server" taggedAs working in {
+    val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
+      server.clearSession
+      server.start
 
+      val request  = Request("/index.html")
       val response = Response()
       response.setContentString("Hello World!")
+      server.recordIfNotExists(request, response)
 
-      recorder.record(request, response)
-
-    }) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val request = Request("/index.html")
 
