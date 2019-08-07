@@ -123,7 +123,7 @@ class HttpRecorderTest extends AirframeSpec {
 
   }
 
-  "programmable server" taggedAs working in {
+  "programmable server" in {
     val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
       server.clearSession
       server.start
