@@ -18,7 +18,7 @@ import wvlet.airframe.SourceCode
 /**
   *
   */
-object Asserts {
+trait Asserts {
 
   def assert(cond: => Boolean)(implicit code: SourceCode) = {
     if (!cond) {
