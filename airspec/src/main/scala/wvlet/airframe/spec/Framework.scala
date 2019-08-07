@@ -34,13 +34,13 @@ object Framework {
 
   object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false
-    override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
+    override def superclassName(): String           = "wvlet.airframe.spec.spi.AirSpec"
     override def requireNoArgConstructor(): Boolean = true
   }
 
   object AirSpecObjectFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = true
-    override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
+    override def superclassName(): String           = "wvlet.airframe.spec.spi.AirSpec"
     override def requireNoArgConstructor(): Boolean = false
   }
 

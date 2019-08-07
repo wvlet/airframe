@@ -11,22 +11,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airframe.spec.spi
 
-import wvlet.airframe.Design
-import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
-import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airframe.SourceCode
 
 /**
-  * A base trait for defining unit tests using airspec
+  *
   */
-trait AirSpec {
-  private[spec] def surface: Surface = {
-    ReflectSurfaceFactory.ofClass(this.getClass)
-  }
-  private[spec] def methodSurfaces: Seq[MethodSurface] = {
-    ReflectSurfaceFactory.methodsOfClass(this.getClass)
-  }
-
-  protected def design: Design = Design.empty.noLifeCycleLogging
+trait AirSpecException extends RuntimeException {
+  def message: String
+  def code: SourceCode
 }
+
+case class AssertionFailure(message: String, code: SourceCode) extends AirSpecException
+case class Ignored(message: String, code: SourceCode)          extends AirSpecException
