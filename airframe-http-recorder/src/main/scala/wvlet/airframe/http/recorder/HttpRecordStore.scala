@@ -13,11 +13,14 @@
  */
 package wvlet.airframe.http.recorder
 
+import java.nio.charset.StandardCharsets
 import java.time.Instant
-import java.util.Locale
+import java.util.{Base64, Locale}
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{MediaType, Request, Response}
+import com.twitter.finatra.http.request.ContentType
+import com.twitter.io.Buf
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
@@ -106,6 +109,17 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
     val httpHeadersForRecording = filterHeaders(request, defaultExcludeRequestHeaders)
 
+    def encode(contentType: Option[String], content: Buf): String = {
+      contentType match {
+        case Some(MediaType.OctetStream) =>
+          // Encode binary contents with Base64
+          HttpRecordStore.encodeToBase64(content)
+        case _ =>
+          // Use regular strings
+          Buf.decodeString(content, StandardCharsets.UTF_8)
+      }
+    }
+
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -113,10 +127,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       destHost = recorderConfig.destAddress.hostAndPort,
       path = request.uri,
       requestHeader = httpHeadersForRecording,
-      requestBody = request.contentString,
+      requestBody = encode(request.contentType, request.content),
       responseCode = response.statusCode,
       responseHeader = response.headerMap.toMap,
-      responseBody = response.contentString,
+      responseBody = encode(response.contentType, response.content),
       createdAt = Instant.now()
     )
 
@@ -159,5 +173,21 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
           }
         prefix.hashCode * 13 + headerHash
     }
+  }
+}
+
+object HttpRecordStore {
+
+  def encodeToBase64(content: Buf): String = {
+    val buf = new Array[Byte](content.length)
+    content.write(buf, 0)
+
+    val encoder = Base64.getEncoder
+    encoder.encodeToString(buf)
+  }
+
+  def decodeFromBase64(base64String: String): Array[Byte] = {
+    val decoder = Base64.getDecoder
+    decoder.decode(base64String)
   }
 }

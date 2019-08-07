@@ -14,11 +14,14 @@
 package wvlet.airframe.http.recorder
 
 import com.twitter.finagle.Http
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.http.{MediaType, Request, Response, Status}
+import com.twitter.io.Buf
 import com.twitter.util.Await
 import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+
+import scala.util.Random
 
 /**
   *
@@ -163,4 +166,36 @@ class HttpRecorderTest extends AirframeSpec {
     }
   }
 
+  "support binary contents" in {
+    val storeConfig = HttpRecorderConfig(destUri = "localhost", sessionName = "binary-test")
+    val store       = new HttpRecordStore(storeConfig, dropSession = true)
+
+    val binaryRequestData = new Array[Byte](512)
+    Random.nextBytes(binaryRequestData)
+    val binaryResponseData = new Array[Byte](1024)
+    Random.nextBytes(binaryResponseData)
+    val binaryResponse = Response()
+    binaryResponse.contentType = MediaType.OctetStream
+    binaryResponse.content = Buf.ByteArray.Owned(binaryResponseData)
+    binaryResponse.contentLength = binaryResponseData.length
+
+    val request = Request("/test")
+    request.content = Buf.ByteArray.Owned(binaryRequestData)
+    request.contentType = MediaType.OctetStream
+    store.record(request, binaryResponse)
+
+    store.findNext(request) match {
+      case None         => fail()
+      case Some(record) =>
+        // Check binary request
+        HttpRecordStore.decodeFromBase64(record.requestBody) shouldBe binaryRequestData
+
+        // Check binary response
+        val r = record.toResponse
+        r.content.length shouldBe 1024
+        val arr = new Array[Byte](1024)
+        r.content.write(arr, 0)
+        arr shouldBe binaryResponseData
+    }
+  }
 }

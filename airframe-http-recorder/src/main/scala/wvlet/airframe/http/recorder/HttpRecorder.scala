@@ -16,7 +16,7 @@ package wvlet.airframe.http.recorder
 import java.util.Locale
 
 import com.twitter.finagle.builder.ClientBuilder
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
@@ -162,7 +162,14 @@ object HttpRecorder extends LogSupport {
   }
 
   private[recorder] def computeRequestHash(request: Request, recorderConfig: HttpRecorderConfig): Int = {
-    s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${request.contentString.hashCode}".hashCode
+    val contentHash = request.contentType match {
+      case Some(MediaType.OctetStream) =>
+        request.content.hashCode()
+      case _ =>
+        request.contentString.hashCode
+    }
+
+    s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${contentHash}".hashCode
   }
 
 }
