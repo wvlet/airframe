@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, Task, TaskDef}
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
+import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{LogSupport, Logger}

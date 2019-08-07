@@ -11,22 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airframe.spec.spi
 
-import wvlet.airframe.spec.spi.AirSpec
-import wvlet.log.LogSupport
+import wvlet.airframe.Design
+import wvlet.airframe.surface.reflect.ReflectSurfaceFactory
+import wvlet.airframe.surface.{MethodSurface, Surface}
 
 /**
-  *
+  * A base trait for defining unit tests using airspec
   */
-class TestSpec extends AirSpec with LogSupport {
-  info("test spec")
-
-  def hello: String = {
-    "hello"
+trait AirSpec {
+  private[spec] def surface: Surface = {
+    ReflectSurfaceFactory.ofClass(this.getClass)
   }
-}
+  private[spec] def methodSurfaces: Seq[MethodSurface] = {
+    ReflectSurfaceFactory.methodsOfClass(this.getClass)
+  }
 
-object TestObjSpec extends AirSpec {
-  def objectMethod: String = "hello companion methods"
+  protected def design: Design = Design.empty.noLifeCycleLogging
 }
