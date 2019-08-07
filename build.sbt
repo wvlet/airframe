@@ -752,3 +752,17 @@ lazy val examples =
                tablet,
                finagle,
                airframeSpecJVM % "test")
+
+lazy val airspec =
+  project
+    .in(file("airspec"))
+    .settings(buildSettings)
+    .settings(
+      name := "airspec",
+      description := "Functional testing framework for Scala",
+      libraryDependencies ++= Seq(
+        "org.scala-sbt" % "test-interface" % "1.0"
+      ),
+      testFrameworks += new TestFramework("wvlet.airframe.spec.runner.Framework")
+    )
+    .dependsOn(airframeJVM, airframeMacrosJVMRef)
