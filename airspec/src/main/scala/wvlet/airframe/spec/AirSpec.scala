@@ -28,5 +28,5 @@ trait AirSpec {
     ReflectSurfaceFactory.methodsOfClass(this.getClass)
   }
 
-  protected def design: Design = Design.empty
+  protected def design: Design = Design.empty.noLifeCycleLogging
 }

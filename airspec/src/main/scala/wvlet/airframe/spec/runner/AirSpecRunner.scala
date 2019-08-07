@@ -18,14 +18,14 @@ import wvlet.log.LogSupport
 /**
   *
   */
-class Runner(val args: Array[String], val remoteArgs: Array[String], classLoader: ClassLoader)
+class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner
     with LogSupport {
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs.map { t =>
       info(t)
 
-      new AirTask(t, classLoader)
+      new AirSpecTask(t, classLoader)
     }
   }
 
@@ -35,10 +35,10 @@ class Runner(val args: Array[String], val remoteArgs: Array[String], classLoader
   }
 }
 
-object Runner extends LogSupport {
-  def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): Runner = {
+object AirSpecRunner extends LogSupport {
+  def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecRunner = {
     debug(s"args: ${args.mkString(", ")}")
     debug(s"remote args: ${args.mkString(", ")}")
-    new Runner(args, remoteArgs, testClassLoader)
+    new AirSpecRunner(args, remoteArgs, testClassLoader)
   }
 }
