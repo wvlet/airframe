@@ -14,7 +14,7 @@
 package wvlet.airframe.spec.runner
 import sbt.testing
 import sbt.testing.{Fingerprint, SubclassFingerprint}
-import wvlet.airframe.spec.runner.Framework.AirSpecFingerPrint
+import wvlet.airframe.spec.runner.Framework.{AirSpecClassFingerPrint, AirSpecObjectFingerPrint}
 import wvlet.log.{LogSupport, Logger}
 
 /**
@@ -25,7 +25,7 @@ class Framework extends sbt.testing.Framework with LogSupport {
   info(s"Running AirSpec")
 
   override def name(): String                     = "airspec"
-  override def fingerprints(): Array[Fingerprint] = Array(AirSpecFingerPrint)
+  override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
     Runner.newRunner(args, remoteArgs, testClassLoader)
   }
@@ -33,9 +33,16 @@ class Framework extends sbt.testing.Framework with LogSupport {
 
 object Framework {
 
-  object AirSpecFingerPrint extends SubclassFingerprint {
+  object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false
     override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
     override def requireNoArgConstructor(): Boolean = true
   }
+
+  object AirSpecObjectFingerPrint extends SubclassFingerprint {
+    override def isModule: Boolean                  = true
+    override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
+    override def requireNoArgConstructor(): Boolean = false
+  }
+
 }

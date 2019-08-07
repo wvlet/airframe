@@ -14,24 +14,32 @@
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, Logger, Task, TaskDef}
 import wvlet.airframe.spec.AirSpec
+import wvlet.airframe.spec.runner.Framework.AirSpecObjectFingerPrint
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogSupport
 
 /**
   *
   */
-class AirTask(inputTaskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
+class AirTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
   override def tags(): Array[String] = Array.empty
   override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
     info(s"executing task: ${taskDef}")
 
     try {
-      val className = inputTaskDef.fullyQualifiedName()
+      val className = taskDef.fullyQualifiedName()
       val cls       = classLoader.loadClass(className)
-      val instance  = cls.newInstance()
-      instance match {
-        case as: AirSpec =>
+
+      val testObj = taskDef.fingerprint() match {
+        case AirSpecObjectFingerPrint =>
+          ReflectTypeUtil.companionObject(cls)
+        case _ =>
+          Some(cls.newInstance())
+      }
+
+      testObj match {
+        case Some(as: AirSpec) =>
           info(s"surface: ${as.surface}")
           info(s"ms: ${as.methodSurfaces.mkString("\n")}")
         case other =>
@@ -43,6 +51,4 @@ class AirTask(inputTaskDef: TaskDef, classLoader: ClassLoader) extends sbt.testi
     }
     Array.empty
   }
-
-  override def taskDef: TaskDef = inputTaskDef
 }

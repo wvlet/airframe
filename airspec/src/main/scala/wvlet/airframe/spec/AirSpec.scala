@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.Design
 import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
@@ -21,11 +22,11 @@ import wvlet.airframe.surface.{MethodSurface, Surface}
   */
 trait AirSpec {
   private[spec] def surface: Surface = {
-    val tpe = scala.reflect.runtime.currentMirror.classSymbol(this.getClass).toType
-    ReflectSurfaceFactory.ofType(tpe)
+    ReflectSurfaceFactory.ofClass(this.getClass)
   }
   private[spec] def methodSurfaces: Seq[MethodSurface] = {
-    val tpe = scala.reflect.runtime.currentMirror.classSymbol(this.getClass).toType
-    ReflectSurfaceFactory.methodsOfType(tpe)
+    ReflectSurfaceFactory.methodsOfClass(this.getClass)
   }
+
+  protected def design: Design = Design.empty
 }
