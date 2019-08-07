@@ -38,7 +38,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
   // TODO: Detect schema change
   if (dropSession) {
-    dropSession
+    clearSession
   }
 
   def clearSession: Unit = {

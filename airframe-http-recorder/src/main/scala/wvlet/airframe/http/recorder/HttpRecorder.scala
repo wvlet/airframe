@@ -39,7 +39,14 @@ case class HttpRecorderConfig(destUri: String = "localhost",
                               excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
-  def sqliteFilePath   = s"${storageFolder}/${sessionName}.sqlite"
+  def sqliteFilePath = {
+    if (sessionName == ":memory:") {
+      ":memory:"
+    } else {
+      s"${storageFolder}/${sessionName}.sqlite"
+    }
+  }
+
   lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
   lazy val destAddress = ServerAddress(destUri)
 
