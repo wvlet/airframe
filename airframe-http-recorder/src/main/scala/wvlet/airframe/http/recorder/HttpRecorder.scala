@@ -39,8 +39,10 @@ case class HttpRecorderConfig(destUri: String = "localhost",
                               excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
+  def isInMemory: Boolean = sessionName == ":memory:"
+
   def sqliteFilePath = {
-    if (sessionName == ":memory:") {
+    if (isInMemory) {
       ":memory:"
     } else {
       s"${storageFolder}/${sessionName}.sqlite"
