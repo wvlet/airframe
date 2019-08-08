@@ -13,10 +13,9 @@
  */
 package wvlet.airframe.spec
 
-import wvlet.airframe.Design
 import wvlet.airframe.spec.spi.AirSpec
+import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport
-import wvlet.airframe._
 
 /**
   *

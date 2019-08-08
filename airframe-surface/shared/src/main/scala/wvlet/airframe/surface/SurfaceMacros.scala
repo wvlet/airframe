@@ -80,6 +80,7 @@ private[surface] object SurfaceMacros {
               val name  = m.name.decodedName.toString
               val ret   = surfaceOf(m.returnType)
               val args  = methodParmetersOf(m.owner.typeSignature, m)
+              // TODO: Support .call(instance, args)
               q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
             }
             q"IndexedSeq(..$list)"

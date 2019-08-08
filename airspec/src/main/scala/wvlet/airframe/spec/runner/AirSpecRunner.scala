@@ -33,6 +33,15 @@ class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], clas
     info(s"done")
     ""
   }
+
+  // These methods are defined for Scala.js
+  def receiveMessage(msg: String): Option[String] = None
+  def deserializeTask(task: String, deserializer: String => sbt.testing.TaskDef): sbt.testing.Task = {
+    new AirSpecTask(deserializer(task), classLoader)
+  }
+  def serializeTask(task: sbt.testing.Task, serializer: sbt.testing.TaskDef => String): String = {
+    serializer(task.taskDef())
+  }
 }
 
 object AirSpecRunner extends LogSupport {
