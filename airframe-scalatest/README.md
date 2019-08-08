@@ -1,9 +1,9 @@
-airframe-spec
+airframe-scalatest
 === 
 
-airframe-spec is a base trait for writing tests using ScalaTest.
+airframe-scalatest is a base trait for writing tests using ScalaTest.
 
-With airframe-spec, you can: 
+With airframe-scalatest, you can: 
 - Configuring loggers automatically 
 - Reload log levels periodically using log-test.properties file in `src/test/resources` folder.
 
