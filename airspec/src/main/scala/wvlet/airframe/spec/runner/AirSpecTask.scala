@@ -30,6 +30,8 @@ import scala.util.{Failure, Success, Try}
   */
 class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
+  import AirSpecTask._
+
   override def tags(): Array[String] = Array.empty
 
   def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
@@ -59,8 +61,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
     }
 
     def runSpec(spec: AirSpecBase): Unit = {
-      // TODO sanitize name
-      log(s"[${spec.getClass.getSimpleName}]")
+      log(s"${decodeClassName(spec.getClass)}:")
       spec.getDesign.noLifeCycleLogging.withSession { session =>
         for (m <- spec.testMethods) {
           val args: Seq[Any] = for (p <- m.args) yield {
@@ -142,6 +143,24 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 }
 
 object AirSpecTask {
+
+  private[spec] def decodeClassName(cls: Class[_]): String = {
+    // Scala.js doesn't produce a clean class name with cls.getSimpleName(), so we need to use
+    // the full class name
+    val decodedClassName = scala.reflect.NameTransformer.decode(cls.getName)
+    val pos              = decodedClassName.lastIndexOf('.')
+    var name =
+      if (pos == -1)
+        decodedClassName
+      else
+        decodedClassName.substring((pos + 1).min(decodedClassName.length - 1))
+
+    // For object names ending with $
+    if (name.endsWith("$")) {
+      name = name.substring(0, name.length - 1)
+    }
+    name
+  }
 
   private[spec] case class AirSpecEvent(taskDef: TaskDef,
                                         override val fullyQualifiedName: String,
