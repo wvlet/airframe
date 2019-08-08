@@ -19,15 +19,18 @@ import wvlet.airframe.spec.runner.AirSpecRunner
 import wvlet.log.LogSupport
 
 /**
-  *
+  * Include this class to your build.sbt:
+  * testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
   */
-class Framework extends sbt.testing.Framework with LogSupport {
-  import Framework._
+class AirSpecFramework extends sbt.testing.Framework with LogSupport {
+  import AirSpecFramework._
   override def name(): String                     = "airspec"
   override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
     AirSpecRunner.newRunner(args, remoteArgs, testClassLoader)
   }
+
+  // This method is necessary for Scala.js
   def slaveRunner(args: Array[String],
                   remoteArgs: Array[String],
                   testClassLoader: ClassLoader,
@@ -35,7 +38,7 @@ class Framework extends sbt.testing.Framework with LogSupport {
     runner(args, remoteArgs, testClassLoader)
 }
 
-object Framework {
+object AirSpecFramework {
 
   object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false

@@ -14,7 +14,7 @@
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, TaskDef}
 import wvlet.airframe.spec.CompatApi
-import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
+import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec.spi.AirSpecBase
 import wvlet.log.LogSupport
 
