@@ -24,14 +24,27 @@ trait AirSpecException extends RuntimeException {
   override def getMessage: String = message
   def message: String
   def code: SourceCode
+  def statusLabel: String
 }
 
-case class AssertionFailure(message: String, code: SourceCode)   extends AirSpecException
-case class Ignored(message: String, code: SourceCode)            extends AirSpecException
-case class Pending(message: String, code: SourceCode)            extends AirSpecException
-case class Skipped(message: String, code: SourceCode)            extends AirSpecException
-case class Cancelled(message: String, code: SourceCode)          extends AirSpecException
-case class InterceptException(message: String, code: SourceCode) extends AirSpecException
+case class AssertionFailure(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "failed"
+}
+case class Ignored(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "ignored"
+}
+case class Pending(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "pending"
+}
+case class Skipped(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "skipped"
+}
+case class Cancelled(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "skipped"
+}
+case class InterceptException(message: String, code: SourceCode) extends AirSpecException {
+  override def statusLabel: String = "interrupted"
+}
 
 object AirSpecException {
   private[spec] def classifyException(e: Throwable): Status = {
