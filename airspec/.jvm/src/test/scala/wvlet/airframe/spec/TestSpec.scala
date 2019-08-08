@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.spec
 
+import java.net.{URLDecoder, URLEncoder}
+
 import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport
@@ -42,6 +44,14 @@ class TestSpec extends AirSpec with LogSupport {
 
   def skip: Unit = {
     skip("skip test")
+  }
+
+  def `test cancel methods`: Unit = {
+    cancel("cancelled")
+  }
+
+  def `test pending`: Unit = {
+    pending("pending test")
   }
 
 }

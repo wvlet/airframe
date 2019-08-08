@@ -71,8 +71,10 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           log(s"- ${m.name}${argStr}")
 
           val startTimeNanos = System.nanoTime()
-          val result         = Try(m.call(spec, args: _*))
-          val durationNanos  = System.nanoTime() - startTimeNanos
+          val result = Try {
+            m.call(spec, args: _*)
+          }
+          val durationNanos = System.nanoTime() - startTimeNanos
           reportEvent(eventHandler: EventHandler, s"${taskDef.fullyQualifiedName()}:${m.name}", result, durationNanos)
         }
       }
@@ -133,7 +135,8 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           case _ =>
             warn(s"${status} ${testName}: ${e.message} (${e.code})")
         }
-      case _ =>
+      case other =>
+        error(s"Failed ${testName}: ${other.getMessage}")
     }
   }
 

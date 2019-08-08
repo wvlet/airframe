@@ -33,8 +33,8 @@ case class Ignored(message: String, code: SourceCode)          extends AirSpecEx
 case class Pending(message: String, code: SourceCode)          extends AirSpecException
 case class Skipped(message: String, code: SourceCode)          extends AirSpecException
 case class Cancelled(message: String, code: SourceCode)        extends AirSpecException
-object AirSpecException {
 
+object AirSpecException {
   @tailrec private[spec] def findCause(e: Throwable): Throwable = {
     e match {
       case i: InvocationTargetException => findCause(i.getTargetException)
