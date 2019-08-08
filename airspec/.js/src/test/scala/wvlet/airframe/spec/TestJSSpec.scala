@@ -38,3 +38,9 @@ class TestJSSpec extends AirSpec with LogSupport {
     info("hello symbol name tests")
   }
 }
+
+class `Flexible test spec name` extends AirSpec {
+  override private[spec] def methodSurfaces = Surface.methodsOf[`Flexible test spec name`]
+
+  def `should support long method names`: Unit = {}
+}

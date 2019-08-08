@@ -60,3 +60,7 @@ object TestObjSpec extends AirSpec with LogSupport {
     "hello obj"
   }
 }
+
+object `Flexible Test Name` extends AirSpec {
+  def `hello word spec` = {}
+}
