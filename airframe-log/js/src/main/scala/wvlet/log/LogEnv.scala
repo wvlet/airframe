@@ -37,4 +37,11 @@ private[log] object LogEnv extends LogEnvBase {
   override def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = {
     // no-op
   }
+
+  /**
+    *
+    */
+  override def unregisterJMX: Unit = {
+    // no-op
+  }
 }

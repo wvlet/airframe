@@ -16,7 +16,7 @@ package wvlet.log
 import java.io.{File, FileReader}
 import java.net.URL
 import java.util.Properties
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{Executors, TimeUnit}
 import java.util.concurrent.atomic.{AtomicLong, AtomicReference}
 
 import wvlet.log.LogLevelScanner.ScannerState
@@ -188,7 +188,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
       state.compareAndSet(STOPPING, RUNNING)
       if (state.compareAndSet(STOPPED, RUNNING)) {
         // Create a new thread if the previous thread is terminated
-        new LogLevelScannerThread().start
+        new LogLevelScannerThread().start()
       }
     }
   }
@@ -230,7 +230,7 @@ private[log] class LogLevelScanner extends Guard { scanner =>
   }
 
   private class LogLevelScannerThread extends Thread {
-    setName("WvletLogLevelScanner")
+    setName("AirframeLogLevelScanner")
     // Enable terminating JVM without shutting down this executor
     setDaemon(true)
 

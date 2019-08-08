@@ -66,19 +66,24 @@ private[surface] object SurfaceMacros {
 
     private def createMethodCaller(t: c.Type, name: String, methodArgs: Seq[MethodArg]): c.Tree = {
       val methodName = TermName(name)
-      if (methodArgs.size == 0) {
-        q"""
+      try {
+        if (methodArgs.size == 0) {
+          q"""
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
-          """
-      } else {
-        val argList = methodArgs.zipWithIndex.map {
-          case (x, i) =>
-            q"args(${i}).asInstanceOf[${x.tpe}]"
-        }
-
-        q"""
+            """
+        } else {
+          val argList = methodArgs.zipWithIndex.map {
+            case (x, i) =>
+              q"args(${i}).asInstanceOf[${x.tpe}]"
+          }
+          q"""
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName}(..${argList}) })
-          """
+            """
+        }
+      } catch {
+        case e: Throwable =>
+          // Fallback for an unknown error
+          q"None"
       }
     }
 
@@ -93,14 +98,14 @@ private[surface] object SurfaceMacros {
         val result = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
             val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod          = modifierBitMaskOf(m)
-              val owner        = surfaceOf(t)
-              val name         = m.name.decodedName.toString
-              val ret          = surfaceOf(m.returnType)
-              val methodArgs   = methodArgsOf(t, m).flatten
-              val args         = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              val mod        = modifierBitMaskOf(m)
+              val owner      = surfaceOf(t)
+              val name       = m.name.decodedName.toString
+              val ret        = surfaceOf(m.returnType)
+              val methodArgs = methodArgsOf(t, m).flatten
+              val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              // Generate code for supporting ClassMethodSurface.call(instance, args)
               val methodCaller = createMethodCaller(t, name, methodArgs)
-              // TODO: Support .call(instance, args)
               q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
             }
             q"IndexedSeq(..$list)"

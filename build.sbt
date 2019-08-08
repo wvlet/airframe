@@ -768,7 +768,6 @@ lazy val airspec =
       testFrameworks += new TestFramework("wvlet.airframe.spec.Framework")
     )
     .jvmSettings(
-      classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars,
       libraryDependencies ++= Seq(
         "org.scala-sbt" % "test-interface" % "1.0"
       )

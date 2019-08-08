@@ -52,18 +52,32 @@ private[log] object LogEnv extends LogEnvBase {
     LogLevelScanner.scanLogLevels(loglevelFileCandidates)
   }
 
-  {
+  private def onGraalVM: Boolean = {
     // https://www.graalvm.org/sdk/javadoc/index.html?constant-values.html
     val graalVMFlag = Option(System.getProperty("org.graalvm.nativeimage.kind"))
-    val onGraalVM   = graalVMFlag.map(p => p == "executable" || p == "shared").getOrElse(false)
+    graalVMFlag.map(p => p == "executable" || p == "shared").getOrElse(false)
+  }
 
+  private val mBeanName = new ObjectName("wvlet.log:type=Logger")
+
+  if (!onGraalVM) {
+    // Register the log level configuration interface to JMX
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    if (!mbeanServer.isRegistered(mBeanName)) {
+      mbeanServer.registerMBean(LoggerJMX, mBeanName)
+    }
+  }
+
+  /**
+    *
+    */
+  override def unregisterJMX: Unit = {
     if (!onGraalVM) {
-      // Register the log level configuration interface to JMX
       val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      val name        = new ObjectName("wvlet.log:type=Logger")
-      if (!mbeanServer.isRegistered(name)) {
-        mbeanServer.registerMBean(LoggerJMX, name)
-      }
+      val name =
+        if (mbeanServer.isRegistered(mBeanName)) {
+          mbeanServer.unregisterMBean(mBeanName)
+        }
     }
   }
 }
