@@ -64,9 +64,9 @@ private[surface] object SurfaceMacros {
           isTargetMethod(_, t))
     }
 
-    private def createMethodCaller(t: c.Type, name: String, methodArgs: Seq[MethodArg]): c.Tree = {
+    private def createMethodCaller(t: c.Type, m: MethodSymbol, name: String, methodArgs: Seq[MethodArg]): c.Tree = {
       val methodName = TermName(name)
-      try {
+      if (m.isPublic) {
         if (methodArgs.size == 0) {
           q"""
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
@@ -80,10 +80,9 @@ private[surface] object SurfaceMacros {
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName}(..${argList}) })
             """
         }
-      } catch {
-        case e: Throwable =>
-          // Fallback for an unknown error
-          q"None"
+      } else {
+        // Fallback for an unknown error
+        q"None"
       }
     }
 
@@ -105,7 +104,7 @@ private[surface] object SurfaceMacros {
               val methodArgs = methodArgsOf(t, m).flatten
               val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
               // Generate code for supporting ClassMethodSurface.call(instance, args)
-              val methodCaller = createMethodCaller(t, name, methodArgs)
+              val methodCaller = createMethodCaller(t, m, name, methodArgs)
               q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
             }
             q"IndexedSeq(..$list)"
