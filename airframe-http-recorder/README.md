@@ -35,7 +35,6 @@ import com.twitter.finagle.http.{Request,Response}
 // and make actual requests the destination for non-recorded requests.
 val recorderConfig = HttpRecorderConfig(destUri = "https://www.google.com")
 withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
-  server.start
 
   // Create an HTTP client. This example uses Finagle's http client implementation
   val client = FinagleClient.newSyncClient(server.localAddress)  // "localhost:(port number)"
@@ -50,7 +49,6 @@ withResource(HttpRecorder.createRecorderProxy(recorderConfig)) { server =>
 
 // Create a proxy server only for recording server responses
 withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
-  server.start
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will be recorded
 
@@ -60,7 +58,6 @@ withResource(HttpRecorder.createRecordOnlyServer(recorderConfig)) { server =>
 
 // Create a replay server that returns recorded responses for matching requests 
 withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
-  server.start
   val addr = server.localAddress // "localhost:(port number)"
   // Requests to the local server will return the recorded responses
 }
@@ -76,8 +73,6 @@ import com.twitter.finagle.http.{Request,Response}
 
 val recorderConfig = HttpRecorderConfig(sessionName="my-recording")
 val response = withResource(HttpRecorder.createProgrammableServer(recorderConfig)) { server =>
-  server.start
-
   // Add custom server responses
   val request = Request("/index.html")
   val response = Response()

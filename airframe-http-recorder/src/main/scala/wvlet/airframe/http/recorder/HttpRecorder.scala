@@ -103,7 +103,11 @@ object HttpRecorder extends LogSupport {
   def createRecorderProxy(recorderConfig: HttpRecorderConfig,
                           dropExistingSession: Boolean = false): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
-    new HttpRecorderServer(recorder, HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+    val server = new HttpRecorderServer(
+      recorder,
+      HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+    server.start
+    server
   }
 
   /**
@@ -112,7 +116,10 @@ object HttpRecorder extends LogSupport {
   def createRecordOnlyServer(recorderConfig: HttpRecorderConfig,
                              dropExistingSession: Boolean = true): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
-    new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
+    val server =
+      new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
+    server.start
+    server
   }
 
   /**
@@ -122,7 +129,9 @@ object HttpRecorder extends LogSupport {
   def createReplayOnlyServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
     val recorder = new HttpRecordStore(recorderConfig)
     // Return the server instance as FinagleServer to avoid further recording
-    new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    val server = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    server.start
+    server
   }
 
   /**
@@ -131,7 +140,9 @@ object HttpRecorder extends LogSupport {
     */
   def createProgrammableServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
     val recorder = new HttpRecordStore(recorderConfig)
-    new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    val server   = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    server.start
+    server
   }
 
   /**
