@@ -49,7 +49,6 @@ class HttpRecorderTest extends AirframeSpec {
     val path = "/airframe/"
     val response: Response =
       withResource(HttpRecorder.createRecordOnlyServer(recorderConfig, dropExistingSession = true)) { server =>
-        server.start
         withClient(server.localAddress) { client =>
           val response = client(Request(path)).map { response =>
             debug(response)
@@ -60,7 +59,6 @@ class HttpRecorderTest extends AirframeSpec {
       }
 
     val replayResponse: Response = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val response = client(Request(path)).map { response =>
           debug(response)
@@ -78,7 +76,6 @@ class HttpRecorderTest extends AirframeSpec {
 
     // Check non-recorded response
     val errorResponse = withResource(HttpRecorder.createReplayOnlyServer(recorderConfig)) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val response = client(Request("/non-recorded-path.html")).map { response =>
           debug(response)
@@ -97,7 +94,6 @@ class HttpRecorderTest extends AirframeSpec {
 
     // Recording
     withResource(HttpRecorder.createRecorderProxy(recorderConfig, dropExistingSession = true)) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val request = Request("/airframe/")
         val r1      = Await.result(client(request))
@@ -111,7 +107,6 @@ class HttpRecorderTest extends AirframeSpec {
     val replayConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
     withResource(HttpRecorder.createRecorderProxy(replayConfig)) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val request = Request("/airframe/")
         val r1      = Await.result(client(request))
@@ -124,16 +119,14 @@ class HttpRecorderTest extends AirframeSpec {
   }
 
   "programmable server" in {
-    val response = withResource(HttpRecorder.createProgrammableServer { recorder =>
-      val request = Request("/index.html")
+    val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
+      server.clearSession
 
+      val request  = Request("/index.html")
       val response = Response()
       response.setContentString("Hello World!")
+      server.recordIfNotExists(request, response)
 
-      recorder.record(request, response)
-
-    }) { server =>
-      server.start
       withClient(server.localAddress) { client =>
         val request = Request("/index.html")
 

@@ -26,6 +26,23 @@ import wvlet.log.LogSupport
 class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
     extends FinagleServer(FinagleServerConfig("http-recorder", recordStore.recorderConfig.serverPort), finagleService) {
 
+  def clearSession: Unit = {
+    recordStore.clearSession
+  }
+
+  def record(request: Request, response: Response): Unit = {
+    recordStore.record(request, response)
+  }
+
+  def recordIfNotExists(request: Request, response: Response): Unit = {
+    // Do not increment the request hit counter to replay the recorded responses
+    recordStore
+      .findNext(request, incrementHitCount = false)
+      .getOrElse {
+        record(request, response)
+      }
+  }
+
   override def close(): Unit = {
     super.close()
     recordStore.close()

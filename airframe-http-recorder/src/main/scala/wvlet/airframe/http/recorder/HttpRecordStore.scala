@@ -38,6 +38,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
   // TODO: Detect schema change
   if (dropSession) {
+    clearSession
+  }
+
+  def clearSession: Unit = {
     warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
     connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
   }
@@ -75,13 +79,13 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     }
   }
 
-  def findNext(request: Request): Option[HttpRecord] = {
+  def findNext(request: Request, incrementHitCount: Boolean = true): Option[HttpRecord] = {
     val rh = requestHash(request)
 
     // If there are multiple records for the same request, use the counter to find
     // n-th request, where n is the access count to the same path
     val counter  = requestCounter.getOrElseUpdate(rh, new AtomicInteger())
-    val hitCount = counter.getAndIncrement()
+    val hitCount = if (incrementHitCount) counter.getAndIncrement() else counter.get()
     trace(s"findNext: request hash: ${rh} for ${request}, hitCount: ${hitCount}")
     connectionPool.queryWith(
       // Get the next request matching the requestHash
@@ -115,6 +119,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       responseBody = response.contentString,
       createdAt = Instant.now()
     )
+
+    trace(s"Recording ${request} -> ${entry}")
     connectionPool.withConnection { conn =>
       entry.insertInto(recordTableName, conn)
     }
@@ -139,6 +145,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
 
     val httpHeadersForHash = filterHeaders(request, recorderConfig.lowerCaseHeaderExcludePrefixes)
+
+    trace(s"http headers for request ${request}: ${httpHeadersForHash.mkString(",")}")
 
     httpHeadersForHash match {
       case headers if headers.isEmpty => prefix.hashCode * 13
