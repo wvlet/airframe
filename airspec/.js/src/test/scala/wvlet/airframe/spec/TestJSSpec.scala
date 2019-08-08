@@ -21,9 +21,9 @@ import wvlet.airframe._
 /**
   *
   */
-class TestSpec extends AirSpec {
+class TestJSSpec extends AirSpec {
   // This line is necessary for Scala.js
-  override private[spec] def methodSurfaces = Surface.methodsOf[TestSpec]
+  override private[spec] def methodSurfaces = Surface.methodsOf[TestJSSpec]
 
   override protected def design: Design =
     newDesign
