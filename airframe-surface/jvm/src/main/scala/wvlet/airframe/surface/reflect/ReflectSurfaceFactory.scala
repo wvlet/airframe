@@ -133,7 +133,7 @@ object ReflectSurfaceFactory extends LogSupport {
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members
+      t.members.sorted // Sort the members in the source code order
         .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
           isTargetMethod(_, t))
     }

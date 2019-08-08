@@ -20,6 +20,7 @@ import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec.spi.{AirSpecBase, AirSpecException, AssertionFailure}
 import wvlet.log.LogSupport
 import wvlet.airframe.spec._
+import wvlet.airframe.spec.spi.AirSpecException.{classifyException, findCause}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
@@ -40,7 +41,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   }
 
   /**
-    * Scala.js specific: Same as basic
+    * Scala.js specific executor:
     * [[[sbt.testing.Task.execute(eventHandler:sbt\.testing\.EventHandler,loggers:Array[sbt\.testing\.Logger])*
     * execute]]]
     * but takes a continuation.
@@ -53,7 +54,6 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   def execute(eventHandler: EventHandler,
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
-    debug(s"executing task: ${taskDef}")
 
     def log(msg: String): Unit = {
       info(msg)
@@ -73,12 +73,13 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           val startTimeNanos = System.nanoTime()
           val result         = Try(m.call(spec, args: _*))
           val durationNanos  = System.nanoTime() - startTimeNanos
-          reportEvent(eventHandler: EventHandler, result, durationNanos)
+          reportEvent(eventHandler: EventHandler, s"${taskDef.fullyQualifiedName()}:${m.name}", result, durationNanos)
         }
       }
     }
 
     compat.withLogScanner {
+      debug(s"executing task: ${taskDef}")
       try {
         val testClassName = taskDef.fullyQualifiedName()
         val testObj = taskDef.fingerprint() match {
@@ -104,19 +105,35 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   }
 
   import AirSpecTask._
-  private def reportEvent(eventHandler: EventHandler, result: Try[_], durationNanos: Long): Unit = {
+  private def reportEvent(eventHandler: EventHandler, testName: String, result: Try[_], durationNanos: Long): Unit = {
     val (status, throwableOpt) = result match {
       case Success(x) =>
         (Status.Success, new OptionalThrowable())
       case Failure(ex) =>
-        (AirSpecException.classifyException(ex), new OptionalThrowable(ex))
+        val status = classifyException(ex)
+        reportError(testName: String, ex, status)
+        (status, new OptionalThrowable(findCause(ex)))
     }
     try {
-      val e = AirSpecEvent(taskDef, status, throwableOpt, durationNanos)
+      val e = AirSpecEvent(taskDef, testName, status, throwableOpt, durationNanos)
       eventHandler.handle(e)
     } catch {
       case e: Throwable =>
         warn(e)
+    }
+  }
+
+  private def reportError(testName: String, e: Throwable, status: Status): Unit = {
+    val cause = findCause(e)
+    cause match {
+      case e: AirSpecException =>
+        status match {
+          case Status.Failure | Status.Error =>
+            error(s"${status} ${testName}: ${e.message} (${e.code})")
+          case _ =>
+            warn(s"${status} ${testName}: ${e.message} (${e.code})")
+        }
+      case _ =>
     }
   }
 
@@ -125,14 +142,14 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 object AirSpecTask {
 
   private[spec] case class AirSpecEvent(taskDef: TaskDef,
+                                        override val fullyQualifiedName: String,
                                         override val status: Status,
                                         override val throwable: OptionalThrowable,
                                         durationNanos: Long)
       extends Event {
-    override def fullyQualifiedName(): String = taskDef.fullyQualifiedName()
-    override def fingerprint(): Fingerprint   = taskDef.fingerprint()
-    override def selector(): Selector         = taskDef.selectors().head
-    override def duration(): Long             = TimeUnit.NANOSECONDS.toMillis(durationNanos)
+    override def fingerprint(): Fingerprint = taskDef.fingerprint()
+    override def selector(): Selector       = taskDef.selectors().head
+    override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
   }
 
 }

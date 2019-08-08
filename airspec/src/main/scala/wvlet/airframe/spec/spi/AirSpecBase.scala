@@ -15,12 +15,11 @@ package wvlet.airframe.spec.spi
 
 import wvlet.airframe.Design
 import wvlet.airframe.surface.MethodSurface
-import wvlet.log.LogSupport
 
 /**
   *
   */
-trait AirSpecBase extends LogSupport with Asserts {
+trait AirSpecBase extends Asserts {
   private[spec] def methodSurfaces: Seq[MethodSurface]
   protected def design: Design = Design.empty.noLifeCycleLogging
 

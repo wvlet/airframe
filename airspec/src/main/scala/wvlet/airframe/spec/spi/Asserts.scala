@@ -40,4 +40,16 @@ trait Asserts {
     throw Ignored(reason, code)
   }
 
+  def pending(reason: String = "pending")(implicit code: SourceCode): Unit = {
+    throw Pending(reason, code)
+  }
+
+  def cancel(reason: String = "cancelled")(implicit code: SourceCode): Unit = {
+    throw Cancelled(reason, code)
+  }
+
+  def skip(reason: String = "skipped")(implicit code: SourceCode): Unit = {
+    throw Skipped(reason, code)
+  }
+
 }
