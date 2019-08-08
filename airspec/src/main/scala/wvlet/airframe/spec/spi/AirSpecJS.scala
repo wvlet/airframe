@@ -22,7 +22,9 @@ import wvlet.log.LogSupport
   */
 trait AirSpecJS extends LogSupport with Asserts {
   private[spec] def methodSurfaces: Seq[MethodSurface]
-  def design: Design = Design.empty.noLifeCycleLogging
+  protected def design: Design = Design.empty.noLifeCycleLogging
+
+  private[spec] def getDesign: Design = design
 
   private[spec] def testMethods: Seq[MethodSurface] = {
     methodSurfaces.filter(_.isPublic)
