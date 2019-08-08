@@ -5,6 +5,16 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.0
+-  airframe-http-recorder: Support binary requests and responses ([#579](https://github.com/wvlet/airframe/issues/579)) [[a0c5894](https://github.com/wvlet/airframe/commit/a0c5894)]
+-  airframe-http-recorder: Support custom recording  ([#578](https://github.com/wvlet/airframe/issues/578)) [[d9b8ed2](https://github.com/wvlet/airframe/commit/d9b8ed2)]
+-  airframe-json: Throw IntegerOverflow exceptions for too big numbers ([#575](https://github.com/wvlet/airframe/issues/575)) [[0e541ee](https://github.com/wvlet/airframe/commit/0e541ee)]
+-  airframe-benchmark: Aggregate benchmark programs (msgpack-benchmark, json-benchmark) into one project ([#573](https://github.com/wvlet/airframe/issues/573)) [[67656ba](https://github.com/wvlet/airframe/commit/67656ba)]
+-  [#475](https://github.com/wvlet/airframe/issues/475): Use Scala 2.13 compatible collection syntaxes ([#572](https://github.com/wvlet/airframe/issues/572)) [[6f20a16](https://github.com/wvlet/airframe/commit/6f20a16)]
+-  airframe-json: Use exhaustive match for JSONValue.value ([#571](https://github.com/wvlet/airframe/issues/571)) [[f138d74](https://github.com/wvlet/airframe/commit/f138d74)]
+-  airframe-http: Support Router.add[Filter], andThen[Filter] ([#570](https://github.com/wvlet/airframe/issues/570)) [[8335c39](https://github.com/wvlet/airframe/commit/8335c39)]
+-  airframe-http: Wrap exceptions with Future for each filter and context ([#569](https://github.com/wvlet/airframe/issues/569)) [[1324385](https://github.com/wvlet/airframe/commit/1324385)]
+
 ## 19.7.6
 -  airframe-http-recorder: [#559](https://github.com/wvlet/airframe/issues/559) Support expiration ([#567](https://github.com/wvlet/airframe/issues/567)) [[32a0224](https://github.com/wvlet/airframe/commit/32a0224)]
 -  airframe-http: Allow setting FinagleServer name ([#566](https://github.com/wvlet/airframe/issues/566)) [[3f810f1](https://github.com/wvlet/airframe/commit/3f810f1)]
