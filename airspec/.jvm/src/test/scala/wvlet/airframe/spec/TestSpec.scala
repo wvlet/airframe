@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.spec
 
-import java.net.{URLDecoder, URLEncoder}
-
 import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport

@@ -34,4 +34,8 @@ private[spec] object Compat extends CompatApi {
     Logger.setDefaultHandler(new ConsoleLogHandler(SourceCodeLogFormatter))
     block
   }
+
+  private[spec] def findCause(e: Throwable): Throwable = {
+    e
+  }
 }

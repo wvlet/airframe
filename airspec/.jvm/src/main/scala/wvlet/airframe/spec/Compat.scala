@@ -13,10 +13,13 @@
  */
 package wvlet.airframe.spec
 
+import java.lang.reflect.InvocationTargetException
+
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
+import scala.annotation.tailrec
 import scala.util.Try
 
 /**
@@ -41,6 +44,13 @@ private[spec] object Compat extends CompatApi {
       block
     } finally {
       Logger.stopScheduledLogLevelScan
+    }
+  }
+
+  @tailrec private[spec] def findCause(e: Throwable): Throwable = {
+    e match {
+      case i: InvocationTargetException => findCause(i.getTargetException)
+      case _                            => e
     }
   }
 }

@@ -13,12 +13,9 @@
  */
 package wvlet.airframe.spec.spi
 
-import java.lang.reflect.InvocationTargetException
-
+import wvlet.airframe.spec._
 import sbt.testing.Status
 import wvlet.airframe.SourceCode
-
-import scala.annotation.tailrec
 
 /**
   *
@@ -35,15 +32,8 @@ case class Skipped(message: String, code: SourceCode)          extends AirSpecEx
 case class Cancelled(message: String, code: SourceCode)        extends AirSpecException
 
 object AirSpecException {
-  @tailrec private[spec] def findCause(e: Throwable): Throwable = {
-    e match {
-      case i: InvocationTargetException => findCause(i.getTargetException)
-      case _                            => e
-    }
-  }
-
   private[spec] def classifyException(e: Throwable): Status = {
-    findCause(e) match {
+    compat.findCause(e) match {
       case a: AssertionFailure => Status.Failure
       case i: Ignored          => Status.Ignored
       case p: Pending          => Status.Pending

@@ -14,13 +14,12 @@
 package wvlet.airframe.spec.runner
 import java.util.concurrent.TimeUnit
 
-import sbt.testing.{Event, EventHandler, Fingerprint, Logger, OptionalThrowable, Selector, Status, Task, TaskDef}
-import wvlet.airframe.Session
+import sbt.testing._
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
-import wvlet.airframe.spec.spi.{AirSpecBase, AirSpecException, AssertionFailure}
-import wvlet.log.LogSupport
 import wvlet.airframe.spec._
-import wvlet.airframe.spec.spi.AirSpecException.{classifyException, findCause}
+import wvlet.airframe.spec.spi.AirSpecException.classifyException
+import wvlet.airframe.spec.spi.{AirSpecBase, AirSpecException}
+import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
@@ -114,7 +113,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       case Failure(ex) =>
         val status = classifyException(ex)
         reportError(testName: String, ex, status)
-        (status, new OptionalThrowable(findCause(ex)))
+        (status, new OptionalThrowable(compat.findCause(ex)))
     }
     try {
       val e = AirSpecEvent(taskDef, testName, status, throwableOpt, durationNanos)
@@ -126,7 +125,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   }
 
   private def reportError(testName: String, e: Throwable, status: Status): Unit = {
-    val cause = findCause(e)
+    val cause = compat.findCause(e)
     cause match {
       case e: AirSpecException =>
         status match {
@@ -155,13 +154,4 @@ object AirSpecTask {
     override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
   }
 
-}
-
-class MethodTask(session: Session, testInstnace: AirSpecBase, override val taskDef: TaskDef, classLoader: ClassLoader)
-    extends sbt.testing.Task
-    with LogSupport {
-  override def tags(): Array[String] = Array.empty
-  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
-    Array.empty
-  }
 }
