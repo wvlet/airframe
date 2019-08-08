@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.surface.MethodSurface
+
 /**
   * An interface for compatibility between Scala JVM and Scala.js
   */
@@ -21,4 +23,6 @@ private[spec] trait CompatApi {
   def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[spec] def withLogScanner[U](block: => U): U
   private[spec] def findCause(e: Throwable): Throwable
+
+  private[spec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
 }

@@ -11,11 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airframe.spec
+
 import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
+import wvlet.airframe.surface.MethodSurface
 
 /**
-  *
+  * This annotation is necessary to support (test class).getInstance() in Scala.js
   */
 @EnableReflectiveInstantiation
-trait AirSpec extends AirSpecBase
+trait AirSpecBase extends AirSpecSpi

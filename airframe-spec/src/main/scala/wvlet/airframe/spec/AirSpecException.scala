@@ -11,9 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airframe.spec
 
-import wvlet.airframe.spec._
 import sbt.testing.Status
 import wvlet.airframe.SourceCode
 
@@ -21,15 +20,17 @@ import wvlet.airframe.SourceCode
   *
   */
 trait AirSpecException extends RuntimeException {
+  override def getMessage: String = message
   def message: String
   def code: SourceCode
 }
 
-case class AssertionFailure(message: String, code: SourceCode) extends AirSpecException
-case class Ignored(message: String, code: SourceCode)          extends AirSpecException
-case class Pending(message: String, code: SourceCode)          extends AirSpecException
-case class Skipped(message: String, code: SourceCode)          extends AirSpecException
-case class Cancelled(message: String, code: SourceCode)        extends AirSpecException
+case class AssertionFailure(message: String, code: SourceCode)   extends AirSpecException
+case class Ignored(message: String, code: SourceCode)            extends AirSpecException
+case class Pending(message: String, code: SourceCode)            extends AirSpecException
+case class Skipped(message: String, code: SourceCode)            extends AirSpecException
+case class Cancelled(message: String, code: SourceCode)          extends AirSpecException
+case class InterceptException(message: String, code: SourceCode) extends AirSpecException
 
 object AirSpecException {
   private[spec] def classifyException(e: Throwable): Status = {

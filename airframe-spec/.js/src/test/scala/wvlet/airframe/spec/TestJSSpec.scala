@@ -14,7 +14,6 @@
 package wvlet.airframe.spec
 
 import wvlet.airframe.Design
-import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe._
 import wvlet.log.LogSupport

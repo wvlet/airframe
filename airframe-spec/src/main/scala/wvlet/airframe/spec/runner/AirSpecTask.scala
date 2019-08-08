@@ -15,10 +15,8 @@ package wvlet.airframe.spec.runner
 import java.util.concurrent.TimeUnit
 
 import sbt.testing._
-import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
-import wvlet.airframe.spec._
-import wvlet.airframe.spec.spi.AirSpecException.classifyException
-import wvlet.airframe.spec.spi.{AirSpecBase, AirSpecException}
+import wvlet.airframe.spec.{AirSpecException, _}
+import wvlet.airframe.spec.runner.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
@@ -60,7 +58,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       info(msg)
     }
 
-    def runSpec(spec: AirSpecBase): Unit = {
+    def runSpec(spec: AirSpecSpi): Unit = {
       log(s"${decodeClassName(spec.getClass)}:")
       spec.getDesign.noLifeCycleLogging.withSession { session =>
         for (m <- spec.testMethods) {
@@ -92,16 +90,17 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
         }
 
         testObj match {
-          case Some(as: AirSpecBase) =>
+          case Some(as: AirSpecSpi) =>
             runSpec(as)
           case other =>
             warn(s"Failed to instantiate: ${testClassName}")
         }
-
-        continuation(Array.empty)
       } catch {
         case e: Throwable =>
           warn(e.getMessage)
+          reportError(taskDef.fullyQualifiedName(), e, Status.Error)
+      } finally {
+        continuation(Array.empty)
       }
     }
   }
@@ -112,7 +111,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       case Success(x) =>
         (Status.Success, new OptionalThrowable())
       case Failure(ex) =>
-        val status = classifyException(ex)
+        val status = AirSpecException.classifyException(ex)
         reportError(testName: String, ex, status)
         (status, new OptionalThrowable(compat.findCause(ex)))
     }
