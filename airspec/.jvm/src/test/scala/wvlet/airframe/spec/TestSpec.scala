@@ -31,6 +31,11 @@ class TestSpec extends AirSpec with LogSupport {
     info(m)
     assert(m == "my message")
   }
+
+  def `support free-style test description`: Unit = {
+    info("hello")
+  }
+
 }
 
 object TestObjSpec extends AirSpec with LogSupport {
