@@ -18,7 +18,7 @@ import sbt.testing._
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec._
 import wvlet.airframe.spec.spi.AirSpecException
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
@@ -30,6 +30,9 @@ import scala.util.{Failure, Success, Try}
 class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
   import AirSpecTask._
+
+  private val taskLogger = Logger("wvlet.airframe.spec.runner.TaskLogger")
+  taskLogger.setFormatter(AirSpecLogFormatter)
 
   override def tags(): Array[String] = Array.empty
 
@@ -55,19 +58,15 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
 
-    def log(msg: String): Unit = {
-      info(msg)
-    }
-
     def runSpec(spec: AirSpecSpi): Unit = {
-      log(s"${decodeClassName(spec.getClass)}:")
+      taskLogger.info(s"${decodeClassName(spec.getClass)}:")
       spec.getDesign.noLifeCycleLogging.withSession { session =>
         for (m <- spec.testMethods) {
           val args: Seq[Any] = for (p <- m.args) yield {
             session.getInstanceOf(p.surface)
           }
           val argStr = if (args.isEmpty) "" else s"(${args.mkString(",")})"
-          log(s"- ${m.name}${argStr}")
+          taskLogger.info(s" - ${m.name}${argStr}")
 
           val startTimeNanos = System.nanoTime()
           val result = Try {
@@ -79,9 +78,10 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       }
     }
 
-    compat.withLogScanner {
-      debug(s"executing task: ${taskDef}")
-      try {
+    try {
+      compat.withLogScanner {
+        trace(s"Executing a task: ${taskDef}")
+
         val testClassName = taskDef.fullyQualifiedName()
         val testObj = taskDef.fingerprint() match {
           case AirSpecObjectFingerPrint =>
@@ -94,15 +94,15 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           case Some(as: AirSpecSpi) =>
             runSpec(as)
           case other =>
-            warn(s"Failed to instantiate: ${testClassName}")
+            taskLogger.warn(s"Failed to instantiate: ${testClassName}")
         }
-      } catch {
-        case e: Throwable =>
-          warn(e.getMessage)
-          reportError(taskDef.fullyQualifiedName(), e, Status.Error)
-      } finally {
-        continuation(Array.empty)
       }
+    } catch {
+      case e: Throwable =>
+        // Unknown error
+        reportError(taskDef.fullyQualifiedName(), e, Status.Error)
+    } finally {
+      continuation(Array.empty)
     }
   }
 
@@ -121,7 +121,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       eventHandler.handle(e)
     } catch {
       case e: Throwable =>
-        warn(e)
+        taskLogger.warn(e)
     }
   }
 
@@ -130,13 +130,15 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
     cause match {
       case e: AirSpecException =>
         status match {
-          case Status.Failure | Status.Error =>
-            error(s"${status} ${testName}: ${e.message} (${e.code})")
+          case Status.Failure =>
+            taskLogger.error(s"${status} ${testName}: ${e.message} (${e.code})")
+          case Status.Error =>
+            taskLogger.error(s"${status} ${testName}: ${e.message} (${e.code})", e)
           case _ =>
-            warn(s"${status} ${testName}: ${e.message} (${e.code})")
+            taskLogger.warn(s"${status} ${testName}: ${e.message} (${e.code})")
         }
       case other =>
-        error(s"Failed ${testName}: ${other.getMessage}")
+        taskLogger.error(s"Failed ${testName}: ${other.getMessage}", e)
     }
   }
 

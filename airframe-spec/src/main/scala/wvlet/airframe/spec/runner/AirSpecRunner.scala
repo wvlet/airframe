@@ -29,7 +29,7 @@ class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], clas
   override def done(): String = {
     // sbt 1.3.x's layered class loader will not clean up LogHandlers
     // registered at java.util.logging, so we need to unregister all LogHandlers implementations that
-    // uses airframe's code before the next run.
+    // use airframe's code before sbt detaches the class loader
     Logger.clearAllHandlers
     ""
   }
