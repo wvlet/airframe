@@ -15,8 +15,9 @@ package wvlet.airframe.spec.runner
 import java.util.concurrent.TimeUnit
 
 import sbt.testing._
-import wvlet.airframe.spec.{AirSpecException, _}
-import wvlet.airframe.spec.runner.AirSpecFramework.AirSpecObjectFingerPrint
+import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
+import wvlet.airframe.spec._
+import wvlet.airframe.spec.spi.AirSpecException
 import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration

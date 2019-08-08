@@ -21,11 +21,11 @@ import wvlet.log.{ConsoleLogHandler, Logger}
   *
   */
 private[spec] object Compat extends CompatApi {
-  def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     throw new IllegalStateException(s"Scala.js cannot read module classes: ${fullyQualifiedName}")
   }
 
-  def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val clsOpt = Reflect.lookupInstantiatableClass(fullyQualifiedName)
     clsOpt.map(_.newInstance())
   }

@@ -11,7 +11,7 @@ AirSpec
 
 ```
 libraryDependencies += "org.wvlet.airframe" %% "airframe-spec" % "(version)"
-testFrameworks += new TestFramework("wvlet.airframe.spec.runnger.AirSpecFramework")
+testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 ```
 
 For Scala.js:
