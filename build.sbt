@@ -767,11 +767,11 @@ lazy val examples =
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airspec"))
+    .in(file("airframe-spec"))
     .settings(buildSettings)
     .settings(
-      name := "airspec",
-      description := "Functional testing framework for Scala",
+      name := "airframe-spec",
+      description := "AirSpec: A Functional Testing Framework for Scala",
       testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
     )
     .jvmSettings(
