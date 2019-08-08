@@ -20,4 +20,5 @@ private[spec] trait CompatApi {
   def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[spec] def withLogScanner[U](block: => U): U
+  private[spec] def findCause(e: Throwable): Throwable
 }

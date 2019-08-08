@@ -17,11 +17,12 @@ import wvlet.airframe.Design
 import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe._
+import wvlet.log.LogSupport
 
 /**
   *
   */
-class TestJSSpec extends AirSpec {
+class TestJSSpec extends AirSpec with LogSupport {
   // This line is necessary for Scala.js
   override private[spec] def methodSurfaces = Surface.methodsOf[TestJSSpec]
 
@@ -31,5 +32,9 @@ class TestJSSpec extends AirSpec {
 
   def hello(name: String = "hello"): Unit = {
     info(name)
+  }
+
+  def `natural method name test`: Unit = {
+    info("hello symbol name tests")
   }
 }

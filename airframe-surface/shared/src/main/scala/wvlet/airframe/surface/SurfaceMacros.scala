@@ -64,8 +64,8 @@ private[surface] object SurfaceMacros {
           isTargetMethod(_, t))
     }
 
-    private def createMethodCaller(t: c.Type, m: MethodSymbol, name: String, methodArgs: Seq[MethodArg]): c.Tree = {
-      val methodName = TermName(name)
+    private def createMethodCaller(t: c.Type, m: MethodSymbol, methodArgs: Seq[MethodArg]): c.Tree = {
+      val methodName = TermName(m.name.encodedName.toString)
       if (m.isPublic) {
         if (methodArgs.size == 0) {
           q"""
@@ -104,7 +104,7 @@ private[surface] object SurfaceMacros {
               val methodArgs = methodArgsOf(t, m).flatten
               val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
               // Generate code for supporting ClassMethodSurface.call(instance, args)
-              val methodCaller = createMethodCaller(t, m, name, methodArgs)
+              val methodCaller = createMethodCaller(t, m, methodArgs)
               q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
             }
             q"IndexedSeq(..$list)"

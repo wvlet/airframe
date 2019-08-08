@@ -28,9 +28,9 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
     with LogSupport {
 
   private lazy val method: Option[jl.reflect.Method] = {
-    // Need to encode Scala method names into the bytecode format used in class files
-    val methodName = scala.reflect.NameTransformer.encode(name)
-    Try(owner.rawType.getDeclaredMethod(methodName, args.map(_.surface.rawType): _*)).toOption
+    // For `symbol-based method names`, we need to encode Scala method names into the bytecode format used in class files.
+    val rawMethodName = scala.reflect.NameTransformer.encode(name)
+    Try(owner.rawType.getDeclaredMethod(rawMethodName, args.map(_.surface.rawType): _*)).toOption
   }
 
   def getMethod: Option[jl.reflect.Method] = method
