@@ -12,7 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.recorder
-import java.nio.charset.StandardCharsets
 import java.sql.{Connection, ResultSet}
 import java.time.Instant
 
@@ -43,13 +42,16 @@ case class HttpRecord(session: String,
   }
 
   def toResponse: Response = {
-    val r        = Response(Version.Http11, Status.fromCode(responseCode))
-    val rawBytes = responseBody.getBytes(StandardCharsets.UTF_8)
-    r.content = Buf.ByteArray.Owned(rawBytes)
-    r.contentLength = rawBytes.length
+    val r = Response(Version.Http11, Status.fromCode(responseCode))
+
     responseHeader.foreach { x =>
       r.headerMap.set(x._1, x._2)
     }
+
+    // Decode binary contents with Base64
+    val contentBytes = HttpRecordStore.decodeFromBase64(responseBody)
+    r.content = Buf.ByteArray.Owned(contentBytes)
+    r.contentLength = contentBytes.length
     r
   }
 

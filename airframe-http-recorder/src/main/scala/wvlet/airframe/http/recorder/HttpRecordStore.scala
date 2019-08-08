@@ -14,10 +14,11 @@
 package wvlet.airframe.http.recorder
 
 import java.time.Instant
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.{Base64, Locale}
 
 import com.twitter.finagle.http.{Request, Response}
+import com.twitter.io.Buf
 import wvlet.airframe.jdbc.{DbConfig, SQLiteConnectionPool}
 import wvlet.airframe.metrics.TimeWindow
 import wvlet.log.LogSupport
@@ -28,25 +29,56 @@ import wvlet.log.LogSupport
 class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boolean = false)
     extends AutoCloseable
     with LogSupport {
-  private val connectionPool = new SQLiteConnectionPool(DbConfig.ofSQLite(recorderConfig.sqliteFilePath))
-
+  private val requestCounter  = scala.collection.mutable.Map.empty[Int, AtomicInteger]
+  private val connectionPool  = new SQLiteConnectionPool(DbConfig.ofSQLite(recorderConfig.sqliteFilePath))
   private def recordTableName = recorderConfig.recordTableName
 
-  // Prepare a database table for recording HttpRecord
-  connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
-  connectionPool.executeUpdate(
-    s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
-  // TODO: Detect schema change
-  if (dropSession) {
-    clearSession
+  // Increment this value if we need to change the table format.
+  private val recordFormatVersion = 2
+
+  init
+
+  protected def init {
+    if (!recorderConfig.isInMemory) {
+      // Support recorder version migration for persistent records
+      connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
+      connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
+        val lastVersion = if (handler.next()) {
+          handler.getInt(1)
+        } else {
+          1
+        }
+
+        if (lastVersion < recordFormatVersion) {
+          warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
+          clearAllRecords
+        }
+      }
+      // Record the current record format version
+      connectionPool.executeUpdate(
+        s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}")
+    }
+
+    // Prepare a database table for recording HttpRecord
+    connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
+    connectionPool.executeUpdate(
+      s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
+    // TODO: Detect schema change
+    if (dropSession) {
+      clearSession
+    }
+    cleanupExpiredRecords
+  }
+
+  private def clearAllRecords: Unit = {
+    warn(s"Deleting all records in ${recorderConfig.sqliteFilePath}")
+    connectionPool.executeUpdate(s"drop table if exists ${recordTableName}")
   }
 
   def clearSession: Unit = {
     warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
     connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
   }
-
-  cleanupExpiredRecords
 
   private def cleanupExpiredRecords: Unit = {
     val duration = TimeWindow.withUTC.parse(recorderConfig.expirationTime)
@@ -61,8 +93,6 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
         s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}")
     }
   }
-
-  private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
 
   def resetCounter: Unit = {
     requestCounter.clear()
@@ -105,7 +135,6 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     val rh = requestHash(request)
 
     val httpHeadersForRecording = filterHeaders(request, defaultExcludeRequestHeaders)
-
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -113,10 +142,10 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       destHost = recorderConfig.destAddress.hostAndPort,
       path = request.uri,
       requestHeader = httpHeadersForRecording,
-      requestBody = request.contentString,
+      requestBody = HttpRecordStore.encodeToBase64(request.content),
       responseCode = response.statusCode,
       responseHeader = response.headerMap.toMap,
-      responseBody = response.contentString,
+      responseBody = HttpRecordStore.encodeToBase64(response.content),
       createdAt = Instant.now()
     )
 
@@ -159,5 +188,21 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
           }
         prefix.hashCode * 13 + headerHash
     }
+  }
+}
+
+object HttpRecordStore {
+
+  def encodeToBase64(content: Buf): String = {
+    val buf = new Array[Byte](content.length)
+    content.write(buf, 0)
+
+    val encoder = Base64.getEncoder
+    encoder.encodeToString(buf)
+  }
+
+  def decodeFromBase64(base64String: String): Array[Byte] = {
+    val decoder = Base64.getDecoder
+    decoder.decode(base64String)
   }
 }
