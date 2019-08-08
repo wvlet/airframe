@@ -20,19 +20,17 @@ import wvlet.log.LogSupport
   *
   */
 class TestSpec extends AirSpec with LogSupport {
-  info("test spec")
-
   override protected def design: Design =
     newDesign
       .bind[String].toInstance("my message")
 
   def hello(m: String): Unit = {
-    info(m)
+    trace(m)
     assert(m == "my message")
   }
 
   def `support free-style test description`: Unit = {
-    info("hello")
+    trace("hello")
   }
 
   def assertionFailure: Unit = {
@@ -60,11 +58,12 @@ class TestSpec extends AirSpec with LogSupport {
 
 object TestObjSpec extends AirSpec with LogSupport {
   def objectMethod: String = {
-    info("hello companion methods")
+    trace("hello companion methods")
     "hello obj"
   }
 }
 
-object `Flexible Test Name` extends AirSpec {
-  def `hello word spec` = {}
+object `A flexible test spec` extends AirSpec {
+  def `should have a natural language description` = {}
+  def `should support arbitrary texts`: Unit       = {}
 }

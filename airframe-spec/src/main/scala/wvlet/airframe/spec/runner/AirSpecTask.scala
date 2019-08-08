@@ -32,9 +32,6 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
   import AirSpecTask._
 
-  private val taskLogger = Logger("wvlet.airframe.spec.runner.TaskLogger")
-  taskLogger.setFormatter(AirSpecLogFormatter)
-
   override def tags(): Array[String] = Array.empty
 
   def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
@@ -61,26 +58,38 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
     val testClassName = taskDef.fullyQualifiedName()
 
+    val taskLogger = new AirSpecLogger(loggers)
+
     def runSpec(spec: AirSpecSpi): Unit = {
       val clsLeafName = decodeClassName(spec.getClass)
-      taskLogger.info(s"${clsLeafName}:")
+      taskLogger.logSpecName(clsLeafName)
       spec.getDesign.noLifeCycleLogging.withSession { session =>
         for (m <- spec.testMethods) {
           val args: Seq[Any] = for (p <- m.args) yield {
             session.getInstanceOf(p.surface)
           }
-          val argStr = if (args.isEmpty) "" else s"(${args.mkString(",")})"
-
           val startTimeNanos = System.nanoTime()
           val result = Try {
             m.call(spec, args: _*)
           }
           val durationNanos = System.nanoTime() - startTimeNanos
-          reportEvent(eventHandler: EventHandler, clsName = testClassName, testName = m.name, result, durationNanos)
+
+          val (status, throwableOpt) = result match {
+            case Success(x) =>
+              (Status.Success, new OptionalThrowable())
+            case Failure(ex) =>
+              val status = AirSpecException.classifyException(ex)
+              (status, new OptionalThrowable(compat.findCause(ex)))
+          }
+
+          val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+          taskLogger.logEvent(e)
+          eventHandler.handle(e)
         }
       }
     }
 
+    val startTimeNanos = System.nanoTime()
     try {
       compat.withLogScanner {
         trace(s"Executing a task: ${taskDef}")
@@ -95,64 +104,20 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           case Some(as: AirSpecSpi) =>
             runSpec(as)
           case other =>
-            taskLogger.warn(s"Failed to instantiate: ${testClassName}")
+            throw new IllegalStateException(s"Non AirSpec class: ${testClassName}")
         }
       }
     } catch {
       case e: Throwable =>
         // Unknown error
-        reportError(taskDef.fullyQualifiedName(), e, Status.Error)
+        val event =
+          AirSpecEvent(taskDef, "init", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
+        taskLogger.logEvent(event)
+        eventHandler.handle(event)
     } finally {
       continuation(Array.empty)
     }
   }
-
-  import AirSpecTask._
-  private def reportEvent(eventHandler: EventHandler,
-                          clsName: String,
-                          testName: String,
-                          result: Try[_],
-                          durationNanos: Long): Unit = {
-    val (status, throwableOpt) = result match {
-      case Success(x) =>
-        taskLogger.info(s" - ${testName}")
-        (Status.Success, new OptionalThrowable())
-      case Failure(ex) =>
-        val status = AirSpecException.classifyException(ex)
-        reportError(testName: String, ex, status)
-        (status, new OptionalThrowable(compat.findCause(ex)))
-    }
-    try {
-      val e = AirSpecEvent(taskDef, testName, status, throwableOpt, durationNanos)
-      eventHandler.handle(e)
-    } catch {
-      case e: Throwable =>
-        taskLogger.warn(e)
-    }
-  }
-
-  private def formatError(testName: String, status: Status, e: AirSpecException): String = {
-    s" - ${testName} -- ${status.toString.toLowerCase(Locale.ENGLISH)}  (${e.code})"
-  }
-
-  private def reportError(testName: String, e: Throwable, status: Status): Unit = {
-    val cause = compat.findCause(e)
-    cause match {
-      case e: AirSpecException =>
-        val msg = formatError(testName, status, e)
-        status match {
-          case Status.Failure =>
-            taskLogger.error(msg)
-          case Status.Error =>
-            taskLogger.error(msg)
-          case _ =>
-            taskLogger.warn(msg)
-        }
-      case other =>
-        taskLogger.error(s" - ${testName} -- Error ${other.getMessage}", e)
-    }
-  }
-
 }
 
 object AirSpecTask {
