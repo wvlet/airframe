@@ -70,12 +70,12 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 object AirSpecTask extends LogSupport {
 
   private def runSpec(spec: AirSpec): Unit = {
-    spec.design.noLifeCycleLogging.withSession { session =>
+    spec.getDesign.noLifeCycleLogging.withSession { session =>
       for (m <- spec.testMethods) {
         val args: Seq[Any] = for (p <- m.args) yield {
           session.getInstanceOf(p.surface)
         }
-        debug(s"Running ${m.name}(${args.mkString(",")})")
+        info(s"Running ${m.name}(${args.mkString(",")})")
         m.call(spec, args: _*)
       }
     }

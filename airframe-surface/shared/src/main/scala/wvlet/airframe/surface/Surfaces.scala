@@ -244,17 +244,14 @@ case class ClassMethodSurface(mod: Int,
                               name: String,
                               returnType: Surface,
                               args: Seq[MethodParameter],
-                              noArgCaller: Option[Any => Unit])
+                              methodCaller: Option[(Any, Seq[Any]) => Any])
     extends MethodSurface {
   override def call(obj: Any, x: Any*) = {
     def unsupported = throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
 
-    if (x.size > 0) {
-      unsupported
-    }
-    noArgCaller
+    methodCaller
       .map { caller =>
-        caller(obj)
+        caller(obj, x.toSeq)
       }
       .getOrElse {
         unsupported

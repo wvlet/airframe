@@ -64,12 +64,24 @@ private[surface] object SurfaceMacros {
           isTargetMethod(_, t))
     }
 
-    private def createMethodCaller(t: c.Type, name: String): c.Tree = {
+    private def createMethodCaller(t: c.Type, m: MethodSymbol): c.Tree = {
+      val methodName = m.name
 
-      val methodName = TermName(name)
-      q"""
-         Some({ x: Any =>  x.asInstanceOf[${t}].${methodName} })
-       """
+      val args = methodArgsOf(t, m).flatten
+      if (args.size == 0) {
+        q"""
+         Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
+          """
+      } else {
+        val argList = args.zipWithIndex.map {
+          case (x, i) =>
+            q"args(${i}).asInstanceOf[${x.tpe}]"
+        }
+
+        q"""
+         Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName}(..${argList}) })
+          """
+      }
     }
 
     def createMethodSurfaceOf(targetType: c.Type): c.Tree = {
@@ -83,14 +95,14 @@ private[surface] object SurfaceMacros {
         val result = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
             val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod         = modifierBitMaskOf(m)
-              val owner       = surfaceOf(t)
-              val name        = m.name.decodedName.toString
-              val ret         = surfaceOf(m.returnType)
-              val args        = methodParmetersOf(m.owner.typeSignature, m)
-              val noArgCaller = createMethodCaller(t, name)
+              val mod          = modifierBitMaskOf(m)
+              val owner        = surfaceOf(t)
+              val name         = m.name.decodedName.toString
+              val ret          = surfaceOf(m.returnType)
+              val args         = methodParmetersOf(m.owner.typeSignature, m)
+              val methodCaller = createMethodCaller(t, m)
               // TODO: Support .call(instance, args)
-              q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${noArgCaller})"
+              q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
             }
             q"IndexedSeq(..$list)"
           case _ =>
