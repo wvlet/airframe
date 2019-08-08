@@ -765,7 +765,7 @@ lazy val airspec =
     .settings(
       name := "airspec",
       description := "Functional testing framework for Scala",
-      testFrameworks += new TestFramework("wvlet.airframe.spec.Framework")
+      testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
     )
     .jvmSettings(
       libraryDependencies ++= Seq(

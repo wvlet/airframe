@@ -14,7 +14,7 @@
 package wvlet.airframe.spec
 
 /**
-  *
+  * An interface for compatibility between Scala JVM and Scala.js
   */
 private[spec] trait CompatApi {
   def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
