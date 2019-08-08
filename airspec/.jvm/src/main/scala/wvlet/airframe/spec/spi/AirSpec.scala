@@ -18,7 +18,7 @@ import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFacto
 /**
   * A base trait for defining unit tests using airspec
   */
-trait AirSpec extends AirSpecJS {
+trait AirSpec extends AirSpecBase {
   override private[spec] def methodSurfaces = {
     ReflectSurfaceFactory.methodsOfClass(this.getClass)
   }

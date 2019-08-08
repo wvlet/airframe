@@ -18,4 +18,4 @@ import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
   *
   */
 @EnableReflectiveInstantiation
-trait AirSpec extends AirSpecJS
+trait AirSpec extends AirSpecBase
