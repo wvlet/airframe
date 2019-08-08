@@ -33,19 +33,19 @@ class TestSpec extends AirSpec with LogSupport {
     trace("hello")
   }
 
-  def assertionFailure: Unit = {
+  def `should support assertion`: Unit = {
     assert(false, "failure")
   }
 
-  def skip: Unit = {
+  def `should support skipping`: Unit = {
     skip("skip test")
   }
 
-  def `test cancel methods`: Unit = {
+  def `should support cancel`: Unit = {
     cancel("cancelled")
   }
 
-  def `test pending`: Unit = {
+  def `should support pending`: Unit = {
     pending("pending test")
   }
 
@@ -57,7 +57,7 @@ class TestSpec extends AirSpec with LogSupport {
 }
 
 object TestObjSpec extends AirSpec with LogSupport {
-  def objectMethod: String = {
+  def supportTestsInObjectMethods: String = {
     trace("hello companion methods")
     "hello obj"
   }

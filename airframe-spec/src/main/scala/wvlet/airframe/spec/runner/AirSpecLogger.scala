@@ -24,30 +24,47 @@ import wvlet.log.Logger
   */
 class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
 
-  private val taskLogger = Logger("wvlet.airframe.spec.runner.TaskLogger")
-  taskLogger.setFormatter(AirSpecLogFormatter)
+  def withColor(prefix: String, s: String) = {
+    s"${prefix}${s}${Console.RESET}"
+  }
+
+  private def log(body: sbt.testing.Logger => Unit) {
+    for (l <- sbtLoggers) {
+      body(l)
+    }
+  }
+
+  private def info(m: String): Unit = {
+    log(_.info(m))
+  }
+
+  private def warn(e: Throwable): Unit = {
+    val msg = withColor(Console.YELLOW, e.getMessage)
+    log(_.warn(msg))
+  }
+
+  private def error(e: Throwable): Unit = {
+    val msg = withColor(Console.RED, e.getMessage)
+    log(_.error(msg))
+  }
 
   def logSpecName(specName: String): Unit = {
-    taskLogger.info(s"${specName}:")
+    info(s"${withColor(Console.CYAN, specName)}:")
   }
 
   def logEvent(e: AirSpecEvent): Unit = {
     e.status match {
       case Status.Success =>
-        taskLogger.info(s" - ${e.fullyQualifiedName}")
+        info(s" ${withColor(Console.WHITE, "-")} ${withColor(Console.CYAN, e.fullyQualifiedName)}")
       case other =>
         reportError(e.fullyQualifiedName, e.throwable.get(), e.status)
     }
   }
 
   private def formatError(baseColor: String, testName: String, status: Status, e: AirSpecException): String = {
-    def withColor(colStr: String, s: String): String = {
-      s"${Console.RESET}${colStr}${s}${Console.RESET}"
-    }
-
-    val statusLabel =
-      s"${withColor(Console.WHITE, " - [")}${withColor(baseColor, e.statusLabel)}${withColor(Console.WHITE, "]")}"
-    f"${statusLabel}%-51s ${testName} ${withColor(Console.BLUE, s"(${e.code})")}"
+    val statusLabel = s"- ${withColor(Console.WHITE, e.statusLabel)}"
+    f" ${withColor(Console.WHITE, "-")} ${withColor(baseColor, testName)} ${statusLabel} ${withColor(Console.BLUE,
+                                                                                                     s"(${e.code})")}"
   }
 
   private def reportError(testName: String, e: Throwable, status: Status): Unit = {
@@ -55,16 +72,18 @@ class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
     cause match {
       case e: AirSpecException =>
         status match {
-          case Status.Failure =>
-            taskLogger.error(formatError(Console.RED, testName, status, e))
+          case Status.Failure | Status.Canceled =>
+            info(formatError(Console.RED, testName, status, e))
+            error(e)
           case Status.Error =>
-            taskLogger.error(formatError(Console.RED, testName, status, e), e)
+            info(formatError(Console.RED, testName, status, e))
+            error(e)
           case _ =>
-            taskLogger.warn(formatError(Console.YELLOW, testName, status, e))
+            info(formatError(Console.YELLOW, testName, status, e))
+            warn(e)
         }
       case other =>
-        taskLogger.error(s" - ${testName} -- Error ${other.getMessage}", e)
+        info(s" - ${testName} -- Error ${other.getMessage}")
     }
   }
-
 }

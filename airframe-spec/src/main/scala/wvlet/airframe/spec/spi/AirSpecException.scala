@@ -40,7 +40,7 @@ case class Skipped(message: String, code: SourceCode) extends AirSpecException {
   override def statusLabel: String = "skipped"
 }
 case class Cancelled(message: String, code: SourceCode) extends AirSpecException {
-  override def statusLabel: String = "skipped"
+  override def statusLabel: String = "cancelled"
 }
 case class InterceptException(message: String, code: SourceCode) extends AirSpecException {
   override def statusLabel: String = "interrupted"
