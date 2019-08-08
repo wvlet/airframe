@@ -64,6 +64,14 @@ private[surface] object SurfaceMacros {
           isTargetMethod(_, t))
     }
 
+    private def createMethodCaller(t: c.Type, name: String): c.Tree = {
+
+      val methodName = TermName(name)
+      q"""
+         Some({ x: Any =>  x.asInstanceOf[${t}].${methodName} })
+       """
+    }
+
     def createMethodSurfaceOf(targetType: c.Type): c.Tree = {
       if (methodMemo.contains(targetType)) {
         methodMemo(targetType)
@@ -75,13 +83,14 @@ private[surface] object SurfaceMacros {
         val result = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
             val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod   = modifierBitMaskOf(m)
-              val owner = surfaceOf(t)
-              val name  = m.name.decodedName.toString
-              val ret   = surfaceOf(m.returnType)
-              val args  = methodParmetersOf(m.owner.typeSignature, m)
+              val mod         = modifierBitMaskOf(m)
+              val owner       = surfaceOf(t)
+              val name        = m.name.decodedName.toString
+              val ret         = surfaceOf(m.returnType)
+              val args        = methodParmetersOf(m.owner.typeSignature, m)
+              val noArgCaller = createMethodCaller(t, name)
               // TODO: Support .call(instance, args)
-              q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq)"
+              q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${noArgCaller})"
             }
             q"IndexedSeq(..$list)"
           case _ =>
