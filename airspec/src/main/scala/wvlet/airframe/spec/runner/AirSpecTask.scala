@@ -14,7 +14,7 @@
 package wvlet.airframe.spec.runner
 import sbt.testing.{EventHandler, Logger, Task, TaskDef}
 import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
-import wvlet.airframe.spec.spi.AirSpec
+import wvlet.airframe.spec.spi.{AirSpec, AirSpecBase}
 import wvlet.airframe.spec.Compat
 import wvlet.log.{LogSupport, Logger}
 
@@ -69,7 +69,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
 object AirSpecTask extends LogSupport {
 
-  private def runSpec(spec: AirSpec): Unit = {
+  private def runSpec(spec: AirSpecBase): Unit = {
     spec.getDesign.noLifeCycleLogging.withSession { session =>
       for (m <- spec.testMethods) {
         val args: Seq[Any] = for (p <- m.args) yield {

@@ -17,6 +17,8 @@ import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
+import scala.util.Try
+
 /**
   *
   */
@@ -27,7 +29,7 @@ object Compat {
   }
 
   def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
-    classLoader.loadClass(fullyQualifiedName).newInstance()
+    Try(classLoader.loadClass(fullyQualifiedName).newInstance).toOption
   }
 
   private[spec] def withLogScanner[U](block: => U): U = {

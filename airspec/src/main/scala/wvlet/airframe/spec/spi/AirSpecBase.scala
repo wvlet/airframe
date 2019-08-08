@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
 /**
   *
   */
-trait AirSpecJS extends LogSupport with Asserts {
+trait AirSpecBase extends LogSupport with Asserts {
   private[spec] def methodSurfaces: Seq[MethodSurface]
   protected def design: Design = Design.empty.noLifeCycleLogging
 

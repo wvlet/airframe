@@ -23,8 +23,6 @@ class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], clas
     with LogSupport {
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs.map { t =>
-      info(t)
-
       new AirSpecTask(t, classLoader)
     }
   }
