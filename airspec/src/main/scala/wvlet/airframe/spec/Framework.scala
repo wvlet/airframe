@@ -28,6 +28,11 @@ class Framework extends sbt.testing.Framework with LogSupport {
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
     AirSpecRunner.newRunner(args, remoteArgs, testClassLoader)
   }
+  def slaveRunner(args: Array[String],
+                  remoteArgs: Array[String],
+                  testClassLoader: ClassLoader,
+                  send: String => Unit): testing.Runner =
+    runner(args, remoteArgs, testClassLoader)
 }
 
 object Framework {

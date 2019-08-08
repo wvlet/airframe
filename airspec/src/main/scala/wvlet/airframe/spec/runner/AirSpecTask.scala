@@ -12,12 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import sbt.testing.{EventHandler, Task, TaskDef}
+import sbt.testing.{EventHandler, Logger, Task, TaskDef}
 import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec.spi.AirSpec
-import wvlet.airframe.surface.reflect.ReflectTypeUtil
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
+import wvlet.airframe.spec.Compat
 import wvlet.log.{LogSupport, Logger}
+
+import scala.concurrent.{Await, Promise}
+import scala.concurrent.duration.Duration
 
 /**
   *
@@ -25,34 +27,42 @@ import wvlet.log.{LogSupport, Logger}
 class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
 
   override def tags(): Array[String] = Array.empty
-  override def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[Task] = {
-    debug(s"executing task: ${taskDef}")
 
-    AirSpecTask.withLogScanner {
+  def execute(eventHandler: EventHandler,
+              loggers: Array[sbt.testing.Logger],
+              continuation: Array[sbt.testing.Task] => Unit): Unit = {
+    info(s"executing task: ${taskDef}")
+
+    Compat.withLogScanner {
       try {
-        val className = taskDef.fullyQualifiedName()
-        val cls       = classLoader.loadClass(className)
-
+        val testClassName = taskDef.fullyQualifiedName()
         val testObj = taskDef.fingerprint() match {
           case AirSpecObjectFingerPrint =>
-            ReflectTypeUtil.companionObject(cls)
+            Compat.findCompanionObjectOf(testClassName, classLoader)
           case _ =>
-            Some(cls.newInstance())
+            Compat.newInstanceOf(testClassName, classLoader)
         }
 
         testObj match {
           case Some(as: AirSpec) =>
             AirSpecTask.runSpec(as)
           case other =>
-            warn(s"${other.getClass}")
+            warn(s"Failed to instantiate: ${testClassName}")
         }
       } catch {
         case e: Throwable =>
-          warn(e)
+          warn(e.getMessage)
       }
-      Array.empty
     }
   }
+
+  def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
+    val p = Promise[Unit]()
+    execute(eventHandler, loggers, _ => p.success(()))
+    Await.result(p.future, Duration.Inf)
+    Array.empty
+  }
+
 }
 
 object AirSpecTask extends LogSupport {
@@ -68,17 +78,4 @@ object AirSpecTask extends LogSupport {
       }
     }
   }
-
-  private def withLogScanner[U](block: => U): U = {
-    Logger.setDefaultFormatter(SourceCodeLogFormatter)
-
-    // Periodically scan log level file
-    Logger.scheduleLogLevelScan
-    try {
-      block
-    } finally {
-      Logger.stopScheduledLogLevelScan
-    }
-  }
-
 }

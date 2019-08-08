@@ -4,6 +4,8 @@ val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0"
 
+val SCALA_JS_VERSION = "0.6.27"
+
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
@@ -130,7 +132,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   http,
   jsonJVM,
-  airspec
+  airspecJVM
 )
 
 // JVM projects that supports Scala 2.13
@@ -157,7 +159,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   metricsJS,
   codecJS,
   msgpackJS,
-  jsonJS
+  jsonJS,
+  airspecJS
 )
 
 // For community-build
@@ -755,15 +758,27 @@ lazy val examples =
                airframeSpecJVM % "test")
 
 lazy val airspec =
-  project
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
     .in(file("airspec"))
     .settings(buildSettings)
     .settings(
       name := "airspec",
       description := "Functional testing framework for Scala",
-      libraryDependencies ++= Seq(
-        "org.scala-sbt" % "test-interface" % "1.0"
-      ),
       testFrameworks += new TestFramework("wvlet.airframe.spec.Framework")
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef)
+    .jvmSettings(
+      libraryDependencies ++= Seq(
+        "org.scala-sbt" % "test-interface" % "1.0"
+      )
+    )
+    .jsSettings(
+      libraryDependencies ++= Seq(
+        "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
+        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
+      )
+    )
+    .dependsOn(log, airframe, airframeMacrosRef)
+
+lazy val airspecJVM = airspec.jvm
+lazy val airspecJS  = airspec.js
