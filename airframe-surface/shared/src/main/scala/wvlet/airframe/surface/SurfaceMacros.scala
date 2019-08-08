@@ -64,16 +64,14 @@ private[surface] object SurfaceMacros {
           isTargetMethod(_, t))
     }
 
-    private def createMethodCaller(t: c.Type, m: MethodSymbol): c.Tree = {
-      val methodName = m.name
-
-      val args = methodArgsOf(t, m).flatten
-      if (args.size == 0) {
+    private def createMethodCaller(t: c.Type, name: String, methodArgs: Seq[MethodArg]): c.Tree = {
+      val methodName = TermName(name)
+      if (methodArgs.size == 0) {
         q"""
          Some({ (x: Any, args: Seq[Any]) =>  x.asInstanceOf[${t}].${methodName} })
           """
       } else {
-        val argList = args.zipWithIndex.map {
+        val argList = methodArgs.zipWithIndex.map {
           case (x, i) =>
             q"args(${i}).asInstanceOf[${x.tpe}]"
         }
@@ -99,8 +97,9 @@ private[surface] object SurfaceMacros {
               val owner        = surfaceOf(t)
               val name         = m.name.decodedName.toString
               val ret          = surfaceOf(m.returnType)
-              val args         = methodParmetersOf(m.owner.typeSignature, m)
-              val methodCaller = createMethodCaller(t, m)
+              val methodArgs   = methodArgsOf(t, m).flatten
+              val args         = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              val methodCaller = createMethodCaller(t, name, methodArgs)
               // TODO: Support .call(instance, args)
               q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
             }
@@ -352,8 +351,12 @@ private[surface] object SurfaceMacros {
       }
     }
 
-    def methodParmetersOf(targetType: c.Type, method: MethodSymbol): c.Tree = {
+    def methodParametersOf(targetType: c.Type, method: MethodSymbol): c.Tree = {
       val args = methodArgsOf(targetType, method).flatten
+      methodParametersOf(targetType, method, args)
+    }
+
+    def methodParametersOf(targetType: c.Type, method: MethodSymbol, args: Seq[MethodArg]): c.Tree = {
       val argTypes = args.map { x: MethodArg =>
         toClassOf(x.tpe)
       }
@@ -439,7 +442,7 @@ private[surface] object SurfaceMacros {
           new wvlet.airframe.surface.GenericSurface(
             classOf[$t],
             IndexedSeq(..$typeArgs),
-            params = ${methodParmetersOf(t, primaryConstructor)},
+            params = ${methodParametersOf(t, primaryConstructor)},
             objectFactory=${factory}
         )"""
       }
