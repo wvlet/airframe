@@ -20,35 +20,35 @@ import wvlet.airframe.SourceCode
   */
 trait Asserts {
 
-  def assert(cond: => Boolean)(implicit code: SourceCode) = {
+  protected def assert(cond: => Boolean)(implicit code: SourceCode) = {
     if (!cond) {
       throw AssertionFailure("assertion failed", code)
     }
   }
 
-  def assert(cond: => Boolean, message: String)(implicit code: SourceCode) = {
+  protected def assert(cond: => Boolean, message: String)(implicit code: SourceCode) = {
     if (!cond) {
       throw AssertionFailure(message, code)
     }
   }
 
-  def fail(reason: String = "failed")(implicit code: SourceCode): Unit = {
+  protected def fail(reason: String = "failed")(implicit code: SourceCode): Unit = {
     throw AssertionFailure(reason, code)
   }
 
-  def ignore(reason: String = "ignored")(implicit code: SourceCode): Unit = {
+  protected def ignore(reason: String = "ignored")(implicit code: SourceCode): Unit = {
     throw Ignored(reason, code)
   }
 
-  def pending(reason: String = "pending")(implicit code: SourceCode): Unit = {
+  protected def pending(reason: String = "pending")(implicit code: SourceCode): Unit = {
     throw Pending(reason, code)
   }
 
-  def cancel(reason: String = "cancelled")(implicit code: SourceCode): Unit = {
+  protected def cancel(reason: String = "cancelled")(implicit code: SourceCode): Unit = {
     throw Cancelled(reason, code)
   }
 
-  def skip(reason: String = "skipped")(implicit code: SourceCode): Unit = {
+  protected def skip(reason: String = "skipped")(implicit code: SourceCode): Unit = {
     throw Skipped(reason, code)
   }
 
