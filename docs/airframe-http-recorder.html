@@ -11,6 +11,25 @@ ga('send', 'pageview');
 <p>airframe-http-recorder is an HTTP server for recording and replaying HTTP responses.
 This is useful for testing HTTP server interactions in an environment with limited resources (e.g., CI servers)</p>
 
+<p>With HttpRecorder, you can:</p>
+<ul>
+  <li>Create a proxy server to the actual server and record the responses automatically.
+    <ul>
+      <li>This reduces the burden of writing mock servers and dummy responses.</li>
+    </ul>
+  </li>
+  <li>Record custom HTTP request/response pairs.
+    <ul>
+      <li>This is useful for simulating server failures (e.g., returning 5xx responses)</li>
+    </ul>
+  </li>
+  <li>Replay recorded responses, stored in SQLite databases.
+    <ul>
+      <li>This is useful for running HTTP server/client integration tests on CI, without actually accessing the real destination servers.</li>
+    </ul>
+  </li>
+</ul>
+
 <h2 id="usage">Usage</h2>
 
 <p><strong>build.sbt</strong></p>
@@ -22,58 +41,70 @@ This is useful for testing HTTP server interactions in an environment with limit
 
 <h3 id="record--replay">Record &amp; Replay</h3>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.recorder._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code>
 <span class="k">import</span> <span class="nn">wvlet.airframe.control.Control._</span>
-
-<span class="k">val</span> <span class="n">recorderConfig</span> <span class="k">=</span> 
-  <span class="nc">HttpRecorderConfig</span><span class="o">(</span><span class="n">destUri</span> <span class="k">=</span> <span class="s">"https://wvlet.org"</span><span class="o">,</span> <span class="n">sessionName</span> <span class="k">=</span> <span class="s">"airframe"</span><span class="o">)</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.http.recorder.</span><span class="o">{</span><span class="nc">HttpRecorder</span><span class="o">,</span><span class="nc">HttpRecorderConfig</span><span class="o">}</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle.FinagleClient</span>
+<span class="k">import</span> <span class="nn">com.twitter.finagle.http.Status</span>
+<span class="k">import</span> <span class="nn">com.twitter.finagle.http.</span><span class="o">{</span><span class="nc">Request</span><span class="o">,</span><span class="nc">Response</span><span class="o">}</span>
 
 <span class="c1">// Create a proxy server that will record responses for matching requests,
 // and make actual requests the destination for non-recorded requests.
-</span><span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createRecorderProxy</span><span class="o">(</span><span class="n">recorderConfig</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
-  <span class="n">server</span><span class="o">.</span><span class="n">start</span>
-  <span class="k">val</span> <span class="n">addr</span> <span class="k">=</span> <span class="n">server</span><span class="o">.</span><span class="n">localAddress</span> <span class="c1">// "localhost:(port number)"
-</span>  <span class="c1">// Requests to the local server will be recorded
-</span><span class="o">}</span>
+</span><span class="k">val</span> <span class="n">recorderConfig</span> <span class="k">=</span> <span class="nc">HttpRecorderConfig</span><span class="o">(</span><span class="n">destUri</span> <span class="k">=</span> <span class="s">"https://www.google.com"</span><span class="o">)</span>
+<span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createRecorderProxy</span><span class="o">(</span><span class="n">recorderConfig</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+
+  <span class="c1">// Create an HTTP client. This example uses Finagle's http client implementation
+</span>  <span class="k">val</span> <span class="n">client</span> <span class="k">=</span> <span class="nc">FinagleClient</span><span class="o">.</span><span class="n">newSyncClient</span><span class="o">(</span><span class="n">server</span><span class="o">.</span><span class="n">localAddress</span><span class="o">)</span>  <span class="c1">// "localhost:(port number)"
+</span>
+  <span class="c1">// Requests to the local server will be recorded
+</span>  <span class="k">val</span> <span class="n">response</span> <span class="k">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send</span><span class="o">(</span><span class="nc">Request</span><span class="o">(</span><span class="s">"/"</span><span class="o">))</span>
+
+  <span class="c1">// You can record your own dummy responses
+</span>  <span class="n">server</span><span class="o">.</span><span class="n">record</span><span class="o">(</span><span class="nc">Request</span><span class="o">(</span><span class="s">"/dummy"</span><span class="o">),</span> <span class="nc">Response</span><span class="o">(</span><span class="nc">Status</span><span class="o">.</span><span class="nc">NotFound</span><span class="o">))</span>
+<span class="o">}</span>
 
 
 <span class="c1">// Create a proxy server only for recording server responses
 </span><span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createRecordOnlyServer</span><span class="o">(</span><span class="n">recorderConfig</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
-  <span class="n">server</span><span class="o">.</span><span class="n">start</span>
   <span class="k">val</span> <span class="n">addr</span> <span class="k">=</span> <span class="n">server</span><span class="o">.</span><span class="n">localAddress</span> <span class="c1">// "localhost:(port number)"
 </span>  <span class="c1">// Requests to the local server will be recorded
-</span><span class="o">}</span>
+</span>
+  <span class="c1">// If necessary, add custom request-response pairs
+</span>  <span class="n">server</span><span class="o">.</span><span class="n">recordIfNotExists</span><span class="o">(</span><span class="nc">Request</span><span class="o">(</span><span class="s">"/dummy"</span><span class="o">),</span> <span class="nc">Response</span><span class="o">(</span><span class="nc">Status</span><span class="o">.</span><span class="nc">Ok</span><span class="o">))</span>
+<span class="o">}</span>
 
 <span class="c1">// Create a replay server that returns recorded responses for matching requests 
 </span><span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createReplayOnlyServer</span><span class="o">(</span><span class="n">recorderConfig</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
-  <span class="n">server</span><span class="o">.</span><span class="n">start</span>
   <span class="k">val</span> <span class="n">addr</span> <span class="k">=</span> <span class="n">server</span><span class="o">.</span><span class="n">localAddress</span> <span class="c1">// "localhost:(port number)"
 </span>  <span class="c1">// Requests to the local server will return the recorded responses
 </span><span class="o">}</span>
+
 </code></pre>
 </div>
 
-<h3 id="programmable">Programmable</h3>
+<h3 id="programmable-httprecorderserver">Programmable HttpRecorderServer</h3>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.recorder._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.control.Control._</span>
 <span class="k">import</span> <span class="nn">com.twitter.finagle.http.</span><span class="o">{</span><span class="nc">Request</span><span class="o">,</span><span class="nc">Response</span><span class="o">}</span>
 
-<span class="k">val</span> <span class="n">response</span> <span class="k">=</span> <span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createProgrammableServer</span> <span class="o">{</span> <span class="n">recorder</span> <span class="k">=&gt;</span>
-  <span class="c1">// Program server responses instead of recodring
+<span class="k">val</span> <span class="n">recorderConfig</span> <span class="k">=</span> <span class="nc">HttpRecorderConfig</span><span class="o">(</span><span class="n">sessionName</span><span class="o">=</span><span class="s">"my-recording"</span><span class="o">)</span>
+<span class="k">val</span> <span class="n">response</span> <span class="k">=</span> <span class="n">withResource</span><span class="o">(</span><span class="nc">HttpRecorder</span><span class="o">.</span><span class="n">createProgrammableServer</span><span class="o">(</span><span class="n">recorderConfig</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+  <span class="c1">// Add custom server responses
 </span>  <span class="k">val</span> <span class="n">request</span> <span class="k">=</span> <span class="nc">Request</span><span class="o">(</span><span class="s">"/index.html"</span><span class="o">)</span>
   <span class="k">val</span> <span class="n">response</span> <span class="k">=</span> <span class="nc">Response</span><span class="o">()</span>
   <span class="n">response</span><span class="o">.</span><span class="n">setContentString</span><span class="o">(</span><span class="s">"Hello World!"</span><span class="o">)</span>
-  
-  <span class="n">recorder</span><span class="o">.</span><span class="n">record</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">)</span>
-  
-<span class="o">})</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
-  <span class="n">server</span><span class="o">.</span><span class="n">start</span>
+  <span class="n">server</span><span class="o">.</span><span class="n">record</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">)</span>
+
   <span class="k">val</span> <span class="n">addr</span> <span class="k">=</span> <span class="n">server</span><span class="o">.</span><span class="n">localAddress</span> <span class="c1">// "localhost:(port number)"
 </span>  <span class="c1">// Requests to the local server will return the programmed responses
 </span><span class="o">}</span>
 </code></pre>
 </div>
+
+<p>If you don’t need to persist your recoded responsoe (e.g., in unit tests), use
+<code class="highlighter-rouge">HttpRecorder.createInMemoryProgrammableServer</code>. The recorded responses wiil be
+discarded after closing the server.</p>
 
 <h2 id="related-projects">Related Projects</h2>
 <ul>
