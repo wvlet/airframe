@@ -36,6 +36,14 @@ class TestSpec extends AirSpec with LogSupport {
     info("hello")
   }
 
+  def assertionFailure: Unit = {
+    assert(false, "failure")
+  }
+
+  def skip: Unit = {
+    skip("skip test")
+  }
+
 }
 
 object TestObjSpec extends AirSpec with LogSupport {
