@@ -12,14 +12,18 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import sbt.testing.{EventHandler, TaskDef}
-import wvlet.airframe.spec.CompatApi
+import java.util.concurrent.TimeUnit
+
+import sbt.testing.{Event, EventHandler, Fingerprint, Logger, OptionalThrowable, Selector, Status, Task, TaskDef}
+import wvlet.airframe.Session
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec.spi.AirSpecBase
 import wvlet.log.LogSupport
+import wvlet.airframe.spec._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
+import scala.util.{Failure, Success, Try}
 
 /**
   *
@@ -28,12 +32,52 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
   override def tags(): Array[String] = Array.empty
 
+  def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
+    val p = Promise[Unit]()
+    execute(eventHandler, loggers, _ => p.success(()))
+    Await.result(p.future, Duration.Inf)
+    Array.empty
+  }
+
+  /**
+    * Scala.js specific: Same as basic
+    * [[[sbt.testing.Task.execute(eventHandler:sbt\.testing\.EventHandler,loggers:Array[sbt\.testing\.Logger])*
+    * execute]]]
+    * but takes a continuation.
+    *
+    * This is to support JavaScripts asynchronous nature.
+    *
+    * When running in a JavaScript environment, only this method will be
+    * called.
+    */
   def execute(eventHandler: EventHandler,
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
     debug(s"executing task: ${taskDef}")
 
-    val compat: CompatApi = wvlet.airframe.spec.Compat
+    def log(msg: String): Unit = {
+      info(msg)
+    }
+
+    def runSpec(spec: AirSpecBase): Unit = {
+      // TODO sanitize name
+      log(s"[${spec.getClass.getSimpleName}]")
+      spec.getDesign.noLifeCycleLogging.withSession { session =>
+        for (m <- spec.testMethods) {
+          val args: Seq[Any] = for (p <- m.args) yield {
+            session.getInstanceOf(p.surface)
+          }
+          val argStr = if (args.isEmpty) "" else s"(${args.mkString(",")})"
+          log(s"- ${m.name}${argStr}")
+
+          val startTimeNanos = System.nanoTime()
+          val result         = Try(m.call(spec, args: _*))
+          val durationNanos  = System.nanoTime() - startTimeNanos
+          reportEvent(eventHandler: EventHandler, result, durationNanos)
+        }
+      }
+    }
+
     compat.withLogScanner {
       try {
         val testClassName = taskDef.fullyQualifiedName()
@@ -46,7 +90,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
 
         testObj match {
           case Some(as: AirSpecBase) =>
-            AirSpecTask.runSpec(as)
+            runSpec(as)
           case other =>
             warn(s"Failed to instantiate: ${testClassName}")
         }
@@ -59,26 +103,45 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
     }
   }
 
-  def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
-    val p = Promise[Unit]()
-    execute(eventHandler, loggers, _ => p.success(()))
-    Await.result(p.future, Duration.Inf)
-    Array.empty
+  import AirSpecTask._
+  private def reportEvent(eventHandler: EventHandler, result: Try[_], durationNanos: Long): Unit = {
+    val (status, throwableOpt) = result match {
+      case Success(x) =>
+        (Status.Success, new OptionalThrowable())
+      case Failure(ex) =>
+        (Status.Failure, new OptionalThrowable(ex))
+    }
+    try {
+      val e = AirSpecEvent(taskDef, status, throwableOpt, durationNanos)
+      eventHandler.handle(e)
+    } catch {
+      case e: Throwable =>
+        warn(e)
+    }
   }
 
 }
 
-object AirSpecTask extends LogSupport {
+object AirSpecTask {
 
-  private def runSpec(spec: AirSpecBase): Unit = {
-    spec.getDesign.noLifeCycleLogging.withSession { session =>
-      for (m <- spec.testMethods) {
-        val args: Seq[Any] = for (p <- m.args) yield {
-          session.getInstanceOf(p.surface)
-        }
-        debug(s"Running ${m.name}(${args.mkString(",")})")
-        m.call(spec, args: _*)
-      }
-    }
+  private[spec] case class AirSpecEvent(taskDef: TaskDef,
+                                        override val status: Status,
+                                        override val throwable: OptionalThrowable,
+                                        durationNanos: Long)
+      extends Event {
+    override def fullyQualifiedName(): String = taskDef.fullyQualifiedName()
+    override def fingerprint(): Fingerprint   = taskDef.fingerprint()
+    override def selector(): Selector         = taskDef.selectors().head
+    override def duration(): Long             = TimeUnit.NANOSECONDS.toMillis(durationNanos)
+  }
+
+}
+
+class MethodTask(session: Session, testInstnace: AirSpecBase, override val taskDef: TaskDef, classLoader: ClassLoader)
+    extends sbt.testing.Task
+    with LogSupport {
+  override def tags(): Array[String] = Array.empty
+  override def execute(eventHandler: EventHandler, loggers: Array[Logger]): Array[Task] = {
+    Array.empty
   }
 }
