@@ -11,16 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airframe.spec.runner
 
 import sbt.testing
 import sbt.testing.{Fingerprint, SubclassFingerprint}
-import wvlet.airframe.spec.runner.AirSpecRunner
 import wvlet.log.LogSupport
 
 /**
   * Include this class to your build.sbt:
-  * testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+  * testFrameworks += new TestFramework("wvlet.airframe.spec.runner.AirSpecFramework")
   */
 class AirSpecFramework extends sbt.testing.Framework with LogSupport {
   import AirSpecFramework._
@@ -42,13 +41,13 @@ object AirSpecFramework {
 
   object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false
-    override def superclassName(): String           = "wvlet.airframe.spec.spi.AirSpec"
+    override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
     override def requireNoArgConstructor(): Boolean = true
   }
 
   object AirSpecObjectFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = true
-    override def superclassName(): String           = "wvlet.airframe.spec.spi.AirSpec"
+    override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
     override def requireNoArgConstructor(): Boolean = false
   }
 

@@ -15,7 +15,7 @@ package wvlet.airframe.spec
 
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.airframe.surface.reflect.ReflectTypeUtil
+import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
@@ -52,5 +52,8 @@ private[spec] object Compat extends CompatApi {
       case i: InvocationTargetException => findCause(i.getTargetException)
       case _                            => e
     }
+  }
+  override private[spec] def methodSurfacesOf(cls: Class[_]) = {
+    ReflectSurfaceFactory.methodsOfClass(cls)
   }
 }

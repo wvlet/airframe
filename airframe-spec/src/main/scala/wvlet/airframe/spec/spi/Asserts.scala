@@ -14,6 +14,9 @@
 package wvlet.airframe.spec.spi
 
 import wvlet.airframe.SourceCode
+import wvlet.airframe.spec._
+
+import scala.reflect.ClassTag
 
 /**
   *
@@ -52,4 +55,18 @@ trait Asserts {
     throw Skipped(reason, code)
   }
 
+  def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): Unit = {
+    val E = implicitly[ClassTag[E]]
+
+    try {
+      block
+      val name = E.runtimeClass.getName
+      throw InterceptException(s"Expected a ${name} to be thrown", code)
+    } catch {
+      case ex: InterceptException =>
+        throw new AssertionFailure(ex.message, code)
+      case ex: Throwable if E.runtimeClass.isInstance(ex) =>
+      // No-op
+    }
+  }
 }

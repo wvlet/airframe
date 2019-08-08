@@ -11,20 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airframe.spec
 
 import wvlet.airframe.Design
+import wvlet.airframe.spec.spi.Asserts
 import wvlet.airframe.surface.MethodSurface
 
 /**
-  *
+  * A base trait to use for writing test cases
   */
-trait AirSpecBase extends Asserts {
-  private[spec] def methodSurfaces: Seq[MethodSurface]
-  protected def design: Design = Design.empty.noLifeCycleLogging
+trait AirSpec extends AirSpecSpi with AirSpecBase with Asserts
 
-  private[spec] def getDesign: Design = design
-
+trait AirSpecSpi {
+  private[spec] def methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
+  protected def design: Design                         = Design.empty.noLifeCycleLogging
+  private[spec] def getDesign: Design                  = design
   private[spec] def testMethods: Seq[MethodSurface] = {
     methodSurfaces.filter(_.isPublic)
   }

@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.spec
 
-import wvlet.airframe.spec.spi.AirSpec
 import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport
 
@@ -52,6 +51,11 @@ class TestSpec extends AirSpec with LogSupport {
     pending("pending test")
   }
 
+  def interceptTest: Unit = {
+    intercept[NoSuchElementException] {
+      Seq.empty.head
+    }
+  }
 }
 
 object TestObjSpec extends AirSpec with LogSupport {

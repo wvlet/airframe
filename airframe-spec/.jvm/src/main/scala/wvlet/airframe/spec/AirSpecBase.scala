@@ -11,15 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
-
-import wvlet.airframe.surface.reflect.{ReflectMethodSurface, ReflectSurfaceFactory}
+package wvlet.airframe.spec
 
 /**
-  * A base trait for defining unit tests using Airspec
+  * A base trait for defining unit tests using AirSpec
   */
-trait AirSpec extends AirSpecBase {
-  override private[spec] def methodSurfaces = {
-    ReflectSurfaceFactory.methodsOfClass(this.getClass)
-  }
-}
+trait AirSpecBase extends AirSpecSpi

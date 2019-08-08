@@ -38,4 +38,8 @@ private[spec] object Compat extends CompatApi {
   private[spec] def findCause(e: Throwable): Throwable = {
     e
   }
+  override private[spec] def methodSurfacesOf(cls: Class[_]) = {
+    throw new IllegalStateException(
+      s"Add override def methodSurfacesOf = Surface.methodsOf[${cls.getSimpleName}] in Scala.js")
+  }
 }
