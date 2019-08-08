@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.spec.runner
 import sbt.testing.{Task, TaskDef}
-import wvlet.log.{LogLevelScanner, LogSupport, Logger}
+import wvlet.log.{LogSupport, Logger}
 
 /**
   *
