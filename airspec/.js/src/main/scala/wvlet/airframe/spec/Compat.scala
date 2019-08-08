@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.spec
 
-import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.{ConsoleLogHandler, JSConsoleLogHandler, JSLogger, LogSupport, Logger}
 import org.portablescala.reflect._
+import wvlet.log.LogFormatter.SourceCodeLogFormatter
+import wvlet.log.{ConsoleLogHandler, Logger}
 
 /**
   *
   */
-object Compat extends LogSupport {
+private[spec] object Compat extends CompatApi {
   def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     throw new IllegalStateException(s"Scala.js cannot read module classes: ${fullyQualifiedName}")
   }

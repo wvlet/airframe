@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import sbt.testing.{EventHandler, Logger, Task, TaskDef}
+import sbt.testing.{EventHandler, TaskDef}
+import wvlet.airframe.spec.CompatApi
 import wvlet.airframe.spec.Framework.AirSpecObjectFingerPrint
-import wvlet.airframe.spec.spi.{AirSpec, AirSpecBase}
-import wvlet.airframe.spec.Compat
-import wvlet.log.{LogSupport, Logger}
+import wvlet.airframe.spec.spi.AirSpecBase
+import wvlet.log.LogSupport
 
-import scala.concurrent.{Await, Promise}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Promise}
 
 /**
   *
@@ -31,20 +31,21 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   def execute(eventHandler: EventHandler,
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
-    info(s"executing task: ${taskDef}")
+    debug(s"executing task: ${taskDef}")
 
-    Compat.withLogScanner {
+    val compat: CompatApi = wvlet.airframe.spec.Compat
+    compat.withLogScanner {
       try {
         val testClassName = taskDef.fullyQualifiedName()
         val testObj = taskDef.fingerprint() match {
           case AirSpecObjectFingerPrint =>
-            Compat.findCompanionObjectOf(testClassName, classLoader)
+            compat.findCompanionObjectOf(testClassName, classLoader)
           case _ =>
-            Compat.newInstanceOf(testClassName, classLoader)
+            compat.newInstanceOf(testClassName, classLoader)
         }
 
         testObj match {
-          case Some(as: AirSpec) =>
+          case Some(as: AirSpecBase) =>
             AirSpecTask.runSpec(as)
           case other =>
             warn(s"Failed to instantiate: ${testClassName}")
@@ -75,7 +76,7 @@ object AirSpecTask extends LogSupport {
         val args: Seq[Any] = for (p <- m.args) yield {
           session.getInstanceOf(p.surface)
         }
-        info(s"Running ${m.name}(${args.mkString(",")})")
+        debug(s"Running ${m.name}(${args.mkString(",")})")
         m.call(spec, args: _*)
       }
     }

@@ -22,7 +22,7 @@ import scala.util.Try
 /**
   *
   */
-object Compat {
+private[spec] object Compat extends CompatApi {
   def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
     ReflectTypeUtil.companionObject(cls)
