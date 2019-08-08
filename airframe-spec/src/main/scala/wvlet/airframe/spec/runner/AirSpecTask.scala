@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 import sbt.testing._
@@ -58,22 +59,24 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
 
+    val testClassName = taskDef.fullyQualifiedName()
+
     def runSpec(spec: AirSpecSpi): Unit = {
-      taskLogger.info(s"${decodeClassName(spec.getClass)}:")
+      val clsLeafName = decodeClassName(spec.getClass)
+      taskLogger.info(s"${clsLeafName}:")
       spec.getDesign.noLifeCycleLogging.withSession { session =>
         for (m <- spec.testMethods) {
           val args: Seq[Any] = for (p <- m.args) yield {
             session.getInstanceOf(p.surface)
           }
           val argStr = if (args.isEmpty) "" else s"(${args.mkString(",")})"
-          taskLogger.info(s" - ${m.name}${argStr}")
 
           val startTimeNanos = System.nanoTime()
           val result = Try {
             m.call(spec, args: _*)
           }
           val durationNanos = System.nanoTime() - startTimeNanos
-          reportEvent(eventHandler: EventHandler, s"${taskDef.fullyQualifiedName()}:${m.name}", result, durationNanos)
+          reportEvent(eventHandler: EventHandler, clsName = testClassName, testName = m.name, result, durationNanos)
         }
       }
     }
@@ -81,8 +84,6 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
     try {
       compat.withLogScanner {
         trace(s"Executing a task: ${taskDef}")
-
-        val testClassName = taskDef.fullyQualifiedName()
         val testObj = taskDef.fingerprint() match {
           case AirSpecObjectFingerPrint =>
             compat.findCompanionObjectOf(testClassName, classLoader)
@@ -107,9 +108,14 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
   }
 
   import AirSpecTask._
-  private def reportEvent(eventHandler: EventHandler, testName: String, result: Try[_], durationNanos: Long): Unit = {
+  private def reportEvent(eventHandler: EventHandler,
+                          clsName: String,
+                          testName: String,
+                          result: Try[_],
+                          durationNanos: Long): Unit = {
     val (status, throwableOpt) = result match {
       case Success(x) =>
+        taskLogger.info(s" - ${testName}")
         (Status.Success, new OptionalThrowable())
       case Failure(ex) =>
         val status = AirSpecException.classifyException(ex)
@@ -125,20 +131,25 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
     }
   }
 
+  private def formatError(testName: String, status: Status, e: AirSpecException): String = {
+    s" - ${testName} -- ${status.toString.toLowerCase(Locale.ENGLISH)}  (${e.code})"
+  }
+
   private def reportError(testName: String, e: Throwable, status: Status): Unit = {
     val cause = compat.findCause(e)
     cause match {
       case e: AirSpecException =>
+        val msg = formatError(testName, status, e)
         status match {
           case Status.Failure =>
-            taskLogger.error(s"${status} ${testName}: ${e.message} (${e.code})")
+            taskLogger.error(msg)
           case Status.Error =>
-            taskLogger.error(s"${status} ${testName}: ${e.message} (${e.code})", e)
+            taskLogger.error(msg)
           case _ =>
-            taskLogger.warn(s"${status} ${testName}: ${e.message} (${e.code})")
+            taskLogger.warn(msg)
         }
       case other =>
-        taskLogger.error(s"Failed ${testName}: ${other.getMessage}", e)
+        taskLogger.error(s" - ${testName} -- Error ${other.getMessage}", e)
     }
   }
 
