@@ -49,6 +49,8 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
           case other =>
             warn(s"Failed to instantiate: ${testClassName}")
         }
+
+        continuation(Array.empty)
       } catch {
         case e: Throwable =>
           warn(e.getMessage)
