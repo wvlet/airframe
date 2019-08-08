@@ -26,12 +26,12 @@ import scala.util.Try
   *
   */
 private[spec] object Compat extends CompatApi {
-  def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
     ReflectTypeUtil.companionObject(cls)
   }
 
-  def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     Try(classLoader.loadClass(fullyQualifiedName).newInstance).toOption
   }
 

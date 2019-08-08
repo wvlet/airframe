@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airframe.spec.spi
 
 import sbt.testing.Status
 import wvlet.airframe.SourceCode
+import wvlet.airframe.spec.compat
 
 /**
   *
