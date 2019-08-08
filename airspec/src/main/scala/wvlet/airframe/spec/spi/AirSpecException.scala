@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.spec.spi
 
+import sbt.testing.Status
 import wvlet.airframe.SourceCode
 
 /**
@@ -25,3 +26,20 @@ trait AirSpecException extends RuntimeException {
 
 case class AssertionFailure(message: String, code: SourceCode) extends AirSpecException
 case class Ignored(message: String, code: SourceCode)          extends AirSpecException
+case class Pending(message: String, code: SourceCode)          extends AirSpecException
+case class Skipped(message: String, code: SourceCode)          extends AirSpecException
+case class Cancelled(message: String, code: SourceCode)        extends AirSpecException
+object AirSpecException {
+
+  def classifyException(e: Throwable): Status = {
+    e match {
+      case a: AssertionFailure => Status.Failure
+      case i: Ignored          => Status.Ignored
+      case p: Pending          => Status.Pending
+      case s: Skipped          => Status.Skipped
+      case c: Cancelled        => Status.Canceled
+      case other               => Status.Error
+    }
+  }
+
+}

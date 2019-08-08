@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit
 import sbt.testing.{Event, EventHandler, Fingerprint, Logger, OptionalThrowable, Selector, Status, Task, TaskDef}
 import wvlet.airframe.Session
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
-import wvlet.airframe.spec.spi.AirSpecBase
+import wvlet.airframe.spec.spi.{AirSpecBase, AirSpecException, AssertionFailure}
 import wvlet.log.LogSupport
 import wvlet.airframe.spec._
 
@@ -109,7 +109,7 @@ class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) exten
       case Success(x) =>
         (Status.Success, new OptionalThrowable())
       case Failure(ex) =>
-        (Status.Failure, new OptionalThrowable(ex))
+        (AirSpecException.classifyException(ex), new OptionalThrowable(ex))
     }
     try {
       val e = AirSpecEvent(taskDef, status, throwableOpt, durationNanos)
