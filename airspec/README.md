@@ -50,6 +50,8 @@ $ sbt
 
 > test                                  # Run all tests
 > testOnly -- (pattern)                 # Run all test matching the pattern (spec name or test name)
+> testOnly -- (class pattern):(pattern)  # Search both class and test names 
+
 > testOnly (class name pattern)         # Run all test classe matching the pattern
 > testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
 
