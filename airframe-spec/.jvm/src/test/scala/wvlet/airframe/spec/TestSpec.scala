@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.spec.spi.{AirSpecException, AssertionFailure, Skipped}
 import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport
 
@@ -25,7 +26,7 @@ class TestSpec extends AirSpec with LogSupport {
       .bind[String].toInstance("my message")
   }
 
-  def hello(m: String): Unit = {
+  def helloAirSpec(m: String): Unit = {
     trace(m)
     assert(m == "my message")
   }
@@ -35,19 +36,21 @@ class TestSpec extends AirSpec with LogSupport {
   }
 
   def `should support assertion`: Unit = {
-    //assert(false, "failure")
+    intercept[AirSpecException] {
+      assert(false, "failure")
+    }
   }
 
   def `should support skipping`: Unit = {
-    //skip("skip test")
+    skip("unnecessary test")
   }
 
   def `should support cancel`: Unit = {
-    //cancel("cancelled")
+    cancel("failed to access a necessary service")
   }
 
   def `should support pending`: Unit = {
-    //pending("pending test")
+    pending("until fixing #012")
   }
 
   def interceptTest: Unit = {
