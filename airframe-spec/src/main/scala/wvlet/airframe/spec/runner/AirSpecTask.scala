@@ -15,6 +15,7 @@ package wvlet.airframe.spec.runner
 import java.util.concurrent.TimeUnit
 
 import sbt.testing._
+import wvlet.airframe.Design
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec._
 import wvlet.airframe.spec.spi.AirSpecException
@@ -64,14 +65,19 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
     def runSpec(spec: AirSpecSpi): Unit = {
       val clsLeafName = decodeClassName(spec.getClass)
       taskLogger.logSpecName(clsLeafName)
-      spec.getDesign.noLifeCycleLogging.withSession { session =>
+      var d = Design.newDesign.noLifeCycleLogging
+      d = spec.setupSpec(d)
+      d.withSession { session =>
         for (m <- spec.testMethods) {
-          val args: Seq[Any] = for (p <- m.args) yield {
-            session.getInstanceOf(p.surface)
-          }
+          val childDesign    = spec.setup(d)
           val startTimeNanos = System.nanoTime()
-          val result = Try {
-            m.call(spec, args: _*)
+          val result = session.withChildSession(childDesign) { childSession =>
+            val args: Seq[Any] = for (p <- m.args) yield {
+              childSession.getInstanceOf(p.surface)
+            }
+            Try {
+              m.call(spec, args: _*)
+            }
           }
           val durationNanos = System.nanoTime() - startTimeNanos
 
