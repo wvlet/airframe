@@ -20,9 +20,10 @@ import wvlet.log.LogSupport
   *
   */
 class TestSpec extends AirSpec with LogSupport {
-  override protected def design: Design =
-    newDesign
+  override def setupSpec(design: Design): Design = {
+    design
       .bind[String].toInstance("my message")
+  }
 
   def hello(m: String): Unit = {
     trace(m)
