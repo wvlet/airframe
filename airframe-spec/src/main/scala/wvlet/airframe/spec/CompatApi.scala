@@ -18,8 +18,8 @@ import wvlet.airframe.surface.MethodSurface
 /**
   * An interface for compatibility between Scala JVM and Scala.js
   */
-private[spec] trait CompatApi {
-  private[spec] def isScalaJs: Boolean
+trait CompatApi {
+  def isScalaJs: Boolean
 
   private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
   private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]

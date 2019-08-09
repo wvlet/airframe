@@ -17,5 +17,5 @@ package wvlet.airframe
   *
   */
 package object spec {
-  private[spec] val compat: CompatApi = wvlet.airframe.spec.Compat
+  val compat: CompatApi = wvlet.airframe.spec.Compat
 }

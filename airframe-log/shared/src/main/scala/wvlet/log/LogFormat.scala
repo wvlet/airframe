@@ -40,7 +40,8 @@ object LogFormatter {
 
   def currentThreadName: String = Thread.currentThread().getName
 
-  private val testFrameworkFilter = Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
+  private val testFrameworkFilter =
+    Pattern.compile("""\s+at (sbt\.|org\.scalatest\.).*""")
   val DEFAULT_STACKTRACE_FILTER: String => Boolean = { line: String =>
     !testFrameworkFilter.matcher(line).matches()
   }
