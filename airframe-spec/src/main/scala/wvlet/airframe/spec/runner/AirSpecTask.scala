@@ -67,15 +67,18 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
       val clsLeafName = decodeClassName(spec.getClass)
       taskLogger.logSpecName(clsLeafName)
 
-      // beforeAll
-      var d = Design.newDesign.noLifeCycleLogging
-      d = spec.callBeforeAll(d)
+      try {
+        // Start the spec
+        spec.callBeforeAll
 
-      // Create a new Airframe session
-      d.withSession { session =>
-        try {
+        var d = Design.newDesign.noLifeCycleLogging
+        d = spec.callDesignAll(d)
+
+        // Create a new Airframe session
+        d.withSession { session =>
           for (m <- spec.testMethods) {
-            val childDesign = spec.callBefore(Design.newDesign)
+            spec.callBefore
+            val childDesign = spec.callDesignEach(Design.newDesign)
 
             // Run a spec in a child session
             val startTimeNanos = System.nanoTime()
@@ -105,9 +108,9 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
             taskLogger.logEvent(e)
             eventHandler.handle(e)
           }
-        } finally {
-          spec.callAfterAll
         }
+      } finally {
+        spec.callAfterAll
       }
     }
 

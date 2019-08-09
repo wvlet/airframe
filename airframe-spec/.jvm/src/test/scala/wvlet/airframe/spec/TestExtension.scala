@@ -36,7 +36,7 @@ trait MyServer extends LogSupport {
   *
   */
 trait CustomSpec extends AirSpec with LogSupport {
-  override def beforeAll(design: Design): Design = {
+  override def configure(design: Design): Design = {
     design
       .bind[MyServer].toSingleton
       .bind[MyServerConfig].toInstance(MyServerConfig("A"))
@@ -44,6 +44,7 @@ trait CustomSpec extends AirSpec with LogSupport {
 }
 
 class MyServerSpec extends CustomSpec {
+  // MyServer will be shared by the all test cases
   def test1(server: MyServer): Unit = {
     info(s"run test1")
     assert(server.config.name == "A")
@@ -60,12 +61,20 @@ class MyServerSpec extends CustomSpec {
 }
 
 class MyServer2Spec extends CustomSpec {
-  override protected def before(design: Design): Design = {
-    design.bind[MyServerConfig].toInstance(MyServerConfig("B"))
+  override protected def configureLocal(design: Design): Design = {
+    design
+      .bind[MyServerConfig].toInstance(MyServerConfig("B"))
+      // By adding this local design, the server will be a test case local
+      .bind[MyServer].toSingleton
   }
 
   def test4(server: MyServer): Unit = {
     info("run test4")
+    assert(server.config.name == "B")
+  }
+
+  def test5(server: MyServer): Unit = {
+    info("run test5")
     assert(server.config.name == "B")
   }
 }
