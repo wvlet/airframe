@@ -22,11 +22,13 @@ import wvlet.log.{ConsoleLogHandler, Logger}
   *
   */
 private[spec] object Compat extends CompatApi {
+  override private[spec] def isScalaJs = true
   private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     throw new IllegalStateException(s"Scala.js cannot read module classes: ${fullyQualifiedName}")
   }
 
   private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+    // Scala.js needs to use @EnableReflectiveInstantiation annotation to support .newInstance
     val clsOpt = Reflect.lookupInstantiatableClass(fullyQualifiedName)
     clsOpt.map(_.newInstance())
   }
@@ -37,6 +39,7 @@ private[spec] object Compat extends CompatApi {
   }
 
   private[spec] def findCause(e: Throwable): Throwable = {
+    // Scala.js has no InvocationTargetException
     e
   }
   override private[spec] def methodSurfacesOf(cls: Class[_]) = Seq.empty[MethodSurface]

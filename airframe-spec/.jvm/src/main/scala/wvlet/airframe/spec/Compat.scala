@@ -26,6 +26,8 @@ import scala.util.Try
   *
   */
 private[spec] object Compat extends CompatApi {
+  override private[spec] def isScalaJs = false
+
   private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
     ReflectTypeUtil.companionObject(cls)

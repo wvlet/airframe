@@ -128,14 +128,15 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
           case Some(as: AirSpecSpi) =>
             runSpec(as)
           case other =>
-            throw new IllegalStateException(s"Non AirSpec class: ${testClassName}")
+            taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
+            throw new IllegalStateException(s"${testClassName} needs to be a class extending AirSpec")
         }
       }
     } catch {
       case e: Throwable =>
         // Unknown error
         val event =
-          AirSpecEvent(taskDef, "init", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
+          AirSpecEvent(taskDef, "<init>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
         taskLogger.logEvent(event)
         eventHandler.handle(event)
     } finally {
@@ -148,8 +149,12 @@ object AirSpecTask {
 
   private[spec] def decodeClassName(cls: Class[_]): String = {
     // Scala.js doesn't produce a clean class name with cls.getSimpleName(), so we need to use
+    decodeClassName(cls.getName)
+  }
+
+  private[spec] def decodeClassName(clsName: String): String = {
     // the full class name
-    val decodedClassName = scala.reflect.NameTransformer.decode(cls.getName)
+    val decodedClassName = scala.reflect.NameTransformer.decode(clsName)
     val pos              = decodedClassName.lastIndexOf('.')
     var name =
       if (pos == -1)
