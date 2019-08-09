@@ -23,8 +23,13 @@ import wvlet.airframe.spec.spi.AirSpecException
   */
 private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
 
-  def withColor(prefix: String, s: String) = {
-    s"${prefix}${s}${Console.RESET}"
+  private val useAnciColor = sbtLoggers.forall(_.ansiCodesSupported())
+
+  def withColor(colorEsc: String, s: String) = {
+    if (useAnciColor)
+      s"${colorEsc}${s}${Console.RESET}"
+    else
+      s
   }
 
   private def log(body: sbt.testing.Logger => Unit) {
@@ -94,8 +99,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
             warn(e)
         }
       case other =>
-        info(s" ${errorReportPrefix(Console.RED, testName)} - ${withColor(Console.WHITE, "error")} ${other.getMessage}")
-        error(other)
+        info(s"${errorReportPrefix(Console.RED, testName)} << ${withColor(Console.WHITE, "error")} ${other.getMessage}")
     }
   }
 }

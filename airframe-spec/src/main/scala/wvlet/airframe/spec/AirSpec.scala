@@ -66,7 +66,7 @@ object AirSpecSpi {
   def initImpl(c: sm.Context): c.Tree = {
     import c.universe._
     val t = c.prefix.actualType.typeSymbol
-    q"{ ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
+    q"if(wvlet.airframe.spec.compat.isScalaJs) { ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
   }
 
 }

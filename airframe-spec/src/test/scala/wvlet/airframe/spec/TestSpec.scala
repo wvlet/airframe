@@ -13,14 +13,16 @@
  */
 package wvlet.airframe.spec
 
-import wvlet.airframe.spec.spi.{AirSpecException, AssertionFailure, Skipped}
-import wvlet.airframe.{Design, _}
+import wvlet.airframe.Design
+import wvlet.airframe.spec.spi.AirSpecException
 import wvlet.log.LogSupport
 
 /**
   *
   */
 class TestSpec extends AirSpec with LogSupport {
+  scalaJsSupport
+
   override protected def beforeAll(design: Design): Design = {
     design
       .bind[String].toInstance("my message")
@@ -61,13 +63,21 @@ class TestSpec extends AirSpec with LogSupport {
 }
 
 object TestObjSpec extends AirSpec with LogSupport {
+  scalaJsSupport
+
   def supportTestsInObjectMethods: String = {
     trace("hello companion methods")
     "hello obj"
   }
 }
 
-object WordSpecTest extends AirSpec {
+class WordSpecTest extends AirSpec {
+  scalaJsSupport
+
   def `should have a natural language description` = {}
   def `should support arbitrary texts`: Unit       = {}
+}
+
+class JvmSpecTest extends AirSpec {
+  def `this method will not be called in Scala.js as scalaJsSupport is not called` = {}
 }

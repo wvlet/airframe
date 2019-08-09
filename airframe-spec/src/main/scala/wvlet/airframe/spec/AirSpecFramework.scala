@@ -25,7 +25,7 @@ import wvlet.log.LogSupport
 class AirSpecFramework extends sbt.testing.Framework with LogSupport {
   import AirSpecFramework._
   override def name(): String                     = "airspec"
-  override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
+  override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint)
   override def runner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): testing.Runner = {
     AirSpecRunner.newRunner(args, remoteArgs, testClassLoader)
   }
