@@ -22,54 +22,50 @@ import wvlet.log.io.IOUtil._
   */
 class LogRotationHandlerTest extends Spec {
 
-  "LogRotationHandler" should {
+  def `rotate log files`: Unit = {
+    val l = Logger("wvlet.log.rotation")
+    withTempFile(name = "log-rotation-test", dir = "target") { f =>
+      val h = new LogRotationHandler(f.getPath, 5, 10)
+      l.resetHandler(h)
 
-    "rotate log files" in {
-      val l = Logger("wvlet.log.rotation")
-      withTempFile(name = "log-rotation-test", dir = "target") { f =>
-        val h = new LogRotationHandler(f.getPath, 5, 10)
-        l.resetHandler(h)
+      l.info("test message")
+      l.info("this logger handler rotates logs and compressed the log archives in .gz format")
+      l.info("this is the end of log files")
+      h.flush()
+      h.close()
 
-        l.info("test message")
-        l.info("this logger handler rotates logs and compressed the log archives in .gz format")
-        l.info("this is the end of log files")
-        h.flush()
-        h.close()
-
-        f should exist
-        f.length > 0 shouldBe true
-      }
-    }
-
-    "rescue orphaned log files" in {
-      val l   = Logger("wvlet.log.rotation")
-      val tmp = new File("target/log-rotation-test.log.tmp")
-      if (!tmp.exists()) {
-        tmp.createNewFile()
-      }
-      tmp should exist
-      val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
-
-      tmp shouldNot exist
+      assert(f.exists())
+      assert(f.length > 0 == true)
     }
   }
 
-  "FileHandler" should {
-    "output log to a file" in {
-      val l = Logger("wvlet.log.filehandler")
-      withTempFile(name = "log-file-test", dir = "target") { f =>
-        val h = new FileHandler(f.getPath)
-        l.resetHandler(h)
+  def `rescue orphaned log files`: Unit = {
+    val l   = Logger("wvlet.log.rotation")
+    val tmp = new File("target/log-rotation-test.log.tmp")
+    if (!tmp.exists()) {
+      tmp.createNewFile()
+    }
+    assert(tmp.exists())
+    val h = new LogRotationHandler("target/log-rotation-test.log", 5, 10)
 
-        l.info("test message")
-        l.info("this logger handler rotates logs and compressed the log archives in .gz format")
-        l.info("this is the end of log files")
-        h.flush()
-        h.close()
+    assert(!tmp.exists())
+  }
 
-        f should exist
-        f.length > 0 shouldBe true
-      }
+  def `output log to a file`: Unit = {
+    val l = Logger("wvlet.log.filehandler")
+    withTempFile(name = "log-file-test", dir = "target") { f =>
+      val h = new FileHandler(f.getPath)
+      l.resetHandler(h)
+
+      l.info("test message")
+      l.info("this logger handler rotates logs and compressed the log archives in .gz format")
+      l.info("this is the end of log files")
+      h.flush()
+      h.close()
+
+      assert(f.exists())
+      assert(f.length > 0 == true)
     }
   }
+
 }

@@ -21,31 +21,28 @@ import wvlet.log.Spec
   *
   */
 class IOUtilTest extends Spec {
+  def `find unused port`: Unit = {
+    val port = IOUtil.unusedPort
+    assert(port > 0)
+  }
 
-  "IOUtil" should {
-    "find unused port" in {
-      val port = IOUtil.unusedPort
-      port shouldBe >(0)
-    }
+  def `find a file`: Unit = {
+    val buildSbt = IOUtil.findPath("build.sbt")
+    assert(buildSbt.isDefined)
+    assert(buildSbt.get.getPath == "build.sbt")
 
-    "find a file" in {
-      val buildSbt = IOUtil.findPath("build.sbt")
-      buildSbt shouldBe defined
-      buildSbt.get.getPath shouldBe "build.sbt"
+    val notFound = IOUtil.findPath("non-existing-file-path.xxxxxxx")
+    assert(notFound.isEmpty)
+  }
 
-      val notFound = IOUtil.findPath("non-existing-file-path.xxxxxxx")
-      notFound shouldBe empty
-    }
+  def `read file as a String`: Unit = {
+    val str = IOUtil.readAsString("build.sbt")
+    assert(str.length > 0)
+  }
 
-    "read file as a String" in {
-      val str = IOUtil.readAsString("build.sbt")
-      str.length shouldBe >(0)
-    }
-
-    "throw FileNotFoundException if file is not found" in {
-      intercept[FileNotFoundException] {
-        IOUtil.readAsString("non-existing-file-path.txt.tmp")
-      }
+  def `throw FileNotFoundException if file is not found`: Unit = {
+    intercept[FileNotFoundException] {
+      IOUtil.readAsString("non-existing-file-path.txt.tmp")
     }
   }
 }

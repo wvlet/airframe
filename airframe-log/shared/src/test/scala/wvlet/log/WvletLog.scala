@@ -14,13 +14,15 @@
 package wvlet.log
 
 import wvlet.log.LogFormatter._
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class WvletLog extends Spec with LogSupport {
+class WvletLog extends AirSpec with LogSupport {
+  scalaJsSupport
 
-  def log(formatter: LogFormatter): Unit = {
+  protected def log(formatter: LogFormatter): Unit = {
     LogEnv.defaultConsoleOutput.println(s"[${formatter.getClass.getSimpleName.replaceAll("\\$", "")}]:")
     logger.setFormatter(formatter)
     logger.info("info log")
@@ -31,45 +33,40 @@ class WvletLog extends Spec with LogSupport {
     LogEnv.defaultConsoleOutput.println
   }
 
-  "FancyLogging" should {
+  def `show logging examples` {
+    logger.setFormatter(SourceCodeLogFormatter)
+    logger.setLogLevel(LogLevel.ALL)
 
-    "show logging examples" in {
+    info("Hello wvlet-log!")
+    debug("wvlet-log adds fancy logging to your Scala applications.")
+    trace("You can see the source code location here ==>")
+    error("That makes easy to track your application behavior")
+    logger.setFormatter(IntelliJLogFormatter)
+    warn("And also, customizing log format is easy")
+    info("This is the log format suited to IntelliJ IDEA")
+    debug("This format adds links to the source code ->")
+    logger.setFormatter(SourceCodeLogFormatter)
+    info("wvlet-log uses Scala macro to output log messages only when necessary")
+    error("And also it can show the stack trace", new Exception("Test message"))
+    info("Usage is simple")
+    warn("Just add wvlet.log.LogSupport trait to your application")
+  }
+
+  def `show log format examples` {
+    val name = Thread.currentThread().getName
+    Thread.currentThread().setName("thread-1")
+    try {
+      LogEnv.defaultConsoleOutput.println
+      log(SourceCodeLogFormatter)
+      log(SimpleLogFormatter)
+      log(AppLogFormatter)
+      log(IntelliJLogFormatter)
+      log(TSVLogFormatter)
+      log(BareFormatter)
+    } finally {
+      logger.resetLogLevel
       logger.setFormatter(SourceCodeLogFormatter)
-      logger.setLogLevel(LogLevel.ALL)
-
-      info("Hello wvlet-log!")
-      debug("wvlet-log adds fancy logging to your Scala applications.")
-      trace("You can see the source code location here ==>")
-      error("That makes easy to track your application behavior")
-      logger.setFormatter(IntelliJLogFormatter)
-      warn("And also, customizing log format is easy")
-      info("This is the log format suited to IntelliJ IDEA")
-      debug("This format adds links to the source code ->")
-      logger.setFormatter(SourceCodeLogFormatter)
-      info("wvlet-log uses Scala macro to output log messages only when necessary")
-      error("And also it can show the stack trace", new Exception("Test message"))
-      info("Usage is simple")
-      warn("Just add wvlet.log.LogSupport trait to your application")
+      Thread.currentThread().setName(name)
     }
-
-    "show log format examples" in {
-
-      val name = Thread.currentThread().getName
-      Thread.currentThread().setName("thread-1")
-      try {
-        LogEnv.defaultConsoleOutput.println
-        log(SourceCodeLogFormatter)
-        log(SimpleLogFormatter)
-        log(AppLogFormatter)
-        log(IntelliJLogFormatter)
-        log(TSVLogFormatter)
-        log(BareFormatter)
-      } finally {
-        logger.resetLogLevel
-        logger.setFormatter(SourceCodeLogFormatter)
-        Thread.currentThread().setName(name)
-      }
-    }
-
   }
 }

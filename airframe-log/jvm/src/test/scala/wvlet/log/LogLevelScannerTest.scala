@@ -15,25 +15,23 @@ package wvlet.log
 
 import java.util.concurrent.TimeUnit
 
-import org.scalatest.{BeforeAndAfter, Matchers, WordSpec}
-
 import scala.concurrent.duration.Duration
 
 /**
   *
   */
-class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
+class LogLevelScannerTest extends Spec {
 
-  before {
+  override protected def before {
     // Ensure stopping log level scanner
     Logger.stopScheduledLogLevelScan
   }
 
-  after {
+  override protected def after {
     Logger.stopScheduledLogLevelScan
   }
 
-  def withScanner[U](config: LogLevelScannerConfig)(f: => U): U = {
+  protected def withScanner[U](config: LogLevelScannerConfig)(f: => U): U = {
     val scanner = new LogLevelScanner
     try {
       val lastScanCount = scanner.scanCount.get
@@ -49,48 +47,45 @@ class LogLevelScannerTest extends WordSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "LogLevelScanner" should {
+  def `scan log levels only once`: Unit = {
+    val l = Logger("wvlet.log.test")
+    l.setLogLevel(LogLevel.WARN)
+    assert(l.getLogLevel == LogLevel.WARN)
+    // Load log-test.properties
+    LogLevelScanner.scanLogLevels
+    assert(l.getLogLevel == LogLevel.DEBUG)
+  }
 
-    "scan log levels only once" in {
-      val l = Logger("wvlet.log.test")
-      l.setLogLevel(LogLevel.WARN)
-      l.getLogLevel shouldBe LogLevel.WARN
-      // Load log-test.properties
-      LogLevelScanner.scanLogLevels
-      l.getLogLevel shouldBe LogLevel.DEBUG
+  def `scan loglevels`: Unit = {
+    val l = Logger("wvlet.log.test")
+    l.setLogLevel(LogLevel.WARN)
+    assert(l.getLogLevel == LogLevel.WARN)
+
+    // Load log-test.properties
+    withScanner(
+      LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
+      assert(l.getLogLevel == LogLevel.DEBUG)
     }
+  }
 
-    "scan loglevels" in {
-      val l = Logger("wvlet.log.test")
-      l.setLogLevel(LogLevel.WARN)
-      l.getLogLevel shouldBe LogLevel.WARN
+  def `load another loglevel file`: Unit = {
+    val l = Logger("wvlet.log.test")
+    l.setLogLevel(LogLevel.WARN)
+    assert(l.getLogLevel == LogLevel.WARN)
 
-      // Load log-test.properties
-      withScanner(
-        LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
-        l.getLogLevel shouldBe LogLevel.DEBUG
-      }
+    withScanner(LogLevelScannerConfig(List("wvlet/log/custom-log.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+      assert(l.getLogLevel == LogLevel.ERROR)
     }
+  }
 
-    "load another loglevel file" in {
-      val l = Logger("wvlet.log.test")
-      l.setLogLevel(LogLevel.WARN)
-      l.getLogLevel shouldBe LogLevel.WARN
+  def `load invalid loglevel file safely`: Unit = {
+    val l = Logger("wvlet.log.test")
+    l.setLogLevel(LogLevel.TRACE)
 
-      withScanner(LogLevelScannerConfig(List("wvlet/log/custom-log.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
-        l.getLogLevel shouldBe LogLevel.ERROR
-      }
-    }
-
-    "load invalid loglevel file safely" in {
-      val l = Logger("wvlet.log.test")
-      l.setLogLevel(LogLevel.TRACE)
-
-      withScanner(
-        LogLevelScannerConfig(List("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
-        // Should ignore unknown log level string
-        l.getLogLevel shouldBe LogLevel.TRACE
-      }
+    withScanner(
+      LogLevelScannerConfig(List("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+      // Should ignore unknown log level string
+      assert(l.getLogLevel == LogLevel.TRACE)
     }
   }
 }
