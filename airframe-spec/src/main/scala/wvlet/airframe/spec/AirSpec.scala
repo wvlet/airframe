@@ -17,6 +17,9 @@ import wvlet.airframe.Design
 import wvlet.airframe.spec.spi.Asserts
 import wvlet.airframe.surface.MethodSurface
 
+import scala.language.experimental.macros
+import scala.reflect.macros.{blackbox => sm}
+
 /**
   * A base trait to use for writing test cases
   */
@@ -25,13 +28,22 @@ trait AirSpec extends AirSpecCore with Asserts
 /**
   * If no assertion support is necessary, extend this trait.
   */
-trait AirSpecCore extends AirSpecSpi with AirSpecBase
+trait AirSpecCore extends AirSpecSpi with PlatformAirSpec
 
-trait AirSpecSpi {
-  protected def methodSurfaces: Seq[MethodSurface]
+private[spec] trait AirSpecSpi {
+  protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[spec] def testMethods: Seq[MethodSurface] = {
-    methodSurfaces.filter(x => x.isPublic)
+    _methodSurfaces.filter(x => x.isPublic)
   }
+
+  /**
+    * This will add Scala.js support to the AirSpec.
+    *
+    * Scala.js does not support runtime reflection, so the user needs to
+    * explicitly create Seq[MethodSurface] at compile-time.
+    * This method is a helper method to populate methodSurfaces automatically.
+    */
+  protected def scalaJsSupport: Unit = macro AirSpecSpi.initImpl
 
   protected def beforeAll(design: Design): Design = design
   protected def before(design: Design): Design    = design
@@ -49,6 +61,12 @@ object AirSpecSpi {
     def callBefore(design: Design): Design    = airSpec.before(design)
     def callAfter: Unit                       = airSpec.after
     def callAfterAll: Unit                    = airSpec.afterAll
+  }
+
+  def initImpl(c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = c.prefix.actualType.typeSymbol
+    q"{ ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
   }
 
 }
