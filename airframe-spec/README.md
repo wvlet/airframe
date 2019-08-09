@@ -43,6 +43,7 @@ class MyTest extends AirSpec {
 ```
 
 
+
 ## Writing Specs In Natural Languages
 
 If you prefer natural language descriptions for your test cases, use symbols for function names:
@@ -64,3 +65,26 @@ class SeqSpec extends AirSpec {
 }
 
 ```
+
+
+## Scala.js
+
+To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
+ 
+```scala
+import wvlet.airframe.spec._
+
+class ScalaJSSpec extends AirSpec {
+  // This is necessary to find test methods in Scala.js
+  scalaJsSupport  
+
+  def myTest: Unit = assert(1 == 1)
+}
+```
+
+Scala.js has no runtime reflection to find methods in AirSpec classes.
+So calling `scalaJsSupport` will generate `MethodSurface`s (airframe-surface), so that 
+AirSpec can find test methods at runtime. 
+
+Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the
+same test spec both for Scala and Scala.js.
