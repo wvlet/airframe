@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.spec.runner
 
-import java.util.Locale
-
 import sbt.testing.Status
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
@@ -92,7 +90,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
           case se: AirSpecException =>
             s" ${statusLabel(se.statusLabel)}: ${withColor(baseColor, se.message)} ${errorLocation(se)}"
           case _ =>
-            s" ${statusLabel(e.status.name().toLowerCase(Locale.ENGLISH))}: ${withColor(baseColor, ex.getMessage())}"
+            s" ${statusLabel("error")}: ${withColor(baseColor, ex.getMessage())}"
         }
       case _ =>
         ""

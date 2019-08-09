@@ -79,7 +79,7 @@ case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-case class Design(designOptions: DesignOptions, private[airframe] val binding: Vector[Binding]) extends LogSupport {
+case class Design private[airframe] (designOptions: DesignOptions, binding: Vector[Binding]) extends LogSupport {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**
