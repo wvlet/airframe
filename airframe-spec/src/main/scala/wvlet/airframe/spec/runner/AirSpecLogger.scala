@@ -14,6 +14,8 @@
 package wvlet.airframe.spec.runner
 
 import sbt.testing.Status
+import wvlet.airframe.log.AnsiColorPalette
+import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airframe.spec.compat
 import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
 import wvlet.airframe.spec.spi.AirSpecException
@@ -21,13 +23,13 @@ import wvlet.airframe.spec.spi.AirSpecException
 /**
   *
   */
-private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
+private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
 
   private val useAnciColor = sbtLoggers.forall(_.ansiCodesSupported())
 
   def withColor(colorEsc: String, s: String) = {
     if (useAnciColor)
-      s"${colorEsc}${s}${Console.RESET}"
+      s"${colorEsc}${s}${RESET}"
     else
       s
   }
@@ -43,63 +45,78 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
   }
 
   private def warn(e: Throwable): Unit = {
-    val msg = withColor(Console.YELLOW, e.getMessage)
+    val msg = withColor(YELLOW, e.getMessage)
     log(_.warn(msg))
   }
 
   private def error(e: Throwable): Unit = {
-    val msg = withColor(Console.RED, e.getMessage)
+    val msg = withColor(RED, e.getMessage)
     log(_.error(msg))
   }
 
   def logSpecName(specName: String): Unit = {
-    info(s"${withColor(Console.CYAN, specName)}:")
+    info(s"${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
+  }
+
+  def dash: String = {
+    withColor(GRAY, " -")
   }
 
   def logEvent(e: AirSpecEvent): Unit = {
     e.status match {
       case Status.Success =>
-        info(s" ${withColor(Console.WHITE, "-")} ${withColor(Console.CYAN, e.fullyQualifiedName)}")
+        info(s"${dash} ${withColor(GREEN, e.fullyQualifiedName)} ${elapsedTime(e.durationNanos)}")
       case other =>
-        reportError(e.fullyQualifiedName, e.throwable.get(), e.status)
+        reportError(e)
     }
   }
 
+  private def elapsedTime(nanos: Long): String = {
+    withColor(GRAY, ElapsedTime.succinctNanos(nanos).toString)
+  }
+
   private def statusLabel(e: AirSpecException): String = {
-    s"<< ${withColor(Console.WHITE, e.statusLabel)}"
+    s"<< ${withColor(WHITE, e.statusLabel)}"
   }
 
   private def errorReportPrefix(baseColor: String, testName: String): String = {
-    s" ${withColor(Console.WHITE, "-")} ${withColor(baseColor, testName)}"
+    s"${dash} ${withColor(baseColor, testName)}"
   }
 
   private def errorLocation(e: AirSpecException): String = {
-    withColor(Console.BLUE, s"(${e.code})")
+    withColor(BLUE, s"(${e.code})")
   }
 
-  private def formatError(baseColor: String, testName: String, status: Status, e: AirSpecException): String = {
-    s"${errorReportPrefix(baseColor, testName)} ${statusLabel(e)} ${errorLocation(e)}"
+  private def formatError(baseColor: String, e: AirSpecEvent, ex: AirSpecException): String = {
+    s"${errorReportPrefix(baseColor, e.fullyQualifiedName)} ${statusLabel(ex)} ${errorLocation(ex)} ${elapsedTime(e.durationNanos)}"
   }
 
-  private def reportError(testName: String, e: Throwable, status: Status): Unit = {
+  private def reportError(event: AirSpecEvent): Unit = {
+    val testName     = event.fullyQualifiedName
+    val e            = event.throwable.get()
+    val status       = event.status
+    val elapsedNanos = event.durationNanos
+
     val cause = compat.findCause(e)
     cause match {
       case e: AirSpecException =>
         status match {
           case Status.Failure =>
-            info(formatError(Console.RED, testName, status, e))
+            info(formatError(RED, event, e))
             error(e)
           case Status.Error =>
-            info(formatError(Console.RED, testName, status, e))
+            info(formatError(RED, event, e))
             error(e)
           case Status.Pending | Status.Canceled | Status.Skipped =>
-            info(s"${errorReportPrefix(Console.YELLOW, testName)} ${statusLabel(e)}: ${e.message} ${errorLocation(e)}")
+            info(
+              s"${errorReportPrefix(YELLOW, testName)} ${statusLabel(e)}: ${e.message} ${errorLocation(e)} ${elapsedTime(elapsedNanos)}")
           case _ =>
-            info(formatError(Console.YELLOW, testName, status, e))
+            info(formatError(YELLOW, event, e))
             warn(e)
         }
       case other =>
-        info(s"${errorReportPrefix(Console.RED, testName)} << ${withColor(Console.WHITE, "error")} ${other.getMessage}")
+        info(
+          s"${errorReportPrefix(RED, testName)} << ${withColor(WHITE, "error")} ${other.getMessage} ${elapsedTime(elapsedNanos)}")
     }
   }
 }

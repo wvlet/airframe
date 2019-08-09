@@ -785,7 +785,7 @@ lazy val airspec =
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
-    .dependsOn(log, airframe, airframeMacrosRef)
+    .dependsOn(log, airframe, metrics, airframeMacrosRef)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js

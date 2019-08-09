@@ -26,13 +26,13 @@ trait MyServer extends LogSupport {
 
   @PostConstruct
   def start: Unit = {
-    info(f"Starting ${config.name}: ${this.hashCode()}%x")
+    debug(f"Starting ${config.name}: ${this.hashCode()}%x")
     counter.incrementAndGet()
   }
 
   @PreDestroy
   def stop: Unit = {
-    info(f"Stopping ${config.name}: ${this.hashCode()}%x")
+    debug(f"Stopping ${config.name}: ${this.hashCode()}%x")
   }
 }
 
@@ -54,16 +54,16 @@ class MyServerSpec extends CustomSpec {
 
   // MyServer will be shared by the all test cases
   def test1(server: MyServer): Unit = {
-    info(s"run test1")
+    debug(s"run test1")
     assert(server.config.name == "A")
   }
 
   def test2(server: MyServer): Unit = {
-    info(s"run test2")
+    debug(s"run test2")
   }
 
   def test3(session: Session): Unit = {
-    info(s"run test3")
+    debug(s"run test3")
     val server = session.build[MyServer]
   }
 
@@ -81,12 +81,12 @@ class MyServer2Spec extends CustomSpec {
   }
 
   def test4(server: MyServer): Unit = {
-    info("run test4")
+    debug("run test4")
     assert(server.config.name == "B")
   }
 
   def test5(server: MyServer): Unit = {
-    info("run test5")
+    debug("run test5")
     assert(server.config.name == "B")
   }
 
