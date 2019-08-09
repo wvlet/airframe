@@ -25,9 +25,10 @@ class TestJSSpec extends AirSpec with LogSupport {
   // This line is necessary for Scala.js
   override private[spec] def methodSurfaces = Surface.methodsOf[TestJSSpec]
 
-  override protected def design: Design =
-    newDesign
+  override protected def beforeAll(design: Design): Design = {
+    design
       .bind[String].toInstance("hello Scala.js")
+  }
 
   def hello(name: String = "hello"): Unit = {
     info(name)
