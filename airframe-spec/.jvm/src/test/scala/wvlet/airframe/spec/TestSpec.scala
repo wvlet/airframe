@@ -63,7 +63,7 @@ object TestObjSpec extends AirSpec with LogSupport {
   }
 }
 
-object `A flexible test spec` extends AirSpec {
+object WordSpecTest extends AirSpec {
   def `should have a natural language description` = {}
   def `should support arbitrary texts`: Unit       = {}
 }

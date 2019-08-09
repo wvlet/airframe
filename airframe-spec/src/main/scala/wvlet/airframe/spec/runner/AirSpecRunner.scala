@@ -13,13 +13,17 @@
  */
 package wvlet.airframe.spec.runner
 import sbt.testing.{Task, TaskDef}
+import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
 
 /**
   *
   */
-class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], classLoader: ClassLoader)
+private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
+
+  override def args: Array[String] = config.args
+
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs.map { t =>
       new AirSpecTask(t, classLoader)
@@ -34,7 +38,7 @@ class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], clas
     ""
   }
 
-  // These methods are defined for Scala.js
+  // The following methods are defined for Scala.js support:
   def receiveMessage(msg: String): Option[String] = None
   def deserializeTask(task: String, deserializer: String => sbt.testing.TaskDef): sbt.testing.Task = {
     new AirSpecTask(deserializer(task), classLoader)
@@ -44,10 +48,12 @@ class AirSpecRunner(val args: Array[String], val remoteArgs: Array[String], clas
   }
 }
 
-object AirSpecRunner extends LogSupport {
+private[spec] object AirSpecRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecRunner = {
     debug(s"args: ${args.mkString(", ")}")
     debug(s"remote args: ${args.mkString(", ")}")
-    new AirSpecRunner(args, remoteArgs, testClassLoader)
+    new AirSpecRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
   }
+
+  case class AirSpecConfig(args: Array[String]) {}
 }
