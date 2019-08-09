@@ -28,11 +28,12 @@ class TestJSSpec extends AirSpec with LogSupport {
   }
 
   def hello(name: String = "hello"): Unit = {
-    info(name)
+    debug(name)
+    assert(name == "hello Scala.js")
   }
 
   def `natural method name test`: Unit = {
-    info("hello symbol name tests")
+    debug("hello symbol name tests")
   }
 }
 

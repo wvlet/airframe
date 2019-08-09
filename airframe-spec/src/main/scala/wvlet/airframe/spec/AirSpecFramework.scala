@@ -16,13 +16,12 @@ package wvlet.airframe.spec
 import sbt.testing
 import sbt.testing.{Fingerprint, SubclassFingerprint}
 import wvlet.airframe.spec.runner.AirSpecRunner
-import wvlet.log.LogSupport
 
 /**
   * Include this class to your build.sbt:
   * testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
   */
-class AirSpecFramework extends sbt.testing.Framework with LogSupport {
+class AirSpecFramework extends sbt.testing.Framework {
   import AirSpecFramework._
   override def name(): String                     = "airspec"
   override def fingerprints(): Array[Fingerprint] = Array(AirSpecClassFingerPrint, AirSpecObjectFingerPrint)
