@@ -138,7 +138,7 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
       case e: Throwable =>
         // Unknown error
         val event =
-          AirSpecEvent(taskDef, "<init>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
+          AirSpecEvent(taskDef, "<spec>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
         taskLogger.logEvent(event)
         eventHandler.handle(event)
     } finally {
