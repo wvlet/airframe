@@ -266,7 +266,7 @@ def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
   val readmeFiles =
     baseDir
       .listFiles()
-      .filter(x => x.isDirectory && x.name.startsWith("airframe"))
+      .filter(x => x.isDirectory && (x.name.startsWith("airframe") || x.name.startsWith("airspec")))
       .map(x => x / "README.md")
       .filter(_.exists())
 

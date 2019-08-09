@@ -1,7 +1,7 @@
-AirSpec (airframe-spec)
+AirSpec
 ======
 
-[AirSpec](https://wvlet.org/airframe/airframe-spec) is a lightweight testing framework for Scala and Scala.js.
+[AirSpec](https://wvlet.org/airframe/docs/airspec.html) is a functional testing framework for Scala and Scala.js.
 
 # Usage
 
@@ -10,13 +10,13 @@ AirSpec (airframe-spec)
 **build.sbt**
 
 ```
-libraryDependencies += "org.wvlet.airframe" %% "airframe-spec" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
 testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 ```
 
 For Scala.js, use `%%%`:
 ```
-libraryDependencies += "org.wvlet.airframe" %%% "airframe-spec" % "(version)"
+libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 ```
 
 ## Writing Unit Tests 
