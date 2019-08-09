@@ -21,3 +21,11 @@ class CommonSpec extends AirSpec {
 
   def helloSpec: Unit = {}
 }
+
+object ObjSpec extends AirSpec {
+  scalaJsSupport
+
+  def hello1: Unit = {
+    assert(true)
+  }
+}
