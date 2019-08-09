@@ -60,10 +60,20 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
     }
   }
 
+  private def statusLabel(e: AirSpecException): String = {
+    s"<< ${withColor(Console.WHITE, e.statusLabel)}"
+  }
+
+  private def errorReportPrefix(baseColor: String, testName: String): String = {
+    s" ${withColor(Console.WHITE, "-")} ${withColor(baseColor, testName)}"
+  }
+
+  private def errorLocation(e: AirSpecException): String = {
+    withColor(Console.BLUE, s"(${e.code})")
+  }
+
   private def formatError(baseColor: String, testName: String, status: Status, e: AirSpecException): String = {
-    val statusLabel = s"- ${withColor(Console.WHITE, e.statusLabel)}"
-    f" ${withColor(Console.WHITE, "-")} ${withColor(baseColor, testName)} ${statusLabel} ${withColor(Console.BLUE,
-                                                                                                     s"(${e.code})")}"
+    s"${errorReportPrefix(baseColor, testName)} ${statusLabel(e)} ${errorLocation(e)}"
   }
 
   private def reportError(testName: String, e: Throwable, status: Status): Unit = {
@@ -71,19 +81,20 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
     cause match {
       case e: AirSpecException =>
         status match {
-          case Status.Failure | Status.Canceled =>
+          case Status.Failure =>
             info(formatError(Console.RED, testName, status, e))
             error(e)
           case Status.Error =>
             info(formatError(Console.RED, testName, status, e))
             error(e)
+          case Status.Pending | Status.Canceled | Status.Skipped =>
+            info(s"${errorReportPrefix(Console.YELLOW, testName)} ${statusLabel(e)}: ${e.message} ${errorLocation(e)}")
           case _ =>
             info(formatError(Console.YELLOW, testName, status, e))
             warn(e)
         }
       case other =>
-        info(
-          s" ${withColor(Console.WHITE, "-")} ${withColor(Console.RED, testName)} - ${withColor(Console.RED, "error")} ${other.getMessage}")
+        info(s" ${errorReportPrefix(Console.RED, testName)} - ${withColor(Console.WHITE, "error")} ${other.getMessage}")
         error(other)
     }
   }
