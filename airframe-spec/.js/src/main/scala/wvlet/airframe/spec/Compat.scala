@@ -14,6 +14,7 @@
 package wvlet.airframe.spec
 
 import org.portablescala.reflect._
+import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, Logger}
 
@@ -38,8 +39,6 @@ private[spec] object Compat extends CompatApi {
   private[spec] def findCause(e: Throwable): Throwable = {
     e
   }
-  override private[spec] def methodSurfacesOf(cls: Class[_]) = {
-    throw new IllegalStateException(
-      s"Add this method in Scala.js: override protected def methodSurfacesOf = Surface.methodsOf[${cls.getSimpleName}]")
-  }
+  override private[spec] def methodSurfacesOf(cls: Class[_]) = Seq.empty[MethodSurface]
+
 }
