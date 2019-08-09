@@ -20,7 +20,12 @@ import wvlet.airframe.surface.MethodSurface
 /**
   * A base trait to use for writing test cases
   */
-trait AirSpec extends AirSpecSpi with AirSpecBase with Asserts
+trait AirSpec extends AirSpecCore with Asserts
+
+/**
+  * If no assertion support is necessary, extend this trait.
+  */
+trait AirSpecCore extends AirSpecSpi with AirSpecBase
 
 trait AirSpecSpi {
   private[spec] def methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
