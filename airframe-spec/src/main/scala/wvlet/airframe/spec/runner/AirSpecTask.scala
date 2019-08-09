@@ -72,10 +72,10 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
           val childDesign    = spec.setup(d)
           val startTimeNanos = System.nanoTime()
           val result = session.withChildSession(childDesign) { childSession =>
-            val args: Seq[Any] = for (p <- m.args) yield {
-              childSession.getInstanceOf(p.surface)
-            }
             Try {
+              val args: Seq[Any] = for (p <- m.args) yield {
+                childSession.getInstanceOf(p.surface)
+              }
               m.call(spec, args: _*)
             }
           }
