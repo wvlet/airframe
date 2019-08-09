@@ -13,11 +13,14 @@
  */
 package wvlet.airframe.spec.runner
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 import sbt.testing._
 import wvlet.airframe.Design
 import wvlet.airframe.spec._
+import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
@@ -33,7 +36,7 @@ import scala.util.{Failure, Success, Try}
   * For each test method in the AirSpec instance, it will create a child session so that
   * users can manage test-method local instances, which will be discarded after the completion of the test method.
   */
-private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader)
+private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: TaskDef, classLoader: ClassLoader)
     extends sbt.testing.Task
     with LogSupport {
 
@@ -73,7 +76,7 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
 
     import AirSpecSpi._
 
-    def runSpec(spec: AirSpecSpi): Unit = {
+    def runSpec(spec: AirSpecSpi, targetMethods: Seq[MethodSurface]): Unit = {
       val clsLeafName = decodeClassName(spec.getClass)
       taskLogger.logSpecName(clsLeafName)
 
@@ -87,7 +90,7 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
 
         // Create a new Airframe session
         d.withSession { session =>
-          for (m <- spec.testMethods) {
+          for (m <- targetMethods) {
             spec.callBefore
             // Allow configuring the test-local design
             val childDesign = spec.callDesignEach(Design.newDesign)
@@ -142,7 +145,26 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
 
         testObj match {
           case Some(spec: AirSpecSpi) =>
-            runSpec(spec)
+            val selectedMethods =
+              config.pattern match {
+                case Some(regex) =>
+                  regex
+                  // Include all tests when the class name matches with the keyword
+                    .findFirstIn(taskDef.fullyQualifiedName())
+                    .map(x => spec.testMethods)
+                    .getOrElse {
+                      // Find matching methods
+                      spec.testMethods.filter { m =>
+                        regex.findFirstIn(m.name).isDefined
+                      }
+                    }
+                case None =>
+                  spec.testMethods
+              }
+
+            if (selectedMethods.nonEmpty) {
+              runSpec(spec, selectedMethods)
+            }
           case _ =>
             taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
             throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")

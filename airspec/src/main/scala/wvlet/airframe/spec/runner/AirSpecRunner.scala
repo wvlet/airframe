@@ -12,9 +12,14 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
+import java.util.regex.PatternSyntaxException
+
 import sbt.testing.{Task, TaskDef}
 import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
+
+import scala.util.{Failure, Try}
+import scala.util.matching.Regex
 
 /**
   * AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
@@ -26,7 +31,7 @@ private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[S
 
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
     taskDefs.map { t =>
-      new AirSpecTask(t, classLoader)
+      new AirSpecTask(config, t, classLoader)
     }
   }
 
@@ -41,7 +46,7 @@ private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[S
   // The following methods are defined for Scala.js support:
   def receiveMessage(msg: String): Option[String] = None
   def deserializeTask(task: String, deserializer: String => sbt.testing.TaskDef): sbt.testing.Task = {
-    new AirSpecTask(deserializer(task), classLoader)
+    new AirSpecTask(config, deserializer(task), classLoader)
   }
   def serializeTask(task: sbt.testing.Task, serializer: sbt.testing.TaskDef => String): String = {
     serializer(task.taskDef())
@@ -55,5 +60,19 @@ private[spec] object AirSpecRunner extends LogSupport {
     new AirSpecRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
   }
 
-  case class AirSpecConfig(args: Array[String]) {}
+  case class AirSpecConfig(args: Array[String]) {
+    lazy val pattern: Option[Regex] = {
+      // For now, we only support regex-based test name matcher using the first argument
+      args.find(x => !x.startsWith("-")).flatMap { p =>
+        try {
+          // Support wildcard (*) for convenience
+          Some(s"(?i)${p.replaceAll("\\*", ".*")}".r)
+        } catch {
+          case e: Throwable =>
+            logger.warn(s"Invalid regular expression ${p}: ${e.getMessage}")
+            None
+        }
+      }
+    }
+  }
 }

@@ -42,6 +42,19 @@ class MyTest extends AirSpec {
 }
 ```
 
+## Running Tests
+
+AirSpec supports pattern matching for running specific tests:
+```
+$ sbt
+
+> test                                  # Run all tests
+> testOnly -- (pattern)                 # Run all test matching the pattern (spec name or test name)
+> testOnly (class name pattern)         # Run all test classe matching the pattern
+> testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
+
+```
+`pattern` supports wildcard (`*`) and regular expressions. Cases will be ignored.  
 
 ## Writing Specs In Natural Languages
 
@@ -64,6 +77,8 @@ class SeqSpec extends AirSpec {
 }
 
 ```
+
+
 
 
 ## Scala.js
