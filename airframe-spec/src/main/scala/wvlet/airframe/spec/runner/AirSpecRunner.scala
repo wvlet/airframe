@@ -17,7 +17,7 @@ import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
 
 /**
-  *
+  * AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
   */
 private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {

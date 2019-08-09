@@ -14,7 +14,6 @@
 package wvlet.airframe.spec.spi
 
 import wvlet.airframe.SourceCode
-import wvlet.airframe.spec._
 
 import scala.reflect.ClassTag
 
