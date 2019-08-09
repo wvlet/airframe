@@ -21,12 +21,18 @@ import wvlet.airframe.spec.AirSpec
 class CommonSpec extends AirSpec {
   scalaJsSupport
 
-  def helloSpec: Unit = {
-    fail("test failure")
+  def hello: Unit = {
+    assert(true)
   }
 
   def failTest: Unit = {
-    throw new IllegalArgumentException("invalid argumetn")
+    ignore()
+    fail("test failure")
+  }
+
+  def exceptionTest: Unit = {
+    ignore()
+    throw new IllegalArgumentException("invalid argument")
   }
 }
 
