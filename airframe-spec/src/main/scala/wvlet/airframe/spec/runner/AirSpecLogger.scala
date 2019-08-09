@@ -13,12 +13,14 @@
  */
 package wvlet.airframe.spec.runner
 
+import java.util.Locale
+
 import sbt.testing.Status
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
-import wvlet.airframe.spec.compat
 import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
 import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.log.LogFormatter
 
 /**
   *
@@ -44,13 +46,13 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
     log(_.info(m))
   }
 
-  private def warn(e: Throwable): Unit = {
-    val msg = withColor(YELLOW, e.getMessage)
+  private def warn(m: String): Unit = {
+    val msg = withColor(YELLOW, m)
     log(_.warn(msg))
   }
 
-  private def error(e: Throwable): Unit = {
-    val msg = withColor(RED, e.getMessage)
+  private def error(m: String): Unit = {
+    val msg = withColor(BRIGHT_RED, m)
     log(_.error(msg))
   }
 
@@ -58,65 +60,49 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
     info(s"${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
   }
 
-  def dash: String = {
-    withColor(GRAY, " -")
-  }
-
   def logEvent(e: AirSpecEvent): Unit = {
-    e.status match {
-      case Status.Success =>
-        info(s"${dash} ${withColor(GREEN, e.fullyQualifiedName)} ${elapsedTime(e.durationNanos)}")
-      case other =>
-        reportError(e)
+    val (baseColor, showStackTraces) = e.status match {
+      case Status.Success                  => (GREEN, false)
+      case Status.Failure | Status.Error   => (RED, true)
+      case Status.Skipped                  => (BRIGHT_GREEN, false)
+      case Status.Canceled                 => (YELLOW, false)
+      case Status.Pending | Status.Ignored => (BRIGHT_YELLOW, false)
     }
-  }
 
-  private def elapsedTime(nanos: Long): String = {
-    withColor(GRAY, ElapsedTime.succinctNanos(nanos).toString)
-  }
+    def elapsedTime: String = {
+      withColor(GRAY, ElapsedTime.succinctNanos(e.durationNanos).toString)
+    }
 
-  private def statusLabel(e: AirSpecException): String = {
-    s"<< ${withColor(WHITE, e.statusLabel)}"
-  }
+    def statusLabel(statusLabel: String): String = {
+      s"<< ${withColor(WHITE, statusLabel)}"
+    }
 
-  private def errorReportPrefix(baseColor: String, testName: String): String = {
-    s"${dash} ${withColor(baseColor, testName)}"
-  }
+    def errorLocation(e: AirSpecException): String = {
+      withColor(BLUE, s"(${e.code})")
+    }
 
-  private def errorLocation(e: AirSpecException): String = {
-    withColor(BLUE, s"(${e.code})")
-  }
-
-  private def formatError(baseColor: String, e: AirSpecEvent, ex: AirSpecException): String = {
-    s"${errorReportPrefix(baseColor, e.fullyQualifiedName)} ${statusLabel(ex)} ${errorLocation(ex)} ${elapsedTime(e.durationNanos)}"
-  }
-
-  private def reportError(event: AirSpecEvent): Unit = {
-    val testName     = event.fullyQualifiedName
-    val e            = event.throwable.get()
-    val status       = event.status
-    val elapsedNanos = event.durationNanos
-
-    val cause = compat.findCause(e)
-    cause match {
-      case e: AirSpecException =>
-        status match {
-          case Status.Failure =>
-            info(formatError(RED, event, e))
-            error(e)
-          case Status.Error =>
-            info(formatError(RED, event, e))
-            error(e)
-          case Status.Pending | Status.Canceled | Status.Skipped =>
-            info(
-              s"${errorReportPrefix(YELLOW, testName)} ${statusLabel(e)}: ${e.message} ${errorLocation(e)} ${elapsedTime(elapsedNanos)}")
+    val prefix = {
+      s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName)} ${elapsedTime}"
+    }
+    val tail = e.status match {
+      case Status.Success => ""
+      case _ if e.throwable.isDefined =>
+        val ex = e.throwable.get()
+        ex match {
+          case se: AirSpecException =>
+            s" ${statusLabel(se.statusLabel)}: ${withColor(baseColor, se.message)} ${errorLocation(se)}"
           case _ =>
-            info(formatError(YELLOW, event, e))
-            warn(e)
+            s" ${statusLabel(e.status.name().toLowerCase(Locale.ENGLISH))}: ${withColor(baseColor, ex.getMessage())}"
         }
-      case other =>
-        info(
-          s"${errorReportPrefix(RED, testName)} << ${withColor(WHITE, "error")} ${other.getMessage} ${elapsedTime(elapsedNanos)}")
+      case _ =>
+        ""
+    }
+    info(s"${prefix}${tail}")
+
+    if (showStackTraces) {
+      val ex         = wvlet.airframe.spec.compat.findCause(e.throwable.get())
+      val stackTrace = LogFormatter.formatStacktrace(ex)
+      error(stackTrace)
     }
   }
 }

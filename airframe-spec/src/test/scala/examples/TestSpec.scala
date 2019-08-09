@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package examples
 
 import wvlet.airframe.Design
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.spec.spi.AirSpecException
 import wvlet.log.LogSupport
 
