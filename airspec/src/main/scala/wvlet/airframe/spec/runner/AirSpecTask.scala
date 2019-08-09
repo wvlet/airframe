@@ -148,16 +148,12 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
             val selectedMethods =
               config.pattern match {
                 case Some(regex) =>
-                  regex
-                  // Include all tests when the class name matches with the keyword
-                    .findFirstIn(taskDef.fullyQualifiedName())
-                    .map(x => spec.testMethods)
-                    .getOrElse {
-                      // Find matching methods
-                      spec.testMethods.filter { m =>
-                        regex.findFirstIn(m.name).isDefined
-                      }
-                    }
+                  // Find matching methods
+                  spec.testMethods.filter { m =>
+                    // Concatenate class name + method name for handy search
+                    val fullName = s"${taskDef.fullyQualifiedName()}:${m.name}"
+                    regex.findFirstIn(fullName).isDefined
+                  }
                 case None =>
                   spec.testMethods
               }
