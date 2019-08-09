@@ -62,36 +62,53 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
 
     val taskLogger = new AirSpecLogger(loggers)
 
+    import AirSpecSpi._
+
     def runSpec(spec: AirSpecSpi): Unit = {
       val clsLeafName = decodeClassName(spec.getClass)
       taskLogger.logSpecName(clsLeafName)
+
+      // beforeAll
       var d = Design.newDesign.noLifeCycleLogging
-      d = spec.setupSpec(d)
+      d = spec.callBeforeAll(d)
+
+      // Create a new Airframe session
       d.withSession { session =>
-        for (m <- spec.testMethods) {
-          val childDesign    = spec.setup(d)
-          val startTimeNanos = System.nanoTime()
-          val result = session.withChildSession(childDesign) { childSession =>
-            Try {
-              val args: Seq[Any] = for (p <- m.args) yield {
-                childSession.getInstanceOf(p.surface)
+        try {
+          for (m <- spec.testMethods) {
+            val childDesign = spec.callBefore(d)
+
+            // Run a spec in a child session
+            val startTimeNanos = System.nanoTime()
+            val result = session.withChildSession(childDesign) { childSession =>
+              val r = Try {
+                try {
+                  val args: Seq[Any] = for (p <- m.args) yield {
+                    childSession.getInstanceOf(p.surface)
+                  }
+                  m.call(spec, args: _*)
+                } finally {
+                  spec.callAfter
+                }
               }
-              m.call(spec, args: _*)
+              r
             }
-          }
-          val durationNanos = System.nanoTime() - startTimeNanos
+            val durationNanos = System.nanoTime() - startTimeNanos
 
-          val (status, throwableOpt) = result match {
-            case Success(x) =>
-              (Status.Success, new OptionalThrowable())
-            case Failure(ex) =>
-              val status = AirSpecException.classifyException(ex)
-              (status, new OptionalThrowable(compat.findCause(ex)))
-          }
+            val (status, throwableOpt) = result match {
+              case Success(x) =>
+                (Status.Success, new OptionalThrowable())
+              case Failure(ex) =>
+                val status = AirSpecException.classifyException(ex)
+                (status, new OptionalThrowable(compat.findCause(ex)))
+            }
 
-          val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
-          taskLogger.logEvent(e)
-          eventHandler.handle(e)
+            val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+            taskLogger.logEvent(e)
+            eventHandler.handle(e)
+          }
+        } finally {
+          spec.callAfterAll
         }
       }
     }
