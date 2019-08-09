@@ -13,7 +13,11 @@
  */
 package wvlet.airframe.spec
 
+import wvlet.airframe.surface.MethodSurface
+
 /**
   * A base trait for defining unit tests using AirSpec
   */
-trait AirSpecBase extends AirSpecSpi
+trait AirSpecBase extends AirSpecSpi {
+  protected def methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
+}

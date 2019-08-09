@@ -28,7 +28,7 @@ trait AirSpec extends AirSpecCore with Asserts
 trait AirSpecCore extends AirSpecSpi with AirSpecBase
 
 trait AirSpecSpi {
-  private[spec] def methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
+  protected def methodSurfaces: Seq[MethodSurface]
   private[spec] def testMethods: Seq[MethodSurface] = {
     methodSurfaces.filter(x => x.isPublic)
   }

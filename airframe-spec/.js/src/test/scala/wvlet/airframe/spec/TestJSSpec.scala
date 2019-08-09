@@ -15,7 +15,6 @@ package wvlet.airframe.spec
 
 import wvlet.airframe.Design
 import wvlet.airframe.surface.Surface
-import wvlet.airframe._
 import wvlet.log.LogSupport
 
 /**
@@ -23,7 +22,7 @@ import wvlet.log.LogSupport
   */
 class TestJSSpec extends AirSpec with LogSupport {
   // This line is necessary for Scala.js
-  override private[spec] def methodSurfaces = Surface.methodsOf[TestJSSpec]
+  override protected def methodSurfaces = Surface.methodsOf[TestJSSpec]
 
   override protected def beforeAll(design: Design): Design = {
     design
@@ -40,7 +39,7 @@ class TestJSSpec extends AirSpec with LogSupport {
 }
 
 class `Flexible test spec name` extends AirSpec {
-  override private[spec] def methodSurfaces = Surface.methodsOf[`Flexible test spec name`]
+  override protected def methodSurfaces = Surface.methodsOf[`Flexible test spec name`]
 
   def `should support long method names`: Unit = {}
 }
