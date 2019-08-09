@@ -9,11 +9,11 @@ With airframe-scalatest, you can:
 
 ## Usage
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-spec_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-scalatest_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-scalatest_2.12/)
 
 **build.sbt**
 ```scala
-libraryDependencies += "org.wvlet.airframe" %% "airframe-spec" % "(version)" % "test"
+libraryDependencies += "org.wvlet.airframe" %% "airframe-scalatest" % "(version)" % "test"
 ```
 
 
