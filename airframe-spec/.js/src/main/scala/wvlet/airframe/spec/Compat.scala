@@ -40,6 +40,6 @@ private[spec] object Compat extends CompatApi {
   }
   override private[spec] def methodSurfacesOf(cls: Class[_]) = {
     throw new IllegalStateException(
-      s"Add override def methodSurfacesOf = Surface.methodsOf[${cls.getSimpleName}] in Scala.js")
+      s"Add this method in Scala.js: override protected def methodSurfacesOf = Surface.methodsOf[${cls.getSimpleName}]")
   }
 }
