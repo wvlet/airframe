@@ -40,13 +40,13 @@ class AirSpecFramework extends sbt.testing.Framework with LogSupport {
 
 object AirSpecFramework {
 
-  object AirSpecClassFingerPrint extends SubclassFingerprint {
+  private[spec] object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false
     override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
     override def requireNoArgConstructor(): Boolean = true
   }
 
-  object AirSpecObjectFingerPrint extends SubclassFingerprint {
+  private[spec] object AirSpecObjectFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = true
     override def superclassName(): String           = "wvlet.airframe.spec.AirSpec"
     override def requireNoArgConstructor(): Boolean = false

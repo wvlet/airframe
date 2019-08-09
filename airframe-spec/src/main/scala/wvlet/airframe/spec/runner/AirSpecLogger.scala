@@ -17,12 +17,11 @@ import sbt.testing.Status
 import wvlet.airframe.spec.compat
 import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
 import wvlet.airframe.spec.spi.AirSpecException
-import wvlet.log.Logger
 
 /**
   *
   */
-class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
+private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
 
   def withColor(prefix: String, s: String) = {
     s"${prefix}${s}${Console.RESET}"

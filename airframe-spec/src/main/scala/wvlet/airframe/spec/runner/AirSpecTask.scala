@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 import sbt.testing._
 import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec._
 import wvlet.airframe.spec.spi.AirSpecException
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
@@ -28,7 +27,9 @@ import scala.util.{Failure, Success, Try}
 /**
   *
   */
-class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader) extends sbt.testing.Task with LogSupport {
+private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader)
+    extends sbt.testing.Task
+    with LogSupport {
 
   import AirSpecTask._
 

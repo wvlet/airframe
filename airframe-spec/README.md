@@ -45,12 +45,12 @@ class MyTest extends AirSpec {
 
 ## Writing Specs In Natural Languages
 
-If you prefer natural language descriptions for your test cases, use symbols for class names or function names:
+If you prefer natural language descriptions for your test cases, use symbols for function names:
 
 ```scala
 import wvlet.airframe.spec._
 
-class `In A Set` extends AirSpec {
+class SeqSpec extends AirSpec {
   def `the size of empty Seq should be 0`: Unit = {
     assert(Seq.empty.size == 0)
   }
