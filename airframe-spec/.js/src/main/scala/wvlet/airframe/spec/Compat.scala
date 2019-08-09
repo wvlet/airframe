@@ -22,7 +22,7 @@ import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
   *
   */
 private[spec] object Compat extends CompatApi with LogSupport {
-  override private[spec] def isScalaJs = true
+  override def isScalaJs = true
   private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
     clsOpt.map {
