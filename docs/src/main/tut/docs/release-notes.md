@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.1
+-  **AirSpec**: Added a new function-based testing library for Scala and Scala.js [#580](https://github.com/wvlet/airframe/pull/580)
+   - source code: https://github.com/wvlet/airframe/tree/master/airspec
+-  airframe-scalatest: Rename airframe-spec to airframe-scalatest [[51f8922](https://github.com/wvlet/airframe/commit/51f8922)]
+-  airframe-surfaace: Support symbolic method names in Scala.js [[57d67fe](https://github.com/wvlet/airframe/commit/57d67fe)]
+-  airframe-surface: Sort methodSurface based on the source code order [[bdf1a86](https://github.com/wvlet/airframe/commit/bdf1a86)]
+-  Handle ClassNotFound issue of sbt-1.3.x by cleaning-up all custom LogHandlers [[e70ab0d](https://github.com/wvlet/airframe/commit/e70ab0d)]
+
 ## 19.8.0
 -  airframe-http-recorder: Support binary requests and responses ([#579](https://github.com/wvlet/airframe/issues/579)) [[a0c5894](https://github.com/wvlet/airframe/commit/a0c5894)]
 -  airframe-http-recorder: Support custom recording  ([#578](https://github.com/wvlet/airframe/issues/578)) [[d9b8ed2](https://github.com/wvlet/airframe/commit/d9b8ed2)]
