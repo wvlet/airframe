@@ -55,7 +55,7 @@ trait Asserts {
     throw Skipped(reason, code)
   }
 
-  def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): Unit = {
+  protected def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): Unit = {
     val E = implicitly[ClassTag[E]]
 
     try {

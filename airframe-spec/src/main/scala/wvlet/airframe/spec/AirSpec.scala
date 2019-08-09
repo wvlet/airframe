@@ -30,11 +30,25 @@ trait AirSpecCore extends AirSpecSpi with AirSpecBase
 trait AirSpecSpi {
   private[spec] def methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[spec] def testMethods: Seq[MethodSurface] = {
-    methodSurfaces.filter(_.isPublic)
+    methodSurfaces.filter(x => x.isPublic)
   }
 
-  def setupSpec(design: Design): Design = design
-  def setup(design: Design): Design     = design
-  def tearDown: Unit                    = {}
-  def tearDownSpec: Unit                = {}
+  protected def beforeAll(design: Design): Design = design
+  protected def before(design: Design): Design    = design
+  protected def after: Unit                       = {}
+  protected def afterAll: Unit                    = {}
+}
+
+object AirSpecSpi {
+
+  /**
+    * This wrapper is used for accessing protected methods in AirSpec
+    */
+  private[spec] implicit class AirSpecAccess(val airSpec: AirSpecSpi) extends AnyVal {
+    def callBeforeAll(design: Design): Design = airSpec.beforeAll(design)
+    def callBefore(design: Design): Design    = airSpec.before(design)
+    def callAfter: Unit                       = airSpec.after
+    def callAfterAll: Unit                    = airSpec.afterAll
+  }
+
 }

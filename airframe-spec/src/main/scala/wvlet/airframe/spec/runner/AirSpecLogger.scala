@@ -82,7 +82,9 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) {
             warn(e)
         }
       case other =>
-        info(s" - ${testName} -- Error ${other.getMessage}")
+        info(
+          s" ${withColor(Console.WHITE, "-")} ${withColor(Console.RED, testName)} - ${withColor(Console.RED, "error")} ${other.getMessage}")
+        error(other)
     }
   }
 }

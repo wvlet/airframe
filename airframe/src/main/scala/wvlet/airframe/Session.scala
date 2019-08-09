@@ -146,7 +146,7 @@ object Session extends LogSupport {
     *
     * @param session
     */
-  implicit class SessionAccess(session: Session) {
+  implicit class SessionAccess(val session: Session) extends AnyVal {
     def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = session.get[A](surface)(sourceCode)
     def getOrElse[A](surface: Surface, obj: => A)(implicit sourceCode: SourceCode): A =
       session.getOrElse[A](surface, obj)(sourceCode)
