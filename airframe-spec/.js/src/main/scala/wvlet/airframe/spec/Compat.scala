@@ -16,15 +16,18 @@ package wvlet.airframe.spec
 import org.portablescala.reflect._
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
-import wvlet.log.{ConsoleLogHandler, Logger}
+import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
 /**
   *
   */
-private[spec] object Compat extends CompatApi {
+private[spec] object Compat extends CompatApi with LogSupport {
   override private[spec] def isScalaJs = true
   private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
-    throw new IllegalStateException(s"Scala.js cannot read module classes: ${fullyQualifiedName}")
+    val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
+    clsOpt.map {
+      _.loadModule()
+    }
   }
 
   private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {

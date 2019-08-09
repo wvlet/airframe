@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit
 
 import sbt.testing._
 import wvlet.airframe.Design
-import wvlet.airframe.spec.AirSpecFramework.AirSpecObjectFingerPrint
 import wvlet.airframe.spec._
 import wvlet.airframe.spec.spi.AirSpecException
 import wvlet.log.LogSupport
@@ -116,9 +115,10 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
     val startTimeNanos = System.nanoTime()
     try {
       compat.withLogScanner {
-        trace(s"Executing a task: ${taskDef}")
+        debug(s"Executing a task: ${taskDef}")
         val testObj = taskDef.fingerprint() match {
-          case AirSpecObjectFingerPrint =>
+          // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint
+          case c: SubclassFingerprint if c.isModule =>
             compat.findCompanionObjectOf(testClassName, classLoader)
           case _ =>
             compat.newInstanceOf(testClassName, classLoader)

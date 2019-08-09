@@ -21,7 +21,7 @@ libraryDependencies += "org.wvlet.airframe" %%% "airframe-spec" % "(version)"
 
 ## Writing Unit Tests 
 
-In AirSpec test cases are defined as functions in a class (or object) extending `AirSpec`.
+In AirSpec test cases are defined as functions in a class (or an object) extending `AirSpec`.
 All public functions (methods) in the class will be executed as test cases:
 
 ```scala
@@ -41,7 +41,6 @@ class MyTest extends AirSpec {
   }
 }
 ```
-
 
 
 ## Writing Specs In Natural Languages
