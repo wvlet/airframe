@@ -23,7 +23,7 @@ import wvlet.log.LogSupport
 class TestSpec extends AirSpec with LogSupport {
   scalaJsSupport
 
-  override protected def beforeAll(design: Design): Design = {
+  override protected def configure(design: Design): Design = {
     design
       .bind[String].toInstance("my message")
   }

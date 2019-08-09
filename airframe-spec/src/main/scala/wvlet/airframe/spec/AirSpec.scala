@@ -45,10 +45,20 @@ private[spec] trait AirSpecSpi {
     */
   protected def scalaJsSupport: Unit = macro AirSpecSpi.scalaJsSupportImpl
 
-  protected def beforeAll(design: Design): Design = design
-  protected def before(design: Design): Design    = design
-  protected def after: Unit                       = {}
-  protected def afterAll: Unit                    = {}
+  /**
+    * Configure a global design for this Spec
+    */
+  protected def configure(design: Design): Design = design
+
+  /**
+    * Configure a test case local design
+    */
+  protected def configureLocal(design: Design): Design = design
+
+  protected def beforeAll: Unit = {}
+  protected def before: Unit    = {}
+  protected def after: Unit     = {}
+  protected def afterAll: Unit  = {}
 }
 
 private[spec] object AirSpecSpi {
@@ -57,10 +67,12 @@ private[spec] object AirSpecSpi {
     * This wrapper is used for accessing protected methods in AirSpec
     */
   private[spec] implicit class AirSpecAccess(val airSpec: AirSpecSpi) extends AnyVal {
-    def callBeforeAll(design: Design): Design = airSpec.beforeAll(design)
-    def callBefore(design: Design): Design    = airSpec.before(design)
-    def callAfter: Unit                       = airSpec.after
-    def callAfterAll: Unit                    = airSpec.afterAll
+    def callDesignAll(design: Design): Design  = airSpec.configure(design)
+    def callDesignEach(design: Design): Design = airSpec.configureLocal(design)
+    def callBeforeAll: Unit                    = airSpec.beforeAll
+    def callBefore: Unit                       = airSpec.before
+    def callAfter: Unit                        = airSpec.after
+    def callAfterAll: Unit                     = airSpec.afterAll
   }
 
   def scalaJsSupportImpl(c: sm.Context): c.Tree = {
