@@ -11,7 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package examples
+
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
@@ -19,7 +21,13 @@ package wvlet.airframe.spec
 class CommonSpec extends AirSpec {
   scalaJsSupport
 
-  def helloSpec: Unit = {}
+  def helloSpec: Unit = {
+    fail("test failure")
+  }
+
+  def failTest: Unit = {
+    throw new IllegalArgumentException("invalid argumetn")
+  }
 }
 
 object ObjSpec extends AirSpec {
