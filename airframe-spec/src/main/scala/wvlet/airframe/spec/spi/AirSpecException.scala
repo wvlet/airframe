@@ -18,7 +18,7 @@ import wvlet.airframe.SourceCode
 import wvlet.airframe.spec.compat
 
 /**
-  *
+  * Define exceptions that will be used for various test failures
   */
 trait AirSpecException extends RuntimeException {
   override def getMessage: String = message

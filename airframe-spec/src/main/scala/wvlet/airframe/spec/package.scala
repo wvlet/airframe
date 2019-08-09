@@ -17,5 +17,6 @@ package wvlet.airframe
   *
   */
 package object spec {
+  // For Scala, Scala.js compatibility
   val compat: CompatApi = wvlet.airframe.spec.Compat
 }

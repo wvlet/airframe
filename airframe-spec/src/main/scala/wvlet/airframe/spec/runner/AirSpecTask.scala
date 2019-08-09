@@ -25,7 +25,13 @@ import scala.concurrent.{Await, Promise}
 import scala.util.{Failure, Success, Try}
 
 /**
+  * AirSpecTask is a unit of test execution.
   *
+  * For each test spec (AirSpec instance), it will create a global airframe session,
+  * which can be configured with configure(Design).
+  *
+  * For each test method in the AirSpec instance, it will create a child session so that
+  * users can manage test-method local instances, which will be discarded after the completion of the test method.
   */
 private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: ClassLoader)
     extends sbt.testing.Task
@@ -35,6 +41,10 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
 
   override def tags(): Array[String] = Array.empty
 
+  /**
+    * This method will be used only for Scala (JVM). This will delegate the task execution process to
+    * execute(handler, logger, continuation)
+    */
   def execute(eventHandler: EventHandler, loggers: Array[sbt.testing.Logger]): Array[sbt.testing.Task] = {
     val p = Promise[Unit]()
     execute(eventHandler, loggers, _ => p.success(()))
@@ -72,22 +82,26 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
         spec.callBeforeAll
 
         var d = Design.newDesign.noLifeCycleLogging
+        // Allow configuring the global spec design
         d = spec.callDesignAll(d)
 
         // Create a new Airframe session
         d.withSession { session =>
           for (m <- spec.testMethods) {
             spec.callBefore
+            // Allow configuring the test-local design
             val childDesign = spec.callDesignEach(Design.newDesign)
 
-            // Run a spec in a child session
             val startTimeNanos = System.nanoTime()
+            // Create a test-method local child session
             val result = session.withChildSession(childDesign) { childSession =>
               Try {
                 try {
+                  // Build a list of method arguments
                   val args: Seq[Any] = for (p <- m.args) yield {
                     childSession.getInstanceOf(p.surface)
                   }
+                  // Call the test method
                   m.call(spec, args: _*)
                 } finally {
                   spec.callAfter
@@ -117,7 +131,7 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
     val startTimeNanos = System.nanoTime()
     try {
       compat.withLogScanner {
-        debug(s"Executing a task: ${taskDef}")
+        trace(s"Executing task: ${taskDef}")
         val testObj = taskDef.fingerprint() match {
           // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint
           case c: SubclassFingerprint if c.isModule =>
@@ -127,11 +141,11 @@ private[spec] class AirSpecTask(override val taskDef: TaskDef, classLoader: Clas
         }
 
         testObj match {
-          case Some(as: AirSpecSpi) =>
-            runSpec(as)
-          case other =>
+          case Some(spec: AirSpecSpi) =>
+            runSpec(spec)
+          case _ =>
             taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
-            throw new IllegalStateException(s"${testClassName} needs to be a class extending AirSpec")
+            throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")
         }
       }
     } catch {
