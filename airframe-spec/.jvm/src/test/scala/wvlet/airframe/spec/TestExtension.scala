@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec
+import java.util.concurrent.atomic.AtomicInteger
+
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.{Design, _}
 import wvlet.log.LogSupport
@@ -19,11 +21,13 @@ import wvlet.log.LogSupport
 case class MyServerConfig(name: String)
 
 trait MyServer extends LogSupport {
-  val config = bind[MyServerConfig]
+  val config  = bind[MyServerConfig]
+  val counter = bind[AtomicInteger]
 
   @PostConstruct
   def start: Unit = {
     info(f"Starting ${config.name}: ${this.hashCode()}%x")
+    counter.incrementAndGet()
   }
 
   @PreDestroy
@@ -36,14 +40,18 @@ trait MyServer extends LogSupport {
   *
   */
 trait CustomSpec extends AirSpec with LogSupport {
+  protected val serverLaunchCounter = new AtomicInteger(0)
+
   override def configure(design: Design): Design = {
     design
       .bind[MyServer].toSingleton
       .bind[MyServerConfig].toInstance(MyServerConfig("A"))
+      .bind[AtomicInteger].toInstance(serverLaunchCounter)
   }
 }
 
 class MyServerSpec extends CustomSpec {
+
   // MyServer will be shared by the all test cases
   def test1(server: MyServer): Unit = {
     info(s"run test1")
@@ -57,6 +65,10 @@ class MyServerSpec extends CustomSpec {
   def test3(session: Session): Unit = {
     info(s"run test3")
     val server = session.build[MyServer]
+  }
+
+  override protected def afterAll: Unit = {
+    assert(serverLaunchCounter.get() == 1)
   }
 }
 
@@ -76,5 +88,9 @@ class MyServer2Spec extends CustomSpec {
   def test5(server: MyServer): Unit = {
     info("run test5")
     assert(server.config.name == "B")
+  }
+
+  override protected def afterAll: Unit = {
+    assert(serverLaunchCounter.get() == testMethods.size)
   }
 }

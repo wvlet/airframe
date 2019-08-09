@@ -46,12 +46,16 @@ private[spec] trait AirSpecSpi {
   protected def scalaJsSupport: Unit = macro AirSpecSpi.scalaJsSupportImpl
 
   /**
-    * Configure a global design for this Spec
+    * Configure a global design for this spec.
+    *
     */
   protected def configure(design: Design): Design = design
 
   /**
-    * Configure a test case local design
+    * Configure a test-case local design in the spec.
+    *
+    * Note that if you override a global design in this method,
+    * test cases will create test-case local instances (singletons)
     */
   protected def configureLocal(design: Design): Design = design
 
