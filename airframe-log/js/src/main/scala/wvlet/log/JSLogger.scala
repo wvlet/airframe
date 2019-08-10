@@ -5,7 +5,7 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 /**
   *
   */
-@JSExportTopLevel("wvlet.log")
+@JSExportTopLevel("log")
 object JSLogger {
   @JSExport
   def setDefaultLogLevel(level: String): Boolean = {
