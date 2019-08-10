@@ -61,11 +61,11 @@ class LoggerTest extends Spec {
   scalaJsSupport
 
   override protected def beforeAll: Unit = {
-    Logger.setDefaultLogLevel(LogLevel.TRACE)
+    Logger("wvlet.log").setLogLevel(LogLevel.TRACE)
   }
 
   override protected def afterAll: Unit = {
-    Logger.setDefaultLogLevel(LogLevel.INFO)
+    Logger("wvlet.log").setLogLevel(LogLevel.INFO)
   }
 
   def `use leaf logger name` {
