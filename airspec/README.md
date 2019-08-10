@@ -5,10 +5,11 @@ AirSpec
 
 # Quick Start
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-spec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-spec_2.12/)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/)
+
+- AirSpec is available since version 19.8.1
 
 **build.sbt**
-
 ```
 libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
 testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
