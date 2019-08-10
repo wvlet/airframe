@@ -16,6 +16,7 @@ package wvlet.airframe.surface
 import wvlet.airframe.spec.AirSpec
 
 class CNameTest extends AirSpec {
+  scalaJsSupport
 
   def `convert to snakeCase`: Unit = {
     assert(CName("AirframeSurface").snakeCase == "airframe_surface")

@@ -24,6 +24,8 @@ object ParamTest {
 }
 
 class ParamTest extends SurfaceSpec {
+  scalaJsSupport
+
   def `have default value`: Unit = {
     val s = Surface.of[ParamTest.A]
     val p = s.params.head

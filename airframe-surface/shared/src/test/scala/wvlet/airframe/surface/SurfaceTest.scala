@@ -54,6 +54,7 @@ import wvlet.airframe.surface.Examples._
   *
   */
 class SurfaceTest extends SurfaceSpec {
+  scalaJsSupport
 
   def `resolve types`: Unit = {
     val a = check(Surface.of[A], "A")

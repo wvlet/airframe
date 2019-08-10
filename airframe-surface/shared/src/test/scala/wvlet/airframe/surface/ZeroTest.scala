@@ -20,15 +20,18 @@ import wvlet.airframe.surface.tag.@@
   *
   */
 class ZeroTest extends SurfaceSpec {
+  scalaJsSupport
 
-  import Zero._
   import ZeroTest._
 
-  protected def zeroCheck[A](surface: Surface, v: A): A = {
-    val z = zeroOf(surface).asInstanceOf[A]
-    warn(z)
-    warn(v)
-    assert(z == v)
+  protected def zeroCheck[P](surface: Surface, v: P): P = {
+    val z = Zero.zeroOf(surface).asInstanceOf[P]
+    surface match {
+      case s: ArraySurface =>
+        pending("array comparison")
+      case _ =>
+        assert(z == v)
+    }
     z
   }
 
@@ -66,7 +69,8 @@ class ZeroTest extends SurfaceSpec {
   }
 
   def `support case classes`: Unit = {
-    zeroCheck(Surface.of[A], A(0, "", B(0.0f, 0.0)))
+    val s = Surface.of[ZeroA]
+    zeroCheck(Surface.of[ZeroA], ZeroA(0, "", ZeroB(0.0f, 0.0)))
     // Read the default parameter values.
     // Disabled the check because Scala.js doesn't support reading the default values:
     // https://github.com/wvlet/airframe/issues/149
@@ -87,7 +91,7 @@ object ZeroTest {
   trait MyTag
   type MyA = String
 
-  case class A(i: Int, s: String, b: B)
-  case class B(f: Float, d: Double)
+  case class ZeroA(i: Int, s: String, b: ZeroB)
+  case class ZeroB(f: Float, d: Double)
   //case class C(i: Int = 10, s: String = "Hello", f: Float = 123.4f, b: B)
 }

@@ -23,6 +23,8 @@ object MultipleConstructorArgsTest {
 
 import MultipleConstructorArgsTest._
 class MultipleConstructorArgsTest extends SurfaceSpec {
+  scalaJsSupport
+
   def `support muliple constructor args`: Unit = {
 
     val s: Surface = Surface.of[MultiC]

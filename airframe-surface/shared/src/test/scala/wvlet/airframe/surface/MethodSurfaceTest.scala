@@ -33,6 +33,7 @@ import MethodExamples._
   *
   */
 class MethodSurfaceTest extends SurfaceSpec {
+  scalaJsSupport
 
   def `list methods`: Unit = {
     val m = Surface.methodsOf[A]
