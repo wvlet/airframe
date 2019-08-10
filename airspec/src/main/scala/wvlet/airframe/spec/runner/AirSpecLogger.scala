@@ -18,14 +18,16 @@ import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
 import wvlet.airframe.spec.spi.AirSpecException
-import wvlet.log.LogFormatter
+import wvlet.log.{LogFormatter, LogRecord, Logger}
 
 /**
   *
   */
 private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
-
   private val useAnciColor = sbtLoggers.forall(_.ansiCodesSupported())
+
+  private val airSpecLogger = Logger("wvlet.airframe.spec.AirSpec")
+  airSpecLogger.setFormatter(LogFormatter.BareFormatter)
 
   def withColor(colorEsc: String, s: String) = {
     if (useAnciColor)
@@ -34,24 +36,18 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       s
   }
 
-  private def log(body: sbt.testing.Logger => Unit) {
-    for (l <- sbtLoggers) {
-      body(l)
-    }
-  }
-
   private def info(m: String): Unit = {
-    log(_.info(m))
+    airSpecLogger.info(m)
   }
 
   private def warn(m: String): Unit = {
     val msg = withColor(YELLOW, m)
-    log(_.warn(msg))
+    airSpecLogger.warn(msg)
   }
 
   private def error(m: String): Unit = {
     val msg = withColor(BRIGHT_RED, m)
-    log(_.error(msg))
+    airSpecLogger.error(msg)
   }
 
   def logSpecName(specName: String): Unit = {
