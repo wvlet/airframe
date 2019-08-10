@@ -16,7 +16,7 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
 
-val AIRSPEC_VERSION  = "19.8.0+63-afaf5156-SNAPSHOT"
+val AIRSPEC_VERSION  = "19.8.1"
 val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
