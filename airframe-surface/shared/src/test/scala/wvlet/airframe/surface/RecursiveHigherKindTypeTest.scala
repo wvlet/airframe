@@ -33,14 +33,14 @@ object RecursiveHigherKindTypeTest {
   *
   */
 class RecursiveHigherKindTypeTest extends SurfaceSpec {
+  scalaJsSupport
+
   import RecursiveHigherKindTypeTest._
   import Holder.BySkinny
 
-  "Surface" should {
-    "support recursive higher kind types" in {
-      val s = Surface.of[Holder[BySkinny]]
-      s.name shouldBe "Holder[BySkinny]"
-      s.typeArgs(0).dealias.name shouldBe "MyTask[_]"
-    }
+  def `support recursive higher kind types`: Unit = {
+    val s = Surface.of[Holder[BySkinny]]
+    assert(s.name == "Holder[BySkinny]")
+    assert(s.typeArgs(0).dealias.name == "MyTask[_]")
   }
 }

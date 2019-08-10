@@ -28,36 +28,34 @@ import wvlet.airframe.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
 
-  "Surface for Class" should {
-    "support multiple param blocks" in {
-      val a = check(Surface.of[A], "A")
-      debug(a.params.mkString(", "))
+  def `support multiple param blocks`: Unit = {
+    val a = check(Surface.of[A], "A")
+    debug(a.params.mkString(", "))
 
-      a.params.length shouldBe 2
+    assert(a.params.length == 2)
 
-      val p0 = a.params(0)
-      val p1 = a.params(1)
-      p0.name shouldBe "id"
-      p1.name shouldBe "context"
+    val p0 = a.params(0)
+    val p1 = a.params(1)
+    assert(p0.name == "id")
+    assert(p1.name == "context")
 
-      val a0 = a.objectFactory
-        .map { x =>
-          x.newInstance(Seq(1, "c"))
-        }
-        .get
-        .asInstanceOf[A]
+    val a0 = a.objectFactory
+      .map { x =>
+        x.newInstance(Seq(1, "c"))
+      }
+      .get
+      .asInstanceOf[A]
 
-      a0.id shouldBe 1
-      a0.context shouldBe "c"
-    }
+    assert(a0.id == 1)
+    assert(a0.context == "c")
+  }
 
-    "support tags in constructor args" in {
-      // TODO support this in Scala.js
-      check(Surface.of[Int @@ MyTag], "Int@@MyTag")
-      val b = check(Surface.of[B], "B")
-      b.params.length shouldBe 1
-      val p = b.params(0)
-      check(p.surface, "Int@@MyTag")
-    }
+  def `support tags in constructor args`: Unit = {
+    // TODO support this in Scala.js
+    check(Surface.of[Int @@ MyTag], "Int@@MyTag")
+    val b = check(Surface.of[B], "B")
+    assert(b.params.length == 1)
+    val p = b.params(0)
+    check(p.surface, "Int@@MyTag")
   }
 }

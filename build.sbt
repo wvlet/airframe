@@ -69,7 +69,9 @@ val buildSettings = Seq[Setting[_]](
   ),
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
-  )
+  ),
+  testFrameworks += airSpecFramework,
+  libraryDependencies += "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % "test"
 )
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
@@ -371,8 +373,7 @@ lazy val surface =
       libraryDependencies ++= Seq(
         "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
         "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
-        "org.scalatest"          %%% "scalatest"               % SCALATEST_VERSION % "test"
+        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided"
       )
     )
     .jvmSettings(
@@ -382,7 +383,7 @@ lazy val surface =
       )
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, airframeScalaTest % "test")
+    .dependsOn(log)
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
@@ -459,10 +460,8 @@ lazy val log: sbtcrossproject.CrossProject =
       description := "Fancy logger for Scala",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided",
-        "org.wvlet.airframe"     %%% "airspec"                 % AIRSPEC_VERSION
-      ),
-      testFrameworks += airSpecFramework
+        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided"
+      )
     )
     .jvmSettings(
       libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")

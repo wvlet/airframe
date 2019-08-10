@@ -21,45 +21,45 @@ import wvlet.airframe.surface.SurfaceSpec
 class PathTest extends SurfaceSpec {
   import Path._
 
-  "Path" should {
-    "define root" in {
-      val r = Path.root
-      r.size should be(0)
-      r.fullPath should be("/")
+  def `define root`: Unit = {
+    val r = Path.root
+    assert(r.size == 0)
+    assert(r.fullPath == "/")
+  }
+
+  def `define absolute paths`: Unit = {
+    val p = Path("/abs/path")
+    assert(p.size == 2)
+    assert(p.name == "path")
+    assert(p.isRelative == false)
+    assert(p.isAbsolute == true)
+    assert(p.fullPath == "/abs/path")
+    val pp = p.parent
+    assert(pp.isDefined)
+    pp.map { pp =>
+      assert(pp.fullPath == "/abs")
     }
 
-    "define absolute paths" in {
-      val p = Path("/abs/path")
-      p.size should be(2)
-      p.name should be("path")
-      p.isRelative should be(false)
-      p.isAbsolute should be(true)
-      p.fullPath should be("/abs/path")
-      val pp = p.parent
-      pp shouldBe defined
-      pp map { _.fullPath should be("/abs") }
+    val p2 = Path("/abs/path")
+    assert(p == p2)
 
-      val p2 = Path("/abs/path")
-      p should be(p2)
+    val p3 = p / "hello"
+    assert(p3.fullPath == "/abs/path/hello")
+  }
 
-      val p3 = p / "hello"
-      p3.fullPath should be("/abs/path/hello")
-    }
+  def `define relative path`: Unit = {
+    val p = Path("hello/world")
+    assert(p.fullPath == "hello/world")
+    assert(p.isRelative == true)
+    assert(p.isAbsolute == false)
+  }
 
-    "define relative path" in {
-      val p = Path("hello/world")
-      p.fullPath should be("hello/world")
-      p.isRelative should be(true)
-      p.isAbsolute should be(false)
-    }
+  def `be comparable`: Unit = {
+    assert(Path("/abs/path") == Path("/abs/path"))
+    assert(Path("/a") != Path("/b"))
 
-    "be comparable" in {
-      Path("/abs/path") should be(Path("/abs/path"))
-      Path("/a") should not be (Path("/b"))
-
-      Path("a") should be(Path("a"))
-      Path("b/c") should be(Path("b/c"))
-      Path("b/c") should not be (Path("a/c"))
-    }
+    assert(Path("a") == Path("a"))
+    assert(Path("b/c") == Path("b/c"))
+    assert(Path("b/c") != Path("a/c"))
   }
 }
