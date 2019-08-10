@@ -1,0 +1,242 @@
+<html><head><title>Airframe: airspec</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Taro L. Saito" /><meta name="description" content="Lightweight Building Blocks for Scala" /><meta name="og:image" content="/airframe/img/poster.png" /><meta name="image" property="og:image" content="/airframe/img/poster.png" /><meta name="og:title" content="Airframe: airspec" /><meta name="title" property="og:title" content="Airframe: airspec" /><meta name="og:site_name" content="Airframe" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Lightweight Building Blocks for Scala" /><link rel="icon" type="image/png" href="/airframe/img/favicon.png" /><meta name="twitter:title" content="Airframe: airspec" /><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png" /><meta name="twitter:description" content="Lightweight Building Blocks for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/style.css" /><link rel="stylesheet" href="/airframe/css/palette.css" /><link rel="stylesheet" href="/airframe/css/codemirror.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><script async="async">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-98364158-1' , 'auto');
+ga('send', 'pageview');
+      </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Overview</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/airspec.html" class="">AirSpec Test Library</a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Modules</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe-canvas.html" class="">airframe-canvas</a></li> <li><a href="/airframe/docs/airframe-codec.html" class="">airframe-codec</a></li> <li><a href="/airframe/docs/airframe-config.html" class="">airframe-config</a></li> <li><a href="/airframe/docs/airframe-control.html" class="">airframe-control</a></li> <li><a href="/airframe/docs/airframe-fluentd.html" class="">airframe-fluentd</a></li> <li><a href="/airframe/docs/airframe-http.html" class="">airframe-http</a></li> <li><a href="/airframe/docs/airframe-http-recorder.html" class="">airframe-http-recorder</a></li> <li><a href="/airframe/docs/airframe-jdbc.html" class="">airframe-jdbc</a></li> <li><a href="/airframe/docs/airframe-jmx.html" class="">airframe-jmx</a></li> <li><a href="/airframe/docs/airframe-json.html" class="">airframe-json</a></li> <li><a href="/airframe/docs/airframe-launcher.html" class="">airframe-launcher</a></li> <li><a href="/airframe/docs/airframe-log.html" class="">airframe-log</a></li> <li><a href="/airframe/docs/airframe-metrics.html" class="">airframe-metrics</a></li> <li><a href="/airframe/docs/airframe-msgpack.html" class="">airframe-msgpack</a></li> <li><a href="/airframe/docs/airframe-scalatest.html" class="">airframe-scalatest</a></li> <li><a href="/airframe/docs/airframe-surface.html" class="">airframe-surface</a></li> <li><a href="/airframe/docs/airframe-sql.html" class="">airframe-sql</a></li> <li><a href="/airframe/docs/airframe-tablet.html" class="">airframe-tablet</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="airspec">AirSpec</h1>
+
+<p><a href="https://wvlet.org/airframe/docs/airspec.html">AirSpec</a> is a functional testing framework for Scala and Scala.js.</p>
+
+<h1 id="quick-start">Quick Start</h1>
+
+<p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-spec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-spec_2.12/badge.svg" alt="Maven Central" /></a></p>
+
+<p><strong>build.sbt</strong></p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
+testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+</code></pre>
+</div>
+
+<p>For Scala.js, use <code class="highlighter-rouge">%%%</code>:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
+</code></pre>
+</div>
+
+<p>To run your tests, you only need the following steps:</p>
+<ul>
+  <li>Create a class (or object) by extending <code class="highlighter-rouge">wvlet.airframe.spec.AirSpec</code>.</li>
+  <li>Define your test cases as functions (public methods) in this class.</li>
+  <li>Use sbt <code class="highlighter-rouge">&gt; testOnly -- (pattern)</code> to run your tests!</li>
+</ul>
+
+<p>Tests in AirSpec are designed to be pure Scala as much as possible so as not to introduce any complex DSLs,
+which are usually hard to remenber, for writing tests.</p>
+
+<p>Tests in AirSpec are just regular functions in Scala.</p>
+
+<p>Using AirSpec is simple, but it also
+supports powerful lifecycle management of objects based on <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>.
+The function arguments of test methods will be used for passing objects that are necessary for running tests, and
+after finishing tests, these objects will be discarded properly.</p>
+
+<h1 id="usage">Usage</h1>
+
+<h2 id="writing-unit-tests">Writing Unit Tests</h2>
+
+<p>In AirSpec test cases are defined as functions in a class (or an object) extending <code class="highlighter-rouge">AirSpec</code>.
+All public functions (methods) in the class will be executed as test cases:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+
+<span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="c1">// Basic assertion
+</span>  <span class="k">def</span> <span class="n">emptySeqSizeShouldBe0</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="c1">// Catch an exception
+</span>  <span class="k">def</span> <span class="n">emptySeqHeadShouldFail</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">intercept</span><span class="o">[</span><span class="kt">NoSuchElementException</span><span class="o">]{</span>
+      <span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">head</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>AirSpec supports basic assertions like <code class="highlighter-rouge">assert</code>, <code class="highlighter-rouge">fail</code>, <code class="highlighter-rouge">ignore</code>, <code class="highlighter-rouge">cancel</code>, <code class="highlighter-rouge">pending</code>, <code class="highlighter-rouge">skip</code>, <code class="highlighter-rouge">intercept[E]</code>, etc.
+See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala">Asserts.scala</a>.</p>
+
+<h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
+
+<p>AirSpec supports pattern matching for running specific tests:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ sbt
+
+&gt; test                                  # Run all tests
+&gt; testOnly -- (pattern)                 # Run all test matching the pattern (spec name or test name)
+&gt; testOnly -- (class pattern):(pattern)  # Search both class and test names 
+
+&gt; testOnly (class name pattern)         # Run all test classe matching the pattern
+&gt; testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
+
+</code></pre>
+</div>
+<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. Cases will be ignored.</p>
+
+<h2 id="writing-specs-in-natural-languages">Writing Specs In Natural Languages</h2>
+
+<p>If you prefer natural language descriptions for your test cases, use symbols for function names:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+
+<span class="k">class</span> <span class="nc">SeqSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">`the size of empty Seq should be 0`</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="c1">// Catch an exception
+</span>  <span class="k">def</span> <span class="n">`throw NoSuchElementException when taking the head of an empty Set`</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">intercept</span><span class="o">[</span><span class="kt">NoSuchElementException</span><span class="o">]</span> <span class="o">{</span>
+      <span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">head</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h2 id="scalajs">Scala.js</h2>
+
+<p>To use AirSpec in Scala.js, <code class="highlighter-rouge">scalaJsSupport</code> must be called inside your spec classes:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+
+<span class="k">class</span> <span class="nc">ScalaJSSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="c1">// This is necessary to find test methods in Scala.js
+</span>  <span class="n">scalaJsSupport</span>  
+
+  <span class="k">def</span> <span class="n">myTest</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="n">assert</span><span class="o">(</span><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Scala.js has no runtime reflection to find methods in AirSpec classes.
+So calling <code class="highlighter-rouge">scalaJsSupport</code> will generate <code class="highlighter-rouge">MethodSurface</code>s (airframe-surface), so that 
+AirSpec can find test methods at runtime.</p>
+
+<p>Calling <code class="highlighter-rouge">scalaJsSupport</code> has no effect in Scala JVM platform, so you can use the
+same test spec both for Scala and Scala.js.</p>
+
+<h2 id="dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</h2>
+
+<p>AirSpec can pass shared objects to your test cases by using function arguments.</p>
+
+<p>In AirSpec:</p>
+<ul>
+  <li>You can share objects initialized in the global session between test cases.</li>
+  <li>No need to define local variables by yourself just for sharing them between test cases.
+Avoid creating local variables in a test spec is good for ensuring the locality of variables inside your test methods.
+In AirSpec you usually don’t need to initialize/discard such shared variables in beforeAll/afterAll methods.</li>
+</ul>
+
+<h2 id="glocal-and-local-sessions">Glocal and Local Sessions</h2>
+
+<p>AirSpec manages two types of sessions: <em>global</em> and <em>local</em>:</p>
+<ul>
+  <li>For each AirSpec instance, a single global session will be created.</li>
+  <li>For each test method in the AirSpec instance, a local (child) session that inherits the global session will be created.</li>
+</ul>
+
+<p>To configure the design of objects that will be created in each session,
+override <code class="highlighter-rouge">configure(Design)</code> and <code class="highlighter-rouge">configureLocal(Design)</code> methods in AirSpec.</p>
+
+<h3 id="session-lifecycle">Session LifeCycle</h3>
+
+<ul>
+  <li>Create a new instance of AirSpec
+    <ul>
+      <li>Run <code class="highlighter-rouge">beforeAll</code></li>
+      <li>Call configure(design) to prepare a new global design</li>
+      <li>Start a new global session
+        <ul>
+          <li>for each test method <em>m</em>:
+            <ul>
+              <li><code class="highlighter-rouge">before</code></li>
+              <li>Call configureLocal(design) to prepare a new local design</li>
+              <li>Start a new local session
+                <ul>
+                  <li>Call the test method <em>m</em> by building method arguments using the local session (and the global session). See also <a href="https://wvlet.org/airframe/docs/airframe.html#child-sessions">Airframe DI: Child Sessions</a> to learn more about the dependency resolution order.</li>
+                </ul>
+              </li>
+              <li>Shutdown the local session. All data in the local session will be discarded</li>
+              <li><code class="highlighter-rouge">after</code></li>
+            </ul>
+          </li>
+          <li>Repeat the loop</li>
+        </ul>
+      </li>
+      <li>Shutdown the global session. All data in the global session will be discarded.</li>
+      <li>Call <code class="highlighter-rouge">afterAll</code></li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="di-example">DI Example</h2>
+
+<p>This is an example to utilize a global session to share the same service instance between test methods:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.Design</span>
+<span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
+<span class="k">import</span> <span class="nn">javax.annotation._</span>
+
+<span class="k">case</span> <span class="k">class</span> <span class="nc">ServiceConfig</span><span class="o">(</span><span class="n">port</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span>
+
+<span class="k">class</span> <span class="nc">Service</span><span class="o">(</span><span class="n">config</span><span class="k">:</span><span class="kt">ServiceConfig</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">LogSupport</span> <span class="o">{</span>
+  <span class="nd">@PostConstruct</span>
+  <span class="k">def</span> <span class="n">start</span> <span class="o">{</span>
+    <span class="n">info</span><span class="o">(</span><span class="n">s</span><span class="s">"Starting a server at ${config.port}"</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="nd">@PreDestroy</span>
+  <span class="k">def</span> <span class="n">end</span> <span class="o">{</span>
+    <span class="n">info</span><span class="o">(</span><span class="n">s</span><span class="s">"Stopping the server at ${config.port}"</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">class</span> <span class="nc">ServiceSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
+  <span class="k">override</span> <span class="k">protected</span> <span class="k">def</span> <span class="n">configure</span><span class="o">(</span><span class="n">design</span><span class="k">:</span><span class="kt">Design</span><span class="o">)</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">design</span>
+      <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Service</span><span class="o">].</span><span class="n">toSingleton</span>
+      <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ServiceConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">ServiceConfig</span><span class="o">(</span><span class="n">port</span><span class="k">=</span><span class="mi">8080</span><span class="o">))</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">test1</span><span class="o">(</span><span class="n">service</span><span class="k">:</span><span class="kt">Service</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+     <span class="n">info</span><span class="o">(</span><span class="n">s</span><span class="s">"server id: ${service.hashCode}"</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">test2</span><span class="o">(</span><span class="n">service</span><span class="k">:</span><span class="kt">Service</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+     <span class="n">info</span><span class="o">(</span><span class="n">s</span><span class="s">"server id: ${service.hashCode}"</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>This test shares the same Service instance between two test methods <code class="highlighter-rouge">test1</code> and <code class="highlighter-rouge">test2</code>:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="o">&gt;</span> <span class="n">testOnly</span> <span class="o">--</span> <span class="nc">ServiceSpec</span>
+<span class="mi">2019</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mi">17</span><span class="k">:</span><span class="err">24</span><span class="kt">:</span><span class="err">37</span><span class="kt">.</span><span class="err">184</span><span class="kt">-</span><span class="err">0700</span>  <span class="kt">info</span> <span class="o">[</span><span class="kt">Service</span><span class="o">]</span> <span class="nc">Starting</span> <span class="n">a</span> <span class="n">server</span> <span class="n">at</span> <span class="mi">8080</span>  <span class="o">-</span> <span class="o">(</span><span class="nc">ServiceSpec</span><span class="o">.</span><span class="n">scala</span><span class="k">:</span><span class="err">25</span><span class="o">)</span>
+<span class="mi">2019</span><span class="o">-</span><span class="mi">08</span><span class="o">-</span><span class="mi">09</span> <span class="mi">17</span><span class="k">:</span><span class="err">24</span><span class="kt">:</span><span class="err">37</span><span class="kt">.</span><span class="err">188</span><span class="kt">-</span><span class="err">0700</span>  <span class="kt">info</span> <span class="o">[</span><span class="kt">ServiceSpec</span><span class="o">]</span> <span class="n">test1</span><span class="k">:</span> <span class="kt">server</span> <span class="kt">id:</span> <span class="err">588474577</span>  <span class="kt">-</span> <span class="o">(</span><span class="kt">ServiceSpec.scala:</span><span class="err">42</span><span class="o">)</span>
+<span class="err">2019</span><span class="kt">-</span><span class="err">08</span><span class="kt">-</span><span class="err">09</span> <span class="err">17</span><span class="kt">:</span><span class="err">24</span><span class="kt">:</span><span class="err">37</span><span class="kt">.</span><span class="err">193</span><span class="kt">-</span><span class="err">0700</span>  <span class="kt">info</span> <span class="o">[</span><span class="kt">ServiceSpec</span><span class="o">]</span> <span class="n">test2</span><span class="k">:</span> <span class="kt">server</span> <span class="kt">id:</span> <span class="err">588474577</span>  <span class="kt">-</span> <span class="o">(</span><span class="kt">ServiceSpec.scala:</span><span class="err">46</span><span class="o">)</span>
+<span class="err">2019</span><span class="kt">-</span><span class="err">08</span><span class="kt">-</span><span class="err">09</span> <span class="err">17</span><span class="kt">:</span><span class="err">24</span><span class="kt">:</span><span class="err">37</span><span class="kt">.</span><span class="err">194</span><span class="kt">-</span><span class="err">0700</span>  <span class="kt">info</span> <span class="o">[</span><span class="kt">Service</span><span class="o">]</span> <span class="nc">Stopping</span> <span class="n">the</span> <span class="n">server</span> <span class="n">at</span> <span class="mi">8080</span>  <span class="o">-</span> <span class="o">(</span><span class="nc">ServiceSpec</span><span class="o">.</span><span class="n">scala</span><span class="k">:</span><span class="err">30</span><span class="o">)</span>
+<span class="o">[</span><span class="kt">info</span><span class="o">]</span> <span class="nc">ServiceSpec</span><span class="k">:</span>
+<span class="err">[</span><span class="kt">info</span><span class="err">]</span>  <span class="kt">-</span> <span class="kt">test1</span> <span class="err">13</span><span class="kt">.</span><span class="err">94</span><span class="kt">ms</span>
+<span class="o">[</span><span class="kt">info</span><span class="o">]</span>  <span class="o">-</span> <span class="n">test2</span> <span class="mf">403.41</span><span class="n">us</span>
+<span class="o">[</span><span class="kt">info</span><span class="o">]</span> <span class="nc">Passed</span><span class="k">:</span> <span class="kt">Total</span> <span class="err">2</span><span class="o">,</span> <span class="nc">Failed</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Errors</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Passed</span> <span class="mi">2</span>
+</code></pre>
+</div>
+</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
+hljs.initHighlighting();
+              </script><script>((window.gitter = {}).chat = {}).options = {
+room: 'wvlet/airframe'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/airframe/js/main.js"></script></body></html>
