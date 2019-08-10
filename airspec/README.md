@@ -128,15 +128,9 @@ same test spec both for Scala and Scala.js.
 ## Dependency Injection with Airframe DI
 
 AirSpec can pass shared objects to your test cases by using function arguments.
+This enables sharing objects initialized at the global session between the test cases in a test instance. 
 
-In AirSpec:
-- You can share objects initialized in the global session between test cases.
-- No need to define local variables by yourself just for sharing them between test cases.
-Avoid creating local variables in a test spec is good for ensuring the locality of variables inside your test methods.
-In AirSpec you usually don't need to initialize/discard such shared variables in beforeAll/afterAll methods.
-
-
-## Glocal and Local Sessions
+## Global and Local Sessions
 
 AirSpec manages two types of sessions: _global_ and _local_:
 - For each AirSpec instance, a single global session will be created.
@@ -147,17 +141,19 @@ override `configure(Design)` and `configureLocal(Design)` methods in AirSpec.
 
 ### Session LifeCycle
 
+AirSpec manages global/local sessions in this order:
+
 - Create a new instance of AirSpec
   - Run `beforeAll`
   - Call configure(design) to prepare a new global design
   - Start a new global session
      - for each test method _m_:
-       - `before`
+       - Call `before`
        - Call configureLocal(design) to prepare a new local design
        - Start a new local session
           - Call the test method _m_ by building method arguments using the local session (and the global session). See also [Airframe DI: Child Sessions](https://wvlet.org/airframe/docs/airframe.html#child-sessions) to learn more about the dependency resolution order.
        - Shutdown the local session. All data in the local session will be discarded
-       - `after`
+       - Call `after`
      - Repeat the loop
   - Shutdown the global session. All data in the global session will be discarded.
   - Call `afterAll`
