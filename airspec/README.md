@@ -19,11 +19,12 @@ For Scala.js, use `%%%`:
 ```
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 ```
-
 To run your tests, you only need the following steps:
-- Create a class (or object) by extending `wvlet.airframe.spec.AirSpec`.
-- Define your test cases as functions (public methods) in this class.
-- Use sbt `> testOnly -- (pattern)` to run your tests!
+- Create a class (or object) by extending **`wvlet.airframe.spec.AirSpec`**.
+- Define your test cases as ___functions___ (public methods) in this class.
+- Use **sbt `> testOnly -- (pattern)`** to run your tests!
+
+![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 
 Tests in AirSpec are designed to be pure Scala as much as possible so as not to introduce any complex DSLs,
 which are usually hard to remenber, for writing tests.
