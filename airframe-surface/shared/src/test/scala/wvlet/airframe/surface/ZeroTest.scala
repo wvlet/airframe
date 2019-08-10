@@ -24,61 +24,61 @@ class ZeroTest extends SurfaceSpec {
   import Zero._
   import ZeroTest._
 
-  def zeroCheck[A](surface: Surface, v: A): A = {
+  protected def zeroCheck[A](surface: Surface, v: A): A = {
     val z = zeroOf(surface).asInstanceOf[A]
-    z shouldBe v
+    warn(z)
+    warn(v)
+    assert(z == v)
     z
   }
 
-  "Zero" should {
-    "support primitives" in {
-      zeroCheck(Surface.of[Int], 0)
-      zeroCheck(Surface.of[Long], 0L)
-      zeroCheck(Surface.of[Char], 0.toChar)
-      zeroCheck(Surface.of[Boolean], false)
-      zeroCheck(Surface.of[Short], 0.toShort)
-      zeroCheck(Surface.of[Byte], 0.toByte)
-      zeroCheck(Surface.of[Float], 0f)
-      zeroCheck(Surface.of[Double], 0.0)
-      zeroCheck(Surface.of[String], "")
-      zeroCheck(Surface.of[Unit], null)
-    }
+  def `support primitives`: Unit = {
+    zeroCheck(Surface.of[Int], 0)
+    zeroCheck(Surface.of[Long], 0L)
+    zeroCheck(Surface.of[Char], 0.toChar)
+    zeroCheck(Surface.of[Boolean], false)
+    zeroCheck(Surface.of[Short], 0.toShort)
+    zeroCheck(Surface.of[Byte], 0.toByte)
+    zeroCheck(Surface.of[Float], 0f)
+    zeroCheck(Surface.of[Double], 0.0)
+    zeroCheck(Surface.of[String], "")
+    zeroCheck(Surface.of[Unit], null)
+  }
 
-    "support arrays" in {
-      zeroCheck(Surface.of[Array[Int]], Array.empty[Int])
-      zeroCheck(Surface.of[Array[Long]], Array.empty[Long])
-      zeroCheck(Surface.of[Array[String]], Array.empty[String])
-    }
+  def `support arrays`: Unit = {
+    zeroCheck(Surface.of[Array[Int]], Array.empty[Int])
+    zeroCheck(Surface.of[Array[Long]], Array.empty[Long])
+    zeroCheck(Surface.of[Array[String]], Array.empty[String])
+  }
 
-    "support Tuple" in {
-      zeroCheck(Surface.of[(Int, String)], (0, ""))
-      zeroCheck(Surface.of[(Int, String, Seq[Int])], (0, "", Seq.empty))
-    }
+  def `support Tuple`: Unit = {
+    zeroCheck(Surface.of[(Int, String)], (0, ""))
+    zeroCheck(Surface.of[(Int, String, Seq[Int])], (0, "", Seq.empty))
+  }
 
-    "special types" in {
-      zeroCheck(Surface.of[Option[String]], None)
-      zeroCheck(Surface.of[MyA], "")
-      zeroCheck(Surface.of[Int @@ MyTag], 0)
-      zeroCheck(Surface.of[Nothing], null)
-      zeroCheck(Surface.of[AnyRef], null)
-      zeroCheck(Surface.of[Any], null)
-    }
+  def `special types`: Unit = {
+    zeroCheck(Surface.of[Option[String]], None)
+    zeroCheck(Surface.of[MyA], "")
+    zeroCheck(Surface.of[Int @@ MyTag], 0)
+    zeroCheck(Surface.of[Nothing], null)
+    zeroCheck(Surface.of[AnyRef], null)
+    zeroCheck(Surface.of[Any], null)
+  }
 
-    "support case classes" in {
-      zeroCheck(Surface.of[A], A(0, "", B(0.0f, 0.0)))
-      // Read the default parameter values.
-      // Disabled the check because Scala.js doesn't support reading the default values:
-      // https://github.com/wvlet/airframe/issues/149
-      // zeroCheck(Surface.of[C], C(10, "Hello", 123.4f, B(0.0f, 0.0)))
-    }
+  def `support case classes`: Unit = {
+    zeroCheck(Surface.of[A], A(0, "", B(0.0f, 0.0)))
+    // Read the default parameter values.
+    // Disabled the check because Scala.js doesn't support reading the default values:
+    // https://github.com/wvlet/airframe/issues/149
+    // zeroCheck(Surface.of[C], C(10, "Hello", 123.4f, B(0.0f, 0.0)))
+  }
 
-    "support Scala collections" in {
-      zeroCheck(Surface.of[Seq[Int]], Seq.empty[Int])
-      zeroCheck(Surface.of[IndexedSeq[Int]], IndexedSeq.empty[Int])
-      zeroCheck(Surface.of[Map[Int, String]], Map.empty[Int, String])
-      zeroCheck(Surface.of[Set[Int]], Set.empty[Int])
-      zeroCheck(Surface.of[List[Int]], List.empty[Int])
-    }
+  def `support Scala collections`: Unit = {
+    zeroCheck(Surface.of[Seq[Int]], Seq.empty[Int])
+    zeroCheck(Surface.of[IndexedSeq[Int]], IndexedSeq.empty[Int])
+    zeroCheck(Surface.of[Map[Int, String]], Map.empty[Int, String])
+    zeroCheck(Surface.of[Set[Int]], Set.empty[Int])
+    zeroCheck(Surface.of[List[Int]], List.empty[Int])
   }
 }
 

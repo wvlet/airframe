@@ -29,55 +29,53 @@ object TaggedTypeTest {
 import TaggedTypeTest._
 class TaggedTypeTest extends SurfaceSpec {
 
-  "TaggedType" should {
-    "pass sanity check" in {
-      val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
-      val e2: Person @@ Guest   = new Person(2, "yui")
-    }
+  def `pass sanity check`: Unit = {
+    val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
+    val e2: Person @@ Guest   = new Person(2, "yui")
+  }
 
-    "be a reference" in {
-      val t = check(Surface.of[Person @@ Employee], "Person@@Employee")
-      val p = t.dealias
-      p.name shouldBe "Person"
-      t.isPrimitive shouldBe false
-      t.isAlias shouldBe false
-      t.isOption shouldBe false
-      t.objectFactory shouldBe defined
-      t.rawType shouldBe classOf[Person]
-      t.typeArgs shouldBe empty
-      t.params.mkString(",") shouldBe "id:Int,name:String"
+  def `be a reference`: Unit = {
+    val t = check(Surface.of[Person @@ Employee], "Person@@Employee")
+    val p = t.dealias
+    assert(p.name == "Person")
+    assert(t.isPrimitive == false)
+    assert(t.isAlias == false)
+    assert(t.isOption == false)
+    assert(t.objectFactory.isDefined)
+    assert(t.rawType == classOf[Person])
+    assert(t.typeArgs.isEmpty)
+    assert(t.params.mkString(",") == "id:Int,name:String")
 
-      val n    = check(Surface.of[Name @@ Employee], "Name@@Employee")
-      val name = n.dealias
-      name.name shouldBe "String"
-      n.isPrimitive shouldBe true
-      n.isAlias shouldBe true
-      n.isOption shouldBe false
-      n.objectFactory shouldBe empty
-    }
+    val n    = check(Surface.of[Name @@ Employee], "Name@@Employee")
+    val name = n.dealias
+    assert(name.name == "String")
+    assert(n.isPrimitive == true)
+    assert(n.isAlias == true)
+    assert(n.isOption == false)
+    assert(n.objectFactory.isEmpty)
+  }
 
-    "tag tagged type" in {
-      check(Surface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
-    }
+  def `tag tagged type`: Unit = {
+    check(Surface.of[Name @@ Person @@ Employee], "Name@@Person@@Employee")
+  }
 
-    "be comparable" in {
-      val t1 = check(Surface.of[Person @@ Employee], "Person@@Employee")
-      val t2 = check(Surface.of[Person @@ Customer], "Person@@Customer")
-      val t3 = check(Surface.of[Person @@ Guest], "Person@@Guest")
+  def `be comparable`: Unit = {
+    val t1 = check(Surface.of[Person @@ Employee], "Person@@Employee")
+    val t2 = check(Surface.of[Person @@ Customer], "Person@@Customer")
+    val t3 = check(Surface.of[Person @@ Guest], "Person@@Guest")
 
-      val set = Set(t1, t2)
-      set should contain(Surface.of[Person @@ Employee])
-      set should contain(Surface.of[Person @@ Customer])
-      set should not contain (Surface.of[Person @@ Guest])
+    val set = Set(t1, t2)
+    assert(set.contains(Surface.of[Person @@ Employee]))
+    assert(set.contains(Surface.of[Person @@ Customer]))
+    assert(!set.contains(Surface.of[Person @@ Guest]))
 
-      set should contain(t1)
-      set should contain(t2)
-      set should not contain (t3)
+    assert(set.contains(t1))
+    assert(set.contains(t2))
+    assert(!set.contains(t3))
 
-      val c = check(Surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
-      val s = Set(c)
-      s should contain(Surface.of[Seq[String] @@ Employee])
-      s should contain(c)
-    }
+    val c = check(Surface.of[Seq[String] @@ Employee], "Seq[String]@@Employee")
+    val s = Set(c)
+    assert(s.contains(Surface.of[Seq[String] @@ Employee]))
+    assert(s.contains(c))
   }
 }
