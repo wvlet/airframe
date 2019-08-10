@@ -28,13 +28,14 @@ testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 <div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 </code></pre>
 </div>
-
 <p>To run your tests, you only need the following steps:</p>
 <ul>
-  <li>Create a class (or object) by extending <code class="highlighter-rouge">wvlet.airframe.spec.AirSpec</code>.</li>
-  <li>Define your test cases as functions (public methods) in this class.</li>
-  <li>Use sbt <code class="highlighter-rouge">&gt; testOnly -- (pattern)</code> to run your tests!</li>
+  <li>Create a class (or object) by extending <strong><code class="highlighter-rouge">wvlet.airframe.spec.AirSpec</code></strong>.</li>
+  <li>Define your test cases as <strong><em>functions</em></strong> (public methods) in this class.</li>
+  <li>Use <strong>sbt <code class="highlighter-rouge">&gt; testOnly -- (pattern)</code></strong> to run your tests!</li>
 </ul>
+
+<p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
 
 <p>Tests in AirSpec are designed to be pure Scala as much as possible so as not to introduce any complex DSLs,
 which are usually hard to remenber, for writing tests.</p>
@@ -135,17 +136,10 @@ same test spec both for Scala and Scala.js.</p>
 
 <h2 id="dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</h2>
 
-<p>AirSpec can pass shared objects to your test cases by using function arguments.</p>
+<p>AirSpec can pass shared objects to your test cases by using function arguments.
+This enables sharing objects initialized at the global session between the test cases in a test instance.</p>
 
-<p>In AirSpec:</p>
-<ul>
-  <li>You can share objects initialized in the global session between test cases.</li>
-  <li>No need to define local variables by yourself just for sharing them between test cases.
-Avoid creating local variables in a test spec is good for ensuring the locality of variables inside your test methods.
-In AirSpec you usually don’t need to initialize/discard such shared variables in beforeAll/afterAll methods.</li>
-</ul>
-
-<h2 id="glocal-and-local-sessions">Glocal and Local Sessions</h2>
+<h2 id="global-and-local-sessions">Global and Local Sessions</h2>
 
 <p>AirSpec manages two types of sessions: <em>global</em> and <em>local</em>:</p>
 <ul>
@@ -158,6 +152,8 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
 
 <h3 id="session-lifecycle">Session LifeCycle</h3>
 
+<p>AirSpec manages global/local sessions in this order:</p>
+
 <ul>
   <li>Create a new instance of AirSpec
     <ul>
@@ -167,7 +163,7 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
         <ul>
           <li>for each test method <em>m</em>:
             <ul>
-              <li><code class="highlighter-rouge">before</code></li>
+              <li>Call <code class="highlighter-rouge">before</code></li>
               <li>Call configureLocal(design) to prepare a new local design</li>
               <li>Start a new local session
                 <ul>
@@ -175,7 +171,7 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
                 </ul>
               </li>
               <li>Shutdown the local session. All data in the local session will be discarded</li>
-              <li><code class="highlighter-rouge">after</code></li>
+              <li>Call <code class="highlighter-rouge">after</code></li>
             </ul>
           </li>
           <li>Repeat the loop</li>
