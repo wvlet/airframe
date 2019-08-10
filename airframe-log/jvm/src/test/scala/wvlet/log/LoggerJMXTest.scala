@@ -20,36 +20,38 @@ import javax.management.{Attribute, ObjectName}
   *
   */
 class LoggerJMXTest extends Spec {
-  "LoggerJMX" should {
-    "be registered" in {
-      // Initialize a logger
-      val l = Logger.rootLogger
+  override protected def afterAll: Unit = {
+    LogEnv.unregisterJMX
+  }
 
-      val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      val name        = new ObjectName("wvlet.log:type=Logger")
-      mbeanServer.isRegistered(name) shouldBe true
+  def `be registered`: Unit = {
+    // Initialize a logger
+    val l = Logger.rootLogger
 
-      // Check the default log level
-      mbeanServer.getAttribute(name, "DefaultLogLevel").toString shouldBe l.getLogLevel.toString
+    val mbeanServer = ManagementFactory.getPlatformMBeanServer
+    val name        = new ObjectName("wvlet.log:type=Logger")
+    assert(mbeanServer.isRegistered(name))
 
-      val currentLogLevel = l.getLogLevel
-      try {
-        mbeanServer.setAttribute(name, new Attribute("DefaultLogLevel", "error"))
-        l.getLogLevel shouldBe LogLevel.ERROR
-      } finally {
-        l.setLogLevel(currentLogLevel)
-      }
+    // Check the default log level
+    assert(mbeanServer.getAttribute(name, "DefaultLogLevel").toString == l.getLogLevel.toString)
+
+    val currentLogLevel = l.getLogLevel
+    try {
+      mbeanServer.setAttribute(name, new Attribute("DefaultLogLevel", "error"))
+      assert(l.getLogLevel == LogLevel.ERROR)
+    } finally {
+      l.setLogLevel(currentLogLevel)
     }
+  }
 
-    "support setting log levels through JMX" in {
-      // Creating JMX proxy is a bit complicated, so just test LoggerJMX impl here
-      val current = LoggerJMX.getLogLevel("wvlet.log")
-      try {
-        LoggerJMX.setLogLevel("wvlet.log", "WARN")
-        LoggerJMX.getLogLevel("wvlet.log") shouldBe "warn"
-      } finally {
-        LoggerJMX.setLogLevel("wvlet.log", current)
-      }
+  def `support setting log levels through JMX`: Unit = {
+    // Creating JMX proxy is a bit complicated, so just test LoggerJMX impl here
+    val current = LoggerJMX.getLogLevel("wvlet.log")
+    try {
+      LoggerJMX.setLogLevel("wvlet.log", "WARN")
+      assert(LoggerJMX.getLogLevel("wvlet.log") == "warn")
+    } finally {
+      LoggerJMX.setLogLevel("wvlet.log", current)
     }
   }
 }

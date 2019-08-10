@@ -16,6 +16,9 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
 
+val AIRSPEC_VERSION  = "19.8.1"
+val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
 
@@ -447,7 +450,7 @@ lazy val launcher =
     .dependsOn(surfaceJVM, control, codecJVM, airframeScalaTestJVM % "test")
 
 // airframe-log should have minimum dependencies
-lazy val log =
+lazy val log: sbtcrossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-log"))
     .settings(buildSettings)
@@ -457,12 +460,13 @@ lazy val log =
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
         "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided",
-        "org.scalatest"          %%% "scalatest"               % SCALATEST_VERSION % "test"
-      )
+        "org.wvlet.airframe"     %%% "airspec"                 % AIRSPEC_VERSION
+      ),
+      testFrameworks += airSpecFramework
     )
     .jvmSettings(
-      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3"),
-      classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
+      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
+      //classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
     )
     .jsSettings(
       jsBuildSettings,
@@ -772,7 +776,7 @@ lazy val airspec =
     .settings(
       name := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
-      testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+      testFrameworks += airSpecFramework
     )
     .jvmSettings(
       libraryDependencies ++= Seq(
