@@ -14,7 +14,7 @@
 package wvlet.airframe.spec
 
 import wvlet.airframe.Design
-import wvlet.airframe.spec.spi.Asserts
+import wvlet.airframe.spec.spi.{Asserts, RichAsserts}
 import wvlet.airframe.surface.MethodSurface
 
 import scala.language.experimental.macros
@@ -23,7 +23,7 @@ import scala.reflect.macros.{blackbox => sm}
 /**
   * A base trait to use for writing test cases
   */
-trait AirSpec extends AirSpecBase with Asserts
+trait AirSpec extends AirSpecBase with Asserts with RichAsserts
 
 /**
   * If no assertion support is necessary, extend this trait.

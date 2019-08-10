@@ -14,8 +14,10 @@
 package wvlet.airframe.spec.spi
 
 import wvlet.airframe.SourceCode
+import wvlet.airframe.spec.AirSpecMacros
 
 import scala.reflect.ClassTag
+import scala.language.experimental.macros
 
 /**
   *
@@ -42,7 +44,9 @@ trait Asserts {
     throw Ignored(reason, code)
   }
 
-  protected def pending(reason: String = "pending")(implicit code: SourceCode): Unit = {
+  protected def pending: Unit = macro AirSpecMacros.pendingImpl
+
+  protected def pendingUntil(reason: String = "pending")(implicit code: SourceCode): Unit = {
     throw Pending(reason, code)
   }
 
