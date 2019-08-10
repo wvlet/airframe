@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.2
+-  airspec: Use airframe-log for AirSpec logging for improving the log messages ([#584](https://github.com/wvlet/airframe/issues/584)) [[857ae2c](https://github.com/wvlet/airframe/commit/857ae2c)]
+- internal: Migrate test cases of airframe-log/surface to airspec
+
 ## 19.8.1
 -  **AirSpec**: Added a new function-based testing library for Scala and Scala.js [#580](https://github.com/wvlet/airframe/pull/580)
    - source code: https://github.com/wvlet/airframe/tree/master/airspec
