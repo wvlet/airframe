@@ -70,4 +70,12 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
+  def `support Option`: Unit = {
+    Some(1) shouldBe defined
+    Some(1) shouldNotBe empty
+    None shouldBe empty
+    None shouldNotBe defined
+    Option(null) shouldBe empty
+    Option(null) shouldNotBe defined
+  }
 }
