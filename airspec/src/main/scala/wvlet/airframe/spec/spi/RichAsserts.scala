@@ -26,12 +26,12 @@ trait RichAsserts extends LogSupport {
 
   // Here we do not extend AnyVal (which needs to be a public class in an object) to make this enrichment available as trait
 
+  private def pp(v: Array[_]): String = {
+    s"[${v.mkString(",")}]"
+  }
+
   protected abstract class ShouldBeArrayBase[A <: Array[_]] {
     def value: Array[_]
-
-    protected def pp(v: Array[_]): String = {
-      s"[${value.mkString(",")}]"
-    }
 
     protected def matchFailure(expected: A, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
@@ -157,18 +157,32 @@ trait RichAsserts extends LogSupport {
     }
   }
 
+  private def arrayDeepEqual[A <: Any](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
+    if (!util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
+                                expected.asInstanceOf[Array[java.lang.Object]])) {
+      throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+    }
+  }
+
+  private def arrayNotDeepEqual[A](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
+    if (util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
+                               expected.asInstanceOf[Array[java.lang.Object]])) {
+      throw AssertionFailure(s"${pp(value)} match with ${pp(expected)}", code)
+    }
+  }
+
   implicit protected class ShouldBeAnyArray[A](val value: Array[A]) extends ShouldBeArrayBase[Array[A]] {
     def shouldBe(expected: Array[A])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
                                   expected.asInstanceOf[Array[java.lang.Object]])) {
-        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+        throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
       }
     }
 
     def shouldNotBe(unexpected: Array[A])(implicit code: SourceCode): Unit = {
       if (util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
                                  unexpected.asInstanceOf[Array[java.lang.Object]])) {
-        throw AssertionFailure(s"${value} match with ${unexpected}", code)
+        throw AssertionFailure(s"${pp(value)} match with ${pp(unexpected)}", code)
       }
     }
   }
@@ -269,14 +283,24 @@ trait RichAsserts extends LogSupport {
 
   implicit protected class ShouldBe(val value: Any) {
     def shouldBe(expected: Any)(implicit code: SourceCode): Unit = {
-      if (value != expected) {
-        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+      (value, expected) match {
+        case (a: Array[_], b: Array[_]) =>
+          arrayDeepEqual(a, b)(code)
+        case _ =>
+          if (value != expected) {
+            throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+          }
       }
     }
 
     def shouldNotBe(expected: Any)(implicit code: SourceCode): Unit = {
-      if (value == expected) {
-        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+      (value, expected) match {
+        case (a: Array[_], b: Array[_]) =>
+          arrayNotDeepEqual(a, b)(code)
+        case _ =>
+          if (value == expected) {
+            throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+          }
       }
     }
 

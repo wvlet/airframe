@@ -141,6 +141,17 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
+  def `support array deepEqual`: Unit = {
+    val a: AnyRef = Array(1.0f)
+    val b: AnyRef = Array(1.0f)
+
+    a shouldBe a
+    a shouldBe b
+
+    a shouldBeTheSameInstanceAs a
+    a shouldNotBeTheSameInstanceAs b
+  }
+
   case class MyObj(id: Int, name: String)
 
   def `exhaustive check`: Unit = {
