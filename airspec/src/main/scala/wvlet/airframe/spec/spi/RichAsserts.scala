@@ -24,7 +24,7 @@ import wvlet.log.LogSupport
   */
 trait RichAsserts extends LogSupport {
 
-  // Here we do not extend AnyVal to make this enrichment available as trait
+  // Here we do not extend AnyVal (which needs to be a public class in an object) to make this enrichment available as trait
 
   protected abstract class ShouldBeArrayBase[A <: Array[_]] {
     def value: Array[_]
@@ -49,7 +49,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeIntArray(override val value: Array[Int]) extends ShouldBeArrayBase[Array[Int]] {
+  implicit protected class ShouldBeIntArray(override val value: Array[Int]) extends ShouldBeArrayBase[Array[Int]] {
     def shouldBe(expected: Array[Int])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -62,7 +62,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeLongArray(override val value: Array[Long]) extends ShouldBeArrayBase[Array[Long]] {
+  implicit protected class ShouldBeLongArray(override val value: Array[Long]) extends ShouldBeArrayBase[Array[Long]] {
     def shouldBe(expected: Array[Long])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -75,7 +75,8 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeShortArray(override val value: Array[Short]) extends ShouldBeArrayBase[Array[Short]] {
+  implicit protected class ShouldBeShortArray(override val value: Array[Short])
+      extends ShouldBeArrayBase[Array[Short]] {
     def shouldBe(expected: Array[Short])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -88,7 +89,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeByteArray(override val value: Array[Byte]) extends ShouldBeArrayBase[Array[Byte]] {
+  implicit protected class ShouldBeByteArray(override val value: Array[Byte]) extends ShouldBeArrayBase[Array[Byte]] {
     def shouldBe(expected: Array[Byte])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -101,7 +102,8 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeBooleanArray(override val value: Array[Boolean]) extends ShouldBeArrayBase[Array[Boolean]] {
+  implicit protected class ShouldBeBooleanArray(override val value: Array[Boolean])
+      extends ShouldBeArrayBase[Array[Boolean]] {
     def shouldBe(expected: Array[Boolean])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -114,7 +116,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeCharArray(override val value: Array[Char]) extends ShouldBeArrayBase[Array[Char]] {
+  implicit protected class ShouldBeCharArray(override val value: Array[Char]) extends ShouldBeArrayBase[Array[Char]] {
     def shouldBe(expected: Array[Char])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -127,7 +129,8 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeFloatArray(override val value: Array[Float]) extends ShouldBeArrayBase[Array[Float]] {
+  implicit protected class ShouldBeFloatArray(override val value: Array[Float])
+      extends ShouldBeArrayBase[Array[Float]] {
     def shouldBe(expected: Array[Float])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -140,7 +143,8 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeDoubleArray(override val value: Array[Double]) extends ShouldBeArrayBase[Array[Double]] {
+  implicit protected class ShouldBeDoubleArray(override val value: Array[Double])
+      extends ShouldBeArrayBase[Array[Double]] {
     def shouldBe(expected: Array[Double])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -153,7 +157,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeAnyArray[A](val value: Array[A]) extends ShouldBeArrayBase[Array[A]] {
+  implicit protected class ShouldBeAnyArray[A](val value: Array[A]) extends ShouldBeArrayBase[Array[A]] {
     def shouldBe(expected: Array[A])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
                                   expected.asInstanceOf[Array[java.lang.Object]])) {
@@ -174,7 +178,7 @@ trait RichAsserts extends LogSupport {
   for (t <- Seq("Int", "Long", "Short", "Byte", "Boolean", "Char", "Float", "Double")) {
     println(
       s"""
-  implicit class ShouldBe${t}Array(override val value: Array[${t}]) extends ShouldBeArrayBase[Array[${t}]] {
+  implicit protected class ShouldBe${t}Array(override val value: Array[${t}]) extends ShouldBeArrayBase[Array[${t}]] {
     def shouldBe(expected: Array[${t}])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
         throw matchFailure(expected, code)
@@ -217,7 +221,7 @@ trait RichAsserts extends LogSupport {
   protected def defined = DefinedTarget
   protected def empty   = EmptyTarget
 
-  implicit class ShouldBeOption[A](val value: Option[A]) {
+  implicit protected class ShouldBeOption[A](val value: Option[A]) {
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode): Unit = {
       expected.check(value, value.isEmpty, code)
     }
@@ -227,7 +231,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeIterable[A](val value: Iterable[A]) {
+  implicit protected class ShouldBeIterable[A](val value: Iterable[A]) {
     def shouldBe(expected: Iterable[A])(implicit code: SourceCode): Unit = {
       if (value != expected) {
         throw AssertionFailure(s"${value} didn't match with ${expected}", code)
@@ -249,7 +253,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeProduct(val value: Product) {
+  implicit protected class ShouldBeProduct(val value: Product) {
     def shouldBe(expected: Product)(implicit code: SourceCode): Unit = {
       if (value != expected) {
         throw AssertionFailure(s"${value} didn't match with ${expected}", code)
@@ -263,7 +267,7 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBe(val value: Any) {
+  implicit protected class ShouldBe(val value: Any) {
     def shouldBe(expected: Any)(implicit code: SourceCode): Unit = {
       if (value != expected) {
         throw AssertionFailure(s"${value} didn't match with ${expected}", code)
@@ -276,31 +280,22 @@ trait RichAsserts extends LogSupport {
       }
     }
 
-    def shouldBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
-      if (value.asInstanceOf[AnyRef] ne expected) {
-        throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
+    def shouldBeTheSameInstanceAs(expected: Any)(implicit code: SourceCode): Unit = {
+      (value, expected) match {
+        case (a: AnyRef, b: AnyRef) if a eq b =>
+        // OK
+        case _ =>
+          throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
       }
     }
 
-    def shouldNotBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
-      if (value.asInstanceOf[AnyRef] eq expected) {
-        throw AssertionFailure(s"${value} should not be the same instance with ${expected}", code)
-      }
-    }
-  }
-
-  implicit class ShouldBeAnyRef(val value: AnyRef) {
-    def shouldBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
-      if (value ne expected) {
-        throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
-      }
-    }
-
-    def shouldNotBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
-      if (value eq expected) {
-        throw AssertionFailure(s"${value} should not be the same instance with ${expected}", code)
+    def shouldNotBeTheSameInstanceAs(expected: Any)(implicit code: SourceCode): Unit = {
+      (value, expected) match {
+        case (a: AnyRef, b: AnyRef) if a ne b =>
+        // OK
+        case _ =>
+          throw AssertionFailure(s"${value} shoul not be the same instance as ${expected}", code)
       }
     }
   }
-
 }

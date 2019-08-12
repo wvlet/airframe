@@ -50,6 +50,7 @@ class ShouldBeTest extends AirSpec {
 
   def `support collection matchers`: Unit = {
     Seq.empty shouldBe Seq.empty
+    Seq.empty shouldBe empty
     Seq(1) shouldBe List(1)
     Map(1 -> "apple", 2 -> "banana") shouldBe Map(1 -> "apple", 2 -> "banana")
   }
@@ -120,7 +121,73 @@ class ShouldBeTest extends AirSpec {
     val a2 = a1
     val a3 = new String("hello")
 
-    a1 shouldBeTheSameInstance a2
-    a1 shouldNotBeTheSameInstance a3
+    a1 shouldBe a2
+    a1 shouldBe a3
+    a1 shouldBeTheSameInstanceAs a2
+    a1 shouldNotBeTheSameInstanceAs a3
   }
+
+  protected def checkEqual[A, B](a: A, b: B): Unit = {
+    a shouldBe b
+    intercept[AssertionFailure] {
+      a shouldNotBe b
+    }
+  }
+
+  protected def checkNotEqual[A, B](a: A, b: B): Unit = {
+    a shouldNotBe b
+    intercept[AssertionFailure] {
+      a shouldBe b
+    }
+  }
+
+  case class MyObj(id: Int, name: String)
+
+  def `exhaustive check`: Unit = {
+    checkEqual(1, 1)
+    checkNotEqual(1, 2)
+
+    checkEqual("apple", "apple")
+    checkNotEqual("apple", "banana")
+
+    val list = Seq(
+      (1, 2),
+      ("apple", "banana"),
+      (Seq(1), Seq(1, 2)),
+      (Seq(Seq(1), 2, 3), Seq(Seq(2), 2, 3)),
+      (List(1, 2, 3), List(1, 2)),
+      (List.empty, List(1)),
+      (IndexedSeq(1), IndexedSeq(2)),
+      (Map(1 -> 2), Map(1 -> 3)),
+      (Map(1 -> 2), Map(1 -> 'a')),
+      (Map(1 -> 2), List((1, 2))),
+      (Set(1, 2), Set(1, 2, 3)),
+      (Vector(1, 2), Vector(1, 2, 3)),
+      ((1, 'a', 1), (1, 'a', 2)),
+      (Some("a"), Some("b")),
+      (Some("a"), None),
+      (None, Some("a")),
+      (Array(1, 2), Array(1)),
+      (Array(1L, 2L), Array(2L)),
+      (Array(1.toShort), Array(2.toShort)),
+      (Array(1.toByte), Array(2.toByte)),
+      (Array('a'), Array('b')),
+      (Array(1f), Array(2f)),
+      (Array(1.0), Array(2.0)),
+      (Array(true, false), Array(false, true)),
+      (Array(1, 1L, "hello"), Array()),
+      (Array(1, 2, Array(1, 2)), Array(1, 2, Array(1, 3))),
+      (MyObj(1, "a"), MyObj(1, "b"))
+    )
+
+    for ((a, b) <- list) {
+      checkEqual(a, a)
+      checkNotEqual(a, b)
+
+      a shouldBeTheSameInstanceAs a
+      a shouldNotBeTheSameInstanceAs b
+      b shouldBeTheSameInstanceAs b
+    }
+  }
+
 }
