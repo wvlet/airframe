@@ -15,7 +15,7 @@ val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
-
+val JS_JAVA_LOGGING_VERSION = "0.1.5"
 val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -71,7 +71,10 @@ val buildSettings = Seq[Setting[_]](
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  testFrameworks += airSpecFramework
+  testFrameworks += airSpecFramework,
+  libraryDependencies ++= Seq(
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+  )
 )
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
@@ -363,6 +366,17 @@ lazy val airframeMacrosJS  = airframeMacros.js
 lazy val airframeMacrosJVMRef = airframeMacrosJVM % "compile-internal,test-internal"
 lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-internal"
 
+val surfaceDependencies = { scalaVersion: String =>
+  Seq(
+    "org.scala-lang"         % "scala-reflect"             % scalaVersion,
+    "org.scala-lang"         % "scala-compiler"            % scalaVersion % "provided"
+  )
+}
+val surfaceJVMDependencies = Seq(
+  // For ading PreDestroy, PostConstruct annotations to Java9
+  "javax.annotation" % "javax.annotation-api" % "1.3.1"
+)
+
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-surface"))
@@ -370,17 +384,10 @@ lazy val surface =
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
-      libraryDependencies ++= Seq(
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
-        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided"
-      )
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % "1.3.1"
-      )
+      libraryDependencies ++= surfaceJVMDependencies
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airspec % "test")
@@ -450,6 +457,17 @@ lazy val launcher =
     )
     .dependsOn(surfaceJVM, control, codecJVM, airframeScalaTestJVM % "test")
 
+val logDependencies = { scalaVersion: String =>
+  Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion % "provided"
+  )
+}
+val logJVMDependencies = Seq(
+  "ch.qos.logback" % "logback-core" % "1.2.3"
+)
+
+
+
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform)
@@ -458,19 +476,16 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided"
-      )
+      libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
+      libraryDependencies ++= logJVMDependencies,
       //classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
     )
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
+        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
       )
     )
     .dependsOn(airspec % "test")
@@ -773,13 +788,11 @@ val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
 val airspecDependencies     = Seq("airframe", "airframe-metrics")
 
-
 // Setting keys for AirSpec
-val airspecDependsOn = settingKey[Seq[String]]("Dependent module names of airspec projects")
-val airspecSourceDirectories = settingKey[Seq[String]]("airspec source codes")
+val airspecDependsOn            = settingKey[Seq[String]]("Dependent module names of airspec projects")
+val airspecSourceDirectories    = settingKey[Seq[String]]("airspec source codes")
 val airspecSourceDirectoriesJVM = settingKey[Seq[String]]("airspec source codes for Scala JVM")
-val airspecSourceDirectoriesJS = settingKey[Seq[String]]("airspec source codes for Scala.js")
-
+val airspecSourceDirectoriesJS  = settingKey[Seq[String]]("airspec source codes for Scala.js")
 
 val airspecBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
@@ -826,7 +839,6 @@ val airspecJSBuildSettings = Seq[Setting[_]](
   }
 )
 
-
 lazy val airspecLog =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
@@ -837,23 +849,16 @@ lazy val airspecLog =
       airspecBuildSettings,
       name := "airspec-log",
       description := "airframe-log for AirSpec",
-      libraryDependencies ++= Seq(
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
-        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
-      )
+      libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
       airspecJVMBuildSettings,
-      libraryDependencies ++= Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "ch.qos.logback" % "logback-core" % "1.2.3" % "provided"
-      )
+      libraryDependencies ++= logJVMDependencies
     )
     .jsSettings(
       airspecJSBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
+        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
       )
     )
 
@@ -870,13 +875,11 @@ lazy val airspecDeps =
       airspecBuildSettings,
       name := "airspec-deps",
       description := "Dependencies of AirSpec",
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
       airspecJVMBuildSettings,
-      libraryDependencies ++= Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % "1.3.1"
-      )
+      libraryDependencies ++= surfaceJVMDependencies
     )
     .jsSettings(
       airspecJSBuildSettings,
@@ -895,10 +898,7 @@ lazy val airspec =
       airspecDependsOn := airspecDependencies,
       airspecBuildSettings,
       name := "airspec",
-      description := "AirSpec: A Functional Testing Framework for Scala",
-      libraryDependencies ++= Seq(
-        "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
-      )
+      description := "AirSpec: A Functional Testing Framework for Scala"
     )
     .jvmSettings(
       airspecJVMBuildSettings,
