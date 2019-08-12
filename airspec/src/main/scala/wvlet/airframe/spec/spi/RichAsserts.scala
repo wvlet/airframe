@@ -275,6 +275,32 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} didn't match with ${expected}", code)
       }
     }
+
+    def shouldBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
+      if (value.asInstanceOf[AnyRef] ne expected) {
+        throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
+      }
+    }
+
+    def shouldNotBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
+      if (value.asInstanceOf[AnyRef] eq expected) {
+        throw AssertionFailure(s"${value} should not be the same instance with ${expected}", code)
+      }
+    }
+  }
+
+  implicit class ShouldBeAnyRef(val value: AnyRef) {
+    def shouldBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
+      if (value ne expected) {
+        throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
+      }
+    }
+
+    def shouldNotBeTheSameInstance(expected: AnyRef)(implicit code: SourceCode): Unit = {
+      if (value eq expected) {
+        throw AssertionFailure(s"${value} should not be the same instance with ${expected}", code)
+      }
+    }
   }
 
 }

@@ -64,6 +64,10 @@ class MyTest extends AirSpec {
 AirSpec supports basic assertions like `assert`, `fail`, `ignore`, `cancel`, `pending`, `skip`, `intercept[E]`, etc.
 See also [Asserts.scala](https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala). 
 
+
+
+
+
 ## Running Tests in sbt
 
 AirSpec supports pattern matching for running specific tests:

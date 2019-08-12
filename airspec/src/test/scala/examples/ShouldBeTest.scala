@@ -20,6 +20,7 @@ import wvlet.airframe.spec.spi.AssertionFailure
   *
   */
 class ShouldBeTest extends AirSpec {
+  scalaJsSupport
 
   def `support shouldBe matcher`: Unit = {
     1 shouldBe 1
@@ -112,5 +113,14 @@ class ShouldBeTest extends AirSpec {
     (1, 2, 3) shouldNotBe (1, 3, 2)
     (1, 'a') shouldBe (1, 'a')
     (2, 'a') shouldNotBe (2, 'b')
+  }
+
+  def `support equality check`: Unit = {
+    val a1 = new String("hello")
+    val a2 = a1
+    val a3 = new String("hello")
+
+    a1 shouldBeTheSameInstance a2
+    a1 shouldNotBeTheSameInstance a3
   }
 }
