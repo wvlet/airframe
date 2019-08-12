@@ -25,7 +25,6 @@ import wvlet.log.LogSupport
 trait RichAsserts extends LogSupport {
 
   // Here we do not extend AnyVal to make this enrichment available as trait
-
   implicit class ShouldBeIntArray(val value: Array[Int]) {
     def shouldBe(expected: Array[Int])(implicit code: SourceCode): Unit = {
       if (!util.Arrays.equals(value, expected)) {
@@ -38,6 +37,36 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
+  }
+
+  implicit class ShouldBeLongArray(val value: Array[Long]) {
+    def shouldBe(expected: Array[Long])(implicit code: SourceCode): Unit = {
+      if (!util.Arrays.equals(value, expected)) {
+        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+      }
+    }
+
+    def shouldNotBe(unexpected: Array[Long])(implicit code: SourceCode): Unit = {
+      if (util.Arrays.equals(value, unexpected)) {
+        throw AssertionFailure(s"${value} match with ${unexpected}", code)
+      }
+    }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeShortArray(val value: Array[Short]) {
@@ -52,6 +81,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeByteArray(val value: Array[Byte]) {
@@ -66,6 +103,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeBooleanArray(val value: Array[Boolean]) {
@@ -80,6 +125,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeCharArray(val value: Array[Char]) {
@@ -94,6 +147,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeFloatArray(val value: Array[Float]) {
@@ -108,6 +169,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeDoubleArray(val value: Array[Double]) {
@@ -122,6 +191,14 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+
   }
 
   implicit class ShouldBeAnyArray[A](val value: Array[A]) {
@@ -138,47 +215,76 @@ trait RichAsserts extends LogSupport {
         throw AssertionFailure(s"${value} match with ${unexpected}", code)
       }
     }
+
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
   }
 
   // Code generator
   /*
-      for (t <- Seq("Int", "Short", "Byte", "Boolean", "Char", "Float", "Double")) {
+  for (t <- Seq("Int", "Long", "Short", "Byte", "Boolean", "Char", "Float", "Double")) {
     println(
       s"""
-           |implicit class ShouldBe${t}Array(val value: Array[${t}]) {
-           |    def shouldBe(expected: Array[${t}])(implicit code: SourceCode): Unit = {
-           |      if (!util.Arrays.equals(value, expected)) {
-           |        throw AssertionFailure(s"$${value} didn't match with $${expected}", code)
-           |      }
-           |    }
-           |
-           |    def shouldNotBe(unexpected: Array[${t}])(implicit code: SourceCode): Unit = {
-           |      if (util.Arrays.equals(value, unexpected)) {
-           |        throw AssertionFailure(s"$${value} match with $${unexpected}", code)
-           |      }
-           |    }
-           |}
-           |
-           |""".stripMargin
+         |implicit class ShouldBe${t}Array(val value: Array[${t}]) {
+         |    def shouldBe(expected: Array[${t}])(implicit code: SourceCode): Unit = {
+         |      if (!util.Arrays.equals(value, expected)) {
+         |        throw AssertionFailure(s"$${value} didn't match with $${expected}", code)
+         |      }
+         |    }
+         |
+         |    def shouldNotBe(unexpected: Array[${t}])(implicit code: SourceCode): Unit = {
+         |      if (util.Arrays.equals(value, unexpected)) {
+         |        throw AssertionFailure(s"$${value} match with $${unexpected}", code)
+         |      }
+         |    }
+         |    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+         |      expected.matchWith(value, code)
+         |    }
+         |
+         |    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+         |      expected.flip.matchWith(value, code)
+         |    }
+         |
+         |}
+         |
+         |""".stripMargin
     )
   }
    */
 
-  sealed trait OptionTarget {
+  private[spec] sealed trait OptionTarget {
     def matchWith[A](v: Option[A], code: SourceCode): Unit
+    def matchWith[A](v: Iterable[A], code: SourceCode): Unit
     def flip: OptionTarget
   }
-  protected case object DefinedTarget extends OptionTarget {
+
+  private[spec] case object DefinedTarget extends OptionTarget {
     override def matchWith[A](v: Option[A], code: SourceCode): Unit = {
+      if (v.isEmpty) {
+        throw AssertionFailure(s"${v} is empty", code)
+      }
+    }
+    def matchWith[A](v: Iterable[A], code: SourceCode): Unit = {
       if (v.isEmpty) {
         throw AssertionFailure(s"${v} is empty", code)
       }
     }
     override def flip: OptionTarget = EmptyTarget
   }
-  protected case object EmptyTarget extends OptionTarget {
+
+  private[spec] case object EmptyTarget extends OptionTarget {
     override def matchWith[A](v: Option[A], code: SourceCode): Unit = {
       if (v.isDefined) {
+        throw AssertionFailure(s"${v} is not empty", code)
+      }
+    }
+    override def matchWith[A](v: Iterable[A], code: SourceCode): Unit = {
+      if (v.nonEmpty) {
         throw AssertionFailure(s"${v} is not empty", code)
       }
     }
@@ -198,13 +304,36 @@ trait RichAsserts extends LogSupport {
     }
   }
 
-  implicit class ShouldBeCollection[A](val value: Seq[A]) {
-    def shouldBe(expected: Seq[A])(implicit code: SourceCode): Unit = {
+  implicit class ShouldBeIterable[A](val value: Iterable[A]) {
+    def shouldBe(expected: Iterable[A])(implicit code: SourceCode): Unit = {
       if (value != expected) {
         throw AssertionFailure(s"${value} didn't match with ${expected}", code)
       }
     }
-    def shouldNotBe(unexpected: Seq[A])(implicit code: SourceCode): Unit = {
+
+    def shouldNotBe(unexpected: Iterable[A])(implicit code: SourceCode): Unit = {
+      if (value == unexpected) {
+        throw AssertionFailure(s"${value} didn't match with ${unexpected}", code)
+      }
+    }
+
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.matchWith(value, code)
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      expected.flip.matchWith(value, code)
+    }
+  }
+
+  implicit class ShouldBeProduct(val value: Product) {
+    def shouldBe(expected: Product)(implicit code: SourceCode): Unit = {
+      if (value != expected) {
+        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+      }
+    }
+
+    def shouldNotBe(unexpected: Product)(implicit code: SourceCode): Unit = {
       if (value == unexpected) {
         throw AssertionFailure(s"${value} didn't match with ${unexpected}", code)
       }

@@ -54,9 +54,16 @@ class ShouldBeTest extends AirSpec {
   }
 
   def `support array matchers`: Unit = {
-
     Array(1, 2, 3) shouldBe Array(1, 2, 3)
+    Array(1, 2, 3) shouldBe defined
+    Array(1, 2, 3) shouldNotBe empty
+
+    Array(1L, 2L, 3L) shouldBe Array(1L, 2L, 3L)
     Array(1.toShort) shouldBe Array(1.toShort)
+    Array(1.0f) shouldBe Array(1.0f)
+    Array(1.0) shouldBe Array(1.0)
+    Array('a') shouldBe Array('a')
+    Array(true, false) shouldBe Array(true, false)
     Array("hello") shouldBe Array("hello")
   }
 
@@ -70,12 +77,40 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
-  def `support Option`: Unit = {
+  def `support Option matchers`: Unit = {
     Some(1) shouldBe defined
     Some(1) shouldNotBe empty
     None shouldBe empty
     None shouldNotBe defined
     Option(null) shouldBe empty
     Option(null) shouldNotBe defined
+
+    intercept[AssertionFailure] {
+      Some(1) shouldBe empty
+    }
+
+    intercept[AssertionFailure] {
+      Some(1) shouldNotBe defined
+    }
+  }
+
+  def `support defined/empty for Seq[A]` : Unit = {
+    Seq() shouldBe empty
+    Seq() shouldNotBe defined
+
+    Seq(1) shouldBe defined
+    Seq(1) shouldNotBe empty
+
+    Map() shouldBe empty
+
+    Array(1) shouldBe defined
+    Array(1) shouldNotBe empty
+  }
+
+  def `support tuples` = {
+    (1, 2, 3) shouldBe (1, 2, 3)
+    (1, 2, 3) shouldNotBe (1, 3, 2)
+    (1, 'a') shouldBe (1, 'a')
+    (2, 'a') shouldNotBe (2, 'b')
   }
 }
