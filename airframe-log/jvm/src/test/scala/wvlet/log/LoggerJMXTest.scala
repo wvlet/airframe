@@ -21,6 +21,7 @@ import javax.management.{Attribute, ObjectName}
   */
 class LoggerJMXTest extends Spec {
   override protected def afterAll: Unit = {
+    Logger.clearAllHandlers
     LogEnv.unregisterJMX
   }
 
