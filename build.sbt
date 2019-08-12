@@ -784,6 +784,20 @@ lazy val examples =
                finagle,
                airframeScalaTestJVM % "test")
 
+/**
+  * AirSpec build definitions.
+  *
+  * To make airspec a standalone library without any cyclic project references, airspec shares the same source code with airframe-log, di, surface, etc.
+  *
+  * Since airframe-log, di, and surfaces uses Scala macros whose def-macros cannot be called within the same project,
+  * we need to split the source code into three projects:
+  *
+  *  - airspec-log (dependsOn airframe-log's source)
+  *  - airspec-core (di-macros, surface)
+  *  - airspec (di, metrics)
+  *
+  */
+
 val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
 val airspecDependencies     = Seq("airframe", "airframe-metrics")
@@ -868,13 +882,13 @@ lazy val airspecLogJS  = airspecLog.js
 lazy val airspecDeps =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airspec-deps"))
+    .in(file("airspec-core"))
     .settings(buildSettings)
     .settings(
       airspecDependsOn := airspecCoreDependencies,
       airspecBuildSettings,
-      name := "airspec-deps",
-      description := "Dependencies of AirSpec",
+      name := "airspec-core",
+      description := "A core module of AirSpec with Surface and DI macros",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
