@@ -16,7 +16,6 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
 
-val AIRSPEC_VERSION  = "19.8.2"
 val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
@@ -72,8 +71,7 @@ val buildSettings = Seq[Setting[_]](
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
-  testFrameworks += airSpecFramework,
-  libraryDependencies += "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % "test"
+  testFrameworks += airSpecFramework
 )
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
@@ -385,7 +383,7 @@ lazy val surface =
       )
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log)
+    .dependsOn(log, airspec % "test")
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
@@ -475,6 +473,7 @@ lazy val log: sbtcrossproject.CrossProject =
         "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
       )
     )
+    .dependsOn(airspec % "test")
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
@@ -770,74 +769,74 @@ lazy val examples =
                finagle,
                airframeScalaTestJVM % "test")
 
-val airspecLogDependencies = Seq("airframe-log")
+val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
-val airspecDependencies = Seq("airframe", "airframe-metrics")
+val airspecDependencies     = Seq("airframe", "airframe-metrics")
 
 lazy val airspecLog =
   crossProject(JSPlatform, JVMPlatform)
-  .crossType(CrossType.Pure)
-  .in(file("airspec-log"))
-  .settings(buildSettings)
-  .settings(
-    name := "airspec-log",
-    description := "airframe-log for AirSpec",
-    unmanagedSourceDirectories in Compile ++= {
-      val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
-      val sourceDirs = for (m <- airspecLogDependencies) yield {
-        Seq(
-          file(s"${baseDir}/${m}/src/main/scala"),
-          file(s"${baseDir}/${m}/shared/src/main/scala")
-        )
-      }
-      sourceDirs.flatten
-    },
-    libraryDependencies ++= Seq(
-      "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
-      "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
-      "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+    .crossType(CrossType.Pure)
+    .in(file("airspec-log"))
+    .settings(buildSettings)
+    .settings(
+      name := "airspec-log",
+      description := "airframe-log for AirSpec",
+      unmanagedSourceDirectories in Compile ++= {
+        val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+        val sourceDirs = for (m <- airspecLogDependencies) yield {
+          Seq(
+            file(s"${baseDir}/${m}/src/main/scala"),
+            file(s"${baseDir}/${m}/shared/src/main/scala")
+          )
+        }
+        sourceDirs.flatten
+      },
+      libraryDependencies ++= Seq(
+        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
+        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
+        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+      )
     )
-  )
-  .jvmSettings(
-    unmanagedSourceDirectories in Compile ++= {
-      val sv      = scalaBinaryVersion.value
-      val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
-      val sourceDirs = for (m <- airspecLogDependencies) yield {
-        Seq(
-          file(s"${baseDir}/${m}/.jvm/src/main/scala"),
-          file(s"${baseDir}/${m}/.jvm/src/main/scala-${sv}"),
-          file(s"${baseDir}/${m}/jvm/src/main/scala"),
-          file(s"${baseDir}/${m}/jvm/src/main/scala-${sv}")
-        )
-      }
-      sourceDirs.flatten
-    },
-    libraryDependencies ++= Seq(
-      // For ading PreDestroy, PostConstruct annotations to Java9
-      "ch.qos.logback"   % "logback-core"         % "1.2.3" % "provided"
+    .jvmSettings(
+      unmanagedSourceDirectories in Compile ++= {
+        val sv      = scalaBinaryVersion.value
+        val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+        val sourceDirs = for (m <- airspecLogDependencies) yield {
+          Seq(
+            file(s"${baseDir}/${m}/.jvm/src/main/scala"),
+            file(s"${baseDir}/${m}/.jvm/src/main/scala-${sv}"),
+            file(s"${baseDir}/${m}/jvm/src/main/scala"),
+            file(s"${baseDir}/${m}/jvm/src/main/scala-${sv}")
+          )
+        }
+        sourceDirs.flatten
+      },
+      libraryDependencies ++= Seq(
+        // For ading PreDestroy, PostConstruct annotations to Java9
+        "ch.qos.logback" % "logback-core" % "1.2.3" % "provided"
+      )
     )
-  )
-  .jsSettings(
-    unmanagedSourceDirectories in Compile ++= {
-      val sv      = scalaBinaryVersion.value
-      val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
-      val sourceDirs = for (m <- airspecLogDependencies) yield {
-        Seq(
-          file(s"${baseDir}/${m}/.js/src/main/scala"),
-          file(s"${baseDir}/${m}/.js/src/main/scala-${sv}"),
-          file(s"${baseDir}/${m}/js/src/main/scala"),
-          file(s"${baseDir}/${m}/js/src/main/scala-${sv}"),
-        )
-      }
-      sourceDirs.flatten
-    },
-    libraryDependencies ++= Seq(
-      "org.scala-js"       %%% "scalajs-java-logging"   % "0.1.5"
+    .jsSettings(
+      unmanagedSourceDirectories in Compile ++= {
+        val sv      = scalaBinaryVersion.value
+        val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+        val sourceDirs = for (m <- airspecLogDependencies) yield {
+          Seq(
+            file(s"${baseDir}/${m}/.js/src/main/scala"),
+            file(s"${baseDir}/${m}/.js/src/main/scala-${sv}"),
+            file(s"${baseDir}/${m}/js/src/main/scala"),
+            file(s"${baseDir}/${m}/js/src/main/scala-${sv}"),
+          )
+        }
+        sourceDirs.flatten
+      },
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
+      )
     )
-  )
 
 lazy val airspecLogJVM = airspecLog.jvm
-lazy val airspecLogJS = airspecLog.js
+lazy val airspecLogJS  = airspecLog.js
 
 lazy val airspecDeps =
   crossProject(JSPlatform, JVMPlatform)
@@ -892,10 +891,10 @@ lazy val airspecDeps =
         sourceDirs.flatten
       }
     )
-  .dependsOn(airspecLog)
+    .dependsOn(airspecLog)
 
 lazy val airspecDepsJVM = airspecDeps.jvm
-lazy val airspecDepsJS = airspecDeps.js
+lazy val airspecDepsJS  = airspecDeps.js
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
@@ -917,7 +916,7 @@ lazy val airspec =
         sourceDirs.flatten
       },
       libraryDependencies ++= Seq(
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided",
+        "org.scala-lang" % "scala-compiler" % scalaVersion.value % "provided",
       )
     )
     .jvmSettings(
