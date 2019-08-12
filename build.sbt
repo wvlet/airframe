@@ -15,8 +15,8 @@ val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
-val JS_JAVA_LOGGING_VERSION = "0.1.5"
-val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+val JS_JAVA_LOGGING_VERSION         = "0.1.5"
+val airSpecFramework                = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
@@ -368,8 +368,8 @@ lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-inter
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
-    "org.scala-lang"         % "scala-reflect"             % scalaVersion,
-    "org.scala-lang"         % "scala-compiler"            % scalaVersion % "provided"
+    "org.scala-lang" % "scala-reflect"  % scalaVersion,
+    "org.scala-lang" % "scala-compiler" % scalaVersion % "provided"
   )
 }
 val surfaceJVMDependencies = Seq(
@@ -465,8 +465,6 @@ val logDependencies = { scalaVersion: String =>
 val logJVMDependencies = Seq(
   "ch.qos.logback" % "logback-core" % "1.2.3"
 )
-
-
 
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
@@ -797,7 +795,6 @@ lazy val examples =
   *  - airspec (di, metrics)
   *
   */
-
 val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
 val airspecDependencies     = Seq("airframe", "airframe-metrics")
