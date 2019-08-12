@@ -800,10 +800,7 @@ val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
 val airspecDependencies     = Seq("airframe", "airframe-metrics")
 
 // Setting keys for AirSpec
-val airspecDependsOn            = settingKey[Seq[String]]("Dependent module names of airspec projects")
-val airspecSourceDirectories    = settingKey[Seq[String]]("airspec source codes")
-val airspecSourceDirectoriesJVM = settingKey[Seq[String]]("airspec source codes for Scala JVM")
-val airspecSourceDirectoriesJS  = settingKey[Seq[String]]("airspec source codes for Scala.js")
+val airspecDependsOn = settingKey[Seq[String]]("Dependent module names of airspec projects")
 
 val airspecBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
