@@ -879,7 +879,7 @@ lazy val airspecLog =
 lazy val airspecLogJVM = airspecLog.jvm
 lazy val airspecLogJS  = airspecLog.js
 
-lazy val airspecDeps =
+lazy val airspecCore =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec-core"))
@@ -900,8 +900,8 @@ lazy val airspecDeps =
     )
     .dependsOn(airspecLog)
 
-lazy val airspecDepsJVM = airspecDeps.jvm
-lazy val airspecDepsJS  = airspecDeps.js
+lazy val airspecCoreJVM = airspecCore.jvm
+lazy val airspecCoreJS  = airspecCore.js
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
@@ -927,7 +927,7 @@ lazy val airspec =
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
-    .dependsOn(airspecDeps)
+    .dependsOn(airspecCore)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
