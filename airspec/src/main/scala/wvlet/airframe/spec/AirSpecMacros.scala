@@ -11,17 +11,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.spec
 import scala.language.experimental.macros
+import scala.reflect.macros.{blackbox => sm}
 
 /**
-  * Source code location
+  *
   */
-case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
-  override def toString = s"${fileName}:${line}"
-}
+private[spec] object AirSpecMacros {
 
-object SourceCode {
-  def apply()(implicit code: SourceCode) = code
-  implicit def generate: SourceCode = macro AirframeMacros.sourceCode
+  def sourceCode(c: sm.Context): c.Tree = {
+    import c.universe._
+    c.internal.enclosingOwner
+    val pos = c.enclosingPosition
+    q"wvlet.airframe.SourceCode(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
+  }
+
+  def pendingImpl(c: sm.Context): c.Tree = {
+    import c.universe._
+    q"""
+       throw wvlet.airframe.spec.spi.Pending("pending", ${sourceCode(c)})
+     """
+  }
 }

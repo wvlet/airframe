@@ -53,7 +53,7 @@ class TestSpec extends AirSpec with LogSupport {
   }
 
   def `should support pending`: Unit = {
-    pending("until fixing #012")
+    pendingUntil("fixing #012")
   }
 
   def interceptTest: Unit = {

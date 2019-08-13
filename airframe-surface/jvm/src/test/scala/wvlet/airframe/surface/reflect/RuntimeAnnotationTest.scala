@@ -55,7 +55,7 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     assert(m.findAnnotationOf[Resource].isEmpty)
 
     val p = m.args.find(_.name == "arg").get
-    info(s"p: ${p}, ${p.index}")
+    debug(s"p: ${p}, ${p.index}")
     val r = p.findAnnotationOf[Resource]
     assert(r.isDefined)
     assert(r.get.name() == "b arg")

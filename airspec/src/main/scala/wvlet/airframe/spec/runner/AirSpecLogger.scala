@@ -57,7 +57,8 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
   def logEvent(e: AirSpecEvent): Unit = {
     val (baseColor, showStackTraces) = e.status match {
       case Status.Success                  => (GREEN, false)
-      case Status.Failure | Status.Error   => (RED, true)
+      case Status.Failure                  => (RED, false) // Do not show the stack trace for assertion failures
+      case Status.Error                    => (RED, true)
       case Status.Skipped                  => (BRIGHT_GREEN, false)
       case Status.Canceled                 => (YELLOW, false)
       case Status.Pending | Status.Ignored => (BRIGHT_YELLOW, false)

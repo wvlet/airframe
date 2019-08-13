@@ -82,7 +82,7 @@ class SurfaceTest extends SurfaceSpec {
   }
 
   def `resolve surface from class`: Unit = {
-    pending("Scala.js doesn't support reflection")
+    pendingUntil("Scala.js doesn't support reflection")
     val a = Surface.of[A]
     //check(Surface.get(classOf[A]).get, a.toString)
   }
@@ -196,13 +196,13 @@ class SurfaceTest extends SurfaceSpec {
     assert(a.objectFactory.isDefined)
 
     val a1 = a.objectFactory.map(_.newInstance(Seq(true, 0.toByte, 1.toShort, 10, 20L, 0.1f, 0.2, "hello")))
-    info(a1)
+    debug(a1)
     assert(a1.get == a0)
 
     val e = check(Surface.of[E], "E")
     assert(e.objectFactory.isDefined)
     val e1: E = e.objectFactory.map(_.newInstance(Seq(a0))).get.asInstanceOf[E]
-    info(e1)
+    debug(e1)
     assert(e1.a == a0)
   }
 
@@ -211,7 +211,7 @@ class SurfaceTest extends SurfaceSpec {
     val d0 = d.objectFactory.map { f =>
       f.newInstance(Seq(1, "leo"))
     }.get
-    info(d0)
+    debug(d0)
     assert(d0 == D(1, "leo"))
   }
 

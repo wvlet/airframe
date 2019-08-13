@@ -28,7 +28,7 @@ class ZeroTest extends SurfaceSpec {
     val z = Zero.zeroOf(surface).asInstanceOf[P]
     surface match {
       case s: ArraySurface =>
-        pending("array comparison")
+        pendingUntil("array comparison")
       case _ =>
         assert(z == v)
     }

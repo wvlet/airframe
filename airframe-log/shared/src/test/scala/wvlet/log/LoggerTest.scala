@@ -181,7 +181,7 @@ class LoggerTest extends Spec {
 
   def `use succinct name when used with anonymous trait`: Unit = {
     if (LogEnv.isScalaJS) {
-      pending()
+      pending
     } else {
       val l = new Sample with LogSupport {
         self =>

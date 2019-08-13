@@ -37,7 +37,7 @@ class MethodSurfaceTest extends SurfaceSpec {
 
   def `list methods`: Unit = {
     val m = Surface.methodsOf[A]
-    info(m.mkString("\n"))
+    debug(m.mkString("\n"))
 
     val hello = m.find(_.name == "hello").get
     assert(hello.isAbstract == false)
@@ -80,6 +80,6 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(f.isStatic == false)
 
     val m2 = Surface.methodsOf[MyA]
-    info(m2)
+    debug(m2)
   }
 }
