@@ -33,6 +33,8 @@ private[log] trait LogEnvBase {
     */
   def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit
 
+  def registerJMX: Unit
+
   /**
     *
     */

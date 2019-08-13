@@ -38,9 +38,10 @@ private[log] object LogEnv extends LogEnvBase {
     // no-op
   }
 
-  /**
-    *
-    */
+  override def registerJMX: Unit = {
+    // no-op
+  }
+
   override def unregisterJMX: Unit = {
     // no-op
   }
