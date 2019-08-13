@@ -77,59 +77,13 @@ trait RichAsserts extends LogSupport {
   protected def defined = DefinedTarget
   protected def empty   = EmptyTarget
 
-  implicit protected class ShouldBeOption[A](val value: Option[A]) {
-    def shouldBe(expected: OptionTarget)(implicit code: SourceCode): Unit = {
-      expected.check(value, value.isEmpty, code)
-    }
-
-    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode): Unit = {
-      expected.flip.check(value, value.isEmpty, code)
-    }
-  }
-
-  implicit protected class ShouldBeIterable[A](val value: Iterable[A]) {
-    def shouldBe(expected: Iterable[A])(implicit code: SourceCode): Unit = {
-      if (value != expected) {
-        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
-      }
-    }
-
-    def shouldNotBe(unexpected: Iterable[A])(implicit code: SourceCode): Unit = {
-      if (value == unexpected) {
-        throw AssertionFailure(s"${value} didn't match with ${unexpected}", code)
-      }
-    }
-
-    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      expected.check(value, value.isEmpty, code)
-    }
-
-    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      expected.flip.check(value, value.isEmpty, code)
-    }
-  }
-
-  implicit protected class ShouldBeProduct(val value: Product) {
-    def shouldBe(expected: Product)(implicit code: SourceCode): Unit = {
-      if (value != expected) {
-        throw AssertionFailure(s"${value} didn't match with ${expected}", code)
-      }
-    }
-
-    def shouldNotBe(unexpected: Product)(implicit code: SourceCode): Unit = {
-      if (value == unexpected) {
-        throw AssertionFailure(s"${value} didn't match with ${unexpected}", code)
-      }
-    }
-  }
-
   implicit protected class ShouldBe(val value: Any) {
 
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
     }
     protected def unmatchFailure(unexpected: Any, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} matches with ${pp(unexpected)}", code)
+      AssertionFailure(s"${pp(value)} matched with ${pp(unexpected)}", code)
     }
 
     def shouldBe(expected: Any)(implicit code: SourceCode): Unit = {
@@ -168,15 +122,23 @@ trait RichAsserts extends LogSupport {
           }
         case (a: Array[AnyRef], b: Array[AnyRef]) =>
           arrayDeepEqual(a, b)(code)
+        case (a: Iterable[_], b: Iterable[_]) =>
+          if (a != b) {
+            throw matchFailure(b, code)
+          }
+        case (a: Product, b: Product) =>
+          if (a != b) {
+            throw matchFailure(b, code)
+          }
         case _ =>
           if (value != expected) {
-            throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+            throw matchFailure(expected, code)
           }
       }
     }
 
-    def shouldNotBe(expected: Any)(implicit code: SourceCode): Unit = {
-      (value, expected) match {
+    def shouldNotBe(unexpected: Any)(implicit code: SourceCode): Unit = {
+      (value, unexpected) match {
         case (a: Array[Int], b: Array[Int]) =>
           if (util.Arrays.equals(a, b)) {
             throw unmatchFailure(b, code)
@@ -211,15 +173,25 @@ trait RichAsserts extends LogSupport {
           }
         case (a: Array[AnyRef], b: Array[AnyRef]) =>
           arrayNotDeepEqual(a, b)(code)
+        case (a: Iterable[_], b: Iterable[_]) =>
+          if (a == b) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Product, b: Product) =>
+          if (a == b) {
+            throw unmatchFailure(b, code)
+          }
         case _ =>
-          if (value == expected) {
-            throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+          if (value == unexpected) {
+            throw unmatchFailure(unexpected, code)
           }
       }
     }
 
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
       value match {
+        case v: Option[_] =>
+          expected.check(value, v.isEmpty, code)
         case v: Iterable[_] =>
           expected.check(value, v.isEmpty, code)
         case v: Array[_] =>
@@ -231,6 +203,8 @@ trait RichAsserts extends LogSupport {
 
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
       value match {
+        case v: Option[_] =>
+          expected.flip.check(value, v.isEmpty, code)
         case v: Iterable[_] =>
           expected.flip.check(value, v.isEmpty, code)
         case v: Array[_] =>

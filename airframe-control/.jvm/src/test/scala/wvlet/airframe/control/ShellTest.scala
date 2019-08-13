@@ -28,12 +28,12 @@ import wvlet.airframe.AirframeSpec
   */
 class ShellTest extends AirframeSpec {
   "Shell" should {
-    "find JVM" in {
+    def `find JVM`: Unit = {
       val j = Shell.findJavaCommand()
       j should be('defined)
     }
 
-    "find javaw.exe" in {
+    def `find javaw.exe`: Unit = {
       if (OS.isWindows) {
         When("OS is windows")
         val cmd = Shell.findJavaCommand("javaw").get
@@ -42,7 +42,7 @@ class ShellTest extends AirframeSpec {
       }
     }
 
-    "detect process IDs" in {
+    def `detect process IDs`: Unit = {
       val p   = Shell.launchProcess("echo hello world")
       val pid = Shell.getProcessID(p)
       debug(s"process ID:$pid")
@@ -51,34 +51,34 @@ class ShellTest extends AirframeSpec {
       }
     }
 
-    "detect current JVM process ID" in {
+    def `detect current JVM process ID`: Unit = {
       val pid = Shell.getProcessIDOfCurrentJVM
       debug(s"JVM process ID:$pid")
       pid should not be (-1)
     }
 
-    "be able to launch Java" in {
+    def `be able to launch Java`: Unit = {
       Shell.launchJava("-version -Duser.language=en")
     }
 
-    "be able to kill processes" in {
+    def `be able to kill processes`: Unit = {
       val p        = Shell.launchProcess("cat")
       val pid      = Shell.getProcessID(p)
       val exitCode = Shell.kill(pid)
     }
 
-    "be able to kill process trees" in {
+    def `be able to kill process trees`: Unit = {
       val p   = Shell.launchProcess("cat")
       val pid = Shell.getProcessID(p)
       Shell.killTree(pid)
     }
 
-    "find sh" in {
+    def `find sh`: Unit = {
       val cmd = Shell.findSh
       cmd should be('defined)
     }
 
-    "launch command" in {
+    def `launch command`: Unit = {
       Shell.launchProcess("echo hello world")
       Shell.launchProcess("echo cygwin env=$CYGWIN")
     }
@@ -90,7 +90,7 @@ class ShellTest extends AirframeSpec {
       }
     }
 
-    "launch a remote process as a daemon" in {
+    def `launch a remote process as a daemon`: Unit = {
       pending // disabled because ssh cannot be used in travis CI
       Shell.launchRemoteDaemon("localhost", "sleep 5")
     }

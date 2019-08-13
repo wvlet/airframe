@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class RetryTest extends AirframeSpec {
-  "support backoff retry" in {
+class RetryTest extends AirSpec {
+  def `support backoff retry`: Unit = {
     var count = 0
 
     val r =
@@ -41,7 +41,7 @@ class RetryTest extends AirframeSpec {
     count shouldBe 3
   }
 
-  "support jitter retry" in {
+  def `support jitter retry`: Unit = {
     var count = 0
 
     val r =
@@ -61,7 +61,7 @@ class RetryTest extends AirframeSpec {
     count shouldBe 2
   }
 
-  "throw max retry exception" in {
+  def `throw max retry exception`: Unit = {
     val e = intercept[MaxRetryException] {
       Retry
         .withBackOff(maxRetry = 3)
@@ -78,10 +78,10 @@ class RetryTest extends AirframeSpec {
 
     e.retryContext.maxRetry shouldBe 3
     e.retryContext.retryCount shouldBe 3
-    e.retryContext.lastError shouldBe a[IllegalStateException]
+    e.retryContext.lastError.getClass shouldBe classOf[IllegalStateException]
   }
 
-  "change retry wait strategy" in {
+  def `change retry wait strategy`: Unit = {
     val r = Retry
       .withJitter()
       .withBackOff(initialIntervalMillis = 3)
@@ -95,7 +95,7 @@ class RetryTest extends AirframeSpec {
     m.maxRetry shouldBe 100
   }
 
-  "pass the execution context" in {
+  def `pass the execution context`: Unit = {
     val r = Retry.withBackOff(initialIntervalMillis = 0)
 
     var count   = 0
