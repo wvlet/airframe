@@ -4,7 +4,7 @@ val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.8"
 val SCALA_2_13 = "2.13.0"
 
-val SCALA_JS_VERSION = "0.6.27"
+val SCALA_JS_VERSION = "0.6.28"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
