@@ -43,25 +43,25 @@ trait Asserts {
     assert((a - b).abs < delta, s"${a} should be ${b} +- ${delta}")(code)
   }
 
-  protected def fail(reason: String = "failed")(implicit code: SourceCode): Unit = {
+  protected def fail(reason: String = "failed")(implicit code: SourceCode): Nothing = {
     throw AssertionFailure(reason, code)
   }
 
-  protected def ignore(reason: String = "ignored")(implicit code: SourceCode): Unit = {
+  protected def ignore(reason: String = "ignored")(implicit code: SourceCode): Nothing = {
     throw Ignored(reason, code)
   }
 
-  protected def pending: Unit = macro AirSpecMacros.pendingImpl
+  protected def pending: Nothing = macro AirSpecMacros.pendingImpl
 
-  protected def pendingUntil(reason: String = "pending")(implicit code: SourceCode): Unit = {
+  protected def pendingUntil(reason: String = "pending")(implicit code: SourceCode): Nothing = {
     throw Pending(reason, code)
   }
 
-  protected def cancel(reason: String = "cancelled")(implicit code: SourceCode): Unit = {
+  protected def cancel(reason: String = "cancelled")(implicit code: SourceCode): Nothing = {
     throw Cancelled(reason, code)
   }
 
-  protected def skip(reason: String = "skipped")(implicit code: SourceCode): Unit = {
+  protected def skip(reason: String = "skipped")(implicit code: SourceCode): Nothing = {
     throw Skipped(reason, code)
   }
 
