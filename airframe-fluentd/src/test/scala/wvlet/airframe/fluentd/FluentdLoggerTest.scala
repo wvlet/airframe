@@ -15,6 +15,7 @@ package wvlet.airframe.fluentd
 import wvlet.airframe.spec.AirSpec
 import wvlet.airframe._
 import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
+import wvlet.log.LogLevel
 
 /**
   *
@@ -35,7 +36,7 @@ class FluentdLoggerTest extends AirSpec {
 
   def `should support console logging`: Unit = {
     val d =
-      newDesign.bind[MetricLogger].to[ConsoleLogger]
+      fluentd.withDebugConsoleLogging.noLifeCycleLogging
 
     d.build[MetricLogger] { f =>
       f.emit("data", Map("id" -> 1, "event" -> "GET"))
@@ -46,8 +47,9 @@ class FluentdLoggerTest extends AirSpec {
 
     val d =
       newDesign
-        .bind[Logger1].toInstance(new ConsoleLogger(Some("l1")))
-        .bind[Logger2].toInstance(new ConsoleLogger(Some("l2")))
+        .bind[Logger1].toInstance(new ConsoleLogger(Some("l1"), LogLevel.DEBUG))
+        .bind[Logger2].toInstance(new ConsoleLogger(Some("l2"), LogLevel.DEBUG))
+        .noLifeCycleLogging
 
     d.withSession { s =>
       val f1 = s.build[LoggerFactory1]

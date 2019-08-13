@@ -49,7 +49,7 @@ trait MockFluentd extends LogSupport {
         }
         if (totalReadLen > 0) {
           val v = ValueCodec.unpackMsgPack(b, 0, totalReadLen)
-          logger.info(s"Received event: ${v}")
+          logger.debug(s"Received event: ${v}")
         }
       }
     }
@@ -89,6 +89,7 @@ class FluencyTest extends AirSpec {
                        ackResponseMode = false)
     .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
     .bind[MockFluentd].toEagerSingleton
+    .noLifeCycleLogging
 
   def `should send metrics to fluentd through Fluency`: Unit = {
     d.build[MetricLoggingService] { f =>

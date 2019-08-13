@@ -35,7 +35,7 @@ case class ErrorMetric(errorType: String, ex: Exception) extends TaggedMetric {
 class MetricLoggerTest extends AirSpec {
 
   override protected def configureLocal(design: Design): Design = {
-    design + fluentd.withConsoleLogging
+    design + fluentd.withDebugConsoleLogging
   }
 
   def `generate MetricLogger for case classes`(f: MetricLoggerFactory): Unit = {

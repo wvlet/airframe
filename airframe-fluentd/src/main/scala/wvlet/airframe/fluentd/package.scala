@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 import org.komamitsu.fluency.ingester.sender.ErrorHandler
+import wvlet.log.LogLevel
 
 /**
   *
@@ -101,4 +102,10 @@ package object fluentd {
     newDesign
       .bind[MetricLogger].to[ConsoleLogger]
   }
+
+  def withDebugConsoleLogging: Design = {
+    newDesign
+      .bind[MetricLogger].toInstance(new ConsoleLogger(logLevel = LogLevel.DEBUG))
+  }
+
 }

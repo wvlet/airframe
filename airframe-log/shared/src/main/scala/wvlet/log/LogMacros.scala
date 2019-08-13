@@ -80,6 +80,11 @@ private[log] object LogMacros {
     }
   }
 
+  def logAtImpl(c: Context)(logLevel: c.Tree, message: c.Tree): c.Tree = {
+    import c.universe._
+    new MacroHelper[c.type](c).log(logLevel, message)
+  }
+
   def errorLog(c: Context)(message: c.Tree): c.Tree = {
     import c.universe._
     new MacroHelper[c.type](c).log(q"wvlet.log.LogLevel.ERROR", message)
