@@ -20,11 +20,21 @@ import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
 import wvlet.airframe.spec.spi.AirSpecException
 import wvlet.log.{LogFormatter, LogRecord, Logger}
 
+private[spec] object AirSpecLogger {
+  private def isTravisCI: Boolean = {
+    sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
+  }
+}
+
 /**
   *
   */
 private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
-  private val useAnciColor = sbtLoggers.forall(_.ansiCodesSupported())
+  import AirSpecLogger._
+  // Always use ANSI color log for Travis because sbt's ansiCodeSupported() returns false even though it can show ANSI colors
+  private val useAnciColor = {
+    isTravisCI || sbtLoggers.forall(_.ansiCodesSupported())
+  }
 
   private val airSpecLogger = Logger("wvlet.airframe.spec.AirSpec")
   airSpecLogger.setFormatter(LogFormatter.BareFormatter)
