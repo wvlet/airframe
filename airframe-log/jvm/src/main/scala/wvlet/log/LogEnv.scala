@@ -60,24 +60,26 @@ private[log] object LogEnv extends LogEnvBase {
 
   private val mBeanName = new ObjectName("wvlet.log:type=Logger")
 
-  if (!onGraalVM) {
-    // Register the log level configuration interface to JMX
-    val mbeanServer = ManagementFactory.getPlatformMBeanServer
-    if (!mbeanServer.isRegistered(mBeanName)) {
+  // Register JMX entry upon start-up
+  registerJMX
+
+  override def registerJMX: Unit = {
+    if (!onGraalVM) {
+      // Register the log level configuration interface to JMX
+      val mbeanServer = ManagementFactory.getPlatformMBeanServer
+      if (mbeanServer.isRegistered(mBeanName)) {
+        unregisterJMX
+      }
       mbeanServer.registerMBean(LoggerJMX, mBeanName)
     }
   }
 
-  /**
-    *
-    */
   override def unregisterJMX: Unit = {
     if (!onGraalVM) {
       val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      val name =
-        if (mbeanServer.isRegistered(mBeanName)) {
-          mbeanServer.unregisterMBean(mBeanName)
-        }
+      if (mbeanServer.isRegistered(mBeanName)) {
+        mbeanServer.unregisterMBean(mBeanName)
+      }
     }
   }
 }

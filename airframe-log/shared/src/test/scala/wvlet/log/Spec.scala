@@ -17,4 +17,8 @@ import wvlet.airframe.spec.AirSpec
 /**
   *
   */
-trait Spec extends AirSpec with LogSupport {}
+trait Spec extends AirSpec with LogSupport {
+  override protected def after: Unit = {
+    Logger.clearAllHandlers
+  }
+}

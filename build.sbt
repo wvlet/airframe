@@ -15,9 +15,8 @@ val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
-
-val AIRSPEC_VERSION  = "19.8.2"
-val airSpecFramework = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+val JS_JAVA_LOGGING_VERSION         = "0.1.5"
+val airSpecFramework                = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
@@ -50,7 +49,9 @@ lazy val travisSettings = List(
   )
 )
 
-inThisBuild(if (isTravisBuild) travisSettings else List.empty)
+inThisBuild(
+  if (isTravisBuild) travisSettings
+  else List.empty)
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
@@ -71,7 +72,9 @@ val buildSettings = Seq[Setting[_]](
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
   ),
   testFrameworks += airSpecFramework,
-  libraryDependencies += "org.wvlet.airframe" %%% "airspec" % AIRSPEC_VERSION % "test"
+  libraryDependencies ++= Seq(
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+  )
 )
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
@@ -363,6 +366,17 @@ lazy val airframeMacrosJS  = airframeMacros.js
 lazy val airframeMacrosJVMRef = airframeMacrosJVM % "compile-internal,test-internal"
 lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-internal"
 
+val surfaceDependencies = { scalaVersion: String =>
+  Seq(
+    "org.scala-lang" % "scala-reflect"  % scalaVersion,
+    "org.scala-lang" % "scala-compiler" % scalaVersion % "provided"
+  )
+}
+val surfaceJVMDependencies = Seq(
+  // For ading PreDestroy, PostConstruct annotations to Java9
+  "javax.annotation" % "javax.annotation-api" % "1.3.1"
+)
+
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
     .in(file("airframe-surface"))
@@ -370,20 +384,13 @@ lazy val surface =
     .settings(
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
-      libraryDependencies ++= Seq(
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value,
-        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-compiler"            % scalaVersion.value % "provided"
-      )
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= Seq(
-        // For ading PreDestroy, PostConstruct annotations to Java9
-        "javax.annotation" % "javax.annotation-api" % "1.3.1"
-      )
+      libraryDependencies ++= surfaceJVMDependencies
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log)
+    .dependsOn(log, airspec % "test")
 
 lazy val surfaceJVM = surface.jvm
 lazy val surfaceJS  = surface.js
@@ -450,6 +457,15 @@ lazy val launcher =
     )
     .dependsOn(surfaceJVM, control, codecJVM, airframeScalaTestJVM % "test")
 
+val logDependencies = { scalaVersion: String =>
+  Seq(
+    "org.scala-lang" % "scala-reflect" % scalaVersion % "provided"
+  )
+}
+val logJVMDependencies = Seq(
+  "ch.qos.logback" % "logback-core" % "1.2.3"
+)
+
 // airframe-log should have minimum dependencies
 lazy val log: sbtcrossproject.CrossProject =
   crossProject(JVMPlatform, JSPlatform)
@@ -458,21 +474,19 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1",
-        "org.scala-lang"         % "scala-reflect"             % scalaVersion.value % "provided"
-      )
+      libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= Seq("ch.qos.logback" % "logback-core" % "1.2.3")
+      libraryDependencies ++= logJVMDependencies,
       //classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
     )
     .jsSettings(
       jsBuildSettings,
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-java-logging" % "0.1.5"
+        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
       )
     )
+    .dependsOn(airspec % "test")
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
@@ -674,6 +688,7 @@ lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
 val JMH_VERSION = "1.21"
+
 import xerial.sbt.pack.PackPlugin._
 
 lazy val benchmark =
@@ -767,28 +782,146 @@ lazy val examples =
                finagle,
                airframeScalaTestJVM % "test")
 
+/**
+  * AirSpec build definitions.
+  *
+  * To make airspec a standalone library without any cyclic project references, airspec shares the same source code with airframe-log, di, surface, etc.
+  *
+  * Since airframe-log, di, and surfaces uses Scala macros whose def-macros cannot be called within the same project,
+  * we need to split the source code into three projects:
+  *
+  *  - airspec-log (dependsOn airframe-log's source)
+  *  - airspec-core (di-macros, surface)
+  *  - airspec (di, metrics)
+  *
+  */
+val airspecLogDependencies  = Seq("airframe-log")
+val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
+val airspecDependencies     = Seq("airframe", "airframe-metrics")
+
+// Setting keys for AirSpec
+val airspecDependsOn = settingKey[Seq[String]]("Dependent module names of airspec projects")
+
+val airspecBuildSettings = Seq[Setting[_]](
+  unmanagedSourceDirectories in Compile ++= {
+    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val sourceDirs = for (m <- airspecDependsOn.value) yield {
+      Seq(
+        file(s"${baseDir}/${m}/src/main/scala"),
+        file(s"${baseDir}/${m}/shared/src/main/scala")
+      )
+    }
+    sourceDirs.flatten
+  }
+)
+
+val airspecJVMBuildSettings = Seq[Setting[_]](
+  unmanagedSourceDirectories in Compile ++= {
+    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val sv      = scalaBinaryVersion.value
+    val sourceDirs = for (m <- airspecDependsOn.value) yield {
+      Seq(
+        file(s"${baseDir}/${m}/.jvm/src/main/scala"),
+        file(s"${baseDir}/${m}/.jvm/src/main/scala-${sv}"),
+        file(s"${baseDir}/${m}/jvm/src/main/scala"),
+        file(s"${baseDir}/${m}/jvm/src/main/scala-${sv}")
+      )
+    }
+    sourceDirs.flatten
+  }
+)
+
+val airspecJSBuildSettings = Seq[Setting[_]](
+  unmanagedSourceDirectories in Compile ++= {
+    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val sv      = scalaBinaryVersion.value
+    val sourceDirs = for (m <- airspecDependsOn.value) yield {
+      Seq(
+        file(s"${baseDir}/${m}/.js/src/main/scala"),
+        file(s"${baseDir}/${m}/.js/src/main/scala-${sv}"),
+        file(s"${baseDir}/${m}/js/src/main/scala"),
+        file(s"${baseDir}/${m}/js/src/main/scala-${sv}")
+      )
+    }
+    sourceDirs.flatten
+  }
+)
+
+lazy val airspecLog =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airspec-log"))
+    .settings(buildSettings)
+    .settings(
+      airspecDependsOn := airspecLogDependencies,
+      airspecBuildSettings,
+      name := "airspec-log",
+      description := "airframe-log for AirSpec",
+      libraryDependencies ++= logDependencies(scalaVersion.value)
+    )
+    .jvmSettings(
+      airspecJVMBuildSettings,
+      libraryDependencies ++= logJVMDependencies
+    )
+    .jsSettings(
+      airspecJSBuildSettings,
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
+      )
+    )
+
+lazy val airspecLogJVM = airspecLog.jvm
+lazy val airspecLogJS  = airspecLog.js
+
+lazy val airspecCore =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airspec-core"))
+    .settings(buildSettings)
+    .settings(
+      airspecDependsOn := airspecCoreDependencies,
+      airspecBuildSettings,
+      name := "airspec-core",
+      description := "A core module of AirSpec with Surface and DI macros",
+      libraryDependencies ++= surfaceDependencies(scalaVersion.value)
+    )
+    .jvmSettings(
+      airspecJVMBuildSettings,
+      libraryDependencies ++= surfaceJVMDependencies
+    )
+    .jsSettings(
+      airspecJSBuildSettings,
+    )
+    .dependsOn(airspecLog)
+
+lazy val airspecCoreJVM = airspecCore.jvm
+lazy val airspecCoreJS  = airspecCore.js
+
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec"))
     .settings(buildSettings)
     .settings(
+      airspecDependsOn := airspecDependencies,
+      airspecBuildSettings,
       name := "airspec",
-      description := "AirSpec: A Functional Testing Framework for Scala",
-      testFrameworks += airSpecFramework
+      description := "AirSpec: A Functional Testing Framework for Scala"
     )
     .jvmSettings(
+      airspecJVMBuildSettings,
       libraryDependencies ++= Seq(
         "org.scala-sbt" % "test-interface" % "1.0"
       )
     )
     .jsSettings(
+      airspecJSBuildSettings,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
-    .dependsOn(log, airframe, metrics, airframeMacrosRef)
+    .dependsOn(airspecCore)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
