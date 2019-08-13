@@ -117,7 +117,8 @@ lazy val scaladoc =
         inAnyProject --
           inProjects(jvmProjects2_12: _*) --
           inProjects(airframeMacrosJS) --
-          inProjects(jsProjects: _*),
+          inProjects(jsProjects: _*) --
+          inProjects(airspecProjects: _*),
       // compile projects first
       Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
     )
@@ -169,6 +170,15 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   msgpackJS,
   jsonJS,
   airspecJS
+)
+
+lazy val airspecProjects: Seq[ProjectReference] = Seq(
+  airspecJVM,
+  airspecJS,
+  airspecCoreJVM,
+  airspecCoreJS,
+  airspecLogJVM,
+  airspecLogJS
 )
 
 // For community-build
