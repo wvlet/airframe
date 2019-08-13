@@ -733,7 +733,7 @@ lazy val benchmark =
       ),
       publishPackArchiveTgz
     )
-    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, airframeScalaTestJVM % "test")
+    .dependsOn(msgpackJVM, jsonJVM, metricsJVM, launcher, airspecJVM % "test")
 
 lazy val fluentd =
   project
