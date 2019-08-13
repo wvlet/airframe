@@ -87,13 +87,13 @@ usage: bench [targetPackage]
 <div class="highlighter-rouge"><pre class="highlight"><code>$ ./sbt
 
 # Run JSON benchmark:
-&gt; benchmark/testOnly * -- -n json
+&gt; benchmark/testOnly * -- "json benchmark"
 
 # Run benchmark for measuring JSON parse time:
-&gt; benchmark/testOnly * -- -n json-perf
+&gt; benchmark/testOnly * -- "json perf"
 
 # Run Msgpack benchmark:
-&gt; benchmark/testOnly * -- -n msgpack
+&gt; benchmark/testOnly * -- msgpack
 
 # Run all JMH benchmarks:
 &gt; benchmark/run bench-quick
