@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 object ConfigOverrideTest {
   case class MyAppConfig(
@@ -25,12 +25,12 @@ object ConfigOverrideTest {
 /**
   *
   */
-class ConfigOverrideTest extends AirframeSpec {
+class ConfigOverrideTest extends AirSpec {
   import ConfigOverrideTest._
 
   def newConfig: Config = Config(env = "default").register[MyAppConfig](MyAppConfig())
 
-  "override config via canonical param name" in {
+  def `override config via canonical param name`: Unit = {
     val prop = Map("myapp.coordinator_address" -> "mylocalhost:8081")
     val appConfig =
       newConfig
@@ -42,7 +42,7 @@ class ConfigOverrideTest extends AirframeSpec {
     appConfig.name shouldBe "myapp"
   }
 
-  "override config with key names with hyphen" in {
+  def `override config with key names with hyphen`: Unit = {
     val prop = Map("my-app.coordinator-address" -> "mylocalhost:8081")
 
     val appConfig =

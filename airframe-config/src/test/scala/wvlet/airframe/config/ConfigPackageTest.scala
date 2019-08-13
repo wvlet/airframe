@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.config
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe._
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.tag._
 
 trait AppTag
@@ -21,33 +21,31 @@ trait AppTag
 /**
   *
   */
-class ConfigPackageTest extends AirframeSpec {
+class ConfigPackageTest extends AirSpec {
 
   private val configPaths = Seq("airframe-config/src/test/resources")
 
-  "config package" should {
-    "bind config with Airframe design" in {
-      val d = newDesign.noLifeCycleLogging
-        .withConfigEnv(env = "development")
-        .withConfigPaths(configPaths)
-        .bindConfig[DefaultConfig](DefaultConfig(10, "aina"))
-        .bindConfigFromYaml[ClassConfig]("classes.yml")
-        // Specifying non exising yaml file
-        .bindConfigFromYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
-        // Switching env
-        .withConfigEnv(env = "staging")
-        .bindConfigFromYaml[SampleConfig @@ AppTag]("myconfig.yml")
-        .overrideConfigParams(Map("sample.id" -> 2))
+  def `bind config with Airframe design`: Unit = {
+    val d = newDesign.noLifeCycleLogging
+      .withConfigEnv(env = "development")
+      .withConfigPaths(configPaths)
+      .bindConfig[DefaultConfig](DefaultConfig(10, "aina"))
+      .bindConfigFromYaml[ClassConfig]("classes.yml")
+      // Specifying non exising yaml file
+      .bindConfigFromYaml[SampleConfig]("myconfig--.yml", SampleConfig(1, "leo"))
+      // Switching env
+      .withConfigEnv(env = "staging")
+      .bindConfigFromYaml[SampleConfig @@ AppTag]("myconfig.yml")
+      .overrideConfigParams(Map("sample.id" -> 2))
 
-      d.withSession { session =>
-        session.build[DefaultConfig] shouldBe DefaultConfig(10, "aina")
+    d.withSession { session =>
+      session.build[DefaultConfig] shouldBe DefaultConfig(10, "aina")
 
-        val classConfig = session.build[ClassConfig]
-        classConfig.classes shouldBe Seq("class1", "class2", "class3")
-        classConfig.classAssignments shouldBe Map("nobita" -> "class1", "takeshi" -> "class2", "suneo" -> "class3")
-        session.build[SampleConfig] shouldBe SampleConfig(2, "leo")
-        session.build[SampleConfig @@ AppTag] shouldBe SampleConfig(2, "staging-config")
-      }
+      val classConfig = session.build[ClassConfig]
+      classConfig.classes shouldBe Seq("class1", "class2", "class3")
+      classConfig.classAssignments shouldBe Map("nobita" -> "class1", "takeshi" -> "class2", "suneo" -> "class3")
+      session.build[SampleConfig] shouldBe SampleConfig(2, "leo")
+      session.build[SampleConfig @@ AppTag] shouldBe SampleConfig(2, "staging-config")
     }
   }
 }

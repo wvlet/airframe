@@ -433,7 +433,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.18"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, tablet, airframeScalaTestJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, tablet, airspecJVM % "test")
 
 lazy val control =
   project

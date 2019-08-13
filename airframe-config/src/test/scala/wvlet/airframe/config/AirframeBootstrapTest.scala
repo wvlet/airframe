@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface._
 
 object AirframeBootstrapTest {
@@ -39,45 +39,43 @@ object AirframeBootstrapTest {
 /**
   *
   */
-class AirframeBootstrapTest extends AirframeSpec {
+class AirframeBootstrapTest extends AirSpec {
   import AirframeBootstrapTest._
 
-  "AirframeBootstrap" should {
-    "bind configs" in {
-      module1.noLifeCycleLogging.showConfig
-        .withSession { session =>
-          session.build[AppConfig] shouldBe AppConfig("hello")
-          session.build[String] shouldBe "world"
-        }
-    }
-
-    "combine modules" in {
-      (module1 + module2).noLifeCycleLogging.showConfig
-        .withSession { session =>
-          session.build[AppConfig] shouldBe AppConfig("hello")
-          session.build[String] shouldBe "Airframe"
-        }
-    }
-
-    "override config" in {
-      (module1 + module3).noLifeCycleLogging
-        .overrideConfigParams(Map("app.name" -> "good morning"))
-        .showConfig
-        .withSession { session =>
-          session.build[AppConfig] shouldBe AppConfig("good morning")
-          session.build[App2Config] shouldBe App2Config("scala")
-        }
-    }
-
-    "get config" in {
-      module3.noLifeCycleLogging.getConfig match {
-        case Some(c) =>
-          c.getAll.length shouldBe 1
-          c.getAll.head.tpe shouldBe Surface.of[App2Config]
-          c.getAll.head.value shouldBe App2Config("scala")
-        case None =>
-          fail()
+  def `bind configs`: Unit = {
+    module1.noLifeCycleLogging.showConfig
+      .withSession { session =>
+        session.build[AppConfig] shouldBe AppConfig("hello")
+        session.build[String] shouldBe "world"
       }
+  }
+
+  def `combine modules`: Unit = {
+    (module1 + module2).noLifeCycleLogging.showConfig
+      .withSession { session =>
+        session.build[AppConfig] shouldBe AppConfig("hello")
+        session.build[String] shouldBe "Airframe"
+      }
+  }
+
+  def `override config`: Unit = {
+    (module1 + module3).noLifeCycleLogging
+      .overrideConfigParams(Map("app.name" -> "good morning"))
+      .showConfig
+      .withSession { session =>
+        session.build[AppConfig] shouldBe AppConfig("good morning")
+        session.build[App2Config] shouldBe App2Config("scala")
+      }
+  }
+
+  def `get config`: Unit = {
+    module3.noLifeCycleLogging.getConfig match {
+      case Some(c) =>
+        c.getAll.length shouldBe 1
+        c.getAll.head.tpe shouldBe Surface.of[App2Config]
+        c.getAll.head.value shouldBe App2Config("scala")
+      case None =>
+        fail()
     }
   }
 }
