@@ -57,7 +57,7 @@ trait Asserts {
     throw Skipped(reason, code)
   }
 
-  protected def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): Unit = {
+  protected def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): E = {
     val E = implicitly[ClassTag[E]]
 
     try {
@@ -68,7 +68,7 @@ trait Asserts {
       case ex: InterceptException =>
         throw new AssertionFailure(ex.message, code)
       case ex: Throwable if E.runtimeClass.isInstance(ex) =>
-      // No-op
+        ex.asInstanceOf[E]
     }
   }
 }

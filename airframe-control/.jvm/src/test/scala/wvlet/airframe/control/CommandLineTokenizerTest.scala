@@ -21,7 +21,7 @@ import wvlet.airframe.AirframeSpec
 //
 //--------------------------------------
 class CommandLineTokenizerTest extends AirframeSpec {
-  "tokenize a single string into args" in {
+  def `tokenize a single string into args`: Unit = {
     val args = CommandLineTokenizer.tokenize("""-c "hello world!" -f 3.432""")
 
     args.length shouldBe 4

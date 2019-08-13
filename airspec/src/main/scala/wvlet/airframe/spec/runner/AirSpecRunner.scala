@@ -12,13 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec.runner
-import java.util.regex.PatternSyntaxException
-
 import sbt.testing.{Task, TaskDef}
 import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
 
-import scala.util.{Failure, Try}
 import scala.util.matching.Regex
 
 /**

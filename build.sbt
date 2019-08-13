@@ -442,7 +442,7 @@ lazy val control =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(logJVM, jmx, airframeScalaTestJVM % "test")
+    .dependsOn(logJVM, jmx, airspecJVM % "test")
 
 lazy val jmx =
   project
