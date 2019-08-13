@@ -16,14 +16,13 @@ package wvlet.airframe.spec.spi
 import wvlet.airframe.SourceCode
 import wvlet.airframe.spec.AirSpecMacros
 
-import scala.reflect.ClassTag
 import scala.language.experimental.macros
+import scala.reflect.ClassTag
 
 /**
   *
   */
 trait Asserts {
-
   protected def assert(cond: => Boolean)(implicit code: SourceCode) = {
     if (!cond) {
       throw AssertionFailure("assertion failed", code)

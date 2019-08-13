@@ -15,7 +15,10 @@ package wvlet.airframe
 import scala.language.experimental.macros
 
 /**
-  * Source code location
+  * Source code location.
+  *
+  * This code is placed under airframe-di-macros to avoid weird compilation error in IntelliJ
+  * if we place this code in airframe.
   */
 case class SourceCode(filePath: String, fileName: String, line: Int, col: Int) {
   override def toString = s"${fileName}:${line}"
