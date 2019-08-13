@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.launcher
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.launcher.LauncherTest.capture
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -75,84 +75,84 @@ object ArgProcessorTest {
   case class BooleanOption(@option(prefix = "--flag") flag: Option[Boolean] = None)
 }
 
-class ArgProcessorTest extends AirframeSpec {
+class ArgProcessorTest extends AirSpec {
   import ArgProcessorTest._
 
-  "should run the default command" in {
+  def `should run the default command`: Unit = {
 
     val c = capture {
       Launcher.of[Cmd].execute("")
     }
-    c should include("Type --help to show the list of sub commands")
+    c.contains("Type --help to show the list of sub commands") shouldBe true
   }
 
-  "should parse top-level arguments" in {
+  def `should parse top-level arguments`: Unit = {
     val l = Launcher.of[Cmd]
     l.execute("")
     l.execute("-h")
   }
 
-  "should show global options" in {
+  def `should show global options`: Unit = {
     val c = capture {
       nestedLauncher.execute("sub -h")
     }
-    c should include("global options")
-    c should include("port number")
+    c.contains("global options") shouldBe true
+    c.contains("port number") shouldBe true
   }
 
-  "should show sub command options" in {
+  def `should show sub command options`: Unit = {
     val c = capture {
       nestedLauncher.execute("sub hello -h")
     }
-    c should include("global options")
-    c should include("port number")
+    c.contains("global options") shouldBe true
+    c.contains("port number") shouldBe true
   }
 
-  "should execute sub commands" in {
+  def `should execute sub commands`: Unit = {
     capture {
       nestedLauncher.execute("sub hello")
       nestedLauncher.execute("sub hello -t 100")
     }
   }
 
-  "should support more nested commands" in {
+  def `should support more nested commands`: Unit = {
     val c = capture {
       moreNestedLauncher.execute("sub nested1 --help")
     }
-    c should include("hello a")
-    c should include("hello b")
+    c.contains("hello a") shouldBe true
+    c.contains("hello b") shouldBe true
 
     val c2 = capture {
       moreNestedLauncher.execute("--help")
     }
-    c2 should include("sub")
-    c2 should not include ("nested1")
+    c2.contains("sub") shouldBe true
+    c2.contains("nested1") shouldNotBe true
 
     val c3 = capture {
       moreNestedLauncher.execute("sub --help")
     }
-    c3 should include("hello")
-    c3 should include("nested1")
-    c3 should include("nested2")
+    c3.contains("hello") shouldBe true
+    c3.contains("nested1") shouldBe true
+    c3.contains("nested2") shouldBe true
   }
 
-  "should support function arg" taggedAs ("farg") in {
+  def `should support function arg`: Unit = {
     Launcher.of[FunctionArg].execute("proxy")
   }
 
-  "should support argument list" in {
+  def `should support argument list`: Unit = {
     // Single element => Seq("apple")
-    Launcher.of[SeqArg].execute("apple").getRootInstance should be(SeqArg(Seq("apple")))
+    Launcher.of[SeqArg].execute("apple").getRootInstance shouldBe SeqArg(Seq("apple"))
     // Multiple elements => Seq("apple", "banana")
-    Launcher.of[SeqArg].execute("apple banana").getRootInstance should be(SeqArg(Seq("apple", "banana")))
+    Launcher.of[SeqArg].execute("apple banana").getRootInstance shouldBe SeqArg(Seq("apple", "banana"))
   }
 
-  "should support multiple same-name options" in {
-    Launcher.of[SeqOption].execute("-p 10").getRootInstance should be(SeqOption(Seq(10)))
-    Launcher.of[SeqOption].execute("-p 10 -p 20 -p 30").getRootInstance should be(SeqOption(Seq(10, 20, 30)))
+  def `should support multiple same-name options`: Unit = {
+    Launcher.of[SeqOption].execute("-p 10").getRootInstance shouldBe SeqOption(Seq(10))
+    Launcher.of[SeqOption].execute("-p 10 -p 20 -p 30").getRootInstance shouldBe SeqOption(Seq(10, 20, 30))
   }
 
-  "should set Option[Boolean] option" taggedAs working in {
+  def `should set Option[Boolean] option`: Unit = {
     Launcher.of[BooleanOption].execute("--flag").getRootInstance shouldBe BooleanOption(Some(true))
     Launcher.of[BooleanOption].execute("").getRootInstance shouldBe BooleanOption(None)
   }

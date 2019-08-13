@@ -469,7 +469,7 @@ lazy val launcher =
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
-    .dependsOn(surfaceJVM, control, codecJVM, airframeScalaTestJVM % "test")
+    .dependsOn(surfaceJVM, control, codecJVM, airspecJVM % "test")
 
 val logDependencies = { scalaVersion: String =>
   Seq(
