@@ -32,7 +32,7 @@ import ConfigProviderTest._
 class ConfigProviderTest extends AirframeSpec {
 
   "ConfigurationProvider" should {
-    def `provide config objects with Airframe`: Unit = {
+    "provide config objects with Airframe" in {
       pending
       val config =
         Config("staging").registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")
