@@ -13,25 +13,22 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class NestedConfigTest extends AirframeSpec {
+class NestedConfigTest extends AirSpec {
   import NestedConfigTest._
-  "Config" should {
-    "support nested case classes" in {
-      val configPaths = Seq("airframe-config/src/test/resources")
+  def `support nested case classes`: Unit = {
+    val configPaths = Seq("airframe-config/src/test/resources")
 
-      val config = Config(env = "default", configPaths = configPaths)
-        .registerFromYaml[ServerPoolConfig]("nested.yml")
+    val config = Config(env = "default", configPaths = configPaths)
+      .registerFromYaml[ServerPoolConfig]("nested.yml")
 
-      val s = config.toString
-      debug(s)
-    }
+    val s = config.toString
+    debug(s)
   }
-
 }
 
 object NestedConfigTest {

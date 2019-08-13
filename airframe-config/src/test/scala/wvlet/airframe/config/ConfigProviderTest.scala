@@ -13,8 +13,7 @@
  */
 package wvlet.airframe.config
 
-//import wvlet.airframe._
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 object ConfigProviderTest {
 
@@ -29,13 +28,12 @@ import ConfigProviderTest._
 /**
   *
   */
-class ConfigProviderTest extends AirframeSpec {
+class ConfigProviderTest extends AirSpec {
 
-  "ConfigurationProvider" should {
-    "provide config objects with Airframe" in {
-      pending
-      val config =
-        Config("staging").registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")
+  def `provide config objects with Airframe`: Unit = {
+    pending
+    val config =
+      Config("staging").registerFromYaml[ConfigA]("airframe-config/src/test/resources/myconfig.yml")
 
 //      var d = newDesign
 //      for(c <- config.getAll) {
@@ -43,6 +41,5 @@ class ConfigProviderTest extends AirframeSpec {
 //      }
 //      val myapp = d.newSession.build[MyApp]
 //      myapp.configA shouldBe ConfigA(2, "staging-config")
-    }
   }
 }
