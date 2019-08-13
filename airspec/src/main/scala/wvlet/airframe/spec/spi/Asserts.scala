@@ -35,6 +35,14 @@ trait Asserts {
     }
   }
 
+  protected def assertEquals(a: Float, b: Float, delta: Double)(implicit code: SourceCode): Unit = {
+    assert((a - b).abs < delta, s"${a} should be ${b} +- ${delta}")(code)
+  }
+
+  protected def assertEquals(a: Double, b: Double, delta: Double)(implicit code: SourceCode): Unit = {
+    assert((a - b).abs < delta, s"${a} should be ${b} +- ${delta}")(code)
+  }
+
   protected def fail(reason: String = "failed")(implicit code: SourceCode): Unit = {
     throw AssertionFailure(reason, code)
   }
