@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.codec.MessageHolder
+import wvlet.airframe.spec.AirSpec
 
 object ObjectJSONCodecTest {
   case class A(id: Int, name: String)
@@ -23,25 +23,23 @@ object ObjectJSONCodecTest {
 /**
   *
   */
-class ObjectJSONCodecTest extends AirframeSpec {
+class ObjectJSONCodecTest extends AirSpec {
   import ObjectJSONCodecTest._
 
-  "ObjectJSONCodec" should {
-    "convert object into json" in {
-      val codec = ObjectJSONCodec.of[A]
-      val a     = A(1, "leo")
-      val json  = codec.toJSON(a)
-      val v     = new MessageHolder
-      codec.fromJSON(json, v)
+  def `convert object into json`: Unit = {
+    val codec = ObjectJSONCodec.of[A]
+    val a     = A(1, "leo")
+    val json  = codec.toJSON(a)
+    val v     = new MessageHolder
+    codec.fromJSON(json, v)
 
-      v.isNull shouldBe false
-      v.getLastValue shouldBe a
-    }
+    v.isNull shouldBe false
+    v.getLastValue shouldBe a
+  }
 
-    "forbid creating codecs for non-object" in {
-      intercept[IllegalArgumentException] {
-        ObjectJSONCodec.of[String]
-      }
+  def `forbid creating codecs for non-object`: Unit = {
+    intercept[IllegalArgumentException] {
+      ObjectJSONCodec.of[String]
     }
   }
 }

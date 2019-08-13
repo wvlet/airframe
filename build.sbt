@@ -599,13 +599,12 @@ lazy val tablet =
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.scalacheck"         %% "scalacheck"               % SCALACHECK_VERSION % "test",
         "org.msgpack"            % "msgpack-core"              % "0.8.14",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
     )
-    .dependsOn(codecJVM, logJVM, surfaceJVM, airframeScalaTestJVM % "test")
+    .dependsOn(codecJVM, logJVM, surfaceJVM, airspecJVM % "test")
 
 lazy val jdbc =
   project

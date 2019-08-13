@@ -13,13 +13,13 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.codec.MessageHolder
+import wvlet.airframe.spec.AirSpec
 
-class ArrayJSONCodecTest extends AirframeSpec {
+class ArrayJSONCodecTest extends AirSpec {
   private def assertEncode[T](codec: ArrayJSONCodec[T], input: Array[T]) = {
     val json = codec.toJSON(input)
-    info(s"encoded: $json")
+    debug(s"encoded: $json")
     val v = new MessageHolder
     codec.fromJSON(json, v)
 
@@ -27,53 +27,51 @@ class ArrayJSONCodecTest extends AirframeSpec {
     v.getLastValue shouldBe input
   }
 
-  "ArrayJSONCodec" should {
-    "encode short array" in {
-      val codec = ArrayJSONCodec.of[Short]
-      val a     = Array[Short](1, 2)
-      assertEncode(codec, a)
-    }
+  def `encode short array`: Unit = {
+    val codec = ArrayJSONCodec.of[Short]
+    val a     = Array[Short](1, 2)
+    assertEncode(codec, a)
+  }
 
-    "encode int array" in {
-      val codec = ArrayJSONCodec.of[Int]
-      val a     = Array(1, 2)
-      assertEncode(codec, a)
-    }
+  def `encode int array`: Unit = {
+    val codec = ArrayJSONCodec.of[Int]
+    val a     = Array(1, 2)
+    assertEncode(codec, a)
+  }
 
-    "encode long array" in {
-      val codec = ArrayJSONCodec.of[Long]
-      val a     = Array(1L, 2L)
-      assertEncode(codec, a)
-    }
+  def `encode long array`: Unit = {
+    val codec = ArrayJSONCodec.of[Long]
+    val a     = Array(1L, 2L)
+    assertEncode(codec, a)
+  }
 
-    "encode char array" in {
-      val codec = ArrayJSONCodec.of[Char]
-      val a     = Array('a', 'b')
-      assertEncode(codec, a)
-    }
+  def `encode char array`: Unit = {
+    val codec = ArrayJSONCodec.of[Char]
+    val a     = Array('a', 'b')
+    assertEncode(codec, a)
+  }
 
-    "encode float array" in {
-      val codec = ArrayJSONCodec.of[Float]
-      val a     = Array(1.5f, 2.5f)
-      assertEncode(codec, a)
-    }
+  def `encode float array`: Unit = {
+    val codec = ArrayJSONCodec.of[Float]
+    val a     = Array(1.5f, 2.5f)
+    assertEncode(codec, a)
+  }
 
-    "encode double array" in {
-      val codec = ArrayJSONCodec.of[Double]
-      val a     = Array(1.5d, 2.5d)
-      assertEncode(codec, a)
-    }
+  def `encode double array`: Unit = {
+    val codec = ArrayJSONCodec.of[Double]
+    val a     = Array(1.5d, 2.5d)
+    assertEncode(codec, a)
+  }
 
-    "encode boolean array" in {
-      val codec = ArrayJSONCodec.of[Boolean]
-      val a     = Array(true, false)
-      assertEncode(codec, a)
-    }
+  def `encode boolean array`: Unit = {
+    val codec = ArrayJSONCodec.of[Boolean]
+    val a     = Array(true, false)
+    assertEncode(codec, a)
+  }
 
-    "encode string array" in {
-      val codec = ArrayJSONCodec.of[String]
-      val a     = Array("a", "b")
-      assertEncode(codec, a)
-    }
+  def `encode string array`: Unit = {
+    val codec = ArrayJSONCodec.of[String]
+    val a     = Array("a", "b")
+    assertEncode(codec, a)
   }
 }

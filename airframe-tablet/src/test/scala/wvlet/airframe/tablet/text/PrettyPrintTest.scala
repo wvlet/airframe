@@ -13,25 +13,20 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
 import wvlet.airframe.tablet.text.PrettyPrintTest._
-class PrettyPrintTest extends AirframeSpec {
-  "PrettyPrint" should {
-
-    "print objects" in {
-      //PrettyPrint.pp(Seq(1, 2, 3))
-      PrettyPrint.pp(Seq(AP(1, "leo"), AP(2, "yui")))
-      PrettyPrint.show(Seq(AP(1, "leo"), AP(2, "yui")))
-    }
+class PrettyPrintTest extends AirSpec {
+  def `print objects`: Unit = {
+    //PrettyPrint.pp(Seq(1, 2, 3))
+    PrettyPrint.pp(Seq(AP(1, "leo"), AP(2, "yui")))
+    PrettyPrint.show(Seq(AP(1, "leo"), AP(2, "yui")))
   }
 }
 
 object PrettyPrintTest {
-
   case class AP(id: Int, name: String)
-
 }
