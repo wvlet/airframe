@@ -456,7 +456,7 @@ lazy val jmx =
       name := "airframe-jmx",
       description := "A library for exposing Scala object data through JMX"
     )
-    .dependsOn(surfaceJVM, airframeScalaTestJVM % "test")
+    .dependsOn(surfaceJVM, airspecJVM % "test")
 
 lazy val launcher =
   project
