@@ -515,7 +515,7 @@ lazy val metrics =
       libraryDependencies ++= Seq()
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, surface, airframeScalaTest % "test")
+    .dependsOn(log, surface, airspec % "test")
 
 lazy val metricsJVM = metrics.jvm
 lazy val metricsJS  = metrics.js
