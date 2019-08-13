@@ -78,13 +78,13 @@ usage: bench [targetPackage]
 $ ./sbt
 
 # Run JSON benchmark:
-> benchmark/testOnly * -- -n json
+> benchmark/testOnly * -- "json benchmark"
 
 # Run benchmark for measuring JSON parse time:
-> benchmark/testOnly * -- -n json-perf
+> benchmark/testOnly * -- "json perf"
 
 # Run Msgpack benchmark:
-> benchmark/testOnly * -- -n msgpack
+> benchmark/testOnly * -- msgpack
 
 # Run all JMH benchmarks:
 > benchmark/run bench-quick
