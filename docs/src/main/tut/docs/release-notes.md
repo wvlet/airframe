@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.3
+- AirSpec:
+  -  airspec is now a standalone project without any cyclic dependencies to airframe module ([#592](https://github.com/wvlet/airframe/issues/592)) [[d0db028](https://github.com/wvlet/airframe/commit/d0db028)]
+  -  Support shouldBe matchers ([#590](https://github.com/wvlet/airframe/issues/590)) [[0caf159](https://github.com/wvlet/airframe/commit/0caf159)]
+  -  Always use ANSI color logs for Travis CI ([#596](https://github.com/wvlet/airframe/issues/596)) [[1c791fd](https://github.com/wvlet/airframe/commit/1c791fd)]
+-  internal chaange: airframe-control: Use AirSpec for test cases ([#594](https://github.com/wvlet/airframe/issues/594)) [[d08c603](https://github.com/wvlet/airframe/commit/d08c603)]
+-  Upgrade to Scala.js 0.6.28 ([#593](https://github.com/wvlet/airframe/issues/593)) [[00e88ab](https://github.com/wvlet/airframe/commit/00e88ab)]
+
 ## 19.8.2
 -  airspec: Use airframe-log for AirSpec logging for improving the log messages ([#584](https://github.com/wvlet/airframe/issues/584)) [[857ae2c](https://github.com/wvlet/airframe/commit/857ae2c)]
 - internal: Migrate test cases of airframe-log/surface to airspec
