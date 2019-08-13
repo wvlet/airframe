@@ -14,7 +14,8 @@
 package wvlet.airframe.fluentd
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.airframe.{AirframeSpec, fluentd}
+import wvlet.airframe.{Design, fluentd}
+import wvlet.airframe.spec.AirSpec
 
 case class SampleMetric(time: Long, value: String) extends TaggedMetric {
   def metricTag = "sample"
@@ -31,34 +32,31 @@ case class ErrorMetric(errorType: String, ex: Exception) extends TaggedMetric {
 /**
   *
   */
-class MetricLoggerTest extends AirframeSpec {
-  val d = fluentd.withConsoleLogging.noLifeCycleLogging
+class MetricLoggerTest extends AirSpec {
 
-  "generate MetricLogger for case classes" in {
-    d.build[MetricLoggerFactory] { f =>
-      val l = f.getTypedLogger[SampleMetric]
-      l.emit(SampleMetric(100000, "hello"))
-      l.emit(SampleMetric(100001, "fluentd"))
-    }
+  override protected def configureLocal(design: Design): Design = {
+    design + fluentd.withConsoleLogging
   }
 
-  "support nested metrics" in {
-    d.build[MetricLoggerFactory] { f =>
-      val l = f.getTypedLogger[NestedMetric]
-      l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
-      l.emit(
-        NestedMetric("test options",
-                     Seq(10, 20),
-                     Some("optional value"),
-                     SampleMetric(100003, "option value is also supported")))
-    }
+  def `generate MetricLogger for case classes`(f: MetricLoggerFactory): Unit = {
+    val l = f.getTypedLogger[SampleMetric]
+    l.emit(SampleMetric(100000, "hello"))
+    l.emit(SampleMetric(100001, "fluentd"))
   }
 
-  "support exception stack trace metrics" in {
-    d.build[MetricLoggerFactory] { f =>
-      val l = f.getTypedLogger[ErrorMetric]
-      l.emit(ErrorMetric("illegal_argument", new IllegalArgumentException("invalid input")))
-      l.emit(ErrorMetric("remote error", new InvocationTargetException(new IllegalStateException("unknown error"))))
-    }
+  def `support nested metrics`(f: MetricLoggerFactory): Unit = {
+    val l = f.getTypedLogger[NestedMetric]
+    l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
+    l.emit(
+      NestedMetric("test options",
+                   Seq(10, 20),
+                   Some("optional value"),
+                   SampleMetric(100003, "option value is also supported")))
+  }
+
+  def `support exception stack trace metrics`(f: MetricLoggerFactory): Unit = {
+    val l = f.getTypedLogger[ErrorMetric]
+    l.emit(ErrorMetric("illegal_argument", new IllegalArgumentException("invalid input")))
+    l.emit(ErrorMetric("remote error", new InvocationTargetException(new IllegalStateException("unknown error"))))
   }
 }
