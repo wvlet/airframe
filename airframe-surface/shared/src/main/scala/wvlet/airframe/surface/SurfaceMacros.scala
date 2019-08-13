@@ -59,7 +59,7 @@ private[surface] object SurfaceMacros {
     }
 
     def localMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members
+      t.members.sorted
         .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
           isTargetMethod(_, t))
     }

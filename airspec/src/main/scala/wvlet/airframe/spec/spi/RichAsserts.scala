@@ -14,7 +14,6 @@
 package wvlet.airframe.spec.spi
 
 import java.util
-import java.util.Comparator
 
 import wvlet.airframe.SourceCode
 import wvlet.log.LogSupport
@@ -24,136 +23,17 @@ import wvlet.log.LogSupport
   */
 trait RichAsserts extends LogSupport {
 
-  // Here we do not extend AnyVal (which needs to be a public class in an object) to make this enrichment available as trait
+  // Here we do not extend implicit classes with AnyVal, which needs to be a public class in an object,
+  // to make this enrichment available as trait
 
-  private def pp(v: Array[_]): String = {
-    s"[${v.mkString(",")}]"
-  }
-
-  protected abstract class ShouldBeArrayBase[A <: Array[_]] {
-    def value: Array[_]
-
-    protected def matchFailure(expected: A, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
-    }
-    protected def unmatchFailure(unexpected: A, code: SourceCode): AssertionFailure = {
-      AssertionFailure(s"${pp(value)} matches with ${pp(unexpected)}", code)
-    }
-
-    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      expected.check(value, value.isEmpty, code)
-    }
-
-    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      expected.flip.check(value, value.isEmpty, code)
-    }
-  }
-
-  implicit protected class ShouldBeIntArray(override val value: Array[Int]) extends ShouldBeArrayBase[Array[Int]] {
-    def shouldBe(expected: Array[Int])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Int])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeLongArray(override val value: Array[Long]) extends ShouldBeArrayBase[Array[Long]] {
-    def shouldBe(expected: Array[Long])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Long])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeShortArray(override val value: Array[Short])
-      extends ShouldBeArrayBase[Array[Short]] {
-    def shouldBe(expected: Array[Short])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Short])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeByteArray(override val value: Array[Byte]) extends ShouldBeArrayBase[Array[Byte]] {
-    def shouldBe(expected: Array[Byte])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Byte])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeBooleanArray(override val value: Array[Boolean])
-      extends ShouldBeArrayBase[Array[Boolean]] {
-    def shouldBe(expected: Array[Boolean])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Boolean])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeCharArray(override val value: Array[Char]) extends ShouldBeArrayBase[Array[Char]] {
-    def shouldBe(expected: Array[Char])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Char])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeFloatArray(override val value: Array[Float])
-      extends ShouldBeArrayBase[Array[Float]] {
-    def shouldBe(expected: Array[Float])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Float])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-
-  implicit protected class ShouldBeDoubleArray(override val value: Array[Double])
-      extends ShouldBeArrayBase[Array[Double]] {
-    def shouldBe(expected: Array[Double])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[Double])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
+  private def pp(v: Any): String = {
+    v match {
+      case null =>
+        "null"
+      case a: Array[_] =>
+        s"[${a.mkString(",")}]"
+      case _ =>
+        v.toString
     }
   }
 
@@ -170,44 +50,6 @@ trait RichAsserts extends LogSupport {
       throw AssertionFailure(s"${pp(value)} match with ${pp(expected)}", code)
     }
   }
-
-  implicit protected class ShouldBeAnyArray[A](val value: Array[A]) extends ShouldBeArrayBase[Array[A]] {
-    def shouldBe(expected: Array[A])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
-                                  expected.asInstanceOf[Array[java.lang.Object]])) {
-        throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
-      }
-    }
-
-    def shouldNotBe(unexpected: Array[A])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
-                                 unexpected.asInstanceOf[Array[java.lang.Object]])) {
-        throw AssertionFailure(s"${pp(value)} match with ${pp(unexpected)}", code)
-      }
-    }
-  }
-
-  // Code generator
-  /*
-  for (t <- Seq("Int", "Long", "Short", "Byte", "Boolean", "Char", "Float", "Double")) {
-    println(
-      s"""
-  implicit protected class ShouldBe${t}Array(override val value: Array[${t}]) extends ShouldBeArrayBase[Array[${t}]] {
-    def shouldBe(expected: Array[${t}])(implicit code: SourceCode): Unit = {
-      if (!util.Arrays.equals(value, expected)) {
-        throw matchFailure(expected, code)
-      }
-    }
-    def shouldNotBe(unexpected: Array[${t}])(implicit code: SourceCode): Unit = {
-      if (util.Arrays.equals(value, unexpected)) {
-        throw unmatchFailure(unexpected, code)
-      }
-    }
-  }
-"""
-    )
-  }
-   */
 
   private[spec] sealed trait OptionTarget {
     def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit
@@ -282,25 +124,119 @@ trait RichAsserts extends LogSupport {
   }
 
   implicit protected class ShouldBe(val value: Any) {
+
+    protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
+      AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
+    }
+    protected def unmatchFailure(unexpected: Any, code: SourceCode): AssertionFailure = {
+      AssertionFailure(s"${pp(value)} matches with ${pp(unexpected)}", code)
+    }
+
     def shouldBe(expected: Any)(implicit code: SourceCode): Unit = {
       (value, expected) match {
-        case (a: Array[_], b: Array[_]) =>
+        case (a: Array[Int], b: Array[Int]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Short], b: Array[Short]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Byte], b: Array[Byte]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Char], b: Array[Char]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Long], b: Array[Long]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Boolean], b: Array[Boolean]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Float], b: Array[Float]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[Double], b: Array[Double]) =>
+          if (!util.Arrays.equals(a, b)) {
+            throw matchFailure(b, code)
+          }
+        case (a: Array[AnyRef], b: Array[AnyRef]) =>
           arrayDeepEqual(a, b)(code)
         case _ =>
           if (value != expected) {
-            throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+            throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
           }
       }
     }
 
     def shouldNotBe(expected: Any)(implicit code: SourceCode): Unit = {
       (value, expected) match {
-        case (a: Array[_], b: Array[_]) =>
+        case (a: Array[Int], b: Array[Int]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Short], b: Array[Short]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Byte], b: Array[Byte]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Char], b: Array[Char]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Long], b: Array[Long]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Boolean], b: Array[Boolean]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Float], b: Array[Float]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[Double], b: Array[Double]) =>
+          if (util.Arrays.equals(a, b)) {
+            throw unmatchFailure(b, code)
+          }
+        case (a: Array[AnyRef], b: Array[AnyRef]) =>
           arrayNotDeepEqual(a, b)(code)
         case _ =>
           if (value == expected) {
-            throw AssertionFailure(s"${value} didn't match with ${expected}", code)
+            throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
           }
+      }
+    }
+
+    def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      value match {
+        case v: Iterable[_] =>
+          expected.check(value, v.isEmpty, code)
+        case v: Array[_] =>
+          expected.check(value, v.isEmpty, code)
+        case _ =>
+          throw AssertionFailure(s"${pp(value)} is not an Option", code)
+      }
+    }
+
+    def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
+      value match {
+        case v: Iterable[_] =>
+          expected.flip.check(value, v.isEmpty, code)
+        case v: Array[_] =>
+          expected.flip.check(value, v.isEmpty, code)
+        case _ =>
+          throw AssertionFailure(s"${pp(value)} is not an Option", code)
       }
     }
 
@@ -309,7 +245,7 @@ trait RichAsserts extends LogSupport {
         case (a: AnyRef, b: AnyRef) if a eq b =>
         // OK
         case _ =>
-          throw AssertionFailure(s"${value} is not the same instance with ${expected}", code)
+          throw AssertionFailure(s"${pp(value)} is not the same instance with ${pp(expected)}", code)
       }
     }
 
@@ -318,7 +254,7 @@ trait RichAsserts extends LogSupport {
         case (a: AnyRef, b: AnyRef) if a ne b =>
         // OK
         case _ =>
-          throw AssertionFailure(s"${value} shoul not be the same instance as ${expected}", code)
+          throw AssertionFailure(s"${pp(value)} should not be the same instance as ${pp(expected)}", code)
       }
     }
   }
