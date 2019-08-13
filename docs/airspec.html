@@ -89,7 +89,9 @@ See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main
 
 </code></pre>
 </div>
-<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. Cases will be ignored.</p>
+
+<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. Cases of test classes and names will be ignored.
+Basically this command finds matches from the list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.</p>
 
 <h2 id="writing-specs-in-natural-languages">Writing Specs In Natural Languages</h2>
 
@@ -107,6 +109,45 @@ See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main
     <span class="n">intercept</span><span class="o">[</span><span class="kt">NoSuchElementException</span><span class="o">]</span> <span class="o">{</span>
       <span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">head</span>
     <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<h2 id="shouldbe-matchers">shouldBe matchers</h2>
+
+<p>AirSpec supports handy assertions with <code class="highlighter-rouge">shouldBe</code> or <code class="highlighter-rouge">shouldNotBe</code>:</p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+
+<span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">test</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="c1">// checking the value equality with shouldBe, shouldNotBe:
+</span>    <span class="mi">1</span> <span class="n">shouldBe</span> <span class="mi">1</span>
+    <span class="mi">1</span> <span class="n">shouldNotBe</span> <span class="mi">2</span>
+    <span class="nc">List</span><span class="o">().</span><span class="n">isEmpty</span> <span class="n">shouldBe</span> <span class="kc">true</span>
+
+    <span class="c1">// For optional values, shouldBe defined (or empty) can be used:
+</span>    <span class="nc">Option</span><span class="o">(</span><span class="s">"hello"</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="n">defined</span>
+    <span class="nc">Option</span><span class="o">(</span><span class="kc">null</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="n">empty</span>
+    <span class="nc">None</span> <span class="n">shouldNotBe</span> <span class="n">defined</span>
+
+    <span class="c1">// For Arrays, shouldBe checks the equality with deep equals
+</span>    <span class="nc">Array</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="nc">Array</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+
+    <span class="c1">// Collection checker 
+</span>    <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="n">defined</span>
+    <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span> <span class="n">shouldNotBe</span> <span class="n">empty</span>
+    <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+    <span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="sc">'a'</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="sc">'a'</span><span class="o">)</span>
+
+    <span class="c1">// Object equality checker
+</span>    <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">a1</span> <span class="k">=</span> <span class="n">a</span>
+    <span class="k">val</span> <span class="n">b</span> <span class="k">=</span> <span class="nc">List</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+    <span class="n">a</span> <span class="n">shouldBe</span> <span class="n">a1</span>
+    <span class="n">a</span> <span class="n">shouldBeTheSameInstanceAs</span> <span class="n">a1</span>
+    <span class="n">a</span> <span class="n">shouldBe</span> <span class="n">b</span>
+    <span class="n">a</span> <span class="n">shouldNotBeTheSameInstanceAs</span> <span class="n">b</span>
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
