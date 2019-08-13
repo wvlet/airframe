@@ -13,25 +13,27 @@
  */
 package wvlet.airframe.fluentd
 import org.msgpack.core.MessagePack
-import wvlet.log.LogSupport
+import wvlet.log.{LogLevel, LogSupport}
 
 /**
   * Fluentd client implementation for debugging. This just emits metrics to the console log
   */
-class ConsoleLogger(val tagPrefix: Option[String] = None) extends MetricLogger with LogSupport {
+class ConsoleLogger(val tagPrefix: Option[String] = None, logLevel: LogLevel = LogLevel.INFO)
+    extends MetricLogger
+    with LogSupport {
 
   override def withTagPrefix(newTagPrefix: String): ConsoleLogger = {
     new ConsoleLogger(Some(newTagPrefix))
   }
 
   override protected def emitRaw(tag: String, event: Map[String, Any]): Unit = {
-    info(s"${tag}: ${event.mkString(", ")}")
+    logAt(logLevel, s"${tag}: ${event.mkString(", ")}")
   }
   override protected def emitRawMsgPack(tag: String, event: Array[Byte]): Unit = {
     val unpacker = MessagePack.newDefaultUnpacker(event)
     val v        = unpacker.unpackValue()
     unpacker.close()
-    info(s"${tag}: ${v}")
+    logAt(logLevel, s"${tag}: ${v}")
   }
   override def close(): Unit = {}
 }

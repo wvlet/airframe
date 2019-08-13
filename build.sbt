@@ -749,7 +749,7 @@ lazy val fluentd =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, airframeJVM, airframeMacrosJVMRef, airspecJVM % "test")
+    .dependsOn(codecJVM, airframeJVM % "compile", airframeMacrosJVMRef, airspecJVM % "test")
 
 lazy val sql =
   project

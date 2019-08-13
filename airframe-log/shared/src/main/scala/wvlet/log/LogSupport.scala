@@ -56,6 +56,8 @@ trait LoggingMethods extends Serializable {
 
   protected def trace(message: Any): Unit = macro traceLog
   protected def trace(message: Any, cause: Throwable): Unit = macro traceLogWithCause
+
+  protected def logAt(logLevel: LogLevel, message: Any): Unit = macro logAtImpl
 }
 
 trait PublicLoggingMethods extends Serializable { p =>
