@@ -141,6 +141,8 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   http,
   jsonJVM,
+  airspecLogJVM,
+  airspecCoreJVM,
   airspecJVM
 )
 
@@ -169,6 +171,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   codecJS,
   msgpackJS,
   jsonJS,
+  airspecLogJS,
+  airspecCoreJS,
   airspecJS
 )
 
