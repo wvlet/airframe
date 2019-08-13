@@ -24,7 +24,8 @@ import wvlet.log.{LogFormatter, LogRecord, Logger}
   *
   */
 private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
-  private val useAnciColor = sbtLoggers.forall(_.ansiCodesSupported())
+  // Always use ANSI color log because sbt's ansiCodeSupported() returns false on Travis CI, which actually can show ANSI colors
+  private val useAnciColor = true // sbtLoggers.forall(_.ansiCodesSupported())
 
   private val airSpecLogger = Logger("wvlet.airframe.spec.AirSpec")
   airSpecLogger.setFormatter(LogFormatter.BareFormatter)
