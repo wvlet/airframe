@@ -65,9 +65,6 @@ AirSpec supports basic assertions like `assert`, `fail`, `ignore`, `cancel`, `pe
 See also [Asserts.scala](https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala). 
 
 
-
-
-
 ## Running Tests in sbt
 
 AirSpec supports pattern matching for running specific tests:
@@ -82,7 +79,9 @@ $ sbt
 > testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
 
 ```
-`pattern` supports wildcard (`*`) and regular expressions. Cases will be ignored.  
+
+`pattern` supports wildcard (`*`) and regular expressions. Cases of test classes and names will be ignored.
+Basically this command finds matches from the list of all `(test class full name):(test function name)` strings.
 
 
 ## Writing Specs In Natural Languages
@@ -106,6 +105,44 @@ class SeqSpec extends AirSpec {
 }
 ```
 
+## shouldBe matchers
+
+AirSpec supports handy assertions with `shouldBe` or `shouldNotBe`:
+```scala
+import wvlet.airframe.spec._
+
+class MyTest extends AirSpec {
+  def test: Unit = {
+    // checking the value equality with shouldBe, shouldNotBe:
+    1 shouldBe 1
+    1 shouldNotBe 2
+    List().isEmpty shouldBe true
+
+    // For optional values, shouldBe defined (or empty) can be used:
+    Option("hello") shouldBe defined
+    Option(null) shouldBe empty
+    None shouldNotBe defined
+
+    // For Arrays, shouldBe checks the equality with deep equals
+    Array(1, 2) shouldBe Array(1, 2)
+
+    // Collection checker 
+    Seq(1) shouldBe defined
+    Seq(1) shouldNotBe empty
+    Seq(1, 2) shouldBe Seq(1, 2)
+    (1, 'a') shouldBe (1, 'a')
+
+    // Object equality checker
+    val a = List(1, 2)
+    val a1 = a
+    val b = List(1, 2)
+    a shouldBe a1
+    a shouldBeTheSameInstanceAs a1
+    a shouldBe b
+    a shouldNotBeTheSameInstanceAs b
+  }
+}
+```
 
 ## Scala.js
 
