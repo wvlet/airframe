@@ -63,6 +63,9 @@ private[spec] trait AirSpecSpi {
   protected def before: Unit    = {}
   protected def after: Unit     = {}
   protected def afterAll: Unit  = {}
+
+  // Returns true if this is running in TravisCI
+  protected def inTravisCI: Boolean = AirSpecSpi.inTravisCI
 }
 
 private[spec] object AirSpecSpi {
@@ -85,4 +88,7 @@ private[spec] object AirSpecSpi {
     q"if(wvlet.airframe.spec.compat.isScalaJs) { ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
   }
 
+  private[spec] def inTravisCI: Boolean = {
+    sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
+  }
 }
