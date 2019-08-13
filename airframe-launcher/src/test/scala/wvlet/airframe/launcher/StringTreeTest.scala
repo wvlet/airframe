@@ -21,32 +21,27 @@
 
 package wvlet.airframe.launcher
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
-/**
-  * @author leo
-  */
-class StringTreeTest extends AirframeSpec {
+class StringTreeTest extends AirSpec {
 
-  "ValueHolder" should {
-    "have nested values" in {
-      val h  = StringTree.empty
-      val h2 = h.set("a", "apple")
-      debug(h2)
-      val h3 = h2.set("B/b", "book")
-      val h4 = h3.set("B/c", "cookie")
-      debug(h4)
-      val h5 = h4.set("B/c", "cake")
-      debug(h5)
-      val h6 = h5.set("B/b", "magazine")
-      debug(h6)
-      val h7 = h6.set("B/b/note", "my bookshelf")
-      debug(h7)
+  def `have nested values`: Unit = {
+    val h  = StringTree.empty
+    val h2 = h.set("a", "apple")
+    debug(h2)
+    val h3 = h2.set("B/b", "book")
+    val h4 = h3.set("B/c", "cookie")
+    debug(h4)
+    val h5 = h4.set("B/c", "cake")
+    debug(h5)
+    val h6 = h5.set("B/b", "magazine")
+    debug(h6)
+    val h7 = h6.set("B/b/note", "my bookshelf")
+    debug(h7)
 
-      val b = h7.get("B")
-      debug(b)
-      val n = h7.get("B/b")
-      debug(n)
-    }
+    val b = h7.get("B")
+    debug(b)
+    val n = h7.get("B/b")
+    debug(n)
   }
 }

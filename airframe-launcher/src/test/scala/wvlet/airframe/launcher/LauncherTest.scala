@@ -23,220 +23,214 @@ package wvlet.airframe.launcher
 
 import java.io.ByteArrayOutputStream
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
-/**
-  * @author leo
-  */
-class LauncherTest extends AirframeSpec {
+class LauncherTest extends AirSpec {
 
-  "Launcher" should {
-
-    import LauncherTest._
-    "populate arguments in constructor" taggedAs ("test1") in {
-      capture {
-        val l = Launcher.execute[GlobalOption]("-h -l debug")
-        l.help should be(true)
-        l.loglevel should be(Some(LogLevel.DEBUG))
-        l.started should be(true)
-      }
+  import LauncherTest._
+  def `populate arguments in constructor`: Unit = {
+    capture {
+      val l = Launcher.execute[GlobalOption]("-h -l debug")
+      l.help shouldBe true
+      l.loglevel shouldBe Some(LogLevel.DEBUG)
+      l.started shouldBe true
     }
-
-    "populate arguments in constructor even when no parameter is given" taggedAs ("popl") in {
-      val l = Launcher.execute[GlobalOption]("")
-      l.help should be(false)
-      l.loglevel should be(None)
-      l.started should be(true)
-    }
-
-    "display help message" in {
-      val help = capture {
-        val l = Launcher.execute[GlobalOption]("-h -l debug")
-        l.started should be(true)
-      }
-      trace(s"help message:\n$help")
-      help should (include("-h"))
-      help should (include("--help"))
-      help should (include("-l"))
-      help should (include("--loglevel"))
-    }
-
-    "display full options in help" taggedAs ("subhelp") in {
-      capture {
-        Launcher.execute[MyCommand]("--help")
-      } should include("--help")
-      capture {
-        Launcher.execute[MyCommand]("hello --help")
-      } should include("--help")
-    }
-
-    "parse double hyphen options" in {
-      capture {
-        val l = Launcher.execute[GlobalOption]("--help --loglevel debug")
-        l.help should be(true)
-        l.loglevel should be(Some(LogLevel.DEBUG))
-      }
-    }
-
-    "populate nested options" taggedAs ("nested") in {
-      capture {
-        val l = Launcher.execute[NestedOption]("-h -l debug")
-        l.g.help should be(true)
-        l.g.loglevel should be(Some(LogLevel.DEBUG))
-        l.g.started should be(true)
-      }
-    }
-
-    "display help message of nested option" in {
-      val help = capture {
-        Launcher.execute[NestedOption]("-h -l debug")
-      }
-      help should (include("-h"))
-      help should (include("--help"))
-      help should (include("-l"))
-      help should (include("--loglevel"))
-    }
-
-    "populate nested options even when no parameter is given" taggedAs ("nested2") in {
-      val l = Launcher.execute[NestedOption]("")
-      l.g should not be (null)
-      l.g.help should be(false)
-      l.g.loglevel should be(None)
-      l.g.started should be(true)
-    }
-
-    "find commands" in {
-      val c = Launcher.execute[SimpleCommandSet]("hello")
-      c.helloIsExecuted should be(true)
-    }
-
-    "display command list" taggedAs ("help") in {
-      val help = capture {
-        Launcher.of[SimpleCommandSet].printHelp
-      }
-      trace(s"command list help:\n$help")
-      help should (include("hello"))
-      help should (include("say hello"))
-      help should (include("world"))
-      help should (include("say world"))
-      help should not(include("default"))
-    }
-
-    "run default command" in {
-      val help = capture {
-        Launcher.execute[SimpleCommandSet]("")
-      }
-      debug(s"default command message:\n$help")
-      help should (include(DEFAULT_MESSAGE))
-    }
-
-    "create command modules" in {
-      val c = myCommandModule
-
-      capture {
-        val r = c.execute("box hello")
-        val m = r.executedInstance
-        m.getClass should be(classOf[SimpleCommandSet])
-        m.asInstanceOf[SimpleCommandSet].helloIsExecuted should be(true)
-      }
-    }
-
-    "display command module help" in {
-      val help = capture {
-        myCommandModule.execute("-h")
-      }
-      trace(help)
-      help should (include("-h"))
-      help should (include("-l"))
-      help should (include("box"))
-      help should (include("command set"))
-    }
-
-    "display individual command help" in {
-      val help = capture {
-        val result = myCommandModule.execute("box --help")
-        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
-        m.g.help should be(true)
-      }
-      trace(help)
-      help should (include("hello"))
-      help should (include("world"))
-    }
-
-    "display sub-command help" taggedAs ("sub-command-help") in {
-      val help = capture {
-        val result = myCommandModule.execute("box world --help")
-        val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
-        m.g.help should be(true)
-      }
-      trace(s"box world --help:\n$help")
-      help should (include("argMessage"))
-      help should (include("--color  use color"))
-      help should (include("say world"))
-    }
-
-    "display invalid command error" in {
-      val msg = capture {
-        intercept[IllegalArgumentException] {
-          myCommandModule.execute("unknown-command")
-        }
-      }
-      trace(msg)
-    }
-
-    "unwrap InvocationTargetException" in {
-      val msg = capture {
-        intercept[IllegalArgumentException] {
-          myCommandModule.execute("errorTest")
-        }
-      }
-      trace(msg)
-    }
-
-    "handle private parameters in constructors" in {
-      capture {
-        val l = Launcher.execute[CommandWithPrivateField]("-h")
-        l.started should be(true)
-      }
-    }
-
-    "run test command" taggedAs ("failed") in {
-      val message = capture {
-        Launcher.execute[MyCommand]("hello -r 3") // hello x 3
-      }
-      debug(message)
-      message should (include("hello!hello!hello!"))
-    }
-
-    "accept array type arguments" taggedAs ("array") in {
-      val f = Launcher.execute[ArrayOpt]("file1 file2 file3")
-      f.files should be(Array("file1", "file2", "file3"))
-    }
-
-    "accept array type arguments with default values" taggedAs ("array-default") in {
-      val f = Launcher.execute[ArrayOptWithDefault]("")
-      f.files should be(Array("sample"))
-
-      val f2 = Launcher.execute[ArrayOptWithDefault]("sampleA sampleB")
-      f2.files should be(Array("sampleA", "sampleB"))
-    }
-
-    "accept list type arguments" taggedAs ("list") in {
-      val f = Launcher.execute[ListOpt]("-f file1 -f file2 -f file3")
-      f.files should be(List("file1", "file2", "file3"))
-    }
-
-    "accept Option arguments" taggedAs ("optarg") in {
-      val f = Launcher.execute[OptArg]("")
-      f.arg should be(None)
-
-      val f2 = Launcher.execute[OptArg]("hello")
-      f2.arg shouldBe defined
-      f2.arg.get should be("hello")
-    }
-
   }
+
+  def `populate arguments in constructor even when no parameter is given`: Unit = {
+    val l = Launcher.execute[GlobalOption]("")
+    l.help shouldBe false
+    l.loglevel shouldBe None
+    l.started shouldBe true
+  }
+
+  def `display help message`: Unit = {
+    val help = capture {
+      val l = Launcher.execute[GlobalOption]("-h -l debug")
+      l.started shouldBe true
+    }
+    trace(s"help message:\n$help")
+    help.contains("-h") shouldBe true
+    help.contains("--help") shouldBe true
+    help.contains("-l") shouldBe true
+    help.contains("--loglevel") shouldBe true
+  }
+
+  def `display full options in help`: Unit = {
+    capture {
+      Launcher.execute[MyCommand]("--help")
+    }.contains("--help") shouldBe true
+    capture {
+      Launcher.execute[MyCommand]("hello --help")
+    }.contains("--help") shouldBe true
+  }
+
+  def `parse double hyphen options`: Unit = {
+    capture {
+      val l = Launcher.execute[GlobalOption]("--help --loglevel debug")
+      l.help shouldBe true
+      l.loglevel shouldBe Some(LogLevel.DEBUG)
+    }
+  }
+
+  def `populate nested options`: Unit = {
+    capture {
+      val l = Launcher.execute[NestedOption]("-h -l debug")
+      l.g.help shouldBe true
+      l.g.loglevel shouldBe Some(LogLevel.DEBUG)
+      l.g.started shouldBe true
+    }
+  }
+
+  def `display help message of nested option`: Unit = {
+    val help = capture {
+      Launcher.execute[NestedOption]("-h -l debug")
+    }
+    help.contains("-h") shouldBe true
+    help.contains("--help") shouldBe true
+    help.contains("-l") shouldBe true
+    help.contains("--loglevel") shouldBe true
+  }
+
+  def `populate nested options even when no parameter is given`: Unit = {
+    val l = Launcher.execute[NestedOption]("")
+    l.g != null shouldBe true
+    l.g.help shouldBe false
+    l.g.loglevel shouldBe None
+    l.g.started shouldBe true
+  }
+
+  def `find commands`: Unit = {
+    val c = Launcher.execute[SimpleCommandSet]("hello")
+    c.helloIsExecuted shouldBe true
+  }
+
+  def `display command list`: Unit = {
+    val help = capture {
+      Launcher.of[SimpleCommandSet].printHelp
+    }
+    trace(s"command list help:\n$help")
+    help.contains("hello") shouldBe true
+    help.contains("say hello") shouldBe true
+    help.contains("world") shouldBe true
+    help.contains("say world") shouldBe true
+    help.contains("default") shouldNotBe true
+  }
+
+  def `run default command`: Unit = {
+    val help = capture {
+      Launcher.execute[SimpleCommandSet]("")
+    }
+    debug(s"default command message:\n$help")
+    help.contains(DEFAULT_MESSAGE) shouldBe true
+  }
+
+  def `create command modules`: Unit = {
+    val c = myCommandModule
+
+    capture {
+      val r = c.execute("box hello")
+      val m = r.executedInstance
+      m.getClass shouldBe classOf[SimpleCommandSet]
+      m.asInstanceOf[SimpleCommandSet].helloIsExecuted shouldBe true
+    }
+  }
+
+  def `display command module help`: Unit = {
+    val help = capture {
+      myCommandModule.execute("-h")
+    }
+    trace(help)
+    help.contains("-h") shouldBe true
+    help.contains("-l") shouldBe true
+    help.contains("box") shouldBe true
+    help.contains("command set") shouldBe true
+  }
+
+  def `display individual command help`: Unit = {
+    val help = capture {
+      val result = myCommandModule.execute("box --help")
+      val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+      m.g.help shouldBe true
+    }
+    trace(help)
+    help.contains("hello") shouldBe true
+    help.contains("world") shouldBe true
+  }
+
+  def `display sub-command help`: Unit = {
+    val help = capture {
+      val result = myCommandModule.execute("box world --help")
+      val m      = result.getRootInstance.asInstanceOf[MyCommandModule]
+      m.g.help shouldBe true
+    }
+    trace(s"box world --help:\n$help")
+    help.contains("argMessage") shouldBe true
+    help.contains("--color  use color") shouldBe true
+    help.contains("say world") shouldBe true
+  }
+
+  def `display invalid command error`: Unit = {
+    val msg = capture {
+      intercept[IllegalArgumentException] {
+        myCommandModule.execute("unknown-command")
+      }
+    }
+    trace(msg)
+  }
+
+  def `unwrap InvocationTargetException`: Unit = {
+    val msg = capture {
+      intercept[IllegalArgumentException] {
+        myCommandModule.execute("errorTest")
+      }
+    }
+    trace(msg)
+  }
+
+  def `handle private parameters in constructors`: Unit = {
+    capture {
+      val l = Launcher.execute[CommandWithPrivateField]("-h")
+      l.started shouldBe true
+    }
+  }
+
+  def `run test command`: Unit = {
+    val message = capture {
+      Launcher.execute[MyCommand]("hello -r 3") // hello x 3
+    }
+    debug(message)
+    message.contains("hello!hello!hello!") shouldBe true
+  }
+
+  def `accept array type arguments`: Unit = {
+    val f = Launcher.execute[ArrayOpt]("file1 file2 file3")
+    f.files shouldBe Array("file1", "file2", "file3")
+  }
+
+  def `accept array type arguments with default values`: Unit = {
+    val f = Launcher.execute[ArrayOptWithDefault]("")
+    f.files shouldBe Array("sample")
+
+    val f2 = Launcher.execute[ArrayOptWithDefault]("sampleA sampleB")
+    f2.files shouldBe Array("sampleA", "sampleB")
+  }
+
+  def `accept list type arguments`: Unit = {
+    val f = Launcher.execute[ListOpt]("-f file1 -f file2 -f file3")
+    f.files shouldBe List("file1", "file2", "file3")
+  }
+
+  def `accept Option arguments`: Unit = {
+    val f = Launcher.execute[OptArg]("")
+    f.arg shouldBe None
+
+    val f2 = Launcher.execute[OptArg]("hello")
+    f2.arg shouldBe defined
+    f2.arg.get shouldBe "hello"
+  }
+
 }
 
 object LauncherTest {
