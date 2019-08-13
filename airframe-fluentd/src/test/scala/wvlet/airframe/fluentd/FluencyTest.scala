@@ -18,7 +18,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
-import wvlet.airframe.{AirframeSpec, bind, _}
+import wvlet.airframe.spec.AirSpec
+import wvlet.airframe._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -79,17 +80,17 @@ case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
 /**
   *
   */
-class FluencyTest extends AirframeSpec {
+class FluencyTest extends AirSpec {
   val fluentdPort = IOUtil.randomPort
+
   val d = fluentd
     .withFluentdLogger(port = fluentdPort,
                        // Do not send ack for simplicity
                        ackResponseMode = false)
     .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
     .bind[MockFluentd].toEagerSingleton
-    .noLifeCycleLogging
 
-  "should send metrics to fluentd through Fluency" in {
+  def `should send metrics to fluentd through Fluency`: Unit = {
     d.build[MetricLoggingService] { f =>
       // Use a regular emit method
       f.factory.getLogger.emit("mytag", Map("data" -> "hello"))

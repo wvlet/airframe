@@ -12,16 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe._
 import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
 
 /**
   *
   */
-class FluentdLoggerTest extends AirframeSpec {
+class FluentdLoggerTest extends AirSpec {
 
-  "should use Fluency as a Fluentd client" in {
+  def `should use Fluency as a Fluentd client`: Unit = {
     val d = fluentd
       .withFluentdLogger()
       .noLifeCycleLogging
@@ -33,7 +33,7 @@ class FluentdLoggerTest extends AirframeSpec {
     }
   }
 
-  "should support console logging" in {
+  def `should support console logging`: Unit = {
     val d =
       newDesign.bind[MetricLogger].to[ConsoleLogger]
 
@@ -42,7 +42,7 @@ class FluentdLoggerTest extends AirframeSpec {
     }
   }
 
-  "generate multiple loggers" in {
+  def `generate multiple loggers`: Unit = {
 
     val d =
       newDesign
