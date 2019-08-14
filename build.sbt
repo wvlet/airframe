@@ -894,7 +894,8 @@ lazy val airspecCore =
     )
     .jsSettings(
       airspecJSBuildSettings,
-      mappings in (Compile, packageBin) ++= mappings.in(airspecLogJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageBin) ++= mappings
+        .in(airspecLogJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecLogJS, Compile, packageSrc).value
     )
     .dependsOn(airspecLog)
@@ -921,7 +922,8 @@ lazy val airspecDeps =
     )
     .jsSettings(
       airspecJSBuildSettings,
-      mappings in (Compile, packageBin) ++= mappings.in(airspecCoreJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageBin) ++= mappings
+        .in(airspecCoreJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecCoreJS, Compile, packageSrc).value
     )
     .dependsOn(airspecCore)
@@ -950,7 +952,8 @@ lazy val airspec =
       )
     )
     .jsSettings(
-      mappings in (Compile, packageBin) ++= mappings.in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageBin) ++= mappings
+        .in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
@@ -958,7 +961,6 @@ lazy val airspec =
       )
     )
     .dependsOn(airspecDeps % internalScope)
-
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
@@ -974,8 +976,7 @@ lazy val airspecRef =
       name := "airspec-ref",
       description := "A project for referncing airspec for internal testing"
     )
-  .dependsOn(airspec, airspecDeps)
+    .dependsOn(airspec, airspecDeps)
 
 lazy val airspecRefJVM = airspecRef.jvm
-lazy val airspecRefJS = airspecRef.js
-
+lazy val airspecRefJS  = airspecRef.js
