@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class HttpStatusTest extends AirframeSpec {
-  "have reasons" in {
+class HttpStatusTest extends AirSpec {
+  def `have reasons`: Unit = {
     HttpStatus.knownStatuses.foreach { x =>
       x.toString
       HttpStatus.ofCode(x.code) == x
