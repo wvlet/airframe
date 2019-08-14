@@ -78,6 +78,7 @@ class TracerTest extends AirSpec {
     }
 
     val report = stats.coverageReportFor(d)
-    info(report)
+    val r      = report.toString
+    debug(r)
   }
 }

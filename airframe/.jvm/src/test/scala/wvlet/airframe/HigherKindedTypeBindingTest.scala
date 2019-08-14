@@ -49,10 +49,10 @@ class HigherKindedTypeBindingTest extends AirSpec {
 
   def `support higher-kinded type binding`: Unit = {
 
-    // TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js
+    warn("TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js")
     val s = Surface.of[WebApp[Future]]
-    info(s)
-    info(s.typeArgs(0))
+    debug(s)
+    debug(s.typeArgs(0))
 
     val d = newDesign
       .bind[WebApp[Future]].toInstance(webAppWithFuture)

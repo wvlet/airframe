@@ -34,13 +34,13 @@ object BindFactory {
     @PostConstruct
     def start(): Unit = {
       // This will be called only once since XY is used as singleton
-      info(s"${x.hello} ${y.world}!")
+      debug(s"${x.hello} ${y.world}!")
     }
 
     @PreDestroy
     def close(): Unit = {
       // This will be called only once since XY is used as singleton
-      info(s"${x.goodbye} ${y.world}!")
+      debug(s"${x.goodbye} ${y.world}!")
     }
   }
 
@@ -50,13 +50,13 @@ object BindFactory {
     @PostConstruct
     def start(): Unit = {
       // This will be called only once since XY is used as singleton
-      info(s"Hello ${world}!")
+      debug(s"Hello ${world}!")
     }
 
     @PreDestroy
     def close(): Unit = {
       // This will be called only once since XY is used as singleton
-      info(s"Good-bye ${world}!")
+      debug(s"Good-bye ${world}!")
     }
   }
 

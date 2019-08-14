@@ -25,12 +25,12 @@ object SingletonTest {
 
   // This doesn't tell about Singleton
   trait X extends LogSupport {
-    info("new X is instantiated")
+    debug("new X is instantiated")
 
     val counter = bind[TraitCounter].withLifeCycle(
       init = { c =>
         val v = c.incrementAndGet()
-        info(s"Counter is initialized: ${v}")
+        debug(s"Counter is initialized: ${v}")
       }
     )
   }

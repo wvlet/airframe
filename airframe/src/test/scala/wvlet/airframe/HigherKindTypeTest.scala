@@ -42,11 +42,10 @@ class HigherKindTypeTest extends AirSpec {
   scalaJsSupport
 
   val design =
-    newDesign
+    newSilentDesign
       .bind[HolderInterpreted].toInstance(interpreted)
       .bind[Holder[Task]].toInstance(interpreted2)
       .bind[Holder[MyFuture]].toInstance(interpreted3)
-      .noLifeCycleLogging
 
   def `support higher kind types`: Unit = {
     design.build[HolderInterpreted] { repo =>
