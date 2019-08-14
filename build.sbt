@@ -683,7 +683,7 @@ lazy val httpRecorder =
                jdbc,
                tablet,
                airframeMacrosJVMRef,
-               airframeScalaTestJVM % "test")
+               airspecJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)

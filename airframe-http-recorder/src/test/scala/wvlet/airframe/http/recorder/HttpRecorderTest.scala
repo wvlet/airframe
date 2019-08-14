@@ -17,7 +17,8 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.io.Buf
 import com.twitter.util.Await
-import wvlet.airframe.AirframeSpec
+
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 
@@ -26,9 +27,9 @@ import scala.util.Random
 /**
   *
   */
-class HttpRecorderTest extends AirframeSpec {
+class HttpRecorderTest extends AirSpec {
 
-  def orderInsensitveHash(m: Map[String, String]): Int = {
+  private def orderInsensitveHash(m: Map[String, String]): Int = {
     m.map { x =>
         s"${x._1}:${x._2}".hashCode
       }
@@ -37,7 +38,7 @@ class HttpRecorderTest extends AirframeSpec {
       }
   }
 
-  def withClient[U](addr: String)(body: FinagleService => U): U = {
+  private def withClient[U](addr: String)(body: FinagleService => U): U = {
     val client = Http.client.newService(addr)
     try {
       body(client)
@@ -46,7 +47,7 @@ class HttpRecorderTest extends AirframeSpec {
     }
   }
 
-  "start HTTP recorder" in {
+  def `start HTTP recorder`: Unit = {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
@@ -91,7 +92,7 @@ class HttpRecorderTest extends AirframeSpec {
     errorResponse.statusCode shouldBe 404
   }
 
-  "switch recoding/replaying" taggedAs ("path-through") in {
+  def `switch recoding/replaying`: Unit = {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
 
@@ -121,7 +122,7 @@ class HttpRecorderTest extends AirframeSpec {
 
   }
 
-  "programmable server" in {
+  def `programmable server`: Unit = {
     val response = withResource(HttpRecorder.createInMemoryProgrammableServer) { server =>
       server.clearSession
 
@@ -145,7 +146,7 @@ class HttpRecorderTest extends AirframeSpec {
     response.contentString shouldBe "Hello World!"
   }
 
-  "delete expired records" in {
+  def `delete expired records`: Unit = {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org",
                          sessionName = "airframe",
@@ -166,7 +167,7 @@ class HttpRecorderTest extends AirframeSpec {
     }
   }
 
-  "support binary contents" in {
+  def `support binary contents`: Unit = {
     val storeConfig = HttpRecorderConfig(destUri = "localhost", sessionName = "binary-test")
     val store       = new HttpRecordStore(storeConfig, dropSession = true)
 
