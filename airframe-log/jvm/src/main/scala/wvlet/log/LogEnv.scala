@@ -67,10 +67,9 @@ private[log] object LogEnv extends LogEnvBase {
     if (!onGraalVM) {
       // Register the log level configuration interface to JMX
       val mbeanServer = ManagementFactory.getPlatformMBeanServer
-      if (mbeanServer.isRegistered(mBeanName)) {
-        unregisterJMX
+      if (!mbeanServer.isRegistered(mBeanName)) {
+        mbeanServer.registerMBean(LoggerJMX, mBeanName)
       }
-      mbeanServer.registerMBean(LoggerJMX, mBeanName)
     }
   }
 

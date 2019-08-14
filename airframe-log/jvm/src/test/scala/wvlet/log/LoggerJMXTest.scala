@@ -22,6 +22,7 @@ import javax.management.{Attribute, ObjectName}
 class LoggerJMXTest extends Spec {
   override protected def beforeAll = {
     // Make sure registering the JMX mBean that can be loadable from the current class loader
+    LogEnv.unregisterJMX
     LogEnv.registerJMX
   }
 
