@@ -13,15 +13,15 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.http.example.LongPathExample
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class LongPathTest extends AirframeSpec {
+class LongPathTest extends AirSpec {
 
-  "match long paths" in {
+  def `match long paths`: Unit = {
     val r = Router.add[LongPathExample]
 
     {

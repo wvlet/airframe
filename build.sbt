@@ -633,7 +633,7 @@ lazy val http =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airframeScalaTestJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecJVM % "test")
 
 val FINAGLE_VERSION = "19.6.0"
 lazy val finagle =

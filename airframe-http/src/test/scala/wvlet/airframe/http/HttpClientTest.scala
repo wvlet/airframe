@@ -18,12 +18,12 @@ import java.net._
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class HttpClientTest extends AirframeSpec {
+class HttpClientTest extends AirSpec {
   import HttpClient._
   abstract class RetryTest(expectedRetryCount: Int, expectedExecCount: Int) {
     val retryer = defaultHttpClientRetry[SimpleHttpRequest, SimpleHttpResponse]
@@ -58,7 +58,7 @@ class HttpClientTest extends AirframeSpec {
     }
   }
 
-  "retry on failed http requests" in {
+  def `retry on failed http requests`: Unit = {
     val retryableResponses: Seq[SimpleHttpResponse] = Seq(
       SimpleHttpResponse(HttpStatus.ServiceUnavailable_503),
       SimpleHttpResponse(HttpStatus.TooManyRequests_429),
@@ -74,7 +74,7 @@ class HttpClientTest extends AirframeSpec {
       }
     }
   }
-  "never retry on deterministic http request failrues" in {
+  def `never retry on deterministic http request failrues`: Unit = {
     val nonRetryableResponses: Seq[SimpleHttpResponse] = Seq(
       SimpleHttpResponse(HttpStatus.BadRequest_400, "bad request"),
       SimpleHttpResponse(HttpStatus.Unauthorized_401, "permission deniend"),
@@ -90,7 +90,7 @@ class HttpClientTest extends AirframeSpec {
     }
   }
 
-  "retry on non-deterministic failures" in {
+  def `retry on non-deterministic failures`: Unit = {
     val retryableExceptions: Seq[Throwable] = Seq(
       new TimeoutException("timeout"),
       new ExecutionException(new InterruptedException("exception")),
@@ -112,7 +112,7 @@ class HttpClientTest extends AirframeSpec {
     }
   }
 
-  "never retry on deterministic failures" in {
+  def `never retry on deterministic failures`: Unit = {
     val nonRetryableExceptions: Seq[Throwable] = Seq(
       new ExecutionException(new SSLHandshakeException("exception")),
       new ExecutionException(new SSLKeyException("exception")),
