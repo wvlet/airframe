@@ -895,7 +895,7 @@ lazy val airspecCore =
       mappings in (Compile, packageBin) ++= mappings.in(airspecLogJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecLogJS, Compile, packageSrc).value
     )
-    .dependsOn(airspecLog % "provided")
+    .dependsOn(airspecLog)
 
 lazy val airspecCoreJVM = airspecCore.jvm
 lazy val airspecCoreJS  = airspecCore.js
@@ -922,7 +922,7 @@ lazy val airspecDeps =
       mappings in (Compile, packageBin) ++= mappings.in(airspecCoreJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecCoreJS, Compile, packageSrc).value
     )
-    .dependsOn(airspecCore % "provided", airspecLog % "provided")
+    .dependsOn(airspecCore)
 
 lazy val airspecDepsJVM = airspecDeps.jvm
 lazy val airspecDepsJS  = airspecDeps.js
@@ -955,7 +955,7 @@ lazy val airspec =
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
-    .dependsOn(airspecDeps % "provided", airspecCore % "provided", airspecLog % "provided")
+    .dependsOn(airspecDeps % internalScope)
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
