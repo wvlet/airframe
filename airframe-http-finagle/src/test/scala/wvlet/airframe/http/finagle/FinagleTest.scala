@@ -17,16 +17,16 @@ import java.nio.charset.StandardCharsets
 
 import com.twitter.finagle.http
 import com.twitter.finagle.http.Status
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http.HttpStatus
 
 /**
   *
   */
-class FinagleTest extends AirframeSpec {
+class FinagleTest extends AirSpec {
   import wvlet.airframe.http.finagle._
 
-  "provide facade of http requests" in {
+  def `provide facade of http requests`: Unit = {
     Seq(http.Method.Get,
         http.Method.Post,
         http.Method.Delete,
@@ -50,7 +50,7 @@ class FinagleTest extends AirframeSpec {
       }
   }
 
-  "provide facade of http responses" in {
+  def `provide facade of http responses`: Unit = {
     val orig = http.Response(Status.Forbidden)
     orig.setContentString("hello world")
     orig.setContentTypeJson()
@@ -62,6 +62,6 @@ class FinagleTest extends AirframeSpec {
     r.contentString shouldBe "hello world"
     r.contentType shouldBe Some("application/json;charset=utf-8")
     r.contentBytes shouldBe "hello world".getBytes(StandardCharsets.UTF_8)
-    r.toRaw shouldBe theSameInstanceAs(orig)
+    r.toRaw shouldBeTheSameInstanceAs orig
   }
 }

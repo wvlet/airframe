@@ -656,7 +656,7 @@ lazy val finagle =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(http, airframeMacrosJVMRef, airframeScalaTestJVM % "test")
+    .dependsOn(http, airframeMacrosJVMRef, airspecJVM % "test")
 
 lazy val httpRecorder =
   project
