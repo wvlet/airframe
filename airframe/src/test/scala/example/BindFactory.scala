@@ -13,7 +13,7 @@
  */
 package example
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 
 /**
@@ -84,10 +84,9 @@ object BindFactory {
   session.shutdown // shows "Bye World!" and "Good-bye Scala!"
 }
 
-class BindFactory extends AirframeSpec {
-  "BindFactory" should {
-    "run" in {
-      val b = BindFactory
-    }
+class BindFactory extends AirSpec {
+  scalaJsSupport
+  def `run`: Unit = {
+    val b = BindFactory
   }
 }

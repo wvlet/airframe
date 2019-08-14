@@ -15,6 +15,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 
 object FactoryBindingLifecycleTest {
@@ -53,11 +54,11 @@ object FactoryBindingLifecycleTest {
 /**
   *
   */
-class FactoryBindingLifecycleTest extends AirframeSpec {
+class FactoryBindingLifecycleTest extends AirSpec {
 
   import FactoryBindingLifecycleTest._
 
-  "run shutdown hooks" in {
+  def `run shutdown hooks`: Unit = {
     threadCounter.get() shouldBe 0
     newSilentDesign.build[ClientFactory] { f =>
       startCounter shouldBe empty

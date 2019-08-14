@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 import wvlet.airframe.Alias.{HelloRef, StringHello}
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.DefaultTracer
 
@@ -53,87 +54,87 @@ object DesignTest {
 /**
   *
   */
-class DesignTest extends AirframeSpec {
+class DesignTest extends AirSpec {
+  scalaJsSupport
+
   import DesignTest._
 
   val o = Hello("override")
 
-  "Design" should {
-    "be immutable" in {
-      d0 shouldEqual Design.empty
+  def `be immutable`: Unit = {
+    d0 shouldBe Design.empty
 
-      val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
-      d2 should not equal (d1)
+    val d2 = d1.bind[Hello].toInstance(Hello("airframe"))
+    d2 shouldNotBe d1
+  }
+
+  def `be appendable`: Unit = {
+    val d2 = d1.bind[Hello].toInstance(o)
+
+    val d3 = d1 + d2
+    val d4 = d1.add(d2)
+
+    d3.build[Hello] { h =>
+      h shouldBeTheSameInstanceAs o
     }
+    d4.build[Hello] { h =>
+      h shouldBeTheSameInstanceAs o
+    }
+  }
 
-    "be appendable" in {
-      val d2 = d1.bind[Hello].toInstance(o)
+  def `display design`: Unit = {
+    val s = d1.toString
+    // sanity test
+    s shouldNotBe empty
+    debug(d1.toString)
+  }
 
-      val d3 = d1 + d2
-      val d4 = d1.add(d2)
+  def `remove binding`: Unit = {
+    val dd = d1.remove[Message]
 
-      d3.build[Hello] { h =>
-        h should be theSameInstanceAs o
+    def hasMessage(d: Design): Boolean =
+      d.binding.exists(_.from == Surface.of[Message])
+    def hasProductionMessage(d: Design): Boolean =
+      d.binding.exists(_.from == Surface.of[ProductionMessage])
+
+    hasMessage(d1) shouldBe true
+    hasMessage(dd) shouldBe false
+
+    hasProductionMessage(d1) shouldBe true
+    hasProductionMessage(dd) shouldBe true
+  }
+
+  def `bind providers`: Unit = {
+    val d = newSilentDesign
+      .bind[Hello].toProvider { (m: ProductionString) =>
+        Hello(m)
       }
-      d4.build[Hello] { h =>
-        h should be theSameInstanceAs o
+      .bind[ProductionString].toInstance("hello production")
+
+    d.build[Hello] { h =>
+      h.message shouldBe "hello production"
+    }
+  }
+
+  def `bind type aliases`: Unit = {
+    val d = newSilentDesign
+      .bind[HelloRef].toInstance(new StringHello)
+
+    d.build[HelloRef] { h =>
+      h.hello shouldBe "hello world"
+    }
+  }
+
+  def `start and stop session`: Unit = {
+    // Sanity test
+    newDesign.noLifeCycleLogging
+      .withSession { session =>
+        // Do nothing
       }
-    }
+  }
 
-    "display design" in {
-      val s = d1.toString
-      // sanity test
-      s shouldNot be(empty)
-      debug(d1.toString)
-    }
-
-    "remove binding" in {
-      val dd = d1.remove[Message]
-
-      def hasMessage(d: Design): Boolean =
-        d.binding.exists(_.from == Surface.of[Message])
-      def hasProductionMessage(d: Design): Boolean =
-        d.binding.exists(_.from == Surface.of[ProductionMessage])
-
-      hasMessage(d1) shouldBe true
-      hasMessage(dd) shouldBe false
-
-      hasProductionMessage(d1) shouldBe true
-      hasProductionMessage(dd) shouldBe true
-    }
-
-    "bind providers" in {
-      val d = newSilentDesign
-        .bind[Hello].toProvider { (m: ProductionString) =>
-          Hello(m)
-        }
-        .bind[ProductionString].toInstance("hello production")
-
-      d.build[Hello] { h =>
-        h.message shouldBe "hello production"
-      }
-    }
-
-    "bind type aliases" taggedAs ("alias") in {
-      val d = newSilentDesign
-        .bind[HelloRef].toInstance(new StringHello)
-
-      d.build[HelloRef] { h =>
-        h.hello shouldBe "hello world"
-      }
-    }
-
-    "start and stop session" in {
-      // Sanity test
-      newDesign.noLifeCycleLogging
-        .withSession { session =>
-          // Do nothing
-        }
-    }
-
-    "set/unset options" in {
-      val d = Design.newDesign
-      d.withTracer(DefaultTracer).noTracer
-    }
+  def `set/unset options`: Unit = {
+    val d = Design.newDesign
+    d.withTracer(DefaultTracer).noTracer
   }
 }

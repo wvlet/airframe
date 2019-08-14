@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class Counter extends LogSupport {
@@ -82,131 +83,131 @@ trait LifeCycleOrder {
 /**
   *
   */
-class LifeCycleManagerTest extends AirframeSpec {
-  "LifeCycleManager" should {
-    "call init hook" taggedAs ("init") in {
-      val c = newSilentDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
-      c.initCount shouldBe 1
-    }
+class LifeCycleManagerTest extends AirSpec {
+  scalaJsSupport
 
-    "call lifecycle hooks properly for singleton" taggedAs ("start") in {
-      val session      = newSilentDesign.bind[CounterService].toSingleton.newSession
-      val multiCounter = session.build[CounterUser]
-      multiCounter.counter1 shouldBe theSameInstanceAs(multiCounter.counter2)
+  def `call init hook`: Unit = {
+    val c = newSilentDesign.bind[CounterService].toSingleton.newSession.build[CounterService]
+    c.initCount shouldBe 1
+  }
 
-      multiCounter.counter1.initCount shouldBe 1
-      multiCounter.counter1.injectCount shouldBe 1
-      multiCounter.counter1.startCount shouldBe 0
-      multiCounter.counter1.shutdownCount shouldBe 0
+  def `call lifecycle hooks properly for singleton`: Unit = {
+    val session      = newSilentDesign.bind[CounterService].toSingleton.newSession
+    val multiCounter = session.build[CounterUser]
+    multiCounter.counter1 shouldBeTheSameInstanceAs (multiCounter.counter2)
 
-      session.start
-      multiCounter.counter1.initCount shouldBe 1
-      multiCounter.counter1.injectCount shouldBe 1
-      multiCounter.counter1.startCount shouldBe 1
-      multiCounter.counter1.shutdownCount shouldBe 0
-      session.shutdown
+    multiCounter.counter1.initCount shouldBe 1
+    multiCounter.counter1.injectCount shouldBe 1
+    multiCounter.counter1.startCount shouldBe 0
+    multiCounter.counter1.shutdownCount shouldBe 0
 
-      multiCounter.counter1.initCount shouldBe 1
-      multiCounter.counter1.injectCount shouldBe 1
-      multiCounter.counter1.startCount shouldBe 1
-      multiCounter.counter1.shutdownCount shouldBe 1
-    }
+    session.start
+    multiCounter.counter1.initCount shouldBe 1
+    multiCounter.counter1.injectCount shouldBe 1
+    multiCounter.counter1.startCount shouldBe 1
+    multiCounter.counter1.shutdownCount shouldBe 0
+    session.shutdown
 
-    "start and shutdown only once for singleton referenced multiple times" taggedAs ("multi") in {
-      val session = newSilentDesign.bind[Counter].toSingleton.newSession
+    multiCounter.counter1.initCount shouldBe 1
+    multiCounter.counter1.injectCount shouldBe 1
+    multiCounter.counter1.startCount shouldBe 1
+    multiCounter.counter1.shutdownCount shouldBe 1
+  }
 
-      val u1 = session.build[User1]
-      val u2 = session.build[User2]
+  def `start and shutdown only once for singleton referenced multiple times`: Unit = {
+    val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
-      // Shoud have the same service instance
-      u1.counterService shouldBe theSameInstanceAs(u2.counterService)
+    val u1 = session.build[User1]
+    val u2 = session.build[User2]
 
-      session.start
+    // Shoud have the same service instance
+    u1.counterService shouldBeTheSameInstanceAs (u2.counterService)
 
-      session.shutdown
+    session.start
 
-      // Counter should be initialized only once
-      u1.initCount shouldBe 1
-      u2.initCount shouldBe 1
+    session.shutdown
 
-      u1.injectCount shouldBe 2
-      u2.injectCount shouldBe 2
+    // Counter should be initialized only once
+    u1.initCount shouldBe 1
+    u2.initCount shouldBe 1
 
-      // Counter also should be started only once
-      u1.startCount shouldBe 1
-      u2.startCount shouldBe 1
+    u1.injectCount shouldBe 2
+    u2.injectCount shouldBe 2
 
-      // Shutdown should be called only once
-      u1.shutdownCount shouldBe 1
-      u2.shutdownCount shouldBe 1
-    }
+    // Counter also should be started only once
+    u1.startCount shouldBe 1
+    u2.startCount shouldBe 1
 
-    "run start hook when the session is already started" in {
-      val session = newSilentDesign.newSession
+    // Shutdown should be called only once
+    u1.shutdownCount shouldBe 1
+    u2.shutdownCount shouldBe 1
+  }
 
-      var cs: CounterService = null
-      session.start {
-        cs = session.build[CounterService]
-        cs.initCount shouldBe 1
-        cs.startCount shouldBe 1
-        cs.shutdownCount shouldBe 0
-      }
+  def `run start hook when the session is already started`: Unit = {
+    val session = newSilentDesign.newSession
+
+    var cs: CounterService = null
+    session.start {
+      cs = session.build[CounterService]
       cs.initCount shouldBe 1
       cs.startCount shouldBe 1
-      cs.shutdownCount shouldBe 1
+      cs.shutdownCount shouldBe 0
     }
+    cs.initCount shouldBe 1
+    cs.startCount shouldBe 1
+    cs.shutdownCount shouldBe 1
+  }
 
-    "run start hook only once for singleton after session is started" in {
-      val session = newSilentDesign.bind[Counter].toSingleton.newSession
+  def `run start hook only once for singleton after session is started`: Unit = {
+    val session = newSilentDesign.bind[Counter].toSingleton.newSession
 
-      var cs: CounterService  = null
-      var cs2: CounterService = null
-      session.start {
-        cs = session.build[CounterService]
-        cs.initCount shouldBe 1
-        cs.injectCount shouldBe 1
-        cs.startCount shouldBe 1
-        cs.shutdownCount shouldBe 0
-
-        cs2 = session.build[CounterService]
-        cs2.initCount shouldBe 1
-        cs2.injectCount shouldBe 1 // CounterService is already instantiated
-        cs2.startCount shouldBe 1
-        cs2.shutdownCount shouldBe 0
-      }
+    var cs: CounterService  = null
+    var cs2: CounterService = null
+    session.start {
+      cs = session.build[CounterService]
       cs.initCount shouldBe 1
       cs.injectCount shouldBe 1
       cs.startCount shouldBe 1
-      cs.shutdownCount shouldBe 1
+      cs.shutdownCount shouldBe 0
 
-      cs.counterService shouldBe theSameInstanceAs(cs2.counterService)
+      cs2 = session.build[CounterService]
+      cs2.initCount shouldBe 1
+      cs2.injectCount shouldBe 1 // CounterService is already instantiated
+      cs2.startCount shouldBe 1
+      cs2.shutdownCount shouldBe 0
+    }
+    cs.initCount shouldBe 1
+    cs.injectCount shouldBe 1
+    cs.startCount shouldBe 1
+    cs.shutdownCount shouldBe 1
+
+    cs.counterService shouldBeTheSameInstanceAs (cs2.counterService)
+  }
+
+  def `execute beforeShutdown hook`: Unit = {
+    val session = newSilentDesign.newSession
+    val l       = session.build[LifeCycleOrder]
+    session.start {}
+    l.init shouldBe 1
+    l.start shouldBe 2
+    l.preShutdown shouldBe 3
+    l.shutdown shouldBe 4
+  }
+
+  def `show life cycle log`: Unit = {
+    newDesign.withSession { session =>
+      // Just show debug logs
     }
 
-    "execute beforeShutdown hook" in {
-      val session = newSilentDesign.newSession
-      val l       = session.build[LifeCycleOrder]
-      session.start {}
-      l.init shouldBe 1
-      l.start shouldBe 2
-      l.preShutdown shouldBe 3
-      l.shutdown shouldBe 4
-    }
-
-    "show life cycle log" in {
-      newDesign.withSession { session =>
-        // Just show debug logs
+    val l       = Logger("wvlet.airframe")
+    val current = l.getLogLevel
+    try {
+      l.setLogLevel(LogLevel.DEBUG)
+      newSilentDesign.withSession { session =>
+        // Show debug level session life cycle log
       }
-
-      val l       = Logger("wvlet.airframe")
-      val current = l.getLogLevel
-      try {
-        l.setLogLevel(LogLevel.DEBUG)
-        newSilentDesign.withSession { session =>
-          // Show debug level session life cycle log
-        }
-      } finally {
-        l.setLogLevel(current)
-      }
+    } finally {
+      l.setLogLevel(current)
     }
   }
 }

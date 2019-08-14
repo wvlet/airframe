@@ -12,13 +12,16 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
 
 /**
   *
   */
-class PathDependentTypeTest extends AirframeSpec {
-  "pass dependent types" in {
+class PathDependentTypeTest extends AirSpec {
+  scalaJsSupport
+
+  def `pass dependent types`: Unit = {
     import PathDependentType._
     val s = Surface.of[JdbcProfile#Backend#Database]
 

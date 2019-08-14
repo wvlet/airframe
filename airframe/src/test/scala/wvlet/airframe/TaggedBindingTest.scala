@@ -12,10 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.tag._
 
 object TaggedBindingTest {
+
   case class Fruit(name: String)
 
   trait Apple
@@ -36,23 +38,22 @@ import TaggedBindingTest._
 /**
   *
   */
-class TaggedBindingTest extends AirframeSpec {
+class TaggedBindingTest extends AirSpec {
+  scalaJsSupport
 
-  "Airframe" should {
-    "support tagged binding" in {
-      val apple = Surface.of[Fruit @@ Apple]
-      warn(s"apple: ${apple}, alias:${apple.isAlias}")
+  def `support tagged binding`: Unit = {
+    val apple = Surface.of[Fruit @@ Apple]
+    warn(s"apple: ${apple}, alias:${apple.isAlias}")
 
-      val d = newDesign
-        .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
-        .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
-        .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
+    val d = newDesign
+      .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
+      .bind[Fruit @@ Banana].toInstance(Fruit("banana"))
+      .bind[Fruit @@ Lemon].toInstance(Fruit("lemon"))
 
-      val session = d.newSession
-      val tagged  = session.build[TaggedBinding]
-      tagged.apple.name shouldBe ("apple")
-      tagged.banana.name shouldBe ("banana")
-      tagged.lemon.name shouldBe ("lemon")
-    }
+    val session = d.newSession
+    val tagged  = session.build[TaggedBinding]
+    tagged.apple.name shouldBe "apple"
+    tagged.banana.name shouldBe "banana"
+    tagged.lemon.name shouldBe "lemon"
   }
 }

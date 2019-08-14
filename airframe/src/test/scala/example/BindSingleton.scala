@@ -15,7 +15,7 @@ package example
 
 import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 
 /**
@@ -63,10 +63,9 @@ object BindSingleton {
   session.shutdown // shows "Good-bye World!"
 }
 
-class BindSingleton extends AirframeSpec {
-  "BindSingleton" should {
-    "run" in {
-      val b = BindSingleton
-    }
+class BindSingleton extends AirSpec {
+  scalaJsSupport
+  def `run`: Unit = {
+    val b = BindSingleton
   }
 }
