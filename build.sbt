@@ -793,7 +793,7 @@ lazy val examples =
                jdbc,
                tablet,
                finagle,
-               airframeScalaTestJVM % "test")
+               airspecJVM % "test")
 
 /**
   * AirSpec build definitions.

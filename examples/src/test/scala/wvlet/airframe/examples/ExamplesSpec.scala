@@ -13,16 +13,16 @@
  */
 package wvlet.airframe.examples
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 import wvlet.log.io.Resource
 
 /**
   *
   */
-class ExamplesSpec extends AirframeSpec {
+class ExamplesSpec extends AirSpec {
 
-  def runAll(packageName: String): Unit = {
+  private def runAll(packageName: String): Unit = {
     for {
       cl  <- Resource.findClasses(s"wvlet.airframe.examples.${packageName}", classOf[App]).sortBy(_.getSimpleName)
       app <- ReflectTypeUtil.companionObject(cl)
@@ -33,31 +33,31 @@ class ExamplesSpec extends AirframeSpec {
     }
   }
 
-  "codec examples" taggedAs ("ex-codec") in {
+  def `codec examples`: Unit = {
     runAll("codec")
   }
 
-  "di examples" taggedAs ("ex-di") in {
+  def `di examples`: Unit = {
     runAll("di")
   }
 
-  "control examples" taggedAs ("ex-control") in {
+  def `control examples`: Unit = {
     runAll("control")
   }
 
-  "http examples" taggedAs ("ex-http") in {
+  def `http examples`: Unit = {
     runAll("http")
   }
 
-  "launcher examples" taggedAs ("ex-launcher") in {
+  def `launcher examples`: Unit = {
     runAll("launcher")
   }
 
-  "log examples" taggedAs ("ex-log") in {
+  def `log examples`: Unit = {
     runAll("log")
   }
 
-  "surface examples" taggedAs ("ex-surface") in {
+  def `surface examples`: Unit = {
     runAll("surface")
   }
 
