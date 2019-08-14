@@ -65,7 +65,7 @@ object MapBindingTest {
 
     def handle(name: String) = {
       val message = dispatcher.apply(name).handle
-      info(message)
+      debug(message)
     }
   }
 }

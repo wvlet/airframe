@@ -34,13 +34,13 @@ object ServiceMixinExample {
   case class ConsoleConfig(out: PrintStream)
 
   class ConsolePrinter(config: ConsoleConfig) extends Printer with LogSupport {
-    info(s"using config: ${config}")
+    debug(s"using config: ${config}")
 
     def print(s: String): Unit = { config.out.println(s) }
   }
 
   class LogPrinter extends Printer with LogSupport {
-    def print(s: String): Unit = { info(s) }
+    def print(s: String): Unit = { debug(s) }
   }
 
   class Fortune {
@@ -107,7 +107,7 @@ object ServiceMixinExample {
   //}
 
   class HeavyObject() extends LogSupport {
-    info(f"Heavy Process!!: ${this.hashCode()}%x")
+    debug(f"Heavy Process!!: ${this.hashCode()}%x")
   }
 
   trait HeavySingletonService {
@@ -122,7 +122,7 @@ object ServiceMixinExample {
   case class B(a: A)
 
   class EagerSingleton extends LogSupport {
-    info("initialized")
+    debug("initialized")
     val initializedTime = System.nanoTime()
   }
 
@@ -164,7 +164,7 @@ object ServiceMixinExample {
   }
 
   trait Nest1 extends LogSupport {
-    info("instantiated Nest1")
+    debug("instantiated Nest1")
     val nest2 = bind[Nest2]
   }
 
@@ -183,19 +183,19 @@ object ServiceMixinExample {
   }
 
   trait ConcreteModule extends AbstractModule with LogSupport {
-    def hello: Unit = { info("hello!") }
+    def hello: Unit = { debug("hello!") }
   }
 
   object ConcreteSingleton extends AbstractModule with LogSupport {
-    def hello: Unit = { info("hello singleton!") }
+    def hello: Unit = { debug("hello singleton!") }
   }
 
   trait NonAbstractModule extends LogSupport {
-    info("This should be built")
+    debug("This should be built")
   }
 
   object SingletonOfNonAbstractModules extends NonAbstractModule {
-    info("Hello singleton")
+    debug("Hello singleton")
   }
 
   trait NestedAbstractModule {
@@ -203,7 +203,7 @@ object ServiceMixinExample {
   }
 
   trait EagerSingletonWithInject extends LogSupport {
-    info("initialized")
+    debug("initialized")
     val heavy           = bind[HeavyObject]
     val initializedTime = System.nanoTime()
   }
@@ -215,16 +215,16 @@ object ServiceMixinExample {
     var closeCount = new AtomicInteger(0)
 
     def init: Unit = {
-      info("initialized")
+      debug("initialized")
       initCount.incrementAndGet()
     }
     def start: Unit = {
-      info("started")
+      debug("started")
       startCount.incrementAndGet()
     }
 
     def close: Unit = {
-      info("closed")
+      debug("closed")
       closeCount.incrementAndGet()
     }
   }
@@ -407,11 +407,11 @@ class AirframeTest extends AirSpec {
     f.hello shouldBe "Hello Airframe!"
     f.helloFromProvider shouldBe "Hello Airframe!"
 
-    info(f.hello2)
+    debug(f.hello2)
   }
   def `support type alias`: Unit = {
     val apple = Surface.of[Apple]
-    warn(s"apple: ${apple}, alias:${apple.isAlias}")
+    debug(s"apple: ${apple}, alias:${apple.isAlias}")
 
     val d = newDesign
       .bind[Apple].toInstance(LocalFruit("apple"))

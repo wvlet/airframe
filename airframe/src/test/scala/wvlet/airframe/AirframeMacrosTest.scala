@@ -17,7 +17,7 @@ import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 
 trait NonAbstractTrait extends LogSupport {
-  info("hello trait")
+  debug("hello trait")
 }
 
 trait AbstractTrait extends LogSupport {
@@ -25,7 +25,7 @@ trait AbstractTrait extends LogSupport {
 }
 
 trait ConcreteTrait extends AbstractTrait {
-  override def abstractMethod: Unit = { info("hello abstract trait") }
+  override def abstractMethod: Unit = { debug("hello abstract trait") }
 }
 
 trait App1 {

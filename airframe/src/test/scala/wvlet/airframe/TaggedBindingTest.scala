@@ -43,7 +43,7 @@ class TaggedBindingTest extends AirSpec {
 
   def `support tagged binding`: Unit = {
     val apple = Surface.of[Fruit @@ Apple]
-    warn(s"apple: ${apple}, alias:${apple.isAlias}")
+    debug(s"apple: ${apple}, alias:${apple.isAlias}")
 
     val d = newDesign
       .bind[Fruit @@ Apple].toInstance(Fruit("apple"))
