@@ -141,8 +141,6 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   http,
   jsonJVM,
-  airspecLogJVM,
-  airspecCoreJVM,
   airspecJVM
 )
 
@@ -171,8 +169,6 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   codecJS,
   msgpackJS,
   jsonJS,
-  airspecLogJS,
-  airspecCoreJS,
   airspecJS
 )
 
@@ -361,15 +357,13 @@ lazy val airframeMacros =
     .crossType(CrossType.Pure)
     .in(file("airframe-di-macros"))
     .settings(buildSettings)
+    .settings(noPublish)
     .settings(
-      buildSettings,
       name := "airframe-di-macros",
       description := "Macros for Airframe",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
-      ),
-      publish := {},
-      publishLocal := {}
+      )
     )
     .jsSettings(jsBuildSettings)
 
@@ -377,8 +371,9 @@ lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 // To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
-lazy val airframeMacrosJVMRef = airframeMacrosJVM % "compile-internal,test-internal"
-lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-internal"
+val internalScope             = "compile-internal,test-internal"
+lazy val airframeMacrosJVMRef = airframeMacrosJVM % internalScope
+lazy val airframeMacrosRef    = airframeMacros % internalScope
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
@@ -786,15 +781,17 @@ lazy val examples =
 /**
   * AirSpec build definitions.
   *
-  * To make airspec a standalone library without any cyclic project references, airspec shares the same source code with airframe-log, di, surface, etc.
+  * To make airspec a standalone library without any cyclic project references, airspec embeds the source code of airframe-log, di, surface, etc.
   *
   * Since airframe-log, di, and surfaces uses Scala macros whose def-macros cannot be called within the same project,
-  * we need to split the source code into three projects:
+  * we need to split the source code into 4 projects:
   *
   *  - airspec-log (dependsOn airframe-log's source)
-  *  - airspec-core (di-macros, surface)
-  *  - airspec (di, metrics)
+  *  - airspec-core (di-macros, surface)  # surface uses airframe-log macros
+  *  - airspec-deps (di, metrics)  # di uses di-macros
+  *  - airspec (test-interface) # Need to split this as IntelliJ cannot find classes in unmanagedSourceDirectories
   *
+  * airspec.jar will be an all-in-one jar with airframe-log, di, surface, metrics, etc.
   */
 val airspecLogDependencies  = Seq("airframe-log")
 val airspecCoreDependencies = Seq("airframe-di-macros", "airframe-surface")
@@ -853,6 +850,7 @@ lazy val airspecLog =
     .crossType(CrossType.Pure)
     .in(file("airspec-log"))
     .settings(buildSettings)
+    .settings(noPublish)
     .settings(
       airspecDependsOn := airspecLogDependencies,
       airspecBuildSettings,
@@ -879,6 +877,7 @@ lazy val airspecCore =
     .crossType(CrossType.Pure)
     .in(file("airspec-core"))
     .settings(buildSettings)
+    .settings(noPublish)
     .settings(
       airspecDependsOn := airspecCoreDependencies,
       airspecBuildSettings,
@@ -887,15 +886,48 @@ lazy val airspecCore =
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      airspecJVMBuildSettings
+      airspecJVMBuildSettings,
+      mappings in (Compile, packageBin) ++= mappings.in(airspecLogJVM, Compile, packageBin).value,
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecLogJVM, Compile, packageSrc).value
     )
     .jsSettings(
       airspecJSBuildSettings,
+      mappings in (Compile, packageBin) ++= mappings.in(airspecLogJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecLogJS, Compile, packageSrc).value
     )
-    .dependsOn(airspecLog)
+    .dependsOn(airspecLog % "provided")
 
 lazy val airspecCoreJVM = airspecCore.jvm
 lazy val airspecCoreJS  = airspecCore.js
+
+lazy val airspecDeps =
+  crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airspec-deps"))
+    .settings(buildSettings)
+    .settings(noPublish)
+    .settings(
+      airspecDependsOn := airspecDependencies,
+      airspecBuildSettings,
+      name := "airspec-deps",
+      description := "Dependencies of AirSpec"
+    )
+    .jvmSettings(
+      airspecJVMBuildSettings,
+      mappings in (Compile, packageBin) ++= mappings.in(airspecCoreJVM, Compile, packageBin).value,
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecCoreJVM, Compile, packageSrc).value
+    )
+    .jsSettings(
+      airspecJSBuildSettings,
+      mappings in (Compile, packageBin) ++= mappings.in(airspecCoreJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecCoreJS, Compile, packageSrc).value
+    )
+    .dependsOn(airspecCore % "provided", airspecLog % "provided")
+
+lazy val airspecDepsJVM = airspecDeps.jvm
+lazy val airspecDepsJS  = airspecDeps.js
+
+lazy val airspecJVMModules = Seq(airspecDepsJVM, airspecCoreJVM, airspecLogJVM)
 
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
@@ -903,25 +935,27 @@ lazy val airspec =
     .in(file("airspec"))
     .settings(buildSettings)
     .settings(
-      airspecDependsOn := airspecDependencies,
-      airspecBuildSettings,
+      //airspecBuildSettings,
       name := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala"
     )
     .jvmSettings(
-      airspecJVMBuildSettings,
+      // Embed dependent project codes to make airspec a single jar
+      mappings in (Compile, packageBin) ++= mappings.in(airspecDepsJVM, Compile, packageBin).value,
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJVM, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-sbt" % "test-interface" % "1.0"
       )
     )
     .jsSettings(
-      airspecJSBuildSettings,
+      mappings in (Compile, packageBin) ++= mappings.in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
+      mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
-    .dependsOn(airspecCore)
+    .dependsOn(airspecDeps % "provided", airspecCore % "provided", airspecLog % "provided")
 
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
