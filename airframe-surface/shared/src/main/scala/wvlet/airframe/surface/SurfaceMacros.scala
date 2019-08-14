@@ -326,11 +326,11 @@ private[surface] object SurfaceMacros {
               val defaultValueGetter =
                 findMethod(x, "apply$default$" + index)
                   .orElse(findMethod(x, "$lessinit$greater$default$" + index))
-              defaultValueGetter.map { g =>
-                q"${g}"
+              // TODO: This doesn't work for local case class with default parameter values in Scala.js
+              defaultValueGetter.map { method =>
+                q"${method}"
               }
             }
-          println(s"${showRaw(defaultValue)}")
           index += 1
           MethodArg(p, t, defaultValue)
         }
