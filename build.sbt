@@ -175,6 +175,8 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
 lazy val airspecProjects: Seq[ProjectReference] = Seq(
   airspecJVM,
   airspecJS,
+  airspecDepsJVM,
+  airspecDepsJS,
   airspecCoreJVM,
   airspecCoreJS,
   airspecLogJVM,
