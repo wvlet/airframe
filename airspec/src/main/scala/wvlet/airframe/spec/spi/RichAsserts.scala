@@ -190,6 +190,8 @@ trait RichAsserts extends LogSupport {
 
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
       value match {
+        case v: String =>
+          expected.check(value, v.isEmpty, code)
         case v: Option[_] =>
           expected.check(value, v.isEmpty, code)
         case v: Iterable[_] =>
@@ -203,6 +205,8 @@ trait RichAsserts extends LogSupport {
 
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
       value match {
+        case v: String =>
+          expected.flip.check(value, v.isEmpty, code)
         case v: Option[_] =>
           expected.flip.check(value, v.isEmpty, code)
         case v: Iterable[_] =>

@@ -13,36 +13,35 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 
 /**
   *
   */
-class AssistedInjectionTest extends AirframeSpec {
+class AssistedInjectionTest extends AirSpec {
+  scalaJsSupport
 
   import AssistedInjectionTest._
 
-  "Airframe" should {
+  def `support assisted injection`: Unit = {
+    newSilentDesign
+      .bind[MyService].toInstance("hello")
+      .withSession { session =>
+        val p  = session.build[NamedServiceProvider]
+        val a1 = p.provider("A1", session)
+        val a2 = p.provider("A2", session)
 
-    "support assisted injection" in {
-      newSilentDesign
-        .bind[MyService].toInstance("hello")
-        .withSession { session =>
-          val p  = session.build[NamedServiceProvider]
-          val a1 = p.provider("A1", session)
-          val a2 = p.provider("A2", session)
+        a1.name shouldBe "A1"
+        a2.name shouldBe "A2"
 
-          a1.name shouldBe "A1"
-          a2.name shouldBe "A2"
+        a1.service shouldBe "hello"
+        a2.service shouldBe "hello"
 
-          a1.service shouldBe "hello"
-          a2.service shouldBe "hello"
-
-          val a3 = assistedInjector("A3", session)
-          a3.name shouldBe "A3"
-          a3.service shouldBe "hello"
-        }
-    }
+        val a3 = assistedInjector("A3", session)
+        a3.name shouldBe "A3"
+        a3.service shouldBe "hello"
+      }
   }
 
 }

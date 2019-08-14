@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.spec.AirSpec
+
 object DefaultValueTest {
   case class A(a: Long = 10, b: Long = 100, c: Long = 1000)
 
@@ -22,9 +24,11 @@ object DefaultValueTest {
 /**
   *
   */
-class DefaultValueTest extends AirframeSpec {
+class DefaultValueTest extends AirSpec {
+  scalaJsSupport
+
   import DefaultValueTest._
-  "populate default values" in {
+  def `populate default values`: Unit = {
     newDesign.build[B] { b =>
       b.a shouldBe A()
     }

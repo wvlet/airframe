@@ -310,7 +310,8 @@ private[surface] object SurfaceMacros {
 
       val companion = targetType.companion match {
         case NoType => None
-        case comp   => Some(comp)
+        case comp =>
+          Some(comp)
       }
 
       val ret = for (params <- constructor.paramLists) yield {
@@ -323,12 +324,13 @@ private[surface] object SurfaceMacros {
             companion.flatMap { x =>
               // Find default value getter from the companion class
               val defaultValueGetter =
-                findMethod(x, "apply$default$" + index).orElse(findMethod(x, "$lessinit$greater$default$" + index))
+                findMethod(x, "apply$default$" + index)
+                  .orElse(findMethod(x, "$lessinit$greater$default$" + index))
               defaultValueGetter.map { g =>
                 q"${g}"
               }
             }
-
+          println(s"${showRaw(defaultValue)}")
           index += 1
           MethodArg(p, t, defaultValue)
         }
@@ -420,7 +422,7 @@ private[surface] object SurfaceMacros {
             argExtractor.foldLeft[c.Tree](Select(New(Ident(targetType.dealias.typeSymbol)), termNames.CONSTRUCTOR))(
               (x, arg) => Apply(x, arg))
 
-          // TODO: Support companion object call for instanciating the object
+          // TODO: Support companion object call for instantiating the object
           val expr =
             q"""new wvlet.airframe.surface.ObjectFactory {
             def newInstance(args:Seq[Any]) : ${targetType} = { $constructor }

@@ -13,30 +13,30 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.spec.AirSpec
+
 /**
   * TODO: This works only in JVM,
   * because we cannot extract constructor default parameters in Scala.js
   */
-class ConstructorBindingTest extends AirframeSpec {
+class ConstructorBindingTest extends AirSpec {
 
   import ConstructorBindingTest._
 
-  "Airframe" should {
-    "build objects using default constructor parameters" in {
-      newSilentDesign.build[CbTest] { a =>
-        debug(a)
-        a shouldBe CbTest(-1, "leo")
-      }
+  def `build objects using default constructor parameters`: Unit = {
+    newSilentDesign.build[CbTest] { a =>
+      debug(a)
+      a shouldBe CbTest(-1, "leo")
     }
+  }
 
-    "build objects using default param and binding" in {
-      newSilentDesign
-        .bind[MyValue].toInstance("hello")
-        .build[CbTest1] { a =>
-          debug(a)
-          a shouldBe CbTest1(-1, "hello")
-        }
-    }
+  def `build objects using default param and binding`: Unit = {
+    newSilentDesign
+      .bind[MyValue].toInstance("hello")
+      .build[CbTest1] { a =>
+        debug(a)
+        a shouldBe CbTest1(-1, "hello")
+      }
   }
 }
 

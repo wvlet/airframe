@@ -16,6 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.SingletonTest._
+import wvlet.airframe.spec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 object SingletonTest {
@@ -65,41 +66,40 @@ object SingletonTest {
 /**
   *
   */
-class SingletonTest extends AirframeSpec {
+class SingletonTest extends AirSpec {
+  scalaJsSupport
 
   val design =
     newDesign
       .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
-  "Singleton" should {
-    "bind singleton with bind[X]" in {
-      val session = design.newSession
+  def `bind singleton with bind[X]` : Unit = {
+    val session = design.newSession
 
-      val a = session.build[A]
-      val b = session.build[B]
+    val a = session.build[A]
+    val b = session.build[B]
 
-      a.t.counter should be theSameInstanceAs b.t.counter
-      session.build[TraitCounter].get() shouldBe 1
-    }
+    a.t.counter shouldBeTheSameInstanceAs b.t.counter
+    session.build[TraitCounter].get() shouldBe 1
+  }
 
-    "bind singleton with bind[X] as a service" in {
-      val session = design.newSession
+  def `bind singleton with bind[X] as a service`: Unit = {
+    val session = design.newSession
 
-      val u1 = session.build[U1]
-      val u2 = session.build[U2]
+    val u1 = session.build[U1]
+    val u2 = session.build[U2]
 
-      u1.service.counter should be theSameInstanceAs u2.service.counter
-      u1.service.counter.get() shouldBe 1
-    }
+    u1.service.counter shouldBeTheSameInstanceAs u2.service.counter
+    u1.service.counter.get() shouldBe 1
+  }
 
-    "support overriding non-abstract singleton trait" taggedAs ("override") in {
-      val d = newDesign
-        .bind[E].toSingleton
-        .bind[NonAbstract].toSingletonOf[C]
+  def `support overriding non-abstract singleton trait`: Unit = {
+    val d = newDesign
+      .bind[E].toSingleton
+      .bind[NonAbstract].toSingletonOf[C]
 
-      val session = d.newSession
-      val e       = session.build[E]
-      e.m.hello shouldBe "nice"
-    }
+    val session = d.newSession
+    val e       = session.build[E]
+    e.m.hello shouldBe "nice"
   }
 }

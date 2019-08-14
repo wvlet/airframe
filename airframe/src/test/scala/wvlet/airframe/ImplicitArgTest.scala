@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.spec.AirSpec
+
 object ImplicitArgTest {
 
   case class ImplA(a: String)(implicit val b: Int)
@@ -23,10 +25,12 @@ object ImplicitArgTest {
 /**
   *
   */
-class ImplicitArgTest extends AirframeSpec {
+class ImplicitArgTest extends AirSpec {
+  scalaJsSupport
+
   import ImplicitArgTest._
 
-  "support implicit args" in {
+  def `support implicit args`: Unit = {
 
     val d = newDesign
       .bind[String].toInstance("hello")

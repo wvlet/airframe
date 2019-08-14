@@ -350,7 +350,7 @@ lazy val airframe =
       // include the macro sources in the main source jar
       mappings in (Compile, packageSrc) ++= mappings.in(airframeMacrosJS, Compile, packageSrc).value
     )
-    .dependsOn(surface, airframeMacrosRef, airframeScalaTest % "test")
+    .dependsOn(surface, airframeMacrosRef, airspec % "test")
 
 lazy val airframeJVM = airframe.jvm
 lazy val airframeJS  = airframe.js
@@ -382,14 +382,12 @@ lazy val airframeMacrosRef    = airframeMacros    % "compile-internal,test-inter
 
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
-    "org.scala-lang" % "scala-reflect"  % scalaVersion,
-    "org.scala-lang" % "scala-compiler" % scalaVersion % "provided"
+    // For ading PreDestroy, PostConstruct annotations to Java9
+    "javax.annotation" % "javax.annotation-api" % "1.3.1",
+    "org.scala-lang"   % "scala-reflect"        % scalaVersion,
+    "org.scala-lang"   % "scala-compiler"       % scalaVersion % "provided"
   )
 }
-val surfaceJVMDependencies = Seq(
-  // For ading PreDestroy, PostConstruct annotations to Java9
-  "javax.annotation" % "javax.annotation-api" % "1.3.1"
-)
 
 lazy val surface =
   crossProject(JVMPlatform, JSPlatform)
@@ -399,9 +397,6 @@ lazy val surface =
       name := "airframe-surface",
       description := "A library for extracting object structure surface",
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
-    )
-    .jvmSettings(
-      libraryDependencies ++= surfaceJVMDependencies
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airspec % "test")
@@ -892,8 +887,7 @@ lazy val airspecCore =
       libraryDependencies ++= surfaceDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      airspecJVMBuildSettings,
-      libraryDependencies ++= surfaceJVMDependencies
+      airspecJVMBuildSettings
     )
     .jsSettings(
       airspecJSBuildSettings,

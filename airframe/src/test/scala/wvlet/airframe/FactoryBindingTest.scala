@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.spec.AirSpec
+
 object FactoryBindingTest {
 
   case class MyConfig(a: Int)
@@ -57,7 +59,9 @@ object FactoryBindingTest {
 /**
   *
   */
-class FactoryBindingTest extends AirframeSpec {
+class FactoryBindingTest extends AirSpec {
+  scalaJsSupport
+
   import FactoryBindingTest._
 
   val c1 = MyConfig(10)
@@ -69,7 +73,7 @@ class FactoryBindingTest extends AirframeSpec {
     .bind[MyConfig2].toInstance(c2)
     .bind[D1].toInstance(d1)
 
-  "create factories to override partial binding" in {
+  def `create factories to override partial binding`: Unit = {
     d.build[FactoryExample] { f =>
       val m1 = f.factory(MyConfig(15))
       m1.config shouldBe MyConfig(15)
@@ -81,7 +85,7 @@ class FactoryBindingTest extends AirframeSpec {
     }
   }
 
-  "create constructor binding factories" in {
+  def `create constructor binding factories`: Unit = {
     d.build[FactoryExample2] { f =>
       val j1 = f.factory(MyConfig(17))
       j1.config shouldBe MyConfig(17)
@@ -93,7 +97,7 @@ class FactoryBindingTest extends AirframeSpec {
     }
   }
 
-  "create factory of many args" in {
+  def `create factory of many args`: Unit = {
     d.build[FactorySetExample] { f =>
       {
         val j = f.f2(MyConfig(2), MyConfig2(3))

@@ -129,9 +129,9 @@ object Example {
 
 import Example._
 
-class Example extends AirframeSpec {
+class Example extends AirSpec {
   "AirframeExample" should {
-    "build new planes" in {
+    def `build new planes`: Unit =  {
       val simplePlane = simplePlaneDesign.newSession.build[AirPlane]
       simplePlane.start
 
@@ -139,7 +139,7 @@ class Example extends AirframeSpec {
       hybridPlane.start
     }
 
-    "extends a component" in {
+    def `extends a component`: Unit =  {
       val session =
         hybridPlaneDesign
         .bind[Metric].toInstance(MetricLogging)
