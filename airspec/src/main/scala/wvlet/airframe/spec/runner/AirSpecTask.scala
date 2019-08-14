@@ -16,10 +16,11 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 import sbt.testing._
+import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.Design
 import wvlet.airframe.spec._
 import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airframe.spec.spi.{AirSpecContext, AirSpecException, MissingTestDependency}
 import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogSupport
 
@@ -76,9 +77,78 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
 
     import AirSpecSpi._
 
-    def runSpec(spec: AirSpecSpi, targetMethods: Seq[MethodSurface]): Unit = {
-      val clsLeafName = decodeClassName(spec.getClass)
-      taskLogger.logSpecName(clsLeafName)
+    val startTimeNanos = System.nanoTime()
+    try {
+      compat.withLogScanner {
+        trace(s"Executing task: ${taskDef}")
+        val testObj = taskDef.fingerprint() match {
+          // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint
+          case c: SubclassFingerprint if c.isModule =>
+            compat.findCompanionObjectOf(testClassName, classLoader)
+          case _ =>
+            compat.newInstanceOf(testClassName, classLoader)
+        }
+
+        testObj match {
+          case Some(spec: AirSpecSpi) =>
+            new TaskExecutor(taskDef, config, taskLogger, eventHandler).runSpec(spec)
+          case _ =>
+            taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
+            throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")
+        }
+      }
+    } catch {
+      case e: Throwable =>
+        // Unknown error
+        val event =
+          AirSpecEvent(taskDef, "<spec>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
+        taskLogger.logEvent(event)
+        eventHandler.handle(event)
+    } finally {
+      continuation(Array.empty)
+    }
+  }
+}
+
+object AirSpecTask {
+
+  private[spec] case class AirSpecEvent(taskDef: TaskDef,
+                                        override val fullyQualifiedName: String,
+                                        override val status: Status,
+                                        override val throwable: OptionalThrowable,
+                                        durationNanos: Long)
+      extends Event {
+    override def fingerprint(): Fingerprint = taskDef.fingerprint()
+    override def selector(): Selector       = taskDef.selectors().head
+    override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
+  }
+
+  private[spec] class TaskExecutor(taskDef: TaskDef,
+                                   config: AirSpecConfig,
+                                   taskLogger: AirSpecLogger,
+                                   eventHandler: EventHandler) {
+
+    def runSpec(spec: AirSpecSpi): Unit = {
+      val selectedMethods =
+        config.pattern match {
+          case Some(regex) =>
+            // Find matching methods
+            spec.testMethods.filter { m =>
+              // Concatenate class name + method name for handy search
+              val fullName = s"${spec.specName}:${m.name}"
+              regex.findFirstIn(fullName).isDefined
+            }
+          case None =>
+            spec.testMethods
+        }
+
+      if (selectedMethods.nonEmpty) {
+        runSpec(spec, selectedMethods)
+      }
+    }
+
+    private def runSpec(spec: AirSpecSpi, targetMethods: Seq[MethodSurface]): Unit = {
+      taskLogger.logSpecName(spec.leafSpecName)
 
       try {
         // Start the spec
@@ -98,11 +168,27 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
             val startTimeNanos = System.nanoTime()
             // Create a test-method local child session
             val result = session.withChildSession(childDesign) { childSession =>
+              val context =
+                new AirSpecContextImpl(this,
+                                       specName = spec.leafSpecName,
+                                       testName = m.name,
+                                       currentSession = childSession)
               Try {
                 try {
                   // Build a list of method arguments
                   val args: Seq[Any] = for (p <- m.args) yield {
-                    childSession.getInstanceOf(p.surface)
+                    try {
+                      p.surface.rawType match {
+                        case cls if classOf[AirSpecContext].isAssignableFrom(cls) =>
+                          context
+                        case _ =>
+                          childSession.getInstanceOf(p.surface)
+                      }
+                    } catch {
+                      case e @ MISSING_DEPENDENCY(stack, _) =>
+                        throw MissingTestDependency(
+                          s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}")
+                    }
                   }
                   // Call the test method
                   m.call(spec, args: _*)
@@ -130,88 +216,6 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
         spec.callAfterAll
       }
     }
-
-    val startTimeNanos = System.nanoTime()
-    try {
-      compat.withLogScanner {
-        trace(s"Executing task: ${taskDef}")
-        val testObj = taskDef.fingerprint() match {
-          // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint
-          case c: SubclassFingerprint if c.isModule =>
-            compat.findCompanionObjectOf(testClassName, classLoader)
-          case _ =>
-            compat.newInstanceOf(testClassName, classLoader)
-        }
-
-        testObj match {
-          case Some(spec: AirSpecSpi) =>
-            val selectedMethods =
-              config.pattern match {
-                case Some(regex) =>
-                  // Find matching methods
-                  spec.testMethods.filter { m =>
-                    // Concatenate class name + method name for handy search
-                    val fullName = s"${taskDef.fullyQualifiedName()}:${m.name}"
-                    regex.findFirstIn(fullName).isDefined
-                  }
-                case None =>
-                  spec.testMethods
-              }
-
-            if (selectedMethods.nonEmpty) {
-              runSpec(spec, selectedMethods)
-            }
-          case _ =>
-            taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
-            throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")
-        }
-      }
-    } catch {
-      case e: Throwable =>
-        // Unknown error
-        val event =
-          AirSpecEvent(taskDef, "<spec>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
-        taskLogger.logEvent(event)
-        eventHandler.handle(event)
-    } finally {
-      continuation(Array.empty)
-    }
-  }
-}
-
-object AirSpecTask {
-
-  private[spec] def decodeClassName(cls: Class[_]): String = {
-    // Scala.js doesn't produce a clean class name with cls.getSimpleName(), so we need to use
-    decodeClassName(cls.getName)
-  }
-
-  private[spec] def decodeClassName(clsName: String): String = {
-    // the full class name
-    val decodedClassName = scala.reflect.NameTransformer.decode(clsName)
-    val pos              = decodedClassName.lastIndexOf('.')
-    var name =
-      if (pos == -1)
-        decodedClassName
-      else
-        decodedClassName.substring((pos + 1).min(decodedClassName.length - 1))
-
-    // For object names ending with $
-    if (name.endsWith("$")) {
-      name = name.substring(0, name.length - 1)
-    }
-    name
-  }
-
-  private[spec] case class AirSpecEvent(taskDef: TaskDef,
-                                        override val fullyQualifiedName: String,
-                                        override val status: Status,
-                                        override val throwable: OptionalThrowable,
-                                        durationNanos: Long)
-      extends Event {
-    override def fingerprint(): Fingerprint = taskDef.fingerprint()
-    override def selector(): Selector       = taskDef.selectors().head
-    override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
   }
 
 }

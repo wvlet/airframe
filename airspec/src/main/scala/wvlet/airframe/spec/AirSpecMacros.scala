@@ -33,4 +33,12 @@ private[spec] object AirSpecMacros {
        throw wvlet.airframe.spec.spi.Pending("pending", ${sourceCode(c)})
      """
   }
+
+  def runImpl[A](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""
+       val __surface = wvlet.airframe.surface.Surface.of[A]
+    """
+  }
 }

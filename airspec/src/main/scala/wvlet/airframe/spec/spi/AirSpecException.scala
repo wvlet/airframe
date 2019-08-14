@@ -23,28 +23,33 @@ import wvlet.airframe.spec.compat
 trait AirSpecException extends RuntimeException {
   override def getMessage: String = message
   def message: String
+}
+
+trait AirSpecFailureBase extends AirSpecException {
   def code: SourceCode
   def statusLabel: String
 }
 
-case class AssertionFailure(message: String, code: SourceCode) extends AirSpecException {
+case class AssertionFailure(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "failed"
 }
-case class Ignored(message: String, code: SourceCode) extends AirSpecException {
+case class Ignored(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "ignored"
 }
-case class Pending(message: String, code: SourceCode) extends AirSpecException {
+case class Pending(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "pending"
 }
-case class Skipped(message: String, code: SourceCode) extends AirSpecException {
+case class Skipped(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "skipped"
 }
-case class Cancelled(message: String, code: SourceCode) extends AirSpecException {
+case class Cancelled(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "cancelled"
 }
-case class InterceptException(message: String, code: SourceCode) extends AirSpecException {
+case class InterceptException(message: String, code: SourceCode) extends AirSpecFailureBase {
   override def statusLabel: String = "interrupted"
 }
+
+case class MissingTestDependency(message: String) extends AirSpecException {}
 
 object AirSpecException {
   private[spec] def classifyException(e: Throwable): Status = {

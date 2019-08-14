@@ -36,6 +36,13 @@ private[spec] trait AirSpecSpi {
     _methodSurfaces.filter(x => x.isPublic)
   }
 
+  private[spec] lazy val specName: String = {
+    AirSpecSpi.decodeClassName(this.getClass.getName)
+  }
+  private[spec] lazy val leafSpecName: String = {
+    AirSpecSpi.leafClassName(specName)
+  }
+
   /**
     * This will add Scala.js support to the AirSpec.
     *
@@ -91,4 +98,26 @@ private[spec] object AirSpecSpi {
   private[spec] def inTravisCI: Boolean = {
     sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
   }
+
+  private[spec] def decodeClassName(clsName: String): String = {
+    // the full class name
+    val decodedClassName = scala.reflect.NameTransformer.decode(clsName)
+
+    // For object names ending with $
+    if (decodedClassName.endsWith("$")) {
+      decodedClassName.substring(0, decodedClassName.length - 1)
+    } else {
+      decodedClassName
+    }
+  }
+
+  private[spec] def leafClassName(fullClassName: String): String = {
+    // the full class name
+    val pos = fullClassName.lastIndexOf('.')
+    if (pos == -1)
+      fullClassName
+    else
+      fullClassName.substring((pos + 1).min(fullClassName.length - 1))
+  }
+
 }

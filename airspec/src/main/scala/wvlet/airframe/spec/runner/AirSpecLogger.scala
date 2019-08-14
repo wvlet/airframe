@@ -18,7 +18,7 @@ import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airframe.spec.AirSpecSpi
 import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
-import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airframe.spec.spi.{AirSpecException, AirSpecFailureBase}
 import wvlet.log.{LogFormatter, LogRecord, Logger}
 
 /**
@@ -76,7 +76,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       s"<< ${withColor(WHITE, statusLabel)}"
     }
 
-    def errorLocation(e: AirSpecException): String = {
+    def errorLocation(e: AirSpecFailureBase): String = {
       withColor(BLUE, s"(${e.code})")
     }
 
@@ -88,7 +88,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       case _ if e.throwable.isDefined =>
         val ex = e.throwable.get()
         ex match {
-          case se: AirSpecException =>
+          case se: AirSpecFailureBase =>
             s" ${statusLabel(se.statusLabel)}: ${withColor(baseColor, se.message)} ${errorLocation(se)}"
           case _ =>
             s" ${statusLabel("error")}: ${withColor(baseColor, ex.getMessage())}"
