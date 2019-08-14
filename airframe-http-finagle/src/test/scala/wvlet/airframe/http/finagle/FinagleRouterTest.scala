@@ -19,7 +19,7 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Method, Request}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JSONCodec
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
@@ -80,9 +80,9 @@ trait MyApi extends LogSupport {
 /**
   *
   */
-class FinagleRouterTest extends AirframeSpec {
+class FinagleRouterTest extends AirSpec {
 
-  "support Router.of[X] and Router.add[X]" in {
+  def `support Router.of[X] and Router.add[X]` : Unit = {
     // sanity test
     val r1 = Router.add[MyApi]
     val r2 = Router.of[MyApi]
@@ -90,7 +90,7 @@ class FinagleRouterTest extends AirframeSpec {
 
   val d = newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
 
-  "Support function arg mappings" in {
+  def `Support function arg mappings`: Unit = {
     d.build[FinagleServer] { server =>
       val client = Http.client
         .newService(server.localAddress)
@@ -218,7 +218,7 @@ class FinagleRouterTest extends AirframeSpec {
     }
   }
 
-  "support production mode" in {
+  def `support production mode`: Unit = {
     d.withProductionMode.build[FinagleServer] { server =>
       // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
     }

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.{Http, http}
 import com.twitter.util.Await
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.{Endpoint, Router}
 
@@ -31,9 +31,9 @@ trait TestMessagePackApi {
 /**
   *
   */
-class MessagePackResponseTest extends AirframeSpec {
+class MessagePackResponseTest extends AirSpec {
 
-  "support Accept: application/x-msgpack" in {
+  def `support Accept: application/x-msgpack`: Unit = {
     newFinagleServerDesign(name = "msgpack-test-server", router = Router.of[TestMessagePackApi]).build[FinagleServer] {
       server =>
         val client = Http.newService(server.localAddress)

@@ -14,7 +14,7 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response, Status}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
@@ -95,7 +95,7 @@ trait FinagleClientTestApi extends LogSupport {
 /**
   *
   */
-class FinagleClientTest extends AirframeSpec {
+class FinagleClientTest extends AirSpec {
 
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
@@ -103,7 +103,7 @@ class FinagleClientTest extends AirframeSpec {
       FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r))
     .noLifeCycleLogging
 
-  "create client" in {
+  def `create client`: Unit = {
 
     def addRequestId(request: Request): Request = {
       request.headerMap.put("X-Request-Id", "10")
@@ -155,7 +155,7 @@ class FinagleClientTest extends AirframeSpec {
     }
   }
 
-  "fail request" in {
+  def `fail request`: Unit = {
     d.build[FinagleServer] { server =>
       withResource(
         FinagleClient.newSyncClient(
@@ -188,11 +188,11 @@ class FinagleClientTest extends AirframeSpec {
     }
   }
 
-  "support https request" in {
+  def `support https request`: Unit = {
     withResource(FinagleClient.newSyncClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)
-      page should include("<html")
+      page.contains("<html") shouldBe true
     }
   }
 }

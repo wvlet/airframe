@@ -16,7 +16,7 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.tracing.ConsoleTracer
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -24,50 +24,48 @@ import wvlet.log.io.IOUtil
 /**
   *
   */
-class FinagleServerFactoryTest extends AirframeSpec {
+class FinagleServerFactoryTest extends AirSpec {
   val p1 = IOUtil.unusedPort
   val p2 = IOUtil.unusedPort
 
   val router1 = Router.add[MyApi]
   val router2 = Router.add[MyApi]
 
-  "FinagleServerFactory" should {
-    "start multiple FinagleServers" in {
-      val serverConfig1 = FinagleServerConfig(name = "server1", port = p1, router = router1)
-      val serverConfig2 = FinagleServerConfig(name = "server2", port = p2, router = router2)
+  def `start multiple FinagleServers`: Unit = {
+    val serverConfig1 = FinagleServerConfig(name = "server1", port = p1, router = router1)
+    val serverConfig2 = FinagleServerConfig(name = "server2", port = p2, router = router2)
 
-      finagleDefaultDesign.build[FinagleServerFactory] { factory =>
-        val server1 = factory.newFinagleServer(serverConfig1)
-        val server2 = factory.newFinagleServer(serverConfig2)
+    finagleDefaultDesign.build[FinagleServerFactory] { factory =>
+      val server1 = factory.newFinagleServer(serverConfig1)
+      val server2 = factory.newFinagleServer(serverConfig2)
 
-        val client1 = Http.client.newService(s"localhost:${p1}")
-        val client2 = Http.client.newService(s"localhost:${p2}")
+      val client1 = Http.client.newService(s"localhost:${p1}")
+      val client2 = Http.client.newService(s"localhost:${p2}")
 
-        Await.result(client1(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
-        Await.result(client2(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
-      }
+      Await.result(client1(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
+      Await.result(client2(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
     }
+  }
 
-    "allow customize services" in {
-      val d2 =
-        finagleDefaultDesign
-          .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
+  def `allow customize services`: Unit = {
+    val d2 =
+      finagleDefaultDesign
+        .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
-      d2.build[FinagleServer] { server =>
-        val client = Http.client.newService(s"localhost:${server.port}")
-        Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
-      }
+    d2.build[FinagleServer] { server =>
+      val client = Http.client.newService(s"localhost:${server.port}")
+      Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
     }
+  }
 
-    "allow customize Finagle Http Server" in {
-      val d =
-        finagleDefaultDesign
-          .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
+  def `allow customize Finagle Http Server`: Unit = {
+    val d =
+      finagleDefaultDesign
+        .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
 
-      d.build[FinagleServer] { server =>
-        val client = Http.client.newService(server.localAddress)
-        Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server with tracer"
-      }
+    d.build[FinagleServer] { server =>
+      val client = Http.client.newService(server.localAddress)
+      Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server with tracer"
     }
   }
 }

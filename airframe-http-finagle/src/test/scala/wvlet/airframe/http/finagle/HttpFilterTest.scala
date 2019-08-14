@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Request, Response, Status, Version}
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -103,9 +103,9 @@ class ExceptionTestFilter extends FinagleFilter {
 /**
   *
   */
-class HttpFilterTest extends AirframeSpec {
+class HttpFilterTest extends AirSpec {
 
-  "apply filter before the route" in {
+  def `apply filter before the route`: Unit = {
 
     val router =
       Router
@@ -158,7 +158,7 @@ class HttpFilterTest extends AirframeSpec {
     }
   }
 
-  "handle errors in context" in {
+  def `handle errors in context`: Unit = {
     val router =
       Router
         .add[ExceptionHandleFilter]
@@ -175,7 +175,7 @@ class HttpFilterTest extends AirframeSpec {
     }
   }
 
-  "handle errors in filter" taggedAs ("filter-ex") in {
+  def `handle errors in filter`: Unit = {
     val router =
       Router
         .add[ExceptionHandleFilter]
