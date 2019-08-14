@@ -13,21 +13,21 @@
  */
 
 package wvlet.airframe.sql.catalog
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.sql.catalog.DataType._
 
 /**
   *
   */
-class DataTypeTest extends AirframeSpec {
+class DataTypeTest extends AirSpec {
 
-  def parse(t: String, expected: DataType): Unit = {
+  protected def parse(t: String, expected: DataType): Unit = {
     debug(s"parse ${t}")
     val parsed = DataType.parse(t)
     parsed shouldBe Some(expected)
   }
 
-  "parse DataType names" in {
+  def `parse DataType names`: Unit = {
     parse("byte", LongType)
     parse("char", LongType)
     parse("short", LongType)
@@ -57,7 +57,7 @@ class DataTypeTest extends AirframeSpec {
     )
   }
 
-  "return any type for unknwon types" in {
+  def `return any type for unknwon types`: Unit = {
     parse("unknown", AnyType)
     parse("map[bit,long]", MapType(AnyType, LongType))
   }

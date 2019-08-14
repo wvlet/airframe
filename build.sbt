@@ -770,7 +770,7 @@ lazy val sql =
         "org.apache.spark" %% "spark-sql" % "2.4.0" % "test"
       )
     )
-    .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airframeScalaTestJVM % "test")
+    .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecJVM % "test")
 
 lazy val examples =
   project
