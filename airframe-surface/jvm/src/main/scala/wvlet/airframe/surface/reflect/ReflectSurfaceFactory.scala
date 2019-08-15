@@ -158,11 +158,6 @@ object ReflectSurfaceFactory extends LogSupport {
       m.owner == t.typeSymbol
     }
 
-    def localMethodsOfInnerType(prefix: ru.Type, t: ru.Type): Iterable[MethodSymbol] = {
-      allMethodsOf(t)
-        .filter(_.owner.fullName == prefix.typeSymbol.fullName)
-    }
-
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
       val name = fullTypeNameOf(targetType)
       if (methodSurfaceCache.contains(name)) {
@@ -175,9 +170,8 @@ object ReflectSurfaceFactory extends LogSupport {
           val localMethods = targetType match {
             case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
               localMethodsOf(t.dealias)
-            case t @ RefinedType(List(_, prefix), decls: MemberScope) =>
-              // Local class
-              localMethodsOfInnerType(prefix, t.dealias)
+            case t @ RefinedType(List(_, baseType), decls: MemberScope) =>
+              localMethodsOf(baseType)
             case _ => Seq.empty
           }
           val list = for (m <- localMethods) yield {
