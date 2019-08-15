@@ -27,4 +27,6 @@ trait CompatApi {
   private[spec] def findCause(e: Throwable): Throwable
 
   private[spec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
+
+  private[spec] def getSpecName(cls: Class[_]): String
 }

@@ -37,7 +37,7 @@ private[spec] trait AirSpecSpi {
   }
 
   private[spec] lazy val specName: String = {
-    AirSpecSpi.decodeClassName(this.getClass.getName)
+    AirSpecSpi.decodeClassName(compat.getSpecName(this.getClass))
   }
   private[spec] lazy val leafSpecName: String = {
     AirSpecSpi.leafClassName(specName)
