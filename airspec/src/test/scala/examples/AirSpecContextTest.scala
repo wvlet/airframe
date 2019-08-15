@@ -31,9 +31,7 @@ class AirSpecContextTest extends AirSpec {
     context.specName shouldBe "AirSpecContextTest"
     context.testName shouldBe "support passing the test context"
 
-    val f = new TestFixture {
-      val v = "hello2"
-    }
+    val f = new TestFixture {}
 
     context.run(f)
     context.run[TestFixture]

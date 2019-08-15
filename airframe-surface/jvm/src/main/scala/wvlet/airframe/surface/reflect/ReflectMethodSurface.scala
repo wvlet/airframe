@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
+import wvlet.airframe.surface.{AnyRefSurface, MethodParameter, MethodSurface, Surface}
 import java.{lang => jl}
 
 import wvlet.log.LogSupport
@@ -46,7 +46,7 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
         m.invoke(obj, args: _*)
       }
     case None =>
-      trace(s"Undefined method: ${name}")
+      trace(s"Undefined method: ${name} in ${obj} (${owner.rawType})")
       null
   }
 }

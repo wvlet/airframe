@@ -132,31 +132,35 @@ object ReflectSurfaceFactory extends LogSupport {
     private val seen       = scala.collection.mutable.Set[ru.Type]()
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
-    def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members.sorted // Sort the members in the source code order
-        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact)
-        .map(_.asMethod)
-        .filter(isTargetMethod(_, t))
-    }
-
-    def localMethodsOfInnerType(prefix: ru.Type, t: ru.Type): Iterable[MethodSymbol] = {
+    private def allMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       t.members.sorted // Sort the members in the source code order
         .filter(
           x =>
-            x.isMethod
-              && !x.isConstructor
-              && !x.isImplementationArtifact
+            x.isMethod &&
+              !x.isConstructor &&
+              !x.isImplementationArtifact
               && !x.isImplicit
-              && !x.isSynthetic
-        )
+            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+              && !x.isSynthetic)
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
           !x.isAccessor && !name.startsWith("$") && name != "<init>"
         }
-        .filter { x =>
-          x.owner.fullName == prefix.typeSymbol.fullName
-        }
+    }
+
+    def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
+      allMethodsOf(t)
+        .filter(m => isOwnedByTargetClass(m, t))
+    }
+
+    private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
+      m.owner == t.typeSymbol
+    }
+
+    def localMethodsOfInnerType(prefix: ru.Type, t: ru.Type): Iterable[MethodSymbol] = {
+      allMethodsOf(t)
+        .filter(_.owner.fullName == prefix.typeSymbol.fullName)
     }
 
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
@@ -176,7 +180,6 @@ object ReflectSurfaceFactory extends LogSupport {
               localMethodsOfInnerType(prefix, t.dealias)
             case _ => Seq.empty
           }
-
           val list = for (m <- localMethods) yield {
             val mod   = modifierBitMaskOf(m)
             val owner = surfaceOf(targetType)
@@ -190,21 +193,6 @@ object ReflectSurfaceFactory extends LogSupport {
         methodSurfaceCache += name -> methodSurfaces
         methodSurfaces
       }
-    }
-
-    private def isTargetMethod(m: MethodSymbol, target: ru.Type): Boolean = {
-      // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-      val methodName = m.name.decodedName.toString
-      m.isMethod &&
-      !m.isImplicit &&
-      !m.isSynthetic &&
-      !m.isAccessor &&
-      !methodName.startsWith("$") &&
-      methodName != "<init>" &&
-      isOwnedByTargetClass(m, target)
-    }
-    private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
-      m.owner == t.typeSymbol
     }
 
     def modifierBitMaskOf(m: MethodSymbol): Int = {
@@ -484,7 +472,10 @@ object ReflectSurfaceFactory extends LogSupport {
         // For example, trait MyTag, which has no implementation will be just an java.lang.Object
         val name     = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
-        new Alias(name, fullName, AnyRefSurface)
+        Alias(name, fullName, AnyRefSurface)
+      case t @ RefinedType(List(base, prefix), decl) =>
+        // For traits with extended methods
+        new GenericSurface(resolveClass(prefix))
       case t =>
         new GenericSurface(resolveClass(t))
     }
