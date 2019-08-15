@@ -488,13 +488,14 @@ private[surface] object SurfaceMacros {
     }
 
     private def newGenericSurfaceOf(t: c.Type): c.Tree = {
-      val finalType =
+      val finalType = {
         if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
           // Use M[_] for type M
           t.erasure
         } else {
           t
         }
+      }
 
       val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
       expr

@@ -36,7 +36,7 @@ private[spec] object AirSpecMacros {
      """
   }
 
-  def runImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+  def buildAndRunImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
@@ -54,10 +54,11 @@ private[spec] object AirSpecMacros {
   def runSpecImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"""
+    q"""{
         wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
           .callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
           .asInstanceOf[${t}]
+        }
     """
   }
 }

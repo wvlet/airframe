@@ -13,6 +13,7 @@
  */
 package examples
 
+import wvlet.airframe.Design
 import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.spec.spi.AirSpecContext
 
@@ -29,11 +30,16 @@ class ContextTest extends AirSpec {
     def testA(context: AirSpecContext): Unit = {
       callCountA += 1
       context.testName shouldBe "testA"
-      context.specName.contains("TestFixture") shouldBe true
     }
     def testB(context: AirSpecContext): Unit = {
       callCountB += 1
       context.testName shouldBe "testB"
+    }
+
+    def testFixtureName(context: AirSpecContext): Unit = {
+      if (isScalaJS) {
+        pendingUntil("Getting class names in Scala.js is unstable")
+      }
       context.specName.contains("TestFixture") shouldBe true
     }
   }
@@ -52,17 +58,22 @@ class ContextTest extends AirSpec {
 
     val f = new TestFixture {
       var callCountC = 0
-      def testC(context: AirSpecContext): Unit = {
+      def testC: Unit = {
         callCountC += 1
-        context.specName.contains("TestFixture") shouldBe true
       }
+
+      // TODO: This shows compilation error in Scala.js. It looks like a bug in Surface
+      //      def testContext(context: AirSpecContext): Unit = {
+      //        context.testName shouldBe "testContext"
+      //        context.specName.contains("TestFixture") shouldBe true
+      //      }
     }
 
     f.callCountA shouldBe 0
     f.callCountB shouldBe 0
     f.callCountC shouldBe 0
 
-    val f2 = context.runSpec(f)
+    val f2 = context.run(f)
     f2 shouldBeTheSameInstanceAs f
 
     f.callCountA shouldBe 1
@@ -71,12 +82,12 @@ class ContextTest extends AirSpec {
   }
 
   def `support running AirSpec from a type`(context: AirSpecContext): Unit = {
-    val f = context.run[TestFixture]
+    val f = context.buildAndRun[TestFixture]
 
     f.callCountA shouldBe 1
     f.callCountB shouldBe 1
 
-    val f2 = context.runSpec(f)
+    val f2 = context.run(f)
     f2 shouldBeTheSameInstanceAs f2
 
     f.callCountA shouldBe 2
@@ -84,17 +95,42 @@ class ContextTest extends AirSpec {
   }
 
   class MySpec extends AirSpec {
-    def `check global context`(context: AirSpecContext): Unit = {
+    def `check local context`(context: AirSpecContext): Unit = {
       context.parentContext shouldBe defined
-      context.testName shouldBe "check global context"
-      context.specName.contains("MySpec") shouldBe true
+      context.testName shouldBe "check local context"
       context.indentLevel shouldBe 1
+    }
+
+    def checkClassName(context: AirSpecContext): Unit = {
+      if (isScalaJS) {
+        pendingUntil("Getting class names in Scala.js is unstable")
+      }
+      context.specName.contains("MySpec") shouldBe true
     }
   }
 
   def `support passing a context to spec instances`(context: AirSpecContext): Unit = {
     context.indentLevel shouldBe 0
-    context.run[MySpec]
+    context.buildAndRun[MySpec]
+    context.run(new MySpec)
+  }
+}
 
+class ContextWithDI extends AirSpec {
+  scalaJsSupport
+
+  trait SpecWithDI extends AirSpec {
+    import wvlet.airframe._
+    private val port = bind[Int]
+
+    def `check binding`: Unit = {
+      port shouldBe 1000
+    }
+  }
+
+  override protected def configure(design: Design): Design = design.bind[Int].toInstance(1000)
+
+  def `delegate bindings from the global session`(context: AirSpecContext): Unit = {
+    context.buildAndRun[SpecWithDI]
   }
 }

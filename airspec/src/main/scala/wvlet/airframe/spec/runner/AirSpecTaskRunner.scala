@@ -117,7 +117,12 @@ private[spec] class AirSpecTaskRunner(taskDef: TaskDef,
       d = spec.callDesignAll(d)
 
       // Create a global Airframe session
-      d.withSession { globalSession =>
+      val globalSession =
+        parentContext
+          .map(_.currentSession.newChildSession(d))
+          .getOrElse { d.newSession }
+
+      globalSession.start {
         for (m <- targetMethods) {
           spec.callBefore
           // Configure the test-local design

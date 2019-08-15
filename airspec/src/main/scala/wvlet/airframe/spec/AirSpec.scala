@@ -85,6 +85,8 @@ private[spec] trait AirSpecSpi {
 
   // Returns true if this is running in TravisCI
   protected def inTravisCI: Boolean = AirSpecSpi.inTravisCI
+
+  protected def isScalaJS: Boolean = compat.isScalaJs
 }
 
 private[spec] object AirSpecSpi {

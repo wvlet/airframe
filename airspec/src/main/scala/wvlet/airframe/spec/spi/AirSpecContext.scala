@@ -62,12 +62,12 @@ trait AirSpecContext {
     * Build an instance of type A using Airframe DI, and run the test method within A.
     * @return the generated instance of A
     */
-  def run[A <: AirSpecBase]: A = macro AirSpecMacros.runImpl[A]
+  def buildAndRun[A <: AirSpecBase]: A = macro AirSpecMacros.buildAndRunImpl[A]
 
   /**
     * Run the test methods in a given AirSpec instance
     */
-  def runSpec[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
+  def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
   protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi
   protected def newSpec(specSurface: Surface): AirSpecSpi
