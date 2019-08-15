@@ -32,8 +32,9 @@ private[spec] class AirSpecContextImpl(taskExecutor: TaskExecutor,
     extends AirSpecContext
     with LogSupport {
 
-  override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+  override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {
     taskExecutor.run(spec, testMethods)
+    spec
   }
   override protected def newSpec(specSurface: Surface): AirSpecSpi = {
     currentSession.get(specSurface)

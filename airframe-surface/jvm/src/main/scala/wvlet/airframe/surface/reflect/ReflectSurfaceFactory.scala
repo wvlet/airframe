@@ -171,7 +171,7 @@ object ReflectSurfaceFactory extends LogSupport {
             case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
               localMethodsOf(t.dealias)
             case t @ RefinedType(List(_, baseType), decls: MemberScope) =>
-              localMethodsOf(baseType)
+              localMethodsOf(baseType) ++ localMethodsOf(t)
             case _ => Seq.empty
           }
           val list = for (m <- localMethods) yield {

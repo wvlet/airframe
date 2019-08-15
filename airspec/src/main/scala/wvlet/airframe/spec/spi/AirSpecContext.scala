@@ -26,23 +26,24 @@ trait AirSpecContext {
   def testName: String
 
   /**
-    * Build an instance of type A using Airframe DI, and run the test method within A
+    * Build an instance of type A using Airframe DI, and run the test method within A.
+    * @return the generated instance of A
     */
-  def run[A <: AirSpecBase]: Unit = macro AirSpecMacros.runImpl[A]
+  def run[A <: AirSpecBase]: A = macro AirSpecMacros.runImpl[A]
 
   /**
     * Run the test methods in a given AirSpec instance
     */
-  def run[A <: AirSpecBase](spec: A): Unit = macro AirSpecMacros.runSpecImpl[A]
+  def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
-  protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit
+  protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi
   protected def newSpec(specSurface: Surface): AirSpecSpi
 }
 
 object AirSpecContext {
 
   implicit class AirSpecContextAccess(val context: AirSpecContext) extends AnyVal {
-    def callRunInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+    def callRunInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {
       context.runInternal(spec, testMethods)
     }
     def callNewSpec(specSurface: Surface): AirSpecSpi = context.newSpec(specSurface)

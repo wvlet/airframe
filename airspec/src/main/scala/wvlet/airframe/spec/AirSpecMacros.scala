@@ -45,6 +45,7 @@ private[spec] object AirSpecMacros {
            val context = ${c.prefix}
            val spec = context.callNewSpec(wvlet.airframe.surface.Surface.of[${t}])
            context.callRunInternal(spec, wvlet.airframe.surface.Surface.methodsOf[${t}])
+           spec.asInstanceOf[${t}]
         }
     """
   }
@@ -53,7 +54,9 @@ private[spec] object AirSpecMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""
-       wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix}).callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
+        wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
+          .callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
+          .asInstanceOf[${t}]
     """
   }
 }

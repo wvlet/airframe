@@ -117,7 +117,7 @@ private[surface] object SurfaceMacros {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
             localMethodsOf(t.dealias)
           case t @ RefinedType(List(_, baseType), decls) =>
-            localMethodsOf(baseType)
+            localMethodsOf(baseType) ++ localMethodsOf(t)
           case _ => Seq.empty
         }
 
