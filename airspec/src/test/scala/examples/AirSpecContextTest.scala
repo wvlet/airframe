@@ -16,9 +16,9 @@ package examples
 import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.spec.spi.AirSpecContext
 
-class TestFixture extends AirSpec {
-  def test1: Unit = {}
-  def test2: Unit = {}
+trait TestFixture extends AirSpec {
+  def testA: Unit = {}
+  def testB: Unit = {}
 }
 
 /**
@@ -31,6 +31,10 @@ class AirSpecContextTest extends AirSpec {
     context.specName shouldBe "AirSpecContextTest"
     context.testName shouldBe "support passing the test context"
 
-    context.run(new TestFixture {})
+    val f = new TestFixture {
+      val v = "hello"
+    }
+
+    context.run(f)
   }
 }

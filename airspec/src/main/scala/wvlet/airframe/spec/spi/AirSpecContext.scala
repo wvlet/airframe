@@ -14,7 +14,11 @@
 package wvlet.airframe
 package spec.spi
 
-import wvlet.airframe.spec.AirSpecBase
+import wvlet.airframe.spec.runner.AirSpecTask.TaskExecutor
+import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
+import wvlet.airframe.surface.MethodSurface
+
+import scala.language.experimental.macros
 
 /**
   *
@@ -31,5 +35,7 @@ trait AirSpecContext {
   /**
     * Run the test methods in a given AirSpec instance
     */
-  def run[A <: AirSpecBase](spec: A): Unit
+  def run[A <: AirSpecBase](spec: A): Unit = macro AirSpecMacros.runImpl[A]
+
+  def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit
 }

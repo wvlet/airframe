@@ -134,8 +134,29 @@ object ReflectSurfaceFactory extends LogSupport {
 
     def localMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       t.members.sorted // Sort the members in the source code order
-        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
-          isTargetMethod(_, t))
+        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact)
+        .map(_.asMethod)
+        .filter(isTargetMethod(_, t))
+    }
+
+    def localMethodsOfInnerType(prefix: ru.Type, t: ru.Type): Iterable[MethodSymbol] = {
+      t.members.sorted // Sort the members in the source code order
+        .filter(
+          x =>
+            x.isMethod
+              && !x.isConstructor
+              && !x.isImplementationArtifact
+              && !x.isImplicit
+              && !x.isSynthetic
+        )
+        .map(_.asMethod)
+        .filter { x =>
+          val name = x.name.decodedName.toString
+          !x.isAccessor && !name.startsWith("$") && name != "<init>"
+        }
+        .filter { x =>
+          x.owner.fullName == prefix.typeSymbol.fullName
+        }
     }
 
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
@@ -146,19 +167,25 @@ object ReflectSurfaceFactory extends LogSupport {
         throw new IllegalArgumentException(s"recursive type in method: ${targetType.typeSymbol.fullName}")
       } else {
         methodSeen += targetType
-        val methodSurfaces = targetType match {
-          case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-            val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod   = modifierBitMaskOf(m)
-              val owner = surfaceOf(t)
-              val name  = m.name.decodedName.toString
-              val ret   = surfaceOf(m.returnType)
-              val args  = methodParametersOf(t, m)
-              ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
-            }
-            list.toIndexedSeq
-          case _ =>
-            Seq.empty
+        val methodSurfaces = {
+          val localMethods = targetType match {
+            case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
+              localMethodsOf(t.dealias)
+            case t @ RefinedType(List(_, prefix), decls: MemberScope) =>
+              // Local class
+              localMethodsOfInnerType(prefix, t.dealias)
+            case _ => Seq.empty
+          }
+
+          val list = for (m <- localMethods) yield {
+            val mod   = modifierBitMaskOf(m)
+            val owner = surfaceOf(targetType)
+            val name  = m.name.decodedName.toString
+            val ret   = surfaceOf(m.returnType)
+            val args  = methodParametersOf(targetType, m)
+            ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
+          }
+          list.toIndexedSeq
         }
         methodSurfaceCache += name -> methodSurfaces
         methodSurfaces
@@ -381,7 +408,11 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def methodArgsOf(targetType: ru.Type, constructor: MethodSymbol): List[List[MethodArg]] = {
-      val classTypeParams = targetType.typeSymbol.asClass.typeParams
+      val classTypeParams = if (targetType.typeSymbol.isClass) {
+        targetType.typeSymbol.asClass.typeParams
+      } else {
+        List.empty[Symbol]
+      }
 
       val companion = targetType.companion match {
         case NoType => None
@@ -461,6 +492,7 @@ object ReflectSurfaceFactory extends LogSupport {
 
   /**
     * Used when we can use reflection to instantiate objects of this surface
+    *
     * @param rawType
     * @param typeArgs
     * @param params
@@ -469,7 +501,8 @@ object ReflectSurfaceFactory extends LogSupport {
                               override val typeArgs: Seq[Surface] = Seq.empty,
                               override val params: Seq[Parameter] = Seq.empty)
       extends GenericSurface(rawType, typeArgs, params, None)
-      with LogSupport { self =>
+      with LogSupport {
+    self =>
     override val objectFactory: Option[ObjectFactory] = {
       if (rawType.getConstructors.isEmpty) {
         None

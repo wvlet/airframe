@@ -34,11 +34,13 @@ private[spec] object AirSpecMacros {
      """
   }
 
-  def runImpl[A](c: sm.Context): c.Tree = {
+  def runImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
-    q"""
-       val __surface = wvlet.airframe.surface.Surface.of[A]
-    """
+    q"""{
+        val spec = ${spec}
+        val methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}]
+       ${c.prefix}.runInternal(spec, methodSurfaces)
+    }"""
   }
 }

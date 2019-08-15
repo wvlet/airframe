@@ -91,7 +91,7 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
 
         testObj match {
           case Some(spec: AirSpecSpi) =>
-            new TaskExecutor(taskDef, config, taskLogger, eventHandler).runSpec(spec)
+            new TaskExecutor(taskDef, config, taskLogger, eventHandler).run(spec, spec.testMethods)
           case _ =>
             taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
             throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")
@@ -128,18 +128,18 @@ object AirSpecTask {
                                    taskLogger: AirSpecLogger,
                                    eventHandler: EventHandler) {
 
-    def runSpec(spec: AirSpecSpi): Unit = {
+    def run(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
       val selectedMethods =
         config.pattern match {
           case Some(regex) =>
             // Find matching methods
-            spec.testMethods.filter { m =>
+            testMethods.filter { m =>
               // Concatenate class name + method name for handy search
               val fullName = s"${spec.specName}:${m.name}"
               regex.findFirstIn(fullName).isDefined
             }
           case None =>
-            spec.testMethods
+            testMethods
         }
 
       if (selectedMethods.nonEmpty) {

@@ -14,10 +14,13 @@
 package wvlet.airframe
 package spec.runner
 
-import wvlet.airframe.spec.AirSpecBase
+import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
 import wvlet.airframe.spec.runner.AirSpecTask.TaskExecutor
 import wvlet.airframe.spec.spi.AirSpecContext
+import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogSupport
+
+import scala.language.experimental.macros
 
 /**
   *
@@ -33,11 +36,7 @@ private[spec] class AirSpecContextImpl(taskExecutor: TaskExecutor,
     * Build an instance of type A using Airframe DI, and run the test method within A
     */
   override def run[A <: AirSpecBase]: Unit = {}
-
-  /**
-    * Run the test methods in a given AirSpec instance
-    */
-  override def run[A <: AirSpecBase](spec: A): Unit = {
-    taskExecutor.runSpec(spec)
+  override def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+    taskExecutor.run(spec, testMethods)
   }
 }
