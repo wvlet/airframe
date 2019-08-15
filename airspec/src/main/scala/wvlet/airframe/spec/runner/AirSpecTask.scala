@@ -90,8 +90,9 @@ private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: Tas
         }
 
         testObj match {
-          case Some(spec: AirSpecSpi) =>
-            new TaskExecutor(taskDef, config, taskLogger, eventHandler).run(spec, spec.testMethods)
+          case Some(spec: AirSpec) =>
+            new TaskExecutor(taskDef, config, taskLogger, eventHandler)
+              .run(spec, spec.testMethods)
           case _ =>
             taskLogger.logSpecName(decodeClassName(taskDef.fullyQualifiedName()))
             throw new IllegalStateException(s"${testClassName} needs to be a class (or an object) extending AirSpec")

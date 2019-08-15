@@ -467,9 +467,9 @@ object ReflectSurfaceFactory extends LogSupport {
         val name     = t.typeSymbol.name.decodedName.toString
         val fullName = s"${prefix.typeSymbol.fullName}.${name}"
         Alias(name, fullName, AnyRefSurface)
-      case t @ RefinedType(List(base, prefix), decl) =>
+      case t @ RefinedType(List(_, baseType), decl) =>
         // For traits with extended methods
-        new GenericSurface(resolveClass(prefix))
+        new GenericSurface(resolveClass(baseType))
       case t =>
         new GenericSurface(resolveClass(t))
     }

@@ -487,23 +487,29 @@ private[surface] object SurfaceMacros {
         surfaceOf(underlying)
     }
 
+    private def newGenericSurfaceOf(t: c.Type): c.Tree = {
+      val finalType =
+        if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
+          // Use M[_] for type M
+          t.erasure
+        } else {
+          t
+        }
+
+      val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
+      expr
+    }
+
     private val genericSurfaceFactory: SurfaceFactory = {
       case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_))
         q"new wvlet.airframe.surface.GenericSurface(classOf[$t], typeArgs = IndexedSeq(..$typeArgs))"
       case t @ TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         q"wvlet.airframe.surface.ExistentialType"
+      case t @ RefinedType(List(_, baseType), decl) =>
+        newGenericSurfaceOf(baseType)
       case t =>
-        val finalType =
-          if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
-            // Use M[_] for type M
-            t.erasure
-          } else {
-            t
-          }
-
-        val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
-        expr
+        newGenericSurfaceOf(t)
     }
 
     private val surfaceFactories: SurfaceFactory =
