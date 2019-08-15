@@ -19,7 +19,7 @@ import wvlet.airframe.spec.spi.AirSpecContext
 /**
   *
   */
-class AirSpecContextTest extends AirSpec {
+class ContextTest extends AirSpec {
   scalaJsSupport
 
   trait TestFixture extends AirSpec {
@@ -29,20 +29,22 @@ class AirSpecContextTest extends AirSpec {
     def testA(context: AirSpecContext): Unit = {
       callCountA += 1
       context.testName shouldBe "testA"
+      context.specName.contains("TestFixture") shouldBe true
     }
     def testB(context: AirSpecContext): Unit = {
       callCountB += 1
       context.testName shouldBe "testB"
+      context.specName.contains("TestFixture") shouldBe true
     }
   }
 
   def `support passing the test context`(context: AirSpecContext): Unit = {
-    context.specName shouldBe "AirSpecContextTest"
+    context.specName shouldBe "ContextTest"
     context.testName shouldBe "support passing the test context"
   }
 
   def `support running AirSpec instances`(context: AirSpecContext): Unit = {
-    context.specName shouldBe "AirSpecContextTest"
+    context.specName shouldBe "ContextTest"
     context.testName shouldBe "support running AirSpec instances"
 
     // This import statement is necessary for Scala.js
@@ -50,8 +52,9 @@ class AirSpecContextTest extends AirSpec {
 
     val f = new TestFixture {
       var callCountC = 0
-      def testC: Unit = {
+      def testC(context: AirSpecContext): Unit = {
         callCountC += 1
+        context.specName.contains("TestFixture") shouldBe true
       }
     }
 
@@ -59,7 +62,7 @@ class AirSpecContextTest extends AirSpec {
     f.callCountB shouldBe 0
     f.callCountC shouldBe 0
 
-    val f2 = context.run(f)
+    val f2 = context.runSpec(f)
     f2 shouldBeTheSameInstanceAs f
 
     f.callCountA shouldBe 1
@@ -73,10 +76,25 @@ class AirSpecContextTest extends AirSpec {
     f.callCountA shouldBe 1
     f.callCountB shouldBe 1
 
-    val f2 = context.run(f)
+    val f2 = context.runSpec(f)
     f2 shouldBeTheSameInstanceAs f2
 
     f.callCountA shouldBe 2
     f.callCountB shouldBe 2
+  }
+
+  class MySpec extends AirSpec {
+    def `check global context`(context: AirSpecContext): Unit = {
+      context.parentContext shouldBe defined
+      context.testName shouldBe "check global context"
+      context.specName.contains("MySpec") shouldBe true
+      context.indentLevel shouldBe 1
+    }
+  }
+
+  def `support passing a context to spec instances`(context: AirSpecContext): Unit = {
+    context.indentLevel shouldBe 0
+    context.run[MySpec]
+
   }
 }

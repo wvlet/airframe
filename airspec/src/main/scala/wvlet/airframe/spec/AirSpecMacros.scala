@@ -43,7 +43,8 @@ private[spec] object AirSpecMacros {
            ${new AirframeMacros.BindHelper[c.type](c).registerTraitFactory(t)}
            import wvlet.airframe.spec.spi.AirSpecContext._
            val context = ${c.prefix}
-           val spec = context.callNewSpec(wvlet.airframe.surface.Surface.of[${t}])
+           val surface = wvlet.airframe.surface.Surface.of[${t}]
+           val spec = context.callNewSpec(surface)
            context.callRunInternal(spec, wvlet.airframe.surface.Surface.methodsOf[${t}])
            spec.asInstanceOf[${t}]
         }

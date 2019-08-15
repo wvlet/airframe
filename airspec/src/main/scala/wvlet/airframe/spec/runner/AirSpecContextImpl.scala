@@ -14,8 +14,7 @@
 package wvlet.airframe
 package spec.runner
 
-import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
-import wvlet.airframe.spec.runner.AirSpecTask.TaskExecutor
+import wvlet.airframe.spec.AirSpecSpi
 import wvlet.airframe.spec.spi.AirSpecContext
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
@@ -25,18 +24,22 @@ import scala.language.experimental.macros
 /**
   *
   */
-private[spec] class AirSpecContextImpl(taskExecutor: TaskExecutor,
-                                       val specName: String,
-                                       val testName: String,
-                                       currentSession: Session)
+private[spec] class AirSpecContextImpl(taskExecutor: AirSpecTaskRunner,
+                                       val parentContext: Option[AirSpecContext],
+                                       val currentSpec: AirSpecSpi,
+                                       val testName: String = "<init>",
+                                       val currentSession: Session)
     extends AirSpecContext
     with LogSupport {
 
   override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {
-    taskExecutor.run(spec, testMethods)
+    taskExecutor.run(Some(this), spec, testMethods)
     spec
   }
   override protected def newSpec(specSurface: Surface): AirSpecSpi = {
-    currentSession.get(specSurface)
+    val spec: AirSpecSpi = currentSession.get(specSurface)
+    // When the spec instance is an anonymous class, we need to find the real class name from the specSurface
+    spec.setSpecName(specSurface.fullName)
+    spec
   }
 }

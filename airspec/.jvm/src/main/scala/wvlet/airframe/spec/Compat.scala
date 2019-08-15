@@ -72,8 +72,11 @@ private[spec] object Compat extends CompatApi {
       import collection.JavaConverters._
       val interfaces = cl.getInterfaces
       if (interfaces != null && interfaces.length > 0) {
-        // Use the first interface name instead of the anonymous name
-        name = interfaces(0).getName
+        // Use the first interface name instead of the anonymous name and Airframe SessionHolder (injected at compile-time)
+        interfaces
+          .map(_.getName)
+          .find(x => x != "wvlet.airframe.SessionHolder" && !x.contains("$anon$"))
+          .foreach(name = _)
       }
     }
     name

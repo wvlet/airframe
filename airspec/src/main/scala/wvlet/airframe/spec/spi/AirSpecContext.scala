@@ -13,17 +13,50 @@
  */
 package wvlet.airframe.spec.spi
 
+import wvlet.airframe.Session
 import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 
 import scala.language.experimental.macros
 
 /**
+  * AirSpecContext is an interface to pass the test environment data to individual test methods.
+  *
+  *
+  * Spec: global
+  *  -
   *
   */
 trait AirSpecContext {
-  def specName: String
+  def currentSpec: AirSpecSpi
+  def parentContext: Option[AirSpecContext]
+
+  /**
+    * Get the current session used for calling the test method
+    */
+  def currentSession: Session
+
+  /**
+    * Get the leaf name of the current spec class.
+    *
+    * Note: In Scala.js, this may return weired names especially for inner classes.
+    */
+  def specName: String = currentSpec.leafSpecName
+
+  def fullSpecName: String = {
+    val parent = parentContext.map(x => s"${x.fullSpecName}.").getOrElse("")
+    s"${parent}${specName}"
+  }
+
+  /**
+    * Get the test method name currently running.
+    * For a global context, this will return '<init>'.
+    */
   def testName: String
+
+  lazy val indentLevel: Int = {
+    parentContext.map(_.indentLevel + 1).getOrElse(0)
+  }
 
   /**
     * Build an instance of type A using Airframe DI, and run the test method within A.
@@ -34,7 +67,7 @@ trait AirSpecContext {
   /**
     * Run the test methods in a given AirSpec instance
     */
-  def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
+  def runSpec[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
   protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi
   protected def newSpec(specSurface: Surface): AirSpecSpi

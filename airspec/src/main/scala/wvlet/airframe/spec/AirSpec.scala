@@ -31,15 +31,27 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
 private[spec] trait AirSpecSpi {
+  /*
+   * Design note: Ideally we should list test methods just by using the name of classes implementing AirSpecSpi without
+   * instantiating test instances. However, this was impossible in Scala.js, which has only limited reflection support.
+   * So we are using scalaJsSupport method.
+   *
+   * If we don't need to support Scala.js, we will just use RuntimeSurface to get a list of test methods.
+   */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[spec] def testMethods: Seq[MethodSurface] = {
     _methodSurfaces.filter(x => x.isPublic)
   }
 
-  private[spec] lazy val specName: String = {
+  private[spec] var specName: String = {
     AirSpecSpi.decodeClassName(compat.getSpecName(this.getClass))
   }
-  private[spec] lazy val leafSpecName: String = {
+
+  private[spec] def setSpecName(newSpecName: String): Unit = {
+    specName = newSpecName
+  }
+
+  private[spec] def leafSpecName: String = {
     AirSpecSpi.leafClassName(specName)
   }
 
@@ -114,10 +126,14 @@ private[spec] object AirSpecSpi {
   private[spec] def leafClassName(fullClassName: String): String = {
     // the full class name
     val pos = fullClassName.lastIndexOf('.')
-    if (pos == -1)
-      fullClassName
-    else
-      fullClassName.substring((pos + 1).min(fullClassName.length - 1))
+    val leafName = {
+      if (pos == -1)
+        fullClassName
+      else {
+        fullClassName.substring((pos + 1).min(fullClassName.length - 1))
+      }
+    }
+    leafName.replaceAll("\\$", ".")
   }
 
 }
