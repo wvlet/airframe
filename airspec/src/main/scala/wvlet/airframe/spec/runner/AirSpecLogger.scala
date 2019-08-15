@@ -67,7 +67,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
   }
 
   private def indent(level: Int): String = {
-    "  " * level
+    "    " * level
   }
 
   def logSpecName(specName: String, indentLevel: Int): Unit = {
