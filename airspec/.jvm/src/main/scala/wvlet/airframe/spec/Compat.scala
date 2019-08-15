@@ -58,4 +58,27 @@ private[spec] object Compat extends CompatApi {
   override private[spec] def methodSurfacesOf(cls: Class[_]) = {
     ReflectSurfaceFactory.methodsOfClass(cls)
   }
+
+  override private[spec] def getSpecName(cl: Class[_]): String = {
+    var name = cl.getName
+
+    if (name.endsWith("$")) {
+      // Remove trailing $ of Scala Object name
+      name = name.substring(0, name.length - 1)
+    }
+
+    // When class is an anonymous trait
+    if (name.contains("$anon$")) {
+      import collection.JavaConverters._
+      val interfaces = cl.getInterfaces
+      if (interfaces != null && interfaces.length > 0) {
+        // Use the first interface name instead of the anonymous name and Airframe SessionHolder (injected at compile-time)
+        interfaces
+          .map(_.getName)
+          .find(x => x != "wvlet.airframe.SessionHolder" && !x.contains("$anon$"))
+          .foreach(name = _)
+      }
+    }
+    name
+  }
 }

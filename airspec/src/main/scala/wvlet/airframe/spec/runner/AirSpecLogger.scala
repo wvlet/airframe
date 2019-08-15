@@ -13,13 +13,25 @@
  */
 package wvlet.airframe.spec.runner
 
-import sbt.testing.Status
+import java.util.concurrent.TimeUnit
+
+import sbt.testing.{Event, Fingerprint, OptionalThrowable, Selector, Status, TaskDef}
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airframe.spec.AirSpecSpi
-import wvlet.airframe.spec.runner.AirSpecTask.AirSpecEvent
-import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airframe.spec.spi.{AirSpecException, AirSpecFailureBase}
 import wvlet.log.{LogFormatter, LogRecord, Logger}
+
+private[spec] case class AirSpecEvent(taskDef: TaskDef,
+                                      override val fullyQualifiedName: String,
+                                      override val status: Status,
+                                      override val throwable: OptionalThrowable,
+                                      durationNanos: Long)
+    extends Event {
+  override def fingerprint(): Fingerprint = taskDef.fingerprint()
+  override def selector(): Selector       = taskDef.selectors().head
+  override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)
+}
 
 /**
   *
@@ -54,11 +66,15 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
     airSpecLogger.error(msg)
   }
 
-  def logSpecName(specName: String): Unit = {
-    info(s"${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
+  private def indent(level: Int): String = {
+    "    " * level
   }
 
-  def logEvent(e: AirSpecEvent): Unit = {
+  def logSpecName(specName: String, indentLevel: Int): Unit = {
+    info(s"${indent(indentLevel)} ${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
+  }
+
+  def logEvent(e: AirSpecEvent, indentLevel: Int = 0): Unit = {
     val (baseColor, showStackTraces) = e.status match {
       case Status.Success                  => (GREEN, false)
       case Status.Failure                  => (RED, false) // Do not show the stack trace for assertion failures
@@ -76,7 +92,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       s"<< ${withColor(WHITE, statusLabel)}"
     }
 
-    def errorLocation(e: AirSpecException): String = {
+    def errorLocation(e: AirSpecFailureBase): String = {
       withColor(BLUE, s"(${e.code})")
     }
 
@@ -88,7 +104,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       case _ if e.throwable.isDefined =>
         val ex = e.throwable.get()
         ex match {
-          case se: AirSpecException =>
+          case se: AirSpecFailureBase =>
             s" ${statusLabel(se.statusLabel)}: ${withColor(baseColor, se.message)} ${errorLocation(se)}"
           case _ =>
             s" ${statusLabel("error")}: ${withColor(baseColor, ex.getMessage())}"
@@ -96,7 +112,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
       case _ =>
         ""
     }
-    info(s"${prefix}${tail}")
+    info(s"${indent(indentLevel)}${prefix}${tail}")
 
     if (showStackTraces) {
       val ex         = wvlet.airframe.spec.compat.findCause(e.throwable.get())

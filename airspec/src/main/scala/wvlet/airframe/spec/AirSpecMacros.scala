@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec
+import wvlet.airframe.AirframeMacros
+
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
@@ -32,5 +34,31 @@ private[spec] object AirSpecMacros {
     q"""
        throw wvlet.airframe.spec.spi.Pending("pending", ${sourceCode(c)})
      """
+  }
+
+  def buildAndRunImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+           ${new AirframeMacros.BindHelper[c.type](c).registerTraitFactory(t)}
+           import wvlet.airframe.spec.spi.AirSpecContext._
+           val context = ${c.prefix}
+           val surface = wvlet.airframe.surface.Surface.of[${t}]
+           val spec = context.callNewSpec(surface)
+           context.callRunInternal(spec, wvlet.airframe.surface.Surface.methodsOf[${t}])
+           spec.asInstanceOf[${t}]
+        }
+    """
+  }
+
+  def runSpecImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""{
+        wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
+          .callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
+          .asInstanceOf[${t}]
+        }
+    """
   }
 }

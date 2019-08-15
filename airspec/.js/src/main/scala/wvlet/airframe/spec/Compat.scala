@@ -47,4 +47,16 @@ private[spec] object Compat extends CompatApi with LogSupport {
   }
   override private[spec] def methodSurfacesOf(cls: Class[_]) = Seq.empty[MethodSurface]
 
+  override private[spec] def getSpecName(cl: Class[_]): String = {
+    var name = cl.getName
+
+    // In Scala.js we cannot use cl.getInterfaces to find the actual type
+    val pos = name.indexOf("$")
+    if (pos > 0) {
+      // Remove trailing $xxx
+      name = name.substring(0, pos)
+    }
+    name
+  }
+
 }

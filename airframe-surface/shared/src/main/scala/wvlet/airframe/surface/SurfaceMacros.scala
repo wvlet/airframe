@@ -58,10 +58,29 @@ private[surface] object SurfaceMacros {
       surfaceOf(targetType)
     }
 
+    private def allMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
+      t.members.sorted // Sort the members in the source code order
+        .filter(
+          x =>
+            x.isMethod &&
+              !x.isConstructor &&
+              !x.isImplementationArtifact
+              && !x.isImplicit
+            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+              && !x.isSynthetic)
+        .map(_.asMethod)
+        .filter { x =>
+          val name = x.name.decodedName.toString
+          !x.isAccessor && !name.startsWith("$") && name != "<init>"
+        }
+    }
+
     def localMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members.sorted
-        .filter(x => x.isMethod && !x.isConstructor && !x.isImplementationArtifact).map(_.asMethod).filter(
-          isTargetMethod(_, t))
+      allMethodsOf(t).filter(m => isOwnedByTargetClass(m, t))
+    }
+
+    private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
+      m.owner == t.typeSymbol
     }
 
     private def createMethodCaller(t: c.Type, m: MethodSymbol, methodArgs: Seq[MethodArg]): c.Tree = {
@@ -94,22 +113,27 @@ private[surface] object SurfaceMacros {
           c.abort(c.enclosingPosition, s"recursive type in method: ${targetType.typeSymbol.fullName}")
         }
         methodSeen += targetType
-        val result = targetType match {
+        val localMethods = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-            val list = for (m <- localMethodsOf(t.dealias)) yield {
-              val mod        = modifierBitMaskOf(m)
-              val owner      = surfaceOf(t)
-              val name       = m.name.decodedName.toString
-              val ret        = surfaceOf(m.returnType)
-              val methodArgs = methodArgsOf(t, m).flatten
-              val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
-              // Generate code for supporting ClassMethodSurface.call(instance, args)
-              val methodCaller = createMethodCaller(t, m, methodArgs)
-              q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
-            }
-            q"IndexedSeq(..$list)"
-          case _ =>
-            q"Seq.empty"
+            localMethodsOf(t.dealias)
+          case t @ RefinedType(List(_, baseType), decls) =>
+            localMethodsOf(baseType) ++ localMethodsOf(t)
+          case _ => Seq.empty
+        }
+
+        val result = {
+          val list = for (m <- localMethods) yield {
+            val mod        = modifierBitMaskOf(m)
+            val owner      = surfaceOf(targetType)
+            val name       = m.name.decodedName.toString
+            val ret        = surfaceOf(m.returnType)
+            val methodArgs = methodArgsOf(targetType, m).flatten
+            val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+            // Generate code for supporting ClassMethodSurface.call(instance, args)
+            val methodCaller = createMethodCaller(targetType, m, methodArgs)
+            q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+          }
+          q"IndexedSeq(..$list)"
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
@@ -306,7 +330,11 @@ private[surface] object SurfaceMacros {
       * Returns the list of the method argument lists (supporting multiple param block methods)
       */
     def methodArgsOf(targetType: c.Type, constructor: MethodSymbol): List[List[MethodArg]] = {
-      val classTypeParams = targetType.typeSymbol.asClass.typeParams
+      val classTypeParams = if (targetType.typeSymbol.isClass) {
+        targetType.typeSymbol.asClass.typeParams
+      } else {
+        List.empty[Symbol]
+      }
 
       val companion = targetType.companion match {
         case NoType => None
@@ -459,23 +487,30 @@ private[surface] object SurfaceMacros {
         surfaceOf(underlying)
     }
 
+    private def newGenericSurfaceOf(t: c.Type): c.Tree = {
+      val finalType = {
+        if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
+          // Use M[_] for type M
+          t.erasure
+        } else {
+          t
+        }
+      }
+
+      val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
+      expr
+    }
+
     private val genericSurfaceFactory: SurfaceFactory = {
       case t @ TypeRef(prefix, symbol, args) if !args.isEmpty =>
         val typeArgs = typeArgsOf(t).map(surfaceOf(_))
         q"new wvlet.airframe.surface.GenericSurface(classOf[$t], typeArgs = IndexedSeq(..$typeArgs))"
       case t @ TypeRef(NoPrefix, symbol, args) if !t.typeSymbol.isClass =>
         q"wvlet.airframe.surface.ExistentialType"
+      case t @ RefinedType(List(_, baseType), decl) =>
+        newGenericSurfaceOf(baseType)
       case t =>
-        val finalType =
-          if (t.typeSymbol.asType.isAbstract && !(t =:= typeOf[AnyRef])) {
-            // Use M[_] for type M
-            t.erasure
-          } else {
-            t
-          }
-
-        val expr = q"new wvlet.airframe.surface.GenericSurface(classOf[${finalType}])"
-        expr
+        newGenericSurfaceOf(t)
     }
 
     private val surfaceFactories: SurfaceFactory =
@@ -530,22 +565,6 @@ private[surface] object SurfaceMacros {
       }
     }
 
-    private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
-      m.owner == t.typeSymbol
-    }
-
-    private def isTargetMethod(m: MethodSymbol, target: c.Type): Boolean = {
-      // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-      val methodName = m.name.decodedName.toString
-      m.isMethod &&
-      !m.isImplicit &&
-      !m.isSynthetic &&
-      !m.isAccessor &&
-      !methodName.startsWith("$") &&
-      methodName != "<init>" &&
-      isOwnedByTargetClass(m, target)
-    }
-
     def modifierBitMaskOf(m: MethodSymbol): Int = {
       var mod = 0
       if (m.isPublic) {
@@ -569,4 +588,5 @@ private[surface] object SurfaceMacros {
       mod
     }
   }
+
 }
