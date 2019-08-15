@@ -76,8 +76,8 @@ trait AirSpecContext {
 object AirSpecContext {
 
   implicit class AirSpecContextAccess(val context: AirSpecContext) extends AnyVal {
-    def callRunInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {
-      context.runInternal(spec, testMethods)
+    def callRunInternal(spec: AirSpecSpi, specMethods: Seq[MethodSurface]): AirSpecSpi = {
+      context.runInternal(spec, AirSpecSpi.collectTestMethods(specMethods))
     }
     def callNewSpec(specSurface: Surface): AirSpecSpi = context.newSpec(specSurface)
   }
