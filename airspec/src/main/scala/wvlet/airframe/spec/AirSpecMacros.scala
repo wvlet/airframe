@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.spec
+import wvlet.airframe.AirframeMacros
+
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
@@ -34,13 +36,24 @@ private[spec] object AirSpecMacros {
      """
   }
 
-  def runImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
+  def runImpl[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
-        val spec = ${spec}
-        val methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}]
-       ${c.prefix}.runInternal(spec, methodSurfaces)
-    }"""
+           ${new AirframeMacros.BindHelper[c.type](c).registerTraitFactory(t)}
+           import wvlet.airframe.spec.spi.AirSpecContext._
+           val context = ${c.prefix}
+           val spec = context.callNewSpec(wvlet.airframe.surface.Surface.of[${t}])
+           context.callRunInternal(spec, wvlet.airframe.surface.Surface.methodsOf[${t}])
+        }
+    """
+  }
+
+  def runSpecImpl[A: c.WeakTypeTag](c: sm.Context)(spec: c.Tree): c.Tree = {
+    import c.universe._
+    val t = implicitly[c.WeakTypeTag[A]].tpe
+    q"""
+       wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix}).callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
+    """
   }
 }

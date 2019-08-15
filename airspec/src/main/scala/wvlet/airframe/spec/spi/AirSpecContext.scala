@@ -11,12 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
-package spec.spi
+package wvlet.airframe.spec.spi
 
-import wvlet.airframe.spec.runner.AirSpecTask.TaskExecutor
 import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
-import wvlet.airframe.surface.MethodSurface
+import wvlet.airframe.surface.{MethodSurface, Surface}
 
 import scala.language.experimental.macros
 
@@ -30,12 +28,23 @@ trait AirSpecContext {
   /**
     * Build an instance of type A using Airframe DI, and run the test method within A
     */
-  def run[A <: AirSpecBase]: Unit
+  def run[A <: AirSpecBase]: Unit = macro AirSpecMacros.runImpl[A]
 
   /**
     * Run the test methods in a given AirSpec instance
     */
-  def run[A <: AirSpecBase](spec: A): Unit = macro AirSpecMacros.runImpl[A]
+  def run[A <: AirSpecBase](spec: A): Unit = macro AirSpecMacros.runSpecImpl[A]
 
-  def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit
+  protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit
+  protected def newSpec(specSurface: Surface): AirSpecSpi
+}
+
+object AirSpecContext {
+
+  implicit class AirSpecContextAccess(val context: AirSpecContext) extends AnyVal {
+    def callRunInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+      context.runInternal(spec, testMethods)
+    }
+    def callNewSpec(specSurface: Surface): AirSpecSpi = context.newSpec(specSurface)
+  }
 }

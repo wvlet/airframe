@@ -17,7 +17,7 @@ package spec.runner
 import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
 import wvlet.airframe.spec.runner.AirSpecTask.TaskExecutor
 import wvlet.airframe.spec.spi.AirSpecContext
-import wvlet.airframe.surface.MethodSurface
+import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
@@ -32,11 +32,10 @@ private[spec] class AirSpecContextImpl(taskExecutor: TaskExecutor,
     extends AirSpecContext
     with LogSupport {
 
-  /**
-    * Build an instance of type A using Airframe DI, and run the test method within A
-    */
-  override def run[A <: AirSpecBase]: Unit = {}
-  override def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+  override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
     taskExecutor.run(spec, testMethods)
+  }
+  override protected def newSpec(specSurface: Surface): AirSpecSpi = {
+    currentSession.get(specSurface)
   }
 }
