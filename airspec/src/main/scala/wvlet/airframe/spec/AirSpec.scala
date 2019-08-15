@@ -40,7 +40,7 @@ private[spec] trait AirSpecSpi {
    */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[spec] def testMethods: Seq[MethodSurface] = {
-    _methodSurfaces.filter(x => x.isPublic)
+    AirSpecSpi.collectTestMethods(_methodSurfaces)
   }
 
   private[spec] var specName: String = {
@@ -90,6 +90,10 @@ private[spec] trait AirSpecSpi {
 }
 
 private[spec] object AirSpecSpi {
+
+  private[spec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[MethodSurface] = {
+    methodSurfaces.filter(_.isPublic)
+  }
 
   /**
     * This wrapper is used for accessing protected methods in AirSpec

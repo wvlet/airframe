@@ -71,7 +71,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
   }
 
   def logSpecName(specName: String, indentLevel: Int): Unit = {
-    info(s"${indent(indentLevel)} ${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
+    info(s"${indent(indentLevel)}${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
   }
 
   def logEvent(e: AirSpecEvent, indentLevel: Int = 0): Unit = {

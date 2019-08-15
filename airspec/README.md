@@ -97,10 +97,22 @@ class SeqSpec extends AirSpec {
   }
 
   // Catch an exception
-  def `throw NoSuchElementException when taking the head of an empty Set`: Unit = {
+  def `throw NoSuchElementException when taking the head of an empty Set`(): Unit = {
     intercept[NoSuchElementException] {
       Seq.empty.head
     }
+  }
+}
+```
+
+It is also possible to use Symbol for test class names:
+
+```scala
+import wvlet.airframe.spec._
+
+class `Seq[X] test spec` extends AirSpec {
+  def `the size of empty Seq should be 0`: Unit = {
+    assert(Seq.empty.size == 0)
   }
 }
 ```
@@ -251,4 +263,49 @@ This test shares the same Service instance between two test methods `test1` and 
 [info]  - test1 13.94ms
 [info]  - test2 403.41us
 [info] Passed: Total 2, Failed 0, Errors 0, Passed 2
+```
+
+## Reusing Test Classes
+
+To reuse test cases, create a fixture, which is a class, object, or trait extending
+AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:
+
+```scala
+import wvlet.airframe.spec._
+import wvlet.airframe.spec.spi.AirSpecContext
+
+class MySpec extends AirSpec {
+  // A template for reusable test cases
+  class Fixture[A](data: Seq[A]) extends AirSpec {
+    override protected def beforeAll: Unit = {
+      info(s"Run tests for ${data}")
+    }
+    def emptyTest: Unit = {
+      data shouldNotBe empty
+    }
+    def sizeTest: Unit = {
+      data.length shouldBe data.size
+    }
+  }
+
+  // Inject AirSpecContext using DI
+  def test(context: AirSpecContext): Unit = {
+    context.run(new Fixture(Seq(1, 2)))
+    context.run(new Fixture(Seq("A", "B", "C")))
+  }
+}
+```
+
+This code will run the same Fixture two times using different data sets:
+```
+MySpec:
+    MySpec.Fixture:
+2019-08-15 15:11:33.458-0700  info [MySpec$Fixture] Run tests for List(1, 2)
+     - emptyTest 471.97us
+     - sizeTest 156.25us
+    MySpec.Fixture:est / testOnly 0s
+2019-08-15 15:11:33.475-0700  info [MySpec$Fixture] Run tests for List(A, B, C)
+     - emptyTest 105.52us
+     - sizeTest 80.27us
+ - test 38.52ms
 ```
