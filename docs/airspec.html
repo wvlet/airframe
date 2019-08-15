@@ -105,10 +105,22 @@ Basically this command finds matches from the list of all <code class="highlight
   <span class="o">}</span>
 
   <span class="c1">// Catch an exception
-</span>  <span class="k">def</span> <span class="n">`throw NoSuchElementException when taking the head of an empty Set`</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+</span>  <span class="k">def</span> <span class="n">`throw NoSuchElementException when taking the head of an empty Set`</span><span class="o">()</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
     <span class="n">intercept</span><span class="o">[</span><span class="kt">NoSuchElementException</span><span class="o">]</span> <span class="o">{</span>
       <span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">head</span>
     <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>It is also possible to use Symbol for test class names:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+
+<span class="k">class</span> <span class="nc">`Seq</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="n">test</span> <span class="n">spec` extends AirSpec {
+  def `the</span> <span class="n">size</span> <span class="n">of</span> <span class="n">empty</span> <span class="nc">Seq</span> <span class="n">should</span> <span class="n">be</span> <span class="mi">0</span><span class="o">`:</span> <span class="nc">Unit</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="n">assert</span><span class="o">(</span><span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
 </code></pre>
@@ -274,6 +286,51 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
 <span class="err">[</span><span class="kt">info</span><span class="err">]</span>  <span class="kt">-</span> <span class="kt">test1</span> <span class="err">13</span><span class="kt">.</span><span class="err">94</span><span class="kt">ms</span>
 <span class="o">[</span><span class="kt">info</span><span class="o">]</span>  <span class="o">-</span> <span class="n">test2</span> <span class="mf">403.41</span><span class="n">us</span>
 <span class="o">[</span><span class="kt">info</span><span class="o">]</span> <span class="nc">Passed</span><span class="k">:</span> <span class="kt">Total</span> <span class="err">2</span><span class="o">,</span> <span class="nc">Failed</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Errors</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Passed</span> <span class="mi">2</span>
+</code></pre>
+</div>
+
+<h2 id="reusing-test-classes">Reusing Test Classes</h2>
+
+<p>To reuse test cases, create a fixture, which is a class, object, or trait extending
+AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.spec.spi.AirSpecContext</span>
+
+<span class="k">class</span> <span class="nc">MySpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="c1">// A template for reusable test cases
+</span>  <span class="k">class</span> <span class="nc">Fixture</span><span class="o">[</span><span class="kt">A</span><span class="o">](</span><span class="n">data</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">A</span><span class="o">])</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+    <span class="k">override</span> <span class="k">protected</span> <span class="k">def</span> <span class="n">beforeAll</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="n">info</span><span class="o">(</span><span class="n">s</span><span class="s">"Run tests for ${data}"</span><span class="o">)</span>
+    <span class="o">}</span>
+    <span class="k">def</span> <span class="n">emptyTest</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="n">data</span> <span class="n">shouldNotBe</span> <span class="n">empty</span>
+    <span class="o">}</span>
+    <span class="k">def</span> <span class="n">sizeTest</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="n">data</span><span class="o">.</span><span class="n">length</span> <span class="n">shouldBe</span> <span class="n">data</span><span class="o">.</span><span class="n">size</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="c1">// Inject AirSpecContext using DI
+</span>  <span class="k">def</span> <span class="n">test</span><span class="o">(</span><span class="n">context</span><span class="k">:</span> <span class="kt">AirSpecContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="k">new</span> <span class="nc">Fixture</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)))</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="k">new</span> <span class="nc">Fixture</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="s">"A"</span><span class="o">,</span> <span class="s">"B"</span><span class="o">,</span> <span class="s">"C"</span><span class="o">)))</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>This code will run the same Fixture two times using different data sets:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>MySpec:
+    MySpec.Fixture:
+2019-08-15 15:11:33.458-0700  info [MySpec$Fixture] Run tests for List(1, 2)
+     - emptyTest 471.97us
+     - sizeTest 156.25us
+    MySpec.Fixture:est / testOnly 0s
+2019-08-15 15:11:33.475-0700  info [MySpec$Fixture] Run tests for List(A, B, C)
+     - emptyTest 105.52us
+     - sizeTest 80.27us
+ - test 38.52ms
 </code></pre>
 </div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
