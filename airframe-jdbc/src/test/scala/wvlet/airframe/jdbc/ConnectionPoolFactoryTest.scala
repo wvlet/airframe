@@ -43,7 +43,7 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
       while (rs.next()) {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
-        logger.info(s"read (${id}, ${name})")
+        logger.debug(s"read (${id}, ${name})")
       }
     }
 
@@ -62,7 +62,7 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
       while (rs.next()) {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
-        logger.info(s"read with prepared statement: (${id}, ${name})")
+        logger.debug(s"read with prepared statement: (${id}, ${name})")
       }
     }
 
