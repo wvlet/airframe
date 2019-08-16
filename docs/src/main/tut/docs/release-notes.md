@@ -5,6 +5,18 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.4
+- AirSpec is renamed to a simple package `wvlet.airspec`.
+  -  airspec: Rename to wvlet.airspec ([#605](https://github.com/wvlet/airframe/issues/605)) [[6d6ff91](https://github.com/wvlet/airframe/commit/6d6ff91)]
+  -  airspec: Add optional PropertyBased testing [[9fbe8ca](https://github.com/wvlet/airframe/commit/9fbe8ca)]
+  -  airspec: [#597](https://github.com/wvlet/airframe/issues/597): Add AirSpecContext to run nested tests ([#602](https://github.com/wvlet/airframe/issues/602)) [[a41211a](https://github.com/wvlet/airframe/commit/a41211a)]
+  -  Make airspec an all-in-jar ([#601](https://github.com/wvlet/airframe/issues/601)) [[18d3970](https://github.com/wvlet/airframe/commit/18d3970)]
+  -  airspec: Add assertEquals(a, b, delta) [[2ca677a](https://github.com/wvlet/airframe/commit/2ca677a)]
+  -  airspec: Add inTravisCI checker [[9302a70](https://github.com/wvlet/airframe/commit/9302a70)]
+  -  airspec: Return Nothing for asserts throwing exceptions [[7fb68e2](https://github.com/wvlet/airframe/commit/7fb68e2)]
+  -  Migrated all airframe module tests from ScalaTest to AirSpec
+- airframe-surface: disable createObjectFactry for abstract classes in Scala.js [[45b22ac](https://github.com/wvlet/airframe/commit/45b22ac)]
+
 ## 19.8.3
 - AirSpec:
   -  airspec is now a standalone project without any cyclic dependencies to airframe module ([#592](https://github.com/wvlet/airframe/issues/592)) [[d0db028](https://github.com/wvlet/airframe/commit/d0db028)]
