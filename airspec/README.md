@@ -25,10 +25,10 @@ Here is a summary of AirSpec features;
 
 In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to create a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have some standards of running tests without introducing third-party dependencies.
 
-__Problem__: These testing frameworks are good enough for writing tests, but in order to uses one of them, I and my team needed to learn complex DSLs, or to be a minimalist for using minimum testing frameworks like minitest.
+__Problem__: These testing frameworks are good enough for writing tests, but in order to uses one of them, I (and my team members) needed to learn complex DSLs, or to be a minimalist for using testing frameworks like minitest.
 
 - __Complex DSLs__:
-  - ScalaTests supports [variosu writing styles of tests](http://www.scalatest.org/user_guide/selecting_a_style), and [assersions](http://www.scalatest.org/user_guide/using_assertions). We had no idea how to choose the best style for our team.
+  - ScalaTests supports [various writing styles of tests](http://www.scalatest.org/user_guide/selecting_a_style), and [assersions](http://www.scalatest.org/user_guide/using_assertions). We had no idea how to choose the best style for our team.
   - Specs2 introduces its own testing syntaxes, and even [the very first example](https://etorreborre.github.io/specs2/) is cryptic for new people (i.e., high learning cost).
   - With these rich testing frameworks, using a consistent style is challenging as we have too much flexibility in writing tests. And also remembering rich assertion syntaxes like `x should be (>= 0)` or `x.name must_== "me"` needs a lot of practices and education within the team.
 
