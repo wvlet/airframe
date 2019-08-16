@@ -148,6 +148,6 @@ class RouterTest extends AirSpec {
     // Test DFA builder
     val r   = Router.add[ControllerExample]
     val dfa = RouteMatcher.buildPathDFA(r.routes)
-    info(dfa.toString)
+    debug(dfa.toString)
   }
 }
