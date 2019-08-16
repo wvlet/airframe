@@ -71,7 +71,7 @@ class LoggerTest extends Spec {
   def `use leaf logger name`: Unit = {
     val l = Logger("leaf")
     assert(l.getName == "leaf")
-    l.info("leaf logger")
+    l.debug("leaf logger")
   }
 
   def `have access to root logger`: Unit = {
@@ -260,7 +260,7 @@ class LoggerTest extends Spec {
 
   def `support flush and close`: Unit = {
     val h = new ConsoleLogHandler(SourceCodeLogFormatter)
-    h.publish(LogRecord(new jul.LogRecord(jul.Level.INFO, "console log handler test")))
+    h.publish(LogRecord(new jul.LogRecord(jul.Level.FINE, "console log handler test")))
     h.flush()
     h.close()
   }

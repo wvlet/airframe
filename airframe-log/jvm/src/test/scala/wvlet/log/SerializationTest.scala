@@ -8,7 +8,7 @@ object SerializationTest {
 
   trait A extends LogSupport {
     debug("new A")
-    def hello = info("hello")
+    def hello = debug("hello")
   }
 }
 
