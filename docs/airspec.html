@@ -8,9 +8,47 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Overview</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/airspec.html" class="">AirSpec Test Library</a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Modules</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe-canvas.html" class="">airframe-canvas</a></li> <li><a href="/airframe/docs/airframe-codec.html" class="">airframe-codec</a></li> <li><a href="/airframe/docs/airframe-config.html" class="">airframe-config</a></li> <li><a href="/airframe/docs/airframe-control.html" class="">airframe-control</a></li> <li><a href="/airframe/docs/airframe-fluentd.html" class="">airframe-fluentd</a></li> <li><a href="/airframe/docs/airframe-http.html" class="">airframe-http</a></li> <li><a href="/airframe/docs/airframe-http-recorder.html" class="">airframe-http-recorder</a></li> <li><a href="/airframe/docs/airframe-jdbc.html" class="">airframe-jdbc</a></li> <li><a href="/airframe/docs/airframe-jmx.html" class="">airframe-jmx</a></li> <li><a href="/airframe/docs/airframe-json.html" class="">airframe-json</a></li> <li><a href="/airframe/docs/airframe-launcher.html" class="">airframe-launcher</a></li> <li><a href="/airframe/docs/airframe-log.html" class="">airframe-log</a></li> <li><a href="/airframe/docs/airframe-metrics.html" class="">airframe-metrics</a></li> <li><a href="/airframe/docs/airframe-msgpack.html" class="">airframe-msgpack</a></li> <li><a href="/airframe/docs/airframe-scalatest.html" class="">airframe-scalatest</a></li> <li><a href="/airframe/docs/airframe-surface.html" class="">airframe-surface</a></li> <li><a href="/airframe/docs/airframe-sql.html" class="">airframe-sql</a></li> <li><a href="/airframe/docs/airframe-tablet.html" class="">airframe-tablet</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="airspec">AirSpec</h1>
 
-<p><a href="https://wvlet.org/airframe/docs/airspec.html">AirSpec</a> is a functional testing framework for Scala and Scala.js.</p>
+<p><a href="https://wvlet.org/airframe/docs/airspec.html">AirSpec</a> is a new functional testing framework for Scala and Scala.js.</p>
 
-<p><strong>Features</strong>:</p>
+<h1 id="introduction">Introduction</h1>
+
+<p>In Scala there are several rich testing frameworks like <a href="http://www.scalatest.org/">ScalaTests</a>, <a href="https://etorreborre.github.io/specs2/">Specs2</a>, <a href="https://github.com/lihaoyi/utest">uTest</a>, etc. We also have a simple testing framework like <a href="https://github.com/monix/minitest">minitest</a>. In 2019, Scala community has started an experiment to create a nano-testing framework <a href="https://github.com/scala/nanotest-strawman">nanotest-strawman</a> based on minitest so that Scala users can have some standards of running tests without introducing third-party dependencies.</p>
+
+<p><strong>Problem</strong>: These testing frameworks are good enough for writing tests, but in order to uses one of them, I and my team needed to learn complex DSLs, or to be a minimalist for using minimum testing frameworks like minitest.</p>
+
+<ul>
+  <li><strong>Complex DSLs</strong>:
+    <ul>
+      <li>ScalaTests supports <a href="http://www.scalatest.org/user_guide/selecting_a_style">variosu writing styles of tests</a>, and <a href="http://www.scalatest.org/user_guide/using_assertions">assersions</a>. We had no idea how to choose the best style for our team.</li>
+      <li>Specs2 introduces its own testing syntaxes, and even <a href="https://etorreborre.github.io/specs2/">the very first example</a> is cryptic for new people (i.e., high learning cost).</li>
+      <li>With these rich testing frameworks, using a consistent style is challenging as we have too much flexibility in writing tests. And also remembering rich assertion syntaxes like <code class="highlighter-rouge">x should be (&gt;= 0)</code> or <code class="highlighter-rouge">x.name must_== "me"</code> needs a lot of practices and education within the team.</li>
+    </ul>
+  </li>
+  <li><strong>Too Minimalistic Framework</strong>
+    <ul>
+      <li>On the other hand, minitest can do the job of writing tests with a small set of syntaxes like <code class="highlighter-rouge">asserts</code> and <code class="highlighter-rouge">test("....")</code>, but its functionality is quite limited; For example, we can’t run tests by specifying their names (only class name based search is supported in sbt). We also don’t have useful syntax sugars like <code class="highlighter-rouge">x shouldBe y</code>. minitest is simple to use, but at the same time it forces us to be like <a href="https://en.wikipedia.org/wiki/Zen">Zen</a>-mode.</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Motivation</strong>: Where is a middle ground of these two extremes? I don’t want to learn too complex DSLs, and also don’t want to be a minimalist, neither.</p>
+
+<h2 id="airspec-writing-tests-as-functions-in-scala">AirSpec: Writing Tests As Functions In Scala</h2>
+
+<p>My question was: Can we <strong>use plain Scala functions to define tests</strong>? From the experiences of developing <a href="https://wvlet.org/airframe/docs/airframe-surface.html">airframe-surface</a> I’ve learned how to list functions in a class using reflection or Scala macros (in Scala.js). With this approach, a class in Scala will be just a test suite that has a set of test methods, and no need exists to introduce various testing styles as in ScalaTests.</p>
+
+<p>And also, if we define tests by usign functions, it makes possible to <strong>pass test dependencies through function arguments</strong>. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it was not ideal as we need to properly initalize and shutdown these variables with setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>, which has a strong support of life-cycle management, I thought we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.</p>
+
+<p>With these ideas in my mind, I’ve developed AirSpec by leveraging existing Airframe modules like surface and airframe DI. After implementing basic features of AirSpec, I’ve successfully <strong>replaced all of test cases in 20+ Airframe modules with AirSpec</strong>, which were originally written in ScalaTest. Rewriting test cases using AirSpec was almost straightforward as AirSpec has handy <code class="highlighter-rouge">shouldBe</code> syntaxes (for limited use cases) and property testing support with ScalaCheck.</p>
+
+<p>Let’s start using AirSpec in the following tutorial.</p>
+
+<h1 id="quick-start">Quick Start</h1>
+
+<p>AirSpec is a simple testing framework using pure Scala functions for writing test cases. This style requires no extra learning costs if you alreday know Scala. For advanced users, dependency injection and property-based testing are also available.</p>
+
+<p>Here is a summary of AirSpec features;</p>
+
 <ul>
   <li>Simple entry point: <code class="highlighter-rouge">import wvlet.airspec._</code></li>
   <li>You can use plain Scala classes and methods to define tests.
@@ -36,8 +74,7 @@ ga('send', 'pageview');
   <li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
 </ul>
 
-<h1 id="quick-start">Quick Start</h1>
-
+<h2 id="build-settings">Build Settings</h2>
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p><strong>build.sbt</strong></p>
@@ -74,16 +111,11 @@ All public functions (methods) in the class will be executed as test cases:</p>
 </code></pre>
 </div>
 
-<p>AirSpec supports basic assertions like <code class="highlighter-rouge">assert</code>, <code class="highlighter-rouge">fail</code>, <code class="highlighter-rouge">ignore</code>, <code class="highlighter-rouge">cancel</code>, <code class="highlighter-rouge">pending</code>, <code class="highlighter-rouge">skip</code>, <code class="highlighter-rouge">intercept[E]</code>, etc.
-See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala">Asserts.scala</a>.</p>
+<p>AirSpec supports basic assertions like <code class="highlighter-rouge">assert</code>, <code class="highlighter-rouge">fail</code>, <code class="highlighter-rouge">ignore</code>, <code class="highlighter-rouge">cancel</code>, <code class="highlighter-rouge">pending</code>, <code class="highlighter-rouge">skip</code>, <code class="highlighter-rouge">intercept[E]</code>, and <code class="highlighter-rouge">shouldBe</code> matchers (explained later).</p>
 
-<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs,
-which are usually hard to remember.</p>
+<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
 
-<p>Using AirSpec is simple, but it also
-supports powerful lifecycle management of objects based on <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>.
-The function arguments of test methods will be used for passing objects that are necessary for running tests, and
-after finishing tests, these objects will be discarded properly.</p>
+<p>AirSpec also supports powerful object lifecycle management, integrated with <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>. The function arguments of test methods will be used for injecting objects that are necessary for running tests, and after finishing tests, these objects will be discarded properly.</p>
 
 <h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
 
@@ -97,9 +129,9 @@ after finishing tests, these objects will be discarded properly.</p>
 </code></pre>
 </div>
 
-<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. If the pattern partially matches with test names, 
-it will run these matched tests. AirSpec creates a list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.
-Cases of test names will be ignored.</p>
+<p><code class="highlighter-rouge">pattern</code> is used for partial matching with test names. It also supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. 
+Basically AirSpec will find matches from the list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.
+Cases of test names will be ignored in the serach.</p>
 
 <p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
 
