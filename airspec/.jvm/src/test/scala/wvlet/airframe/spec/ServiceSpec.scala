@@ -21,12 +21,12 @@ case class ServiceConfig(port: Int)
 
 class Service(config: ServiceConfig) extends LogSupport {
   @PostConstruct
-  def start {
+  def start: Unit = {
     info(s"Starting a server at ${config.port}")
   }
 
   @PreDestroy
-  def end {
+  def end: Unit = {
     info(s"Stopping the server at ${config.port}")
   }
 }

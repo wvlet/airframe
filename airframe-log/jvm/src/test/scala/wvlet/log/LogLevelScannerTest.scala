@@ -22,12 +22,12 @@ import scala.concurrent.duration.Duration
   */
 class LogLevelScannerTest extends Spec {
 
-  override protected def before {
+  override protected def before: Unit = {
     // Ensure stopping log level scanner
     Logger.stopScheduledLogLevelScan
   }
 
-  override protected def after {
+  override protected def after: Unit = {
     Logger.stopScheduledLogLevelScan
   }
 
