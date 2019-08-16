@@ -16,7 +16,7 @@ package wvlet.airframe.spec.spi
 import org.scalacheck.Test.{Parameters, PropException, Result}
 import org.scalacheck.util.Pretty
 import wvlet.airframe.spec.AirSpecSpi
-import org.scalacheck.{Arbitrary, Prop, Shrink, Test}
+import org.scalacheck.{Arbitrary, Gen, Prop, Shrink, Test}
 
 /**
   *
@@ -50,6 +50,12 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
     checkProperty(prop)
   }
 
+  def forAll[A1](gen: Gen[A1])(
+      checker: A1 => Unit)(implicit toProp: Boolean => Prop, s1: Shrink[A1], pp1: A1 => Pretty): Unit = {
+    val prop = Prop.forAll(gen)(checker.andThen(OK))(toProp, s1, pp1)
+    checkProperty(prop)
+  }
+
   def forAll[A1, A2](checker: (A1, A2) => Unit)(implicit toProp: Boolean => Prop,
                                                 a1: Arbitrary[A1],
                                                 s1: Shrink[A1],
@@ -61,6 +67,18 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
       checker(a1, a2)
       true
     }(toProp, a1, s1, pp1, a2, s2, pp2)
+    checkProperty(prop)
+  }
+
+  def forAll[A1, A2](g1: Gen[A1], g2: Gen[A2])(checker: (A1, A2) => Unit)(implicit toProp: Boolean => Prop,
+                                                                          s1: Shrink[A1],
+                                                                          pp1: A1 => Pretty,
+                                                                          s2: Shrink[A2],
+                                                                          pp2: A2 => Pretty): Unit = {
+    val prop = Prop.forAll(g1, g2) { (a1: A1, a2: A2) =>
+      checker(a1, a2)
+      true
+    }(toProp, s1, pp1, s2, pp2)
     checkProperty(prop)
   }
 
@@ -80,5 +98,4 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
     }(toProp, a1, s1, pp1, a2, s2, pp2, a3, s3, pp3)
     checkProperty(prop)
   }
-
 }
