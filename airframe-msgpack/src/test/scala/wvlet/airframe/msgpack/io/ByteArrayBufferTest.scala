@@ -13,17 +13,13 @@
  */
 package wvlet.airframe.msgpack.io
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 
 /**
   *
   */
-class ByteArrayBufferTest extends AirframeSpec {
-  "ByteArrayBuffer" should {
-    "have ReadBuffer API" in {
-      val b = ByteArrayBuffer.newBuffer(1024)
-
-    }
+class ByteArrayBufferTest extends AirSpec {
+  def `have ReadBuffer API`: Unit = {
+    val b = ByteArrayBuffer.newBuffer(1024)
   }
-
 }
