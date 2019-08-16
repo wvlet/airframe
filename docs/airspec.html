@@ -43,12 +43,12 @@ ga('send', 'pageview');
 
 <p>In Scala there are several rich testing frameworks like <a href="http://www.scalatest.org/">ScalaTests</a>, <a href="https://etorreborre.github.io/specs2/">Specs2</a>, <a href="https://github.com/lihaoyi/utest">uTest</a>, etc. We also have a simple testing framework like <a href="https://github.com/monix/minitest">minitest</a>. In 2019, Scala community has started an experiment to create a nano-testing framework <a href="https://github.com/scala/nanotest-strawman">nanotest-strawman</a> based on minitest so that Scala users can have some standards of running tests without introducing third-party dependencies.</p>
 
-<p><strong>Problem</strong>: These testing frameworks are good enough for writing tests, but in order to uses one of them, I and my team needed to learn complex DSLs, or to be a minimalist for using minimum testing frameworks like minitest.</p>
+<p><strong>Problem</strong>: These testing frameworks are good enough for writing tests, but in order to uses one of them, I (and my team members) needed to learn complex DSLs, or to be a minimalist for using testing frameworks like minitest.</p>
 
 <ul>
   <li><strong>Complex DSLs</strong>:
     <ul>
-      <li>ScalaTests supports <a href="http://www.scalatest.org/user_guide/selecting_a_style">variosu writing styles of tests</a>, and <a href="http://www.scalatest.org/user_guide/using_assertions">assersions</a>. We had no idea how to choose the best style for our team.</li>
+      <li>ScalaTests supports <a href="http://www.scalatest.org/user_guide/selecting_a_style">various writing styles of tests</a>, and <a href="http://www.scalatest.org/user_guide/using_assertions">assersions</a>. We had no idea how to choose the best style for our team.</li>
       <li>Specs2 introduces its own testing syntaxes, and even <a href="https://etorreborre.github.io/specs2/">the very first example</a> is cryptic for new people (i.e., high learning cost).</li>
       <li>With these rich testing frameworks, using a consistent style is challenging as we have too much flexibility in writing tests. And also remembering rich assertion syntaxes like <code class="highlighter-rouge">x should be (&gt;= 0)</code> or <code class="highlighter-rouge">x.name must_== "me"</code> needs a lot of practices and education within the team.</li>
     </ul>
