@@ -333,6 +333,36 @@ AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected t
  - test 38.52ms
 </code></pre>
 </div>
+
+<h2 id="property-based-testing-with-scalacheck">Property Based Testing with ScalaCheck</h2>
+
+<p>Optionally AirSpec can integrate with <a href="https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md">ScalaCheck</a>.
+Add <code class="highlighter-rouge">wvlet.airframe.spec.spi.PropertyCheck</code> trait to your spec, and use <code class="highlighter-rouge">forAll</code> methods.</p>
+
+<p><strong>build.sbt</strong></p>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.scalacheck"</span> <span class="o">%%%</span> <span class="s">"scalacheck"</span> <span class="o">%</span> <span class="s">"1.14.0"</span> <span class="o">%</span> <span class="s">"test"</span>
+</code></pre>
+</div>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.spec.spi.PropertyCheck</span>
+
+<span class="k">class</span> <span class="nc">PropertyBasedTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="k">with</span> <span class="nc">PropertyCheck</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">testAllInt</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">forAll</span><span class="o">{</span> <span class="n">i</span><span class="k">:</span><span class="kt">Int</span> <span class="o">=&gt;</span> <span class="n">i</span><span class="o">.</span><span class="n">isValidInt</span> <span class="n">shouldBe</span> <span class="kc">true</span> <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">testCommutativity</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">forAll</span><span class="o">{</span> <span class="o">(</span><span class="n">x</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">y</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span> <span class="o">==</span> <span class="n">y</span><span class="o">+</span><span class="n">x</span> <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="k">def</span> <span class="n">useGenerator</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">import</span> <span class="nn">org.scalacheck.Gen</span>
+    <span class="n">forAll</span><span class="o">(</span><span class="nc">Gen</span><span class="o">.</span><span class="n">posNum</span><span class="o">[</span><span class="kt">Long</span><span class="o">]){</span> <span class="n">x</span><span class="k">:</span> <span class="kt">Long</span> <span class="o">=&gt;</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="n">shouldBe</span> <span class="kc">true</span> <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
