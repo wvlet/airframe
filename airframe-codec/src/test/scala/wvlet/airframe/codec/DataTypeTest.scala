@@ -20,6 +20,7 @@ import wvlet.airframe.codec.DataType.Column
   *
   */
 class DataTypeTest extends AirSpec {
+  scalaJsSupport
 
   def `have primitive types`: Unit = {
     DataType.primitiveTypes.contains(DataType.NIL) shouldBe true
