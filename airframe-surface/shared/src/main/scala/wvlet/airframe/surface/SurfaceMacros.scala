@@ -429,7 +429,7 @@ private[surface] object SurfaceMacros {
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (isAbstract(targetType) || isPathDependentType(targetType)) {
+      if (targetType.typeSymbol.isAbstract || isAbstract(targetType) || isPathDependentType(targetType)) {
         None
       } else {
         findPrimaryConstructorOf(targetType).map { primaryConstructor =>
