@@ -309,3 +309,33 @@ MySpec:
      - sizeTest 80.27us
  - test 38.52ms
 ```
+
+## Property Based Testing with ScalaCheck
+
+Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md).
+Add `wvlet.airframe.spec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
+
+__build.sbt__
+```scala
+libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
+```
+
+```scala
+import wvlet.airframe.spec._
+import wvlet.airframe.spec.spi.PropertyCheck
+
+class PropertyBasedTest extends AirSpec with PropertyCheck {
+  def testAllInt: Unit = {
+    forAll{ i:Int => i.isValidInt shouldBe true }
+  }
+
+  def testCommutativity: Unit = {
+    forAll{ (x:Int, y:Int) => x+y == y+x }
+  }
+
+  def useGenerator: Unit = {
+    import org.scalacheck.Gen
+    forAll(Gen.posNum[Long]){ x: Long => x > 0 shouldBe true }
+  }
+}
+```
