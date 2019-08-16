@@ -16,7 +16,7 @@ package wvlet.airframe.codec
 import java.sql.{DriverManager, ResultSet}
 import java.util
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JDBCCodec._
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.log.io.IOUtil.withResource
@@ -25,9 +25,9 @@ import scala.collection.compat._
 /**
   *
   */
-class JDBCCodecTest extends AirframeSpec {
+class JDBCCodecTest extends AirSpec {
 
-  def withQuery[U](sql: String)(body: ResultSet => U): U = {
+  protected def withQuery[U](sql: String)(body: ResultSet => U): U = {
     Class.forName("org.sqlite.JDBC")
     withResource(DriverManager.getConnection("jdbc:sqlite::memory:")) { conn =>
       withResource(conn.createStatement()) { stmt =>
@@ -39,7 +39,7 @@ class JDBCCodecTest extends AirframeSpec {
     }
   }
 
-  "encode all JDBC types" in {
+  def `encode all JDBC types`: Unit = {
     withQuery("""
             |select
             |1,
@@ -78,7 +78,7 @@ class JDBCCodecTest extends AirframeSpec {
     }
   }
 
-  "encode null" in {
+  def `encode null`: Unit = {
     val types = Seq(
       "bit",
       "tinyint",
@@ -126,7 +126,7 @@ class JDBCCodecTest extends AirframeSpec {
     }
   }
 
-  "support sql date" in {
+  def `support sql date`: Unit = {
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23").toByteArray) shouldBe Some(
       java.sql.Date.valueOf("2019-01-23"))
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
@@ -134,7 +134,7 @@ class JDBCCodecTest extends AirframeSpec {
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  "support sql time" in {
+  def `support sql time`: Unit = {
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packString("01:23:45").toByteArray) shouldBe Some(
       java.sql.Time.valueOf("01:23:45"))
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
@@ -142,7 +142,7 @@ class JDBCCodecTest extends AirframeSpec {
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  "support sql timestamp" in {
+  def `support sql timestamp`: Unit = {
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23 01:23:45.000").toByteArray) shouldBe Some(
       java.sql.Timestamp.valueOf("2019-01-23 01:23:45.000"))
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
@@ -150,7 +150,7 @@ class JDBCCodecTest extends AirframeSpec {
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  "support java.math.BigDecimal" in {
+  def `support java.math.BigDecimal`: Unit = {
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packString("12345").toByteArray) shouldBe Some(
       new java.math.BigDecimal(12345))
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packLong(12345L).toByteArray) shouldBe Some(
@@ -160,7 +160,7 @@ class JDBCCodecTest extends AirframeSpec {
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
-  "support array types" in {
+  def `support array types`: Unit = {
     val p = MessagePack.newBufferPacker
     JavaSqlArrayCodec.pack(p, MockArray(Array("a", "b")))
     JavaSqlArrayCodec.pack(p, MockArray(Array(1, 2)))
@@ -179,7 +179,7 @@ class JDBCCodecTest extends AirframeSpec {
     }
   }
 
-  "ResultSet to JSON maps" taggedAs working in {
+  def `ResultSet to JSON maps`: Unit = {
     withQuery("""with a(id, name) as
                 |(select * from (values (1, 'leo'), (2, 'yui')))
                 |select * from a order by id asc
