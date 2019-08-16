@@ -195,6 +195,11 @@ Cases of test names will be ignored in the search.</p>
     <span class="nc">Option</span><span class="o">(</span><span class="kc">null</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="n">empty</span>
     <span class="nc">None</span> <span class="n">shouldNotBe</span> <span class="n">defined</span>
 
+    <span class="c1">// null check
+</span>    <span class="k">val</span> <span class="n">s</span><span class="k">:</span><span class="kt">String</span> <span class="o">=</span> <span class="kc">null</span>
+    <span class="n">s</span> <span class="n">shouldBe</span> <span class="kc">null</span>
+    <span class="s">"s"</span> <span class="n">shouldNotBe</span> <span class="kc">null</span>
+
     <span class="c1">// For Arrays, shouldBe checks the equality with deep equals
 </span>    <span class="nc">Array</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span> <span class="n">shouldBe</span> <span class="nc">Array</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
 
