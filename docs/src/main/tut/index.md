@@ -14,6 +14,8 @@ Airframe is a collection of [lightweight building blocks](docs/index.html) for k
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
+- [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
+
 ## Blog Articles
 - [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
   - airframe-http, airframe-http-finagle

@@ -89,7 +89,7 @@ trait Session extends AutoCloseable {
     * Create a child session with an additional design.
     * The created session has its own singleton holder and a lifecycle manager.
     *
-    * - Child sessions tries to delegate the object binding to the parent (or ansector) session if no corresponding binding is defined in the child design.
+    * - Child sessions tries to delegate the object binding to the parent (or ancestor) session if no corresponding binding is defined in the child design.
     * - If the parent and ancestors ve no binding for a given type, it will creates a new object in the child session.
     * - If the parent or an ancestor session already initialized a target binding, lifecycle hooks for that binding will not be called in the child session.
     *

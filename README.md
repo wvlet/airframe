@@ -18,6 +18,7 @@ Airframe https://wvlet.org/airframe is a collection of [lightweight building blo
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 
 - [Airframe Home](https://wvlet.org/airframe/)
+- [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
 
 ## Resources
 
