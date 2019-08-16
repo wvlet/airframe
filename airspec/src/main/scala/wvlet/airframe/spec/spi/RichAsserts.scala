@@ -16,12 +16,13 @@ package wvlet.airframe.spec.spi
 import java.util
 
 import wvlet.airframe.SourceCode
+import wvlet.airframe.spec.AirSpecSpi
 import wvlet.log.LogSupport
 
 /**
   *
   */
-trait RichAsserts extends LogSupport {
+trait RichAsserts extends LogSupport { this: AirSpecSpi =>
 
   // Here we do not extend implicit classes with AnyVal, which needs to be a public class in an object,
   // to make this enrichment available as trait
@@ -86,7 +87,7 @@ trait RichAsserts extends LogSupport {
       AssertionFailure(s"${pp(value)} matched with ${pp(unexpected)}", code)
     }
 
-    def shouldBe(expected: Any)(implicit code: SourceCode): Unit = {
+    def shouldBe(expected: Any)(implicit code: SourceCode): Boolean = {
       (value, expected) match {
         case (a: Array[Int], b: Array[Int]) =>
           if (!util.Arrays.equals(a, b)) {
@@ -135,6 +136,7 @@ trait RichAsserts extends LogSupport {
             throw matchFailure(expected, code)
           }
       }
+      true
     }
 
     def shouldNotBe(unexpected: Any)(implicit code: SourceCode): Unit = {

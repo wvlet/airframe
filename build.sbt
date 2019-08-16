@@ -941,7 +941,10 @@ lazy val airspec =
     .settings(
       //airspecBuildSettings,
       name := "airspec",
-      description := "AirSpec: A Functional Testing Framework for Scala"
+      description := "AirSpec: A Functional Testing Framework for Scala",
+      libraryDependencies ++= Seq(
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "provided"
+      )
     )
     .jvmSettings(
       // Embed dependent project codes to make airspec a single jar
