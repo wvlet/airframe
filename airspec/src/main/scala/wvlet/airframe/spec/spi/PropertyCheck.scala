@@ -25,7 +25,7 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
 
   protected def scalaCheckConfig: Parameters = Test.Parameters.default
 
-  private def check(prop: Prop): Unit = {
+  private def checkProperty(prop: Prop): Unit = {
     val result = Test.check(scalaCheckConfig, prop)
     if (!result.passed) {
       result match {
@@ -47,7 +47,7 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
                                       s1: Shrink[A1],
                                       pp1: A1 => Pretty): Unit = {
     val prop = Prop.forAll(checker.andThen(OK))(toProp, a1, s1, pp1)
-    check(prop)
+    checkProperty(prop)
   }
 
   def forAll[A1, A2](checker: (A1, A2) => Unit)(implicit toProp: Boolean => Prop,
@@ -61,7 +61,7 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
       checker(a1, a2)
       true
     }(toProp, a1, s1, pp1, a2, s2, pp2)
-    check(prop)
+    checkProperty(prop)
   }
 
   def forAll[A1, A2, A3](checker: (A1, A2, A3) => Unit)(implicit toProp: Boolean => Prop,
@@ -78,7 +78,7 @@ trait PropertyCheck { this: AirSpecSpi with Asserts =>
       checker(a1, a2, a3)
       true
     }(toProp, a1, s1, pp1, a2, s2, pp2, a3, s3, pp3)
-    check(prop)
+    checkProperty(prop)
   }
 
 }

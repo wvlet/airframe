@@ -412,7 +412,7 @@ lazy val canvas =
         "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
       )
     )
-    .dependsOn(logJVM, control % "test", airframeScalaTestJVM % "test")
+    .dependsOn(logJVM, control % "test", airspecRefJVM % "test")
 
 lazy val config =
   project
