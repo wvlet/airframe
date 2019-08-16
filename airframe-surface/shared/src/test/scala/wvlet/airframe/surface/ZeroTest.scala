@@ -30,7 +30,7 @@ class ZeroTest extends SurfaceSpec {
       case s: ArraySurface =>
         pendingUntil("array comparison")
       case _ =>
-        assert(z == v)
+        z shouldBe v
     }
     z
   }

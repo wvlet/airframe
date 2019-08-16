@@ -271,7 +271,7 @@ private[surface] object SurfaceMacros {
       t.members.exists(x => x.isMethod && x.isAbstract && !x.isAbstractOverride)
 
     private def isAbstract(t: c.Type): Boolean = {
-      t.typeSymbol.isAbstract || hasAbstractMethods(t)
+      t.typeSymbol.isAbstract && hasAbstractMethods(t)
     }
 
     private def isPathDependentType(t: c.Type): Boolean = {
