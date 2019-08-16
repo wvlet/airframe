@@ -34,7 +34,7 @@ private[spec] object Compat extends CompatApi {
   }
 
   private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
-    Try(classLoader.loadClass(fullyQualifiedName).newInstance).toOption
+    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()).toOption
   }
 
   private[spec] def withLogScanner[U](block: => U): U = {

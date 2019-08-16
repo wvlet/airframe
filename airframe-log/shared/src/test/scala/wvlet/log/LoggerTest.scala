@@ -68,7 +68,7 @@ class LoggerTest extends Spec {
     Logger("wvlet.log").setLogLevel(LogLevel.INFO)
   }
 
-  def `use leaf logger name` {
+  def `use leaf logger name`: Unit = {
     val l = Logger("leaf")
     assert(l.getName == "leaf")
     l.info("leaf logger")
