@@ -60,14 +60,14 @@ ga('send', 'pageview');
   <li><strong>Too minimalistic framework:</strong>
     <ul>
       <li>On the other hand, a minimalist approach like minitest, which uses a limited set of syntax like <code class="highlighter-rouge">asserts</code> and <code class="highlighter-rouge">test("....")</code>, is too restricted. For example, I believe assertion syntax like <code class="highlighter-rouge">x shouldBe y</code> is a good invention in ScalaTest to make clear the meaning of assertions to represent <code class="highlighter-rouge">(value) shoudlBe (expected value)</code>. In minitest <code class="highlighter-rouge">assert(x == y)</code> has the same meaning, but the intention of test writers is not clear because we can write it in two ways: <code class="highlighter-rouge">assert(value == expected)</code> or <code class="highlighter-rouge">assert(expected == value)</code>. Minitest also has no feature for selecting test cases to run; It only supports specifying class names to run, which is just a basic functionality of <strong>sbt</strong>.</li>
-      <li>A minimalist approach like this forces us to be in <a href="https://en.wikipedia.org/wiki/Zen">Zen</a> mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and DSL for our own teams.</li>
+      <li>A minimalist approach like this forces us to be in <a href="https://en.wikipedia.org/wiki/Zen">Zen</a> mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and developing a DSL for our own teams.</li>
     </ul>
   </li>
 </ul>
 
 <h2 id="airspec-writing-tests-as-functions-in-scala">AirSpec: Writing Tests As Functions In Scala</h2>
 
-<p>So where is a middle ground in-between these two extremes? We usually don’t want to learn too complex DSLs, and also we don’t want to be a minimalist, neither.</p>
+<p>So where is a middle ground in-between these two extremes? We usually don’t want to learn too complex DSLs, and also we don’t want to be a minimalist, either.</p>
 
 <p>Why can’t we <strong>use plain Scala functions to define tests</strong>? ScalaTest already has <a href="http://www.scalatest.org/user_guide/selecting_a_style">RefSpec</a> to write tests in Scala functions. Unfortunately, however, its support is limited only to Scala JVM as Scala.js does not support runtime reflections to list function names. Scala.js is powerful for developing web applications in Scala, so we don’t want to drop it, and the lack of runtime reflection in Scala.js is probably a reason why existing testing frameworks needed to develop their own DSLs like <code class="highlighter-rouge">test(....) {  test body } </code>.</p>
 
