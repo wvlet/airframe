@@ -27,6 +27,7 @@ import wvlet.airframe.spec.spi.PropertyCheck
   *
   */
 class RoundTripTest extends AirSpec with PropertyCheck {
+  scalaJsSupport
 
   val buf = ByteArrayBuffer.newBuffer(1024)
 

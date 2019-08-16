@@ -21,6 +21,8 @@ import wvlet.log.io.Timer
 import scala.util.Random
 
 class MessageFormatTest extends AirSpec with Timer {
+  scalaJsSupport
+
   def `cover all byte codes`: Unit = {
     def checkV(b: Byte, tpe: ValueType): Unit = {
       try MessageFormat.of(b).valueType shouldBe tpe

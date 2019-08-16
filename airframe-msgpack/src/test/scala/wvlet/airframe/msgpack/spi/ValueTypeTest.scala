@@ -20,6 +20,7 @@ import wvlet.airframe.msgpack.spi.Code._
   *
   */
 class ValueTypeTest extends AirSpec {
+  scalaJsSupport
 
   def `have name`: Unit = {
     val vt = Seq(ValueType.NIL,
