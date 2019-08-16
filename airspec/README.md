@@ -1,37 +1,9 @@
 AirSpec
 ======
 
-[AirSpec](https://wvlet.org/airframe/docs/airspec.html) is a new functional testing framework for Scala and Scala.js.
+[AirSpec](https://wvlet.org/airframe/docs/airspec.html) is a new functional testing framework for Scala and Scala.js. 
 
-# Introduction
-
-In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to create a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have some standards of running tests without introducing third-party dependencies.
-
-__Problem__: These testing frameworks are good enough for writing tests, but in order to uses one of them, I and my team needed to learn complex DSLs, or to be a minimalist for using minimum testing frameworks like minitest.
-
-- __Complex DSLs__:
-  - ScalaTests supports [variosu writing styles of tests](http://www.scalatest.org/user_guide/selecting_a_style), and [assersions](http://www.scalatest.org/user_guide/using_assertions). We had no idea how to choose the best style for our team.
-  - Specs2 introduces its own testing syntaxes, and even [the very first example](https://etorreborre.github.io/specs2/) is cryptic for new people (i.e., high learning cost).
-  - With these rich testing frameworks, using a consistent style is challenging as we have too much flexibility in writing tests. And also remembering rich assertion syntaxes like `x should be (>= 0)` or `x.name must_== "me"` needs a lot of practices and education within the team.
-
-- __Too Minimalistic Framework__
-  - On the other hand, minitest can do the job of writing tests with a small set of syntaxes like `asserts` and `test("....")`, but its functionality is quite limited; For example, we can't run tests by specifying their names (only class name based search is supported in sbt). We also don't have useful syntax sugars like `x shouldBe y`. minitest is simple to use, but at the same time it forces us to be like [Zen](https://en.wikipedia.org/wiki/Zen)-mode.
-
-__Motivation__: Where is a middle ground of these two extremes? I don't want to learn too complex DSLs, and also don't want to be a minimalist, neither.
-
-## AirSpec: Writing Tests As Functions In Scala
-
-My question was: Can we __use plain Scala functions to define tests__? From the experiences of developing [airframe-surface](https://wvlet.org/airframe/docs/airframe-surface.html) I've learned how to list functions in a class using reflection or Scala macros (in Scala.js). With this approach, a class in Scala will be just a test suite that has a set of test methods, and no need exists to introduce various testing styles as in ScalaTests.
-
-And also, if we define tests by usign functions, it makes possible to __pass test dependencies through function arguments__. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it was not ideal as we need to properly initalize and shutdown these variables with setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html), which has a strong support of life-cycle management, I thought we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.
-
-With these ideas in my mind, I've developed AirSpec by leveraging existing Airframe modules like surface and airframe DI. After implementing basic features of AirSpec, I've successfully __replaced all of test cases in 20+ Airframe modules with AirSpec__, which were originally written in ScalaTest. Rewriting test cases using AirSpec was almost straightforward as AirSpec has handy `shouldBe` syntaxes (for limited use cases) and property testing support with ScalaCheck. 
-
-Let's start using AirSpec in the following tutorial.
-
-# Quick Start
-
-AirSpec is a simple testing framework using pure Scala functions for writing test cases. This style requires no extra learning costs if you alreday know Scala. For advanced users, dependency injection and property-based testing are also available. 
+AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning costs if you alreday know Scala. For advanced users, dependency injection and property-based testing are also available. 
 
 Here is a summary of AirSpec features;
 
@@ -49,7 +21,34 @@ Here is a summary of AirSpec features;
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
 - Scala 2.11, 2.12, 2.13, and Scala.js support
 
-## Build Settings
+# Motivation
+
+In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to create a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have some standards of running tests without introducing third-party dependencies.
+
+__Problem__: These testing frameworks are good enough for writing tests, but in order to uses one of them, I and my team needed to learn complex DSLs, or to be a minimalist for using minimum testing frameworks like minitest.
+
+- __Complex DSLs__:
+  - ScalaTests supports [variosu writing styles of tests](http://www.scalatest.org/user_guide/selecting_a_style), and [assersions](http://www.scalatest.org/user_guide/using_assertions). We had no idea how to choose the best style for our team.
+  - Specs2 introduces its own testing syntaxes, and even [the very first example](https://etorreborre.github.io/specs2/) is cryptic for new people (i.e., high learning cost).
+  - With these rich testing frameworks, using a consistent style is challenging as we have too much flexibility in writing tests. And also remembering rich assertion syntaxes like `x should be (>= 0)` or `x.name must_== "me"` needs a lot of practices and education within the team.
+
+- __Too Minimalistic Framework__
+  - On the other hand, minitest can do the job of writing tests with a small set of syntaxes like `asserts` and `test("....")`, but its functionality is quite limited; For example, we can't run tests by specifying their names (only class name based search is supported in sbt). We also don't have useful syntax sugars like `x shouldBe y`. minitest is simple to use, but at the same time it forces us to be like [Zen](https://en.wikipedia.org/wiki/Zen)-mode.
+
+## AirSpec: Writing Tests As Functions In Scala
+
+Where is a middle ground betweeen these two extremes? I don't want to learn too complex DSLs, and also don't want to be a minimalist, neither.
+
+My question was: Can we __use plain Scala functions to define tests__? From the experiences of developing [airframe-surface](https://wvlet.org/airframe/docs/airframe-surface.html) I've learned how to list functions in a class using reflection or Scala macros (in Scala.js). With this approach, a class in Scala will be just a test suite that has a set of test methods, and no need exists to introduce various testing styles as in ScalaTests.
+
+And also, if we define tests by usign functions, it makes possible to __pass test dependencies through function arguments__. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it was not ideal as we need to properly initalize and shutdown these variables with setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html), which has a strong support of life-cycle management, I thought we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.
+
+With these ideas in my mind, I've developed AirSpec by leveraging existing Airframe modules like surface and airframe DI. After implementing basic features of AirSpec, I've successfully __replaced all of test cases in 20+ Airframe modules with AirSpec__, which were originally written in ScalaTest. Rewriting test cases using AirSpec was almost straightforward as AirSpec has handy `shouldBe` syntaxes (for limited use cases) and property testing support with ScalaCheck. 
+
+Let's start using AirSpec in the following tutorial.
+
+# Quick Start
+
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/)
 
 **build.sbt**
