@@ -13,55 +13,54 @@
  */
 package wvlet.airframe.json
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.json.JSON._
 
 /**
   *
   */
-class JSONParserTest extends AirframeSpec {
+class JSONParserTest extends AirSpec {
+  scalaJsSupport
 
-  def parse(s: String): JSONValue = {
+  protected def parse(s: String): JSONValue = {
     val v = JSON.parse(JSONSource.fromString(s))
     debug(s"parse ${s}: ${v}")
     v
   }
 
-  "JSONParser" should {
-    "parser json string" in {
-      parse("{}")
-      parse("""{"id":1, "name":"leo", "value":0.1, "num":1000}""")
-    }
-    "parse large array of objects" in {
-      val json = (for (_ <- 0 to 10000) yield "{}").mkString("[", ",", "]")
-      parse(json)
-    }
+  def `parser json string`: Unit = {
+    parse("{}")
+    parse("""{"id":1, "name":"leo", "value":0.1, "num":1000}""")
+  }
+  def `parse large array of objects`: Unit = {
+    val json = (for (_ <- 0 to 10000) yield "{}").mkString("[", ",", "]")
+    parse(json)
+  }
 
-    "parse any json values" in {
-      val v = JSON.parseAny("null")
-      v shouldBe JSONNull
-      JSON.parseAny("1") shouldBe JSONLong(1L)
-      JSON.parseAny("1.23") shouldBe JSONDouble(1.23)
-      JSON.parseAny("[]") shouldBe JSONArray(IndexedSeq.empty)
-      JSON.parseAny("[1, 2]") shouldBe JSONArray(IndexedSeq(JSONLong(1L), JSONLong(2L)))
-      JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
+  def `parse any json values`: Unit = {
+    val v = JSON.parseAny("null")
+    v shouldBe JSONNull
+    JSON.parseAny("1") shouldBe JSONLong(1L)
+    JSON.parseAny("1.23") shouldBe JSONDouble(1.23)
+    JSON.parseAny("[]") shouldBe JSONArray(IndexedSeq.empty)
+    JSON.parseAny("[1, 2]") shouldBe JSONArray(IndexedSeq(JSONLong(1L), JSONLong(2L)))
+    JSON.parseAny("""{"id":1}""") shouldBe JSONObject(Seq("id" -> JSONLong(1L)))
+  }
+
+  def `parse numeric json values`: Unit = {
+    JSON.parseAny(Long.MaxValue.toString) shouldBe JSONLong(Long.MaxValue)
+    JSON.parseAny(Long.MinValue.toString) shouldBe JSONLong(Long.MinValue)
+
+    JSON.parseAny(Double.MaxValue.toString) shouldBe JSONDouble(Double.MaxValue)
+    JSON.parseAny(Double.MinValue.toString) shouldBe JSONDouble(Double.MinValue)
+  }
+
+  def `throw IntegerOverflowException error`: Unit = {
+    intercept[IntegerOverflow] {
+      JSON.parseAny("9223372036854775808")
     }
-
-    "parse numeric json values" in {
-      JSON.parseAny(Long.MaxValue.toString) shouldBe JSONLong(Long.MaxValue)
-      JSON.parseAny(Long.MinValue.toString) shouldBe JSONLong(Long.MinValue)
-
-      JSON.parseAny(Double.MaxValue.toString) shouldBe JSONDouble(Double.MaxValue)
-      JSON.parseAny(Double.MinValue.toString) shouldBe JSONDouble(Double.MinValue)
-    }
-
-    "throw IntegerOverflowException error" in {
-      intercept[IntegerOverflow] {
-        JSON.parseAny("9223372036854775808")
-      }
-      intercept[IntegerOverflow] {
-        JSON.parseAny("-9223372036854775809")
-      }
+    intercept[IntegerOverflow] {
+      JSON.parseAny("-9223372036854775809")
     }
   }
 }
