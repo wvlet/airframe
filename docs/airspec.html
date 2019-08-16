@@ -20,7 +20,7 @@ ga('send', 'pageview');
 
 <p><strong>build.sbt</strong></p>
 <div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
-testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+testFrameworks += new TestFramework("wvlet.airspec.Framework")
 </code></pre>
 </div>
 
@@ -30,7 +30,7 @@ testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
 </div>
 <p>To run your tests, you only need the following steps:</p>
 <ul>
-  <li>Create a class (or object) by extending <strong><code class="highlighter-rouge">wvlet.airframe.spec.AirSpec</code></strong>.</li>
+  <li>Create a class (or object) by extending <strong><code class="highlighter-rouge">wvlet.airspec.AirSpec</code></strong>.</li>
   <li>Define your test cases as <strong><em>functions</em></strong> (public methods) in this class.</li>
   <li>Use <strong>sbt <code class="highlighter-rouge">&gt; testOnly -- (pattern)</code></strong> to run your tests!</li>
 </ul>
@@ -54,7 +54,7 @@ after finishing tests, these objects will be discarded properly.</p>
 <p>In AirSpec test cases are defined as functions in a class (or an object) extending <code class="highlighter-rouge">AirSpec</code>.
 All public functions (methods) in the class will be executed as test cases:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
   <span class="c1">// Basic assertion
@@ -97,7 +97,7 @@ Basically this command finds matches from the list of all <code class="highlight
 
 <p>If you prefer natural language descriptions for your test cases, use symbols for function names:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">SeqSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">`the size of empty Seq should be 0`</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
@@ -116,7 +116,7 @@ Basically this command finds matches from the list of all <code class="highlight
 
 <p>It is also possible to use Symbol for test class names:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">`Seq</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="n">test</span> <span class="n">spec` extends AirSpec {
   def `the</span> <span class="n">size</span> <span class="n">of</span> <span class="n">empty</span> <span class="nc">Seq</span> <span class="n">should</span> <span class="n">be</span> <span class="mi">0</span><span class="o">`:</span> <span class="nc">Unit</span> <span class="k">=</span> <span class="o">{</span>
@@ -129,7 +129,7 @@ Basically this command finds matches from the list of all <code class="highlight
 <h2 id="shouldbe-matchers">shouldBe matchers</h2>
 
 <p>AirSpec supports handy assertions with <code class="highlighter-rouge">shouldBe</code> or <code class="highlighter-rouge">shouldNotBe</code>:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">test</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
@@ -164,28 +164,6 @@ Basically this command finds matches from the list of all <code class="highlight
 <span class="o">}</span>
 </code></pre>
 </div>
-
-<h2 id="scalajs">Scala.js</h2>
-
-<p>To use AirSpec in Scala.js, <code class="highlighter-rouge">scalaJsSupport</code> must be called inside your spec classes:</p>
-
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
-
-<span class="k">class</span> <span class="nc">ScalaJSSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
-  <span class="c1">// This is necessary to find test methods in Scala.js
-</span>  <span class="n">scalaJsSupport</span>  
-
-  <span class="k">def</span> <span class="n">myTest</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="n">assert</span><span class="o">(</span><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span>
-<span class="o">}</span>
-</code></pre>
-</div>
-
-<p>Scala.js has no runtime reflection to find methods in AirSpec classes.
-So calling <code class="highlighter-rouge">scalaJsSupport</code> will generate <code class="highlighter-rouge">MethodSurface</code>s (airframe-surface), so that 
-AirSpec can find test methods at runtime.</p>
-
-<p>Calling <code class="highlighter-rouge">scalaJsSupport</code> has no effect in Scala JVM platform, so you can use the
-same test spec both for Scala and Scala.js.</p>
 
 <h2 id="dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</h2>
 
@@ -239,10 +217,7 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
 <h2 id="di-example">DI Example</h2>
 
 <p>This is an example to utilize a global session to share the same service instance between test methods:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
-<span class="k">import</span> <span class="nn">wvlet.airframe.Design</span>
-<span class="k">import</span> <span class="nn">wvlet.log.LogSupport</span>
-<span class="k">import</span> <span class="nn">javax.annotation._</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">ServiceConfig</span><span class="o">(</span><span class="n">port</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span>
 
@@ -294,8 +269,7 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
 <p>To reuse test cases, create a fixture, which is a class, object, or trait extending
 AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
-<span class="k">import</span> <span class="nn">wvlet.airframe.spec.spi.AirSpecContext</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">MySpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
   <span class="c1">// A template for reusable test cases
@@ -337,15 +311,15 @@ AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected t
 <h2 id="property-based-testing-with-scalacheck">Property Based Testing with ScalaCheck</h2>
 
 <p>Optionally AirSpec can integrate with <a href="https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md">ScalaCheck</a>.
-Add <code class="highlighter-rouge">wvlet.airframe.spec.spi.PropertyCheck</code> trait to your spec, and use <code class="highlighter-rouge">forAll</code> methods.</p>
+Add <code class="highlighter-rouge">wvlet.airspec.spi.PropertyCheck</code> trait to your spec, and use <code class="highlighter-rouge">forAll</code> methods.</p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.scalacheck"</span> <span class="o">%%%</span> <span class="s">"scalacheck"</span> <span class="o">%</span> <span class="s">"1.14.0"</span> <span class="o">%</span> <span class="s">"test"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">#</span> <span class="nc">Use</span> <span class="o">%%%</span> <span class="k">for</span> <span class="nc">Scala</span><span class="o">.</span><span class="n">js</span>
+<span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.scalacheck"</span> <span class="o">%%</span> <span class="s">"scalacheck"</span> <span class="o">%</span> <span class="s">"1.14.0"</span> <span class="o">%</span> <span class="s">"test"</span>
 </code></pre>
 </div>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.spec._</span>
-<span class="k">import</span> <span class="nn">wvlet.airframe.spec.spi.PropertyCheck</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">PropertyBasedTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="k">with</span> <span class="nc">PropertyCheck</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">testAllInt</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
@@ -363,6 +337,29 @@ Add <code class="highlighter-rouge">wvlet.airframe.spec.spi.PropertyCheck</code>
 <span class="o">}</span>
 </code></pre>
 </div>
+
+<h2 id="scalajs">Scala.js</h2>
+
+<p>To use AirSpec in Scala.js, <code class="highlighter-rouge">scalaJsSupport</code> must be called inside your spec classes:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
+
+<span class="k">class</span> <span class="nc">ScalaJSSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="c1">// This is necessary to find test methods in Scala.js
+</span>  <span class="n">scalaJsSupport</span>  
+
+  <span class="k">def</span> <span class="n">myTest</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="n">assert</span><span class="o">(</span><span class="mi">1</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>Scala.js has no runtime reflection to find methods in AirSpec classes.
+So calling <code class="highlighter-rouge">scalaJsSupport</code> will generate <code class="highlighter-rouge">MethodSurface</code>s (airframe-surface), so that 
+AirSpec can find test methods at runtime.</p>
+
+<p>Calling <code class="highlighter-rouge">scalaJsSupport</code> has no effect in Scala JVM platform, so you can use the
+same test spec both for Scala and Scala.js.</p>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
