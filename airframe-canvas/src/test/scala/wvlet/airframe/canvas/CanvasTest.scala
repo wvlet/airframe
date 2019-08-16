@@ -14,23 +14,22 @@
 package wvlet.airframe.canvas
 import java.nio.ByteBuffer
 
-import org.scalacheck.Gen
-import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control
+import wvlet.airframe.spec.AirSpec
+import wvlet.airframe.spec.spi.PropertyCheck
 
 /**
   *
   */
-class CanvasTest extends AirframeSpec with ScalaCheckPropertyChecks {
+class CanvasTest extends AirSpec with PropertyCheck {
 
-  def check[A](v: A, canvas: Canvas, writer: Canvas => Unit, reader: Canvas => A): Unit = {
+  protected def check[A](v: A, canvas: Canvas, writer: Canvas => Unit, reader: Canvas => A): Unit = {
     writer(canvas)
     val v2 = reader(canvas)
     v2 shouldBe v
   }
 
-  def checkReadWritePrimitiveValues(c: Canvas): Unit = {
+  protected def checkReadWritePrimitiveValues(c: Canvas): Unit = {
     for (offset <- 0L until c.size) {
       forAll { (v: Boolean) =>
         check(v, c, _.writeBoolean(offset, v), _.readBoolean(offset))
@@ -89,93 +88,90 @@ class CanvasTest extends AirframeSpec with ScalaCheckPropertyChecks {
 
   val canvasSize = 64
 
-  def withCanvas(creator: => Canvas)(body: Canvas => Unit): Unit = {
+  protected def withCanvas(creator: => Canvas)(body: Canvas => Unit): Unit = {
     Control.withResource(creator) { c =>
       body(c)
     }
   }
 
-  "Canvas" should {
-    "create on-heap canvas" in {
-      withCanvas(Canvas.newCanvas(canvasSize)) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
+  def `create on-heap canvas`: Unit = {
+    withCanvas(Canvas.newCanvas(canvasSize)) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create off-heap canvas`: Unit = {
+    withCanvas(Canvas.newOffHeapCanvas(canvasSize)) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create array-wrapped canvas`: Unit = {
+    withCanvas(Canvas.wrap(Array.ofDim[Byte](canvasSize))) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create sub-array wrapped canvas`: Unit = {
+    val b = Array.ofDim[Byte](canvasSize)
+    withCanvas(Canvas.wrap(b, 10, 30)) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create ByteBuffer-based canvas`: Unit = {
+    withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create DirectByteBuffer-based canvas`: Unit = {
+    val b = ByteBuffer.allocateDirect(canvasSize)
+    withCanvas(Canvas.wrap(b)) { c =>
+      checkReadWritePrimitiveValues(c)
+    }
+  }
+
+  def `create slices`: Unit = {
+    val c = Canvas.newCanvas(100)
+    for (i <- 0L until c.size) {
+      c.writeByte(i, i.toByte)
+    }
+    c.slice(0, c.size) shouldBe c
+    val c1 = c.slice(10, 20)
+    c1.toByteArray shouldBe c.readBytes(10, 20)
+  }
+
+  def `check invalid slice size`: Unit = {
+    val c = Canvas.newCanvas(10)
+    intercept[IllegalArgumentException] {
+      c.slice(130, 10)
     }
 
-    "create off-heap canvas" in {
-      withCanvas(Canvas.newOffHeapCanvas(canvasSize)) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
+    intercept[IllegalArgumentException] {
+      c.slice(0, 20)
     }
+  }
 
-    "create array-wrapped canvas" in {
-      withCanvas(Canvas.wrap(Array.ofDim[Byte](canvasSize))) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
+  def `check invalid read size`: Unit = {
+    val c = Canvas.newCanvas(10)
+    intercept[IllegalArgumentException] {
+      c.readBytes(0, Long.MaxValue)
     }
+  }
 
-    "create sub-array wrapped canvas" in {
-      val b = Array.ofDim[Byte](canvasSize)
-      withCanvas(Canvas.wrap(b, 10, 30)) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
+  def `copy between Canvases`: Unit = {
+    val c1 = Canvas.newCanvas(100)
+    val c2 = Canvas.newCanvas(100)
+
+    for (i <- 0L until c1.size) {
+      c1.writeByte(i, i.toByte)
     }
+    c1.readBytes(30, c2, 20, 10)
+    c1.readBytes(30, 10) shouldBe c2.readBytes(20, 10)
 
-    "create ByteBuffer-based canvas" in {
-      withCanvas(Canvas.wrap(ByteBuffer.allocate(canvasSize))) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
-    }
-
-    "create DirectByteBuffer-based canvas" in {
-      val b = ByteBuffer.allocateDirect(canvasSize)
-      withCanvas(Canvas.wrap(b)) { c =>
-        checkReadWritePrimitiveValues(c)
-      }
-    }
-
-    "create slices" in {
-      val c = Canvas.newCanvas(100)
-      for (i <- 0L until c.size) {
-        c.writeByte(i, i.toByte)
-      }
-      c.slice(0, c.size) shouldBe c
-      val c1 = c.slice(10, 20)
-      c1.toByteArray shouldBe c.readBytes(10, 20)
-    }
-
-    "check invalid slice size" in {
-      val c = Canvas.newCanvas(10)
-      intercept[IllegalArgumentException] {
-        c.slice(130, 10)
-      }
-
-      intercept[IllegalArgumentException] {
-        c.slice(0, 20)
-      }
-    }
-
-    "check invalid read size" in {
-      val c = Canvas.newCanvas(10)
-      intercept[IllegalArgumentException] {
-        c.readBytes(0, Long.MaxValue)
-      }
-    }
-
-    "copy between Canvases" in {
-      val c1 = Canvas.newCanvas(100)
-      val c2 = Canvas.newCanvas(100)
-
-      for (i <- 0L until c1.size) {
-        c1.writeByte(i, i.toByte)
-      }
-      c1.readBytes(30, c2, 20, 10)
-      c1.readBytes(30, 10) shouldBe c2.readBytes(20, 10)
-
-      val c3 = Canvas.newCanvas(100)
-      c3.writeBytes(0, c1, 50, 5)
-      c3.readBytes(0, 5) shouldBe c1.readBytes(50, 5)
-    }
-
+    val c3 = Canvas.newCanvas(100)
+    c3.writeBytes(0, c1, 50, 5)
+    c3.readBytes(0, 5) shouldBe c1.readBytes(50, 5)
   }
 }
