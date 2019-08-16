@@ -201,4 +201,13 @@ class ShouldBeTest extends AirSpec {
     }
   }
 
+  def `support shouldBe null`: Unit = {
+    val a: String = null
+    a shouldBe null
+    "a" shouldNotBe null
+
+    checkEqual(a, null)
+    checkNotEqual("a", null)
+  }
+
 }
