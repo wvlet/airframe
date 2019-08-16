@@ -10,13 +10,35 @@ ga('send', 'pageview');
 
 <p><a href="https://wvlet.org/airframe/docs/airspec.html">AirSpec</a> is a functional testing framework for Scala and Scala.js.</p>
 
+<p><strong>Features</strong>:</p>
+<ul>
+  <li>Simple entry point: <code class="highlighter-rouge">import wvlet.airspec._</code></li>
+  <li>You can use plain Scala classes and methods to define tests.
+    <ul>
+      <li>Public methods in a class extending <code class="highlighter-rouge">AirSpec</code> trait will be your test cases.</li>
+      <li>No annotation is necessary.</li>
+    </ul>
+  </li>
+  <li>Simple assertions: <code class="highlighter-rouge">assert(cond)</code> or <code class="highlighter-rouge">x shouldBe y</code>
+    <ul>
+      <li>No need to remember complex DSLs</li>
+    </ul>
+  </li>
+  <li>Lifecycle management with <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>
+    <ul>
+      <li>The arguments of test methods can be used to inject necessary services for running your tests.</li>
+      <li>The lifecycle (e.g., start and shutdown) of the injected services can be managed by Airframe DI.</li>
+    </ul>
+  </li>
+  <li>Nesting and reusing your test cases with <code class="highlighter-rouge">context.run(spec)</code></li>
+  <li>Handy keyword search for <em>sbt</em>: <code class="highlighter-rouge">&gt; testOnly -- (a pattern for class or method names)</code></li>
+  <li>Property-based testing integrated with <a href="https://www.scalacheck.org/">ScalaCheck</a></li>
+  <li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
+</ul>
+
 <h1 id="quick-start">Quick Start</h1>
 
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg" alt="Maven Central" /></a></p>
-
-<ul>
-  <li>AirSpec is available since version 19.8.1</li>
-</ul>
 
 <p><strong>build.sbt</strong></p>
 <div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
@@ -28,26 +50,6 @@ testFrameworks += new TestFramework("wvlet.airspec.Framework")
 <div class="highlighter-rouge"><pre class="highlight"><code>libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 </code></pre>
 </div>
-<p>To run your tests, you only need the following steps:</p>
-<ul>
-  <li>Create a class (or object) by extending <strong><code class="highlighter-rouge">wvlet.airspec.AirSpec</code></strong>.</li>
-  <li>Define your test cases as <strong><em>functions</em></strong> (public methods) in this class.</li>
-  <li>Use <strong>sbt <code class="highlighter-rouge">&gt; testOnly -- (pattern)</code></strong> to run your tests!</li>
-</ul>
-
-<p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
-
-<p>Tests in AirSpec are designed to be pure Scala as much as possible so as not to introduce any complex DSLs,
-which are usually hard to remenber, for writing tests.</p>
-
-<p>Tests in AirSpec are just regular functions in Scala.</p>
-
-<p>Using AirSpec is simple, but it also
-supports powerful lifecycle management of objects based on <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>.
-The function arguments of test methods will be used for passing objects that are necessary for running tests, and
-after finishing tests, these objects will be discarded properly.</p>
-
-<h1 id="usage">Usage</h1>
 
 <h2 id="writing-unit-tests">Writing Unit Tests</h2>
 
@@ -75,6 +77,14 @@ All public functions (methods) in the class will be executed as test cases:</p>
 <p>AirSpec supports basic assertions like <code class="highlighter-rouge">assert</code>, <code class="highlighter-rouge">fail</code>, <code class="highlighter-rouge">ignore</code>, <code class="highlighter-rouge">cancel</code>, <code class="highlighter-rouge">pending</code>, <code class="highlighter-rouge">skip</code>, <code class="highlighter-rouge">intercept[E]</code>, etc.
 See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala">Asserts.scala</a>.</p>
 
+<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs,
+which are usually hard to remember.</p>
+
+<p>Using AirSpec is simple, but it also
+supports powerful lifecycle management of objects based on <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>.
+The function arguments of test methods will be used for passing objects that are necessary for running tests, and
+after finishing tests, these objects will be discarded properly.</p>
+
 <h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
 
 <p>AirSpec supports pattern matching for running specific tests:</p>
@@ -82,16 +92,16 @@ See also <a href="https://github.com/wvlet/airframe/blob/master/airspec/src/main
 
 &gt; test                                  # Run all tests
 &gt; testOnly -- (pattern)                 # Run all test matching the pattern (spec name or test name)
-&gt; testOnly -- (class pattern):(pattern)  # Search both class and test names 
-
-&gt; testOnly (class name pattern)         # Run all test classe matching the pattern
-&gt; testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
+&gt; testOnly -- (class pattern)*(pattern)  # Search both class and test names 
 
 </code></pre>
 </div>
 
-<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. Cases of test classes and names will be ignored.
-Basically this command finds matches from the list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.</p>
+<p><code class="highlighter-rouge">pattern</code> supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions. If the pattern partially matches with test names, 
+it will run these matched tests. AirSpec creates a list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.
+Cases of test names will be ignored.</p>
+
+<p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
 
 <h2 id="writing-specs-in-natural-languages">Writing Specs In Natural Languages</h2>
 
