@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.json
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.json.JSON.{JSONArray, JSONLong, JSONNumber, JSONObject}
+import wvlet.airspec.AirSpec
 
 /**
   *

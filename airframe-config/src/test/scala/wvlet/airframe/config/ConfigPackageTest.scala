@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.config
 import wvlet.airframe._
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.tag._
+import wvlet.airspec.AirSpec
 
 trait AppTag
 

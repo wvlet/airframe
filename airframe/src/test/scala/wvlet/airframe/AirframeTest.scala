@@ -17,9 +17,9 @@ import java.io.PrintStream
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
-import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.{Primitive, Surface}
+import wvlet.airspec.AirSpec
 
 import scala.util.Random
 

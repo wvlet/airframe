@@ -14,10 +14,10 @@
 
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.sql.SQLBenchmark
 import wvlet.airframe.sql.model.SQLSig
 import wvlet.airframe.sql.parser.SQLParser
+import wvlet.airspec.AirSpec
 
 /**
   *

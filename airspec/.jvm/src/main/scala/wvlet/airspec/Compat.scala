@@ -11,33 +11,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airspec
 
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
 import scala.annotation.tailrec
 import scala.util.Try
+import wvlet.airframe.surface.reflect.{ReflectTypeUtil, ReflectSurfaceFactory}
 
 /**
   *
   */
-private[spec] object Compat extends CompatApi {
+private[airspec] object Compat extends CompatApi {
   override def isScalaJs = false
 
-  private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)
     ReflectTypeUtil.companionObject(cls)
   }
 
-  private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
+  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()).toOption
   }
 
-  private[spec] def withLogScanner[U](block: => U): U = {
+  private[airspec] def withLogScanner[U](block: => U): U = {
     Logger.setDefaultFormatter(SourceCodeLogFormatter)
 
     // Periodically scan log level file
@@ -49,17 +49,17 @@ private[spec] object Compat extends CompatApi {
     }
   }
 
-  @tailrec private[spec] def findCause(e: Throwable): Throwable = {
+  @tailrec private[airspec] def findCause(e: Throwable): Throwable = {
     e match {
       case i: InvocationTargetException => findCause(i.getTargetException)
       case _                            => e
     }
   }
-  override private[spec] def methodSurfacesOf(cls: Class[_]) = {
+  override private[airspec] def methodSurfacesOf(cls: Class[_]) = {
     ReflectSurfaceFactory.methodsOfClass(cls)
   }
 
-  override private[spec] def getSpecName(cl: Class[_]): String = {
+  override private[airspec] def getSpecName(cl: Class[_]): String = {
     var name = cl.getName
 
     if (name.endsWith("$")) {
@@ -69,7 +69,6 @@ private[spec] object Compat extends CompatApi {
 
     // When class is an anonymous trait
     if (name.contains("$anon$")) {
-      import collection.JavaConverters._
       val interfaces = cl.getInterfaces
       if (interfaces != null && interfaces.length > 0) {
         // Use the first interface name instead of the anonymous name and Airframe SessionHolder (injected at compile-time)

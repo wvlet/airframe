@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.tracing.{ChromeTracer, DIStats}
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object TracerTest extends LogSupport {

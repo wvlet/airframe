@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object DefaultValueTest {
   case class A(a: Long = 10, b: Long = 100, c: Long = 1000)

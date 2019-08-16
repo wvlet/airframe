@@ -17,8 +17,8 @@ import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import java.util.TimeZone
 
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airspec.spi.AirSpecException
+import wvlet.airspec.AirSpec
 
 /**
   *

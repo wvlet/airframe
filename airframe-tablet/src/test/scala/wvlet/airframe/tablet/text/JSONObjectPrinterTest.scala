@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import wvlet.airframe.msgpack.spi.MessagePack
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

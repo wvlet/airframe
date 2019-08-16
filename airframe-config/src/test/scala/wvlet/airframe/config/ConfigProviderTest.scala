@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.spec.AirSpec
-
 object ConfigProviderTest {
 
   case class ConfigA(id: Int, fullName: String)
@@ -24,6 +22,7 @@ object ConfigProviderTest {
   }
 }
 import ConfigProviderTest._
+import wvlet.airspec.AirSpec
 
 /**
   *

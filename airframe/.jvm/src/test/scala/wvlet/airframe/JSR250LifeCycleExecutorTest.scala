@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 trait JSR250Test {
   var initialized = false

@@ -12,7 +12,7 @@ AirSpec
 **build.sbt**
 ```
 libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)"
-testFrameworks += new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+testFrameworks += new TestFramework("wvlet.airspec.Framework")
 ```
 
 For Scala.js, use `%%%`:
@@ -20,7 +20,7 @@ For Scala.js, use `%%%`:
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 ```
 To run your tests, you only need the following steps:
-- Create a class (or object) by extending **`wvlet.airframe.spec.AirSpec`**.
+- Create a class (or object) by extending **`wvlet.airspec.AirSpec`**.
 - Define your test cases as ___functions___ (public methods) in this class.
 - Use **sbt `> testOnly -- (pattern)`** to run your tests!
 
@@ -44,7 +44,7 @@ In AirSpec test cases are defined as functions in a class (or an object) extendi
 All public functions (methods) in the class will be executed as test cases:
 
 ```scala
-import wvlet.airframe.spec._
+import wvlet.airspec._
 
 class MyTest extends AirSpec {
   // Basic assertion
@@ -89,7 +89,7 @@ Basically this command finds matches from the list of all `(test class full name
 If you prefer natural language descriptions for your test cases, use symbols for function names:
 
 ```scala
-import wvlet.airframe.spec._
+import wvlet.airspec._
 
 class SeqSpec extends AirSpec {
   def `the size of empty Seq should be 0`: Unit = {
@@ -108,7 +108,7 @@ class SeqSpec extends AirSpec {
 It is also possible to use Symbol for test class names:
 
 ```scala
-import wvlet.airframe.spec._
+import wvlet.airspec._
 
 class `Seq[X] test spec` extends AirSpec {
   def `the size of empty Seq should be 0`: Unit = {
@@ -121,7 +121,7 @@ class `Seq[X] test spec` extends AirSpec {
 
 AirSpec supports handy assertions with `shouldBe` or `shouldNotBe`:
 ```scala
-import wvlet.airframe.spec._
+import wvlet.airspec._
 
 class MyTest extends AirSpec {
   def test: Unit = {
@@ -155,28 +155,6 @@ class MyTest extends AirSpec {
   }
 }
 ```
-
-## Scala.js
-
-To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
- 
-```scala
-import wvlet.airframe.spec._
-
-class ScalaJSSpec extends AirSpec {
-  // This is necessary to find test methods in Scala.js
-  scalaJsSupport  
-
-  def myTest: Unit = assert(1 == 1)
-}
-```
-
-Scala.js has no runtime reflection to find methods in AirSpec classes.
-So calling `scalaJsSupport` will generate `MethodSurface`s (airframe-surface), so that 
-AirSpec can find test methods at runtime. 
-
-Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the
-same test spec both for Scala and Scala.js.
 
 
 ## Dependency Injection with Airframe DI
@@ -216,10 +194,7 @@ AirSpec manages global/local sessions in this order:
 
 This is an example to utilize a global session to share the same service instance between test methods:
 ```scala
-import wvlet.airframe.spec._
-import wvlet.airframe.Design
-import wvlet.log.LogSupport
-import javax.annotation._
+
 
 case class ServiceConfig(port:Int)
 
@@ -271,8 +246,7 @@ To reuse test cases, create a fixture, which is a class, object, or trait extend
 AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected to test method arguments:
 
 ```scala
-import wvlet.airframe.spec._
-import wvlet.airframe.spec.spi.AirSpecContext
+import wvlet.airspec._
 
 class MySpec extends AirSpec {
   // A template for reusable test cases
@@ -313,16 +287,16 @@ MySpec:
 ## Property Based Testing with ScalaCheck
 
 Optionally AirSpec can integrate with [ScalaCheck](https://github.com/typelevel/scalacheck/blob/master/doc/UserGuide.md).
-Add `wvlet.airframe.spec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
+Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` methods.
 
 __build.sbt__
 ```scala
-libraryDependencies += "org.scalacheck" %%% "scalacheck" % "1.14.0" % "test"
+# Use %%% for Scala.js
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
 ```
 
 ```scala
-import wvlet.airframe.spec._
-import wvlet.airframe.spec.spi.PropertyCheck
+import wvlet.airspec._
 
 class PropertyBasedTest extends AirSpec with PropertyCheck {
   def testAllInt: Unit = {
@@ -339,3 +313,26 @@ class PropertyBasedTest extends AirSpec with PropertyCheck {
   }
 }
 ```
+
+## Scala.js
+
+To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
+ 
+```scala
+import wvlet.airspec._
+
+class ScalaJSSpec extends AirSpec {
+  // This is necessary to find test methods in Scala.js
+  scalaJsSupport  
+
+  def myTest: Unit = assert(1 == 1)
+}
+```
+
+Scala.js has no runtime reflection to find methods in AirSpec classes.
+So calling `scalaJsSupport` will generate `MethodSurface`s (airframe-surface), so that 
+AirSpec can find test methods at runtime. 
+
+Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the
+same test spec both for Scala and Scala.js.
+

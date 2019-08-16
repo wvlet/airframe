@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.launcher
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object OptionBuilderTest {
 

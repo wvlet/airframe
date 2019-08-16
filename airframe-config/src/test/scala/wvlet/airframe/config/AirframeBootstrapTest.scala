@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface._
+import wvlet.airspec.AirSpec
 
 object AirframeBootstrapTest {
   case class AppConfig(name: String)

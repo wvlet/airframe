@@ -13,8 +13,8 @@
  */
 package examples
 
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.AssertionFailure
+import wvlet.airspec.spi.AssertionFailure
+import wvlet.airspec.AirSpec
 
 /**
   *

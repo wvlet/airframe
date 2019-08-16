@@ -14,7 +14,7 @@
 package wvlet.airframe.examples.airspec
 
 import wvlet.airframe.Design
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

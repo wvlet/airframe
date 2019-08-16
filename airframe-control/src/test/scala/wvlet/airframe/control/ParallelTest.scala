@@ -15,7 +15,7 @@ package wvlet.airframe.control
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}

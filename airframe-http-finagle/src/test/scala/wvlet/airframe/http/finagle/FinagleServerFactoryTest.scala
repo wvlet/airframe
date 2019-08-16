@@ -16,9 +16,9 @@ import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.tracing.ConsoleTracer
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**

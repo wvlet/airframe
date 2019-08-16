@@ -11,11 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airspec.spi
 
 import wvlet.airframe.Session
-import wvlet.airframe.spec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
 import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airspec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
 
 import scala.language.experimental.macros
 

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.jmx
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random

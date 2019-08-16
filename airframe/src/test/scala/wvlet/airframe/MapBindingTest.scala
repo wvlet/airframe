@@ -13,9 +13,9 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.tag._
+import wvlet.airspec.AirSpec
 
 /**
   *

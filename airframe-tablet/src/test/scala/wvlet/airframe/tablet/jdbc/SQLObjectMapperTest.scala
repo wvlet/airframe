@@ -15,8 +15,8 @@ package wvlet.airframe.tablet.jdbc
 
 import java.sql.{DriverManager, JDBCType}
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil._
 
 /**

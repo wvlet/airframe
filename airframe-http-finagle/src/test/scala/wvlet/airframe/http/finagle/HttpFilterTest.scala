@@ -16,8 +16,8 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Request, Response, Status, Version}
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http._
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 

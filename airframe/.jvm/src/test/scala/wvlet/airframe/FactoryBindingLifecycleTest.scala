@@ -15,7 +15,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object FactoryBindingLifecycleTest {

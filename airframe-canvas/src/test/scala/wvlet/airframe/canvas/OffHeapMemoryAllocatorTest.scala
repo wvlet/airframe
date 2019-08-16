@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.canvas
-import wvlet.airframe.spec.AirSpec
+
+import wvlet.airspec.AirSpec
 
 /**
   *

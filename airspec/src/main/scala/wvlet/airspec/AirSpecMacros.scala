@@ -11,16 +11,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
-import wvlet.airframe.AirframeMacros
+package wvlet.airspec
 
+import wvlet.airframe.AirframeMacros
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
 
 /**
   *
   */
-private[spec] object AirSpecMacros {
+private[airspec] object AirSpecMacros {
 
   def sourceCode(c: sm.Context): c.Tree = {
     import c.universe._
@@ -32,7 +32,7 @@ private[spec] object AirSpecMacros {
   def pendingImpl(c: sm.Context): c.Tree = {
     import c.universe._
     q"""
-       throw wvlet.airframe.spec.spi.Pending("pending", ${sourceCode(c)})
+       throw wvlet.airspec.spi.Pending("pending", ${sourceCode(c)})
      """
   }
 
@@ -41,7 +41,7 @@ private[spec] object AirSpecMacros {
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
            ${new AirframeMacros.BindHelper[c.type](c).registerTraitFactory(t)}
-           import wvlet.airframe.spec.spi.AirSpecContext._
+           import wvlet.airspec.spi.AirSpecContext._
            val context = ${c.prefix}
            val surface = wvlet.airframe.surface.Surface.of[${t}]
            val spec = context.callNewSpec(surface)
@@ -55,7 +55,7 @@ private[spec] object AirSpecMacros {
     import c.universe._
     val t = implicitly[c.WeakTypeTag[A]].tpe
     q"""{
-        wvlet.airframe.spec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
+        wvlet.airspec.spi.AirSpecContext.AirSpecContextAccess(${c.prefix})
           .callRunInternal(${spec}, wvlet.airframe.surface.Surface.methodsOf[${t}])
           .asInstanceOf[${t}]
         }

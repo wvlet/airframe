@@ -11,11 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airspec.spi
 
 import sbt.testing.Status
 import wvlet.airframe.SourceCode
-import wvlet.airframe.spec.compat
+import wvlet.airspec._
 
 /**
   * Define exceptions that will be used for various test failures
@@ -52,7 +52,7 @@ case class InterceptException(message: String, code: SourceCode) extends AirSpec
 case class MissingTestDependency(message: String) extends AirSpecException {}
 
 object AirSpecException {
-  private[spec] def classifyException(e: Throwable): Status = {
+  private[airspec] def classifyException(e: Throwable): Status = {
     compat.findCause(e) match {
       case a: AssertionFailure => Status.Failure
       case i: Ignored          => Status.Ignored

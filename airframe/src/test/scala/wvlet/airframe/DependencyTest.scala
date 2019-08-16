@@ -14,7 +14,7 @@
 package wvlet.airframe
 
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object DependencyTest1 {
   trait A {

@@ -15,8 +15,8 @@ package wvlet.airframe.canvas
 import java.nio.ByteBuffer
 
 import wvlet.airframe.control.Control
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.PropertyCheck
+import wvlet.airspec.spi.PropertyCheck
+import wvlet.airspec.AirSpec
 
 /**
   *

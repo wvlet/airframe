@@ -17,10 +17,9 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.io.Buf
 import com.twitter.util.Await
-
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.airspec.AirSpec
 
 import scala.util.Random
 

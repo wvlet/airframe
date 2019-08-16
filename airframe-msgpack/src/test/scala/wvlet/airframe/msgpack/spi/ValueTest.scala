@@ -19,8 +19,8 @@ import org.scalacheck.Gen
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
 import wvlet.airframe.msgpack.spi.Value._
 import wvlet.airframe.msgpack.spi.ValueFactory._
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.PropertyCheck
+import wvlet.airspec.spi.PropertyCheck
+import wvlet.airspec.AirSpec
 
 /**
   *

@@ -23,7 +23,7 @@ package wvlet.airframe.launcher
 
 import java.io.ByteArrayOutputStream
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class LauncherTest extends AirSpec {

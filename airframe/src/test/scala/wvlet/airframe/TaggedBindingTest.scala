@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.tag._
+import wvlet.airspec.AirSpec
 
 object TaggedBindingTest {
 

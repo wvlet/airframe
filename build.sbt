@@ -16,7 +16,7 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.27.2"
 val SLF4J_VERSION                   = "1.7.25"
 val JS_JAVA_LOGGING_VERSION         = "0.1.5"
-val airSpecFramework                = new TestFramework("wvlet.airframe.spec.AirSpecFramework")
+val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
@@ -33,6 +33,7 @@ val isRelease: Boolean = sys.env.isDefinedAt("RELEASE")
 dynverSonatypeSnapshots in ThisBuild := !isRelease
 
 // For publishing in Travis CI
+
 lazy val travisSettings = List(
   // For publishing on Travis CI
   useGpg := false,

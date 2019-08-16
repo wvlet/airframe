@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airspec.spi
 
 import java.util
 
 import wvlet.airframe.SourceCode
-import wvlet.airframe.spec.AirSpecSpi
+import wvlet.airspec.AirSpecSpi
 import wvlet.log.LogSupport
 
 /**
@@ -52,12 +52,12 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     }
   }
 
-  private[spec] sealed trait OptionTarget {
+  private[airspec] sealed trait OptionTarget {
     def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit
     def flip: OptionTarget
   }
 
-  private[spec] case object DefinedTarget extends OptionTarget {
+  private[airspec] case object DefinedTarget extends OptionTarget {
     override def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit = {
       if (isEmpty) {
         throw AssertionFailure(s"${v} is empty", code)
@@ -66,7 +66,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     override def flip: OptionTarget = EmptyTarget
   }
 
-  private[spec] case object EmptyTarget extends OptionTarget {
+  private[airspec] case object EmptyTarget extends OptionTarget {
     override def check[A](v: A, isEmpty: Boolean, code: SourceCode): Unit = {
       if (!isEmpty) {
         throw AssertionFailure(s"${v} is not empty", code)

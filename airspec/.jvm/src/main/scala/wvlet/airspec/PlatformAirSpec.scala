@@ -11,16 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
-
-import org.portablescala.reflect.annotation.EnableReflectiveInstantiation
+package wvlet.airspec
 
 /**
-  * Scala.js platform-specific implementation
-  *
-  * EnableReflectiveInstantiation annotation is necessary to support (test class).getInstance() in Scala.js
+  * Platform-specific AirSpecApi implementation
   */
-@EnableReflectiveInstantiation
 trait PlatformAirSpec {
   this: AirSpecSpi =>
 }

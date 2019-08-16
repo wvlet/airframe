@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe._
 import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
+import wvlet.airspec.AirSpec
 import wvlet.log.LogLevel
 
 /**

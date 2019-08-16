@@ -15,7 +15,7 @@ package wvlet.airframe.fluentd
 import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.{Design, fluentd}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 case class SampleMetric(time: Long, value: String) extends TaggedMetric {
   def metricTag = "sample"

@@ -14,8 +14,8 @@
 package examples
 
 import wvlet.airframe.Design
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.AirSpecException
+import wvlet.airspec.spi.AirSpecException
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**

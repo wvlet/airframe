@@ -16,7 +16,7 @@ package wvlet.airframe
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.SingletonTest._
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 object SingletonTest {

@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.tablet.obj.{ObjectTabletReader, ObjectTabletWriter}
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**

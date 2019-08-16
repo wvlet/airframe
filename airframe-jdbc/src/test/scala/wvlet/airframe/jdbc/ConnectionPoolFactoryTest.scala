@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.jdbc
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.airframe._
+import wvlet.airspec.AirSpec
 
 object ConnectionPoolFactoryTest {
   type MyDbConfig1 = DbConfig

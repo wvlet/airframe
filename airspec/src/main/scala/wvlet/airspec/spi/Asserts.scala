@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airspec.spi
 
 import wvlet.airframe.SourceCode
-import wvlet.airframe.spec.{AirSpecMacros, AirSpecSpi}
+import wvlet.airspec.{AirSpecMacros, AirSpecSpi}
 
 import scala.language.experimental.macros
 import scala.reflect.ClassTag

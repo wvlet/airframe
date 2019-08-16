@@ -14,7 +14,7 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

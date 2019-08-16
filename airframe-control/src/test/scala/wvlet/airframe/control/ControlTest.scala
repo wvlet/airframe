@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object ControlTest {
   class A extends AutoCloseable {

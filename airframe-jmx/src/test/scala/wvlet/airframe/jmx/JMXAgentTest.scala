@@ -14,7 +14,7 @@
 package wvlet.airframe.jmx
 
 import javax.management.ObjectName
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *
