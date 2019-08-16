@@ -3,11 +3,25 @@ AirSpec
 
 [AirSpec](https://wvlet.org/airframe/docs/airspec.html) is a functional testing framework for Scala and Scala.js.
 
+
+**Features**:
+- Simple entry point: `import wvlet.airspec._`
+- You can use plain Scala classes and methods to define tests.
+  - Public methods in a class extending `AirSpec` trait will be your test cases.
+  - No annotation is necessary.
+- Simple assertions: `assert(cond)` or `x shouldBe y`
+  - No need to remember complex DSLs
+- Lifecycle management with [Airframe DI](https://wvlet.org/airframe/docs/airframe.html)
+  - The arguments of test methods can be used to inject necessary services for running your tests. 
+  - The lifecycle (e.g., start and shutdown) of the injected services can be managed by Airframe DI.
+- Nesting and reusing your test cases with `context.run(spec)`
+- Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
+- Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
+- Scala 2.11, 2.12, 2.13, and Scala.js support
+
 # Quick Start
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/)
-
-- AirSpec is available since version 19.8.1
 
 **build.sbt**
 ```
@@ -19,24 +33,7 @@ For Scala.js, use `%%%`:
 ```
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)"
 ```
-To run your tests, you only need the following steps:
-- Create a class (or object) by extending **`wvlet.airspec.AirSpec`**.
-- Define your test cases as ___functions___ (public methods) in this class.
-- Use **sbt `> testOnly -- (pattern)`** to run your tests!
 
-![image](https://wvlet.org/airframe/img/airspec/airspec.png)
-
-Tests in AirSpec are designed to be pure Scala as much as possible so as not to introduce any complex DSLs,
-which are usually hard to remenber, for writing tests.
-
-Tests in AirSpec are just regular functions in Scala.
-
-Using AirSpec is simple, but it also
-supports powerful lifecycle management of objects based on [Airframe DI](https://wvlet.org/airframe/docs/airframe.html).
-The function arguments of test methods will be used for passing objects that are necessary for running tests, and
-after finishing tests, these objects will be discarded properly.
-
-# Usage
 
 ## Writing Unit Tests 
 
@@ -64,6 +61,14 @@ class MyTest extends AirSpec {
 AirSpec supports basic assertions like `assert`, `fail`, `ignore`, `cancel`, `pending`, `skip`, `intercept[E]`, etc.
 See also [Asserts.scala](https://github.com/wvlet/airframe/blob/master/airspec/src/main/scala/wvlet/airframe/spec/spi/Asserts.scala). 
 
+Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs,
+which are usually hard to remember.
+
+Using AirSpec is simple, but it also
+supports powerful lifecycle management of objects based on [Airframe DI](https://wvlet.org/airframe/docs/airframe.html).
+The function arguments of test methods will be used for passing objects that are necessary for running tests, and
+after finishing tests, these objects will be discarded properly.
+
 
 ## Running Tests in sbt
 
@@ -73,16 +78,15 @@ $ sbt
 
 > test                                  # Run all tests
 > testOnly -- (pattern)                 # Run all test matching the pattern (spec name or test name)
-> testOnly -- (class pattern):(pattern)  # Search both class and test names 
-
-> testOnly (class name pattern)         # Run all test classe matching the pattern
-> testOnly *TestClassName -- (pattern)  # Run all matching tests in a specific class
+> testOnly -- (class pattern)*(pattern)  # Search both class and test names 
 
 ```
 
-`pattern` supports wildcard (`*`) and regular expressions. Cases of test classes and names will be ignored.
-Basically this command finds matches from the list of all `(test class full name):(test function name)` strings.
+`pattern` supports wildcard (`*`) and regular expressions. If the pattern partially matches with test names, 
+it will run these matched tests. AirSpec creates a list of all `(test class full name):(test function name)` strings.
+Cases of test names will be ignored.
 
+![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 
 ## Writing Specs In Natural Languages
 
