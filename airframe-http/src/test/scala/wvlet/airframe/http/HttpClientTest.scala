@@ -18,7 +18,7 @@ import java.net._
 import java.util.concurrent.{ExecutionException, TimeoutException}
 
 import javax.net.ssl.{SSLHandshakeException, SSLKeyException, SSLPeerUnverifiedException}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

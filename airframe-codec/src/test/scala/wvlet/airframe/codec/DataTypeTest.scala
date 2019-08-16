@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.DataType.Column
+import wvlet.airspec.AirSpec
 
 /**
   *

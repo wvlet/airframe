@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 import wvlet.airframe.config.ConfigOverrideTest.MyAppConfig
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object NestedOverrideTest {
   case class LogConfig(file: LogFileConfig)

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.json
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**

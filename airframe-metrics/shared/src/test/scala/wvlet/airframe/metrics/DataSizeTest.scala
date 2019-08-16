@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

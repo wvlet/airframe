@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.runner
+package wvlet.airspec.runner
+
 import sbt.testing._
 import wvlet.airframe.Design
-import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.LogSupport
 
 import scala.concurrent.duration.Duration
@@ -23,7 +24,7 @@ import scala.concurrent.{Await, Promise}
 /**
   * AirSpecTask is a unit of test execution.
   */
-private[spec] class AirSpecTask(config: AirSpecConfig, override val taskDef: TaskDef, classLoader: ClassLoader)
+private[airspec] class AirSpecTask(config: AirSpecConfig, override val taskDef: TaskDef, classLoader: ClassLoader)
     extends sbt.testing.Task
     with LogSupport {
 

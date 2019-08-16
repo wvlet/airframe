@@ -14,9 +14,9 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.{Http, http}
 import com.twitter.util.Await
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.http.{Endpoint, Router}
+import wvlet.airspec.AirSpec
 
 case class SampleResponse(id: Int, name: String)
 

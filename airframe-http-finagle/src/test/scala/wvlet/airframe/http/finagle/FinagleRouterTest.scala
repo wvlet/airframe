@@ -19,10 +19,10 @@ import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Method, Request}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Future}
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JSONCodec
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)

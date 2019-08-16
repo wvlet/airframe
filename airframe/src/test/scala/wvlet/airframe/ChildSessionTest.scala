@@ -14,7 +14,7 @@
 package wvlet.airframe
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random

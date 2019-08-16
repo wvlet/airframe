@@ -20,7 +20,7 @@ import org.scalacheck.util.Pretty
 import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
-import wvlet.airframe.spec.spi.PropertyCheck
+import wvlet.airspec.spi.PropertyCheck
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 
 /**

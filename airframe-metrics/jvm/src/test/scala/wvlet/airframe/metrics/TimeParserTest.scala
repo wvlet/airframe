@@ -15,7 +15,7 @@ package wvlet.airframe.metrics
 
 import java.time.ZonedDateTime
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.log
-import wvlet.airframe.spec.AirSpec
+
+import wvlet.airspec.AirSpec
 
 /**
   *

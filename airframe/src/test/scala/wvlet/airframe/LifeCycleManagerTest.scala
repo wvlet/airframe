@@ -15,7 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class Counter extends LogSupport {

@@ -13,12 +13,11 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.spec.AirSpec
-
 /**
   *
   */
 import wvlet.airframe.tablet.text.PrettyPrintTest._
+import wvlet.airspec.AirSpec
 class PrettyPrintTest extends AirSpec {
   def `print objects`: Unit = {
     //PrettyPrint.pp(Seq(1, 2, 3))

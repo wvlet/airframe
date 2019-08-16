@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.msgpack.spi
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.msgpack.spi.Code._
+import wvlet.airspec.AirSpec
 
 /**
   *

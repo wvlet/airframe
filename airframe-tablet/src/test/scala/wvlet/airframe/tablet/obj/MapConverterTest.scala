@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.tablet.obj.MapConverterTest.Sample
+import wvlet.airspec.AirSpec
 
 object MapConverterTest {
   case class Sample(name: String, id: Int)

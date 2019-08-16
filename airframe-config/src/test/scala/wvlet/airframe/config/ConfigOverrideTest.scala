@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object ConfigOverrideTest {
   case class MyAppConfig(

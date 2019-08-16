@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.io.Resource
 
 case class MyConfig(id: Int, fullName: String, port: Int = 8989)

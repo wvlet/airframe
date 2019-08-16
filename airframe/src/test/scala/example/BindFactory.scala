@@ -13,7 +13,7 @@
  */
 package example
 import javax.annotation.{PostConstruct, PreDestroy}
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 /**

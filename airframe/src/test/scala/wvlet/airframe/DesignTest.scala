@@ -13,9 +13,9 @@
  */
 package wvlet.airframe
 import wvlet.airframe.Alias.{HelloRef, StringHello}
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.DefaultTracer
+import wvlet.airspec.AirSpec
 
 trait Message
 case class Hello(message: String) extends Message

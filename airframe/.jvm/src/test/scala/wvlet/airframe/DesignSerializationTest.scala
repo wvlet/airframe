@@ -16,7 +16,7 @@ package wvlet.airframe
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
 import DesignTest._
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object DesignSerializationTest {
 

@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet.airspec
 
 import wvlet.airframe.surface.MethodSurface
 
@@ -21,12 +21,12 @@ import wvlet.airframe.surface.MethodSurface
 trait CompatApi {
   def isScalaJs: Boolean
 
-  private[spec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
-  private[spec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
-  private[spec] def withLogScanner[U](block: => U): U
-  private[spec] def findCause(e: Throwable): Throwable
+  private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
+  private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any]
+  private[airspec] def withLogScanner[U](block: => U): U
+  private[airspec] def findCause(e: Throwable): Throwable
 
-  private[spec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
+  private[airspec] def methodSurfacesOf(cls: Class[_]): Seq[MethodSurface]
 
-  private[spec] def getSpecName(cls: Class[_]): String
+  private[airspec] def getSpecName(cls: Class[_]): String
 }

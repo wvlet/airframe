@@ -19,7 +19,7 @@ import scala.reflect.macros.{blackbox => sm}
 
 private[wvlet] object AirframeMacros {
 
-  private[airframe] class BindHelper[C <: Context](val c: C) {
+  private[wvlet] class BindHelper[C <: Context](val c: C) {
 
     import c.universe._
 

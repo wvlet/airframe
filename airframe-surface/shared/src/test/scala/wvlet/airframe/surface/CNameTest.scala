@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 class CNameTest extends AirSpec {
   scalaJsSupport

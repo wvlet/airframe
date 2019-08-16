@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.tablet.Tablet._
+import wvlet.airspec.AirSpec
 
 import scala.io.Source
 

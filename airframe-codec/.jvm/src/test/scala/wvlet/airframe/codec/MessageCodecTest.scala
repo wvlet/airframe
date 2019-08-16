@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.MessageCodecTest.ExtractTest
 import wvlet.airframe.codec.PrimitiveCodec.LongCodec
+import wvlet.airspec.AirSpec
 
 /**
   *

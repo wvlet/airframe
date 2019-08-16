@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.examples
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
+import wvlet.airspec.AirSpec
 import wvlet.log.io.Resource
 
 /**

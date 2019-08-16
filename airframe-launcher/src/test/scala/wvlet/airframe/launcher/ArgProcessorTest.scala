@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.launcher
 import wvlet.airframe.launcher.LauncherTest.capture
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 

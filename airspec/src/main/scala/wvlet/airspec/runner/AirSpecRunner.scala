@@ -11,9 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.runner
+package wvlet.airspec.runner
+
 import sbt.testing.{Task, TaskDef}
-import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.log.{LogSupport, Logger}
 
 import scala.util.matching.Regex
@@ -21,7 +22,7 @@ import scala.util.matching.Regex
 /**
   * AirSpecRunner receives a list of TaskDefs from sbt, then create AirSpecTasks to execute.
   */
-private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
+private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
 
   override def args: Array[String] = config.args
@@ -50,7 +51,7 @@ private[spec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[S
   }
 }
 
-private[spec] object AirSpecRunner extends LogSupport {
+private[airspec] object AirSpecRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecRunner = {
     debug(s"args: ${args.mkString(", ")}")
     debug(s"remote args: ${args.mkString(", ")}")

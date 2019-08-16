@@ -17,9 +17,9 @@ import java.io.{FileNotFoundException, FileOutputStream}
 import java.util.Properties
 
 import wvlet.airframe.config.PropertiesConfig.{ConfigKey, Prefix}
-import wvlet.airframe.spec.AirSpec
 import wvlet.log.io.IOUtil
 import wvlet.airframe.surface.tag._
+import wvlet.airspec.AirSpec
 
 trait AppScope
 trait SessionScope

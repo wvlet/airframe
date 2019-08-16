@@ -13,11 +13,11 @@
  */
 
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.sql.SQLBenchmark
 import wvlet.airframe.sql.SQLBenchmark.TestQuery
 import wvlet.airframe.sql.model.Expression
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
+import wvlet.airspec.AirSpec
 
 /**
   *

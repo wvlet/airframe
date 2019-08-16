@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JSONCodecTest.WithRawJSON
 import wvlet.airframe.json.{JSON, Json}
+import wvlet.airspec.AirSpec
 
 /**
   *

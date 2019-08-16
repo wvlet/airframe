@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.json
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.json.JSON._
+import wvlet.airspec.AirSpec
 
 /**
   *

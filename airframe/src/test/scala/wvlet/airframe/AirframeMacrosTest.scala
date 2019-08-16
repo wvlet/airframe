@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 trait NonAbstractTrait extends LogSupport {

@@ -13,8 +13,8 @@
  */
 
 package wvlet.airframe.sql.catalog
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.sql.catalog.DataType._
+import wvlet.airspec.AirSpec
 
 /**
   *

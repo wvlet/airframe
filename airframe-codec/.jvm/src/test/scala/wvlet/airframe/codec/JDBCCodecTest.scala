@@ -16,10 +16,11 @@ package wvlet.airframe.codec
 import java.sql.{DriverManager, ResultSet}
 import java.util
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JDBCCodec._
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil.withResource
+
 import scala.collection.compat._
 
 /**

@@ -16,7 +16,7 @@ package wvlet.airframe
 import wvlet.airframe.ProviderSerializationExample._
 import wvlet.airframe.ProviderVal._
 import DesignSerializationTest._
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 /**
   *

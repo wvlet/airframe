@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.msgpack.spi
 
-import wvlet.airframe.spec.AirSpec
-import wvlet.airframe.spec.spi.{AirSpecException, AssertionFailure}
+import wvlet.airspec.spi.{AirSpecException, AssertionFailure}
+import wvlet.airspec.AirSpec
 import wvlet.log.LogLevel
 import wvlet.log.io.Timer
 

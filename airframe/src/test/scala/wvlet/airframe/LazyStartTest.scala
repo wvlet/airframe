@@ -15,7 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object LazyStartTest {

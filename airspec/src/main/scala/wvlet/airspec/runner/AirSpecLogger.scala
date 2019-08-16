@@ -11,22 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.runner
+package wvlet.airspec.runner
 
 import java.util.concurrent.TimeUnit
 
-import sbt.testing.{Event, Fingerprint, OptionalThrowable, Selector, Status, TaskDef}
+import sbt.testing._
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
-import wvlet.airframe.spec.AirSpecSpi
-import wvlet.airframe.spec.spi.{AirSpecException, AirSpecFailureBase}
-import wvlet.log.{LogFormatter, LogRecord, Logger}
+import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.spi.AirSpecFailureBase
+import wvlet.log.{LogFormatter, Logger}
 
-private[spec] case class AirSpecEvent(taskDef: TaskDef,
-                                      override val fullyQualifiedName: String,
-                                      override val status: Status,
-                                      override val throwable: OptionalThrowable,
-                                      durationNanos: Long)
+private[airspec] case class AirSpecEvent(taskDef: TaskDef,
+                                         override val fullyQualifiedName: String,
+                                         override val status: Status,
+                                         override val throwable: OptionalThrowable,
+                                         durationNanos: Long)
     extends Event {
   override def fingerprint(): Fingerprint = taskDef.fingerprint()
   override def selector(): Selector       = taskDef.selectors().head
@@ -36,13 +36,13 @@ private[spec] case class AirSpecEvent(taskDef: TaskDef,
 /**
   *
   */
-private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
+private[airspec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
   // Always use ANSI color log for Travis because sbt's ansiCodeSupported() returns false even though it can show ANSI colors
   private val useAnciColor = {
     AirSpecSpi.inTravisCI || sbtLoggers.forall(_.ansiCodesSupported())
   }
 
-  private val airSpecLogger = Logger("wvlet.airframe.spec.AirSpec")
+  private val airSpecLogger = Logger("wvlet.airspec.AirSpec")
   airSpecLogger.setFormatter(LogFormatter.BareFormatter)
 
   def withColor(colorEsc: String, s: String) = {
@@ -115,7 +115,7 @@ private[spec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends
     info(s"${indent(indentLevel)}${prefix}${tail}")
 
     if (showStackTraces) {
-      val ex         = wvlet.airframe.spec.compat.findCause(e.throwable.get())
+      val ex         = wvlet.airspec.compat.findCause(e.throwable.get())
       val stackTrace = LogFormatter.formatStacktrace(ex)
       error(stackTrace)
     }

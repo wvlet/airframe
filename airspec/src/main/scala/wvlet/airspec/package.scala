@@ -11,11 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec
+package wvlet
 
 /**
-  * Platform-specific AirSpecApi implementation
+  *
   */
-trait PlatformAirSpec {
-  this: AirSpecSpi =>
+package object airspec {
+  // For Scala, Scala.js compatibility
+  val compat: CompatApi = wvlet.airspec.Compat
 }

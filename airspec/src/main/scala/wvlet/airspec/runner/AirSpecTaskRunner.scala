@@ -11,17 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.runner
+package wvlet.airspec.runner
 
-import java.util.concurrent.TimeUnit
-
-import sbt.testing.{Event, EventHandler, Fingerprint, OptionalThrowable, Selector, Status, SubclassFingerprint, TaskDef}
+import sbt.testing._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.Design
-import wvlet.airframe.spec.{AirSpecSpi, compat}
-import wvlet.airframe.spec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.airframe.spec.spi.{AirSpecContext, AirSpecException, MissingTestDependency}
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.spi.{AirSpecContext, AirSpecException, MissingTestDependency}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -35,11 +33,12 @@ import scala.util.{Failure, Success, Try}
   * For each test method in the AirSpec instance, it will create a child session so that
   * users can manage test-method local instances, which will be discarded after the completion of the test method.
   */
-private[spec] class AirSpecTaskRunner(taskDef: TaskDef,
-                                      config: AirSpecConfig,
-                                      taskLogger: AirSpecLogger,
-                                      eventHandler: EventHandler)
+private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
+                                         config: AirSpecConfig,
+                                         taskLogger: AirSpecLogger,
+                                         eventHandler: EventHandler)
     extends LogSupport {
+  import wvlet.airspec._
 
   def runTask(task: TaskDef, classLoader: ClassLoader): Unit = {
     val testClassName = taskDef.fullyQualifiedName()

@@ -17,8 +17,8 @@ import java.nio.charset.StandardCharsets
 
 import com.twitter.finagle.http
 import com.twitter.finagle.http.Status
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.http.HttpStatus
+import wvlet.airspec.AirSpec
 
 /**
   *

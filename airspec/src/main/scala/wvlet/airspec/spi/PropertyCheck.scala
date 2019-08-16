@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.spec.spi
+package wvlet.airspec.spi
 
 import org.scalacheck.Test.{Parameters, PropException, Result}
 import org.scalacheck.util.Pretty
-import wvlet.airframe.spec.AirSpecSpi
 import org.scalacheck.{Arbitrary, Gen, Prop, Shrink, Test}
+import wvlet.airspec.AirSpecSpi
 
 /**
   *

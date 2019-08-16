@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.metrics
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 import scala.concurrent.duration.TimeUnit
 import scala.concurrent.duration._

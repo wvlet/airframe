@@ -13,8 +13,8 @@
  */
 package wvlet.airframe
 
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 /**
   * Reproduction of https://github.com/wvlet/airframe/pull/423

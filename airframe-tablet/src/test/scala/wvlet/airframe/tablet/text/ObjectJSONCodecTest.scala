@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import wvlet.airframe.codec.MessageHolder
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 object ObjectJSONCodecTest {
   case class A(id: Int, name: String)

@@ -11,12 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
-package spec.runner
+package wvlet.airspec.runner
 
-import wvlet.airframe.spec.AirSpecSpi
-import wvlet.airframe.spec.spi.AirSpecContext
+import wvlet.airframe.Session
 import wvlet.airframe.surface.{MethodSurface, Surface}
+import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.spi.AirSpecContext
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
@@ -24,11 +24,11 @@ import scala.language.experimental.macros
 /**
   *
   */
-private[spec] class AirSpecContextImpl(taskExecutor: AirSpecTaskRunner,
-                                       val parentContext: Option[AirSpecContext],
-                                       val currentSpec: AirSpecSpi,
-                                       val testName: String = "<init>",
-                                       val currentSession: Session)
+private[airspec] class AirSpecContextImpl(taskExecutor: AirSpecTaskRunner,
+                                          val parentContext: Option[AirSpecContext],
+                                          val currentSpec: AirSpecSpi,
+                                          val testName: String = "<init>",
+                                          val currentSession: Session)
     extends AirSpecContext
     with LogSupport {
 

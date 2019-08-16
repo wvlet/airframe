@@ -14,7 +14,7 @@
 
 package wvlet.airframe.surface
 
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.language.implicitConversions

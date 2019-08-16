@@ -15,8 +15,8 @@ package wvlet.airframe.http
 
 import wvlet.airframe.http.example.ControllerExample.User
 import wvlet.airframe.http.example._
-import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 /**
   *

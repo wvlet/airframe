@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe
-import wvlet.airframe.spec.AirSpec
+
+import wvlet.airspec.AirSpec
 
 import scala.language.higherKinds
 

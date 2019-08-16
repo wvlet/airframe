@@ -14,7 +14,7 @@
 package wvlet.airframe.tablet.text
 
 import wvlet.airframe.codec.MessageHolder
-import wvlet.airframe.spec.AirSpec
+import wvlet.airspec.AirSpec
 
 class ArrayJSONCodecTest extends AirSpec {
   private def assertEncode[T](codec: ArrayJSONCodec[T], input: Array[T]) = {
