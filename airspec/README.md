@@ -36,11 +36,11 @@ A problem here is, in order to write tests in Scala, we usually have only two ch
 
 - __Too minimalistic framework:__
   - On the other hand, a minimalist approach like minitest, which uses a limited set of syntax like `asserts` and `test("....")`, is too restricted. For example, I believe assertion syntax like `x shouldBe y` is a good invention in ScalaTest to make clear the meaning of assertions to represent `(value) shoudlBe (expected value)`. In minitest `assert(x == y)` has the same meaning, but the intention of test writers is not clear because we can write it in two ways: `assert(value == expected)` or `assert(expected == value)`. Minitest also has no feature for selecting test cases to run; It only supports specifying class names to run, which is just a basic functionality of __sbt__.
-  - A minimalist approach like this forces us to be in [Zen](https://en.wikipedia.org/wiki/Zen) mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and DSL for our own teams.
+  - A minimalist approach like this forces us to be in [Zen](https://en.wikipedia.org/wiki/Zen) mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and developing a DSL for our own teams.
 
 ## AirSpec: Writing Tests As Functions In Scala
 
-So where is a middle ground in-between these two extremes? We usually don't want to learn too complex DSLs, and also we don't want to be a minimalist, neither.
+So where is a middle ground in-between these two extremes? We usually don't want to learn too complex DSLs, and also we don't want to be a minimalist, either.
 
 Why can't we __use plain Scala functions to define tests__? ScalaTest already has [RefSpec](http://www.scalatest.org/user_guide/selecting_a_style) to write tests in Scala functions. Unfortunately, however, its support is limited only to Scala JVM as Scala.js does not support runtime reflections to list function names. Scala.js is powerful for developing web applications in Scala, so we don't want to drop it, and the lack of runtime reflection in Scala.js is probably a reason why existing testing frameworks needed to develop their own DSLs like `test(....) {  test body } `.
 
