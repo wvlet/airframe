@@ -22,9 +22,9 @@ class LogTest extends Spec {
 
   def `should support initialization`: Unit = {
     wvlet.airframe.log.init
-    info("hello")
+    debug("hello")
 
     wvlet.airframe.log.initNoColor
-    info("hello")
+    debug("hello")
   }
 }
