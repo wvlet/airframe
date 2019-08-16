@@ -21,7 +21,7 @@ import org.scalacheck.{Arbitrary, Gen, Prop, Shrink, Test}
 /**
   *
   */
-trait PropertyCheck { this: AirSpecSpi with Asserts =>
+trait PropertyCheck extends Asserts { this: AirSpecSpi =>
 
   protected def scalaCheckConfig: Parameters = Test.Parameters.default
 
