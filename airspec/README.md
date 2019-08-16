@@ -170,6 +170,11 @@ class MyTest extends AirSpec {
     Option(null) shouldBe empty
     None shouldNotBe defined
 
+    // null check
+    val s:String = null
+    s shouldBe null
+    "s" shouldNotBe null
+
     // For Arrays, shouldBe checks the equality with deep equals
     Array(1, 2) shouldBe Array(1, 2)
 

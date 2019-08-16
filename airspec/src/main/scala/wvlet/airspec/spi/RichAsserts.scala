@@ -191,32 +191,44 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     }
 
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      value match {
-        case v: String =>
-          expected.check(value, v.isEmpty, code)
-        case v: Option[_] =>
-          expected.check(value, v.isEmpty, code)
-        case v: Iterable[_] =>
-          expected.check(value, v.isEmpty, code)
-        case v: Array[_] =>
-          expected.check(value, v.isEmpty, code)
-        case _ =>
-          throw AssertionFailure(s"${pp(value)} is not an Option", code)
+      if (expected == null) {
+        if (value != null) {
+          throw AssertionFailure(s"${pp(value)} is not null", code)
+        }
+      } else {
+        value match {
+          case v: String =>
+            expected.check(value, v.isEmpty, code)
+          case v: Option[_] =>
+            expected.check(value, v.isEmpty, code)
+          case v: Iterable[_] =>
+            expected.check(value, v.isEmpty, code)
+          case v: Array[_] =>
+            expected.check(value, v.isEmpty, code)
+          case _ =>
+            throw AssertionFailure(s"${pp(value)} is not an Option", code)
+        }
       }
     }
 
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
-      value match {
-        case v: String =>
-          expected.flip.check(value, v.isEmpty, code)
-        case v: Option[_] =>
-          expected.flip.check(value, v.isEmpty, code)
-        case v: Iterable[_] =>
-          expected.flip.check(value, v.isEmpty, code)
-        case v: Array[_] =>
-          expected.flip.check(value, v.isEmpty, code)
-        case _ =>
-          throw AssertionFailure(s"${pp(value)} is not an Option", code)
+      if (expected == null) {
+        if (value == null) {
+          throw AssertionFailure(s"${pp(value)} should be null", code)
+        }
+      } else {
+        value match {
+          case v: String =>
+            expected.flip.check(value, v.isEmpty, code)
+          case v: Option[_] =>
+            expected.flip.check(value, v.isEmpty, code)
+          case v: Iterable[_] =>
+            expected.flip.check(value, v.isEmpty, code)
+          case v: Array[_] =>
+            expected.flip.check(value, v.isEmpty, code)
+          case _ =>
+            throw AssertionFailure(s"${pp(value)} is not an Option", code)
+        }
       }
     }
 
