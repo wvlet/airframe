@@ -2,7 +2,7 @@ package wvlet.log
 import java.io.PrintStream
 import java.lang.management.ManagementFactory
 
-import javax.management.ObjectName
+import javax.management.{InstanceAlreadyExistsException, ObjectName}
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 
 /**
@@ -68,7 +68,12 @@ private[log] object LogEnv extends LogEnvBase {
       // Register the log level configuration interface to JMX
       val mbeanServer = ManagementFactory.getPlatformMBeanServer
       if (!mbeanServer.isRegistered(mBeanName)) {
-        mbeanServer.registerMBean(LoggerJMX, mBeanName)
+        try {
+          mbeanServer.registerMBean(LoggerJMX, mBeanName)
+        } catch {
+          case e: InstanceAlreadyExistsException =>
+          // this exception can happen as JMX entries can be initialized by different class loaders while running sbt
+        }
       }
     }
   }
