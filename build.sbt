@@ -407,10 +407,7 @@ lazy val canvas =
     .settings(buildSettings)
     .settings(
       name := "airframe-canvas",
-      description := "Airframe off-heap memory library",
-      libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
-      )
+      description := "Airframe off-heap memory library"
     )
     .dependsOn(logJVM, control % "test", airspecRefJVM % "test")
 
@@ -536,10 +533,7 @@ lazy val msgpack =
     .settings(buildSettings)
     .settings(
       name := "airframe-msgpack",
-      description := "Pure-Scala MessagePack library",
-      libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
-      )
+      description := "Pure-Scala MessagePack library"
     )
     .jvmSettings(
       libraryDependencies += "org.msgpack" % "msgpack-core" % MSGPACK_VERSION
@@ -680,7 +674,7 @@ lazy val json =
       description := "JSON parser"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, airframeScalaTest % "test")
+    .dependsOn(log, airspecRef % "test")
 
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
@@ -977,7 +971,10 @@ lazy val airspecRef =
     .settings(
       //airspecBuildSettings,
       name := "airspec-ref",
-      description := "A project for referncing airspec for internal testing"
+      description := "A project for referncing airspec for internal testing",
+      libraryDependencies ++= Seq(
+        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
+      )
     )
     .dependsOn(airspec, airspecDeps)
 
