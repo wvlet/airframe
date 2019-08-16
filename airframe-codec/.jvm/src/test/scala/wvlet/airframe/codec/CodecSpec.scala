@@ -12,19 +12,19 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 
 /**
   *
   */
-trait CodecSpec extends AirframeSpec {
-  def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
+trait CodecSpec extends AirSpec {
+  protected def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
     roundtrip[A](MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[A]], v, expectedType)
   }
 
-  def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
+  protected def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     debug(s"Testing roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newBufferPacker
@@ -42,7 +42,7 @@ trait CodecSpec extends AirframeSpec {
     h
   }
 
-  def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
+  protected def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
     val h = new MessageHolder
     trace(s"Testing str based roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newBufferPacker
@@ -57,7 +57,7 @@ trait CodecSpec extends AirframeSpec {
     h
   }
 
-  def checkCodec[A](codec: MessageCodec[A], v: A): Unit = {
+  protected def checkCodec[A](codec: MessageCodec[A], v: A): Unit = {
     val b = codec.toMsgPack(v)
     val r = codec.unpackBytes(b)
     r shouldBe defined

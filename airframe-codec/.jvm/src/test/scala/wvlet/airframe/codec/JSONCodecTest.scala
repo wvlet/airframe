@@ -13,15 +13,15 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.JSONCodecTest.WithRawJSON
 import wvlet.airframe.json.{JSON, Json}
 
 /**
   *
   */
-class JSONCodecTest extends AirframeSpec {
-  def check(json: String): Unit = {
+class JSONCodecTest extends AirSpec {
+  protected def check(json: String): Unit = {
     val b = JSONCodec.toMsgPack(json)
     JSONCodec.unpackMsgPack(b) match {
       case Some(parsedJson) =>
@@ -31,7 +31,7 @@ class JSONCodecTest extends AirframeSpec {
     }
   }
 
-  "serialize json into msgpack" in {
+  def `serialize json into msgpack`: Unit = {
     check(
       """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}""")
     check("[1]")
@@ -46,7 +46,7 @@ class JSONCodecTest extends AirframeSpec {
     check("[]")
   }
 
-  "serialize non-array/object json values" in {
+  def `serialize non-array/object json values`: Unit = {
     check("true")
     check("null")
     check("false")
@@ -58,12 +58,12 @@ class JSONCodecTest extends AirframeSpec {
   val json1      = """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}"""
   val json1Value = JSON.parse(json1)
 
-  "support JSONValue mapping" in {
+  def `support JSONValue mapping`: Unit = {
     val msgpackOfJson1 = JSONValueCodec.toMsgPack(json1Value)
     JSONValueCodec.unpackMsgPack(msgpackOfJson1) shouldBe Some(json1Value)
   }
 
-  "support raw json mapping" in {
+  def `support raw json mapping`: Unit = {
     val codec = MessageCodec.of[WithRawJSON]
     // JSON -> msgpack -> WithRawJSON
     val obj = codec.unpackJson(s"""{"json":${json1}}""")

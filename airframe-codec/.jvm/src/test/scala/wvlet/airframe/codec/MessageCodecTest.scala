@@ -13,63 +13,59 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airframe.spec.AirSpec
 import wvlet.airframe.codec.MessageCodecTest.ExtractTest
 import wvlet.airframe.codec.PrimitiveCodec.LongCodec
 
 /**
   *
   */
-class MessageCodecTest extends AirframeSpec {
-  "MessageCodec" should {
+class MessageCodecTest extends AirSpec {
+  def `have surface`: Unit = {
+    val l = LongCodec.surface
+    debug(l)
+  }
 
-    "have surface" in {
-      val l = LongCodec.surface
-      debug(l)
+  def `throw an error for invalid data`: Unit = {
+    val s = MessageCodec.of[String]
+    intercept[Exception] {
+      s.unpack(Array.emptyByteArray)
     }
+  }
 
-    "throw an error for invalid data" in {
-      val s = MessageCodec.of[String]
-      intercept[Exception] {
-        s.unpack(Array.emptyByteArray)
-      }
+  def `throw an IllegalArgumentException for invalid input`: Unit = {
+    val s = MessageCodec.of[Seq[String]]
+    intercept[IllegalArgumentException] {
+      s.unpack(JSONCodec.toMsgPack("{}"))
     }
+  }
 
-    "throw an IllegalArgumentException for invalid input" in {
-      val s = MessageCodec.of[Seq[String]]
-      intercept[IllegalArgumentException] {
-        s.unpack(JSONCodec.toMsgPack("{}"))
-      }
+  def `unpack empty json`: Unit = {
+    val codec = MessageCodec.of[Seq[String]]
+    codec.unpackJson("")
+  }
+
+  def `unpack empty msgapack`: Unit = {
+    val codec = MessageCodec.of[Seq[String]]
+    codec.unpackMsgPack(Array.emptyByteArray)
+  }
+
+  def `convert JSON to Scala object`: Unit = {
+    val obj = MessageCodec.fromJson[ExtractTest](
+      """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}""")
+    assert(obj == ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), ""))
+  }
+
+  def `throw MessageCodecException upon invalid JSON data`: Unit = {
+    val ex = intercept[MessageCodecException[_]] {
+      val a = MessageCodec.fromJson[ExtractTest]("""{"id":"invalid_id"}""")
     }
+    ex.errorCode shouldBe INVALID_DATA
+  }
 
-    "unpack empty json" in {
-      val codec = MessageCodec.of[Seq[String]]
-      codec.unpackJson("")
-    }
-
-    "unpack empty msgapack" in {
-      val codec = MessageCodec.of[Seq[String]]
-      codec.unpackMsgPack(Array.emptyByteArray)
-    }
-
-    "convert JSON to Scala object" in {
-      val obj = MessageCodec.fromJson[ExtractTest](
-        """{"id":1, "name":"leo", "flag":true, "number":0.01, "arr":[0, 1, 2], "nil":null}""")
-      assert(obj == ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), ""))
-    }
-
-    "throw MessageCodecException upon invalid JSON data" in {
-      val ex = intercept[MessageCodecException[_]] {
-        val a = MessageCodec.fromJson[ExtractTest]("""{"id":"invalid_id"}""")
-      }
-      ex.errorCode shouldBe INVALID_DATA
-    }
-
-    "convert Scala object to JSON" in {
-      val json = MessageCodec.toJson(ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), null))
-      assert(json == """{"id":1,"name":"leo","flag":true,"number":0.01,"arr":[0,1,2],"nil":null}""")
-    }
-
+  def `convert Scala object to JSON`: Unit = {
+    val json = MessageCodec.toJson(ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), null))
+    assert(json == """{"id":1,"name":"leo","flag":true,"number":0.01,"arr":[0,1,2],"nil":null}""")
   }
 
 }

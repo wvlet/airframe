@@ -554,10 +554,7 @@ lazy val codec =
     .settings(buildSettings)
     .settings(
       name := "airframe-codec",
-      description := "Airframe MessagePack-based codec",
-      libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "test"
-      )
+      description := "Airframe MessagePack-based codec"
     )
     .jvmSettings(
       libraryDependencies ++= Seq(
@@ -568,7 +565,7 @@ lazy val codec =
     .jsSettings(
       jsBuildSettings
     )
-    .dependsOn(log, surface, msgpack, metrics, json, airframeScalaTest % "test")
+    .dependsOn(log, surface, msgpack, metrics, json, airspecRef % "test")
 
 lazy val codecJVM = codec.jvm
 lazy val codecJS  = codec.js
