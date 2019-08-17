@@ -118,7 +118,7 @@ private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
       val globalSession =
         parentContext
           .map(_.currentSession.newChildSession(d))
-          .getOrElse { d.newSession }
+          .getOrElse { d.newSessionBuilder.noShutdownHook.build } // Do not register JVM shutdown hooks
 
       globalSession.start {
         for (m <- targetMethods) {
