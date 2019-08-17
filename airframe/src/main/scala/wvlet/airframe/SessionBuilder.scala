@@ -55,6 +55,8 @@ class SessionBuilder(design: Design,
     new SessionBuilder(design, parent, name, false, lifeCycleEventHandler)
   }
 
+  def build: Session = create
+
   def create: Session = {
     // Remove duplicate bindings in the design
     val d = design.minimize
