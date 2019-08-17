@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.6
+-  airspec
+   -  Fix shouldNotBe null error message [[c869db1](https://github.com/wvlet/airframe/commit/c869db1)]
+   -  [#612](https://github.com/wvlet/airframe/issues/612): Fixes java.lang.ClassNotFoundException: scala.reflect.api.Trees ([#613](https://github.com/wvlet/airframe/issues/613)) [[06b70d8](https://github.com/wvlet/airframe/commit/06b70d8)]
+   -  [#610](https://github.com/wvlet/airframe/issues/610): Avoid registering JVM shutdown hooks in airspec sessions ([#611](https://github.com/wvlet/airframe/issues/611)) [[44b84d3](https://github.com/wvlet/airframe/commit/44b84d3)]
+-  internal: Upgrade to sbt 1.3.0-RC3 with turbo mode ([#614](https://github.com/wvlet/airframe/issues/614)) [[59d9d48](https://github.com/wvlet/airframe/commit/59d9d48)]
+
 ## 19.8.5
 -  airspec: Fix log message duplication issue ([#609](https://github.com/wvlet/airframe/issues/609)) [[4536123](https://github.com/wvlet/airframe/commit/4536123)]
 -  airspec: Support shouldBe null ([#607](https://github.com/wvlet/airframe/issues/607)) [[78c87dd](https://github.com/wvlet/airframe/commit/78c87dd)]
