@@ -21,6 +21,8 @@ val airSpecFramework                = new TestFramework("wvlet.airspec.Framework
 // Allow using Ctrl+C in sbt without exiting the prompt
 cancelable in Global := true
 
+ThisBuild / turbo := true
+
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
@@ -691,6 +693,9 @@ lazy val benchmark =
     .settings(
       name := "airframe-benchmark",
       packMain := Map("airframe-benchmark" -> "wvlet.airframe.benchmark.BenchmarkMain"),
+      // Turbo mode didn't work with this error:
+      // java.lang.RuntimeException: ERROR: Unable to find the resource: /META-INF/BenchmarkList
+      turbo := false,
       // Generate JMH benchmark cord before packaging and testing
       pack := pack.dependsOn(compile in Test).value,
       sourceDirectory in Jmh := (sourceDirectory in Compile).value,
