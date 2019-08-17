@@ -5,6 +5,11 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.5
+-  airspec: Fix log message duplication issue ([#609](https://github.com/wvlet/airframe/issues/609)) [[4536123](https://github.com/wvlet/airframe/commit/4536123)]
+-  airspec: Support shouldBe null ([#607](https://github.com/wvlet/airframe/issues/607)) [[78c87dd](https://github.com/wvlet/airframe/commit/78c87dd)]
+-  airframe-log: Handle InstanceAlreadyExistsException at logger JMX mbeam registration ([#608](https://github.com/wvlet/airframe/issues/608)) [[bd13110](https://github.com/wvlet/airframe/commit/bd13110)]
+
 ## 19.8.4
 - AirSpec is renamed to a simple package `wvlet.airspec`.
   -  airspec: Rename to wvlet.airspec ([#605](https://github.com/wvlet/airframe/issues/605)) [[6d6ff91](https://github.com/wvlet/airframe/commit/6d6ff91)]
