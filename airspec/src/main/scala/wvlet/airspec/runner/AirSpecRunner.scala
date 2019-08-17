@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing.{Task, TaskDef}
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.log.{LogSupport, Logger}
+import wvlet.log.LogSupport
 
 import scala.util.matching.Regex
 
@@ -25,26 +25,27 @@ import scala.util.matching.Regex
 private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
 
+  private val taskLogger = new AirSpecLogger()
+
   override def args: Array[String] = config.args
 
   override def tasks(taskDefs: Array[TaskDef]): Array[Task] = {
-    taskDefs.map { t =>
-      new AirSpecTask(config, t, classLoader)
-    }
+    taskDefs
+      .map(t => new AirSpecTask(config, taskLogger, t, classLoader))
   }
 
   override def done(): String = {
     // sbt 1.3.x's layered class loader will not clean up LogHandlers
     // registered at java.util.logging, so we need to unregister all LogHandlers implementations that
     // use airframe's code before sbt detaches the class loader
-    Logger.clearAllHandlers
+    taskLogger.clearHandler
     ""
   }
 
   // The following methods are defined for Scala.js support:
   def receiveMessage(msg: String): Option[String] = None
   def deserializeTask(task: String, deserializer: String => sbt.testing.TaskDef): sbt.testing.Task = {
-    new AirSpecTask(config, deserializer(task), classLoader)
+    new AirSpecTask(config, taskLogger, deserializer(task), classLoader)
   }
   def serializeTask(task: sbt.testing.Task, serializer: sbt.testing.TaskDef => String): String = {
     serializer(task.taskDef())
@@ -53,8 +54,6 @@ private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Arra
 
 private[airspec] object AirSpecRunner extends LogSupport {
   def newRunner(args: Array[String], remoteArgs: Array[String], testClassLoader: ClassLoader): AirSpecRunner = {
-    debug(s"args: ${args.mkString(", ")}")
-    debug(s"remote args: ${args.mkString(", ")}")
     new AirSpecRunner(AirSpecConfig(args), remoteArgs, testClassLoader)
   }
 

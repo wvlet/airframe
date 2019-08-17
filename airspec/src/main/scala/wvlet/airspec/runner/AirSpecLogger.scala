@@ -20,7 +20,7 @@ import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airspec.AirSpecSpi
 import wvlet.airspec.spi.AirSpecFailureBase
-import wvlet.log.{LogFormatter, Logger}
+import wvlet.log.{ConsoleLogHandler, LogFormatter, Logger}
 
 private[airspec] case class AirSpecEvent(taskDef: TaskDef,
                                          override val fullyQualifiedName: String,
@@ -36,14 +36,22 @@ private[airspec] case class AirSpecEvent(taskDef: TaskDef,
 /**
   *
   */
-private[airspec] class AirSpecLogger(sbtLoggers: Array[sbt.testing.Logger]) extends AnsiColorPalette {
+private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   // Always use ANSI color log for Travis because sbt's ansiCodeSupported() returns false even though it can show ANSI colors
   private val useAnciColor = {
-    AirSpecSpi.inTravisCI || sbtLoggers.forall(_.ansiCodesSupported())
+    AirSpecSpi.inTravisCI || true //|| sbtLoggers.forall(_.ansiCodesSupported())
   }
 
-  private val airSpecLogger = Logger("wvlet.airspec.AirSpec")
-  airSpecLogger.setFormatter(LogFormatter.BareFormatter)
+  private val airSpecLogger = {
+    val l = Logger("wvlet.airspec.runner.AirSpecLogger")
+    l.clearAllHandlers
+    l.setFormatter(LogFormatter.BareFormatter)
+    l
+  }
+
+  private[runner] def clearHandler = {
+    airSpecLogger.clearHandlers
+  }
 
   def withColor(colorEsc: String, s: String) = {
     if (useAnciColor)

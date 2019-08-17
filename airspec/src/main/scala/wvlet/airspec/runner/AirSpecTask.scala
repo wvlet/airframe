@@ -24,7 +24,10 @@ import scala.concurrent.{Await, Promise}
 /**
   * AirSpecTask is a unit of test execution.
   */
-private[airspec] class AirSpecTask(config: AirSpecConfig, override val taskDef: TaskDef, classLoader: ClassLoader)
+private[airspec] class AirSpecTask(config: AirSpecConfig,
+                                   taskLogger: AirSpecLogger,
+                                   override val taskDef: TaskDef,
+                                   classLoader: ClassLoader)
     extends sbt.testing.Task
     with LogSupport {
 
@@ -56,8 +59,7 @@ private[airspec] class AirSpecTask(config: AirSpecConfig, override val taskDef: 
               loggers: Array[sbt.testing.Logger],
               continuation: Array[sbt.testing.Task] => Unit): Unit = {
     try {
-      val taskLogger = new AirSpecLogger(loggers)
-      new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler).runTask(taskDef, classLoader)
+      new AirSpecTaskRunner(taskDef, config, taskLogger, eventHandler, classLoader).runTask
     } finally {
       continuation(Array.empty)
     }

@@ -223,7 +223,9 @@ object Logger {
   }
 
   def setDefaultFormatter(formatter: LogFormatter): Unit = {
-    rootLogger.resetHandler(new ConsoleLogHandler(formatter))
+    synchronized {
+      rootLogger.resetHandler(new ConsoleLogHandler(formatter))
+    }
   }
 
   def setDefaultHandler(handler: jl.Handler): Unit = {
