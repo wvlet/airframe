@@ -17,7 +17,6 @@ import sbt.testing._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.Design
 import wvlet.airframe.surface.MethodSurface
-import wvlet.airspec.AirSpecSpi
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException, MissingTestDependency}
 import wvlet.log.LogSupport
@@ -36,19 +35,19 @@ import scala.util.{Failure, Success, Try}
 private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
                                          config: AirSpecConfig,
                                          taskLogger: AirSpecLogger,
-                                         eventHandler: EventHandler)
+                                         eventHandler: EventHandler,
+                                         classLoader: ClassLoader)
     extends LogSupport {
   import wvlet.airspec._
 
-  def runTask(task: TaskDef, classLoader: ClassLoader): Unit = {
+  def runTask: Unit = {
     val testClassName = taskDef.fullyQualifiedName()
 
     val startTimeNanos = System.nanoTime()
     try {
       // Start a background log level scanner thread. If a thread is already running, reuse it.
       compat.withLogScanner {
-        trace(s"Executing task: ${taskDef}")
-
+        trace(s"Processing task: ${taskDef}")
         // Getting an instance of AirSpec
         val testObj = taskDef.fingerprint() match {
           // In Scala.js we cannot use pattern match for objects like AirSpecObjectFingerPrint, so using isModule here.
