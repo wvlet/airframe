@@ -19,4 +19,8 @@ package wvlet
 package object airspec {
   // For Scala, Scala.js compatibility
   val compat: CompatApi = wvlet.airspec.Compat
+
+  private[airspec] lazy val inTravisCI: Boolean = {
+    sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
+  }
 }
