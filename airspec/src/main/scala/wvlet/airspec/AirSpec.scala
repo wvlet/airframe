@@ -16,6 +16,7 @@ package wvlet.airspec
 import wvlet.airframe.Design
 import wvlet.airspec.spi.{Asserts, RichAsserts}
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec
 
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
@@ -84,7 +85,7 @@ private[airspec] trait AirSpecSpi {
   protected def afterAll: Unit  = {}
 
   // Returns true if this is running in TravisCI
-  protected def inTravisCI: Boolean = AirSpecSpi.inTravisCI
+  protected def inTravisCI: Boolean = airspec.inTravisCI
 
   protected def isScalaJS: Boolean = compat.isScalaJs
 }
@@ -111,10 +112,6 @@ private[airspec] object AirSpecSpi {
     import c.universe._
     val t = c.prefix.actualType.typeSymbol
     q"if(wvlet.airspec.compat.isScalaJs) { ${c.prefix}._methodSurfaces = wvlet.airframe.surface.Surface.methodsOf[${t}] }"
-  }
-
-  private[airspec] def inTravisCI: Boolean = {
-    sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
   }
 
   private[airspec] def decodeClassName(clsName: String): String = {

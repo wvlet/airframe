@@ -18,9 +18,8 @@ import java.util.concurrent.TimeUnit
 import sbt.testing._
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
-import wvlet.airspec.AirSpecSpi
 import wvlet.airspec.spi.AirSpecFailureBase
-import wvlet.log.{ConsoleLogHandler, LogFormatter, Logger}
+import wvlet.log.{LogFormatter, Logger}
 
 private[airspec] case class AirSpecEvent(taskDef: TaskDef,
                                          override val fullyQualifiedName: String,
@@ -38,9 +37,7 @@ private[airspec] case class AirSpecEvent(taskDef: TaskDef,
   */
 private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   // Always use ANSI color log for Travis because sbt's ansiCodeSupported() returns false even though it can show ANSI colors
-  private val useAnciColor = {
-    AirSpecSpi.inTravisCI || true //|| sbtLoggers.forall(_.ansiCodesSupported())
-  }
+  private val useAnciColor = true
 
   private val airSpecLogger = {
     val l = Logger("wvlet.airspec.runner.AirSpecLogger")
