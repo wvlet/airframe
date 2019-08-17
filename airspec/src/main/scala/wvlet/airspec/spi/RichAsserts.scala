@@ -193,7 +193,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldBe(expected: OptionTarget)(implicit code: SourceCode) = {
       if (expected == null) {
         if (value != null) {
-          throw AssertionFailure(s"${pp(value)} is not null", code)
+          throw AssertionFailure(s"${pp(value)} should be null", code)
         }
       } else {
         value match {
@@ -214,7 +214,7 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     def shouldNotBe(expected: OptionTarget)(implicit code: SourceCode) = {
       if (expected == null) {
         if (value == null) {
-          throw AssertionFailure(s"${pp(value)} should be null", code)
+          throw AssertionFailure(s"${pp(value)} should not be null", code)
         }
       } else {
         value match {
