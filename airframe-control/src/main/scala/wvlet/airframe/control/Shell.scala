@@ -20,7 +20,7 @@ import wvlet.log.LogSupport
 
 import scala.collection.mutable.WeakHashMap
 import scala.sys.process.{Process, ProcessLogger}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Launch UNIX (or cygwin) commands from Scala
@@ -190,7 +190,7 @@ object Shell extends LogSupport {
   def prepareProcessBuilder(cmdLine: String, inheritIO: Boolean): ProcessBuilder = {
     trace(s"cmdLine: $cmdLine")
     val tokens = Array(Shell.getCommand("sh"), "-c", if (OS.isWindows) quote(cmdLine) else cmdLine)
-    prepareProcessBuilderFromSeq(tokens, inheritIO)
+    prepareProcessBuilderFromSeq(tokens.toIndexedSeq, inheritIO)
   }
 
   def prepareProcessBuilderFromSeq(tokens: Seq[String], inheritIO: Boolean): ProcessBuilder = {

@@ -24,13 +24,13 @@ object ParamTest {
 }
 
 class ParamTest extends SurfaceSpec {
-  "Parameter" should {
-    "have default value" in {
-      val s = Surface.of[ParamTest.A]
-      val p = s.params.head
-      p.getDefaultValue shouldBe Option(-1)
-      val p1 = s.params(1)
-      p1.getDefaultValue shouldBe Option(20)
-    }
+  scalaJsSupport
+
+  def `have default value`: Unit = {
+    val s = Surface.of[ParamTest.A]
+    val p = s.params.head
+    assert(p.getDefaultValue == Option(-1))
+    val p1 = s.params(1)
+    assert(p1.getDefaultValue == Option(20))
   }
 }

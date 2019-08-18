@@ -13,41 +13,40 @@
  */
 package wvlet.airframe.surface
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
-class CNameTest extends AirframeSpec {
+class CNameTest extends AirSpec {
+  scalaJsSupport
 
-  "CName" should {
-    "convert to snakeCase" in {
-      assert(CName("AirframeSurface").snakeCase == "airframe_surface")
-      assert(CName("airframe_surface").snakeCase == "airframe_surface")
-      assert(CName("airframe-surface").snakeCase == "airframe_surface")
-      assert(CName("airframeSurface").snakeCase == "airframe_surface")
-      assert(CName("Airframe Surface").snakeCase == "airframe_surface")
-    }
+  def `convert to snakeCase`: Unit = {
+    assert(CName("AirframeSurface").snakeCase == "airframe_surface")
+    assert(CName("airframe_surface").snakeCase == "airframe_surface")
+    assert(CName("airframe-surface").snakeCase == "airframe_surface")
+    assert(CName("airframeSurface").snakeCase == "airframe_surface")
+    assert(CName("Airframe Surface").snakeCase == "airframe_surface")
+  }
 
-    "convert to dashCase" in {
-      assert(CName("AirframeSurface").dashCase == "airframe-surface")
-      assert(CName("airframe_surface").dashCase == "airframe-surface")
-      assert(CName("airframe-surface").dashCase == "airframe-surface")
-      assert(CName("airframeSurface").dashCase == "airframe-surface")
-      assert(CName("Airframe Surface").dashCase == "airframe-surface")
-    }
+  def `convert to dashCase`: Unit = {
+    assert(CName("AirframeSurface").dashCase == "airframe-surface")
+    assert(CName("airframe_surface").dashCase == "airframe-surface")
+    assert(CName("airframe-surface").dashCase == "airframe-surface")
+    assert(CName("airframeSurface").dashCase == "airframe-surface")
+    assert(CName("Airframe Surface").dashCase == "airframe-surface")
+  }
 
-    "convert to .upperCamelCase" in {
-      assert(CName("AirframeSurface").upperCamelCase == "AirframeSurface")
-      assert(CName("airframe_surface").upperCamelCase == "AirframeSurface")
-      assert(CName("airframe-surface").upperCamelCase == "AirframeSurface")
-      assert(CName("airframeSurface").upperCamelCase == "AirframeSurface")
-      assert(CName("Airframe Surface").upperCamelCase == "AirframeSurface")
-    }
+  def `convert to .upperCamelCase`: Unit = {
+    assert(CName("AirframeSurface").upperCamelCase == "AirframeSurface")
+    assert(CName("airframe_surface").upperCamelCase == "AirframeSurface")
+    assert(CName("airframe-surface").upperCamelCase == "AirframeSurface")
+    assert(CName("airframeSurface").upperCamelCase == "AirframeSurface")
+    assert(CName("Airframe Surface").upperCamelCase == "AirframeSurface")
+  }
 
-    "convert to lowerCamelCase" in {
-      assert(CName("AirframeSurface").lowerCamelCase == "airframeSurface")
-      assert(CName("airframe_surface").lowerCamelCase == "airframeSurface")
-      assert(CName("airframe-surface").lowerCamelCase == "airframeSurface")
-      assert(CName("airframeSurface").lowerCamelCase == "airframeSurface")
-      assert(CName("Airframe Surface").lowerCamelCase == "airframeSurface")
-    }
+  def `convert to lowerCamelCase`: Unit = {
+    assert(CName("AirframeSurface").lowerCamelCase == "airframeSurface")
+    assert(CName("airframe_surface").lowerCamelCase == "airframeSurface")
+    assert(CName("airframe-surface").lowerCamelCase == "airframeSurface")
+    assert(CName("airframeSurface").lowerCamelCase == "airframeSurface")
+    assert(CName("Airframe Surface").lowerCamelCase == "airframeSurface")
   }
 }

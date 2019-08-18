@@ -13,36 +13,46 @@
  */
 package wvlet.airframe.http.recorder
 
-import com.twitter.finagle.{Http, Service}
+import java.util.Locale
+
 import com.twitter.finagle.builder.ClientBuilder
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
 import javax.net.ssl.SSLContext
 import wvlet.airframe.http.ServerAddress
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-case class HttpRecorderConfig(destUri: String,
+case class HttpRecorderConfig(destUri: String = "localhost",
                               sessionName: String = "default",
-                              expirationTime: String = "1w",
+                              expirationTime: String = "1w", // Delete recorded response in a week by default
                               // the folder to store response records
                               storageFolder: String = "fixtures",
-                              // Drop the session records for recording mode
-                              dropSessionIfExists: Boolean = true,
                               recordTableName: String = "record",
                               // Specify the port to use. The default is finding an available port
                               private val port: Int = -1,
                               // A filter for customizing HTTP request headers to use for generating database keys.
                               // For example, we should remove headers that depends on the current time, etc.
-                              headerExcludes: String => Boolean = HttpRecorder.defaultHeaderExclude,
+                              excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
                               fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
 
-  def sqliteFilePath   = s"${storageFolder}/${sessionName}.sqlite"
+  def isInMemory: Boolean = sessionName == ":memory:"
+
+  def sqliteFilePath = {
+    if (isInMemory) {
+      ":memory:"
+    } else {
+      s"${storageFolder}/${sessionName}.sqlite"
+    }
+  }
+
   lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
   lazy val destAddress = ServerAddress(destUri)
+
+  lazy val lowerCaseHeaderExcludePrefixes: Seq[String] = excludeHeaderPrefixes.map(_.toLowerCase(Locale.ENGLISH))
 }
 
 /**
@@ -52,22 +62,16 @@ case class HttpRecorderConfig(destUri: String,
   */
 object HttpRecorder extends LogSupport {
 
-  def defaultHeaderExclude: String => Boolean = { headerName =>
-    // Ignore Finagle's tracing IDs
-    headerName.startsWith("X-B3-") || headerName.startsWith("Finagle-")
-  }
+  // Http headers to ignore for recording and hashing purposes
+  def defaultExcludeHeaderPrefixes: Seq[String] = Seq(
+    "date", // unstable header
+    "x-b3-", // Finagle's tracing IDs
+    "finagle-", // Finagle specific headers
+    "host", // The host value can be changed
+    "content-length" // this can be 0 (or missing)
+  )
 
-  /**
-    * Creates an HTTP server that will record HTTP responses.
-    */
-  def createRecordingServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder = new HttpRecordStore(
-      recorderConfig,
-      // Delete the previous recordings for the same sesion name
-      dropSession = recorderConfig.dropSessionIfExists
-    )
-
+  private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")
     val clientBuilder =
       ClientBuilder()
@@ -78,40 +82,77 @@ object HttpRecorder extends LogSupport {
         .keepAlive(true)
         .retryPolicy(RetryPolicy.tries(3, RetryPolicy.TimeoutAndWriteExceptionsOnly))
 
-    val destClient = (if (recorderConfig.destAddress.port == 443) {
-                        clientBuilder.tls(SSLContext.getDefault)
-                      } else {
-                        clientBuilder
-                      }).build()
+    (if (recorderConfig.destAddress.port == 443) {
+       clientBuilder.tls(SSLContext.getDefault)
+     } else {
+       clientBuilder
+     }).build()
+  }
 
-    new HttpRecorderServer(recorder, finagleConfig, new RecordingService(recorder, destClient))
+  private def newRecordStoreForRecording(recorderConfig: HttpRecorderConfig, dropSession: Boolean): HttpRecordStore = {
+    val recorder = new HttpRecordStore(
+      recorderConfig,
+      // Delete the previous recordings for the same session name
+      dropSession = dropSession
+    )
+    recorder
   }
 
   /**
-    * Creates an HTTP server that returns recorded HTTP responses.
+    * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
+    * actually send the request to the destination server and record the response.
+    */
+  def createRecorderProxy(recorderConfig: HttpRecorderConfig,
+                          dropExistingSession: Boolean = false): HttpRecorderServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
+    val server = new HttpRecorderServer(
+      recorder,
+      HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+    server.start
+    server
+  }
+
+  /**
+    * Creates an HTTP server that will record HTTP responses.
+    */
+  def createRecordOnlyServer(recorderConfig: HttpRecorderConfig,
+                             dropExistingSession: Boolean = true): HttpRecorderServer = {
+    val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
+    val server =
+      new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))
+    server.start
+    server
+  }
+
+  /**
+    * Creates an HTTP server that returns only recorded HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createReplayServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
-    val finagleConfig = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder      = new HttpRecordStore(recorderConfig)
-    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
+  def createReplayOnlyServer(recorderConfig: HttpRecorderConfig): FinagleServer = {
+    val recorder = new HttpRecordStore(recorderConfig)
+    // Return the server instance as FinagleServer to avoid further recording
+    val server = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    server.start
+    server
   }
 
   /**
     * Creates an HTTP server that returns programmed HTTP responses.
     * If no matching record is found, use the given fallback handler.
     */
-  def createProgrammableServer(programmer: HttpRecordStore => Unit): FinagleServer = {
-    val recorderConfig = HttpRecorderConfig("localhost")
-    val finagleConfig  = FinagleServerConfig(recorderConfig.serverPort)
-    val recorder = new HttpRecordStore(recorderConfig, true) {
-      override def requestHash(request: Request): Int = {
-        val content = request.getContentString()
-        s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${content.hashCode}".hashCode
-      }
-    }
-    programmer(recorder)
-    new HttpRecorderServer(recorder, finagleConfig, new ReplayService(recorder))
+  def createProgrammableServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
+    val recorder = new HttpRecordStore(recorderConfig)
+    val server   = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    server.start
+    server
+  }
+
+  /**
+    * Create an in-memory programmable server, whose recorded response will be discarded after closing the server.
+    * This is useful for debugging HTTP clients
+    */
+  def createInMemoryProgrammableServer: HttpRecorderServer = {
+    createProgrammableServer(HttpRecorderConfig(sessionName = ":memory:"))
   }
 
   def defaultFallBackHandler = {
@@ -120,6 +161,17 @@ object HttpRecorder extends LogSupport {
       r.contentString = s"${request.uri} is not found"
       Future.value(r)
     }
+  }
+
+  private[recorder] def computeRequestHash(request: Request, recorderConfig: HttpRecorderConfig): Int = {
+    val contentHash = request.contentType match {
+      case Some(MediaType.OctetStream) =>
+        request.content.hashCode()
+      case _ =>
+        request.contentString.hashCode
+    }
+
+    s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${contentHash}".hashCode
   }
 
 }

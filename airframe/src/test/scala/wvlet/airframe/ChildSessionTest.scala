@@ -14,6 +14,7 @@
 package wvlet.airframe
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random
@@ -110,9 +111,11 @@ object ChildSessionTest {
 /**
   *
   */
-class ChildSessionTest extends AirframeSpec {
+class ChildSessionTest extends AirSpec {
+  scalaJsSupport
+
   import ChildSessionTest._
-  "support creating a child session" in {
+  def `support creating a child session`: Unit = {
     requestCount.get() shouldBe 0
     serverDesign.build[HttpServer] { server =>
       val parentThreadId = server.threadManager.threadId

@@ -49,7 +49,7 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 
   override def setAttributes(attributes: AttributeList): AttributeList = {
     val l = new AttributeList(attributes.size())
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     for (a <- attributes.asList().asScala) {
       l.add(setAttribute(a))
     }

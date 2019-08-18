@@ -22,37 +22,35 @@ import wvlet.airframe.surface.Surface
   *
   */
 class StandardCodecTest extends CodecSpec {
-  "StandardCodec" should {
-    "support File" in {
-      val codec          = MessageCodec.of[File]
-      def check(v: File) = checkCodec(codec, v)
-      check(new File("sample.txt"))
-      check(new File("/var/log"))
-      check(new File("/etc/conf.d/myconf.conf"))
-      check(new File("c:/etc/conf.d/myconf.conf"))
-      check(new File("."))
-      check(new File(".."))
-      check(new File("relative/path.txt"))
+
+  def `support File`: Unit = {
+    val codec          = MessageCodec.of[File]
+    def check(v: File) = checkCodec(codec, v)
+    check(new File("sample.txt"))
+    check(new File("/var/log"))
+    check(new File("/etc/conf.d/myconf.conf"))
+    check(new File("c:/etc/conf.d/myconf.conf"))
+    check(new File("."))
+    check(new File(".."))
+    check(new File("relative/path.txt"))
+  }
+
+  def `support Enum`: Unit = {
+    for (v <- TestEnum.values()) {
+      roundtrip[TestEnum](Surface.of[TestEnum], v)
     }
 
-    "support Enum" in {
-      for (v <- TestEnum.values()) {
-        roundtrip[TestEnum](Surface.of[TestEnum], v)
-      }
+    val codec = MessageCodec.of[TestEnum]
+    val p     = MessagePack.newBufferPacker
+    p.packString("ABORTED") // non-existing enum type
+    val v = codec.unpackMsgPack(p.toByteArray)
+    v shouldBe empty
+  }
 
-      val codec = MessageCodec.of[TestEnum]
-      val p     = MessagePack.newBufferPacker
-      p.packString("ABORTED") // non-existing enum type
-      val v = codec.unpackMsgPack(p.toByteArray)
-      v shouldBe empty
-    }
-
-    "support case-insensitive enum match" in {
-      val p     = MessagePack.newBufferPacker
-      val codec = MessageCodec.of[TestEnum]
-      p.packString("Running")
-      codec.unpackMsgPack(p.toByteArray) shouldBe Some(TestEnum.RUNNING)
-
-    }
+  def `support case-insensitive enum match`: Unit = {
+    val p     = MessagePack.newBufferPacker
+    val codec = MessageCodec.of[TestEnum]
+    p.packString("Running")
+    codec.unpackMsgPack(p.toByteArray) shouldBe Some(TestEnum.RUNNING)
   }
 }

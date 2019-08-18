@@ -12,18 +12,19 @@
  * limitations under the License.
  */
 package wvlet.airframe.log
-import wvlet.log.Spec
+import wvlet.log.{LogSupport, Spec}
 
 /**
   *
   */
 class LogTest extends Spec {
-  "should support initialization" in {
-    import wvlet.airframe._
-    log.init
-    info("hello")
+  scalaJsSupport
 
-    log.initNoColor
-    info("hello")
+  def `should support initialization`: Unit = {
+    wvlet.airframe.log.init
+    debug("hello")
+
+    wvlet.airframe.log.initNoColor
+    debug("hello")
   }
 }

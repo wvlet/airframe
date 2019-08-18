@@ -21,7 +21,7 @@ import wvlet.airframe.surface.Surface
   *
   */
 class JavaTimeCodecTest extends CodecSpec {
-  "support Java Instant" in {
+  def `support Java Instant`: Unit = {
 
     val timeStr = "2018-05-26T21:10:29.858818Z"
     val i       = Instant.parse(timeStr)
@@ -48,7 +48,7 @@ class JavaTimeCodecTest extends CodecSpec {
     v.get shouldBe Seq[Instant](epochSecond, epochSecond, i, null)
   }
 
-  "support ZonedDateTime" in {
+  def `support ZonedDateTime`: Unit = {
     roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.now())
     roundtrip(Surface.of[ZonedDateTime], ZonedDateTime.parse("2007-12-03T10:15:30+01:00[Europe/Paris]"))
 
@@ -59,7 +59,7 @@ class JavaTimeCodecTest extends CodecSpec {
     v shouldBe empty
   }
 
-  "support java.util.Date" in {
+  def `support java.util.Date`: Unit = {
     val now = java.util.Date.from(Instant.now())
     roundtrip(Surface.of[java.util.Date], now)
   }

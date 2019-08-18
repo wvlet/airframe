@@ -12,14 +12,15 @@
  * limitations under the License.
  */
 package wvlet.airframe.canvas
-import wvlet.airframe.AirframeSpec
+
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class OffHeapMemoryAllocatorTest extends AirframeSpec {
+class OffHeapMemoryAllocatorTest extends AirSpec {
 
-  "allocate and release memory" in {
+  def `allocate and release memory`: Unit = {
     val a  = new OffHeapMemoryAllocator
     val m1 = a.allocate(10)
     a.allocatedMemorySize shouldBe 10

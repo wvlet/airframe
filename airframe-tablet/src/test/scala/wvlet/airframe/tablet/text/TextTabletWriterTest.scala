@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.text
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.Tablet._
+import wvlet.airspec.AirSpec
 
 import scala.io.Source
 
@@ -27,45 +27,41 @@ import wvlet.airframe.tablet.text.TextTabletWriterTest._
 /**
   *
   */
-class TextTabletWriterTest extends AirframeSpec {
+class TextTabletWriterTest extends AirSpec {
 
-  "TextTabletWriter" should {
-
-    val seq = Seq(
-      Person(1,
-             "leo",
-             Seq("xxx-xxxx"),
-             """123 Apple Street
+  val seq = Seq(
+    Person(1,
+           "leo",
+           Seq("xxx-xxxx"),
+           """123 Apple Street
                |Cupertino, CA""".stripMargin),
-      Person(2,
-             "yui",
-             Seq("yyy-yyyy", "zzz-zzzz"),
-             """456 Orange Avenue
+    Person(2,
+           "yui",
+           Seq("yyy-yyyy", "zzz-zzzz"),
+           """456 Orange Avenue
                |Santa Clara, CA""".stripMargin)
-    )
+  )
 
-    "output object in JSON array format" in {
-      val w = seq.toJson
-      info(w.mkString("\n"))
-    }
+  def `output object in JSON array format`: Unit = {
+    val w = seq.toJson
+    debug(w.mkString("\n"))
+  }
 
-    "output object in CSV format" in {
-      val csv = seq.toCSV.mkString("\n")
+  def `output object in CSV format`: Unit = {
+    val csv = seq.toCSV.mkString("\n")
 
-      info(csv)
-      val json = CSVTabletReader(Source.fromString(csv)).toJson
+    debug(csv)
+    val json = CSVTabletReader(Source.fromString(csv)).toJson
 
-      info(json.mkString("\n"))
-    }
+    debug(json.mkString("\n"))
+  }
 
-    "output object in TSV format" in {
-      val tsv = seq.toTSV.mkString("\n")
-      info(tsv)
-      val json = TSVTabletReader(Source.fromString(tsv)).toJson
-      info(json.mkString("\n"))
-      val csv = TSVTabletReader(Source.fromString(tsv)).toCSV
-      info(csv.mkString("\n"))
-    }
-
+  def `output object in TSV format`: Unit = {
+    val tsv = seq.toTSV.mkString("\n")
+    debug(tsv)
+    val json = TSVTabletReader(Source.fromString(tsv)).toJson
+    debug(json.mkString("\n"))
+    val csv = TSVTabletReader(Source.fromString(tsv)).toCSV
+    debug(csv.mkString("\n"))
   }
 }

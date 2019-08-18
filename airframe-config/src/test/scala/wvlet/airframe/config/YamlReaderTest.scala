@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.config
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.io.Resource
 
 case class MyConfig(id: Int, fullName: String, port: Int = 8989)
@@ -22,7 +22,7 @@ case class DB(accountId: Int, database: String, table: Seq[String])
 /**
   *
   */
-class YamlReaderTest extends AirframeSpec {
+class YamlReaderTest extends AirSpec {
 
   val yml = Resource.find("myconfig.yml").map(_.getPath).getOrElse {
     fail("myconfig.yml is not found")
@@ -35,56 +35,54 @@ class YamlReaderTest extends AirframeSpec {
     fail("classes.yml is not found")
   }
 
-  "YamlReader" should {
-    "parse yaml file" in {
-      val m = YamlReader.loadYaml(yml)
-      m.keys should contain("default")
-      m.keys should contain("staging")
-      m.keys should have size (2)
+  def `parse yaml file`: Unit = {
+    val m = YamlReader.loadYaml(yml)
+    m.contains("default") shouldBe true
+    m.contains("staging") shouldBe true
+    m.size shouldBe 2
+  }
+
+  def `read yaml as objects`: Unit = {
+    val m = YamlReader.loadMapOf[MyConfig](yml)
+    m.contains("default") shouldBe true
+    m.contains("staging") shouldBe true
+
+    m("default") shouldBe MyConfig(1, "default-config", 8989)
+    m("staging") shouldBe MyConfig(2, "staging-config", 10000)
+  }
+
+  def `read an specific env from yaml`: Unit = {
+    val m = YamlReader.load[MyConfig](yml, "staging")
+    m shouldBe MyConfig(2, "staging-config", 10000)
+  }
+
+  def `throw an exception when the target env is missing`: Unit = {
+    intercept[IllegalArgumentException] {
+      YamlReader.load[MyConfig](yml, "production")
     }
+  }
 
-    "read yaml as objects" in {
-      val m = YamlReader.loadMapOf[MyConfig](yml)
-      m.keys should contain("default")
-      m.keys should contain("staging")
+  def `parse lists in yaml`: Unit = {
+    val m = YamlReader.loadYamlList(listYml)
+    m.size shouldBe 2
+    m(0)("database") shouldBe "mydb"
+    m(0)("account_id") shouldBe 1
+    m(1)("database") shouldBe "mydb2"
+    m(1)("account_id") shouldBe 10
 
-      m("default") shouldBe MyConfig(1, "default-config", 8989)
-      m("staging") shouldBe MyConfig(2, "staging-config", 10000)
-    }
+    val s = m.map(p => YamlReader.bind[DB](p))
+    s(0) shouldBe DB(1, "mydb", Seq("A"))
+    s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
+  }
 
-    "read an specific env from yaml" in {
-      val m = YamlReader.load[MyConfig](yml, "staging")
-      m shouldBe MyConfig(2, "staging-config", 10000)
-    }
-
-    "throw an exception when the target env is missing" in {
-      intercept[IllegalArgumentException] {
-        YamlReader.load[MyConfig](yml, "production")
-      }
-    }
-
-    "parse lists in yaml" in {
-      val m = YamlReader.loadYamlList(listYml)
-      m should have size (2)
-      m(0)("database") shouldBe "mydb"
-      m(0)("account_id") shouldBe 1
-      m(1)("database") shouldBe "mydb2"
-      m(1)("account_id") shouldBe 10
-
-      val s = m.map(p => YamlReader.bind[DB](p))
-      s(0) shouldBe DB(1, "mydb", Seq("A"))
-      s(1) shouldBe DB(10, "mydb2", Seq("T1", "T2"))
-    }
-
-    "parse map in yaml" taggedAs ("map") in {
-      val m = YamlReader.loadMapOf[ClassConfig](classesYml)
-      m should have size (2)
-      m("development").classes shouldBe Seq("class1", "class2", "class3")
-      m("development").classAssignments shouldBe Map(
-        "nobita"  -> "class1",
-        "takeshi" -> "class2",
-        "suneo"   -> "class3"
-      )
-    }
+  def `parse map in yaml`: Unit = {
+    val m = YamlReader.loadMapOf[ClassConfig](classesYml)
+    m.size shouldBe 2
+    m("development").classes shouldBe Seq("class1", "class2", "class3")
+    m("development").classAssignments shouldBe Map(
+      "nobita"  -> "class1",
+      "takeshi" -> "class2",
+      "suneo"   -> "class3"
+    )
   }
 }

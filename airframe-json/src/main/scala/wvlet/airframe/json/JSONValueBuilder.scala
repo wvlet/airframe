@@ -81,7 +81,9 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
     val num = try {
       JSONLong(s.toLong)
     } catch {
-      case _: Exception => JSONDouble(s.toDouble)
+      case _: NumberFormatException =>
+        // JSON is not suited to representing scientific values.
+        throw IntegerOverflow(BigInt(s).bigInteger)
     }
     add(num)
   }

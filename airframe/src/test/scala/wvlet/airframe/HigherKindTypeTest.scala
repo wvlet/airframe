@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe
+
+import wvlet.airspec.AirSpec
+
 import scala.language.higherKinds
 
 object HigherKindTypeTest {
@@ -36,27 +39,26 @@ object HigherKindTypeTest {
 
 import HigherKindTypeTest._
 
-class HigherKindTypeTest extends AirframeSpec {
+class HigherKindTypeTest extends AirSpec {
+  scalaJsSupport
+
   val design =
-    newDesign
+    newSilentDesign
       .bind[HolderInterpreted].toInstance(interpreted)
       .bind[Holder[Task]].toInstance(interpreted2)
       .bind[Holder[MyFuture]].toInstance(interpreted3)
-      .noLifeCycleLogging
 
-  "Airframe" should {
-    "support higher kind types" in {
-      design.build[HolderInterpreted] { repo =>
-        repo.hello shouldBe "new interpretation"
-      }
+  def `support higher kind types`: Unit = {
+    design.build[HolderInterpreted] { repo =>
+      repo.hello shouldBe "new interpretation"
+    }
 
-      design.build[Holder[Task]] { repo =>
-        repo.hello shouldBe "another interpretation"
-      }
+    design.build[Holder[Task]] { repo =>
+      repo.hello shouldBe "another interpretation"
+    }
 
-      design.build[Holder[MyFuture]] { repo =>
-        repo.hello shouldBe "third interpretation"
-      }
+    design.build[Holder[MyFuture]] { repo =>
+      repo.hello shouldBe "third interpretation"
     }
   }
 }

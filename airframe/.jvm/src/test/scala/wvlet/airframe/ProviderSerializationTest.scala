@@ -16,34 +16,32 @@ package wvlet.airframe
 import wvlet.airframe.ProviderSerializationExample._
 import wvlet.airframe.ProviderVal._
 import DesignSerializationTest._
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class ProviderSerializationTest extends AirframeSpec {
+class ProviderSerializationTest extends AirSpec {
 
-  "Design" should {
-    "serialize design with provider" taggedAs (Serde) in {
-      val testBinderDesign =
-        providerDesign.bind[App].toProvider(provider5 _)
+  def `serialize design with provider`: Unit = {
+    val testBinderDesign =
+      providerDesign.bind[App].toProvider(provider5 _)
 
-      val b = serialize(testBinderDesign)
-      val d = deserialize(b)
+    val b = serialize(testBinderDesign)
+    val d = deserialize(b)
 
-      val app = d.newSession.build[App]
-      app shouldBe App(d1, d2, d3, d4, d5)
-    }
+    val app = d.newSession.build[App]
+    app shouldBe App(d1, d2, d3, d4, d5)
+  }
 
-    "serialize design with provider1" taggedAs (Serde) in {
-      val testBinderDesign =
-        providerDesign.bind[App].toProvider(provider1 _)
+  def `serialize design with provider1`: Unit = {
+    val testBinderDesign =
+      providerDesign.bind[App].toProvider(provider1 _)
 
-      val b = serialize(testBinderDesign)
-      val d = deserialize(b)
+    val b = serialize(testBinderDesign)
+    val d = deserialize(b)
 
-      val app = d.newSession.build[App]
-      app shouldBe App(d1, z2, z3, z4, z5)
-    }
-
+    val app = d.newSession.build[App]
+    app shouldBe App(d1, z2, z3, z4, z5)
   }
 }

@@ -25,6 +25,8 @@ options:
         url: docs/comparison.html
       - title: Airframe Internals
         url: docs/internals.html
+  - title: AirSpec Testing Framework
+    url: docs/airspec.html
   - title: Airframe Modules
     url: docs/index.html
     menu_section: utilities
@@ -57,10 +59,10 @@ options:
         url: docs/airframe-metrics.html
       - title: airframe-msgpack
         url: docs/airframe-msgpack.html
+      - title: airframe-scalatest
+        url: docs/airframe-scalatest.html
       - title: airframe-surface
         url: docs/airframe-surface.html
-      - title: airframe-spec
-        url: docs/airframe-spec.html
       - title: airframe-sql
         url: docs/airframe-sql.html
       - title: airframe-tablet

@@ -14,13 +14,17 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response, Status}
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-case class User(id: Int, name: String)
+case class User(id: Int, name: String, requestId: String) {
+  def withRequestId(newRequestId: String): User = User(id, name, newRequestId)
+}
+
+case class UserRequest(id: Int, name: String)
 
 trait FinagleClientTestApi extends LogSupport {
 
@@ -29,29 +33,43 @@ trait FinagleClientTestApi extends LogSupport {
     "Ok"
   }
 
+  private def getRequestId(request: Request): String = {
+    request.header.getOrElse("X-Request-Id", "N/A")
+  }
+
   @Endpoint(method = HttpMethod.GET, path = "/user/:id")
-  def get(id: Int): User = {
-    User(id, "leo")
+  def get(id: Int, request: Request): User = {
+    User(id, "leo", getRequestId(request))
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/user/info")
+  def getResource(id: Int, name: String, request: Request): User = {
+    User(id, name, getRequestId(request))
+  }
+
+  @Endpoint(method = HttpMethod.GET, path = "/user/info2")
+  def getResource(query: UserRequest, request: Request): User = {
+    User(query.id, query.name, getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/user")
-  def list: Seq[User] = {
-    Seq(User(1, "leo"))
+  def list(request: Request): Seq[User] = {
+    Seq(User(1, "leo", getRequestId(request)))
   }
 
   @Endpoint(method = HttpMethod.POST, path = "/user")
-  def create(newUser: User): User = {
-    newUser
+  def create(newUser: User, request: Request): User = {
+    newUser.withRequestId(getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.DELETE, path = "/user/:id")
-  def delete(id: Int): User = {
-    User(id, "xxx")
+  def delete(id: Int, request: Request): User = {
+    User(id, "xxx", getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.PUT, path = "/user")
-  def put(updatedUser: User): User = {
-    updatedUser
+  def put(updatedUser: User, request: Request): User = {
+    updatedUser.withRequestId(getRequestId(request))
   }
 
   @Endpoint(method = HttpMethod.GET, path = "/busy")
@@ -64,19 +82,33 @@ trait FinagleClientTestApi extends LogSupport {
   def forbidden: Response = {
     Response(Status.Forbidden)
   }
+
+  @Endpoint(method = HttpMethod.GET, path = "/response")
+  def rawResponse: Response = {
+    val r = Response(Status.Ok)
+    r.setContentString("raw response")
+    r
+  }
+
 }
 
 /**
   *
   */
-class FinagleClientTest extends AirframeSpec {
+class FinagleClientTest extends AirSpec {
 
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
-    .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = IOUtil.randomPort, router = r))
+    .bind[FinagleServerConfig].toInstance(
+      FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r))
     .noLifeCycleLogging
 
-  "create client" in {
+  def `create client`: Unit = {
+
+    def addRequestId(request: Request): Request = {
+      request.headerMap.put("X-Request-Id", "10")
+      request
+    }
 
     d.build[FinagleServer] { server =>
       withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
@@ -85,22 +117,45 @@ class FinagleClientTest extends AirframeSpec {
         ret shouldBe "Ok"
 
         // Using HTTP request wrappers
-        client.get[User]("/user/1") shouldBe User(1, "leo")
+        client.get[User]("/user/1") shouldBe User(1, "leo", "N/A")
+        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai")) shouldBe User(2, "kai", "N/A")
+        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo", "N/A"))
 
-        client.list[Seq[User]]("/user") shouldBe Seq(User(1, "leo"))
+        client.post[User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
+        client.postOps[User, User]("/user", User(2, "yui", "N/A")) shouldBe User(2, "yui", "N/A")
 
-        client.post[User]("/user", User(2, "yui")) shouldBe User(2, "yui")
-        client.post[User, User]("/user", User(2, "yui")) shouldBe User(2, "yui")
+        client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
+        client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
 
-        client.put[User]("/user", User(10, "aina")) shouldBe User(10, "aina")
-        client.put[User, User]("/user", User(10, "aina")) shouldBe User(10, "aina")
+        client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
 
-        client.delete[User]("/user/1") shouldBe User(1, "xxx")
+        // Get a response as is
+        client.get[Response]("/response").contentString shouldBe "raw response"
+
+        // Using a custom HTTP header
+        client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
+        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
+                                                                                                               "kai",
+                                                                                                               "10")
+        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
+                                                                                                                "kai",
+                                                                                                                "10")
+
+        client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
+
+        client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+        client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+
+        client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+        client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+
+        client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
       }
     }
   }
 
-  "fail request" in {
+  def `fail request`: Unit = {
     d.build[FinagleServer] { server =>
       withResource(
         FinagleClient.newSyncClient(
@@ -133,11 +188,11 @@ class FinagleClientTest extends AirframeSpec {
     }
   }
 
-  "support https request" in {
+  def `support https request`: Unit = {
     withResource(FinagleClient.newSyncClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)
-      page should include("<html")
+      page.contains("<html") shouldBe true
     }
   }
 }

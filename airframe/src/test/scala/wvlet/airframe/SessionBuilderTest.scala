@@ -13,37 +13,39 @@
  */
 package wvlet.airframe
 
+import wvlet.airspec.AirSpec
+
 /**
   *
   */
-class SessionBuilderTest extends AirframeSpec {
+class SessionBuilderTest extends AirSpec {
+  scalaJsSupport
+
   val d = newSilentDesign
 
-  "SessionBuilder" should {
-    "create a named session" in {
-      val session = d.newSessionBuilder
-        .withName("MySession")
-        .create
-      session.name shouldBe "MySession"
+  def `create a named session`: Unit = {
+    val session = d.newSessionBuilder
+      .withName("MySession")
+      .create
+    session.name shouldBe "MySession"
 
-      session.start
+    session.start
 
-      session.shutdown
-    }
+    session.shutdown
+  }
 
-    "create a session with custom event handler" in {
-      var counter = 0
-      val session = d.newSessionBuilder
-        .withEventHandler(new LifeCycleEventHandler {
-          override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-            counter += 1
-          }
-        })
-        .create
+  def `create a session with custom event handler`: Unit = {
+    var counter = 0
+    val session = d.newSessionBuilder
+      .withEventHandler(new LifeCycleEventHandler {
+        override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+          counter += 1
+        }
+      })
+      .create
 
-      session.start {
-        counter shouldBe 1
-      }
+    session.start {
+      counter shouldBe 1
     }
   }
 }

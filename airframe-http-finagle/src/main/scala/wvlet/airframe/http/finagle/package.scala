@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import com.twitter.finagle.http
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.io.Buf.ByteArray
+import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
@@ -24,6 +25,8 @@ import wvlet.log.io.IOUtil
   *
   */
 package object finagle {
+
+  type FinagleContext = HttpContext[Request, Response, Future]
 
   private def finagleBaseDesign: Design =
     httpDefaultDesign
@@ -41,9 +44,9 @@ package object finagle {
   /**
     * Create a new design for FinagleServer using a random port (if not given)
     */
-  def newFinagleServerDesign(router: Router, port: Int = IOUtil.randomPort): Design = {
+  def newFinagleServerDesign(name: String = "default", port: Int = IOUtil.randomPort, router: Router): Design = {
     finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(port = port, router = router))
+      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(name = name, port = port, router = router))
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {
@@ -52,10 +55,11 @@ package object finagle {
   }
 
   implicit object FinagleHttpRequestAdapter extends HttpRequestAdapter[http.Request] {
-    override def methodOf(request: Request): HttpMethod         = toHttpMethod(request.method)
-    override def pathOf(request: Request): String               = request.path
-    override def queryOf(request: Request): Map[String, String] = request.params
-    override def contentStringOf(request: Request): String      = request.contentString
+    override def methodOf(request: Request): HttpMethod          = toHttpMethod(request.method)
+    override def pathOf(request: Request): String                = request.path
+    override def headerOf(request: Request): Map[String, String] = request.headerMap.toMap
+    override def queryOf(request: Request): Map[String, String]  = request.params
+    override def contentStringOf(request: Request): String       = request.contentString
     override def contentBytesOf(request: Request): Array[Byte] = {
       val content = request.content
       val size    = content.length
@@ -65,6 +69,7 @@ package object finagle {
     }
     override def contentTypeOf(request: Request): Option[String]       = request.contentType
     override def httpRequestOf(request: Request): HttpRequest[Request] = FinagleHttpRequest(request)
+    override def requestType: Class[Request]                           = classOf[Request]
   }
 
   implicit class FinagleHttpResponse(val raw: http.Response) extends HttpResponse[http.Response] {

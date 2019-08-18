@@ -13,14 +13,17 @@
  */
 package wvlet.airframe
 
+import wvlet.airspec.AirSpec
+
 /**
   *
   */
-class DesignBuildTest extends AirframeSpec {
+class DesignBuildTest extends AirSpec {
+  scalaJsSupport
 
-  "visible outer variables in code block" in {
+  def `visible outer variables in code block`: Unit = {
     val helloDesign = "hello"
-    val d = newDesign
+    val d = newSilentDesign
       .bind[String].toInstance(helloDesign)
 
     d.build[String] { x =>

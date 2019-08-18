@@ -24,24 +24,22 @@ object SurfaceJVMTest {
 import SurfaceJVMTest._
 class SurfaceJVMTest extends SurfaceSpec {
 
-  "SurfaceJVM" should {
-    "resolve ParSeq" in {
-      pending
-      //import scala.collection.parallel.ParSeq
-      //check(Surface.of[ParSeq[Int]], "ParSeq[Int]")
-    }
+  def `resolve ParSeq`: Unit = {
+    pendingUntil("ParSeq is not available in Scala 2.13")
+    //import scala.collection.parallel.ParSeq
+    //check(Surface.of[ParSeq[Int]], "ParSeq[Int]")
+  }
 
-    "resolve java util type" in {
-      check(Surface.of[File], "File")
-      check(Surface.of[java.util.Date], "Date")
-      check(Surface.of[java.time.LocalDate], "LocalDate")
-      check(Surface.of[java.time.LocalDateTime], "LocalDateTime")
-      check(Surface.of[java.time.Instant], "Instant")
-    }
+  def `resolve java util type`: Unit = {
+    check(Surface.of[File], "File")
+    check(Surface.of[java.util.Date], "Date")
+    check(Surface.of[java.time.LocalDate], "LocalDate")
+    check(Surface.of[java.time.LocalDateTime], "LocalDateTime")
+    check(Surface.of[java.time.Instant], "Instant")
+  }
 
-    "resolve java enum type" in {
-      check(Surface.of[ChronoUnit], "ChronoUnit")
-      check(Surface.of[MyChrono], "MyChrono:=ChronoUnit")
-    }
+  def `resolve java enum type`: Unit = {
+    check(Surface.of[ChronoUnit], "ChronoUnit")
+    check(Surface.of[MyChrono], "MyChrono:=ChronoUnit")
   }
 }

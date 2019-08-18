@@ -154,7 +154,7 @@ object PackerImpl {
         v8.ValueFactory.newExtension(-1, extBytes)
       }
       case ArrayValue(elems) =>
-        import scala.collection.JavaConverters._
+        import scala.jdk.CollectionConverters._
         val values = elems.map(x => toMsgPackV8Value(x)).toList.asJava
         v8.ValueFactory.newArray(values)
       case MapValue(entries) =>

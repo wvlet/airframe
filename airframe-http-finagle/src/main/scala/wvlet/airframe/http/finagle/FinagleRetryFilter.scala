@@ -60,10 +60,12 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
         case ResultClass.Failed(isRetryable, cause) => {
           if (!retryContext.canContinue) {
             // Reached the max retry
-            throw new HttpClientMaxRetryException(retryContext, cause)
+            rep.flatMap { r =>
+              Future.exception(HttpClientMaxRetryException(FinagleHttpResponse(r), retryContext, cause))
+            }
           } else if (!isRetryable) {
             // Non-retryable failure
-            throw cause
+            Future.exception(cause)
           } else {
             Future
               .value {

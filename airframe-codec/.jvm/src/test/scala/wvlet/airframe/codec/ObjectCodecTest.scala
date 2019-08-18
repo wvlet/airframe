@@ -23,7 +23,7 @@ import wvlet.airframe.msgpack.spi.MessagePack
 class ObjectCodecTest extends CodecSpec {
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
-  "support reading map value" in {
+  def `support reading map value`: Unit = {
     val v: A1  = A1(1, 2, 3, 4, 5, 6, true, "str")
     val packer = MessagePack.newBufferPacker
     codec.packAsMap(packer, v)
@@ -38,7 +38,7 @@ class ObjectCodecTest extends CodecSpec {
     h.getLastValue shouldBe v
   }
 
-  "populate the default value when missing" taggedAs ("default-arg") in {
+  def `populate the default value when missing`: Unit = {
     val packer = MessagePack.newBufferPacker
     packer.packMapHeader(1)
     packer.packString("i")
@@ -55,7 +55,7 @@ class ObjectCodecTest extends CodecSpec {
     h.getLastValue shouldBe A2(10, 2L, 0)
   }
 
-  "populate case class with Option" in {
+  def `populate case class with Option`: Unit = {
     val codec = MessageCodec.of[A3]
 
     {
@@ -86,7 +86,7 @@ class ObjectCodecTest extends CodecSpec {
     }
   }
 
-  "write as map type message pack" in {
+  def `write as map type message pack`: Unit = {
     val codec    = MessageCodec.of[A3]
     val a3       = A3(Some("optValue"), "strValue")
     val msgpack  = codec.toMsgPack(a3)

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 object ControlTest {
   class A extends AutoCloseable {
@@ -27,57 +27,55 @@ object ControlTest {
 /**
   *
   */
-class ControlTest extends AirframeSpec {
-  "Control" should {
-    "have loan pattern" in {
-      val out = new ControlTest.A
-      out.closed shouldBe false
-      Control.withResource(out) { o =>
-        // do nothing
-      }
-      out.closed shouldBe true
+class ControlTest extends AirSpec {
+  def `have loan pattern`: Unit = {
+    val out = new ControlTest.A
+    out.closed shouldBe false
+    Control.withResource(out) { o =>
+      // do nothing
     }
-    "have loan pattern for two resources" in {
-      val in  = new ControlTest.A
-      val out = new ControlTest.A
-      out.closed shouldBe false
-      Control.withResources(in, out) { (i, o) =>
-        // do nothing
-      }
-      in.closed shouldBe true
-      out.closed shouldBe true
+    out.closed shouldBe true
+  }
+  def `have loan pattern for two resources`: Unit = {
+    val in  = new ControlTest.A
+    val out = new ControlTest.A
+    out.closed shouldBe false
+    Control.withResources(in, out) { (i, o) =>
+      // do nothing
     }
-    "not cause error for null resource" in {
-      Control.withResource(null) { o =>
-        // do nothing
-      }
-      Control.withResources(null, null) { (i, o) =>
-        // do nothing
-      }
+    in.closed shouldBe true
+    out.closed shouldBe true
+  }
+  def `not cause error for null resource`: Unit = {
+    Control.withResource(null) { o =>
+      // do nothing
     }
-    "report resource closing errors" in {
-      class FirstException  extends RuntimeException
-      class SecondException extends RuntimeException
+    Control.withResources(null, null) { (i, o) =>
+      // do nothing
+    }
+  }
+  def `report resource closing errors`: Unit = {
+    class FirstException  extends RuntimeException
+    class SecondException extends RuntimeException
 
-      assertThrows[FirstException] {
-        Control.withResource(new AutoCloseable {
+    intercept[FirstException] {
+      Control.withResource(new AutoCloseable {
+        override def close(): Unit = throw new FirstException()
+      }) { o =>
+        // do nothing
+      }
+    }
+
+    intercept[SecondException] {
+      Control.withResources(
+        new AutoCloseable {
           override def close(): Unit = throw new FirstException()
-        }) { o =>
-          // do nothing
+        },
+        new AutoCloseable {
+          override def close(): Unit = throw new SecondException()
         }
-      }
-
-      assertThrows[SecondException] {
-        Control.withResources(
-          new AutoCloseable {
-            override def close(): Unit = throw new FirstException()
-          },
-          new AutoCloseable {
-            override def close(): Unit = throw new SecondException()
-          }
-        ) { (i, o) =>
-          // do nothing
-        }
+      ) { (i, o) =>
+        // do nothing
       }
     }
   }

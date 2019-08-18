@@ -13,15 +13,14 @@
  */
 package wvlet.airframe.jdbc
 
-import wvlet.airframe.{AirframeSpec, _}
 import wvlet.log.LogSupport
+import wvlet.airframe._
+import wvlet.airspec.AirSpec
 
 object ConnectionPoolFactoryTest {
-
   type MyDbConfig1 = DbConfig
   type MyDbConfig2 = DbConfig
   type MyDbConfig3 = DbConfig
-
 }
 
 import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
@@ -44,7 +43,7 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
       while (rs.next()) {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
-        logger.info(s"read (${id}, ${name})")
+        logger.debug(s"read (${id}, ${name})")
       }
     }
 
@@ -63,7 +62,7 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
       while (rs.next()) {
         val id   = rs.getInt("id")
         val name = rs.getString("name")
-        logger.info(s"read with prepared statement: (${id}, ${name})")
+        logger.debug(s"read with prepared statement: (${id}, ${name})")
       }
     }
 
@@ -75,52 +74,48 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
 /**
   *
   */
-class ConnectionPoolFactoryTest extends AirframeSpec {
-
+class ConnectionPoolFactoryTest extends AirSpec {
   val d = newDesign
     .bind[ConnectionPoolFactory].toSingleton
     .bind[MyDbConfig1].toInstance(DbConfig.ofSQLite(path = "target/test/mydb1.sqlite"))
     .bind[MyDbConfig2].toInstance(DbConfig.ofSQLite(path = "target/test/mydb2.sqlite"))
     .bind[MyDbConfig3].toInstance(DbConfig.ofPostgreSQL(database = "travis_ci_test").withUser(user = "postgres"))
+    .noLifeCycleLogging
 
-  "ConnectionPoolFactory" should {
+  def `use multiple SQLite configs`: Unit = {
+    if (!inTravisCI) pending
 
-    "use multiple SQLite configs" in {
-      if (!inCI) pending
+    d.withSession { session =>
+      val t = session.build[TestConnection]
+      t.test(t.pool1)
+      t.test(t.pool2)
+    }
+  }
 
+  def `use PostgreSQL connection pool`: Unit = {
+    if (!inTravisCI) pending
+
+    d.withSession { session =>
+      val t = session.build[TestConnection]
+      t.test(t.pgPool)
+    }
+  }
+
+  def `report error for unknown db type`: Unit = {
+    intercept[IllegalArgumentException] {
       d.withSession { session =>
-        val t = session.build[TestConnection]
-        t.test(t.pool1)
-        t.test(t.pool2)
+        val f = session.build[ConnectionPoolFactory]
+        f.newConnectionPool(DbConfig.of("superdb"))
       }
     }
+  }
 
-    "use PostgreSQL connection pool" in {
-      if (!inCI) pending
-
+  def `report error for missing postgresql host`: Unit = {
+    intercept[IllegalArgumentException] {
       d.withSession { session =>
-        val t = session.build[TestConnection]
-        t.test(t.pgPool)
+        val f = session.build[ConnectionPoolFactory]
+        f.newConnectionPool(DbConfig.of("postgresql"))
       }
     }
-
-    "report error for unknown db type" in {
-      intercept[IllegalArgumentException] {
-        d.withSession { session =>
-          val f = session.build[ConnectionPoolFactory]
-          f.newConnectionPool(DbConfig.of("superdb"))
-        }
-      }
-    }
-
-    "report error for missing postgresql host" in {
-      intercept[IllegalArgumentException] {
-        d.withSession { session =>
-          val f = session.build[ConnectionPoolFactory]
-          f.newConnectionPool(DbConfig.of("postgresql"))
-        }
-      }
-    }
-
   }
 }

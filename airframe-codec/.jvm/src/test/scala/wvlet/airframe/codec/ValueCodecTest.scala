@@ -30,19 +30,19 @@ import ValueCodecTest._
   */
 class ValueCodecTest extends CodecSpec {
 
-  "support MessagePack values" in {
+  def `support MessagePack values`: Unit = {
     roundtrip(ValueCodec, ValueFactory.newInteger(1), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newString("hello msgpack"), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newBoolean(true), DataType.ANY)
     roundtrip(ValueCodec, ValueFactory.newFloat(0.1234d), DataType.ANY)
   }
 
-  "accept value" in {
+  def `accept value`: Unit = {
     val codec = MessageCodec.of[ValueTest]
     codec.unpackJson("""{"v":"hello msgpack"}""") shouldBe Some(ValueTest(StringValue("hello msgpack")))
   }
 
-  "accept raw msgpack" in {
+  def `accept raw msgpack`: Unit = {
     val codec = MessageCodec.of[RawMsgpackTest]
     codec.unpackJson("""{"msgpack":"hello msgpack"}""") match {
       case Some(x) =>
@@ -52,7 +52,7 @@ class ValueCodecTest extends CodecSpec {
     }
   }
 
-  "accept MsgPack type" in {
+  def `accept MsgPack type`: Unit = {
     val codec = MessageCodec.of[RawMsgpackTest2]
     codec.unpackJson("""{"msgpack":"hello msgpack"}""") match {
       case Some(x) =>

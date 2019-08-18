@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY, MISSING_SESSION}
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.{Primitive, Surface}
+import wvlet.airspec.AirSpec
 
 import scala.util.Random
 
@@ -33,13 +34,13 @@ object ServiceMixinExample {
   case class ConsoleConfig(out: PrintStream)
 
   class ConsolePrinter(config: ConsoleConfig) extends Printer with LogSupport {
-    info(s"using config: ${config}")
+    debug(s"using config: ${config}")
 
     def print(s: String): Unit = { config.out.println(s) }
   }
 
   class LogPrinter extends Printer with LogSupport {
-    def print(s: String): Unit = { info(s) }
+    def print(s: String): Unit = { debug(s) }
   }
 
   class Fortune {
@@ -106,7 +107,7 @@ object ServiceMixinExample {
   //}
 
   class HeavyObject() extends LogSupport {
-    info(f"Heavy Process!!: ${this.hashCode()}%x")
+    debug(f"Heavy Process!!: ${this.hashCode()}%x")
   }
 
   trait HeavySingletonService {
@@ -121,7 +122,7 @@ object ServiceMixinExample {
   case class B(a: A)
 
   class EagerSingleton extends LogSupport {
-    info("initialized")
+    debug("initialized")
     val initializedTime = System.nanoTime()
   }
 
@@ -144,11 +145,11 @@ object ServiceMixinExample {
     def provider(config: HelloConfig): String = config.message
   }
 
-  case class Fruit(name: String)
+  case class LocalFruit(name: String)
 
-  type Apple  = Fruit
-  type Banana = Fruit
-  type Lemon  = Fruit
+  type Apple  = LocalFruit
+  type Banana = LocalFruit
+  type Lemon  = LocalFruit
 
   trait TaggedBinding {
     val apple  = bind[Apple]
@@ -163,7 +164,7 @@ object ServiceMixinExample {
   }
 
   trait Nest1 extends LogSupport {
-    info("instantiated Nest1")
+    debug("instantiated Nest1")
     val nest2 = bind[Nest2]
   }
 
@@ -182,19 +183,19 @@ object ServiceMixinExample {
   }
 
   trait ConcreteModule extends AbstractModule with LogSupport {
-    def hello: Unit = { info("hello!") }
+    def hello: Unit = { debug("hello!") }
   }
 
   object ConcreteSingleton extends AbstractModule with LogSupport {
-    def hello: Unit = { info("hello singleton!") }
+    def hello: Unit = { debug("hello singleton!") }
   }
 
   trait NonAbstractModule extends LogSupport {
-    info("This should be built")
+    debug("This should be built")
   }
 
   object SingletonOfNonAbstractModules extends NonAbstractModule {
-    info("Hello singleton")
+    debug("Hello singleton")
   }
 
   trait NestedAbstractModule {
@@ -202,7 +203,7 @@ object ServiceMixinExample {
   }
 
   trait EagerSingletonWithInject extends LogSupport {
-    info("initialized")
+    debug("initialized")
     val heavy           = bind[HeavyObject]
     val initializedTime = System.nanoTime()
   }
@@ -214,16 +215,16 @@ object ServiceMixinExample {
     var closeCount = new AtomicInteger(0)
 
     def init: Unit = {
-      info("initialized")
+      debug("initialized")
       initCount.incrementAndGet()
     }
     def start: Unit = {
-      info("started")
+      debug("started")
       startCount.incrementAndGet()
     }
 
     def close: Unit = {
-      info("closed")
+      debug("closed")
       closeCount.incrementAndGet()
     }
   }
@@ -261,302 +262,284 @@ import wvlet.airframe.ServiceMixinExample._
 /**
   *
   */
-class AirframeTest extends AirframeSpec {
+class AirframeTest extends AirSpec {
+  scalaJsSupport
 
-  "Airframe" should {
+  def `be able to use wvlet.airframe.Design to define a new design`: Unit = {
+    val d = Design.newDesign
 
-    "be able to use wvlet.airframe.Design to define a new design" in {
-      val d = Design.newDesign
-
-      // For test coverage
-      d.withLifeCycleLogging.noLifeCycleLogging
-        .withSession { session =>
-          // do nothing
-        }
-    }
-
-    "create a design" in {
-      // Both should work
-      val d  = newDesign.bind[Printer].to[ConsolePrinter]
-      val d1 = newDesign.bind[Printer].to[ConsolePrinter]
-    }
-
-    "instantiate class" in {
-      val d = newDesign
-        .bind[Printer].to[ConsolePrinter]
-        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-
-      val m = d.newSession.build[FortunePrinterMixin]
-    }
-
-    "create singleton" in {
-      val d = newDesign
-        .bind[HeavyObject].toSingleton
-
-      val session = d.newSession
-      val a       = session.build[AirframeAppA]
-      val b       = session.build[AirframeAppB]
-      a.heavy shouldEqual b.heavy
-    }
-
-    "create singleton eagerly" in {
-      val start = System.nanoTime()
-      val session =
-        newDesign
-          .bind[EagerSingleton].toEagerSingleton
-          .newSession
-      val current = System.nanoTime()
-      val s       = session.build[EagerSingleton]
-      s.initializedTime should be >= start
-      s.initializedTime should be <= current
-    }
-
-    "create eager singleton type" taggedAs ("to-singleton") in {
-      val d = newDesign
-        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
-        .bind[Printer].toEagerSingletonOf[ConsolePrinter]
-
-      val p = d.newSession.build[Printer]
-      p.getClass shouldBe classOf[ConsolePrinter]
-
-      val d2 = d.bind[Printer].toSingletonOf[ConsolePrinter]
-      val ho = d2.newSession.build[Printer]
-      ho.getClass shouldBe classOf[ConsolePrinter]
-    }
-
-    "forbid binding to the same type" in {
-      warn("Running cyclic dependency check test")
-      val ex = intercept[CYCLIC_DEPENDENCY] {
-        val d = newDesign
-          .bind[Printer].to[Printer]
+    // For test coverage
+    d.withLifeCycleLogging.noLifeCycleLogging
+      .withSession { session =>
+        // do nothing
       }
-      ex.deps should contain(Surface.of[Printer])
-      ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
+  }
 
-      intercept[CYCLIC_DEPENDENCY] {
-        val d = newDesign
-          .bind[Printer].toSingletonOf[Printer]
-      }.deps should contain(Surface.of[Printer])
+  def `create a design`: Unit = {
+    // Both should work
+    val d  = newDesign.bind[Printer].to[ConsolePrinter]
+    val d1 = newDesign.bind[Printer].to[ConsolePrinter]
+  }
 
-      intercept[CYCLIC_DEPENDENCY] {
-        val d = newDesign
-          .bind[Printer].toEagerSingletonOf[Printer]
-      }.deps should contain(Surface.of[Printer])
-    }
+  def `instantiate class`: Unit = {
+    val d = newDesign
+      .bind[Printer].to[ConsolePrinter]
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-//    trait HasCycle {
-//      val obj = bind[A]
-//    }
+    val m = d.newSession.build[FortunePrinterMixin]
+  }
 
-    "found cyclic dependencies" taggedAs ("cyclic") in {
-      // This will be shown as compilation error in Surface
-      pending
-//      val c = newDesign.newSession
-//      warn("Running cyclic dependency test: A->B->A")
-//
-//      val caught = intercept[CYCLIC_DEPENDENCY] {
-//        c.build[HasCycle]
-//      }
-//      warn(s"${caught}")
-//      caught.deps should contain(Surface.of[A])
-//      caught.deps should contain(Surface.of[B])
-    }
+  def `create singleton`: Unit = {
+    val d = newDesign
+      .bind[HeavyObject].toSingleton
 
-    "detect missing dependencies" in {
-      val d = newDesign
-      warn("Running missing dependency check")
-      val caught = intercept[MISSING_DEPENDENCY] {
-        d.newSession.build[MissingDep]
-      }
-      warn(s"${caught}")
-      caught.stack should contain(Primitive.String)
-    }
+    val session = d.newSession
+    val a       = session.build[AirframeAppA]
+    val b       = session.build[AirframeAppB]
+    a.heavy shouldBe b.heavy
+  }
 
-    "find a session in parameter" in {
-      pending
-      val session = newDesign
-        .bind[Printer].to[ConsolePrinter]
-        .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+  def `create singleton eagerly`: Unit = {
+    val start = System.nanoTime()
+    val session =
+      newDesign
+        .bind[EagerSingleton].toEagerSingleton
         .newSession
-      new ClassWithContext(session)
-    }
+    val current = System.nanoTime()
+    val s       = session.build[EagerSingleton]
+    s.initializedTime >= start shouldBe true
+    s.initializedTime <= current shouldBe true
+  }
 
-    "support binding listener" taggedAs ("listener") in {
-      val counter = new AtomicInteger(0)
+  def `create eager singleton type`: Unit = {
+    val d = newDesign
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+      .bind[Printer].toEagerSingletonOf[ConsolePrinter]
 
-      val design =
-        newDesign
-          .bind[EagerSingleton].toEagerSingleton
-          .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+    val p = d.newSession.build[Printer]
+    p.getClass shouldBe classOf[ConsolePrinter]
 
-      val session = design.newSessionBuilder
-        .withEventHandler(new LifeCycleEventHandler {
-          override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-            logger.debug(s"injected: ${t}")
-            counter.incrementAndGet()
-          }
-        })
-        .create
+    val d2 = d.bind[Printer].toSingletonOf[ConsolePrinter]
+    val ho = d2.newSession.build[Printer]
+    ho.getClass shouldBe classOf[ConsolePrinter]
+  }
 
-      session.build[ConsoleConfig]
-      counter.get shouldBe 2
-    }
-
-    "support binding via factory" taggedAs ("factory-binding") in {
+  def `forbid binding to the same type`: Unit = {
+    warn("Running cyclic dependency check test")
+    val ex = intercept[CYCLIC_DEPENDENCY] {
       val d = newDesign
-        .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
-
-      val session = d.newSession
-      val f       = session.build[FactoryExample]
-      f.hello shouldBe "Hello Airframe!"
-      f.helloFromProvider shouldBe "Hello Airframe!"
-
-      info(f.hello2)
+        .bind[Printer].to[Printer]
     }
+    ex.deps.contains(Surface.of[Printer]) shouldBe true
+    ex.toString.contains("CYCLIC_DEPENDENCY") shouldBe true
 
-    "support type alias" taggedAs ("alias") in {
-      val apple = Surface.of[Apple]
-      warn(s"apple: ${apple}, alias:${apple.isAlias}")
-
+    intercept[CYCLIC_DEPENDENCY] {
       val d = newDesign
-        .bind[Apple].toInstance(Fruit("apple"))
-        .bind[Banana].toInstance(Fruit("banana"))
-        .bind[Lemon].toInstance(Fruit("lemon"))
+        .bind[Printer].toSingletonOf[Printer]
+    }.deps.contains(Surface.of[Printer]) shouldBe true
 
-      val session = d.newSession
-      val tagged  = session.build[TaggedBinding]
-      tagged.apple.name shouldBe ("apple")
-      tagged.banana.name shouldBe ("banana")
-      tagged.lemon.name shouldBe ("lemon")
-    }
-
-    "support nested context injection" taggedAs ("nested") in {
-      val session = newDesign.newSession
-      session.build[Nested]
-    }
-
-    "support injecting to a class" in {
+    intercept[CYCLIC_DEPENDENCY] {
       val d = newDesign
-      val s = d.newSession.build[ClassInjection]
-      s.obj shouldNot be(null)
+        .bind[Printer].toEagerSingletonOf[Printer]
+    }.deps.contains(Surface.of[Printer]) shouldBe true
+  }
 
-      d.newSession.build[NestedClassInjection]
+  def `found cyclic dependencies`: Unit = {
+    //
+    pendingUntil("Fixing a compilation error in Surface")
+    //      val c = newDesign.newSession
+    //      warn("Running cyclic dependency test: A->B->A")
+    //
+    //      val caught = intercept[CYCLIC_DEPENDENCY] {
+    //        c.build[HasCycle]
+    //      }
+    //      warn(s"${caught}")
+    //      caught.deps should contain(Surface.of[A])
+    //      caught.deps should contain(Surface.of[B])
+  }
+
+  def `detect missing dependencies`: Unit = {
+    val d = newDesign
+    warn("Running missing dependency check")
+    val caught = intercept[MISSING_DEPENDENCY] {
+      d.newSession.build[MissingDep]
     }
+    warn(s"${caught}")
+    caught.stack.contains(Primitive.String) shouldBe true
+  }
 
-    "build abstract type that has concrete binding" taggedAs ("abstract") in {
-      val d = newDesign
-        .bind[AbstractModule].to[ConcreteModule]
-      val s = d.newSession
-      val m = s.build[AbstractModule]
-      m.hello
-    }
+  def `find a session in parameter`: Unit = {
+    pending
+    val session = newDesign
+      .bind[Printer].to[ConsolePrinter]
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+      .newSession
+    new ClassWithContext(session)
+  }
 
-    "build nested abstract type that has concrete binding" taggedAs ("nested-abstract") in {
-      val d = newDesign
-        .bind[AbstractModule].to[ConcreteModule]
-      val s = d.newSession
-      val m = s.build[NestedAbstractModule]
-      m.m.hello
-    }
+  def `support binding listener`: Unit = {
+    val counter = new AtomicInteger(0)
 
-    "build a trait bound to singleton" taggedAs ("singleton") in {
-      val d = newDesign
-        .bind[AbstractModule].toInstance(ConcreteSingleton)
-      val s = d.newSession
-      val m = s.build[AbstractModule]
-      m.hello
-    }
-
-    "build a trait" taggedAs ("trait") in {
-      val h = newDesign
-      val s = h.newSession
-      val m = s.build[NonAbstractModule]
-    }
-
-    "build a trait to singleton" taggedAs ("trait-singleton") in {
-      val d =
-        newDesign
-          .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
-
-      val m = d.newSession.build[NonAbstractModule]
-      m shouldBe theSameInstanceAs(SingletonOfNonAbstractModules)
-
-    }
-
-    "create single with inject eagerly" in {
-      val start = System.nanoTime()
-      val d = newSilentDesign
-        .bind[EagerSingletonWithInject].toEagerSingleton
-      val s       = d.newSession.build[EagerSingletonWithInject]
-      val current = System.nanoTime()
-      s.initializedTime should be >= start
-      s.initializedTime should be <= current
-    }
-
-    "support onInit and onShutdown" taggedAs ("lifecycle") in {
-      val session = newSilentDesign.newSession
-      val e       = session.build[LifeCycleExample]
-      e.module.initCount.get() shouldBe 1
-      session.start
-      session.shutdown
-      e.module.closeCount.get() shouldBe 1
-    }
-
-    "bind lifecycle code" taggedAs ("bind-init") in {
-      val session = newSilentDesign.newSession
-      val e       = session.build[BindLifeCycleExample]
-      e.module.initCount.get() shouldBe 1
-
-      session.start
-      e.module.startCount.get() shouldBe 1
-
-      session.shutdown
-      e.module.closeCount.get() shouldBe 1
-    }
-
-    "bind lifecycle" taggedAs ("bind-lifecycle") in {
-      val session = newSilentDesign.newSession
-      val e       = session.build[BindLifeCycleExample2]
-      e.module.initCount.get() shouldBe 1
-
-      session.start
-      e.module.startCount.get() shouldBe 1
-
-      session.shutdown
-      e.module.closeCount.get() shouldBe 1
-    }
-
-    "extend Design" in {
-      val d1 = newDesign
-        .bind[HeavyObject].toSingleton
-
-      val d2 = newDesign
+    val design =
+      newDesign
+        .bind[EagerSingleton].toEagerSingleton
         .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
 
-      val d = d1 + d2
+    val session = design.newSessionBuilder
+      .withEventHandler(new LifeCycleEventHandler {
+        override def onInit(l: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+          logger.debug(s"injected: ${t}")
+          counter.incrementAndGet()
+        }
+      })
+      .create
 
-      val session = d.noLifeCycleLogging.newSession
-      session.build[HeavyObject]
-      session.build[ConsoleConfig]
+    session.build[ConsoleConfig]
+    counter.get shouldBe 2
+  }
+
+  def `support binding via factory`: Unit = {
+    val d = newDesign
+      .bind[HelloConfig].toInstance(HelloConfig("Hello Airframe!"))
+
+    val session = d.newSession
+    val f       = session.build[FactoryExample]
+    f.hello shouldBe "Hello Airframe!"
+    f.helloFromProvider shouldBe "Hello Airframe!"
+
+    debug(f.hello2)
+  }
+  def `support type alias`: Unit = {
+    val apple = Surface.of[Apple]
+    debug(s"apple: ${apple}, alias:${apple.isAlias}")
+
+    val d = newDesign
+      .bind[Apple].toInstance(LocalFruit("apple"))
+      .bind[Banana].toInstance(LocalFruit("banana"))
+      .bind[Lemon].toInstance(LocalFruit("lemon"))
+
+    val session = d.newSession
+    val tagged  = session.build[TaggedBinding]
+    tagged.apple.name shouldBe ("apple")
+    tagged.banana.name shouldBe ("banana")
+    tagged.lemon.name shouldBe ("lemon")
+  }
+
+  def `support nested context injection`: Unit = {
+    val session = newDesign.newSession
+    session.build[Nested]
+  }
+  def `support injecting to a class`: Unit = {
+    val d = newDesign
+    val s = d.newSession.build[ClassInjection]
+    s.obj != null shouldBe true
+
+    d.newSession.build[NestedClassInjection]
+  }
+
+  def `build abstract type that has concrete binding`: Unit = {
+    val d = newDesign
+      .bind[AbstractModule].to[ConcreteModule]
+    val s = d.newSession
+    val m = s.build[AbstractModule]
+    m.hello
+  }
+
+  def `build nested abstract type that has concrete binding`: Unit = {
+    val d = newDesign
+      .bind[AbstractModule].to[ConcreteModule]
+    val s = d.newSession
+    val m = s.build[NestedAbstractModule]
+    m.m.hello
+  }
+
+  def `build a trait bound to singleton`: Unit = {
+    val d = newDesign
+      .bind[AbstractModule].toInstance(ConcreteSingleton)
+    val s = d.newSession
+    val m = s.build[AbstractModule]
+    m.hello
+  }
+
+  def `build a trait`: Unit = {
+    val h = newDesign
+    val s = h.newSession
+    val m = s.build[NonAbstractModule]
+  }
+
+  def `build a trait to singleton`: Unit = {
+    val d =
+      newDesign
+        .bind[NonAbstractModule].toInstance(SingletonOfNonAbstractModules)
+
+    val m = d.newSession.build[NonAbstractModule]
+    m shouldBeTheSameInstanceAs SingletonOfNonAbstractModules
+
+  }
+
+  def `create single with inject eagerly`: Unit = {
+    val start = System.nanoTime()
+    val d = newSilentDesign
+      .bind[EagerSingletonWithInject].toEagerSingleton
+    val s       = d.newSession.build[EagerSingletonWithInject]
+    val current = System.nanoTime()
+    s.initializedTime >= start shouldBe true
+    s.initializedTime <= current shouldBe true
+  }
+
+  def `support onInit and onShutdown`: Unit = {
+    val session = newSilentDesign.newSession
+    val e       = session.build[LifeCycleExample]
+    e.module.initCount.get() shouldBe 1
+    session.start
+    session.shutdown
+    e.module.closeCount.get() shouldBe 1
+  }
+
+  def `bind lifecycle code`: Unit = {
+    val session = newSilentDesign.newSession
+    val e       = session.build[BindLifeCycleExample]
+    e.module.initCount.get() shouldBe 1
+
+    session.start
+    e.module.startCount.get() shouldBe 1
+
+    session.shutdown
+    e.module.closeCount.get() shouldBe 1
+  }
+
+  def `bind lifecycle`: Unit = {
+    val session = newSilentDesign.newSession
+    val e       = session.build[BindLifeCycleExample2]
+    e.module.initCount.get() shouldBe 1
+
+    session.start
+    e.module.startCount.get() shouldBe 1
+
+    session.shutdown
+    e.module.closeCount.get() shouldBe 1
+  }
+
+  def `extend Design`: Unit = {
+    val d1 = newDesign
+      .bind[HeavyObject].toSingleton
+
+    val d2 = newDesign
+      .bind[ConsoleConfig].toInstance(ConsoleConfig(System.err))
+
+    val d = d1 + d2
+
+    val session = d.noLifeCycleLogging.newSession
+    session.build[HeavyObject]
+    session.build[ConsoleConfig]
+  }
+
+  def `throw MISSING_SESSION`: Unit = {
+
+    warn("Running MISSING_SESSION test")
+    val caught = intercept[MISSING_SESSION] {
+      Session.findSession(Surface.of[Test], new Test {})
     }
-
-    "throw MISSING_SESSION" in {
-
-      warn("Running MISSING_SESSION test")
-      val caught = intercept[MISSING_SESSION] {
-        Session.findSession(Surface.of[Test], new Test {})
-      }
-      warn(caught.getMessage)
-    }
-
-    case class ConfigA(param1: Int = 0, param2: Int = 0)
-    case class ConfigB()
-
-    "not cause compilation error" in {
-      val d = newDesign
-        .bind[ConfigA].toInstance(ConfigA(param2 = 1))
-        .bind[ConfigB].toInstance(ConfigB())
-
-    }
+    warn(caught.getMessage)
   }
 }

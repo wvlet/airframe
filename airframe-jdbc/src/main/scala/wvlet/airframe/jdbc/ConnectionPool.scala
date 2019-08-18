@@ -37,7 +37,7 @@ trait ConnectionPool extends LogSupport {
       }
     }
   }
-  def executeUpdate(sql: String): Unit = {
+  def executeUpdate(sql: String): Int = {
     // TODO Add update retry
     withConnection { conn =>
       withResource(conn.createStatement()) { stmt =>

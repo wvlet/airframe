@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import org.scalatest.Tag
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object SerializationTest extends LogSupport {
@@ -35,38 +35,33 @@ object SerializationTest extends LogSupport {
 
 import DesignSerializationTest._
 
-object Serde extends Tag("serde")
+class SerializationTest extends AirSpec {
 
-class SerializationTest extends AirframeSpec {
+  def `serialize provider`: Unit = {
+    import wvlet.airframe.SerializationTest._
+    val b  = serialize(d)
+    val ds = deserialize(b)
+    ds shouldBe d
 
-  "Airframe" should {
-    "serialize provider" taggedAs (Serde) in {
-      import wvlet.airframe.SerializationTest._
-      val b  = serialize(d)
-      val ds = deserialize(b)
-      ds shouldEqual d
+    val s = ds.newSession
+    s.build[A1] shouldBe A1(1)
+    s.build[App] shouldBe App(A1(1))
+  }
 
-      val s = ds.newSession
-      s.build[A1] shouldBe A1(1)
-      s.build[App] shouldBe App(A1(1))
-    }
+  def `serialize provider that involves toInstance of local var`: Unit = {
+    import ProviderSerializationExample._
+    import ProviderVal._
 
-    "serialize provider that involves toInstance of local var" taggedAs (Serde) in {
-      import ProviderSerializationExample._
-      import ProviderVal._
+    val d = newDesign
+      .bind[D1].toInstance(d1)
+      .bind[D2].toInstance(d2)
+      .bind[D3].toInstance(d3)
+      .bind[D4].toInstance(d4)
+      .bind[D5].toInstance(d5)
+      .bind[App].toProvider(provider5 _)
 
-      val d = newDesign
-        .bind[D1].toInstance(d1)
-        .bind[D2].toInstance(d2)
-        .bind[D3].toInstance(d3)
-        .bind[D4].toInstance(d4)
-        .bind[D5].toInstance(d5)
-        .bind[App].toProvider(provider5 _)
-
-      val b  = serialize(d)
-      val ds = deserialize(b)
-      ds shouldEqual d
-    }
-
+    val b  = serialize(d)
+    val ds = deserialize(b)
+    ds shouldBe d
   }
 }

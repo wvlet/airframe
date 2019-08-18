@@ -12,12 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
-import wvlet.airframe.AirframeSpec
+
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class ServerAddressTest extends AirframeSpec {
+class ServerAddressTest extends AirSpec {
 
   val examples = Seq(
     (ServerAddress("localhost:12345"), ServerAddress("localhost", 12345), "localhost:12345", "localhost:12345"),
@@ -47,7 +48,7 @@ class ServerAddressTest extends AirframeSpec {
      "wvlet.org:8080")
   )
 
-  "parse host and port" in {
+  def `parse host and port`: Unit = {
     for (x <- examples) {
       x._1 shouldBe x._2
       x._1.uri shouldBe x._3

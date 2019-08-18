@@ -14,26 +14,24 @@
 package wvlet.airframe.jmx
 
 import javax.management.ObjectName
-
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class JMXAgentTest extends AirframeSpec {
+class JMXAgentTest extends AirSpec {
 
-  "JMXAgent" should {
-    "find jmx registry" in {
-      if (!JMXUtil.isAtLeastJava9) {
-        val agent = JMXAgent.defaultAgent
-        agent.withConnector { connector =>
-          val connection = connector.getMBeanServerConnection()
-          connection.getMBeanCount.toInt shouldBe >(0)
-          val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))
-          m shouldNot be(null)
-          debug(m)
-        }
+  def `find jmx registry`: Unit = {
+    if (!JMXUtil.isAtLeastJava9) {
+      val agent = JMXAgent.defaultAgent
+      agent.withConnector { connector =>
+        val connection = connector.getMBeanServerConnection()
+        connection.getMBeanCount.toInt > 0 shouldBe true
+        val m = connection.getMBeanInfo(new ObjectName("java.lang:type=OperatingSystem"))
+        m != null shouldBe true
+        debug(m)
       }
     }
   }
+
 }

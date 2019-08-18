@@ -15,62 +15,57 @@ package wvlet.airframe.tablet.jdbc
 
 import java.sql.{DriverManager, JDBCType}
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.obj.ObjectTabletWriter
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil._
 
 /**
   *
   */
 import wvlet.airframe.tablet.jdbc.SQLObjectMapperTest._
-class SQLObjectMapperTest extends AirframeSpec {
+class SQLObjectMapperTest extends AirSpec {
 
-  "SQLObjectMapper" should {
-
-    "support all JDBC type mapping" in {
-      // sanity test
-      for (v <- JDBCType.values()) {
-        SQLObjectMapper.jdbcToDataType(v)
-      }
+  def `support all JDBC type mapping`: Unit = {
+    // sanity test
+    for (v <- JDBCType.values()) {
+      SQLObjectMapper.jdbcToDataType(v)
     }
-
-    "generate SQL" in {
-      val r = R(0, 1, 2, 3, 'a', 5, true, "hello")
-
-      // Open in-memory sqlite database
-      Class.forName("org.sqlite.JDBC")
-      withResource(DriverManager.getConnection("jdbc:sqlite::memory:")) { conn =>
-        // Create table
-        withResource(conn.createStatement()) { stmt =>
-          val ct = SQLObjectMapper.createTableSQLFor[R]("mytable")
-          info(ct)
-          stmt.execute(ct)
-        }
-
-        // Insert record
-        SQLObjectMapper.insertRecord(conn, "mytable", r)
-
-        // Read record
-        val b = Seq.newBuilder[R]
-        withResource(conn.createStatement()) { stmt =>
-          withResource(stmt.executeQuery("select * from mytable")) { rs =>
-            b ++= new ResultSetReader(rs).pipe(new ObjectTabletWriter[R]())
-          }
-        }
-        val s = b.result
-        debug(b.result)
-      }
-    }
-
-    "allow primary key config" in {
-      val sql = SQLObjectMapper.createTableSQLFor[T1]("t1", Map("id" -> "primary key"))
-      debug(sql)
-      sql should include(""""id" integer primary key""")
-      sql shouldNot include(""""name" string primary key""")
-    }
-
   }
 
+  def `generate SQL`: Unit = {
+    val r = R(0, 1, 2, 3, 'a', 5, true, "hello")
+
+    // Open in-memory sqlite database
+    Class.forName("org.sqlite.JDBC")
+    withResource(DriverManager.getConnection("jdbc:sqlite::memory:")) { conn =>
+      // Create table
+      withResource(conn.createStatement()) { stmt =>
+        val ct = SQLObjectMapper.createTableSQLFor[R]("mytable")
+        debug(ct)
+        stmt.execute(ct)
+      }
+
+      // Insert record
+      SQLObjectMapper.insertRecord(conn, "mytable", r)
+
+      // Read record
+      val b = Seq.newBuilder[R]
+      withResource(conn.createStatement()) { stmt =>
+        withResource(stmt.executeQuery("select * from mytable")) { rs =>
+          b ++= new ResultSetReader(rs).pipe(new ObjectTabletWriter[R]())
+        }
+      }
+      val s = b.result
+      debug(b.result)
+    }
+  }
+
+  def `allow primary key config`: Unit = {
+    val sql = SQLObjectMapper.createTableSQLFor[T1]("t1", Map("id" -> "primary key"))
+    debug(sql)
+    assert(sql.contains(""""id" integer primary key"""))
+    assert(!sql.contains(""""name" string primary key"""))
+  }
 }
 
 object SQLObjectMapperTest {

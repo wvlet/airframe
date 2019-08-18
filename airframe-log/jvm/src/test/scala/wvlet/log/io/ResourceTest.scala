@@ -23,46 +23,42 @@ import wvlet.log.Spec
 //--------------------------------------
 
 class ResourceTest extends Spec {
-  "Resource" should {
-    "find files from the current class loader" in {
-      debug("find files from package")
-      val l = Resource.listResources("wvlet.log.io", { s: String =>
-        s.endsWith(".class")
-      })
-      l.size should be > 0
-    }
+  def `find files from the current class loader`: Unit = {
+    debug("find files from package")
+    val l = Resource.listResources("wvlet.log.io", { s: String =>
+      s.endsWith(".class")
+    })
+    assert(l.size > 0)
+  }
 
-    "find resources from jar files" in {
-      debug("find files from a jar file")
+  def `find resources from jar files`: Unit = {
+    debug("find files from a jar file")
 
-      val l = Resource.listResources("scala.io", { s: String =>
-        s.endsWith(".class")
-      })
-      l.size should be > 0
-      for (each <- l) {
-        each.url.toString should include("/scala/io")
-      }
-    }
-
-    "find classes of specific types" in {
-      val l = Resource.findClasses("scala.io", classOf[scala.io.Source])
-      l.size should be > 0
-      debug(l)
-      for (each <- l) {
-        debug(each)
-        classOf[scala.io.Source].isAssignableFrom(each) should be(true)
-      }
+    val l = Resource.listResources("scala.io", { s: String =>
+      s.endsWith(".class")
+    })
+    assert(l.size > 0)
+    for (each <- l) {
+      assert(each.url.toString.contains("/scala/io"))
     }
   }
 
-  "ResourceReader trait" should {
-    "find files using the context class" in {
-      new ResourceReader {
-        open("hello.txt") { f =>
-          val lines = IOUtil.readAsString(f).split("\n")
-          lines.length shouldBe 1
-          lines(0).toString shouldBe "Hello World!"
-        }
+  def `find classes of specific types`: Unit = {
+    val l = Resource.findClasses("scala.io", classOf[scala.io.Source])
+    assert(l.size > 0)
+    debug(l)
+    for (each <- l) {
+      debug(each)
+      assert(classOf[scala.io.Source].isAssignableFrom(each))
+    }
+  }
+
+  def `find files using the context class`: Unit = {
+    new ResourceReader {
+      open("hello.txt") { f =>
+        val lines = IOUtil.readAsString(f).split("\n")
+        assert(lines.length == 1)
+        assert(lines(0).toString == "Hello World!")
       }
     }
   }

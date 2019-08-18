@@ -15,23 +15,23 @@ package wvlet.airframe
 
 import wvlet.log.LogSupport
 import wvlet.airframe.surface.tag._
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class MapBindingTest extends AirframeSpec {
+class MapBindingTest extends AirSpec {
+  scalaJsSupport
   import MapBindingTest._
 
-  "Airframe" should {
-    "support map binding" in {
-      val d = newSilentDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")
+  def `support map binding`: Unit = {
+    val d = newSilentDesign.bind[Mapper].toSingleton.bind[String @@ InfoHandler].toInstance("info")
 
-      d.withSession { session =>
-        val m = session.build[Mapper]
-        m.handle("info")
-        m.handle("get")
-        m.handle("other")
-      }
+    d.withSession { session =>
+      val m = session.build[Mapper]
+      m.handle("info")
+      m.handle("get")
+      m.handle("other")
     }
   }
 }
@@ -65,7 +65,7 @@ object MapBindingTest {
 
     def handle(name: String) = {
       val message = dispatcher.apply(name).handle
-      info(message)
+      debug(message)
     }
   }
 }

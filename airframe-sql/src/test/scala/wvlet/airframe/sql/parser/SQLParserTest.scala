@@ -13,15 +13,15 @@
  */
 package wvlet.airframe.sql.parser
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.sql.SQLBenchmark
 import wvlet.airframe.sql.SQLBenchmark.TestQuery
 import wvlet.airframe.sql.analyzer.QuerySignature
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class SQLParserTest extends AirframeSpec {
+class SQLParserTest extends AirSpec {
 
   /**
     * sql 1 -> model 1 -> sql 2 -> model 2
@@ -29,7 +29,7 @@ class SQLParserTest extends AirframeSpec {
     * model 1 should be equivalent to model 2
     *
     */
-  def roundtrip(q: TestQuery): Unit = {
+  protected def roundtrip(q: TestQuery): Unit = {
     debug(s"roundtrip test:\n${q.sql}")
     val m1        = SQLParser.parse(q.sql)
     val planTree1 = m1.printPlan
@@ -60,33 +60,33 @@ class SQLParserTest extends AirframeSpec {
 
   }
 
-  def roundtrip(s: Seq[TestQuery]): Unit = {
+  protected def roundtrip(s: Seq[TestQuery]): Unit = {
     s.foreach { sql =>
       roundtrip(sql)
     }
   }
 
-  "parse selection queries" in {
+  def `parse selection queries`: Unit = {
     roundtrip(SQLBenchmark.selection)
   }
 
-  "parse DDL queries" in {
+  def `parse DDL queries`: Unit = {
     roundtrip(SQLBenchmark.ddl)
   }
 
-  "parse TPC-H" in {
+  def `parse TPC-H`: Unit = {
     roundtrip(SQLBenchmark.tpcH)
   }
 
-  "parse TPC-DS" in {
+  def `parse TPC-DS`: Unit = {
     roundtrip(SQLBenchmark.tpcDS)
   }
 
-  "parse hive queries" in {
+  def `parse hive queries`: Unit = {
     roundtrip(SQLBenchmark.hive)
   }
 
-  "parse private queries" taggedAs working in {
+  def `parse private queries`: Unit = {
     roundtrip(SQLBenchmark.privateQueries)
   }
 }

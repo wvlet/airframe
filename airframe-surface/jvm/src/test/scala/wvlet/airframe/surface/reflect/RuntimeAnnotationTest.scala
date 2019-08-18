@@ -30,41 +30,40 @@ class RuntimeAnnot(@Resource(name = "param A") a: String, c: Int) {
   *
   */
 class RuntimeAnnotationTest extends SurfaceSpec {
-  "RuntimeSurface" should {
-    "find class annotations" in {
-      val r = Surface.of[RuntimeAnnot]
-      val a = r.findAnnotationOf[Resource]
-      a shouldBe defined
-      a.get.name() shouldBe "annot-test"
-    }
-
-    "find parameter annotations" in {
-      val s = Surface.of[RuntimeAnnot]
-      val p = s.params.find(_.name == "a").get
-      val a = p.findAnnotationOf[Resource]
-      a shouldBe defined
-      a.get.name() shouldBe "param A"
-
-      val c = s.params.find(_.name == "c").get
-      c.findAnnotationOf[Resource] shouldBe empty
-    }
-
-    "find method annotations" in {
-      val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
-      val a = m.findAnnotationOf[PreDestroy]
-      a shouldBe defined
-      m.findAnnotationOf[Resource] shouldNot be(defined)
-
-      val p = m.args.find(_.name == "arg").get
-      info(s"p: ${p}, ${p.index}")
-      val r = p.findAnnotationOf[Resource]
-      r shouldBe defined
-      r.get.name() shouldBe "b arg"
-    }
-
-    "pass sanity check" in {
-      val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
-      m.annotations shouldBe empty
-    }
+  def `find class annotations`: Unit = {
+    val r = Surface.of[RuntimeAnnot]
+    val a = r.findAnnotationOf[Resource]
+    assert(a.isDefined)
+    assert(a.get.name() == "annot-test")
   }
+
+  def `find parameter annotations`: Unit = {
+    val s = Surface.of[RuntimeAnnot]
+    val p = s.params.find(_.name == "a").get
+    val a = p.findAnnotationOf[Resource]
+    assert(a.isDefined)
+    assert(a.get.name() == "param A")
+
+    val c = s.params.find(_.name == "c").get
+    assert(c.findAnnotationOf[Resource].isEmpty)
+  }
+
+  def `find method annotations`: Unit = {
+    val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "b").get
+    val a = m.findAnnotationOf[PreDestroy]
+    assert(a.isDefined)
+    assert(m.findAnnotationOf[Resource].isEmpty)
+
+    val p = m.args.find(_.name == "arg").get
+    debug(s"p: ${p}, ${p.index}")
+    val r = p.findAnnotationOf[Resource]
+    assert(r.isDefined)
+    assert(r.get.name() == "b arg")
+  }
+
+  def `pass sanity check`: Unit = {
+    val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
+    assert(m.annotations.isEmpty)
+  }
+
 }

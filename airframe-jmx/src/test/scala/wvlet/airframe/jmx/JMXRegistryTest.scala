@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.jmx
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 import scala.util.Random
@@ -43,63 +43,61 @@ object MyJMXAppObj
 /**
   *
   */
-class JMXRegistryTest extends AirframeSpec {
+class JMXRegistryTest extends AirSpec {
 
   val agent = new JMXAgent(new JMXConfig())
 
-  override def afterAll: Unit = {
+  override protected def afterAll: Unit = {
     agent.unregisterAll
   }
 
-  "JMXRegistry" should {
-    "register a new mbean" in {
-      val b = new SampleMBean
-      agent.register(b)
+  def `register a new mbean`: Unit = {
+    val b = new SampleMBean
+    agent.register(b)
 
-      if (!JMXUtil.isAtLeastJava9) {
-        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
-        debug(m)
+    if (!JMXUtil.isAtLeastJava9) {
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=SampleMBean")
+      debug(m)
 
-        val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
-        debug(a)
-      }
+      val a = agent.getMBeanAttribute("wvlet.airframe.jmx:name=SampleMBean", "freeMemory")
+      debug(a)
     }
-
-    "support class field" taggedAs ("class-field") in {
-      val f = new FieldMBean(1, "apple")
-      agent.register(f)
-
-      if (!JMXUtil.isAtLeastJava9) {
-        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
-        info(m)
-
-        agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "a") shouldBe 1
-        agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "b") shouldBe "apple"
-      }
-    }
-
-    "handle nested JMX MBean" taggedAs ("nested") in {
-      val n = new NestedMBean
-      agent.register(n)
-
-      if (!JMXUtil.isAtLeastJava9) {
-        val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
-        info(m)
-
-        agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt should be <= 10
-        agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe ("nested JMX bean")
-      }
-    }
-
-    "avoid double registration" in {
-      val f = new FieldMBean(1, "apple")
-      agent.register(f)
-      agent.register(f)
-    }
-
-    "support complex trait name" in {
-      agent.register[MyJMXApp](new MyJMXApp {})
-    }
-
   }
+
+  def `support class field`: Unit = {
+    val f = new FieldMBean(1, "apple")
+    agent.register(f)
+
+    if (!JMXUtil.isAtLeastJava9) {
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=FieldMBean")
+      info(m)
+
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "a") shouldBe 1
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=FieldMBean", "b") shouldBe "apple"
+    }
+  }
+
+  def `handle nested JMX MBean`: Unit = {
+    val n = new NestedMBean
+    agent.register(n)
+
+    if (!JMXUtil.isAtLeastJava9) {
+      val m = agent.getMBeanInfo("wvlet.airframe.jmx:name=NestedMBean")
+      info(m)
+
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.count").toString.toInt <= 10 shouldBe true
+      agent.getMBeanAttribute("wvlet.airframe.jmx:name=NestedMBean", "stat.state") shouldBe "nested JMX bean"
+    }
+  }
+
+  def `avoid double registration`: Unit = {
+    val f = new FieldMBean(1, "apple")
+    agent.register(f)
+    agent.register(f)
+  }
+
+  def `support complex trait name`: Unit = {
+    agent.register[MyJMXApp](new MyJMXApp {})
+  }
+
 }

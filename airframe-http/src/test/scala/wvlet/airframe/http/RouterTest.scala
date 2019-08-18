@@ -13,23 +13,23 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.AirframeSpec
-import wvlet.airframe.http.example._
 import wvlet.airframe.http.example.ControllerExample.User
+import wvlet.airframe.http.example._
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class RouterTest extends AirframeSpec {
-  "reject invalid path" in {
+class RouterTest extends AirSpec {
+  def `reject invalid path`: Unit = {
     val e = intercept[IllegalArgumentException] {
       Router.of[InvalidService]
     }
     trace(e.getMessage)
   }
 
-  "register functions as routes" in {
+  def `register functions as routes`: Unit = {
     val r = Router.of[ControllerExample]
 
     trace(r.routes)
@@ -38,14 +38,14 @@ class RouterTest extends AirframeSpec {
     post shouldBe defined
   }
 
-  "support prefixed paths" in {
+  def `support prefixed paths`: Unit = {
     val r = Router.of[PrefixExample]
 
     trace(r.routes)
     r.routes.head.path shouldBe "/v1/hello"
   }
 
-  "combination of multiple controllers" in {
+  def `combination of multiple controllers`: Unit = {
     val r = Router
       .add[ControllerExample]
       .add[PrefixExample]
@@ -54,7 +54,7 @@ class RouterTest extends AirframeSpec {
     r.routes.find(_.path == "/v1/hello") shouldBe defined
   }
 
-  "find target method" in {
+  def `find target method`: Unit = {
     val router = Router.of[ControllerExample]
 
     val r = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/user/1"))
@@ -76,9 +76,18 @@ class RouterTest extends AirframeSpec {
     debug(r4)
     r4 shouldBe defined
     r4.get.route.method shouldBe HttpMethod.DELETE
+
+    val r5 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"))
+    debug(r5)
+    r5 shouldBe defined
+    r5.get.route.method shouldBe HttpMethod.GET
+
+    val r6 = router.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config/xxxx/info"))
+    debug(r6)
+    r6 shouldNotBe defined
   }
 
-  "call registered methods" in {
+  def `call registered methods`: Unit = {
     val router = Router.of[ControllerExample]
 
     val s = new ControllerExample {}
@@ -115,7 +124,7 @@ class RouterTest extends AirframeSpec {
     call(SimpleHttpRequest(HttpMethod.GET, "/v1/config/info"), "hello")
   }
 
-  "find ambiguous path patterns" in {
+  def `find ambiguous path patterns`: Unit = {
     val r = Router.add[AmbiguousPathExample]
     warn("Ambiguous HTTP path pattern test")
     val ex = intercept[Throwable] {
@@ -124,7 +133,7 @@ class RouterTest extends AirframeSpec {
     warn(ex.getMessage)
   }
 
-  "find methods with the same prefix" in {
+  def `find methods with the same prefix`: Unit = {
     val r  = Router.add[SharedPathPrefix]
     val m1 = r.findRoute(SimpleHttpRequest(HttpMethod.GET, "/v1/config"))
     m1 shouldBe defined
@@ -135,10 +144,10 @@ class RouterTest extends AirframeSpec {
     m2.get.route.path shouldBe "/v1/config/app"
   }
 
-  "build DFA" in {
+  def `build DFA`: Unit = {
     // Test DFA builder
     val r   = Router.add[ControllerExample]
     val dfa = RouteMatcher.buildPathDFA(r.routes)
-    info(dfa.toString)
+    debug(dfa.toString)
   }
 }

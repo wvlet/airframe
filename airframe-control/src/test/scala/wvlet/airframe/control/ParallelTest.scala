@@ -15,145 +15,142 @@ package wvlet.airframe.control
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 import scala.language.postfixOps
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
-class ParallelTest extends AirframeSpec {
+class ParallelTest extends AirSpec {
 
-  "Parallel" should {
-    "run() in parallel with Seq" in {
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
+  def `run() in parallel with Seq`: Unit = {
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
 
-      val source    = Seq(1, 2, 3)
-      val counter   = new AtomicInteger(0)
-      val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
-      val result = Parallel.run(source, parallelism = 3) { i =>
-        // Record the current time
-        startTime(i - 1) = System.currentTimeMillis()
-        counter.incrementAndGet()
-        while (counter.get() < 3) {
-          Thread.sleep(0)
+    val source    = Seq(1, 2, 3)
+    val counter   = new AtomicInteger(0)
+    val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
+    val result = Parallel.run(source, parallelism = 3) { i =>
+      // Record the current time
+      startTime(i - 1) = System.currentTimeMillis()
+      counter.incrementAndGet()
+      while (counter.get() < 3) {
+        Thread.sleep(0)
+      }
+      i * 2
+    }
+    val endTime = System.currentTimeMillis()
+    assert(startTime.forall(_ <= endTime))
+    assert(result == List(2, 4, 6))
+
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
+
+  def `iterate() in parallel with Iterator`: Unit = {
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
+
+    val source    = Seq(1, 2, 3)
+    val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
+    val result = Parallel.iterate(source.iterator, parallelism = 3) { i =>
+      startTime(i - 1) = System.currentTimeMillis()
+      i * 2
+    }
+    // wait for completion here
+    val list = result.toList
+
+    val endTime = System.currentTimeMillis()
+    assert(startTime.forall(_ <= endTime))
+
+    // The result element order can be shuffled
+    assert(List(2, 4, 6).forall(x => list.contains(x)))
+
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
+
+  def `handle errors in run()` : Unit = {
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
+
+    val source    = Seq(1, 2, 3)
+    val exception = new RuntimeException("failure")
+
+    val result = Parallel
+      .run(source, parallelism = 3) { i =>
+        Try {
+          if (i == 2) {
+            throw exception
+          }
+          i * 2
         }
-        i * 2
-      }
-      val endTime = System.currentTimeMillis()
-      assert(startTime.forall(_ <= endTime))
-      assert(result == List(2, 4, 6))
+      }.toList
 
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
-    }
+    assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
 
-    "iterate() in parallel with Iterator" in {
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
 
-      val source    = Seq(1, 2, 3)
-      val startTime = Array(Long.MaxValue, Long.MaxValue, Long.MaxValue)
-      val result = Parallel.iterate(source.toIterator, parallelism = 3) { i =>
-        startTime(i - 1) = System.currentTimeMillis()
-        i * 2
-      }
-      // wait for completion here
-      val list = result.toList
+  def `handle errors in iterate()` : Unit = {
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
 
-      val endTime = System.currentTimeMillis()
-      assert(startTime.forall(_ <= endTime))
+    val source    = Seq(1, 2, 3)
+    val exception = new RuntimeException("failure")
 
-      // The result element order can be shuffled
-      assert(List(2, 4, 6).forall(x => list.contains(x)))
-
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
-    }
-
-    "handle errors in run()" in {
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
-
-      val source    = Seq(1, 2, 3)
-      val exception = new RuntimeException("failure")
-
-      val result = Parallel
-        .run(source, parallelism = 3) { i =>
-          Try {
-            if (i == 2) {
-              throw exception
-            }
-            i * 2
+    val result = Parallel
+      .iterate(source.iterator, parallelism = 3) { i =>
+        Try {
+          if (i == 2) {
+            throw exception
           }
-        }.toList
+          i * 2
+        }
+      }.toList
 
-      assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
+    assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
 
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
+
+  def `be run for Seq using syntax sugar`: Unit = {
+    import wvlet.airframe.control.parallel._
+
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
+
+    val source = Seq(1, 2, 3)
+    val result: Seq[Int] = source.parallel.withParallelism(2).map { x =>
+      x * 2
     }
 
-    "handle errors in iterate()" in {
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
+    assert(result == List(2, 4, 6))
 
-      val source    = Seq(1, 2, 3)
-      val exception = new RuntimeException("failure")
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
 
-      val result = Parallel
-        .iterate(source.toIterator, parallelism = 3) { i =>
-          Try {
-            if (i == 2) {
-              throw exception
-            }
-            i * 2
-          }
-        }.toList
+  def `be run for Iterator using syntax sugar`: Unit = {
+    import wvlet.airframe.control.parallel._
 
-      assert(List(Success(2), Failure(exception), Success(6)).forall(x => result.contains(x)))
+    Parallel.jmxStats.startedTasks.set(0)
+    Parallel.jmxStats.finishedTasks.set(0)
 
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
+    val source = Seq(1, 2, 3).iterator
+    val result: Iterator[Int] = source.parallel.withParallelism(2).map { x =>
+      x * 2
     }
 
-    "be run for Seq using syntax sugar" in {
-      import wvlet.airframe.control.parallel._
+    val list = result.toList
+    assert(List(2, 4, 6).forall(x => list.contains(x)))
 
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
+    assert(Parallel.jmxStats.startedTasks.get() == 3)
+    assert(Parallel.jmxStats.finishedTasks.get() == 3)
+  }
 
-      val source = Seq(1, 2, 3)
-      val result: Seq[Int] = source.parallel.withParallelism(2).map { x =>
-        x * 2
-      }
-
-      assert(result == List(2, 4, 6))
-
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
-    }
-
-    "be run for Iterator using syntax sugar" in {
-      import wvlet.airframe.control.parallel._
-
-      Parallel.jmxStats.startedTasks.set(0)
-      Parallel.jmxStats.finishedTasks.set(0)
-
-      val source = Seq(1, 2, 3).iterator
-      val result: Iterator[Int] = source.parallel.withParallelism(2).map { x =>
-        x * 2
-      }
-
-      val list = result.toList
-      assert(List(2, 4, 6).forall(x => list.contains(x)))
-
-      assert(Parallel.jmxStats.startedTasks.get() == 3)
-      assert(Parallel.jmxStats.finishedTasks.get() == 3)
-    }
-
-//    "repeat() and stop" in {
+//    def `repeat() and stop`: Unit =  {
 //      val source  = Seq(0)
 //
 //      val ticker  = Ticker.manualTicker
@@ -181,5 +178,4 @@ class ParallelTest extends AirframeSpec {
 //      assert(counter(2) == 3)
 //      assert(counter(5) == 1)
 //    }
-  }
 }

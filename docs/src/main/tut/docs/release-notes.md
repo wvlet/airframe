@@ -5,6 +5,82 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.6
+-  airspec
+   -  Fix shouldNotBe null error message [[c869db1](https://github.com/wvlet/airframe/commit/c869db1)]
+   -  [#612](https://github.com/wvlet/airframe/issues/612): Fixes java.lang.ClassNotFoundException: scala.reflect.api.Trees ([#613](https://github.com/wvlet/airframe/issues/613)) [[06b70d8](https://github.com/wvlet/airframe/commit/06b70d8)]
+   -  [#610](https://github.com/wvlet/airframe/issues/610): Avoid registering JVM shutdown hooks in airspec sessions ([#611](https://github.com/wvlet/airframe/issues/611)) [[44b84d3](https://github.com/wvlet/airframe/commit/44b84d3)]
+-  internal: Upgrade to sbt 1.3.0-RC3 with turbo mode ([#614](https://github.com/wvlet/airframe/issues/614)) [[59d9d48](https://github.com/wvlet/airframe/commit/59d9d48)]
+
+## 19.8.5
+-  airspec: Fix log message duplication issue ([#609](https://github.com/wvlet/airframe/issues/609)) [[4536123](https://github.com/wvlet/airframe/commit/4536123)]
+-  airspec: Support shouldBe null ([#607](https://github.com/wvlet/airframe/issues/607)) [[78c87dd](https://github.com/wvlet/airframe/commit/78c87dd)]
+-  airframe-log: Handle InstanceAlreadyExistsException at logger JMX mbeam registration ([#608](https://github.com/wvlet/airframe/issues/608)) [[bd13110](https://github.com/wvlet/airframe/commit/bd13110)]
+
+## 19.8.4
+- AirSpec is renamed to a simple package `wvlet.airspec`.
+  -  airspec: Rename to wvlet.airspec ([#605](https://github.com/wvlet/airframe/issues/605)) [[6d6ff91](https://github.com/wvlet/airframe/commit/6d6ff91)]
+  -  airspec: Add optional PropertyBased testing [[9fbe8ca](https://github.com/wvlet/airframe/commit/9fbe8ca)]
+  -  airspec: [#597](https://github.com/wvlet/airframe/issues/597): Add AirSpecContext to run nested tests ([#602](https://github.com/wvlet/airframe/issues/602)) [[a41211a](https://github.com/wvlet/airframe/commit/a41211a)]
+  -  Make airspec an all-in-jar ([#601](https://github.com/wvlet/airframe/issues/601)) [[18d3970](https://github.com/wvlet/airframe/commit/18d3970)]
+  -  airspec: Add assertEquals(a, b, delta) [[2ca677a](https://github.com/wvlet/airframe/commit/2ca677a)]
+  -  airspec: Add inTravisCI checker [[9302a70](https://github.com/wvlet/airframe/commit/9302a70)]
+  -  airspec: Return Nothing for asserts throwing exceptions [[7fb68e2](https://github.com/wvlet/airframe/commit/7fb68e2)]
+  -  Migrated all airframe module tests from ScalaTest to AirSpec
+- airframe-surface: disable createObjectFactry for abstract classes in Scala.js [[45b22ac](https://github.com/wvlet/airframe/commit/45b22ac)]
+
+## 19.8.3
+- AirSpec:
+  -  airspec is now a standalone project without any cyclic dependencies to airframe module ([#592](https://github.com/wvlet/airframe/issues/592)) [[d0db028](https://github.com/wvlet/airframe/commit/d0db028)]
+  -  Support shouldBe matchers ([#590](https://github.com/wvlet/airframe/issues/590)) [[0caf159](https://github.com/wvlet/airframe/commit/0caf159)]
+  -  Always use ANSI color logs for Travis CI ([#596](https://github.com/wvlet/airframe/issues/596)) [[1c791fd](https://github.com/wvlet/airframe/commit/1c791fd)]
+-  internal chaange: airframe-control: Use AirSpec for test cases ([#594](https://github.com/wvlet/airframe/issues/594)) [[d08c603](https://github.com/wvlet/airframe/commit/d08c603)]
+-  Upgrade to Scala.js 0.6.28 ([#593](https://github.com/wvlet/airframe/issues/593)) [[00e88ab](https://github.com/wvlet/airframe/commit/00e88ab)]
+
+## 19.8.2
+-  airspec: Use airframe-log for AirSpec logging for improving the log messages ([#584](https://github.com/wvlet/airframe/issues/584)) [[857ae2c](https://github.com/wvlet/airframe/commit/857ae2c)]
+- internal: Migrate test cases of airframe-log/surface to airspec
+
+## 19.8.1
+-  **AirSpec**: Added a new function-based testing library for Scala and Scala.js [#580](https://github.com/wvlet/airframe/pull/580)
+   - source code: https://github.com/wvlet/airframe/tree/master/airspec
+-  airframe-scalatest: Rename airframe-spec to airframe-scalatest [[51f8922](https://github.com/wvlet/airframe/commit/51f8922)]
+-  airframe-surfaace: Support symbolic method names in Scala.js [[57d67fe](https://github.com/wvlet/airframe/commit/57d67fe)]
+-  airframe-surface: Sort methodSurface based on the source code order [[bdf1a86](https://github.com/wvlet/airframe/commit/bdf1a86)]
+-  Handle ClassNotFound issue of sbt-1.3.x by cleaning-up all custom LogHandlers [[e70ab0d](https://github.com/wvlet/airframe/commit/e70ab0d)]
+
+## 19.8.0
+-  airframe-http-recorder: Support binary requests and responses ([#579](https://github.com/wvlet/airframe/issues/579)) [[a0c5894](https://github.com/wvlet/airframe/commit/a0c5894)]
+-  airframe-http-recorder: Support custom recording  ([#578](https://github.com/wvlet/airframe/issues/578)) [[d9b8ed2](https://github.com/wvlet/airframe/commit/d9b8ed2)]
+-  airframe-json: Throw IntegerOverflow exceptions for too big numbers ([#575](https://github.com/wvlet/airframe/issues/575)) [[0e541ee](https://github.com/wvlet/airframe/commit/0e541ee)]
+-  airframe-benchmark: Aggregate benchmark programs (msgpack-benchmark, json-benchmark) into one project ([#573](https://github.com/wvlet/airframe/issues/573)) [[67656ba](https://github.com/wvlet/airframe/commit/67656ba)]
+-  [#475](https://github.com/wvlet/airframe/issues/475): Use Scala 2.13 compatible collection syntaxes ([#572](https://github.com/wvlet/airframe/issues/572)) [[6f20a16](https://github.com/wvlet/airframe/commit/6f20a16)]
+-  airframe-json: Use exhaustive match for JSONValue.value ([#571](https://github.com/wvlet/airframe/issues/571)) [[f138d74](https://github.com/wvlet/airframe/commit/f138d74)]
+-  airframe-http: Support Router.add[Filter], andThen[Filter] ([#570](https://github.com/wvlet/airframe/issues/570)) [[8335c39](https://github.com/wvlet/airframe/commit/8335c39)]
+-  airframe-http: Wrap exceptions with Future for each filter and context ([#569](https://github.com/wvlet/airframe/issues/569)) [[1324385](https://github.com/wvlet/airframe/commit/1324385)]
+
+## 19.7.6
+-  airframe-http-recorder: [#559](https://github.com/wvlet/airframe/issues/559) Support expiration ([#567](https://github.com/wvlet/airframe/issues/567)) [[32a0224](https://github.com/wvlet/airframe/commit/32a0224)]
+-  airframe-http: Allow setting FinagleServer name ([#566](https://github.com/wvlet/airframe/issues/566)) [[3f810f1](https://github.com/wvlet/airframe/commit/3f810f1)]
+-  airframe-http: Return the last failed response with HttpClientException ([#565](https://github.com/wvlet/airframe/issues/565)) [[2099555](https://github.com/wvlet/airframe/commit/2099555)]
+-  airframe-http-recorder: Exclude unnecessary request headers from records ([#563](https://github.com/wvlet/airframe/issues/563)) [[2246316](https://github.com/wvlet/airframe/commit/2246316)]
+-  airframe-http-recorder: Exclude Date header from request hash ([#562](https://github.com/wvlet/airframe/issues/562)) [[8b75221](https://github.com/wvlet/airframe/commit/8b75221)]
+-  airframe-http-recorder: Use case-insensitive request hashing ([#561](https://github.com/wvlet/airframe/issues/561)) [[20467a6](https://github.com/wvlet/airframe/commit/20467a6)]
+-  airframe-http-recorder: Add createRecorderProxy ([#557](https://github.com/wvlet/airframe/issues/557)) [[bbba4db](https://github.com/wvlet/airframe/commit/bbba4db)]
+-  Rename airframe-macros to airframe-di-macros ([#560](https://github.com/wvlet/airframe/issues/560)) [[9a6e871](https://github.com/wvlet/airframe/commit/9a6e871)]
+
+## 19.7.5
+-  airframe-http: Support reading raw response as is ([#553](https://github.com/wvlet/airframe/issues/553)) [[1ccedae](https://github.com/wvlet/airframe/commit/1ccedae)]
+-  airframe-http-client: Add getResource for GET with query strings ([#552](https://github.com/wvlet/airframe/issues/552)) [[fd5849c](https://github.com/wvlet/airframe/commit/fd5849c)]
+-  airframe-http-client: Support customizing http requests [#550](https://github.com/wvlet/airframe/issues/550) ([#551](https://github.com/wvlet/airframe/issues/551)) [[1542beb](https://github.com/wvlet/airframe/commit/1542beb)]
+-  airframe-http: Add HttpFilter support to Router ([#540](https://github.com/wvlet/airframe/issues/540)) [[1cb7096](https://github.com/wvlet/airframe/commit/1cb7096)]
+
+## 19.7.4
+-  airframe-log: GraalVM support ([#549](https://github.com/wvlet/airframe/issues/549)) [[df8b408](https://github.com/wvlet/airframe/commit/df8b408)]
+-  airframe-http: Fix over routing in airframe-http ([#547](https://github.com/wvlet/airframe/issues/547)) [[4eb6245](https://github.com/wvlet/airframe/commit/4eb6245)]
+-  airframe-config: Allow reading config files from classpath, and add more examples ([#544](https://github.com/wvlet/airframe/issues/544)) [[697b04e](https://github.com/wvlet/airframe/commit/697b04e)]
+-  airframe-json: Reuse StringBuilder [#381](https://github.com/wvlet/airframe/issues/381) ([#546](https://github.com/wvlet/airframe/issues/546)) [[04bd01f](https://github.com/wvlet/airframe/commit/04bd01f)]
+
 ## 19.7.3
 -  airframe-metrics: Add TimeWindow.howMany(unit), minutesDiff, etc. ([#545](https://github.com/wvlet/airframe/issues/545)) [[77f7be9](https://github.com/wvlet/airframe/commit/77f7be9)]
 

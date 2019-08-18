@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.launcher
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
 
 object OptionBuilderTest {
 
@@ -28,15 +28,13 @@ object OptionBuilderTest {
 /**
   *
   */
-class OptionBuilderTest extends AirframeSpec {
+class OptionBuilderTest extends AirSpec {
   import OptionBuilderTest._
 
-  "OptionBuilder" should {
-    "read default value" in {
-      val l   = Launcher.of[Main1]
-      val m   = l.execute("")
-      val opt = m.getRootInstance.asInstanceOf[Main1].opt
-      opt.env shouldBe "default"
-    }
+  def `read default value`: Unit = {
+    val l   = Launcher.of[Main1]
+    val m   = l.execute("")
+    val opt = m.getRootInstance.asInstanceOf[Main1].opt
+    opt.env shouldBe "default"
   }
 }

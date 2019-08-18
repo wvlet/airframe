@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.config
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.config.ConfigOverrideTest.MyAppConfig
+import wvlet.airspec.AirSpec
 
 object NestedOverrideTest {
   case class LogConfig(file: LogFileConfig)
@@ -23,13 +23,13 @@ object NestedOverrideTest {
 /**
   *
   */
-class NestedOverrideTest extends AirframeSpec {
+class NestedOverrideTest extends AirSpec {
 
   private val configPaths = Seq("airframe-config/src/test/resources")
 
   import NestedOverrideTest._
 
-  "override nested yaml" in {
+  def `override nested yaml`: Unit = {
 
     val config =
       Config(env = "default", configPaths = configPaths)

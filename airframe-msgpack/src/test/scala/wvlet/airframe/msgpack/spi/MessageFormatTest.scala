@@ -13,118 +13,118 @@
  */
 package wvlet.airframe.msgpack.spi
 
-import org.scalatest.exceptions.TestFailedException
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.spi.{AirSpecException, AssertionFailure}
+import wvlet.airspec.AirSpec
 import wvlet.log.LogLevel
-import wvlet.log.io.{StopWatch, Timer}
+import wvlet.log.io.Timer
 
 import scala.util.Random
 
-class MessageFormatTest extends AirframeSpec with Timer {
-  "MessageFormat" should {
-    "cover all byte codes" in {
-      def checkV(b: Byte, tpe: ValueType): Unit = {
-        try MessageFormat.of(b).valueType shouldBe tpe
-        catch {
-          case e: TestFailedException =>
-            error(f"Failure when looking at byte ${b}%02x")
-            throw e
-        }
-      }
+class MessageFormatTest extends AirSpec with Timer {
+  scalaJsSupport
 
-      def checkF(b: Byte, f: MessageFormat): Unit = {
-        MessageFormat.of(b) shouldBe f
-      }
-
-      def check(b: Byte, tpe: ValueType, f: MessageFormat): Unit = {
-        checkV(b, tpe)
-        checkF(b, f)
-      }
-
-      for (i <- 0 until 0x7f) {
-        check(i.toByte, ValueType.INTEGER, MessageFormat.POSFIXINT)
-      }
-
-      for (i <- 0x80 until 0x8f) {
-        check(i.toByte, ValueType.MAP, MessageFormat.FIXMAP)
-      }
-
-      for (i <- 0x90 until 0x9f) {
-        check(i.toByte, ValueType.ARRAY, MessageFormat.FIXARRAY)
-      }
-
-      check(Code.NIL, ValueType.NIL, MessageFormat.NIL)
-
-      MessageFormat.of(Code.NEVER_USED) shouldBe MessageFormat.NEVER_USED
-
-      for (i <- Seq(Code.TRUE, Code.FALSE)) {
-        check(i, ValueType.BOOLEAN, MessageFormat.BOOLEAN)
-      }
-
-      check(Code.BIN8, ValueType.BINARY, MessageFormat.BIN8)
-      check(Code.BIN16, ValueType.BINARY, MessageFormat.BIN16)
-      check(Code.BIN32, ValueType.BINARY, MessageFormat.BIN32)
-
-      check(Code.FIXEXT1, ValueType.EXTENSION, MessageFormat.FIXEXT1)
-      check(Code.FIXEXT2, ValueType.EXTENSION, MessageFormat.FIXEXT2)
-      check(Code.FIXEXT4, ValueType.EXTENSION, MessageFormat.FIXEXT4)
-      check(Code.FIXEXT8, ValueType.EXTENSION, MessageFormat.FIXEXT8)
-      check(Code.FIXEXT16, ValueType.EXTENSION, MessageFormat.FIXEXT16)
-      check(Code.EXT8, ValueType.EXTENSION, MessageFormat.EXT8)
-      check(Code.EXT16, ValueType.EXTENSION, MessageFormat.EXT16)
-      check(Code.EXT32, ValueType.EXTENSION, MessageFormat.EXT32)
-
-      check(Code.INT8, ValueType.INTEGER, MessageFormat.INT8)
-      check(Code.INT16, ValueType.INTEGER, MessageFormat.INT16)
-      check(Code.INT32, ValueType.INTEGER, MessageFormat.INT32)
-      check(Code.INT64, ValueType.INTEGER, MessageFormat.INT64)
-      check(Code.UINT8, ValueType.INTEGER, MessageFormat.UINT8)
-      check(Code.UINT16, ValueType.INTEGER, MessageFormat.UINT16)
-      check(Code.UINT32, ValueType.INTEGER, MessageFormat.UINT32)
-      check(Code.UINT64, ValueType.INTEGER, MessageFormat.UINT64)
-
-      check(Code.STR8, ValueType.STRING, MessageFormat.STR8)
-      check(Code.STR16, ValueType.STRING, MessageFormat.STR16)
-      check(Code.STR32, ValueType.STRING, MessageFormat.STR32)
-
-      check(Code.FLOAT32, ValueType.FLOAT, MessageFormat.FLOAT32)
-      check(Code.FLOAT64, ValueType.FLOAT, MessageFormat.FLOAT64)
-
-      check(Code.ARRAY16, ValueType.ARRAY, MessageFormat.ARRAY16)
-      check(Code.ARRAY32, ValueType.ARRAY, MessageFormat.ARRAY32)
-
-      for (i <- 0xe0 to 0xff) {
-        check(i.toByte, ValueType.INTEGER, MessageFormat.NEGFIXINT)
+  def `cover all byte codes`: Unit = {
+    def checkV(b: Byte, tpe: ValueType): Unit = {
+      try MessageFormat.of(b).valueType shouldBe tpe
+      catch {
+        case e: AirSpecException =>
+          error(f"Failure when looking at byte ${b}%02x")
+          throw e
       }
     }
 
-    "improve the valueOf performance" in {
-      val N   = 10000
-      val idx = (0 until N).map(x => Random.nextInt(256).toByte).toArray[Byte]
+    def checkF(b: Byte, f: MessageFormat): Unit = {
+      MessageFormat.of(b) shouldBe f
+    }
 
-      // Initialize
-      MessageFormat.of(0.toByte)
+    def check(b: Byte, tpe: ValueType, f: MessageFormat): Unit = {
+      checkV(b, tpe)
+      checkF(b, f)
+    }
 
-      val t = time("lookup", repeat = 10, logLevel = LogLevel.WARN) {
-        block("switch") {
-          var i = 0
-          while (i < N) {
-            MessageFormat.toMessageFormat(idx(i))
-            i += 1
-          }
-        }
+    for (i <- 0 until 0x7f) {
+      check(i.toByte, ValueType.INTEGER, MessageFormat.POSFIXINT)
+    }
 
-        block("table") {
-          var i = 0
-          while (i < N) {
-            MessageFormat.of(idx(i))
-            i += 1
-          }
+    for (i <- 0x80 until 0x8f) {
+      check(i.toByte, ValueType.MAP, MessageFormat.FIXMAP)
+    }
+
+    for (i <- 0x90 until 0x9f) {
+      check(i.toByte, ValueType.ARRAY, MessageFormat.FIXARRAY)
+    }
+
+    check(Code.NIL, ValueType.NIL, MessageFormat.NIL)
+
+    MessageFormat.of(Code.NEVER_USED) shouldBe MessageFormat.NEVER_USED
+
+    for (i <- Seq(Code.TRUE, Code.FALSE)) {
+      check(i, ValueType.BOOLEAN, MessageFormat.BOOLEAN)
+    }
+
+    check(Code.BIN8, ValueType.BINARY, MessageFormat.BIN8)
+    check(Code.BIN16, ValueType.BINARY, MessageFormat.BIN16)
+    check(Code.BIN32, ValueType.BINARY, MessageFormat.BIN32)
+
+    check(Code.FIXEXT1, ValueType.EXTENSION, MessageFormat.FIXEXT1)
+    check(Code.FIXEXT2, ValueType.EXTENSION, MessageFormat.FIXEXT2)
+    check(Code.FIXEXT4, ValueType.EXTENSION, MessageFormat.FIXEXT4)
+    check(Code.FIXEXT8, ValueType.EXTENSION, MessageFormat.FIXEXT8)
+    check(Code.FIXEXT16, ValueType.EXTENSION, MessageFormat.FIXEXT16)
+    check(Code.EXT8, ValueType.EXTENSION, MessageFormat.EXT8)
+    check(Code.EXT16, ValueType.EXTENSION, MessageFormat.EXT16)
+    check(Code.EXT32, ValueType.EXTENSION, MessageFormat.EXT32)
+
+    check(Code.INT8, ValueType.INTEGER, MessageFormat.INT8)
+    check(Code.INT16, ValueType.INTEGER, MessageFormat.INT16)
+    check(Code.INT32, ValueType.INTEGER, MessageFormat.INT32)
+    check(Code.INT64, ValueType.INTEGER, MessageFormat.INT64)
+    check(Code.UINT8, ValueType.INTEGER, MessageFormat.UINT8)
+    check(Code.UINT16, ValueType.INTEGER, MessageFormat.UINT16)
+    check(Code.UINT32, ValueType.INTEGER, MessageFormat.UINT32)
+    check(Code.UINT64, ValueType.INTEGER, MessageFormat.UINT64)
+
+    check(Code.STR8, ValueType.STRING, MessageFormat.STR8)
+    check(Code.STR16, ValueType.STRING, MessageFormat.STR16)
+    check(Code.STR32, ValueType.STRING, MessageFormat.STR32)
+
+    check(Code.FLOAT32, ValueType.FLOAT, MessageFormat.FLOAT32)
+    check(Code.FLOAT64, ValueType.FLOAT, MessageFormat.FLOAT64)
+
+    check(Code.ARRAY16, ValueType.ARRAY, MessageFormat.ARRAY16)
+    check(Code.ARRAY32, ValueType.ARRAY, MessageFormat.ARRAY32)
+
+    for (i <- 0xe0 to 0xff) {
+      check(i.toByte, ValueType.INTEGER, MessageFormat.NEGFIXINT)
+    }
+  }
+
+  def `improve the valueOf performance`: Unit = {
+    val N   = 10000
+    val idx = (0 until N).map(x => Random.nextInt(256).toByte).toArray[Byte]
+
+    // Initialize
+    MessageFormat.of(0.toByte)
+
+    val t = time("lookup", repeat = 10, logLevel = LogLevel.DEBUG) {
+      block("switch") {
+        var i = 0
+        while (i < N) {
+          MessageFormat.toMessageFormat(idx(i))
+          i += 1
         }
       }
 
-      // Do not check the performance since on TravisCI performance can be very unstable
-      //t("table").averageWithoutMinMax shouldBe <=(t("switch").averageWithoutMinMax)
+      block("table") {
+        var i = 0
+        while (i < N) {
+          MessageFormat.of(idx(i))
+          i += 1
+        }
+      }
     }
+
+    // Do not check the performance since on TravisCI performance can be very unstable
+    //t("table").averageWithoutMinMax shouldBe <=(t("switch").averageWithoutMinMax)
   }
 }

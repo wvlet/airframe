@@ -13,6 +13,8 @@ Airframe has several modules for kick starting your application development in S
 
 - [airframe](airframe.html)
   - Scala-friendly dependency injection library.
+- [airspec](airspec.html)
+  - A functional testing framework for Scala.
 - [ariframe-canvas](airframe-canvas.html)
   - Off-heap memory buffer
 - [airframe-codec](airframe-codec.html)

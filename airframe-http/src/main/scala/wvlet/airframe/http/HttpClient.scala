@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import java.net.URLEncoder
+
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext}
 import wvlet.log.LogSupport
@@ -30,9 +32,17 @@ import scala.reflect.runtime.{universe => ru}
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   /**
-    * Send an HTTP request.
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    *
+    * @throws HttpClientMaxRetryException if max retry reaches
+    * @throws HttpClientException for non-retryable error is happend
     */
   def send(req: Req): F[Resp]
+
+  /**
+    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    */
+  def sendSafe(req: Req): F[Resp]
 
   /**
     * Await the response and extract the return value
@@ -43,15 +53,33 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
     */
   private[http] def awaitF[A](f: F[A]): A
 
-  def get[Resource: ru.TypeTag](resourcePath: String): F[Resource]
-  def list[OperationResponse: ru.TypeTag](resourcePath: String): F[OperationResponse]
-  def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
-  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
-                                                                resource: Resource): F[OperationResponse]
-  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): F[Resource]
-  def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
-                                                               resource: Resource): F[OperationResponse]
-  def delete[OperationResponse: ru.TypeTag](resourcePath: String): F[OperationResponse]
+  def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): F[Resource]
+
+  /**
+    * Send a get request using the ResourceRequest. ResourceRequest parameters will be expanded as URL query strings
+    */
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                     resourceRequest: ResourceRequest,
+                                                                     requestFilter: Req => Req = identity): F[Resource]
+
+  def list[OperationResponse: ru.TypeTag](resourcePath: String,
+                                          requestFilter: Req => Req = identity): F[OperationResponse]
+  def post[Resource: ru.TypeTag](resourcePath: String,
+                                 resource: Resource,
+                                 requestFilter: Req => Req = identity): F[Resource]
+  def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity): F[OperationResponse]
+  def put[Resource: ru.TypeTag](resourcePath: String,
+                                resource: Resource,
+                                requestFilter: Req => Req = identity): F[Resource]
+  def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity): F[OperationResponse]
+  def delete[OperationResponse: ru.TypeTag](resourcePath: String,
+                                            requestFilter: Req => Req = identity): F[OperationResponse]
 
   def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
 }
@@ -67,33 +95,59 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) extends AutoCloseable {
   protected def awaitF[A](f: F[A]): A = asyncClient.awaitF(f)
 
+  /**
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    *
+    * @throws HttpClientMaxRetryException if max retry reaches
+    * @throws HttpClientException for non-retryable error is happend
+    */
   def send(req: Req): Resp = awaitF(asyncClient.send(req))
 
-  def get[Resource: ru.TypeTag](resourcePath: String): Resource = {
-    awaitF(asyncClient.get[Resource](resourcePath))
+  /**
+    * Send an HTTP request and returns a response (or the last response if the request is retried)
+    */
+  def sendSafe(req: Req): Resp = awaitF(asyncClient.sendSafe(req))
+
+  def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): Resource = {
+    awaitF(asyncClient.get[Resource](resourcePath, requestFilter))
   }
-  def list[OperationResponse: ru.TypeTag](resourcePath: String): OperationResponse = {
-    awaitF(asyncClient.list[OperationResponse](resourcePath))
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                     resourceRequest: ResourceRequest,
+                                                                     requestFilter: Req => Req = identity): Resource = {
+    awaitF(asyncClient.getResource[ResourceRequest, Resource](resourcePath, resourceRequest, requestFilter))
+  }
+  def list[OperationResponse: ru.TypeTag](resourcePath: String,
+                                          requestFilter: Req => Req = identity): OperationResponse = {
+    awaitF(asyncClient.list[OperationResponse](resourcePath, requestFilter))
   }
 
-  def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource = {
-    awaitF(asyncClient.post[Resource](resourcePath, resource))
+  def post[Resource: ru.TypeTag](resourcePath: String,
+                                 resource: Resource,
+                                 requestFilter: Req => Req = identity): Resource = {
+    awaitF(asyncClient.post[Resource](resourcePath, resource, requestFilter))
   }
-  def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
-                                                                resource: Resource): OperationResponse = {
-    awaitF(asyncClient.post[Resource, OperationResponse](resourcePath, resource))
-  }
-
-  def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Resource = {
-    awaitF(asyncClient.put[Resource](resourcePath, resource))
-  }
-  def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](resourcePath: String,
-                                                               resource: Resource): OperationResponse = {
-    awaitF(asyncClient.put[Resource, OperationResponse](resourcePath, resource))
+  def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity): OperationResponse = {
+    awaitF(asyncClient.postOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
   }
 
-  def delete[OperationResponse: ru.TypeTag](resourcePath: String): OperationResponse = {
-    awaitF(asyncClient.delete[OperationResponse](resourcePath))
+  def put[Resource: ru.TypeTag](resourcePath: String,
+                                resource: Resource,
+                                requestFilter: Req => Req = identity): Resource = {
+    awaitF(asyncClient.put[Resource](resourcePath, resource, requestFilter))
+  }
+  def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity): OperationResponse = {
+    awaitF(asyncClient.putOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
+  }
+
+  def delete[OperationResponse: ru.TypeTag](resourcePath: String,
+                                            requestFilter: Req => Req = identity): OperationResponse = {
+    awaitF(asyncClient.delete[OperationResponse](resourcePath, requestFilter))
   }
 
   override def close(): Unit = {
@@ -136,6 +190,10 @@ object HttpClient extends LogSupport {
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec.")
     AddExtraRetryWait(extraWaitMillis.toInt)
+  }
+
+  def urlEncode(s: String): String = {
+    URLEncoder.encode(s, "UTF-8")
   }
 
 }

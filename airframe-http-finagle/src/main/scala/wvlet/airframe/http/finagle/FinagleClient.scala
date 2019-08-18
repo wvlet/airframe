@@ -18,12 +18,15 @@ import java.util.concurrent.TimeUnit
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
-import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
+import wvlet.airframe.codec.{JSONValueCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry.RetryContext
+import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
+import wvlet.airframe.json.JSON.{JSONArray, JSONObject}
 import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
+import scala.util.control.NonFatal
 
 case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
                                requestFilter: http.Request => http.Request = identity,
@@ -49,19 +52,43 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   override def send(req: Request): Future[Response] = {
-    client(req)
+    client.apply(req)
+  }
+
+  private def toRawUnsafe(resp: HttpResponse[_]): Response = {
+    resp.asInstanceOf[HttpResponse[Response]].toRaw
+  }
+
+  override def sendSafe(req: Request): Future[Response] = {
+    try {
+      client.apply(req).rescue {
+        case e: HttpClientException =>
+          Future.value(toRawUnsafe(e.response))
+      }
+    } catch {
+      case e: HttpClientException =>
+        Future.value(toRawUnsafe(e.response))
+      case NonFatal(e) =>
+        Future.exception(e)
+    }
   }
 
   def close: Unit = {
     client.close()
   }
 
-  def newRequest(method: HttpMethod, path: String): Request = {
-    // TODO add additional http headers
-    val req = Request(toFinagleHttpMethod(method), path)
-    config.requestFilter(req)
+  def newRequest(method: HttpMethod, path: String, additionalRequestFilter: Request => Request = identity): Request = {
+    var req = Request(toFinagleHttpMethod(method), path)
+    // Add common http headers
+    req = config.requestFilter(req)
+    // Add additional http headers
+    req = additionalRequestFilter(req)
+    req
   }
 
+  /**
+    * Await the result of Future[A]. It will throw an exception if some error happens
+    */
   override private[http] def awaitF[A](f: Future[A]): A = {
     val r = Await.result(f, config.timeout)
     trace(r)
@@ -72,10 +99,17 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {
-    val codec = MessageCodec.of[A]
-    response.map { r =>
-      val msgpack = responseCodec.toMsgPack(r)
-      codec.unpack(msgpack)
+    if (implicitly[ru.TypeTag[A]] == ru.typeTag[Response]) {
+      // Can return the response as is
+      response.asInstanceOf[Future[A]]
+    } else {
+      // Need a conversion
+      val codec = MessageCodec.of[A]
+      response
+        .map { r =>
+          val msgpack = responseCodec.toMsgPack(r)
+          codec.unpack(msgpack)
+        }
     }
   }
 
@@ -86,45 +120,83 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     json
   }
 
-  override def get[Resource: ru.TypeTag](resourcePath: String): Future[Resource] = {
-    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath)))
-  }
-  override def list[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath)))
+  override def get[Resource: ru.TypeTag](resourcePath: String,
+                                         requestFilter: Request => Request = identity): Future[Resource] = {
+    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
 
-  override def post[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
+  override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
+                                                                              resourceRequest: ResourceRequest,
+                                                                              requestFilter: Request => Request =
+                                                                                identity): Future[Resource] = {
+
+    // Read resource as JSON
+    val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
+    val queryParams: Seq[String] =
+      resourceRequestJsonValue.v.map {
+        case (k, j @ JSONArray(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON array value
+        case (k, j @ JSONObject(_)) =>
+          s"${urlEncode(k)}=${urlEncode(j.toJSON)}" // Flatten the JSON object value
+        case (k, other) =>
+          s"${urlEncode(k)}=${urlEncode(other.toString)}"
+      }
+
+    // Build query strings
+    val pathWithQueryParam = new StringBuilder
+    pathWithQueryParam.append(resourcePath)
+    pathWithQueryParam.append("?")
+    pathWithQueryParam.append(queryParams.mkString("&"))
+
+    convert[Resource](send(newRequest(HttpMethod.GET, pathWithQueryParam.result(), requestFilter)))
+  }
+
+  override def list[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
+  }
+
+  override def post[Resource: ru.TypeTag](resourcePath: String,
+                                          resource: Resource,
+                                          requestFilter: Request => Request = identity): Future[Resource] = {
+    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
   }
-  override def post[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+  override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
-      resource: Resource): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
+      resource: Resource,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r))
   }
 
-  override def put[Resource: ru.TypeTag](resourcePath: String, resource: Resource): Future[Resource] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
+  override def put[Resource: ru.TypeTag](resourcePath: String,
+                                         resource: Resource,
+                                         requestFilter: Request => Request = identity): Future[Resource] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r))
   }
-  override def put[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+  override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
-      resource: Resource): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
+      resource: Resource,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r))
   }
 
-  override def delete[OperationResponse: ru.TypeTag](resourcePath: String): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath)))
+  override def delete[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath, requestFilter)))
   }
 
 }

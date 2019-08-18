@@ -175,7 +175,7 @@ object Logger {
   // Set a custom LogManager to show log messages even in shutdown hooks
   System.setProperty("java.util.logging.manager", "wvlet.log.AirframeLogManager")
 
-  import collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   private lazy val loggerCache = new ConcurrentHashMap[String, Logger].asScala
 
@@ -223,7 +223,9 @@ object Logger {
   }
 
   def setDefaultFormatter(formatter: LogFormatter): Unit = {
-    rootLogger.resetHandler(new ConsoleLogHandler(formatter))
+    synchronized {
+      rootLogger.resetHandler(new ConsoleLogHandler(formatter))
+    }
   }
 
   def setDefaultHandler(handler: jl.Handler): Unit = {

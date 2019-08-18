@@ -14,24 +14,26 @@
 
 package wvlet.airframe.surface
 
-import wvlet.airframe.AirframeSpec
+import wvlet.airspec.AirSpec
+import wvlet.log.LogSupport
+
 import scala.language.implicitConversions
 
-trait SurfaceSpec extends AirframeSpec {
+trait SurfaceSpec extends AirSpec with LogSupport {
 
-  def check(body: => Surface, expectedName: String): Surface = {
+  protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
-    surface.toString shouldBe expectedName
+    assert(surface.toString == expectedName)
     surface
   }
 
-  def checkPrimitive(body: => Surface, expectedName: String): Surface = {
+  protected def checkPrimitive(body: => Surface, expectedName: String): Surface = {
     val s = check(body, expectedName)
-    s.isAlias shouldBe false
-    s.isOption shouldBe false
-    s.isPrimitive shouldBe true
-    s.objectFactory.isEmpty shouldBe true
+    assert(s.isAlias == false)
+    assert(s.isOption == false)
+    assert(s.isPrimitive == true)
+    assert(s.objectFactory.isEmpty == true)
     s
   }
 

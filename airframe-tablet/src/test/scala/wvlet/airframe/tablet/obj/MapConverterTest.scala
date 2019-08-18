@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.tablet.obj
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.obj.MapConverterTest.Sample
+import wvlet.airspec.AirSpec
 
 object MapConverterTest {
   case class Sample(name: String, id: Int)
@@ -23,14 +23,11 @@ object MapConverterTest {
 /**
   *
   */
-class MapConverterTest extends AirframeSpec {
-  "MapConverter" should {
-    "convert to Map" in {
-      val s  = Sample("leo", 1)
-      val mc = MapConverter.of[Sample]
-      val m  = mc.toMap(s)
-      info(m)
-    }
+class MapConverterTest extends AirSpec {
+  def `convert to Map`: Unit = {
+    val s  = Sample("leo", 1)
+    val mc = MapConverter.of[Sample]
+    val m  = mc.toMap(s)
+    debug(m)
   }
-
 }

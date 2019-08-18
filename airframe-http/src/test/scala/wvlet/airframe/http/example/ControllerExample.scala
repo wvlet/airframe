@@ -31,7 +31,7 @@ trait ControllerExample extends LogSupport {
   @Endpoint(path = "/user/:id", method = HttpMethod.GET)
   def getUser(id: String): User = {
     val u = User(id, "leo")
-    info(s"get ${u}")
+    debug(s"get ${u}")
     u
   }
 
@@ -40,39 +40,39 @@ trait ControllerExample extends LogSupport {
   def newUser(createUserRequest: CreateUserRequest): User = {
     // Support mapping JSON body message -> MsgPack -> Object
     val newUser = User(createUserRequest.id, createUserRequest.name)
-    info(s"create user: ${newUser}, create request:${createUserRequest}")
+    debug(s"create user: ${newUser}, create request:${createUserRequest}")
     newUser
   }
 
   @Endpoint(path = "/user/:id", method = HttpMethod.DELETE)
   def deleteUser(id: String): Unit = {
-    info(s"delete ${id}")
+    debug(s"delete ${id}")
   }
 
   @Endpoint(path = "/user/:id", method = HttpMethod.PUT)
   def updateUser(id: String, httpRequest: HttpRequest[_]): String = {
-    info(s"id: ${id}, ${httpRequest.contentString}")
+    debug(s"id: ${id}, ${httpRequest.contentString}")
     httpRequest.contentString
   }
 
   @Endpoint(path = "/:group/users", method = HttpMethod.GET)
   def groupUsers(group: String): Group = {
     val g = Group(group, Seq(User("10", "leo")))
-    info(s"get ${g}")
+    debug(s"get ${g}")
     g
   }
 
   @Endpoint(path = "/:group/user/:id", method = HttpMethod.GET)
   def groupUser(group: String, id: String): Group = {
     val g = Group(group, Seq(User(id, "leo")))
-    info(s"get ${g}")
+    debug(s"get ${g}")
     g
   }
 
   @Endpoint(path = "/conflict/users", method = HttpMethod.GET)
   def conflictPath(): Group = {
     val g = Group("xxx", Seq(User("10", "leo")))
-    info(s"get ${g}")
+    debug(s"get ${g}")
     g
   }
 

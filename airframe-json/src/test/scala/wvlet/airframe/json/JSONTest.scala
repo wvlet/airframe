@@ -12,19 +12,21 @@
  * limitations under the License.
  */
 package wvlet.airframe.json
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.json.JSON.{JSONArray, JSONLong, JSONNumber, JSONObject}
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class JSONTest extends AirframeSpec {
-  "support toJSONValue" in {
+class JSONTest extends AirSpec {
+  scalaJsSupport
+
+  def `support toJSONValue`: Unit = {
     val json: Json = """{"id":1}"""
     json.toJSONValue shouldBe JSON.parse(json)
   }
 
-  "JSONObject.get() and JSONArray.apply()" in {
+  def `JSONObject.get() and JSONArray.apply()` : Unit = {
     val json: Json = """{"user": [{ "id": 1 }, { "id": 2 }]}"""
     val jsonValue  = JSON.parse(json)
 
@@ -37,7 +39,7 @@ class JSONTest extends AirframeSpec {
     id shouldBe Some(1)
   }
 
-  "JSON DSL" in {
+  def `JSON DSL`: Unit = {
     val json: Json = """{"user": [{ "id": 1, "name": "a" }, { "id": 2, "name": "b" }]}"""
     val jsonValue  = JSON.parse(json)
 

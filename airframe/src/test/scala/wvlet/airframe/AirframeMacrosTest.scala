@@ -13,10 +13,11 @@
  */
 package wvlet.airframe
 
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 trait NonAbstractTrait extends LogSupport {
-  info("hello trait")
+  debug("hello trait")
 }
 
 trait AbstractTrait extends LogSupport {
@@ -24,7 +25,7 @@ trait AbstractTrait extends LogSupport {
 }
 
 trait ConcreteTrait extends AbstractTrait {
-  override def abstractMethod: Unit = { info("hello abstract trait") }
+  override def abstractMethod: Unit = { debug("hello abstract trait") }
 }
 
 trait App1 {
@@ -42,28 +43,28 @@ class ConcreteClass {
 /**
   *
   */
-class AirframeMacrosTest extends AirframeSpec {
-  "AirframeMacro" should {
-    "build trait at compile time" in {
+class AirframeMacrosTest extends AirSpec {
+  scalaJsSupport
 
-      val session = newDesign.newSession
-      session.build[NonAbstractTrait]
-      session.build[App1]
-    }
+  def `build trait at compile time`: Unit = {
 
-    "build abstract trait" in {
-      val session = newDesign
-        .bind[AbstractTrait].to[ConcreteTrait]
-        .newSession
+    val session = newDesign.newSession
+    session.build[NonAbstractTrait]
+    session.build[App1]
+  }
 
-      val t   = session.build[AbstractTrait]
-      val app = session.build[App2]
-      t.abstractMethod
-      app.t.abstractMethod
-    }
+  def `build abstract trait`: Unit = {
+    val session = newDesign
+      .bind[AbstractTrait].to[ConcreteTrait]
+      .newSession
 
-    "inject Session to concrete class" in {
-      newDesign.newSession.build[ConcreteClass]
-    }
+    val t   = session.build[AbstractTrait]
+    val app = session.build[App2]
+    t.abstractMethod
+    app.t.abstractMethod
+  }
+
+  def `inject Session to concrete class`: Unit = {
+    newDesign.newSession.build[ConcreteClass]
   }
 }

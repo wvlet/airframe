@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 import wvlet.airframe.tracing.{ChromeTracer, DIStats}
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object TracerTest extends LogSupport {
@@ -48,11 +49,11 @@ object TracerTest extends LogSupport {
 /**
   *
   */
-class TracerTest extends AirframeSpec {
+class TracerTest extends AirSpec {
 
   import TracerTest._
 
-  "should trace events" in {
+  def `should trace events`: Unit = {
     val d = newDesign.noLifeCycleLogging
       .withTracer(ChromeTracer.newTracer("target/trace.json"))
 
@@ -61,7 +62,7 @@ class TracerTest extends AirframeSpec {
     }
   }
 
-  "should report design coverage" in {
+  def `should report design coverage`: Unit = {
     val stats = new DIStats()
     val d = newDesign.noLifeCycleLogging
       .bind[A].toSingleton
@@ -77,6 +78,7 @@ class TracerTest extends AirframeSpec {
     }
 
     val report = stats.coverageReportFor(d)
-    info(report)
+    val r      = report.toString
+    debug(r)
   }
 }

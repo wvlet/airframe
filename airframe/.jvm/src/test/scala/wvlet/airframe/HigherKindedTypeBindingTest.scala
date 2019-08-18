@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import wvlet.airframe.surface.Surface
+import wvlet.airspec.AirSpec
 
 import scala.concurrent.Future
 import scala.language.higherKinds
@@ -43,30 +44,27 @@ object TaglessFinalExample {
 /**
   *
   */
-class HigherKindedTypeBindingTest extends AirframeSpec {
+class HigherKindedTypeBindingTest extends AirSpec {
   import TaglessFinalExample._
 
-  "Airframe" should {
-    "support higher-kinded type binding" in {
+  def `support higher-kinded type binding`: Unit = {
 
-      // TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js
-      val s = Surface.of[WebApp[Future]]
-      info(s)
-      info(s.typeArgs(0))
+    warn("TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js")
+    val s = Surface.of[WebApp[Future]]
+    debug(s)
+    debug(s.typeArgs(0))
 
-      val d = newDesign
-        .bind[WebApp[Future]].toInstance(webAppWithFuture)
-        .bind[WebApp[Option]].toInstance(webAppWithOption)
-        .noLifeCycleLogging
+    val d = newDesign
+      .bind[WebApp[Future]].toInstance(webAppWithFuture)
+      .bind[WebApp[Option]].toInstance(webAppWithOption)
+      .noLifeCycleLogging
 
-      d.build[WebApp[Future]] { app =>
-        app.serverInfo.value shouldBe Some(Success("hello"))
-      }
+    d.build[WebApp[Future]] { app =>
+      app.serverInfo.value shouldBe Some(Success("hello"))
+    }
 
-      d.build[WebApp[Option]] { app =>
-        app.serverInfo shouldBe Some("hello")
-      }
+    d.build[WebApp[Option]] { app =>
+      app.serverInfo shouldBe Some("hello")
     }
   }
-
 }

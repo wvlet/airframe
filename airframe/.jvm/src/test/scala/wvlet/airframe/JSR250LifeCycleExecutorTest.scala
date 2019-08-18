@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import javax.annotation.{PostConstruct, PreDestroy}
+import wvlet.airspec.AirSpec
 
 trait JSR250Test {
   var initialized = false
@@ -33,17 +34,15 @@ trait JSR250Test {
 /**
   *
   */
-class JSR250LifeCycleExecutorTest extends AirframeSpec {
-  "Airframe" should {
-    "support JSR250 event" in {
-      val s = newSilentDesign.newSession
+class JSR250LifeCycleExecutorTest extends AirSpec {
+  def `support JSR250 event`: Unit = {
+    val s = newSilentDesign.newSession
 
-      val t = s.build[JSR250Test]
-      t.initialized shouldBe true
-      t.stopped shouldBe false
-      s.start {}
-      t.initialized shouldBe true
-      t.stopped shouldBe true
-    }
+    val t = s.build[JSR250Test]
+    t.initialized shouldBe true
+    t.stopped shouldBe false
+    s.start {}
+    t.initialized shouldBe true
+    t.stopped shouldBe true
   }
 }

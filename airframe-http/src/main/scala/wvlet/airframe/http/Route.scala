@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
-import wvlet.airframe.codec.{JSONCodec, MessageCodecFactory}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{Surface, Zero}
@@ -29,6 +29,10 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
   require(
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
+
+  override def toString =
+    s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
+      .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
 
   val pathComponents: IndexedSeq[String] = {
     path
@@ -48,7 +52,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
   def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
       implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
-    val requestParams = adapter.queryOf(request) ++ params
+    val requestParams: Map[String, String] = adapter.queryOf(request) ++ params
+    lazy val queryParamMsgpack             = Route.stringMapCodec.toMsgPack(requestParams)
 
     // Build the function arguments
     val methodArgs: Seq[Any] =
@@ -57,6 +62,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
           case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
             adapter.httpRequestOf(request)
+          case cl if adapter.requestType.isAssignableFrom(cl) =>
+            request
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
@@ -65,32 +72,37 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                 // Pass the String parameter to the method argument
                 argCodec.unpackMsgPack(StringCodec.toMsgPack(paramValue))
               case None =>
-                // Build the parameter from the content body
-                val contentBytes = adapter.contentBytesOf(request)
-
-                if (contentBytes.nonEmpty) {
-                  val msgpack =
-                    adapter.contentTypeOf(request).map(_.split(";")(0)) match {
-                      case Some("application/x-msgpack") =>
-                        contentBytes
-                      case Some("application/json") =>
-                        // JSON -> msgpack
-                        JSONCodec.toMsgPack(JSON.parse(contentBytes))
-                      case _ =>
-                        // Try parsing as JSON first
-                        Try(JSON.parse(contentBytes))
-                          .map { jsonValue =>
-                            JSONCodec.toMsgPack(jsonValue)
-                          }
-                          .getOrElse {
-                            // If parsing as JSON fails, treat the content body as a regular string
-                            StringCodec.toMsgPack(adapter.contentStringOf(request))
-                          }
-                    }
-                  argCodec.unpackMsgPack(msgpack)
+                if (adapter.methodOf(request) == HttpMethod.GET) {
+                  // Build the method argument instance from the query strings for GET requests
+                  argCodec.unpackMsgPack(queryParamMsgpack)
                 } else {
-                  // Return the method default argument if exists
-                  arg.getMethodArgDefaultValue(controller)
+                  // Build the method argument instance from the content body for non GET requests
+                  val contentBytes = adapter.contentBytesOf(request)
+
+                  if (contentBytes.nonEmpty) {
+                    val msgpack =
+                      adapter.contentTypeOf(request).map(_.split(";")(0)) match {
+                        case Some("application/x-msgpack") =>
+                          contentBytes
+                        case Some("application/json") =>
+                          // JSON -> msgpack
+                          JSONCodec.toMsgPack(JSON.parse(contentBytes))
+                        case _ =>
+                          // Try parsing as JSON first
+                          Try(JSON.parse(contentBytes))
+                            .map { jsonValue =>
+                              JSONCodec.toMsgPack(jsonValue)
+                            }
+                            .getOrElse {
+                              // If parsing as JSON fails, treat the content body as a regular string
+                              StringCodec.toMsgPack(adapter.contentStringOf(request))
+                            }
+                      }
+                    argCodec.unpackMsgPack(msgpack)
+                  } else {
+                    // Return the method default argument if exists
+                    arg.getMethodArgDefaultValue(controller)
+                  }
                 }
             }
             // If mapping fails, use the zero value
@@ -112,4 +124,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       call(controller, buildControllerMethodArgs(controller, request, params))
     }
   }
+}
+
+object Route {
+  private[Route] val stringMapCodec = MessageCodec.of[Map[String, String]]
 }

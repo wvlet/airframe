@@ -27,47 +27,47 @@ object RecursiveSurfaceTest {
   *
   */
 class RecursiveSurfaceTest extends SurfaceSpec {
+  scalaJsSupport
 
   import RecursiveSurfaceTest._
 
-  "Surface" should {
-    "find surface from full type name string" in {
-      val s = Surface.of[Leaf]
-      surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") shouldBe s
-    }
-
-    "support recursive type" in {
-      val c: Surface = Surface.of[Cons]
-      c.toString shouldBe "Cons"
-
-      c.params should have length (2)
-      val h = c.params(0)
-      h.name shouldBe "head"
-      h.surface shouldBe Primitive.String
-
-      val t = c.params(1)
-      t.name shouldBe "tail"
-      val lazyC: Surface = t.surface
-      lazyC.toString shouldBe "Cons"
-      lazyC.params should have length (2)
-      lazyC.isPrimitive shouldBe false
-      lazyC.isOption shouldBe false
-      lazyC.isAlias shouldBe false
-      lazyC.objectFactory shouldBe defined
-    }
-
-    "support generic recursive type" in {
-      val c: Surface = Surface.of[TypedCons[String]]
-      c.toString shouldBe "TypedCons[String]"
-
-      c.params should have length (2)
-      c.params(0).surface shouldBe Primitive.String
-
-      val lazyC: Surface = c.params(1).surface
-      lazyC.toString shouldBe "TypedCons[String]"
-      lazyC.params should have length (2)
-      lazyC.isPrimitive shouldBe false
-      lazyC.isOption shouldBe false
-    }
+  def `find surface from full type name string`: Unit = {
+    val s = Surface.of[Leaf]
+    assert(surface.getCached("wvlet.airframe.surface.RecursiveSurfaceTest.Leaf") == s)
   }
+
+  def `support recursive type`: Unit = {
+    val c: Surface = Surface.of[Cons]
+    assert(c.toString == "Cons")
+
+    assert(c.params.length == 2)
+    val h = c.params(0)
+    assert(h.name == "head")
+    assert(h.surface == Primitive.String)
+
+    val t = c.params(1)
+    assert(t.name == "tail")
+    val lazyC: Surface = t.surface
+    assert(lazyC.toString == "Cons")
+    assert(lazyC.params.length == 2)
+    assert(lazyC.isPrimitive == false)
+    assert(lazyC.isOption == false)
+    assert(lazyC.isAlias == false)
+    assert(lazyC.objectFactory.isDefined)
+  }
+
+  def `support generic recursive type`: Unit = {
+    val c: Surface = Surface.of[TypedCons[String]]
+    assert(c.toString == "TypedCons[String]")
+
+    assert(c.params.length == 2)
+    assert(c.params(0).surface == Primitive.String)
+
+    val lazyC: Surface = c.params(1).surface
+    assert(lazyC.toString == "TypedCons[String]")
+    assert(lazyC.params.length == 2)
+    assert(lazyC.isPrimitive == false)
+    assert(lazyC.isOption == false)
+  }
+
 }

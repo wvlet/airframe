@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
+import wvlet.airspec.AirSpec
 
 object DependencyTest1 {
   trait A {
@@ -27,25 +28,25 @@ object DependencyTest1 {
   trait DImpl extends D
 }
 
-class DependencyTest extends AirframeSpec {
-  "Airframe" should {
-    "show missing dependencies" in {
-      val d = newSilentDesign
-      d.withSession { session =>
-        val m = intercept[MISSING_DEPENDENCY] {
-          val a = session.build[DependencyTest1.A]
-        }
-        val msg = m.getMessage
-        msg should include("D <- C")
-      }
-    }
+class DependencyTest extends AirSpec {
+  scalaJsSupport
 
-    "resolve concrete dependencies" in {
-      val d = newSilentDesign
-        .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concrete trait
-      d.withSession { session =>
+  def `show missing dependencies`: Unit = {
+    val d = newSilentDesign
+    d.withSession { session =>
+      val m = intercept[MISSING_DEPENDENCY] {
         val a = session.build[DependencyTest1.A]
       }
+      val msg = m.getMessage
+      msg.contains("D <- C") shouldBe true
+    }
+  }
+
+  def `resolve concrete dependencies`: Unit = {
+    val d = newSilentDesign
+      .bind[DependencyTest1.D].to[DependencyTest1.DImpl] // abstract class to a concrete trait
+    d.withSession { session =>
+      val a = session.build[DependencyTest1.A]
     }
   }
 }

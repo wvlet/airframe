@@ -8,7 +8,7 @@ object SerializationTest {
 
   trait A extends LogSupport {
     debug("new A")
-    def hello = info("hello")
+    def hello = debug("hello")
   }
 }
 
@@ -19,19 +19,17 @@ class SerializationTest extends Spec {
 
   import SerializationTest._
 
-  "Logger" should {
-    "serializable" in {
-      val a = new A {}
-      val b = new ByteArrayOutputStream()
-      IOUtil.withResource(new ObjectOutputStream(b)) { out =>
-        out.writeObject(a)
-      }
-      val ser = b.toByteArray
-      IOUtil.withResource(new ObjectInputStream(new ByteArrayInputStream(ser))) { in =>
-        debug("deserialization")
-        val a = in.readObject().asInstanceOf[A]
-        a.hello
-      }
+  def `logger should be serializable`: Unit = {
+    val a = new A {}
+    val b = new ByteArrayOutputStream()
+    IOUtil.withResource(new ObjectOutputStream(b)) { out =>
+      out.writeObject(a)
+    }
+    val ser = b.toByteArray
+    IOUtil.withResource(new ObjectInputStream(new ByteArrayInputStream(ser))) { in =>
+      debug("deserialization")
+      val a = in.readObject().asInstanceOf[A]
+      a.hello
     }
   }
 }

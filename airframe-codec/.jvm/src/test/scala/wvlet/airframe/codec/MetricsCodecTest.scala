@@ -12,17 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.metrics.{DataSize, ElapsedTime}
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class MetricsCodecTest extends AirframeSpec {
+class MetricsCodecTest extends AirSpec {
 
-  "support DataSize" in {
+  def `support DataSize`: Unit = {
     val codec = MessageCodec.of[DataSize]
 
     // String
@@ -45,12 +45,12 @@ class MetricsCodecTest extends AirframeSpec {
     }
   }
 
-  "support Zero.of[DataSize]" in {
+  def `support Zero.of[DataSize]` : Unit = {
     val z = Zero.zeroOf(Surface.of[DataSize])
     z shouldBe DataSize(0)
   }
 
-  "support ElapsedTime" in {
+  def `support ElapsedTime`: Unit = {
     val codec = MessageCodec.of[ElapsedTime]
 
     // String

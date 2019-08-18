@@ -13,18 +13,18 @@
  */
 
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.sql.SQLBenchmark
 import wvlet.airframe.sql.SQLBenchmark.TestQuery
 import wvlet.airframe.sql.model.Expression
 import wvlet.airframe.sql.parser.{SQLGenerator, SQLParser}
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class SQLAnonymizerTest extends AirframeSpec {
+class SQLAnonymizerTest extends AirSpec {
 
-  def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {
+  protected def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {
     val l = SQLParser.parse(q.sql)
     debug(q.sql)
     trace(l.printPlan)
@@ -37,7 +37,7 @@ class SQLAnonymizerTest extends AirframeSpec {
     debug(sig)
   }
 
-  def processQueries(input: Seq[TestQuery]): Unit = {
+  protected def processQueries(input: Seq[TestQuery]): Unit = {
     val queries = input.map(_.sql)
     val dict    = SQLAnonymizer.buildAnonymizationDictionary(queries)
     input.foreach { x =>
@@ -45,19 +45,19 @@ class SQLAnonymizerTest extends AirframeSpec {
     }
   }
 
-  "anonymize standard queries" taggedAs working in {
+  def `anonymize standard queries`: Unit = {
     processQueries(SQLBenchmark.selection)
   }
 
-  "anonymize DDL queries" in {
+  def `anonymize DDL queries`: Unit = {
     processQueries(SQLBenchmark.ddl)
   }
 
-  "anonymize TPC-H" in {
+  def `anonymize TPC-H`: Unit = {
     processQueries(SQLBenchmark.tpcH)
   }
 
-  "anonymize TPC-DS" in {
+  def `anonymize TPC-DS`: Unit = {
     processQueries(SQLBenchmark.tpcDS)
   }
 

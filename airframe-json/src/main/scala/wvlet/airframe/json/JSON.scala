@@ -81,7 +81,7 @@ object JSON extends LogSupport {
   val JSONTrue  = JSONBoolean(true)
   val JSONFalse = JSONBoolean(false)
 
-  trait JSONNumber extends JSONValue
+  sealed trait JSONNumber extends JSONValue
   final case class JSONDouble(v: Double) extends JSONNumber {
     override def toJSON: String = v.toString
   }

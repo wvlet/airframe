@@ -13,6 +13,8 @@
  */
 package wvlet.airframe
 
+import wvlet.airspec.AirSpec
+
 trait HelloBind {}
 
 trait BindExample {
@@ -31,43 +33,42 @@ trait DesignBindExample {
 /**
   *
   */
-class SessionTest extends AirframeSpec {
+class SessionTest extends AirSpec {
+  scalaJsSupport
 
   val d1 =
     newDesign
       .bind[HelloBind].toSingleton
       .noLifeCycleLogging
 
-  "Session" should {
-    "pre-compile session injection template" taggedAs ("session-inject") in {
-      val session = newDesign.newSession
-      val b       = session.build[BindExample]
-      b shouldBe a[BindExample]
-    }
+  def `pre-compile session injection template`: Unit = {
+    val session = newDesign.newSession
+    val b       = session.build[BindExample]
+    classOf[BindExample].isAssignableFrom(b.getClass) shouldBe true
+  }
 
-    "pre-compile singleton binding" taggedAs ("singleton-inject") in {
-      // HelloBind should be instantiated without using runtime-eval
-      val session = newDesign
-        .bind[HelloBind].toEagerSingleton
-        .newSession
+  def `pre-compile singleton binding`: Unit = {
+    // HelloBind should be instantiated without using runtime-eval
+    val session = newDesign
+      .bind[HelloBind].toEagerSingleton
+      .newSession
 
-      val b = session.build[BindExample]
-      b shouldBe a[BindExample]
-    }
+    val b = session.build[BindExample]
+    classOf[BindExample].isAssignableFrom(b.getClass) shouldBe true
+  }
 
-    "find self session from binding" in {
-      val session = newDesign
-        .bind[HelloBind].toSingleton
-        .newSession
+  def `find self session from binding`: Unit = {
+    val session = newDesign
+      .bind[HelloBind].toSingleton
+      .newSession
 
-      val e = session.build[SessionBindExample]
-      e.s shouldBe theSameInstanceAs(session)
-    }
+    val e = session.build[SessionBindExample]
+    e.s shouldBeTheSameInstanceAs (session)
+  }
 
-    "should bind an equivalent design" in {
-      d1.build[DesignBindExample] { e =>
-        e.design shouldBe d1.minimize
-      }
+  def `should bind an equivalent design`: Unit = {
+    d1.build[DesignBindExample] { e =>
+      e.design shouldBe d1.minimize
     }
   }
 }

@@ -24,9 +24,12 @@ import wvlet.airframe.http.SimpleHttpResponse.SimpleHttpResponseAdapter
   * @tparam Req
   */
 trait HttpRequestAdapter[Req] {
+  def requestType: Class[Req]
+
   def methodOf(request: Req): HttpMethod
   def pathOf(request: Req): String
   def queryOf(request: Req): Map[String, String]
+  def headerOf(request: Req): Map[String, String]
   def contentStringOf(request: Req): String
   def contentBytesOf(request: Req): Array[Byte]
   def contentTypeOf(request: Req): Option[String]
@@ -39,9 +42,11 @@ trait HttpRequestAdapter[Req] {
 trait HttpRequest[Req] {
   protected def adapter: HttpRequestAdapter[Req]
 
-  def method: HttpMethod                 = adapter.methodOf(toRaw)
-  def path: String                       = adapter.pathOf(toRaw)
-  def query: Map[String, String]         = adapter.queryOf(toRaw)
+  def method: HttpMethod         = adapter.methodOf(toRaw)
+  def path: String               = adapter.pathOf(toRaw)
+  def query: Map[String, String] = adapter.queryOf(toRaw)
+  // TODO Use multi-map
+  def header: Map[String, String]        = adapter.headerOf(toRaw)
   def contentString: String              = adapter.contentStringOf(toRaw)
   def contentBytes: Array[Byte]          = adapter.contentBytesOf(toRaw)
   def contentType: Option[String]        = adapter.contentTypeOf(toRaw)
@@ -79,6 +84,7 @@ trait HttpResponse[Resp] {
 
 case class SimpleHttpRequest(override val method: HttpMethod,
                              override val path: String,
+                             override val header: Map[String, String] = Map.empty,
                              override val query: Map[String, String] = Map.empty,
                              override val contentString: String = "")
     extends HttpRequest[SimpleHttpRequest] {
@@ -94,12 +100,14 @@ object SimpleHttpRequest {
     override def methodOf(request: SimpleHttpRequest): HttpMethod          = request.method
     override def pathOf(request: SimpleHttpRequest): String                = request.path
     override def queryOf(request: SimpleHttpRequest): Map[String, String]  = request.query
+    override def headerOf(request: SimpleHttpRequest): Map[String, String] = request.header
     override def contentStringOf(request: SimpleHttpRequest): String       = request.contentString
     override def contentBytesOf(request: SimpleHttpRequest): Array[Byte]   = request.contentBytes
     override def contentTypeOf(request: SimpleHttpRequest): Option[String] = request.contentType
     override def httpRequestOf(request: SimpleHttpRequest): HttpRequest[SimpleHttpRequest] = {
       request
     }
+    override def requestType: Class[SimpleHttpRequest] = classOf[SimpleHttpRequest]
   }
 }
 

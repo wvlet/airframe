@@ -22,19 +22,26 @@ import wvlet.airframe.control.ResultClass
 import wvlet.airframe.control.ResultClass.{Failed, Succeeded, nonRetryableFailure, retryableFailure}
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
+import scala.language.existentials
 
 /**
   *
   */
-class HttpClientException(val status: HttpStatus, message: String, cause: Throwable) extends Exception(message, cause) {
-  def this(status: HttpStatus) = this(status, status.toString, null)
-  def this(status: HttpStatus, message: String) = this(status, s"${status} ${message}", null)
-  def this(status: HttpStatus, cause: Throwable) = this(status, s"${status} ${cause.getMessage}", cause)
+class HttpClientException(val response: HttpResponse[_], val status: HttpStatus, message: String, cause: Throwable)
+    extends Exception(message, cause) {
+  def this(response: HttpResponse[_], status: HttpStatus) = this(response, status, response.status.toString, null)
+  def this(response: HttpResponse[_], status: HttpStatus, message: String) =
+    this(response, status, s"${status} ${message}", null)
+  def this(response: HttpResponse[_], status: HttpStatus, cause: Throwable) =
+    this(response, status, s"${status} ${cause.getMessage}", cause)
   def statusCode: Int = status.code
 }
 
-case class HttpClientMaxRetryException(retryContext: RetryContext, cause: Throwable)
+case class HttpClientMaxRetryException(override val response: HttpResponse[_],
+                                       retryContext: RetryContext,
+                                       cause: Throwable)
     extends HttpClientException(
+      response = response,
       status = {
         cause match {
           case e: HttpClientException =>
@@ -56,9 +63,9 @@ object HttpClientException extends LogSupport {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
     if (content == null || content.isEmpty) {
-      new HttpClientException(status)
+      new HttpClientException(adapter.httpResponseOf(response), status)
     } else {
-      new HttpClientException(status, s"Request failed: ${content}")
+      new HttpClientException(adapter.httpResponseOf(response), status, s"Request failed: ${content}")
     }
   }
 

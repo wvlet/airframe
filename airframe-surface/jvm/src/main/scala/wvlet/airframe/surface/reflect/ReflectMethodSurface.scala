@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.surface.reflect
 
-import wvlet.airframe.surface.{MethodParameter, MethodSurface, Surface}
+import wvlet.airframe.surface.{AnyRefSurface, MethodParameter, MethodSurface, Surface}
 import java.{lang => jl}
 
 import wvlet.log.LogSupport
@@ -27,22 +27,35 @@ case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnTy
     extends MethodSurface
     with LogSupport {
 
-  private lazy val method: Option[jl.reflect.Method] = {
-    Try(owner.rawType.getDeclaredMethod(name, args.map(_.surface.rawType): _*)).toOption
+  private def findActualMethod(cls: Class[_]): Option[jl.reflect.Method] = {
+    // For `symbol-based method names`, we need to encode Scala method names into the bytecode format used in class files.
+    val rawMethodName = scala.reflect.NameTransformer.encode(name)
+    Try(cls.getDeclaredMethod(rawMethodName, args.map(_.surface.rawType): _*)).toOption
   }
+
+  private lazy val method: Option[jl.reflect.Method] = findActualMethod(owner.rawType)
 
   def getMethod: Option[jl.reflect.Method] = method
 
-  override def call(obj: Any, x: Any*): Any = method match {
-    case Some(m) =>
-      if (x == null || x.isEmpty) {
-        trace(s"Calling method ${name}")
-        m.invoke(obj)
-      } else {
-        val args = x.map(_.asInstanceOf[AnyRef])
-        trace(s"Calling method ${name} with args: ${args.mkString(", ")}")
-        m.invoke(obj, args: _*)
-      }
-    case None => null
+  override def call(obj: Any, x: Any*): Any = {
+    val targetMethod: Option[jl.reflect.Method] = method.orElse {
+      // RefinedTypes may have new methods which cannot be found from the owner
+      Option(obj).flatMap(objRef => findActualMethod(objRef.getClass))
+    }
+
+    targetMethod match {
+      case Some(m) =>
+        if (x == null || x.isEmpty) {
+          trace(s"Calling method ${name}")
+          m.invoke(obj)
+        } else {
+          val args = x.map(_.asInstanceOf[AnyRef])
+          trace(s"Calling method ${name} with args: ${args.mkString(", ")}")
+          m.invoke(obj, args: _*)
+        }
+      case None =>
+        trace(s"Undefined method: ${name} in ${obj} (${owner.rawType})")
+        null
+    }
   }
 }

@@ -12,16 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.fluentd
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe._
 import wvlet.airframe.fluentd.FluentdLoggerTest.{Logger1, Logger2, LoggerFactory1, LoggerFactory2}
+import wvlet.airspec.AirSpec
+import wvlet.log.LogLevel
 
 /**
   *
   */
-class FluentdLoggerTest extends AirframeSpec {
+class FluentdLoggerTest extends AirSpec {
 
-  "should use Fluency as a Fluentd client" in {
+  def `should use Fluency as a Fluentd client`: Unit = {
     val d = fluentd
       .withFluentdLogger()
       .noLifeCycleLogging
@@ -33,21 +34,22 @@ class FluentdLoggerTest extends AirframeSpec {
     }
   }
 
-  "should support console logging" in {
+  def `should support console logging`: Unit = {
     val d =
-      newDesign.bind[MetricLogger].to[ConsoleLogger]
+      fluentd.withDebugConsoleLogging.noLifeCycleLogging
 
     d.build[MetricLogger] { f =>
       f.emit("data", Map("id" -> 1, "event" -> "GET"))
     }
   }
 
-  "generate multiple loggers" in {
+  def `generate multiple loggers`: Unit = {
 
     val d =
       newDesign
-        .bind[Logger1].toInstance(new ConsoleLogger(Some("l1")))
-        .bind[Logger2].toInstance(new ConsoleLogger(Some("l2")))
+        .bind[Logger1].toInstance(new ConsoleLogger(Some("l1"), LogLevel.DEBUG))
+        .bind[Logger2].toInstance(new ConsoleLogger(Some("l2"), LogLevel.DEBUG))
+        .noLifeCycleLogging
 
     d.withSession { s =>
       val f1 = s.build[LoggerFactory1]

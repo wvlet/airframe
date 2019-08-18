@@ -13,29 +13,26 @@
  */
 package wvlet.airframe.tablet.msgpack
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.tablet.obj.{ObjectTabletReader, ObjectTabletWriter}
+import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
 /**
   *
   */
-class MessagePackTabletTest extends AirframeSpec {
-  "MessagePackTablet" should {
+class MessagePackTabletTest extends AirSpec {
 
-    "write/read data in msgpack.gz" in {
-      IOUtil.withTempFile("sample.msgpack.gz") { file =>
-        val w = MessagePackTablet.msgpackGzWriter(file.getPath)
-        ObjectTabletReader.newTabletReaderOf(Seq(1, 2, 3)).pipe(w)
-        w.close()
+  def `write/read data in msgpack.gz`: Unit = {
+    IOUtil.withTempFile("sample.msgpack.gz") { file =>
+      val w = MessagePackTablet.msgpackGzWriter(file.getPath)
+      ObjectTabletReader.newTabletReaderOf(Seq(1, 2, 3)).pipe(w)
+      w.close()
 
-        val r  = MessagePackTablet.msgpackGzReader(file.getPath)
-        val w2 = new ObjectTabletWriter[Int]
-        val s  = r.pipe(w2).toSeq
+      val r  = MessagePackTablet.msgpackGzReader(file.getPath)
+      val w2 = new ObjectTabletWriter[Int]
+      val s  = r.pipe(w2).toSeq
 
-        s shouldBe Seq(1, 2, 3)
-      }
+      s shouldBe Seq(1, 2, 3)
     }
-
   }
 }

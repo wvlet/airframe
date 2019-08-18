@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object LazyStartTest {
@@ -46,7 +47,8 @@ object LazyStartTest {
 /**
   *
   */
-class LazyStartTest extends AirframeSpec {
+class LazyStartTest extends AirSpec {
+  scalaJsSupport
 
   import LazyStartTest._
 
@@ -59,49 +61,47 @@ class LazyStartTest extends AirframeSpec {
     .bind[F1].toInstance(f1)
     .bind[F2].toInstance(f2)
 
-  "Airframe" should {
-    "support lazy start" in {
-      (f1.get, f2.get) shouldBe (false, false)
-      d.build[MyApp] { app =>
-        (f1.get, f2.get) shouldBe (true, false)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
-
-      d.withLazyMode.build[MyApp] { app =>
-        (f1.get, f2.get) shouldBe (true, false)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
-
-      // Override config
-      d.withProductionMode.withLazyMode.build[MyApp] { app =>
-        (f1.get, f2.get) shouldBe (true, false)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
-
-      d.build[MyApp2] { app =>
-        (f1.get, f2.get) shouldBe (false, true)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
+  def `support lazy start`: Unit = {
+    (f1.get, f2.get) shouldBe (false, false)
+    d.build[MyApp] { app =>
+      (f1.get, f2.get) shouldBe (true, false)
     }
+    (f1.get, f2.get) shouldBe (false, false)
 
-    "support eager start" in {
-      (f1.get, f2.get) shouldBe (false, false)
-      d.withProductionMode.build[MyApp] { app =>
-        (f1.get, f2.get) shouldBe (true, true)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
-
-      // Override config
-      (f1.get, f2.get) shouldBe (false, false)
-      d.withLazyMode.withProductionMode.build[MyApp] { app =>
-        (f1.get, f2.get) shouldBe (true, true)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
-
-      d.withProductionMode.build[MyApp2] { app =>
-        (f1.get, f2.get) shouldBe (true, true)
-      }
-      (f1.get, f2.get) shouldBe (false, false)
+    d.withLazyMode.build[MyApp] { app =>
+      (f1.get, f2.get) shouldBe (true, false)
     }
+    (f1.get, f2.get) shouldBe (false, false)
+
+    // Override config
+    d.withProductionMode.withLazyMode.build[MyApp] { app =>
+      (f1.get, f2.get) shouldBe (true, false)
+    }
+    (f1.get, f2.get) shouldBe (false, false)
+
+    d.build[MyApp2] { app =>
+      (f1.get, f2.get) shouldBe (false, true)
+    }
+    (f1.get, f2.get) shouldBe (false, false)
+  }
+
+  def `support eager start`: Unit = {
+    (f1.get, f2.get) shouldBe (false, false)
+    d.withProductionMode.build[MyApp] { app =>
+      (f1.get, f2.get) shouldBe (true, true)
+    }
+    (f1.get, f2.get) shouldBe (false, false)
+
+    // Override config
+    (f1.get, f2.get) shouldBe (false, false)
+    d.withLazyMode.withProductionMode.build[MyApp] { app =>
+      (f1.get, f2.get) shouldBe (true, true)
+    }
+    (f1.get, f2.get) shouldBe (false, false)
+
+    d.withProductionMode.build[MyApp2] { app =>
+      (f1.get, f2.get) shouldBe (true, true)
+    }
+    (f1.get, f2.get) shouldBe (false, false)
   }
 }

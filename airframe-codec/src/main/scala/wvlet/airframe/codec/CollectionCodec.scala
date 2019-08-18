@@ -19,7 +19,7 @@ import wvlet.airframe.json.JSONParseException
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 object CollectionCodec {

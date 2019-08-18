@@ -23,14 +23,16 @@ object MultipleConstructorArgsTest {
 
 import MultipleConstructorArgsTest._
 class MultipleConstructorArgsTest extends SurfaceSpec {
-  "support muliple constructor args" in {
+  scalaJsSupport
+
+  def `support muliple constructor args`: Unit = {
 
     val s: Surface = Surface.of[MultiC]
-    s.objectFactory shouldNot be(empty)
+    assert(s.objectFactory.nonEmpty)
 
     val f = s.objectFactory.get
-    s.params.size shouldBe 2
+    assert(s.params.size == 2)
     val i = f.newInstance(Seq(1, "hello"))
-    i.asInstanceOf[MultiC].msg shouldBe "1:hello"
+    assert(i.asInstanceOf[MultiC].msg == "1:hello")
   }
 }

@@ -115,7 +115,7 @@ package object config {
     def overrideConfigParamsWithProperties(
         props: Properties,
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
-      import scala.collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       val m = for (key <- props.propertyNames().asScala) yield {
         key.toString -> props.get(key).asInstanceOf[Any]
       }
