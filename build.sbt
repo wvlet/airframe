@@ -963,29 +963,29 @@ lazy val airspec =
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
 
-def isAirSpecClass(mapping:(File, String)): Boolean = mapping._2.startsWith("wvlet/airspec/")
+def isAirSpecClass(mapping: (File, String)): Boolean = mapping._2.startsWith("wvlet/airspec/")
 
 // A JVM project containing only wvlet.airspec package classes
 lazy val airspecLight =
   project
-  .in(file("airspec-light"))
-  .settings(buildSettings)
-  .settings(
-    name := "airspec-light",
-    description := "API and and runner for AirSpec test cases",
-    // Need to see the airspec source code directly to avoid any cyclic project references
-    airspecDependsOn := Seq("airspec"),
-    airspecBuildSettings,
-    airspecJVMBuildSettings,
-    // Extract only wvlet.airspec packages
-    mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
-    mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
-    libraryDependencies ++= Seq(
-      "org.scala-sbt" % "test-interface" % "1.0" % "provided",
-      "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "provided"
+    .in(file("airspec-light"))
+    .settings(buildSettings)
+    .settings(
+      name := "airspec-light",
+      description := "API and and runner for AirSpec test cases",
+      // Need to see the airspec source code directly to avoid any cyclic project references
+      airspecDependsOn := Seq("airspec"),
+      airspecBuildSettings,
+      airspecJVMBuildSettings,
+      // Extract only wvlet.airspec packages
+      mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
+      mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
+      libraryDependencies ++= Seq(
+        "org.scala-sbt"  % "test-interface" % "1.0"              % "provided",
+        "org.scalacheck" %%% "scalacheck"   % SCALACHECK_VERSION % "provided"
+      )
     )
-  )
-  .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
 
 // An internal-only project for using AirSpec for testing Airframe modules
 lazy val airspecRef =
