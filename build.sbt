@@ -802,7 +802,7 @@ val airspecDependsOn = settingKey[Seq[String]]("Dependent module names of airspe
 
 val airspecBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
-    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sourceDirs = for (m <- airspecDependsOn.value) yield {
       Seq(
         file(s"${baseDir}/${m}/src/main/scala"),
@@ -815,7 +815,7 @@ val airspecBuildSettings = Seq[Setting[_]](
 
 val airspecJVMBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
-    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs = for (m <- airspecDependsOn.value) yield {
       Seq(
@@ -831,7 +831,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
 
 val airspecJSBuildSettings = Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
-    val baseDir = baseDirectory.value.getParentFile.getParentFile.getAbsolutePath
+    val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
     val sourceDirs = for (m <- airspecDependsOn.value) yield {
       Seq(
@@ -974,13 +974,9 @@ lazy val airspecLight =
     name := "airspec-light",
     description := "API and and runner for AirSpec test cases",
     // Need to see the airspec source code directly to avoid any cyclic project references
-    unmanagedSourceDirectories in Compile ++= {
-      val base = (ThisBuild / baseDirectory).value / "airspec"
-      Seq(
-        base / "src" / "main" / "scala",
-        base / ".jvm" / "src" / "main" / "scala",
-      )
-    },
+    airspecDependsOn := Seq("airspec"),
+    airspecBuildSettings,
+    airspecJVMBuildSettings,
     // Extract only wvlet.airspec packages
     mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
     mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
