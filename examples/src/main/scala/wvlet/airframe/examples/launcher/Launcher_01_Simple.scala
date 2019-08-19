@@ -21,10 +21,12 @@ import wvlet.airframe.launcher.{Launcher, argument, command, option}
 object Launcher_01_Simple extends App {
 
   // Define global options in the constructor arguments:
-  class MyApp(@option(prefix = "-e", description = "Environment (e.g., production, staging)")
-              env: String,
-              @option(prefix = "-h,--help", description = "Display help messages", isHelp = true)
-              displayHelp: Boolean) {
+  class MyApp(
+      @option(prefix = "-e", description = "Environment (e.g., production, staging)")
+      env: String,
+      @option(prefix = "-h,--help", description = "Display help messages", isHelp = true)
+      displayHelp: Boolean
+  ) {
 
     // Define command-local options in the function arguments:
     @command(description = "Launch a monitor")

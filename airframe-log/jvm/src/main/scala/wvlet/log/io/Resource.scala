@@ -217,9 +217,11 @@ object Resource {
     return logicalName
   }
 
-  private def collectFileResources(resourceURLString: String,
-                                   packagePath: String,
-                                   resourceFilter: String => Boolean): Seq[VirtualFile] = {
+  private def collectFileResources(
+      resourceURLString: String,
+      packagePath: String,
+      resourceFilter: String => Boolean
+  ): Seq[VirtualFile] = {
     val logicalName = extractLogicalName(packagePath, resourceURLString)
     if (logicalName == null) {
       throw new IllegalArgumentException("packagePath=" + packagePath + ", resourceURL=" + resourceURLString)
@@ -250,9 +252,11 @@ object Resource {
     * @param resourceFilter
     * @return the list of resources matching the given resource filter
     */
-  private def listResources(resourceURL: URL,
-                            packageName: String,
-                            resourceFilter: String => Boolean): Seq[VirtualFile] = {
+  private def listResources(
+      resourceURL: URL,
+      packageName: String,
+      resourceFilter: String => Boolean
+  ): Seq[VirtualFile] = {
     val pkgPath  = packagePath(packageName)
     val fileList = Seq.newBuilder[VirtualFile]
     if (resourceURL == null) {
@@ -315,9 +319,11 @@ object Resource {
     * @param resourceFilter
     * @return
     */
-  def listResources(packageName: String,
-                    resourceFilter: String => Boolean,
-                    classLoader: ClassLoader = Thread.currentThread.getContextClassLoader): Seq[VirtualFile] = {
+  def listResources(
+      packageName: String,
+      resourceFilter: String => Boolean,
+      classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
+  ): Seq[VirtualFile] = {
     val b = Seq.newBuilder[VirtualFile]
     for (u <- findResourceURLs(classLoader, packageName)) {
       b ++= listResources(u, packageName, resourceFilter)
@@ -354,9 +360,11 @@ object Resource {
     b.result
   }
 
-  def findClasses[A](packageName: String,
-                     toSearch: Class[A],
-                     classLoader: ClassLoader = Thread.currentThread.getContextClassLoader): Seq[Class[A]] = {
+  def findClasses[A](
+      packageName: String,
+      toSearch: Class[A],
+      classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
+  ): Seq[Class[A]] = {
     val classFileList = listResources(packageName, { f: String =>
       f.endsWith(".class")
     }, classLoader)

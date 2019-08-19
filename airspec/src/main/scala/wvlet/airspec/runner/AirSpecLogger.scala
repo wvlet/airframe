@@ -21,12 +21,13 @@ import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airspec.spi.AirSpecFailureBase
 import wvlet.log.{LogFormatter, Logger}
 
-private[airspec] case class AirSpecEvent(taskDef: TaskDef,
-                                         override val fullyQualifiedName: String,
-                                         override val status: Status,
-                                         override val throwable: OptionalThrowable,
-                                         durationNanos: Long)
-    extends Event {
+private[airspec] case class AirSpecEvent(
+    taskDef: TaskDef,
+    override val fullyQualifiedName: String,
+    override val status: Status,
+    override val throwable: OptionalThrowable,
+    durationNanos: Long
+) extends Event {
   override def fingerprint(): Fingerprint = taskDef.fingerprint()
   override def selector(): Selector       = taskDef.selectors().head
   override def duration(): Long           = TimeUnit.NANOSECONDS.toMillis(durationNanos)

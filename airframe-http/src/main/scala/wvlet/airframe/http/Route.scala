@@ -28,7 +28,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     extends LogSupport {
   require(
     path.startsWith("/"),
-    s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}")
+    s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}"
+  )
 
   override def toString =
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
@@ -50,7 +51,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     * @return
     */
   def buildControllerMethodArgs[Req](controller: Any, request: Req, params: Map[String, String])(
-      implicit adapter: HttpRequestAdapter[Req]): Seq[Any] = {
+      implicit adapter: HttpRequestAdapter[Req]
+  ): Seq[Any] = {
     // Collect URL query parameters and other parameters embedded inside URL.
     val requestParams: Map[String, String] = adapter.queryOf(request) ++ params
     lazy val queryParamMsgpack             = Route.stringMapCodec.toMsgPack(requestParams)
@@ -117,9 +119,11 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     methodSurface.call(controller, methodArgs: _*)
   }
 
-  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
-                                    request: Req,
-                                    params: Map[String, String]): Option[Any] = {
+  def call[Req: HttpRequestAdapter](
+      controllerProvider: ControllerProvider,
+      request: Req,
+      params: Map[String, String]
+  ): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
       call(controller, buildControllerMethodArgs(controller, request, params))
     }

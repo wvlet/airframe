@@ -34,7 +34,8 @@ class MethodCallHook(val injectee: Injectee, method: jl.reflect.Method) extends 
 object JSR250LifeCycleExecutor extends LifeCycleEventHandler with LogSupport {
 
   private def findAnnotation[T <: jl.annotation.Annotation: ClassTag](
-      annot: Array[jl.annotation.Annotation]): Option[T] = {
+      annot: Array[jl.annotation.Annotation]
+  ): Option[T] = {
     val c = implicitly[ClassTag[T]]
     annot
       .collectFirst {

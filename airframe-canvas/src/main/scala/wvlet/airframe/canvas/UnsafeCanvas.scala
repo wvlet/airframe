@@ -20,18 +20,18 @@ import java.nio.ByteBuffer
   *
   */
 final class UnsafeCanvas(
-                         // Base object for resolving the relative address of the raw byte array.
-                         // If base == null, the address value (the second parameter) will be a raw memory address
-                         private[canvas] val base: AnyRef,
-                         // The head address of the underlying memory. If the base is null, this address is a direct memory address.
-                         // If not, this will be the relative address within an array object (base).
-                         private[canvas] val address: Long,
-                         // The size of the underlying memory.
-                         val size: Long,
-                         // Reference is used to hold a reference to an object that holds the underlying memory
-                         // so that it cannot be released by GC.
-                         private[canvas] val reference: AnyRef)
-    extends Canvas {
+    // Base object for resolving the relative address of the raw byte array.
+    // If base == null, the address value (the second parameter) will be a raw memory address
+    private[canvas] val base: AnyRef,
+    // The head address of the underlying memory. If the base is null, this address is a direct memory address.
+    // If not, this will be the relative address within an array object (base).
+    private[canvas] val address: Long,
+    // The size of the underlying memory.
+    val size: Long,
+    // Reference is used to hold a reference to an object that holds the underlying memory
+    // so that it cannot be released by GC.
+    private[canvas] val reference: AnyRef
+) extends Canvas {
   import UnsafeUtil._
 
   override def readByte(offset: Long): Byte = {
@@ -153,18 +153,23 @@ object UnsafeCanvas {
   }
   def wrap(buf: ByteBuffer): Canvas = {
     if (buf.isDirect) {
-      new UnsafeCanvas(base = null,
-                       address = DirectBufferAccess.getAddress(buf) + buf.position(),
-                       size = buf.remaining(),
-                       reference = buf)
+      new UnsafeCanvas(
+        base = null,
+        address = DirectBufferAccess.getAddress(buf) + buf.position(),
+        size = buf.remaining(),
+        reference = buf
+      )
     } else if (buf.hasArray) {
-      new UnsafeCanvas(base = buf.array(),
-                       address = UnsafeUtil.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),
-                       size = buf.remaining(),
-                       reference = null)
+      new UnsafeCanvas(
+        base = buf.array(),
+        address = UnsafeUtil.arrayByteBaseOffset + buf.arrayOffset() + buf.position(),
+        size = buf.remaining(),
+        reference = null
+      )
     } else {
       throw new IllegalArgumentException(
-        s"Canvas supports only array-backed ByteBuffer or DirectBuffer: The input buffer is ${buf.getClass}")
+        s"Canvas supports only array-backed ByteBuffer or DirectBuffer: The input buffer is ${buf.getClass}"
+      )
     }
   }
 

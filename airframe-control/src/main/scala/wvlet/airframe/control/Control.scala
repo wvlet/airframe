@@ -28,7 +28,8 @@ object Control {
   }
 
   def withResources[R1 <: AutoCloseable, R2 <: AutoCloseable, U](resource1: R1, resource2: R2)(
-      body: (R1, R2) => U): U = {
+      body: (R1, R2) => U
+  ): U = {
     try {
       body(resource1, resource2)
     } finally {

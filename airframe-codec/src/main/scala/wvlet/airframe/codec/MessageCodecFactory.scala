@@ -20,10 +20,13 @@ object MessageCodecFactory {
     new MessageCodecFactory(
       StandardCodec.standardCodec ++
         MetricsCodec.metricsCodec ++
-        Compat.platformSpecificCodecs)
+        Compat.platformSpecificCodecs
+    )
 
-  private[codec] def defaultFinder(factory: MessageCodecFactory,
-                                   seenSet: Set[Surface]): PartialFunction[Surface, MessageCodec[_]] = {
+  private[codec] def defaultFinder(
+      factory: MessageCodecFactory,
+      seenSet: Set[Surface]
+  ): PartialFunction[Surface, MessageCodec[_]] = {
     case s if s.isOption =>
       // Option type
       val elementSurface = s.typeArgs(0)
@@ -36,9 +39,11 @@ import wvlet.airframe.codec.MessageCodecFactory._
 /**
   *
   */
-class MessageCodecFactory(knownCodecs: Map[Surface, MessageCodec[_]],
-                          private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
-                            MessageCodecFactory.defaultObjectCodecFactory) {
+class MessageCodecFactory(
+    knownCodecs: Map[Surface, MessageCodec[_]],
+    private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
+      MessageCodecFactory.defaultObjectCodecFactory
+) {
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
     new MessageCodecFactory(knownCodecs ++ additionalCodecs, objectCodecFactory)

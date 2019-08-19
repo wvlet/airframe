@@ -239,13 +239,14 @@ case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surfac
   override def objectFactory: Option[ObjectFactory] = ref.objectFactory
 }
 
-case class ClassMethodSurface(mod: Int,
-                              owner: Surface,
-                              name: String,
-                              returnType: Surface,
-                              args: Seq[MethodParameter],
-                              methodCaller: Option[(Any, Seq[Any]) => Any])
-    extends MethodSurface {
+case class ClassMethodSurface(
+    mod: Int,
+    owner: Surface,
+    name: String,
+    returnType: Surface,
+    args: Seq[MethodParameter],
+    methodCaller: Option[(Any, Seq[Any]) => Any]
+) extends MethodSurface {
   override def call(obj: Any, x: Any*) = {
     def unsupported = throw new UnsupportedOperationException(s"Calling method ${name} is not supported: ${this}")
 

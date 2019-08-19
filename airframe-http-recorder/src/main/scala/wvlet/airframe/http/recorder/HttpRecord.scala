@@ -25,17 +25,19 @@ import wvlet.log.LogSupport
 /**
   * HTTP response record that will be stored to the database
   */
-case class HttpRecord(session: String,
-                      requestHash: Int,
-                      method: String,
-                      destHost: String,
-                      path: String,
-                      requestHeader: Map[String, String],
-                      requestBody: String,
-                      responseCode: Int,
-                      responseHeader: Map[String, String],
-                      responseBody: String,
-                      createdAt: Instant) {
+case class HttpRecord(
+    session: String,
+    requestHash: Int,
+    method: String,
+    destHost: String,
+    path: String,
+    requestHeader: Map[String, String],
+    requestBody: String,
+    responseCode: Int,
+    responseHeader: Map[String, String],
+    responseBody: String,
+    createdAt: Instant
+) {
 
   def summary: String = {
     s"${method}(${responseCode}) ${destHost}${path}: ${responseBody.substring(0, 30.min(responseBody.size))} ..."

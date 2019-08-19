@@ -56,8 +56,10 @@ object CName {
     if (paramName == null) {
       paramName
     } else {
-      canonicalNameTable.getOrElseUpdate(paramName,
-                                         paramNameReplacePattern.matcher(paramName).replaceAll("").toLowerCase)
+      canonicalNameTable.getOrElseUpdate(
+        paramName,
+        paramNameReplacePattern.matcher(paramName).replaceAll("").toLowerCase
+      )
     }
   }
 

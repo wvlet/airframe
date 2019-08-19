@@ -25,8 +25,10 @@ package object parallel {
     def parallel: ParallelIterator[T] = ParallelIterator(source)
   }
 
-  case class ParallelSeq[T](private val source: Seq[T],
-                            private val parallelism: Int = Runtime.getRuntime.availableProcessors()) {
+  case class ParallelSeq[T](
+      private val source: Seq[T],
+      private val parallelism: Int = Runtime.getRuntime.availableProcessors()
+  ) {
 
     def withParallelism(parallelism: Int): ParallelSeq[T] = {
       copy(parallelism = parallelism)
@@ -38,8 +40,10 @@ package object parallel {
 
   }
 
-  case class ParallelIterator[T](private val source: Iterator[T],
-                                 private val parallelism: Int = Runtime.getRuntime.availableProcessors()) {
+  case class ParallelIterator[T](
+      private val source: Iterator[T],
+      private val parallelism: Int = Runtime.getRuntime.availableProcessors()
+  ) {
 
     def withParallelism(parallelism: Int): ParallelIterator[T] = {
       copy(parallelism = parallelism)

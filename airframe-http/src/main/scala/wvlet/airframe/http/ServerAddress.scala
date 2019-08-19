@@ -19,11 +19,13 @@ import wvlet.log.LogSupport
 /**
   * Server address holder
   */
-case class ServerAddress(host: String,
-                         // server port. -1 if hte port is unknown
-                         port: Int,
-                         // http or https
-                         scheme: Option[String] = None) {
+case class ServerAddress(
+    host: String,
+    // server port. -1 if hte port is unknown
+    port: Int,
+    // http or https
+    scheme: Option[String] = None
+) {
   override def toString: String = hostAndPort
 
   // Returns host:port string without the protcol scheme like http://, https://

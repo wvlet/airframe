@@ -26,18 +26,20 @@ import wvlet.airframe.http.finagle.FinagleServer
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
-case class HttpRecorderConfig(destUri: String = "localhost",
-                              sessionName: String = "default",
-                              expirationTime: String = "1w", // Delete recorded response in a week by default
-                              // the folder to store response records
-                              storageFolder: String = "fixtures",
-                              recordTableName: String = "record",
-                              // Specify the port to use. The default is finding an available port
-                              private val port: Int = -1,
-                              // A filter for customizing HTTP request headers to use for generating database keys.
-                              // For example, we should remove headers that depends on the current time, etc.
-                              excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
-                              fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler) {
+case class HttpRecorderConfig(
+    destUri: String = "localhost",
+    sessionName: String = "default",
+    expirationTime: String = "1w", // Delete recorded response in a week by default
+    // the folder to store response records
+    storageFolder: String = "fixtures",
+    recordTableName: String = "record",
+    // Specify the port to use. The default is finding an available port
+    private val port: Int = -1,
+    // A filter for customizing HTTP request headers to use for generating database keys.
+    // For example, we should remove headers that depends on the current time, etc.
+    excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
+    fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler
+) {
 
   def isInMemory: Boolean = sessionName == ":memory:"
 
@@ -64,10 +66,10 @@ object HttpRecorder extends LogSupport {
 
   // Http headers to ignore for recording and hashing purposes
   def defaultExcludeHeaderPrefixes: Seq[String] = Seq(
-    "date", // unstable header
-    "x-b3-", // Finagle's tracing IDs
-    "finagle-", // Finagle specific headers
-    "host", // The host value can be changed
+    "date",          // unstable header
+    "x-b3-",         // Finagle's tracing IDs
+    "finagle-",      // Finagle specific headers
+    "host",          // The host value can be changed
     "content-length" // this can be 0 (or missing)
   )
 
@@ -102,12 +104,15 @@ object HttpRecorder extends LogSupport {
     * Creates an HTTP proxy server that will return recorded responses. If no record is found, it will
     * actually send the request to the destination server and record the response.
     */
-  def createRecorderProxy(recorderConfig: HttpRecorderConfig,
-                          dropExistingSession: Boolean = false): HttpRecorderServer = {
+  def createRecorderProxy(
+      recorderConfig: HttpRecorderConfig,
+      dropExistingSession: Boolean = false
+  ): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     val server = new HttpRecorderServer(
       recorder,
-      HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig)))
+      HttpRecorderServer.newRecordProxyService(recorder, newDestClient(recorderConfig))
+    )
     server.start
     server
   }
@@ -115,8 +120,10 @@ object HttpRecorder extends LogSupport {
   /**
     * Creates an HTTP server that will record HTTP responses.
     */
-  def createRecordOnlyServer(recorderConfig: HttpRecorderConfig,
-                             dropExistingSession: Boolean = true): HttpRecorderServer = {
+  def createRecordOnlyServer(
+      recorderConfig: HttpRecorderConfig,
+      dropExistingSession: Boolean = true
+  ): HttpRecorderServer = {
     val recorder = newRecordStoreForRecording(recorderConfig, dropExistingSession)
     val server =
       new HttpRecorderServer(recorder, HttpRecorderServer.newRecordingService(recorder, newDestClient(recorderConfig)))

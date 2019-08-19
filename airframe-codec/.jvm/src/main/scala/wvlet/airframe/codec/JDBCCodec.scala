@@ -347,7 +347,8 @@ object JDBCCodec extends LogSupport {
           v.setObject(new java.sql.Date(epochMillis))
         case other =>
           v.setError(
-            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Data from ${other} type"))
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Data from ${other} type")
+          )
       }
     }
   }
@@ -365,7 +366,8 @@ object JDBCCodec extends LogSupport {
           v.setObject(new java.sql.Time(epochMillis))
         case other =>
           v.setError(
-            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type"))
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type")
+          )
       }
     }
   }
@@ -383,7 +385,8 @@ object JDBCCodec extends LogSupport {
           v.setObject(new java.sql.Timestamp(epochMillis))
         case other =>
           v.setError(
-            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type"))
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.sql.Time from ${other} type")
+          )
       }
     }
   }
@@ -405,7 +408,8 @@ object JDBCCodec extends LogSupport {
           v.setObject(java.math.BigDecimal.valueOf(f))
         case other =>
           v.setError(
-            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.math.BigDecimal from ${other} type"))
+            new MessageCodecException(INVALID_DATA, this, s"Cannot construct java.math.BigDecimal from ${other} type")
+          )
       }
     }
   }
@@ -434,7 +438,8 @@ object JDBCCodec extends LogSupport {
           BooleanArrayCodec.pack(p, a)
         case a: Array[AnyRef] =>
           throw new UnsupportedOperationException(
-            s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}")
+            s"Reading array type of ${arr.getClass} is not supported:\n${a.mkString(", ")}"
+          )
         case other =>
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }

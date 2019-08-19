@@ -163,10 +163,12 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   private def unexpected(expected: String): Exception = {
     val char = s(cursor)
-    new UnexpectedToken(line,
-                        cursor - lineStartPos,
-                        cursor,
-                        f"Found '${String.valueOf(char.toChar)}' 0x${char}%02x. expected: ${expected}")
+    new UnexpectedToken(
+      line,
+      cursor - lineStartPos,
+      cursor,
+      f"Found '${String.valueOf(char.toChar)}' 0x${char}%02x. expected: ${expected}"
+    )
   }
 
   def scan: Unit = {
@@ -393,10 +395,12 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   private def ensure(length: Int): Unit = {
     if (cursor + length > s.length) {
-      throw new UnexpectedEOF(line,
-                              cursor - lineStartPos,
-                              cursor,
-                              s"Expected having ${length} characters, but ${s.length - cursor} is left")
+      throw new UnexpectedEOF(
+        line,
+        cursor - lineStartPos,
+        cursor,
+        s"Expected having ${length} characters, but ${s.length - cursor} is left"
+      )
     }
   }
 
@@ -503,7 +507,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
     val isValidUtf8Header = validUtf8BitVector & (1L << first5bit)
     if (isValidUtf8Header != 0L) {
       val pos     = (ch & 0xF0) >> (4 - 1)
-      val mask    = 0x03L << pos
+      val mask    = 0X03L << pos
       val utf8len = (utf8CharLenTable & mask) >> pos
       val start   = cursor
       cursor += 1

@@ -234,12 +234,13 @@ case class WindowFrame(frameType: FrameType, start: FrameBound, end: Option[Fram
 }
 
 // Function
-case class FunctionCall(name: String,
-                        args: Seq[Expression],
-                        isDistinct: Boolean,
-                        filter: Option[Expression],
-                        window: Option[Window])
-    extends Expression {
+case class FunctionCall(
+    name: String,
+    args: Seq[Expression],
+    isDistinct: Boolean,
+    filter: Option[Expression],
+    window: Option[Window]
+) extends Expression {
   override def children: Seq[Expression] = args ++ filter.toSeq ++ window.toSeq
   def functionName: String               = name.toString.toLowerCase(Locale.US)
   override def toString                  = s"FunctionCall(${name}, ${args.mkString(", ")}, distinct:${isDistinct}, window:${window})"

@@ -92,16 +92,19 @@ object Launcher extends LogSupport {
           case None      => false
         }
       }
-      .map { m =>
-        { li: LauncherInstance =>
-          m.call(li.instance)
-        }
+      .map {
+        m =>
+          { li: LauncherInstance =>
+            m.call(li.instance)
+          }
       }
 
-    new CommandLauncher(LauncherInfo(commandName, commandDescription, commandUsage),
-                        parser,
-                        subCommands,
-                        defaultCommand)
+    new CommandLauncher(
+      LauncherInfo(commandName, commandDescription, commandUsage),
+      parser,
+      subCommands,
+      defaultCommand
+    )
   }
 
   /**
@@ -229,11 +232,12 @@ case class LauncherInfo(name: String, description: String, usage: String, isDefa
   * }}}
   *
   */
-class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
-                      private[launcher] val optionParser: OptionParser,
-                      private[launcher] val subCommands: Seq[CommandLauncher],
-                      defaultCommand: Option[LauncherInstance => Any])
-    extends LogSupport {
+class CommandLauncher(
+    private[launcher] val launcherInfo: LauncherInfo,
+    private[launcher] val optionParser: OptionParser,
+    private[launcher] val subCommands: Seq[CommandLauncher],
+    defaultCommand: Option[LauncherInstance => Any]
+) extends LogSupport {
 
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
@@ -254,19 +258,23 @@ class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
   }
 
   private[launcher] def add(name: String, description: String, commandLauncher: CommandLauncher): CommandLauncher = {
-    new CommandLauncher(launcherInfo,
-                        optionParser,
-                        subCommands :+ commandLauncher.withLauncherInfo(name, description),
-                        defaultCommand)
+    new CommandLauncher(
+      launcherInfo,
+      optionParser,
+      subCommands :+ commandLauncher.withLauncherInfo(name, description),
+      defaultCommand
+    )
   }
 
   private[launcher] def printHelp(launcherConfig: LauncherConfig, stack: List[LauncherInstance]): Unit = {
     printHelpInternal(launcherConfig, stack.map(_.launcher))
   }
 
-  private[launcher] def printMethodHelp(launcherConfig: LauncherConfig,
-                                        m: MethodOptionSchema,
-                                        stack: List[LauncherInstance]): Unit = {
+  private[launcher] def printMethodHelp(
+      launcherConfig: LauncherConfig,
+      m: MethodOptionSchema,
+      stack: List[LauncherInstance]
+  ): Unit = {
     val h             = stack.head
     val globalOptions = stack.tail.flatMap(_.launcher.optionParser.optionList)
 
@@ -303,10 +311,12 @@ class CommandLauncher(private[launcher] val launcherInfo: LauncherInfo,
     print(help)
   }
 
-  private[launcher] def execute(launcherConfig: LauncherConfig,
-                                stack: List[LauncherInstance],
-                                args: Seq[String],
-                                showHelp: Boolean): LauncherResult = {
+  private[launcher] def execute(
+      launcherConfig: LauncherConfig,
+      stack: List[LauncherInstance],
+      args: Seq[String],
+      showHelp: Boolean
+  ): LauncherResult = {
     val result = optionParser.parse(args.toArray)
     trace(result)
 

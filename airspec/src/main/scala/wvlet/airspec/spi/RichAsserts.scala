@@ -39,15 +39,19 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   }
 
   private def arrayDeepEqual[A <: Any](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
-    if (!util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
-                                expected.asInstanceOf[Array[java.lang.Object]])) {
+    if (!util.Arrays.deepEquals(
+          value.asInstanceOf[Array[java.lang.Object]],
+          expected.asInstanceOf[Array[java.lang.Object]]
+        )) {
       throw AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
     }
   }
 
   private def arrayNotDeepEqual[A](value: Array[A], expected: Array[A])(code: SourceCode): Unit = {
-    if (util.Arrays.deepEquals(value.asInstanceOf[Array[java.lang.Object]],
-                               expected.asInstanceOf[Array[java.lang.Object]])) {
+    if (util.Arrays.deepEquals(
+          value.asInstanceOf[Array[java.lang.Object]],
+          expected.asInstanceOf[Array[java.lang.Object]]
+        )) {
       throw AssertionFailure(s"${pp(value)} match with ${pp(expected)}", code)
     }
   }

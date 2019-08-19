@@ -56,13 +56,15 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       }
       // Record the current record format version
       connectionPool.executeUpdate(
-        s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}")
+        s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}"
+      )
     }
 
     // Prepare a database table for recording HttpRecord
     connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
     connectionPool.executeUpdate(
-      s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)")
+      s"create index if not exists ${recordTableName}_index on ${recordTableName} (session, requestHash)"
+    )
     // TODO: Detect schema change
     if (dropSession) {
       clearSession
@@ -90,7 +92,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
     if (deletedRows > 0) {
       warn(
-        s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}")
+        s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}"
+      )
     }
   }
 
@@ -100,7 +103,8 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
   def numRecordsInSession: Long = {
     connectionPool.executeQuery(
-      s"select count(1) cnt from ${recordTableName} where session = '${recorderConfig.sessionName}'") { rs =>
+      s"select count(1) cnt from ${recordTableName} where session = '${recorderConfig.sessionName}'"
+    ) { rs =>
       if (rs.next()) {
         rs.getLong(1)
       } else {
@@ -119,11 +123,11 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     trace(s"findNext: request hash: ${rh} for ${request}, hitCount: ${hitCount}")
     connectionPool.queryWith(
       // Get the next request matching the requestHash
-      s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?") {
-      prepare =>
-        prepare.setString(1, recorderConfig.sessionName)
-        prepare.setInt(2, rh)
-        prepare.setInt(3, hitCount)
+      s"select * from ${recordTableName} where session = ? and requestHash = ? order by createdAt limit 1 offset ?"
+    ) { prepare =>
+      prepare.setString(1, recorderConfig.sessionName)
+      prepare.setInt(2, rh)
+      prepare.setInt(3, hitCount)
     } { rs =>
       HttpRecord.read(rs).headOption
     }

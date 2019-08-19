@@ -54,7 +54,8 @@ lazy val travisSettings = List(
 
 inThisBuild(
   if (isTravisBuild) travisSettings
-  else List.empty)
+  else List.empty
+)
 
 val buildSettings = Seq[Setting[_]](
   scalaVersion := SCALA_2_12,
@@ -483,7 +484,7 @@ lazy val log: sbtcrossproject.CrossProject =
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= logJVMDependencies,
+      libraryDependencies ++= logJVMDependencies
       //classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
     )
     .jsSettings(
@@ -766,16 +767,18 @@ lazy val examples =
       libraryDependencies ++= Seq(
         )
     )
-    .dependsOn(codecJVM,
-               airframeJVM,
-               config,
-               airframeMacrosJVM,
-               launcher,
-               jmx,
-               jdbc,
-               tablet,
-               finagle,
-               airspecRefJVM % "test")
+    .dependsOn(
+      codecJVM,
+      airframeJVM,
+      config,
+      airframeMacrosJVM,
+      launcher,
+      jmx,
+      jdbc,
+      tablet,
+      finagle,
+      airspecRefJVM % "test"
+    )
 
 /**
   * AirSpec build definitions.

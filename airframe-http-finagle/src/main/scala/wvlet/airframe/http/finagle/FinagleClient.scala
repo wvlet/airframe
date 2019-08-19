@@ -28,10 +28,12 @@ import wvlet.log.LogSupport
 import scala.reflect.runtime.{universe => ru}
 import scala.util.control.NonFatal
 
-case class FinagleClientConfig(initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
-                               requestFilter: http.Request => http.Request = identity,
-                               timeout: Duration = Duration(90, TimeUnit.SECONDS),
-                               retry: RetryContext = FinagleClient.defaultRetry)
+case class FinagleClientConfig(
+    initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
+    requestFilter: http.Request => http.Request = identity,
+    timeout: Duration = Duration(90, TimeUnit.SECONDS),
+    retry: RetryContext = FinagleClient.defaultRetry
+)
 
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
@@ -120,15 +122,18 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     json
   }
 
-  override def get[Resource: ru.TypeTag](resourcePath: String,
-                                         requestFilter: Request => Request = identity): Future[Resource] = {
+  override def get[Resource: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Request => Request = identity
+  ): Future[Resource] = {
     convert[Resource](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
 
-  override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
-                                                                              resourceRequest: ResourceRequest,
-                                                                              requestFilter: Request => Request =
-                                                                                identity): Future[Resource] = {
+  override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
+      resourcePath: String,
+      resourceRequest: ResourceRequest,
+      requestFilter: Request => Request = identity
+  ): Future[Resource] = {
 
     // Read resource as JSON
     val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
@@ -153,13 +158,16 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   override def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
-      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
     convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
   }
 
-  override def post[Resource: ru.TypeTag](resourcePath: String,
-                                          resource: Resource,
-                                          requestFilter: Request => Request = identity): Future[Resource] = {
+  override def post[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[Resource] = {
     val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
@@ -168,16 +176,19 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
     val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r))
   }
 
-  override def put[Resource: ru.TypeTag](resourcePath: String,
-                                         resource: Resource,
-                                         requestFilter: Request => Request = identity): Future[Resource] = {
+  override def put[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[Resource] = {
     val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
@@ -186,7 +197,8 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
     val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
@@ -195,7 +207,8 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   override def delete[OperationResponse: ru.TypeTag](
       resourcePath: String,
-      requestFilter: Request => Request = identity): Future[OperationResponse] = {
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
     convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath, requestFilter)))
   }
 
@@ -220,7 +233,8 @@ object FinagleClient extends LogSupport {
   }
   def newSyncClient(
       hostAndPort: String,
-      config: FinagleClientConfig = defaultConfig): HttpSyncClient[Future, http.Request, http.Response] = {
+      config: FinagleClientConfig = defaultConfig
+  ): HttpSyncClient[Future, http.Request, http.Response] = {
     new FinagleClient(address = ServerAddress(hostAndPort), config).syncClient
   }
 }

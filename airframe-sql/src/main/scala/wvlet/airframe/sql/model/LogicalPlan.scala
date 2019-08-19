@@ -221,11 +221,12 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute] = ???
   }
 
-  case class Aggregate(child: Relation,
-                       selectItems: Seq[SelectItem],
-                       groupingKeys: Seq[GroupingKey],
-                       having: Option[Expression])
-      extends UnaryRelation
+  case class Aggregate(
+      child: Relation,
+      selectItems: Seq[SelectItem],
+      groupingKeys: Seq[GroupingKey],
+      having: Option[Expression]
+  ) extends UnaryRelation
       with Selection {
 
     override def sig(config: QuerySignatureConfig): String = {
@@ -342,11 +343,12 @@ object LogicalPlan {
     override def outputAttributes: Seq[Attribute]          = ??? // TODO
     override def sig(config: QuerySignatureConfig): String = s"Lt(${query.sig(config)})"
   }
-  case class LateralView(child: Relation,
-                         exprs: Seq[Expression],
-                         tableAlias: Identifier,
-                         columnAliases: Seq[Identifier])
-      extends UnaryRelation {
+  case class LateralView(
+      child: Relation,
+      exprs: Seq[Expression],
+      tableAlias: Identifier,
+      columnAliases: Seq[Identifier]
+  ) extends UnaryRelation {
     override def outputAttributes: Seq[Attribute]          = ??? // TODO
     override def sig(config: QuerySignatureConfig): String = s"LV(${child.sig(config)})"
   }
@@ -373,11 +375,12 @@ object LogicalPlan {
     }
   }
 
-  case class CreateTableAs(table: QName,
-                           ifNotEotExists: Boolean,
-                           columnAliases: Option[Seq[Identifier]],
-                           query: Relation)
-      extends DDL {
+  case class CreateTableAs(
+      table: QName,
+      ifNotEotExists: Boolean,
+      columnAliases: Option[Seq[Identifier]],
+      query: Relation
+  ) extends DDL {
     override def sig(config: QuerySignatureConfig) = s"CT(${Table(table).sig(config)},${query.sig(config)})"
     override def inputAttributes: Seq[Attribute]   = query.inputAttributes
     override def outputAttributes: Seq[Attribute]  = Nil

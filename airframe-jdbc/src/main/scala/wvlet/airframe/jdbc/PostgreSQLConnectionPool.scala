@@ -48,7 +48,8 @@ class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLCon
       throw new IllegalArgumentException(s"missing postgres jdbc host: ${config}")
     }
     connectionPoolConfig.setJdbcUrl(
-      s"jdbc:postgresql://${config.host.get}:${config.port.getOrElse(5432)}/${config.database}")
+      s"jdbc:postgresql://${config.host.get}:${config.port.getOrElse(5432)}/${config.database}"
+    )
 
     info(s"jdbc URL: ${connectionPoolConfig.getJdbcUrl}")
     new HikariDataSource(connectionPoolConfig)

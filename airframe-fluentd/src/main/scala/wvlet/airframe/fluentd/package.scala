@@ -26,21 +26,23 @@ package object fluentd {
     * A MetricLogger design for sending metrics to Fluentd
     *
     */
-  def withFluentdLogger(host: String = "127.0.0.1",
-                        port: Int = 24224,
-                        tagPrefix: String = "",
-                        // Use the extended EventTime timestamps
-                        // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-                        useExtendedEventTime: Boolean = false,
-                        maxBufferSize: Long = 512 * 1024 * 1024,
-                        flushIntervalMillis: Int = 600,
-                        bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
-                        bufferChunkRetentionTimeMillis: Int = 1000,
-                        jvmHeapBufferMode: Boolean = true,
-                        ackResponseMode: Boolean = true,
-                        sslEnabled: Boolean = false,
-                        fileBackupDir: String = null,
-                        errorHandler: ErrorHandler = null): Design = {
+  def withFluentdLogger(
+      host: String = "127.0.0.1",
+      port: Int = 24224,
+      tagPrefix: String = "",
+      // Use the extended EventTime timestamps
+      // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+      useExtendedEventTime: Boolean = false,
+      maxBufferSize: Long = 512 * 1024 * 1024,
+      flushIntervalMillis: Int = 600,
+      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionTimeMillis: Int = 1000,
+      jvmHeapBufferMode: Boolean = true,
+      ackResponseMode: Boolean = true,
+      sslEnabled: Boolean = false,
+      fileBackupDir: String = null,
+      errorHandler: ErrorHandler = null
+  ): Design = {
 
     newDesign
       .bind[MetricLogger].toInstance(
@@ -58,26 +60,29 @@ package object fluentd {
           sslEnabled,
           fileBackupDir,
           errorHandler
-        ))
+        )
+      )
   }
 
   /**
     * A MetricLogger design for sending metrics to TD
     */
-  def withTDLogger(apikey: String,
-                   host: String = "api.treasuredata.com",
-                   port: Int = 443,
-                   tagPrefix: String = "",
-                   maxBufferSize: Long = 512 * 1024 * 1024,
-                   flushIntervalMillis: Int = 600,
-                   bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
-                   bufferChunkRetentionTimeMillis: Int = 1000,
-                   jvmHeapBufferMode: Boolean = true,
-                   // Use the extended EventTime timestamps
-                   // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-                   useExtededEventTime: Boolean = false,
-                   fileBackupDir: String = null,
-                   errorHandler: ErrorHandler = null): Design = {
+  def withTDLogger(
+      apikey: String,
+      host: String = "api.treasuredata.com",
+      port: Int = 443,
+      tagPrefix: String = "",
+      maxBufferSize: Long = 512 * 1024 * 1024,
+      flushIntervalMillis: Int = 600,
+      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionTimeMillis: Int = 1000,
+      jvmHeapBufferMode: Boolean = true,
+      // Use the extended EventTime timestamps
+      // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+      useExtededEventTime: Boolean = false,
+      fileBackupDir: String = null,
+      errorHandler: ErrorHandler = null
+  ): Design = {
 
     newDesign
       .bind[MetricLogger].toInstance(

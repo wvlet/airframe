@@ -39,13 +39,16 @@ object Config extends LogSupport {
   private[config] def defaultConfigPath =
     cleanupConfigPaths(
       Seq(
-        ".", // current directory
+        ".",                                 // current directory
         sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
-      ))
+      )
+    )
 
-  def apply(env: String = "default",
-            defaultEnv: String = "default",
-            configPaths: Seq[String] = defaultConfigPath): Config =
+  def apply(
+      env: String = "default",
+      defaultEnv: String = "default",
+      configPaths: Seq[String] = defaultConfigPath
+  ): Config =
     Config(ConfigEnv(env, defaultEnv, configPaths), Map.empty[Surface, ConfigHolder])
 
   def cleanupConfigPaths(paths: Seq[String]) = {
@@ -178,8 +181,10 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     }
   }
 
-  private def loadFromYaml[ConfigType: ru.TypeTag](yamlFile: String,
-                                                   onMissingFile: => Option[ConfigType]): Option[ConfigType] = {
+  private def loadFromYaml[ConfigType: ru.TypeTag](
+      yamlFile: String,
+      onMissingFile: => Option[ConfigType]
+  ): Option[ConfigType] = {
     val tpe = Surface.of[ConfigType]
     findConfigFile(yamlFile) match {
       case None =>
@@ -193,7 +198,8 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
           case None =>
             // Load default
             debug(
-              s"Configuration for ${env.env} is not found in ${realPath}. Load ${env.defaultEnv} configuration instead")
+              s"Configuration for ${env.env} is not found in ${realPath}. Load ${env.defaultEnv} configuration instead"
+            )
             m.get(env.defaultEnv).map { x =>
               info(s"Loading ${tpe} from ${realPath}, default env:${env.defaultEnv}")
               x
@@ -208,8 +214,10 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     this + ConfigHolder(tpe, config.get)
   }
 
-  def overrideWith(props: Map[String, Any],
-                   onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
+  def overrideWith(
+      props: Map[String, Any],
+      onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+  ): Config = {
     val p = new Properties
     for ((k, v) <- props) {
       Option(v).map { x =>
@@ -219,13 +227,17 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     if (p.isEmpty) this else PropertiesConfig.overrideWithProperties(this, p, onUnusedProperties)
   }
 
-  def overrideWithProperties(props: Properties,
-                             onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
+  def overrideWithProperties(
+      props: Properties,
+      onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+  ): Config = {
     if (props.isEmpty) this else PropertiesConfig.overrideWithProperties(this, props, onUnusedProperties)
   }
 
-  def overrideWithPropertiesFile(propertiesFile: String,
-                                 onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Config = {
+  def overrideWithPropertiesFile(
+      propertiesFile: String,
+      onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+  ): Config = {
     findConfigFile(propertiesFile) match {
       case None =>
         throw new FileNotFoundException(s"Properties file ${propertiesFile} is not found")

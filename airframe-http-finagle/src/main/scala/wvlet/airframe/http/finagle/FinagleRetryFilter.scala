@@ -42,9 +42,11 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
     }
   }
 
-  private def dispatch(retryContext: RetryContext,
-                       request: Request,
-                       service: Service[Request, Response]): Future[Response] = {
+  private def dispatch(
+      retryContext: RetryContext,
+      request: Request,
+      service: Service[Request, Response]
+  ): Future[Response] = {
     val rep = service(request)
     rep.transform { x =>
       val classifier = x match {

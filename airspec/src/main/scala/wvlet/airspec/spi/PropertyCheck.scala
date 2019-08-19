@@ -46,10 +46,12 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     Prop(x)
   }
 
-  def forAll[A1, U](checker: A1 => U)(implicit
-                                      a1: Arbitrary[A1],
-                                      s1: Shrink[A1],
-                                      pp1: A1 => Pretty): Unit = {
+  def forAll[A1, U](checker: A1 => U)(
+      implicit
+      a1: Arbitrary[A1],
+      s1: Shrink[A1],
+      pp1: A1 => Pretty
+  ): Unit = {
     val prop = Prop.forAll(checker.andThen(OK))(booleanProp, a1, s1, pp1)
     checkProperty(prop)
   }
@@ -59,13 +61,15 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  def forAll[A1, A2, U](checker: (A1, A2) => U)(implicit
-                                                a1: Arbitrary[A1],
-                                                s1: Shrink[A1],
-                                                pp1: A1 => Pretty,
-                                                a2: Arbitrary[A2],
-                                                s2: Shrink[A2],
-                                                pp2: A2 => Pretty): Unit = {
+  def forAll[A1, A2, U](checker: (A1, A2) => U)(
+      implicit
+      a1: Arbitrary[A1],
+      s1: Shrink[A1],
+      pp1: A1 => Pretty,
+      a2: Arbitrary[A2],
+      s2: Shrink[A2],
+      pp2: A2 => Pretty
+  ): Unit = {
     val prop = Prop.forAll { (a1: A1, a2: A2) =>
       checker(a1, a2)
       true
@@ -73,11 +77,13 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  def forAll[A1, A2, U](g1: Gen[A1], g2: Gen[A2])(checker: (A1, A2) => U)(implicit
-                                                                          s1: Shrink[A1],
-                                                                          pp1: A1 => Pretty,
-                                                                          s2: Shrink[A2],
-                                                                          pp2: A2 => Pretty): Unit = {
+  def forAll[A1, A2, U](g1: Gen[A1], g2: Gen[A2])(checker: (A1, A2) => U)(
+      implicit
+      s1: Shrink[A1],
+      pp1: A1 => Pretty,
+      s2: Shrink[A2],
+      pp2: A2 => Pretty
+  ): Unit = {
     val prop = Prop.forAll(g1, g2) { (a1: A1, a2: A2) =>
       checker(a1, a2)
       true
@@ -85,16 +91,18 @@ trait PropertyCheck extends Asserts { this: AirSpecSpi =>
     checkProperty(prop)
   }
 
-  def forAll[A1, A2, A3, U](checker: (A1, A2, A3) => U)(implicit
-                                                        a1: Arbitrary[A1],
-                                                        s1: Shrink[A1],
-                                                        pp1: A1 => Pretty,
-                                                        a2: Arbitrary[A2],
-                                                        s2: Shrink[A2],
-                                                        pp2: A2 => Pretty,
-                                                        a3: Arbitrary[A3],
-                                                        s3: Shrink[A3],
-                                                        pp3: A3 => Pretty): Unit = {
+  def forAll[A1, A2, A3, U](checker: (A1, A2, A3) => U)(
+      implicit
+      a1: Arbitrary[A1],
+      s1: Shrink[A1],
+      pp1: A1 => Pretty,
+      a2: Arbitrary[A2],
+      s2: Shrink[A2],
+      pp2: A2 => Pretty,
+      a3: Arbitrary[A3],
+      s3: Shrink[A3],
+      pp3: A3 => Pretty
+  ): Unit = {
     val prop = Prop.forAll { (a1: A1, a2: A2, a3: A3) =>
       checker(a1, a2, a3)
       true

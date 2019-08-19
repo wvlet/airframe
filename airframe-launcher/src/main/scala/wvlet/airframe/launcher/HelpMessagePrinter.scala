@@ -22,13 +22,15 @@ import wvlet.log.LogSupport
   */
 trait HelpMessagePrinter {
 
-  def render(commandName: String,
-             arguments: Seq[CLArgItem],
-             oneLineUsage: Option[String],
-             description: String,
-             options: Seq[CLOption],
-             globalOptions: Seq[CLOption],
-             subCommands: Seq[CommandLauncher]): String
+  def render(
+      commandName: String,
+      arguments: Seq[CLArgItem],
+      oneLineUsage: Option[String],
+      description: String,
+      options: Seq[CLOption],
+      globalOptions: Seq[CLOption],
+      subCommands: Seq[CommandLauncher]
+  ): String
 
 }
 

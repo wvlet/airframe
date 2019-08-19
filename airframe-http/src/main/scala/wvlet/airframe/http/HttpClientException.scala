@@ -37,10 +37,11 @@ class HttpClientException(val response: HttpResponse[_], val status: HttpStatus,
   def statusCode: Int = status.code
 }
 
-case class HttpClientMaxRetryException(override val response: HttpResponse[_],
-                                       retryContext: RetryContext,
-                                       cause: Throwable)
-    extends HttpClientException(
+case class HttpClientMaxRetryException(
+    override val response: HttpResponse[_],
+    retryContext: RetryContext,
+    cause: Throwable
+) extends HttpClientException(
       response = response,
       status = {
         cause match {

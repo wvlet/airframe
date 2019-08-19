@@ -34,8 +34,10 @@ class MessageException(val errorCode: ErrorCode, message: String = null, cause: 
 }
 
 case class InsufficientBufferException(currentPosition: Long, expectedLength: Long)
-    extends MessageException(ErrorCode.INSUFFICIENT_BUFFER,
-                             s"Need at least ${expectedLength} more bytes. current cursor:${currentPosition}")
+    extends MessageException(
+      ErrorCode.INSUFFICIENT_BUFFER,
+      s"Need at least ${expectedLength} more bytes. current cursor:${currentPosition}"
+    )
 
 /**
   * This error is thrown when the user tries to read an integer value
@@ -60,5 +62,5 @@ object MessageException {
   def overflowI64(i64: Long)  = new IntegerOverflowException(BigInteger.valueOf(i64))
   def overflow(b: BigInteger) = new IntegerOverflowException(b)
 
-  def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0x80000000L).toLong)
+  def overflowU32Size(u32: Int) = new TooLargeMessageException(((u32 & 0x7fffffff) + 0X80000000L).toLong)
 }

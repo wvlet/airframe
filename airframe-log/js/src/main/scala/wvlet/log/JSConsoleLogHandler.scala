@@ -23,8 +23,8 @@ class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandl
             s"""%c${ts} %c${level} %c[${r.leafLoggerName}] %c${r.message} %c${loc}""",
             s"color:${logColorPalette.timestamp}", // timestamp
             logLevelCSS,
-            s"color:${logColorPalette.loggerName}", // logger name
-            logLevelCSS, // log message
+            s"color:${logColorPalette.loggerName}",  // logger name
+            logLevelCSS,                             // log message
             s"color:${logColorPalette.codeLocation}" // loc
           )
         }

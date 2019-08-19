@@ -82,12 +82,13 @@ trait HttpResponse[Resp] {
   def toRaw: Resp
 }
 
-case class SimpleHttpRequest(override val method: HttpMethod,
-                             override val path: String,
-                             override val header: Map[String, String] = Map.empty,
-                             override val query: Map[String, String] = Map.empty,
-                             override val contentString: String = "")
-    extends HttpRequest[SimpleHttpRequest] {
+case class SimpleHttpRequest(
+    override val method: HttpMethod,
+    override val path: String,
+    override val header: Map[String, String] = Map.empty,
+    override val query: Map[String, String] = Map.empty,
+    override val contentString: String = ""
+) extends HttpRequest[SimpleHttpRequest] {
 
   override protected def adapter: HttpRequestAdapter[SimpleHttpRequest] = SimpleHttpRequestAdapter
   override def contentBytes: Array[Byte]                                = contentString.getBytes(StandardCharsets.UTF_8)
@@ -111,10 +112,11 @@ object SimpleHttpRequest {
   }
 }
 
-case class SimpleHttpResponse(override val status: HttpStatus,
-                              override val contentString: String = "",
-                              override val contentType: Option[String] = None)
-    extends HttpResponse[SimpleHttpResponse] {
+case class SimpleHttpResponse(
+    override val status: HttpStatus,
+    override val contentString: String = "",
+    override val contentType: Option[String] = None
+) extends HttpResponse[SimpleHttpResponse] {
   override protected def adapter: HttpResponseAdapter[SimpleHttpResponse] = SimpleHttpResponseAdapter
   override def toRaw: SimpleHttpResponse                                  = this
 }
