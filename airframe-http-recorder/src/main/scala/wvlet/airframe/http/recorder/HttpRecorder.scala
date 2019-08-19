@@ -35,9 +35,9 @@ case class HttpRecorderConfig(
     recordTableName: String = "record",
     // Specify the port to use. The default is finding an available port
     private val port: Int = -1,
-    // A filter for customizing HTTP request headers to use for generating database keys.
-    // For example, we should remove headers that depends on the current time, etc.
-    excludeHeaderPrefixes: Seq[String] = HttpRecorder.defaultExcludeHeaderPrefixes,
+    // Used for computing hash key for matching requests
+    requestMatcher: HttpRequestMatcher = new HttpRequestMatcher.DefaultHttpRequestMatcher(),
+    excludeHeaderForRecording: (String, String) => Boolean = HttpRecorder.defaultHeaderFilterForRecording,
     fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler
 ) {
 
@@ -54,7 +54,6 @@ case class HttpRecorderConfig(
   lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
   lazy val destAddress = ServerAddress(destUri)
 
-  lazy val lowerCaseHeaderExcludePrefixes: Seq[String] = excludeHeaderPrefixes.map(_.toLowerCase(Locale.ENGLISH))
 }
 
 /**
@@ -64,14 +63,9 @@ case class HttpRecorderConfig(
   */
 object HttpRecorder extends LogSupport {
 
-  // Http headers to ignore for recording and hashing purposes
-  def defaultExcludeHeaderPrefixes: Seq[String] = Seq(
-    "date",          // unstable header
-    "x-b3-",         // Finagle's tracing IDs
-    "finagle-",      // Finagle specific headers
-    "host",          // The host value can be changed
-    "content-length" // this can be 0 (or missing)
-  )
+  def defaultHeaderFilterForRecording: (String, String) => Boolean = { (key: String, value: String) =>
+    key.toLowerCase(Locale.ENGLISH).contains("authorization")
+  }
 
   private def newDestClient(recorderConfig: HttpRecorderConfig): Service[Request, Response] = {
     debug(s"dest: ${recorderConfig.destAddress}")
@@ -168,17 +162,6 @@ object HttpRecorder extends LogSupport {
       r.contentString = s"${request.uri} is not found"
       Future.value(r)
     }
-  }
-
-  private[recorder] def computeRequestHash(request: Request, recorderConfig: HttpRecorderConfig): Int = {
-    val contentHash = request.contentType match {
-      case Some(MediaType.OctetStream) =>
-        request.content.hashCode()
-      case _ =>
-        request.contentString.hashCode
-    }
-
-    s"${request.method.toString()}:${recorderConfig.destAddress.hostAndPort}${request.uri}:${contentHash}".hashCode
   }
 
 }

@@ -19,6 +19,7 @@ import com.twitter.io.Buf
 import com.twitter.util.Await
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
+import wvlet.airframe.http.recorder.HttpRequestMatcher.SimpleRequestMatcher
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
@@ -92,7 +93,7 @@ class HttpRecorderTest extends AirSpec {
     errorResponse.statusCode shouldBe 404
   }
 
-  def `switch recoding/replaying`: Unit = {
+  def `switch recording/replaying`: Unit = {
     val recorderConfig =
       HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe-path-through")
 
@@ -199,6 +200,25 @@ class HttpRecorderTest extends AirSpec {
         val arr = new Array[Byte](1024)
         r.content.write(arr, 0)
         arr shouldBe binaryResponseData
+    }
+  }
+
+  def `support simple request matcher`: Unit = {
+    val config = HttpRecorderConfig(sessionName = ":memory:", requestMatcher = SimpleRequestMatcher)
+    withResource(HttpRecorder.createProgrammableServer(config)) { server =>
+      val request = Request("/airframe")
+      request.accept = "application/v1+json"
+      val response = Response()
+      response.contentString = "hello airframe"
+      server.record(request, response)
+
+      withClient(server.localAddress) { client =>
+        val request = Request("/airframe")
+
+        // It should match by ignoring http headers
+        val r = Await.result(client(request))
+        r.contentString shouldBe "hello airframe"
+      }
     }
   }
 }

@@ -31,10 +31,10 @@ case class HttpRecord(
     method: String,
     destHost: String,
     path: String,
-    requestHeader: Map[String, String],
+    requestHeader: Seq[(String, String)],
     requestBody: String,
     responseCode: Int,
-    responseHeader: Map[String, String],
+    responseHeader: Seq[(String, String)],
     responseBody: String,
     createdAt: Instant
 ) {
@@ -81,7 +81,7 @@ case class HttpRecord(
 }
 
 object HttpRecord extends LogSupport {
-  private[recorder] val headerCodec                               = MessageCodec.of[Map[String, String]]
+  private[recorder] val headerCodec                               = MessageCodec.of[Seq[(String, String)]]
   private[recorder] val recordCodec                               = MessageCodec.of[HttpRecord]
   private[recorder] def createTableSQL(tableName: String): String =
     // TODO: Add a method to generate this SQL statement in airframe-codec
