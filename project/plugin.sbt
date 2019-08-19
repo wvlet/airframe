@@ -8,7 +8,7 @@ addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"              % "0.6.2")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"               % "0.4.2")
 
 // For setting explicit versions for each commit
-addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "3.0.0")
+addSbtPlugin("com.dwijnand" % "sbt-dynver"     % "4.0.0")
 addSbtPlugin("com.47deg"    % "sbt-microsites" % "0.7.26")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
