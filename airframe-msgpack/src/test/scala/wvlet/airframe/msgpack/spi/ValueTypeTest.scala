@@ -23,15 +23,17 @@ class ValueTypeTest extends AirSpec {
   scalaJsSupport
 
   def `have name`: Unit = {
-    val vt = Seq(ValueType.NIL,
-                 ValueType.BOOLEAN,
-                 ValueType.INTEGER,
-                 ValueType.FLOAT,
-                 ValueType.STRING,
-                 ValueType.BINARY,
-                 ValueType.ARRAY,
-                 ValueType.MAP,
-                 ValueType.EXTENSION)
+    val vt = Seq(
+      ValueType.NIL,
+      ValueType.BOOLEAN,
+      ValueType.INTEGER,
+      ValueType.FLOAT,
+      ValueType.STRING,
+      ValueType.BINARY,
+      ValueType.ARRAY,
+      ValueType.MAP,
+      ValueType.EXTENSION
+    )
     for (v <- vt) {
       v.name shouldBe v.getClass.getSimpleName.replaceAll("\\$", "")
     }

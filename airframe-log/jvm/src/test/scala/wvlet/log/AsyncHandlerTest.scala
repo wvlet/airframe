@@ -56,47 +56,50 @@ class AsyncHandlerTest extends Spec with Timer {
       }
     }
 
-    val result = for ((handlerName, handler) <- Seq(("log-with-heavy-handler", HeavyHandler),
-                                                    ("log-with-fast-handler", NullHandler))) yield {
-      time(s"${handlerName}", repeat = R0, blockRepeat = R1) {
-        withResource(new AsyncHandler(handler)) { asyncHandler =>
-          // async
-          al.resetHandler(asyncHandler)
-          // sync
-          sl.resetHandler(handler)
+    val result =
+      for ((handlerName, handler) <- Seq(
+             ("log-with-heavy-handler", HeavyHandler),
+             ("log-with-fast-handler", NullHandler)
+           )) yield {
+        time(s"${handlerName}", repeat = R0, blockRepeat = R1) {
+          withResource(new AsyncHandler(handler)) { asyncHandler =>
+            // async
+            al.resetHandler(asyncHandler)
+            // sync
+            sl.resetHandler(handler)
 
-          // Using a thread manager explicitly because of parallel collection issue of Scala 2.13.0-M4
-          //import CompatParColls.Converters._
-          block("async") {
-            withThreadManager { threadManager =>
-              for (i <- (0 until N)) {
-                threadManager.submit(
-                  new Runnable {
-                    override def run(): Unit = {
-                      al.info(s"hello world: ${i}")
+            // Using a thread manager explicitly because of parallel collection issue of Scala 2.13.0-M4
+            //import CompatParColls.Converters._
+            block("async") {
+              withThreadManager { threadManager =>
+                for (i <- (0 until N)) {
+                  threadManager.submit(
+                    new Runnable {
+                      override def run(): Unit = {
+                        al.info(s"hello world: ${i}")
+                      }
                     }
-                  }
-                )
+                  )
+                }
               }
             }
-          }
 
-          block("sync") {
-            withThreadManager { threadManager =>
-              for (i <- (0 until N)) {
-                threadManager.submit(
-                  new Runnable {
-                    override def run(): Unit = {
-                      sl.info(s"hello world: ${i}")
+            block("sync") {
+              withThreadManager { threadManager =>
+                for (i <- (0 until N)) {
+                  threadManager.submit(
+                    new Runnable {
+                      override def run(): Unit = {
+                        sl.info(s"hello world: ${i}")
+                      }
                     }
-                  }
-                )
+                  )
+                }
               }
             }
           }
         }
       }
-    }
     val t = result(0) // heavy handler result
     //t("async").averageWithoutMinMax should be < t("sync").averageWithoutMinMax
   }

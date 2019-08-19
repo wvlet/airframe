@@ -48,10 +48,13 @@ class MetricLoggerTest extends AirSpec {
     val l = f.getTypedLogger[NestedMetric]
     l.emit(NestedMetric("test nested logs", Seq(1, 2, 3), None, SampleMetric(100002, "I'm happy")))
     l.emit(
-      NestedMetric("test options",
-                   Seq(10, 20),
-                   Some("optional value"),
-                   SampleMetric(100003, "option value is also supported")))
+      NestedMetric(
+        "test options",
+        Seq(10, 20),
+        Some("optional value"),
+        SampleMetric(100003, "option value is also supported")
+      )
+    )
   }
 
   def `support exception stack trace metrics`(f: MetricLoggerFactory): Unit = {

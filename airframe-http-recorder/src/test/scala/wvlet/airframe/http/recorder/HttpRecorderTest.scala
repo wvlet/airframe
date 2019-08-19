@@ -74,7 +74,8 @@ class HttpRecorderTest extends AirSpec {
     response.status shouldBe replayResponse.status
     replayResponse.headerMap.get("X-Airframe-Record-Time") shouldBe defined
     orderInsensitveHash(response.headerMap.toMap) shouldBe orderInsensitveHash(
-      replayResponse.headerMap.toMap - "X-Airframe-Record-Time")
+      replayResponse.headerMap.toMap - "X-Airframe-Record-Time"
+    )
     response.contentString shouldBe replayResponse.contentString
 
     // Check non-recorded response
@@ -147,10 +148,12 @@ class HttpRecorderTest extends AirSpec {
 
   def `delete expired records`: Unit = {
     val recorderConfig =
-      HttpRecorderConfig(destUri = "https://wvlet.org",
-                         sessionName = "airframe",
-                         // Expire immediately
-                         expirationTime = "1s")
+      HttpRecorderConfig(
+        destUri = "https://wvlet.org",
+        sessionName = "airframe",
+        // Expire immediately
+        expirationTime = "1s"
+      )
 
     val path = "/airframe/"
     withResource(new HttpRecordStore(recorderConfig, dropSession = true)) { store =>

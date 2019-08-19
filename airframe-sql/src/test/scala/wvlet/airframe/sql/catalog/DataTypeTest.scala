@@ -48,12 +48,15 @@ class DataTypeTest extends AirSpec {
     parse("array[array[string]]", ArrayType(ArrayType(StringType)))
     parse("map[string,long]", MapType(StringType, LongType))
     parse("map[string,array[string]]", MapType(StringType, ArrayType(StringType)))
-    parse("""{id:long,name:string}""",
-          DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType))))
+    parse(
+      """{id:long,name:string}""",
+      DataType.RecordType(Seq(NamedType("id", LongType), NamedType("name", StringType)))
+    )
     parse(
       """{id:long,name:string,address:array[string]}""",
       DataType.RecordType(
-        Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType))))
+        Seq(NamedType("id", LongType), NamedType("name", StringType), NamedType("address", ArrayType(StringType)))
+      )
     )
   }
 

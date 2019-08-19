@@ -33,7 +33,8 @@ class JSONCodecTest extends AirSpec {
 
   def `serialize json into msgpack`: Unit = {
     check(
-      """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}""")
+      """{"id":1, "name":"leo", "address":["xxx", "yyy"], "flag":true, "float":1.234, "nil":null, "nested":{"message":"hello"}}"""
+    )
     check("[1]")
     check("[12342345324234234]")
     check("[0.12]")

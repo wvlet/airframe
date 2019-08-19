@@ -22,30 +22,42 @@ class ServerAddressTest extends AirSpec {
 
   val examples = Seq(
     (ServerAddress("localhost:12345"), ServerAddress("localhost", 12345), "localhost:12345", "localhost:12345"),
-    (ServerAddress("wvlet.org:80"),
-     ServerAddress("wvlet.org", 80, Some("http")),
-     "http://wvlet.org:80",
-     "wvlet.org:80"),
-    (ServerAddress("wvlet.org:443"),
-     ServerAddress("wvlet.org", 443, Some("https")),
-     "https://wvlet.org:443",
-     "wvlet.org:443"),
-    (ServerAddress("http://localhost"),
-     ServerAddress("localhost", 80, Some("http")),
-     "http://localhost:80",
-     "localhost:80"),
-    (ServerAddress("https://localhost"),
-     ServerAddress("localhost", 443, Some("https")),
-     "https://localhost:443",
-     "localhost:443"),
-    (ServerAddress("https://localhost:444"),
-     ServerAddress("localhost", 444, Some("https")),
-     "https://localhost:444",
-     "localhost:444"),
-    (ServerAddress("http://wvlet.org:8080"),
-     ServerAddress("wvlet.org", 8080, Some("http")),
-     "http://wvlet.org:8080",
-     "wvlet.org:8080")
+    (
+      ServerAddress("wvlet.org:80"),
+      ServerAddress("wvlet.org", 80, Some("http")),
+      "http://wvlet.org:80",
+      "wvlet.org:80"
+    ),
+    (
+      ServerAddress("wvlet.org:443"),
+      ServerAddress("wvlet.org", 443, Some("https")),
+      "https://wvlet.org:443",
+      "wvlet.org:443"
+    ),
+    (
+      ServerAddress("http://localhost"),
+      ServerAddress("localhost", 80, Some("http")),
+      "http://localhost:80",
+      "localhost:80"
+    ),
+    (
+      ServerAddress("https://localhost"),
+      ServerAddress("localhost", 443, Some("https")),
+      "https://localhost:443",
+      "localhost:443"
+    ),
+    (
+      ServerAddress("https://localhost:444"),
+      ServerAddress("localhost", 444, Some("https")),
+      "https://localhost:444",
+      "localhost:444"
+    ),
+    (
+      ServerAddress("http://wvlet.org:8080"),
+      ServerAddress("wvlet.org", 8080, Some("http")),
+      "http://wvlet.org:8080",
+      "wvlet.org:8080"
+    )
   )
 
   def `parse host and port`: Unit = {

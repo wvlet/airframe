@@ -70,8 +70,10 @@ class ValueTest extends AirSpec with PropertyCheck {
     }
     forAll(Gen.posNum[Long]) { (v: Long) =>
       // Create value between 2^63-1 < v <= 2^64-1
-      checkSuccinctType(OffsetPacker.packBigInteger(_, BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))),
-                        MessageFormat.UINT64)
+      checkSuccinctType(
+        OffsetPacker.packBigInteger(_, BigInteger.valueOf(Long.MaxValue).add(BigInteger.valueOf(v))),
+        MessageFormat.UINT64
+      )
     }
   }
 
@@ -108,10 +110,12 @@ class ValueTest extends AirSpec with PropertyCheck {
     a(0) shouldBe LongValue(0)
     a(1) shouldBe StringValue("hello")
     check(a, ValueType.ARRAY, "[0,\"hello\"]", "[0,\"hello\"]")
-    check(newArray(newArray(newString("Apple"), newFloat(0.2)), newNil),
-          ValueType.ARRAY,
-          """[["Apple",0.2],null]""",
-          """[["Apple",0.2],null]""")
+    check(
+      newArray(newArray(newString("Apple"), newFloat(0.2)), newNil),
+      ValueType.ARRAY,
+      """[["Apple",0.2],null]""",
+      """[["Apple",0.2],null]"""
+    )
   }
 
   def `have string`: Unit = {

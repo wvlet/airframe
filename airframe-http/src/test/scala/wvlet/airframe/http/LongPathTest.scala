@@ -46,7 +46,8 @@ class LongPathTest extends AirSpec {
     {
       val m =
         r.findRoute(
-          SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/config/autoscaling/clusters/default/maxCapacity"))
+          SimpleHttpRequest(HttpMethod.GET, "/v1/config/entry/config/autoscaling/clusters/default/maxCapacity")
+        )
 
       m shouldBe defined
       val p = m.get.params
