@@ -147,10 +147,11 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airspecJVM
 )
 
-// JVM projects that supports Scala 2.13
+// JVM projects supporting Scala 2.11 - Scala 2.13
 lazy val jvmProjects: Seq[ProjectReference] = communityBuildProjects ++ Seq[ProjectReference](
   jdbc,
-  fluentd
+  fluentd,
+  airspecLight
 )
 
 // JVM projects excluded from Scala 2.13 build
@@ -162,7 +163,7 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   examples
 )
 
-// Scala.js build is only for Scala 2.12
+// Scala.js build (only for Scala 2.12)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
@@ -928,15 +929,12 @@ lazy val airspecDeps =
 lazy val airspecDepsJVM = airspecDeps.jvm
 lazy val airspecDepsJS  = airspecDeps.js
 
-lazy val airspecJVMModules = Seq(airspecDepsJVM, airspecCoreJVM, airspecLogJVM)
-
 lazy val airspec =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
     .in(file("airspec"))
     .settings(buildSettings)
     .settings(
-      //airspecBuildSettings,
       name := "airspec",
       description := "AirSpec: A Functional Testing Framework for Scala",
       libraryDependencies ++= Seq(
@@ -965,6 +963,35 @@ lazy val airspec =
 lazy val airspecJVM = airspec.jvm
 lazy val airspecJS  = airspec.js
 
+def isAirSpecClass(mapping:(File, String)): Boolean = mapping._2.startsWith("wvlet/airspec/")
+
+// A JVM project containing only wvlet.airspec package classes
+lazy val airspecLight =
+  project
+  .in(file("airspec-light"))
+  .settings(buildSettings)
+  .settings(
+    name := "airspec-light",
+    description := "API and and runner for AirSpec test cases",
+    // Need to see the airspec source code directly to avoid any cyclic project references
+    unmanagedSourceDirectories in Compile ++= {
+      val base = (ThisBuild / baseDirectory).value / "airspec"
+      Seq(
+        base / "src" / "main" / "scala",
+        base / ".jvm" / "src" / "main" / "scala",
+      )
+    },
+    // Extract only wvlet.airspec packages
+    mappings in (Compile, packageBin) := mappings.in(Compile, packageBin).value.filter(isAirSpecClass),
+    mappings in (Compile, packageSrc) := mappings.in(Compile, packageSrc).value.filter(isAirSpecClass),
+    libraryDependencies ++= Seq(
+      "org.scala-sbt" % "test-interface" % "1.0" % "provided",
+      "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION % "provided"
+    )
+  )
+  .dependsOn(airframeJVM, airframeMacrosJVMRef, metricsJVM)
+
+// An internal-only project for using AirSpec for testing Airframe modules
 lazy val airspecRef =
   crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
