@@ -37,18 +37,18 @@ class FinagleTest extends AirSpec {
       http.Method.Options,
       http.Method.Trace
     ).foreach { m =>
-        val req = http.Request(m, "/hello")
-        req.setContentString("hello finagle")
-        req.setContentTypeJson()
-        val r = req.toHttpRequest
-        r.method shouldBe toHttpMethod(m)
-        r.path shouldBe "/hello"
-        r.query shouldBe Map.empty
-        r.contentString shouldBe "hello finagle"
-        r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
-        r.contentType shouldBe Some("application/json;charset=utf-8")
-        r.toRaw shouldBe req
-      }
+      val req = http.Request(m, "/hello")
+      req.setContentString("hello finagle")
+      req.setContentTypeJson()
+      val r = req.toHttpRequest
+      r.method shouldBe toHttpMethod(m)
+      r.path shouldBe "/hello"
+      r.query shouldBe Map.empty
+      r.contentString shouldBe "hello finagle"
+      r.contentBytes shouldBe "hello finagle".getBytes(StandardCharsets.UTF_8)
+      r.contentType shouldBe Some("application/json;charset=utf-8")
+      r.toRaw shouldBe req
+    }
   }
 
   def `provide facade of http responses`: Unit = {
