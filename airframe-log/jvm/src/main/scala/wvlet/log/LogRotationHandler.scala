@@ -47,22 +47,25 @@ object LogRotationHandler {
   * @param logFileExt
   */
 class FileHandler(fileName: String, formatter: LogFormatter = AppLogFormatter, logFileExt: String = ".log")
-    extends LogRotationHandler(fileName,
-                               maxNumberOfFiles = Integer.MAX_VALUE,
-                               maxSizeInBytes = Long.MaxValue,
-                               formatter = formatter,
-                               logFileExt = logFileExt)
+    extends LogRotationHandler(
+      fileName,
+      maxNumberOfFiles = Integer.MAX_VALUE,
+      maxSizeInBytes = Long.MaxValue,
+      formatter = formatter,
+      logFileExt = logFileExt
+    )
 
 /**
   * Log rotation handler
   */
-class LogRotationHandler(fileName: String,
-                         maxNumberOfFiles: Int = 100, // Rotate up to 100 files
-                         maxSizeInBytes: Long = 104857600, // 100 MB
-                         formatter: LogFormatter = AppLogFormatter,
-                         logFileExt: String = ".log",
-                         tempFileExt: String = ".tmp")
-    extends jl.Handler
+class LogRotationHandler(
+    fileName: String,
+    maxNumberOfFiles: Int = 100,      // Rotate up to 100 files
+    maxSizeInBytes: Long = 104857600, // 100 MB
+    formatter: LogFormatter = AppLogFormatter,
+    logFileExt: String = ".log",
+    tempFileExt: String = ".tmp"
+) extends jl.Handler
     with AutoCloseable
     with Flushable {
 

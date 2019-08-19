@@ -18,6 +18,8 @@ import wvlet.airframe.surface.Surface
   *
   */
 trait CodecFinder {
-  def findCodec(factory: MessageCodecFactory,
-                seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, MessageCodec[_]]
+  def findCodec(
+      factory: MessageCodecFactory,
+      seenSet: Set[Surface] = Set.empty
+  ): PartialFunction[Surface, MessageCodec[_]]
 }

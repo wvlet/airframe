@@ -21,7 +21,8 @@ object ArgProcessorTest {
 
   @command(description = "My command")
   case class Cmd(
-      @option(prefix = "-h,--help", description = "show help messages", isHelp = true) help: Boolean = false) {
+      @option(prefix = "-h,--help", description = "show help messages", isHelp = true) help: Boolean = false
+  ) {
 
     @command(isDefault = true)
     def usage: Unit = {
@@ -60,13 +61,14 @@ object ArgProcessorTest {
 
   class FunctionArg(
       @option(prefix = "-e", description = "Environment")
-      env: String = "default-env")
-      extends LogSupport {
+      env: String = "default-env"
+  ) extends LogSupport {
 
     @command(description = "Start a proxy server")
     def proxy(
         @option(prefix = "-p,--port", description = "port number")
-        port: Int = IOUtil.randomPort) = {}
+        port: Int = IOUtil.randomPort
+    ) = {}
   }
 
   case class SeqArg(@argument args: Seq[String])

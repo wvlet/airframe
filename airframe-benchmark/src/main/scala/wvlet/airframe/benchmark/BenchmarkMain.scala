@@ -65,24 +65,28 @@ class BenchmarkMain(
       @argument(description = "Target benchmark suite to run: json, msgpack")
       targetPackage: Option[String] = None
   ): Unit = {
-    bench(iteration = iteration,
-          warmupIteration = 0,
-          measurementTime = measurementTime,
-          forkCount = forkCount,
-          targetPackage = targetPackage)
+    bench(
+      iteration = iteration,
+      warmupIteration = 0,
+      measurementTime = measurementTime,
+      forkCount = forkCount,
+      targetPackage = targetPackage
+    )
   }
 
   @command(description = "Run a benchmark")
-  def bench(@option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
-            iteration: Int = 10,
-            @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
-            warmupIteration: Int = 3,
-            @option(prefix = "-mt", description = "measurement time (default: 1s)")
-            measurementTime: ElapsedTime = ElapsedTime.parse("0.5s"),
-            @option(prefix = "-F,--fork-count", description = "Fork Count (default: 1)")
-            forkCount: Int = 1,
-            @argument(description = "Target benchmark suite to run: json, msgpack")
-            targetPackage: Option[String] = None): Unit = {
+  def bench(
+      @option(prefix = "-i,--iteration", description = "The number of iteration (default: 10)")
+      iteration: Int = 10,
+      @option(prefix = "-w,--warmup", description = "The number of warm-up iteration (default: 5)")
+      warmupIteration: Int = 3,
+      @option(prefix = "-mt", description = "measurement time (default: 1s)")
+      measurementTime: ElapsedTime = ElapsedTime.parse("0.5s"),
+      @option(prefix = "-F,--fork-count", description = "Fork Count (default: 1)")
+      forkCount: Int = 1,
+      @argument(description = "Target benchmark suite to run: json, msgpack")
+      targetPackage: Option[String] = None
+  ): Unit = {
     info("Starting the benchmark")
     var opt = new OptionsBuilder()
       .forks(forkCount)
@@ -104,10 +108,12 @@ class BenchmarkMain(
   }
 
   @command(description = "Run JSON performance benchmark")
-  def json_perf(@option(prefix = "-n", description = "The number of iteration (default: 10)")
-                iteration: Int = 10,
-                @option(prefix = "-b", description = "The number of block iteration (default: 10)")
-                blockIteration: Int = 10): Unit = {
+  def json_perf(
+      @option(prefix = "-n", description = "The number of iteration (default: 10)")
+      iteration: Int = 10,
+      @option(prefix = "-b", description = "The number of block iteration (default: 10)")
+      blockIteration: Int = 10
+  ): Unit = {
     JSONBenchmark.runAll(N = iteration, B = iteration)
   }
 

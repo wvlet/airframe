@@ -123,7 +123,8 @@ object JMXMBean extends LogSupport {
     val methods = ReflectSurfaceFactory.methodsOfType(tpe)
 
     val jmxParams: Seq[ParameterBase] = surface.params.filter(_.findAnnotationOf[aj.JMX].isDefined) ++ methods.filter(
-      _.findAnnotationOf[aj.JMX].isDefined)
+      _.findAnnotationOf[aj.JMX].isDefined
+    )
 
     jmxParams.flatMap { p =>
       val paramName = parent.map(x => s"${x.name}.${p.name}").getOrElse(p.name)

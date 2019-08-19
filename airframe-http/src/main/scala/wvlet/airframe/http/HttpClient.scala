@@ -58,28 +58,40 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
   /**
     * Send a get request using the ResourceRequest. ResourceRequest parameters will be expanded as URL query strings
     */
-  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
-                                                                     resourceRequest: ResourceRequest,
-                                                                     requestFilter: Req => Req = identity): F[Resource]
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
+      resourcePath: String,
+      resourceRequest: ResourceRequest,
+      requestFilter: Req => Req = identity
+  ): F[Resource]
 
-  def list[OperationResponse: ru.TypeTag](resourcePath: String,
-                                          requestFilter: Req => Req = identity): F[OperationResponse]
-  def post[Resource: ru.TypeTag](resourcePath: String,
-                                 resource: Resource,
-                                 requestFilter: Req => Req = identity): F[Resource]
+  def list[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
+  def post[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resource]
   def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Req => Req = identity): F[OperationResponse]
-  def put[Resource: ru.TypeTag](resourcePath: String,
-                                resource: Resource,
-                                requestFilter: Req => Req = identity): F[Resource]
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
+  def put[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resource]
   def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Req => Req = identity): F[OperationResponse]
-  def delete[OperationResponse: ru.TypeTag](resourcePath: String,
-                                            requestFilter: Req => Req = identity): F[OperationResponse]
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
+  def delete[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
 
   def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
 }
@@ -111,42 +123,54 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
   def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): Resource = {
     awaitF(asyncClient.get[Resource](resourcePath, requestFilter))
   }
-  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](resourcePath: String,
-                                                                     resourceRequest: ResourceRequest,
-                                                                     requestFilter: Req => Req = identity): Resource = {
+  def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
+      resourcePath: String,
+      resourceRequest: ResourceRequest,
+      requestFilter: Req => Req = identity
+  ): Resource = {
     awaitF(asyncClient.getResource[ResourceRequest, Resource](resourcePath, resourceRequest, requestFilter))
   }
-  def list[OperationResponse: ru.TypeTag](resourcePath: String,
-                                          requestFilter: Req => Req = identity): OperationResponse = {
+  def list[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
     awaitF(asyncClient.list[OperationResponse](resourcePath, requestFilter))
   }
 
-  def post[Resource: ru.TypeTag](resourcePath: String,
-                                 resource: Resource,
-                                 requestFilter: Req => Req = identity): Resource = {
+  def post[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resource = {
     awaitF(asyncClient.post[Resource](resourcePath, resource, requestFilter))
   }
   def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Req => Req = identity): OperationResponse = {
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
     awaitF(asyncClient.postOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
   }
 
-  def put[Resource: ru.TypeTag](resourcePath: String,
-                                resource: Resource,
-                                requestFilter: Req => Req = identity): Resource = {
+  def put[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resource = {
     awaitF(asyncClient.put[Resource](resourcePath, resource, requestFilter))
   }
   def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
-      requestFilter: Req => Req = identity): OperationResponse = {
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
     awaitF(asyncClient.putOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
   }
 
-  def delete[OperationResponse: ru.TypeTag](resourcePath: String,
-                                            requestFilter: Req => Req = identity): OperationResponse = {
+  def delete[OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
     awaitF(asyncClient.delete[OperationResponse](resourcePath, requestFilter))
   }
 
@@ -188,7 +212,8 @@ object HttpClient extends LogSupport {
       }
     val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
     warn(
-      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec.")
+      f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec."
+    )
     AddExtraRetryWait(extraWaitMillis.toInt)
   }
 

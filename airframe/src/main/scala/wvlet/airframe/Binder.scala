@@ -37,11 +37,12 @@ object Binder {
   case class SingletonBinding(from: Surface, to: Surface, isEager: Boolean, sourceCode: SourceCode) extends Binding {
     override def forSingleton: Boolean = true
   }
-  case class ProviderBinding(factory: DependencyFactory,
-                             provideSingleton: Boolean,
-                             eager: Boolean,
-                             sourceCode: SourceCode)
-      extends Binding {
+  case class ProviderBinding(
+      factory: DependencyFactory,
+      provideSingleton: Boolean,
+      eager: Boolean,
+      sourceCode: SourceCode
+  ) extends Binding {
     assert(!eager || (eager && provideSingleton))
     def from: Surface                  = factory.from
     override def forSingleton: Boolean = provideSingleton
@@ -126,7 +127,8 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
   def toInstance(any: => A): Design = {
     trace(s"binder toInstance: ${from}")
     design.addBinding(
-      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true, sourceCode))
+      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true, sourceCode)
+    )
   }
 
   /**
@@ -138,7 +140,8 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
   def toLazyInstance(any: => A): Design = {
     trace(s"binder toLazyInstance: ${from}")
     design.addBinding(
-      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false, sourceCode))
+      ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false, sourceCode)
+    )
   }
 
   def toSingletonOf[B <: A]: Design = macro binderToSingletonOfImpl[B]

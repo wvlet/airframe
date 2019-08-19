@@ -23,8 +23,10 @@ import wvlet.airframe.surface.{EnumSurface, GenericSurface, Surface}
   */
 object JVMCodecFactory extends CodecFinder {
 
-  def findCodec(factory: MessageCodecFactory,
-                seenSet: Set[Surface] = Set.empty): PartialFunction[Surface, MessageCodec[_]] = {
+  def findCodec(
+      factory: MessageCodecFactory,
+      seenSet: Set[Surface] = Set.empty
+  ): PartialFunction[Surface, MessageCodec[_]] = {
     case EnumSurface(cl) =>
       EnumCodec(cl)
     case s if ReflectTypeUtil.isTuple(s.rawType) =>

@@ -25,10 +25,11 @@ import Design._
 /**
   * Design configs
   */
-case class DesignOptions(enabledLifeCycleLogging: Boolean = true,
-                         stage: Stage = Stage.DEVELOPMENT,
-                         options: Map[String, Any] = Map.empty)
-    extends Serializable {
+case class DesignOptions(
+    enabledLifeCycleLogging: Boolean = true,
+    stage: Stage = Stage.DEVELOPMENT,
+    options: Map[String, Any] = Map.empty
+) extends Serializable {
   def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten
     new DesignOptions(other.enabledLifeCycleLogging, other.stage, defaultOptionMerger(options, other.options))

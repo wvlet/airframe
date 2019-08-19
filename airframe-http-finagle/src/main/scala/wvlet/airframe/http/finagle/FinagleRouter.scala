@@ -25,10 +25,11 @@ import wvlet.log.LogSupport
 /**
   * A router for dispatching http requests to the predefined routes.
   */
-class FinagleRouter(config: FinagleServerConfig,
-                    controllerProvider: ControllerProvider,
-                    responseHandler: ResponseHandler[Request, Response])
-    extends SimpleFilter[Request, Response]
+class FinagleRouter(
+    config: FinagleServerConfig,
+    controllerProvider: ControllerProvider,
+    responseHandler: ResponseHandler[Request, Response]
+) extends SimpleFilter[Request, Response]
     with LogSupport {
 
   // A table for Route -> matching HttpFilter
@@ -57,9 +58,11 @@ object FinagleRouter {
   /**
     * Traverse the Router tree and build HttpFilter for each local Route
     */
-  def buildRouteFilters(router: Router,
-                        parentFilter: FinagleFilter,
-                        controllerProvider: ControllerProvider): Map[Route, RouteFilter] = {
+  def buildRouteFilters(
+      router: Router,
+      parentFilter: FinagleFilter,
+      controllerProvider: ControllerProvider
+  ): Map[Route, RouteFilter] = {
 
     // TODO Extract this logic into airframe-http
     val localFilterOpt: Option[FinagleFilter] =

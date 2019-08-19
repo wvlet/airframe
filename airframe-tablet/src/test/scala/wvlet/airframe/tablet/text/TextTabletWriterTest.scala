@@ -30,15 +30,9 @@ import wvlet.airframe.tablet.text.TextTabletWriterTest._
 class TextTabletWriterTest extends AirSpec {
 
   val seq = Seq(
-    Person(1,
-           "leo",
-           Seq("xxx-xxxx"),
-           """123 Apple Street
+    Person(1, "leo", Seq("xxx-xxxx"), """123 Apple Street
                |Cupertino, CA""".stripMargin),
-    Person(2,
-           "yui",
-           Seq("yyy-yyyy", "zzz-zzzz"),
-           """456 Orange Avenue
+    Person(2, "yui", Seq("yyy-yyyy", "zzz-zzzz"), """456 Orange Avenue
                |Santa Clara, CA""".stripMargin)
   )
 

@@ -31,10 +31,11 @@ case class FinagleServerConfig(name: String = "default", port: Int = IOUtil.unus
 /**
   *
   */
-class FinagleServer(finagleConfig: FinagleServerConfig,
-                    finagleService: FinagleService,
-                    initServer: Http.Server => Http.Server = identity)
-    extends LogSupport
+class FinagleServer(
+    finagleConfig: FinagleServerConfig,
+    finagleService: FinagleService,
+    initServer: Http.Server => Http.Server = identity
+) extends LogSupport
     with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
 

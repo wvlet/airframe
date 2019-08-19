@@ -81,8 +81,10 @@ object DataType {
     * @param column
     */
   case class RecordType(typeName: String, column: Seq[Column]) extends DataType {
-    require(column.map(_.name).distinct.size == column.size,
-            s"record contains duplicate column names: ${column.mkString(",")}")
+    require(
+      column.map(_.name).distinct.size == column.size,
+      s"record contains duplicate column names: ${column.mkString(",")}"
+    )
 
     // Person(id:int, name:string, address:Address)
     // Address(address:string, phone:array[string])

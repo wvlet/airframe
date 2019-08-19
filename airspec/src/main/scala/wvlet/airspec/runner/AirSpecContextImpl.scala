@@ -24,12 +24,13 @@ import scala.language.experimental.macros
 /**
   *
   */
-private[airspec] class AirSpecContextImpl(taskExecutor: AirSpecTaskRunner,
-                                          val parentContext: Option[AirSpecContext],
-                                          val currentSpec: AirSpecSpi,
-                                          val testName: String = "<init>",
-                                          val currentSession: Session)
-    extends AirSpecContext
+private[airspec] class AirSpecContextImpl(
+    taskExecutor: AirSpecTaskRunner,
+    val parentContext: Option[AirSpecContext],
+    val currentSpec: AirSpecSpi,
+    val testName: String = "<init>",
+    val currentSession: Session
+) extends AirSpecContext
     with LogSupport {
 
   override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {

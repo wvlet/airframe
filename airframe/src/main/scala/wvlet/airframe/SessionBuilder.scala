@@ -32,12 +32,13 @@ object Stage {
 /**
   *
   */
-class SessionBuilder(design: Design,
-                     parent: Option[AirframeSession] = None,
-                     name: Option[String] = None,
-                     addShutdownHook: Boolean = true,
-                     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler)
-    extends LogSupport {
+class SessionBuilder(
+    design: Design,
+    parent: Option[AirframeSession] = None,
+    name: Option[String] = None,
+    addShutdownHook: Boolean = true,
+    lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler
+) extends LogSupport {
 
   /**
     * @param e

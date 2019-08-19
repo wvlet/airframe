@@ -116,7 +116,8 @@ class JDBCCodecTest extends AirSpec {
     )
 
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
-      new java.sql.Timestamp(15000000))
+      new java.sql.Timestamp(15000000)
+    )
     val selectItems = types.map(x => s"cast(null as ${x})").mkString(", ")
 
     withQuery(s"select ${selectItems}") { rs =>
@@ -129,35 +130,44 @@ class JDBCCodecTest extends AirSpec {
 
   def `support sql date`: Unit = {
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23").toByteArray) shouldBe Some(
-      java.sql.Date.valueOf("2019-01-23"))
+      java.sql.Date.valueOf("2019-01-23")
+    )
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
-      new java.sql.Date(15000000))
+      new java.sql.Date(15000000)
+    )
     JavaSqlDateCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
   def `support sql time`: Unit = {
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packString("01:23:45").toByteArray) shouldBe Some(
-      java.sql.Time.valueOf("01:23:45"))
+      java.sql.Time.valueOf("01:23:45")
+    )
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
-      new java.sql.Time(15000000))
+      new java.sql.Time(15000000)
+    )
     JavaSqlTimeCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
   def `support sql timestamp`: Unit = {
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packString("2019-01-23 01:23:45.000").toByteArray) shouldBe Some(
-      java.sql.Timestamp.valueOf("2019-01-23 01:23:45.000"))
+      java.sql.Timestamp.valueOf("2019-01-23 01:23:45.000")
+    )
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packLong(15000000).toByteArray) shouldBe Some(
-      new java.sql.Timestamp(15000000))
+      new java.sql.Timestamp(15000000)
+    )
     JavaSqlTimestampCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 
   def `support java.math.BigDecimal`: Unit = {
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packString("12345").toByteArray) shouldBe Some(
-      new java.math.BigDecimal(12345))
+      new java.math.BigDecimal(12345)
+    )
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packLong(12345L).toByteArray) shouldBe Some(
-      new java.math.BigDecimal(12345))
+      new java.math.BigDecimal(12345)
+    )
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packDouble(12345.0).toByteArray) shouldBe Some(
-      java.math.BigDecimal.valueOf(12345.0))
+      java.math.BigDecimal.valueOf(12345.0)
+    )
     BigDecimalCodec.unpackBytes(MessagePack.newBufferPacker.packNil.toByteArray) shouldBe None
   }
 

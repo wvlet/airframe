@@ -70,7 +70,8 @@ trait Session extends AutoCloseable {
 
   private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A
   private[airframe] def createNewInstanceOf[A](surface: Surface, traitInstanceFactory: => A)(
-      implicit sourceCode: SourceCode): A
+      implicit sourceCode: SourceCode
+  ): A
 
   def getInstanceOf(surface: Surface)(implicit sourceCode: SourceCode): Any
 
@@ -167,7 +168,8 @@ object Session extends LogSupport {
     getSession(enclosingObj).getOrElse {
       error(
         s"No wvlet.airframe.Session is found in the scope: ${enclosingObj.getClass}, " +
-          s"enclosing object: ${enclosingObj}")
+          s"enclosing object: ${enclosingObj}"
+      )
       throw new MISSING_SESSION(enclosingObj.getClass)
     }
   }

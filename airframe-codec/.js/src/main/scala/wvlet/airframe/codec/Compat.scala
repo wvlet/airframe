@@ -23,8 +23,10 @@ object Compat {
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
 
   object JSCodecFinger extends CodecFinder {
-    override def findCodec(factory: MessageCodecFactory,
-                           seenSet: Set[Surface]): PartialFunction[Surface, MessageCodec[_]] = {
+    override def findCodec(
+        factory: MessageCodecFactory,
+        seenSet: Set[Surface]
+    ): PartialFunction[Surface, MessageCodec[_]] = {
       case other => throw new UnsupportedOperationException(s"${other}")
     }
   }

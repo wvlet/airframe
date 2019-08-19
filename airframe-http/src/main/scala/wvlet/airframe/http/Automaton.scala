@@ -99,11 +99,13 @@ object Automaton {
 
   case class NextNode[Node](node: Node, nodeId: Int)
 
-  case class DFA[Node, Token](nodeTable: Map[Node, Int],
-                              tokenTable: Map[Token, Int],
-                              edges: Set[Edge[Node, Token]],
-                              init: Node,
-                              defaultToken: Token) {
+  case class DFA[Node, Token](
+      nodeTable: Map[Node, Int],
+      tokenTable: Map[Token, Int],
+      edges: Set[Edge[Node, Token]],
+      init: Node,
+      defaultToken: Token
+  ) {
 
     val initStateId = nodeTable(init)
 
@@ -125,7 +127,8 @@ object Automaton {
       s += "\n[edges]"
       s += transitionTable
         .map { case ((state, token), next) => s"${state}: ${tokenIdTable(token)} -> ${next.nodeId}: ${next.node}" }.mkString(
-          "\n")
+          "\n"
+        )
       s.result().mkString("\n")
     }
 

@@ -60,7 +60,7 @@ object AssistedInjectionTest extends LogSupport {
       new NamedService with SessionHolder {
         override def airframeSession: Session = session
         val name: String                      = givenName
-    }
+      }
   }
 
   def assistedInjector(serviceName: String, session: Session): NamedService = new NamedService with SessionHolder {

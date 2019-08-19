@@ -52,9 +52,10 @@ class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: M
   }
 }
 
-class MetricLoggerFactory(fluentdClient: MetricLogger,
-                          codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory.withObjectMapCodec)
-    extends LogSupport {
+class MetricLoggerFactory(
+    fluentdClient: MetricLogger,
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory.withObjectMapCodec
+) extends LogSupport {
   def getLogger: MetricLogger = fluentdClient
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
     fluentdClient.withTagPrefix(tagPrefix)

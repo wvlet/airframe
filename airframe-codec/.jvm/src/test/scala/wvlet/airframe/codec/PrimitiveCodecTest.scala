@@ -41,16 +41,19 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     }
   }
 
-  protected def arrayRoundTripTest[T](surface: Surface)(implicit
-                                                        impArb: Arbitrary[Array[T]],
-                                                        shrink: Shrink[Array[T]],
-                                                        pp: Array[T] => Pretty): Unit = {
+  protected def arrayRoundTripTest[T](surface: Surface)(
+      implicit
+      impArb: Arbitrary[Array[T]],
+      shrink: Shrink[Array[T]],
+      pp: Array[T] => Pretty
+  ): Unit = {
     val codec = MessageCodec.ofSurface(ArraySurface(surface.rawType, surface)).asInstanceOf[MessageCodec[Array[T]]]
     val seqCodec =
       MessageCodec.ofSurface(new GenericSurface(classOf[Seq[_]], Seq(surface))).asInstanceOf[MessageCodec[Seq[T]]]
     val javaListCodec = MessageCodec
       .ofSurface(new GenericSurface(classOf[java.util.List[_]], Seq(surface))).asInstanceOf[MessageCodec[
-        java.util.List[T]]]
+        java.util.List[T]
+      ]]
 
     forAll { (v: Array[T]) =>
       // Array round trip
@@ -62,9 +65,10 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     }
   }
 
-  protected def roundTripTestWithStr[T](surface: Surface, dataType: DataType)(implicit impArb: Arbitrary[T],
-                                                                              s1: Shrink[T],
-                                                                              pp1: T => Pretty): Unit = {
+  protected def roundTripTestWithStr[T](
+      surface: Surface,
+      dataType: DataType
+  )(implicit impArb: Arbitrary[T], s1: Shrink[T], pp1: T => Pretty): Unit = {
     val codec = MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[T]]
     forAll { (v: T) =>
       // Test input:T -> output:T
@@ -122,8 +126,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Int]]
@@ -144,8 +148,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Long]]
@@ -166,8 +170,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(1021.1)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Short]]
@@ -188,8 +192,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(123.0)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Byte]]
@@ -210,8 +214,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(123.0)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Char]]
@@ -232,8 +236,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Float]]
@@ -254,8 +258,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(0.1f)
     p.packDouble(12345.01)
-    p.packString("non-number") // will be 0
-    p.packNil // will be 0
+    p.packString("non-number")    // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Double]]
@@ -280,8 +284,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packFloat(0.0f)
     p.packFloat(0.1f)
     p.packDouble(12345.01)
-    p.packString("non-number") // will be false (default value)
-    p.packNil // will be false
+    p.packString("non-number")    // will be false (default value)
+    p.packNil                     // will be false
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Boolean]]
@@ -291,17 +295,19 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
   }
 
   def `read various types of data as string`: Unit = {
-    val expected = Seq("10",
-                       "12",
-                       "13.2",
-                       "false",
-                       "true",
-                       "10.0",
-                       "12345.01",
-                       "",
-                       LARGE_VALUE.toString,
-                       """[1,"leo"]""",
-                       """{"name":"leo"}""")
+    val expected = Seq(
+      "10",
+      "12",
+      "13.2",
+      "false",
+      "true",
+      "10.0",
+      "12345.01",
+      "",
+      LARGE_VALUE.toString,
+      """[1,"leo"]""",
+      """{"name":"leo"}"""
+    )
 
     val p = MessagePack.newBufferPacker
     p.packArrayHeader(expected.size)
@@ -312,7 +318,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(10.0f)
     p.packDouble(12345.01)
-    p.packNil // will be 0
+    p.packNil                     // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
     p.packArrayHeader(2)
     p.packInt(1)

@@ -267,8 +267,8 @@ object LauncherTest {
   case class GlobalOption(
       @option(prefix = "-h,--help", description = "display help messages", isHelp = true) help: Boolean = false,
       @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
-      var started: Boolean = false)
-      extends LogSupport {
+      var started: Boolean = false
+  ) extends LogSupport {
 
     trace("started GlobalOption command")
     started = true
@@ -295,8 +295,10 @@ object LauncherTest {
       helloIsExecuted = true
     }
     @command(description = "say world")
-    def world(@argument argMessage: String,
-              @option(prefix = "--color", description = "use color") color: Boolean): Unit = debug("world world")
+    def world(
+        @argument argMessage: String,
+        @option(prefix = "--color", description = "use color") color: Boolean
+    ): Unit = debug("world world")
   }
 
   def myCommandModule =
@@ -315,14 +317,17 @@ object LauncherTest {
 
   class CommandWithPrivateField(
       @option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean,
-      var started: Boolean = false) {
+      var started: Boolean = false
+  ) {
     started = true
   }
 
   class MyCommand(@option(prefix = "-h,--help", description = "display help", isHelp = true) help: Boolean) {
     @command(description = "say hello")
-    def hello(@option(prefix = "-r", description = "repeat times") repeat: Int = 1,
-              @argument message: String = "hello!"): Unit = {
+    def hello(
+        @option(prefix = "-r", description = "repeat times") repeat: Int = 1,
+        @argument message: String = "hello!"
+    ): Unit = {
       for (i <- 0 until repeat) print(message)
     }
   }

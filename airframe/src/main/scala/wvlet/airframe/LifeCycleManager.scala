@@ -29,10 +29,11 @@ case object STOPPED  extends LifeCycleStage
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
-class LifeCycleManager(private[airframe] val eventHandler: LifeCycleEventHandler,
-                       // EventHandler without lifecycle logger and shutdown hook
-                       private[airframe] val coreEventHandler: LifeCycleEventHandler)
-    extends LogSupport {
+class LifeCycleManager(
+    private[airframe] val eventHandler: LifeCycleEventHandler,
+    // EventHandler without lifecycle logger and shutdown hook
+    private[airframe] val coreEventHandler: LifeCycleEventHandler
+) extends LogSupport {
   self =>
 
   import LifeCycleManager._

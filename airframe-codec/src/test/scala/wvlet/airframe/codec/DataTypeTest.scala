@@ -95,7 +95,8 @@ class DataTypeTest extends AirSpec {
     val r1 = DataType.RecordType("A", Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT)))
     val r2 = DataType.RecordType(
       "B",
-      Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT), Column("c3", DataType.JSON)))
+      Seq(Column("c1", DataType.INTEGER), Column("c2", DataType.FLOAT), Column("c3", DataType.JSON))
+    )
     val u = DataType.UNION(Seq(r1, r2))
     u.signature shouldBe "union[A|B]"
     u.typeArgs shouldBe Seq(r1, r2)

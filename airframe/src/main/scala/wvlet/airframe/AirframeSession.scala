@@ -28,14 +28,14 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-private[airframe] class AirframeSession(parent: Option[AirframeSession],
-                                        sessionName: Option[String],
-                                        val design: Design,
-                                        stage: Stage,
-                                        val lifeCycleManager: LifeCycleManager,
-                                        private val singletonHolder: collection.mutable.Map[Surface, Any] =
-                                          new ConcurrentHashMap[Surface, Any]().asScala)
-    extends Session
+private[airframe] class AirframeSession(
+    parent: Option[AirframeSession],
+    sessionName: Option[String],
+    val design: Design,
+    stage: Stage,
+    val lifeCycleManager: LifeCycleManager,
+    private val singletonHolder: collection.mutable.Map[Surface, Any] = new ConcurrentHashMap[Surface, Any]().asScala
+) extends Session
     with LogSupport {
   self =>
 
@@ -65,19 +65,23 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     // Add a reference to this session to allow bind[Session]
     val sessionSurface = Surface.of[Session]
     val sessionBinding =
-      ProviderBinding(DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]),
-                      true,
-                      true,
-                      implicitly[SourceCode])
+      ProviderBinding(
+        DependencyFactory(sessionSurface, Seq.empty, LazyF0(this).asInstanceOf[Any]),
+        true,
+        true,
+        implicitly[SourceCode]
+      )
     b += sessionSurface -> sessionBinding
 
     // Add a reference to the design
     val designSurface = Surface.of[Design]
     val designBinding =
-      ProviderBinding(DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]),
-                      true,
-                      true,
-                      implicitly[SourceCode])
+      ProviderBinding(
+        DependencyFactory(designSurface, Seq.empty, LazyF0(this.design).asInstanceOf[Any]),
+        true,
+        true,
+        implicitly[SourceCode]
+      )
     b += designSurface -> designBinding
 
     // Add user-defined bindings
@@ -108,7 +112,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
-      sessionName, // Should we add suffixes for child sessions?
+      sessionName,                                 // Should we add suffixes for child sessions?
       new Design(design.designOptions, d.binding), // Inherit parent options
       stage,
       lifeCycleManager,
@@ -128,7 +132,7 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
         design = childDesign,
         parent = Some(this),
         name = None,
-        addShutdownHook = false, // Disable registration of shutdown hooks
+        addShutdownHook = false,                                  // Disable registration of shutdown hooks
         lifeCycleEventHandler = lifeCycleManager.coreEventHandler // Use only core lifecycle event handlers
       )
 
@@ -213,12 +217,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     }
   }
 
-  private[airframe] def getInstance(t: Surface,
-                                    sourceCode: SourceCode,
-                                    contextSession: AirframeSession,
-                                    create: Boolean, // true for factory binding
-                                    seen: List[Surface],
-                                    defaultValue: Option[() => Any] = None): AnyRef = {
+  private[airframe] def getInstance(
+      t: Surface,
+      sourceCode: SourceCode,
+      contextSession: AirframeSession,
+      create: Boolean, // true for factory binding
+      seen: List[Surface],
+      defaultValue: Option[() => Any] = None
+  ): AnyRef = {
 
     stats.observe(t)
     tracer.onInjectStart(this, t)
@@ -254,13 +260,18 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
                   from,
                   registerInjectee(
                     from,
-                    contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen, defaultValue)))
+                    contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen, defaultValue)
+                  )
+                )
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from == to =>
                 trace(s"[${name}] Found a singleton binding: ${from}, defined at ${sourceCode}")
                 singletonHolder.getOrElseUpdate(
                   from,
-                  registerInjectee(from,
-                                   contextSession.buildInstance(to, sourceCode, contextSession, seen, defaultValue)))
+                  registerInjectee(
+                    from,
+                    contextSession.buildInstance(to, sourceCode, contextSession, seen, defaultValue)
+                  )
+                )
               case p @ ProviderBinding(factory, provideSingleton, eager, sourceCode) =>
                 trace(s"[${name}] Found a provider for ${p.from}: ${p}, defined at ${sourceCode}")
                 def buildWithProvider: Any = {
@@ -288,7 +299,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           // Create a singleton if no binding is found
           singletonHolder.getOrElseUpdate(
             t,
-            registerInjectee(t, contextSession.buildInstance(t, sourceCode, contextSession, seen, defaultValue)))
+            registerInjectee(t, contextSession.buildInstance(t, sourceCode, contextSession, seen, defaultValue))
+          )
         }
       }
 
@@ -298,11 +310,13 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
     result.asInstanceOf[AnyRef]
   }
 
-  private[airframe] def buildInstance(t: Surface,
-                                      sourceCode: SourceCode,
-                                      contextSession: AirframeSession,
-                                      seen: List[Surface],
-                                      defaultValue: Option[() => Any] = None): Any = {
+  private[airframe] def buildInstance(
+      t: Surface,
+      sourceCode: SourceCode,
+      contextSession: AirframeSession,
+      seen: List[Surface],
+      defaultValue: Option[() => Any] = None
+  ): Any = {
     traitFactoryCache
       .get(t).map { f =>
         trace(s"[${name}] Using a pre-registered trait factory for ${t}")
@@ -324,10 +338,12 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
   /**
     * Create a new instance of the surface
     */
-  private def buildInstance(surface: Surface,
-                            sourceCode: SourceCode,
-                            contextSession: AirframeSession,
-                            seen: List[Surface]): Any = {
+  private def buildInstance(
+      surface: Surface,
+      sourceCode: SourceCode,
+      contextSession: AirframeSession,
+      seen: List[Surface]
+  ): Any = {
     trace(s"[${name}] buildInstance ${surface}, dependencies:[${seen.mkString(" <- ")}]")
     if (surface.isPrimitive) {
       // Cannot build Primitive types
@@ -339,12 +355,14 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
           val args = for (p <- surface.params) yield {
             // When using the default constructor, we should disable singleton registration for p unless p has SingletonBinding
             // For example, when building A(p1:Long=10, p2:Long=20, ...), we should not register p1, p2 long values as singleton.
-            contextSession.getInstance(p.surface,
-                                       sourceCode,
-                                       contextSession,
-                                       create = true,
-                                       seen,
-                                       p.getDefaultValue.map(x => () => x))
+            contextSession.getInstance(
+              p.surface,
+              sourceCode,
+              contextSession,
+              create = true,
+              seen,
+              p.getDefaultValue.map(x => () => x)
+            )
           }
           val obj = factory.newInstance(args)
           obj
@@ -358,7 +376,8 @@ private[airframe] class AirframeSession(parent: Option[AirframeSession],
               warn(
                 s"[${name}] No binding nor the default constructor for ${surface} at ${sourceCode} is found. " +
                   s"Add bind[${surface}].toXXX to your design or dependencies. The dependency order is: [${seen.reverse
-                    .mkString(" -> ")}]")
+                    .mkString(" -> ")}]"
+              )
               throw MISSING_DEPENDENCY(seen, sourceCode)
           }
           obj

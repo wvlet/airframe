@@ -80,7 +80,7 @@ object TimeWindowUnit {
   case object Week extends TimeWindowUnit("w") {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.truncatedTo(ChronoUnit.DAYS) // Truncate to the beginning of the day
-        .`with`(DayOfWeek.MONDAY) // Monday-origin week is the ISO standard
+        .`with`(DayOfWeek.MONDAY)     // Monday-origin week is the ISO standard
     }
     override def increment(a: ZonedDateTime, v: Long): ZonedDateTime = {
       a.plus(v, ChronoUnit.WEEKS)

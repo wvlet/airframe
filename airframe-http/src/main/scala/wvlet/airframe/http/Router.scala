@@ -34,10 +34,12 @@ import scala.language.experimental.macros
   *   e4 -> process(e4)
   *
   */
-case class Router(surface: Option[Surface] = None,
-                  children: Seq[Router] = Seq.empty,
-                  localRoutes: Seq[Route] = Seq.empty,
-                  filterSurface: Option[Surface] = None) {
+case class Router(
+    surface: Option[Surface] = None,
+    children: Seq[Router] = Seq.empty,
+    localRoutes: Seq[Route] = Seq.empty,
+    filterSurface: Option[Surface] = None
+) {
   def isEmpty = this eq Router.empty
 
   def routes: Seq[Route] = {

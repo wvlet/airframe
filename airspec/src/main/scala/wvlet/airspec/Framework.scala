@@ -30,10 +30,12 @@ class Framework extends sbt.testing.Framework {
   }
 
   // This method is necessary for Scala.js
-  def slaveRunner(args: Array[String],
-                  remoteArgs: Array[String],
-                  testClassLoader: ClassLoader,
-                  send: String => Unit): testing.Runner =
+  def slaveRunner(
+      args: Array[String],
+      remoteArgs: Array[String],
+      testClassLoader: ClassLoader,
+      send: String => Unit
+  ): testing.Runner =
     runner(args, remoteArgs, testClassLoader)
 }
 

@@ -79,8 +79,10 @@ object JavaTimeCodec {
         case Success(zd) =>
           v.setObject(zd)
         case Failure(e) =>
-          v.setIncompatibleFormatException(this,
-                                           s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}")
+          v.setIncompatibleFormatException(
+            this,
+            s"${zonedDateTimeStr} cannot be read as ZonedDateTime: ${e.getMessage}"
+          )
       }
     }
   }

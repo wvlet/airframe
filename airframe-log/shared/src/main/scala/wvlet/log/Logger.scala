@@ -26,13 +26,14 @@ import scala.reflect.ClassTag
   *
   * @param wrapped
   */
-class Logger(private val name: String,
-             /**
-               * Since java.util.logging.Logger is non-serializable, we need to find the logger instance after deserialization.
-               * If wrapped is null, _log method will find or create the logger instance.
-               */
-             @transient private[log] var wrapped: jl.Logger)
-    extends Serializable {
+class Logger(
+    private val name: String,
+    /**
+      * Since java.util.logging.Logger is non-serializable, we need to find the logger instance after deserialization.
+      * If wrapped is null, _log method will find or create the logger instance.
+      */
+    @transient private[log] var wrapped: jl.Logger
+) extends Serializable {
 
   import LogMacros._
 
@@ -190,10 +191,12 @@ object Logger {
     * @param useParents
     * @return
     */
-  private[log] def initLogger(name: String,
-                              level: Option[LogLevel] = None,
-                              handlers: Seq[Handler] = Seq.empty,
-                              useParents: Boolean = true): Logger = {
+  private[log] def initLogger(
+      name: String,
+      level: Option[LogLevel] = None,
+      handlers: Seq[Handler] = Seq.empty,
+      useParents: Boolean = true
+  ): Logger = {
     val logger = Logger.apply(name)
     logger.clearHandlers
     level.foreach(l => logger.setLogLevel(l))

@@ -47,7 +47,8 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
           val expectedPort = config.registryPort.get
           if (expectedPort != jmxReg.port) {
             throw new IllegalStateException(
-              s"JMX registry is already running using an unexpected port: ${jmxReg.port}. Expected port = ${expectedPort}")
+              s"JMX registry is already running using an unexpected port: ${jmxReg.port}. Expected port = ${expectedPort}"
+            )
           }
         }
         s"service:jmx:rmi:///jndi/rmi://${jmxReg.host}:${jmxReg.port}/jmxrmi"

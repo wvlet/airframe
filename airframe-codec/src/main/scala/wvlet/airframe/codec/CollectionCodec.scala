@@ -35,11 +35,13 @@ object CollectionCodec {
       }
     }
 
-    def unpack[A](u: Unpacker,
-                  v: MessageHolder,
-                  surface: Surface,
-                  elementCodec: MessageCodec[A],
-                  newBuilder: => mutable.Builder[A, Seq[A]]): Unit = {
+    def unpack[A](
+        u: Unpacker,
+        v: MessageHolder,
+        surface: Surface,
+        elementCodec: MessageCodec[A],
+        newBuilder: => mutable.Builder[A, Seq[A]]
+    ): Unit = {
 
       u.getNextValueType match {
         case ValueType.ARRAY =>
@@ -67,7 +69,8 @@ object CollectionCodec {
         case other =>
           u.skipValue
           v.setError(
-            new MessageCodecException(INVALID_DATA, elementCodec, s"Unsupported type for Seq[$surface]: ${other}"))
+            new MessageCodecException(INVALID_DATA, elementCodec, s"Unsupported type for Seq[$surface]: ${other}")
+          )
       }
     }
   }

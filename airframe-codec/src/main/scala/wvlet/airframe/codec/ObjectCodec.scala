@@ -33,11 +33,12 @@ trait PackAsMapSupport[A] { self: MessageCodec[A] =>
   * @param paramCodec
   * @param methodOwner
   */
-class ParamListCodec(name: String,
-                     params: IndexedSeq[Parameter],
-                     paramCodec: Seq[MessageCodec[_]],
-                     methodOwner: Option[Any] = None)
-    extends MessageCodec[Seq[Any]]
+class ParamListCodec(
+    name: String,
+    params: IndexedSeq[Parameter],
+    paramCodec: Seq[MessageCodec[_]],
+    methodOwner: Option[Any] = None
+) extends MessageCodec[Seq[Any]]
     with LogSupport {
   private lazy val codecTable =
     params

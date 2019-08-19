@@ -84,7 +84,8 @@ package object config {
     }
 
     def bindConfigFromYaml[A: ru.TypeTag](yamlFile: String, defaultValue: => A)(
-        implicit sourceCode: SourceCode): Design = {
+        implicit sourceCode: SourceCode
+    ): Design = {
       val configHolder = currentConfig.registerFromYamlOrElse[A](yamlFile, defaultValue)
       val s            = Surface.of[A]
       val newConfig    = configHolder.of[A]
@@ -97,7 +98,8 @@ package object config {
       */
     def overrideConfigParams(
         props: Map[String, Any],
-        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES)(implicit sourceCode: SourceCode): Design = {
+        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+    )(implicit sourceCode: SourceCode): Design = {
       val prevConfig   = getConfig
       val configHolder = currentConfig.overrideWith(props, onUnusedProperties)
       val d2           = d.withConfig(configHolder)
@@ -114,7 +116,8 @@ package object config {
       */
     def overrideConfigParamsWithProperties(
         props: Properties,
-        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES): Design = {
+        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+    ): Design = {
       import scala.jdk.CollectionConverters._
       val m = for (key <- props.propertyNames().asScala) yield {
         key.toString -> props.get(key).asInstanceOf[Any]

@@ -27,17 +27,21 @@ object Retry extends LogSupport {
   def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
   def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
 
-  def withBackOff(maxRetry: Int = 3,
-                  initialIntervalMillis: Int = 100,
-                  maxIntervalMillis: Int = 15000,
-                  multiplier: Double = 1.5): RetryContext = {
+  def withBackOff(
+      maxRetry: Int = 3,
+      initialIntervalMillis: Int = 100,
+      maxIntervalMillis: Int = 15000,
+      multiplier: Double = 1.5
+  ): RetryContext = {
     defaultRetryContext.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
   }
 
-  def withJitter(maxRetry: Int = 3,
-                 initialIntervalMillis: Int = 100,
-                 maxIntervalMillis: Int = 15000,
-                 multiplier: Double = 1.5): RetryContext = {
+  def withJitter(
+      maxRetry: Int = 3,
+      initialIntervalMillis: Int = 100,
+      maxIntervalMillis: Int = 15000,
+      multiplier: Double = 1.5
+  ): RetryContext = {
     defaultRetryContext.withMaxRetry(maxRetry).withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
   }
 
@@ -57,7 +61,8 @@ object Retry extends LogSupport {
   case class MaxRetryException(retryContext: RetryContext)
       extends Exception(
         s"Reached the max retry count ${retryContext.retryCount}/${retryContext.maxRetry}: ${retryContext.lastError.getMessage}",
-        retryContext.lastError)
+        retryContext.lastError
+      )
 
   // Throw this to force retry the execution
   case class RetryableFailure(e: Throwable) extends Exception(e)
@@ -69,19 +74,22 @@ object Retry extends LogSupport {
 
   private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
     warn(
-      f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec.")
+      f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec."
+    )
   }
 
-  case class RetryContext(context: Option[Any],
-                          lastError: Throwable,
-                          retryCount: Int,
-                          maxRetry: Int,
-                          retryWaitStrategy: RetryPolicy,
-                          nextWaitMillis: Int,
-                          baseWaitMillis: Int,
-                          resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-                          errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-                          beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT) {
+  case class RetryContext(
+      context: Option[Any],
+      lastError: Throwable,
+      retryCount: Int,
+      maxRetry: Int,
+      retryWaitStrategy: RetryPolicy,
+      nextWaitMillis: Int,
+      baseWaitMillis: Int,
+      resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
+      errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
+      beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
+  ) {
 
     private def partialUpdate(newParam: Map[String, Any]): RetryContext = {
       val surface = Surface.of[RetryContext]
@@ -100,7 +108,8 @@ object Retry extends LogSupport {
           "retryCount"     -> 0,
           "nextWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
           "baseWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis
-        ))
+        )
+      )
     }
 
     def canContinue: Boolean = {
@@ -120,7 +129,8 @@ object Retry extends LogSupport {
           "retryCount"     -> (retryCount + 1),
           "nextWaitMillis" -> retryWaitStrategy.nextWait(baseWaitMillis),
           "baseWaitMillis" -> retryWaitStrategy.updateBaseWait(baseWaitMillis)
-        ))
+        )
+      )
       beforeRetryAction(nextRetry) match {
         case AddExtraRetryWait(extraWaitMillis) if extraWaitMillis > 0 =>
           nextRetry.withExtraWaitMillis(extraWaitMillis)
@@ -141,16 +151,20 @@ object Retry extends LogSupport {
       partialUpdate(Map("maxRetry" -> newMaxRetry))
     }
 
-    def withBackOff(initialIntervalMillis: Int = 100,
-                    maxIntervalMillis: Int = 15000,
-                    multiplier: Double = 1.5): RetryContext = {
+    def withBackOff(
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       partialUpdate(Map("retryWaitStrategy" -> new ExponentialBackOff(config)))
     }
 
-    def withJitter(initialIntervalMillis: Int = 100,
-                   maxIntervalMillis: Int = 15000,
-                   multiplier: Double = 1.5): RetryContext = {
+    def withJitter(
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
       partialUpdate(Map("retryWaitStrategy" -> new Jitter(config)))
     }
@@ -159,7 +173,8 @@ object Retry extends LogSupport {
       partialUpdate(
         Map(
           "resultClassifier" -> newResultClassifier.asInstanceOf[Any => ResultClass]
-        ))
+        )
+      )
     }
 
     /**
@@ -239,9 +254,11 @@ object Retry extends LogSupport {
     throw e
   }
 
-  case class RetryPolicyConfig(initialIntervalMillis: Int = 100,
-                               maxIntervalMillis: Int = 15000,
-                               multiplier: Double = 1.5) {
+  case class RetryPolicyConfig(
+      initialIntervalMillis: Int = 100,
+      maxIntervalMillis: Int = 15000,
+      multiplier: Double = 1.5
+  ) {
     require(initialIntervalMillis >= 0)
     require(maxIntervalMillis >= 0)
     require(multiplier >= 0)

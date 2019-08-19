@@ -63,7 +63,8 @@ class LogLevelScannerTest extends Spec {
 
     // Load log-test.properties
     withScanner(
-      LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))) {
+      LogLevelScannerConfig(LogLevelScanner.DEFAULT_LOGLEVEL_FILE_CANDIDATES, Duration(500, TimeUnit.MILLISECONDS))
+    ) {
       assert(l.getLogLevel == LogLevel.DEBUG)
     }
   }
@@ -83,7 +84,8 @@ class LogLevelScannerTest extends Spec {
     l.setLogLevel(LogLevel.TRACE)
 
     withScanner(
-      LogLevelScannerConfig(List("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))) {
+      LogLevelScannerConfig(List("wvlet/log/invalid-loglevel.properties"), Duration(500, TimeUnit.MILLISECONDS))
+    ) {
       // Should ignore unknown log level string
       assert(l.getLogLevel == LogLevel.TRACE)
     }

@@ -320,7 +320,8 @@ object Shell extends LogSupport {
                   x =>
                     x.isDirectory
                       && (x.getName.startsWith("jdk") || x.getName.startsWith("jre"))
-                      && hasJavaCommand(x.getAbsolutePath)).map(_.getAbsolutePath)
+                      && hasJavaCommand(x.getAbsolutePath)
+                ).map(_.getAbsolutePath)
             }
             def latestJDK(jdkPath: Array[String]): Option[String] = {
               if (jdkPath.isEmpty)
@@ -337,8 +338,10 @@ object Shell extends LogSupport {
               case Windows => latestJDK(listJDKIn("c:/Program Files/Java"))
               case Mac => {
                 val l =
-                  Seq("/System/Library/Frameworkds/JavaVM.framework/Home",
-                      "/System/Library/Frameworkds/JavaVM.framework/Versions/CurrentJDK/Home").filter(hasJavaCommand)
+                  Seq(
+                    "/System/Library/Frameworkds/JavaVM.framework/Home",
+                    "/System/Library/Frameworkds/JavaVM.framework/Versions/CurrentJDK/Home"
+                  ).filter(hasJavaCommand)
                 if (l.isEmpty)
                   None
                 else

@@ -23,12 +23,14 @@ import wvlet.airframe.sql.model.LogicalPlan
 object SQLParser extends LogSupport {
 
   private def createLexerErrorListener = new BaseErrorListener {
-    override def syntaxError(recognizer: Recognizer[_, _],
-                             offendingSymbol: Any,
-                             line: Int,
-                             charPositionInLine: Int,
-                             msg: String,
-                             e: RecognitionException): Unit = {
+    override def syntaxError(
+        recognizer: Recognizer[_, _],
+        offendingSymbol: Any,
+        line: Int,
+        charPositionInLine: Int,
+        msg: String,
+        e: RecognitionException
+    ): Unit = {
       throw new SQLParseError(msg, line, charPositionInLine, e)
     }
   }

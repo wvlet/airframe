@@ -26,21 +26,23 @@ object Fluentd {
     *
     * @return
     */
-  def newFluentdLogger(host: String = "127.0.0.1",
-                       port: Int = 24224,
-                       tagPrefix: String = "",
-                       // Use the extended EventTime timestamps
-                       // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-                       useExtendedEventTime: Boolean = false,
-                       maxBufferSize: Long = 512 * 1024 * 1024,
-                       flushIntervalMillis: Int = 600,
-                       bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
-                       bufferChunkRetentionTimeMillis: Int = 1000,
-                       jvmHeapBufferMode: Boolean = true,
-                       ackResponseMode: Boolean = true,
-                       sslEnabled: Boolean = false,
-                       fileBackupDir: String = null,
-                       errorHandler: ErrorHandler = null): FluentdLogger = {
+  def newFluentdLogger(
+      host: String = "127.0.0.1",
+      port: Int = 24224,
+      tagPrefix: String = "",
+      // Use the extended EventTime timestamps
+      // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+      useExtendedEventTime: Boolean = false,
+      maxBufferSize: Long = 512 * 1024 * 1024,
+      flushIntervalMillis: Int = 600,
+      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionTimeMillis: Int = 1000,
+      jvmHeapBufferMode: Boolean = true,
+      ackResponseMode: Boolean = true,
+      sslEnabled: Boolean = false,
+      fileBackupDir: String = null,
+      errorHandler: ErrorHandler = null
+  ): FluentdLogger = {
     // We need to extract this code probably because of a bug of Scala compiler.
     val builder = new FluencyBuilderForFluentd()
     builder.setMaxBufferSize(maxBufferSize)
@@ -55,20 +57,22 @@ object Fluentd {
     new FluentdLogger(if (tagPrefix.isEmpty) None else Some(tagPrefix), useExtendedEventTime, builder.build(host, port))
   }
 
-  def newTDLogger(apikey: String,
-                  host: String = "api.treasuredata.com",
-                  port: Int = 443,
-                  tagPrefix: String = "",
-                  maxBufferSize: Long = 512 * 1024 * 1024,
-                  flushIntervalMillis: Int = 600,
-                  bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
-                  bufferChunkRetentionTimeMillis: Int = 1000,
-                  jvmHeapBufferMode: Boolean = true,
-                  // Use the extended EventTime timestamps
-                  // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
-                  useExtededEventTime: Boolean = false,
-                  fileBackupDir: String = null,
-                  errorHandler: ErrorHandler = null): FluentdLogger = {
+  def newTDLogger(
+      apikey: String,
+      host: String = "api.treasuredata.com",
+      port: Int = 443,
+      tagPrefix: String = "",
+      maxBufferSize: Long = 512 * 1024 * 1024,
+      flushIntervalMillis: Int = 600,
+      bufferChunkRetentionSize: Int = 4 * 1024 * 1024,
+      bufferChunkRetentionTimeMillis: Int = 1000,
+      jvmHeapBufferMode: Boolean = true,
+      // Use the extended EventTime timestamps
+      // https://github.com/fluent/fluentd/wiki/Forward-Protocol-Specification-v1#eventtime-ext-format
+      useExtededEventTime: Boolean = false,
+      fileBackupDir: String = null,
+      errorHandler: ErrorHandler = null
+  ): FluentdLogger = {
 
     val builder = new FluencyBuilderForTreasureData()
     builder.setMaxBufferSize(maxBufferSize)
@@ -79,8 +83,10 @@ object Fluentd {
     builder.setFileBackupDir(fileBackupDir)
     builder.setErrorHandler(errorHandler) // Passing null is allowed in Fluency
     builder.build(apikey, host)
-    new FluentdLogger(if (tagPrefix.isEmpty) None else Some(tagPrefix),
-                      useExtededEventTime,
-                      builder.build(apikey, host))
+    new FluentdLogger(
+      if (tagPrefix.isEmpty) None else Some(tagPrefix),
+      useExtededEventTime,
+      builder.build(apikey, host)
+    )
   }
 }

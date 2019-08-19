@@ -63,7 +63,8 @@ object Parallel extends LogSupport {
     * @return Collection of the results
     */
   def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
-      f: T => R): Seq[R] = {
+      f: T => R
+  ): Seq[R] = {
 
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.run (parallelism = ${parallelism})")
@@ -119,9 +120,11 @@ object Parallel extends LogSupport {
     * @param f           Function which processes each element of the source collection
     * @return Iterator of the results
     */
-  def iterate[T, R](source: Iterator[T],
-                    parallelism: Int = Runtime.getRuntime.availableProcessors(),
-                    jmxAgent: Option[JMXAgent] = None)(f: T => R): Iterator[R] = {
+  def iterate[T, R](
+      source: Iterator[T],
+      parallelism: Int = Runtime.getRuntime.availableProcessors(),
+      jmxAgent: Option[JMXAgent] = None
+  )(f: T => R): Iterator[R] = {
 
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
@@ -229,12 +232,13 @@ object Parallel extends LogSupport {
   //    }
   //  }
 
-  private[control] class Worker[T, R](executionId: String,
-                                      workerId: String,
-                                      requestQueue: BlockingQueue[Worker[T, R]],
-                                      resultQueue: BlockingQueue[Option[R]],
-                                      f: T => R)
-      extends Runnable
+  private[control] class Worker[T, R](
+      executionId: String,
+      workerId: String,
+      requestQueue: BlockingQueue[Worker[T, R]],
+      resultQueue: BlockingQueue[Option[R]],
+      f: T => R
+  ) extends Runnable
       with LogSupport {
 
     val message: AtomicReference[T] = new AtomicReference[T]()
@@ -258,12 +262,13 @@ object Parallel extends LogSupport {
     }
   }
 
-  private[control] class IndexedWorker[T, R](executionId: String,
-                                             workerId: String,
-                                             requestQueue: BlockingQueue[IndexedWorker[T, R]],
-                                             resultArray: Array[R],
-                                             f: T => R)
-      extends Runnable
+  private[control] class IndexedWorker[T, R](
+      executionId: String,
+      workerId: String,
+      requestQueue: BlockingQueue[IndexedWorker[T, R]],
+      resultArray: Array[R],
+      f: T => R
+  ) extends Runnable
       with LogSupport {
 
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()

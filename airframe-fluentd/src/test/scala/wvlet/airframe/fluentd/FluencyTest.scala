@@ -84,9 +84,11 @@ class FluencyTest extends AirSpec {
   val fluentdPort = IOUtil.randomPort
 
   val d = fluentd
-    .withFluentdLogger(port = fluentdPort,
-                       // Do not send ack for simplicity
-                       ackResponseMode = false)
+    .withFluentdLogger(
+      port = fluentdPort,
+      // Do not send ack for simplicity
+      ackResponseMode = false
+    )
     .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
     .bind[MockFluentd].toEagerSingleton
     .noLifeCycleLogging

@@ -32,12 +32,13 @@ import scala.util.{Failure, Success, Try}
   * For each test method in the AirSpec instance, it will create a child session so that
   * users can manage test-method local instances, which will be discarded after the completion of the test method.
   */
-private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
-                                         config: AirSpecConfig,
-                                         taskLogger: AirSpecLogger,
-                                         eventHandler: EventHandler,
-                                         classLoader: ClassLoader)
-    extends LogSupport {
+private[airspec] class AirSpecTaskRunner(
+    taskDef: TaskDef,
+    config: AirSpecConfig,
+    taskLogger: AirSpecLogger,
+    eventHandler: EventHandler,
+    classLoader: ClassLoader
+) extends LogSupport {
   import wvlet.airspec._
 
   def runTask: Unit = {
@@ -99,9 +100,11 @@ private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
     s"${parentName}${spec.leafSpecName}"
   }
 
-  private def runSpec(parentContext: Option[AirSpecContext],
-                      spec: AirSpecSpi,
-                      targetMethods: Seq[MethodSurface]): Unit = {
+  private def runSpec(
+      parentContext: Option[AirSpecContext],
+      spec: AirSpecSpi,
+      targetMethods: Seq[MethodSurface]
+  ): Unit = {
 
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
     taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
@@ -130,11 +133,13 @@ private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
           // Create a test-method local child session
           val result = globalSession.withChildSession(childDesign) { childSession =>
             val context =
-              new AirSpecContextImpl(this,
-                                     parentContext = parentContext,
-                                     currentSpec = spec,
-                                     testName = m.name,
-                                     currentSession = childSession)
+              new AirSpecContextImpl(
+                this,
+                parentContext = parentContext,
+                currentSpec = spec,
+                testName = m.name,
+                currentSession = childSession
+              )
             Try {
               try {
                 // Build a list of method arguments
@@ -149,7 +154,8 @@ private[airspec] class AirSpecTaskRunner(taskDef: TaskDef,
                   } catch {
                     case e @ MISSING_DEPENDENCY(stack, _) =>
                       throw MissingTestDependency(
-                        s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}")
+                        s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}"
+                      )
                   }
                 }
                 // Call the test method

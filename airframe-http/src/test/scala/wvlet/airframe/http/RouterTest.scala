@@ -113,8 +113,10 @@ class RouterTest extends AirSpec {
 
     call(SimpleHttpRequest(HttpMethod.GET, "/user/10"), ControllerExample.User("10", "leo"))
     call(SimpleHttpRequest(HttpMethod.PUT, "/user/2", contentString = "hello"), "hello")
-    call(SimpleHttpRequest(HttpMethod.POST, "/user", contentString = """{"name":"aina", "id":"xxxx"}"""),
-         User("xxxx", "aina"))
+    call(
+      SimpleHttpRequest(HttpMethod.POST, "/user", contentString = """{"name":"aina", "id":"xxxx"}"""),
+      User("xxxx", "aina")
+    )
     call(SimpleHttpRequest(HttpMethod.GET, "/scala/users"), ControllerExample.Group("scala", Seq(User("10", "leo"))))
 
     call(SimpleHttpRequest(HttpMethod.GET, "/scala/user/11"), ControllerExample.Group("scala", Seq(User("11", "leo"))))

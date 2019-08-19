@@ -400,8 +400,8 @@ class RoundTripTest extends AirSpec with PropertyCheck {
     for (v <- Seq(
            Instant.ofEpochSecond(Instant.now().getEpochSecond, 123456789L),
            Instant.ofEpochSecond(-1302749144L, 0), // 1928-09-19T21:14:16Z
-           Instant.ofEpochSecond(-747359729L, 0), // 1946-04-27T00:04:31Z
-           Instant.ofEpochSecond(4257387427L, 0) // 2104-11-29T07:37:07Z
+           Instant.ofEpochSecond(-747359729L, 0),  // 1946-04-27T00:04:31Z
+           Instant.ofEpochSecond(4257387427L, 0)   // 2104-11-29T07:37:07Z
          )) {
       roundtrip(v) { OffsetPacker.packTimestamp(_, _) } { OffsetUnpacker.unpackTimestamp(_) }
     }

@@ -27,7 +27,8 @@ import scala.util.Try
 package object reflect {
 
   private[reflect] def findAnnotation[T <: jl.annotation.Annotation: ClassTag](
-      annot: Array[jl.annotation.Annotation]): Option[T] = {
+      annot: Array[jl.annotation.Annotation]
+  ): Option[T] = {
     val c = implicitly[ClassTag[T]]
     annot
       .collectFirst {

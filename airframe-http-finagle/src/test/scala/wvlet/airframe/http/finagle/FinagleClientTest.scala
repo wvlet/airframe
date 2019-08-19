@@ -100,7 +100,8 @@ class FinagleClientTest extends AirSpec {
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
     .bind[FinagleServerConfig].toInstance(
-      FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r))
+      FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r)
+    )
     .noLifeCycleLogging
 
   def `create client`: Unit = {
@@ -135,12 +136,16 @@ class FinagleClientTest extends AirSpec {
 
         // Using a custom HTTP header
         client.get[User]("/user/1", addRequestId) shouldBe User(1, "leo", "10")
-        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
-                                                                                                               "kai",
-                                                                                                               "10")
-        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(2,
-                                                                                                                "kai",
-                                                                                                                "10")
+        client.getResource[UserRequest, User]("/user/info", UserRequest(2, "kai"), addRequestId) shouldBe User(
+          2,
+          "kai",
+          "10"
+        )
+        client.getResource[UserRequest, User]("/user/info2", UserRequest(2, "kai"), addRequestId) shouldBe User(
+          2,
+          "kai",
+          "10"
+        )
 
         client.list[Seq[User]]("/user", addRequestId) shouldBe Seq(User(1, "leo", "10"))
 
@@ -161,7 +166,10 @@ class FinagleClientTest extends AirSpec {
         FinagleClient.newSyncClient(
           server.localAddress,
           config = FinagleClientConfig(
-            retry = FinagleClient.defaultRetry.withMaxRetry(3).withBackOff(initialIntervalMillis = 1)))) { client =>
+            retry = FinagleClient.defaultRetry.withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
+          )
+        )
+      ) { client =>
         warn("Starting http client failure tests")
 
         {

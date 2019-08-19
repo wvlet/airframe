@@ -141,7 +141,8 @@ object ReflectSurfaceFactory extends LogSupport {
               !x.isImplementationArtifact
               && !x.isImplicit
             // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-              && !x.isSynthetic)
+              && !x.isSynthetic
+        )
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
@@ -370,7 +371,8 @@ object ReflectSurfaceFactory extends LogSupport {
     def publicConstructorsOf(t: ru.Type): Iterable[MethodSymbol] = {
       t.members
         .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
-          _.asMethod)
+          _.asMethod
+        )
     }
 
     def findPrimaryConstructorOf(t: ru.Type): Option[MethodSymbol] = {
@@ -482,10 +484,11 @@ object ReflectSurfaceFactory extends LogSupport {
     * @param typeArgs
     * @param params
     */
-  class RuntimeGenericSurface(override val rawType: Class[_],
-                              override val typeArgs: Seq[Surface] = Seq.empty,
-                              override val params: Seq[Parameter] = Seq.empty)
-      extends GenericSurface(rawType, typeArgs, params, None)
+  class RuntimeGenericSurface(
+      override val rawType: Class[_],
+      override val typeArgs: Seq[Surface] = Seq.empty,
+      override val params: Seq[Parameter] = Seq.empty
+  ) extends GenericSurface(rawType, typeArgs, params, None)
       with LogSupport {
     self =>
     override val objectFactory: Option[ObjectFactory] = {
@@ -512,11 +515,13 @@ object ReflectSurfaceFactory extends LogSupport {
               case e: InvocationTargetException =>
                 logger.warn(
                   s"Failed to instantiate ${self}: [${e.getTargetException.getClass.getName}] ${e.getTargetException.getMessage}\nargs:[${args
-                    .mkString(", ")}]")
+                    .mkString(", ")}]"
+                )
                 throw e.getTargetException
               case e: Throwable =>
                 logger.warn(
-                  s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]")
+                  s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]"
+                )
                 throw e
             }
           }

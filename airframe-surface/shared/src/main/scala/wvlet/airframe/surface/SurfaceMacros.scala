@@ -67,7 +67,8 @@ private[surface] object SurfaceMacros {
               !x.isImplementationArtifact
               && !x.isImplicit
             // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-              && !x.isSynthetic)
+              && !x.isSynthetic
+        )
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
@@ -260,7 +261,8 @@ private[surface] object SurfaceMacros {
     def publicConstructorsOf(t: c.Type): Iterable[MethodSymbol] = {
       t.members
         .filter(m => m.isMethod && m.asMethod.isConstructor && m.isPublic).filterNot(isPhantomConstructor).map(
-          _.asMethod)
+          _.asMethod
+        )
     }
 
     def findPrimaryConstructorOf(t: c.Type): Option[MethodSymbol] = {
@@ -448,7 +450,8 @@ private[surface] object SurfaceMacros {
           // Create a constructor call
           val constructor: c.Tree =
             argExtractor.foldLeft[c.Tree](Select(New(Ident(targetType.dealias.typeSymbol)), termNames.CONSTRUCTOR))(
-              (x, arg) => Apply(x, arg))
+              (x, arg) => Apply(x, arg)
+            )
 
           // TODO: Support companion object call for instantiating the object
           val expr =
