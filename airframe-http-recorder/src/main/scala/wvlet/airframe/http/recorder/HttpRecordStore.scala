@@ -34,7 +34,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   private def recordTableName = recorderConfig.recordTableName
 
   // Increment this value if we need to change the table format.
-  private val recordFormatVersion = 2
+  private val recordFormatVersion = 3
 
   init
 
@@ -42,17 +42,18 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     if (!recorderConfig.isInMemory) {
       // Support recorder version migration for persistent records
       connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
-      connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
-        val lastVersion = if (handler.next()) {
+      val lastVersion = connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
+        if (handler.next()) {
           handler.getInt(1)
         } else {
-          1
+          recordFormatVersion
         }
+      }
 
-        if (lastVersion < recordFormatVersion) {
-          warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
-          clearAllRecords
-        }
+      if (lastVersion < recordFormatVersion) {
+        warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
+        clearAllRecords
+        connectionPool.executeUpdate("drop table if exists recorder_info")
       }
       // Record the current record format version
       connectionPool.executeUpdate(
@@ -114,7 +115,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   }
 
   def findNext(request: Request, incrementHitCount: Boolean = true): Option[HttpRecord] = {
-    val rh = requestHash(request)
+    val rh = recorderConfig.requestMatcher.computeHash(request)
 
     // If there are multiple records for the same request, use the counter to find
     // n-th request, where n is the access count to the same path
@@ -133,12 +134,12 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     }
   }
 
-  private val defaultExcludeRequestHeaders = recorderConfig.lowerCaseHeaderExcludePrefixes ++ Seq("authorization")
-
   def record(request: Request, response: Response): Unit = {
-    val rh = requestHash(request)
-
-    val httpHeadersForRecording = filterHeaders(request, defaultExcludeRequestHeaders)
+    val rh = recorderConfig.requestMatcher.computeHash(request)
+    val httpHeadersForRecording: Seq[(String, String)] =
+      request.headerMap.toSeq.filter { x =>
+        recorderConfig.excludeHeaderForRecording(x._1, x._2)
+      }
     val entry = HttpRecord(
       recorderConfig.sessionName,
       requestHash = rh,
@@ -148,12 +149,12 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       requestHeader = httpHeadersForRecording,
       requestBody = HttpRecordStore.encodeToBase64(request.content),
       responseCode = response.statusCode,
-      responseHeader = response.headerMap.toMap,
+      responseHeader = response.headerMap.toSeq,
       responseBody = HttpRecordStore.encodeToBase64(response.content),
       createdAt = Instant.now()
     )
 
-    trace(s"Recording ${request} -> ${entry}")
+    trace(s"Recording ${request} -> ${entry.summary}")
     connectionPool.withConnection { conn =>
       entry.insertInto(recordTableName, conn)
     }
@@ -163,36 +164,6 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     connectionPool.stop
   }
 
-  private def filterHeaders(request: Request, excludePrefixes: Seq[String]): Map[String, String] = {
-    request.headerMap.toSeq.filterNot { x =>
-      val key = x._1.toLowerCase(Locale.ENGLISH)
-      excludePrefixes.exists(ex => key.startsWith(ex))
-    }.toMap
-  }
-
-  /**
-    * Compute a hash key of the given HTTP request.
-    * This value will be used for DB indexes
-    */
-  protected def requestHash(request: Request): Int = {
-    val prefix = HttpRecorder.computeRequestHash(request, recorderConfig)
-
-    val httpHeadersForHash = filterHeaders(request, recorderConfig.lowerCaseHeaderExcludePrefixes)
-
-    trace(s"http headers for request ${request}: ${httpHeadersForHash.mkString(",")}")
-
-    httpHeadersForHash match {
-      case headers if headers.isEmpty => prefix.hashCode * 13
-      case headers =>
-        val headerHash = headers
-          .map { x =>
-            s"${x._1.toLowerCase(Locale.ENGLISH)}:${x._2}".hashCode
-          }.reduce { (xor, next) =>
-            xor ^ next // Take XOR to compute order-insensitive hash values.
-          }
-        prefix.hashCode * 13 + headerHash
-    }
-  }
 }
 
 object HttpRecordStore {
