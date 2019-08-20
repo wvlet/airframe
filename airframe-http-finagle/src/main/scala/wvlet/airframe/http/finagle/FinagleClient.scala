@@ -54,7 +54,12 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   override def send(req: Request): Future[Response] = {
-    client.apply(config.requestFilter(req))
+    val request = config.requestFilter(req)
+    // Add HOST header if missing
+    if (request.host.isEmpty) {
+      request.host = address.hostAndPort
+    }
+    client.apply(request)
   }
 
   /**
