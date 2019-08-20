@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.7
+-  airframe-http-recorder: Store records to .airframe folder ([#619](https://github.com/wvlet/airframe/issues/619)) [[e22b5ed](https://github.com/wvlet/airframe/commit/e22b5ed)]
+-  airframe-http-recorder: Support custom http request matchers ([#618](https://github.com/wvlet/airframe/issues/618)) [[37aea23](https://github.com/wvlet/airframe/commit/37aea23)]
+-  Upgrade to sbt-dyvner 4.0.0 ([#617](https://github.com/wvlet/airframe/issues/617)) [[02fee65](https://github.com/wvlet/airframe/commit/02fee65)]
+-  Upgrade scalafmt to 2.0.1 ([#616](https://github.com/wvlet/airframe/issues/616)) [[4112e95](https://github.com/wvlet/airframe/commit/4112e95)]
+-  airspec: Add airspec-light project settings ([#615](https://github.com/wvlet/airframe/issues/615)) [[34e56f6](https://github.com/wvlet/airframe/commit/34e56f6)]
+
 ## 19.8.6
 -  airspec
    -  Fix shouldNotBe null error message [[c869db1](https://github.com/wvlet/airframe/commit/c869db1)]
