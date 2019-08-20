@@ -14,6 +14,7 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.util.Await
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
@@ -201,6 +202,15 @@ class FinagleClientTest extends AirSpec {
       val page = client.get[String]("/airframe/")
       trace(page)
       page.contains("<html") shouldBe true
+    }
+  }
+
+  def `support sendRaw`: Unit = {
+    withResource(FinagleClient.newClient("https://wvlet.org")) { client =>
+      val r = client.sendRaw(Request("/airframe/")).map { x =>
+        x.contentString.contains("<html") shouldBe true
+      }
+      Await.result(r)
     }
   }
 }

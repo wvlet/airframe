@@ -54,6 +54,13 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   override def send(req: Request): Future[Response] = {
+    client.apply(config.requestFilter(req))
+  }
+
+  /**
+    * Send the request without applying the requestFilter
+    */
+  def sendRaw(req: Request): Future[Response] = {
     client.apply(req)
   }
 
@@ -63,7 +70,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 
   override def sendSafe(req: Request): Future[Response] = {
     try {
-      client.apply(req).rescue {
+      send(req).rescue {
         case e: HttpClientException =>
           Future.value(toRawUnsafe(e.response))
       }
@@ -79,6 +86,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     client.close()
   }
 
+  /**
+    * Create a new Request by applying the requestFilter and an additional filter
+    */
   def newRequest(method: HttpMethod, path: String, additionalRequestFilter: Request => Request = identity): Request = {
     var req = Request(toFinagleHttpMethod(method), path)
     // Add common http headers
