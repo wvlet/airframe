@@ -34,6 +34,12 @@ class CommonSpec extends AirSpec {
     ignore()
     throw new IllegalArgumentException("invalid argument")
   }
+
+  def ciChecker: Unit = {
+    // sanity test
+    inTravisCI
+    inCircleCI
+  }
 }
 
 object ObjSpec extends AirSpec {
