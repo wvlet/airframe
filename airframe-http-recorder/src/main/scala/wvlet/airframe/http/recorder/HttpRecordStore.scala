@@ -139,7 +139,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
     val rh = recorderConfig.requestMatcher.computeHash(request)
 
     val httpHeadersForRecording: Seq[(String, String)] =
-      request.headerMap.toSeq.filter { x =>
+      request.headerMap.toSeq.filterNot { x =>
         recorderConfig.excludeHeaderForRecording(x._1, x._2)
       }
     val entry = HttpRecord(
