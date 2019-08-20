@@ -26,13 +26,17 @@ import Design._
   * Design configs
   */
 case class DesignOptions(
-    enabledLifeCycleLogging: Boolean = true,
-    stage: Stage = Stage.DEVELOPMENT,
+    enabledLifeCycleLogging: Option[Boolean] = None,
+    stage: Option[Stage] = None,
     options: Map[String, Any] = Map.empty
 ) extends Serializable {
   def +(other: DesignOptions): DesignOptions = {
     // configs will be overwritten
-    new DesignOptions(other.enabledLifeCycleLogging, other.stage, defaultOptionMerger(options, other.options))
+    new DesignOptions(
+      other.enabledLifeCycleLogging.orElse(this.enabledLifeCycleLogging),
+      other.stage.orElse(this.stage),
+      defaultOptionMerger(options, other.options)
+    )
   }
 
   private def defaultOptionMerger(a: Map[String, Any], b: Map[String, Any]): Map[String, Any] = {
@@ -48,18 +52,18 @@ case class DesignOptions(
   }
 
   def withLifeCycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = true, stage, options)
+    new DesignOptions(enabledLifeCycleLogging = Some(true), stage, options)
   }
   def noLifecycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = false, stage, options)
+    new DesignOptions(enabledLifeCycleLogging = Some(false), stage, options)
   }
 
   def withProductionMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Stage.PRODUCTION, options)
+    new DesignOptions(enabledLifeCycleLogging, Some(Stage.PRODUCTION), options)
   }
 
   def withLazyMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Stage.DEVELOPMENT, options)
+    new DesignOptions(enabledLifeCycleLogging, Some(Stage.DEVELOPMENT), options)
   }
 
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {

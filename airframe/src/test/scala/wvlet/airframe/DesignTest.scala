@@ -137,4 +137,31 @@ class DesignTest extends AirSpec {
     val d = Design.newDesign
     d.withTracer(DefaultTracer).noTracer
   }
+
+  def `preserve explicit design options`: Unit = {
+    val d1 = Design.newDesign.withProductionMode.noLifeCycleLogging
+    val d2 = Design.newDesign
+
+    d1.designOptions.enabledLifeCycleLogging shouldBe Some(false)
+    d1.designOptions.stage shouldBe Some(Stage.PRODUCTION)
+
+    d2.designOptions.enabledLifeCycleLogging shouldBe empty
+    d2.designOptions.stage shouldBe empty
+
+    val d = d1 + d2
+    d.designOptions.enabledLifeCycleLogging shouldBe Some(false)
+    d.designOptions.stage shouldBe Some(Stage.PRODUCTION)
+
+    val d3 = d2 + d1
+    d3.designOptions.enabledLifeCycleLogging shouldBe Some(false)
+    d3.designOptions.stage shouldBe Some(Stage.PRODUCTION)
+  }
+
+  def `override design options`: Unit = {
+    val d1 = Design.newDesign.withProductionMode.noLifeCycleLogging
+    val d2 = Design.newDesign.withLazyMode.withLifeCycleLogging
+    val d  = d1 + d2
+    d.designOptions.enabledLifeCycleLogging shouldBe Some(true)
+    d.designOptions.stage shouldBe Some(Stage.DEVELOPMENT)
+  }
 }
