@@ -63,7 +63,7 @@ class SessionBuilder(
     val d = design.minimize
     // Combine the lifecycle logger and event handlers
     val lifeCycleLogger =
-      if (d.designOptions.enabledLifeCycleLogging) {
+      if (d.designOptions.enabledLifeCycleLogging.getOrElse(true)) {
         ShowLifeCycleLog
       } else {
         // Show life cycle log in debug level only
@@ -79,7 +79,8 @@ class SessionBuilder(
     }
 
     val l       = new LifeCycleManager(lifeCycleLogger wraps eventHandler, lh)
-    val session = new AirframeSession(parent = parent, name, d, d.designOptions.stage, l)
+    val stage   = d.designOptions.stage.getOrElse(Stage.DEVELOPMENT)
+    val session = new AirframeSession(parent = parent, name, d, stage, l)
     debug(f"Creating a new session: ${session.name}")
     l.setSession(session)
     session.init
