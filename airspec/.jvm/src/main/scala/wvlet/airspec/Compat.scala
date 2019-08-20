@@ -19,8 +19,9 @@ import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.Logger
 
 import scala.annotation.tailrec
-import scala.util.Try
-import wvlet.airframe.surface.reflect.{ReflectTypeUtil, ReflectSurfaceFactory}
+import scala.util.{Failure, Success, Try}
+import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
+import wvlet.airspec.spi.AirSpecException
 
 /**
   *
@@ -34,7 +35,13 @@ private[airspec] object Compat extends CompatApi {
   }
 
   private[airspec] def newInstanceOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
-    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()).toOption
+    Try(classLoader.loadClass(fullyQualifiedName).getDeclaredConstructor().newInstance()) match {
+      case Success(x) => Some(x)
+      case Failure(e: InvocationTargetException)
+          if classOf[spi.AirSpecException].isAssignableFrom(e.getCause.getClass) =>
+        throw e
+      case _ => None
+    }
   }
 
   private[airspec] def withLogScanner[U](block: => U): U = {
