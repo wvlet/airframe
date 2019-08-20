@@ -18,7 +18,7 @@ import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.Design
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.airspec.spi.{AirSpecContext, AirSpecException, MissingTestDependency}
+import wvlet.airspec.spi.{AirSpecContext, AirSpecException, AirSpecFailureBase, MissingTestDependency}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
@@ -43,6 +43,7 @@ private[airspec] class AirSpecTaskRunner(
 
   def runTask: Unit = {
     val testClassName = taskDef.fullyQualifiedName()
+    val leafName      = AirSpecSpi.leafClassName(AirSpecSpi.decodeClassName(testClassName))
 
     val startTimeNanos = System.nanoTime()
     try {
@@ -62,15 +63,20 @@ private[airspec] class AirSpecTaskRunner(
           case Some(spec: AirSpecSpi) =>
             run(parentContext = None, spec, spec.testMethods)
           case _ =>
-            taskLogger.logSpecName(AirSpecSpi.decodeClassName(taskDef.fullyQualifiedName()), indentLevel = 0)
-            throw new IllegalStateException(s"${testClassName} needs to be a class or object extending AirSpec")
+            taskLogger.logSpecName(leafName, indentLevel = 0)
+            throw new IllegalStateException(
+              s"${testClassName} needs to be a class or object extending AirSpec: ${testObj.getClass}"
+            )
         }
       }
     } catch {
       case e: Throwable =>
+        taskLogger.logSpecName(leafName, indentLevel = 0)
+        val cause  = compat.findCause(e)
+        val status = AirSpecException.classifyException(cause)
         // Unknown error
         val event =
-          AirSpecEvent(taskDef, "<spec>", Status.Error, new OptionalThrowable(e), System.nanoTime() - startTimeNanos)
+          AirSpecEvent(taskDef, "<spec>", status, new OptionalThrowable(cause), System.nanoTime() - startTimeNanos)
         taskLogger.logEvent(event)
         eventHandler.handle(event)
     }
