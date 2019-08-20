@@ -204,8 +204,8 @@ class HttpRecorderTest extends AirSpec {
   }
 
   def `support simple request matcher`: Unit = {
-    val config = HttpRecorderConfig(sessionName = ":memory:", requestMatcher = SimpleRequestMatcher)
-    withResource(HttpRecorder.createProgrammableServer(config)) { server =>
+    val config = HttpRecorderConfig(requestMatcher = SimpleRequestMatcher)
+    withResource(HttpRecorder.createInMemoryServer(config)) { server =>
       val request = Request("/airframe")
       request.accept = "application/v1+json"
       val response = Response()

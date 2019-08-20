@@ -29,9 +29,10 @@ import wvlet.log.io.IOUtil
 case class HttpRecorderConfig(
     destUri: String = "localhost",
     sessionName: String = "default",
-    expirationTime: String = "1w", // Delete recorded response in a week by default
+    expirationTime: String = "1M", // Delete recorded response in a month by default
     // the folder to store response records
-    storageFolder: String = "fixtures",
+    dbFileName: String = "http-records",
+    storageFolder: String = ".airframe/http",
     recordTableName: String = "record",
     // Specify the port to use. The default is finding an available port
     private val port: Int = -1,
@@ -40,20 +41,14 @@ case class HttpRecorderConfig(
     excludeHeaderForRecording: (String, String) => Boolean = HttpRecorder.defaultHeaderFilterForRecording,
     fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler
 ) {
+  def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
 
-  def isInMemory: Boolean = sessionName == ":memory:"
-
-  def sqliteFilePath = {
-    if (isInMemory) {
-      ":memory:"
-    } else {
-      s"${storageFolder}/${sessionName}.sqlite"
-    }
+  lazy val serverPort = if (port == -1) {
+    IOUtil.unusedPort
+  } else {
+    port
   }
-
-  lazy val serverPort  = if (port == -1) IOUtil.unusedPort else port
   lazy val destAddress = ServerAddress(destUri)
-
 }
 
 /**
@@ -152,8 +147,19 @@ object HttpRecorder extends LogSupport {
     * Create an in-memory programmable server, whose recorded response will be discarded after closing the server.
     * This is useful for debugging HTTP clients
     */
+  def createInMemoryServer(recorderConfig: HttpRecorderConfig): HttpRecorderServer = {
+    val recorder = new HttpRecordStore(recorderConfig, inMemory = true)
+    val server   = new HttpRecorderServer(recorder, HttpRecorderServer.newReplayService(recorder))
+    server.start
+    server
+  }
+
+  /**
+    * Create an in-memory programmable server, whose recorded response will be discarded after closing the server.
+    * This is useful for debugging HTTP clients.
+    */
   def createInMemoryProgrammableServer: HttpRecorderServer = {
-    createProgrammableServer(HttpRecorderConfig(sessionName = ":memory:"))
+    createInMemoryServer(HttpRecorderConfig())
   }
 
   def defaultFallBackHandler = {
@@ -163,5 +169,4 @@ object HttpRecorder extends LogSupport {
       Future.value(r)
     }
   }
-
 }

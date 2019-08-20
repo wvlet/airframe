@@ -26,11 +26,14 @@ import wvlet.log.LogSupport
 /**
   * Recorder for HTTP server responses
   */
-class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boolean = false)
+class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boolean = false, inMemory: Boolean = false)
     extends AutoCloseable
     with LogSupport {
-  private val requestCounter  = scala.collection.mutable.Map.empty[Int, AtomicInteger]
-  private val connectionPool  = new SQLiteConnectionPool(DbConfig.ofSQLite(recorderConfig.sqliteFilePath))
+  private val requestCounter = scala.collection.mutable.Map.empty[Int, AtomicInteger]
+  private val connectionPool = {
+    val dbFilePath = if (inMemory) ":memory:" else recorderConfig.sqliteFilePath
+    new SQLiteConnectionPool(DbConfig.ofSQLite(dbFilePath))
+  }
   private def recordTableName = recorderConfig.recordTableName
 
   // Increment this value if we need to change the table format.
@@ -39,27 +42,25 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   init
 
   protected def init {
-    if (!recorderConfig.isInMemory) {
-      // Support recorder version migration for persistent records
-      connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
-      val lastVersion = connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
-        if (handler.next()) {
-          handler.getInt(1)
-        } else {
-          recordFormatVersion
-        }
+    // Support recorder version migration for persistent records
+    connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
+    val lastVersion = connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
+      if (handler.next()) {
+        handler.getInt(1)
+      } else {
+        recordFormatVersion
       }
-
-      if (lastVersion < recordFormatVersion) {
-        warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
-        clearAllRecords
-        connectionPool.executeUpdate("drop table if exists recorder_info")
-      }
-      // Record the current record format version
-      connectionPool.executeUpdate(
-        s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}"
-      )
     }
+
+    if (lastVersion < recordFormatVersion) {
+      warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
+      clearAllRecords
+      connectionPool.executeUpdate("drop table if exists recorder_info")
+    }
+    // Record the current record format version
+    connectionPool.executeUpdate(
+      s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}"
+    )
 
     // Prepare a database table for recording HttpRecord
     connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
@@ -136,6 +137,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
   def record(request: Request, response: Response): Unit = {
     val rh = recorderConfig.requestMatcher.computeHash(request)
+
     val httpHeadersForRecording: Seq[(String, String)] =
       request.headerMap.toSeq.filter { x =>
         recorderConfig.excludeHeaderForRecording(x._1, x._2)
@@ -154,7 +156,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
       createdAt = Instant.now()
     )
 
-    trace(s"Recording ${request} -> ${entry.summary}")
+    trace(s"record: request hash ${rh} for ${request} -> ${entry.summary}")
     connectionPool.withConnection { conn =>
       entry.insertInto(recordTableName, conn)
     }
