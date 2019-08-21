@@ -69,12 +69,12 @@ object SingletonTest {
 class SingletonTest extends AirSpec {
   scalaJsSupport
 
-  val design =
+  val d =
     newDesign
       .bind[TraitCounter].toInstance(new AtomicInteger(0))
 
   def `bind singleton with bind[X]` : Unit = {
-    val session = design.newSession
+    val session = d.newSession
 
     val a = session.build[A]
     val b = session.build[B]
@@ -84,7 +84,7 @@ class SingletonTest extends AirSpec {
   }
 
   def `bind singleton with bind[X] as a service`: Unit = {
-    val session = design.newSession
+    val session = d.newSession
 
     val u1 = session.build[U1]
     val u2 = session.build[U2]

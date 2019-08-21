@@ -155,8 +155,12 @@ object ReflectSurfaceFactory extends LogSupport {
         .filter(m => isOwnedByTargetClass(m, t))
     }
 
+    private def nonObject(x: ru.Symbol): Boolean = {
+      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+    }
+
     private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
-      m.owner == t.typeSymbol
+      m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
     }
 
     def createMethodSurfaceOf(targetType: ru.Type): Seq[MethodSurface] = {
