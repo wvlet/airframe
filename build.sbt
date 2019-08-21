@@ -82,7 +82,7 @@ val buildSettings = Seq[Setting[_]](
 )
 
 // Do not run tests concurrently to avoid JMX registration failures
-val runTestSequentially = Seq[Setting[_]](concurrentRestrictions in ThisScope := Seq(Tags.limit(Tags.Test, 1)))
+val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 publishTo in ThisBuild := sonatypePublishTo.value
