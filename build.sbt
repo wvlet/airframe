@@ -85,10 +85,6 @@ val buildSettings = Seq[Setting[_]](
 publishTo in ThisBuild := sonatypePublishTo.value
 
 val jsBuildSettings = Seq[Setting[_]](
-// Do not run tests concurrently
-//  concurrentRestrictions in ThisScope := Seq(
-//    Tags.limit(Tags.Test, 1)
-//  )
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )
@@ -448,7 +444,11 @@ lazy val jmx =
     .settings(buildSettings)
     .settings(
       name := "airframe-jmx",
-      description := "A library for exposing Scala object data through JMX"
+      description := "A library for exposing Scala object data through JMX",
+      // Do not run tests concurrently to avoid JMX registration failures
+      concurrentRestrictions := Seq(
+        Tags.limit(Tags.Test, 1)
+      )
     )
     .dependsOn(surfaceJVM, airspecRefJVM % "test")
 
