@@ -81,14 +81,13 @@ val buildSettings = Seq[Setting[_]](
   )
 )
 
+// Do not run tests concurrently to avoid JMX registration failures
+val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
+
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 publishTo in ThisBuild := sonatypePublishTo.value
 
 val jsBuildSettings = Seq[Setting[_]](
-  // Do not run tests concurrently
-  concurrentRestrictions in Global := Seq(
-    Tags.limit(Tags.Test, 1)
-  )
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )
@@ -448,7 +447,9 @@ lazy val jmx =
     .settings(buildSettings)
     .settings(
       name := "airframe-jmx",
-      description := "A library for exposing Scala object data through JMX"
+      description := "A library for exposing Scala object data through JMX",
+      // Do not run tests concurrently to avoid JMX registration failures
+      runTestSequentially
     )
     .dependsOn(surfaceJVM, airspecRefJVM % "test")
 
@@ -485,8 +486,8 @@ lazy val log: sbtcrossproject.CrossProject =
       libraryDependencies ++= logDependencies(scalaVersion.value)
     )
     .jvmSettings(
-      libraryDependencies ++= logJVMDependencies
-      //classLoaderLayeringStrategy in Test := ClassLoaderLayeringStrategy.AllLibraryJars
+      libraryDependencies ++= logJVMDependencies,
+      runTestSequentially
     )
     .jsSettings(
       jsBuildSettings,
