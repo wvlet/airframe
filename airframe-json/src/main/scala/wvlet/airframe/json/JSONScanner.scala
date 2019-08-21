@@ -330,7 +330,8 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   }
 
   private def scanNumber(ctx: JSONContext[J]): Unit = {
-    var ch = s(cursor)
+    val numberStart = cursor
+    var ch          = s(cursor)
     if (ch == Minus) {
       sb.append(ch)
       cursor += 1
@@ -379,7 +380,10 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
         ch = cursorChar
       }
     }
-    ctx.addNumber(sb.getAndReset())
+    val numberEnd = cursor
+    if (numberStart < numberEnd) {
+      ctx.addNumber(sb.getAndReset(), dotIndex, expIndex)
+    }
   }
 
   private def ensure(length: Int): Unit = {

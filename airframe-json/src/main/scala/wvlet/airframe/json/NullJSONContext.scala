@@ -33,6 +33,6 @@ class NullJSONContext(isObject: Boolean) extends JSONContext[Unit] with LogSuppo
   override def addNull(s: JSONSource, start: Int, end: Int): Unit                = {}
   override def addString(s: JSONSource, start: Int, end: Int): Unit              = {}
   override def addUnescapedString(s: String): Unit                               = {}
-  override def addNumber(str: String): Unit                                      = {}
+  override def addNumber(str: String, dotIndex: Int, expIndex: Int): Unit        = {}
   override def addBoolean(s: JSONSource, v: Boolean, start: Int, end: Int): Unit = {}
 }
