@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.8
+-  airframe-http-recorder: Fix exclude flag behavior ([#627](https://github.com/wvlet/airframe/issues/627)) [[c73d8a7](https://github.com/wvlet/airframe/commit/c73d8a7)]
+-  airframe-http-client: Add HOST header if missing ([#626](https://github.com/wvlet/airframe/issues/626)) [[7d1c91e](https://github.com/wvlet/airframe/commit/7d1c91e)]
+-  airframe-di: Fix design option override ([#625](https://github.com/wvlet/airframe/issues/625)) [[576fab7](https://github.com/wvlet/airframe/commit/576fab7)]
+-  airspec: Support skipping the whole spec ([#624](https://github.com/wvlet/airframe/issues/624)) [[f7d5f59](https://github.com/wvlet/airframe/commit/f7d5f59)]
+-  airframe-http-finagle: Add sendRaw(request) ([#623](https://github.com/wvlet/airframe/issues/623)) [[c54da5e](https://github.com/wvlet/airframe/commit/c54da5e)]
+-  airspec: Add inCicleCI ([#622](https://github.com/wvlet/airframe/issues/622)) [[972f9bf](https://github.com/wvlet/airframe/commit/972f9bf)]
+
 ## 19.8.7
 -  airframe-http-recorder: Store records to .airframe folder ([#619](https://github.com/wvlet/airframe/issues/619)) [[e22b5ed](https://github.com/wvlet/airframe/commit/e22b5ed)]
 -  airframe-http-recorder: Support custom http request matchers ([#618](https://github.com/wvlet/airframe/issues/618)) [[37aea23](https://github.com/wvlet/airframe/commit/37aea23)]
