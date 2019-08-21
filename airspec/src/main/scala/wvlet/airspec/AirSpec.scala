@@ -68,16 +68,32 @@ private[airspec] trait AirSpecSpi {
   /**
     * Configure a global design for this spec.
     *
+    * @deprecated(message="Use design:Design instead", since="19.8.9")
     */
-  protected def configure(design: Design): Design = design
+  protected def configure(d: Design): Design = d + design
+
+  /**
+    * Provide a global design for this spec.
+    */
+  protected def design: Design = Design.empty
 
   /**
     * Configure a test-case local design in the spec.
     *
     * Note that if you override a global design in this method,
     * test cases will create test-case local instances (singletons)
+    *
+    * @deprecated(message="Use localDesign: Design instead", since="19.8.9")
     */
-  protected def configureLocal(design: Design): Design = design
+  protected def configureLocal(design: Design): Design = design + localDesign
+
+  /**
+    * Provide a test-case local design in the spec.
+    *
+    * Note that if you override a global design in this method,
+    * test cases will create test-case local instances (singletons)
+    */
+  protected def localDesign: Design = Design.empty
 
   protected def beforeAll: Unit = {}
   protected def before: Unit    = {}

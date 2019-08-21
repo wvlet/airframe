@@ -43,7 +43,7 @@ trait MyServer extends LogSupport {
 trait CustomSpec extends AirSpec with LogSupport {
   protected val serverLaunchCounter = new AtomicInteger(0)
 
-  override def configure(design: Design): Design = {
+  override protected def configure(design: Design): Design = {
     design
       .bind[MyServer].toSingleton
       .bind[MyServerConfig].toInstance(MyServerConfig("A"))

@@ -42,22 +42,22 @@ import HigherKindTypeTest._
 class HigherKindTypeTest extends AirSpec {
   scalaJsSupport
 
-  val design =
+  val d =
     newSilentDesign
       .bind[HolderInterpreted].toInstance(interpreted)
       .bind[Holder[Task]].toInstance(interpreted2)
       .bind[Holder[MyFuture]].toInstance(interpreted3)
 
   def `support higher kind types`: Unit = {
-    design.build[HolderInterpreted] { repo =>
+    d.build[HolderInterpreted] { repo =>
       repo.hello shouldBe "new interpretation"
     }
 
-    design.build[Holder[Task]] { repo =>
+    d.build[Holder[Task]] { repo =>
       repo.hello shouldBe "another interpretation"
     }
 
-    design.build[Holder[MyFuture]] { repo =>
+    d.build[Holder[MyFuture]] { repo =>
       repo.hello shouldBe "third interpretation"
     }
   }

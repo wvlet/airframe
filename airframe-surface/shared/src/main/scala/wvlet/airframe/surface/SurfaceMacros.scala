@@ -80,8 +80,12 @@ private[surface] object SurfaceMacros {
       allMethodsOf(t).filter(m => isOwnedByTargetClass(m, t))
     }
 
+    private def nonObject(x: c.Symbol): Boolean = {
+      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+    }
+
     private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
-      m.owner == t.typeSymbol
+      m.owner == t.typeSymbol || t.baseClasses.filter(nonObject).exists(_ == m.owner)
     }
 
     private def createMethodCaller(t: c.Type, m: MethodSymbol, methodArgs: Seq[MethodArg]): c.Tree = {

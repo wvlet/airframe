@@ -19,9 +19,9 @@ val JS_JAVA_LOGGING_VERSION         = "0.1.5"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
 // Allow using Ctrl+C in sbt without exiting the prompt
-cancelable in Global := true
+// cancelable in Global := true
 
-ThisBuild / turbo := true
+//ThisBuild / turbo := true
 
 // For using Scala 2.12 in sbt
 scalaVersion in ThisBuild := SCALA_2_12
