@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.9
+-  airspec: Support AirSpec.design, localDesign ([#631](https://github.com/wvlet/airframe/issues/631)) [[dfd7a86](https://github.com/wvlet/airframe/commit/dfd7a86)]
+   - This also fixes an issue in finding test methods defined in sub classes.
+-  internal: Run tests in parallel ([#629](https://github.com/wvlet/airframe/issues/629)) [[779f80d](https://github.com/wvlet/airframe/commit/779f80d)]
+-  internal: Upgrade to sbt 1.3.0-RC4 ([#628](https://github.com/wvlet/airframe/issues/628)) [[5a0807b](https://github.com/wvlet/airframe/commit/5a0807b)]
+
 ## 19.8.8
 -  airframe-http-recorder: Fix exclude flag behavior ([#627](https://github.com/wvlet/airframe/issues/627)) [[c73d8a7](https://github.com/wvlet/airframe/commit/c73d8a7)]
 -  airframe-http-client: Add HOST header if missing ([#626](https://github.com/wvlet/airframe/issues/626)) [[7d1c91e](https://github.com/wvlet/airframe/commit/7d1c91e)]
