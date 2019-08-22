@@ -3,15 +3,15 @@ AirSpec
 
 [AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js. 
 
-AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are optionally supported.
+AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
 
 AirSpec has nice properties for writing tests in Scala:
 
-- A short entry point: `import wvlet.airspec._`
-- Using plain Scala classes and methods to define tests.
+- Simple usage: `import wvlet.airspec._` and extend `AirSpec` trait.
+- Tests can be defined using plain Scala classes and methods.
   - Public methods in a class extending `AirSpec` trait will be your test cases.
-  - No annotations (like [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) are necessary.
-- Testing with simple assertions: `assert(cond)` and `x shouldBe y`.
+  - No annotation (like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
+- Testing with simple assertions: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
 - Lifecycle management with [Airframe DI](https://wvlet.org/airframe/docs/airframe.html):
   - The arguments of test methods can be used to inject necessary services for running your tests. 
@@ -24,11 +24,14 @@ AirSpec has nice properties for writing tests in Scala:
 We are now planning to add some missing features (e.g., better reporting, power assertions):
 - [Milestone: AirSpec 19](https://github.com/wvlet/airframe/issues/606)
 
-# Motivation
+
+To start using AirSpec, read [Quick Start](#quick-start).
+
+# Background & Motivation
 
 In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to creating a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have [some standards for writing tests in Scala](https://github.com/scala/scala-dev/issues/641) without introducing third-party dependencies.
 
-A problem here is, in order to write tests in Scala, we usually have only two choices: learning DSLs or being a minimalist.
+A problem here is, in order to write tests in Scala, we usually have only two choices: learning DSLs or being a minimalist:
 
 - __Complex DSLs__:
   - ScalaTests supports [various writing styles of tests](http://www.scalatest.org/user_guide/selecting_a_style), and [assersions](http://www.scalatest.org/user_guide/using_assertions). We had no idea how to choose the best style for our team. To simplify this, uTest has picked only one of the styles from ScalaTests, but it's still a new domain-specific language on top of Scala. Specs2 introduces its own testing syntax, and even [the very first example](https://etorreborre.github.io/specs2/) can be cryptic for new people, resulting in high learning cost.
@@ -36,7 +39,7 @@ A problem here is, in order to write tests in Scala, we usually have only two ch
 
 - __Too minimalistic framework:__
   - On the other hand, a minimalist approach like minitest, which uses a limited set of syntax like `asserts` and `test("....")`, is too restricted. For example, I believe assertion syntax like `x shouldBe y` is a good invention in ScalaTest to make clear the meaning of assertions to represent `(value) shoudlBe (expected value)`. In minitest `assert(x == y)` has the same meaning, but the intention of test writers is not clear because we can write it in two ways: `assert(value == expected)` or `assert(expected == value)`. Minitest also has no feature for selecting test cases to run; It only supports specifying class names to run, which is just a basic functionality of __sbt__.
-  - A minimalist approach like this forces us to be in [Zen](https://en.wikipedia.org/wiki/Zen) mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and developing a DSL for our own teams.
+  - A minimalist approach forces us to be like [Zen](https://en.wikipedia.org/wiki/Zen) mode. We can extend minitest with rich assertions, but we still need to figure out the right balance between a minimalist and developing a DSL for our own teams.
 
 ## AirSpec: Writing Tests As Functions In Scala
 
@@ -50,7 +53,7 @@ And also, if we define tests by using functions, it becomes possible to __pass t
 
 AirSpec was born with these ideas in mind by leveraging Airframe modules like Airframe Surface and DI. After implementing basic features of AirSpec, we've successfully __migrated all of the test cases in 20+ Airframe modules into AirSpec__, which were originally written in ScalaTest. Rewriting test cases was almost straightforward as AirSpec has handy `shouldBe` syntax and property testing support with ScalaCheck.
 
-In the following sections, we will see how to use AirSpec to write tests in a Scala-friendly style.
+In the following sections, we will see how to write tests in a Scala-friendly style with AirSpec.
 
 # Quick Start
 
@@ -68,6 +71,8 @@ For Scala.js, use `%%%`:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)" % "test"
 ```
+
+If you have multiple sub projects, add the above testFramework setting to each sub-project.
 
 ## Writing Unit Tests 
 
@@ -94,34 +99,9 @@ class MyTest extends AirSpec {
 
 If you need to define utility methods in a class, use private or protected scope.
 
-AirSpec supports basic assertions like `assert`, `fail`, `ignore`, `cancel`, `pending`, `skip`, `intercept[E]`, and `shouldBe` matchers, which is will be explained later.
-
-Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
-
-AirSpec also supports powerful object lifecycle management, integrated with [Airframe DI](https://wvlet.org/airframe/docs/airframe.html). The function arguments of test methods will be used for injecting objects that are necessary for running tests, and after finishing tests, these objects will be discarded properly.
-
-
-## Running Tests in sbt
-
-AirSpec supports pattern matching for running only specific tests:
-```
-$ sbt
-
-> test                                   # Run all tests
-> testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
-> testOnly -- (class pattern)*(pattern)  # Search both class and test names 
-
-```
-
-`pattern` is used for partial matching with test names. It also supports wildcard (`*`) and regular expressions.
-Basically AirSpec will find matches from the list of all `(test class full name):(test function name)` strings.
-Cases of test names will be ignored in the search.
-
-![image](https://wvlet.org/airframe/img/airspec/airspec.png)
-
 ## Writing Specs In Natural Languages
 
-If you prefer natural language descriptions for your test cases, use symbols for function names:
+If you prefer natural language descriptions for your test cases, use symbols (back-quoted strings) for function names:
 
 ```scala
 import wvlet.airspec._
@@ -145,16 +125,40 @@ It is also possible to use symbols for test class names:
 ```scala
 import wvlet.airspec._
 
-class `Seq[X] test spec` extends AirSpec {
+class `Test properties of Seq[X]` extends AirSpec {
   def `the size of empty Seq should be 0`: Unit = {
     assert(Seq.empty.size == 0)
   }
 }
 ```
 
-## shouldBe matchers
+## Assertions in AirSpec
 
-AirSpec supports handy assertions with `shouldBe` or `shouldNotBe`:
+AirSpec supports basic assertions listed below:
+
+|__syntax__               | __meaning__ |
+|-------------------------|----------|
+|`assert(x == y)`         | check x equals to y |
+|`assertEquals(a, b, delta)` | check Float (or Double) value equality by allowing some delta difference |
+|`fail("reason")`         | fail the test if this code path should not be reached  |
+|`ignore("reason")`       | ignore this test execution.  |
+|`cancel("reason")`       | cancel the test (e.g., due to set up failure) |
+|`pending`                | pending the test execution (e.g., when hitting an unknown issue) |
+|`pendingUntil("reason")` | pending until fixing some blocking issues|
+|`skip`                   | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
+|`intercept[E] { ... }`   | Catch an exception of type `E` to check an expected exception is thrown |
+|`x shouldBe y`           | check x == y. This supports matching collections like Seq, Array |
+|`x shouldNotBe y`        | check x != y |
+|`x shouldNotBe null`     | shouldBe supports null check|
+|`x shouldBe defined`     | check x.isDefined == true, when x is Option or Seq |
+|`x shouldBe empty`       | check x.isEmpty == true, when x is Option or Seq |
+|`x shouldBeTheSameInstanceAs y` | check x eq y, i.e., x and y are the same object instance |
+|`x shouldNotBeTheSameInstanceAs y` | check x ne y, x and y should not be the same instance |
+
+Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
+
+### Example: shouldBe matchers
+
 ```scala
 import wvlet.airspec._
 
@@ -196,6 +200,25 @@ class MyTest extends AirSpec {
 }
 ```
 
+## Running Tests in sbt
+
+AirSpec supports pattern matching for running only specific tests:
+```
+$ sbt
+
+> test                                   # Run all tests
+> testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
+> testOnly -- (class pattern)*(pattern)  # Search both class and test names
+
+```
+
+`pattern` is used for partial matching with test names. It also supports wildcard (`*`) and regular expressions (experimental).
+Basically AirSpec will find matches from the list of all `(test class full name):(test function name)` strings.
+Cases of test names will be ignored in the search.
+
+![image](https://wvlet.org/airframe/img/airspec/airspec.png)
+
+
 
 ## Dependency Injection with Airframe DI
 
@@ -209,7 +232,7 @@ AirSpec manages two types of sessions: _global_ and _local_:
 - For each test method in the AirSpec instance, a local (child) session that inherits the global session will be created.
 
 To configure the design of objects that will be created in each session,
-override `configure(Design)` and `configureLocal(Design)` methods in AirSpec.
+override `protected def design:Design` or `protected def localDesign: Design` methods in AirSpec.
 
 ### Session LifeCycle
 
@@ -217,11 +240,11 @@ AirSpec manages global/local sessions in this order:
 
 - Create a new instance of AirSpec
   - Run `beforeAll`
-  - Call configure(design) to prepare a new global design
+  - Call `design` to prepare a new global design
   - Start a new global session
      - for each test method _m_:
        - Call `before`
-       - Call configureLocal(design) to prepare a new local design
+       - Call `localDesign` to prepare a new local design
        - Start a new local session
           - Call the test method _m_ by building method arguments using the local session (and the global session). See also [Airframe DI: Child Sessions](https://wvlet.org/airframe/docs/airframe.html#child-sessions) to learn more about the dependency resolution order.
        - Shutdown the local session. All data in the local session will be discarded
@@ -252,8 +275,8 @@ class Service(config:ServerConfig) extends LogSupport {
 }
 
 class ServiceSpec extends AirSpec with LogSupport {
-  override protected def configure(design:Design): Design = {
-    design
+  override protected def design: Design = {
+    newDesign
       .bind[Service].toSingleton
       .bind[ServiceConfig].toInstance(ServiceConfig(port=8080))
   }
@@ -364,4 +387,5 @@ class ScalaJSSpec extends AirSpec {
 
 This is because Scala.js has no runtime reflection to find methods in AirSpec classes, so we need to provide method data by calling `scalaJsSupport`.
 Internally this will generate `MethodSurface`s (airframe-surface), so that AirSpec can find test methods at runtime. Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the same test spec both for Scala and Scala.js.
+
 
