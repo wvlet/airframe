@@ -291,6 +291,9 @@ All <strong>public methods</strong> in the class will be executed as test cases:
 &gt; testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
 &gt; testOnly -- (class pattern)*(pattern)  # Search both class and test names
 
+# sbt's default test functionalities:
+&gt; testQuick                              # Run only previously failed test specs
+&gt; testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported) 
 </code></pre>
 </div>
 
@@ -299,6 +302,15 @@ Basically AirSpec will find matches from the list of all <code class="highlighte
 Cases of test names will be ignored in the search.</p>
 
 <p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
+
+<h3 id="disable-parallel-test-execution">Disable Parallel Test Execution</h3>
+
+<p>sbt 1.x or higher runs tests in parallel. This is fast, but it messes up console log messages.
+If you prefer sequential test execution, set <code class="highlighter-rouge">parallelExecution in Test</code> to false:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">parallelExecution</span> <span class="n">in</span> <span class="nc">Test</span> <span class="o">:=</span> <span class="kc">false</span>
+</code></pre>
+</div>
 
 <h2 id="dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</h2>
 
@@ -399,6 +411,49 @@ override <code class="highlighter-rouge">protected def design:Design</code> or <
 <span class="o">[</span><span class="kt">info</span><span class="o">]</span> <span class="nc">Passed</span><span class="k">:</span> <span class="kt">Total</span> <span class="err">2</span><span class="o">,</span> <span class="nc">Failed</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Errors</span> <span class="mi">0</span><span class="o">,</span> <span class="nc">Passed</span> <span class="mi">2</span>
 </code></pre>
 </div>
+
+<h3 id="pro-tips">Pro Tips</h3>
+
+<p>Designs of Airframe DI are useful for defining modules of your application.
+If you need to switch some implementations or configurations for your tests, override your design as shown below:</p>
+
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="k">object</span> <span class="nc">AppModule</span> <span class="o">{</span>
+  <span class="c1">// Define your application design
+</span>  <span class="k">def</span> <span class="n">serviceDesign</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">newDesign</span>
+        <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Service</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">ServiceImpl</span><span class="o">]</span>
+        <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ServiceConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="nc">ServiceConfig</span><span class="o">(...))</span>
+  <span class="o">}</span>
+
+  <span class="c1">// Define designs of other compoments as you need
+</span>  <span class="k">def</span> <span class="n">componentDesign</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">...</span>
+<span class="o">}</span>
+
+<span class="c1">// Design for testing
+</span><span class="k">object</span> <span class="nc">AppTestModule</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="n">serviceDesignForTests</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">AppModule</span><span class="o">.</span><span class="n">appDesign</span>  <span class="c1">// Reuse your application design for tests
+</span>     <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ServiceConfig</span><span class="o">].</span><span class="n">toInstnce</span><span class="o">(</span><span class="k">new</span> <span class="nc">ServiceConfig</span><span class="o">(...))</span> <span class="c1">// Override the config for tests
+</span>  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">import</span> <span class="nn">wvlet.airspec._</span>
+<span class="k">class</span> <span class="nc">AppTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
+  <span class="c1">// Use the testing design
+</span>  <span class="k">protected</span> <span class="k">override</span> <span class="k">def</span> <span class="n">design</span> <span class="k">=</span> <span class="nc">AppTestModue</span><span class="o">.</span><span class="n">serviceDesignForTests</span>
+
+  <span class="c1">// Inject a Service object initialized with a test configuration
+</span>  <span class="k">def</span> <span class="n">`start up test`</span><span class="o">(</span><span class="n">service</span><span class="k">:</span><span class="kt">Service</span><span class="o">)</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+     <span class="c1">// test your service here
+</span>  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+</div>
+
+<p>If you are already familiar to dependency injection using <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a> or <a href="https://github.com/google/guice">Google Guice</a>, it would not be so difficult to split your application into some units of testable modules.
+ This is generally a good practice to minimize the scope of tests only for specific components.</p>
 
 <h2 id="reusing-test-classes">Reusing Test Classes</h2>
 
