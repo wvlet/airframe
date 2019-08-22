@@ -10,19 +10,19 @@ ga('send', 'pageview');
 
 <p><a href="https://github.com/wvlet/airframe/tree/master/airspec">AirSpec</a> is a new functional testing framework for Scala and Scala.js.</p>
 
-<p>AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are optionally supported.</p>
+<p>AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.</p>
 
 <p>AirSpec has nice properties for writing tests in Scala:</p>
 
 <ul>
-  <li>A short entry point: <code class="highlighter-rouge">import wvlet.airspec._</code></li>
-  <li>Using plain Scala classes and methods to define tests.
+  <li>Simple usage: <code class="highlighter-rouge">import wvlet.airspec._</code> and extend <code class="highlighter-rouge">AirSpec</code> trait.</li>
+  <li>Tests can be defined using plain Scala classes and methods.
     <ul>
       <li>Public methods in a class extending <code class="highlighter-rouge">AirSpec</code> trait will be your test cases.</li>
-      <li>No annotations (like <a href="https://junit.org/junit5/docs/current/user-guide/">JUnit5</a>) are necessary.</li>
+      <li>No annotation (like ones in <a href="https://junit.org/junit5/docs/current/user-guide/">JUnit5</a>) is necessary.</li>
     </ul>
   </li>
-  <li>Testing with simple assertions: <code class="highlighter-rouge">assert(cond)</code> and <code class="highlighter-rouge">x shouldBe y</code>.
+  <li>Testing with simple assertions: <code class="highlighter-rouge">assert(cond)</code>, <code class="highlighter-rouge">x shouldBe y</code>, etc.
     <ul>
       <li>No need to learn other complex DSLs.</li>
     </ul>
@@ -44,11 +44,13 @@ ga('send', 'pageview');
   <li><a href="https://github.com/wvlet/airframe/issues/606">Milestone: AirSpec 19</a></li>
 </ul>
 
-<h1 id="motivation">Motivation</h1>
+<p>To start using AirSpec, read <a href="#quick-start">Quick Start</a>.</p>
+
+<h1 id="background--motivation">Background &amp; Motivation</h1>
 
 <p>In Scala there are several rich testing frameworks like <a href="http://www.scalatest.org/">ScalaTests</a>, <a href="https://etorreborre.github.io/specs2/">Specs2</a>, <a href="https://github.com/lihaoyi/utest">uTest</a>, etc. We also have a simple testing framework like <a href="https://github.com/monix/minitest">minitest</a>. In 2019, Scala community has started an experiment to creating a nano-testing framework <a href="https://github.com/scala/nanotest-strawman">nanotest-strawman</a> based on minitest so that Scala users can have <a href="https://github.com/scala/scala-dev/issues/641">some standards for writing tests in Scala</a> without introducing third-party dependencies.</p>
 
-<p>A problem here is, in order to write tests in Scala, we usually have only two choices: learning DSLs or being a minimalist.</p>
+<p>A problem here is, in order to write tests in Scala, we usually have only two choices: learning DSLs or being a minimalist:</p>
 
 <ul>
   <li><strong>Complex DSLs</strong>:
@@ -60,7 +62,7 @@ ga('send', 'pageview');
   <li><strong>Too minimalistic framework:</strong>
     <ul>
       <li>On the other hand, a minimalist approach like minitest, which uses a limited set of syntax like <code class="highlighter-rouge">asserts</code> and <code class="highlighter-rouge">test("....")</code>, is too restricted. For example, I believe assertion syntax like <code class="highlighter-rouge">x shouldBe y</code> is a good invention in ScalaTest to make clear the meaning of assertions to represent <code class="highlighter-rouge">(value) shoudlBe (expected value)</code>. In minitest <code class="highlighter-rouge">assert(x == y)</code> has the same meaning, but the intention of test writers is not clear because we can write it in two ways: <code class="highlighter-rouge">assert(value == expected)</code> or <code class="highlighter-rouge">assert(expected == value)</code>. Minitest also has no feature for selecting test cases to run; It only supports specifying class names to run, which is just a basic functionality of <strong>sbt</strong>.</li>
-      <li>A minimalist approach like this forces us to be in <a href="https://en.wikipedia.org/wiki/Zen">Zen</a> mode. We can extend minitest with rich assertions, but we need to figure out the right balance between a minimalist and developing a DSL for our own teams.</li>
+      <li>A minimalist approach forces us to be like <a href="https://en.wikipedia.org/wiki/Zen">Zen</a> mode. We can extend minitest with rich assertions, but we still need to figure out the right balance between a minimalist and developing a DSL for our own teams.</li>
     </ul>
   </li>
 </ul>
@@ -77,7 +79,7 @@ ga('send', 'pageview');
 
 <p>AirSpec was born with these ideas in mind by leveraging Airframe modules like Airframe Surface and DI. After implementing basic features of AirSpec, we’ve successfully <strong>migrated all of the test cases in 20+ Airframe modules into AirSpec</strong>, which were originally written in ScalaTest. Rewriting test cases was almost straightforward as AirSpec has handy <code class="highlighter-rouge">shouldBe</code> syntax and property testing support with ScalaCheck.</p>
 
-<p>In the following sections, we will see how to use AirSpec to write tests in a Scala-friendly style.</p>
+<p>In the following sections, we will see how to write tests in a Scala-friendly style with AirSpec.</p>
 
 <h1 id="quick-start">Quick Start</h1>
 
@@ -95,6 +97,8 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airspec"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
 </code></pre>
 </div>
+
+<p>If you have multiple sub projects, add the above testFramework setting to each sub-project.</p>
 
 <h2 id="writing-unit-tests">Writing Unit Tests</h2>
 
@@ -121,33 +125,9 @@ All <strong>public methods</strong> in the class will be executed as test cases:
 
 <p>If you need to define utility methods in a class, use private or protected scope.</p>
 
-<p>AirSpec supports basic assertions like <code class="highlighter-rouge">assert</code>, <code class="highlighter-rouge">fail</code>, <code class="highlighter-rouge">ignore</code>, <code class="highlighter-rouge">cancel</code>, <code class="highlighter-rouge">pending</code>, <code class="highlighter-rouge">skip</code>, <code class="highlighter-rouge">intercept[E]</code>, and <code class="highlighter-rouge">shouldBe</code> matchers, which is will be explained later.</p>
-
-<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
-
-<p>AirSpec also supports powerful object lifecycle management, integrated with <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>. The function arguments of test methods will be used for injecting objects that are necessary for running tests, and after finishing tests, these objects will be discarded properly.</p>
-
-<h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
-
-<p>AirSpec supports pattern matching for running only specific tests:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ sbt
-
-&gt; test                                   # Run all tests
-&gt; testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
-&gt; testOnly -- (class pattern)*(pattern)  # Search both class and test names 
-
-</code></pre>
-</div>
-
-<p><code class="highlighter-rouge">pattern</code> is used for partial matching with test names. It also supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions.
-Basically AirSpec will find matches from the list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.
-Cases of test names will be ignored in the search.</p>
-
-<p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
-
 <h2 id="writing-specs-in-natural-languages">Writing Specs In Natural Languages</h2>
 
-<p>If you prefer natural language descriptions for your test cases, use symbols for function names:</p>
+<p>If you prefer natural language descriptions for your test cases, use symbols (back-quoted strings) for function names:</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
@@ -170,7 +150,7 @@ Cases of test names will be ignored in the search.</p>
 
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
-<span class="k">class</span> <span class="nc">`Seq</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="n">test</span> <span class="n">spec` extends AirSpec {
+<span class="k">class</span> <span class="nc">`Test</span> <span class="n">properties</span> <span class="n">of</span> <span class="nc">Seq</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span><span class="n">` extends AirSpec {
   def `the</span> <span class="n">size</span> <span class="n">of</span> <span class="n">empty</span> <span class="nc">Seq</span> <span class="n">should</span> <span class="n">be</span> <span class="mi">0</span><span class="o">`:</span> <span class="nc">Unit</span> <span class="k">=</span> <span class="o">{</span>
     <span class="n">assert</span><span class="o">(</span><span class="nc">Seq</span><span class="o">.</span><span class="n">empty</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span>
   <span class="o">}</span>
@@ -178,9 +158,89 @@ Cases of test names will be ignored in the search.</p>
 </code></pre>
 </div>
 
-<h2 id="shouldbe-matchers">shouldBe matchers</h2>
+<h2 id="assertions-in-airspec">Assertions in AirSpec</h2>
 
-<p>AirSpec supports handy assertions with <code class="highlighter-rouge">shouldBe</code> or <code class="highlighter-rouge">shouldNotBe</code>:</p>
+<p>AirSpec supports basic assertions listed below:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><strong>syntax</strong></th>
+      <th><strong>meaning</strong></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">assert(x == y)</code></td>
+      <td>check x equals to y</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">assertEquals(a, b, delta)</code></td>
+      <td>check Float (or Double) value equality by allowing some delta difference</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">fail("reason")</code></td>
+      <td>fail the test if this code path should not be reached</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">ignore("reason")</code></td>
+      <td>ignore this test execution.</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">cancel("reason")</code></td>
+      <td>cancel the test (e.g., due to set up failure)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">pending</code></td>
+      <td>pending the test execution (e.g., when hitting an unknown issue)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">pendingUntil("reason")</code></td>
+      <td>pending until fixing some blocking issues</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">skip</code></td>
+      <td>Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">intercept[E] { ... }</code></td>
+      <td>Catch an exception of type <code class="highlighter-rouge">E</code> to check an expected exception is thrown</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe y</code></td>
+      <td>check x == y. This supports matching collections like Seq, Array</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBe y</code></td>
+      <td>check x != y</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBe null</code></td>
+      <td>shouldBe supports null check</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe defined</code></td>
+      <td>check x.isDefined == true, when x is Option or Seq</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe empty</code></td>
+      <td>check x.isEmpty == true, when x is Option or Seq</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBeTheSameInstanceAs y</code></td>
+      <td>check x eq y, i.e., x and y are the same object instance</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBeTheSameInstanceAs y</code></td>
+      <td>check x ne y, x and y should not be the same instance</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.</p>
+
+<h3 id="example-shouldbe-matchers">Example: shouldBe matchers</h3>
+
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airspec._</span>
 
 <span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="o">{</span>
@@ -222,6 +282,24 @@ Cases of test names will be ignored in the search.</p>
 </code></pre>
 </div>
 
+<h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
+
+<p>AirSpec supports pattern matching for running only specific tests:</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>$ sbt
+
+&gt; test                                   # Run all tests
+&gt; testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
+&gt; testOnly -- (class pattern)*(pattern)  # Search both class and test names
+
+</code></pre>
+</div>
+
+<p><code class="highlighter-rouge">pattern</code> is used for partial matching with test names. It also supports wildcard (<code class="highlighter-rouge">*</code>) and regular expressions (experimental).
+Basically AirSpec will find matches from the list of all <code class="highlighter-rouge">(test class full name):(test function name)</code> strings.
+Cases of test names will be ignored in the search.</p>
+
+<p><img src="https://wvlet.org/airframe/img/airspec/airspec.png" alt="image" /></p>
+
 <h2 id="dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</h2>
 
 <p>AirSpec can pass shared objects to your test cases by using function arguments.
@@ -236,7 +314,7 @@ This is useful for sharing objects initialized only once at the beginning with t
 </ul>
 
 <p>To configure the design of objects that will be created in each session,
-override <code class="highlighter-rouge">configure(Design)</code> and <code class="highlighter-rouge">configureLocal(Design)</code> methods in AirSpec.</p>
+override <code class="highlighter-rouge">protected def design:Design</code> or <code class="highlighter-rouge">protected def localDesign: Design</code> methods in AirSpec.</p>
 
 <h3 id="session-lifecycle">Session LifeCycle</h3>
 
@@ -246,13 +324,13 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
   <li>Create a new instance of AirSpec
     <ul>
       <li>Run <code class="highlighter-rouge">beforeAll</code></li>
-      <li>Call configure(design) to prepare a new global design</li>
+      <li>Call <code class="highlighter-rouge">design</code> to prepare a new global design</li>
       <li>Start a new global session
         <ul>
           <li>for each test method <em>m</em>:
             <ul>
               <li>Call <code class="highlighter-rouge">before</code></li>
-              <li>Call configureLocal(design) to prepare a new local design</li>
+              <li>Call <code class="highlighter-rouge">localDesign</code> to prepare a new local design</li>
               <li>Start a new local session
                 <ul>
                   <li>Call the test method <em>m</em> by building method arguments using the local session (and the global session). See also <a href="https://wvlet.org/airframe/docs/airframe.html#child-sessions">Airframe DI: Child Sessions</a> to learn more about the dependency resolution order.</li>
@@ -292,8 +370,8 @@ override <code class="highlighter-rouge">configure(Design)</code> and <code clas
 <span class="o">}</span>
 
 <span class="k">class</span> <span class="nc">ServiceSpec</span> <span class="k">extends</span> <span class="nc">AirSpec</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
-  <span class="k">override</span> <span class="k">protected</span> <span class="k">def</span> <span class="n">configure</span><span class="o">(</span><span class="n">design</span><span class="k">:</span><span class="kt">Design</span><span class="o">)</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="n">design</span>
+  <span class="k">override</span> <span class="k">protected</span> <span class="k">def</span> <span class="n">design</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="n">newDesign</span>
       <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Service</span><span class="o">].</span><span class="n">toSingleton</span>
       <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ServiceConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">ServiceConfig</span><span class="o">(</span><span class="n">port</span><span class="k">=</span><span class="mi">8080</span><span class="o">))</span>
   <span class="o">}</span>
