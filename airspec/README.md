@@ -21,7 +21,7 @@ AirSpec has nice properties for writing tests in Scala:
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
 - Scala 2.11, 2.12, 2.13, and Scala.js support
 
-AirSpec is already feature complete and ready to use in production. Actually all modules of Airframe, including AirSpec, are tested by using AirSpec.
+AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
 For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):
 - [Milestone: AirSpec 19](https://github.com/wvlet/airframe/issues/606)
 
@@ -68,12 +68,12 @@ libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)" % "test"
 testFrameworks += new TestFramework("wvlet.airspec.Framework")
 ```
 
+If you have multiple sub projects, add the above `testFramework` setting to each sub project.
+
 For Scala.js, use `%%%`:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)" % "test"
 ```
-
-If you have multiple sub projects, add the above testFramework setting to each sub-project.
 
 ## Writing Unit Tests 
 
