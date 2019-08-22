@@ -210,6 +210,9 @@ $ sbt
 > testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
 > testOnly -- (class pattern)*(pattern)  # Search both class and test names
 
+# sbt's default test functionalities:
+> testQuick                              # Run only previously failed test specs
+> testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported) 
 ```
 
 `pattern` is used for partial matching with test names. It also supports wildcard (`*`) and regular expressions (experimental).
@@ -218,7 +221,14 @@ Cases of test names will be ignored in the search.
 
 ![image](https://wvlet.org/airframe/img/airspec/airspec.png)
 
+### Disable Parallel Test Execution
 
+sbt 1.x or higher runs tests in parallel. This is fast, but it messes up console log messages.
+If you prefer sequential test execution, set `parallelExecution in Test` to false:
+
+```scala
+parallelExecution in Test := false
+```
 
 ## Dependency Injection with Airframe DI
 
@@ -303,6 +313,49 @@ This test shares the same Service instance between two test methods `test1` and 
 [info]  - test2 403.41us
 [info] Passed: Total 2, Failed 0, Errors 0, Passed 2
 ```
+
+### Pro Tips
+
+Designs of Airframe DI are useful for defining modules of your application.
+If you need to switch some implementations or configurations for your tests, override your design as shown below:
+
+```scala
+import wvlet.airframe._
+
+object AppModule {
+  // Define your application design
+  def serviceDesign: Design = {
+    newDesign
+        .bind[Service].to[ServiceImpl]
+        .bind[ServiceConfig].toInstance(new ServiceConfig(...))
+  }
+
+  // Define designs of other compoments as you need
+  def componentDesign: Design = ...
+}
+
+// Design for testing
+object AppTestModule {
+  def serviceDesignForTests: Design = {
+    AppModule.appDesign  // Reuse your application design for tests
+     .bind[ServiceConfig].toInstnce(new ServiceConfig(...)) // Override the config for tests
+  }
+}
+
+import wvlet.airspec._
+class AppTest extends AirSpec {
+  // Use the testing design
+  protected override def design = AppTestModue.serviceDesignForTests
+
+  // Inject a Service object initialized with a test configuration
+  def `start up test`(service:Service): Unit = {
+     // test your service here
+  }
+}
+```
+
+If you are already familiar to dependency injection using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html) or [Google Guice](https://github.com/google/guice), it would not be so difficult to split your application into some units of testable modules.
+ This is generally a good practice to minimize the scope of tests only for specific components.
 
 ## Reusing Test Classes
 
