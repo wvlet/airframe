@@ -62,11 +62,11 @@ In the following sections, we will see how to write tests in a Scala-friendly st
 
 To use AirSpec, add `"org.wvlet.airframe" %% "airspec"` to your test dependency and add `wvlet.airspec.Framework` as a TestFramework.
 
-**build.sbt**
-
 AirSpec uses `(year).(month).(patch)` versioning scheme. For example, version 19.8.x means a version released on August, 2019:
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/)
+
+**build.sbt**
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airspec" % "(version)" % "test"
 testFrameworks += new TestFramework("wvlet.airspec.Framework")
@@ -178,7 +178,7 @@ AirSpec supports basic assertions listed below:
 |`cancel("reason")`       | cancel the test (e.g., due to set up failure) |
 |`pending`                | pending the test execution (e.g., when hitting an unknown issue) |
 |`pendingUntil("reason")` | pending until fixing some blocking issues|
-|`skip`                   | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
+|`skip("reason")`         | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
 
 Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
