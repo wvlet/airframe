@@ -313,15 +313,15 @@ Internally this will generate <code class="highlighter-rouge">MethodSurface</cod
 <h2 id="running-tests-in-sbt">Running Tests in sbt</h2>
 
 <p>AirSpec supports pattern matching for running only specific tests:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>$ sbt
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">$</span> <span class="n">sbt</span>
 
-&gt; test                                   # Run all tests
-&gt; testOnly -- (pattern)                  # Run all test matching the pattern (class name or test name)
-&gt; testOnly -- (class pattern)*(pattern)  # Search both class and test names
+<span class="o">&gt;</span> <span class="n">test</span>                                   <span class="k">#</span> <span class="nc">Run</span> <span class="n">all</span> <span class="n">tests</span>
+<span class="o">&gt;</span> <span class="n">testOnly</span> <span class="o">--</span> <span class="o">(</span><span class="n">pattern</span><span class="o">)</span>                  <span class="k">#</span> <span class="nc">Run</span> <span class="n">all</span> <span class="n">test</span> <span class="n">matching</span> <span class="n">the</span> <span class="n">pattern</span> <span class="o">(</span><span class="k">class</span> <span class="nc">name</span> <span class="n">or</span> <span class="n">test</span> <span class="n">name</span><span class="o">)</span>
+<span class="o">&gt;</span> <span class="n">testOnly</span> <span class="o">--</span> <span class="o">(</span><span class="k">class</span> <span class="nc">pattern</span><span class="o">)*(</span><span class="n">pattern</span><span class="o">)</span>  <span class="k">#</span> <span class="nc">Search</span> <span class="n">both</span> <span class="k">class</span> <span class="nc">and</span> <span class="n">test</span> <span class="n">names</span>
 
-# sbt's default test functionalities:
-&gt; testQuick                              # Run only previously failed test specs
-&gt; testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported) 
+<span class="k">#</span> <span class="n">sbt</span><span class="ss">'s </span><span class="n">default</span> <span class="n">test</span> <span class="n">functionalities</span><span class="k">:</span>
+<span class="kt">&gt;</span> <span class="kt">testQuick</span>                              <span class="k">#</span> <span class="kt">Run</span> <span class="kt">only</span> <span class="kt">previously</span> <span class="kt">failed</span> <span class="kt">test</span> <span class="kt">specs</span>
+<span class="o">&gt;</span> <span class="n">testOnly</span> <span class="o">(</span><span class="k">class</span> <span class="nc">name</span><span class="o">)</span>                  <span class="k">#</span> <span class="nc">Run</span> <span class="n">tests</span> <span class="n">only</span> <span class="n">in</span> <span class="n">specific</span> <span class="n">classes</span> <span class="n">matching</span> <span class="n">a</span> <span class="n">pattern</span> <span class="o">(</span><span class="n">wildcard</span> <span class="n">is</span> <span class="n">supported</span><span class="o">)</span> 
 </code></pre>
 </div>
 
@@ -524,8 +524,8 @@ AirSpec. Then call AirSpecContext.run(AirSpec instance), which can be injected t
 Add <code class="highlighter-rouge">wvlet.airspec.spi.PropertyCheck</code> trait to your spec, and use <code class="highlighter-rouge">forAll</code> methods.</p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">#</span> <span class="nc">Use</span> <span class="o">%%%</span> <span class="k">for</span> <span class="nc">Scala</span><span class="o">.</span><span class="n">js</span>
-<span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.scalacheck"</span> <span class="o">%%</span> <span class="s">"scalacheck"</span> <span class="o">%</span> <span class="s">"1.14.0"</span> <span class="o">%</span> <span class="s">"test"</span>
+<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// Use %%% for Scala.js
+</span><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.scalacheck"</span> <span class="o">%%</span> <span class="s">"scalacheck"</span> <span class="o">%</span> <span class="s">"1.14.0"</span> <span class="o">%</span> <span class="s">"test"</span>
 </code></pre>
 </div>
 
