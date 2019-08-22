@@ -21,7 +21,8 @@ AirSpec has nice properties for writing tests in Scala:
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
 - Scala 2.11, 2.12, 2.13, and Scala.js support
 
-We are now planning to add some missing features (e.g., better reporting, power assertions):
+AirSpec is already feature complete and ready to use in production. Actually all modules of Airframe, including AirSpec, are tested by using AirSpec.
+For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):
 - [Milestone: AirSpec 19](https://github.com/wvlet/airframe/issues/606)
 
 
@@ -139,21 +140,21 @@ AirSpec supports basic assertions listed below:
 |__syntax__               | __meaning__ |
 |-------------------------|----------|
 |`assert(x == y)`         | check x equals to y |
-|`assertEquals(a, b, delta)` | check Float (or Double) value equality by allowing some delta difference |
+|`assertEquals(a, b, delta)` | check the equality of Float (or Double) values by allowing some delta difference |
+|`intercept[E] { ... }`   | Catch an exception of type `E` to check an expected exception is thrown |
+|`x shouldBe y`           | check x == y. This supports matching collections like Seq, Array (with deepEqual) |
+|`x shouldNotBe y`        | check x != y |
+|`x shouldNotBe null`     | shouldBe, shouldNotBe supports null check|
+|`x shouldBe defined`     | check x.isDefined == true, when x is Option or Seq |
+|`x shouldBe empty`       | check x.isEmpty == true, when x is Option or Seq |
+|`x shouldBeTheSameInstanceAs y` | check x eq y; x and y are the same object instance |
+|`x shouldNotBeTheSameInstanceAs y` | check x ne y; x and y should not be the same instance |
 |`fail("reason")`         | fail the test if this code path should not be reached  |
 |`ignore("reason")`       | ignore this test execution.  |
 |`cancel("reason")`       | cancel the test (e.g., due to set up failure) |
 |`pending`                | pending the test execution (e.g., when hitting an unknown issue) |
 |`pendingUntil("reason")` | pending until fixing some blocking issues|
 |`skip`                   | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
-|`intercept[E] { ... }`   | Catch an exception of type `E` to check an expected exception is thrown |
-|`x shouldBe y`           | check x == y. This supports matching collections like Seq, Array |
-|`x shouldNotBe y`        | check x != y |
-|`x shouldNotBe null`     | shouldBe supports null check|
-|`x shouldBe defined`     | check x.isDefined == true, when x is Option or Seq |
-|`x shouldBe empty`       | check x.isEmpty == true, when x is Option or Seq |
-|`x shouldBeTheSameInstanceAs y` | check x eq y, i.e., x and y are the same object instance |
-|`x shouldNotBeTheSameInstanceAs y` | check x ne y, x and y should not be the same instance |
 
 Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
@@ -337,7 +338,7 @@ object AppModule {
 // Design for testing
 object AppTestModule {
   def serviceDesignForTests: Design = {
-    AppModule.appDesign  // Reuse your application design for tests
+    AppModule.serviceDesign  // Reuse your application design for tests
      .bind[ServiceConfig].toInstnce(new ServiceConfig(...)) // Override the config for tests
   }
 }
