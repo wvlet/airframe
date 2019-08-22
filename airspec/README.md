@@ -28,7 +28,7 @@ For providing better testing experience, we are now planning to add more feature
 
 To start using AirSpec, read [Quick Start](#quick-start).
 
-# Background & Motivation
+## Background & Motivation
 
 In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to creating a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have [some standards for writing tests in Scala](https://github.com/scala/scala-dev/issues/641) without introducing third-party dependencies.
 
@@ -42,7 +42,7 @@ A problem here is, in order to write tests in Scala, we usually have only two ch
   - On the other hand, a minimalist approach like minitest, which uses a limited set of syntax like `asserts` and `test("....")`, is too restricted. For example, I believe assertion syntax like `x shouldBe y` is a good invention in ScalaTest to make clear the meaning of assertions to represent `(value) shoudlBe (expected value)`. In minitest `assert(x == y)` has the same meaning, but the intention of test writers is not clear because we can write it in two ways: `assert(value == expected)` or `assert(expected == value)`. Minitest also has no feature for selecting test cases to run; It only supports specifying class names to run, which is just a basic functionality of __sbt__.
   - A minimalist approach forces us to be like [Zen](https://en.wikipedia.org/wiki/Zen) mode. We can extend minitest with rich assertions, but we still need to figure out the right balance between a minimalist and developing a DSL for our own teams.
 
-## AirSpec: Writing Tests As Functions In Scala
+## AirSpec: Writing Tests As Plain Functions In Scala
 
 So where is a middle ground in-between these two extremes? We usually don't want to learn too complex DSLs, and also we don't want to be a minimalist, either.
 
@@ -99,6 +99,25 @@ class MyTest extends AirSpec {
 ```
 
 If you need to define utility methods in a class, use private or protected scope.
+
+### Scala.js
+
+To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
+ 
+```scala
+import wvlet.airspec._
+
+class ScalaJSSpec extends AirSpec {
+  // This is necessary to find test methods in Scala.js
+  scalaJsSupport
+
+  def myTest: Unit = assert(1 == 1)
+}
+```
+
+This is because Scala.js has no runtime reflection to find methods in AirSpec classes, so we need to provide method data by calling `scalaJsSupport`.
+Internally this will generate `MethodSurface`s (airframe-surface), so that AirSpec can find test methods at runtime. Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the same test spec both for Scala and Scala.js.
+
 
 ## Writing Specs In Natural Languages
 
@@ -346,7 +365,7 @@ object AppTestModule {
 import wvlet.airspec._
 class AppTest extends AirSpec {
   // Use the testing design
-  protected override def design = AppTestModue.serviceDesignForTests
+  protected override def design = AppTestModule.serviceDesignForTests
 
   // Inject a Service object initialized with a test configuration
   def `start up test`(service:Service): Unit = {
@@ -423,23 +442,3 @@ class PropertyBasedTest extends AirSpec with PropertyCheck {
   }
 }
 ```
-
-## Scala.js
-
-To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
- 
-```scala
-import wvlet.airspec._
-
-class ScalaJSSpec extends AirSpec {
-  // This is necessary to find test methods in Scala.js
-  scalaJsSupport  
-
-  def myTest: Unit = assert(1 == 1)
-}
-```
-
-This is because Scala.js has no runtime reflection to find methods in AirSpec classes, so we need to provide method data by calling `scalaJsSupport`.
-Internally this will generate `MethodSurface`s (airframe-surface), so that AirSpec can find test methods at runtime. Calling `scalaJsSupport` has no effect in Scala JVM platform, so you can use the same test spec both for Scala and Scala.js.
-
-
