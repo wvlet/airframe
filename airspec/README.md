@@ -3,6 +3,8 @@ AirSpec
 
 [AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js. 
 
+- [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/master/airspec)
+
 AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
 
 AirSpec has nice properties for writing tests in Scala:
@@ -58,9 +60,11 @@ In the following sections, we will see how to write tests in a Scala-friendly st
 
 # Quick Start
 
-To use AirSpec, add `airspec` to your test dependency and add `wvlet.airspec.Framework` as a TestFramework: 
+To use AirSpec, add `"org.wvlet.airframe" %% "airspec"` to your test dependency and add `wvlet.airspec.Framework` as a TestFramework.
 
 **build.sbt**
+
+AirSpec uses `(year).(month).(patch)` versioning scheme. For example, version 19.8.x means a version released on August, 2019:
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/)
 ```scala
@@ -73,6 +77,7 @@ If you have multiple sub projects, add the above `testFramework` setting to each
 For Scala.js, use `%%%`:
 ```scala
 libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)" % "test"
+testFrameworks += new TestFramework("wvlet.airspec.Framework")
 ```
 
 ## Writing Unit Tests 
