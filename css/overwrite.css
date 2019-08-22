@@ -2,31 +2,27 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
 p {
-  margin-top: 12px;
-  margin-bottom: 12px;
+    margin-top: 12px;
+    margin-bottom: 12px;
 }
 
 strong {
-  color: #333333;
-  font-weight: 800;
+    color: #333333;
+    font-weight: 800;
 }
 
 pre {
-  margin-top: 0px;
-  line-height: 1.4em;
-}
-
-pre .hljs {
-  padding: 10px;
+    margin-top: 0px;
+    line-height: 1.4em;
 }
 
 #page-content-wrapper section pre {
-  margin-top: 0px;
+    margin-top: 0px;
 }
 
 #page-content-wrapper section pre .hljs {
-  margin-top: 0px;
-  padding: 10px;
+    margin-top: 0px;
+    padding: 10px;
 }
 
 .jumbotron {
@@ -61,8 +57,8 @@ body {
     line-height: 1.4;
 }
 
-code, kbd,pre,samp {
-    font-family: 'Roboto Mono',Menlo,Consolas,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New,sans-serif;
+code, kbd, pre, samp {
+    font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
 }
 
 td code {
@@ -71,4 +67,78 @@ td code {
 
 .sidebar-nav > li a.active {
     background-color: #345F76;
+}
+
+pre .hljs {
+    padding: 10px;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #7b97bd;
+}
+
+/* Ocean Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+    color: #d04754;
+}
+
+/* Ocean Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+    color: #dc784c;
+}
+
+/* Ocean Yellow */
+.hljs-attribute {
+    color: #f1ce88;
+}
+
+/* Ocean Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+    color: #648c41;
+}
+
+/* Ocean Blue */
+.hljs-title,
+.hljs-section {
+    color: #2b88a9;
+}
+
+/* Ocean Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+    color: #bd67b4;
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    background: #2b303b;
+    color: #c8cdd6;
+    padding: 0.5em;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
 }
