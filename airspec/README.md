@@ -230,7 +230,7 @@ class MyTest extends AirSpec {
 ## Running Tests in sbt
 
 AirSpec supports pattern matching for running only specific tests:
-```
+```scala
 $ sbt
 
 > test                                   # Run all tests
@@ -426,7 +426,7 @@ Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` metho
 
 __build.sbt__
 ```scala
-# Use %%% for Scala.js
+// Use %%% for Scala.js
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
 ```
 
