@@ -132,7 +132,7 @@ class SeqSpec extends AirSpec {
   }
 
   // Catch an exception
-  def `throw NoSuchElementException when taking the head of an empty Set`(): Unit = {
+  def `throw NoSuchElementException when taking the head of an empty Set`: Unit = {
     intercept[NoSuchElementException] {
       Seq.empty.head
     }
@@ -177,7 +177,9 @@ AirSpec supports basic assertions listed below:
 
 Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
-### Example: shouldBe matchers
+### Examples
+
+Here are examples of using `shouldBe` matchers:
 
 ```scala
 import wvlet.airspec._
