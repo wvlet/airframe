@@ -39,7 +39,7 @@ ga('send', 'pageview');
   <li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
 </ul>
 
-<p>AirSpec is already feature complete and ready to use in production. Actually all modules of Airframe, including AirSpec, are tested by using AirSpec.
+<p>AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
 For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):</p>
 <ul>
   <li><a href="https://github.com/wvlet/airframe/issues/606">Milestone: AirSpec 19</a></li>
@@ -94,12 +94,12 @@ For providing better testing experience, we are now planning to add more feature
 </code></pre>
 </div>
 
+<p>If you have multiple sub projects, add the above <code class="highlighter-rouge">testFramework</code> setting to each sub project.</p>
+
 <p>For Scala.js, use <code class="highlighter-rouge">%%%</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airspec"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
 </code></pre>
 </div>
-
-<p>If you have multiple sub projects, add the above testFramework setting to each sub-project.</p>
 
 <h2 id="writing-unit-tests">Writing Unit Tests</h2>
 
