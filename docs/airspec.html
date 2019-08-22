@@ -10,6 +10,10 @@ ga('send', 'pageview');
 
 <p><a href="https://github.com/wvlet/airframe/tree/master/airspec">AirSpec</a> is a new functional testing framework for Scala and Scala.js.</p>
 
+<ul>
+  <li><a href="https://github.com/wvlet/airframe/tree/master/airspec">GitHub: AirSpec</a></li>
+</ul>
+
 <p>AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.</p>
 
 <p>AirSpec has nice properties for writing tests in Scala:</p>
@@ -84,11 +88,13 @@ For providing better testing experience, we are now planning to add more feature
 
 <h1 id="quick-start">Quick Start</h1>
 
-<p>To use AirSpec, add <code class="highlighter-rouge">airspec</code> to your test dependency and add <code class="highlighter-rouge">wvlet.airspec.Framework</code> as a TestFramework:</p>
+<p>To use AirSpec, add <code class="highlighter-rouge">"org.wvlet.airframe" %% "airspec"</code> to your test dependency and add <code class="highlighter-rouge">wvlet.airspec.Framework</code> as a TestFramework.</p>
 
-<p><strong>build.sbt</strong></p>
+<p>AirSpec uses <code class="highlighter-rouge">(year).(month).(patch)</code> versioning scheme. For example, version 19.8.x means a version released on August, 2019:</p>
 
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airspec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airspec_2.12/badge.svg" alt="Maven Central" /></a></p>
+
+<p><strong>build.sbt</strong></p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airspec"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
 <span class="n">testFrameworks</span> <span class="o">+=</span> <span class="k">new</span> <span class="nc">TestFramework</span><span class="o">(</span><span class="s">"wvlet.airspec.Framework"</span><span class="o">)</span>
 </code></pre>
@@ -98,6 +104,7 @@ For providing better testing experience, we are now planning to add more feature
 
 <p>For Scala.js, use <code class="highlighter-rouge">%%%</code>:</p>
 <div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airspec"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
+<span class="n">testFrameworks</span> <span class="o">+=</span> <span class="k">new</span> <span class="nc">TestFramework</span><span class="o">(</span><span class="s">"wvlet.airspec.Framework"</span><span class="o">)</span>
 </code></pre>
 </div>
 
@@ -250,7 +257,7 @@ Internally this will generate <code class="highlighter-rouge">MethodSurface</cod
       <td>pending until fixing some blocking issues</td>
     </tr>
     <tr>
-      <td><code class="highlighter-rouge">skip</code></td>
+      <td><code class="highlighter-rouge">skip("reason")</code></td>
       <td>Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)</td>
     </tr>
   </tbody>
