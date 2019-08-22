@@ -39,7 +39,8 @@ ga('send', 'pageview');
   <li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
 </ul>
 
-<p>We are now planning to add some missing features (e.g., better reporting, power assertions):</p>
+<p>AirSpec is already feature complete and ready to use in production. Actually all modules of Airframe, including AirSpec, are tested by using AirSpec.
+For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):</p>
 <ul>
   <li><a href="https://github.com/wvlet/airframe/issues/606">Milestone: AirSpec 19</a></li>
 </ul>
@@ -176,7 +177,39 @@ All <strong>public methods</strong> in the class will be executed as test cases:
     </tr>
     <tr>
       <td><code class="highlighter-rouge">assertEquals(a, b, delta)</code></td>
-      <td>check Float (or Double) value equality by allowing some delta difference</td>
+      <td>check the equality of Float (or Double) values by allowing some delta difference</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">intercept[E] { ... }</code></td>
+      <td>Catch an exception of type <code class="highlighter-rouge">E</code> to check an expected exception is thrown</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe y</code></td>
+      <td>check x == y. This supports matching collections like Seq, Array (with deepEqual)</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBe y</code></td>
+      <td>check x != y</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBe null</code></td>
+      <td>shouldBe, shouldNotBe supports null check</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe defined</code></td>
+      <td>check x.isDefined == true, when x is Option or Seq</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBe empty</code></td>
+      <td>check x.isEmpty == true, when x is Option or Seq</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldBeTheSameInstanceAs y</code></td>
+      <td>check x eq y; x and y are the same object instance</td>
+    </tr>
+    <tr>
+      <td><code class="highlighter-rouge">x shouldNotBeTheSameInstanceAs y</code></td>
+      <td>check x ne y; x and y should not be the same instance</td>
     </tr>
     <tr>
       <td><code class="highlighter-rouge">fail("reason")</code></td>
@@ -201,38 +234,6 @@ All <strong>public methods</strong> in the class will be executed as test cases:
     <tr>
       <td><code class="highlighter-rouge">skip</code></td>
       <td>Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js)</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">intercept[E] { ... }</code></td>
-      <td>Catch an exception of type <code class="highlighter-rouge">E</code> to check an expected exception is thrown</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldBe y</code></td>
-      <td>check x == y. This supports matching collections like Seq, Array</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldNotBe y</code></td>
-      <td>check x != y</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldNotBe null</code></td>
-      <td>shouldBe supports null check</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldBe defined</code></td>
-      <td>check x.isDefined == true, when x is Option or Seq</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldBe empty</code></td>
-      <td>check x.isEmpty == true, when x is Option or Seq</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldBeTheSameInstanceAs y</code></td>
-      <td>check x eq y, i.e., x and y are the same object instance</td>
-    </tr>
-    <tr>
-      <td><code class="highlighter-rouge">x shouldNotBeTheSameInstanceAs y</code></td>
-      <td>check x ne y, x and y should not be the same instance</td>
     </tr>
   </tbody>
 </table>
@@ -434,7 +435,7 @@ If you need to switch some implementations or configurations for your tests, ove
 <span class="c1">// Design for testing
 </span><span class="k">object</span> <span class="nc">AppTestModule</span> <span class="o">{</span>
   <span class="k">def</span> <span class="n">serviceDesignForTests</span><span class="k">:</span> <span class="kt">Design</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="nc">AppModule</span><span class="o">.</span><span class="n">appDesign</span>  <span class="c1">// Reuse your application design for tests
+    <span class="nc">AppModule</span><span class="o">.</span><span class="n">serviceDesign</span>  <span class="c1">// Reuse your application design for tests
 </span>     <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">ServiceConfig</span><span class="o">].</span><span class="n">toInstnce</span><span class="o">(</span><span class="k">new</span> <span class="nc">ServiceConfig</span><span class="o">(...))</span> <span class="c1">// Override the config for tests
 </span>  <span class="o">}</span>
 <span class="o">}</span>
