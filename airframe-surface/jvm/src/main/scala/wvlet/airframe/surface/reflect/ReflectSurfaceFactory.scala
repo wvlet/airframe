@@ -45,6 +45,7 @@ object ReflectSurfaceFactory extends LogSupport {
   }
 
   def of[A: ru.WeakTypeTag]: Surface = ofType(implicitly[ru.WeakTypeTag[A]].tpe)
+
   def ofType(tpe: ru.Type): Surface = {
     apply(tpe)
   }
@@ -52,6 +53,16 @@ object ReflectSurfaceFactory extends LogSupport {
     val tpe = scala.reflect.runtime.currentMirror.classSymbol(cls).toType
     ofType(tpe)
   }
+
+  def localSurfaceOf[A: ru.WeakTypeTag](context: Any): Surface = {
+    val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+    ofType(tpe) match {
+      case r: RuntimeGenericSurface =>
+        r.withOuter(context.asInstanceOf[AnyRef])
+      case other => other
+    }
+  }
+
   def findTypeOf(s: Surface): Option[ru.Type] = typeMap.get(s)
 
   def get(name: String): Surface = {
@@ -448,10 +459,16 @@ object ReflectSurfaceFactory extends LogSupport {
       override def apply(t: ru.Type): Surface = {
         val primaryConstructor = findPrimaryConstructorOf(t).get
         val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
+        val methodParams       = methodParametersOf(t, primaryConstructor)
+
+        if (!t.typeSymbol.isStatic) {
+          // t is an inner class
+
+        }
         val s = new RuntimeGenericSurface(
           resolveClass(t),
           typeArgs,
-          params = methodParametersOf(t, primaryConstructor)
+          params = methodParams
         )
         s
       }
@@ -491,10 +508,16 @@ object ReflectSurfaceFactory extends LogSupport {
   class RuntimeGenericSurface(
       override val rawType: Class[_],
       override val typeArgs: Seq[Surface] = Seq.empty,
-      override val params: Seq[Parameter] = Seq.empty
+      override val params: Seq[Parameter] = Seq.empty,
+      outer: Option[AnyRef] = None
   ) extends GenericSurface(rawType, typeArgs, params, None)
       with LogSupport {
     self =>
+
+    def withOuter(outer: AnyRef): Surface = {
+      new RuntimeGenericSurface(rawType, typeArgs, params, Some(outer))
+    }
+
     override val objectFactory: Option[ObjectFactory] = {
       if (rawType.getConstructors.isEmpty) {
         None
@@ -510,7 +533,12 @@ object ReflectSurfaceFactory extends LogSupport {
               val obj = if (args.isEmpty) {
                 primaryConstructor.newInstance()
               } else {
-                val a = args.map(_.asInstanceOf[AnyRef])
+                val argList = Seq.newBuilder[AnyRef]
+                outer.map { x =>
+                  argList += x
+                }
+                argList ++= args.map(_.asInstanceOf[AnyRef])
+                val a = argList.result()
                 logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
                 primaryConstructor.newInstance(a: _*)
               }
