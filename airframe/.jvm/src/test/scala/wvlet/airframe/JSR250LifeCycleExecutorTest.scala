@@ -16,7 +16,7 @@ package wvlet.airframe
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airspec.AirSpec
 
-trait JSR250Test {
+class JSR250Test {
   var initialized = false
   var stopped     = false
 
@@ -31,6 +31,8 @@ trait JSR250Test {
   }
 }
 
+class InheritedHookTest extends JSR250Test
+
 /**
   *
   */
@@ -39,6 +41,17 @@ class JSR250LifeCycleExecutorTest extends AirSpec {
     val s = newSilentDesign.newSession
 
     val t = s.build[JSR250Test]
+    t.initialized shouldBe true
+    t.stopped shouldBe false
+    s.start {}
+    t.initialized shouldBe true
+    t.stopped shouldBe true
+  }
+
+  def `support inherited JSR250 annotations`: Unit = {
+    val s = newSilentDesign.newSession
+
+    val t = s.build[InheritedHookTest]
     t.initialized shouldBe true
     t.stopped shouldBe false
     s.start {}
