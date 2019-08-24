@@ -564,26 +564,29 @@ object ReflectSurfaceFactory extends LogSupport {
       // Create instance with Reflection
       override def newInstance(args: Seq[Any]): Any = {
         try {
-          // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
-          val cc = rawType.getConstructors()
-          assert(cc.length > 0)
-          val primaryConstructor = cc(0)
-          val obj = if (args.isEmpty) {
-            primaryConstructor.newInstance()
-          } else {
-            val argList = Seq.newBuilder[AnyRef]
-            if (!isStatic) {
-              // Add a reference to the context instance if this surface represents an inner class
-              outerInstance.foreach { x =>
-                argList += x
+          // We should not store the primary constructor reference here to avoid including java.lang.reflect.Constructor,
+          // which is non-serializable, within this RuntimeGenericSurface class
+          getPrimaryConstructorOf(rawType)
+            .map { primaryConstructor =>
+              if (args.isEmpty) {
+                primaryConstructor.newInstance()
+              } else {
+                val argList = Seq.newBuilder[AnyRef]
+                if (!isStatic) {
+                  // Add a reference to the context instance if this surface represents an inner class
+                  outerInstance.foreach { x =>
+                    argList += x
+                  }
+                }
+                argList ++= args.map(_.asInstanceOf[AnyRef])
+                val a = argList.result()
+                logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
+                primaryConstructor.newInstance(a: _*)
               }
             }
-            argList ++= args.map(_.asInstanceOf[AnyRef])
-            val a = argList.result()
-            logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
-            primaryConstructor.newInstance(a: _*)
-          }
-          obj.asInstanceOf[Any]
+            .getOrElse {
+              throw new IllegalStateException(s"No primary constructor is found for ${rawType}")
+            }
         } catch {
           case e: InvocationTargetException =>
             logger.warn(
