@@ -27,23 +27,21 @@ so you can allocate a larger memory region than the value specified with <code c
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-canvas_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-surface_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-canvas"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-canvas"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">Canvas</code> object has various factory methods for creating canvas objects
 from scratch, or based on existing byte arrays (e.g., Array[Byte], ByteBuffer, etc.)</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.canvas.Canvas</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.canvas.Canvas</span>
 
-<span class="k">val</span> <span class="n">c</span> <span class="k">=</span> <span class="nc">Canvas</span><span class="o">.</span><span class="n">newOffHeapCanvas</span><span class="o">(</span><span class="mi">512</span><span class="o">)</span>
-<span class="n">c</span><span class="o">.</span><span class="n">writeInt</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">10</span><span class="o">)</span>
-<span class="k">val</span> <span class="n">i</span> <span class="k">=</span> <span class="n">c</span><span class="o">.</span><span class="n">readInt</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span> <span class="c1">// 10
+<span class="k">val</span> <span class="nv">c</span> <span class="k">=</span> <span class="nv">Canvas</span><span class="o">.</span><span class="py">newOffHeapCanvas</span><span class="o">(</span><span class="mi">512</span><span class="o">)</span>
+<span class="nv">c</span><span class="o">.</span><span class="py">writeInt</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">10</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">i</span> <span class="k">=</span> <span class="nv">c</span><span class="o">.</span><span class="py">readInt</span><span class="o">(</span><span class="mi">0</span><span class="o">)</span> <span class="c1">// 10
 </span>
 <span class="c1">// Release the buffer
-</span><span class="n">c</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
-</code></pre>
-</div>
+</span><span class="nv">c</span><span class="o">.</span><span class="py">close</span><span class="o">()</span>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

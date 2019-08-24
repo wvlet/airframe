@@ -12,31 +12,29 @@ ga('send', 'pageview');
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-msgpack_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-msgpack"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-msgpack"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h2 id="usage">Usage</h2>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.msgpack.spi.MessagePack</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.msgpack.spi.MessagePack</span>
 
 <span class="c1">// Create a packer for writing MessagePack values
-</span><span class="k">val</span> <span class="n">packer</span> <span class="k">=</span> <span class="nc">MessagePack</span><span class="o">.</span><span class="n">newBufferPacker</span>
+</span><span class="k">val</span> <span class="nv">packer</span> <span class="k">=</span> <span class="nv">MessagePack</span><span class="o">.</span><span class="py">newBufferPacker</span>
 
-<span class="n">packer</span><span class="o">.</span><span class="n">packInt</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
-<span class="n">packer</span><span class="o">.</span><span class="n">packString</span><span class="o">(</span><span class="s">"hello"</span><span class="o">)</span>
+<span class="nv">packer</span><span class="o">.</span><span class="py">packInt</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+<span class="nv">packer</span><span class="o">.</span><span class="py">packString</span><span class="o">(</span><span class="s">"hello"</span><span class="o">)</span>
 <span class="c1">// ...
 </span>
 <span class="c1">// Produce MessagePack byte array
-</span><span class="k">val</span> <span class="n">msgpack</span> <span class="k">=</span> <span class="n">packer</span><span class="o">.</span><span class="n">toByteArray</span>
+</span><span class="k">val</span> <span class="nv">msgpack</span> <span class="k">=</span> <span class="nv">packer</span><span class="o">.</span><span class="py">toByteArray</span>
 
 
 <span class="c1">// Create an unpacker for reading MesagePack values 
-</span><span class="k">val</span> <span class="n">unpacker</span> <span class="k">=</span> <span class="nc">MessagePack</span><span class="o">.</span><span class="n">newUnpacker</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span>
-<span class="n">unpacker</span><span class="o">.</span><span class="n">unpackInt</span> <span class="c1">// 10
-</span><span class="n">unpacker</span><span class="o">.</span><span class="n">unpackString</span> <span class="c1">// String
-</span></code></pre>
-</div>
+</span><span class="k">val</span> <span class="nv">unpacker</span> <span class="k">=</span> <span class="nv">MessagePack</span><span class="o">.</span><span class="py">newUnpacker</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span>
+<span class="nv">unpacker</span><span class="o">.</span><span class="py">unpackInt</span> <span class="c1">// 10
+</span><span class="nv">unpacker</span><span class="o">.</span><span class="py">unpackString</span> <span class="c1">// String
+</span></code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

@@ -15,87 +15,81 @@ ga('send', 'pageview');
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-control"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-control"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h3 id="control">Control</h3>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Control</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Control</span>
 
 <span class="c1">// Loan pattern
-</span><span class="nc">Control</span><span class="o">.</span><span class="n">withResource</span><span class="o">(</span><span class="k">new</span> <span class="nc">FileInputStream</span><span class="o">(</span><span class="s">"in.txt"</span><span class="o">)){</span> <span class="n">in</span> <span class="k">=&gt;</span>
+</span><span class="nv">Control</span><span class="o">.</span><span class="py">withResource</span><span class="o">(</span><span class="k">new</span> <span class="nc">FileInputStream</span><span class="o">(</span><span class="s">"in.txt"</span><span class="o">)){</span> <span class="n">in</span> <span class="k">=&gt;</span>
   <span class="o">...</span>
 <span class="o">}</span>
 
 <span class="c1">// Handle two resources
-</span><span class="nc">Control</span><span class="o">.</span><span class="n">withResources</span><span class="o">(</span>
+</span><span class="nv">Control</span><span class="o">.</span><span class="py">withResources</span><span class="o">(</span>
   <span class="k">new</span> <span class="nc">FileInputStream</span><span class="o">(</span><span class="s">"in.txt"</span><span class="o">),</span> <span class="k">new</span> <span class="nc">FileOutputStream</span><span class="o">(</span><span class="s">"out.txt"</span><span class="o">)</span>
 <span class="o">){</span> <span class="o">(</span><span class="n">in</span><span class="o">,</span> <span class="n">out</span><span class="o">)</span> <span class="k">=&gt;</span>
   <span class="o">...</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="retry">Retry</h3>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
 <span class="k">import</span> <span class="nn">java.util.concurrent.TimeoutException</span>
 
 <span class="c1">// Backoff retry
-</span><span class="k">val</span> <span class="n">r</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span>
+</span><span class="k">val</span> <span class="nv">r</span><span class="k">:</span> <span class="kt">String</span> <span class="o">=</span>
   <span class="nc">Retry</span>
-    <span class="o">.</span><span class="n">withBackOff</span><span class="o">(</span><span class="n">maxRetry</span> <span class="k">=</span> <span class="mi">3</span><span class="o">)</span>
-    <span class="o">.</span><span class="n">retryOn</span> <span class="o">{</span> 
-       <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">TimeoutException</span> <span class="o">=&gt;</span> <span class="nc">Retry</span><span class="o">.</span><span class="n">retryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+    <span class="o">.</span><span class="py">withBackOff</span><span class="o">(</span><span class="n">maxRetry</span> <span class="k">=</span> <span class="mi">3</span><span class="o">)</span>
+    <span class="o">.</span><span class="py">retryOn</span> <span class="o">{</span> 
+       <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">TimeoutException</span> <span class="o">=&gt;</span> <span class="nv">Retry</span><span class="o">.</span><span class="py">retryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
     <span class="o">}</span>
-    <span class="o">.</span><span class="n">run</span> <span class="o">{</span>
-      <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="o">(</span><span class="s">"hello retry"</span><span class="o">)</span>
-      <span class="k">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
+    <span class="o">.</span><span class="py">run</span> <span class="o">{</span>
+      <span class="nv">logger</span><span class="o">.</span><span class="py">info</span><span class="o">(</span><span class="s">"hello retry"</span><span class="o">)</span>
+      <span class="nf">if</span> <span class="o">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">{</span>
         <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">throw</span> <span class="k">new</span> <span class="nc">TimeoutException</span><span class="o">(</span><span class="s">"retry test"</span><span class="o">)</span>
       <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
         <span class="s">"success"</span>
       <span class="o">}</span>
     <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="parallel">Parallel</h3>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Parallel</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Parallel</span>
 
 <span class="c1">// Simply run a given function for each element of the source collection
-</span><span class="k">val</span> <span class="n">source</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span>
-<span class="k">val</span> <span class="n">result</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Parallel</span><span class="o">.</span><span class="n">run</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">parallelism</span> <span class="k">=</span> <span class="mi">4</span><span class="o">){</span> <span class="n">i</span> <span class="k">=&gt;</span>
+</span><span class="k">val</span> <span class="nv">source</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Seq</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">result</span><span class="k">:</span> <span class="kt">Seq</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nv">Parallel</span><span class="o">.</span><span class="py">run</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">parallelism</span> <span class="k">=</span> <span class="mi">4</span><span class="o">){</span> <span class="n">i</span> <span class="k">=&gt;</span>
   <span class="o">...</span>
 <span class="o">}</span>
 
 <span class="c1">// `Iterator` can be used instead of `Seq` as a source. This version is useful to handle a very large data.
-</span><span class="k">val</span> <span class="n">source</span><span class="k">:</span> <span class="kt">Iterator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">...</span>
-<span class="k">val</span> <span class="n">result</span><span class="k">:</span> <span class="kt">Iterator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nc">Parallel</span><span class="o">.</span><span class="n">iterate</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">parallelism</span> <span class="k">=</span> <span class="mi">4</span><span class="o">){</span> <span class="n">i</span> <span class="k">=&gt;</span>
+</span><span class="k">val</span> <span class="nv">source</span><span class="k">:</span> <span class="kt">Iterator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="o">...</span>
+<span class="k">val</span> <span class="nv">result</span><span class="k">:</span> <span class="kt">Iterator</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="k">=</span> <span class="nv">Parallel</span><span class="o">.</span><span class="py">iterate</span><span class="o">(</span><span class="n">source</span><span class="o">,</span> <span class="n">parallelism</span> <span class="k">=</span> <span class="mi">4</span><span class="o">){</span> <span class="n">i</span> <span class="k">=&gt;</span>
   <span class="o">...</span>
 <span class="o">}</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>or</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.parallel._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.parallel._</span>
 
 <span class="c1">// This syntax works for both Seq and Iterator
-</span><span class="k">val</span> <span class="n">result</span> <span class="k">=</span> <span class="n">source</span><span class="o">.</span><span class="n">parallel</span><span class="o">.</span><span class="n">withParallelism</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="n">map</span> <span class="o">{</span> <span class="n">i</span> <span class="k">=&gt;</span>
+</span><span class="k">val</span> <span class="nv">result</span> <span class="k">=</span> <span class="nv">source</span><span class="o">.</span><span class="py">parallel</span><span class="o">.</span><span class="py">withParallelism</span><span class="o">(</span><span class="mi">4</span><span class="o">).</span><span class="py">map</span> <span class="o">{</span> <span class="n">i</span> <span class="k">=&gt;</span>
   <span class="o">...</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>You can monitor metrics of parallel execution via JMX using <a href="https://github.com/wvlet/airframe/tree/master/airframe-jmx">airframe-jmx</a>.</p>
 
-<div class="highlighter-rouge"><pre class="highlight"><code>JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
+</code></pre></div></div>
 
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();

@@ -21,11 +21,10 @@ ga('send', 'pageview');
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-scalatest_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-scalatest_2.12/badge.svg" alt="Maven Central" /></a></p>
 
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-scalatest"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-scalatest"</span> <span class="o">%</span> <span class="s">"(version)"</span> <span class="o">%</span> <span class="s">"test"</span>
+</code></pre></div></div>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">package</span> <span class="nn">org.yourdomain</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">package</span> <span class="nn">org.yourdomain</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.AirframeSpec</span>
 
 <span class="k">class</span> <span class="nc">MyTest</span> <span class="k">extends</span> <span class="nc">AirframeSpec</span> <span class="o">{</span>
@@ -33,15 +32,13 @@ ga('send', 'pageview');
     <span class="c1">// ... write your test here  
 </span>  <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>To configure log-level while running tests, add <code class="highlighter-rouge">log-test.properties</code>:</p>
 
 <p><strong>src/test/resources/log-test.properties</strong></p>
-<div class="highlighter-rouge"><pre class="highlight"><code>org.yourdomain=debug
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>org.yourdomain=debug
+</code></pre></div></div>
 
 <p>This sets debug loglevel to classes under <code class="highlighter-rouge">org.yourdomain</code> package. It is recommended to add <code class="highlighter-rouge">log-test.properties</code> 
 to .gitignore as as not to share such configurations for debugging.</p>

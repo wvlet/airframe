@@ -14,43 +14,39 @@ ga('send', 'pageview');
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-json_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jmx_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-json"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-json"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h3 id="parsing-json">Parsing JSON</h3>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.json.JSON</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.json.JSON</span>
 
 <span class="c1">// Returns a JSON value object of the input JSON string 
-</span><span class="k">val</span> <span class="n">jsonValue</span> <span class="k">=</span> <span class="nc">JSON</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"""{"id":1, "name":"leo"}"""</span><span class="o">)</span>
-</code></pre>
-</div>
+</span><span class="k">val</span> <span class="nv">jsonValue</span> <span class="k">=</span> <span class="nv">JSON</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="s">"""{"id":1, "name":"leo"}"""</span><span class="o">)</span>
+</code></pre></div></div>
 
 <h3 id="mapping-json-into-object">Mapping JSON into object</h3>
 
 <p>With airframe-codec, it supports JSON to object mapping.</p>
 
 <p>Add airframe-codec to your dependency:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <p><code class="highlighter-rouge">MessageCodec</code> will create a JSON encoder and decorder for your objects:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.codec.MessageCodec</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.codec.MessageCodec</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Person</span><span class="o">(</span><span class="n">id</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
-<span class="k">val</span> <span class="n">p</span> <span class="k">=</span> <span class="nc">Person</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"leo"</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">p</span> <span class="k">=</span> <span class="nc">Person</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"leo"</span><span class="o">)</span>
 
-<span class="k">val</span> <span class="n">codec</span> <span class="k">=</span> <span class="nc">MessageCodec</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">Person</span><span class="o">]</span>
+<span class="k">val</span> <span class="nv">codec</span> <span class="k">=</span> <span class="nv">MessageCodec</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">Person</span><span class="o">]</span>
 <span class="c1">// Convert the object to JSON representation
-</span><span class="k">val</span> <span class="n">json</span> <span class="k">=</span> <span class="n">codec</span><span class="o">.</span><span class="n">toJson</span><span class="o">(</span><span class="n">p</span><span class="o">)</span> <span class="c1">// {"id":1, "name":"leo"}
+</span><span class="k">val</span> <span class="nv">json</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toJson</span><span class="o">(</span><span class="n">p</span><span class="o">)</span> <span class="c1">// {"id":1, "name":"leo"}
 </span>
 <span class="c1">// Read JSON as case class 
-</span><span class="n">codec</span><span class="o">.</span><span class="n">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span> <span class="c1">// Some(Person(1, "leo"))
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span> <span class="c1">// Some(Person(1, "leo"))
 </span>
-</code></pre>
-</div>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

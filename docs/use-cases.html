@@ -22,40 +22,38 @@ ga('send', 'pageview');
 
 <p>Configuring applications is cumbersome because you need to think about how to pass configurations to your classes. With Airframe this process becomes much simpler; Just binding configuration objects to your class:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">Config</span><span class="o">(</span><span class="n">host</span><span class="k">:</span><span class="kt">String</span><span class="o">,</span> <span class="n">port</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span>
 
 <span class="k">trait</span> <span class="nc">App</span> <span class="o">{</span>
   <span class="c1">// bind configurations
-</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">config</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">server</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="nv">config</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">]</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">server</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
 
-  <span class="k">def</span> <span class="n">run</span> <span class="o">{</span>
-    <span class="n">sever</span><span class="o">.</span><span class="n">launch</span><span class="o">(</span><span class="n">config</span><span class="o">.</span><span class="n">host</span><span class="o">,</span> <span class="n">config</span><span class="o">.</span><span class="n">port</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">run</span> <span class="o">{</span>
+    <span class="nv">sever</span><span class="o">.</span><span class="py">launch</span><span class="o">(</span><span class="nv">config</span><span class="o">.</span><span class="py">host</span><span class="o">,</span> <span class="nv">config</span><span class="o">.</span><span class="py">port</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
 
 <span class="c1">// Create a new design and add configuration
-</span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span>
+</span><span class="k">val</span> <span class="nv">d</span> <span class="k">=</span>
   <span class="n">newDesign</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">YourServer</span><span class="o">]</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">8080</span><span class="o">))</span>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">].</span><span class="py">to</span><span class="o">[</span><span class="kt">YourServer</span><span class="o">]</span>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">].</span><span class="py">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="mi">8080</span><span class="o">))</span>
 
 <span class="c1">// Start the application
-</span><span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
-  <span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
-  <span class="n">app</span><span class="o">.</span><span class="n">run</span>
+</span><span class="nv">d</span><span class="o">.</span><span class="py">withSession</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
+  <span class="k">val</span> <span class="nv">app</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
+  <span class="nv">app</span><span class="o">.</span><span class="py">run</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>To change the configuration, you only need to add another binding because bindings to the same type object can be overwritten:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="c1">// You can override Config in your test code
-</span><span class="k">val</span> <span class="n">testDesign</span> <span class="k">=</span>
-  <span class="n">d</span><span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="n">randomPort</span><span class="o">))</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// You can override Config in your test code
+</span><span class="k">val</span> <span class="nv">testDesign</span> <span class="k">=</span>
+  <span class="nv">d</span><span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Config</span><span class="o">].</span><span class="py">toInstance</span><span class="o">(</span><span class="k">new</span> <span class="nc">Config</span><span class="o">(</span><span class="s">"localhost"</span><span class="o">,</span> <span class="n">randomPort</span><span class="o">))</span>
+</code></pre></div></div>
 
 <p>Airframe has a submodule called <a href="airframe-config.html">airframe-config</a>, which is useful for 
 configuring your applications with YAML files.</p>
@@ -64,75 +62,73 @@ configuring your applications with YAML files.</p>
 
 <p>Airframe makes easier managing resources (e.g., network or database connections, thread managers, etc.) For example, if you are writing an application that requires an access to a database service. You need to establish a connection, and also need to properly close the connection after the application terminates. Airframe support such resource management using <a href="lifecicle.html">Life Cycle</a> triggers (onInit, onStart, onShutdown):</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="k">trait</span> <span class="nc">DBService</span> <span class="o">{</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">dbConfig</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBConfig</span><span class="o">]</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">connection</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBConnection</span><span class="o">]</span>
-    <span class="o">.</span><span class="n">onInit</span> <span class="o">{</span> <span class="n">c</span> <span class="k">=&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">connect</span><span class="o">(</span><span class="n">dbConfig</span><span class="o">.</span><span class="n">url</span><span class="o">,</span> <span class="n">dbConfig</span><span class="o">.</span><span class="n">user</span><span class="o">,</span> <span class="o">...</span> <span class="o">)</span> <span class="o">}</span>
-    <span class="o">.</span><span class="n">onShutdown</span> <span class="o">{</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">dbConfig</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBConfig</span><span class="o">]</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">connection</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBConnection</span><span class="o">]</span>
+    <span class="o">.</span><span class="py">onInit</span> <span class="o">{</span> <span class="n">c</span> <span class="k">=&gt;</span> <span class="nv">c</span><span class="o">.</span><span class="py">connect</span><span class="o">(</span><span class="nv">dbConfig</span><span class="o">.</span><span class="py">url</span><span class="o">,</span> <span class="nv">dbConfig</span><span class="o">.</span><span class="py">user</span><span class="o">,</span> <span class="o">...</span> <span class="o">)</span> <span class="o">}</span>
+    <span class="o">.</span><span class="py">onShutdown</span> <span class="o">{</span>
       <span class="c1">// This will be executed when session.shutdown is called
-</span>      <span class="n">c</span> <span class="k">=&gt;</span> <span class="n">c</span><span class="o">.</span><span class="n">close</span>
+</span>      <span class="n">c</span> <span class="k">=&gt;</span> <span class="nv">c</span><span class="o">.</span><span class="py">close</span>
     <span class="o">}</span>
 
-  <span class="k">def</span> <span class="n">query</span><span class="o">(</span><span class="n">sql</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="n">connection</span><span class="o">.</span><span class="n">query</span><span class="o">(</span><span class="n">sql</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">query</span><span class="o">(</span><span class="n">sql</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nv">connection</span><span class="o">.</span><span class="py">query</span><span class="o">(</span><span class="n">sql</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
 
 <span class="c1">// Using DBService. This class has no need to care about closing DB
 // connection resources because DBService will take care of it.
 </span><span class="k">trait</span> <span class="nc">App</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">dbService</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBService</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">dbService</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">DBService</span><span class="o">]</span>
 
-  <span class="n">dbService</span><span class="o">.</span><span class="n">query</span><span class="o">(</span><span class="s">"select * from tbl"</span><span class="o">)</span>
+  <span class="nv">dbService</span><span class="o">.</span><span class="py">query</span><span class="o">(</span><span class="s">"select * from tbl"</span><span class="o">)</span>
 <span class="o">}</span>
 
 <span class="c1">// Your application launcher code
-</span><span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">newDesign</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DBService</span><span class="o">].</span><span class="n">toSingleton</span> <span class="c1">// To share the connection between classes
-</span>  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">DBConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">DBConfig</span><span class="o">(</span><span class="s">"jdbc://..."</span><span class="o">,</span> <span class="s">"user name"</span><span class="o">,</span> <span class="o">...))</span>
+</span><span class="k">val</span> <span class="nv">d</span> <span class="k">=</span> <span class="n">newDesign</span>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">DBService</span><span class="o">].</span><span class="py">toSingleton</span> <span class="c1">// To share the connection between classes
+</span>  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">DBConfig</span><span class="o">].</span><span class="py">toInstance</span><span class="o">(</span><span class="nc">DBConfig</span><span class="o">(</span><span class="s">"jdbc://..."</span><span class="o">,</span> <span class="s">"user name"</span><span class="o">,</span> <span class="o">...))</span>
 
-<span class="n">d</span><span class="o">.</span><span class="n">withSession</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
+<span class="nv">d</span><span class="o">.</span><span class="py">withSession</span> <span class="o">{</span> <span class="n">session</span> <span class="k">=&gt;</span>
   <span class="c1">// db connection will be established here
-</span>  <span class="k">val</span> <span class="n">app</span> <span class="k">=</span> <span class="n">session</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
+</span>  <span class="k">val</span> <span class="nv">app</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
 <span class="o">}</span>
 <span class="c1">// database connection will be closed automatically
 </span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="factory-binding">Factory Binding</h2>
 
 <p>If you need to configure a service (e.g., port number of an web client), but you need to provide other dependencies from Airframe,
 <code class="highlighter-rouge">bindFactory[I =&gt; A]</code> can be used.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyClient</span> <span class="o">{</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">port</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="c1">// This will be overwritten by the factory
-</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">httpClientConfig</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">]</span> <span class="c1">// Use the shared instance 
-</span>  <span class="k">private</span> <span class="k">val</span> <span class="n">httpClient</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">HttpClient</span><span class="o">(</span><span class="n">port</span><span class="o">,</span> <span class="n">httpClientConfig</span><span class="o">)</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyClient</span> <span class="o">{</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">port</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Int</span><span class="o">]</span> <span class="c1">// This will be overwritten by the factory
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="nv">httpClientConfig</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">]</span> <span class="c1">// Use the shared instance 
+</span>  <span class="k">private</span> <span class="k">val</span> <span class="nv">httpClient</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">HttpClient</span><span class="o">(</span><span class="n">port</span><span class="o">,</span> <span class="n">httpClientConfig</span><span class="o">)</span>
   
   <span class="nd">@PreDestroy</span>
-  <span class="k">def</span> <span class="n">stop</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="n">httpClient</span><span class="o">.</span><span class="n">close</span><span class="o">()</span>
+  <span class="k">def</span> <span class="nf">stop</span><span class="k">:</span> <span class="kt">Unit</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nv">httpClient</span><span class="o">.</span><span class="py">close</span><span class="o">()</span>
   <span class="o">}</span>
 <span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">MyService</span> <span class="o">{</span>
   <span class="c1">// Create a factory Int =&gt; MyClient, which will override Int binding using a given parameter.
-</span>  <span class="k">val</span> <span class="n">clientFactory</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">Int</span> <span class="k">=&gt;</span> <span class="kt">MyClient</span><span class="o">]</span>
+</span>  <span class="k">val</span> <span class="nv">clientFactory</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">Int</span> <span class="k">=&gt;</span> <span class="kt">MyClient</span><span class="o">]</span>
 <span class="o">}</span>
 
 
 <span class="n">newDesign</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="nc">HttpClientConfig</span><span class="o">(</span><span class="n">useSSL</span><span class="k">=</span><span class="kc">true</span><span class="o">,</span> <span class="n">timeoutSec</span><span class="k">=</span><span class="mi">60</span><span class="o">))</span>
-  <span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">MyService</span><span class="o">]</span> <span class="o">{</span> <span class="n">s</span> <span class="k">=&gt;</span>
-    <span class="k">val</span> <span class="n">client1</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">clientFactory</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
-    <span class="k">val</span> <span class="n">client2</span> <span class="k">=</span> <span class="n">s</span><span class="o">.</span><span class="n">clientFactory</span><span class="o">(</span><span class="mi">8081</span><span class="o">)</span>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">HttpClientConfig</span><span class="o">].</span><span class="py">toInstance</span><span class="o">(</span><span class="nc">HttpClientConfig</span><span class="o">(</span><span class="n">useSSL</span><span class="k">=</span><span class="kc">true</span><span class="o">,</span> <span class="n">timeoutSec</span><span class="k">=</span><span class="mi">60</span><span class="o">))</span>
+  <span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">MyService</span><span class="o">]</span> <span class="o">{</span> <span class="n">s</span> <span class="k">=&gt;</span>
+    <span class="k">val</span> <span class="nv">client1</span> <span class="k">=</span> <span class="nv">s</span><span class="o">.</span><span class="py">clientFactory</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
+    <span class="k">val</span> <span class="nv">client2</span> <span class="k">=</span> <span class="nv">s</span><span class="o">.</span><span class="py">clientFactory</span><span class="o">(</span><span class="mi">8081</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="c1">// clients will be closed here
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 <p>In this example, port number (Int) can be provided later when instantiating MyClient. 
 HttpClientConfig instance can be shared between generated clients. 
 You can also define lifecycle hooks to MyClient, which will be added for each generated instance of MyClient.</p>
@@ -140,31 +136,30 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 <h2 id="service-mix-in">Service Mix-In</h2>
 
 <p>A traditional way of building applications is passing necessary services to a main class:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">YourService</span><span class="o">(</span><span class="n">threadPool</span><span class="k">:</span><span class="kt">ThreadPool</span><span class="o">,</span> <span class="n">s1</span><span class="k">:</span><span class="kt">Service1</span><span class="o">,</span> <span class="n">s2</span><span class="k">:</span><span class="kt">Service2</span><span class="o">,</span> <span class="o">...)</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">YourService</span><span class="o">(</span><span class="n">threadPool</span><span class="k">:</span><span class="kt">ThreadPool</span><span class="o">,</span> <span class="n">s1</span><span class="k">:</span><span class="kt">Service1</span><span class="o">,</span> <span class="n">s2</span><span class="k">:</span><span class="kt">Service2</span><span class="o">,</span> <span class="o">...)</span> <span class="o">{</span>
   <span class="o">...</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">t</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ThreadPool</span>
-<span class="k">val</span> <span class="n">s1</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Service1</span><span class="o">(...)</span>
-<span class="k">val</span> <span class="n">s2</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Service2</span><span class="o">(...)</span>
+<span class="k">val</span> <span class="nv">t</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">ThreadPool</span>
+<span class="k">val</span> <span class="nv">s1</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Service1</span><span class="o">(...)</span>
+<span class="k">val</span> <span class="nv">s2</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Service2</span><span class="o">(...)</span>
 <span class="o">...</span>
-<span class="k">val</span> <span class="n">service</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">YourService</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="n">s1</span><span class="o">,</span> <span class="n">s2</span><span class="o">,</span> <span class="o">...)</span>
-</code></pre>
-</div>
+<span class="k">val</span> <span class="nv">service</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">YourService</span><span class="o">(</span><span class="n">t</span><span class="o">,</span> <span class="n">s1</span><span class="o">,</span> <span class="n">s2</span><span class="o">,</span> <span class="o">...)</span>
+</code></pre></div></div>
 
 <p>However, this approach is not scalable if you need to use more services in your class or if you need to implement applications that require different subsets of services.</p>
 
 <p>If you write such services as <a href="http://docs.scala-lang.org/tutorials/tour/traits.html">traits</a> in Scala, it will be quite easy to compose applications that depends on many services. Here is an example of defining services using Airframe and Scala traits:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
 <span class="c1">// Define a thread pool functionality
 </span><span class="k">trait</span> <span class="nc">ThreadPool</span> <span class="o">{</span>
-  <span class="k">private</span> <span class="k">val</span> <span class="n">executorService</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">ExecutorService</span><span class="o">]</span>
-    <span class="o">.</span><span class="n">onShutdown</span><span class="o">{</span> <span class="k">_</span><span class="o">.</span><span class="n">shutdown</span> <span class="o">}</span>
+  <span class="k">private</span> <span class="k">val</span> <span class="nv">executorService</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">ExecutorService</span><span class="o">]</span>
+    <span class="o">.</span><span class="py">onShutdown</span><span class="o">{</span> <span class="nv">_</span><span class="o">.</span><span class="py">shutdown</span> <span class="o">}</span>
 
-  <span class="k">def</span> <span class="n">submit</span><span class="o">[</span><span class="kt">U</span><span class="o">](</span><span class="n">body</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">U</span><span class="o">)</span> <span class="o">{</span>
-    <span class="n">executorService</span><span class="o">.</span><span class="n">submit</span><span class="o">(</span><span class="k">new</span> <span class="nc">Runnable</span> <span class="o">{</span>
-      <span class="k">def</span> <span class="n">run</span> <span class="o">{</span> <span class="n">body</span> <span class="o">}</span>
+  <span class="k">def</span> <span class="nf">submit</span><span class="o">[</span><span class="kt">U</span><span class="o">](</span><span class="n">body</span><span class="k">:</span> <span class="o">=&gt;</span> <span class="n">U</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nv">executorService</span><span class="o">.</span><span class="py">submit</span><span class="o">(</span><span class="k">new</span> <span class="nc">Runnable</span> <span class="o">{</span>
+      <span class="k">def</span> <span class="nf">run</span> <span class="o">{</span> <span class="n">body</span> <span class="o">}</span>
     <span class="o">}</span>
   <span class="o">}</span>
 <span class="o">}</span>
@@ -172,30 +167,29 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 <span class="c1">// Instead of using constructor arguments,
 // create a service trait that binds necessary service objects
 </span><span class="k">trait</span> <span class="nc">ThreadPoolService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">threadPool</span> <span class="k">=</span> <span class="n">bindSingleton</span><span class="o">[</span><span class="kt">ThreadPool</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">threadPool</span> <span class="k">=</span> <span class="n">bindSingleton</span><span class="o">[</span><span class="kt">ThreadPool</span><span class="o">]</span>
 <span class="o">}</span>
 
 <span class="c1">// Another service
 </span><span class="k">trait</span> <span class="nc">MonitorService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">monitor</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">monitor</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">]</span>
 <span class="o">}</span>
 
 <span class="c1">// Mix-in services
 </span><span class="k">trait</span> <span class="nc">App1</span> <span class="k">extends</span> <span class="nc">ThreadPoolService</span> <span class="k">with</span> <span class="nc">MonitorService</span> <span class="o">{</span>
-  <span class="n">monitor</span><span class="o">.</span><span class="n">log</span><span class="o">(</span><span class="s">"starting app"</span><span class="o">)</span>
-  <span class="n">threadPool</span><span class="o">.</span><span class="n">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
+  <span class="nv">monitor</span><span class="o">.</span><span class="py">log</span><span class="o">(</span><span class="s">"starting app"</span><span class="o">)</span>
+  <span class="nv">threadPool</span><span class="o">.</span><span class="py">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
 <span class="o">}</span>
 
 <span class="c1">// Reuse singleton ThreadPool in another application
 </span><span class="k">trait</span> <span class="nc">App2</span> <span class="k">extends</span> <span class="nc">ThreadPoolService</span> <span class="o">{</span>
-  <span class="n">threadPool</span><span class="o">.</span><span class="n">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
+  <span class="nv">threadPool</span><span class="o">.</span><span class="py">submit</span><span class="o">(</span> <span class="o">...</span> <span class="o">)</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>In general, you can create your application with Service mix-ins as below:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">YourApp</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">YourApp</span>
  <span class="k">extends</span> <span class="nc">AService</span>
     <span class="k">with</span> <span class="nc">BService</span>
     <span class="k">with</span> <span class="nc">CDService</span>
@@ -206,51 +200,47 @@ You can also define lifecycle hooks to MyClient, which will be added for each ge
 </span><span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">AService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 <span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">BService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">b</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">b</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span>
 <span class="o">}</span>
 
 <span class="k">trait</span> <span class="nc">CDService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="n">c</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">C</span><span class="o">]</span>
-  <span class="k">val</span> <span class="n">d</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">D</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">c</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">C</span><span class="o">]</span>
+  <span class="k">val</span> <span class="nv">d</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">D</span><span class="o">]</span>
 <span class="o">}</span>
 <span class="o">...</span>
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="override-bindings">Override Bindings</h3>
 
 <p>It is also possible to manually inject an instance implementation. This is useful for changing the behavior of objects for testing:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomApp</span> <span class="k">extends</span> <span class="nc">App1</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomApp</span> <span class="k">extends</span> <span class="nc">App1</span> <span class="o">{</span>
   <span class="c1">// Manually inject an instance
-</span>  <span class="k">override</span> <span class="k">val</span> <span class="n">monitor</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">MockMonitor</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
+</span>  <span class="k">override</span> <span class="k">val</span> <span class="nv">monitor</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">MockMonitor</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>If you are using <a href="http://scalamock.org/">ScalaMock</a> or <a href="http://site.mockito.org/">Mockito</a>, you may overwrite a service with a mock (empty) implementation:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MockApp</span> <span class="k">extends</span> <span class="nc">App1</span> <span class="o">{</span>
-  <span class="k">override</span> <span class="k">val</span> <span class="n">monitor</span> <span class="k">=</span> <span class="n">mock</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">]</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MockApp</span> <span class="k">extends</span> <span class="nc">App1</span> <span class="o">{</span>
+  <span class="k">override</span> <span class="k">val</span> <span class="nv">monitor</span> <span class="k">=</span> <span class="n">mock</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">]</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Or you can use mock instance binding by extending the design:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">val</span> <span class="n">coreDesign</span> <span class="k">=</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">coreDesign</span> <span class="k">=</span>
   <span class="n">newDesign</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">MonitorImpl</span><span class="o">]</span>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">].</span><span class="py">to</span><span class="o">[</span><span class="kt">MonitorImpl</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">testDesign</span> <span class="k">=</span>
+<span class="k">val</span> <span class="nv">testDesign</span> <span class="k">=</span>
   <span class="n">coreDesign</span>
-  <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">].</span><span class="n">toInstance</span><span class="o">(</span><span class="n">mock</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">])</span>
-</code></pre>
-</div>
+  <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">].</span><span class="py">toInstance</span><span class="o">(</span><span class="n">mock</span><span class="o">[</span><span class="kt">Monitor</span><span class="o">])</span>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

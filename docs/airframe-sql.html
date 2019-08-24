@@ -13,17 +13,15 @@ ga('send', 'pageview');
 
 <p>airframe-sql is a SQL parser/lexer and model classes that follows SQL-92 standard.</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-sql"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-sql"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
 <h2 id="usage">Usage</h2>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.sql.parser.SQLParser</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.sql.parser.SQLParser</span>
 
 <span class="c1">// Parse SQL and generate a logical plan 
-</span><span class="k">val</span> <span class="n">logicalPlan</span> <span class="k">=</span> <span class="nc">SQLParser</span><span class="o">.</span><span class="n">parse</span><span class="o">(</span><span class="s">"select * from a"</span><span class="o">)</span> <span class="c1">// Project[*](Table("a")) 
-</span></code></pre>
-</div>
+</span><span class="k">val</span> <span class="nv">logicalPlan</span> <span class="k">=</span> <span class="nv">SQLParser</span><span class="o">.</span><span class="py">parse</span><span class="o">(</span><span class="s">"select * from a"</span><span class="o">)</span> <span class="c1">// Project[*](Table("a")) 
+</span></code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {

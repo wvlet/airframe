@@ -26,32 +26,30 @@ airframe-codec can convert it into integers if the target schema (e.g., objects)
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-codec_2.12/badge.svg" alt="Maven Central" /></a></p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span> <span class="o">%</span> <span class="s">"(version)"</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span> <span class="o">%</span> <span class="s">"(version)"</span>
+</code></pre></div></div>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.codec.MessageCodec</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.codec.MessageCodec</span>
 
 
 <span class="k">case</span> <span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="n">id</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span> <span class="n">name</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span>
 
 <span class="c1">// Automatically generate a codec (MessagePack-based reader/writer) for A
-</span><span class="k">val</span> <span class="n">codec</span> <span class="k">=</span> <span class="nc">MessageCodec</span><span class="o">.</span><span class="n">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+</span><span class="k">val</span> <span class="nv">codec</span> <span class="k">=</span> <span class="nv">MessageCodec</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
 
 <span class="c1">// Convert an object into msgpack binary
-</span><span class="k">val</span> <span class="n">a</span> <span class="k">=</span> <span class="n">A</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"leo"</span><span class="o">)</span>
-<span class="k">val</span> <span class="n">msgpack</span> <span class="k">=</span> <span class="n">codec</span><span class="o">.</span><span class="n">toMsgPack</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>
+</span><span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="nf">A</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"leo"</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">msgpack</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toMsgPack</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>
 
 <span class="c1">// Read msgpack data as object
-</span><span class="n">codec</span><span class="o">.</span><span class="n">unpackMsgPack</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span> <span class="c1">// Some(A(1, "leo"))
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">unpackMsgPack</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span> <span class="c1">// Some(A(1, "leo"))
 </span>
 
 <span class="c1">// Convert to JSON
-</span><span class="k">val</span> <span class="n">json</span> <span class="k">=</span> <span class="n">codec</span><span class="o">.</span><span class="n">toJson</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>   <span class="c1">//  {"id":1,"name":"leo"}
+</span><span class="k">val</span> <span class="nv">json</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toJson</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>   <span class="c1">//  {"id":1,"name":"leo"}
 </span>
-<span class="n">codec</span><span class="o">.</span><span class="n">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span>  <span class="c1">// Some(A(1, "leo"))
-</span></code></pre>
-</div>
+<span class="nv">codec</span><span class="o">.</span><span class="py">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span>  <span class="c1">// Some(A(1, "leo"))
+</span></code></pre></div></div>
 
 <ul>
   <li>To create a custom codec, use MessageCodecFactory.</li>

@@ -21,14 +21,13 @@ ga('send', 'pageview');
 
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-http-finagle_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-http-finagle_2.12/badge.svg" alt="Maven Central" /></a>
 <a href="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12"><img src="http://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-http_2.12.svg?label=scaladoc" alt="Scaladoc" /></a></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span> <span class="o">%</span> <span class="o">(</span><span class="n">version</span><span class="o">)</span>
-</code></pre>
-</div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span> <span class="o">%</span> <span class="o">(</span><span class="n">version</span><span class="o">)</span>
+</code></pre></div></div>
 
 <h2 id="defining-http-endpoints">Defining HTTP Endpoints</h2>
 
 <p><strong>MyApi.scala</strong></p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
 <span class="k">import</span> <span class="nn">com.twitter.util.Future</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.</span><span class="o">{</span><span class="nc">Endpoint</span><span class="o">,</span> <span class="nc">HttpMethod</span><span class="o">,</span> <span class="nc">HttpRequest</span><span class="o">}</span>
 
@@ -45,44 +44,42 @@ ga('send', 'pageview');
   <span class="k">import</span> <span class="nn">MyApi._</span>
 
   <span class="c1">// Binding http path parameters (e.g., :name) to method arguments
-</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/user/:name"</span><span class="o">)</span>
-  <span class="k">def</span> <span class="n">getUser</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">User</span> <span class="o">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
+</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/user/:name"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">getUser</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">User</span> <span class="o">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
 
   <span class="c1">// Receive a JSON request body {"user":"leo"} to generate NewUserRequest instance
-</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">POST</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/user"</span><span class="o">)</span>
-  <span class="k">def</span> <span class="n">createNewUser</span><span class="o">(</span><span class="n">request</span><span class="k">:</span><span class="kt">NewUserRequest</span><span class="o">)</span><span class="k">:</span> <span class="kt">User</span> <span class="o">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="n">name</span><span class="o">)</span>
+</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">POST</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/user"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">createNewUser</span><span class="o">(</span><span class="n">request</span><span class="k">:</span><span class="kt">NewUserRequest</span><span class="o">)</span><span class="k">:</span> <span class="kt">User</span> <span class="o">=</span> <span class="nc">User</span><span class="o">(</span><span class="nv">request</span><span class="o">.</span><span class="py">name</span><span class="o">)</span>
 
   <span class="c1">// To read http request headers, add a method argument of HttpRequest[Request] type
-</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info"</span><span class="o">)</span>
-  <span class="k">def</span> <span class="n">getInfo</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">ServerInfo</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">toRaw</span><span class="o">.</span><span class="n">userAgent</span><span class="o">)</span>
+</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">getInfo</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">ServerInfo</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="nv">request</span><span class="o">.</span><span class="py">toRaw</span><span class="o">.</span><span class="py">userAgent</span><span class="o">)</span>
   <span class="o">}</span>
 
   <span class="c1">// Returning Future[X] is also possible.
 </span>  <span class="c1">// This style is convenient when you need to call another service that returns Future response.
-</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info_f"</span><span class="o">)</span>
-  <span class="k">def</span> <span class="n">getInfoFuture</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">ServerInfo</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="nc">Future</span><span class="o">.</span><span class="n">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="n">request</span><span class="o">.</span><span class="n">toRaw</span><span class="o">.</span><span class="n">userAgent</span><span class="o">))</span>
+</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info_f"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">getInfoFuture</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">ServerInfo</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nv">Future</span><span class="o">.</span><span class="py">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="nv">request</span><span class="o">.</span><span class="py">toRaw</span><span class="o">.</span><span class="py">userAgent</span><span class="o">))</span>
   <span class="o">}</span>
   
   <span class="c1">// It is also possible to return a custom HTTP responses
-</span>  <span class="nd">@EndPoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/custom_response"</span><span class="o">)</span>
-  <span class="k">def</span> <span class="n">customResponse</span><span class="k">:</span> <span class="kt">Response</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="k">val</span> <span class="n">response</span> <span class="k">=</span> <span class="nc">Reponse</span><span class="o">()</span>
-    <span class="n">response</span><span class="o">.</span><span class="n">contentString</span> <span class="k">=</span> <span class="s">"hello airframe-http"</span>
+</span>  <span class="nd">@EndPoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/custom_response"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">customResponse</span><span class="k">:</span> <span class="kt">Response</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="k">val</span> <span class="nv">response</span> <span class="k">=</span> <span class="nc">Reponse</span><span class="o">()</span>
+    <span class="nv">response</span><span class="o">.</span><span class="py">contentString</span> <span class="k">=</span> <span class="s">"hello airframe-http"</span>
     <span class="n">response</span>
   <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>This <code class="highlighter-rouge">MyApi</code> defines these http end points:</p>
-<div class="highlighter-rouge"><pre class="highlight"><code>GET  /v1/user/:name    returns {"name":"..."}
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET  /v1/user/:name    returns {"name":"..."}
 POST /v1/user          returns {"name":"..."}
 GET  /v1/info          returns {"version":"1.0", "ua":"...."}
 GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Mapping between JSON values and Scala objects will be handled automatically.</p>
 
@@ -133,25 +130,24 @@ without some transformations. With MessagePack, you can send the data to the cli
 <h2 id="starting-a-finagle-http-server">Starting A Finagle HTTP Server</h2>
 
 <p>To start a server, create a finagle server design with <code class="highlighter-rouge">newFinagleServerDesign(router, port)</code>:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 <span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
 
 <span class="c1">// Define API routes. This will read all @Endpoint annotations in MyApi
 // You can add more routes by using `.add[X]` method.
-</span><span class="k">val</span> <span class="n">router</span> <span class="k">=</span> <span class="nc">Router</span><span class="o">.</span><span class="n">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
+</span><span class="k">val</span> <span class="nv">router</span> <span class="k">=</span> <span class="nv">Router</span><span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
 
-<span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+<span class="nv">design</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
   <span class="c1">// Finagle http server will start here
 </span>
   <span class="c1">// To keep runing the server, run `server.waitServerTermination`:
-</span>  <span class="n">server</span><span class="o">.</span><span class="n">waitServerTermination</span>
+</span>  <span class="nv">server</span><span class="o">.</span><span class="py">waitServerTermination</span>
 <span class="o">}</span>
 <span class="c1">// The server will terminate here
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h2 id="customizing-finagle">Customizing Finagle</h2>
 
@@ -168,56 +164,53 @@ without some transformations. With MessagePack, you can send the data to the cli
 <p>To customize Finagle server, extend FinagleServerFactory and define your own 
 server factory:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomFinagleServerFactory</span> <span class="k">extends</span> <span class="nc">FinagleServerFactory</span> <span class="o">{</span>
-  <span class="k">override</span> <span class="k">def</span> <span class="n">initServer</span><span class="o">(</span><span class="n">server</span><span class="k">:</span> <span class="kt">Http.Server</span><span class="o">)</span><span class="k">:</span> <span class="kt">Http.Server</span> <span class="o">=</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">CustomFinagleServerFactory</span> <span class="k">extends</span> <span class="nc">FinagleServerFactory</span> <span class="o">{</span>
+  <span class="k">override</span> <span class="k">def</span> <span class="nf">initServer</span><span class="o">(</span><span class="n">server</span><span class="k">:</span> <span class="kt">Http.Server</span><span class="o">)</span><span class="k">:</span> <span class="kt">Http.Server</span> <span class="o">=</span> <span class="o">{</span>
     <span class="c1">// Enable tracer for Finagle
-</span>    <span class="n">server</span><span class="o">.</span><span class="n">withTracer</span><span class="o">(</span><span class="nc">ConsoleTracer</span><span class="o">)</span>
+</span>    <span class="nv">server</span><span class="o">.</span><span class="py">withTracer</span><span class="o">(</span><span class="nc">ConsoleTracer</span><span class="o">)</span>
   <span class="o">}</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="n">design</span> <span class="k">=</span> <span class="n">newFinagleServerDesign</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my server"</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my server"</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
     <span class="c1">// Configure Finagle Server
-</span>    <span class="o">.</span><span class="n">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="n">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
+</span>    <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="py">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
 
-<span class="n">design</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span> 
+<span class="nv">design</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span> 
   <span class="c1">// The customized server will start here
 </span><span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h3 id="running-multiple-finagle-servers">Running Multiple Finagle Servers</h3>
 
 <p>Create a FinagleServerFactory, and call <code class="highlighter-rouge">newFinagleServer(FinagleServerConfig)</code>:</p>
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
-<span class="n">finagleDefaultDesign</span><span class="o">.</span><span class="n">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
- <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server1"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
- <span class="n">factory</span><span class="o">.</span><span class="n">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server2"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
+<span class="nv">finagleDefaultDesign</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
+ <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server1"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
+ <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server2"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
  <span class="c1">// Two finagle servers will start at port 8081 and 8081
 </span><span class="o">}</span>
 <span class="c1">// Two servers will be stopped after exiting the session
-</span></code></pre>
-</div>
+</span></code></pre></div></div>
 
 <h3 id="shutting-down-finagle-server">Shutting Down Finagle Server</h3>
 
 <p>Closing the current Airframe session will terminate the finagle server as well:</p>
 
-<div class="language-scala highlighter-rouge"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http._</span>
 
 <span class="k">trait</span> <span class="nc">YourApi</span> <span class="o">{</span>
    <span class="c1">// Bind the current session
-</span>   <span class="k">private</span> <span class="k">val</span> <span class="n">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>
+</span>   <span class="k">private</span> <span class="k">val</span> <span class="nv">session</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Session</span><span class="o">]</span>
 
-   <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/v1/shutdown"</span><span class="o">,</span> <span class="n">method</span><span class="k">=</span><span class="nc">HttpMethod</span><span class="o">.</span><span class="nc">POST</span><span class="o">)</span>
-   <span class="k">def</span> <span class="n">shutdown</span> <span class="o">{</span>
+   <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/v1/shutdown"</span><span class="o">,</span> <span class="n">method</span><span class="k">=</span><span class="nv">HttpMethod</span><span class="o">.</span><span class="py">POST</span><span class="o">)</span>
+   <span class="k">def</span> <span class="nf">shutdown</span> <span class="o">{</span>
      <span class="c1">// Closing the current session will terminate the FinagleServer too.
-</span>     <span class="n">session</span><span class="o">.</span><span class="n">shutdown</span>
+</span>     <span class="nv">session</span><span class="o">.</span><span class="py">shutdown</span>
    <span class="o">}</span>
 <span class="o">}</span>
-</code></pre>
-</div>
+</code></pre></div></div>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
