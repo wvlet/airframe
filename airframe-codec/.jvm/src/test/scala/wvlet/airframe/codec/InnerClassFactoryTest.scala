@@ -23,7 +23,7 @@ class InnerClassFactoryTest extends AirSpec {
 
   case class A(id: Int, name: String)
 
-  def `pass contest in Surface`: Unit = {
+  def `pass inner class context to Surface`: Unit = {
     val s = Surface.of[A]
     val a = s.objectFactory.map { x =>
       x.newInstance(Seq(1, "leo"))
@@ -31,7 +31,7 @@ class InnerClassFactoryTest extends AirSpec {
     a shouldBe Some(A(1, "leo"))
   }
 
-  def `support inner class codec`: Unit = {
+  def `support codec for inner classes`: Unit = {
     val codec   = MessageCodec.of[A]
     val a       = A(1, "leo")
     val msgpack = codec.toMsgPack(a)
