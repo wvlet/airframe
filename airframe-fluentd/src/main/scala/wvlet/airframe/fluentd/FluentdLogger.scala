@@ -14,7 +14,6 @@
 package wvlet.airframe.fluentd
 import java.time.Instant
 
-import javax.annotation.PreDestroy
 import org.komamitsu.fluency.{EventTime, Fluency}
 import wvlet.log.LogSupport
 
@@ -22,15 +21,16 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
     extends MetricLogger
     with LogSupport {
 
-  debug("Starting Fluency")
-
   override def withTagPrefix(newTagPrefix: String): FluentdLogger = {
     new FluentdLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
   }
 
-  @PreDestroy
-  def close(): Unit = {
-    debug("Stopping Fluency")
+  override def start(): Unit = {
+    debug("Starting Fluency")
+  }
+
+  override def close(): Unit = {
+    debug(s"Stopping Fluency")
     fluency.flush()
     fluency.close()
   }

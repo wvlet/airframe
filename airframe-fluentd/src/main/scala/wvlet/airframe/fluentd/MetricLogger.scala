@@ -14,7 +14,7 @@
 package wvlet.airframe.fluentd
 import java.util.concurrent.ConcurrentHashMap
 
-import javax.annotation.PreDestroy
+import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
@@ -41,6 +41,9 @@ abstract class MetricLogger extends AutoCloseable {
         s"${prefix}.${tag}"
     }
   }
+
+  @PostConstruct
+  def start(): Unit = {}
 
   @PreDestroy
   override def close(): Unit
@@ -85,6 +88,11 @@ class MetricLoggerFactory(
           new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
         }
       ).asInstanceOf[TypedMetricLogger[T]]
+  }
+
+  @PostConstruct
+  def start: Unit = {
+    debug("Starting MetricLoggerFactory")
   }
 
   @PreDestroy
