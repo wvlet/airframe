@@ -20,12 +20,9 @@ object MapConverterTest {
   case class Sample(name: String, id: Int)
 }
 
-/**
-  *
-  */
 class MapConverterTest extends AirSpec {
   def `convert to Map`: Unit = {
-    val s  = Sample("leo", 1)
+    val s  = Sample("leo", 10)
     val mc = MapConverter.of[Sample]
     val m  = mc.toMap(s)
     debug(m)
