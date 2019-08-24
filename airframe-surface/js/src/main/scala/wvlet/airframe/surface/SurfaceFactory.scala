@@ -20,6 +20,7 @@ import scala.language.experimental.macros
   */
 object SurfaceFactory {
   def of[A]: Surface = macro SurfaceMacros.of[A]
-  def localSurfaceOf[A](context: Any): Surface = ???
+  // TODO support inner clases in Scala.js
+  def localSurfaceOf[A](context: Any): Surface = macro SurfaceMacros.localSurfaceOf[A]
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }

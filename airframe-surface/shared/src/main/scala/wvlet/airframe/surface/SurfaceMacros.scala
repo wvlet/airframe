@@ -44,6 +44,11 @@ private[surface] object SurfaceMacros {
     new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)
   }
 
+  def localSurfaceOf[A: c.WeakTypeTag](c: sm.Context)(context: c.Tree): c.Tree = {
+    val targetType = implicitly[c.WeakTypeTag[A]].tpe
+    new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)
+  }
+
   def methodsOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
     new SurfaceGenerator[c.type](c).createMethodSurfaceOf(targetType)
