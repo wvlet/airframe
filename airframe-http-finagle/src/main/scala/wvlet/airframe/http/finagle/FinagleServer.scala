@@ -44,15 +44,25 @@ class FinagleServer(
 
   @PostConstruct
   def start: Unit = {
-    info(s"Starting ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
-    val customServer = initServer(Http.Server())
-    server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))
+    synchronized {
+      if (server.isEmpty) {
+        info(s"Starting ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
+        val customServer = initServer(Http.Server())
+        server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))
+      }
+    }
   }
 
   @PreDestroy
   def stop = {
-    info(s"Stopping ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
-    server.map(_.close())
+    synchronized {
+      if (server.isDefined) {
+        info(s"Stopping ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
+        server.map(x => Await.result(x.close))
+      } else {
+        None
+      }
+    }
   }
 
   override def close(): Unit = {
