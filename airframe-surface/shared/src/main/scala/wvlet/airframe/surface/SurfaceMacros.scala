@@ -24,7 +24,13 @@ private[surface] object SurfaceMacros {
   def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
-    q"wvlet.airframe.surface.SurfaceFactory.of[${targetType}]"
+    val t          = targetType.typeSymbol
+    if (t.isStatic) {
+      q"wvlet.airframe.surface.SurfaceFactory.of[${targetType}]"
+    } else {
+      // If t is non-static class (e.g., this.A), we need to pass its outer context instance (as this)
+      q"wvlet.airframe.surface.SurfaceFactory.localSurfaceOf[${targetType}](this)"
+    }
   }
 
   def methodSurfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
@@ -34,6 +40,11 @@ private[surface] object SurfaceMacros {
   }
 
   def of[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
+    val targetType = implicitly[c.WeakTypeTag[A]].tpe
+    new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)
+  }
+
+  def localSurfaceOf[A: c.WeakTypeTag](c: sm.Context)(context: c.Tree): c.Tree = {
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
     new SurfaceGenerator[c.type](c).createSurfaceOf(targetType)
   }

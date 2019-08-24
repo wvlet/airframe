@@ -11,20 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.tablet.obj
+package wvlet.airframe.codec
 
-import wvlet.airframe.tablet.obj.MapConverterTest.Sample
 import wvlet.airspec.AirSpec
 
-object MapConverterTest {
-  case class Sample(name: String, id: Int)
-}
+/**
+  *
+  */
+class InnerClassCodecTest extends AirSpec {
 
-class MapConverterTest extends AirSpec {
-  def `convert to Map`: Unit = {
-    val s  = Sample("leo", 10)
-    val mc = MapConverter.of[Sample]
-    val m  = mc.toMap(s)
-    debug(m)
+  case class A(id: Int, name: String)
+
+  def `support codec for inner classes`: Unit = {
+    val codec   = MessageCodec.of[A]
+    val a       = A(1, "leo")
+    val msgpack = codec.toMsgPack(a)
+    val a1      = codec.unpackMsgPack(msgpack)
+    a1 shouldBe Some(a)
   }
 }
