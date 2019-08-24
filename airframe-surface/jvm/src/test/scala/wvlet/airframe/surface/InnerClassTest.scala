@@ -30,7 +30,7 @@ class InnerClassTest extends AirSpec {
   }
 
   def `throw IllegalStateException when failed to find the outer class instance`: Unit = {
-    intercept[IllegalStateException] {
+    val e = intercept[IllegalStateException] {
       new {
         val s = Surface.of[A]
         s.objectFactory.map { x =>
@@ -38,5 +38,6 @@ class InnerClassTest extends AirSpec {
         }
       }
     }
+    e.getMessage.contains(s"${this.getClass.getSimpleName}") shouldBe true
   }
 }

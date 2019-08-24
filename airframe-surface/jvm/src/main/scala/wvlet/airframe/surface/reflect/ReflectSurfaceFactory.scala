@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.surface.reflect
 
-import java.lang.reflect.InvocationTargetException
+import java.lang.reflect.{Constructor, InvocationTargetException}
 import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.log.LogSupport
@@ -54,12 +54,18 @@ object ReflectSurfaceFactory extends LogSupport {
     ofType(tpe)
   }
 
-  private def getFirstParamTypeOfPrimaryConstructor(cls: Class[_]): Option[Class[_]] = {
+  private def getPrimaryConstructorOf(cls: Class[_]): Option[Constructor[_]] = {
     val constructors = cls.getConstructors
     if (constructors.size == 0) {
       None
     } else {
-      val constructorParamTypes = constructors(0).getParameterTypes
+      Some(constructors(0))
+    }
+  }
+
+  private def getFirstParamTypeOfPrimaryConstructor(cls: Class[_]): Option[Class[_]] = {
+    getPrimaryConstructorOf(cls).flatMap { constructor =>
+      val constructorParamTypes = constructor.getParameterTypes
       if (constructorParamTypes.size == 0) {
         None
       } else {
@@ -535,52 +541,71 @@ object ReflectSurfaceFactory extends LogSupport {
       new RuntimeGenericSurface(rawType, typeArgs, params, Some(outer))
     }
 
+    private class ReflectObjectFactory extends ObjectFactory {
+      private lazy val isStatic = mirror.classSymbol(rawType).isStatic
+      private def outerInstance: Option[AnyRef] = {
+        if (isStatic) {
+          None
+        } else {
+          // Inner class
+          outer.orElse {
+            val contextClass = getFirstParamTypeOfPrimaryConstructor(rawType)
+            val msg = contextClass
+              .map(x => s" Call Surface.of[${rawType.getSimpleName}] where `this` points to an instance of ${x}").getOrElse(
+                ""
+              )
+            throw new IllegalStateException(
+              s"Cannot build a non-static class ${rawType.getName}.${msg}"
+            )
+          }
+        }
+      }
+
+      // Create instance with Reflection
+      override def newInstance(args: Seq[Any]): Any = {
+        try {
+          // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
+          val cc = rawType.getConstructors()
+          assert(cc.length > 0)
+          val primaryConstructor = cc(0)
+          val obj = if (args.isEmpty) {
+            primaryConstructor.newInstance()
+          } else {
+            val argList = Seq.newBuilder[AnyRef]
+            if (!isStatic) {
+              // Add a reference to the context instance if this surface represents an inner class
+              outerInstance.foreach { x =>
+                argList += x
+              }
+            }
+            argList ++= args.map(_.asInstanceOf[AnyRef])
+            val a = argList.result()
+            logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
+            primaryConstructor.newInstance(a: _*)
+          }
+          obj.asInstanceOf[Any]
+        } catch {
+          case e: InvocationTargetException =>
+            logger.warn(
+              s"Failed to instantiate ${self}: [${e.getTargetException.getClass.getName}] ${e.getTargetException.getMessage}\nargs:[${args
+                .mkString(", ")}]"
+            )
+            throw e.getTargetException
+          case e: Throwable =>
+            logger.warn(
+              s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]"
+            )
+            throw e
+        }
+      }
+    }
+
     override val objectFactory: Option[ObjectFactory] = {
       if (rawType.getConstructors.isEmpty) {
         None
       } else {
-        Some(new ObjectFactory {
-          // Create instance with Reflection
-          override def newInstance(args: Seq[Any]): Any = {
-            try {
-              // We should find the primary constructor here to avoid including java.lang.reflect.Constructor, which is non-serializable, within Surface instance
-              val cc = rawType.getConstructors()
-              assert(cc.length > 0)
-              val primaryConstructor = cc(0)
-              val obj = if (args.isEmpty) {
-                primaryConstructor.newInstance()
-              } else {
-                val argList = Seq.newBuilder[AnyRef]
-                outer.map { x =>
-                  // Add a reference to the context instance if this surface represents an inner class
-                  argList += x
-                }
-                argList ++= args.map(_.asInstanceOf[AnyRef])
-                val a = argList.result()
-                logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
-                if (primaryConstructor.getParameterCount != a.length) {
-                  throw new IllegalStateException(s"Cannot build ${rawType.getName}, which might be an inner class")
-                }
-                primaryConstructor.newInstance(a: _*)
-              }
-              obj.asInstanceOf[Any]
-            } catch {
-              case e: InvocationTargetException =>
-                logger.warn(
-                  s"Failed to instantiate ${self}: [${e.getTargetException.getClass.getName}] ${e.getTargetException.getMessage}\nargs:[${args
-                    .mkString(", ")}]"
-                )
-                throw e.getTargetException
-              case e: Throwable =>
-                logger.warn(
-                  s"Failed to instantiate ${self}: [${e.getClass.getName}] ${e.getMessage}\nargs:[${args.mkString(", ")}]"
-                )
-                throw e
-            }
-          }
-        })
+        Some(new ReflectObjectFactory())
       }
     }
   }
-
 }
