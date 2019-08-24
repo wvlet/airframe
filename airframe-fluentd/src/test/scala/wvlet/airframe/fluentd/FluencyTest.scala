@@ -57,20 +57,18 @@ trait MockFluentd extends LogSupport {
 
   @PostConstruct
   def start: Unit = {
+    debug(s"starting MockFluentd")
     t.start()
   }
 
   @PreDestroy
   def stop: Unit = {
+    debug(s"stopping MockFluentd")
     shutdown.set(true)
     socket.close()
     t.interrupt()
   }
 
-}
-
-trait MetricLoggingService extends MockFluentd {
-  val factory = bind[MetricLoggerFactory]
 }
 
 case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
@@ -81,26 +79,28 @@ case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
   *
   */
 class FluencyTest extends AirSpec {
-  val fluentdPort = IOUtil.randomPort
+  private val fluentdPort = IOUtil.randomPort
 
-  val d = fluentd
-    .withFluentdLogger(
-      port = fluentdPort,
-      // Do not send ack for simplicity
-      ackResponseMode = false
-    )
-    .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
-    .bind[MockFluentd].toEagerSingleton
-    .noLifeCycleLogging
+  override protected val design = {
+    newDesign
+      .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
+      .bind[MockFluentd].toEagerSingleton
+      .add(
+        fluentd
+          .withFluentdLogger(
+            port = fluentdPort,
+            // Do not send ack for simplicity
+            ackResponseMode = false
+          )
+      )
+  }
 
-  def `should send metrics to fluentd through Fluency`: Unit = {
-    d.build[MetricLoggingService] { f =>
-      // Use a regular emit method
-      f.factory.getLogger.emit("mytag", Map("data" -> "hello"))
+  def `should send metrics to fluentd through Fluency`(f: MetricLoggerFactory): Unit = {
+    // Use a regular emit method
+    f.getLogger.emit("mytag", Map("data" -> "hello"))
 
-      // Use object metric logger
-      val l = f.factory.getTypedLogger[FluencyMetric]
-      l.emit(FluencyMetric(1, "leo"))
-    }
+    // Use object metric logger
+    val l = f.getTypedLogger[FluencyMetric]
+    l.emit(FluencyMetric(1, "leo"))
   }
 }
