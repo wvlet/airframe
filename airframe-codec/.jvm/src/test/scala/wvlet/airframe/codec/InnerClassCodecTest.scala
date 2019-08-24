@@ -13,23 +13,14 @@
  */
 package wvlet.airframe.codec
 
-import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class InnerClassFactoryTest extends AirSpec {
+class InnerClassCodecTest extends AirSpec {
 
   case class A(id: Int, name: String)
-
-  def `pass inner class context to Surface`: Unit = {
-    val s = Surface.of[A]
-    val a = s.objectFactory.map { x =>
-      x.newInstance(Seq(1, "leo"))
-    }
-    a shouldBe Some(A(1, "leo"))
-  }
 
   def `support codec for inner classes`: Unit = {
     val codec   = MessageCodec.of[A]
@@ -37,18 +28,5 @@ class InnerClassFactoryTest extends AirSpec {
     val msgpack = codec.toMsgPack(a)
     val a1      = codec.unpackMsgPack(msgpack)
     a1 shouldBe Some(a)
-  }
-
-  def `throw IllegalStateException when failed to find the outer class instance`: Unit = {
-    intercept[IllegalStateException] {
-      new {
-        val s = Surface.of[A]
-        val v = {
-          s.objectFactory.map { x =>
-            x.newInstance(Seq(1, "leo"))
-          }
-        }
-      }
-    }
   }
 }

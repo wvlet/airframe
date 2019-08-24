@@ -54,17 +54,31 @@ object ReflectSurfaceFactory extends LogSupport {
     ofType(tpe)
   }
 
+  private def getFirstParamTypeOfPrimaryConstructor(cls: Class[_]): Option[Class[_]] = {
+    val constructors = cls.getConstructors
+    if (constructors.size == 0) {
+      None
+    } else {
+      val constructorParamTypes = constructors(0).getParameterTypes
+      if (constructorParamTypes.size == 0) {
+        None
+      } else {
+        Some(constructorParamTypes(0))
+      }
+    }
+  }
+
   def localSurfaceOf[A: ru.WeakTypeTag](context: Any): Surface = {
     val tpe = implicitly[ru.WeakTypeTag[A]].tpe
     ofType(tpe) match {
       case r: RuntimeGenericSurface =>
-        val outerClass = r.rawType.getConstructors()(0).getParameterTypes()(0)
-        if (outerClass == context.getClass) {
-          // Add outer context class to the Surface to support Surface.objectFactory -> newInstance(outer, p1, p2, ...)
-          r.withOuter(context.asInstanceOf[AnyRef])
-        } else {
-          // In this surface, we cannot support objectFactory, but param etc. will work
-          r
+        getFirstParamTypeOfPrimaryConstructor(r.rawType) match {
+          case Some(outerClass) if outerClass == context.getClass =>
+            // Add outer context class to the Surface to support Surface.objectFactory -> newInstance(outer, p1, p2, ...)
+            r.withOuter(context.asInstanceOf[AnyRef])
+          case _ =>
+            // In this surface, we cannot support objectFactory, but param etc. will work
+            r
         }
       case other => other
     }
@@ -538,6 +552,7 @@ object ReflectSurfaceFactory extends LogSupport {
               } else {
                 val argList = Seq.newBuilder[AnyRef]
                 outer.map { x =>
+                  // Add a reference to the context instance if this surface represents an inner class
                   argList += x
                 }
                 argList ++= args.map(_.asInstanceOf[AnyRef])
