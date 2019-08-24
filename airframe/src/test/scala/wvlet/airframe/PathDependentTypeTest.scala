@@ -35,7 +35,6 @@ class PathDependentTypeTest extends AirSpec {
 }
 
 object PathDependentType {
-
   object MyBackend extends JdbcBackend
 
   trait JdbcServcie {

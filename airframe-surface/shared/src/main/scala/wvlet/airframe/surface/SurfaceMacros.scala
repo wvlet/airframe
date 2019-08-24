@@ -24,7 +24,10 @@ private[surface] object SurfaceMacros {
   def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
-    if (targetType.typeSymbol.isStatic) {
+    val t          = targetType.typeSymbol
+    // t can be an inner class (outer instance is necessary) or
+    // a path dependent type (no outer instance is necessary to use path dependent types)
+    if (t.isStatic || targetType.toString.contains("#")) {
       q"wvlet.airframe.surface.SurfaceFactory.of[${targetType}]"
     } else {
       q"wvlet.airframe.surface.SurfaceFactory.localSurfaceOf[${targetType}](this)"
