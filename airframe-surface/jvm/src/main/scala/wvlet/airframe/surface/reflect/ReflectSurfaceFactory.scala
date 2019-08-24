@@ -470,10 +470,6 @@ object ReflectSurfaceFactory extends LogSupport {
         val typeArgs           = typeArgsOf(t).map(surfaceOf(_)).toIndexedSeq
         val methodParams       = methodParametersOf(t, primaryConstructor)
 
-        if (!t.typeSymbol.isStatic) {
-          // t is an inner class
-
-        }
         val s = new RuntimeGenericSurface(
           resolveClass(t),
           typeArgs,
