@@ -20,5 +20,6 @@ import scala.language.experimental.macros
   */
 object SurfaceFactory {
   def of[A]: Surface = macro SurfaceMacros.of[A]
+  def localSurfaceOf[A](context: Any): Surface = ???
   def methodsOf[A]: Seq[MethodSurface] = macro SurfaceMacros.methodsOf[A]
 }

@@ -56,9 +56,18 @@ object ReflectSurfaceFactory extends LogSupport {
 
   def localSurfaceOf[A: ru.WeakTypeTag](context: Any): Surface = {
     val tpe = implicitly[ru.WeakTypeTag[A]].tpe
+    assert(!tpe.typeSymbol.isStatic, s"localSurfaceOf[A] should be used only for non-static types: ${tpe}")
     ofType(tpe) match {
       case r: RuntimeGenericSurface =>
-        r.withOuter(context.asInstanceOf[AnyRef])
+        val outerClass = r.rawType.getConstructors()(0).getParameterTypes()(0)
+        if (outerClass != context.getClass) {
+          throw new IllegalStateException(
+            s"Cannot create Surface.of[${tpe}] at inner classes. `this` pointer should see ${outerClass.getSimpleName}"
+          )
+        } else {
+          // Add outer context class to the Surface to support Surface.objectFactory -> newInstance(outer, p1, p2, ...)
+          r.withOuter(context.asInstanceOf[AnyRef])
+        }
       case other => other
     }
   }

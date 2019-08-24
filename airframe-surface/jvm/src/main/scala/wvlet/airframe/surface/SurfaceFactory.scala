@@ -23,7 +23,5 @@ import scala.reflect.runtime.{universe => ru}
 object SurfaceFactory {
   def of[A: ru.WeakTypeTag]: Surface                           = ReflectSurfaceFactory.of[A]
   def localSurfaceOf[A: ru.WeakTypeTag](context: Any): Surface = ReflectSurfaceFactory.localSurfaceOf[A](context)
-
-  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface] = ReflectSurfaceFactory.methodsOf[A]
-
+  def methodsOf[A: ru.WeakTypeTag]: Seq[MethodSurface]         = ReflectSurfaceFactory.methodsOf[A]
 }
