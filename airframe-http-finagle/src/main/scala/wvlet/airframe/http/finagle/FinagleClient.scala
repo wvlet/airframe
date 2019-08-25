@@ -53,8 +53,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     retryFilter andThen finagleClient.newService(address.hostAndPort)
   }
 
-  override def send(req: Request): Future[Response] = {
-    val request = config.requestFilter(req)
+  override def send(req: Request, requestFilter: Request => Request = identity): Future[Response] = {
+    // Apply the common filter in the config first, the apply the additional filter
+    val request = requestFilter(config.requestFilter(req))
     // Add HOST header if missing
     if (request.host.isEmpty) {
       request.host = address.hostAndPort
@@ -63,7 +64,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   /**
-    * Send the request without applying the requestFilter
+    * Send the request without applying any requestFilter
     */
   def sendRaw(req: Request): Future[Response] = {
     client.apply(req)
@@ -73,9 +74,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     resp.asInstanceOf[HttpResponse[Response]].toRaw
   }
 
-  override def sendSafe(req: Request): Future[Response] = {
+  override def sendSafe(req: Request, requestFilter: Request => Request = identity): Future[Response] = {
     try {
-      send(req).rescue {
+      send(req, requestFilter).rescue {
         case e: HttpClientException =>
           Future.value(toRawUnsafe(e.response))
       }
@@ -92,15 +93,10 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   /**
-    * Create a new Request by applying the requestFilter and an additional filter
+    * Create a new Request
     */
-  def newRequest(method: HttpMethod, path: String, additionalRequestFilter: Request => Request = identity): Request = {
-    var req = Request(toFinagleHttpMethod(method), path)
-    // Add common http headers
-    req = config.requestFilter(req)
-    // Add additional http headers
-    req = additionalRequestFilter(req)
-    req
+  protected def newRequest(method: HttpMethod, path: String): Request = {
+    Request(toFinagleHttpMethod(method), path)
   }
 
   /**
@@ -141,7 +137,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resourcePath: String,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
+    convert[Resource](send(newRequest(HttpMethod.GET, resourcePath), requestFilter))
   }
 
   override def getResource[ResourceRequest: ru.TypeTag, Resource: ru.TypeTag](
@@ -168,14 +164,14 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     pathWithQueryParam.append("?")
     pathWithQueryParam.append(queryParams.mkString("&"))
 
-    convert[Resource](send(newRequest(HttpMethod.GET, pathWithQueryParam.result(), requestFilter)))
+    convert[Resource](send(newRequest(HttpMethod.GET, pathWithQueryParam.result()), requestFilter))
   }
 
   override def list[OperationResponse: ru.TypeTag](
       resourcePath: String,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath, requestFilter)))
+    convert[OperationResponse](send(newRequest(HttpMethod.GET, resourcePath), requestFilter))
   }
 
   override def post[Resource: ru.TypeTag](
@@ -183,20 +179,20 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
+    val r = newRequest(HttpMethod.POST, resourcePath)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
-    convert[Resource](send(r))
+    convert[Resource](send(r, requestFilter))
   }
   override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.POST, resourcePath, requestFilter)
+    val r = newRequest(HttpMethod.POST, resourcePath)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r))
+    convert[OperationResponse](send(r, requestFilter))
   }
 
   override def put[Resource: ru.TypeTag](
@@ -204,27 +200,27 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
+    val r = newRequest(HttpMethod.PUT, resourcePath)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
-    convert[Resource](send(r))
+    convert[Resource](send(r, requestFilter))
   }
   override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath, requestFilter)
+    val r = newRequest(HttpMethod.PUT, resourcePath)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
-    convert[OperationResponse](send(r))
+    convert[OperationResponse](send(r, requestFilter))
   }
 
   override def delete[OperationResponse: ru.TypeTag](
       resourcePath: String,
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
-    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath, requestFilter)))
+    convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter))
   }
 
 }

@@ -37,12 +37,12 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
     * @throws HttpClientMaxRetryException if max retry reaches
     * @throws HttpClientException for non-retryable error is happend
     */
-  def send(req: Req): F[Resp]
+  def send(req: Req, requestFilter: Req => Req = identity): F[Resp]
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried)
     */
-  def sendSafe(req: Req): F[Resp]
+  def sendSafe(req: Req, requestFilter: Req => Req = identity): F[Resp]
 
   /**
     * Await the response and extract the return value
@@ -113,12 +113,12 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
     * @throws HttpClientMaxRetryException if max retry reaches
     * @throws HttpClientException for non-retryable error is happend
     */
-  def send(req: Req): Resp = awaitF(asyncClient.send(req))
+  def send(req: Req, requestFilter: Req => Req = identity): Resp = awaitF(asyncClient.send(req, requestFilter))
 
   /**
     * Send an HTTP request and returns a response (or the last response if the request is retried)
     */
-  def sendSafe(req: Req): Resp = awaitF(asyncClient.sendSafe(req))
+  def sendSafe(req: Req, requestFilter: Req => Req = identity): Resp = awaitF(asyncClient.sendSafe(req, requestFilter))
 
   def get[Resource: ru.TypeTag](resourcePath: String, requestFilter: Req => Req = identity): Resource = {
     awaitF(asyncClient.get[Resource](resourcePath, requestFilter))
