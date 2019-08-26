@@ -16,7 +16,7 @@ package wvlet.airframe.http.recorder
 import java.util.Locale
 
 import com.twitter.finagle.builder.ClientBuilder
-import com.twitter.finagle.http.{MediaType, Request, Response, Status}
+import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.service.RetryPolicy
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.Future
