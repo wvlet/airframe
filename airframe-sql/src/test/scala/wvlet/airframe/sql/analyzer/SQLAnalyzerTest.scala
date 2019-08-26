@@ -13,28 +13,32 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.AirframeSpec
 import wvlet.airframe.sql.catalog.Catalog.{Catalog, DbTable, TableSchema}
 import wvlet.airframe.sql.catalog.{DataType, NamedType}
+import wvlet.airspec.AirSpec
 
 /**
   *
   */
-class SQLAnalyzerTest extends AirframeSpec {
+class SQLAnalyzerTest extends AirSpec {
 
   val tbl =
-    DbTable(Some("public"),
-            "a",
-            TableSchema(
-              Seq(NamedType("id", DataType.LongType),
-                  NamedType("name", DataType.StringType),
-                  NamedType("address", DataType.StringType))))
+    DbTable(
+      Some("public"),
+      "a",
+      TableSchema(
+        Seq(
+          NamedType("id", DataType.LongType),
+          NamedType("name", DataType.StringType),
+          NamedType("address", DataType.StringType)
+        )
+      )
+    )
 
   val catalog =
     Catalog(Seq(tbl))
 
-  "resolve input/output types" in {
+  def `resolve input/output types`: Unit = {
     SQLAnalyzer.analyze("select id, name from a", "public", catalog)
   }
-
 }
