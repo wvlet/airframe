@@ -19,7 +19,8 @@ import wvlet.airspec.AirSpec
   *
   */
 class BenchmarkMainTest extends AirSpec {
-  private val iteration = if (inTravisCI) 1 else 10
+  // Never repeat test in the test.
+  private val iteration = 1
 
   // Need to run without forking the JVM process (-F 0) as sbt cannot pass proper classpath and causes
   // "Could not find or load main class org.openjdk.jmh.runner.ForkedMain" error

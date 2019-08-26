@@ -78,17 +78,19 @@ usage: bench [targetPackage]
 $ ./sbt
 
 # Run JSON benchmark:
-> benchmark/testOnly * -- "json benchmark"
+> benchmark/run bench-quick json
 
 # Run benchmark for measuring JSON parse time:
-> benchmark/testOnly * -- "json perf"
+> benchmark/run json-perf
 
 # Run Msgpack benchmark:
-> benchmark/testOnly * -- msgpack
+> benchmark/run bench-quick msgpack
 
 # Run all JMH benchmarks:
 > benchmark/run bench-quick
 ```
+
+To see more stable performance characteristics, use `bench` command, instead of `bench-quick`.
 
 ## Building The Benchmark Runner
 ```
