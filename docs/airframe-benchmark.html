@@ -85,17 +85,19 @@ usage: bench [targetPackage]
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./sbt
 
 # Run JSON benchmark:
-&gt; benchmark/testOnly * -- "json benchmark"
+&gt; benchmark/run bench-quick json
 
 # Run benchmark for measuring JSON parse time:
-&gt; benchmark/testOnly * -- "json perf"
+&gt; benchmark/run json-perf
 
 # Run Msgpack benchmark:
-&gt; benchmark/testOnly * -- msgpack
+&gt; benchmark/run bench-quick msgpack
 
 # Run all JMH benchmarks:
 &gt; benchmark/run bench-quick
 </code></pre></div></div>
+
+<p>To see more stable performance characteristics, use <code class="highlighter-rouge">bench</code> command, instead of <code class="highlighter-rouge">bench-quick</code>.</p>
 
 <h2 id="building-the-benchmark-runner">Building The Benchmark Runner</h2>
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ./sbt
