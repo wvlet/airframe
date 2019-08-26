@@ -57,7 +57,7 @@ body {
     line-height: 1.4;
 }
 
-code, kbd, pre, samp {
+code, kbd, pre, samp, table td {
     font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
 }
 
@@ -68,6 +68,13 @@ td code {
 .sidebar-nav > li a.active {
     background-color: #345F76;
 }
+
+
+table td {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
 
 pre .hljs {
     padding: 10px;
