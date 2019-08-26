@@ -5,6 +5,19 @@ title: Release Notes
 
 # Release Notes
 
+## 19.8.10
+-  airspec: synchonize logger cleanup to stabilize tests [[121ef76](https://github.com/wvlet/airframe/commit/121ef76)]
+-  airframe-http-recorder: Avoid unnecessary db update [[6353233](https://github.com/wvlet/airframe/commit/6353233)]
+-  airframe-http-client: use a consistent header customization order [#638](https://github.com/wvlet/airframe/issues/638) ([#639](https://github.com/wvlet/airframe/issues/639)) [[576b9c9](https://github.com/wvlet/airframe/commit/576b9c9)]
+-  airframe-http-finagle: Make FinagleServer start/stop idempotent ([#637](https://github.com/wvlet/airframe/issues/637)) [[bc39b75](https://github.com/wvlet/airframe/commit/bc39b75)]
+-  airframe-surface: Support inner classes ([#635](https://github.com/wvlet/airframe/issues/635)) [[112a3f9](https://github.com/wvlet/airframe/commit/112a3f9)]
+-  airframe-di: Fix [#632](https://github.com/wvlet/airframe/issues/632) to run inherited lifecycle hooks ([#633](https://github.com/wvlet/airframe/issues/633)) [[c9ccafe](https://github.com/wvlet/airframe/commit/c9ccafe)]
+internal changes:
+-  Use a black theme for source code [[c40b9c7](https://github.com/wvlet/airframe/commit/c40b9c7)]
+-  Update AirSpec doc [[7d67f5e](https://github.com/wvlet/airframe/commit/7d67f5e)]
+-  Skip benchmark test on Travis CI [[a55acb5](https://github.com/wvlet/airframe/commit/a55acb5)]
+-  Fix Fluency tests ([#636](https://github.com/wvlet/airframe/issues/636)) [[7df550b](https://github.com/wvlet/airframe/commit/7df550b)]
+
 ## 19.8.9
 -  airspec: Support AirSpec.design, localDesign ([#631](https://github.com/wvlet/airframe/issues/631)) [[dfd7a86](https://github.com/wvlet/airframe/commit/dfd7a86)]
    - This also fixes an issue in finding test methods defined in sub classes.
