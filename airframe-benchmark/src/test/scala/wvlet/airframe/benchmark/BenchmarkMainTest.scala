@@ -19,6 +19,10 @@ import wvlet.airspec.AirSpec
   *
   */
 class BenchmarkMainTest extends AirSpec {
+  if (inTravisCI) {
+    skip("Running benchmark on CI with coverage report has too much overhead")
+  }
+
   // Never repeat test in the test.
   private val iteration = 1
 

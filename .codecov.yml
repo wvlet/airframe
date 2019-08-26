@@ -11,4 +11,5 @@ coverage:
 
 ignore:
   - "**/*Macros.scala"        # Scala Macros coverage cannot be evaluated
-  - "**/[\.]?js/src/**.scala" # Scala.js code 
+  - "**/[\.]?js/src/**.scala" # Scala.js code
+  - "airframe-benchmark/**/*.scala" # Do not check benchmark code coverage
