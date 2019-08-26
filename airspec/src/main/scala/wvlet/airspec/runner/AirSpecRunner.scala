@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing.{Task, TaskDef}
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 
 import scala.util.matching.Regex
 
@@ -38,7 +38,7 @@ private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Arra
     // sbt 1.3.x's layered class loader will not clean up LogHandlers
     // registered at java.util.logging, so we need to unregister all LogHandlers implementations that
     // use airframe's code before sbt detaches the class loader
-    taskLogger.clearHandler
+    Logger.clearAllHandlers
     ""
   }
 

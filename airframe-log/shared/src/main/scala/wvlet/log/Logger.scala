@@ -110,8 +110,10 @@ class Logger(
   }
 
   def clearHandlers: Unit = {
-    for (lst <- Option(_log.getHandlers); h <- lst) {
-      _log.removeHandler(h)
+    synchronized {
+      for (lst <- Option(_log.getHandlers); h <- lst) {
+        _log.removeHandler(h)
+      }
     }
   }
 
@@ -120,10 +122,12 @@ class Logger(
     */
   def clearAllHandlers: Unit = {
     var l: Option[Logger] = Some(this)
-    while (l.isDefined) {
-      l.map { x =>
-        x.clearHandlers
-        l = x.getParent
+    synchronized {
+      while (l.isDefined) {
+        l.map { x =>
+          x.clearHandlers
+          l = x.getParent
+        }
       }
     }
   }

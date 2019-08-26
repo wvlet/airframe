@@ -19,7 +19,7 @@ import org.openjdk.jmh.runner.options.{OptionsBuilder, TimeValue}
 import wvlet.airframe.benchmark.json.JSONBenchmark
 import wvlet.airframe.launcher.{Launcher, argument, command, option}
 import wvlet.airframe.metrics.ElapsedTime
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 
 /**
   *
@@ -31,10 +31,12 @@ object BenchmarkMain {
 
   def main(argLine: String): Unit = {
     launcher.execute(argLine)
+    Logger.clearAllHandlers
   }
 
   def main(args: Array[String]): Unit = {
     launcher.execute(args)
+    Logger.clearAllHandlers
   }
 }
 
