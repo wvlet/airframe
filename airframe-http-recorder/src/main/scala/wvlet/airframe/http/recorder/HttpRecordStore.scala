@@ -37,30 +37,43 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   private def recordTableName = recorderConfig.recordTableName
 
   // Increment this value if we need to change the table format.
-  private val recordFormatVersion = 3
+  private val recordFormatVersion = 4
 
   init
 
+  private def createRecorderInfoTable: Unit = {
+    connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
+  }
+
   protected def init {
     // Support recorder version migration for persistent records
-    connectionPool.executeUpdate("create table if not exists recorder_info(format_version integer primary key)")
-    val lastVersion = connectionPool.executeQuery("select format_version from recorder_info limit 1") { handler =>
-      if (handler.next()) {
-        handler.getInt(1)
-      } else {
-        recordFormatVersion
-      }
+    createRecorderInfoTable
+    val lastVersion: Option[Int] = connectionPool.executeQuery("select format_version from recorder_info limit 1") {
+      handler =>
+        if (handler.next()) {
+          Some(handler.getInt(1))
+        } else {
+          None
+        }
     }
 
-    if (lastVersion < recordFormatVersion) {
-      warn(s"Record format version has been changed from ${lastVersion} to ${recordFormatVersion}")
+    def setVersion: Unit = {
       clearAllRecords
-      connectionPool.executeUpdate("drop table if exists recorder_info")
+      // Record the current record format version
+      connectionPool.executeUpdate(
+        s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}"
+      )
     }
-    // Record the current record format version
-    connectionPool.executeUpdate(
-      s"insert into recorder_info(format_version) values(${recordFormatVersion}) ON CONFLICT(format_version) DO UPDATE SET format_version=${recordFormatVersion}"
-    )
+
+    lastVersion match {
+      case None => setVersion
+      case Some(last) if last != recordFormatVersion =>
+        warn(s"Record format version has been changed from ${last} to ${recordFormatVersion}")
+        connectionPool.executeUpdate("drop table if exists recorder_info") // Support schema migration
+        createRecorderInfoTable
+        setVersion
+      case _ => // do nothing
+    }
 
     // Prepare a database table for recording HttpRecord
     connectionPool.executeUpdate(HttpRecord.createTableSQL(recordTableName))
