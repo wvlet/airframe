@@ -14,32 +14,33 @@
 package wvlet.airframe.json
 
 import wvlet.airframe.json.JSON._
-
 import wvlet.log.LogSupport
+
+import scala.collection.mutable._
 
 class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
 
-  override def result: JSONValue                           = null
-  override def isObjectContext: Boolean                    = false
-  override def closeContext(s: JSONSource, end: Int): Unit = {}
-  def add(v: JSONValue): Unit                              = {}
+  override def result: JSONValue        = null
+  override def isObjectContext: Boolean = false
+  override def closeContext(): Unit     = {}
+  def add(v: JSONValue): Unit           = {}
 
-  override def singleContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def singleContext(): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] var holder: JSONValue                      = _
-      override def isObjectContext                             = false
-      override def closeContext(s: JSONSource, end: Int): Unit = {}
+      private[this] var holder: JSONValue = _
+      override def isObjectContext        = false
+      override def closeContext(): Unit   = {}
       override def add(v: JSONValue): Unit = {
         holder = v
       }
       override def result: JSONValue = holder
     }
 
-  override def objectContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def objectContext()(implicit buffer: ArrayBuffer[(String, JSONValue)]): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] var key: String = null
-      private[this] val list        = Seq.newBuilder[(String, JSONValue)]
-      override def closeContext(s: JSONSource, end: Int): Unit = {
+      private[this] var key: String = _
+      buffer.clear()
+      override def closeContext(): Unit = {
         self.add(result)
       }
       override def isObjectContext: Boolean = true
@@ -47,28 +48,24 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
         if (key == null) {
           key = v.toString
         } else {
-          list += key -> v
+          buffer.append(key -> v)
           key = null
         }
       }
-      override def result: JSONValue = {
-        JSONObject(list.result())
-      }
+      override def result: JSONValue = JSONObject(buffer.toList)
     }
 
-  override def arrayContext(s: JSONSource, start: Int): JSONContext[JSONValue] =
+  override def arrayContext()(implicit buffer: ArrayBuffer[JSONValue]): JSONContext[JSONValue] =
     new JSONValueBuilder {
-      private[this] val list                = IndexedSeq.newBuilder[JSONValue]
+      buffer.clear()
       override def isObjectContext: Boolean = false
-      override def closeContext(s: JSONSource, end: Int): Unit = {
+      override def closeContext(): Unit = {
         self.add(result)
       }
       override def add(v: JSONValue): Unit = {
-        list += v
+        buffer.append(v)
       }
-      override def result: JSONValue = {
-        JSONArray(list.result())
-      }
+      override def result: JSONValue = JSONArray(buffer.toList)
     }
 
   override def addNull(s: JSONSource, start: Int, end: Int): Unit = {
@@ -80,17 +77,16 @@ class JSONValueBuilder extends JSONContext[JSONValue] with LogSupport { self =>
   override def addUnescapedString(s: String): Unit = {
     add(JSONString(s))
   }
-  override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
-    val v = s.substring(start, end)
+  override def addNumber(str: String, dotIndex: Int, expIndex: Int): Unit = {
     val num: JSONNumber = if (dotIndex >= 0 || expIndex >= 0) {
-      JSONDouble(v.toDouble)
+      JSONDouble(str.toDouble)
     } else {
       try {
-        JSONLong(v.toLong)
+        JSONLong(str.toLong)
       } catch {
         case _: NumberFormatException =>
           // JSON is not suited to representing scientific values.
-          throw IntegerOverflow(BigInt(v).bigInteger)
+          throw IntegerOverflow(BigInt(str).bigInteger)
       }
     }
     add(num)
