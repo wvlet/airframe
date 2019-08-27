@@ -76,7 +76,12 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
               case None =>
                 if (adapter.methodOf(request) == HttpMethod.GET) {
                   // Build the method argument instance from the query strings for GET requests
-                  argCodec.unpackMsgPack(queryParamMsgpack)
+                  requestParams.get(arg.name) match {
+                    case Some(x) =>
+                      argCodec.unpackMsgPack(StringCodec.toMsgPack(x)).orElse(arg.getDefaultValue)
+                    case None =>
+                      argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
+                  }
                 } else {
                   // Build the method argument instance from the content body for non GET requests
                   val contentBytes = adapter.contentBytesOf(request)
@@ -111,7 +116,9 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             v.getOrElse(Zero.zeroOf(arg.surface))
         }
       }
-    trace(s"(${methodSurface.args.mkString(", ")}) <=  [${methodArgs.mkString(", ")}]")
+    trace(
+      s"Method Binding: ${methodSurface.name}(${methodSurface.args.mkString(", ")}) <= [${methodArgs.mkString(", ")}]"
+    )
     methodArgs
   }
 
