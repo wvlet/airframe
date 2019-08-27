@@ -16,7 +16,7 @@ import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
-import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.airframe.surface.{OptionSurface, Surface, Zero}
 import wvlet.log.LogSupport
 
 import scala.util.Try
@@ -60,7 +60,8 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     // Build the function arguments
     val methodArgs: Seq[Any] =
       for (arg <- methodSurface.args) yield {
-        arg.surface.rawType match {
+        val argSurface = arg.surface
+        argSurface.rawType match {
           case cl if classOf[HttpRequest[_]].isAssignableFrom(cl) =>
             // Bind the current http request instance
             adapter.httpRequestOf(request)
@@ -68,7 +69,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             request
           case _ =>
             // Build from the string value in the request params
-            val argCodec = MessageCodecFactory.defaultFactory.of(arg.surface)
+            val argCodec = MessageCodecFactory.defaultFactory.of(argSurface)
             val v: Option[Any] = requestParams.get(arg.name) match {
               case Some(paramValue) =>
                 // Pass the String parameter to the method argument
@@ -76,7 +77,19 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
               case None =>
                 if (adapter.methodOf(request) == HttpMethod.GET) {
                   // Build the method argument instance from the query strings for GET requests
-                  argCodec.unpackMsgPack(queryParamMsgpack)
+                  requestParams.get(arg.name) match {
+                    case Some(x) =>
+                      argCodec.unpackMsgPack(StringCodec.toMsgPack(x)).orElse(arg.getDefaultValue)
+                    case None =>
+                      argSurface match {
+                        case _ if argSurface.isPrimitive =>
+                          arg.getDefaultValue
+                        case o: OptionSurface if o.elementSurface.isPrimitive =>
+                          arg.getDefaultValue
+                        case _ =>
+                          argCodec.unpackMsgPack(queryParamMsgpack).orElse(arg.getDefaultValue)
+                      }
+                  }
                 } else {
                   // Build the method argument instance from the content body for non GET requests
                   val contentBytes = adapter.contentBytesOf(request)
@@ -111,7 +124,10 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
             v.getOrElse(Zero.zeroOf(arg.surface))
         }
       }
-    trace(s"(${methodSurface.args.mkString(", ")}) <=  [${methodArgs.mkString(", ")}]")
+    trace(
+      s"Method binding for request ${adapter.pathOf(request)}: ${methodSurface.name}(${methodSurface.args
+        .mkString(", ")}) <= [${methodArgs.mkString(", ")}]"
+    )
     methodArgs
   }
 

@@ -245,7 +245,7 @@ object FinagleClient extends LogSupport {
   def newSyncClient(
       hostAndPort: String,
       config: FinagleClientConfig = defaultConfig
-  ): HttpSyncClient[Future, http.Request, http.Response] = {
+  ): FinagleSyncClient = {
     new FinagleClient(address = ServerAddress(hostAndPort), config).syncClient
   }
 }
