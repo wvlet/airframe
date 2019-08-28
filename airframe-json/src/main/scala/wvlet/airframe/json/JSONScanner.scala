@@ -563,7 +563,6 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
         cursor += 1
       case 'u' =>
         cursor += 1
-        val start   = cursor
         val hexCode = scanHex(4, 0).toChar
         sb.append(hexCode)
       case _ =>
@@ -573,17 +572,17 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
 
   @tailrec
   private def scanHex(n: Int, code: Int): Int = {
-    if (n > 0) {
+    if (n == 0) {
+      code
+    } else {
       val ch = s(cursor)
       if ((ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') || (ch >= '0' && ch <= '9')) {
         // OK
         cursor += 1
-        scanHex(n - 1, (code << 8) | HexChars(ch))
+        scanHex(n - 1, (code << 4) | HexChars(ch))
       } else {
         throw unexpected("hex")
       }
-    } else {
-      code
     }
   }
 }

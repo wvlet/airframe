@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.json
 
 import wvlet.airframe.json.JSON
 import wvlet.airframe.json.JSON.{JSONArray, JSONBoolean, JSONNull, JSONNumber, JSONObject, JSONString, JSONValue}
-import wvlet.airframe.msgpack.spi.{MessagePack, Value}
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
 import wvlet.log.io.IOUtil
 
@@ -24,14 +24,17 @@ import wvlet.log.io.IOUtil
   */
 class JSONToMessagePackConverterTest extends AirSpec {
 
-  private def msgpackToJson(msgpack: Array[Byte]): JSONValue = {
-    val v = IOUtil.withResource(MessagePack.newUnpacker(msgpack)) { unpacker =>
-      unpacker.unpackValue
+  protected def msgpackToJson(msgpack: Array[Byte]): JSONValue = {
+    val unpacker = MessagePack.newUnpacker(msgpack)
+    try {
+      val v = unpacker.unpackValue
+      JSON.parse(v.toJson)
+    } finally {
+      unpacker.close()
     }
-    JSON.parse(v.toJson)
   }
 
-  private def deepEqual(a: JSONValue, b: JSONValue): Unit = {
+  protected def deepEqual(a: JSONValue, b: JSONValue): Unit = {
     (a, b) match {
       case (JSONNull, JSONNull) =>
       // ok
@@ -68,10 +71,11 @@ class JSONToMessagePackConverterTest extends AirSpec {
   }
 
   def `convert twitter.json to MsgPack`: Unit = {
-    val json    = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
-    val msgpack = MessagePack.fromJSON(json)
-    val result  = msgpackToJson(msgpack)
-    deepEqual(result, JSON.parse(json))
+    val json      = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
+    val jsonValue = JSON.parse(json)
+    val msgpack   = MessagePack.fromJSON(json)
+    val result    = msgpackToJson(msgpack)
+    deepEqual(result, jsonValue)
   }
 
 }
