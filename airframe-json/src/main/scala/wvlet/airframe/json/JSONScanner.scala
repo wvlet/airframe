@@ -451,7 +451,6 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
   }
 
   private final def scanString(ctx: JSONContext[J]): Unit = {
-    sb.clear()
     cursor += 1
     val stringStart = cursor
     val k           = scanSimpleString
@@ -461,6 +460,7 @@ class JSONScanner[J](private[this] val s: JSONSource, private[this] val handler:
       return
     }
 
+    sb.clear()
     var continue = true
     while (continue) {
       val ch = s(cursor)

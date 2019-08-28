@@ -28,7 +28,6 @@ class JSONToMessagePackConverterTest extends AirSpec {
     val v = IOUtil.withResource(MessagePack.newUnpacker(msgpack)) { unpacker =>
       unpacker.unpackValue
     }
-    trace(v.toJson)
     JSON.parse(v.toJson)
   }
 
@@ -37,7 +36,9 @@ class JSONToMessagePackConverterTest extends AirSpec {
       case (JSONNull, JSONNull) =>
       // ok
       case (a: JSONString, b: JSONString) =>
-        a shouldBe b
+        if (a.v != b.v) {
+          warn(s"match failure:\n${a}\n-----\n${b}")
+        }
       case (a: JSONNumber, b: JSONNumber) =>
         a shouldBe b
       case (a: JSONBoolean, b: JSONBoolean) =>

@@ -19,6 +19,7 @@ import java.time.Instant
 import java.util
 
 import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.log.LogSupport
 
 /**
   *
@@ -252,7 +253,7 @@ object Value {
     }
   }
 
-  private def appendJsonString(sb: StringBuilder, string: String): Unit = {
+  private[spi] def appendJsonString(sb: StringBuilder, string: String): Unit = {
     sb.append("\"")
     var i = 0
     while (i < string.length) {
@@ -293,9 +294,9 @@ object Value {
     sb.append("\"")
   }
 
-  private val HEX_TABLE = "0123456789ABCDEF".toCharArray
+  private final val HEX_TABLE = "0123456789abcdef".toCharArray
 
-  private def escapeChar(sb: StringBuilder, ch: Int): Unit = {
+  private[spi] def escapeChar(sb: StringBuilder, ch: Int): Unit = {
     sb.append("\\u")
     sb.append(HEX_TABLE((ch >> 12) & 0x0f))
     sb.append(HEX_TABLE((ch >> 8) & 0x0f))

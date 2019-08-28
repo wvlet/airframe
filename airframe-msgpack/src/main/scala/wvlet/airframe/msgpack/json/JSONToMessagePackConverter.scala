@@ -57,7 +57,9 @@ class JSONToMessagePackConverterContext extends JSONContext[Seq[MsgPack]] with L
   override def closeContext(s: JSONSource, end: Int): Unit          = {}
   override def addNull(s: JSONSource, start: Int, end: Int): Unit   = packer.packNil
   override def addString(s: JSONSource, start: Int, end: Int): Unit = packer.packString(s.substring(start, end))
-  override def addUnescapedString(s: String): Unit                  = packer.packString(s)
+  override def addUnescapedString(s: String): Unit = {
+    packer.packString(s)
+  }
   override def addNumber(s: JSONSource, start: Int, end: Int, dotIndex: Int, expIndex: Int): Unit = {
     val v = s.substring(start, end)
     if (dotIndex >= 0 || expIndex >= 0) {
