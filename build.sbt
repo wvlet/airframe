@@ -548,7 +548,7 @@ lazy val msgpack =
       jsBuildSettings,
       libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5"
     )
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, json, airspecRef % "test")
 
 lazy val msgpackJVM = msgpack.jvm
 lazy val msgpackJS  = msgpack.js
