@@ -15,6 +15,7 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicReference
 
+import wvlet.airframe.CloseableLifeCycleHookFinder.CloseHook
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.Tracer
 import wvlet.log.{LogSupport, Logger}
@@ -92,17 +93,23 @@ class LifeCycleManager(
   def preShutdownHooks: Seq[LifeCycleHook] = preShutdownHookHolder.list
   def shutdownHooks: Seq[LifeCycleHook]    = shutdownHookHolder.list
 
-  protected def addHook(h: LifeCycleHook)(body: LifeCycleManager => Unit): Unit = {
+  protected def findLifeCycleManagerFor[U](s: Surface)(body: LifeCycleManager => U): U = {
     // Adding a lifecycle hook in the owner session
-    session.findOwnerSessionOf(h.surface) match {
+    session.findOwnerSessionOf(s) match {
       case Some(s) => body(s.lifeCycleManager)
       case None    => body(this)
     }
   }
 
+  private[airframe] def hasShutdownHooksFor(s: Surface): Boolean = {
+    findLifeCycleManagerFor(s) { l =>
+      l.shutdownHookHolder.hasHooksFor(s)
+    }
+  }
+
   def addInitHook(h: LifeCycleHook): Unit = {
-    addHook(h) { l =>
-      if (l.initHookHolder.isFirstRegistration(h)) {
+    findLifeCycleManagerFor(h.surface) { l =>
+      if (l.initHookHolder.registerOnlyOnce(h)) {
         debug(s"[${l.sessionName}] Add an init hook: ${h.surface}")
         h.execute
       } else {
@@ -112,7 +119,7 @@ class LifeCycleManager(
   }
 
   def addInjectHook(h: LifeCycleHook): Unit = {
-    addHook(h) { l =>
+    findLifeCycleManagerFor(h.surface) { l =>
       debug(s"[${l.sessionName}] Running an inject hook: ${h.surface}")
       // Run immediately
       h.execute
@@ -120,9 +127,9 @@ class LifeCycleManager(
   }
 
   def addStartHook(h: LifeCycleHook): Unit = {
-    addHook(h) { l =>
+    findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.startHookHolder.isFirstRegistration(h)) {
+        if (l.startHookHolder.registerOnlyOnce(h)) {
           debug(s"[${l.sessionName}] Add a start hook for ${h.surface}")
           val s = l.state.get
           if (s == STARTED) {
@@ -136,9 +143,9 @@ class LifeCycleManager(
   }
 
   def addPreShutdownHook(h: LifeCycleHook): Unit = {
-    addHook(h) { l =>
+    findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.preShutdownHookHolder.isFirstRegistration(h)) {
+        if (l.preShutdownHookHolder.registerOnlyOnce(h)) {
           debug(s"[${l.sessionName}] Add a pre-shutdown hook for ${h.surface}")
         }
       }
@@ -146,10 +153,22 @@ class LifeCycleManager(
   }
 
   def addShutdownHook(h: LifeCycleHook): Unit = {
-    addHook(h) { l =>
+    findLifeCycleManagerFor(h.surface) { l =>
       l.synchronized {
-        if (l.shutdownHookHolder.isFirstRegistration(h)) {
+        if (l.shutdownHookHolder.registerOnlyOnce(h)) {
           debug(s"[${l.sessionName}] Add a shutdown hook for ${h.surface}")
+        } else {
+          // Override CloseHooks
+          val previousHooks = l.shutdownHookHolder.hooksFor(h.injectee)
+          previousHooks
+            .collect { case c: CloseHook => c }
+            .foreach { c =>
+              // Any custom shutdown hooks precede CloseHook
+              l.shutdownHookHolder.remove(c)
+            }
+          if (l.shutdownHookHolder.registerOnlyOnce(h)) {
+            debug(s"[${l.sessionName}] Override CloseHook of ${h.surface} with a shtudown hook")
+          }
         }
       }
     }
@@ -161,10 +180,28 @@ object LifeCycleManager {
   private[airframe] class LifeCycleHookHolder(private var holder: Vector[LifeCycleHook] = Vector.empty) {
     def list: Seq[LifeCycleHook] = holder
 
+    def hasHooksFor(s: Surface): Boolean = {
+      synchronized {
+        list.exists(_.surface == s)
+      }
+    }
+
+    def remove(x: LifeCycleHook): Unit = {
+      synchronized {
+        holder = holder.filter(_ ne x)
+      }
+    }
+
+    def hooksFor(x: Injectee): Seq[LifeCycleHook] = {
+      synchronized {
+        list.filter(_.injectee == x)
+      }
+    }
+
     /**
       *  Return true if it is not yet registered
       */
-    def isFirstRegistration(x: LifeCycleHook): Boolean = {
+    def registerOnlyOnce(x: LifeCycleHook): Boolean = {
       synchronized {
         if (list.exists(_.injectee == x.injectee)) {
           false
@@ -178,7 +215,9 @@ object LifeCycleManager {
   }
 
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
-    FILOLifeCycleHookExecutor andThen JSR250LifeCycleExecutor
+    FILOLifeCycleHookExecutor andThen
+      JSR250LifeCycleExecutor andThen
+      CloseableLifeCycleHookFinder // This lifecycle must be the last one to check any preceding shutdown hooks
 }
 
 object ShowLifeCycleLog extends LifeCycleEventHandler {
@@ -224,9 +263,9 @@ object ShowDebugLifeCycleLog extends LifeCycleEventHandler {
 /**
   * First In, Last Out (FILO) hook executor.
   *
-  * If objects are injected in A -> B -> C order, init an shutdown orders will be:
-  * init => A -> B -> C
-  * shutdown order => C -> B -> A
+  * If objects are injected in A -> B -> C order, the init and shutdown orders will be as follows:
+  * init hook call order: A -> B -> C
+  * shutdown hook call order: C -> B -> A
   */
 object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
@@ -253,6 +292,33 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
       trace(s"Calling shutdown hook: $h")
       lifeCycleManager.tracer.onShutdownInstance(lifeCycleManager.session, h.injectee)
       h.execute
+    }
+  }
+}
+
+/**
+  * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call
+  * close() if there is no other shutdown hooks
+  */
+object CloseableLifeCycleHookFinder extends LifeCycleEventHandler with LogSupport {
+
+  class CloseHook(val injectee: Injectee) extends LifeCycleHook {
+    override def toString: String = s"CloseHook for [${surface}]"
+    override def execute: Unit = {
+      injectee.injectee match {
+        case c: AutoCloseable =>
+          c.close()
+        case _ =>
+      }
+    }
+  }
+
+  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+    if (classOf[AutoCloseable].isAssignableFrom(t.rawType)) {
+      // Do not register CloseHook if @PreDestory is already registered
+      if (!lifeCycleManager.hasShutdownHooksFor(t)) {
+        lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(t, injectee)))
+      }
     }
   }
 }
