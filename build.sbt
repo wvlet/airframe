@@ -24,7 +24,7 @@ addCommandAlias(
 )
 addCommandAlias(
   "release",
-  "; + projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; projectJS/publishLocal; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeReleaseAll"
+  "; + projectJVM2_13/publishLocalSigned; + projectJVM2_12/publishLocalSigned; projectJS/publishLocalSigned; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeReleaseAll"
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
