@@ -18,6 +18,15 @@ val SLF4J_VERSION                   = "1.7.25"
 val JS_JAVA_LOGGING_VERSION         = "0.1.5"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
+addCommandAlias(
+  "publishSnapshots",
+  "; + projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; projectJS/publishLocal; + projectJVM2_13/publish; + projectJVM2_12/publish; projectJS/publish"
+)
+addCommandAlias(
+  "release",
+  "; + projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; projectJS/publishLocal; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeReleaseAll"
+)
+
 // Allow using Ctrl+C in sbt without exiting the prompt
 // cancelable in Global := true
 
