@@ -19,7 +19,6 @@ import java.time.Instant
 import java.util
 
 import wvlet.airframe.msgpack.spi.MessageException._
-import wvlet.log.LogSupport
 
 /**
   *

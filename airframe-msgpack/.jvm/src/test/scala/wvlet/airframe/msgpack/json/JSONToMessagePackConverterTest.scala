@@ -42,6 +42,7 @@ class JSONToMessagePackConverterTest extends AirSpec {
         if (a.v != b.v) {
           warn(s"match failure:\n${a}\n-----\n${b}")
         }
+        a shouldBe b
       case (a: JSONNumber, b: JSONNumber) =>
         a shouldBe b
       case (a: JSONBoolean, b: JSONBoolean) =>
