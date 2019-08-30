@@ -30,7 +30,6 @@ addCommandAlias(
   s""";
      |++ ${SCALA_2_13};
      |projectJVM2_13/publishSigned;
-     |projectJVM2_12/publishSigned;
      |++ ${SCALA_2_11};
      |projectJVM2_13/publishSigned;
      |projectJVM2_12/publishSigned;
