@@ -14,6 +14,9 @@
 package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
+import wvlet.airframe.json.{JSON, JSONScanner, JSONSource}
+import wvlet.airframe.msgpack.json.JSONToMessagePackConverterContext
+
 /**
   *
   */
@@ -23,4 +26,10 @@ object MessagePack {
   def newUnpacker(in: InputStream): Unpacker                             = Compat.newUnpacker(in)
   def newUnpacker(msgpack: Array[Byte]): Unpacker                        = Compat.newUnpacker(msgpack)
   def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = Compat.newUnpacker(msgpack, offset, len)
+
+  def fromJSON(json: String): MsgPack = {
+    val context = new JSONToMessagePackConverterContext()
+    JSONScanner.scanAny(JSONSource.fromString(json), context)
+    context.mergedResult
+  }
 }

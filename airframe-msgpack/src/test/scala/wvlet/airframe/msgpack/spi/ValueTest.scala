@@ -200,4 +200,11 @@ class ValueTest extends AirSpec with PropertyCheck {
       newInteger(Integer.MIN_VALUE - 1.toLong).asInt
     }
   }
+
+  def `escape special characters`: Unit = {
+    val str = "😏🙌"
+    val s   = new StringBuilder
+    appendJsonString(s, str)
+    s.result() shouldBe "\"\\ud83d\\ude0f\\ud83d\\ude4c\""
+  }
 }
