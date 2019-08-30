@@ -343,7 +343,7 @@ class Service(config:ServerConfig) extends LogSupport {
   }
 
   @PreDestroy
-  def end {
+  def stop {
     info(s"Stopping the server at ${config.port}")
   }
 }

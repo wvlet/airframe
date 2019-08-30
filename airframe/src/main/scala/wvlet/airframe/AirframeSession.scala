@@ -196,7 +196,7 @@ private[airframe] class AirframeSession(
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
-        error(s"Error occurred while executing onInject(${t}, ${injectee})", e)
+        error(s"Error occurred while executing onInit(${t}, ${injectee})", e)
         throw e
     }
     tracer.onInitInstanceEnd(this, t, injectee)

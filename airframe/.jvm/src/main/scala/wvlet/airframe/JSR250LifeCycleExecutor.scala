@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 
 class MethodCallHook(val injectee: Injectee, method: jl.reflect.Method) extends LifeCycleHook {
   override def toString: String = s"MethodCallHook for [${surface}]"
-  def execute: Unit = {
+  override def execute: Unit = {
     method.invoke(injectee.injectee)
   }
 }

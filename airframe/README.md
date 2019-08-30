@@ -297,9 +297,13 @@ This pattern is useful since you usually need a single entry point for starting 
 
 ## Life Cycle
 
+__Update since version 19.9.0__: If objects injected by DI implements `def close(): Unit` function of java.lang.AutoCloseable interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own `onShutdown` hook or use `@PreDestory` annotation.
+
 Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
 
 ```scala
+import wvlet.airframe._
+
 trait MyServerService {
   val service = bind[Server]
     .onInit( _.init )   // Called when the object is initialized
@@ -320,6 +324,7 @@ trait Server {
 }
 ```
 These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
+
 
 ### Eager Initialization of Singletons for Production
 
