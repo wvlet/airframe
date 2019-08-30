@@ -283,9 +283,13 @@ These singleton objects are managed inside the current session object.</p>
 
 <h2 id="life-cycle">Life Cycle</h2>
 
+<p><strong>Update since version 19.9.0</strong>: If objects injected by DI implements <code class="highlighter-rouge">def close(): Unit</code> function of java.lang.AutoCloseable interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own <code class="highlighter-rouge">onShutdown</code> hook or use <code class="highlighter-rouge">@PreDestory</code> annotation.</p>
+
 <p>Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
   <span class="k">val</span> <span class="nv">service</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
     <span class="o">.</span><span class="py">onInit</span><span class="o">(</span> <span class="nv">_</span><span class="o">.</span><span class="py">init</span> <span class="o">)</span>   <span class="c1">// Called when the object is initialized
 </span>    <span class="o">.</span><span class="py">onInject</span><span class="o">(</span><span class="nv">_</span><span class="o">.</span><span class="py">inject</span><span class="o">)</span> <span class="c1">// Called when the object is injected 
