@@ -101,6 +101,7 @@ object JSON extends LogSupport {
   }
 
   final case class JSONObject(v: Seq[(String, JSONValue)]) extends JSONValue {
+    def size: Int = v.size
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("{")
@@ -126,6 +127,7 @@ object JSON extends LogSupport {
     }
   }
   final case class JSONArray(v: IndexedSeq[JSONValue]) extends JSONValue {
+    def size: Int = v.length
     override def toJSON: String = {
       val s = new StringBuilder
       s.append("[")
