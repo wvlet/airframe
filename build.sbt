@@ -18,13 +18,28 @@ val SLF4J_VERSION                   = "1.7.25"
 val JS_JAVA_LOGGING_VERSION         = "0.1.5"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
+// Publish only Scala 2.12 projects for snapshot releases
 addCommandAlias(
   "publishSnapshots",
-  "; + projectJVM2_13/publishLocal; + projectJVM2_12/publishLocal; projectJS/publishLocal; + projectJVM2_13/publish; + projectJVM2_12/publish; projectJS/publish"
+  s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish"
 )
+
+// Publish everything for releases
 addCommandAlias(
   "release",
-  "; + projectJVM2_13/publishLocalSigned; + projectJVM2_12/publishLocalSigned; projectJS/publishLocalSigned; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeReleaseAll"
+  s""";
+     |++ ${SCALA_2_13};
+     |projectJVM2_13/publishSigned;
+     |projectJVM2_12/publishSigned;
+     |++ ${SCALA_2_11};
+     |projectJVM2_13/publishSigned;
+     |projectJVM2_12/publishSigned;
+     |++ ${SCALA_2_12};
+     |projectJVM2_13/publishSigned;
+     |projectJVM2_12/publishSigned;
+     |projectJS/publishSigned;
+     |sonatypeReleaseAll
+     |""".stripMargin.replaceAll("\n", " ")
 )
 
 // Allow using Ctrl+C in sbt without exiting the prompt
