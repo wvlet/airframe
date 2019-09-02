@@ -146,9 +146,9 @@ class Design private[airframe] (
     b
   }
 
-  def addBinding(b: Binding): Design = {
+  def addBinding[A](b: Binding): DesignWithContext[A] = {
     debug(s"Add a binding: $b")
-    new Design(designOptions, binding :+ b, hooks)
+    new DesignWithContext[A](new Design(designOptions, binding :+ b, hooks), b.from)
   }
 
   private[airframe] def withLifeCycleHook[A](hook: LifeCycleHookDesign): DesignWithContext[A] = {
