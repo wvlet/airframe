@@ -124,11 +124,11 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     * @param any
     * @return
     */
-  def toInstance(any: => A): Design = {
+  def toInstance(any: => A): DesignWithContext[A] = {
     trace(s"binder toInstance: ${from}")
-    design.addBinding(
+    val binding =
       ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true, sourceCode)
-    )
+    new DesignWithContext[A](design.addBinding(binding), lastSurface = from)
   }
 
   /**
@@ -187,4 +187,26 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
   def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
     macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
+}
+
+class DesignWithContext[A](
+    design: Design,
+    lastSurface: Surface
+) extends Design(design.designOptions, design.binding, design.hooks) {
+  def onInit(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INIT, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def onInject(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INJECT, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def onStart(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
+    this
+  }
+  def onShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
 }

@@ -79,12 +79,18 @@ case class DesignOptions(
   }
 }
 
+case class LifeCycleHookDesign(lifeCycleHookType: LifeCycleHookType, surface: Surface, hook: Any => Unit)
+
 /**
   * Immutable airframe design.
   *
   * Design instance does not hold any duplicate bindings for the same Surface.
   */
-case class Design private[airframe] (designOptions: DesignOptions, binding: Vector[Binding]) extends LogSupport {
+class Design private[airframe] (
+    private[airframe] val designOptions: DesignOptions,
+    private[airframe] val binding: Vector[Binding],
+    private[airframe] val hooks: Vector[LifeCycleHookDesign]
+) extends LogSupport {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
   /**
@@ -107,11 +113,11 @@ case class Design private[airframe] (designOptions: DesignOptions, binding: Vect
       minimizedList = b :: minimizedList
     }
 
-    Design(designOptions, minimizedList.reverse.toVector)
+    new Design(designOptions, minimizedList.reverse.toVector, hooks)
   }
 
   def add(other: Design): Design = {
-    new Design(designOptions + other.designOptions, binding ++ other.binding)
+    new Design(designOptions + other.designOptions, binding ++ other.binding, hooks)
   }
 
   def +(other: Design): Design = add(other)
@@ -126,35 +132,39 @@ case class Design private[airframe] (designOptions: DesignOptions, binding: Vect
 
   def addBinding(b: Binding): Design = {
     debug(s"Add a binding: $b")
-    new Design(designOptions, binding :+ b)
+    new Design(designOptions, binding :+ b, hooks)
+  }
+
+  private[airframe] def withLifeCycleHook[A](hook: LifeCycleHookDesign): DesignWithContext[A] = {
+    new DesignWithContext[A](new Design(designOptions, binding, hooks = hooks :+ hook), hook.surface)
   }
 
   def remove[A]: Design = macro AirframeMacros.designRemoveImpl[A]
 
   def remove(t: Surface): Design = {
-    new Design(designOptions, binding.filterNot(_.from == t))
+    new Design(designOptions, binding.filterNot(_.from == t), hooks)
   }
 
   def withLifeCycleLogging: Design = {
-    new Design(designOptions.withLifeCycleLogging, binding)
+    new Design(designOptions.withLifeCycleLogging, binding, hooks)
   }
 
   def noLifeCycleLogging: Design = {
-    new Design(designOptions.noLifecycleLogging, binding)
+    new Design(designOptions.noLifecycleLogging, binding, hooks)
   }
 
   /**
     * Enable eager initialization of singletons services for production mode
     */
   def withProductionMode: Design = {
-    new Design(designOptions.withProductionMode, binding)
+    new Design(designOptions.withProductionMode, binding, hooks)
   }
 
   /**
     * Do not initialize singletons for debugging
     */
   def withLazyMode: Design = {
-    new Design(designOptions.withLazyMode, binding)
+    new Design(designOptions.withLazyMode, binding, hooks)
   }
 
   /**
@@ -177,11 +187,11 @@ case class Design private[airframe] (designOptions: DesignOptions, binding: Vect
   }
 
   private[airframe] def withOption[A](key: String, value: A): Design = {
-    new Design(designOptions.withOption(key, value), binding)
+    new Design(designOptions.withOption(key, value), binding, hooks)
   }
 
   private[airframe] def noOption[A](key: String): Design = {
-    new Design(designOptions.noOption(key), binding)
+    new Design(designOptions.noOption(key), binding, hooks)
   }
 
   private[airframe] def getTracer: Option[Tracer] = {
@@ -252,7 +262,7 @@ object Design {
     * Empty design.
     * Using Vector as a binding holder for performance and serialization reason
     */
-  private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty)
+  private[airframe] val blanc: Design = new Design(new DesignOptions(), Vector.empty, Vector.empty)
 
   // Empty design
   def empty: Design = blanc

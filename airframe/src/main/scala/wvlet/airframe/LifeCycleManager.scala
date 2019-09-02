@@ -30,6 +30,13 @@ case object STARTED  extends LifeCycleStage
 case object STOPPING extends LifeCycleStage
 case object STOPPED  extends LifeCycleStage
 
+sealed trait LifeCycleHookType
+case object ON_INIT         extends LifeCycleHookType
+case object ON_INJECT       extends LifeCycleHookType
+case object ON_START        extends LifeCycleHookType
+case object BEFORE_SHUTDOWN extends LifeCycleHookType
+case object ON_SHUTDOWN     extends LifeCycleHookType
+
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */

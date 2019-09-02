@@ -256,7 +256,7 @@ private[wvlet] object AirframeMacros {
     q"""{
          val d = ${c.prefix}
          val target = ${h.surfaceOf(t)}
-         new wvlet.airframe.Design(d.designOptions, d.binding.filterNot(_.from == target))
+         new wvlet.airframe.Design(d.designOptions, d.binding.filterNot(_.from == target), d.hooks)
         }
      """
   }
