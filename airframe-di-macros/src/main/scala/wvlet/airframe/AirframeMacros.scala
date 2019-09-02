@@ -46,7 +46,7 @@ private[wvlet] object AirframeMacros {
         if (t.toString.contains("#")) {
           false
         } else {
-          true
+          hasPublicDefaultConstructor
         }
       } else if (a.isAbstract) {
         // = Abstract type

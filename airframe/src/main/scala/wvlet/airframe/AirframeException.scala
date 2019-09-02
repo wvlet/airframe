@@ -17,6 +17,10 @@ import wvlet.airframe.surface.Surface
 import scala.language.existentials
 
 trait AirframeException extends Exception { self =>
+
+  /**
+    * Returns the exception type
+    */
   def getCode: String           = this.getClass.getSimpleName
   override def toString: String = getMessage
 }
@@ -32,5 +36,16 @@ object AirframeException {
   case class MISSING_DEPENDENCY(stack: List[Surface], sourceCode: SourceCode) extends AirframeException {
     override def getMessage: String =
       s"[$getCode] Binding for ${stack.head} at ${sourceCode} is not found: ${stack.mkString(" <- ")}"
+  }
+
+  case class SHUTDOWN_FAILURE(cause: Throwable) extends AirframeException {
+    override def getMessage: String = {
+      s"[${getCode}] Failure at session shutdown: ${cause.getMessage}"
+    }
+  }
+  case class MULTIPLE_SHUTDOWN_FAILURES(causes: List[Throwable]) extends AirframeException {
+    override def getMessage: String = {
+      s"[${getCode}] Multiple failures occurred during session shutdown:\n${causes.map(x => s"  - ${x.getMessage}").mkString("\n")}"
+    }
   }
 }

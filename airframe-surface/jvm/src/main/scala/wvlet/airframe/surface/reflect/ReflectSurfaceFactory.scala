@@ -551,7 +551,10 @@ object ReflectSurfaceFactory extends LogSupport {
           outer.orElse {
             val contextClass = getFirstParamTypeOfPrimaryConstructor(rawType)
             val msg = contextClass
-              .map(x => s" Call Surface.of[${rawType.getSimpleName}] where `this` points to an instance of ${x}").getOrElse(
+              .map(
+                x =>
+                  s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
+              ).getOrElse(
                 ""
               )
             throw new IllegalStateException(
@@ -568,18 +571,19 @@ object ReflectSurfaceFactory extends LogSupport {
           // which is non-serializable, within this RuntimeGenericSurface class
           getPrimaryConstructorOf(rawType)
             .map { primaryConstructor =>
-              if (args.isEmpty) {
+              val argList = Seq.newBuilder[AnyRef]
+              if (!isStatic) {
+                // Add a reference to the context instance if this surface represents an inner class
+                outerInstance.foreach { x =>
+                  argList += x
+                }
+              }
+              argList ++= args.map(_.asInstanceOf[AnyRef])
+              val a = argList.result()
+              if (a.isEmpty) {
+                logger.trace(s"build ${rawType.getName} using the default constructor")
                 primaryConstructor.newInstance()
               } else {
-                val argList = Seq.newBuilder[AnyRef]
-                if (!isStatic) {
-                  // Add a reference to the context instance if this surface represents an inner class
-                  outerInstance.foreach { x =>
-                    argList += x
-                  }
-                }
-                argList ++= args.map(_.asInstanceOf[AnyRef])
-                val a = argList.result()
                 logger.trace(s"build ${rawType.getName} with args: ${a.mkString(", ")}")
                 primaryConstructor.newInstance(a: _*)
               }
