@@ -13,7 +13,7 @@
  */
 package wvlet.airframe
 
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicInteger}
 
 import wvlet.airspec.AirSpec
 
@@ -24,18 +24,20 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
 
   def `support design time bindings`: Unit = {
 
-    val initialized = new AtomicBoolean(false)
-    val shutdowned  = new AtomicBoolean(false)
+    val order           = new AtomicInteger(1)
+    val initializedTime = new AtomicInteger(0)
+    val shutdownTime    = new AtomicInteger(0)
 
     val d = newSilentDesign
       .bind[String].toInstance("hello")
-      .onInit(x => initialized.set(true))
-      .onShutdown(x => shutdowned.set(true))
+      .onInit(x => initializedTime.set(order.getAndIncrement()))
+      .onShutdown(x => shutdownTime.set(order.getAndIncrement()))
 
     d.build[String] { s =>
-      }
+      //
+    }
 
-    initialized.get shouldBe true
-    shutdowned.get shouldBe true
+    initializedTime.get shouldBe 1
+    shutdownTime.get shouldBe 2
   }
 }

@@ -93,6 +93,22 @@ class Design private[airframe] (
 ) extends LogSupport {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Design]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Design =>
+      (that canEqual this) &&
+        designOptions == that.designOptions &&
+        binding == that.binding &&
+        hooks == that.hooks
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(designOptions, binding, hooks)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
   /**
     * Generates a minimized design by removing overwritten bindings
     *
