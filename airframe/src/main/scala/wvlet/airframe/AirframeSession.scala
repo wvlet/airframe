@@ -194,6 +194,14 @@ private[airframe] class AirframeSession(
     tracer.onInitInstanceStart(this, t, injectee)
 
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
+
+    // Add additional lifecycle hooks for the injectee
+    for (hook <- design.hooks.filter(_.surface == t)) {
+      val h = EventHookHolder(hook.surface, injectee, hook.hook)
+      lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
+    }
+
+    // Start the lifecycle of the object (injectee)
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
         error(s"Error occurred while executing onInit(${t}, ${injectee})", e)

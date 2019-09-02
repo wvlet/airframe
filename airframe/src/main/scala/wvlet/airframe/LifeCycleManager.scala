@@ -117,6 +117,21 @@ class LifeCycleManager(
     }
   }
 
+  private[airframe] def addLifeCycleHook(lifeCycleHookType: LifeCycleHookType, h: LifeCycleHook): Unit = {
+    lifeCycleHookType match {
+      case ON_INIT =>
+        addInitHook(h)
+      case ON_INJECT =>
+        addInjectHook(h)
+      case ON_START =>
+        addStartHook(h)
+      case BEFORE_SHUTDOWN =>
+        addPreShutdownHook(h)
+      case ON_SHUTDOWN =>
+        addShutdownHook(h)
+    }
+  }
+
   def addInitHook(h: LifeCycleHook): Unit = {
     findLifeCycleManagerFor(h.surface) { l =>
       if (l.initHookHolder.registerOnlyOnce(h)) {
@@ -316,6 +331,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
       }
     }
 
+    // If there are any exceptions occurred during the shutdown, throw them here:
     if (exceptionList.nonEmpty) {
       if (exceptionList.size > 1) {
         throw MULTIPLE_SHUTDOWN_FAILURES(exceptionList.toList)

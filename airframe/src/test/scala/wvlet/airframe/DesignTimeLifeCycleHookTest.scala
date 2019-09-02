@@ -24,13 +24,19 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
 
   def `support design time bindings`: Unit = {
 
-    val order           = new AtomicInteger(1)
-    val initializedTime = new AtomicInteger(0)
-    val shutdownTime    = new AtomicInteger(0)
+    val order              = new AtomicInteger(1)
+    val initializedTime    = new AtomicInteger(0)
+    val injectTime         = new AtomicInteger(0)
+    val startTime          = new AtomicInteger(0)
+    val beforeShutdownTime = new AtomicInteger(0)
+    val shutdownTime       = new AtomicInteger(0)
 
     val d = newSilentDesign
       .bind[String].toInstance("hello")
       .onInit(x => initializedTime.set(order.getAndIncrement()))
+      .onInject(x => injectTime.set(order.getAndIncrement()))
+      .onStart(x => startTime.set(order.getAndIncrement()))
+      .beforeShutdown(x => beforeShutdownTime.set(order.getAndIncrement()))
       .onShutdown(x => shutdownTime.set(order.getAndIncrement()))
 
     d.build[String] { s =>
@@ -38,6 +44,9 @@ class DesignTimeLifeCycleHookTest extends AirSpec {
     }
 
     initializedTime.get shouldBe 1
-    shutdownTime.get shouldBe 2
+    injectTime.get shouldBe 2
+    startTime.get shouldBe 3
+    beforeShutdownTime.get shouldBe 4
+    shutdownTime.get shouldBe 5
   }
 }

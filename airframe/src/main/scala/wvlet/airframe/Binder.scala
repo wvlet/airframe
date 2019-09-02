@@ -210,7 +210,6 @@ class DesignWithContext[A](
   }
   def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
-    this
   }
   def onShutdown(body: A => Unit): DesignWithContext[A] = {
     design.withLifeCycleHook[A](LifeCycleHookDesign(ON_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
