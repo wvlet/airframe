@@ -118,21 +118,30 @@ class Design private[airframe] (
     * @return
     */
   def minimize: Design = {
-    var seen          = Set.empty[Surface]
-    var minimizedList = List.empty[Binding]
+    var seenBindingSurrace   = Set.empty[Surface]
+    var minimizedBindingList = List.empty[Binding]
 
-    for (b <- binding) {
+    // Later binding has higher precedence, so traverse bindings from the tail
+    for (b <- binding.reverseIterator) {
       val surface = b.from
-      if (seen.contains(surface)) {
-        // Remove the previous binding for the same surface
-        minimizedList = minimizedList.filter(_.from != surface)
-      } else {
-        seen += surface
+      if (!seenBindingSurrace.contains(surface)) {
+        minimizedBindingList = b :: minimizedBindingList
+        seenBindingSurrace += surface
       }
-      minimizedList = b :: minimizedList
     }
 
-    new Design(designOptions, minimizedList.reverse.toVector, hooks)
+    var seenHooks      = Set.empty[(LifeCycleHookType, Surface)]
+    var minimizedHooks = List.empty[LifeCycleHookDesign]
+    // Override hooks for the same surface and event type
+    for (h <- hooks.reverseIterator) {
+      val key: (LifeCycleHookType, Surface) = (h.lifeCycleHookType, h.surface)
+      if (!seenHooks.contains(key)) {
+        minimizedHooks = h :: minimizedHooks
+        seenHooks += key
+      }
+    }
+
+    new Design(designOptions, minimizedBindingList.reverse.toVector, minimizedHooks.toVector)
   }
 
   def add(other: Design): Design = {

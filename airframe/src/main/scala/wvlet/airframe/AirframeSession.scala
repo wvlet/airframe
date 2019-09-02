@@ -214,12 +214,17 @@ private[airframe] class AirframeSession(
 
   private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
     trace(s"[${name}] findLifeCycleHooksFor ${t}")
-    val lst = Seq.newBuilder[LifeCycleHookDesign]
-    lst ++= design.hooks.filter(_.surface == t)
-    parent.foreach { p =>
-      lst ++= p.findLifeCycleHooksFor(t)
+    if (design.hooks.isEmpty) {
+      parent.map(_.findLifeCycleHooksFor(t)).getOrElse(Seq.empty)
+    } else {
+      val lst = Seq.newBuilder[LifeCycleHookDesign]
+      // hooks in the child session has higher precedence than that in the parent
+      lst ++= design.hooks.filter(_.surface == t)
+      parent.foreach { p =>
+        lst ++= p.findLifeCycleHooksFor(t)
+      }
+      lst.result()
     }
-    lst.result()
   }
 
   // type -> firstObservedTimeMillis
