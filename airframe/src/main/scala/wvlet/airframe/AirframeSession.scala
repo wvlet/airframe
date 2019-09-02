@@ -112,7 +112,7 @@ private[airframe] class AirframeSession(
     trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
-      sessionName,                                          // Should we add suffixes for child sessions?
+      sessionName, // Should we add suffixes for child sessions?
       new Design(design.designOptions, d.binding, d.hooks), // Inherit parent options
       stage,
       lifeCycleManager,
@@ -132,7 +132,7 @@ private[airframe] class AirframeSession(
         design = childDesign,
         parent = Some(this),
         name = None,
-        addShutdownHook = false,                                  // Disable registration of shutdown hooks
+        addShutdownHook = false, // Disable registration of shutdown hooks
         lifeCycleEventHandler = lifeCycleManager.coreEventHandler // Use only core lifecycle event handlers
       )
 
@@ -196,7 +196,8 @@ private[airframe] class AirframeSession(
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
 
     // Add additional lifecycle hooks for the injectee
-    for (hook <- design.hooks.filter(_.surface == t)) {
+    trace(s"Checking lifecycle hooks for ${t}: ${design.hooks.length}")
+    for (hook <- findLifeCycleHooksFor(t)) {
       val h = EventHookHolder(hook.surface, injectee, hook.hook)
       lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
     }
@@ -209,6 +210,16 @@ private[airframe] class AirframeSession(
     }
     tracer.onInitInstanceEnd(this, t, injectee)
     injectee.asInstanceOf[AnyRef]
+  }
+
+  private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
+    trace(s"[${name}] findLifeCycleHooksFor ${t}")
+    val lst = Seq.newBuilder[LifeCycleHookDesign]
+    lst ++= design.hooks.filter(_.surface == t)
+    parent.foreach { p =>
+      lst ++= p.findLifeCycleHooksFor(t)
+    }
+    lst.result()
   }
 
   // type -> firstObservedTimeMillis

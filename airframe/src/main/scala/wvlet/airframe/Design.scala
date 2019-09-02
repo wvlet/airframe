@@ -79,7 +79,10 @@ case class DesignOptions(
   }
 }
 
-case class LifeCycleHookDesign(lifeCycleHookType: LifeCycleHookType, surface: Surface, hook: Any => Unit)
+case class LifeCycleHookDesign(lifeCycleHookType: LifeCycleHookType, surface: Surface, hook: Any => Unit) {
+  // Override toString to protect calling the hook accidentally
+  override def toString: String = s"LifeCycleHookDesign[${lifeCycleHookType}](${surface})"
+}
 
 /**
   * Immutable airframe design.
@@ -133,7 +136,7 @@ class Design private[airframe] (
   }
 
   def add(other: Design): Design = {
-    new Design(designOptions + other.designOptions, binding ++ other.binding, hooks)
+    new Design(designOptions + other.designOptions, binding ++ other.binding, hooks ++ other.hooks)
   }
 
   def +(other: Design): Design = add(other)
@@ -152,6 +155,7 @@ class Design private[airframe] (
   }
 
   private[airframe] def withLifeCycleHook[A](hook: LifeCycleHookDesign): DesignWithContext[A] = {
+    trace(s"withLifeCycleHook: ${hook}")
     new DesignWithContext[A](new Design(designOptions, binding, hooks = hooks :+ hook), hook.surface)
   }
 

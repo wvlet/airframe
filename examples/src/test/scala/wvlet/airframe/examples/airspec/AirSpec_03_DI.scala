@@ -24,10 +24,15 @@ object AirSpec_03_DI extends AirSpec {
   case class Config(port: Int)
   class MyService(val config: Config)
 
-  override protected def configure(design: Design): Design = {
-    design
+  override protected def design: Design = {
+    import wvlet.airframe._
+
+    val d = newDesign
       .bind[Config].toInstance(Config(port = 8080))
       .bind[MyService].toSingleton
+      .onStart(x => info(s"Starting server at port:${x.config.port}"))
+      .onShutdown(x => info(s"Stopping server at port:${x.config.port}"))
+    d
   }
 
   // Injecting a service using DI

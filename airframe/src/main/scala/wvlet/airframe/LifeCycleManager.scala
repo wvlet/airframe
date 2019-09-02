@@ -118,6 +118,7 @@ class LifeCycleManager(
   }
 
   private[airframe] def addLifeCycleHook(lifeCycleHookType: LifeCycleHookType, h: LifeCycleHook): Unit = {
+    debug(s"Add life cycle hook for ${lifeCycleHookType}: ${h.surface}")
     lifeCycleHookType match {
       case ON_INIT =>
         addInitHook(h)
