@@ -15,10 +15,13 @@ package wvlet.airframe
 
 import java.util.concurrent.atomic.AtomicReference
 
+import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
 import wvlet.airframe.CloseableLifeCycleHookFinder.CloseHook
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.Tracer
 import wvlet.log.{LogSupport, Logger}
+
+import scala.util.control.NonFatal
 
 sealed trait LifeCycleStage
 case object INIT     extends LifeCycleStage
@@ -276,11 +279,18 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 
   override def beforeShutdown(lifeCycleManager: LifeCycleManager): Unit = {
+    var exceptionList = List.empty[Throwable]
+
     // beforeShutdown
     for (h <- lifeCycleManager.preShutdownHooks.reverse) {
       trace(s"Calling pre-shutdown hook: $h")
       lifeCycleManager.tracer.beforeShutdownInstance(lifeCycleManager.session, h.injectee)
-      h.execute
+      try {
+        h.execute
+      } catch {
+        case NonFatal(e) =>
+          exceptionList = e :: exceptionList
+      }
     }
 
     // onShutdown
@@ -291,7 +301,20 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
       lifeCycleManager.tracer.onShutdownInstance(lifeCycleManager.session, h.injectee)
-      h.execute
+      try {
+        h.execute
+      } catch {
+        case NonFatal(e) =>
+          exceptionList = e :: exceptionList
+      }
+    }
+
+    if (exceptionList.nonEmpty) {
+      if (exceptionList.size > 1) {
+        throw MULTIPLE_SHUTDOWN_FAILURES(exceptionList.toList)
+      } else {
+        throw SHUTDOWN_FAILURE(exceptionList.head)
+      }
     }
   }
 }

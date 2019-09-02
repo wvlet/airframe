@@ -13,8 +13,10 @@
  */
 package wvlet.airframe
 
+import java.io.Closeable
 import java.util.concurrent.atomic.AtomicInteger
 
+import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
@@ -209,5 +211,37 @@ class LifeCycleManagerTest extends AirSpec {
     } finally {
       l.setLogLevel(current)
     }
+  }
+
+  class CloseExceptionTest extends AutoCloseable {
+    override def close(): Unit = {
+      throw new IllegalStateException("failure test")
+    }
+  }
+
+  def `handle exceptions in shutdown hooks`: Unit = {
+    val e = intercept[SHUTDOWN_FAILURE] {
+      newSilentDesign.build[CloseExceptionTest] { x =>
+        }
+    }
+    e.getMessage.contains("failure test") shouldBe true
+  }
+
+  class MultipleShutdownExceptionTest(t: CloseExceptionTest) extends AutoCloseable {
+    override def close(): Unit = {
+      throw new IllegalStateException("failure 2")
+    }
+  }
+
+  def `handle multiple exceptions`: Unit = {
+    val e = intercept[MULTIPLE_SHUTDOWN_FAILURES] {
+      newSilentDesign
+        .bind[CloseExceptionTest].toSingleton // Inner class needs to be defined where the outer context can be found
+        .build[MultipleShutdownExceptionTest] { x =>
+          }
+    }
+    debug(e)
+    e.causes.find(_.getMessage.contains("failure test")) shouldBe defined
+    e.causes.find(_.getMessage.contains("failure 2")) shouldBe defined
   }
 }
