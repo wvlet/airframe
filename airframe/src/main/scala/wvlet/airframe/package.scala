@@ -64,15 +64,15 @@ package object airframe {
   def bindFactory5[F <: (_, _, _, _, _) => _]: F = macro bindFactory5Impl[F]
 
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-    @deprecated(message = "Use LifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use InitLifeCycle trait or design-time hooks", since = "19.9.0")
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
-    @deprecated(message = "Use LifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use InjectLifeCycle trait or design-time hooks", since = "19.9.0")
     def onInject(body: A => Unit): A = macro addInjectLifeCycle[A]
-    @deprecated(message = "Use LifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use StartLifeCycle trait or design-time hooks", since = "19.9.0")
     def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
-    @deprecated(message = "Use LifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use BeforeShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
     def beforeShutdown(body: A => Unit): A = macro addPreShutdownLifeCycle[A]
-    @deprecated(message = "Use LifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use ShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
   }
 
