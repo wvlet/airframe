@@ -24,23 +24,6 @@ addCommandAlias(
   s"; ++ ${SCALA_2_12}; projectJVM2_13/publish; projectJVM2_12/publish; projectJS/publish"
 )
 
-// Publish everything for releases
-addCommandAlias(
-  "release",
-  s""";
-     |++ ${SCALA_2_13};
-     |projectJVM2_13/publishSigned;
-     |++ ${SCALA_2_11};
-     |projectJVM2_13/publishSigned;
-     |projectJVM2_12/publishSigned;
-     |++ ${SCALA_2_12};
-     |projectJVM2_13/publishSigned;
-     |projectJVM2_12/publishSigned;
-     |projectJS/publishSigned;
-     |sonatypeReleaseAll
-     |""".stripMargin.replaceAll("\n", " ")
-)
-
 // Allow using Ctrl+C in sbt without exiting the prompt
 // cancelable in Global := true
 
