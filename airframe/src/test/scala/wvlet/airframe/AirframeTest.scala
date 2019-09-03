@@ -235,14 +235,6 @@ object ServiceMixinExample {
       .onShutdown(_.close)
   }
 
-  trait BindLifeCycleExample {
-    val module = bind[MyModule].withLifeCycle(
-      init = _.init,
-      start = _.start,
-      shutdown = _.close
-    )
-  }
-
   trait BindLifeCycleExample2 {
     val module = bind[MyModule]
       .onInit(_.init)
@@ -492,18 +484,6 @@ class AirframeTest extends AirSpec {
     val e       = session.build[LifeCycleExample]
     e.module.initCount.get() shouldBe 1
     session.start
-    session.shutdown
-    e.module.closeCount.get() shouldBe 1
-  }
-
-  def `bind lifecycle code`: Unit = {
-    val session = newSilentDesign.newSession
-    val e       = session.build[BindLifeCycleExample]
-    e.module.initCount.get() shouldBe 1
-
-    session.start
-    e.module.startCount.get() shouldBe 1
-
     session.shutdown
     e.module.closeCount.get() shouldBe 1
   }

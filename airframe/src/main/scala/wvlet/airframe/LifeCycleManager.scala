@@ -243,6 +243,7 @@ object LifeCycleManager {
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     FILOLifeCycleHookExecutor andThen
       JSR250LifeCycleExecutor andThen
+      LifeCycleTraitHandler andThen
       CloseableLifeCycleHookFinder // This lifecycle must be the last one to check any preceding shutdown hooks
 }
 
@@ -339,6 +340,33 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
       } else {
         throw SHUTDOWN_FAILURE(exceptionList.head)
       }
+    }
+  }
+}
+
+/**
+  * Register lifecycle hooks defined in LifeCycle trait
+  */
+object LifeCycleTraitHandler extends LifeCycleEventHandler {
+  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
+    injectee match {
+      case l: LifeCycle =>
+        lifeCycleManager.addInitHook(EventHookHolder(t, l, { x: LifeCycle =>
+          x.onInit
+        }))
+        lifeCycleManager.addInjectHook(EventHookHolder(t, l, { x: LifeCycle =>
+          x.onInject
+        }))
+        lifeCycleManager.addStartHook(EventHookHolder(t, l, { x: LifeCycle =>
+          x.onStart
+        }))
+        lifeCycleManager.addPreShutdownHook(EventHookHolder(t, l, { x: LifeCycle =>
+          x.beforeShutdown
+        }))
+        lifeCycleManager.addShutdownHook(EventHookHolder(t, l, { x: LifeCycle =>
+          x.onShutdown
+        }))
+      case _ =>
     }
   }
 }
