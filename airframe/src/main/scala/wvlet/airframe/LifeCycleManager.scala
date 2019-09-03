@@ -350,20 +350,39 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
 object LifeCycleTraitHandler extends LifeCycleEventHandler {
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
     injectee match {
-      case l: LifeCycle =>
-        lifeCycleManager.addInitHook(EventHookHolder(t, l, { x: LifeCycle =>
+      case l: InitLifeCycle =>
+        lifeCycleManager.addInitHook(EventHookHolder(t, l, { x: InitLifeCycle =>
           x.onInit
         }))
-        lifeCycleManager.addInjectHook(EventHookHolder(t, l, { x: LifeCycle =>
+      case _ =>
+    }
+
+    injectee match {
+      case l: InjectLifeCycle =>
+        lifeCycleManager.addInjectHook(EventHookHolder(t, l, { x: InjectLifeCycle =>
           x.onInject
         }))
-        lifeCycleManager.addStartHook(EventHookHolder(t, l, { x: LifeCycle =>
-          x.onStart
-        }))
-        lifeCycleManager.addPreShutdownHook(EventHookHolder(t, l, { x: LifeCycle =>
+    }
+
+    injectee match {
+      case l: BeforeShutdownLifeCycle =>
+        lifeCycleManager.addPreShutdownHook(EventHookHolder(t, l, { x: BeforeShutdownLifeCycle =>
           x.beforeShutdown
         }))
-        lifeCycleManager.addShutdownHook(EventHookHolder(t, l, { x: LifeCycle =>
+      case _ =>
+    }
+
+    injectee match {
+      case l: StartLifeCycle =>
+        lifeCycleManager.addStartHook(EventHookHolder(t, l, { x: StartLifeCycle =>
+          x.onStart
+        }))
+      case _ =>
+    }
+
+    injectee match {
+      case l: ShutdownLifeCycle =>
+        lifeCycleManager.addShutdownHook(EventHookHolder(t, l, { x: ShutdownLifeCycle =>
           x.onShutdown
         }))
       case _ =>

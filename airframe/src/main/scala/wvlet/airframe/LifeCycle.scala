@@ -16,10 +16,26 @@ package wvlet.airframe
 /**
   * A trait for defining lifecycle hooks that will be called at the individual lifecycle stages
   */
-trait LifeCycle {
-  def onInit: Unit         = {}
-  def onInject: Unit       = {}
-  def onStart: Unit        = {}
-  def beforeShutdown: Unit = {}
-  def onShutdown: Unit     = {}
+trait LifeCycle extends InitLifeCycle with InjectLifeCycle with BeforeShutdownLifeCycle with StartAndShutdownLifeCycle
+
+trait InitLifeCycle {
+  def onInit: Unit
+}
+
+trait InjectLifeCycle {
+  def onInject: Unit
+}
+
+trait BeforeShutdownLifeCycle {
+  def beforeShutdown: Unit
+}
+
+trait StartAndShutdownLifeCycle extends StartLifeCycle with ShutdownLifeCycle
+
+trait StartLifeCycle {
+  def onStart: Unit
+}
+
+trait ShutdownLifeCycle {
+  def onShutdown: Unit
 }
