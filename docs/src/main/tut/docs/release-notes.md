@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.1
+-  airframe-di:
+   - Fix an issue in 19.9.0 which closes Sessions unexpectedly by calling Session.close().  
+   - Move lifecycle related code to wvlet.airframe.lifecycle ([#657](https://github.com/wvlet/airframe/issues/657)) [[a51927c](https://github.com/wvlet/airframe/commit/a51927c)]
+   - Deprecate LifeCycle trait as it confuses the owner of the resource when traits are mixed into other classes
+-  airframe-http-recorder: Reduce unecessary warning messages for in-memory recorders.
+-  internal: Revert to the previous release script [[3f802b7](https://github.com/wvlet/airframe/commit/3f802b7)]
+
 ## 19.9.0
 
 -  airframe-di: [#651](https://github.com/wvlet/airframe/issues/651) Support design-time lifecycle hooks ([#655](https://github.com/wvlet/airframe/issues/655)) [[de526a5](https://github.com/wvlet/airframe/commit/de526a5)]
