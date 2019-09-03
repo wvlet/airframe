@@ -15,42 +15,15 @@ before_cache:
 language: scala
 
 stages:
-  - name: publish snapshots
-    if: tag IS blank AND branch = master AND type != pull_request
-  - name: publish
-    if: tag IS present AND type != pull_request
   - name: build
     if: tag IS blank
+  - name: publish
+    if: tag IS present AND type != pull_request
   - name: release
     if: tag IS present
 
 jobs:
   include:
-    - stage: publish snapshots
-      env: PROJECT=publish
-      jdk: openjdk8
-      script:
-        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-    - stage: publish
-      env: PROJECT=publish TARGET=2.12
-      jdk: openjdk8
-      script:
-        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-    - stage: publish
-      env: PROJECT=publish TARGET=2.13
-      jdk: openjdk8
-      script:
-        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-    - stage: publish
-      env: PROJECT=publish TARGET=2.11
-      jdk: openjdk8
-      script:
-        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
-    - stage: publish
-      env: PROJECT=publish TARGET=js
-      jdk: openjdk8
-      script:
-        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: build
       env: PROJECT=code-format
       jdk: openjdk8
@@ -73,6 +46,12 @@ jobs:
       script:
         - if [ "$TRAVIS_BRANCH" == "master" -a "$TRAVIS_PULL_REQUEST" == "false" ]; then
           cd $TRAVIS_BUILD_DIR && ./sbt docs/publishMicrosite; fi
+    - stage: build
+      if: tag IS blank AND branch = master AND type != pull_request
+      env: PROJECT=publish
+      jdk: openjdk8
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: build
       env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
       jdk: openjdk8
@@ -99,6 +78,26 @@ jobs:
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+    - stage: publish
+      env: PROJECT=publish TARGET=2.12
+      jdk: openjdk8
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
+    - stage: publish
+      env: PROJECT=publish TARGET=2.13
+      jdk: openjdk8
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
+    - stage: publish
+      env: PROJECT=publish TARGET=2.11
+      jdk: openjdk8
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
+    - stage: publish
+      env: PROJECT=publish TARGET=js
+      jdk: openjdk8
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: release
       script: ./sbt sonatypeReleaseAll
 
