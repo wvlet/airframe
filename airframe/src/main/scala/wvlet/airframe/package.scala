@@ -63,37 +63,17 @@ package object airframe {
   def bindFactory4[F <: (_, _, _, _) => _]: F = macro bindFactory4Impl[F]
   def bindFactory5[F <: (_, _, _, _, _) => _]: F = macro bindFactory5Impl[F]
 
-  private[airframe] val DO_NOTHING = { a: Any =>
-    // no-op
-  }
-
-  /**
-    * bind[A].withLifeCycle(init = ..., start = ..., shutdown = ...)
-    */
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-    @deprecated(message = "Use onInit, onStart, anShutdown, etc", since = "0.49")
-    def withLifeCycle: LifeCycleBinder[A] = macro addLifeCycle[A]
+    @deprecated(message = "Use InitLifeCycle trait or design-time hooks", since = "19.9.0")
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
+    @deprecated(message = "Use InjectLifeCycle trait or design-time hooks", since = "19.9.0")
     def onInject(body: A => Unit): A = macro addInjectLifeCycle[A]
+    @deprecated(message = "Use StartLifeCycle trait or design-time hooks", since = "19.9.0")
     def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
+    @deprecated(message = "Use BeforeShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
     def beforeShutdown(body: A => Unit): A = macro addPreShutdownLifeCycle[A]
+    @deprecated(message = "Use ShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
-  }
-
-  class LifeCycleBinder[A](dep: A, surface: Surface, session: Session) {
-    def apply(init: A => Unit = DO_NOTHING, start: A => Unit = DO_NOTHING, shutdown: A => Unit = DO_NOTHING): A = {
-
-      if (!(init eq DO_NOTHING)) {
-        session.lifeCycleManager.addInitHook(EventHookHolder(surface, dep, init))
-      }
-      if (!(start eq DO_NOTHING)) {
-        session.lifeCycleManager.addStartHook(EventHookHolder(surface, dep, start))
-      }
-      if (!(shutdown eq DO_NOTHING)) {
-        session.lifeCycleManager.addShutdownHook(EventHookHolder(surface, dep, shutdown))
-      }
-      dep
-    }
   }
 
   // For internal use to hold caches of factories of trait with a session
