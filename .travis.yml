@@ -17,6 +17,8 @@ language: scala
 stages:
   - name: build
     if: tag IS blank
+  - name: cleanup
+    if: tag IS present AND commit_message !~ /^\[doc/
   - name: publish
     if: tag IS present AND type != pull_request AND commit_message !~ /^\[doc/
   - name: release
@@ -82,6 +84,8 @@ jobs:
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
+    - stage: cleanup
+      script: ./sbt sonatypeDropAll
     - stage: publish
       env: PROJECT=publish TARGET=2.12
       jdk: openjdk8
