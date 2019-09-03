@@ -107,7 +107,7 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     *
     * @tparam B
     */
-  def to[B <: A]: Design = macro binderToSingletonOfImpl[B]
+  def to[B <: A]: DesignWithContext[B] = macro binderToSingletonOfImpl[B]
 
   /**
     * Bind an instance of B to A
@@ -115,7 +115,7 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     * @tparam B
     * @return
     */
-  def toInstanceOf[B <: A]: Design = macro binderToImpl[B]
+  def toInstanceOf[B <: A]: DesignWithContext[B] = macro binderToImpl[B]
 
   /**
     * Bind the type to a given instance. The instance will be instantiated as an eager singleton when creating a session.
@@ -124,11 +124,11 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     * @param any
     * @return
     */
-  def toInstance(any: => A): Design = {
+  def toInstance(any: => A): DesignWithContext[A] = {
     trace(s"binder toInstance: ${from}")
-    design.addBinding(
+    val binding =
       ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), true, true, sourceCode)
-    )
+    design.addBinding[A](binding)
   }
 
   /**
@@ -137,54 +137,81 @@ class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCod
     * @param any
     * @return
     */
-  def toLazyInstance(any: => A): Design = {
+  def toLazyInstance(any: => A): DesignWithContext[A] = {
     trace(s"binder toLazyInstance: ${from}")
-    design.addBinding(
+    design.addBinding[A](
       ProviderBinding(DependencyFactory(from, Seq.empty, LazyF0(any).asInstanceOf[Any]), false, false, sourceCode)
     )
   }
 
-  def toSingletonOf[B <: A]: Design = macro binderToSingletonOfImpl[B]
+  def toSingletonOf[B <: A]: DesignWithContext[B] = macro binderToSingletonOfImpl[B]
 
-  def toEagerSingletonOf[B <: A]: Design = macro binderToEagerSingletonOfImpl[B]
+  def toEagerSingletonOf[B <: A]: DesignWithContext[B] = macro binderToEagerSingletonOfImpl[B]
 
-  def toSingleton: Design = {
-    design.addBinding(SingletonBinding(from, from, false, sourceCode))
+  def toSingleton: DesignWithContext[A] = {
+    design.addBinding[A](SingletonBinding(from, from, false, sourceCode))
   }
 
-  def toEagerSingleton: Design = {
-    design.addBinding(SingletonBinding(from, from, true, sourceCode))
+  def toEagerSingleton: DesignWithContext[A] = {
+    design.addBinding[A](SingletonBinding(from, from, true, sourceCode))
   }
 
-  def toInstanceProvider[D1](factory: D1 => A): Design = macro bindToProvider1[D1]
-  def toInstanceProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToProvider2[D1, D2]
-  def toInstanceProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToProvider3[D1, D2, D3]
-  def toInstanceProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design = macro bindToProvider4[D1, D2, D3, D4]
-  def toInstanceProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
-    macro bindToProvider5[D1, D2, D3, D4, D5]
+  def toInstanceProvider[D1](factory: D1 => A): DesignWithContext[A] = macro bindToProvider1[A, D1]
+  def toInstanceProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] = macro bindToProvider2[A, D1, D2]
+  def toInstanceProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] =
+    macro bindToProvider3[A, D1, D2, D3]
+  def toInstanceProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] =
+    macro bindToProvider4[A, D1, D2, D3, D4]
+  def toInstanceProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
+    macro bindToProvider5[A, D1, D2, D3, D4, D5]
 
-  def toProvider[D1](factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
-  def toProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
-  def toProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
-  def toProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
-    macro bindToSingletonProvider4[D1, D2, D3, D4]
-  def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
-    macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
+  def toProvider[D1](factory: D1 => A): DesignWithContext[A] = macro bindToSingletonProvider1[A, D1]
+  def toProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] = macro bindToSingletonProvider2[A, D1, D2]
+  def toProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider3[A, D1, D2, D3]
+  def toProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider4[A, D1, D2, D3, D4]
+  def toProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider5[A, D1, D2, D3, D4, D5]
 
-  def toSingletonProvider[D1](factory: D1 => A): Design = macro bindToSingletonProvider1[D1]
-  def toSingletonProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToSingletonProvider2[D1, D2]
-  def toSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design = macro bindToSingletonProvider3[D1, D2, D3]
-  def toSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
-    macro bindToSingletonProvider4[D1, D2, D3, D4]
-  def toSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
-    macro bindToSingletonProvider5[D1, D2, D3, D4, D5]
+  def toSingletonProvider[D1](factory: D1 => A): DesignWithContext[A] = macro bindToSingletonProvider1[A, D1]
+  def toSingletonProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider2[A, D1, D2]
+  def toSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider3[A, D1, D2, D3]
+  def toSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider4[A, D1, D2, D3, D4]
+  def toSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
+    macro bindToSingletonProvider5[A, D1, D2, D3, D4, D5]
 
-  def toEagerSingletonProvider[D1](factory: D1 => A): Design = macro bindToEagerSingletonProvider1[D1]
-  def toEagerSingletonProvider[D1, D2](factory: (D1, D2) => A): Design = macro bindToEagerSingletonProvider2[D1, D2]
-  def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): Design =
-    macro bindToEagerSingletonProvider3[D1, D2, D3]
-  def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): Design =
-    macro bindToEagerSingletonProvider4[D1, D2, D3, D4]
-  def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): Design =
-    macro bindToEagerSingletonProvider5[D1, D2, D3, D4, D5]
+  def toEagerSingletonProvider[D1](factory: D1 => A): DesignWithContext[A] = macro bindToEagerSingletonProvider1[A, D1]
+  def toEagerSingletonProvider[D1, D2](factory: (D1, D2) => A): DesignWithContext[A] =
+    macro bindToEagerSingletonProvider2[A, D1, D2]
+  def toEagerSingletonProvider[D1, D2, D3](factory: (D1, D2, D3) => A): DesignWithContext[A] =
+    macro bindToEagerSingletonProvider3[A, D1, D2, D3]
+  def toEagerSingletonProvider[D1, D2, D3, D4](factory: (D1, D2, D3, D4) => A): DesignWithContext[A] =
+    macro bindToEagerSingletonProvider4[A, D1, D2, D3, D4]
+  def toEagerSingletonProvider[D1, D2, D3, D4, D5](factory: (D1, D2, D3, D4, D5) => A): DesignWithContext[A] =
+    macro bindToEagerSingletonProvider5[A, D1, D2, D3, D4, D5]
+}
+
+class DesignWithContext[A](
+    design: Design,
+    lastSurface: Surface
+) extends Design(design.designOptions, design.binding, design.hooks) {
+  def onInit(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INIT, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def onInject(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_INJECT, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def onStart(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_START, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def beforeShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(BEFORE_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
+  def onShutdown(body: A => Unit): DesignWithContext[A] = {
+    design.withLifeCycleHook[A](LifeCycleHookDesign(ON_SHUTDOWN, lastSurface, body.asInstanceOf[Any => Unit]))
+  }
 }

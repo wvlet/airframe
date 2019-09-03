@@ -335,24 +335,15 @@ import wvlet.airspec._
 import wvlet.airframe._
 
 case class ServiceConfig(port:Int)
+class Service(val config:ServiceConfig)
 
-class Service(config:ServerConfig) extends LogSupport {
-  @PostConstruct
-  def start {
-    info(s"Starting a server at ${config.port}")
-  }
-
-  @PreDestroy
-  def stop {
-    info(s"Stopping the server at ${config.port}")
-  }
-}
-
-class ServiceSpec extends AirSpec with LogSupport {
+class ServiceSpec extends AirSpec {
   override protected def design: Design = {
     newDesign
-      .bind[Service].toSingleton
       .bind[ServiceConfig].toInstance(ServiceConfig(port=8080))
+      .bind[Service].toSingleton
+      .onStart{x => info(s"Starting a server at ${x.config.port}")}
+      .onShutdown{x => info(s"Stopping the server at ${x.config.port}")}
   }
 
   def test1(service:Service): Unit = {
@@ -368,10 +359,10 @@ class ServiceSpec extends AirSpec with LogSupport {
 This test shares the same Service instance between two test methods `test1` and `test2`, and properly start and closes the service before and after running tests.
 ```scala
 > testOnly -- ServiceSpec
-2019-08-09 17:24:37.184-0700  info [Service] Starting a server at 8080  - (ServiceSpec.scala:25)
+2019-08-09 17:24:37.184-0700  info [ServiceSpec] Starting a server at 8080  - (ServiceSpec.scala:33)
 2019-08-09 17:24:37.188-0700  info [ServiceSpec] test1: server id: 588474577  - (ServiceSpec.scala:42)
 2019-08-09 17:24:37.193-0700  info [ServiceSpec] test2: server id: 588474577  - (ServiceSpec.scala:46)
-2019-08-09 17:24:37.194-0700  info [Service] Stopping the server at 8080  - (ServiceSpec.scala:30)
+2019-08-09 17:24:37.194-0700  info [ServiceSpec] Stopping the server at 8080  - (ServiceSpec.scala:34)
 [info] ServiceSpec:
 [info]  - test1 13.94ms
 [info]  - test2 403.41us

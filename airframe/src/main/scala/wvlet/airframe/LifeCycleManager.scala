@@ -30,6 +30,13 @@ case object STARTED  extends LifeCycleStage
 case object STOPPING extends LifeCycleStage
 case object STOPPED  extends LifeCycleStage
 
+sealed trait LifeCycleHookType
+case object ON_INIT         extends LifeCycleHookType
+case object ON_INJECT       extends LifeCycleHookType
+case object ON_START        extends LifeCycleHookType
+case object BEFORE_SHUTDOWN extends LifeCycleHookType
+case object ON_SHUTDOWN     extends LifeCycleHookType
+
 /**
   * LifeCycleManager manages the life cycle of objects within a Session
   */
@@ -107,6 +114,22 @@ class LifeCycleManager(
   private[airframe] def hasShutdownHooksFor(s: Surface): Boolean = {
     findLifeCycleManagerFor(s) { l =>
       l.shutdownHookHolder.hasHooksFor(s)
+    }
+  }
+
+  private[airframe] def addLifeCycleHook(lifeCycleHookType: LifeCycleHookType, h: LifeCycleHook): Unit = {
+    debug(s"Add life cycle hook for ${lifeCycleHookType}: ${h.surface}")
+    lifeCycleHookType match {
+      case ON_INIT =>
+        addInitHook(h)
+      case ON_INJECT =>
+        addInjectHook(h)
+      case ON_START =>
+        addStartHook(h)
+      case BEFORE_SHUTDOWN =>
+        addPreShutdownHook(h)
+      case ON_SHUTDOWN =>
+        addShutdownHook(h)
     }
   }
 
@@ -309,6 +332,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
       }
     }
 
+    // If there are any exceptions occurred during the shutdown, throw them here:
     if (exceptionList.nonEmpty) {
       if (exceptionList.size > 1) {
         throw MULTIPLE_SHUTDOWN_FAILURES(exceptionList.toList)

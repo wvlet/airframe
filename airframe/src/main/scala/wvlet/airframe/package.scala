@@ -25,7 +25,7 @@ import scala.language.implicitConversions
 /**
   *
   */
-package object airframe extends LogSupport {
+package object airframe {
 
   /**
     * The entry point to create a new design beginning from a blanc design
@@ -102,7 +102,6 @@ package object airframe extends LogSupport {
   import scala.jdk.CollectionConverters._
   val traitFactoryCache = new ConcurrentHashMap[Surface, Session => Any].asScala
   def getOrElseUpdateTraitFactoryCache(s: Surface, factory: Session => Any): Session => Any = {
-    trace(s"Adding factory of ${s}")
     traitFactoryCache.getOrElseUpdate(s, factory)
   }
 

@@ -112,8 +112,8 @@ private[airframe] class AirframeSession(
     trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
-      sessionName,                                 // Should we add suffixes for child sessions?
-      new Design(design.designOptions, d.binding), // Inherit parent options
+      sessionName,                                          // Should we add suffixes for child sessions?
+      new Design(design.designOptions, d.binding, d.hooks), // Inherit parent options
       stage,
       lifeCycleManager,
       singletonHolder
@@ -123,7 +123,7 @@ private[airframe] class AirframeSession(
 
   override def newChildSession(d: Design, inheritParentDesignOptions: Boolean): Session = {
     val childDesign = if (inheritParentDesignOptions) {
-      new Design(design.designOptions, d.binding) // Inherit parent options
+      new Design(design.designOptions, d.binding, d.hooks) // Inherit parent options
     } else {
       d
     }
@@ -194,6 +194,15 @@ private[airframe] class AirframeSession(
     tracer.onInitInstanceStart(this, t, injectee)
 
     observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
+
+    // Add additional lifecycle hooks for the injectee
+    trace(s"Checking lifecycle hooks for ${t}: ${design.hooks.length}")
+    for (hook <- findLifeCycleHooksFor(t)) {
+      val h = EventHookHolder(hook.surface, injectee, hook.hook)
+      lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
+    }
+
+    // Start the lifecycle of the object (injectee)
     Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
         error(s"Error occurred while executing onInit(${t}, ${injectee})", e)
@@ -201,6 +210,21 @@ private[airframe] class AirframeSession(
     }
     tracer.onInitInstanceEnd(this, t, injectee)
     injectee.asInstanceOf[AnyRef]
+  }
+
+  private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
+    trace(s"[${name}] findLifeCycleHooksFor ${t}")
+    if (design.hooks.isEmpty) {
+      parent.map(_.findLifeCycleHooksFor(t)).getOrElse(Seq.empty)
+    } else {
+      val lst = Seq.newBuilder[LifeCycleHookDesign]
+      // hooks in the child session has higher precedence than that in the parent
+      lst ++= design.hooks.filter(_.surface == t)
+      parent.foreach { p =>
+        lst ++= p.findLifeCycleHooksFor(t)
+      }
+      lst.result()
+    }
   }
 
   // type -> firstObservedTimeMillis
