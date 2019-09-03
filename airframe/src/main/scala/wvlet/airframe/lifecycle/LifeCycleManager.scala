@@ -11,14 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
-import wvlet.airframe.CloseableLifeCycleHookFinder.CloseHook
+import wvlet.airframe.lifecycle.CloseableLifeCycleHookFinder.CloseHook
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.Tracer
+import wvlet.airframe.{AirframeSession, Session}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.util.control.NonFatal
@@ -111,14 +112,24 @@ class LifeCycleManager(
     }
   }
 
-  private[airframe] def hasShutdownHooksFor(s: Surface): Boolean = {
+  private[airframe] def hasHooksFor(s: Surface, lifeCycleHookType: LifeCycleHookType): Boolean = {
     findLifeCycleManagerFor(s) { l =>
-      l.shutdownHookHolder.hasHooksFor(s)
+      lifeCycleHookType match {
+        case ON_INIT         => l.initHookHolder.hasHooksFor(s)
+        case ON_INJECT       => false
+        case ON_START        => l.startHookHolder.hasHooksFor(s)
+        case BEFORE_SHUTDOWN => l.preShutdownHookHolder.hasHooksFor(s)
+        case ON_SHUTDOWN     => l.shutdownHookHolder.hasHooksFor(s)
+      }
     }
   }
 
+  private[airframe] def hasShutdownHooksFor(s: Surface): Boolean = {
+    hasHooksFor(s, ON_SHUTDOWN)
+  }
+
   private[airframe] def addLifeCycleHook(lifeCycleHookType: LifeCycleHookType, h: LifeCycleHook): Unit = {
-    debug(s"Add life cycle hook for ${lifeCycleHookType}: ${h.surface}")
+    trace(s"Adding a life cycle hook for ${lifeCycleHookType}: ${h.surface}")
     lifeCycleHookType match {
       case ON_INIT =>
         addInitHook(h)
@@ -242,7 +253,6 @@ object LifeCycleManager {
 
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     FILOLifeCycleHookExecutor andThen
-      LifeCycleTraitHandler andThen
       JSR250LifeCycleExecutor andThen
       CloseableLifeCycleHookFinder // This lifecycle must be the last one to check any preceding shutdown hooks
 }
@@ -345,53 +355,6 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
 }
 
 /**
-  * Register lifecycle hooks defined in LifeCycle trait
-  */
-object LifeCycleTraitHandler extends LifeCycleEventHandler {
-  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-    injectee match {
-      case l: InitLifeCycle =>
-        lifeCycleManager.addInitHook(EventHookHolder(t, l, { x: InitLifeCycle =>
-          x.onInit
-        }))
-      case _ =>
-    }
-
-    injectee match {
-      case l: InjectLifeCycle =>
-        lifeCycleManager.addInjectHook(EventHookHolder(t, l, { x: InjectLifeCycle =>
-          x.onInject
-        }))
-      case _ =>
-    }
-
-    injectee match {
-      case l: BeforeShutdownLifeCycle =>
-        lifeCycleManager.addPreShutdownHook(EventHookHolder(t, l, { x: BeforeShutdownLifeCycle =>
-          x.beforeShutdown
-        }))
-      case _ =>
-    }
-
-    injectee match {
-      case l: StartLifeCycle =>
-        lifeCycleManager.addStartHook(EventHookHolder(t, l, { x: StartLifeCycle =>
-          x.onStart
-        }))
-      case _ =>
-    }
-
-    injectee match {
-      case l: ShutdownLifeCycle =>
-        lifeCycleManager.addShutdownHook(EventHookHolder(t, l, { x: ShutdownLifeCycle =>
-          x.onShutdown
-        }))
-      case _ =>
-    }
-  }
-}
-
-/**
   * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call
   * close() if there is no other shutdown hooks
   */
@@ -411,8 +374,12 @@ object CloseableLifeCycleHookFinder extends LifeCycleEventHandler with LogSuppor
   override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
     if (classOf[AutoCloseable].isAssignableFrom(t.rawType)) {
       // Do not register CloseHook if @PreDestory is already registered
-      if (!lifeCycleManager.hasShutdownHooksFor(t)) {
-        lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(t, injectee)))
+      injectee match {
+        case s: Session => // ignore Airframe session
+        case _ =>
+          if (!lifeCycleManager.hasShutdownHooksFor(t)) {
+            lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(t, injectee)))
+          }
       }
     }
   }

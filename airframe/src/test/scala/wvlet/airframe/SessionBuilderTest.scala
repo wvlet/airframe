@@ -13,6 +13,7 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.lifecycle.{LifeCycleEventHandler, LifeCycleManager}
 import wvlet.airspec.AirSpec
 
 /**

@@ -6,10 +6,11 @@ title: Release Notes
 # Release Notes
 
 ## 19.9.0
--  airframe-di: Add interfaces to define LifeCycle hooks ([#656](https://github.com/wvlet/airframe/issues/656)) [[cf161ec](https://github.com/wvlet/airframe/commit/cf161ec)]
+
 -  airframe-di: [#651](https://github.com/wvlet/airframe/issues/651) Support design-time lifecycle hooks ([#655](https://github.com/wvlet/airframe/issues/655)) [[de526a5](https://github.com/wvlet/airframe/commit/de526a5)]
 -  airframe-di: Ensure running all shutdown hooks ([#653](https://github.com/wvlet/airframe/issues/653)) [[56cf14a](https://github.com/wvlet/airframe/commit/56cf14a)]
 -  airframe-di: Automatically register shutdown hooks for Closeable resources ([#645](https://github.com/wvlet/airframe/issues/645)) [[937342b](https://github.com/wvlet/airframe/commit/937342b)]
+-  ~airframe-di: Add interfaces to define LifeCycle hooks~ ([#656](https://github.com/wvlet/airframe/issues/656)) [[cf161ec](https://github.com/wvlet/airframe/commit/cf161ec)]
 -  airframe-http: Fix Option[X] arg binding ([#642](https://github.com/wvlet/airframe/issues/642)) [[9e9e509](https://github.com/wvlet/airframe/commit/9e9e509)]
 -  airframe-http-finagle: Upgrade to Finagle 19.8.0 ([#652](https://github.com/wvlet/airframe/issues/652)) [[e30d400](https://github.com/wvlet/airframe/commit/e30d400)]
 -  airframe-msgpack: Add a stream json-msgpack converter ([#643](https://github.com/wvlet/airframe/issues/643)) [[b20fd4e](https://github.com/wvlet/airframe/commit/b20fd4e)]

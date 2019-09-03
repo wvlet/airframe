@@ -88,13 +88,17 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   }
 
   private def clearAllRecords: Unit = {
-    warn(s"Deleting all records in ${recorderConfig.sqliteFilePath}")
-    connectionPool.executeUpdate(s"drop table if exists ${recordTableName}")
+    if (!inMemory) {
+      warn(s"Deleting all records in ${recorderConfig.sqliteFilePath}")
+      connectionPool.executeUpdate(s"drop table if exists ${recordTableName}")
+    }
   }
 
   def clearSession: Unit = {
-    warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
-    connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
+    if (!inMemory) {
+      warn(s"Deleting old session records for session:${recorderConfig.sessionName}")
+      connectionPool.executeUpdate(s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}'")
+    }
   }
 
   private def cleanupExpiredRecords: Unit = {

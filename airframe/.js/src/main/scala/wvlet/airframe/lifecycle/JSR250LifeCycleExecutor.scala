@@ -11,31 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 /**
-  * A trait for defining lifecycle hooks that will be called at the individual lifecycle stages
+  *
   */
-trait LifeCycle extends InitLifeCycle with InjectLifeCycle with BeforeShutdownLifeCycle with StartAndShutdownLifeCycle
-
-trait InitLifeCycle {
-  def onInit: Unit
-}
-
-trait InjectLifeCycle {
-  def onInject: Unit
-}
-
-trait BeforeShutdownLifeCycle {
-  def beforeShutdown: Unit
-}
-
-trait StartAndShutdownLifeCycle extends StartLifeCycle with ShutdownLifeCycle
-
-trait StartLifeCycle {
-  def onStart: Unit
-}
-
-trait ShutdownLifeCycle {
-  def onShutdown: Unit
+object JSR250LifeCycleExecutor extends LifeCycleEventHandler {
+  // Do nothing in Scala.js
 }

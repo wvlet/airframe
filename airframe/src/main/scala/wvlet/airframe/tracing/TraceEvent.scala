@@ -12,8 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.tracing
+import wvlet.airframe.lifecycle.Injectee
 import wvlet.airframe.surface.Surface
-import wvlet.airframe.{Injectee, Session}
+import wvlet.airframe.Session
 
 /**
   * Tracing event

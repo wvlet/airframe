@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
+import wvlet.airframe.lifecycle.{EventHookHolder, LifeCycleManager}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
@@ -198,7 +199,7 @@ private[airframe] class AirframeSession(
     // Add additional lifecycle hooks for the injectee
     trace(s"Checking lifecycle hooks for ${t}: ${design.hooks.length}")
     for (hook <- findLifeCycleHooksFor(t)) {
-      val h = EventHookHolder(hook.surface, injectee, hook.hook)
+      val h = EventHookHolder(t, injectee, hook.hook)
       lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
     }
 
