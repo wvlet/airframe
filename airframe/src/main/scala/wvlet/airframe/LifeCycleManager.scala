@@ -362,6 +362,7 @@ object LifeCycleTraitHandler extends LifeCycleEventHandler {
         lifeCycleManager.addInjectHook(EventHookHolder(t, l, { x: InjectLifeCycle =>
           x.onInject
         }))
+      case _ =>
     }
 
     injectee match {
