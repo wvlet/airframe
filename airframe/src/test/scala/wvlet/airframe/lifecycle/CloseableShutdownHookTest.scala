@@ -36,7 +36,7 @@ class CloseableShutdownHookTest extends AirSpec {
     val a = new A
     val d = newSilentDesign.bind[A].toInstance(a)
     d.build[A] { a =>
-      }
+    }
 
     a.closeIsCalled.get() shouldBe true
   }

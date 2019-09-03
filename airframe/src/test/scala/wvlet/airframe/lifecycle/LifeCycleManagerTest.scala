@@ -223,7 +223,7 @@ class LifeCycleManagerTest extends AirSpec {
   def `handle exceptions in shutdown hooks`: Unit = {
     val e = intercept[SHUTDOWN_FAILURE] {
       newSilentDesign.build[CloseExceptionTest] { x =>
-        }
+      }
     }
     e.getMessage.contains("failure test") shouldBe true
   }
@@ -239,7 +239,7 @@ class LifeCycleManagerTest extends AirSpec {
       newSilentDesign
         .bind[CloseExceptionTest].toSingleton // Inner class needs to be defined where the outer context can be found
         .build[MultipleShutdownExceptionTest] { x =>
-          }
+        }
     }
     debug(e)
     e.causes.find(_.getMessage.contains("failure test")) shouldBe defined
