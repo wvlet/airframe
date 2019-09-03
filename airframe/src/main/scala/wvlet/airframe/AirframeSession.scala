@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
+import wvlet.airframe.lifecycle.{EventHookHolder, LifeCycleManager}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport

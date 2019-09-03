@@ -21,6 +21,7 @@ import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
 import Design._
+import wvlet.airframe.lifecycle.LifeCycleHookType
 
 /**
   * Design configs

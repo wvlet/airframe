@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
-import wvlet.log.LogSupport
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 class Injectee(val surface: Surface, val injectee: Any) {
   def canEqual(other: Any): Boolean = other.isInstanceOf[Injectee]

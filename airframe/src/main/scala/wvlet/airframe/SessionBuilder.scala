@@ -13,6 +13,13 @@
  */
 package wvlet.airframe
 
+import wvlet.airframe.lifecycle.{
+  LifeCycleEventHandler,
+  LifeCycleManager,
+  ShowDebugLifeCycleLog,
+  ShowLifeCycleLog,
+  AddShutdownHook
+}
 import wvlet.log.LogSupport
 
 sealed trait Stage

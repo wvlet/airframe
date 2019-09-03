@@ -11,14 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
-import java.io.Closeable
 import java.util.concurrent.atomic.AtomicInteger
 
 import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
+import wvlet.airframe.{bind, newDesign, newSilentDesign}
 import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.airframe._
 
 class Counter extends LogSupport {
   val initialized = new AtomicInteger(0)

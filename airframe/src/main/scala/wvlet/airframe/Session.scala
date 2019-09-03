@@ -14,6 +14,7 @@
 package wvlet.airframe
 
 import wvlet.airframe.AirframeException.MISSING_SESSION
+import wvlet.airframe.lifecycle.LifeCycleManager
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 

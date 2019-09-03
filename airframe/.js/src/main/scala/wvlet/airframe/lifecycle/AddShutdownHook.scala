@@ -11,11 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 /**
   *
   */
-object JSR250LifeCycleExecutor extends LifeCycleEventHandler {
-  // Do nothing in Scala.js
+object AddShutdownHook extends LifeCycleEventHandler {
+  override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
+    // no-op for Scala.js since there is no shutdown hook
+  }
 }

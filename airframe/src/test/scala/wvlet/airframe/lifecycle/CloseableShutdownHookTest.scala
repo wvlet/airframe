@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 import java.util.concurrent.atomic.AtomicBoolean
 
+import wvlet.airframe.{bind, newSilentDesign}
 import wvlet.airspec.AirSpec
 
 /**
@@ -35,7 +36,7 @@ class CloseableShutdownHookTest extends AirSpec {
     val a = new A
     val d = newSilentDesign.bind[A].toInstance(a)
     d.build[A] { a =>
-    }
+      }
 
     a.closeIsCalled.get() shouldBe true
   }

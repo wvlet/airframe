@@ -11,13 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 import java.{lang => jl}
-import javax.annotation.{PostConstruct, PreDestroy}
 
-import wvlet.log.LogSupport
+import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
 

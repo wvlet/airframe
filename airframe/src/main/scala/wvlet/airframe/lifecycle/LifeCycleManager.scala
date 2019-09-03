@@ -11,14 +11,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe
+package wvlet.airframe.lifecycle
 
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
-import wvlet.airframe.CloseableLifeCycleHookFinder.CloseHook
+import wvlet.airframe.lifecycle.CloseableLifeCycleHookFinder.CloseHook
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.Tracer
+import wvlet.airframe.{AirframeSession, Session}
 import wvlet.log.{LogSupport, Logger}
 
 import scala.util.control.NonFatal
