@@ -222,7 +222,7 @@ class LifeCycleManagerTest extends AirSpec {
   def `handle exceptions in shutdown hooks`: Unit = {
     val e = intercept[SHUTDOWN_FAILURE] {
       newSilentDesign.build[CloseExceptionTest] { x =>
-      }
+        }
     }
     e.getMessage.contains("failure test") shouldBe true
   }
@@ -238,47 +238,10 @@ class LifeCycleManagerTest extends AirSpec {
       newSilentDesign
         .bind[CloseExceptionTest].toSingleton // Inner class needs to be defined where the outer context can be found
         .build[MultipleShutdownExceptionTest] { x =>
-        }
+          }
     }
     debug(e)
     e.causes.find(_.getMessage.contains("failure test")) shouldBe defined
     e.causes.find(_.getMessage.contains("failure 2")) shouldBe defined
   }
-
-  class LifeCycleTraitTest extends LifeCycle {
-    var onInitIsCalled: Boolean         = false
-    var onInjectIsCalled: Boolean       = false
-    var onStartIsCalled: Boolean        = false
-    var beforeShutdownIsCalled: Boolean = false
-    var onShutdownIsCalled: Boolean     = false
-    override def onInit: Unit = {
-      onInitIsCalled = true
-    }
-    override def onInject: Unit = {
-      onInjectIsCalled = true
-    }
-    override def onStart: Unit = {
-      onStartIsCalled = true
-    }
-    override def beforeShutdown: Unit = {
-      beforeShutdownIsCalled = true
-    }
-    override def onShutdown: Unit = {
-      onShutdownIsCalled = true
-    }
-  }
-
-  def `support LifeCycle trait`: Unit = {
-    val t = newSilentDesign
-      .build[LifeCycleTraitTest] { t =>
-        t
-      }.asInstanceOf[LifeCycleTraitTest]
-
-    t.onInitIsCalled shouldBe true
-    t.onInjectIsCalled shouldBe true
-    t.onStartIsCalled shouldBe true
-    t.beforeShutdownIsCalled shouldBe true
-    t.onShutdownIsCalled shouldBe true
-  }
-
 }

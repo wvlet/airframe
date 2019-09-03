@@ -112,7 +112,7 @@ private[airframe] class AirframeSession(
     trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
-      sessionName,                                          // Should we add suffixes for child sessions?
+      sessionName, // Should we add suffixes for child sessions?
       new Design(design.designOptions, d.binding, d.hooks), // Inherit parent options
       stage,
       lifeCycleManager,
@@ -132,7 +132,7 @@ private[airframe] class AirframeSession(
         design = childDesign,
         parent = Some(this),
         name = None,
-        addShutdownHook = false,                                  // Disable registration of shutdown hooks
+        addShutdownHook = false, // Disable registration of shutdown hooks
         lifeCycleEventHandler = lifeCycleManager.coreEventHandler // Use only core lifecycle event handlers
       )
 
@@ -198,7 +198,7 @@ private[airframe] class AirframeSession(
     // Add additional lifecycle hooks for the injectee
     trace(s"Checking lifecycle hooks for ${t}: ${design.hooks.length}")
     for (hook <- findLifeCycleHooksFor(t)) {
-      val h = EventHookHolder(hook.surface, injectee, hook.hook)
+      val h = EventHookHolder(t, injectee, hook.hook)
       lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
     }
 
