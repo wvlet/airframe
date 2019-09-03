@@ -5,6 +5,20 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.0
+-  airframe-di: Add interfaces to define LifeCycle hooks ([#656](https://github.com/wvlet/airframe/issues/656)) [[cf161ec](https://github.com/wvlet/airframe/commit/cf161ec)]
+-  airframe-di: [#651](https://github.com/wvlet/airframe/issues/651) Support design-time lifecycle hooks ([#655](https://github.com/wvlet/airframe/issues/655)) [[de526a5](https://github.com/wvlet/airframe/commit/de526a5)]
+-  airframe-di: Ensure running all shutdown hooks ([#653](https://github.com/wvlet/airframe/issues/653)) [[56cf14a](https://github.com/wvlet/airframe/commit/56cf14a)]
+-  airframe-di: Automatically register shutdown hooks for Closeable resources ([#645](https://github.com/wvlet/airframe/issues/645)) [[937342b](https://github.com/wvlet/airframe/commit/937342b)]
+-  airframe-http: Fix Option[X] arg binding ([#642](https://github.com/wvlet/airframe/issues/642)) [[9e9e509](https://github.com/wvlet/airframe/commit/9e9e509)]
+-  airframe-http-finagle: Upgrade to Finagle 19.8.0 ([#652](https://github.com/wvlet/airframe/issues/652)) [[e30d400](https://github.com/wvlet/airframe/commit/e30d400)]
+-  airframe-msgpack: Add a stream json-msgpack converter ([#643](https://github.com/wvlet/airframe/issues/643)) [[b20fd4e](https://github.com/wvlet/airframe/commit/b20fd4e)]
+- internal changes:
+  -  Release only Scala 2.12 projects for snapshots [[b2a8d92](https://github.com/wvlet/airframe/commit/b2a8d92)]
+  -  Upgrade to sbt 1.3.0-RC5 ([#647](https://github.com/wvlet/airframe/issues/647)) [[ff4d209](https://github.com/wvlet/airframe/commit/ff4d209)]
+  -  Add note on airspec and aiframe-log integration [[61af200](https://github.com/wvlet/airframe/commit/61af200)]
+  -  Use scalafmt 2.0.1 syntax ([#654](https://github.com/wvlet/airframe/issues/654)) [[46eb9a1](https://github.com/wvlet/airframe/commit/46eb9a1)]
+
 ## 19.8.10
 -  airspec: synchonize logger cleanup to stabilize tests [[121ef76](https://github.com/wvlet/airframe/commit/121ef76)]
 -  airframe-http-recorder: Avoid unnecessary db update [[6353233](https://github.com/wvlet/airframe/commit/6353233)]
