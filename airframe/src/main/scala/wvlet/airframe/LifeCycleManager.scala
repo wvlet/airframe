@@ -242,8 +242,8 @@ object LifeCycleManager {
 
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     FILOLifeCycleHookExecutor andThen
-      JSR250LifeCycleExecutor andThen
       LifeCycleTraitHandler andThen
+      JSR250LifeCycleExecutor andThen
       CloseableLifeCycleHookFinder // This lifecycle must be the last one to check any preceding shutdown hooks
 }
 
