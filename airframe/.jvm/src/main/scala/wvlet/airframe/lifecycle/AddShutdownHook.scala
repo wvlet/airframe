@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.lifecycle
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import wvlet.log.AirframeLogManager
 
 import scala.collection.mutable
@@ -31,27 +33,31 @@ object AddShutdownHook extends LifeCycleEventHandler {
         // Properly unregister shutdown hooks
         // This will be a workaround for sbt-1.3.0-RC2 https://github.com/sbt/sbt/issues/4794 (user class will not be visible at sbt shutdown)
         if (h != null) {
-          h.remove()
+          if (!h.isAlive) {
+            // Remove the shutdown hook if JVM shutdown is not yet started
+            h.remove()
+          }
         }
         shutdownHooks.remove(lifeCycleManager)
+      }
+      // Resetting the logger when all LifeCycleManagers have terminated
+      if (shutdownHooks.isEmpty) {
+        AirframeLogManager.resetFinally
       }
     }
   }
 
   override def beforeStart(lifeCycleManager: LifeCycleManager): Unit = {
-    val shutdownHookThread = sys.addShutdownHook {
-      lifeCycleManager.shutdown
-
-      removeShutdownHooksFor(lifeCycleManager)
-      if (shutdownHooks.isEmpty) {
-        // Resetting the logger when all lifecycle have terminated
-        AirframeLogManager.resetFinally
-      }
-    }
-
-    // Remember the shutdown hooks registered
     synchronized {
-      shutdownHooks.put(lifeCycleManager, shutdownHookThread)
+      // Remember the registered shutdown hooks
+      shutdownHooks.getOrElseUpdate(
+        lifeCycleManager, {
+          sys.addShutdownHook {
+            lifeCycleManager.shutdown
+            removeShutdownHooksFor(lifeCycleManager)
+          }
+        }
+      )
     }
   }
 
