@@ -5,6 +5,13 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.2
+-  airframe-di: Fixes [#658](https://github.com/wvlet/airframe/issues/658). Do not remove shutdown hook thread while it is running ([#661](https://github.com/wvlet/airframe/issues/661)) [[60f35d3](https://github.com/wvlet/airframe/commit/60f35d3)]
+-  internal changes for Travis CI builds:
+   - Add sonatypeDropAll before the release [[5de0594](https://github.com/wvlet/airframe/commit/5de0594)]
+   -  [doc] Support doc only release [[25073d2](https://github.com/wvlet/airframe/commit/25073d2)]
+   -  Split publish tasks ([#659](https://github.com/wvlet/airframe/issues/659)) [[1d72f22](https://github.com/wvlet/airframe/commit/1d72f22)]
+
 ## 19.9.1
 -  airframe-di:
    - Fix an issue in 19.9.0 which closes Sessions unexpectedly by calling Session.close().  
