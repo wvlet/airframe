@@ -64,5 +64,5 @@ run "git push --tags"
 FileUtils.cp(TMP_RELEASE_NOTES_FILE, RELEASE_NOTES_FILE)
 File.delete(TMP_RELEASE_NOTES_FILE)
 
-run "git commit #{RELEASE_NOTES_FILE} -m \"Add #{next_version} release notes\""
+run "git commit #{RELEASE_NOTES_FILE} -m \"[doc] Add #{next_version} release notes\""
 run "git push"
