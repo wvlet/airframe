@@ -13,16 +13,16 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
      # Publish a release version
      case "$TARGET" in
        2.12)
-         RELEASE=true ./sbt ++2.12.8 "; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
+         RELEASE=true ./sbt ++2.12.8 "; sonatypeOpen; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
          ;;
        2.13)
-         RELEASE=true ./sbt ++2.13.0 "projectJVM2_13/publishSigned"
+         RELEASE=true ./sbt ++2.13.0 "; sonatypeOpen; projectJVM2_13/publishSigned"
          ;;
        2.11)
-         RELEASE=true ./sbt ++2.11.11 "; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
+         RELEASE=true ./sbt ++2.11.11 "; sonatypeOpen; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
          ;;
        js)
-         RELEASE=true ./sbt "projectJS/publishSigned"
+         RELEASE=true ./sbt "; sonatypeOpen; projectJS/publishSigned"
          ;;
      esac
   fi

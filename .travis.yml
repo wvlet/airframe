@@ -85,7 +85,7 @@ jobs:
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - stage: cleanup
-      script: ./sbt sonatypeDropAll
+      script: ./sbt sonatypePrepare
     - stage: publish
       env: PROJECT=publish TARGET=2.12
       jdk: openjdk8
@@ -107,7 +107,7 @@ jobs:
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: release
-      script: ./sbt sonatypeReleaseAll
+      script: ./sbt sonatypeRelease
 
 env:
   global:
