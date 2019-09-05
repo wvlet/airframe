@@ -107,7 +107,7 @@ jobs:
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: release
-      script: ./sbt sonatypeRelease
+      script: ./sbt "; sonatypeOpen; sonatypeRelease"
 
 env:
   global:
