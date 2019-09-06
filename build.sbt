@@ -91,7 +91,7 @@ val buildSettings = Seq[Setting[_]](
 val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
-publishTo in ThisBuild := sonatypePublishTo.value
+publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
   // Workaround for ' JSCom has been closed' issue

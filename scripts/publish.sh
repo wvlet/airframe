@@ -11,20 +11,7 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
      ./sbt "publishSnapshots"
   else
      # Publish a release version
-     case "$TARGET" in
-       2.12)
-         RELEASE=true ./sbt ++2.12.8 "; sonatypeOpen; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
-         ;;
-       2.13)
-         RELEASE=true ./sbt ++2.13.0 "; sonatypeOpen; projectJVM2_13/publishSigned"
-         ;;
-       2.11)
-         RELEASE=true ./sbt ++2.11.11 "; sonatypeOpen; projectJVM2_13/publishSigned; projectJVM2_12/publishSigned"
-         ;;
-       js)
-         RELEASE=true ./sbt "; sonatypeOpen; projectJS/publishSigned"
-         ;;
-     esac
+     RELEASE=true ./sbt "; sonatypePrepare; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned; projectJS/publishSigned; sonatypeBundleUpload; sonatypeRelease"
   fi
 else
   echo "This not a master branch commit. Skipping the release step"
