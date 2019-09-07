@@ -13,8 +13,8 @@ val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.0"
 val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
-val SQLITE_JDBC_VERSION             = "3.27.2"
-val SLF4J_VERSION                   = "1.7.28"
+val SQLITE_JDBC_VERSION             = "3.27.2.1"
+val SLF4J_VERSION                   = "1.7.25"
 val JS_JAVA_LOGGING_VERSION         = "0.1.5"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
@@ -83,7 +83,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.2"
   )
 )
 
@@ -390,7 +390,7 @@ lazy val airframeMacrosRef    = airframeMacros % internalScope
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
     // For ading PreDestroy, PostConstruct annotations to Java9
-    "javax.annotation" % "javax.annotation-api" % "1.3.1",
+    "javax.annotation" % "javax.annotation-api" % "1.3.2",
     "org.scala-lang"   % "scala-reflect"        % scalaVersion,
     "org.scala-lang"   % "scala-compiler"       % scalaVersion % "provided"
   )
@@ -429,7 +429,7 @@ lazy val config =
       name := "airframe-config",
       description := "airframe configuration module",
       libraryDependencies ++= Seq(
-        "org.yaml" % "snakeyaml" % "1.18"
+        "org.yaml" % "snakeyaml" % "1.25"
       )
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, tablet, airspecRefJVM % "test")
@@ -594,7 +594,7 @@ lazy val tablet =
         // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
         // For ColumnType parser
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.msgpack"            % "msgpack-core"              % "0.8.14",
+        "org.msgpack"            % "msgpack-core"              % "0.8.18",
         // For JDBC testing
         "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
       )
@@ -611,7 +611,7 @@ lazy val jdbc =
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
         "org.postgresql" % "postgresql"  % "42.1.4",
-        "com.zaxxer"     % "HikariCP"    % "2.6.2",
+        "com.zaxxer"     % "HikariCP"    % "2.6.3",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
@@ -733,9 +733,9 @@ lazy val fluentd =
       name := "airframe-fluentd",
       description := "Fluentd logger",
       libraryDependencies ++= Seq(
-        "org.komamitsu" % "fluency-core"         % "2.3.2",
-        "org.komamitsu" % "fluency-fluentd"      % "2.3.2",
-        "org.komamitsu" % "fluency-treasuredata" % "2.3.2" % "provided",
+        "org.komamitsu" % "fluency-core"         % "2.3.3",
+        "org.komamitsu" % "fluency-fluentd"      % "2.3.3",
+        "org.komamitsu" % "fluency-treasuredata" % "2.3.3" % "provided",
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
