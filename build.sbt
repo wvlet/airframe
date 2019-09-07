@@ -390,7 +390,7 @@ lazy val airframeMacrosRef    = airframeMacros % internalScope
 val surfaceDependencies = { scalaVersion: String =>
   Seq(
     // For ading PreDestroy, PostConstruct annotations to Java9
-    "javax.annotation" % "javax.annotation-api" % "1.3.1",
+    "javax.annotation" % "javax.annotation-api" % "1.3.2",
     "org.scala-lang"   % "scala-reflect"        % scalaVersion,
     "org.scala-lang"   % "scala-compiler"       % scalaVersion % "provided"
   )
