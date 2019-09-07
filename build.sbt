@@ -733,9 +733,9 @@ lazy val fluentd =
       name := "airframe-fluentd",
       description := "Fluentd logger",
       libraryDependencies ++= Seq(
-        "org.komamitsu" % "fluency-core"         % "2.3.3",
-        "org.komamitsu" % "fluency-fluentd"      % "2.3.3",
-        "org.komamitsu" % "fluency-treasuredata" % "2.3.3" % "provided",
+        "org.komamitsu" % "fluency-core"         % "2.4.0",
+        "org.komamitsu" % "fluency-fluentd"      % "2.4.0",
+        "org.komamitsu" % "fluency-treasuredata" % "2.4.0" % "provided",
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
