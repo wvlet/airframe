@@ -611,7 +611,7 @@ lazy val jdbc =
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
         "org.postgresql" % "postgresql"  % "42.1.4",
-        "com.zaxxer"     % "HikariCP"    % "2.6.2",
+        "com.zaxxer"     % "HikariCP"    % "2.6.3",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
