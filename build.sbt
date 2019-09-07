@@ -83,7 +83,7 @@ val buildSettings = Seq[Setting[_]](
   ),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.1"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.2"
   )
 )
 
