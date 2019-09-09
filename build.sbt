@@ -34,17 +34,9 @@ scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
 
 val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
-val hasTravisTag: Boolean  = sys.env.isDefinedAt("TRAVIS_TAG")
 
 // Use dynamic snapshot version strings for non tagged versions
-dynverSonatypeSnapshots in ThisBuild := {
-  if (isTravisBuild) {
-    // Do not use snapshot version for release builds
-    !hasTravisTag
-  } else {
-    (ThisBuild / isSnapshot).value
-  }
-}
+dynverSonatypeSnapshots in ThisBuild := true
 
 // For publishing in Travis CI
 
