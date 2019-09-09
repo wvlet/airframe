@@ -66,7 +66,7 @@ jobs:
           name: Update Scala 2.12 Dependencies
           command: |
             cd airframe
-            ./sbt ++2.12.8 "projectJVM/test:update projectJS/test:update"
+            ./sbt ++2.12.8 ";projectJVM/test:update; projectJS/test:update"
       - run:
           name: Update Scala 2.13 Dependencies
           command: |
