@@ -17,7 +17,7 @@ import sbt.testing._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.Design
 import wvlet.airframe.surface.MethodSurface
-import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
+import wvlet.airspec.runner.AirSpecRunnerSbt.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException, AirSpecFailureBase, MissingTestDependency}
 import wvlet.log.LogSupport
 
