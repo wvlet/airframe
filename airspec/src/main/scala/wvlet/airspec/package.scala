@@ -26,4 +26,7 @@ package object airspec {
   private[airspec] lazy val inCircleCI: Boolean = {
     sys.env.get("CIRCLECI").map(_.toBoolean).getOrElse(false)
   }
+  private[airspec] lazy val inCI: Boolean = {
+    sys.env.get("CI").map(_.toBoolean).getOrElse(false)
+  }
 }

@@ -100,7 +100,8 @@ private[airspec] trait AirSpecSpi {
   protected def after: Unit     = {}
   protected def afterAll: Unit  = {}
 
-  // Returns true if this is running in TravisCI
+  // Returns true if this is running in CI
+  protected def inCI: Boolean       = airspec.inCI
   protected def inTravisCI: Boolean = airspec.inTravisCI
   protected def inCircleCI: Boolean = airspec.inCircleCI
 
