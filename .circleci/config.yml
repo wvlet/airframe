@@ -20,12 +20,6 @@ commands:
   save_sbt_cache:
     description: "A command for saving cache"
     steps:
-      # Tricks to avoid unnecessary cache updates
-      - run:
-          name: Cleanup sbt tmp files
-          command: |
-            find ~/.sbt -name "*.lock" | xargs rm
-            find ~/.ivy2 -name "ivydata-*.properties" | xargs rm
       - save_cache: *save-cache-sbt
 
 executors:
@@ -42,6 +36,9 @@ workflows:
           requires:
             - build
       - test:
+          requires:
+            - build
+      - publish:
           requires:
             - build
 
@@ -63,7 +60,7 @@ jobs:
           name: Compile
           command: |
             cd airframe
-            ./sbt projectJVM/compile
+            ./sbt projectJVM/test:compile
       - save_sbt_cache
       # Save the source code and compiled artifacts to reuse them in the next tasks
       - persist_to_workspace:
@@ -88,4 +85,12 @@ jobs:
           command: |
             cd airframe
             ./sbt projectJVM/test
-      - save_sbt_cache
+  publish:
+    executor: jdk_executor
+    steps:
+      - attach_and_restore
+      - run:
+          name: Publish
+          command: |
+            cd airframe
+            ./sbt publishLocal
