@@ -5,6 +5,28 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.3
+-  Deprecate airframe-tablet ([#684](https://github.com/wvlet/airframe/issues/684)) [[6d2bb77](https://github.com/wvlet/airframe/commit/6d2bb77)]
+- airframe-jdbc:
+  -  Update HikariCP to 3.3.1 ([#683](https://github.com/wvlet/airframe/issues/683)) [[9434e6b](https://github.com/wvlet/airframe/commit/9434e6b)]
+  -  Update sqlite-jdbc to 3.28.0 ([#682](https://github.com/wvlet/airframe/issues/682)) [[8d907d6](https://github.com/wvlet/airframe/commit/8d907d6)]
+  -  Update postgresql to 42.2.6 ([#673](https://github.com/wvlet/airframe/issues/673)) [[86234f9](https://github.com/wvlet/airframe/commit/86234f9)]
+- airframe-fluentd
+  -  Update fluency-core, fluency-fluentd, ... to 2.4.0 ([#681](https://github.com/wvlet/airframe/issues/681)) [[bc1e5bc](https://github.com/wvlet/airframe/commit/bc1e5bc)]
+- airframe-codec
+  -  Update msgpack-core to 0.8.18 ([#671](https://github.com/wvlet/airframe/issues/671)) [[3fbaecc](https://github.com/wvlet/airframe/commit/3fbaecc)]
+- airframe-di
+ -  Update javax.annotation-api to 1.3.2 ([#669](https://github.com/wvlet/airframe/issues/669)) [[1ca65c4](https://github.com/wvlet/airframe/commit/1ca65c4)]
+- airframe-config
+  - Use airframe-codec instead of airframe-tablet for mapping Yaml to Objects
+  -  Update snakeyaml to 1.25 ([#679](https://github.com/wvlet/airframe/issues/679)) [[81ae0a9](https://github.com/wvlet/airframe/commit/81ae0a9)]
+- internal changes:
+  -  Upgrade to sbt-sonatype 3.6 [[5bc29f0](https://github.com/wvlet/airframe/commit/5bc29f0)]
+  -  Upgrade to sbt 1.3.0 ([#662](https://github.com/wvlet/airframe/issues/662)) [[f6463e9](https://github.com/wvlet/airframe/commit/f6463e9)]
+  -  Update scala-collection-compat to 2.1.2 ([#674](https://github.com/wvlet/airframe/issues/674)) [[2f1286d](https://github.com/wvlet/airframe/commit/2f1286d)]
+  -  Update sbt-scalajs-crossproject to 0.6.1 ([#672](https://github.com/wvlet/airframe/issues/672)) [[8ff4256](https://github.com/wvlet/airframe/commit/8ff4256)]
+  -  Update slf4j-jdk14 to 1.7.28 ([#677](https://github.com/wvlet/airframe/issues/677)) [[6111025](https://github.com/wvlet/airframe/commit/6111025)]
+
 ## 19.9.2
 -  airframe-di: Fixes [#658](https://github.com/wvlet/airframe/issues/658). Do not remove shutdown hook thread while it is running ([#661](https://github.com/wvlet/airframe/issues/661)) [[60f35d3](https://github.com/wvlet/airframe/commit/60f35d3)]
 -  internal changes for Travis CI builds:
