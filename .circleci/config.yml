@@ -1,0 +1,91 @@
+version: 2.1
+
+aliases:
+  - &restore-cache-sbt
+    key: ppa-cache-{{ checksum "airframe/build.sbt" }}
+  - &save-cache-sbt
+    paths:
+      - ~/.ivy2/cache
+      - ~/.sbt
+      - ~/.coursier
+    key: ppa-cache-{{ checksum "airframe/build.sbt" }}
+
+commands:
+  attach_and_restore:
+    description: "A command for attaching and restoring the workspace and cache"
+    steps:
+      - attach_workspace:
+          at: ~/work/airframe
+      - restore_cache: *restore-cache-sbt
+  save_sbt_cache:
+    description: "A command for saving cache"
+    steps:
+      # Tricks to avoid unnecessary cache updates
+      - run:
+          name: Cleanup sbt tmp files
+          command: |
+            find ~/.sbt -name "*.lock" | xargs rm
+            find ~/.ivy2 -name "ivydata-*.properties" | xargs rm
+      - save_cache: *save-cache-sbt
+
+executors:
+  jdk_executor:
+    working_directory: ~/work
+    docker:
+      - image: circleci/openjdk:11-jdk
+
+workflows:
+  master:
+    jobs:
+      - build
+      - code-format:
+          requires:
+            - build
+      - test:
+          requires:
+            - build
+
+jobs:
+  build:
+    executor: jdk_executor
+    steps:
+      - run:
+          name: mkdir
+          command: |
+            mkdir -p ~/.sbt
+            mkdir -p ~/.ivy2/cache
+            mkdir -p ~/.coursier
+            mkdir -p airframe
+      - checkout:
+          path: airframe
+      - attach_and_restore
+      - run:
+          name: Compile
+          command: |
+            cd airframe
+            ./sbt projectJVM/compile
+      - save_sbt_cache
+      # Save the source code and compiled artifacts to reuse them in the next tasks
+      - persist_to_workspace:
+          root: airframe
+          paths:
+            - .
+  code-format:
+    executor: jdk_executor
+    steps:
+      - attach_and_restore
+      - run:
+          name: Format check
+          command: |
+            cd airframe
+            ./scalafmt --test
+  test:
+    executor: jdk_executor
+    steps:
+      - attach_and_restore
+      - run:
+          name: Test
+          command: |
+            cd api
+            ./sbt projectJVM/test
+      - save_sbt_cache
