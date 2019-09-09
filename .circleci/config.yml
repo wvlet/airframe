@@ -29,7 +29,7 @@ executors:
       - image: circleci/openjdk:11-jdk
 
 workflows:
-  master:
+  workflow:
     jobs:
       - dependency
       - code-format:
@@ -108,7 +108,7 @@ jobs:
           name: Test
           command: |
             cd airframe
-            ./sbt ++2.13.0 "projectJVM/test"
+            ./sbt ++2.13.0 "projectJVM2_13/test"
 
   test-scalaJS:
     executor: jdk_executor
