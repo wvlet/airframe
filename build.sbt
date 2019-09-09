@@ -146,7 +146,6 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   launcher,
   metricsJVM,
   codecJVM,
-  tablet,
   msgpackJVM,
   http,
   jsonJVM,
@@ -432,7 +431,7 @@ lazy val config =
         "org.yaml" % "snakeyaml" % "1.25"
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, tablet, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, codecJVM, airspecRefJVM % "test")
 
 lazy val control =
   project
@@ -582,25 +581,6 @@ lazy val codec =
 lazy val codecJVM = codec.jvm
 lazy val codecJS  = codec.js
 
-lazy val tablet =
-  project
-    .in(file("airframe-tablet"))
-    .settings(buildSettings)
-    .settings(
-      name := "airframe-tablet",
-      description := "Data format conversion library",
-      libraryDependencies ++= Seq(
-        // scala-csv doesn't support Scala 2.13 yet
-        // "com.github.tototoshi" %% "scala-csv"   % "1.3.5",
-        // For ColumnType parser
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        "org.msgpack"            % "msgpack-core"              % "0.8.18",
-        // For JDBC testing
-        "org.xerial" % "sqlite-jdbc" % SQLITE_JDBC_VERSION % "test"
-      )
-    )
-    .dependsOn(codecJVM, logJVM, surfaceJVM, airspecRefJVM % "test")
-
 lazy val jdbc =
   project
     .in(file("airframe-jdbc"))
@@ -671,7 +651,7 @@ lazy val httpRecorder =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(codecJVM, metricsJVM, control, finagle, jdbc, tablet, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(codecJVM, metricsJVM, control, finagle, jdbc, airframeMacrosJVMRef, airspecRefJVM % "test")
 
 lazy val json =
   crossProject(JSPlatform, JVMPlatform)
@@ -783,7 +763,6 @@ lazy val examples =
       launcher,
       jmx,
       jdbc,
-      tablet,
       finagle,
       airspecRefJVM % "test"
     )

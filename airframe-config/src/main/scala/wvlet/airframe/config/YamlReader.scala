@@ -16,13 +16,12 @@ package wvlet.airframe.config
 import java.net.URL
 import java.{lang => jl, util => ju}
 
-import org.msgpack.core.{MessagePack, MessagePacker}
 import org.yaml.snakeyaml.Yaml
-import wvlet.airframe.tablet.MessagePackRecord
-import wvlet.airframe.tablet.obj.ObjectTabletWriter
+import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.msgpack.spi.{MessagePack, Packer}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil._
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{Surface, Zero}
 import wvlet.airframe.surface.reflect.ReflectTypeUtil
 
 import scala.jdk.CollectionConverters._
@@ -70,10 +69,11 @@ object YamlReader extends LogSupport {
 
   def bindMap[A: ru.TypeTag](surface: Surface, prop: Map[AnyRef, AnyRef]): A = {
     val yamlMsgpack = toMsgPack(prop)
-    val w           = new ObjectTabletWriter[A]()
-    val result      = w.write(new MessagePackRecord(yamlMsgpack))
+    val surface     = Surface.of[A]
+    val codec       = MessageCodec.of[A]
+    val result      = codec.unpackMsgPack(yamlMsgpack).getOrElse(Zero.zeroOf(surface))
     trace(result)
-    result
+    result.asInstanceOf[A]
   }
 
   def toMsgPack(prop: Map[AnyRef, AnyRef]): Array[Byte] = {
@@ -89,7 +89,7 @@ object YamlReader extends LogSupport {
 class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
 
   def toMsgpack: Array[Byte] = {
-    val packer = MessagePack.newDefaultBufferPacker()
+    val packer = MessagePack.newBufferPacker
     packer.packMapHeader(map.size)
     for ((k, v) <- map) yield {
       pack(packer, k)
@@ -98,9 +98,9 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
     packer.toByteArray
   }
 
-  private def pack(packer: MessagePacker, v: Any): MessagePacker = {
+  private def pack(packer: Packer, v: Any): Packer = {
     if (v == null) {
-      packer.packNil()
+      packer.packNil
     } else {
       trace(s"pack: ${v} (${v.getClass.getName})")
       v match {
