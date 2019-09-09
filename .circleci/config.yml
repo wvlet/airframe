@@ -31,19 +31,25 @@ executors:
 workflows:
   master:
     jobs:
-      - build
+      - dependency
       - code-format:
           requires:
-            - build
-      - test:
+            - dependency
+      - test-scala2_12:
           requires:
-            - build
+            - dependency
+      - test-scala2_13:
+          requires:
+            - dependency
+      - test-scalaJS:
+          requires:
+            - dependency
       - publish:
           requires:
-            - build
+            - dependency
 
 jobs:
-  build:
+  dependency:
     executor: jdk_executor
     steps:
       - run:
@@ -57,16 +63,22 @@ jobs:
           path: airframe
       - attach_and_restore
       - run:
-          name: Compile
+          name: Update Scala 2.12 Dependencies
           command: |
             cd airframe
-            ./sbt projectJVM/test:compile
+            ./sbt ++2.12.8 "projectJVM/test:update projectJS/test:update"
+      - run:
+          name: Update Scala 2.13 Dependencies
+          command: |
+            cd airframe
+            ./sbt ++2.13.0 "projectJVM2_13/test:update"
       - save_sbt_cache
       # Save the source code and compiled artifacts to reuse them in the next tasks
       - persist_to_workspace:
           root: airframe
           paths:
             - .
+
   code-format:
     executor: jdk_executor
     steps:
@@ -76,7 +88,8 @@ jobs:
           command: |
             cd airframe
             ./scalafmt --test
-  test:
+
+  test-scala2_12:
     executor: jdk_executor
     steps:
       - attach_and_restore
@@ -84,7 +97,29 @@ jobs:
           name: Test
           command: |
             cd airframe
-            ./sbt projectJVM/test
+            ./sbt ++2.12.8 "projectJVM/test"
+
+
+  test-scala2_13:
+    executor: jdk_executor
+    steps:
+      - attach_and_restore
+      - run:
+          name: Test
+          command: |
+            cd airframe
+            ./sbt ++2.13.0 "projectJVM/test"
+
+  test-scalaJS:
+    executor: jdk_executor
+    steps:
+      - attach_and_restore
+      - run:
+          name: Test
+          command: |
+            cd airframe
+            ./sbt ++2.12.8 "projectJS/test"
+
   publish:
     executor: jdk_executor
     steps:
@@ -93,4 +128,4 @@ jobs:
           name: Publish
           command: |
             cd airframe
-            ./sbt publishLocal
+            ./sbt ++2.12.8 publishLocal
