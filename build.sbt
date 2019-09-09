@@ -39,6 +39,7 @@ val hasTravisTag: Boolean  = sys.env.isDefinedAt("TRAVIS_TAG")
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := {
   if (isTravisBuild) {
+    // Do not use snapshot version for release builds
     !hasTravisTag
   } else {
     (ThisBuild / isSnapshot).value
