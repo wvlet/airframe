@@ -15,6 +15,7 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.io.Buf.ByteArray
+import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{ResponseHandler, SimpleHttpResponse}
 import wvlet.airframe.surface.Surface
@@ -28,12 +29,27 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
 
+  private def isMsgPackRequest(request: Request): Boolean = {
+    request.accept.contains("application/x-msgpack")
+  }
+
   // TODO: Extract this logic into airframe-http
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
       case r: Response =>
         // Return the response as is
         r
+      case reader: Reader[Buf]
+          if responseSurface.typeArgs.headOption.forall(x => classOf[Buf].isAssignableFrom(x.rawType)) =>
+        // Return the response using streaming
+        val resp = Response(request.version, Status.Ok, reader)
+        if (isMsgPackRequest(request)) {
+          resp.contentType = "application/x-msgpack"
+        } else {
+          // TODO Support other content types
+          resp.setContentTypeJson()
+        }
+        resp
       case r: SimpleHttpResponse =>
         val resp = Response(request)
         resp.statusCode = r.statusCode
@@ -59,7 +75,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         }
 
         // Return application/msgpack content type
-        if (request.accept.contains("application/x-msgpack")) {
+        if (isMsgPackRequest(request)) {
           val res = Response(Status.Ok)
           res.contentType = "application/x-msgpack"
           res.content = ByteArray.Owned(msgpack)

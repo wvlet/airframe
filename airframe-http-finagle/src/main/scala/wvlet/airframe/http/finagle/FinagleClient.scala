@@ -19,6 +19,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{JSONValueCodec, MessageCodec, MessageCodecFactory}
+import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
@@ -231,6 +232,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
 object FinagleClient extends LogSupport {
 
   def defaultConfig: FinagleClientConfig = FinagleClientConfig()
+
+  // Config for tests
+  def noRetryConfig: FinagleClientConfig = FinagleClientConfig(retry = Retry.withBackOff().withMaxRetry(0))
 
   def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
     x.withSessionQualifier.noFailureAccrual
