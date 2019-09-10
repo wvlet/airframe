@@ -62,7 +62,7 @@ trait AirSpecContext {
     * Build an instance of type A using Airframe DI, and run the test method within A.
     * @return the generated instance of A
     */
-  def buildAndRun[A <: AirSpecBase]: A = macro AirSpecMacros.buildAndRunImpl[A]
+  def test[A <: AirSpecBase]: A = macro AirSpecMacros.buildAndRunImpl[A]
 
   /**
     * Run the test methods in a given AirSpec instance

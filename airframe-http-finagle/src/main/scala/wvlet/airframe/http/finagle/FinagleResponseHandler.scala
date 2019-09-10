@@ -13,17 +13,21 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.util.concurrent.atomic.AtomicBoolean
+
+import com.twitter.concurrent.AsyncStream
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{ResponseHandler, SimpleHttpResponse}
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 /**
   * Converting controller results into finagle http responses.
   */
-trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
+trait FinagleResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
 
   // Use Map codecs to create natural JSON responses
   private[this] val mapCodecFactory =
@@ -33,23 +37,38 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
     request.accept.contains("application/x-msgpack")
   }
 
+  private def newStreamResponse(request: Request, reader: Reader[Buf]): Response = {
+    val resp = Response(request.version, Status.Ok, reader)
+    if (isMsgPackRequest(request)) {
+      resp.contentType = "application/x-msgpack"
+    } else {
+      // TODO Support other content types
+      resp.setContentTypeJson()
+    }
+    resp
+  }
+
   // TODO: Extract this logic into airframe-http
   def toHttpResponse[A](request: Request, responseSurface: Surface, a: A): Response = {
     a match {
       case r: Response =>
         // Return the response as is
         r
-      case reader: Reader[Buf]
-          if responseSurface.typeArgs.headOption.forall(x => classOf[Buf].isAssignableFrom(x.rawType)) =>
+      case reader: Reader[_] =>
         // Return the response using streaming
-        val resp = Response(request.version, Status.Ok, reader)
-        if (isMsgPackRequest(request)) {
-          resp.contentType = "application/x-msgpack"
-        } else {
-          // TODO Support other content types
-          resp.setContentTypeJson()
+        responseSurface.typeArgs.headOption match {
+          case Some(bufType) if classOf[Buf].isAssignableFrom(bufType.rawType) =>
+            // Reader[Buf] can be returned directly
+            newStreamResponse(request, reader.asInstanceOf[Reader[Buf]])
+          case Some(elemType) =>
+            // For Reader[X], convert Seq[X] into JSON array
+            val r         = reader.asInstanceOf[Reader[Any]]
+            val codec     = mapCodecFactory.of(elemType).asInstanceOf[MessageCodec[Any]]
+            val bufReader = FinagleResponseHandler.toJsonBufStream(reader, codec)
+            newStreamResponse(request, bufReader)
+          case None =>
+            throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
-        resp
       case r: SimpleHttpResponse =>
         val resp = Response(request)
         resp.statusCode = r.statusCode
@@ -94,4 +113,32 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] {
         }
     }
   }
+}
+
+object FinagleResponseHandler {
+
+  def toJsonBufStream(reader: Reader[_], codec: MessageCodec[Any]): Reader[Buf] = {
+    val reported = new AtomicBoolean(false)
+
+    val jsonArrayElementReader = reader.map { x =>
+      val json = codec.toJson(x)
+      if (reported.compareAndSet(false, true)) {
+        // The first element
+        Buf.Utf8(json)
+      } else {
+        Buf.Utf8(s",${json}")
+      }
+    }
+
+    val jsonReader: AsyncStream[Reader[Buf]] = AsyncStream.fromSeq(
+      Seq(
+        Reader.fromBuf(Buf.Utf8("[")),
+        jsonArrayElementReader,
+        Reader.fromBuf(Buf.Utf8("]"))
+      )
+    )
+
+    Reader.concat(jsonReader)
+  }
+
 }

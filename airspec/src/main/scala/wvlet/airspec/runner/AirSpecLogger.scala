@@ -19,7 +19,7 @@ import sbt.testing._
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airspec.spi.AirSpecFailureBase
-import wvlet.log.{LogFormatter, Logger}
+import wvlet.log.{LogFormatter, LogLevel, Logger}
 
 private[airspec] case class AirSpecEvent(
     taskDef: TaskDef,

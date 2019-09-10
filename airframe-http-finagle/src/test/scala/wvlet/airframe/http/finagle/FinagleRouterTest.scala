@@ -25,6 +25,7 @@ import wvlet.airframe.codec.{JSONCodec, MessageCodec}
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
+import wvlet.airspec.spi.AirSpecContext
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 case class RichInfo(version: String, name: String, details: RichNestedInfo)
@@ -83,18 +84,17 @@ trait MyApi extends LogSupport {
     val json = MessageCodec.of[RichInfo].toJson(getRichInfo)
     Reader.fromBuf(Buf.Utf8(json))
   }
+
+  @Endpoint(path = "/v1/reader-seq")
+  def readerSeq: Reader[RichInfo] = {
+    Reader.fromSeq(Seq(getRichInfo, getRichInfo))
+  }
 }
 
 /**
   *
   */
 class FinagleRouterTest extends AirSpec {
-
-  def `support Router.of[X] and Router.add[X]` : Unit = {
-    // sanity test
-    val r1 = Router.add[MyApi]
-    val r2 = Router.of[MyApi]
-  }
 
   protected override def design: Design = {
     newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
@@ -104,142 +104,162 @@ class FinagleRouterTest extends AirSpec {
       }
   }
 
-  def `Support future responses`(client: FinagleClient): Unit = {
-    val f1 = client.send(Request("/v1/info")).map { response =>
-      debug(response.contentString)
-    }
-    val f2 = client.send(Request("/v1/rich_info")).map { r =>
-      debug(r.contentString)
-    }
+  def `support Router.of[X] and Router.add[X]` : Unit = {
+    // sanity test
+    val r1 = Router.add[MyApi]
+    val r2 = Router.of[MyApi]
+  }
 
-    Await.result(f1.join(f2))
+  def `support production mode`(server: FinagleServer): Unit = {
+    // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
+  }
 
-    // making many requests
-    val futures = (0 until 5).map { x =>
-      client.send(Request("/v1/rich_info")).map { response =>
-        response.contentString
+  def `test various responses`(context: AirSpecContext): Unit = {
+    context.test[ResponseTest]
+  }
+
+  class ResponseTest(client: FinagleClient) extends AirSpec {
+    def `Support future responses`: Unit = {
+      val f1 = client.send(Request("/v1/info")).map { response =>
+        debug(response.contentString)
       }
+      val f2 = client.send(Request("/v1/rich_info")).map { r =>
+        debug(r.contentString)
+      }
+
+      Await.result(f1.join(f2))
+
+      // making many requests
+      val futures = (0 until 5).map { x =>
+        client.send(Request("/v1/rich_info")).map { response =>
+          response.contentString
+        }
+      }
+
+      val result = Await.result(Future.collect(futures))
+      debug(result.mkString(", "))
+
+      // Future response
+      Await.result(client.send(Request("/v1/future")).map { response =>
+        response.contentString
+      }) shouldBe "hello"
     }
 
-    val result = Await.result(Future.collect(futures))
-    debug(result.mkString(", "))
+    def `support JSON response` = {
+      // JSON response
+      val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response =>
+        response.contentString
+      })
 
-    // Future response
-    Await.result(client.send(Request("/v1/future")).map { response =>
-      response.contentString
-    }) shouldBe "hello"
-  }
-
-  def `support JSON response`(client: FinagleClient) = {
-    // JSON response
-    val json = Await.result(client.send(Request("/v1/rich_info_future")).map { response =>
-      response.contentString
-    })
-
-    json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
-  }
-
-  def `support JSON POST request`(client: FinagleClient) {
-    val request = Request("/v1/json_api")
-    request.method = Method.Post
-    request.contentString = """{"id":10, "name":"leo"}"""
-    val ret = Await.result(client.send(request).map(_.contentString))
-    ret shouldBe """RichRequest(10,leo)"""
-  }
-
-  def `JSON POST request with explicit JSON content type`(client: FinagleClient) {
-    val request = Request("/v1/json_api")
-    request.method = Method.Post
-    request.contentString = """{"id":10, "name":"leo"}"""
-    request.setContentTypeJson()
-    val ret = Await.result(client.send(request).map(_.contentString))
-    ret shouldBe """RichRequest(10,leo)"""
-  }
-
-  def `test parameter mappings`(client: FinagleClient) {
-    // Use the default argument
-    {
-      val request = Request("/v1/json_api_default")
-      request.method = Method.Post
-      val ret = Await.result(client.send(request).map(_.contentString))
-      ret shouldBe """RichRequest(100,dummy)"""
+      json shouldBe """{"version":"0.1","name":"MyApi","details":{"serverType":"test-server"}}"""
     }
 
-    // GET requests with query parameters
-    {
-      val request = Request("/v1/json_api?id=10&name=leo")
-      request.method = Method.Get
-      val ret = Await.result(client.send(request).map(_.contentString))
-      ret shouldBe """RichRequest(10,leo)"""
-    }
-
-    // JSON requests with POST
-    {
+    def `support JSON POST request` {
       val request = Request("/v1/json_api")
       request.method = Method.Post
       request.contentString = """{"id":10, "name":"leo"}"""
       val ret = Await.result(client.send(request).map(_.contentString))
       ret shouldBe """RichRequest(10,leo)"""
     }
-  }
 
-  def `test error response`(client: FinagleClient) = {
-    warn("Exception response test")
-    val l  = Logger.of[FinagleServer]
-    val lv = l.getLogLevel
-    l.setLogLevel(LogLevel.ERROR)
-    try {
-      val request = Request("/v1/error")
-      val ret     = Await.result(client.send(request)) // Receive the raw error response
-      ret.statusCode shouldBe 500
-    } finally {
-      l.setLogLevel(lv)
-    }
-  }
-
-  def `MsgPack response`(client: FinagleClient) = {
-    // MessagePack request
-    {
+    def `JSON POST request with explicit JSON content type` {
       val request = Request("/v1/json_api")
       request.method = Method.Post
-      val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
-      request.content = ByteArray.Owned(msgpack)
-      request.contentType = "application/x-msgpack"
+      request.contentString = """{"id":10, "name":"leo"}"""
+      request.setContentTypeJson()
       val ret = Await.result(client.send(request).map(_.contentString))
       ret shouldBe """RichRequest(10,leo)"""
     }
 
-    // Receive MessagePack
-    {
+    def `test parameter mappings` {
+      // Use the default argument
+      {
+        val request = Request("/v1/json_api_default")
+        request.method = Method.Post
+        val ret = Await.result(client.send(request).map(_.contentString))
+        ret shouldBe """RichRequest(100,dummy)"""
+      }
+
+      // GET requests with query parameters
+      {
+        val request = Request("/v1/json_api?id=10&name=leo")
+        request.method = Method.Get
+        val ret = Await.result(client.send(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
+      }
+
+      // JSON requests with POST
+      {
+        val request = Request("/v1/json_api")
+        request.method = Method.Post
+        request.contentString = """{"id":10, "name":"leo"}"""
+        val ret = Await.result(client.send(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
+      }
+    }
+
+    def `test error response` = {
+      warn("Exception response test")
+      val l  = Logger.of[FinagleServer]
+      val lv = l.getLogLevel
+      l.setLogLevel(LogLevel.ERROR)
+      try {
+        val request = Request("/v1/error")
+        val ret     = Await.result(client.send(request)) // Receive the raw error response
+        ret.statusCode shouldBe 500
+      } finally {
+        l.setLogLevel(lv)
+      }
+    }
+
+    def `MsgPack response` = {
+      // MessagePack request
+      {
+        val request = Request("/v1/json_api")
+        request.method = Method.Post
+        val msgpack = JSONCodec.toMsgPack("""{"id":10, "name":"leo"}""")
+        request.content = ByteArray.Owned(msgpack)
+        request.contentType = "application/x-msgpack"
+        val ret = Await.result(client.send(request).map(_.contentString))
+        ret shouldBe """RichRequest(10,leo)"""
+      }
+
+      // Receive MessagePack
+      {
+        val request = Request("/v1/raw_string_arg")
+        request.method = Method.Post
+        request.contentType = "application/x-msgpack"
+        val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
+        request.content = ByteArray.Owned(msgpack)
+        Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
+      }
+
+    }
+
+    def `Raw string request` {
+      // Raw string arg
       val request = Request("/v1/raw_string_arg")
       request.method = Method.Post
-      request.contentType = "application/x-msgpack"
-      val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
-      request.content = ByteArray.Owned(msgpack)
+      request.contentString = "1.0"
       Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
     }
 
-  }
+    def `Finagle Reader[Buf] response` {
+      val request = Request("/v1/reader")
+      request.method = Method.Get
+      val json  = Await.result(client.send(request).map(_.contentString))
+      val codec = MessageCodec.of[RichInfo]
+      codec.unpackJson(json) shouldBe Some(RichInfo("0.1", "MyApi", RichNestedInfo("test-server")))
+    }
 
-  def `Raw string request`(client: FinagleClient) {
-    // Raw string arg
-    val request = Request("/v1/raw_string_arg")
-    request.method = Method.Post
-    request.contentString = "1.0"
-    Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
-  }
-
-  def `Finagle Reader[Buf] response`(client: FinagleClient) {
-    val request = Request("/v1/reader")
-    request.method = Method.Get
-    val json  = Await.result(client.send(request).map(_.contentString))
-    val codec = MessageCodec.of[RichInfo]
-    codec.unpackJson(json) shouldBe Some(RichInfo("0.1", "MyApi", RichNestedInfo("test-server")))
-  }
-
-  def `support production mode`: Unit = {
-    design.withProductionMode.build[FinagleServer] { server =>
-      // #432: Just need to check the startup of finagle without MISSING_DEPENDENCY error
+    def `Finagle Reader[X] response`: Unit = {
+      val request = Request("/v1/reader-seq")
+      request.method = Method.Get
+      val json = Await.result(client.send(request).map(_.contentString))
+      info(json)
+      val codec = MessageCodec.of[Seq[RichInfo]]
+      val r     = RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
+      codec.fromJson(json) shouldBe Seq(r, r)
     }
   }
 }
