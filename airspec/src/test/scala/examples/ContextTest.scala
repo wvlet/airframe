@@ -82,7 +82,7 @@ class ContextTest extends AirSpec {
   }
 
   def `support running AirSpec from a type`(context: AirSpecContext): Unit = {
-    val f = context.buildAndRun[TestFixture]
+    val f = context.test[TestFixture]
 
     f.callCountA shouldBe 1
     f.callCountB shouldBe 1
@@ -111,7 +111,7 @@ class ContextTest extends AirSpec {
 
   def `support passing a context to spec instances`(context: AirSpecContext): Unit = {
     context.indentLevel shouldBe 0
-    context.buildAndRun[MySpec]
+    context.test[MySpec]
     context.run(new MySpec)
   }
 }
@@ -131,6 +131,6 @@ class ContextWithDI extends AirSpec {
   override protected def configure(design: Design): Design = design.bind[Int].toInstance(1000)
 
   def `delegate bindings from the global session`(context: AirSpecContext): Unit = {
-    context.buildAndRun[SpecWithDI]
+    context.test[SpecWithDI]
   }
 }

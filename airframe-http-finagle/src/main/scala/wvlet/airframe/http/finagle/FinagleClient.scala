@@ -50,7 +50,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
         finagleClient = finagleClient.withTls(address.host)
       case _ =>
     }
-
+    debug(s"Starting a FinagleClient for ${address}")
     retryFilter andThen finagleClient.newService(address.hostAndPort)
   }
 
@@ -90,6 +90,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   }
 
   def close: Unit = {
+    debug(s"Closing FinagleClient for ${address}")
     client.close()
   }
 
