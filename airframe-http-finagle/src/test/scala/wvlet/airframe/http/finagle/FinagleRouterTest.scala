@@ -22,6 +22,7 @@ import com.twitter.io.Buf.ByteArray
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
+import wvlet.airframe.control.Control
 import wvlet.airframe.http._
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airspec.AirSpec
@@ -252,14 +253,38 @@ class FinagleRouterTest extends AirSpec {
       codec.unpackJson(json) shouldBe Some(RichInfo("0.1", "MyApi", RichNestedInfo("test-server")))
     }
 
-    def `Finagle Reader[X] response`: Unit = {
+    val richInfo = RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
+
+    def `convert Reader[X] response to JSON stream`: Unit = {
       val request = Request("/v1/reader-seq")
       request.method = Method.Get
       val json = Await.result(client.send(request).map(_.contentString))
-      info(json)
+      debug(json)
       val codec = MessageCodec.of[Seq[RichInfo]]
-      val r     = RichInfo("0.1", "MyApi", RichNestedInfo("test-server"))
-      codec.fromJson(json) shouldBe Seq(r, r)
+      codec.fromJson(json) shouldBe Seq(richInfo, richInfo)
     }
+
+    def `Convert Reader[X] response to MsgPack stream`: Unit = {
+      val request = Request("/v1/reader-seq")
+      request.method = Method.Get
+      request.accept = "application/x-msgpack"
+      val msgpack = Await.result {
+        client.send(request).map { resp =>
+          val c       = resp.content
+          val msgpack = new Array[Byte](c.length)
+          c.write(msgpack, 0)
+          msgpack
+        }
+      }
+      val codec = MessageCodec.of[RichInfo]
+
+      Control.withResource(MessagePack.newUnpacker(msgpack)) { unpacker =>
+        while (unpacker.hasNext) {
+          val v = unpacker.unpackValue
+          codec.fromMsgPack(v.toMsgpack) shouldBe richInfo
+        }
+      }
+    }
+
   }
 }

@@ -98,6 +98,8 @@ trait MessageCodec[A] extends LogSupport {
   def unpackBytes(msgpack: Array[Byte]): Option[A]                        = unpackMsgPack(msgpack)
   def unpackBytes(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = unpackMsgPack(msgpack, offset, len)
 
+  def fromMsgPack(msgpack: Array[Byte]): A = unpack(msgpack)
+
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
     val unpacker = MessagePack.newUnpacker(msgpack, offset, len)

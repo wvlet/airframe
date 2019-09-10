@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http.{Request, Response, Status}
+import com.twitter.finagle.http.{MediaType, Request, Response, Status}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
@@ -33,14 +33,25 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
 
+  private val xMsgPack = "application/x-msgpack"
+
   private def isMsgPackRequest(request: Request): Boolean = {
-    request.accept.contains("application/x-msgpack")
+    request.accept.contains(xMsgPack)
+  }
+
+  private def isOctetStreamRequest(request: Request): Boolean = {
+    request.accept.contains(MediaType.OctetStream) || (
+      request.contentType.isDefined && request.contentType.get.contains(MediaType.OctetStream)
+    )
   }
 
   private def newStreamResponse(request: Request, reader: Reader[Buf]): Response = {
     val resp = Response(request.version, Status.Ok, reader)
+    resp.setChunked(true)
     if (isMsgPackRequest(request)) {
-      resp.contentType = "application/x-msgpack"
+      resp.contentType = xMsgPack
+    } else if (isOctetStreamRequest(request)) {
+      resp.contentType = MediaType.OctetStream
     } else {
       // TODO Support other content types
       resp.setContentTypeJson()
@@ -62,10 +73,16 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
             newStreamResponse(request, reader.asInstanceOf[Reader[Buf]])
           case Some(elemType) =>
             // For Reader[X], convert Seq[X] into JSON array
-            val r         = reader.asInstanceOf[Reader[Any]]
-            val codec     = mapCodecFactory.of(elemType).asInstanceOf[MessageCodec[Any]]
-            val bufReader = FinagleResponseHandler.toJsonBufStream(reader, codec)
-            newStreamResponse(request, bufReader)
+            val r     = reader.asInstanceOf[Reader[Any]]
+            val codec = mapCodecFactory.of(elemType).asInstanceOf[MessageCodec[Any]]
+
+            if (isMsgPackRequest(request)) {
+              // Return a stream sequence of MessagePack bytes
+              newStreamResponse(request, FinagleResponseHandler.toMsgPackStream(reader, codec))
+            } else {
+              val bufReader = FinagleResponseHandler.toJsonBufStream(reader, codec)
+              newStreamResponse(request, bufReader)
+            }
           case None =>
             throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
@@ -82,7 +99,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
         r.contentString = s
         r
       case _ =>
-        // TODO Return large responses with streams
+        // To return large responses with streams, the interface should return Redaer[X] response
 
         // Convert the response object into JSON
         val rs = mapCodecFactory.of(responseSurface)
@@ -96,7 +113,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
         // Return application/msgpack content type
         if (isMsgPackRequest(request)) {
           val res = Response(Status.Ok)
-          res.contentType = "application/x-msgpack"
+          res.contentType = xMsgPack
           res.content = ByteArray.Owned(msgpack)
           res
         } else {
@@ -139,6 +156,13 @@ object FinagleResponseHandler {
     )
 
     Reader.concat(jsonReader)
+  }
+
+  def toMsgPackStream(reader: Reader[_], codec: MessageCodec[Any]): Reader[Buf] = {
+    reader.map { x =>
+      val msgpack = codec.toMsgPack(x)
+      Buf.ByteArray.Owned(msgpack)
+    }
   }
 
 }
