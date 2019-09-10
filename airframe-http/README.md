@@ -64,6 +64,13 @@ trait MyApi {
     response.contentString = "hello airframe-http"
     response
   }
+
+  import com.twitter.io.{Buf,Reader}
+  // If you return a Reader, the response will be streamed (i.e., it uses less memory)
+  @EndPoint(method = HttpMethod.GET, path = "/stream_response")
+  def streamingResponse: Reader[User] = {
+     Reader.fromSeq(Seq(User("leo"), User("yui")))
+  }
 }
 ```
 

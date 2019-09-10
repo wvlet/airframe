@@ -18,7 +18,7 @@ stages:
   - name: build
     if: tag IS blank
   - name: release
-    if: tag IS present AND commit_message !~ /^\[doc/
+    if: tag IS present
 
 jobs:
   include:
