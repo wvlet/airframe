@@ -71,6 +71,13 @@ ga('send', 'pageview');
     <span class="nv">response</span><span class="o">.</span><span class="py">contentString</span> <span class="k">=</span> <span class="s">"hello airframe-http"</span>
     <span class="n">response</span>
   <span class="o">}</span>
+
+  <span class="k">import</span> <span class="nn">com.twitter.io.</span><span class="o">{</span><span class="nc">Buf</span><span class="o">,</span><span class="nc">Reader</span><span class="o">}</span>
+  <span class="c1">// If you return a Reader, the response will be streamed (i.e., it uses less memory)
+</span>  <span class="nd">@EndPoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/stream_response"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">streamingResponse</span><span class="k">:</span> <span class="kt">Reader</span><span class="o">[</span><span class="kt">User</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+     <span class="nv">Reader</span><span class="o">.</span><span class="py">fromSeq</span><span class="o">(</span><span class="nc">Seq</span><span class="o">(</span><span class="nc">User</span><span class="o">(</span><span class="s">"leo"</span><span class="o">),</span> <span class="nc">User</span><span class="o">(</span><span class="s">"yui"</span><span class="o">)))</span>
+  <span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></div>
 
