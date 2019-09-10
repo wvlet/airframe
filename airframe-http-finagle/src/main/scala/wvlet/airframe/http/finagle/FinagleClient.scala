@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.TimeUnit
 
 import com.twitter.finagle.http.{Request, Response}
-import com.twitter.finagle.{Http, http}
+import com.twitter.finagle.{Http, Service, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{JSONValueCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry
@@ -53,6 +53,9 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     debug(s"Starting a FinagleClient for ${address}")
     retryFilter andThen finagleClient.newService(address.hostAndPort)
   }
+
+  // Use this method to access the native Finagle HTTP client
+  def nativeClient: Service[Request, Response] = client
 
   override def send(req: Request, requestFilter: Request => Request = identity): Future[Response] = {
     // Apply the common filter in the config first, the apply the additional filter

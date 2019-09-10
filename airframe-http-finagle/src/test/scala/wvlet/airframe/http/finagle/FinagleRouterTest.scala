@@ -15,6 +15,7 @@ package wvlet.airframe.http.finagle
 
 import java.lang.reflect.InvocationTargetException
 
+import com.twitter.concurrent.AsyncStream
 import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Method, Request}
 import com.twitter.io.{Buf, Reader}
@@ -88,7 +89,10 @@ trait MyApi extends LogSupport {
 
   @Endpoint(path = "/v1/reader-seq")
   def readerSeq: Reader[RichInfo] = {
-    Reader.fromSeq(Seq(getRichInfo, getRichInfo))
+    val r1     = Reader.fromSeq(Seq(getRichInfo))
+    val r2     = Reader.fromSeq(Seq(getRichInfo))
+    val stream = AsyncStream.fromSeq(Seq(r1, r2))
+    Reader.concat(stream)
   }
 }
 
