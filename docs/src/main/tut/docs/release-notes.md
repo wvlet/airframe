@@ -5,6 +5,10 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.4
+-  airframe-http-finagle: Support streaming JSON/MsgPack responses for Reader[X] ([#691](https://github.com/wvlet/airframe/issues/691)) [[4ebe0ec](https://github.com/wvlet/airframe/commit/4ebe0ec)]
+-  airframe-http-finagle: Support Reader[Buf] stream response ([#690](https://github.com/wvlet/airframe/issues/690)) [[fb237f7](https://github.com/wvlet/airframe/commit/fb237f7)]
+
 ## 19.9.3
 -  Deprecate airframe-tablet ([#684](https://github.com/wvlet/airframe/issues/684)) [[6d2bb77](https://github.com/wvlet/airframe/commit/6d2bb77)]
 - airframe-jdbc:
