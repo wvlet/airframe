@@ -47,7 +47,6 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
 
   private def newStreamResponse(request: Request, reader: Reader[Buf]): Response = {
     val resp = Response(request.version, Status.Ok, reader)
-    resp.setChunked(true)
     if (isMsgPackRequest(request)) {
       resp.contentType = xMsgPack
     } else if (isOctetStreamRequest(request)) {
