@@ -608,7 +608,7 @@ lazy val http =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
 
-val FINAGLE_VERSION = "19.8.0"
+val FINAGLE_VERSION = "19.9.0"
 lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
@@ -618,7 +618,7 @@ lazy val finagle =
       description := "REST API binding for Finagle",
       // A workaround for the dealy of slf4j-jdk14 log flush after sbt class loader is detached
       fork in Test := true,
-      // Finagle doesn't support Scala 2.13 yet
+      // Finagle (finagle-netty4-http) doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "com.twitter" %% "finagle-http"        % FINAGLE_VERSION,
@@ -638,7 +638,7 @@ lazy val httpRecorder =
     .settings(
       name := "airframe-http-recorder",
       description := "Http Response Recorder",
-      // Finagle doesn't support Scala 2.13 yet
+      // Finagle (finagle-netty4-http) doesn't support Scala 2.13 yet
       crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         "com.twitter" %% "finatra-http"        % FINAGLE_VERSION,
