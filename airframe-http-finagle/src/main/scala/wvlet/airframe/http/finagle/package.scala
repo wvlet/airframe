@@ -29,15 +29,22 @@ package object finagle {
   type FinagleContext    = HttpContext[Request, Response, Future]
   type FinagleSyncClient = HttpSyncClient[Future, http.Request, http.Response]
 
-  private def finagleBaseDesign: Design =
+  /**
+    * A design for setting up airframe-http-finagle.
+    * If you create your own FinagleServers, use this design.
+    */
+  def finagleBaseDesign: Design =
     httpDefaultDesign
       .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
-
-  def finagleDefaultDesign: Design =
-    finagleBaseDesign
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }
+
+  /**
+    * The default design for using FinagleServer
+    */
+  def finagleDefaultDesign: Design =
+    finagleBaseDesign
       .bind[FinagleServer].toProvider { (factory: FinagleServerFactory, config: FinagleServerConfig) =>
         factory.newFinagleServer(config)
       }
