@@ -16,8 +16,6 @@ package wvlet.airframe.surface
 
 import java.{lang => jl}
 
-import wvlet.log.LogSupport
-
 import scala.reflect.ClassTag
 import scala.util.Try
 

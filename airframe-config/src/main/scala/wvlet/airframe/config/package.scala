@@ -28,20 +28,18 @@ package object config {
 
   import scala.reflect.runtime.{universe => ru}
 
-  def printConfig(c: Config): Unit = {
-    logger.info("Configurations:")
-    for (c <- c.getAll) {
-      logger.info(s"${c.tpe}: ${c.value}")
-    }
-  }
-
   implicit class ConfigurableDesign(d: Design) {
 
     def showConfig: Design = {
-      bootstrapWithConfigProcessor(printConfig)
+      processConfig { c =>
+        logger.info(c.printConfig)
+      }
     }
 
-    def bootstrapWithConfigProcessor(configProcessor: Config => Unit): Design = {
+    /**
+      * Process Config
+      */
+    def processConfig(configProcessor: Config => Unit): Design = {
       configProcessor(currentConfig)
       d
     }
@@ -125,4 +123,5 @@ package object config {
       overrideConfigParams(m.toMap, onUnusedProperties)
     }
   }
+
 }

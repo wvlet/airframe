@@ -300,6 +300,9 @@ object Design {
   // Create a new Design
   def newDesign: Design = blanc
 
+  // Create a new Design without lifecycle logging
+  def newSilentDesign: Design = blanc.noLifeCycleLogging
+
   private[airframe] trait AdditiveDesignOption[+A] {
     private[airframe] def addAsDesignOption[A1 >: A](other: A1): A1
   }

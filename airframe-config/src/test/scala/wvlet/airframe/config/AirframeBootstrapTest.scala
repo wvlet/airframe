@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.config
 
+import wvlet.airframe.Design
 import wvlet.airframe.surface._
 import wvlet.airspec.AirSpec
 
@@ -78,4 +79,13 @@ class AirframeBootstrapTest extends AirSpec {
         fail()
     }
   }
+
+  def `hide credentials`: Unit = {
+    val x = Credential("leo", "hidden secret password", "some important information")
+    Design.newSilentDesign
+      .bindConfig[Credential](x)
+      .showConfig
+  }
 }
+
+case class Credential(user: String, @secret password: String, @secret(mask = true) key: String)
