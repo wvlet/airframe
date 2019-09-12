@@ -97,6 +97,11 @@ class Design private[airframe] (
 ) extends LogSupport {
   private[airframe] def getDesignConfig: DesignOptions = designOptions
 
+  /**
+    * Used for casting itself as Design if returning DesignWithContext type is cumbersome
+    */
+  def toDesign: Design = this
+
   def canEqual(other: Any): Boolean = other.isInstanceOf[Design]
 
   override def equals(other: Any): Boolean = other match {

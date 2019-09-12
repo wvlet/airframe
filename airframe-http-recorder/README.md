@@ -89,6 +89,21 @@ If you don't need to persist your recoded responsoe (e.g., in unit tests), use
 discarded after closing the server.
 
 
+### Customize Request Matcher
+
+By default, http-recorder finds records that has the method types (e.g., GET, POST, etc.), same path, query string, request body, and HTTP headers. Some unstable HTTP headers like Date, User-Agent, etc. defined in `defaultExcludeHeaderPrefixes` will not be used for matching.
+
+If this is too strict, we can use `PathOnlyMatcher` (checks only method types and uri) or your own implementation to compute hash values for matching requests:
+```scala
+import wvlet.airframe.http.recorder._
+import wvlet.airframe.control.Control._
+
+val config = HttpRecorderConfig(requestMatcher = HttpRequestMatcher.PathOnlyMatcher)
+withResource(HttpRecorder.createInMemoryServer(config)) { server =>
+  // 
+}
+```
+
 ## Related Projects
 - [VCR](https://github.com/vcr/vcr) (for Ruby)
 - [Betamax](https://github.com/betamaxteam/betamax) (no longer maintained)
