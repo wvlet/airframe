@@ -80,7 +80,7 @@ object HttpRequestMatcher {
     }.toMap
   }
 
-  object SimpleRequestMatcher extends HttpRequestMatcher {
+  object PathOnlyMatcher extends HttpRequestMatcher {
     override def computeHash(request: Request): Int = {
       computeRequestPathHash(request)
     }

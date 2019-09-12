@@ -19,7 +19,7 @@ import com.twitter.io.Buf
 import com.twitter.util.Await
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.recorder.HttpRequestMatcher.SimpleRequestMatcher
+import wvlet.airframe.http.recorder.HttpRequestMatcher.PathOnlyMatcher
 import wvlet.airspec.AirSpec
 
 import scala.util.Random
@@ -204,7 +204,7 @@ class HttpRecorderTest extends AirSpec {
   }
 
   def `support simple request matcher`: Unit = {
-    val config = HttpRecorderConfig(requestMatcher = SimpleRequestMatcher)
+    val config = HttpRecorderConfig(requestMatcher = PathOnlyMatcher)
     withResource(HttpRecorder.createInMemoryServer(config)) { server =>
       val request = Request("/airframe")
       request.accept = "application/v1+json"
