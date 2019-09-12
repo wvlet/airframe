@@ -16,7 +16,6 @@ package wvlet.airframe.lifecycle
 import java.util.concurrent.atomic.AtomicReference
 
 import wvlet.airframe.AirframeException.{MULTIPLE_SHUTDOWN_FAILURES, SHUTDOWN_FAILURE}
-import wvlet.airframe.lifecycle.CloseableLifeCycleHookFinder.CloseHook
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.Tracer
 import wvlet.airframe.{AirframeSession, Session}
@@ -253,8 +252,7 @@ object LifeCycleManager {
 
   def defaultLifeCycleEventHandler: LifeCycleEventHandler =
     FILOLifeCycleHookExecutor andThen
-      JSR250LifeCycleExecutor andThen
-      CloseableLifeCycleHookFinder // This lifecycle must be the last one to check any preceding shutdown hooks
+      JSR250LifeCycleExecutor
 }
 
 object ShowLifeCycleLog extends LifeCycleEventHandler {
@@ -330,7 +328,7 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
     // onShutdown
     val shutdownOrder = lifeCycleManager.shutdownHooks.reverse
     if (shutdownOrder.nonEmpty) {
-      debug(s"[${lifeCycleManager.sessionName}] Shutdown order:\n${shutdownOrder.mkString("\n-> ")}")
+      debug(s"[${lifeCycleManager.sessionName}] Shutdown order:\n${shutdownOrder.map(x => s"-> ${x}").mkString("\n")}")
     }
     shutdownOrder.map { h =>
       trace(s"Calling shutdown hook: $h")
@@ -354,33 +352,13 @@ object FILOLifeCycleHookExecutor extends LifeCycleEventHandler with LogSupport {
   }
 }
 
-/**
-  * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call
-  * close() if there is no other shutdown hooks
-  */
-object CloseableLifeCycleHookFinder extends LifeCycleEventHandler with LogSupport {
-
-  class CloseHook(val injectee: Injectee) extends LifeCycleHook {
-    override def toString: String = s"CloseHook for [${surface}]"
-    override def execute: Unit = {
-      injectee.injectee match {
-        case c: AutoCloseable =>
-          c.close()
-        case _ =>
-      }
-    }
-  }
-
-  override def onInit(lifeCycleManager: LifeCycleManager, t: Surface, injectee: AnyRef): Unit = {
-    if (classOf[AutoCloseable].isAssignableFrom(t.rawType)) {
-      // Do not register CloseHook if @PreDestory is already registered
-      injectee match {
-        case s: Session => // ignore Airframe session
-        case _ =>
-          if (!lifeCycleManager.hasShutdownHooksFor(t)) {
-            lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(t, injectee)))
-          }
-      }
+class CloseHook(val injectee: Injectee) extends LifeCycleHook {
+  override def toString: String = s"CloseHook for [${surface}]"
+  override def execute: Unit = {
+    injectee.injectee match {
+      case c: AutoCloseable =>
+        c.close()
+      case _ =>
     }
   }
 }
