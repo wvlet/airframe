@@ -81,11 +81,16 @@ class AirframeBootstrapTest extends AirSpec {
   }
 
   def `hide credentials`: Unit = {
-    val x = Credential("leo", "hidden secret password", "some important information")
+    val x = Credential("leo", "hidden secret password", "some important information", Some("hidden secret key"))
     Design.newSilentDesign
       .bindConfig[Credential](x)
       .showConfig
   }
 }
 
-case class Credential(user: String, @secret password: String, @secret(mask = true) key: String)
+case class Credential(
+    user: String,
+    @secret password: String,
+    @secret(mask = true) key: String,
+    @secret secretKey: Option[String]
+)
