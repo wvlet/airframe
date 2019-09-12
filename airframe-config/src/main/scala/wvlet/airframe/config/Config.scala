@@ -39,7 +39,7 @@ object Config extends LogSupport {
   private[config] def defaultConfigPath =
     cleanupConfigPaths(
       Seq(
-        ".", // current directory
+        ".",                                 // current directory
         sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
       )
     )
