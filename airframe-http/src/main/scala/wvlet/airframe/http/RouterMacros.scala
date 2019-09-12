@@ -49,8 +49,9 @@ object RouterMacros {
 
     q"""
        {
+         val r = ${c.prefix}
          wvlet.airframe.registerTraitFactory[${t}]
-         ${c.prefix}.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
+         r.addInternal(wvlet.airframe.surface.Surface.of[${t}], wvlet.airframe.surface.Surface.methodsOf[${t}])
        }
      """
   }

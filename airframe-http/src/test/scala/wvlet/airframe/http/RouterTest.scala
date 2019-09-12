@@ -54,6 +54,39 @@ class RouterTest extends AirSpec {
     r.routes.find(_.path == "/v1/hello") shouldBe defined
   }
 
+  trait RouteA
+  trait RouteB
+  trait RouteC
+
+  def `stack Routes`: Unit = {
+    val r = Router
+      .add[RouteA]
+      .add[RouteB]
+      .add[RouteC]
+
+    r.children.size shouldBe 3
+  }
+
+  trait FilterA extends HttpFilterType
+  trait RouteD
+
+  def `filter Routers`: Unit = {
+    val r = Router
+      .add[FilterA]
+      .andThen(
+        Router
+          .add[RouteA]
+          .add[RouteB]
+          .add[RouteC]
+      )
+      .add[RouteD]
+
+    r.children.size shouldBe 2
+    r.children(0).filterSurface shouldBe defined
+    r.children(0).children(0).children.size shouldBe 3
+    r.children(1).surface shouldBe defined
+  }
+
   def `find target method`: Unit = {
     val router = Router.of[ControllerExample]
 
