@@ -145,12 +145,12 @@ without some transformations. With MessagePack, you can send the data to the cli
 // You can add more routes by using `.add[X]` method.
 </span><span class="k">val</span> <span class="nv">router</span> <span class="k">=</span> <span class="nv">Router</span><span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">)</span>
 
 <span class="nv">design</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
   <span class="c1">// Finagle http server will start here
 </span>
-  <span class="c1">// To keep runing the server, run `server.waitServerTermination`:
+  <span class="c1">// To keep running the server, run `server.waitServerTermination`:
 </span>  <span class="nv">server</span><span class="o">.</span><span class="py">waitServerTermination</span>
 <span class="o">}</span>
 <span class="c1">// The server will terminate here
@@ -178,7 +178,7 @@ server factory:</p>
   <span class="o">}</span>
 <span class="o">}</span>
 
-<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my server"</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">)</span>
+<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"my server"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">)</span>
     <span class="c1">// Configure Finagle Server
 </span>    <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">].</span><span class="py">to</span><span class="o">[</span><span class="kt">CustomFinagleServerFactory</span><span class="o">]</span>
 
@@ -192,7 +192,8 @@ server factory:</p>
 <p>Create a FinagleServerFactory, and call <code class="highlighter-rouge">newFinagleServer(FinagleServerConfig)</code>:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
-<span class="nv">finagleDefaultDesign</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
+<span class="c1">// Use a design for not starting the default server:
+</span><span class="nv">finagleBaseDesign</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
  <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server1"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
  <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server2"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
  <span class="c1">// Two finagle servers will start at port 8081 and 8081
@@ -218,6 +219,7 @@ server factory:</p>
    <span class="o">}</span>
 <span class="o">}</span>
 </code></pre></div></div>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
