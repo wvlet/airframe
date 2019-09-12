@@ -89,6 +89,34 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     with Design.AdditiveDesignOption[Config]
     with LogSupport {
 
+  override def toString: String = printConfig
+
+  def printConfig: String = {
+    val s = Seq.newBuilder[String]
+    s += "Configurations:"
+    for (c <- getAll) {
+      s += s"[${c.tpe}]"
+      for (p <- c.tpe.params) {
+        import wvlet.airframe.surface.reflect._
+        val v = Option(p.get(c.value)).map(_.toString).getOrElse("")
+        val processedValue = p.findAnnotationOf[secret] match {
+          case Some(h) =>
+            if (h.mask()) {
+              v.replaceAll(".", "x")
+            } else {
+              val trimLen = h.trim().min(v.length)
+              s"${v.substring(0, trimLen)}..."
+            }
+          case _ =>
+            v
+        }
+        s += s" - ${p.name}: ${processedValue}"
+      }
+    }
+    val lines = s.result().mkString("\n")
+    lines
+  }
+
   // Customization
   def withEnv(newEnv: String, defaultEnv: String = "default"): Config = {
     Config(ConfigEnv(newEnv, defaultEnv, env.configPaths), holder)
