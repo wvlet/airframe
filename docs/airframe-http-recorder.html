@@ -103,6 +103,20 @@ This is useful for testing HTTP server interactions in an environment with limit
 <code class="highlighter-rouge">HttpRecorder.createInMemoryProgrammableServer</code>. The recorded responses wiil be
 discarded after closing the server.</p>
 
+<h3 id="customize-request-matcher">Customize Request Matcher</h3>
+
+<p>By default, http-recorder finds records that have the same method type (e.g., GET, POST, etc.), path, query string, request body, and HTTP headers. Some unstable HTTP headers like Date, User-Agent, etc. (defined in <code class="highlighter-rouge">defaultExcludeHeaderPrefixes</code>) will not be used for matching.</p>
+
+<p>If this matching is too strict, we can use <code class="highlighter-rouge">PathOnlyMatcher</code> (checks only method types and uri) or your own implementation to compute hash values for matching requests:</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.recorder._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.control.Control._</span>
+
+<span class="k">val</span> <span class="nv">config</span> <span class="k">=</span> <span class="nc">HttpRecorderConfig</span><span class="o">(</span><span class="n">requestMatcher</span> <span class="k">=</span> <span class="nv">HttpRequestMatcher</span><span class="o">.</span><span class="py">PathOnlyMatcher</span><span class="o">)</span>
+<span class="nf">withResource</span><span class="o">(</span><span class="nv">HttpRecorder</span><span class="o">.</span><span class="py">createInMemoryServer</span><span class="o">(</span><span class="n">config</span><span class="o">))</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+  <span class="c1">// 
+</span><span class="o">}</span>
+</code></pre></div></div>
+
 <h2 id="related-projects">Related Projects</h2>
 <ul>
   <li><a href="https://github.com/vcr/vcr">VCR</a> (for Ruby)</li>
