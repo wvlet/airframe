@@ -39,8 +39,10 @@ object Config extends LogSupport {
   private[config] def defaultConfigPath =
     cleanupConfigPaths(
       Seq(
-        ".",                                 // current directory
-        sys.props.getOrElse("prog.home", "") // program home for wvlet-launcher
+        // current directory
+        ".",
+        // program home for wvlet-launcher
+        sys.props.getOrElse("prog.home", "")
       )
     )
 
@@ -96,9 +98,19 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     s += "Configurations:"
     for (c <- getAll) {
       s += s"[${c.tpe}]"
+      val paramWidth = c.tpe.params.map(_.name.length).max
       for (p <- c.tpe.params) {
         import wvlet.airframe.surface.reflect._
-        val v = Option(p.get(c.value)).map(_.toString).getOrElse("")
+        val v = Option(p.get(c.value))
+          .map { x =>
+            x match {
+              case Some(xx) =>
+                // Unwrap optional value
+                xx.toString
+              case _ => x.toString
+            }
+          }
+          .getOrElse("")
         val processedValue = p.findAnnotationOf[secret] match {
           case Some(h) =>
             if (h.mask()) {
@@ -110,7 +122,8 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
           case _ =>
             v
         }
-        s += s" - ${p.name}: ${processedValue}"
+        val ws = " " * (paramWidth - p.name.length).max(0)
+        s += s" ${ws}${p.name}: ${processedValue}"
       }
     }
     val lines = s.result().mkString("\n")
