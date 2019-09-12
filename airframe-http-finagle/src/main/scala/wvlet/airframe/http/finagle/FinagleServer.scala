@@ -19,12 +19,14 @@ import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.{Await, Future}
 import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe._
+import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
-import wvlet.log.LogSupport
+import wvlet.log.{LogSupport, Logger}
 import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
+import scala.util.control.NonFatal
 
 case class FinagleServerConfig(name: String = "default", port: Int = IOUtil.unusedPort, router: Router = Router.empty)
 
@@ -53,12 +55,12 @@ class FinagleServer(
     }
   }
 
-  @PreDestroy
   def stop = {
     synchronized {
       if (server.isDefined) {
         info(s"Stopping ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
         server.map(x => Await.result(x.close))
+        server = None
       } else {
         None
       }
@@ -136,8 +138,10 @@ object FinagleServer extends LogSupport {
 /**
   * A factory to create new finagle server
   */
-trait FinagleServerFactory {
-  private val session              = bind[Session]
+trait FinagleServerFactory extends AutoCloseable with LogSupport {
+
+  private var createdServers = List.empty[FinagleServer]
+
   protected val controllerProvider = bind[ControllerProvider]
   protected val responseHandler    = bind[ResponseHandler[Request, Response]]
 
@@ -159,12 +163,37 @@ trait FinagleServerFactory {
     val server =
       new FinagleServer(finagleConfig = config, finagleService = newService(finagleRouter), initServer = initServer)
 
-    // Register the FinagleServer instance to the seesion to manage its lifecycle with Airframe
-    session.register[FinagleServer](server)
+    synchronized {
+      createdServers = server :: createdServers
+    }
+    server.start
     server
   }
 
   def newFinagleServer(name: String, port: Int, router: Router): FinagleServer = {
     newFinagleServer(FinagleServerConfig(name = name, port = port, router = router))
+  }
+
+  override def close(): Unit = {
+    debug(s"Closing FinagleServerFactory")
+    val ex = Seq.newBuilder[Throwable]
+    for (server <- createdServers) {
+      try {
+        server.close()
+      } catch {
+        case NonFatal(e) =>
+          ex += e
+      }
+    }
+    createdServers = List.empty
+
+    val exceptions = ex.result()
+    if (exceptions.nonEmpty) {
+      if (exceptions.size == 1) {
+        throw exceptions.head
+      } else {
+        throw MultipleExceptions(exceptions)
+      }
+    }
   }
 }

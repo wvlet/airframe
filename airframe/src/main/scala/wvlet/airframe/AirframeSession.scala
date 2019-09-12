@@ -181,7 +181,8 @@ private[airframe] class AirframeSession(
 
   def register[A: ru.TypeTag](instance: A): Unit = {
     val surface = Surface.of[A]
-    registerInjectee(surface, instance)
+    val owner   = findOwnerSessionOf(surface).getOrElse(this)
+    owner.registerInjectee(surface, instance)
   }
 
   /**

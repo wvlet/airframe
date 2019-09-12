@@ -12,26 +12,28 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
-import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.tracing.ConsoleTracer
+import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airspec.AirSpec
+import wvlet.log.Logger
 import wvlet.log.io.IOUtil
 
 /**
   *
   */
 class FinagleServerFactoryTest extends AirSpec {
-  val p1 = IOUtil.unusedPort
-  val p2 = IOUtil.unusedPort
-
-  val router1 = Router.add[MyApi]
-  val router2 = Router.add[MyApi]
 
   def `start multiple FinagleServers`: Unit = {
+    val p1 = IOUtil.unusedPort
+    val p2 = IOUtil.unusedPort
+
+    val router1 = Router.add[MyApi]
+    val router2 = Router.add[MyApi]
+
     val serverConfig1 = FinagleServerConfig(name = "server1", port = p1, router = router1)
     val serverConfig2 = FinagleServerConfig(name = "server2", port = p2, router = router2)
 
