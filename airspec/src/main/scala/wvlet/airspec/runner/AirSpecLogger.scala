@@ -19,7 +19,8 @@ import sbt.testing._
 import wvlet.airframe.log.AnsiColorPalette
 import wvlet.airframe.metrics.ElapsedTime
 import wvlet.airspec.spi.AirSpecFailureBase
-import wvlet.log.{LogFormatter, LogLevel, Logger}
+import wvlet.log.LogFormatter.BareFormatter
+import wvlet.log.{ConsoleLogHandler, LogFormatter, LogLevel, Logger}
 
 private[airspec] case class AirSpecEvent(
     taskDef: TaskDef,
@@ -42,13 +43,8 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
 
   private val airSpecLogger = {
     val l = Logger("wvlet.airspec.runner.AirSpecLogger")
-    l.clearAllHandlers
-    l.setFormatter(LogFormatter.BareFormatter)
+    l.setFormatter(BareFormatter)
     l
-  }
-
-  private[runner] def clearHandler = {
-    airSpecLogger.clearHandlers
   }
 
   def withColor(colorEsc: String, s: String) = {

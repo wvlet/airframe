@@ -8,9 +8,7 @@ import java.util.{logging => jl}
   *
   * @param formatter
   */
-class ConsoleLogHandler(formatter: LogFormatter) extends jl.Handler {
-  private lazy val out: PrintStream = LogEnv.defaultConsoleOutput
-
+class ConsoleLogHandler(formatter: LogFormatter, out: PrintStream = LogEnv.defaultConsoleOutput) extends jl.Handler {
   override def publish(record: jl.LogRecord): Unit = {
     out.println(formatter.format(record))
   }
