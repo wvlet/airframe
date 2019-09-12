@@ -49,7 +49,7 @@ class HttpRecorderTest extends AirSpec {
 
   def `start HTTP recorder`: Unit = {
     val recorderConfig =
-      HttpRecorderConfig(destUri = "https://wvlet.org", sessionName = "airframe")
+      HttpRecorderConfig(name = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
     val response: Response =
       withResource(HttpRecorder.createRecordOnlyServer(recorderConfig, dropExistingSession = true)) { server =>

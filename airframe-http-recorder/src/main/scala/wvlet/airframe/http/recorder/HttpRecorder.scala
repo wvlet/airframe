@@ -27,6 +27,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class HttpRecorderConfig(
+    name: String = "http-recorder",
     destUri: String = "localhost",
     sessionName: String = "default",
     expirationTime: String = "1M", // Delete recorded response in a month by default

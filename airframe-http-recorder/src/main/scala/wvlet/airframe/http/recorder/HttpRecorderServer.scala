@@ -24,7 +24,10 @@ import wvlet.log.LogSupport
   * A FinagleServer wrapper to close HttpRecordStore when the server terminates
   */
 class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
-    extends FinagleServer(FinagleServerConfig("http-recorder", recordStore.recorderConfig.serverPort), finagleService) {
+    extends FinagleServer(
+      FinagleServerConfig(s"[http-recorder] ${recordStore.recorderConfig.name}", recordStore.recorderConfig.serverPort),
+      finagleService
+    ) {
 
   def clearSession: Unit = {
     recordStore.clearSession
