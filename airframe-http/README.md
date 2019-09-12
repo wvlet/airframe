@@ -118,17 +118,16 @@ import com.twitter.finagle.http.Request
 // You can add more routes by using `.add[X]` method.
 val router = Router.add[MyApi]
 
-val design = newFinagleServerDesign(router, port = 8080)
+val design = newFinagleServerDesign(port = 8080, router = router)
 
 design.build[FinagleServer] { server =>
   // Finagle http server will start here
 
-  // To keep runing the server, run `server.waitServerTermination`:
+  // To keep running the server, run `server.waitServerTermination`:
   server.waitServerTermination
 }
 // The server will terminate here
 ```
-
 
 ## Customizing Finagle
 
@@ -151,7 +150,7 @@ trait CustomFinagleServerFactory extends FinagleServerFactory {
   }
 }
 
-val design = newFinagleServerDesign(name = "my server", router = router, port = 8080)
+val design = newFinagleServerDesign(name = "my server", port = 8080, router = router)
     // Configure Finagle Server
     .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
@@ -167,14 +166,14 @@ Create a FinagleServerFactory, and call `newFinagleServer(FinagleServerConfig)`:
 ```scala
 import wvlet.airframe.http.finagle._
 
-finagleDefaultDesign.build[FinagleServerFactory] { factory =>
+// Use a design for not starting the default server:
+finagleBaseDesign.build[FinagleServerFactory] { factory =>
  factory.newFinagleServer(FinagleServerConfig(name = "server1", port = 8080, router = router1))
  factory.newFinagleServer(FinagleServerConfig(name = "server2", port = 8081, router = router2))
  // Two finagle servers will start at port 8081 and 8081
 }
 // Two servers will be stopped after exiting the session
 ```
-
 
 ### Shutting Down Finagle Server
 
@@ -195,3 +194,5 @@ trait YourApi {
    }
 }
 ```
+
+
