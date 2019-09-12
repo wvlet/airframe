@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import wvlet.airframe.AirframeException.{CYCLIC_DEPENDENCY, MISSING_DEPENDENCY}
 import wvlet.airframe.Binder._
-import wvlet.airframe.lifecycle.{EventHookHolder, LifeCycleManager}
+import wvlet.airframe.lifecycle.{CloseHook, EventHookHolder, Injectee, LifeCycleManager}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.tracing.{DIStats, DefaultTracer, Tracer}
 import wvlet.log.LogSupport
@@ -106,14 +106,14 @@ private[airframe] class AirframeSession(
   }
 
   def getInstanceOf(t: Surface)(implicit sourceCode: SourceCode): AnyRef = {
-    getInstance(t, sourceCode, this, create = false, List.empty)
+    getInstance(t, t, sourceCode, this, create = false, List.empty)
   }
 
   override def newSharedChildSession(d: Design): Session = {
     trace(s"[${name}] Creating a new shared child session with ${d}")
     val childSession = new AirframeSession(
       parent = Some(this),
-      sessionName,                                          // Should we add suffixes for child sessions?
+      sessionName, // Should we add suffixes for child sessions?
       new Design(design.designOptions, d.binding, d.hooks), // Inherit parent options
       stage,
       lifeCycleManager,
@@ -133,7 +133,7 @@ private[airframe] class AirframeSession(
         design = childDesign,
         parent = Some(this),
         name = None,
-        addShutdownHook = false,                                  // Disable registration of shutdown hooks
+        addShutdownHook = false, // Disable registration of shutdown hooks
         lifeCycleEventHandler = lifeCycleManager.coreEventHandler // Use only core lifecycle event handlers
       )
 
@@ -162,60 +162,78 @@ private[airframe] class AirframeSession(
 
   private[airframe] def get[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] at ${sourceCode}")
-    getInstance(surface, sourceCode, this, create = false, List.empty).asInstanceOf[A]
+    getInstance(surface, surface, sourceCode, this, create = false, List.empty).asInstanceOf[A]
   }
 
   private[airframe] def getOrElse[A](surface: Surface, objectFactory: => A)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Get dependency [${surface}] (or create with factory) at ${sourceCode}")
-    getInstance(surface, sourceCode, this, create = false, List.empty, Some(() => objectFactory)).asInstanceOf[A]
+    getInstance(surface, surface, sourceCode, this, create = false, List.empty, Some(() => objectFactory))
+      .asInstanceOf[A]
   }
 
   private[airframe] def createNewInstanceOf[A](surface: Surface)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Create dependency [${surface}] at ${sourceCode}")
-    getInstance(surface, sourceCode, this, create = true, List.empty).asInstanceOf[A]
+    getInstance(surface, surface, sourceCode, this, create = true, List.empty).asInstanceOf[A]
   }
   private[airframe] def createNewInstanceOf[A](surface: Surface, factory: => A)(implicit sourceCode: SourceCode): A = {
     debug(s"[${name}] Create dependency [${surface}] (with factory) at ${sourceCode}")
-    getInstance(surface, sourceCode, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
+    getInstance(surface, surface, sourceCode, this, create = true, List.empty, Some(() => factory)).asInstanceOf[A]
   }
 
   def register[A: ru.TypeTag](instance: A): Unit = {
     val surface = Surface.of[A]
     val owner   = findOwnerSessionOf(surface).getOrElse(this)
-    owner.registerInjectee(surface, instance)
+    owner.registerInjectee(surface, surface, instance)
   }
 
   /**
     * Called when injecting an instance of the surface for the first time.
     * The other hooks (e.g., onStart, onShutdown) will be called in a separate step after the object is injected.
     */
-  private def registerInjectee(t: Surface, injectee: Any): AnyRef = {
-    debug(s"[${name}] Init [${t}]: ${injectee}")
+  private def registerInjectee(bindTarget: Surface, tpe: Surface, injectee: Any): AnyRef = {
+    debug(s"[${name}] Init [${bindTarget} -> ${tpe}]: ${injectee}")
 
-    stats.incrementInitCount(this, t)
-    tracer.onInitInstanceStart(this, t, injectee)
+    stats.incrementInitCount(this, tpe)
+    tracer.onInitInstanceStart(this, tpe, injectee)
 
-    observedTypes.getOrElseUpdate(t, System.currentTimeMillis())
+    observedTypes.getOrElseUpdate(tpe, System.currentTimeMillis())
 
     // Add additional lifecycle hooks for the injectee
-    trace(s"Checking lifecycle hooks for ${t}: ${design.hooks.length}")
-    for (hook <- findLifeCycleHooksFor(t)) {
-      val h = EventHookHolder(t, injectee, hook.hook)
+    trace(s"Checking lifecycle hooks for ${tpe}: ${design.hooks.length}")
+    for (hook <- findLifeCycleHooksFor(tpe)) {
+      val h = EventHookHolder(tpe, injectee, hook.hook)
       lifeCycleManager.addLifeCycleHook(hook.lifeCycleHookType, h)
     }
 
     // Start the lifecycle of the object (injectee)
-    Try(lifeCycleManager.onInit(t, injectee.asInstanceOf[AnyRef])).recover {
+    Try(lifeCycleManager.onInit(tpe, injectee.asInstanceOf[AnyRef])).recover {
       case e: Throwable =>
-        error(s"Error occurred while executing onInit(${t}, ${injectee})", e)
+        error(s"Error occurred while executing onInit(${tpe}, ${injectee})", e)
         throw e
     }
-    tracer.onInitInstanceEnd(this, t, injectee)
+
+    /**
+      * If an injected class implements close() (in AutoCloseable interface), add a shutdown hook to call
+      * close() if there is no other shutdown hooks
+      */
+    if (classOf[AutoCloseable].isAssignableFrom(injectee.getClass)) {
+      injectee match {
+        case s: Session =>
+        // Do not close Session automatically
+        case _ =>
+          if (!lifeCycleManager.hasShutdownHooksFor(bindTarget)) {
+            debug(s"Add close hook for ${bindTarget}")
+            lifeCycleManager.addShutdownHook(new CloseHook(new Injectee(bindTarget, injectee)))
+          }
+      }
+    }
+
+    tracer.onInitInstanceEnd(this, tpe, injectee)
     injectee.asInstanceOf[AnyRef]
   }
 
   private def findLifeCycleHooksFor(t: Surface): Seq[LifeCycleHookDesign] = {
-    trace(s"[${name}] findLifeCycleHooksFor ${t}")
+    //trace(s"[${name}] findLifeCycleHooksFor ${t}")
     if (design.hooks.isEmpty) {
       parent.map(_.findLifeCycleHooksFor(t)).getOrElse(Seq.empty)
     } else {
@@ -244,7 +262,8 @@ private[airframe] class AirframeSession(
   }
 
   private[airframe] def getInstance(
-      t: Surface,
+      bindTarget: Surface,
+      tpe: Surface,
       sourceCode: SourceCode,
       contextSession: AirframeSession,
       create: Boolean, // true for factory binding
@@ -252,11 +271,11 @@ private[airframe] class AirframeSession(
       defaultValue: Option[() => Any] = None
   ): AnyRef = {
 
-    stats.observe(t)
-    tracer.onInjectStart(this, t)
+    stats.observe(tpe)
+    tracer.onInjectStart(this, tpe)
 
-    trace(s"[${name}] Search bindings for ${t}, dependencies:[${seen.mkString(" <- ")}]")
-    if (seen.contains(t)) {
+    trace(s"[${name}] Search bindings for ${tpe}, dependencies:[${seen.mkString(" <- ")}]")
+    if (seen.contains(tpe)) {
       error(s"Found cyclic dependencies: ${seen} at ${sourceCode}")
       throw new CYCLIC_DEPENDENCY(seen, sourceCode)
     }
@@ -264,14 +283,14 @@ private[airframe] class AirframeSession(
     // Find or create an instance for the binding
     // When the instance is created for the first time, it will call onInit lifecycle hook.
     val obj =
-      bindingTable.get(t) match {
+      bindingTable.get(tpe) match {
         case None =>
           // If no binding is found in the current, traverse to the parent.
-          trace(s"[${name}] Search parent for ${t}")
+          trace(s"[${name}] Search parent for ${tpe}")
           parent.flatMap { p =>
-            p.findOwnerSessionOf(t).map { owner =>
+            p.findOwnerSessionOf(tpe).map { owner =>
               // Use the parent session only when some binding is found in the parent
-              owner.getInstance(t, sourceCode, contextSession, create, seen, defaultValue)
+              owner.getInstance(bindTarget, tpe, sourceCode, contextSession, create, seen, defaultValue)
             }
           }
         case Some(b) =>
@@ -279,14 +298,27 @@ private[airframe] class AirframeSession(
             b match {
               case ClassBinding(from, to, sourceCode) =>
                 trace(s"[${name}] Found a class binding from ${from} to ${to}, defined at ${sourceCode}")
-                registerInjectee(from, contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen))
+                registerInjectee(
+                  from,
+                  from,
+                  contextSession.getInstance(from, to, sourceCode, contextSession, create, tpe :: seen)
+                )
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from != to =>
                 trace(s"[${name}] Found a singleton binding: ${from} => ${to}, defined at ${sourceCode}")
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(
                     from,
-                    contextSession.getInstance(to, sourceCode, contextSession, create, t :: seen, defaultValue)
+                    from,
+                    contextSession.getInstance(
+                      from,
+                      to,
+                      sourceCode,
+                      contextSession,
+                      create,
+                      tpe :: seen,
+                      defaultValue
+                    )
                   )
                 )
               case sb @ SingletonBinding(from, to, eager, sourceCode) if from == to =>
@@ -294,6 +326,7 @@ private[airframe] class AirframeSession(
                 singletonHolder.getOrElseUpdate(
                   from,
                   registerInjectee(
+                    bindTarget,
                     from,
                     contextSession.buildInstance(to, sourceCode, contextSession, seen, defaultValue)
                   )
@@ -302,14 +335,14 @@ private[airframe] class AirframeSession(
                 trace(s"[${name}] Found a provider for ${p.from}: ${p}, defined at ${sourceCode}")
                 def buildWithProvider: Any = {
                   val dependencies = for (d <- factory.dependencyTypes) yield {
-                    contextSession.getInstance(d, sourceCode, contextSession, false, t :: seen)
+                    contextSession.getInstance(d, d, sourceCode, contextSession, false, tpe :: seen)
                   }
                   factory.create(dependencies)
                 }
                 if (provideSingleton) {
-                  singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, buildWithProvider))
+                  singletonHolder.getOrElseUpdate(p.from, registerInjectee(p.from, p.from, buildWithProvider))
                 } else {
-                  registerInjectee(p.from, buildWithProvider)
+                  registerInjectee(p.from, p.from, buildWithProvider)
                 }
             }
           Some(result)
@@ -317,47 +350,55 @@ private[airframe] class AirframeSession(
 
     val result =
       obj.getOrElse {
-        trace(s"[${name}] No binding is found for ${t}. Building the instance. create = ${create}")
+        trace(s"[${name}] No binding is found for ${tpe}. Building the instance. create = ${create}")
         if (create) {
           // Create a new instance for bindFactory[X] or building X using its default value
-          registerInjectee(t, contextSession.buildInstance(t, sourceCode, contextSession, seen, defaultValue))
+          registerInjectee(
+            bindTarget,
+            tpe,
+            contextSession.buildInstance(tpe, sourceCode, contextSession, seen, defaultValue)
+          )
         } else {
           // Create a singleton if no binding is found
           singletonHolder.getOrElseUpdate(
-            t,
-            registerInjectee(t, contextSession.buildInstance(t, sourceCode, contextSession, seen, defaultValue))
+            tpe,
+            registerInjectee(
+              bindTarget,
+              tpe,
+              contextSession.buildInstance(tpe, sourceCode, contextSession, seen, defaultValue)
+            )
           )
         }
       }
 
-    tracer.onInjectEnd(this, t)
-    stats.incrementInjectCount(this, t)
+    tracer.onInjectEnd(this, tpe)
+    stats.incrementInjectCount(this, tpe)
 
     result.asInstanceOf[AnyRef]
   }
 
   private[airframe] def buildInstance(
-      t: Surface,
+      tpe: Surface,
       sourceCode: SourceCode,
       contextSession: AirframeSession,
       seen: List[Surface],
-      defaultValue: Option[() => Any] = None
+      defaultValue: Option[() => Any]
   ): Any = {
     traitFactoryCache
-      .get(t).map { f =>
-        trace(s"[${name}] Using a pre-registered trait factory for ${t}")
+      .get(tpe).map { f =>
+        trace(s"[${name}] Using a pre-registered trait factory for ${tpe}")
         f(this)
       }
       .orElse {
         // Use the provided object factory if exists
         defaultValue.map { f =>
-          trace(s"[${name}] Using the default value for ${t}")
+          trace(s"[${name}] Using the default value for ${tpe}")
           f()
         }
       }
       .getOrElse {
-        trace(s"[${name}] No binding is found for ${t}")
-        buildInstance(t, sourceCode, contextSession, t :: seen)
+        trace(s"[${name}] No binding is found for ${tpe}")
+        buildInstance(tpe, sourceCode, contextSession, tpe :: seen)
       }
   }
 
@@ -382,6 +423,7 @@ private[airframe] class AirframeSession(
             // When using the default constructor, we should disable singleton registration for p unless p has SingletonBinding
             // For example, when building A(p1:Long=10, p2:Long=20, ...), we should not register p1, p2 long values as singleton.
             contextSession.getInstance(
+              p.surface,
               p.surface,
               sourceCode,
               contextSession,

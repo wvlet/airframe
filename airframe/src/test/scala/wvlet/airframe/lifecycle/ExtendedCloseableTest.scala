@@ -24,7 +24,8 @@ import wvlet.airspec.AirSpec
 class ExtendedCloseableTest extends AirSpec {
   scalaJsSupport
 
-  val closeCount = new AtomicInteger(0)
+  private val closeCount = new AtomicInteger(0)
+
   trait A extends AutoCloseable {
     override def close(): Unit = {
       closeCount.incrementAndGet()
@@ -39,6 +40,7 @@ class ExtendedCloseableTest extends AirSpec {
     val d = newSilentDesign
       .bind[A].to[B]
 
+    closeCount.get() shouldBe 0
     d.build[A] { a =>
       //
     }
