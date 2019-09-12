@@ -25,7 +25,7 @@ jobs:
     - stage: build
       if: commit_message !~ /^\[doc/
       env: PROJECT=code-format
-      jdk: openjdk8
+      jdk: openjdk11
       script: ./scalafmt --test
     - stage: build
       if: tag IS blank AND branch = master AND type != pull_request
