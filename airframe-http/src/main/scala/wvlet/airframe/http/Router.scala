@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
+import scala.annotation.tailrec
 import scala.language.experimental.macros
 
 /**
@@ -42,6 +43,9 @@ case class Router(
 ) {
   def isEmpty = this eq Router.empty
 
+  // If this node has no operation (endspoints, filter, etc.)
+  def hasNoOperation = surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty
+
   def routes: Seq[Route] = {
     localRoutes ++ children.flatMap(_.routes)
   }
@@ -51,8 +55,9 @@ case class Router(
   private def printNode(indentLevel: Int): String = {
     val s = Seq.newBuilder[String]
 
-    val ws = " " * (indentLevel * 2)
-    s += s"${ws}- Router[${surface.orElse(filterSurface).getOrElse("")}]"
+    val ws   = " " * (indentLevel * 2)
+    val name = surface.orElse(filterSurface).getOrElse(f"${hashCode()}%x")
+    s += s"${ws}- Router[${name}]"
 
     for (r <- localRoutes) {
       s += s"${ws}  + ${r}"
@@ -128,7 +133,7 @@ case class Router(
     if (this.isEmpty) {
       newRouter
     } else {
-      Router.apply(this, newRouter)
+      Router.merge(List(this, newRouter))
     }
   }
 }
@@ -141,8 +146,30 @@ object Router extends LogSupport {
     if (children == null) {
       empty
     } else {
-      children.fold(empty)((prev, child) => prev.addChild(child))
+      children.toList match {
+        case c :: Nil =>
+          c
+        case lst =>
+          merge(lst)
+      }
     }
+  }
+
+  def merge(routes: List[Router]): Router = {
+    @tailrec
+    def loop(h: Router, t: List[Router]): Router = {
+      if (t.isEmpty) {
+        h
+      } else {
+        if (h.hasNoOperation) {
+          loop(h.addChild(t.head), t.tail)
+        } else {
+          loop(empty.addChild(h), t)
+        }
+      }
+    }
+
+    loop(routes.head, routes.tail)
   }
 
   def of[Controller]: Router = macro RouterMacros.of[Controller]
