@@ -24,7 +24,7 @@ object AirSpec_03_DI extends AirSpec {
   case class Config(port: Int)
   class MyService(val config: Config)
 
-  override protected def design: Design = {
+  protected override def design: Design = {
     import wvlet.airframe._
 
     val d = newDesign

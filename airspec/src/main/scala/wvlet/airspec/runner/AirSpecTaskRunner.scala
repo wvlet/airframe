@@ -121,7 +121,7 @@ private[airspec] class AirSpecTaskRunner(
 
       // Configure the global spec design
       var d = Design.newDesign.noLifeCycleLogging
-      d = spec.callDesignAll(d)
+      d = d + spec.callDesign
 
       // Create a global Airframe session
       val globalSession =
@@ -133,7 +133,7 @@ private[airspec] class AirSpecTaskRunner(
         for (m <- targetMethods) {
           spec.callBefore
           // Configure the test-local design
-          val childDesign = spec.callDesignEach(Design.newDesign)
+          val childDesign = spec.callLocalDesign
 
           val startTimeNanos = System.nanoTime()
           // Create a test-method local child session

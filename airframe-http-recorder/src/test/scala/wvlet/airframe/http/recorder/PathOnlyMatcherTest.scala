@@ -23,7 +23,7 @@ import wvlet.airspec.AirSpec
   */
 class PathOnlyMatcherTest extends AirSpec {
 
-  override protected def design: Design = {
+  protected override def design: Design = {
     val config = HttpRecorderConfig(requestMatcher = HttpRequestMatcher.PathOnlyMatcher)
     Design.newDesign
       .bind[HttpRecorderServer].toInstance(HttpRecorder.createInMemoryServer(config))

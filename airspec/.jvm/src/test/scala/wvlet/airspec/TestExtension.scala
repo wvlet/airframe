@@ -43,8 +43,8 @@ trait MyServer extends LogSupport {
 trait CustomSpec extends AirSpec with LogSupport {
   protected val serverLaunchCounter = new AtomicInteger(0)
 
-  override protected def configure(design: Design): Design = {
-    design
+  protected override def design: Design = {
+    Design.newDesign
       .bind[MyServer].toSingleton
       .bind[MyServerConfig].toInstance(MyServerConfig("A"))
       .bind[AtomicInteger].toInstance(serverLaunchCounter)
@@ -74,8 +74,9 @@ class MyServerSpec extends CustomSpec {
 }
 
 class MyServer2Spec extends CustomSpec {
-  override protected def configureLocal(design: Design): Design = {
-    design
+
+  protected override def localDesign: Design = {
+    Design.newDesign
       .bind[MyServerConfig].toInstance(MyServerConfig("B"))
       // By adding this local design, the server will be a test case local
       .bind[MyServer].toSingleton
