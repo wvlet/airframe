@@ -5,6 +5,23 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.5
+-  airspec: Deprecate configure(design) ([#714](https://github.com/wvlet/airframe/issues/714)) [[9277263](https://github.com/wvlet/airframe/commit/9277263)]
+-  airspec: Isolate spec loggers ([#718](https://github.com/wvlet/airframe/issues/718)) [[7ea85f8](https://github.com/wvlet/airframe/commit/7ea85f8)]
+-  airframe-di: Fix duplicated Closeable hook registration ([#704](https://github.com/wvlet/airframe/issues/704)) [[0ca5da2](https://github.com/wvlet/airframe/commit/0ca5da2)]
+-  airframe-config: Add @secret annotation ([#710](https://github.com/wvlet/airframe/issues/710)) [[c82008f](https://github.com/wvlet/airframe/commit/c82008f)]
+-  airframe-http-recorder: Add PathOnlyMatcher ([#711](https://github.com/wvlet/airframe/issues/711)) [[e92536c](https://github.com/wvlet/airframe/commit/e92536c)]
+-  airframe-http-recorder: Add name config ([#709](https://github.com/wvlet/airframe/issues/709)) [[26d3cba](https://github.com/wvlet/airframe/commit/26d3cba)]
+-  airframe-http: Remove redundant Router nesting ([#708](https://github.com/wvlet/airframe/issues/708)) [[cdc410c](https://github.com/wvlet/airframe/commit/cdc410c)]
+-  airframe-http-finagle: Add finagleBaseDesign for using FinagleServerFactory ([#707](https://github.com/wvlet/airframe/issues/707)) [[ea8d56b](https://github.com/wvlet/airframe/commit/ea8d56b)]
+-  airframe-http-finagle: Fix FinagleServer lifecycle ([#703](https://github.com/wvlet/airframe/issues/703)) [[ce9ef85](https://github.com/wvlet/airframe/commit/ce9ef85)]
+-  Internal Changes:
+  -  Upgrade to Scala 2.12.10 ([#715](https://github.com/wvlet/airframe/issues/715)) [[c23d1ce](https://github.com/wvlet/airframe/commit/c23d1ce)]
+  -  Update sbt-sonatype to 3.7 ([#700](https://github.com/wvlet/airframe/issues/700)) [[e6e3e5d](https://github.com/wvlet/airframe/commit/e6e3e5d)]
+  -  Update postgresql to 42.2.8 ([#717](https://github.com/wvlet/airframe/issues/717)) [[43e63f7](https://github.com/wvlet/airframe/commit/43e63f7)]
+  -  Update finagle-core, finagle-http, ... to 19.9.0 ([#694](https://github.com/wvlet/airframe/issues/694)) [[c587c86](https://github.com/wvlet/airframe/commit/c587c86)]
+  -  Use JDK11 for code-format task on CI ([#712](https://github.com/wvlet/airframe/issues/712)) [[a4288eb](https://github.com/wvlet/airframe/commit/a4288eb)]
+
 ## 19.9.4
 -  airframe-http-finagle: Support streaming JSON/MsgPack responses for Reader[X] ([#691](https://github.com/wvlet/airframe/issues/691)) [[4ebe0ec](https://github.com/wvlet/airframe/commit/4ebe0ec)]
 -  airframe-http-finagle: Support Reader[Buf] stream response ([#690](https://github.com/wvlet/airframe/issues/690)) [[fb237f7](https://github.com/wvlet/airframe/commit/fb237f7)]
