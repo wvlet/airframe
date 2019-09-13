@@ -53,7 +53,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: build
       if: commit_message !~ /^\[doc/
-      env: SCALA_VERSION=2.12.8 PROJECT=projectJVM
+      env: SCALA_VERSION=2.12.10 PROJECT=projectJVM
       jdk: openjdk8
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
@@ -69,7 +69,7 @@ jobs:
       script: ./sbt ++$SCALA_VERSION "${PROJECT}/test"
     - stage: build
       if: commit_message !~ /^\[doc/
-      env: SCALA_VERSION=2.12.8 PROJECT=projectJS
+      env: SCALA_VERSION=2.12.10 PROJECT=projectJS
       jdk: openjdk8  # Scala.js 0.6.27 didn't work with jdk11
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - stage: build

@@ -1,7 +1,7 @@
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_11 = "2.11.12"
-val SCALA_2_12 = "2.12.8"
+val SCALA_2_12 = "2.12.10"
 val SCALA_2_13 = "2.13.0"
 
 val SCALA_JS_VERSION = "0.6.28"
