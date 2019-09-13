@@ -42,9 +42,14 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
   private val useAnciColor = true
 
   private val airSpecLogger = {
-    val l = Logger("wvlet.airspec.runner.AirSpecLogger")
+    // Use a different spec logger for each AirSpecRunner
+    val l = Logger(f"wvlet.airspec.runner.AirSpecLogger_${hashCode()}%x")
     l.setFormatter(BareFormatter)
     l
+  }
+
+  def clearHandlers: Unit = {
+    airSpecLogger.clearHandlers
   }
 
   def withColor(colorEsc: String, s: String) = {
