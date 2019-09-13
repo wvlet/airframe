@@ -15,7 +15,7 @@ package wvlet.airspec
 
 import wvlet.airframe.Design
 import wvlet.airspec.spi.{Asserts, RichAsserts}
-import wvlet.airframe.surface.MethodSurface
+import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec
 
 import scala.language.experimental.macros
@@ -66,26 +66,9 @@ private[airspec] trait AirSpecSpi {
   protected def scalaJsSupport: Unit = macro AirSpecSpi.scalaJsSupportImpl
 
   /**
-    * Configure a global design for this spec.
-    *
-    * @deprecated(message="Use design:Design instead", since="19.8.9")
-    */
-  protected def configure(d: Design): Design = d + design
-
-  /**
     * Provide a global design for this spec.
     */
   protected def design: Design = Design.empty
-
-  /**
-    * Configure a test-case local design in the spec.
-    *
-    * Note that if you override a global design in this method,
-    * test cases will create test-case local instances (singletons)
-    *
-    * @deprecated(message="Use localDesign: Design instead", since="19.8.9")
-    */
-  protected def configureLocal(design: Design): Design = design + localDesign
 
   /**
     * Provide a test-case local design in the spec.
@@ -108,21 +91,20 @@ private[airspec] trait AirSpecSpi {
 }
 
 private[airspec] object AirSpecSpi {
-
   private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[MethodSurface] = {
-    methodSurfaces.filter(_.isPublic)
+    methodSurfaces.filter(m => m.isPublic)
   }
 
   /**
     * This wrapper is used for accessing protected methods in AirSpec
     */
   private[airspec] implicit class AirSpecAccess(val airSpec: AirSpecSpi) extends AnyVal {
-    def callDesignAll(design: Design): Design  = airSpec.configure(design)
-    def callDesignEach(design: Design): Design = airSpec.configureLocal(design)
-    def callBeforeAll: Unit                    = airSpec.beforeAll
-    def callBefore: Unit                       = airSpec.before
-    def callAfter: Unit                        = airSpec.after
-    def callAfterAll: Unit                     = airSpec.afterAll
+    def callDesign: Design      = airSpec.design
+    def callLocalDesign: Design = airSpec.localDesign
+    def callBeforeAll: Unit     = airSpec.beforeAll
+    def callBefore: Unit        = airSpec.before
+    def callAfter: Unit         = airSpec.after
+    def callAfterAll: Unit      = airSpec.afterAll
   }
 
   def scalaJsSupportImpl(c: sm.Context): c.Tree = {

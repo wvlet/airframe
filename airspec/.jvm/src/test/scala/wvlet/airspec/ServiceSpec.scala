@@ -13,28 +13,27 @@
  */
 package wvlet.airspec
 
-import javax.annotation._
 import wvlet.airframe.Design
 import wvlet.log.LogSupport
 
 case class ServiceConfig(port: Int)
 
 class Service(config: ServiceConfig) extends LogSupport {
-  @PostConstruct
   def start: Unit = {
     info(s"Starting a server at ${config.port}")
   }
 
-  @PreDestroy
   def end: Unit = {
     info(s"Stopping the server at ${config.port}")
   }
 }
 
 class ServiceSpec extends AirSpec with LogSupport {
-  override protected def configure(design: Design): Design = {
-    design
+  protected override def design: Design = {
+    Design.newDesign
       .bind[Service].toSingleton
+      .onStart(_.start)
+      .onShutdown(_.end)
       .bind[ServiceConfig].toInstance(ServiceConfig(port = 8080))
   }
 

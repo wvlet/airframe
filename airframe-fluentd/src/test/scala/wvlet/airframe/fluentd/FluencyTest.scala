@@ -81,7 +81,7 @@ case class FluencyMetric(id: Int, name: String) extends TaggedMetric {
 class FluencyTest extends AirSpec {
   private val fluentdPort = IOUtil.randomPort
 
-  override protected val design = {
+  protected override val design: Design = {
     newDesign
       .bind[MockFluentdConfig].toInstance(new MockFluentdConfig(fluentdPort))
       .bind[MockFluentd].toEagerSingleton

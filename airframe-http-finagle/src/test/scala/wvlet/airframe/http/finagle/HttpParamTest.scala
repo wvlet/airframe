@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http.finagle
 
+import wvlet.airframe.Design
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
@@ -30,7 +31,7 @@ class HttpParamExample extends LogSupport {
   */
 class HttpParamTest extends AirSpec {
 
-  override protected def design = {
+  protected override def design: Design = {
     val r = Router.add[HttpParamExample]
     newFinagleServerDesign(router = r)
       .bind[FinagleSyncClient].toProvider { server: FinagleServer =>

@@ -128,7 +128,10 @@ class ContextWithDI extends AirSpec {
     }
   }
 
-  override protected def configure(design: Design): Design = design.bind[Int].toInstance(1000)
+  protected override def design: Design = {
+    Design.newDesign
+      .bind[Int].toInstance(1000)
+  }
 
   def `delegate bindings from the global session`(context: AirSpecContext): Unit = {
     context.test[SpecWithDI]
