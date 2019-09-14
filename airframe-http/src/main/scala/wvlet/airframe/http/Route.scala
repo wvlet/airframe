@@ -15,6 +15,7 @@ package wvlet.airframe.http
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.json.JSON
+import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{OptionSurface, Surface, Zero}
 import wvlet.log.LogSupport
@@ -101,7 +102,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
                           contentBytes
                         case Some("application/json") =>
                           // JSON -> msgpack
-                          JSONCodec.toMsgPack(JSON.parse(contentBytes))
+                          MessagePack.fromJSON(contentBytes)
                         case _ =>
                           // Try parsing as JSON first
                           Try(JSON.parse(contentBytes))

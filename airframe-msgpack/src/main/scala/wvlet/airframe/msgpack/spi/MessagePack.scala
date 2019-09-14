@@ -27,9 +27,11 @@ object MessagePack {
   def newUnpacker(msgpack: Array[Byte]): Unpacker                        = Compat.newUnpacker(msgpack)
   def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = Compat.newUnpacker(msgpack, offset, len)
 
-  def fromJSON(json: String): MsgPack = {
+  def fromJSON(json: String): MsgPack           = fromJSON(JSONSource.fromString(json))
+  def fromJSON(jsonBytes: Array[Byte]): MsgPack = fromJSON(JSONSource.fromBytes(jsonBytes))
+  def fromJSON(json: JSONSource): MsgPack = {
     val context = new JSONToMessagePackConverterContext()
-    JSONScanner.scanAny(JSONSource.fromString(json), context)
+    JSONScanner.scanAny(json, context)
     context.mergedResult
   }
 }
