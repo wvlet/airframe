@@ -775,6 +775,7 @@ object PrimitiveCodec {
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {
       u.getNextValueType match {
         case ValueType.NIL =>
+          u.unpackNil
           v.setNull
         case ValueType.BOOLEAN =>
           v.setBoolean(u.unpackBoolean)

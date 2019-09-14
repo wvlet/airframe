@@ -418,4 +418,10 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     json.contains("java.lang.IllegalArgumentException") shouldBe true
   }
 
+  def `unpack null in Any`: Unit = {
+    val codec = MessageCodec.of[Seq[Any]]
+    val seq   = codec.fromJson("[null, 1]")
+    seq shouldBe Seq(null, 1)
+  }
+
 }
