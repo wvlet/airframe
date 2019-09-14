@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.6
+-  airframe-codc: Fix AnyCodec to proceed cursor when Nil is found ([#722](https://github.com/wvlet/airframe/issues/722)) [[3d82c26](https://github.com/wvlet/airframe/commit/3d82c26)]
+-  airframe-msgpack: Add MessagePack.fromJSON(JSONSource) ([#721](https://github.com/wvlet/airframe/issues/721)) [[584ccbf](https://github.com/wvlet/airframe/commit/584ccbf)]
+-  airframe-config: Use left-aligned config display ([#719](https://github.com/wvlet/airframe/issues/719)) [[2a20752](https://github.com/wvlet/airframe/commit/2a20752)]
+-  internal: Use .cache folder for coursier ([#720](https://github.com/wvlet/airframe/issues/720)) [[cb4fca7](https://github.com/wvlet/airframe/commit/cb4fca7)]
+
 ## 19.9.5
 -  airspec: Deprecate configure(design) ([#714](https://github.com/wvlet/airframe/issues/714)) [[9277263](https://github.com/wvlet/airframe/commit/9277263)]
 -  airspec: Isolate spec loggers ([#718](https://github.com/wvlet/airframe/issues/718)) [[7ea85f8](https://github.com/wvlet/airframe/commit/7ea85f8)]
