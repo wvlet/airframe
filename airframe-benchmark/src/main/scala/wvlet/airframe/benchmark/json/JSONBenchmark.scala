@@ -19,7 +19,6 @@ import org.openjdk.jmh.annotations._
 import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.json.JSON.{JSONArray, JSONString}
 import wvlet.airframe.json.{JSON, JSONSource, JSONTraverser, JSONVisitor, NullJSONContext}
-import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Timer}
 
 import scala.util.Random
