@@ -266,6 +266,10 @@ object OffsetPacker {
       cursor.writeByteAndInt(ARRAY32, arraySize)
   }
 
+  def packArray32Header(cursor: WriteCursor, arraySize: Int): Unit = {
+    cursor.writeByteAndInt(ARRAY32, arraySize)
+  }
+
   def packMapHeader(cursor: WriteCursor, mapSize: Int): Unit = {
     if (mapSize < 0)
       throw new IllegalArgumentException("map size must be >= 0")
@@ -277,6 +281,10 @@ object OffsetPacker {
     } else {
       cursor.writeByteAndInt(MAP32, mapSize)
     }
+  }
+
+  def packMap32Header(cursor: WriteCursor, mapSize: Int) = {
+    cursor.writeByteAndInt(MAP32, mapSize)
   }
 
   def packExtTypeHeader(cursor: WriteCursor, extTypeHeader: ExtTypeHeader): Unit = {

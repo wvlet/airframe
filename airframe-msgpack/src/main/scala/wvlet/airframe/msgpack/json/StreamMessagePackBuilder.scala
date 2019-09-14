@@ -14,8 +14,10 @@
 package wvlet.airframe.msgpack.json
 
 import wvlet.airframe.json.{JSONContext, JSONScanner, JSONSource}
-import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack}
+import wvlet.airframe.msgpack.io.ByteArrayBuffer
+import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, OffsetPacker, WriteCursor}
 
+import scala.annotation.tailrec
 import scala.util.{Success, Try}
 
 object StreamMessagePackBuilder {
@@ -27,17 +29,12 @@ object StreamMessagePackBuilder {
   }
 
   sealed abstract class ParseContext(val offset: Long) {
-    private var endOffset: Long   = 0
     private var elementCount: Int = 0
     def isObject: Boolean         = false
     def increment: Unit = {
       elementCount += 1
     }
     def numElements: Int = elementCount
-    def setEndOffset(endOffset: Long): Unit = {
-      this.endOffset = endOffset
-    }
-    def getEndOffset: Long = endOffset
   }
   class ObjectContext(offset: Long) extends ParseContext(offset) {
     override def isObject: Boolean = true
@@ -101,46 +98,37 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] {
     if (contextStack.length > 1) {
       Array.emptyByteArray
     } else {
-      val src          = packer.toByteArray
-      val out          = MessagePack.newBufferPacker
-      var cursor: Long = 0
+      val src    = packer.toByteArray
+      val buf    = ByteArrayBuffer(src)
+      val cursor = WriteCursor(buf, 0)
+
+      @tailrec
       def loop(stack: List[ParseContext]): Unit = {
         stack match {
           case Nil =>
           // do nothing
           case c :: remainings =>
-            if (c.offset > cursor) {
-              val len = c.offset - cursor
-              out.addPayload(src, cursor.toInt, len.toInt)
-              cursor += len
-            }
             c match {
               case o: ObjectContext =>
                 val numMapElements = o.numElements / 2
-                out.packMapHeader(numMapElements)
-                loop(remainings)
+                cursor.setPosition(o.offset.toInt)
+                OffsetPacker.packMap32Header(cursor, numMapElements)
               case a: ArrayContext =>
                 val numMapElements = a.numElements
-                out.packArrayHeader(numMapElements)
-                loop(remainings)
+                cursor.setPosition(a.offset.toInt)
+                OffsetPacker.packArray32Header(cursor, numMapElements)
               case s: SingleContext =>
-                loop(remainings)
             }
-            if (cursor < c.getEndOffset) {
-              val len = c.getEndOffset - cursor
-              out.addPayload(src, cursor.toInt, len.toInt)
-              cursor += len
-            }
+            loop(remainings)
         }
       }
       loop(finishedContextStack)
-      out.toByteArray
+      src
     }
   }
 
   override def closeContext(s: JSONSource, end: Int): Unit = {
     val currentOffset = packer.totalByteSize
-    context.setEndOffset(currentOffset)
     finishedContextStack = context :: finishedContextStack
     context = contextStack.head
     contextStack = contextStack.tail
@@ -150,12 +138,14 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] {
 
   override def objectContext(s: JSONSource, start: Int): JSONContext[MsgPack] = {
     context.increment
+    packer.packMapHeader((1L << 16).toInt)
     addContext(new ObjectContext(packer.totalByteSize))
     this
   }
 
   override def arrayContext(s: JSONSource, start: Int): JSONContext[MsgPack] = {
     context.increment
+    packer.packArrayHeader((1L << 16).toInt)
     addContext(new ArrayContext(packer.totalByteSize))
     this
   }
