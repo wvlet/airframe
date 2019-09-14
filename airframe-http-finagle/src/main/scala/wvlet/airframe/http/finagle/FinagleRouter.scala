@@ -102,9 +102,8 @@ object FinagleRouter {
     override def apply(request: Request): Future[Response] = {
       val route = routeMatch.route
       // Call the method in this controller
-      val args = route.buildControllerMethodArgs[Request](controller, request, routeMatch.params)
       val result = try {
-        route.call(controller, args)
+        route.call(controller, request, routeMatch.params)
       } catch {
         case e: InvocationTargetException =>
           // Return the exception from the target method
