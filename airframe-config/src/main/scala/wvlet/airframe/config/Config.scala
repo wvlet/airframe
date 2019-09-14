@@ -123,7 +123,7 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
             v
         }
         val ws = " " * (paramWidth - p.name.length).max(0)
-        s += s" ${ws}${p.name}: ${processedValue}"
+        s += s" - ${p.name}${ws}: ${processedValue}"
       }
     }
     val lines = s.result().mkString("\n")
