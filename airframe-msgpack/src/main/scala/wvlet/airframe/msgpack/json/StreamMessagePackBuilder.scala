@@ -115,13 +115,14 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] with LogSupport {
           case c :: remainings =>
             c match {
               case o: ObjectContext =>
+                // e1:(key, value), e2:(key, value), ...
                 val numMapElements = o.numElements / 2
                 cursor.setOffset(o.offset.toInt)
                 OffsetPacker.packMap32Header(cursor, numMapElements)
               case a: ArrayContext =>
-                val numMapElements = a.numElements
+                val numArrayElements = a.numElements
                 cursor.setOffset(a.offset.toInt)
-                OffsetPacker.packArray32Header(cursor, numMapElements)
+                OffsetPacker.packArray32Header(cursor, numArrayElements)
               case s: SingleContext =>
             }
             loop(remainings)
