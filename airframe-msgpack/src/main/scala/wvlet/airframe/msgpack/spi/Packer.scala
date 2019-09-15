@@ -20,6 +20,8 @@ import java.time.Instant
   * Message Packer interface
   */
 trait Packer extends AutoCloseable {
+  private[msgpack] def totalByteSize: Long
+
   def packNil: this.type
   def packBoolean(v: Boolean): this.type
   def packByte(v: Byte): this.type

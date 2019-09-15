@@ -39,6 +39,11 @@ class BenchmarkMainTest extends AirSpec {
     warn(s"This is a test run result, and it may not reflect the actual performance")
   }
 
+  def `run json-stream benchmark`: Unit = {
+    BenchmarkMain.main(s"bench-quick -F 0 json_stream")
+    warn(s"This is a test run result, and it may not reflect the actual performance")
+  }
+
   def `run json perf benchmark`: Unit = {
     BenchmarkMain.main(s"json-perf -n ${iteration} -b ${iteration}")
   }

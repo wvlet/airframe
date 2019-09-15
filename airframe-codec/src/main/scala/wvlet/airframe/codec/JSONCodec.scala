@@ -23,12 +23,12 @@ import wvlet.airframe.msgpack.spi._
 object JSONCodec extends MessageCodec[String] {
 
   override def pack(p: Packer, json: String): Unit = {
-    val j = JSON.parseAny(json)
-    packJsonValue(p, j)
+    val msgpack = MessagePack.fromJSON(json)
+    p.writePayload(msgpack)
   }
 
   def toMsgPack(jsonBytes: Array[Byte]): Array[Byte] = {
-    toMsgPack(JSON.parseAny(jsonBytes))
+    MessagePack.fromJSON(jsonBytes)
   }
 
   def toMsgPack(jsonValue: JSONValue): Array[Byte] = {

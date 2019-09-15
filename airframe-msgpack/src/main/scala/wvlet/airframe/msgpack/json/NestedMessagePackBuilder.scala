@@ -13,13 +13,21 @@
  */
 package wvlet.airframe.msgpack.json
 
-import wvlet.airframe.json.{JSONContext, JSONSource}
+import wvlet.airframe.json.{JSONContext, JSONScanner, JSONSource}
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack}
 import wvlet.log.LogSupport
 
 import scala.util.{Success, Try}
 
-class JSONToMessagePackConverterContext extends JSONContext[Seq[MsgPack]] with LogSupport { parent =>
+object NestedMessagePackBuilder {
+  def fromJSON(json: JSONSource): MsgPack = {
+    val context = new NestedMessagePackBuilder()
+    JSONScanner.scanAny(json, context)
+    context.mergedResult
+  }
+}
+
+class NestedMessagePackBuilder extends JSONContext[Seq[MsgPack]] with LogSupport { parent =>
   protected val packer = MessagePack.newBufferPacker
 
   def mergedResult: MsgPack = {
@@ -117,7 +125,7 @@ class JSONToMessagePackConverterContext extends JSONContext[Seq[MsgPack]] with L
 /**
   * A JSON parse context implementation for remembering how many elements are added to an object or array
   */
-class LocalStructureContext extends JSONToMessagePackConverterContext { self =>
+class LocalStructureContext extends NestedMessagePackBuilder { self =>
   private var elementCount: Int = 0
 
   protected def getElementCount: Int = elementCount

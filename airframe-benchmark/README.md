@@ -80,6 +80,9 @@ $ ./sbt
 # Run JSON benchmark:
 > benchmark/run bench-quick json
 
+# Run JSON-MsgPack conversion benchmark:
+> benchmark/run bench-quick json_stream
+
 # Run benchmark for measuring JSON parse time:
 > benchmark/run json-perf
 

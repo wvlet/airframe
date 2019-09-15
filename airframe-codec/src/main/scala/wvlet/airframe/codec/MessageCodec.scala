@@ -130,7 +130,7 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   def fromJson(json: String): A = {
-    val msgpack  = JSONCodec.toMsgPack(json)
+    val msgpack  = MessagePack.fromJSON(json)
     val unpacker = MessagePack.newUnpacker(msgpack)
     val v        = new MessageHolder
     unpack(unpacker, v)

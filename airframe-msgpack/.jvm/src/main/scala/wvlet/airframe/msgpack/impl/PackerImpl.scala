@@ -23,6 +23,10 @@ import wvlet.airframe.msgpack.spi._
   * Adapter to msgpack-core's MessagePacker
   */
 class PackerImpl(packer: MessagePacker) extends Packer {
+  override def totalByteSize: Long = {
+    packer.getTotalWrittenBytes
+  }
+
   override def packNil: PackerImpl.this.type = {
     packer.packNil
     this

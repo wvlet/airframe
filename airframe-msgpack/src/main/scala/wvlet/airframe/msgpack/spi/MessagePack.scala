@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
 import wvlet.airframe.json.{JSON, JSONScanner, JSONSource}
-import wvlet.airframe.msgpack.json.JSONToMessagePackConverterContext
+import wvlet.airframe.msgpack.json.{NestedMessagePackBuilder, StreamMessagePackBuilder}
 
 /**
   *
@@ -30,8 +30,8 @@ object MessagePack {
   def fromJSON(json: String): MsgPack           = fromJSON(JSONSource.fromString(json))
   def fromJSON(jsonBytes: Array[Byte]): MsgPack = fromJSON(JSONSource.fromBytes(jsonBytes))
   def fromJSON(json: JSONSource): MsgPack = {
-    val context = new JSONToMessagePackConverterContext()
+    val context = new StreamMessagePackBuilder()
     JSONScanner.scanAny(json, context)
-    context.mergedResult
+    context.result
   }
 }
