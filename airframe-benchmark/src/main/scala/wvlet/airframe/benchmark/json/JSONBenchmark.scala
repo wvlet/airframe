@@ -82,10 +82,15 @@ class DoubleArray extends JSONParseBenchmark {
   */
 object JSONBenchmark extends Timer {
 
-  def twitterJson      = IOUtil.readAsString("twitter.json")
-  def jsonBooleanArray = s"[${(0 until 10000).map(_ => Random.nextBoolean()).mkString(",")}]"
-  def jsonIntArray     = s"[${(0 until 10000).map(_ => Random.nextLong()).mkString(",")}]"
-  def jsonDoubleArray  = s"[${(0 until 10000).map(_ => Random.nextDouble()).mkString(",")}]"
+  val r1 = new Random(0)
+  val r2 = new Random(0)
+  val r3 = new Random(0)
+
+  def twitterJson       = IOUtil.readAsString("twitter.json")
+  def twitterSingleJson = IOUtil.readAsString("twitter-single.json")
+  def jsonBooleanArray  = s"[${(0 until 100).map(_ => r1.nextBoolean()).mkString(",")}]"
+  def jsonIntArray      = s"[${(0 until 100).map(_ => r2.nextLong()).mkString(",")}]"
+  def jsonDoubleArray   = s"[${(0 until 100).map(_ => r3.nextDouble()).mkString(",")}]"
   def jsonStringArray = {
     // Extract JSON strings from twitter.json
     val j = JSON.parse(twitterJson)

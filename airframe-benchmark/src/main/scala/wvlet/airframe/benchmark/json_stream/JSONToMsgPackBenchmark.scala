@@ -54,6 +54,13 @@ class TwitterJSON extends JSONToMsgPackBenchmarkBase {
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
+class TwitterSingleJSON extends JSONToMsgPackBenchmarkBase {
+  override protected val json: String = JSONBenchmark.twitterSingleJson
+}
+
+@State(Scope.Benchmark)
+@BenchmarkMode(Array(Mode.AverageTime))
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
 class IntArraySON extends JSONToMsgPackBenchmarkBase {
   override protected val json: String = JSONBenchmark.jsonIntArray
 }
