@@ -15,7 +15,8 @@ package wvlet.airframe.msgpack.json
 
 import wvlet.airframe.json.{JSONContext, JSONScanner, JSONSource}
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
-import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, OffsetPacker, WriteCursor}
+import wvlet.airframe.msgpack.spi.{Code, MessagePack, MsgPack, OffsetPacker, WriteCursor}
+import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
 import scala.util.{Success, Try}
@@ -42,9 +43,13 @@ object StreamMessagePackBuilder {
   class ArrayContext(offset: Long) extends ParseContext(offset)
   class SingleContext              extends ParseContext(0)
 
+  private val collectionPlaceHolder = {
+    // Dummy header for ARRAY32 or MAP32
+    Array[Byte](Code.NEVER_USED, Code.NEVER_USED, Code.NEVER_USED, Code.NEVER_USED, Code.NEVER_USED)
+  }
 }
 
-class StreamMessagePackBuilder extends JSONContext[MsgPack] {
+class StreamMessagePackBuilder extends JSONContext[MsgPack] with LogSupport {
   import StreamMessagePackBuilder._
   protected val packer = MessagePack.newBufferPacker
 
@@ -111,11 +116,11 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] {
             c match {
               case o: ObjectContext =>
                 val numMapElements = o.numElements / 2
-                cursor.setPosition(o.offset.toInt)
+                cursor.setOffset(o.offset.toInt)
                 OffsetPacker.packMap32Header(cursor, numMapElements)
               case a: ArrayContext =>
                 val numMapElements = a.numElements
-                cursor.setPosition(a.offset.toInt)
+                cursor.setOffset(a.offset.toInt)
                 OffsetPacker.packArray32Header(cursor, numMapElements)
               case s: SingleContext =>
             }
@@ -138,15 +143,17 @@ class StreamMessagePackBuilder extends JSONContext[MsgPack] {
 
   override def objectContext(s: JSONSource, start: Int): JSONContext[MsgPack] = {
     context.increment
-    packer.packMapHeader((1L << 16).toInt)
     addContext(new ObjectContext(packer.totalByteSize))
+    // Leave a blank space for the Map header
+    packer.writePayload(collectionPlaceHolder)
     this
   }
 
   override def arrayContext(s: JSONSource, start: Int): JSONContext[MsgPack] = {
     context.increment
-    packer.packArrayHeader((1L << 16).toInt)
     addContext(new ArrayContext(packer.totalByteSize))
+    // Leave a blank space for the Array header
+    packer.writePayload(collectionPlaceHolder)
     this
   }
 }

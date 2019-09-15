@@ -19,8 +19,8 @@ package wvlet.airframe.msgpack.spi
 case class WriteCursor(var buf: WriteBuffer, var position: Int) {
   private var offset: Int = 0
 
-  def setPosition(newPosition: Int): Unit = {
-    position = newPosition
+  def setOffset(newOffset: Int): Unit = {
+    offset = newOffset
   }
 
   def lastWrittenBytes: Int = offset

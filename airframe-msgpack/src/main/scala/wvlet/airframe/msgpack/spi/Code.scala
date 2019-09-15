@@ -80,6 +80,4 @@ object Code {
 
   def isFixedRaw(b: Byte): Boolean =
     (b & 0xe0.toByte) == Code.FIXSTR_PREFIX
-
-  private[msgpack] val NEVER_USED_PAYLOAD = Array[Byte](NEVER_USED)
 }
