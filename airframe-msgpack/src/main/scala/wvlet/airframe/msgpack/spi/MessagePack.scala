@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
 import wvlet.airframe.json.{JSON, JSONScanner, JSONSource}
-import wvlet.airframe.msgpack.json.{StreamJSONToMsgPackConverterContext, StreamMessagePackBuilder}
+import wvlet.airframe.msgpack.json.{NestedMessagePackBuilder, StreamMessagePackBuilder}
 
 /**
   *

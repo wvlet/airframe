@@ -20,29 +20,40 @@ import org.openjdk.jmh.infra.Blackhole
 import wvlet.airframe.benchmark.json.JSONBenchmark
 import wvlet.airframe.codec.JSONValueCodec
 import wvlet.airframe.json.{JSON, JSONSource}
-import wvlet.airframe.msgpack.json.StreamMessagePackBuilder
+import wvlet.airframe.msgpack.json.{NestedMessagePackBuilder, StreamMessagePackBuilder}
 import wvlet.airframe.msgpack.spi.MessagePack
 
 /**
   *
   */
+abstract class JSONToMsgPackBenchmarkBase {
+  protected val json: String
+
+  @Benchmark
+  def jsonValue(blackhole: Blackhole): Unit = {
+    blackhole.consume(JSONValueCodec.toMsgPack(JSON.parse(json)))
+  }
+
+  @Benchmark
+  def nested(blackHole: Blackhole): Unit = {
+    blackHole.consume(NestedMessagePackBuilder.fromJSON(JSONSource.fromString(json)))
+  }
+
+  @Benchmark
+  def twoPass(blackHole: Blackhole): Unit = {
+    blackHole.consume(StreamMessagePackBuilder.fromJSON(JSONSource.fromString(json)))
+  }
+}
 @State(Scope.Benchmark)
 @BenchmarkMode(Array(Mode.AverageTime))
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-class JSONToMsgPackBenchmark {
+class TwitterJSON extends JSONToMsgPackBenchmarkBase {
+  override protected val json: String = JSONBenchmark.twitterJson
+}
 
-  @Benchmark
-  def valueToMsgPack(blackhole: Blackhole): Unit = {
-    blackhole.consume(JSONValueCodec.toMsgPack(JSON.parse(JSONBenchmark.twitterJson)))
-  }
-
-  @Benchmark
-  def defaultToMsgPack(blackHole: Blackhole): Unit = {
-    blackHole.consume(MessagePack.fromJSON(JSONBenchmark.twitterJson))
-  }
-
-  @Benchmark
-  def streamToMsgPack(blackHole: Blackhole): Unit = {
-    blackHole.consume(StreamMessagePackBuilder.fromJSON(JSONSource.fromString(JSONBenchmark.twitterJson)))
-  }
+@State(Scope.Benchmark)
+@BenchmarkMode(Array(Mode.AverageTime))
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+class IntArraySON extends JSONToMsgPackBenchmarkBase {
+  override protected val json: String = JSONBenchmark.jsonIntArray
 }
