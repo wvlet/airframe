@@ -160,7 +160,7 @@ private[airspec] class AirSpecTaskRunner(
                   } catch {
                     case e @ MISSING_DEPENDENCY(stack, _) =>
                       throw MissingTestDependency(
-                        s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}"
+                        s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}:\n${e.getMessage}"
                       )
                   }
                 }
