@@ -48,13 +48,13 @@ jobs:
     - stage: build
       if: tag IS blank AND branch = master AND type != pull_request AND commit_message !~ /^\[doc/
       env: PROJECT=publish
-      jdk: openjdk8
+      jdk: openjdk11
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: build
       if: commit_message !~ /^\[doc/
       env: SCALA_VERSION=2.12.10 PROJECT=projectJVM
-      jdk: openjdk8
+      jdk: openjdk11
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script:
@@ -70,19 +70,19 @@ jobs:
     - stage: build
       if: commit_message !~ /^\[doc/
       env: SCALA_VERSION=2.12.10 PROJECT=projectJS
-      jdk: openjdk11  # Scala.js 0.6.27 didn't work with jdk11
+      jdk: openjdk11
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - stage: build
       if: tag IS blank AND branch = master AND type != pull_request AND commit_message !~ /^\[doc/
       env: SCALA_VERSION=2.11.12 PROJECT=projectJVM
       # Build Scala 2.11 support only for master and releases
-      jdk: openjdk8
+      jdk: openjdk11
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - stage: release
       env: PROJECT=publish
-      jdk: openjdk8
+      jdk: openjdk11
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
     - stage: release
