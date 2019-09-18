@@ -92,6 +92,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
+  coverageEnabled := false
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )

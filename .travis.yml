@@ -58,8 +58,8 @@ jobs:
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
       script:
-        - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; coverageReport"
-        - "./sbt coverageAggregate && bash <(curl -s https://codecov.io/bash)"
+        - ./sbt ++$SCALA_VERSION "; coverage; ${PROJECT}/test; ${PROJECT}/coverageReport"
+        - "./sbt ${PROJECT}/coverageAggregate && bash <(curl -s https://codecov.io/bash)"
     - stage: build
       if: commit_message !~ /^\[doc/
       env: SCALA_VERSION=2.13.0 PROJECT=projectJVM2_13
