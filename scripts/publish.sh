@@ -10,6 +10,9 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
      # Publish a snapshot
      ./sbt "publishSnapshots"
   else
+     # Used for sbt-pgp
+     gpg --import ./travis/local.pubring.asc
+     gpg --import ./travis/local.secring.asc
      case "$PROJECT" in
        publish)
          # Publish a release version

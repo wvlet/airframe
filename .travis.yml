@@ -16,7 +16,7 @@ language: scala
 
 stages:
   - name: build
-    if: tag IS blank
+    if: tag IS blank AND commit_message !~ /^\[release\]/
   - name: release
     if: tag IS present
 

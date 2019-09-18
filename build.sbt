@@ -43,7 +43,7 @@ lazy val travisSettings = List(
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
   // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded in .travis.yml
-  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toArray),
+  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray()),
   credentials += Credentials(
     "Sonatype Nexus Repository Manager",
     "oss.sonatype.org",
@@ -57,12 +57,7 @@ inThisBuild(
   else List.empty
 )
 
-val buildSettings = Seq[Setting[_]](
-  scalaVersion := SCALA_2_12,
-  crossScalaVersions := targetScalaVersions,
-  crossPaths := true,
-  publishMavenStyle := true,
-  scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
+val sonatypeSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/wvlet/airframe")),
@@ -74,7 +69,16 @@ val buildSettings = Seq[Setting[_]](
   ),
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
-  ),
+  )
+)
+
+inThisBuild(sonatypeSettings)
+
+val buildSettings = Seq[Setting[_]](
+  crossScalaVersions := targetScalaVersions,
+  crossPaths := true,
+  publishMavenStyle := true,
+  scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
     "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.2"
