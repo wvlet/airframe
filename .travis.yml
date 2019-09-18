@@ -70,7 +70,7 @@ jobs:
     - stage: build
       if: commit_message !~ /^\[doc/
       env: SCALA_VERSION=2.12.10 PROJECT=projectJS
-      jdk: openjdk8  # Scala.js 0.6.27 didn't work with jdk11
+      jdk: openjdk11  # Scala.js 0.6.27 didn't work with jdk11
       script: ./sbt ++$SCALA_VERSION ${PROJECT}/test
     - stage: build
       if: tag IS blank AND branch = master AND type != pull_request AND commit_message !~ /^\[doc/
