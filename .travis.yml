@@ -62,7 +62,7 @@ jobs:
         - "./sbt ${PROJECT}/coverageAggregate && bash <(curl -s https://codecov.io/bash)"
     - stage: build
       if: commit_message !~ /^\[doc/
-      env: SCALA_VERSION=2.13.0 PROJECT=projectJVM2_13
+      env: SCALA_VERSION=2.13.1 PROJECT=projectJVM2_13
       jdk: openjdk11
       services: postgresql
       before_script: psql -c 'create database travis_ci_test;' -U postgres
