@@ -3,7 +3,7 @@ addSbtPlugin("com.jsuereth"       % "sbt-pgp"                  % "2.0.0")
 addSbtPlugin("org.scoverage"      % "sbt-scoverage"            % "1.6.0")
 addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.0.5")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
-addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.28")
+addSbtPlugin("org.scala-js"       % "sbt-scalajs"              % "0.6.29")
 addSbtPlugin("com.typesafe.sbt"   % "sbt-ghpages"              % "0.6.3")
 addSbtPlugin("com.eed3si9n"       % "sbt-unidoc"               % "0.4.2")
 
