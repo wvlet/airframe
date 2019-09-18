@@ -5,6 +5,18 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.7
+-  Add support for Scala.js 1.0.0-M8 ([#732](https://github.com/wvlet/airframe/issues/732)) [[48a58e5](https://github.com/wvlet/airframe/commit/48a58e5)]
+-  airspec: Show the deatailed reason of MISSING_DEPENDENCY ([#729](https://github.com/wvlet/airframe/issues/729)) [[1c24971](https://github.com/wvlet/airframe/commit/1c24971)]
+-  airframe-msgpack: Optimize JSON->MsgPack stream conversion ([#725](https://github.com/wvlet/airframe/issues/725)) [[6a07fb4](https://github.com/wvlet/airframe/commit/6a07fb4)]
+-  internal changes: 
+   - Refactor DesignOptions using copy method ([#731](https://github.com/wvlet/airframe/issues/731)) [[1f4fb14](https://github.com/wvlet/airframe/commit/1f4fb14)]
+   -  Update sbt-scalajs, scalajs-compiler, ... to 0.6.29 ([#730](https://github.com/wvlet/airframe/issues/730)) [[22b5188](https://github.com/wvlet/airframe/commit/22b5188)]
+   -  Update HikariCP to 3.4.0 ([#727](https://github.com/wvlet/airframe/issues/727)) [[2e0f2d1](https://github.com/wvlet/airframe/commit/2e0f2d1)]
+   -  Update sbt-scalafmt to 2.0.5 ([#728](https://github.com/wvlet/airframe/issues/728)) [[d577f9f](https://github.com/wvlet/airframe/commit/d577f9f)]
+   -  Update sbt-pgp to 2.0.0 ([#726](https://github.com/wvlet/airframe/issues/726)) [[f8a2d2d](https://github.com/wvlet/airframe/commit/f8a2d2d)]
+   -  airframe-http: refactoring HTTP request mapper ([#724](https://github.com/wvlet/airframe/issues/724)) [[d992e0f](https://github.com/wvlet/airframe/commit/d992e0f)]
+
 ## 19.9.6
 -  airframe-codc: Fix AnyCodec to proceed cursor when Nil is found ([#722](https://github.com/wvlet/airframe/issues/722)) [[3d82c26](https://github.com/wvlet/airframe/commit/3d82c26)]
 -  airframe-msgpack: Add MessagePack.fromJSON(JSONSource) ([#721](https://github.com/wvlet/airframe/issues/721)) [[584ccbf](https://github.com/wvlet/airframe/commit/584ccbf)]
