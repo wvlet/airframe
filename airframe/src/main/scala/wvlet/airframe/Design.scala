@@ -53,26 +53,27 @@ case class DesignOptions(
   }
 
   def withLifeCycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = Some(true), stage, options)
+    this.copy(enabledLifeCycleLogging = Some(true))
   }
+
   def noLifecycleLogging: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging = Some(false), stage, options)
+    this.copy(enabledLifeCycleLogging = Some(false))
   }
 
   def withProductionMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Some(Stage.PRODUCTION), options)
+    this.copy(stage = Some(Stage.PRODUCTION))
   }
 
   def withLazyMode: DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, Some(Stage.DEVELOPMENT), options)
+    this.copy(stage = Some(Stage.DEVELOPMENT))
   }
 
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, stage, options + (key -> value))
+    this.copy(options = this.options + (key -> value))
   }
 
   private[airframe] def noOption[A](key: String): DesignOptions = {
-    new DesignOptions(enabledLifeCycleLogging, stage, options - key)
+    this.copy(options = this.options - key)
   }
 
   private[airframe] def getOption[A](key: String): Option[A] = {
