@@ -57,7 +57,7 @@ inThisBuild(
   else List.empty
 )
 
-val sonatypeSettings = Seq[Setting[_]](
+val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
   homepage := Some(url("https://github.com/wvlet/airframe")),
@@ -69,12 +69,7 @@ val sonatypeSettings = Seq[Setting[_]](
   ),
   developers := List(
     Developer(id = "leo", name = "Taro L. Saito", email = "leo@xerial.org", url = url("http://xerial.org/leo"))
-  )
-)
-
-inThisBuild(sonatypeSettings)
-
-val buildSettings = Seq[Setting[_]](
+  ),
   crossScalaVersions := targetScalaVersions,
   crossPaths := true,
   publishMavenStyle := true,
