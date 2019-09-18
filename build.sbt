@@ -39,8 +39,6 @@ dynverSonatypeSnapshots in ThisBuild := true
 // For publishing in Travis CI
 
 lazy val travisSettings = List(
-  // For publishing on Travis CI
-  useGpg := false,
   usePgpKeyHex("42575E0CCD6BA16A"),
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
@@ -90,9 +88,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
-  coverageEnabled := false,
-  // Use a different session for Scala.js projects
-  sonatypeSessionName := s"[sbt-sonatype] ${name.value} ${version.value} for Scala.js"
+  coverageEnabled := false
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )
@@ -109,6 +105,16 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
+    .settings {
+      sonatypeSessionName := {
+        if (sys.env.isDefinedAt("SCALA_JS_VERSION")) {
+          // Use a different session for Scala.js projects
+          s"${sonatypeSessionName.value} for Scala.js"
+        } else {
+          sonatypeSessionName.value
+        }
+      }
+    }
     .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
