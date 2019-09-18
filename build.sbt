@@ -4,13 +4,11 @@ val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.10"
 val SCALA_2_13 = "2.13.0"
 
-val SCALA_JS_VERSION = "0.6.28"
-
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8"
-val SCALACHECK_VERSION              = "1.14.0"
+val SCALACHECK_VERSION              = "1.14.1-RC2"
 val MSGPACK_VERSION                 = "0.8.16"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
@@ -41,8 +39,6 @@ dynverSonatypeSnapshots in ThisBuild := true
 // For publishing in Travis CI
 
 lazy val travisSettings = List(
-  // For publishing on Travis CI
-  useGpg := false,
   usePgpKeyHex("42575E0CCD6BA16A"),
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
@@ -92,6 +88,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
+  coverageEnabled := false
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )
@@ -108,6 +105,16 @@ lazy val root =
     .settings(name := "airframe-root")
     .settings(buildSettings)
     .settings(noPublish)
+    .settings {
+      sonatypeSessionName := {
+        if (sys.env.isDefinedAt("SCALA_JS_VERSION")) {
+          // Use a different session for Scala.js projects
+          s"${sonatypeSessionName.value} for Scala.js"
+        } else {
+          sonatypeSessionName.value
+        }
+      }
+    }
     .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
@@ -136,7 +143,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   airframeJVM,
   surfaceJVM,
   logJVM,
-  airframeScalaTestJVM,
+  airframeScalaTest,
   canvas,
   config,
   control,
@@ -171,7 +178,6 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
   logJS,
-  airframeScalaTestJS,
   metricsJS,
   codecJS,
   msgpackJS,
@@ -519,21 +525,17 @@ lazy val metricsJVM = metrics.jvm
 lazy val metricsJS  = metrics.js
 
 lazy val airframeScalaTest =
-  crossProject(JVMPlatform, JSPlatform)
+  project
     .in(file("airframe-scalatest"))
     .settings(buildSettings)
     .settings(
       name := "airframe-scalatest",
       description := "A handy base trait for writing test using ScalaTest",
       libraryDependencies ++= Seq(
-        "org.scalatest" %%% "scalatest" % SCALATEST_VERSION
+        "org.scalatest" %% "scalatest" % SCALATEST_VERSION
       )
     )
-    .jsSettings(jsBuildSettings)
-    .dependsOn(log)
-
-lazy val airframeScalaTestJVM = airframeScalaTest.jvm
-lazy val airframeScalaTestJS  = airframeScalaTest.js
+    .dependsOn(logJVM)
 
 lazy val msgpack =
   crossProject(JVMPlatform, JSPlatform)
@@ -940,7 +942,7 @@ lazy val airspec =
         .in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
-        "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
+        "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
