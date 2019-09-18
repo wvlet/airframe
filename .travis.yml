@@ -85,6 +85,11 @@ jobs:
       jdk: openjdk8
       script:
         - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
+    - stage: release
+      env: PROJECT=publish-js
+      jdk: openjdk11
+      script:
+        - cd $TRAVIS_BUILD_DIR && ./scripts/publish.sh
 
 env:
   global:

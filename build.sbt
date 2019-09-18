@@ -4,8 +4,6 @@ val SCALA_2_11 = "2.11.12"
 val SCALA_2_12 = "2.12.10"
 val SCALA_2_13 = "2.13.0"
 
-val SCALA_JS_VERSION = "1.0.0-M8"
-
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
@@ -92,7 +90,9 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
-  coverageEnabled := false
+  coverageEnabled := false,
+  // Use a different session for Scala.js projects
+  sonatypeSessionName := s"[sbt-sonatype] ${name.value} ${version.value} for Scala.js"
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
 )
@@ -936,7 +936,7 @@ lazy val airspec =
         .in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
-        "org.scala-js"       %% "scalajs-test-interface"  % SCALA_JS_VERSION,
+        "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
         "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
       )
     )
