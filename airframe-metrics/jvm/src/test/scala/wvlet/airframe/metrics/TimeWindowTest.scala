@@ -261,12 +261,12 @@ class TimeWindowTest extends AirSpec {
     }
   }
 
-  def `succinct time window string`: Unit = {
+  def `succinct time window unit`: Unit = {
     val t = TimeWindow.withUTC
 
     def check(x: String, expected: String): Unit = {
       val w = t.parse(x)
-      val s = TimeWindow.succinctUnixTimeRange(w.startUnixTime, w.endUnixTime)
+      val s = TimeWindow.succinctWindowUnit(w.startUnixTime, w.endUnixTime)
       s shouldBe expected
     }
 

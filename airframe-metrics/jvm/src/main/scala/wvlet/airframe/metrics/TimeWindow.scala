@@ -155,7 +155,7 @@ object TimeWindow extends LogSupport {
   def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
   def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
 
-  def succinctUnixTimeRange(startUnixTime: Long, endUnixTime: Long): String = {
+  def succinctWindowUnit(startUnixTime: Long, endUnixTime: Long): String = {
     val r          = withUTC.fromRange(startUnixTime, endUnixTime)
     val secondDiff = (endUnixTime - startUnixTime).toDouble
 
