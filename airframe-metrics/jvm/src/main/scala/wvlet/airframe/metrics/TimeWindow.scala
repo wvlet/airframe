@@ -98,7 +98,31 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   def minus(n: Long, unit: ChronoUnit): TimeWindow = plus(-n, unit)
 
   def howMany(unit: ChronoUnit): Long = unit.between(start, end)
+  def howMany(unit: TimeWindowUnit): Long = {
+    unit match {
+      case TimeWindowUnit.Year =>
+        howMany(ChronoUnit.YEARS)
+      case TimeWindowUnit.Quarter =>
+        val startTruncated = unit.truncate(start)
+        val endTruncated   = unit.truncate(end)
+        val yearDiff       = endTruncated.getYear - startTruncated.getYear
+        (endTruncated.getMonthValue + (yearDiff * 12) - startTruncated.getMonthValue) / 3
+      case TimeWindowUnit.Month =>
+        monthDiff
+      case TimeWindowUnit.Week =>
+        weekDiff
+      case TimeWindowUnit.Day =>
+        dateDiff
+      case TimeWindowUnit.Hour =>
+        hourDiff
+      case TimeWindowUnit.Minute =>
+        minuteDiff
+      case TimeWindowUnit.Second =>
+        secondDiff
+    }
+  }
 
+  def secondDiff: Long = howMany(ChronoUnit.SECONDS)
   def minuteDiff: Long = howMany(ChronoUnit.MINUTES)
   def hourDiff: Long   = howMany(ChronoUnit.HOURS)
   def dateDiff: Long   = howMany(ChronoUnit.DAYS)
@@ -111,7 +135,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   }
 }
 
-object TimeWindow {
+object TimeWindow extends LogSupport {
 
   def withTimeZone(zoneName: String): TimeWindowBuilder = {
     import scala.jdk.CollectionConverters._
@@ -130,6 +154,35 @@ object TimeWindow {
   def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
   def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
   def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
+
+  def succinctUnixTimeRange(startUnixTime: Long, endUnixTime: Long): String = {
+    val r          = withUTC.fromRange(startUnixTime, endUnixTime)
+    val secondDiff = (endUnixTime - startUnixTime).toDouble
+
+    @tailrec
+    def loop(unitsToUse: List[TimeWindowUnit]): String = {
+      if (unitsToUse.isEmpty) {
+        s"${secondDiff}s"
+      } else {
+        val unit     = unitsToUse.head
+        val numUnits = r.howMany(unit)
+
+        val startTruncated      = unit.truncate(r.start)
+        val endTruncated        = unit.truncate(r.end)
+        val truncated           = TimeWindow(startTruncated, endTruncated)
+        val truncatedSecondDiff = truncated.secondDiff
+
+        if (numUnits > 0 && ((secondDiff - truncatedSecondDiff) / (numUnits * unit.secondsInUnit)).abs <= 0.001) {
+          s"${numUnits}${unit.symbol}"
+        } else {
+          loop(unitsToUse.tail)
+        }
+      }
+    }
+
+    // Find the largest unit first from Year to Second
+    loop(TimeWindowUnit.units.reverse)
+  }
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
