@@ -455,7 +455,7 @@ Add `wvlet.airspec.spi.PropertyCheck` trait to your spec, and use `forAll` metho
 __build.sbt__
 ```scala
 // Use %%% for Scala.js
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.0" % "test"
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.14.1" % "test"
 ```
 
 ```scala
