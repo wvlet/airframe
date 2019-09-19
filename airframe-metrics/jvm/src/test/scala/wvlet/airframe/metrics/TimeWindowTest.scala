@@ -285,6 +285,8 @@ class TimeWindowTest extends AirSpec {
       "-356d"          -> "356d",
       "-366d"          -> "366d",
       "-365d"          -> "1y",
+      "-1q"            -> "1q",
+      "+5q"            -> "5q",
       "-1y"            -> "1y"
     )
 
