@@ -261,35 +261,4 @@ class TimeWindowTest extends AirSpec {
     }
   }
 
-  def `succinct time window unit`: Unit = {
-    val t = TimeWindow.withUTC
-
-    def check(x: String, expected: String): Unit = {
-      val w = t.parse(x)
-      val s = TimeWindow.succinctWindowUnit(w.startUnixTime, w.endUnixTime)
-      s shouldBe expected
-    }
-
-    val lst = Seq(
-      "-1d"            -> "1d",
-      "-7d/0w"         -> "1w",
-      "-1w"            -> "1w",
-      "-20d"           -> "20d",
-      "30d/2019-01-01" -> "30d",
-      "31d/2019-01-01" -> "1M",
-      "+2M/2019-01-01" -> "2M",
-      "-40d"           -> "40d",
-      "-1M"            -> "1M",
-      "-1M/0y"         -> "1M",
-      "-2M"            -> "2M",
-      "-356d"          -> "356d",
-      "-366d"          -> "366d",
-      "-365d"          -> "1y",
-      "-1q"            -> "1q",
-      "+5q"            -> "5q",
-      "-1y"            -> "1y"
-    )
-
-    lst.foreach(x => check(x._1, x._2))
-  }
 }

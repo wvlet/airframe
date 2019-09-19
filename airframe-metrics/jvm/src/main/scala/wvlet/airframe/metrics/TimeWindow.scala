@@ -154,35 +154,6 @@ object TimeWindow extends LogSupport {
   def withTimeZone(zoneId: ZoneOffset): TimeWindowBuilder = new TimeWindowBuilder(zoneId)
   def withUTC: TimeWindowBuilder                          = withTimeZone(UTC)
   def withSystemTimeZone: TimeWindowBuilder               = withTimeZone(systemTimeZone)
-
-  def succinctWindowUnit(startUnixTime: Long, endUnixTime: Long): String = {
-    val r          = withUTC.fromRange(startUnixTime, endUnixTime)
-    val secondDiff = (endUnixTime - startUnixTime).toDouble
-
-    @tailrec
-    def loop(unitsToUse: List[TimeWindowUnit]): String = {
-      if (unitsToUse.isEmpty) {
-        s"${secondDiff}s"
-      } else {
-        val unit     = unitsToUse.head
-        val numUnits = r.howMany(unit)
-
-        val startTruncated      = unit.truncate(r.start)
-        val endTruncated        = unit.truncate(r.end)
-        val truncated           = TimeWindow(startTruncated, endTruncated)
-        val truncatedSecondDiff = truncated.secondDiff
-
-        if (numUnits > 0 && ((secondDiff - truncatedSecondDiff) / (numUnits * unit.secondsInUnit)).abs <= 0.001) {
-          s"${numUnits}${unit.symbol}"
-        } else {
-          loop(unitsToUse.tail)
-        }
-      }
-    }
-
-    // Find the largest unit first from Year to Second
-    loop(TimeWindowUnit.units.reverse)
-  }
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
