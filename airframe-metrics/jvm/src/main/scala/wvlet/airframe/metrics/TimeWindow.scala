@@ -98,7 +98,31 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   def minus(n: Long, unit: ChronoUnit): TimeWindow = plus(-n, unit)
 
   def howMany(unit: ChronoUnit): Long = unit.between(start, end)
+  def howMany(unit: TimeWindowUnit): Long = {
+    unit match {
+      case TimeWindowUnit.Year =>
+        howMany(ChronoUnit.YEARS)
+      case TimeWindowUnit.Quarter =>
+        val startTruncated = unit.truncate(start)
+        val endTruncated   = unit.truncate(end)
+        val yearDiff       = endTruncated.getYear - startTruncated.getYear
+        (endTruncated.getMonthValue + (yearDiff * 12) - startTruncated.getMonthValue) / 3
+      case TimeWindowUnit.Month =>
+        monthDiff
+      case TimeWindowUnit.Week =>
+        weekDiff
+      case TimeWindowUnit.Day =>
+        dateDiff
+      case TimeWindowUnit.Hour =>
+        hourDiff
+      case TimeWindowUnit.Minute =>
+        minuteDiff
+      case TimeWindowUnit.Second =>
+        secondDiff
+    }
+  }
 
+  def secondDiff: Long = howMany(ChronoUnit.SECONDS)
   def minuteDiff: Long = howMany(ChronoUnit.MINUTES)
   def hourDiff: Long   = howMany(ChronoUnit.HOURS)
   def dateDiff: Long   = howMany(ChronoUnit.DAYS)
@@ -111,7 +135,7 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
   }
 }
 
-object TimeWindow {
+object TimeWindow extends LogSupport {
 
   def withTimeZone(zoneName: String): TimeWindowBuilder = {
     import scala.jdk.CollectionConverters._

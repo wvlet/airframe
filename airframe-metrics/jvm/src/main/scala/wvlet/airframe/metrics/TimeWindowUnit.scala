@@ -19,7 +19,7 @@ import java.time.{DayOfWeek, ZonedDateTime}
 /**
   *
   */
-sealed abstract class TimeWindowUnit(symbol: String) {
+sealed abstract class TimeWindowUnit(val symbol: String, val secondsInUnit: Int) {
 
   /**
     * Truncate the given time to this unit
@@ -33,19 +33,30 @@ object TimeWindowUnit {
   private val unitTable: Map[String, TimeWindowUnit] = Map(
     "s" -> TimeWindowUnit.Second,
     "m" -> TimeWindowUnit.Minute,
-    "d" -> TimeWindowUnit.Day,
     "h" -> TimeWindowUnit.Hour,
+    "d" -> TimeWindowUnit.Day,
     "w" -> TimeWindowUnit.Week,
     "M" -> TimeWindowUnit.Month,
     "q" -> TimeWindowUnit.Quarter,
     "y" -> TimeWindowUnit.Year
   )
 
+  def units: List[TimeWindowUnit] = List(
+    TimeWindowUnit.Second,
+    TimeWindowUnit.Minute,
+    TimeWindowUnit.Hour,
+    TimeWindowUnit.Day,
+    TimeWindowUnit.Week,
+    TimeWindowUnit.Month,
+    TimeWindowUnit.Quarter,
+    TimeWindowUnit.Year
+  )
+
   def of(s: String): TimeWindowUnit = {
     unitTable.getOrElse(s, throw new IllegalArgumentException(s"Unknown unit type ${s}"))
   }
 
-  case object Second extends TimeWindowUnit("s") {
+  case object Second extends TimeWindowUnit("s", 1) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.truncatedTo(ChronoUnit.SECONDS)
     }
@@ -53,7 +64,7 @@ object TimeWindowUnit {
       a.plus(v, ChronoUnit.SECONDS)
     }
   }
-  case object Minute extends TimeWindowUnit("m") {
+  case object Minute extends TimeWindowUnit("m", 60) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.truncatedTo(ChronoUnit.MINUTES)
     }
@@ -61,7 +72,7 @@ object TimeWindowUnit {
       a.plus(v, ChronoUnit.MINUTES)
     }
   }
-  case object Hour extends TimeWindowUnit("h") {
+  case object Hour extends TimeWindowUnit("h", 60 * 60) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.truncatedTo(ChronoUnit.HOURS)
     }
@@ -69,7 +80,7 @@ object TimeWindowUnit {
       a.plus(v, ChronoUnit.HOURS)
     }
   }
-  case object Day extends TimeWindowUnit("d") {
+  case object Day extends TimeWindowUnit("d", 3600 * 24) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.truncatedTo(ChronoUnit.DAYS)
     }
@@ -77,25 +88,28 @@ object TimeWindowUnit {
       a.plus(v, ChronoUnit.DAYS)
     }
   }
-  case object Week extends TimeWindowUnit("w") {
+  case object Week extends TimeWindowUnit("w", 3600 * 24 * 7) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
-      t.truncatedTo(ChronoUnit.DAYS) // Truncate to the beginning of the day
-        .`with`(DayOfWeek.MONDAY)     // Monday-origin week is the ISO standard
+      // Truncate to the beginning of the day
+      t.truncatedTo(ChronoUnit.DAYS)
+        // Monday-origin week is the ISO standard
+        .`with`(DayOfWeek.MONDAY)
     }
     override def increment(a: ZonedDateTime, v: Long): ZonedDateTime = {
       a.plus(v, ChronoUnit.WEEKS)
     }
   }
-  case object Month extends TimeWindowUnit("M") {
+  case object Month extends TimeWindowUnit("M", 3600 * 24 * 30) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
-      t.withDayOfMonth(1) // Jump to the beginning of the day
+      // Jump to the beginning of the day
+      t.withDayOfMonth(1)
         .truncatedTo(ChronoUnit.DAYS)
     }
     override def increment(a: ZonedDateTime, v: Long): ZonedDateTime = {
       a.plus(v, ChronoUnit.MONTHS)
     }
   }
-  case object Quarter extends TimeWindowUnit("q") {
+  case object Quarter extends TimeWindowUnit("q", 3600 * 24 * 30 * 3) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       // The first quarter of the year is January
       val quarter = ((t.getMonthValue - 1) / 3)
@@ -112,7 +126,7 @@ object TimeWindowUnit {
     }
   }
 
-  case object Year extends TimeWindowUnit("y") {
+  case object Year extends TimeWindowUnit("y", 3600 * 24 * 365) {
     override def truncate(t: ZonedDateTime): ZonedDateTime = {
       t.withDayOfYear(1)
         .truncatedTo(ChronoUnit.DAYS)

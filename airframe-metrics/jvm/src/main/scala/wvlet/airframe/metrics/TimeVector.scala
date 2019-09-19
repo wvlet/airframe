@@ -15,7 +15,21 @@ package wvlet.airframe.metrics
 
 import java.time.ZonedDateTime
 
+import wvlet.airframe.metrics.TimeWindow.withUTC
+
+import scala.annotation.tailrec
+
 case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
+
+  override def toString: String = toDurationString
+
+  def toDurationString = {
+    if (offset == 0) {
+      s"${x}${unit.symbol}"
+    } else {
+      s"${x}${unit.symbol}/${offset}${unit.symbol}"
+    }
+  }
 
   def timeWindowFrom(context: ZonedDateTime): TimeWindow = {
     val grid = unit.truncate(context)
@@ -40,7 +54,8 @@ object TimeVector {
   def apply(s: String): TimeVector = {
     s match {
       // current
-      // thisXXXX is a special time range and needs to be backward range to include the current time
+      // thisXXXX is a special time range and needs to be a backward range to include the current time
+      // even after truncating with `now` offset.
       //             now
       //   |----------x----------|
       //   <---------------------| x = -1, 1 unit distance from the offset
@@ -81,4 +96,37 @@ object TimeVector {
         }
     }
   }
+
+  /**
+    * Compute the most succinct TimeVector to represent a time range [start unixtime, end unixtime)
+    */
+  def succinctTimeVector(startUnixTime: Long, endUnixTime: Long): TimeVector = {
+    val r          = withUTC.fromRange(startUnixTime, endUnixTime)
+    val secondDiff = (endUnixTime - startUnixTime).toDouble
+
+    @tailrec
+    def loop(unitsToUse: List[TimeWindowUnit]): TimeVector = {
+      if (unitsToUse.isEmpty) {
+        TimeVector(endUnixTime - startUnixTime, 0, TimeWindowUnit.Second)
+      } else {
+        val unit     = unitsToUse.head
+        val numUnits = r.howMany(unit)
+
+        val startTruncated      = unit.truncate(r.start)
+        val endTruncated        = unit.truncate(r.end)
+        val truncated           = TimeWindow(startTruncated, endTruncated)
+        val truncatedSecondDiff = truncated.secondDiff
+
+        if (numUnits > 0 && ((secondDiff - truncatedSecondDiff) / (numUnits * unit.secondsInUnit)).abs <= 0.001) {
+          TimeVector(numUnits, 0, unit)
+        } else {
+          loop(unitsToUse.tail)
+        }
+      }
+    }
+
+    // Find the largest unit first from Year to Second
+    loop(TimeWindowUnit.units.reverse)
+  }
+
 }
