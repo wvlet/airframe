@@ -5,6 +5,16 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.8
+-  airframe-metrics: Add TimeVector.succinctTimeVector ([#736](https://github.com/wvlet/airframe/issues/736)) [[9598d81](https://github.com/wvlet/airframe/commit/9598d81)]
+-  airspec: Upgrade to scalacheck 1.14.2 ([#743](https://github.com/wvlet/airframe/issues/743)) [[a14a333](https://github.com/wvlet/airframe/commit/a14a333)]
+-  airframe-jdbc: Update HikariCP to 3.4.1 ([#737](https://github.com/wvlet/airframe/issues/737)) [[081bb14](https://github.com/wvlet/airframe/commit/081bb14)]
+-  internal changes
+   -  Update sbt-microsites to 0.9.6 ([#742](https://github.com/wvlet/airframe/issues/742)) [[587ef94](https://github.com/wvlet/airframe/commit/587ef94)]
+   -  Upgrade to sbt 1.3.2 ([#740](https://github.com/wvlet/airframe/issues/740)) [[f73a11d](https://github.com/wvlet/airframe/commit/f73a11d)]
+   -  Use jdk11 in Travis by default ([#735](https://github.com/wvlet/airframe/issues/735)) [[00e1c0c](https://github.com/wvlet/airframe/commit/00e1c0c)]
+   -  Upgrade to Scala 2.13.1 ([#733](https://github.com/wvlet/airframe/issues/733)) [[220ef74](https://github.com/wvlet/airframe/commit/220ef74)]
+
 ## 19.9.7
 -  Add support for Scala.js 1.0.0-M8 ([#732](https://github.com/wvlet/airframe/issues/732)) [[48a58e5](https://github.com/wvlet/airframe/commit/48a58e5)]
 -  airspec: Show the deatailed reason of MISSING_DEPENDENCY ([#729](https://github.com/wvlet/airframe/issues/729)) [[1c24971](https://github.com/wvlet/airframe/commit/1c24971)]
