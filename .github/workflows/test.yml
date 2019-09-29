@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   code_format:
-    name: Code Format Check
+    name: Code format check
     runs-on: ubuntu-latest
 
     steps:
@@ -17,10 +17,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Scala 2.12 test
-      run: |
-         ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
-         "./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)"
+    - name: Scala 2.12 test with coverage report
+      run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
+    - name: Reporting coverage
+      run: ./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)
   test_2_13:
     name: Scala 2.13 test
     runs-on: ubuntu-latest
