@@ -11,14 +11,16 @@ jobs:
     - uses: actions/checkout@v1
     - name: Code Format Check
       run: ./scalafmt --test
-  test_2_12:
-    name: Scala 2.12 test
+  test:
+    name: Scala JVM Test
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        scala-version: [2.12.10, 2.11.12]
     steps:
     - uses: actions/checkout@v1
-    - name: Scala 2.12 test
-      run: ./sbt projectJVM/test
+    - name: Scala ${{ matrix.scala-version}} JVM test
+      run: ./sbt ++${ matrix.scala-vesrion }} projectJVM/test
   test_2_13:
     name: Scala 2.13 test
     runs-on: ubuntu-latest
@@ -27,14 +29,6 @@ jobs:
     - uses: actions/checkout@v1
     - name: Scala 2.13 test
       run: ./sbt ++2.13.1 projectJVM2_13/test
-  test_2_11:
-    name: Scala 2.11 test
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Scala 2.11 test
-      run: ./sbt ++2.11.12 projectJVM/test
   test_js:
     name: Scala.js test
     runs-on: ubuntu-latest
