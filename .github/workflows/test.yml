@@ -19,8 +19,8 @@ jobs:
     - uses: actions/checkout@v1
     - name: Scala 2.12 test
       run: |
-         ./sbt "; coverage; ${PROJECT}/test; ${PROJECT}/coverageReport"
-         "./sbt ${PROJECT}/coverageAggregate && bash <(curl -s https://codecov.io/bash)"
+         ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
+         "./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)"
   test_2_13:
     name: Scala 2.13 test
     runs-on: ubuntu-latest
