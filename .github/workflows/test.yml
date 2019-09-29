@@ -26,7 +26,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Scala 2.13 test
-      run: ./sbt ++2.13.1 projectJVM/test
+      run: ./sbt ++2.13.1 projectJVM2_13/test
   test_2_11:
     name: Scala 2.11 test
     runs-on: ubuntu-latest
