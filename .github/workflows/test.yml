@@ -11,7 +11,7 @@ jobs:
       - name: scalafmt test
         run: ./scalafmt --test
   test_2_12:
-    name: Scala 2.12 test
+    name: Scala 2.12
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -25,21 +25,21 @@ jobs:
           file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
 
   test_2_13:
-    name: Scala 2.13 test
+    name: Scala 2.13
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - name: Scala 2.13 test
         run: ./sbt ++2.13.1 projectJVM2_13/test
   test_2_11:
-    name: Scala 2.11 test
+    name: Scala 2.11
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - name: Scala 2.11 test
         run: ./sbt ++2.11.12 projectJVM/test
   test_js:
-    name: Scala.js test
+    name: Scala.js
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
