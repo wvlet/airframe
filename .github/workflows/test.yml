@@ -15,14 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Scala 2.12 test with coverage report
+      - name: Scala 2.12 test with coverage test
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
+      - name: Generate a coverage report
+        run: ./sbt projectJVM/coverageAggregate
       - uses: codecov/codecov-action@v1.0.2
         with:
           token: ${{secrets.CODECOV_TOKEN}} #required
           file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
-      - name: Reporting coverage
-        run: ./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)
 
   test_2_13:
     name: Scala 2.13 test
