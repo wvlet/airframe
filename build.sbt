@@ -35,7 +35,7 @@ organization in ThisBuild := "org.wvlet.airframe"
 dynverSonatypeSnapshots in ThisBuild := true
 
 // Configure PGP for publishSigned
-Global / usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
+usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
 Global / useGpgPinentry := false
 
 val buildSettings = Seq[Setting[_]](
