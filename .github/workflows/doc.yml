@@ -21,6 +21,7 @@ jobs:
         run: |
           gem install sass
           gem install jekyll -v 3.8.5
+      # TODO: Stop using GitHub4s as it's slower than direct push
       - name: Publish doc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
