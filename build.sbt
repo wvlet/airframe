@@ -43,13 +43,13 @@ lazy val travisSettings = List(
   pgpPublicRing := file("./travis/local.pubring.asc"),
   pgpSecretRing := file("./travis/local.secring.asc"),
   // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded in .travis.yml
-  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray()),
-  credentials += Credentials(
-    "Sonatype Nexus Repository Manager",
-    "oss.sonatype.org",
-    sys.env.getOrElse("SONATYPE_USER", ""),
-    sys.env.getOrElse("SONATYPE_PASS", "")
-  )
+  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray())
+//  credentials += Credentials(
+//    "Sonatype Nexus Repository Manager",
+//    "oss.sonatype.org",
+//    sys.env.getOrElse("SONATYPE_USER", ""),
+//    sys.env.getOrElse("SONATYPE_PASS", "")
+//  )
 )
 
 inThisBuild(
