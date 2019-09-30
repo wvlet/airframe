@@ -39,7 +39,7 @@ dynverSonatypeSnapshots in ThisBuild := true
 // For publishing in Travis CI
 
 lazy val travisSettings = List(
-  usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
+  usePgpKeyHex("9BF73A0B67E8379A")
   //pgpPublicRing := file("./travis/local.pubring.asc"),
   //pgpSecretRing := file("./travis/local.secring.asc"),
   // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded as secrets
