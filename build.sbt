@@ -34,9 +34,6 @@ organization in ThisBuild := "org.wvlet.airframe"
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
 
-// Configure PGP for publishSigned
-//usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
-
 val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
   licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html")),
