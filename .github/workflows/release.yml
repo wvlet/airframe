@@ -31,14 +31,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - env:
-        PGP_SECRET: '${{ secrets.PGP_SECRET }}'
-        PGP_PASSPHRASE: '${{ secrets.PGP_PASSPHRASE }}'
-        SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
-        SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
       - name: Setup GPG
+        env:
+          PGP_SECRET: '${{ secrets.PGP_SECRET }}'
         run: echo $PGP_SECRET | base64 --decode | gpg --import --no-tty --batch --yes
       - name: Build for Scala.js 0.6.x
+        env:
+          PGP_PASSPHRASE: '${{ secrets.PGP_PASSPHRASE }}'
         run: SCALA_JS_VERSION=0.6.29 ./sbt "projectJS/publishSigned"
       - name: Build for Scala.js 1.0.x
+        env:
+          PGP_PASSPHRASE: '${{ secrets.PGP_PASSPHRASE }}'
+          SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
+          SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
         run: SCALA_JS_VERSION=1.0.0-M8 ./sbt "; projectJS/publishSigned; sonatypeBundleUpload"

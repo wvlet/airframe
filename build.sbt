@@ -31,23 +31,22 @@ addCommandAlias(
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
 
-val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
-
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
 
 // For publishing in Travis CI
 
-lazy val travisSettings = List(
-  usePgpKeyHex("9BF73A0B67E8379A")
+lazy val pgpSettings = List(
+  usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
   //pgpPublicRing := file("./travis/local.pubring.asc"),
   //pgpSecretRing := file("./travis/local.secring.asc"),
   // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded as secrets
   //pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray())
 )
 
+val isInGitHubActions: Boolean = sys.env.isDefinedAt("GITHUB_ACTION")
 inThisBuild(
-  if (isTravisBuild) travisSettings
+  if (isInGitHubActions) pgpSettings
   else List.empty
 )
 
