@@ -1,0 +1,18 @@
+name: Documentation
+
+on: [push]
+
+jobs:
+  doc:
+    name: Update docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install JekyllUpdate docs
+        run: |
+          rvm use 2.6.0 --install --fuzzy
+          gem update --system
+          gem install sass
+          gem install jekyll -v 3.8.5
+      - name: Publish doc
+        run: ./sbt docs/publishMicrosite
