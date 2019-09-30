@@ -1,10 +1,11 @@
 name: Snapshot Release
 
-on: [push]
-#on:
-#  push:
-#    branches:
-#      - master
+on:
+  push:
+    branches:
+      - master
+    tag:
+      - '!v*'
 
 jobs:
   publish_snapshots:
