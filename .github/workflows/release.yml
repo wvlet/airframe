@@ -21,7 +21,7 @@ jobs:
           PGP_SECRET: '${{ secrets.PGP_SECRET }}'
         run: |
           export GPG_TTY=$(tty)
-          echo $PGP_SECRET | base64 --decode | gpg --import
+          echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
       - name: Build bundle
         env:
           PGP_PASSPHRASE: '${{ secrets.PGP_PASSPHRASE }}'
@@ -38,7 +38,7 @@ jobs:
           PGP_SECRET: '${{ secrets.PGP_SECRET }}'
         run: |
           export GPG_TTY=$(tty)
-          echo $PGP_SECRET | base64 --decode | gpg --import
+          echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
       - name: Build for Scala.js 0.6.x
         env:
           PGP_PASSPHRASE: '${{ secrets.PGP_PASSPHRASE }}'
