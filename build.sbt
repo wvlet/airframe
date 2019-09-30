@@ -34,11 +34,9 @@ organization in ThisBuild := "org.wvlet.airframe"
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
 
-//// Configure PGP for publishSigned
-lazy val pgpSettings = List(
-  usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
-)
-inThisBuild(pgpSettings)
+// Configure PGP for publishSigned
+Global / usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
+Global / useGpgPinentry := false
 
 val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
