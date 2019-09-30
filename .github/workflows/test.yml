@@ -6,42 +6,42 @@ jobs:
   code_format:
     name: Code format check
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Code Format Check
-      run: ./scalafmt --test
+      - uses: actions/checkout@v1
+      - name: Code format check
+        run: ./scalafmt --test
   test_2_12:
     name: Scala 2.12 test
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v1
-    - name: Scala 2.12 test with coverage report
-      run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
-    - name: Reporting coverage
-      run: ./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)
+      - uses: actions/checkout@v1
+      - name: Scala 2.12 test with coverage report
+        run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
+      - uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}} #required
+          file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
+      - name: Reporting coverage
+        run: ./sbt projectJVM/coverageAggregate && bash <(curl -s https://codecov.io/bash)
+
   test_2_13:
     name: Scala 2.13 test
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Scala 2.13 test
-      run: ./sbt ++2.13.1 projectJVM2_13/test
+      - uses: actions/checkout@v1
+      - name: Scala 2.13 test
+        run: ./sbt ++2.13.1 projectJVM2_13/test
   test_2_11:
     name: Scala 2.11 test
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Scala 2.11 test
-      run: ./sbt ++2.11.12 projectJVM/test
+      - uses: actions/checkout@v1
+      - name: Scala 2.11 test
+        run: ./sbt ++2.11.12 projectJVM/test
   test_js:
     name: Scala.js test
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v1
-    - name: Scala.js test
-      run: ./sbt projectJS/test
+      - uses: actions/checkout@v1
+      - name: Scala.js test
+        run: ./sbt projectJS/test
