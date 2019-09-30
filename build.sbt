@@ -43,7 +43,7 @@ lazy val travisSettings = List(
   //pgpPublicRing := file("./travis/local.pubring.asc"),
   //pgpSecretRing := file("./travis/local.secring.asc"),
   // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded as secrets
-  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray())
+  pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray())
 )
 
 inThisBuild(
