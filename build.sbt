@@ -265,8 +265,8 @@ lazy val docs =
       micrositeDocumentationUrl := "docs",
       micrositeGitterChannel := true,
       micrositeGitterChannelUrl := "wvlet/airframe",
-      //micrositePushSiteWith := GitHub4s,
-      //micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
+      micrositePushSiteWith := GitHub4s,
+      micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
       micrositePalette ++= Map(
         "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",

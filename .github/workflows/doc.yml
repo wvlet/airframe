@@ -11,10 +11,11 @@ jobs:
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: '2.x'
-      - name: Install JekyllUpdate docs
+      - name: Install Jekyll
         run: |
-          gem update --system
           gem install sass
           gem install jekyll -v 3.8.5
       - name: Publish doc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./sbt docs/publishMicrosite
