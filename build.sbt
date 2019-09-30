@@ -34,21 +34,11 @@ organization in ThisBuild := "org.wvlet.airframe"
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
 
-// For publishing in Travis CI
-
+// Configure PGP for publishSigned
 lazy val pgpSettings = List(
   usePgpKeyHex("6144BF436997FC8FF1684B419BF73A0B67E8379A")
-  //pgpPublicRing := file("./travis/local.pubring.asc"),
-  //pgpSecretRing := file("./travis/local.secring.asc"),
-  // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded as secrets
-  //pgpPassphrase := sys.env.get("PGP_PASSPHRASE").map(_.toCharArray())
 )
-
-val isInGitHubActions: Boolean = sys.env.isDefinedAt("GITHUB_ACTION")
-inThisBuild(
-  if (isInGitHubActions) pgpSettings
-  else List.empty
-)
+inThisBuild(pgpSettings)
 
 val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
