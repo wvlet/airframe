@@ -1,0 +1,19 @@
+name: Snapshot Release
+
+on: [push]
+#on:
+#  push:
+#    branches:
+#      - master
+
+jobs:
+  publish_snapshots:
+    name: Publish snapshots
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Publish snapshots
+        env:
+          SONATYPE_USER: ${{ secrets.SONATYPE_USER }}
+          SONATYPE_PASS: ${{ secrets.SONATYPE_PASS }}
+        run: ./sbt publishSnapshots

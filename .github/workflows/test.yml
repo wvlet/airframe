@@ -4,11 +4,11 @@ on: [pull_request]
 
 jobs:
   code_format:
-    name: Code format check
+    name: Code format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Code format check
+      - name: scalafmt test
         run: ./scalafmt --test
   test_2_12:
     name: Scala 2.12 test
