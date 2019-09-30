@@ -1,7 +1,7 @@
 name: Release
 
 on:
-  pubsh:
+  push:
     branches:
       - master
     tags:
