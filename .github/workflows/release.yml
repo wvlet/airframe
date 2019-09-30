@@ -1,14 +1,11 @@
 name: Release
 
-#on:
-#  push:
-#    branches:
-#      - master
-#    tags:
-#      - 'v*'
-
-# Only for testing
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
 
 jobs:
   publish_jvm:
@@ -16,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
@@ -31,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: olafurpg/setup-gpg@v2
+      - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
