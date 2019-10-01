@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
 
 jobs:
   code_format:
@@ -15,15 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Scala 2.12 test with coverage test
-        run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport"
-      - name: Generate a coverage report
-        run: ./sbt projectJVM/coverageAggregate
-      - uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}} #required
-          file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
-
+      - name: Scala 2.12
+        run: ./sbt projectJVM/test
   test_2_13:
     name: Scala 2.13
     runs-on: ubuntu-latest

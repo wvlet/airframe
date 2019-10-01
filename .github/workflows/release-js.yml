@@ -1,4 +1,4 @@
-name: Release Scala JVM
+name: Release Scala.js
 
 on:
   push:
@@ -6,26 +6,26 @@ on:
       - v*
 
 jobs:
-  publish_jvm:
-    name: Publish Scala JVM
+  publish_js:
+    name: Publish Scala.js
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      # Install OpenJDK 11
-      - uses: olafurpg/setup-scala@v5
-        with:
-          java-version: adopt@1.11
       - uses: olafurpg/setup-gpg@v2 # Necessary for using GPG1
       - name: Setup GPG
         env:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
         run: echo $PGP_SECRET | base64 --decode | gpg --import --batch --yes
-      - name: Build bundle
+      - name: Build for Scala.js 0.6.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: ./sbt "; + projectJVM2_13/publishSigned; + projectJVM2_12/publishSigned"
+        run: SCALA_JS_VERSION=0.6.29 ./sbt "projectJS/publishSigned"
+      - name: Build for Scala.js 1.0.x
+        env:
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+        run: SCALA_JS_VERSION=1.0.0-M8 ./sbt "projectJS/publishSigned"
       - name: Release to Sonatype
         env:
           SONATYPE_USERNAME: '${{ secrets.SONATYPE_USER }}'
           SONATYPE_PASSWORD: '${{ secrets.SONATYPE_PASS }}'
-        run: ./sbt sonatypeBundleRelease
+        run: SCALA_JS_VERSION=1.0.0-M8 ./sbt sonatypeBundleRelease
