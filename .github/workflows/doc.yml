@@ -30,5 +30,6 @@ jobs:
           chmod 600 $HOME/airframe-doc-deploy-key
           mkdir -p $HOME/.ssh
           cp $HOME/airframe-doc-deploy-key $HOME/.ssh/id_rsa
+          md5sum $HOME/.ssh/id_rsa
       - name: Publish doc
         run: ./sbt docs/publishMicrosite
