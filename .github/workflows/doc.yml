@@ -21,7 +21,12 @@ jobs:
         run: |
           gem install sass
           gem install jekyll -v 3.8.5
-      - name: Setup
+      - name: Setup Git
+        -run: |
+          git config --global user.email "leo@xerial.org"
+          git config --global user.name "Taro L. Saito"
+          git config --global push.default simple
+      - name: Setup Deploy
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: |
