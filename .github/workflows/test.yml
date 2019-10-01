@@ -23,7 +23,6 @@ jobs:
         with:
           token: ${{secrets.CODECOV_TOKEN}} #required
           file: ./projectJVM/target/scala-2.12/scoverage-report/scoverage.xml
-
   test_2_13:
     name: Scala 2.13
     runs-on: ubuntu-latest
@@ -45,3 +44,10 @@ jobs:
       - uses: actions/checkout@v1
       - name: Scala.js test
         run: ./sbt projectJS/test
+  test_doc:
+    name: Scaladoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Build Scala unidoc
+        run: ./sbt scaladoc/unidoc
