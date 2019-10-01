@@ -31,31 +31,8 @@ addCommandAlias(
 scalaVersion in ThisBuild := SCALA_2_12
 organization in ThisBuild := "org.wvlet.airframe"
 
-val isTravisBuild: Boolean = sys.env.isDefinedAt("TRAVIS")
-
 // Use dynamic snapshot version strings for non tagged versions
 dynverSonatypeSnapshots in ThisBuild := true
-
-// For publishing in Travis CI
-
-lazy val travisSettings = List(
-  usePgpKeyHex("42575E0CCD6BA16A"),
-  pgpPublicRing := file("./travis/local.pubring.asc"),
-  pgpSecretRing := file("./travis/local.secring.asc"),
-  // PGP_PASS, SONATYPE_USER, SONATYPE_PASS are encoded in .travis.yml
-  pgpPassphrase := sys.env.get("PGP_PASS").map(_.toCharArray()),
-  credentials += Credentials(
-    "Sonatype Nexus Repository Manager",
-    "oss.sonatype.org",
-    sys.env.getOrElse("SONATYPE_USER", ""),
-    sys.env.getOrElse("SONATYPE_PASS", "")
-  )
-)
-
-inThisBuild(
-  if (isTravisBuild) travisSettings
-  else List.empty
-)
 
 val buildSettings = Seq[Setting[_]](
   sonatypeProfileName := "org.wvlet",
@@ -265,8 +242,8 @@ lazy val docs =
       micrositeDocumentationUrl := "docs",
       micrositeGitterChannel := true,
       micrositeGitterChannelUrl := "wvlet/airframe",
-      //micrositePushSiteWith := GitHub4s,
-      //micrositeGithubToken := sys.env.get("GITHUB_REPO_TOKEN"),
+      micrositePushSiteWith := GitHub4s,
+      micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
       micrositePalette ++= Map(
         "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",

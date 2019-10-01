@@ -1,0 +1,28 @@
+name: Doc
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '*.md'
+      - 'docs/*'
+
+jobs:
+  doc:
+    name: Update docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '2.x'
+      - name: Install Jekyll
+        run: |
+          gem install sass
+          gem install jekyll -v 3.8.5
+      # TODO: Stop using GitHub4s as it's slower than direct push
+      - name: Publish doc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./sbt docs/publishMicrosite
