@@ -5,6 +5,14 @@ title: Release Notes
 
 # Release Notes
 
+## 19.9.9
+-  This version is only for internal changes. 
+-  From this release, airfarme will use GitHub actions. 
+-  Update scalafmt-core to 2.1.0 ([#747](https://github.com/wvlet/airframe/issues/747)) [[c851834](https://github.com/wvlet/airframe/commit/c851834)]
+-  Migrate to GitHub Actions ([#744](https://github.com/wvlet/airframe/issues/744)) [[f543442](https://github.com/wvlet/airframe/commit/f543442)]
+-  Update sbt-scalafmt to 2.0.6 ([#745](https://github.com/wvlet/airframe/issues/745)) [[daa7e8f](https://github.com/wvlet/airframe/commit/daa7e8f)]
+-  Update sbt-sonatype to 3.8 ([#746](https://github.com/wvlet/airframe/issues/746)) [[a6e8db0](https://github.com/wvlet/airframe/commit/a6e8db0)]
+
 ## 19.9.8
 -  airframe-metrics: Add TimeVector.succinctTimeVector ([#736](https://github.com/wvlet/airframe/issues/736)) [[9598d81](https://github.com/wvlet/airframe/commit/9598d81)]
 -  airspec: Upgrade to scalacheck 1.14.2 ([#743](https://github.com/wvlet/airframe/issues/743)) [[a14a333](https://github.com/wvlet/airframe/commit/a14a333)]
