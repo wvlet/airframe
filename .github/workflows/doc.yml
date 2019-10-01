@@ -25,11 +25,11 @@ jobs:
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: |
+          mkdir -p ~/.ssh
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           gpg --quiet --batch --yes --decrypt --passphrase="$PGP_PASSPHRASE" \
           --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
           chmod 600 $HOME/airframe-doc-deploy-key
-          mkdir -p ~/.ssh
           cp $HOME/airframe-doc-deploy-key ~/.ssh/id_rsa
           md5sum ~/.ssh/id_rsa
       - name: Publish doc
