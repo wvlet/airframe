@@ -94,6 +94,7 @@ lazy val root =
     //    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
+// Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
 //  project
 //    .enablePlugins(ScalaUnidocPlugin)
@@ -242,8 +243,9 @@ lazy val docs =
       micrositeDocumentationUrl := "docs",
       micrositeGitterChannel := true,
       micrositeGitterChannelUrl := "wvlet/airframe",
-      micrositePushSiteWith := GitHub4s,
-      micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
+      // Configuration for using GitHub4s. This is slow and didn't work well on CI
+      //micrositePushSiteWith := GitHub4s,
+      //micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
       micrositePalette ++= Map(
         "brand-primary"   -> "#2582AA",
         "brand-secondary" -> "#143F56",
