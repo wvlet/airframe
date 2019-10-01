@@ -91,28 +91,28 @@ lazy val root =
         }
       }
     }
-    .aggregate(scaladoc)
+//    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
-lazy val scaladoc =
-  project
-    .enablePlugins(ScalaUnidocPlugin)
-    .in(file("airframe-scaladoc"))
-    .settings(
-      buildSettings,
-      crossScalaVersions := targetScalaVersions,
-      name := "airframe-scaladoc",
-      // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
-      unidocProjectFilter in (ScalaUnidoc, unidoc) :=
-        inAnyProject --
-          inProjects(jvmProjects2_12: _*) --
-          inProjects(airframeMacrosJS) --
-          inProjects(jsProjects: _*) --
-          inProjects(airspecProjects: _*),
-      // compile projects first
-      Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
-    )
-    .aggregate(jvmProjects: _*)
+//lazy val scaladoc =
+//  project
+//    .enablePlugins(ScalaUnidocPlugin)
+//    .in(file("airframe-scaladoc"))
+//    .settings(
+//      buildSettings,
+//      crossScalaVersions := targetScalaVersions,
+//      name := "airframe-scaladoc",
+//      // Need to exclude JS project explicitly to avoid '<type> is already defined' errors
+//      unidocProjectFilter in (ScalaUnidoc, unidoc) :=
+//        inAnyProject --
+//          inProjects(jvmProjects2_12: _*) --
+//          inProjects(airframeMacrosJS) --
+//          inProjects(jsProjects: _*) --
+//          inProjects(airspecProjects: _*),
+//      // compile projects first
+//      Defaults.packageTaskSettings(packageDoc in Compile, (unidoc in Compile).map(_.flatMap(Path.allSubpaths)))
+//    )
+//    .aggregate(jvmProjects: _*)
 
 // JVM projects for scala-community build. This should have no tricky setup and should support Scala 2.12.
 lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
