@@ -91,7 +91,7 @@ lazy val root =
         }
       }
     }
-//    .aggregate(scaladoc)
+    //    .aggregate(scaladoc)
     .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
 
 //lazy val scaladoc =
