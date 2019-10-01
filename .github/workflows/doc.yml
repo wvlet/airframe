@@ -21,8 +21,20 @@ jobs:
         run: |
           gem install sass
           gem install jekyll -v 3.8.5
-      # TODO: Stop using GitHub4s as it's slower than direct push
-      - name: Publish doc
+      - name: Setup Git
+        run: |
+          git config --global user.email "leo@xerial.org"
+          git config --global user.name "Taro L. Saito"
+          git config --global push.default simple
+      - name: Setup Deploy
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          gpg --quiet --batch --yes --decrypt --passphrase="$PGP_PASSPHRASE" \
+          --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
+          chmod 600 $HOME/airframe-doc-deploy-key
+          cp $HOME/airframe-doc-deploy-key ~/.ssh/id_rsa
+      - name: Publish doc
         run: ./sbt docs/publishMicrosite
