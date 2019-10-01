@@ -6,6 +6,6 @@ docs: true
 collections:
   tut:
     output: true
-version: 19.9.8+15-ce15cb43-SNAPSHOT
+version: 19.10.0+1-77c85b30-SNAPSHOT
 org: org.wvlet.airframe
 markdown: kramdown
