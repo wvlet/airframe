@@ -2,11 +2,11 @@ name: Doc
 
 on:
   push:
-#    branches:
-#      - master
-#    paths:
-#      - '**/*.md'
-#      - 'docs/**'
+    branches:
+      - master
+    paths:
+      - '**/*.md'
+      - 'docs/**'
 
 jobs:
   doc:
@@ -36,6 +36,5 @@ jobs:
           --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
           chmod 600 $HOME/airframe-doc-deploy-key
           cp $HOME/airframe-doc-deploy-key ~/.ssh/id_rsa
-          md5sum ~/.ssh/id_rsa
       - name: Publish doc
         run: ./sbt docs/publishMicrosite
