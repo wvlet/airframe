@@ -5,6 +5,9 @@ title: Release Notes
 
 # Release Notes
 
+## 19.10.0
+-  This is a maintenance release for migrating to GitHub Atcions. There is no feature change. ([#749](https://github.com/wvlet/airframe/issues/749)) [[74f84b5](https://github.com/wvlet/airframe/commit/74f84b5)]
+
 ## 19.9.9
 -  This version is only for internal changes. 
 -  From this release, airfarme will use GitHub actions. 
