@@ -25,6 +25,7 @@ jobs:
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
         run: |
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
           gpg --quiet --batch --yes --decrypt --passphrase="$PGP_PASSPHRASE" \
           --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
           chmod 600 $HOME/airframe-doc-deploy-key
