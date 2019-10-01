@@ -198,7 +198,7 @@ lazy val projectJVM2_13 =
       crossScalaVersions := targetScalaVersions
     )
     // Generates unidoc
-    .aggregate(scaladoc)
+    //.aggregate(scaladoc)
     .aggregate(jvmProjects: _*)
 
 // For projects only upto Scala 2.12
