@@ -1,7 +1,9 @@
-[![Gitter Chat][gitter-badge]][gitter-link] [![CI Status](https://github.com/wvlet/airframe/workflows/CI/badge.svg)] [![codecov](https://codecov.io/gh/wvlet/airframe/branch/master/graph/badge.svg)](https://codecov.io/gh/wvlet/airframe) [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-1.0.0-M7.svg)](https://www.scala-js.org)
+[![Gitter Chat][gitter-badge]][gitter-link] [![CI Status][gha-badge]][gha-link] [![codecov](https://codecov.io/gh/wvlet/airframe/branch/master/graph/badge.svg)](https://codecov.io/gh/wvlet/airframe) [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link] [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-0.6.17.svg)](https://www.scala-js.org) [![Scala.js](https://www.scala-js.org/assets/badges/scalajs-1.0.0-M7.svg)](https://www.scala-js.org)
 
 [circleci-badge]: https://circleci.com/gh/wvlet/airframe.svg?style=svg
 [circleci-link]: https://circleci.com/gh/wvlet/airframe
+[gha-badge]: https://github.com/wvlet/airframe/workflows/CI/badge.svg
+[gha-link]: https://github.com/wvlet/airframe/actions?workflow=CI
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-link]: https://gitter.im/wvlet/airframe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [coverall-badge]: https://coveralls.io/repos/github/wvlet/airframe/badge.svg?branch=master
