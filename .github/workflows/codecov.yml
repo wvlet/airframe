@@ -2,9 +2,17 @@ name: Coverage
 
 on:
   pull_request:
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
   push:
     branches:
       - master
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
 
 jobs:
   coverage:
