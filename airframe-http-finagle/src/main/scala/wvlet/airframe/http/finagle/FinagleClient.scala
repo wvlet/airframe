@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service, http}
 import com.twitter.util._
-import wvlet.airframe.codec.{JSONValueCodec, MessageCodec, MessageCodecFactory}
+import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
@@ -226,6 +226,37 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
     convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter))
+  }
+  override def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.DELETE, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[OperationResponse](send(r, requestFilter))
+  }
+
+  override def patch[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[Resource] = {
+    val r = newRequest(HttpMethod.PATCH, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[Resource](send(r, requestFilter))
+  }
+  override def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[OperationResponse] = {
+    val r = newRequest(HttpMethod.PATCH, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    convert[OperationResponse](send(r, requestFilter))
   }
 
 }
