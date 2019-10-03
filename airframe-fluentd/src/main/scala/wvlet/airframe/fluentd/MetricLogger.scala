@@ -18,6 +18,7 @@ import javax.annotation.{PostConstruct, PreDestroy}
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
+import scala.util.Try
 
 abstract class MetricLogger extends AutoCloseable {
   protected def tagPrefix: Option[String]
@@ -51,7 +52,9 @@ abstract class MetricLogger extends AutoCloseable {
 
 class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: MessageCodec[T]) {
   def emit(event: T): Unit = {
-    fluentdClient.emitMsgPack(event.metricTag, codec.toMsgPack(event))
+    Try {
+      fluentdClient.emitMsgPack(event.metricTag, codec.toMsgPack(event))
+    }
   }
 }
 
