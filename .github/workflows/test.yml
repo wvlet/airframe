@@ -22,7 +22,7 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
-      - name: Scala 2.12
+      - name: Scala 2.12 test
         run: ./sbt projectJVM/test
   test_2_13:
     name: Scala 2.13
