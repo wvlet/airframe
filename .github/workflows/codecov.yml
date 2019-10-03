@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - '**.scala'
+      - '**.java'
+      - '**.sbt'
 
 jobs:
   coverage:
