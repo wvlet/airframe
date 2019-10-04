@@ -182,12 +182,9 @@ class FinagleClientTest extends AirSpec {
   def `fail request`: Unit = {
     d.build[FinagleServer] { server =>
       withResource(
-        FinagleClient.newSyncClient(
-          server.localAddress,
-          config = FinagleClientConfig(
-            retry = FinagleClient.defaultRetry.withMaxRetry(3).withBackOff(initialIntervalMillis = 1)
-          )
-        )
+        Finagle.client
+          .withBackOff(maxRetry = 3, initialIntervalMillis = 1)
+          .newSyncClient(server.localAddress)
       ) { client =>
         warn("Starting http client failure tests")
 
@@ -216,7 +213,7 @@ class FinagleClientTest extends AirSpec {
   }
 
   def `support https request`: Unit = {
-    withResource(FinagleClient.newSyncClient("https://wvlet.org")) { client =>
+    withResource(Finagle.newSyncClient("https://wvlet.org")) { client =>
       val page = client.get[String]("/airframe/")
       trace(page)
       page.contains("<html") shouldBe true
@@ -224,7 +221,7 @@ class FinagleClientTest extends AirSpec {
   }
 
   def `support sendRaw`: Unit = {
-    withResource(FinagleClient.newClient("https://wvlet.org")) { client =>
+    withResource(Finagle.newClient("https://wvlet.org")) { client =>
       val r = client.sendRaw(Request("/airframe/")).map { x =>
         x.contentString.contains("<html") shouldBe true
       }

@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.http.finagle
 
-import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Request, Response, Status, Version}
 import com.twitter.util.{Await, Future}
+import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
@@ -128,32 +128,32 @@ class HttpFilterTest extends AirSpec {
     d.build[FinagleServer] { server =>
       val address = server.localAddress
 
-      val client = Http.client.newService(address)
+      withResource(Finagle.client.noRetry.newClient(server.localAddress)) { client =>
+        {
+          val r = Await.result(client.sendSafe(Request("/auth")))
+          debug(r)
+          r.statusCode shouldBe 403
+          myLogStore.lastLog shouldBe Some("403 /auth")
+        }
 
-      {
-        val r = Await.result(client(Request("/auth")))
-        debug(r)
-        r.statusCode shouldBe 403
-        myLogStore.lastLog shouldBe Some("403 /auth")
-      }
+        {
+          val req = Request("/auth")
+          req.authorization = "valid-user"
+          val r = Await.result(client.sendSafe(req))
+          debug(r)
+          r.statusCode shouldBe 200
+          r.contentString shouldBe "passed"
+          myLogStore.lastLog shouldBe Some("200 /auth")
+        }
 
-      {
-        val req = Request("/auth")
-        req.authorization = "valid-user"
-        val r = Await.result(client(req))
-        debug(r)
-        r.statusCode shouldBe 200
-        r.contentString shouldBe "passed"
-        myLogStore.lastLog shouldBe Some("200 /auth")
-      }
+        {
+          val r = Await.result(client.sendSafe(Request("/noauth")))
+          debug(r)
+          r.statusCode shouldBe 200
+          r.contentString shouldBe "hello"
 
-      {
-        val r = Await.result(client(Request("/noauth")))
-        debug(r)
-        r.statusCode shouldBe 200
-        r.contentString shouldBe "hello"
-
-        myLogStore.lastLog shouldBe Some("200 /noauth")
+          myLogStore.lastLog shouldBe Some("200 /noauth")
+        }
       }
     }
   }
@@ -187,7 +187,7 @@ class HttpFilterTest extends AirSpec {
     val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
-      IOUtil.withResource(FinagleClient.newSyncClient(server.localAddress)) { client =>
+      IOUtil.withResource(Finagle.newSyncClient(server.localAddress)) { client =>
         val r = client.sendSafe(Request("/auth"))
         r.statusCode shouldBe Status.BadRequest.code
         r.contentString shouldBe "test-error"
