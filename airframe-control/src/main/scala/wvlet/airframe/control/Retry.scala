@@ -14,7 +14,6 @@
 package wvlet.airframe.control
 
 import wvlet.airframe.control.ResultClass.Failed
-import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}
@@ -90,25 +89,13 @@ object Retry extends LogSupport {
       errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
       beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
   ) {
-
-    private def partialUpdate(newParam: Map[String, Any]): RetryContext = {
-      val surface = Surface.of[RetryContext]
-      val updatedParams = surface.params.map { p =>
-        // Overwrite RetryContext parameters if given
-        newParam.getOrElse(p.name, p.get(this))
-      }
-      surface.objectFactory.get.newInstance(updatedParams).asInstanceOf[RetryContext]
-    }
-
     def init(context: Option[Any] = None): RetryContext = {
-      partialUpdate(
-        Map(
-          "context"        -> context,
-          "lastError"      -> NOT_STARTED,
-          "retryCount"     -> 0,
-          "nextWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
-          "baseWaitMillis" -> retryWaitStrategy.retryPolicyConfig.initialIntervalMillis
-        )
+      this.copy(
+        context = context,
+        lastError = NOT_STARTED,
+        retryCount = 0,
+        nextWaitMillis = retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
+        baseWaitMillis = retryWaitStrategy.retryPolicyConfig.initialIntervalMillis
       )
     }
 
@@ -123,13 +110,11 @@ object Retry extends LogSupport {
       * @return the next retry context
       */
     def nextRetry(retryReason: Throwable): RetryContext = {
-      val nextRetry = partialUpdate(
-        Map(
-          "lastError"      -> retryReason,
-          "retryCount"     -> (retryCount + 1),
-          "nextWaitMillis" -> retryWaitStrategy.nextWait(baseWaitMillis),
-          "baseWaitMillis" -> retryWaitStrategy.updateBaseWait(baseWaitMillis)
-        )
+      val nextRetry = this.copy(
+        lastError = retryReason,
+        retryCount = retryCount + 1,
+        nextWaitMillis = retryWaitStrategy.nextWait(baseWaitMillis),
+        baseWaitMillis = retryWaitStrategy.updateBaseWait(baseWaitMillis)
       )
       beforeRetryAction(nextRetry) match {
         case AddExtraRetryWait(extraWaitMillis) if extraWaitMillis > 0 =>
@@ -140,15 +125,15 @@ object Retry extends LogSupport {
     }
 
     def withExtraWaitMillis(extraWaitMillis: Int): RetryContext = {
-      partialUpdate(Map("nextWaitMillis" -> (this.nextWaitMillis + extraWaitMillis)))
+      this.copy(nextWaitMillis = this.nextWaitMillis + extraWaitMillis)
     }
 
     def withRetryWaitStrategy(newRetryWaitStrategy: RetryPolicy): RetryContext = {
-      partialUpdate(Map("retryWaitStrategy" -> newRetryWaitStrategy))
+      this.copy(retryWaitStrategy = newRetryWaitStrategy)
     }
 
     def withMaxRetry(newMaxRetry: Int): RetryContext = {
-      partialUpdate(Map("maxRetry" -> newMaxRetry))
+      this.copy(maxRetry = newMaxRetry)
     }
 
     def withBackOff(
@@ -157,7 +142,7 @@ object Retry extends LogSupport {
         multiplier: Double = 1.5
     ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-      partialUpdate(Map("retryWaitStrategy" -> new ExponentialBackOff(config)))
+      this.copy(retryWaitStrategy = new ExponentialBackOff(config))
     }
 
     def withJitter(
@@ -166,40 +151,35 @@ object Retry extends LogSupport {
         multiplier: Double = 1.5
     ): RetryContext = {
       val config = RetryPolicyConfig(initialIntervalMillis, maxIntervalMillis, multiplier)
-      partialUpdate(Map("retryWaitStrategy" -> new Jitter(config)))
+      this.copy(retryWaitStrategy = new Jitter(config))
     }
 
     def withResultClassifier[U](newResultClassifier: U => ResultClass): RetryContext = {
-      partialUpdate(
-        Map(
-          "resultClassifier" -> newResultClassifier.asInstanceOf[Any => ResultClass]
-        )
-      )
+      this.copy(resultClassifier = newResultClassifier.asInstanceOf[Any => ResultClass])
     }
 
     /**
       * Set a detailed error handler upon Exception. If the given exception is not retryable,
       * just rethrow the exception. Otherwise, consume the exception.
       */
-    def withErrorClassifier[U](errorClassifier: Throwable => U): RetryContext = {
-      partialUpdate(Map("errorClassifier" -> errorClassifier))
+    def withErrorClassifier(errorClassifier: Throwable => ResultClass): RetryContext = {
+      this.copy(errorClassifier = errorClassifier)
     }
 
     def beforeRetry[U](handler: RetryContext => U): RetryContext = {
-      partialUpdate(Map("beforeRetryAction" -> handler))
+      this.copy(beforeRetryAction = handler)
     }
 
     /**
       * Add a partial function that accepts exceptions that need to be retried.
       *
       * @param errorClassifier
-      * @tparam U
       * @return
       */
-    def retryOn[U](errorClassifier: PartialFunction[Throwable, Failed]): RetryContext = {
-      partialUpdate(Map("errorClassifier" -> { e: Throwable =>
+    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass]): RetryContext = {
+      this.copy(errorClassifier = { e: Throwable =>
         errorClassifier.applyOrElse(e, RETHROW_ALL)
-      }))
+      })
     }
 
     def run[A](body: => A): A = {
@@ -250,7 +230,7 @@ object Retry extends LogSupport {
     }
   }
 
-  private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
+  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
     throw e
   }
 
