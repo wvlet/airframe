@@ -299,7 +299,8 @@ object FinagleClient extends LogSupport {
         multiplier: Double = 1.5
     ): FinagleClientBuilder = {
       withRetryContext(
-        config.retry.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier))
+        config.retry.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
+      )
     }
 
     def withJitter(
@@ -309,7 +310,8 @@ object FinagleClient extends LogSupport {
         multiplier: Double = 1.5
     ): FinagleClientBuilder = {
       withRetryContext(
-        config.retry.withMaxRetry(maxRetry).withJitter(initialIntervalMillis, maxIntervalMillis, multiplier))
+        config.retry.withMaxRetry(maxRetry).withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
+      )
     }
 
     def withRetryContext(retryContext: RetryContext): FinagleClientBuilder = {
