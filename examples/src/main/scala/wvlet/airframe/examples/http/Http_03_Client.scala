@@ -42,7 +42,7 @@ object Http_03_Client extends App with LogSupport {
     // Create a new http client to access the server.
     withResource {
       Finagle.client
-        .withBackOff(maxRetry = 1) // optional
+        .withBackOff(maxRetry = 1)                   // optional
         .withTimeout(Duration(90, TimeUnit.SECONDS)) // optional
         .withInitializer { client: Http.Client =>
           // Add Finagle specific configuration
