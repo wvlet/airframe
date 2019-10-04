@@ -16,10 +16,9 @@ package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.Http
 import com.twitter.finagle.http.{Method, Request}
-import com.twitter.io.{Buf, Reader}
 import com.twitter.io.Buf.ByteArray
+import com.twitter.io.{Buf, Reader}
 import com.twitter.util.{Await, Future}
 import wvlet.airframe.Design
 import wvlet.airframe.codec.{JSONCodec, MessageCodec}
@@ -105,7 +104,7 @@ class FinagleRouterTest extends AirSpec {
     newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
       .bind[FinagleServer].toEagerSingleton
       .bind[FinagleClient].toProvider { server: FinagleServer =>
-        FinagleClient.newClient(server.localAddress, config = FinagleClient.noRetryConfig)
+        Finagle.client.noRetry.newClient(server.localAddress)
       }
   }
 
@@ -210,7 +209,7 @@ class FinagleRouterTest extends AirSpec {
       l.setLogLevel(LogLevel.ERROR)
       try {
         val request = Request("/v1/error")
-        val ret     = Await.result(client.send(request)) // Receive the raw error response
+        val ret     = Await.result(client.sendSafe(request)) // Receive the raw error response
         ret.statusCode shouldBe 500
       } finally {
         l.setLogLevel(lv)

@@ -16,10 +16,10 @@ import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.tracing.ConsoleTracer
 import com.twitter.finagle.{Http, Service}
 import com.twitter.util.{Await, Future}
+import wvlet.airframe.control.Control._
 import wvlet.airframe.http.Router
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airspec.AirSpec
-import wvlet.log.Logger
 import wvlet.log.io.IOUtil
 
 /**
@@ -41,11 +41,11 @@ class FinagleServerFactoryTest extends AirSpec {
       val server1 = factory.newFinagleServer(serverConfig1)
       val server2 = factory.newFinagleServer(serverConfig2)
 
-      val client1 = Http.client.newService(s"localhost:${p1}")
-      val client2 = Http.client.newService(s"localhost:${p2}")
-
-      Await.result(client1(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
-      Await.result(client2(Request("/v1/info")).map(_.contentString)) shouldBe "hello MyApi"
+      withResources(Finagle.newSyncClient(s"localhost:${p1}"), Finagle.newSyncClient(s"localhost:${p2}")) {
+        (client1, client2) =>
+          client1.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
+          client2.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
+      }
     }
   }
 
@@ -55,8 +55,9 @@ class FinagleServerFactoryTest extends AirSpec {
         .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
 
     d2.build[FinagleServer] { server =>
-      val client = Http.client.newService(s"localhost:${server.port}")
-      Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server"
+      withResource(Finagle.newSyncClient(s"localhost:${server.port}")) { client =>
+        client.send(Request("/v1")).contentString shouldBe "hello custom server"
+      }
     }
   }
 
@@ -66,8 +67,9 @@ class FinagleServerFactoryTest extends AirSpec {
         .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
 
     d.build[FinagleServer] { server =>
-      val client = Http.client.newService(server.localAddress)
-      Await.result(client(Request("/v1")).map(_.contentString)) shouldBe "hello custom server with tracer"
+      withResource(Finagle.newSyncClient(server.localAddress)) { client =>
+        client.send(Request("/v1")).contentString shouldBe "hello custom server with tracer"
+      }
     }
   }
 }

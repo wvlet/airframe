@@ -39,7 +39,7 @@ class FinagleDesignTest extends AirSpec {
     finagleDefaultDesign
       .bind[FinagleServerConfig].toInstance(newConfig)
       .bind[FinagleSyncClient].toProvider { server: FinagleServer =>
-        FinagleClient.newSyncClient(server.localAddress)
+        Finagle.newSyncClient(server.localAddress)
       }
       .noLifeCycleLogging
       .build[FinagleSyncClient] { client =>

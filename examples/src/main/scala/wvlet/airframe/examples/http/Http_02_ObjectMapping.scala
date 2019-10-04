@@ -14,7 +14,6 @@
 package wvlet.airframe.examples.http
 
 import com.twitter.finagle.http.Response
-import wvlet.airframe.control.Control
 import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.finagle.{FinagleClient, FinagleServer}
 import wvlet.airframe.http.{Endpoint, HttpMethod, Router, finagle}

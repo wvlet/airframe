@@ -32,7 +32,7 @@ import scala.reflect.runtime.{universe => ru}
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
 
   /**
-    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry limit)
     *
     * @throws HttpClientMaxRetryException if max retry reaches
     * @throws HttpClientException for non-retryable error is happend
@@ -123,7 +123,7 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
   protected def awaitF[A](f: F[A]): A = asyncClient.awaitF(f)
 
   /**
-    * Send an HTTP request and get the response. It will throw an exception for non successful responses
+    * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry)
     *
     * @throws HttpClientMaxRetryException if max retry reaches
     * @throws HttpClientException for non-retryable error is happend

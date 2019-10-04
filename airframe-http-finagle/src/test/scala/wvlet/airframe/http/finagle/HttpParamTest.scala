@@ -35,7 +35,7 @@ class HttpParamTest extends AirSpec {
     val r = Router.add[HttpParamExample]
     newFinagleServerDesign(router = r)
       .bind[FinagleSyncClient].toProvider { server: FinagleServer =>
-        FinagleClient.newSyncClient(server.localAddress)
+        Finagle.newSyncClient(server.localAddress)
       }
   }
 

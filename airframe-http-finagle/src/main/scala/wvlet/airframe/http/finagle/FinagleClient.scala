@@ -34,7 +34,21 @@ case class FinagleClientConfig(
     requestFilter: http.Request => http.Request = identity,
     timeout: Duration = Duration(90, TimeUnit.SECONDS),
     retry: RetryContext = FinagleClient.defaultRetry
-)
+) {
+  def withInitializer(initClient: Http.Client => Http.Client): FinagleClientConfig = {
+    this.copy(initClient = initClient)
+  }
+  def withRetryContext(retryContext: RetryContext): FinagleClientConfig = {
+    this.copy(retry = retryContext)
+  }
+  def withTimeout(timeout: Duration): FinagleClientConfig = {
+    this.copy(timeout = timeout)
+  }
+
+  def withRequestFilter(requestFilter: http.Request => http.Request): FinagleClientConfig = {
+    this.copy(requestFilter = requestFilter)
+  }
+}
 
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
@@ -265,6 +279,57 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   *
   */
 object FinagleClient extends LogSupport {
+
+  case class FinagleClientBuilder(config: FinagleClientConfig = defaultConfig) {
+    def withInitializer(initClient: Http.Client => Http.Client): FinagleClientBuilder = {
+      this.copy(config = config.withInitializer(initClient))
+    }
+    def withTimeout(timeout: Duration): FinagleClientBuilder = {
+      this.copy(config = config.withTimeout(timeout))
+    }
+
+    def noRetry: FinagleClientBuilder = {
+      this.copy(config = config.withRetryContext(config.retry.withMaxRetry(0)))
+    }
+
+    def withMaxRetry(maxRetry: Int): FinagleClientBuilder = {
+      withRetryContext(
+        config.retry.withMaxRetry(maxRetry)
+      )
+    }
+
+    def withBackOff(
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): FinagleClientBuilder = {
+      withRetryContext(
+        config.retry.withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
+      )
+    }
+
+    def withJitter(
+        initialIntervalMillis: Int = 100,
+        maxIntervalMillis: Int = 15000,
+        multiplier: Double = 1.5
+    ): FinagleClientBuilder = {
+      withRetryContext(
+        config.retry.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
+      )
+    }
+
+    def withRetryContext(retryContext: RetryContext): FinagleClientBuilder = {
+      this.copy(config = config.withRetryContext(retryContext))
+    }
+
+    def newClient(hostAndPort: String): FinagleClient = {
+      FinagleClient.newClient(hostAndPort, config)
+    }
+
+    def newSyncClient(hostAndPort: String): FinagleSyncClient = {
+      FinagleClient.newSyncClient(hostAndPort, config)
+    }
+  }
 
   def defaultConfig: FinagleClientConfig = FinagleClientConfig()
 

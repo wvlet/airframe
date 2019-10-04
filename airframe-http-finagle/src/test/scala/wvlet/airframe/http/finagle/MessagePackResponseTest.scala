@@ -12,9 +12,10 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
-import com.twitter.finagle.{Http, http}
+import com.twitter.finagle.http
 import com.twitter.util.Await
 import wvlet.airframe.codec.MessageCodec
+import wvlet.airframe.control.Control.withResource
 import wvlet.airframe.http.{Endpoint, Router}
 import wvlet.airspec.AirSpec
 
@@ -36,17 +37,18 @@ class MessagePackResponseTest extends AirSpec {
   def `support Accept: application/x-msgpack`: Unit = {
     newFinagleServerDesign(name = "msgpack-test-server", router = Router.of[TestMessagePackApi]).build[FinagleServer] {
       server =>
-        val client = Http.newService(server.localAddress)
-        val req    = http.Request("/v1/hello")
-        req.accept = "application/x-msgpack"
-        val msgpack = Await.result(client(req).map { x =>
-          val c = x.content
-          val b = new Array[Byte](c.length)
-          c.write(b, 0)
-          b
-        })
+        withResource(Finagle.newClient(server.localAddress)) { client =>
+          val req = http.Request("/v1/hello")
+          req.accept = "application/x-msgpack"
+          val msgpack = Await.result(client.send(req).map { x =>
+            val c = x.content
+            val b = new Array[Byte](c.length)
+            c.write(b, 0)
+            b
+          })
 
-        MessageCodec.of[SampleResponse].unpackMsgPack(msgpack) shouldBe Some(SampleResponse(1, "leo"))
+          MessageCodec.of[SampleResponse].unpackMsgPack(msgpack) shouldBe Some(SampleResponse(1, "leo"))
+        }
     }
   }
 
