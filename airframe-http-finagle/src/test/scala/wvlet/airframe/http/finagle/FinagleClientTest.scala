@@ -170,7 +170,11 @@ class FinagleClientTest extends AirSpec {
         client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
 
         client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
-        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(1, "xxx", "10")
+        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
+          1,
+          "xxx",
+          "10"
+        )
       }
     }
   }
