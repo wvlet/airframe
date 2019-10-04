@@ -174,13 +174,12 @@ object Retry extends LogSupport {
       * Add a partial function that accepts exceptions that need to be retried.
       *
       * @param errorClassifier
-      * @tparam U
       * @return
       */
-    def retryOn[U](errorClassifier: PartialFunction[Throwable, Failed]): RetryContext = {
+    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass]): RetryContext = {
       this.copy(errorClassifier = { e: Throwable =>
         errorClassifier.applyOrElse(e, RETHROW_ALL)
-      }.asInstanceOf[Throwable => ResultClass])
+      })
     }
 
     def run[A](body: => A): A = {
@@ -231,7 +230,7 @@ object Retry extends LogSupport {
     }
   }
 
-  private def RETHROW_ALL: Throwable => Unit = { e: Throwable =>
+  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
     throw e
   }
 
