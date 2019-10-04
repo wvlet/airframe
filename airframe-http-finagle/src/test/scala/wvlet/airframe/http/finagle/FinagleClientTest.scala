@@ -26,6 +26,7 @@ case class User(id: Int, name: String, requestId: String) {
 }
 
 case class UserRequest(id: Int, name: String)
+case class DeleteRequestBody(force: Boolean)
 
 trait FinagleClientTestApi extends LogSupport {
 
@@ -70,6 +71,11 @@ trait FinagleClientTestApi extends LogSupport {
 
   @Endpoint(method = HttpMethod.PUT, path = "/user")
   def put(updatedUser: User, request: Request): User = {
+    updatedUser.withRequestId(getRequestId(request))
+  }
+
+  @Endpoint(method = HttpMethod.PATCH, path = "/user")
+  def patch(updatedUser: User, request: Request): User = {
     updatedUser.withRequestId(getRequestId(request))
   }
 
@@ -130,7 +136,11 @@ class FinagleClientTest extends AirSpec {
         client.put[User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
         client.putOps[User, User]("/user", User(10, "aina", "N/A")) shouldBe User(10, "aina", "N/A")
 
+        client.patch[User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
+        client.patchOps[User, User]("/user", User(20, "joy", "N/A")) shouldBe User(20, "joy", "N/A")
+
         client.delete[User]("/user/1") shouldBe User(1, "xxx", "N/A")
+        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true)) shouldBe User(1, "xxx", "N/A")
 
         // Get a response as is
         client.get[Response]("/response").contentString shouldBe "raw response"
@@ -156,7 +166,15 @@ class FinagleClientTest extends AirSpec {
         client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
         client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
 
+        client.patch[User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
+        client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
+
         client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
+        client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
+          1,
+          "xxx",
+          "10"
+        )
       }
     }
   }

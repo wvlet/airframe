@@ -92,6 +92,21 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resourcePath: String,
       requestFilter: Req => Req = identity
   ): F[OperationResponse]
+  def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
+  def patch[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resource]
+  def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[OperationResponse]
 
   def syncClient: HttpSyncClient[F, Req, Resp] = new HttpSyncClient(this)
 }
@@ -172,6 +187,28 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
       requestFilter: Req => Req = identity
   ): OperationResponse = {
     awaitF(asyncClient.delete[OperationResponse](resourcePath, requestFilter))
+  }
+  def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
+    awaitF(asyncClient.deleteOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
+  }
+
+  def patch[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resource = {
+    awaitF(asyncClient.patch[Resource](resourcePath, resource, requestFilter))
+  }
+  def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): OperationResponse = {
+    awaitF(asyncClient.patchOps[Resource, OperationResponse](resourcePath, resource, requestFilter))
   }
 
   override def close(): Unit = {
