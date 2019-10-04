@@ -292,25 +292,29 @@ object FinagleClient extends LogSupport {
       this.copy(config = config.withRetryContext(config.retry.withMaxRetry(0)))
     }
 
+    def withMaxRetry(maxRetry: Int): FinagleClientBuilder = {
+      withRetryContext(
+        config.retry.withMaxRetry(maxRetry)
+      )
+    }
+
     def withBackOff(
-        maxRetry: Int = 3,
         initialIntervalMillis: Int = 100,
         maxIntervalMillis: Int = 15000,
         multiplier: Double = 1.5
     ): FinagleClientBuilder = {
       withRetryContext(
-        config.retry.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
+        config.retry.withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
       )
     }
 
     def withJitter(
-        maxRetry: Int = 3,
         initialIntervalMillis: Int = 100,
         maxIntervalMillis: Int = 15000,
         multiplier: Double = 1.5
     ): FinagleClientBuilder = {
       withRetryContext(
-        config.retry.withMaxRetry(maxRetry).withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
+        config.retry.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
       )
     }
 

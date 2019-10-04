@@ -183,7 +183,8 @@ class FinagleClientTest extends AirSpec {
     d.build[FinagleServer] { server =>
       withResource(
         Finagle.client
-          .withBackOff(maxRetry = 3, initialIntervalMillis = 1)
+          .withMaxRetry(3)
+          .withBackOff(initialIntervalMillis = 1)
           .newSyncClient(server.localAddress)
       ) { client =>
         warn("Starting http client failure tests")
