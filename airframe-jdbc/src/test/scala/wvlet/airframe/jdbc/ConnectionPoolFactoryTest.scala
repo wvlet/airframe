@@ -83,7 +83,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
     .noLifeCycleLogging
 
   def `use multiple SQLite configs`: Unit = {
-    if (!inCI) pending
+    if (!inTravisCI) pending
 
     d.withSession { session =>
       val t = session.build[TestConnection]
@@ -93,7 +93,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
   }
 
   def `use PostgreSQL connection pool`: Unit = {
-    if (!inCI) pending
+    if (!inTravisCI) pending
 
     d.withSession { session =>
       val t = session.build[TestConnection]
