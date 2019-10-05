@@ -210,12 +210,12 @@ object Retry extends LogSupport {
           case ResultClass.Succeeded =>
             // OK. Exit the loop
             result = Some(ret.get)
-          case ResultClass.Failed(isRetryable, cause) if isRetryable =>
+          case ResultClass.Failed(isRetryable, cause, extraWaitMillis) if isRetryable =>
             // Retryable error
             retryContext = retryContext.nextRetry(cause)
             // Wait until the next retry
-            Thread.sleep(retryContext.nextWaitMillis)
-          case ResultClass.Failed(isRetryable, cause) if !isRetryable =>
+            Thread.sleep(retryContext.nextWaitMillis + extraWaitMillis)
+          case ResultClass.Failed(isRetryable, cause, _) if !isRetryable =>
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }
@@ -246,23 +246,19 @@ object Retry extends LogSupport {
 
   trait RetryPolicy {
     def retryPolicyConfig: RetryPolicyConfig
-    def updateBaseWait(waitMillis: Int): Int
+    def updateBaseWait(waitMillis: Int): Int = {
+      math.round(waitMillis * retryPolicyConfig.multiplier).toInt.min(retryPolicyConfig.maxIntervalMillis)
+    }
     def nextWait(baseWaitMillis: Int): Int
   }
 
   class ExponentialBackOff(val retryPolicyConfig: RetryPolicyConfig) extends RetryPolicy {
-    override def updateBaseWait(waitMillis: Int): Int = {
-      math.round(waitMillis * retryPolicyConfig.multiplier).toInt.min(retryPolicyConfig.maxIntervalMillis)
-    }
     override def nextWait(baseWaitMillis: Int): Int = {
       baseWaitMillis
     }
   }
 
   class Jitter(val retryPolicyConfig: RetryPolicyConfig, rand: Random = new Random()) extends RetryPolicy {
-    override def updateBaseWait(waitMillis: Int): Int = {
-      math.round(waitMillis * retryPolicyConfig.multiplier).toInt.min(retryPolicyConfig.maxIntervalMillis)
-    }
     override def nextWait(baseWaitMillis: Int): Int = {
       (baseWaitMillis.toDouble * rand.nextDouble()).round.toInt
     }

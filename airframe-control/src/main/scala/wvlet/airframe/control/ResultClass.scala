@@ -28,7 +28,11 @@ object ResultClass {
   /**
     * A label for the failed code execution result
     */
-  case class Failed(isRetryable: Boolean, cause: Throwable) extends ResultClass
+  case class Failed(isRetryable: Boolean, cause: Throwable, extraWaitMillis: Int = 0) extends ResultClass {
+    def withExtraWaitMillis(extraWaitMillis: Int): Failed = {
+      this.copy(extraWaitMillis = extraWaitMillis)
+    }
+  }
 
   def retryableFailure(e: Throwable): Failed    = Retry.retryableFailure(e)
   def nonRetryableFailure(e: Throwable): Failed = Retry.nonRetryableFailure(e)
