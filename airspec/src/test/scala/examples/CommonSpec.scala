@@ -39,6 +39,8 @@ class CommonSpec extends AirSpec {
     // sanity test
     inTravisCI
     inCircleCI
+    inGitHubAction
+    inCI
   }
 }
 
