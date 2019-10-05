@@ -50,8 +50,4 @@ object ResultClass {
   def ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
     retryableFailure(e)
   }
-
-  def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
-    throw e
-  }
 }

@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.control.ResultClass.{Failed, RETHROW_ALL}
+import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}
@@ -73,6 +73,10 @@ object Retry extends LogSupport {
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec."
     )
+  }
+
+  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
+    throw e
   }
 
   private[control] val noExtraWait = ExtraWait()
