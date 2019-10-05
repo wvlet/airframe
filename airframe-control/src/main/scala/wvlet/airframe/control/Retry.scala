@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.control.ResultClass.{ExtraWait, Failed}
+import wvlet.airframe.control.ResultClass.{Failed, RETHROW_ALL}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}
@@ -73,6 +73,34 @@ object Retry extends LogSupport {
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] Execution failed: ${ctx.lastError.getMessage}. Retrying in ${ctx.nextWaitMillis / 1000.0}%.2f sec."
     )
+  }
+
+  private[control] val noExtraWait = ExtraWait()
+
+  case class ExtraWait(maxExtraWaitMillis: Int = 0, factor: Double = 0.0) {
+    require(maxExtraWaitMillis >= 0)
+    require(factor >= 0)
+
+    def hasNoWait: Boolean = {
+      maxExtraWaitMillis == 0 && factor == 0.0
+    }
+
+    // Compute the extra wait millis based on the next wait millis
+    def extraWaitMillis(nextWaitMillis: Int): Int = {
+      if (maxExtraWaitMillis == 0) {
+        if (factor == 0.0) {
+          0
+        } else {
+          (nextWaitMillis * factor).toInt
+        }
+      } else {
+        if (factor == 0.0) {
+          maxExtraWaitMillis
+        } else {
+          (nextWaitMillis * factor).toInt.min(maxExtraWaitMillis)
+        }
+      }
+    }
   }
 
   case class RetryContext(
@@ -229,10 +257,6 @@ object Retry extends LogSupport {
           throw MaxRetryException(retryContext)
       }
     }
-  }
-
-  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
-    throw e
   }
 
   case class RetryPolicyConfig(

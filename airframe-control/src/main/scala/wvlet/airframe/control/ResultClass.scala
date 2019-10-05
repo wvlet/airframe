@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.control
 
+import wvlet.airframe.control.Retry.ExtraWait
+
 /**
   * A classification of the code execution result
   */
@@ -28,7 +30,8 @@ object ResultClass {
   /**
     * A label for the failed code execution result
     */
-  case class Failed(isRetryable: Boolean, cause: Throwable, extraWait: ExtraWait = noExtraWait) extends ResultClass {
+  case class Failed(isRetryable: Boolean, cause: Throwable, extraWait: ExtraWait = Retry.noExtraWait)
+      extends ResultClass {
     def withExtraWaitMillis(extraWaitMillis: Int): Failed = {
       this.copy(extraWait = ExtraWait(maxExtraWaitMillis = extraWaitMillis))
     }
@@ -37,43 +40,18 @@ object ResultClass {
     }
   }
 
-  private val noExtraWait = ExtraWait()
-
-  case class ExtraWait(maxExtraWaitMillis: Int = 0, factor: Double = 0.0) {
-    require(maxExtraWaitMillis >= 0)
-    require(factor >= 0)
-
-    def hasNoWait: Boolean = {
-      maxExtraWaitMillis == 0 && factor == 0.0
-    }
-
-    // Compute the extra wait millis based on the next wait millis
-    def extraWaitMillis(nextWaitMillis: Int): Int = {
-      if (maxExtraWaitMillis == 0) {
-        if (factor == 0.0) {
-          0
-        } else {
-          (nextWaitMillis * factor).toInt
-        }
-      } else {
-        if (factor == 0.0) {
-          maxExtraWaitMillis
-        } else {
-          (nextWaitMillis * factor).toInt.min(maxExtraWaitMillis)
-        }
-      }
-    }
-  }
-
   def retryableFailure(e: Throwable): Failed    = Retry.retryableFailure(e)
   def nonRetryableFailure(e: Throwable): Failed = Retry.nonRetryableFailure(e)
 
-  val ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
+  def ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
     Succeeded
   }
 
-  val ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
+  def ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
     retryableFailure(e)
   }
 
+  def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
+    throw e
+  }
 }
