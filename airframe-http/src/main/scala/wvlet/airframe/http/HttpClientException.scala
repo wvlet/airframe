@@ -85,7 +85,13 @@ object HttpClientException extends LogSupport {
         Succeeded
       case s if s.isServerError =>
         // We should retry on any server side errors
-        retryableFailure(requestFailure(response))
+        val f = retryableFailure(requestFailure(response))
+        if (status == HttpStatus.ServiceUnavailable_503) {
+          // Server is busy (e.g., S3 slow down). We need to reduce the request rate.
+          f.withExtraWaitFactor(0.5)
+        } else {
+          f
+        }
       case s if s.isClientError => // 4xx
         s match {
           case HttpStatus.BadRequest_400 if isRetryable400ErrorMessage(adapter.contentStringOf(response)) =>

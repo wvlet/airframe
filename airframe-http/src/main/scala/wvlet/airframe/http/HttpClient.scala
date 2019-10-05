@@ -15,7 +15,7 @@ package wvlet.airframe.http
 import java.net.URLEncoder
 
 import wvlet.airframe.control.Retry
-import wvlet.airframe.control.Retry.{AddExtraRetryWait, RetryContext}
+import wvlet.airframe.control.Retry.RetryContext
 import wvlet.log.LogSupport
 
 import scala.language.higherKinds
@@ -239,19 +239,10 @@ object HttpClient extends LogSupport {
         s"Request is failed: ${ctx.lastError.getMessage}"
     }
 
-    val extraWaitMillis =
-      ctx.lastError match {
-        case e: HttpClientException if e.status == HttpStatus.ServiceUnavailable_503 =>
-          // Server is busy (e.g., S3 slow down). We need to reduce the request rate.
-          (ctx.nextWaitMillis * 0.5).toLong // Add an extra wait
-        case _ =>
-          0
-      }
-    val nextWaitMillis = ctx.nextWaitMillis + extraWaitMillis
+    val nextWaitMillis = ctx.nextWaitMillis
     warn(
       f"[${ctx.retryCount}/${ctx.maxRetry}] ${errorMessage}. Retry the request in ${nextWaitMillis / 1000.0}%.3f sec."
     )
-    AddExtraRetryWait(extraWaitMillis.toInt)
   }
 
   def urlEncode(s: String): String = {

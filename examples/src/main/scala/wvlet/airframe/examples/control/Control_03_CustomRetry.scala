@@ -30,7 +30,10 @@ object Control_03_CustomRetry extends LogSupport {
         case e: IllegalArgumentException =>
           Retry.nonRetryableFailure(e)
         case e: TimeoutException =>
-          Retry.retryableFailure(e)
+          Retry
+            .retryableFailure(e)
+            // Add extra wait millis
+            .withExtraWaitMillis(50)
       }
 
   withRetry.run {
@@ -40,5 +43,4 @@ object Control_03_CustomRetry extends LogSupport {
   withRetry.run {
     debug("Retryer can be reused for other runs")
   }
-
 }
