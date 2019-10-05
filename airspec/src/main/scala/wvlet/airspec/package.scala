@@ -20,10 +20,16 @@ package object airspec {
   // For Scala, Scala.js compatibility
   val compat: CompatApi = wvlet.airspec.Compat
 
+  private[airspec] lazy val inCI = {
+    sys.env.get("CI").map(_.toBoolean).getOrElse(false) || inTravisCI || inCircleCI || inGitHubAction
+  }
   private[airspec] lazy val inTravisCI: Boolean = {
     sys.env.get("TRAVIS").map(_.toBoolean).getOrElse(false)
   }
   private[airspec] lazy val inCircleCI: Boolean = {
     sys.env.get("CIRCLECI").map(_.toBoolean).getOrElse(false)
+  }
+  private[airspec] lazy val inGitHubAction: Boolean = {
+    sys.env.get("GITHUB_ACTION").isDefined
   }
 }
