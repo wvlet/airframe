@@ -59,7 +59,7 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
       classifier match {
         case ResultClass.Succeeded =>
           rep
-        case ResultClass.Failed(isRetryable, cause, extraWaitMillis) => {
+        case ResultClass.Failed(isRetryable, cause, extraWait) => {
           if (!retryContext.canContinue) {
             // Reached the max retry
             rep.flatMap { r =>
@@ -72,10 +72,10 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
             Future
               .value {
                 // Update the retry count
-                retryContext.nextRetry(cause)
+                retryContext.withExtraWait(extraWait).nextRetry(cause)
               }.flatMap { nextRetryContext =>
                 // Wait until the next retry
-                schedule((retryContext.nextWaitMillis + extraWaitMillis).millis) {
+                schedule(nextRetryContext.nextWaitMillis.millis) {
                   // Run the same request again
                   dispatch(nextRetryContext, request, service)
                 }

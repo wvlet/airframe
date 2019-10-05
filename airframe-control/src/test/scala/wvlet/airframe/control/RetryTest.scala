@@ -16,6 +16,8 @@ package wvlet.airframe.control
 import wvlet.airframe.control.Retry.{MaxRetryException, RetryContext}
 import wvlet.airspec.AirSpec
 
+import scala.concurrent.TimeoutException
+
 /**
   *
   */
@@ -113,5 +115,24 @@ class RetryTest extends AirSpec {
 
     count shouldBe 1
     checked shouldBe true
+  }
+
+  def `add extra wait`: Unit = {
+    intercept[MaxRetryException] {
+      Retry
+        .withBackOff(initialIntervalMillis = 10)
+        .withMaxRetry(1)
+        .withErrorClassifier {
+          case e: TimeoutException =>
+            ResultClass.retryableFailure(e).withExtraWaitMillis(100)
+        }
+        .beforeRetry { ctx: RetryContext =>
+          debug(s"${ctx.retryCount} ${ctx.nextWaitMillis}")
+          ctx.nextWaitMillis shouldBe 10 + 100
+        }
+        .run {
+          throw new TimeoutException()
+        }
+    }
   }
 }

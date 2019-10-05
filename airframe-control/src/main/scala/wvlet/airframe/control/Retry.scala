@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.control
 
-import wvlet.airframe.control.ResultClass.Failed
+import wvlet.airframe.control.ResultClass.{ExtraWait, Failed}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Random, Success, Try}
@@ -53,7 +53,8 @@ object Retry extends LogSupport {
       maxRetry = 3,
       retryWaitStrategy = new ExponentialBackOff(retryConfig),
       nextWaitMillis = retryConfig.initialIntervalMillis,
-      baseWaitMillis = retryConfig.initialIntervalMillis
+      baseWaitMillis = retryConfig.initialIntervalMillis,
+      extraWaitMillis = 0
     )
   }
 
@@ -67,9 +68,6 @@ object Retry extends LogSupport {
   case class RetryableFailure(e: Throwable) extends Exception(e)
 
   case object NOT_STARTED extends Exception("Code is not executed")
-
-  // Return this class at the beforeRetryAction to add extra wait time.
-  case class AddExtraRetryWait(extraWaitMillis: Int)
 
   private def REPORT_RETRY_COUNT: RetryContext => Unit = { ctx: RetryContext =>
     warn(
@@ -85,6 +83,7 @@ object Retry extends LogSupport {
       retryWaitStrategy: RetryPolicy,
       nextWaitMillis: Int,
       baseWaitMillis: Int,
+      extraWaitMillis: Int,
       resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
       errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
       beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
@@ -95,7 +94,8 @@ object Retry extends LogSupport {
         lastError = NOT_STARTED,
         retryCount = 0,
         nextWaitMillis = retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
-        baseWaitMillis = retryWaitStrategy.retryPolicyConfig.initialIntervalMillis
+        baseWaitMillis = retryWaitStrategy.retryPolicyConfig.initialIntervalMillis,
+        extraWaitMillis = 0
       )
     }
 
@@ -110,22 +110,23 @@ object Retry extends LogSupport {
       * @return the next retry context
       */
     def nextRetry(retryReason: Throwable): RetryContext = {
-      val nextRetry = this.copy(
+      val nextRetryCtx = this.copy(
         lastError = retryReason,
         retryCount = retryCount + 1,
-        nextWaitMillis = retryWaitStrategy.nextWait(baseWaitMillis),
-        baseWaitMillis = retryWaitStrategy.updateBaseWait(baseWaitMillis)
+        nextWaitMillis = retryWaitStrategy.nextWait(baseWaitMillis) + extraWaitMillis,
+        baseWaitMillis = retryWaitStrategy.updateBaseWait(baseWaitMillis),
+        extraWaitMillis = 0
       )
-      beforeRetryAction(nextRetry) match {
-        case AddExtraRetryWait(extraWaitMillis) if extraWaitMillis > 0 =>
-          nextRetry.withExtraWaitMillis(extraWaitMillis)
-        case _ =>
-          nextRetry
-      }
+      beforeRetryAction(nextRetryCtx)
+      nextRetryCtx
     }
 
-    def withExtraWaitMillis(extraWaitMillis: Int): RetryContext = {
-      this.copy(nextWaitMillis = this.nextWaitMillis + extraWaitMillis)
+    def withExtraWait(extraWait: ExtraWait): RetryContext = {
+      if (extraWait.hasNoWait && this.extraWaitMillis == 0) {
+        this
+      } else {
+        this.copy(extraWaitMillis = extraWait.extraWaitMillis(nextWaitMillis))
+      }
     }
 
     def withRetryWaitStrategy(newRetryWaitStrategy: RetryPolicy): RetryContext = {
@@ -210,11 +211,11 @@ object Retry extends LogSupport {
           case ResultClass.Succeeded =>
             // OK. Exit the loop
             result = Some(ret.get)
-          case ResultClass.Failed(isRetryable, cause, extraWaitMillis) if isRetryable =>
+          case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
             // Retryable error
-            retryContext = retryContext.nextRetry(cause)
+            retryContext = retryContext.withExtraWait(extraWait).nextRetry(cause)
             // Wait until the next retry
-            Thread.sleep(retryContext.nextWaitMillis + extraWaitMillis)
+            Thread.sleep(retryContext.nextWaitMillis)
           case ResultClass.Failed(isRetryable, cause, _) if !isRetryable =>
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
