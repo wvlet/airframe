@@ -5,6 +5,23 @@ title: Release Notes
 
 # Release Notes
 
+## 19.10.1
+-  airspec: Add inGitHubAction and inCI ([#762](https://github.com/wvlet/airframe/issues/762)) [[0765f11](https://github.com/wvlet/airframe/commit/0765f11)]
+-  airframe-control: Add retryableFailure(e).withExtraWaitMillis/Factor ([#761](https://github.com/wvlet/airframe/issues/761)) [[40b7a58](https://github.com/wvlet/airframe/commit/40b7a58)]
+-  airframe-http-finagle: Add Finagle.client builder ([#760](https://github.com/wvlet/airframe/issues/760)) [[48f44cb](https://github.com/wvlet/airframe/commit/48f44cb)]
+-  airframe-control: Use this.copy for RetryContext ([#759](https://github.com/wvlet/airframe/issues/759)) [[4251c84](https://github.com/wvlet/airframe/commit/4251c84)]
+-  airframe-http: Support patch, patchOps, deleteOps methods ([#755](https://github.com/wvlet/airframe/issues/755)) [[7603f16](https://github.com/wvlet/airframe/commit/7603f16)]
+-  Internal changes
+   -  Add javacOptions to generate Java8 compatible binary ([#764](https://github.com/wvlet/airframe/issues/764)) [[bc399d1](https://github.com/wvlet/airframe/commit/bc399d1)]
+   -  Update sbt-microsites to 0.9.7 ([#752](https://github.com/wvlet/airframe/issues/752)) [[a2e2ce5](https://github.com/wvlet/airframe/commit/a2e2ce5)]
+   -  Use jdk11 for all builds ([#751](https://github.com/wvlet/airframe/issues/751)) [[2f69218](https://github.com/wvlet/airframe/commit/2f69218)]
+-  Enhancement of GitHub Actions configuration
+   -  Do not run CI tests if no source code has changed ([#756](https://github.com/wvlet/airframe/issues/756)) [[7d367b9](https://github.com/wvlet/airframe/commit/7d367b9)]
+   -  Update test.yml [[bbffdae](https://github.com/wvlet/airframe/commit/bbffdae)]
+   -  Enable codecov for PRs ([#753](https://github.com/wvlet/airframe/issues/753)) [[4eee198](https://github.com/wvlet/airframe/commit/4eee198)]
+   -  Upload code coverage report [[cedce6b](https://github.com/wvlet/airframe/commit/cedce6b)]
+   -  Fix doc update on GitHub Actions ([#750](https://github.com/wvlet/airframe/issues/750)) [[0f75cbc](https://github.com/wvlet/airframe/commit/0f75cbc)]
+
 ## 19.10.0
 -  This is a maintenance release for migrating to GitHub Atcions. There is no feature change. ([#749](https://github.com/wvlet/airframe/issues/749)) [[74f84b5](https://github.com/wvlet/airframe/commit/74f84b5)]
 
