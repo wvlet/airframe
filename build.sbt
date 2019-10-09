@@ -589,7 +589,7 @@ lazy val http =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
 
-val FINAGLE_VERSION = "19.9.0"
+val FINAGLE_VERSION = "19.10.0"
 lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
