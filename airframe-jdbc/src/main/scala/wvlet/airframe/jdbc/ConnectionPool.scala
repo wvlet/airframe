@@ -72,8 +72,6 @@ trait ConnectionPool extends LogSupport {
 
 trait ConnectionPoolFactoryService {
   val connectionPoolFactory = bind[ConnectionPoolFactory]
-    .onShutdown(_.close)
-
 }
 
 trait ConnectionPoolFactory extends Guard with AutoCloseable with LogSupport {
