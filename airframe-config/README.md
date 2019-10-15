@@ -46,7 +46,7 @@ default:
 
 **config/server.yml**
 ```
-default:
+default: &default
   host: localhost
   port: 8080
 
