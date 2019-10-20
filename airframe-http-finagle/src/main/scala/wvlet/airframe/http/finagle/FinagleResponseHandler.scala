@@ -50,11 +50,10 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
     request.method match {
       case Method.Post =>
         r.statusCode = HttpStatus.Created_201.code
+      case Method.Delete if responseSurface == Primitive.Unit =>
+        r.statusCode = HttpStatus.NoContent_204.code
       case _ =>
         r.statusCode = HttpStatus.Ok_200.code
-    }
-    if (responseSurface == Primitive.Unit) {
-      r.statusCode = HttpStatus.NoContent_204.code
     }
     r
   }
