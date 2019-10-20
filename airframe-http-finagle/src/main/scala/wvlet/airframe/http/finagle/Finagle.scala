@@ -17,7 +17,7 @@ package wvlet.airframe.http.finagle
   * An entry point for building customized Finagle services
   */
 object Finagle {
-  def client: FinagleClient.FinagleClientBuilder            = FinagleClient.FinagleClientBuilder()
+  def client: FinagleClientConfig                           = FinagleClientConfig()
   def newClient(hostAndPort: String): FinagleClient         = client.newClient(hostAndPort)
   def newSyncClient(hostAndPort: String): FinagleSyncClient = client.newSyncClient(hostAndPort)
 }

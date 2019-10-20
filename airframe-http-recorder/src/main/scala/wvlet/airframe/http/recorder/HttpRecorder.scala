@@ -27,29 +27,60 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 case class HttpRecorderConfig(
-    name: String = "http-recorder",
+    recorderName: String = "http-recorder",
     destUri: String = "localhost",
     sessionName: String = "default",
-    expirationTime: String = "1M", // Delete recorded response in a month by default
+    expirationTime: Option[String] = None, // Do not expire records by default
     // the folder to store response records
     dbFileName: String = "http-records",
     storageFolder: String = ".airframe/http",
     recordTableName: String = "record",
-    // Specify the port to use. The default is finding an available port
-    private val port: Int = -1,
+    // Explicitly specify the port to use
+    port: Option[Int] = None,
     // Used for computing hash key for matching requests
     requestMatcher: HttpRequestMatcher = new HttpRequestMatcher.DefaultHttpRequestMatcher(),
-    excludeHeaderForRecording: (String, String) => Boolean = HttpRecorder.defaultHeaderFilterForRecording,
+    excludeHeaderFilterForRecording: (String, String) => Boolean = HttpRecorder.defaultExcludeHeaderFilterForRecording,
     fallBackHandler: Service[Request, Response] = HttpRecorder.defaultFallBackHandler
 ) {
-  def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
+  private[http] def sqliteFilePath = s"${storageFolder}/${dbFileName}.sqlite"
 
-  lazy val serverPort = if (port == -1) {
-    IOUtil.unusedPort
-  } else {
-    port
-  }
   lazy val destAddress = ServerAddress(destUri)
+
+  def withDestUri(destUri: String): HttpRecorderConfig = {
+    this.copy(destUri = destUri)
+  }
+  def withRecorderName(name: String): HttpRecorderConfig = {
+    this.copy(recorderName = name)
+  }
+  def withSessionName(sessionName: String): HttpRecorderConfig = {
+    this.copy(sessionName = sessionName)
+  }
+  def withExpirationTime(expirationTime: String): HttpRecorderConfig = {
+    this.copy(expirationTime = Some(expirationTime))
+  }
+  def noExpirationTime: HttpRecorderConfig = {
+    this.copy(expirationTime = None)
+  }
+  def withDbFileName(dbFileName: String): HttpRecorderConfig = {
+    this.copy(dbFileName = dbFileName)
+  }
+  def withRecordTableName(recordTableName: String): HttpRecorderConfig = {
+    this.copy(recordTableName = recordTableName)
+  }
+  def withPort(port: Int): HttpRecorderConfig = {
+    this.copy(port = Some(port))
+  }
+  def withRequestMatcher(requestMatcher: HttpRequestMatcher): HttpRecorderConfig = {
+    this.copy(requestMatcher = requestMatcher)
+  }
+  def withExcludeHeaderFilterForRecording(
+      excludeHeaderFilterForRecording: (String, String) => Boolean
+  ): HttpRecorderConfig = {
+    this.copy(excludeHeaderFilterForRecording = excludeHeaderFilterForRecording)
+  }
+  def withFallBackHandler(fallBackHandler: Service[Request, Response]): HttpRecorderConfig = {
+    this.copy(fallBackHandler = fallBackHandler)
+  }
 }
 
 /**
@@ -59,7 +90,9 @@ case class HttpRecorderConfig(
   */
 object HttpRecorder extends LogSupport {
 
-  def defaultHeaderFilterForRecording: (String, String) => Boolean = { (key: String, value: String) =>
+  def config: HttpRecorderConfig = HttpRecorderConfig()
+
+  def defaultExcludeHeaderFilterForRecording: (String, String) => Boolean = { (key: String, value: String) =>
     key.toLowerCase(Locale.ENGLISH).contains("authorization")
   }
 

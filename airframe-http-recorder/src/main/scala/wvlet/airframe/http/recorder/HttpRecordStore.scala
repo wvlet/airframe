@@ -102,17 +102,22 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   }
 
   private def cleanupExpiredRecords: Unit = {
-    val duration = TimeWindow.withUTC.parse(recorderConfig.expirationTime)
-    val diffSec  = duration.endUnixTime - duration.startUnixTime
+    recorderConfig.expirationTime match {
+      case None =>
+      // Do nothing
+      case Some(expire) =>
+        val duration = TimeWindow.withUTC.parse(expire)
+        val diffSec  = duration.endUnixTime - duration.startUnixTime
 
-    val deletedRows = connectionPool.executeUpdate(
-      s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}' and strftime('%s', 'now') - strftime('%s', createdAt) >= ${diffSec}"
-    )
+        val deletedRows = connectionPool.executeUpdate(
+          s"delete from ${recordTableName} where session = '${recorderConfig.sessionName}' and strftime('%s', 'now') - strftime('%s', createdAt) >= ${diffSec}"
+        )
 
-    if (deletedRows > 0) {
-      warn(
-        s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}"
-      )
+        if (deletedRows > 0) {
+          warn(
+            s"Deleted ${deletedRows} expired records from session:${recorderConfig.sessionName}, db:${recorderConfig.sqliteFilePath}"
+          )
+        }
     }
   }
 
@@ -157,7 +162,7 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
 
     val httpHeadersForRecording: Seq[(String, String)] =
       request.headerMap.toSeq.filterNot { x =>
-        recorderConfig.excludeHeaderForRecording(x._1, x._2)
+        recorderConfig.excludeHeaderFilterForRecording(x._1, x._2)
       }
     val entry = HttpRecord(
       recorderConfig.sessionName,

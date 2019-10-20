@@ -19,7 +19,6 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service, http}
 import com.twitter.util._
 import wvlet.airframe.codec.{MessageCodec, MessageCodecFactory}
-import wvlet.airframe.control.Retry
 import wvlet.airframe.control.Retry.RetryContext
 import wvlet.airframe.http.HttpClient.urlEncode
 import wvlet.airframe.http._
@@ -33,20 +32,53 @@ case class FinagleClientConfig(
     initClient: Http.Client => Http.Client = FinagleClient.defaultInitClient,
     requestFilter: http.Request => http.Request = identity,
     timeout: Duration = Duration(90, TimeUnit.SECONDS),
-    retry: RetryContext = FinagleClient.defaultRetry
+    retryContext: RetryContext = FinagleClient.defaultRetryContext
 ) {
   def withInitializer(initClient: Http.Client => Http.Client): FinagleClientConfig = {
     this.copy(initClient = initClient)
   }
   def withRetryContext(retryContext: RetryContext): FinagleClientConfig = {
-    this.copy(retry = retryContext)
+    this.copy(retryContext = retryContext)
   }
   def withTimeout(timeout: Duration): FinagleClientConfig = {
     this.copy(timeout = timeout)
   }
-
   def withRequestFilter(requestFilter: http.Request => http.Request): FinagleClientConfig = {
     this.copy(requestFilter = requestFilter)
+  }
+
+  def noRetry: FinagleClientConfig = {
+    this.copy(retryContext = retryContext.withMaxRetry(0))
+  }
+
+  def withMaxRetry(maxRetry: Int): FinagleClientConfig = {
+    this.copy(retryContext = retryContext.withMaxRetry(maxRetry))
+  }
+
+  def withBackOff(
+      initialIntervalMillis: Int = 100,
+      maxIntervalMillis: Int = 15000,
+      multiplier: Double = 1.5
+  ): FinagleClientConfig = {
+    withRetryContext(retryContext.withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier))
+  }
+
+  def withJitter(
+      initialIntervalMillis: Int = 100,
+      maxIntervalMillis: Int = 15000,
+      multiplier: Double = 1.5
+  ): FinagleClientConfig = {
+    withRetryContext(
+      retryContext.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
+    )
+  }
+
+  def newClient(hostAndPort: String): FinagleClient = {
+    FinagleClient.newClient(hostAndPort, this)
+  }
+
+  def newSyncClient(hostAndPort: String): FinagleSyncClient = {
+    FinagleClient.newSyncClient(hostAndPort, this)
   }
 }
 
@@ -55,7 +87,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     with LogSupport {
 
   private[this] val client = {
-    val retryFilter                = new FinagleRetryFilter(config.retry)
+    val retryFilter                = new FinagleRetryFilter(config.retryContext)
     var finagleClient: Http.Client = config.initClient(Http.client)
 
     address.scheme.map {
@@ -279,76 +311,18 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
   *
   */
 object FinagleClient extends LogSupport {
-
-  case class FinagleClientBuilder(config: FinagleClientConfig = defaultConfig) {
-    def withInitializer(initClient: Http.Client => Http.Client): FinagleClientBuilder = {
-      this.copy(config = config.withInitializer(initClient))
-    }
-    def withTimeout(timeout: Duration): FinagleClientBuilder = {
-      this.copy(config = config.withTimeout(timeout))
-    }
-
-    def noRetry: FinagleClientBuilder = {
-      this.copy(config = config.withRetryContext(config.retry.withMaxRetry(0)))
-    }
-
-    def withMaxRetry(maxRetry: Int): FinagleClientBuilder = {
-      withRetryContext(
-        config.retry.withMaxRetry(maxRetry)
-      )
-    }
-
-    def withBackOff(
-        initialIntervalMillis: Int = 100,
-        maxIntervalMillis: Int = 15000,
-        multiplier: Double = 1.5
-    ): FinagleClientBuilder = {
-      withRetryContext(
-        config.retry.withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
-      )
-    }
-
-    def withJitter(
-        initialIntervalMillis: Int = 100,
-        maxIntervalMillis: Int = 15000,
-        multiplier: Double = 1.5
-    ): FinagleClientBuilder = {
-      withRetryContext(
-        config.retry.withJitter(initialIntervalMillis, maxIntervalMillis, multiplier)
-      )
-    }
-
-    def withRetryContext(retryContext: RetryContext): FinagleClientBuilder = {
-      this.copy(config = config.withRetryContext(retryContext))
-    }
-
-    def newClient(hostAndPort: String): FinagleClient = {
-      FinagleClient.newClient(hostAndPort, config)
-    }
-
-    def newSyncClient(hostAndPort: String): FinagleSyncClient = {
-      FinagleClient.newSyncClient(hostAndPort, config)
-    }
-  }
-
-  def defaultConfig: FinagleClientConfig = FinagleClientConfig()
-
-  // Config for tests
-  def noRetryConfig: FinagleClientConfig = FinagleClientConfig(retry = Retry.withBackOff().withMaxRetry(0))
-
   def defaultInitClient: Http.Client => Http.Client = { x: Http.Client =>
     x.withSessionQualifier.noFailureAccrual
   }
-  def defaultRetry: RetryContext = {
+  def defaultRetryContext: RetryContext = {
     HttpClient.defaultHttpClientRetry[http.Request, http.Response]
   }
-
-  def newClient(hostAndPort: String, config: FinagleClientConfig = defaultConfig): FinagleClient = {
+  def newClient(hostAndPort: String, config: FinagleClientConfig = FinagleClientConfig()): FinagleClient = {
     new FinagleClient(address = ServerAddress(hostAndPort), config)
   }
   def newSyncClient(
       hostAndPort: String,
-      config: FinagleClientConfig = defaultConfig
+      config: FinagleClientConfig = FinagleClientConfig()
   ): FinagleSyncClient = {
     new FinagleClient(address = ServerAddress(hostAndPort), config).syncClient
   }

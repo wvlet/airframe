@@ -49,7 +49,7 @@ class HttpRecorderTest extends AirSpec {
 
   def `start HTTP recorder`: Unit = {
     val recorderConfig =
-      HttpRecorderConfig(name = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
+      HttpRecorderConfig(recorderName = "wvlet.org", destUri = "https://wvlet.org", sessionName = "airframe")
     val path = "/airframe/"
     val response: Response =
       withResource(HttpRecorder.createRecordOnlyServer(recorderConfig, dropExistingSession = true)) { server =>
@@ -148,13 +148,10 @@ class HttpRecorderTest extends AirSpec {
   }
 
   def `delete expired records`: Unit = {
-    val recorderConfig =
-      HttpRecorderConfig(
-        destUri = "https://wvlet.org",
-        sessionName = "airframe",
-        // Expire immediately
-        expirationTime = "1s"
-      )
+    val recorderConfig = HttpRecorder.config
+      .withDestUri("https://wvlet.org")
+      .withSessionName("airframe")
+      .withExpirationTime("1s")
 
     val path = "/airframe/"
     withResource(new HttpRecordStore(recorderConfig, dropSession = true)) { store =>
