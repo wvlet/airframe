@@ -11,16 +11,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
 
-trait CodecErrorCode
-case object INVALID_DATA      extends CodecErrorCode
-case object MISSING_PARAMETER extends CodecErrorCode
+package wvlet.airframe.codec;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
-  *
-  */
-class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
-    extends Exception(message) {
-  override def getMessage = s"[${errorCode.toString}] ${message} -- codec: ${codec}"
+ * Mark parameters as required
+ */
+@Retention(RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface required {
 }

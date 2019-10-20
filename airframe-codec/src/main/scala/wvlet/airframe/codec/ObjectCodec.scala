@@ -75,6 +75,20 @@ class ParamListCodec(
   }
 
   private def getParamDefaultValue(p: Parameter): Any = {
+
+    def returnZero: Unit = {
+      if (wvlet.airframe.codec.Compat.isRequired(p)) {
+        // If the parameter has @required annotation, we can't
+        throw new MessageCodecException(
+          MISSING_PARAMETER,
+          this,
+          s"Parameter ${name}.${p.name} is missing in the input"
+        )
+      } else {
+        Zero.zeroOf(p.surface)
+      }
+    }
+
     p match {
       case m: MethodParameter =>
         methodOwner
@@ -83,9 +97,9 @@ class ParamListCodec(
             m.getMethodArgDefaultValue(owner)
           }
           .orElse(p.getDefaultValue)
-          .getOrElse(Zero.zeroOf(p.surface))
+          .getOrElse(returnZero)
       case other =>
-        p.getDefaultValue.getOrElse(Zero.zeroOf(p.surface))
+        p.getDefaultValue.getOrElse(returnZero)
     }
   }
 

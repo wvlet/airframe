@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{Parameter, Surface}
 
 /**
   *
@@ -30,4 +30,6 @@ object Compat {
       case other => throw new UnsupportedOperationException(s"${other}")
     }
   }
+
+  def isRequired(p: Parameter): Boolean = false
 }

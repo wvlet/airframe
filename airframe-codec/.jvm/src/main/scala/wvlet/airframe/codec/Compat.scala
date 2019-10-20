@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.reflect.RuntimeMethodParameter
+import wvlet.airframe.surface.{Parameter, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -25,4 +26,13 @@ object Compat {
     JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 
   def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
+
+  def isRequired(m: Parameter): Boolean = {
+    m match {
+      case m: RuntimeMethodParameter =>
+        m.findAnnotationOf[required].isDefined
+      case _ =>
+        false
+    }
+  }
 }
