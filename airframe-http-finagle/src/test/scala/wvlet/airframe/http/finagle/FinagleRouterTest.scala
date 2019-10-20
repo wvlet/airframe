@@ -93,6 +93,9 @@ trait MyApi extends LogSupport {
     val stream = AsyncStream.fromSeq(Seq(r1, r2))
     Reader.concat(stream)
   }
+
+  @Endpoint(path = "/v1/delete", method = HttpMethod.DELETE)
+  def emptyResponse: Unit = {}
 }
 
 /**
@@ -235,7 +238,9 @@ class FinagleRouterTest extends AirSpec {
         request.contentType = "application/x-msgpack"
         val msgpack = MessagePack.newBufferPacker.packString("1.0").toByteArray
         request.content = ByteArray.Owned(msgpack)
-        Await.result(client.send(request).map(_.contentString)) shouldBe "1.0"
+        val response = Await.result(client.send(request))
+        response.contentString shouldBe "1.0"
+        response.statusCode shouldBe HttpStatus.Created_201.code
       }
 
     }
@@ -289,5 +294,9 @@ class FinagleRouterTest extends AirSpec {
       }
     }
 
+    def `return 204 for Unit response` = {
+      val result = Await.result(client.send(Request(Method.Delete, "/v1/delete")))
+      result.statusCode shouldBe HttpStatus.NoContent_204.code
+    }
   }
 }

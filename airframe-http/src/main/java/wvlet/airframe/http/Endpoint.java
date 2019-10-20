@@ -21,13 +21,18 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * An annotation used for defining airframe-http REST endpoints.
+ * <p>
+ * Scala doesn't support reading such annotation values at runtime, so
+ * we need to defined this as Java's annotation to support runtime reflections.
+ * </p>
+ */
 @Retention(RUNTIME)
 @Target({METHOD, TYPE})
-public @interface Endpoint
-{
+public @interface Endpoint {
     /**
      * Uri beginning from / (slash)
-     * @return
      */
     String path();
     HttpMethod method() default HttpMethod.GET;

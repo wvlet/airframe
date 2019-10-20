@@ -16,12 +16,12 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.atomic.AtomicBoolean
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http.{MediaType, Request, Response, Status}
+import com.twitter.finagle.http._
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{ResponseHandler, SimpleHttpResponse}
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.http.{HttpStatus, ResponseHandler, SimpleHttpResponse}
+import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
 
 /**
@@ -43,6 +43,20 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
     request.accept.contains(MediaType.OctetStream) || (
       request.contentType.isDefined && request.contentType.get.contains(MediaType.OctetStream)
     )
+  }
+
+  private def newResponse(request: Request, responseSurface: Surface): Response = {
+    val r = Response(request)
+    request.method match {
+      case Method.Post =>
+        r.statusCode = HttpStatus.Created_201.code
+      case _ =>
+        r.statusCode = HttpStatus.Ok_200.code
+    }
+    if (responseSurface == Primitive.Unit) {
+      r.statusCode = HttpStatus.NoContent_204.code
+    }
+    r
   }
 
   private def newStreamResponse(request: Request, reader: Reader[Buf]): Response = {
@@ -86,7 +100,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
             throw new IllegalArgumentException(s"Unknown Reader[X] type: ${responseSurface}")
         }
       case r: SimpleHttpResponse =>
-        val resp = Response(request)
+        val resp = newResponse(request, responseSurface)
         resp.statusCode = r.statusCode
         resp.contentString = r.contentString
         r.contentType.map { c =>
@@ -94,7 +108,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
         }
         resp
       case s: String =>
-        val r = Response()
+        val r = newResponse(request, responseSurface)
         r.contentString = s
         r
       case _ =>
@@ -111,7 +125,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
 
         // Return application/msgpack content type
         if (isMsgPackRequest(request)) {
-          val res = Response(Status.Ok)
+          val res = newResponse(request, responseSurface)
           res.contentType = xMsgPack
           res.content = ByteArray.Owned(msgpack)
           res
@@ -119,7 +133,7 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
           val json = JSONCodec.unpackMsgPack(msgpack)
           json match {
             case Some(j) =>
-              val res = Response(Status.Ok)
+              val res = newResponse(request, responseSurface)
               res.setContentTypeJson()
               res.setContentString(json.get)
               res
