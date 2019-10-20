@@ -47,13 +47,15 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
 
   private def newResponse(request: Request, responseSurface: Surface): Response = {
     val r = Response(request)
-    request.method match {
-      case Method.Post =>
-        r.statusCode = HttpStatus.Created_201.code
-      case Method.Delete if responseSurface == Primitive.Unit =>
-        r.statusCode = HttpStatus.NoContent_204.code
-      case _ =>
-        r.statusCode = HttpStatus.Ok_200.code
+    if (responseSurface == Primitive.Unit) {
+      request.method match {
+        case Method.Post | Method.Put =>
+          r.statusCode = HttpStatus.Created_201.code
+        case Method.Delete =>
+          r.statusCode = HttpStatus.NoContent_204.code
+        case _ =>
+          r.statusCode = HttpStatus.Ok_200.code
+      }
     }
     r
   }

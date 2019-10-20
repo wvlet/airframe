@@ -240,7 +240,7 @@ class FinagleRouterTest extends AirSpec {
         request.content = ByteArray.Owned(msgpack)
         val response = Await.result(client.send(request))
         response.contentString shouldBe "1.0"
-        response.statusCode shouldBe HttpStatus.Created_201.code
+        response.statusCode shouldBe HttpStatus.Ok_200.code
       }
 
     }
