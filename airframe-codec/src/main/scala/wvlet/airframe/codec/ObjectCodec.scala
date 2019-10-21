@@ -14,8 +14,8 @@
 package wvlet.airframe.codec
 
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker, ValueType}
-import wvlet.log.LogSupport
 import wvlet.airframe.surface._
+import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}
 
@@ -76,7 +76,7 @@ class ParamListCodec(
 
   private def getParamDefaultValue(p: Parameter): Any = {
 
-    def returnZero: Unit = {
+    def returnZero: Any = {
       if (wvlet.airframe.codec.Compat.isRequired(p)) {
         // If the parameter has @required annotation, we can't
         throw new MessageCodecException(

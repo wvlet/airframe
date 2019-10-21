@@ -27,8 +27,8 @@ object Compat {
 
   def codecOf[A: ru.TypeTag]: MessageCodec[A] = MessageCodecFactory.defaultFactory.of[A]
 
-  def isRequired(m: Parameter): Boolean = {
-    m match {
+  def isRequired(p: Parameter): Boolean = {
+    p match {
       case m: RuntimeMethodParameter =>
         m.findAnnotationOf[required].isDefined
       case _ =>

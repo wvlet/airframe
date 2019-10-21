@@ -17,12 +17,12 @@ import java.lang.reflect.InvocationTargetException
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.{Await, Future}
-import javax.annotation.{PostConstruct, PreDestroy}
+import javax.annotation.PostConstruct
 import wvlet.airframe._
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.{ControllerProvider, ResponseHandler, Router}
-import wvlet.log.{LogSupport, Logger}
+import wvlet.airframe.http.{ControllerProvider, HttpServerException, ResponseHandler, Router}
+import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
@@ -107,7 +107,15 @@ object FinagleServer extends LogSupport {
 
           val ex = getCause(e)
           logger.warn(ex)
-          Future.value(Response(Status.InternalServerError))
+          ex match {
+            case e: HttpServerException =>
+              val resp = Response(request)
+              resp.statusCode = e.status.code
+              resp.contentString = e.getMessage
+              Future.value(resp)
+            case _ =>
+              Future.value(Response(Status.InternalServerError))
+          }
       }
     }
   }
