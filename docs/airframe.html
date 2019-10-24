@@ -255,9 +255,18 @@ These singleton objects are managed inside the current session object.</p>
 <p>To create instances, you need to create a <code class="highlighter-rouge">Session</code> from you Design:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">session</span> <span class="k">=</span> <span class="nv">design</span><span class="o">.</span><span class="py">newSession</span>
-<span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
-<span class="c1">// do something with a
-</span></code></pre></div></div>
+<span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="o">{</span>
+  <span class="c1">// Do something with a
+</span><span class="o">}</span>
+</code></pre></div></div>
+
+<p>If you need a typed-return value, you can use <code class="highlighter-rouge">design.run[A, B](f: A=&gt;B)</code>:</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">ret</span><span class="k">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="nv">design</span><span class="o">.</span><span class="py">run</span> <span class="o">{</span> <span class="n">a</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=&gt;</span>
+  <span class="c1">// Do something with a and return a value
+</span>  <span class="mi">1</span>
+<span class="o">}</span>
+</code></pre></div></div>
+<p>This will build an instance of A from the design, and return the result.</p>
 
 <p>Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after <code class="highlighter-rouge">session.shutdown</code> is called:</p>
 
