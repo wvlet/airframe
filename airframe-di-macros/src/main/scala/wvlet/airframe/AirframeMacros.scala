@@ -474,6 +474,23 @@ private[wvlet] object AirframeMacros {
     e
   }
 
+  def runWithSession[A: c.WeakTypeTag, B: c.WeakTypeTag](c: sm.Context)(body: c.Expr[A => B]): c.Tree = {
+    import c.universe._
+    val a = implicitly[c.WeakTypeTag[A]].tpe
+    val b = implicitly[c.WeakTypeTag[B]].tpe
+    // Bind the code block to a local variable to resolve the issue #373
+    val e = q"""
+         {
+           val codeBlock = ${body}
+           (${c.prefix}).withSession { session =>
+              val a = session.build[${a}]
+              codeBlock(a)
+           }
+         }.asInstanceOf[${b}]
+     """
+    e
+  }
+
   def addLifeCycle[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
 

@@ -250,6 +250,11 @@ class Design private[airframe] (
   def build[A](body: A => Any): Any = macro AirframeMacros.buildWithSession[A]
 
   /**
+    * Execute a given code block by building A using this design, and return B
+    */
+  def run[A, B](body: A => B): B = macro AirframeMacros.runWithSession[A, B]
+
+  /**
     * Method for configuring the session in details
     */
   def newSessionBuilder: SessionBuilder = {

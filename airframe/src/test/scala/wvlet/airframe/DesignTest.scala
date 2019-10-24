@@ -164,4 +164,14 @@ class DesignTest extends AirSpec {
     d.designOptions.enabledLifeCycleLogging shouldBe Some(true)
     d.designOptions.stage shouldBe Some(Stage.DEVELOPMENT)
   }
+
+  def `support run`: Unit = {
+    val d = Design.newSilentDesign
+      .bind[String].toInstance("hello")
+    val ret = d.run { s: String =>
+      s shouldBe "hello"
+      100
+    }
+    ret shouldBe 100
+  }
 }
