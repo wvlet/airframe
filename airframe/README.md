@@ -267,9 +267,20 @@ To create instances, you need to create a `Session` from you Design:
 
 ```scala
 val session = design.newSession
-val a = session.build[A]
-// do something with a
+val a = session.build[A] {
+  // Do something with a
+}
 ```
+
+If you need a typed-return value, you can use `design.run[A, B](f: A=>B)`:
+```scala
+val ret: Int = design.run { a: A =>
+  // Do something with a and return a value
+  1
+}
+```
+This will build an instance of A from the design, and return the result.
+
 
 Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after `session.shutdown` is called:
 
