@@ -49,7 +49,16 @@ package object reflect {
           Try {
             if (mp.method.name == "<init>") {
               // constructor
-              mp.method.owner.getDeclaredConstructor(mp.method.paramTypes: _*).getParameterAnnotations
+              val owner = mp.method.owner
+              Try(owner.getDeclaredConstructor(mp.method.paramTypes: _*)).toOption
+                .map(_.getParameterAnnotations)
+                .getOrElse {
+                  // inner classes
+                  owner
+                    .getDeclaredConstructors()(0)
+                    .getParameterAnnotations()
+                    .tail
+                }
             } else {
               mp.method.owner.getDeclaredMethod(mp.method.name, mp.method.paramTypes: _*).getParameterAnnotations
             }

@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.reflect.RuntimeMethodParameter
+import wvlet.airframe.surface.{Parameter, Surface, required}
 
 import scala.reflect.runtime.{universe => ru}
 

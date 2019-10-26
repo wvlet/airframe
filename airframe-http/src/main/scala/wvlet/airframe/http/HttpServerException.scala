@@ -11,16 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
-
-trait CodecErrorCode
-case object INVALID_DATA      extends CodecErrorCode
-case object MISSING_PARAMETER extends CodecErrorCode
+package wvlet.airframe.http
 
 /**
-  *
+  * Exception to report errors to client
   */
-class MessageCodecException[A](val errorCode: CodecErrorCode, val codec: MessageCodec[A], val message: String)
-    extends Exception(message) {
-  override def getMessage = s"[${errorCode.toString}] ${message} -- codec: ${codec}"
+class HttpServerException(val request: HttpRequest[_], val status: HttpStatus, message: String, cause: Throwable)
+    extends Exception(message, cause) {
+  def this(request: HttpRequest[_], status: HttpStatus) = this(request, status, status.toString, null)
+  def this(request: HttpRequest[_], status: HttpStatus, message: String) = this(request, status, message, null)
 }

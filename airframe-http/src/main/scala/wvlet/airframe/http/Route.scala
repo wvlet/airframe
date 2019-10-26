@@ -12,6 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+
+import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.log.LogSupport
@@ -47,8 +49,14 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       request: Req,
       params: Map[String, String]
   ): Any = {
-    val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, params)
-    methodSurface.call(controller, methodArgs: _*)
+    try {
+      val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, params)
+      methodSurface.call(controller, methodArgs: _*)
+    } catch {
+      case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
+        val r = implicitly[HttpRequestAdapter[Req]].httpRequestOf(request)
+        throw new HttpServerException(r, HttpStatus.BadRequest_400, e.message, e)
+    }
   }
 
   private[http] def call[Req: HttpRequestAdapter](

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.surface.{Parameter, Surface}
 
 /**
   *

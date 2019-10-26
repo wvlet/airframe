@@ -16,6 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.ObjectCodecTest._
 import wvlet.airframe.msgpack.spi.MessageFormat.FIXMAP
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface.required
 
 /**
   *
@@ -98,6 +99,15 @@ class ObjectCodecTest extends CodecSpec {
     val a = codec.unpackMsgPack(msgpack)
     a shouldBe Some(a3)
   }
+
+  def `support @required annotation`: Unit = {
+    val codec = MessageCodec.of[B]
+    val ex = intercept[MessageCodecException[_]] {
+      codec.unpackJson("{}")
+    }
+    warn(ex.getMessage)
+    ex.errorCode shouldBe MISSING_PARAMETER
+  }
 }
 
 object ObjectCodecTest {
@@ -115,4 +125,6 @@ object ObjectCodecTest {
   case class A2(i: Int, l: Long = 2L, i2: Int)
 
   case class A3(opt: Option[String], str: String)
+
+  case class B(@required name: String)
 }
