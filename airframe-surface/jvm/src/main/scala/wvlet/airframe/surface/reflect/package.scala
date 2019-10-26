@@ -14,10 +14,7 @@
 
 package wvlet.airframe.surface
 
-import java.lang.annotation.Annotation
 import java.{lang => jl}
-
-import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
 import scala.util.Try
@@ -45,7 +42,7 @@ package object reflect {
     }
   }
 
-  implicit class ToRuntimeSurfaceParameter(p: Parameter) extends LogSupport {
+  implicit class ToRuntimeSurfaceParameter(p: Parameter) {
     def annotations: Array[Array[jl.annotation.Annotation]] = {
       p match {
         case mp: MethodParameter =>
