@@ -15,7 +15,9 @@ package wvlet.airframe.surface
 
 import wvlet.airspec.AirSpec
 
-case class ModelWithRequiredParam(@required id: String, name: String)
+case class ModelWithRequiredParam(@required id: String, name: String) {
+  def method(a: String, @required b: Int): Unit = {}
+}
 
 /**
   *
@@ -31,6 +33,15 @@ class RequiredParamTest extends AirSpec {
     p_id.isRequired shouldBe true
     p_name.isRequired shouldBe false
   }
+
+  def `find required method param annotation`: Unit = {
+    val ms = Surface.methodsOf[ModelWithRequiredParam]
+    val m  = ms.find(_.name == "method").get
+
+    m.args(0).isRequired shouldBe false
+    m.args(1).isRequired shouldBe true
+  }
+
   case class LocalA(@required id: String, name: String)
 
   def `find required annotation from local classes`: Unit = {
