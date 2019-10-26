@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-package wvlet.airframe.codec;
+package wvlet.airframe.surface;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

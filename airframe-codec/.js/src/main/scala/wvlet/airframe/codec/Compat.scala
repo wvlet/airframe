@@ -30,6 +30,4 @@ object Compat {
       case other => throw new UnsupportedOperationException(s"${other}")
     }
   }
-
-  def isRequired(p: Parameter): Boolean = false
 }

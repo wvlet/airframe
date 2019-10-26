@@ -14,7 +14,10 @@
 
 package wvlet.airframe.surface
 
+import java.lang.annotation.Annotation
 import java.{lang => jl}
+
+import wvlet.log.LogSupport
 
 import scala.reflect.ClassTag
 import scala.util.Try
@@ -42,14 +45,23 @@ package object reflect {
     }
   }
 
-  implicit class ToRuntimeSurfaceParameter(p: Parameter) {
+  implicit class ToRuntimeSurfaceParameter(p: Parameter) extends LogSupport {
     def annotations: Array[Array[jl.annotation.Annotation]] = {
       p match {
         case mp: MethodParameter =>
           Try {
             if (mp.method.name == "<init>") {
               // constructor
-              mp.method.owner.getDeclaredConstructor(mp.method.paramTypes: _*).getParameterAnnotations
+              val owner = mp.method.owner
+              Try(owner.getDeclaredConstructor(mp.method.paramTypes: _*)).toOption
+                .map(_.getParameterAnnotations)
+                .getOrElse {
+                  // inner classes
+                  owner
+                    .getDeclaredConstructors()(0)
+                    .getParameterAnnotations()
+                    .tail
+                }
             } else {
               mp.method.owner.getDeclaredMethod(mp.method.name, mp.method.paramTypes: _*).getParameterAnnotations
             }

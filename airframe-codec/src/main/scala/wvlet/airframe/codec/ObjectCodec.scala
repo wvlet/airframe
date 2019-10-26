@@ -77,7 +77,7 @@ class ParamListCodec(
   private def getParamDefaultValue(p: Parameter): Any = {
 
     def returnZero: Any = {
-      if (wvlet.airframe.codec.Compat.isRequired(p)) {
+      if (p.isRequired) {
         // If the parameter has @required annotation, we can't
         throw new MessageCodecException(
           MISSING_PARAMETER,

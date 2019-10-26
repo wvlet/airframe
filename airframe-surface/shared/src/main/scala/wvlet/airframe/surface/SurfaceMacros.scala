@@ -433,6 +433,7 @@ private[surface] object SurfaceMacros {
             method = ${ref},
             index = ${index},
             name=${arg.name},
+            isRequired = false,
             surface = ${arg.typeSurface},
             defaultValue = ${defaultValue},
             accessor = ${accessor}

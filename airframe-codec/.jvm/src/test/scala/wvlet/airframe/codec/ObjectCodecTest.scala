@@ -16,6 +16,7 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.ObjectCodecTest._
 import wvlet.airframe.msgpack.spi.MessageFormat.FIXMAP
 import wvlet.airframe.msgpack.spi.MessagePack
+import wvlet.airframe.surface.required
 
 /**
   *

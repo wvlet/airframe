@@ -15,7 +15,7 @@ package wvlet.airframe.surface.reflect
 
 import java.{lang => jl}
 
-import wvlet.airframe.surface.{MethodParameter, MethodRef, Surface}
+import wvlet.airframe.surface.{MethodParameter, MethodRef, Surface, required}
 import wvlet.log.LogSupport
 
 /**
@@ -73,5 +73,10 @@ case class RuntimeMethodParameter(
       case e: Throwable =>
         None
     }
+  }
+
+  override def isRequired: Boolean = {
+    val annots = this.findAnnotationOf[required]
+    annots.isDefined
   }
 }

@@ -22,6 +22,7 @@ case class StdMethodParameter(
     method: MethodRef,
     index: Int,
     name: String,
+    isRequired: Boolean,
     surface: Surface,
     private val defaultValue: Option[Any] = None,
     accessor: Option[Any => Any] = None

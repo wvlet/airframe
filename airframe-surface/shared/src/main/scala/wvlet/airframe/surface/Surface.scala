@@ -55,6 +55,11 @@ trait Parameter extends ParameterBase {
   def surface: Surface
 
   /**
+    * Returns true if this parameter has @required annotation
+    */
+  def isRequired: Boolean
+
+  /**
     * Get this parameter value from a given object x
     */
   def get(x: Any): Any
