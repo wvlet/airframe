@@ -31,7 +31,6 @@ class RequiredParamTest extends AirSpec {
     p_id.isRequired shouldBe true
     p_name.isRequired shouldBe false
   }
-
   case class LocalA(@required id: String, name: String)
 
   def `find required annotation from local classes`: Unit = {
@@ -39,5 +38,4 @@ class RequiredParamTest extends AirSpec {
     val p_id = s.params.find(_.name == "id").get
     p_id.isRequired shouldBe true
   }
-
 }

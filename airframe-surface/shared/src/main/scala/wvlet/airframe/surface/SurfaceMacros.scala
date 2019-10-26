@@ -295,7 +295,7 @@ private[surface] object SurfaceMacros {
       !t.typeSymbol.isStatic && t.toString.contains("#")
     }
 
-    case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree]) {
+    case class MethodArg(paramName: Symbol, tpe: c.Type, defaultValue: Option[c.Tree], isRequired: Boolean) {
       def name: Literal         = Literal(Constant(paramName.name.decodedName.toString))
       private def paramNameTerm = TermName(paramName.name.decodedName.toString)
       def typeSurface: c.Tree   = surfaceOf(tpe)
@@ -376,8 +376,11 @@ private[surface] object SurfaceMacros {
                 q"${method}"
               }
             }
+
+          val isRequired = p.annotations.exists(_.tree.tpe == typeOf[required])
+
           index += 1
-          MethodArg(p, t, defaultValue)
+          MethodArg(p, t, defaultValue, isRequired = isRequired)
         }
       }
       ret
@@ -433,7 +436,7 @@ private[surface] object SurfaceMacros {
             method = ${ref},
             index = ${index},
             name=${arg.name},
-            isRequired = false,
+            isRequired = ${arg.isRequired},
             surface = ${arg.typeSurface},
             defaultValue = ${defaultValue},
             accessor = ${accessor}
