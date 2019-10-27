@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.http.HttpFilter.HttpFilterFactory
 import wvlet.airframe.http.Router.RouteFilter
+import wvlet.log.LogSupport
 
 object HttpRequestDispatcher {
 
@@ -55,7 +56,6 @@ object HttpRequestDispatcher {
       controllerProvider: ControllerProvider
   ): Map[Route, RouteFilter[Req, Resp, F]] = {
 
-    // TODO Extract this logic into airframe-http
     val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
       router.filterSurface
         .map(fs => controllerProvider.findController(fs))
@@ -73,7 +73,7 @@ object HttpRequestDispatcher {
     for (route <- router.localRoutes) {
       val controller =
         route.getControllerSurface
-          .map { controllerSurface =>
+          .flatMap { controllerSurface =>
             val controller = controllerProvider.findController(controllerSurface)
             if (controller.isEmpty) {
               throw new IllegalStateException(s"Missing controller. Add ${controllerSurface} to the design")
@@ -92,22 +92,27 @@ object HttpRequestDispatcher {
     *  Call a controller method by mapping the request parameters to the method arguments.
     *  This will be the last context after applying preceding filters
     */
-  class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
+  private class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
       httpFilterFactory: HttpFilterFactory[Req, Resp, F],
       routeMatch: RouteMatch,
-      controller: Any,
+      controller: Option[Any],
       responseHandler: ResponseHandler[Req, Resp])
-      extends HttpContext[Req, Resp, F] {
+      extends HttpContext[Req, Resp, F]
+      with LogSupport {
 
     override def apply(request: Req): F[Resp] = {
       val route = routeMatch.route
-      // Call the method in this controller
-      val result = try {
-        route.call(controller, request, routeMatch.params)
-      } catch {
-        case e: InvocationTargetException =>
-          // Return the exception from the target method
-          throw e.getTargetException
+      val result = {
+        // Call the method in this controller
+        try {
+          info(controller)
+          info(routeMatch)
+          route.call(controller, request, routeMatch.params)
+        } catch {
+          case e: InvocationTargetException =>
+            // Return the exception from the target method
+            throw e.getTargetException
+        }
       }
 
       route.returnTypeSurface.rawType match {

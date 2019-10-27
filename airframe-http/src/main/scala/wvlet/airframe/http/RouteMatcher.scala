@@ -17,7 +17,7 @@ import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
   def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
-    route.callOpt(controllerProvider, request, params)
+    route.callWithProvider(controllerProvider, request, params)
   }
 }
 

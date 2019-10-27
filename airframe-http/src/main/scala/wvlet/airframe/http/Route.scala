@@ -36,12 +36,12 @@ trait Route {
     * Find a corresponding controller and call the matching methods
     */
   def call[Req: HttpRequestAdapter](
-      controller: Any,
+      controller: Option[Any],
       request: Req,
       params: Map[String, String]
   ): Any
 
-  private[http] def callOpt[Req: HttpRequestAdapter](
+  private[http] def callWithProvider[Req: HttpRequestAdapter](
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String]
@@ -73,11 +73,12 @@ case class ControllerRoute(controllerSurface: Surface,
     * Find a corresponding controller and call the matching methods
     */
   override def call[Req: HttpRequestAdapter](
-      controller: Any,
+      controllerOpt: Option[Any],
       request: Req,
       params: Map[String, String]
   ): Any = {
     try {
+      val controller = controllerOpt.getOrElse(new IllegalStateException(s"no controller for ${path}"))
       val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, params)
       methodSurface.call(controller, methodArgs: _*)
     } catch {
@@ -87,13 +88,13 @@ case class ControllerRoute(controllerSurface: Surface,
     }
   }
 
-  override private[http] def callOpt[Req: HttpRequestAdapter](
+  override private[http] def callWithProvider[Req: HttpRequestAdapter](
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String]
   ): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
-      call(controller, request, params)
+      call(Some(controller), request, params)
     }
   }
 }
@@ -110,9 +111,10 @@ case class FunctionRoute0[R](method: HttpMethod, path: String, f: LazyF0[R]) ext
   /**
     * Find a corresponding controller and call the matching methods
     */
-  override def call[Req: HttpRequestAdapter](controller: Any, request: Req, params: Map[String, String]): Any = ???
-  override private[http] def callOpt[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
-                                                              request: Req,
-                                                              params: Map[String, String]): Option[Any] = ???
-  override def returnTypeSurface: Surface                                                               = ???
+  override def call[Req: HttpRequestAdapter](controller: Option[Any], request: Req, params: Map[String, String]): Any =
+    ???
+  override private[http] def callWithProvider[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
+                                                                       request: Req,
+                                                                       params: Map[String, String]): Option[Any] = ???
+  override def returnTypeSurface: Surface                                                                        = ???
 }
