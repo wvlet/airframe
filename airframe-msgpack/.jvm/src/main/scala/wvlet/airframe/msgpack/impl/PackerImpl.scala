@@ -138,7 +138,7 @@ object PackerImpl {
     val buf    = ByteArrayBuffer.newBuffer(15)
     val cursor = WriteCursor(buf, 0)
     OffsetPacker.packTimestampEpochSecond(cursor, epochSecond, nanoAdjustment)
-    val extData = buf.readBytes(0, cursor.totalWrittenBytes)
+    val extData = buf.readBytes(0, cursor.lastWrittenBytes)
     extData
   }
 

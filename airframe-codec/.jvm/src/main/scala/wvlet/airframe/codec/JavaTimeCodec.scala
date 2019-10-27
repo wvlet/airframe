@@ -40,8 +40,8 @@ object JavaTimeCodec {
       val buf    = ByteArrayBuffer.newBuffer(15)
       val cursor = WriteCursor(buf, 0)
       OffsetPacker.packTimestamp(cursor, v)
-      val extData = buf.readBytes(0, cursor.totalWrittenBytes)
-      p.writePayload(extData, 0, cursor.totalWrittenBytes)
+      val extData = buf.readBytes(0, cursor.lastWrittenBytes)
+      p.writePayload(extData, 0, cursor.lastWrittenBytes)
     }
 
     override def unpack(u: Unpacker, v: MessageHolder): Unit = {

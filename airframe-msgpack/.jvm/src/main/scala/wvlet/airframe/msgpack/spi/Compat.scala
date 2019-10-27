@@ -27,8 +27,8 @@ object Compat {
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToRawLongBits(v)
 
   def newBufferPacker: BufferPacker = {
-    new PureScalaBufferPacker
     //new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
+    new PureScalaBufferPacker
   }
 
   def newPacker(out: OutputStream): Packer = {

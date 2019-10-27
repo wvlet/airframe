@@ -21,10 +21,17 @@ package wvlet.airframe.msgpack.spi
 case class ReadCursor(var buf: ReadBuffer, var position: Int) {
   private var offset: Int = 0
 
-  def lastReadByteLength: Int = offset
+  def lastReadLength: Int = offset
 
-  def resetCursor: Unit = {
+  def reverseCursor: Unit = {
+    offset -= 1
+  }
+
+  def proceedCursor: Int = {
+    val diff = offset
+    this.position += diff
     offset = 0
+    diff
   }
 
   def skipBytes(n: Int): Unit = {
