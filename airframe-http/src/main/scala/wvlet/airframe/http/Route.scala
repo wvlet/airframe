@@ -51,11 +51,12 @@ trait Route {
 /**
   * Define mappings from an HTTP request to a controller method which has the Endpoint annotation
   */
-case class ControllerRoute(controllerSurface: Surface,
-                           method: HttpMethod,
-                           path: String,
-                           methodSurface: ReflectMethodSurface)
-    extends Route
+case class ControllerRoute(
+    controllerSurface: Surface,
+    method: HttpMethod,
+    path: String,
+    methodSurface: ReflectMethodSurface
+) extends Route
     with LogSupport {
   require(
     path.startsWith("/"),
@@ -113,8 +114,10 @@ case class FunctionRoute0[R](method: HttpMethod, path: String, f: LazyF0[R]) ext
     */
   override def call[Req: HttpRequestAdapter](controller: Option[Any], request: Req, params: Map[String, String]): Any =
     ???
-  override private[http] def callWithProvider[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
-                                                                       request: Req,
-                                                                       params: Map[String, String]): Option[Any] = ???
-  override def returnTypeSurface: Surface                                                                        = ???
+  override private[http] def callWithProvider[Req: HttpRequestAdapter](
+      controllerProvider: ControllerProvider,
+      request: Req,
+      params: Map[String, String]
+  ): Option[Any]                          = ???
+  override def returnTypeSurface: Surface = ???
 }

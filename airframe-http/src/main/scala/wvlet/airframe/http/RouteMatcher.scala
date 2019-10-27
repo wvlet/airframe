@@ -65,7 +65,7 @@ object RouteMatcher extends LogSupport {
             throw new IllegalArgumentException(
               s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
             )
-        }
+          }
       )
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {

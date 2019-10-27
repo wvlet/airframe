@@ -24,7 +24,8 @@ object HttpRequestDispatcher {
       router: Router,
       controllerProvider: ControllerProvider,
       backend: HttpBackend[Req, Resp, F],
-      responseHandler: ResponseHandler[Req, Resp]): HttpFilter[Req, Resp, F] = {
+      responseHandler: ResponseHandler[Req, Resp]
+  ): HttpFilter[Req, Resp, F] = {
 
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
@@ -95,8 +96,8 @@ object HttpRequestDispatcher {
       backend: HttpBackend[Req, Resp, F],
       routeMatch: RouteMatch,
       controller: Option[Any],
-      responseHandler: ResponseHandler[Req, Resp])
-      extends HttpContext[Req, Resp, F]
+      responseHandler: ResponseHandler[Req, Resp]
+  ) extends HttpContext[Req, Resp, F]
       with LogSupport {
 
     override def apply(request: Req): F[Resp] = {
