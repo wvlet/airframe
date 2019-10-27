@@ -13,12 +13,14 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.LazyF0
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.log.LogSupport
 
+/**
+  * A mapping from an HTTP endpoint to a corresponding method (or function)
+  */
 trait Route {
   def method: HttpMethod
   def path: String
@@ -29,14 +31,14 @@ trait Route {
       .toIndexedSeq
   }
 
-  def getControllerSurface: Option[Surface] = None
+  def controllerSurface: Surface
   def returnTypeSurface: Surface
 
   /**
     * Find a corresponding controller and call the matching methods
     */
   def call[Req: HttpRequestAdapter](
-      controller: Option[Any],
+      controller: Any,
       request: Req,
       params: Map[String, String]
   ): Any
@@ -67,19 +69,17 @@ case class ControllerRoute(
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
       .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
 
-  override def getControllerSurface: Option[Surface] = Some(controllerSurface)
-  override def returnTypeSurface: Surface            = methodSurface.returnType
+  override def returnTypeSurface: Surface = methodSurface.returnType
 
   /**
     * Find a corresponding controller and call the matching methods
     */
   override def call[Req: HttpRequestAdapter](
-      controllerOpt: Option[Any],
+      controller: Any,
       request: Req,
       params: Map[String, String]
   ): Any = {
     try {
-      val controller = controllerOpt.getOrElse(new IllegalStateException(s"no controller for ${path}"))
       val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, params)
       methodSurface.call(controller, methodArgs: _*)
     } catch {
@@ -95,29 +95,7 @@ case class ControllerRoute(
       params: Map[String, String]
   ): Option[Any] = {
     controllerProvider.findController(controllerSurface).map { controller =>
-      call(Some(controller), request, params)
+      call(controller, request, params)
     }
   }
-}
-
-/**
-  * An endpoint defined by Function0
-  * @param method
-  * @param path
-  * @param f
-  * @tparam R
-  */
-case class FunctionRoute0[R](method: HttpMethod, path: String, f: LazyF0[R]) extends Route {
-
-  /**
-    * Find a corresponding controller and call the matching methods
-    */
-  override def call[Req: HttpRequestAdapter](controller: Option[Any], request: Req, params: Map[String, String]): Any =
-    ???
-  override private[http] def callWithProvider[Req: HttpRequestAdapter](
-      controllerProvider: ControllerProvider,
-      request: Req,
-      params: Map[String, String]
-  ): Option[Any]                          = ???
-  override def returnTypeSurface: Surface = ???
 }

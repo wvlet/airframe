@@ -13,14 +13,11 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.LazyF0
-import wvlet.airframe.http.HttpFilter.HttpFilterFactory
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros
-import scala.reflect.runtime.{universe => ru}
 
 /**
   * Router defines mappings from HTTP requests to Routes.
@@ -81,15 +78,6 @@ case class Router(
     * Add methods annotated with @Endpoint to the routing table
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
-
-  def addRoute[R](method: HttpMethod, path: String)(body: => R): Router = {
-    val r = new Router(surface, children, localRoutes = Seq(FunctionRoute0(method, path, LazyF0(body))))
-    if (this.isEmpty) {
-      r
-    } else {
-      Router.merge(List(this, r))
-    }
-  }
 
   def andThen(next: Router): Router = {
     this.children.size match {
@@ -187,6 +175,6 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Option[Any])
+  case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
 
 }

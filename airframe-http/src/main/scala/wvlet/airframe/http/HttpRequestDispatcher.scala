@@ -18,6 +18,8 @@ import java.lang.reflect.InvocationTargetException
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.log.LogSupport
 
+import scala.language.higherKinds
+
 object HttpRequestDispatcher {
 
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
@@ -71,16 +73,11 @@ object HttpRequestDispatcher {
 
     val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
     for (route <- router.localRoutes) {
-      val controller =
-        route.getControllerSurface
-          .flatMap { controllerSurface =>
-            val controller = controllerProvider.findController(controllerSurface)
-            if (controller.isEmpty) {
-              throw new IllegalStateException(s"Missing controller. Add ${controllerSurface} to the design")
-            }
-            controller
-          }
-      m += (route -> RouteFilter(currentFilter, controller))
+      val controllerOpt = controllerProvider.findController(route.controllerSurface)
+      if (controllerOpt.isEmpty) {
+        throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
+      }
+      m += (route -> RouteFilter(currentFilter, controllerOpt.get))
     }
     for (c <- router.children) {
       m ++= buildRouteFilters(c, currentFilter, controllerProvider)
@@ -95,7 +92,7 @@ object HttpRequestDispatcher {
   private class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
       backend: HttpBackend[Req, Resp, F],
       routeMatch: RouteMatch,
-      controller: Option[Any],
+      controller: Any,
       responseHandler: ResponseHandler[Req, Resp]
   ) extends HttpContext[Req, Resp, F]
       with LogSupport {
