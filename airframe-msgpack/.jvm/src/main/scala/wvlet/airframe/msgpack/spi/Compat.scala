@@ -15,7 +15,7 @@ package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
 import org.msgpack.{core => mj}
-import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, UnpackerImpl}
+import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, PureScalaBufferPacker, UnpackerImpl}
 
 /**
   * For compatibility with Scala, Scala.js
@@ -27,7 +27,8 @@ object Compat {
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToRawLongBits(v)
 
   def newBufferPacker: BufferPacker = {
-    new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
+    new PureScalaBufferPacker
+    //new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
   }
 
   def newPacker(out: OutputStream): Packer = {

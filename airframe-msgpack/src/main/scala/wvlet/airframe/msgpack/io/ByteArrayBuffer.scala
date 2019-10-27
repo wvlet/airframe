@@ -23,7 +23,7 @@ object ByteArrayBuffer {
 
   def fromArray(a: Array[Byte], offset: Int, size: Int): ByteArrayBuffer = {
     require(offset + size <= a.length, s"input array is smaller than offset:${offset} + size:${size}: ${a.length}")
-    ByteArrayBuffer(a, offset, size)
+    new ByteArrayBuffer(a, offset, size)
   }
 
   val emptyReadBuffer  = ByteArrayBuffer(Array.emptyByteArray)
@@ -33,23 +33,59 @@ object ByteArrayBuffer {
 /**
   *
   */
-case class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ReadBuffer with WriteBuffer {
+class ByteArrayBuffer(a: Array[Byte], offset: Int, size: Int) extends ByteArrayBufferBase(a, offset, size)
+
+class InfiniteByteArrayBuffer extends ByteArrayBufferBase(new Array[Byte](10), 0, 10) {
+  override def ensureCapacity(position: Int, requestedLength: Int): Unit = {
+    if (!hasCapacity(position, requestedLength)) {
+      var newLength = a.length
+      while (newLength < position + requestedLength) {
+        newLength *= 2
+      }
+      val newArray = new Array[Byte](newLength)
+      Array.copy(a, 0, newArray, 0, position)
+      a = newArray
+      capacity = newLength
+    }
+  }
+}
+
+abstract class ByteArrayBufferBase(protected[this] var a: Array[Byte], offset: Int, protected var capacity: Int)
+    extends ReadBuffer
+    with WriteBuffer {
   require(offset >= 0, s"baseOffset ${offset} < 0")
   require(
-    offset + size <= a.length,
-    s"insufficient buffer size baseOffset:${offset} + size:${size} <= array size:${a.length}"
+    offset + capacity <= a.length,
+    s"insufficient buffer size. baseOffset:${offset} + capacity:${capacity} <= array size:${a.length}"
   )
+
+  def size: Int = capacity
+
+  def toByteArray(position: Int, arraySize: Int): Array[Byte] = {
+    require(arraySize >= 0)
+    require(
+      position + arraySize <= capacity,
+      s"Insufficient array length (${a.length}, offset:${offset}, size:${capacity}) for slice(${position}, ${arraySize})"
+    )
+    if (a.length == offset + position + arraySize) {
+      a
+    } else {
+      val newArray = new Array[Byte](arraySize)
+      Array.copy(a, offset + position, newArray, 0, arraySize)
+      newArray
+    }
+  }
 
   override def slice(position: Int, newSize: Int): ReadBuffer = {
     require(
-      position + newSize <= size,
+      position + newSize <= capacity,
       s"Insufficient array length (${a.length}, offset:${offset}, size:${size}) for slice(${position}, ${newSize})"
     )
-    ByteArrayBuffer(a, offset + position, newSize)
+    new ByteArrayBuffer(a, offset + position, newSize)
   }
 
   def hasCapacity(position: Int, byteLength: Int): Boolean = {
-    position + byteLength <= size
+    position + byteLength <= capacity
   }
 
   def ensureCapacity(position: Int, requestedLength: Int): Unit = {

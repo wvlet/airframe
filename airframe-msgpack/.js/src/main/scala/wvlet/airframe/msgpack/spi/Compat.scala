@@ -14,6 +14,8 @@
 package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
+import wvlet.airframe.msgpack.impl.PureScalaBufferPacker
+
 /**
   * Compatibility layer for Scala.js
   */
@@ -25,7 +27,9 @@ object Compat {
   def floatToIntBits(v: Float): Int     = java.lang.Float.floatToIntBits(v)
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToLongBits(v)
 
-  def newBufferPacker: BufferPacker                                      = ???
+  def newBufferPacker: BufferPacker = {
+    new PureScalaBufferPacker
+  }
   def newPacker(out: OutputStream): Packer                               = ???
   def newUnpacker(in: InputStream): Unpacker                             = ???
   def newUnpacker(msgpack: Array[Byte]): Unpacker                        = ???

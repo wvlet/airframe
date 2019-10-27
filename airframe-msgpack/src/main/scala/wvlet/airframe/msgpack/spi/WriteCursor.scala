@@ -23,7 +23,7 @@ case class WriteCursor(var buf: WriteBuffer, var position: Int) {
     offset = newOffset
   }
 
-  def lastWrittenBytes: Int = offset
+  def totalWrittenBytes: Int = offset
 
   def ensureCapacity(size: Int): Unit = {
     buf.ensureCapacity(position + offset, size)
