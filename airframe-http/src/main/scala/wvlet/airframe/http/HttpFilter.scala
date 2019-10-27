@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import java.lang.reflect.InvocationTargetException
+
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
@@ -47,9 +49,89 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
   def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F]
 }
 
+object HttpFilter {
+
+  /**
+    * A base class for generating filters for Finagle or other HTTP server backend
+    * @tparam Req
+    * @tparam Resp
+    * @tparam F
+    */
+  abstract class HttpFilterFactory[Req, Resp, F[_]] { factory =>
+    type Filter  = HttpFilter[Req, Resp, F]
+    type Context = HttpContext[Req, Resp, F]
+
+    protected def rescue(body: => F[Resp]): F[Resp] = {
+      try {
+        body
+      } catch {
+        case NonFatal(e) => wrapException(e)
+      }
+    }
+    protected def wrapException(e: Throwable): F[Resp]
+
+    def toFuture[A](a: A): F[A]
+    def isFutureType(x: Class[_]): Boolean
+    def isRawResponseType(x: Class[_]): Boolean
+    def mapF[A, B](f: F[A], body: A => B): F[B]
+
+    def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
+
+    abstract class HttpFilterBase extends Filter {
+      override protected def wrapException(e: Throwable): F[Resp] = factory.wrapException(e)
+      override def andThen(nextFilter: Filter): Filter = {
+        AndThen(this, nextFilter)
+      }
+      override def andThen(context: Context): Context = {
+        AndThenHttpContext(this, context)
+      }
+    }
+
+    case object Identity extends HttpFilterBase {
+      override def apply(request: Req, context: Context): F[Resp] = {
+        this.rescue(context(request))
+      }
+      override def andThen(nextFilter: Filter): Filter = {
+        new WrappedFilter(nextFilter)
+      }
+    }
+
+    class WrappedFilter(filter: Filter) extends HttpFilterBase {
+      override def apply(request: Req, context: Context): F[Resp] = {
+        this.rescue(filter.apply(request, context))
+      }
+    }
+
+    case class AndThen(prev: Filter, next: Filter) extends HttpFilterBase {
+      override def apply(request: Req, context: Context): F[Resp] = {
+        rescue(prev.apply(request, next.andThen(context)))
+      }
+    }
+
+    case class AndThenHttpContext(filter: Filter, context: Context) extends Context {
+      override def apply(request: Req): F[Resp] = {
+        rescue {
+          filter.apply(request, new WrappedHttpContext(context))
+        }
+      }
+    }
+
+    private class WrappedHttpContext(context: Context) extends Context {
+      override def apply(request: Req): F[Resp] = {
+        rescue {
+          context.apply(request)
+        }
+      }
+    }
+  }
+
+}
+
 /***
   * Used for passing the subsequent actions to HttpFilter
   */
 trait HttpContext[Req, Resp, F[_]] {
   def apply(request: Req): F[Resp]
 }
+
+object HttpContext {}

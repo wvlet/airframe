@@ -15,77 +15,40 @@ package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.http.{HttpContext, HttpFilter}
-import wvlet.log.LogSupport
-
-import scala.util.control.NonFatal
+import wvlet.airframe.http.HttpContext
+import wvlet.airframe.http.HttpFilter.HttpFilterFactory
+import wvlet.airframe.http.finagle.FinagleFilter.FinagleFilterFactory
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation
   */
-abstract class FinagleFilter extends HttpFilter[Request, Response, Future] {
-  override def wrapException(e: Throwable): Future[Response] = {
-    Future.exception(e)
-  }
-
-  override def andThen(nextFilter: HttpFilter[Request, Response, Future]): FinagleFilter = {
-    FinagleFilter.AndThen(this, nextFilter)
-  }
-
-  override def andThen(context: HttpContext[Request, Response, Future]): HttpContext[Request, Response, Future] = {
-    FinagleFilter.AndThenHttpContext(this, context)
-  }
-}
+abstract class FinagleFilter extends FinagleFilterFactory.HttpFilterBase
 
 object FinagleFilter {
 
-  case object Identity extends FinagleFilter {
-    override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-      rescue(context(request))
+  object FinagleFilterFactory extends HttpFilterFactory[Request, Response, Future] {
+    override protected def wrapException(e: Throwable): Future[Response] = {
+      Future.exception(e)
     }
-    override def andThen(nextFilter: HttpFilter[Request, Response, Future]): FinagleFilter = {
-      WrappedFilter(nextFilter)
+    override def toFuture[A](a: A): Future[A] = Future.value(a)
+    override def isFutureType(cl: Class[_]): Boolean = {
+      classOf[Future[_]].isAssignableFrom(cl)
     }
-  }
-
-  private case class WrappedFilter(filter: HttpFilter[Request, Response, Future]) extends FinagleFilter {
-    def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-      rescue(filter.apply(request, context))
+    override def isRawResponseType(cl: Class[_]): Boolean = {
+      classOf[Response].isAssignableFrom(cl)
     }
-  }
-
-  private case class AndThen(prev: FinagleFilter, next: HttpFilter[Request, Response, Future])
-      extends FinagleFilter
-      with LogSupport {
-    override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-      rescue(prev.apply(request, next.andThen(context)))
+    override def mapF[A, B](f: Future[A], body: A => B): Future[B] = {
+      f.map(body)
     }
-  }
-
-  private def rescue(body: => Future[Response]): Future[Response] = {
-    try {
-      body
-    } catch {
-      case NonFatal(e) => Future.exception(e)
-    }
-  }
-
-  private case class AndThenHttpContext(filter: FinagleFilter, context: HttpContext[Request, Response, Future])
-      extends HttpContext[Request, Response, Future] {
-    override def apply(request: Request): Future[Response] = {
-      rescue {
-        filter.apply(request, new WrappedHttpContext(context))
+    override def newFilter(
+        body: (Request, HttpContext[Request, Response, Future]) => Future[Response]): FinagleFilterFactory.Filter = {
+      new HttpFilterBase {
+        override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+          body(request, context)
+        }
       }
     }
   }
 
-  private class WrappedHttpContext(context: HttpContext[Request, Response, Future])
-      extends HttpContext[Request, Response, Future] {
-    override def apply(request: Request): Future[Response] = {
-      rescue {
-        context.apply(request)
-      }
-    }
-  }
-
+  val Identity = FinagleFilterFactory.Identity
 }

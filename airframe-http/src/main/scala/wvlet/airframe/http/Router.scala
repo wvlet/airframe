@@ -13,11 +13,14 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.LazyF0
+import wvlet.airframe.http.HttpFilter.HttpFilterFactory
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros
+import scala.reflect.runtime.{universe => ru}
 
 /**
   * Router defines mappings from HTTP requests to Routes.
@@ -79,6 +82,15 @@ case class Router(
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
+  def addRoute[R](method: HttpMethod, path: String)(body: => R): Router = {
+    val r = new Router(surface, children, localRoutes = Seq(FunctionRoute0(method, path, LazyF0(body))))
+    if (this.isEmpty) {
+      r
+    } else {
+      Router.merge(List(this, r))
+    }
+  }
+
   def andThen(next: Router): Router = {
     this.children.size match {
       case 0 =>
@@ -126,7 +138,7 @@ case class Router(
         .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
-            Route(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+            ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
@@ -175,7 +187,6 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  @deprecated(message = "Use Router.add or Router.of instead", since = "19.8.0")
-  def filter[Filter <: HttpFilterType]: Router = macro RouterMacros.of[Filter]
+  case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Option[Any])
 
 }

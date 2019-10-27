@@ -13,16 +13,50 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.LazyF0
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.log.LogSupport
 
+trait Route {
+  def method: HttpMethod
+  def path: String
+  val pathComponents: IndexedSeq[String] = {
+    path
+      .substring(1)
+      .split("/")
+      .toIndexedSeq
+  }
+
+  def getControllerSurface: Option[Surface] = None
+  def returnTypeSurface: Surface
+
+  /**
+    * Find a corresponding controller and call the matching methods
+    */
+  def call[Req: HttpRequestAdapter](
+      controller: Any,
+      request: Req,
+      params: Map[String, String]
+  ): Any
+
+  private[http] def callOpt[Req: HttpRequestAdapter](
+      controllerProvider: ControllerProvider,
+      request: Req,
+      params: Map[String, String]
+  ): Option[Any]
+}
+
 /**
   * Define mappings from an HTTP request to a controller method which has the Endpoint annotation
   */
-case class Route(controllerSurface: Surface, method: HttpMethod, path: String, methodSurface: ReflectMethodSurface)
-    extends LogSupport {
+case class ControllerRoute(controllerSurface: Surface,
+                           method: HttpMethod,
+                           path: String,
+                           methodSurface: ReflectMethodSurface)
+    extends Route
+    with LogSupport {
   require(
     path.startsWith("/"),
     s"Invalid route path: ${path}. EndPoint path must start with a slash (/) in ${methodSurface.owner.name}:${methodSurface.name}"
@@ -32,19 +66,13 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     s"${method} ${path} -> ${methodSurface.name}(${methodSurface.args
       .map(x => s"${x.name}:${x.surface}").mkString(", ")}): ${methodSurface.returnType}"
 
-  val pathComponents: IndexedSeq[String] = {
-    path
-      .substring(1)
-      .split("/")
-      .toIndexedSeq
-  }
-
-  def returnTypeSurface: Surface = methodSurface.returnType
+  override def getControllerSurface: Option[Surface] = Some(controllerSurface)
+  override def returnTypeSurface: Surface            = methodSurface.returnType
 
   /**
     * Find a corresponding controller and call the matching methods
     */
-  def call[Req: HttpRequestAdapter](
+  override def call[Req: HttpRequestAdapter](
       controller: Any,
       request: Req,
       params: Map[String, String]
@@ -59,7 +87,7 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
     }
   }
 
-  private[http] def call[Req: HttpRequestAdapter](
+  override private[http] def callOpt[Req: HttpRequestAdapter](
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String]
@@ -68,4 +96,23 @@ case class Route(controllerSurface: Surface, method: HttpMethod, path: String, m
       call(controller, request, params)
     }
   }
+}
+
+/**
+  * An endpoint defined by Function0
+  * @param method
+  * @param path
+  * @param f
+  * @tparam R
+  */
+case class FunctionRoute0[R](method: HttpMethod, path: String, f: LazyF0[R]) extends Route {
+
+  /**
+    * Find a corresponding controller and call the matching methods
+    */
+  override def call[Req: HttpRequestAdapter](controller: Any, request: Req, params: Map[String, String]): Any = ???
+  override private[http] def callOpt[Req: HttpRequestAdapter](controllerProvider: ControllerProvider,
+                                                              request: Req,
+                                                              params: Map[String, String]): Option[Any] = ???
+  override def returnTypeSurface: Surface                                                               = ???
 }

@@ -17,7 +17,7 @@ import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
   def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
-    route.call(controllerProvider, request, params)
+    route.callOpt(controllerProvider, request, params)
   }
 }
 
@@ -65,7 +65,7 @@ object RouteMatcher extends LogSupport {
             throw new IllegalArgumentException(
               s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
             )
-          }
+        }
       )
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {
