@@ -126,7 +126,7 @@ case class Router(
         .map(m => (m, m.findAnnotationOf[Endpoint]))
         .collect {
           case (m: ReflectMethodSurface, Some(endPoint)) =>
-            Route(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
+            ControllerRoute(controllerSurface, endPoint.method(), prefixPath + endPoint.path(), m)
         }
 
     val newRouter = new Router(surface = Some(controllerSurface), localRoutes = newRoutes)
@@ -175,7 +175,6 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  @deprecated(message = "Use Router.add or Router.of instead", since = "19.8.0")
-  def filter[Filter <: HttpFilterType]: Router = macro RouterMacros.of[Filter]
+  case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
 
 }

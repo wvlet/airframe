@@ -13,8 +13,8 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
@@ -31,7 +31,7 @@ object HttpRequestMapper extends LogSupport {
   private val stringMapCodec = MessageCodec.of[Map[String, String]]
 
   def buildControllerMethodArgs[Req](
-      // This instance is necesary to retrieve the default method argument values
+      // This instance is necessary to retrieve the default method argument values
       controller: Any,
       // The target method surface to call
       methodSurface: ReflectMethodSurface,
@@ -118,5 +118,4 @@ object HttpRequestMapper extends LogSupport {
     )
     methodArgs
   }
-
 }
