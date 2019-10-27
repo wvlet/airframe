@@ -152,21 +152,14 @@ class A {
 
 <h3 id="binding-types">Binding Types</h3>
 
-<p>The following examples show the basic binding types available in Airframe:</p>
+<p>The following examples show the basic in-traint binding types available in Airframe:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>          <span class="c1">// Inject A as a singleton
 </span>
 <span class="k">import</span> <span class="nn">BindingExample._</span>
 
 <span class="c1">// Constructor binding
-</span><span class="k">val</span> <span class="nv">pc</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span> <span class="c1">// Inject a singleton of P
-</span>                    <span class="c1">// (Inject D1, D2 and D3)
-</span>
-<span class="c1">// Provider bindings
-</span><span class="k">val</span> <span class="nv">p0</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="nf">P</span><span class="o">()</span> <span class="o">}</span> <span class="c1">// Inject P using the provider function (closure)
-</span><span class="k">val</span> <span class="nv">p1</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">d1</span><span class="k">:</span><span class="kt">D1</span> <span class="o">=&gt;</span> <span class="nf">P</span><span class="o">(</span><span class="n">d1</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1 to create P
-</span><span class="k">val</span> <span class="nv">p2</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nf">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1 and D2 to create P
-</span><span class="k">val</span> <span class="nv">p3</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="o">(</span><span class="n">d1</span><span class="k">:</span><span class="kt">D1</span><span class="o">,</span> <span class="n">d2</span><span class="k">:</span><span class="kt">D2</span><span class="o">,</span> <span class="n">d3</span><span class="k">:</span><span class="kt">D3</span><span class="o">)</span> <span class="k">=&gt;</span> <span class="nf">P</span><span class="o">(</span><span class="n">d1</span><span class="o">,</span> <span class="n">d2</span><span class="o">,</span> <span class="n">d3</span><span class="o">)</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3
-</span><span class="k">val</span> <span class="nv">pd</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span> <span class="o">{</span> <span class="n">provider</span> <span class="k">_</span> <span class="o">}</span> <span class="c1">// Inject D1, D2 and D3 to call a provider function
+</span><span class="k">val</span> <span class="nv">pc</span><span class="k">:</span> <span class="kt">P</span> <span class="o">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">P</span><span class="o">]</span> <span class="c1">// Inject a singleton of P(D1, D2, D3)
+</span>                    <span class="c1">// This will also inject D1, D2 and D3 to P.
 </span>
 <span class="c1">// Factory bindings can be used to override a part of the dependencies
 </span><span class="k">val</span> <span class="nv">f1</span><span class="k">:</span> <span class="kt">D1</span> <span class="o">=&gt;</span> <span class="n">P</span> <span class="k">=</span> <span class="n">bindFactory</span><span class="o">[</span><span class="kt">D1</span> <span class="k">=&gt;</span> <span class="kt">P</span><span class="o">]</span> <span class="c1">// A factory to use a given D1 to generate P
@@ -292,29 +285,22 @@ These singleton objects are managed inside the current session object.</p>
 
 <h2 id="life-cycle">Life Cycle</h2>
 
-<p><strong>Update since version 19.9.0</strong>: If objects injected by DI implements <code class="highlighter-rouge">def close(): Unit</code> function of java.lang.AutoCloseable interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own <code class="highlighter-rouge">onShutdown</code> hook or use <code class="highlighter-rouge">@PreDestory</code> annotation.</p>
+<p><strong>Update since version 19.9.0</strong>: If objects injected by DI implements <code class="highlighter-rouge">def close(): Unit</code> function of <code class="highlighter-rouge">java.lang.AutoCloseable</code> interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own <code class="highlighter-rouge">onShutdown</code> hook or use <code class="highlighter-rouge">@PreDestory</code> annotation.</p>
 
 <p>Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 
-<span class="k">trait</span> <span class="nc">MyServerService</span> <span class="o">{</span>
-  <span class="k">val</span> <span class="nv">service</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
-    <span class="o">.</span><span class="py">onInit</span><span class="o">(</span> <span class="nv">_</span><span class="o">.</span><span class="py">init</span> <span class="o">)</span>   <span class="c1">// Called when the object is initialized
-</span>    <span class="o">.</span><span class="py">onInject</span><span class="o">(</span><span class="nv">_</span><span class="o">.</span><span class="py">inject</span><span class="o">)</span> <span class="c1">// Called when the object is injected 
-</span>    <span class="o">.</span><span class="py">onStart</span><span class="o">(</span><span class="nv">_</span><span class="o">.</span><span class="py">start</span><span class="o">)</span>   <span class="c1">// Called when session.start is called
-</span>    <span class="o">.</span><span class="py">beforeShutdown</span><span class="o">(</span> <span class="nv">_</span><span class="o">.</span><span class="py">notify</span><span class="o">)</span> <span class="c1">// Called right before all shutdown hook is called
-</span>                               <span class="c1">// Useful for adding pre-shutdown step 
-</span>    <span class="o">.</span><span class="py">onShutdown</span><span class="o">(</span> <span class="nv">_</span><span class="o">.</span><span class="py">stop</span> <span class="o">)</span> <span class="c1">// Called when session.shutdown is called
+<span class="k">object</span> <span class="nc">MyServerService</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="n">newDesign</span>
+    <span class="o">.</span><span class="py">bind</span><span class="o">[</span><span class="kt">Server</span><span class="o">]</span>
+    <span class="o">.</span><span class="py">onInit</span><span class="o">{</span><span class="n">x</span><span class="k">:</span><span class="kt">Server</span> <span class="o">=&gt;</span> <span class="o">...</span> <span class="o">}</span>    <span class="c1">// Called when the object is initialized
+</span>    <span class="o">.</span><span class="py">onInject</span><span class="o">{</span><span class="n">x</span><span class="k">:</span><span class="kt">Server</span> <span class="o">=&gt;</span> <span class="o">...</span> <span class="o">}</span>  <span class="c1">// Called when the object is injected 
+</span>    <span class="o">.</span><span class="py">onStart</span><span class="o">{</span><span class="n">x</span><span class="k">:</span><span class="kt">Server</span> <span class="o">=&gt;</span> <span class="o">...</span> <span class="o">}</span>   <span class="c1">// Called when session.start is called
+</span>    <span class="o">.</span><span class="py">beforeShutdown</span><span class="o">{</span><span class="n">x</span><span class="k">:</span><span class="kt">Server</span> <span class="o">=&gt;</span> <span class="o">...}</span>  <span class="c1">// Called right before all shutdown hook is called
+</span>                                      <span class="c1">// Useful for adding pre-shutdown step 
+</span>    <span class="o">.</span><span class="py">onShutdown</span><span class="o">{</span><span class="n">x</span><span class="k">:</span><span class="kt">Server</span> <span class="o">=&gt;</span> <span class="o">...</span> <span class="o">}</span> <span class="c1">// Called when session.shutdown is called
 </span>  <span class="o">)</span>
-<span class="o">}</span>
-
-<span class="k">trait</span> <span class="nc">Server</span> <span class="o">{</span>
-  <span class="k">def</span> <span class="nf">init</span> <span class="k">=</span> <span class="o">...</span>
-  <span class="k">def</span> <span class="nf">inject</span> <span class="k">=</span> <span class="o">...</span> 
-  <span class="k">def</span> <span class="nf">start</span> <span class="k">=</span> <span class="o">...</span>
-  <span class="k">def</span> <span class="nf">notify</span> <span class="k">=</span> <span class="o">...</span>
-  <span class="k">def</span> <span class="nf">stop</span> <span class="k">=</span> <span class="o">...</span>
 <span class="o">}</span>
 </code></pre></div></div>
 <p>These life cycle hooks except <code class="highlighter-rouge">onInject</code> will be called only once when the binding type is singleton.</p>
