@@ -156,22 +156,15 @@ class A {
 
 ### Binding Types
 
-The following examples show the basic binding types available in Airframe:
+The following examples show the basic in-traint binding types available in Airframe:
 ```scala
 val a = bind[A]          // Inject A as a singleton
 
 import BindingExample._
 
 // Constructor binding
-val pc: P = bind[P] // Inject a singleton of P
-                    // (Inject D1, D2 and D3)
-
-// Provider bindings
-val p0: P = bind { P() } // Inject P using the provider function (closure)
-val p1: P = bind { d1:D1 => P(d1) } // Inject D1 to create P
-val p2: P = bind { (d1:D1, d2:D2) => P(d1, d2) } // Inject D1 and D2 to create P
-val p3: P = bind { (d1:D1, d2:D2, d3:D3) => P(d1, d2, d3) } // Inject D1, D2 and D3
-val pd: P = bind { provider _ } // Inject D1, D2 and D3 to call a provider function
+val pc: P = bind[P] // Inject a singleton of P(D1, D2, D3)
+                    // This will also inject D1, D2 and D3 to P.
 
 // Factory bindings can be used to override a part of the dependencies
 val f1: D1 => P = bindFactory[D1 => P] // A factory to use a given D1 to generate P
@@ -308,34 +301,26 @@ This pattern is useful since you usually need a single entry point for starting 
 
 ## Life Cycle
 
-__Update since version 19.9.0__: If objects injected by DI implements `def close(): Unit` function of java.lang.AutoCloseable interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own `onShutdown` hook or use `@PreDestory` annotation.
+__Update since version 19.9.0__: If objects injected by DI implements `def close(): Unit` function of `java.lang.AutoCloseable` interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own `onShutdown` hook or use `@PreDestory` annotation.
 
 Server side application often requires resource management (e.g., network connection, threads, etc.). Airframe has a built-in object life cycle manager to implement these hooks:
 
 ```scala
 import wvlet.airframe._
 
-trait MyServerService {
-  val service = bind[Server]
-    .onInit( _.init )   // Called when the object is initialized
-    .onInject(_.inject) // Called when the object is injected 
-    .onStart(_.start)   // Called when session.start is called
-    .beforeShutdown( _.notify) // Called right before all shutdown hook is called
-                               // Useful for adding pre-shutdown step 
-    .onShutdown( _.stop ) // Called when session.shutdown is called
+object MyServerService {
+  val design = newDesign
+    .bind[Server]
+    .onInit{x:Server => ... }    // Called when the object is initialized
+    .onInject{x:Server => ... }  // Called when the object is injected 
+    .onStart{x:Server => ... }   // Called when session.start is called
+    .beforeShutdown{x:Server => ...}  // Called right before all shutdown hook is called
+                                      // Useful for adding pre-shutdown step 
+    .onShutdown{x:Server => ... } // Called when session.shutdown is called
   )
-}
-
-trait Server {
-  def init = ...
-  def inject = ... 
-  def start = ...
-  def notify = ...
-  def stop = ...
 }
 ```
 These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
-
 
 ### Eager Initialization of Singletons for Production
 
