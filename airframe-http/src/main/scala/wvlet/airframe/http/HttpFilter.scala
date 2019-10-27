@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.http
 
-import java.lang.reflect.InvocationTargetException
-
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
@@ -57,7 +55,7 @@ object HttpFilter {
     * @tparam Resp
     * @tparam F
     */
-  abstract class HttpFilterFactory[Req, Resp, F[_]] { factory =>
+  trait HttpFilterFactory[Req, Resp, F[_]] { factory =>
     type Filter  = HttpFilter[Req, Resp, F]
     type Context = HttpContext[Req, Resp, F]
 
@@ -68,13 +66,7 @@ object HttpFilter {
         case NonFatal(e) => wrapException(e)
       }
     }
-    protected def wrapException(e: Throwable): F[Resp]
-
-    def toFuture[A](a: A): F[A]
-    def isFutureType(x: Class[_]): Boolean
-    def isRawResponseType(x: Class[_]): Boolean
-    def mapF[A, B](f: F[A], body: A => B): F[B]
-
+    def wrapException(e: Throwable): F[Resp]
     def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
 
     abstract class HttpFilterBase extends Filter {
@@ -133,5 +125,3 @@ object HttpFilter {
 trait HttpContext[Req, Resp, F[_]] {
   def apply(request: Req): F[Resp]
 }
-
-object HttpContext {}

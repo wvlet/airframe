@@ -15,7 +15,6 @@ package wvlet.airframe.http
 
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.airframe.http.HttpFilter.HttpFilterFactory
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.log.LogSupport
 
@@ -24,20 +23,20 @@ object HttpRequestDispatcher {
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       router: Router,
       controllerProvider: ControllerProvider,
-      httpFilterFactory: HttpFilterFactory[Req, Resp, F],
+      backend: HttpBackend[Req, Resp, F],
       responseHandler: ResponseHandler[Req, Resp]): HttpFilter[Req, Resp, F] = {
 
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildRouteFilters(router, httpFilterFactory.Identity, controllerProvider)
+      HttpRequestDispatcher.buildRouteFilters(router, backend.Identity, controllerProvider)
     }
 
-    httpFilterFactory.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
+    backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
           val routeFilter = filterTable(routeMatch.route)
           val context =
-            new HttpEndpointExecutionContext(httpFilterFactory, routeMatch, routeFilter.controller, responseHandler)
+            new HttpEndpointExecutionContext(backend, routeMatch, routeFilter.controller, responseHandler)
           val currentService = routeFilter.filter.andThen(context)
           currentService(request)
         case None =>
@@ -93,7 +92,7 @@ object HttpRequestDispatcher {
     *  This will be the last context after applying preceding filters
     */
   private class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
-      httpFilterFactory: HttpFilterFactory[Req, Resp, F],
+      backend: HttpBackend[Req, Resp, F],
       routeMatch: RouteMatch,
       controller: Option[Any],
       responseHandler: ResponseHandler[Req, Resp])
@@ -105,8 +104,6 @@ object HttpRequestDispatcher {
       val result = {
         // Call the method in this controller
         try {
-          info(controller)
-          info(routeMatch)
           route.call(controller, request, routeMatch.params)
         } catch {
           case e: InvocationTargetException =>
@@ -117,16 +114,16 @@ object HttpRequestDispatcher {
 
       route.returnTypeSurface.rawType match {
         // When a return type is Future[X]
-        case cl: Class[_] if httpFilterFactory.isFutureType(cl) =>
+        case cl: Class[_] if backend.isFutureType(cl) =>
           // Check the type of X
           val futureValueSurface = route.returnTypeSurface.typeArgs(0)
           futureValueSurface.rawType match {
             // If X is Response type, return as is
-            case valueCls if httpFilterFactory.isRawResponseType(valueCls) =>
+            case valueCls if backend.isRawResponseType(valueCls) =>
               result.asInstanceOf[F[Resp]]
             case other =>
               // If X is other type, convert X into an HttpResponse
-              httpFilterFactory.mapF(
+              backend.mapF(
                 result.asInstanceOf[F[_]], { x: Any =>
                   responseHandler.toHttpResponse(request, futureValueSurface, x)
                 }
@@ -134,7 +131,7 @@ object HttpRequestDispatcher {
           }
         case _ =>
           // If the route returns non future value, convert it into Future response
-          httpFilterFactory.toFuture(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
+          backend.toFuture(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
       }
 
     }
