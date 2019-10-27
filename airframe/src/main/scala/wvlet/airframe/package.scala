@@ -48,11 +48,17 @@ package object airframe {
     * @tparam A
     */
   def bind[A]: A = macro bindImpl[A]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A](provider: => A): A = macro bind0Impl[A]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A, D1](provider: D1 => A): A = macro bind1Impl[A, D1]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A, D1, D2](provider: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A, D1, D2, D3](provider: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A, D1, D2, D3, D4](provider: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
   def bind[A, D1, D2, D3, D4, D5](provider: (D1, D2, D3, D4, D5) => A): A =
     macro bind5Impl[A, D1, D2, D3, D4, D5]
 
@@ -64,15 +70,15 @@ package object airframe {
   def bindFactory5[F <: (_, _, _, _, _) => _]: F = macro bindFactory5Impl[F]
 
   implicit class LifeCycleSupport[A](val dep: A) extends LogSupport {
-    @deprecated(message = "Use InitLifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use design.bind[A].toXXX(...).onInit(...) instead", since = "19.9.0")
     def onInit(body: A => Unit): A = macro addInitLifeCycle[A]
-    @deprecated(message = "Use InjectLifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use design.bind[A].toXXX(...).onInject(...) instead", since = "19.9.0")
     def onInject(body: A => Unit): A = macro addInjectLifeCycle[A]
-    @deprecated(message = "Use StartLifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use design.bind[A].toXXX(...).onStart(...) instead", since = "19.9.0")
     def onStart(body: A => Unit): A = macro addStartLifeCycle[A]
-    @deprecated(message = "Use BeforeShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use design.bind[A].toXXX(...).beforeShutdown(...) instead", since = "19.9.0")
     def beforeShutdown(body: A => Unit): A = macro addPreShutdownLifeCycle[A]
-    @deprecated(message = "Use ShutdownLifeCycle trait or design-time hooks", since = "19.9.0")
+    @deprecated(message = "Use design.bind[A].toXXX(...).onShutdown(...) instead", since = "19.9.0")
     def onShutdown(body: A => Unit): A = macro addShutdownLifeCycle[A]
   }
 
