@@ -369,6 +369,39 @@ This test shares the same Service instance between two test methods `test1` and 
 [info] Passed: Total 2, Failed 0, Errors 0, Passed 2
 ```
 
+### Overriding Design At Test Methods
+
+If you need a partially different design in a test method, pass Airframe `Session` to the test method arguments, and call `session.withChildSession(additional_design)`:
+
+```scala
+import wvlet.airspec._
+import wvlet.airframe._
+
+class OverrideTest extends AirSpec {
+
+  override protected def design: Design = {
+    newDesign
+      .bind[String].toInstance("hello")
+  }
+ 
+  // Pass Session to override the design
+  def overrideDesign(session: Session, s: String): Unit = {
+    s shouldBe "hello"
+  
+    // Override a design
+    val d = newDesign
+      .bind[String].toInstance("hello child")
+   
+    // Create a new child session
+    session.withChildSession(d) { childSession =>
+      val cs = childSession.build[String]
+      cs shouldBe "hello child"
+    }
+  }
+}
+
+```
+
 ### Pro Tips
 
 Designs of Airframe DI are useful for defining modules of your application.
@@ -477,3 +510,4 @@ class PropertyBasedTest extends AirSpec with PropertyCheck {
   }
 }
 ```
+
