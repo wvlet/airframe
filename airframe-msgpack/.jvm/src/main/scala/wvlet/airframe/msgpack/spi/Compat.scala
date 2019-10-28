@@ -15,7 +15,14 @@ package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
 import org.msgpack.{core => mj}
-import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, PureScalaBufferPacker, UnpackerImpl}
+import wvlet.airframe.msgpack.impl.{
+  BufferPackerImpl,
+  PackerImpl,
+  PureScalaBufferPacker,
+  PureScalaBufferUnpacker,
+  UnpackerImpl
+}
+import wvlet.airframe.msgpack.io.ByteArrayBuffer
 
 /**
   * For compatibility with Scala, Scala.js
@@ -44,6 +51,7 @@ object Compat {
   }
 
   def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = {
-    new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
+    //new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
+    new PureScalaBufferUnpacker(ByteArrayBuffer.fromArray(msgpack, offset, len))
   }
 }

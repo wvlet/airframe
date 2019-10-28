@@ -83,6 +83,13 @@ case class ReadCursor(var buf: ReadBuffer, var position: Int) {
     offset += len
     v
   }
+
+  def readBytes(len: Int, dest: Array[Byte], destOffset: Int): Unit = {
+    val v = buf.readBytes(position + offset, len, dest, destOffset)
+    offset += len
+    v
+  }
+
   def readBytes(len: Int, dest: WriteBuffer, destOffset: Int): Unit = {
     buf.readBytes(position + offset, len, dest, destOffset)
     offset += len

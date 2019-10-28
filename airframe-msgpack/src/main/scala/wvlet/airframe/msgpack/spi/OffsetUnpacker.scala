@@ -19,12 +19,85 @@ import java.time.Instant
 
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.airframe.msgpack.spi.MessageFormat._
 import wvlet.airframe.msgpack.spi.Value._
 
 /**
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadLength]] method.
   */
 object OffsetUnpacker {
+
+  def peekNextFormat(cursor: ReadCursor): MessageFormat = {
+    val b  = cursor.peekByte
+    val mf = MessageFormat.of(b)
+    mf
+  }
+
+  def skipValue(cursor: ReadCursor, skipCount: Int = 1): Unit = {
+    var count = skipCount
+    while (count > 0) {
+      val b  = cursor.readByte
+      val mf = MessageFormat.of(b)
+      mf match {
+        case POSFIXINT | NEGFIXINT | BOOLEAN | NIL =>
+        case FIXMAP =>
+          val mapLen = b & 0x0f
+          count += mapLen * 2
+        case FIXARRAY =>
+          val arrayLen = b & 0x0f
+          count += arrayLen
+        case FIXSTR =>
+          val strLen = b & 0x1f
+          skipPayload(cursor, strLen)
+        case INT8 | UINT8 =>
+          skipPayload(cursor, 1)
+        case INT16 | UINT16 =>
+          skipPayload(cursor, 2)
+        case INT32 | UINT32 | FLOAT32 =>
+          skipPayload(cursor, 4)
+        case INT64 | UINT64 | FLOAT64 =>
+          skipPayload(cursor, 8)
+        case BIN8 | STR8 =>
+          skipPayload(cursor, readNextLength8(cursor))
+        case BIN16 | STR16 =>
+          skipPayload(cursor, readNextLength16(cursor))
+        case BIN32 | STR32 =>
+          skipPayload(cursor, readNextLength32(cursor))
+        case FIXEXT1 =>
+          skipPayload(cursor, 2)
+        case FIXEXT2 =>
+          skipPayload(cursor, 3)
+        case FIXEXT4 =>
+          skipPayload(cursor, 5)
+        case FIXEXT8 =>
+          skipPayload(cursor, 9)
+        case FIXEXT16 =>
+          skipPayload(cursor, 17)
+        case EXT8 =>
+          skipPayload(cursor, readNextLength8(cursor) + 1)
+        case EXT16 =>
+          skipPayload(cursor, readNextLength16(cursor) + 1)
+        case EXT32 =>
+          skipPayload(cursor, readNextLength32(cursor) + 1)
+        case ARRAY16 =>
+          count += readNextLength16(cursor)
+        case ARRAY32 =>
+          count += readNextLength32(cursor)
+        case MAP16 =>
+          count += readNextLength16(cursor) * 2
+        case MAP32 =>
+          count += readNextLength32(cursor) * 2
+        case NEVER_USED =>
+          throw new MessageException(NEVER_USED_FORMAT, s"Found 0xC1 (NEVER_USED) byte while skipping a value")
+      }
+      count -= 1
+    }
+  }
+
+  def skipPayload(cursor: ReadCursor, numBytes: Int): Unit = {
+    cursor.skipBytes(numBytes)
+  }
+
   def unpackValue(cursor: ReadCursor): Value = {
     val b  = cursor.peekByte
     val mf = MessageFormat.of(b)
@@ -557,6 +630,10 @@ object OffsetUnpacker {
   def readPayload(cursor: ReadCursor, length: Int): Array[Byte] = {
     val data = cursor.readBytes(length)
     data
+  }
+
+  def readPayload(cursor: ReadCursor, length: Int, dest: Array[Byte], destOffset: Int): Unit = {
+    cursor.readBytes(length, dest, destOffset)
   }
 
   /**
