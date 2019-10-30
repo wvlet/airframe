@@ -22,6 +22,9 @@ import wvlet.airframe.msgpack.spi.MessageException._
 import wvlet.airframe.msgpack.spi.MessageFormat._
 import wvlet.airframe.msgpack.spi.Value._
 
+import scala.collection.immutable.ListMap
+import scala.collection.mutable
+
 /**
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadLength]] method.
   */
@@ -138,7 +141,7 @@ object OffsetUnpacker {
       case ValueType.MAP =>
         var readLen   = 0
         val mapLength = unpackMapHeader(cursor)
-        val map       = Map.newBuilder[Value, Value]
+        val map       = ListMap.newBuilder[Value, Value]
         map.sizeHint(mapLength)
         var i = 0
         while (i < mapLength) {
@@ -548,6 +551,7 @@ object OffsetUnpacker {
         val len = readNextLength32(cursor)
         len
       case _ =>
+        cursor.reverseCursor
         throw unexpected(ValueType.MAP, b)
     }
   }

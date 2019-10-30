@@ -71,6 +71,16 @@ class JSONToMessagePackConverterTest extends AirSpec {
     msgpackToJson(msgpack) shouldBe JSON.parse(json)
   }
 
+  def `convert twitter-single.json to MsgPack`: Unit = {
+    val json      = IOUtil.readAsString("airframe-benchmark/src/main/resources/twitter-single.json")
+    val jsonValue = JSON.parse(json)
+    val msgpack   = MessagePack.fromJSON(json)
+    val result    = msgpackToJson(msgpack)
+    info(result)
+    info(jsonValue.toJSON)
+    deepEqual(result, jsonValue)
+  }
+
   def `convert twitter.json to MsgPack`: Unit = {
     val json      = IOUtil.readAsString("airframe-json/src/test/resources/twitter.json")
     val jsonValue = JSON.parse(json)
