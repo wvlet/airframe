@@ -22,6 +22,8 @@ import wvlet.airframe.surface.required
   *
   */
 class ObjectCodecTest extends CodecSpec {
+  scalaJsSupport
+
   val codec = MessageCodec.of[A1].asInstanceOf[ObjectCodec[A1]]
 
   def `support reading map value`: Unit = {

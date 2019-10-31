@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
+
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec

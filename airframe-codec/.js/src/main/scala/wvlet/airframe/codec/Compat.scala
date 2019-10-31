@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.{Parameter, Surface}
+import wvlet.airframe.codec.ScalaStandardCodec.TupleCodec
+import wvlet.airframe.surface.{GenericSurface, Surface}
 
 /**
   *
@@ -27,7 +28,19 @@ object Compat {
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
     ): PartialFunction[Surface, MessageCodec[_]] = {
-      case other => throw new UnsupportedOperationException(s"${other}")
+      case g: GenericSurface
+          if g.rawType.getName.startsWith("scala.Tuple") && classOf[Product].isAssignableFrom(g.rawType) =>
+        TupleCodec(g.typeArgs.map(factory.ofSurface(_, seenSet)))
+      case g: GenericSurface if classOf[IndexedSeq[_]].isAssignableFrom(g.rawType) =>
+        new CollectionCodec.IndexedSeqCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
+      case g: GenericSurface if classOf[List[_]].isAssignableFrom(g.rawType) =>
+        new CollectionCodec.ListCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
+      case g: GenericSurface if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
+        new CollectionCodec.SeqCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
+      case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
+        CollectionCodec.MapCodec(factory.ofSurface(g.typeArgs(0), seenSet), factory.ofSurface(g.typeArgs(1), seenSet))
+//      case other =>
+//        throw new UnsupportedOperationException(s"MessageCodec for ${other} is not found")
     }
   }
 }

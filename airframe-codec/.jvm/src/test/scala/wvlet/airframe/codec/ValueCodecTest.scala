@@ -23,12 +23,13 @@ object ValueCodecTest {
   case class RawMsgpackTest2(msgpack: MsgPack)
 }
 
-import ValueCodecTest._
+import wvlet.airframe.codec.ValueCodecTest._
 
 /**
   *
   */
 class ValueCodecTest extends CodecSpec {
+  scalaJsSupport
 
   def `support MessagePack values`: Unit = {
     roundtrip(ValueCodec, ValueFactory.newInteger(1), DataType.ANY)

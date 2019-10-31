@@ -20,15 +20,18 @@ import org.scalacheck.util.Pretty
 import wvlet.airframe.json.JSON.JSONString
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.msgpack.spi.Value.StringValue
-import wvlet.airspec.spi.PropertyCheck
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
+import wvlet.airspec.spi.PropertyCheck
 
 /**
   *
   */
 class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
-  import scala.jdk.CollectionConverters._
+  scalaJsSupport
+
   import org.scalacheck._
+
+  import scala.jdk.CollectionConverters._
 
   protected def roundTripTest[T](surface: Surface, dataType: DataType)(
       implicit
@@ -126,8 +129,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Int]]
@@ -148,8 +151,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Long]]
@@ -170,8 +173,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(1021.1)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Short]]
@@ -192,8 +195,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(123.0)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Byte]]
@@ -214,8 +217,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(123.0)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Char]]
@@ -236,8 +239,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(13.4f)
     p.packDouble(12345.01)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Float]]
@@ -258,8 +261,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(0.1f)
     p.packDouble(12345.01)
-    p.packString("non-number")    // will be 0
-    p.packNil                     // will be 0
+    p.packString("non-number") // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Double]]
@@ -284,8 +287,8 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packFloat(0.0f)
     p.packFloat(0.1f)
     p.packDouble(12345.01)
-    p.packString("non-number")    // will be false (default value)
-    p.packNil                     // will be false
+    p.packString("non-number") // will be false (default value)
+    p.packNil // will be false
     p.packBigInteger(LARGE_VALUE) // will be 0
 
     val codec = MessageCodec.of[Seq[Boolean]]
@@ -318,7 +321,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     p.packBoolean(true)
     p.packFloat(10.0f)
     p.packDouble(12345.01)
-    p.packNil                     // will be 0
+    p.packNil // will be 0
     p.packBigInteger(LARGE_VALUE) // will be 0
     p.packArrayHeader(2)
     p.packInt(1)

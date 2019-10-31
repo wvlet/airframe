@@ -18,6 +18,8 @@ import wvlet.airframe.surface.Surface
   *
   */
 class ScalaStandardCodecTest extends CodecSpec {
+  scalaJsSupport
+
   def `support Option[A]` : Unit = {
     val v = Some("hello")
     roundtrip(Surface.of[Option[String]], Some("hello"))

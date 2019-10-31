@@ -21,6 +21,8 @@ import wvlet.airspec.AirSpec
   *
   */
 class JSONCodecTest extends AirSpec {
+  scalaJsSupport
+
   protected def check(json: String): Unit = {
     val b = JSONCodec.toMsgPack(json)
     JSONCodec.unpackMsgPack(b) match {
@@ -42,7 +44,7 @@ class JSONCodecTest extends AirSpec {
     check("[true]")
     check("[false]")
     check("[null]")
-    check("""[1, 2, 3.0, "apple", true, false]""")
+    check("""[1,2,3.0,"apple",true,false]""")
     check("{}")
     check("[]")
   }

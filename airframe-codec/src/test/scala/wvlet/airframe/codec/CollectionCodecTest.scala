@@ -22,6 +22,7 @@ import scala.jdk.CollectionConverters._
   *
   */
 class CollectionCodecTest extends CodecSpec {
+  scalaJsSupport
 
   def `support Map type`: Unit = {
     val v = Map("id" -> 1)
@@ -29,6 +30,8 @@ class CollectionCodecTest extends CodecSpec {
   }
 
   def `support Java Map type`: Unit = {
+    if (isScalaJS)
+      skip("Scala.js do not support Java Map")
     val v = Map("id" -> 1).asJava
     roundtrip(Surface.of[java.util.Map[String, Int]], v, DataType.ANY)
   }
@@ -51,6 +54,8 @@ class CollectionCodecTest extends CodecSpec {
   }
 
   def `support JSON Map to java.util.Map`: Unit = {
+    if (isScalaJS)
+      skip("Scala.js doesn't support Java Map")
     val codec   = MessageCodec.of[java.util.Map[String, Int]]
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
