@@ -35,8 +35,15 @@ object Compat {
         new CollectionCodec.IndexedSeqCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
       case g: GenericSurface if classOf[List[_]].isAssignableFrom(g.rawType) =>
         new CollectionCodec.ListCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
+      case g: GenericSurface if classOf[java.util.List[_]].isAssignableFrom(g.rawType) =>
+        new CollectionCodec.JavaListCodec(factory.ofSurface(g.typeArgs(0), seenSet))
       case g: GenericSurface if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
         new CollectionCodec.SeqCodec(g, factory.ofSurface(g.typeArgs(0), seenSet))
+      case g: GenericSurface if classOf[java.util.Map[_, _]].isAssignableFrom(g.rawType) =>
+        CollectionCodec.JavaMapCodec(
+          factory.ofSurface(g.typeArgs(0), seenSet),
+          factory.ofSurface(g.typeArgs(1), seenSet)
+        )
       case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
         CollectionCodec.MapCodec(factory.ofSurface(g.typeArgs(0), seenSet), factory.ofSurface(g.typeArgs(1), seenSet))
 //      case other =>

@@ -66,6 +66,7 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
       // java.util.List[T] -> Array
       roundtrip(javaListCodec, v.toSeq.asJava, DataType.ANY)
     }
+
   }
 
   protected def roundTripTestWithStr[T](
