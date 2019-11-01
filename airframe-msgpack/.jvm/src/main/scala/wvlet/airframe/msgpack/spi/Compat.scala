@@ -15,14 +15,7 @@ package wvlet.airframe.msgpack.spi
 import java.io.{InputStream, OutputStream}
 
 import org.msgpack.{core => mj}
-import wvlet.airframe.msgpack.impl.{
-  BufferPackerImpl,
-  PackerImpl,
-  PureScalaBufferPacker,
-  PureScalaBufferUnpacker,
-  UnpackerImpl
-}
-import wvlet.airframe.msgpack.io.ByteArrayBuffer
+import wvlet.airframe.msgpack.impl.{BufferPackerImpl, PackerImpl, UnpackerImpl}
 
 /**
   * For compatibility with Scala, Scala.js
@@ -34,11 +27,12 @@ object Compat {
   def doubleToLongBits(v: Double): Long = java.lang.Double.doubleToRawLongBits(v)
 
   def newBufferPacker: BufferPacker = {
-    //new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
-    new PureScalaBufferPacker
+    new BufferPackerImpl(mj.MessagePack.newDefaultBufferPacker())
   }
 
   def newPacker(out: OutputStream): Packer = {
+    // TODO: Use pure-scala packer
+    // new PureScalaBufferPacker
     new PackerImpl(mj.MessagePack.newDefaultPacker(out))
   }
 
@@ -51,7 +45,8 @@ object Compat {
   }
 
   def newUnpacker(msgpack: Array[Byte], offset: Int, len: Int): Unpacker = {
-    //new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
-    new PureScalaBufferUnpacker(ByteArrayBuffer.fromArray(msgpack, offset, len))
+    // TODO use pure-scala unpacker
+    //new PureScalaBufferUnpacker(ByteArrayBuffer.fromArray(msgpack, offset, len))
+    new UnpackerImpl(mj.MessagePack.newDefaultUnpacker(msgpack, offset, len))
   }
 }
