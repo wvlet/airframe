@@ -18,6 +18,7 @@ import java.util
 import wvlet.airframe.json.JSONParseException
 import wvlet.airframe.msgpack.spi.{MessagePack, Packer, Unpacker, ValueType}
 import wvlet.airframe.surface.{Surface, Zero}
+import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.collection.mutable
@@ -53,7 +54,8 @@ object CollectionCodec {
             elementCodec.unpack(u, v)
             if (v.isNull) {
               // Add default value
-              b += Zero.zeroOf(surface).asInstanceOf[A]
+              val z = Zero.zeroOf(surface).asInstanceOf[A]
+              b += z
             } else {
               b += v.getLastValue.asInstanceOf[A]
             }
