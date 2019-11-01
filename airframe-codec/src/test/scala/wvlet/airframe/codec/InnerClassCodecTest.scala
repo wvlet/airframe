@@ -19,6 +19,7 @@ import wvlet.airspec.AirSpec
   *
   */
 class InnerClassCodecTest extends AirSpec {
+  scalaJsSupport
 
   case class A(id: Int, name: String)
 

@@ -19,12 +19,88 @@ import java.time.Instant
 
 import wvlet.airframe.msgpack.spi.ErrorCode.{INVALID_EXT_FORMAT, INVALID_TYPE, NEVER_USED_FORMAT}
 import wvlet.airframe.msgpack.spi.MessageException._
+import wvlet.airframe.msgpack.spi.MessageFormat._
 import wvlet.airframe.msgpack.spi.Value._
 
+import scala.collection.immutable.ListMap
+import scala.collection.mutable
+
 /**
-  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadByteLength]] method.
+  * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadLength]] method.
   */
 object OffsetUnpacker {
+
+  def peekNextFormat(cursor: ReadCursor): MessageFormat = {
+    val b  = cursor.peekByte
+    val mf = MessageFormat.of(b)
+    mf
+  }
+
+  def skipValue(cursor: ReadCursor, skipCount: Int = 1): Unit = {
+    var count = skipCount
+    while (count > 0) {
+      val b  = cursor.readByte
+      val mf = MessageFormat.of(b)
+      mf match {
+        case POSFIXINT | NEGFIXINT | BOOLEAN | NIL =>
+        case FIXMAP =>
+          val mapLen = b & 0x0f
+          count += mapLen * 2
+        case FIXARRAY =>
+          val arrayLen = b & 0x0f
+          count += arrayLen
+        case FIXSTR =>
+          val strLen = b & 0x1f
+          skipPayload(cursor, strLen)
+        case INT8 | UINT8 =>
+          skipPayload(cursor, 1)
+        case INT16 | UINT16 =>
+          skipPayload(cursor, 2)
+        case INT32 | UINT32 | FLOAT32 =>
+          skipPayload(cursor, 4)
+        case INT64 | UINT64 | FLOAT64 =>
+          skipPayload(cursor, 8)
+        case BIN8 | STR8 =>
+          skipPayload(cursor, readNextLength8(cursor))
+        case BIN16 | STR16 =>
+          skipPayload(cursor, readNextLength16(cursor))
+        case BIN32 | STR32 =>
+          skipPayload(cursor, readNextLength32(cursor))
+        case FIXEXT1 =>
+          skipPayload(cursor, 2)
+        case FIXEXT2 =>
+          skipPayload(cursor, 3)
+        case FIXEXT4 =>
+          skipPayload(cursor, 5)
+        case FIXEXT8 =>
+          skipPayload(cursor, 9)
+        case FIXEXT16 =>
+          skipPayload(cursor, 17)
+        case EXT8 =>
+          skipPayload(cursor, readNextLength8(cursor) + 1)
+        case EXT16 =>
+          skipPayload(cursor, readNextLength16(cursor) + 1)
+        case EXT32 =>
+          skipPayload(cursor, readNextLength32(cursor) + 1)
+        case ARRAY16 =>
+          count += readNextLength16(cursor)
+        case ARRAY32 =>
+          count += readNextLength32(cursor)
+        case MAP16 =>
+          count += readNextLength16(cursor) * 2
+        case MAP32 =>
+          count += readNextLength32(cursor) * 2
+        case NEVER_USED =>
+          throw new MessageException(NEVER_USED_FORMAT, s"Found 0xC1 (NEVER_USED) byte while skipping a value")
+      }
+      count -= 1
+    }
+  }
+
+  def skipPayload(cursor: ReadCursor, numBytes: Int): Unit = {
+    cursor.skipBytes(numBytes)
+  }
+
   def unpackValue(cursor: ReadCursor): Value = {
     val b  = cursor.peekByte
     val mf = MessageFormat.of(b)
@@ -65,7 +141,7 @@ object OffsetUnpacker {
       case ValueType.MAP =>
         var readLen   = 0
         val mapLength = unpackMapHeader(cursor)
-        val map       = Map.newBuilder[Value, Value]
+        val map       = ListMap.newBuilder[Value, Value]
         map.sizeHint(mapLength)
         var i = 0
         while (i < mapLength) {
@@ -92,7 +168,7 @@ object OffsetUnpacker {
     cursor.readByte match {
       case Code.NIL => // OK
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.NIL, other)
     }
   }
@@ -102,7 +178,7 @@ object OffsetUnpacker {
       case Code.NIL =>
         true
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         false
     }
   }
@@ -114,7 +190,7 @@ object OffsetUnpacker {
       case Code.TRUE =>
         true
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.BOOLEAN, other)
     }
   }
@@ -156,7 +232,7 @@ object OffsetUnpacker {
         if (!i64.isValidByte) throw overflowI64(i64)
         i64.toByte
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.INTEGER, b)
     }
   }
@@ -196,7 +272,7 @@ object OffsetUnpacker {
         if (!i64.isValidShort) throw overflowI64(i64)
         i64.toShort
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.INTEGER, b)
     }
   }
@@ -234,7 +310,7 @@ object OffsetUnpacker {
         if (!i64.isValidInt) throw overflowI64(i64)
         i64.toInt
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.INTEGER, b)
     }
   }
@@ -274,7 +350,7 @@ object OffsetUnpacker {
         val i64 = cursor.readLong
         i64
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.INTEGER, b)
     }
   }
@@ -317,7 +393,7 @@ object OffsetUnpacker {
         val i64 = cursor.readLong
         BigInteger.valueOf(i64)
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         unexpected(ValueType.INTEGER, b)
     }
   }
@@ -331,7 +407,7 @@ object OffsetUnpacker {
         val d = cursor.readDouble
         d.toFloat
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         throw unexpected(ValueType.FLOAT, other)
     }
   }
@@ -345,7 +421,7 @@ object OffsetUnpacker {
         val d = cursor.readDouble
         d
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         throw unexpected(ValueType.FLOAT, other)
     }
   }
@@ -363,7 +439,7 @@ object OffsetUnpacker {
   private def readNextLength32(cursor: ReadCursor): Int = {
     val u32 = cursor.readInt
     if (u32 < 0) {
-      cursor.resetCursor
+      cursor.reverseCursor
       throw overflowU32Size(u32)
     }
     u32
@@ -404,7 +480,7 @@ object OffsetUnpacker {
         if (blen >= 0) {
           blen
         } else {
-          cursor.resetCursor
+          cursor.reverseCursor
           throw unexpected(ValueType.STRING, b)
         }
       }
@@ -424,7 +500,7 @@ object OffsetUnpacker {
         if (slen >= 0) {
           slen
         } else {
-          cursor.resetCursor
+          cursor.reverseCursor
           throw unexpected(ValueType.BINARY, b)
         }
       }
@@ -433,11 +509,11 @@ object OffsetUnpacker {
 
   def unpackString(cursor: ReadCursor): String = {
     val len       = unpackRawStringHeader(cursor)
-    val headerLen = cursor.lastReadByteLength
+    val headerLen = cursor.lastReadLength
     if (len == 0) {
       EMPTY_STRING
     } else if (len >= Integer.MAX_VALUE) {
-      cursor.resetCursor
+      cursor.reverseCursor
       throw new TooLargeMessageException(len)
     } else {
       // TODO reduce memory copy (e.g., by getting a memory reference of the Buffer)
@@ -458,7 +534,7 @@ object OffsetUnpacker {
         val len = readNextLength32(cursor)
         len
       case _ =>
-        cursor.resetCursor
+        cursor.reverseCursor
         throw unexpected(ValueType.ARRAY, b)
     }
   }
@@ -475,6 +551,7 @@ object OffsetUnpacker {
         val len = readNextLength32(cursor)
         len
       case _ =>
+        cursor.reverseCursor
         throw unexpected(ValueType.MAP, b)
     }
   }
@@ -509,13 +586,13 @@ object OffsetUnpacker {
       case Code.EXT32 =>
         val u32 = cursor.readInt
         if (u32 < 0) {
-          cursor.resetCursor
+          cursor.reverseCursor
           throw overflowU32Size(u32)
         }
         val tpe = cursor.readByte
         ExtTypeHeader(tpe, u32)
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         throw unexpected(ValueType.EXTENSION, other)
     }
   }
@@ -528,7 +605,7 @@ object OffsetUnpacker {
 
   def unpackTimestamp(extTypeHeader: ExtTypeHeader, cursor: ReadCursor): Instant = {
     if (extTypeHeader.extType != Code.EXT_TIMESTAMP) {
-      cursor.resetCursor
+      cursor.reverseCursor
       throw unexpected(ValueType.EXTENSION, extTypeHeader.extType)
     }
     val instant = extTypeHeader.byteLength match {
@@ -545,7 +622,7 @@ object OffsetUnpacker {
         val sec     = cursor.readLong
         Instant.ofEpochSecond(sec, nsecU32)
       case other =>
-        cursor.resetCursor
+        cursor.reverseCursor
         throw new MessageException(
           INVALID_EXT_FORMAT,
           s"Timestamp type expects 4, 8, or 12 bytes of payload but got ${other} bytes"
@@ -557,6 +634,10 @@ object OffsetUnpacker {
   def readPayload(cursor: ReadCursor, length: Int): Array[Byte] = {
     val data = cursor.readBytes(length)
     data
+  }
+
+  def readPayload(cursor: ReadCursor, length: Int, dest: Array[Byte], destOffset: Int): Unit = {
+    cursor.readBytes(length, dest, destOffset)
   }
 
   /**
