@@ -29,7 +29,6 @@ trait AirframeSpec
     with BeforeAndAfter
     with BeforeAndAfterAll
     with LogSupport {
-
   // A tag for the current working test
   protected val working = Tag("working")
   // A tag for the failing test.

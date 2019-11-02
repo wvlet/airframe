@@ -46,5 +46,4 @@ class ExtendedCloseableTest extends AirSpec {
     }
     closeCount.get() shouldBe 1
   }
-
 }

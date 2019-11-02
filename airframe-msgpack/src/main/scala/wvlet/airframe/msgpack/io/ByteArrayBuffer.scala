@@ -16,7 +16,6 @@ package wvlet.airframe.msgpack.io
 import wvlet.airframe.msgpack.spi._
 
 object ByteArrayBuffer {
-
   def newBuffer(size: Int): ByteArrayBuffer = apply(new Array[Byte](size))
 
   def apply(a: Array[Byte]): ByteArrayBuffer = fromArray(a, 0, a.length)

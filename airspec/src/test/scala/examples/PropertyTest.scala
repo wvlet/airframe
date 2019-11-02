@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class PropertyTest extends AirSpec with PropertyCheck {
-
   def `hello`: Unit = {}
 
   def `forAll(Int)` : Unit = {

@@ -85,7 +85,6 @@ case class FinagleClientConfig(
 class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     extends HttpClient[Future, http.Request, http.Response]
     with LogSupport {
-
   private[this] val client = {
     val retryFilter                = new FinagleRetryFilter(config.retryContext)
     var finagleClient: Http.Client = config.initClient(Http.client)
@@ -196,7 +195,6 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resourceRequest: ResourceRequest,
       requestFilter: Request => Request = identity
   ): Future[Resource] = {
-
     // Read resource as JSON
     val resourceRequestJsonValue = codecFactory.of[ResourceRequest].toJSONObject(resourceRequest)
     val queryParams: Seq[String] =
@@ -304,7 +302,6 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r.setContentString(toJson(resource))
     convert[OperationResponse](send(r, requestFilter))
   }
-
 }
 
 /**

@@ -35,5 +35,4 @@ object ErrorCode {
   case object INVALID_STRING_CODING extends InvalidFormatError
   case object TOO_LARGE_MESSAGE     extends InvalidFormatError
   case object INVALID_EXT_FORMAT    extends InvalidFormatError
-
 }

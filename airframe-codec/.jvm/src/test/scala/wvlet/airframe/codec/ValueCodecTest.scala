@@ -62,5 +62,4 @@ class ValueCodecTest extends CodecSpec {
         fail("failed to parse msgpack")
     }
   }
-
 }

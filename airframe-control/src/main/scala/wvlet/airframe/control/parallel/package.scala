@@ -16,7 +16,6 @@ package wvlet.airframe.control
 import scala.reflect.ClassTag
 
 package object parallel {
-
   implicit class ToParallelSeq[T](source: Seq[T]) {
     def parallel: ParallelSeq[T] = ParallelSeq(source)
   }
@@ -29,7 +28,6 @@ package object parallel {
       private val source: Seq[T],
       private val parallelism: Int = Runtime.getRuntime.availableProcessors()
   ) {
-
     def withParallelism(parallelism: Int): ParallelSeq[T] = {
       copy(parallelism = parallelism)
     }
@@ -37,14 +35,12 @@ package object parallel {
     def map[R: ClassTag](f: T => R): Seq[R] = {
       Parallel.run(source, parallelism = parallelism)(f)
     }
-
   }
 
   case class ParallelIterator[T](
       private val source: Iterator[T],
       private val parallelism: Int = Runtime.getRuntime.availableProcessors()
   ) {
-
     def withParallelism(parallelism: Int): ParallelIterator[T] = {
       copy(parallelism = parallelism)
     }
@@ -52,7 +48,5 @@ package object parallel {
     def map[R: ClassTag](f: T => R): Iterator[R] = {
       Parallel.iterate(source, parallelism = parallelism)(f)
     }
-
   }
-
 }

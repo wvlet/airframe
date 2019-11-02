@@ -44,7 +44,6 @@ object MyJMXAppObj
   *
   */
 class JMXRegistryTest extends AirSpec {
-
   val agent = new JMXAgent(new JMXConfig())
 
   override protected def afterAll: Unit = {
@@ -99,5 +98,4 @@ class JMXRegistryTest extends AirSpec {
   def `support complex trait name`: Unit = {
     agent.register[MyJMXApp](new MyJMXApp {})
   }
-
 }

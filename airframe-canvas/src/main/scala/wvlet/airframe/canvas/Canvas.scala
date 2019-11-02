@@ -63,7 +63,6 @@ abstract class Canvas extends AutoCloseable {
 }
 
 object Canvas {
-
   private[canvas] val defaultCanvasAllocator = new OffHeapMemoryAllocator
 
   /**

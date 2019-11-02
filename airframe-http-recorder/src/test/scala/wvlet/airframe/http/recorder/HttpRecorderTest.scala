@@ -28,7 +28,6 @@ import scala.util.Random
   *
   */
 class HttpRecorderTest extends AirSpec {
-
   private def orderInsensitveHash(m: Map[String, String]): Int = {
     m.map { x =>
         s"${x._1}:${x._2}".hashCode
@@ -120,7 +119,6 @@ class HttpRecorderTest extends AirSpec {
         r2.headerMap.get("X-Airframe-Record-Time") shouldBe defined
       }
     }
-
   }
 
   def `programmable server`: Unit = {

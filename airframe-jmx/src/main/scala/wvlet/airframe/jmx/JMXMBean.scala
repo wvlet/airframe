@@ -69,11 +69,9 @@ case class JMXMBean(obj: AnyRef, mBeanInfo: MBeanInfo, attributes: Seq[MBeanPara
 }
 
 object JMXMBean extends LogSupport {
-
   private case class JMXMethod(m: MethodSurface, jmxAnnotation: JMX)
 
   def of[A: ru.WeakTypeTag](obj: A): JMXMBean = {
-
     // Find JMX description
     val cl = obj.getClass
 
@@ -145,7 +143,6 @@ object JMXMBean extends LogSupport {
         )
       }
     }
-
   }
 
   private def isNestedMBean(p: ParameterBase): Boolean = {
@@ -200,5 +197,4 @@ object JMXMBean extends LogSupport {
 //    }
 //  }
 //
-
 }

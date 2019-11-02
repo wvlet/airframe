@@ -24,7 +24,6 @@ import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] extends LogSupport {
-
   /**
     * Converting the object into MessagePack (= Array[Byte])
     */
@@ -48,7 +47,6 @@ trait MessageCodec[A] extends LogSupport {
       case None =>
         v.getLastValue.asInstanceOf[A]
     }
-
   }
 
   private def unpackError(e: Throwable): Throwable = {

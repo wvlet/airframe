@@ -34,7 +34,6 @@ class Logger(
       */
     @transient private[log] var wrapped: jl.Logger
 ) extends Serializable {
-
   import LogMacros._
 
   private def _log = {
@@ -176,7 +175,6 @@ class Logger(
 }
 
 object Logger {
-
   // Set a custom LogManager to show log messages even in shutdown hooks
   sys.props.put("java.util.logging.manager", "wvlet.log.AirframeLogManager")
 
@@ -283,5 +281,4 @@ object Logger {
     * @param loglevelFileCandidates
     */
   def scanLogLevels(loglevelFileCandidates: Seq[String]): Unit = { LogEnv.scanLogLevels(loglevelFileCandidates) }
-
 }

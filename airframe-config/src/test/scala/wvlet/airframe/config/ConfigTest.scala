@@ -32,7 +32,6 @@ case class ClassConfig(classes: Seq[String], classAssignments: Map[String, Strin
   *
   */
 class ConfigTest extends AirSpec {
-
   val configPaths = Seq("airframe-config/src/test/resources")
 
   private def loadConfig(env: String) =
@@ -294,5 +293,4 @@ class ConfigTest extends AirSpec {
         .registerFromYaml[SampleConfig]("myconfig.yml")
     }
   }
-
 }

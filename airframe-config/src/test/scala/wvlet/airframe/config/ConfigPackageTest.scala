@@ -22,7 +22,6 @@ trait AppTag
   *
   */
 class ConfigPackageTest extends AirSpec {
-
   private val configPaths = Seq("airframe-config/src/test/resources")
 
   def `bind config with Airframe design`: Unit = {

@@ -19,7 +19,6 @@ import wvlet.log.LogSupport
   * Design objects are composable
   */
 object DI_09_ComposingDesigns extends App with LogSupport {
-
   import wvlet.airframe._
 
   val d1 = newSilentDesign
@@ -45,5 +44,4 @@ object DI_09_ComposingDesigns extends App with LogSupport {
     val s = session.build[String] // Hello!
     info(s"${i} ${s}")
   }
-
 }

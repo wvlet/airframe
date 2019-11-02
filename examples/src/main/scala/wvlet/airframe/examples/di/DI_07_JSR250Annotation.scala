@@ -22,7 +22,6 @@ import wvlet.log.LogSupport
   * This is useful if you need to define lifecycle management hooks as methods in your trait.
   */
 object DI_07_JSR250Annotation extends App {
-
   trait MyService extends LogSupport {
     @PostConstruct
     def start = {
@@ -41,5 +40,4 @@ object DI_07_JSR250Annotation extends App {
     // PostConstrct method will be called here
   }
   // PreDestroy method will be called
-
 }

@@ -19,7 +19,6 @@ import wvlet.log.LogSupport
   * If you need to terminate a session explicitly (e.g., via REST call), bind[Session] is useful.
   */
 object DI_20_BindSession extends App {
-
   import wvlet.airframe._
 
   trait MyApi extends LogSupport {
@@ -34,5 +33,4 @@ object DI_20_BindSession extends App {
   newDesign.build[MyApi] { api =>
     api.shutdown
   }
-
 }

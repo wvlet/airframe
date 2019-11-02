@@ -48,14 +48,12 @@ object FactoryBindingLifecycleTest {
   trait ClientFactory {
     val factory = bindFactory[Int => MyClient]
   }
-
 }
 
 /**
   *
   */
 class FactoryBindingLifecycleTest extends AirSpec {
-
   import FactoryBindingLifecycleTest._
 
   def `run shutdown hooks`: Unit = {

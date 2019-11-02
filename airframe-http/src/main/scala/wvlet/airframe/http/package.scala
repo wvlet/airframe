@@ -17,9 +17,7 @@ package wvlet.airframe
   *
   */
 package object http {
-
   def httpDefaultDesign =
     newDesign
       .bind[ControllerProvider].to[ControllerProviderFromSession]
-
 }

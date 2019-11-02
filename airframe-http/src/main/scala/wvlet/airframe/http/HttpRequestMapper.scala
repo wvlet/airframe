@@ -27,7 +27,6 @@ import scala.util.Try
   * Mapping HTTP requests to method call arguments
   */
 object HttpRequestMapper extends LogSupport {
-
   private val stringMapCodec = MessageCodec.of[Map[String, String]]
 
   def buildControllerMethodArgs[Req](

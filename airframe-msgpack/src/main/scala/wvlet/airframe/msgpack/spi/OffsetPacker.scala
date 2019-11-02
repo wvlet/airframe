@@ -23,7 +23,6 @@ import wvlet.airframe.msgpack.spi.Code._
   * Write MessagePack code at a given position on the buffer and return the written byte length
   */
 object OffsetPacker {
-
   def packValue(cursor: WriteCursor, v: Value): Unit = {
     v match {
       case Value.NilValue =>

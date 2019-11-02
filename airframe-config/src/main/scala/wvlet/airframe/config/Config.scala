@@ -33,7 +33,6 @@ case class ConfigPaths(configPaths: Seq[String]) extends LogSupport {
 }
 
 object Config extends LogSupport {
-
   def empty = Config()
 
   private[config] def defaultConfigPath =
@@ -90,7 +89,6 @@ case class Config private[config] (env: ConfigEnv, holder: Map[Surface, ConfigHo
     extends Iterable[ConfigHolder]
     with Design.AdditiveDesignOption[Config]
     with LogSupport {
-
   override def toString: String = printConfig
 
   def printConfig: String = {

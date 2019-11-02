@@ -20,7 +20,6 @@ import wvlet.airframe.tracing.DIStats
   * This is useful to see unused bindings in the design.
   */
 object DI_91_Stats extends App {
-
   import wvlet.airframe._
   trait A {
     val b = bind[B]

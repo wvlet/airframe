@@ -24,7 +24,6 @@ import wvlet.log.LogSupport
 import scala.language.experimental.macros
 
 object Binder {
-
   sealed trait Binding extends Serializable {
     def forSingleton: Boolean = false
     def from: Surface
@@ -63,7 +62,6 @@ object Binder {
   }
 
   case class DependencyFactory(from: Surface, dependencyTypes: Seq[Surface], factory: Any) {
-
     override def toString: String = {
       val deps = if (dependencyTypes.isEmpty) {
         "()"
@@ -102,7 +100,6 @@ import wvlet.airframe.Binder._
   *
   */
 class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCode) extends LogSupport {
-
   /**
     * Bind a singleton instance of B to A
     *

@@ -24,13 +24,11 @@ object NestedOverrideTest {
   *
   */
 class NestedOverrideTest extends AirSpec {
-
   private val configPaths = Seq("airframe-config/src/test/resources")
 
   import NestedOverrideTest._
 
   def `override nested yaml`: Unit = {
-
     val config =
       Config(env = "default", configPaths = configPaths)
         .registerFromYaml[LogConfig]("override.yml")
@@ -45,5 +43,4 @@ class NestedOverrideTest extends AirSpec {
 
     configDev shouldBe LogConfig(LogFileConfig("access.log", 5))
   }
-
 }

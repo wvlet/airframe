@@ -27,7 +27,6 @@ import scala.util.Random
 case class ExecutorConfig(numThreads: Int)
 
 object ServiceMixinExample {
-
   trait Printer {
     def print(s: String): Unit
   }
@@ -210,7 +209,6 @@ object ServiceMixinExample {
   }
 
   class MyModule extends LogSupport {
-
     val initCount  = new AtomicInteger(0)
     val startCount = new AtomicInteger(0)
     var closeCount = new AtomicInteger(0)
@@ -467,7 +465,6 @@ class AirframeTest extends AirSpec {
 
     val m = d.newSession.build[NonAbstractModule]
     m shouldBeTheSameInstanceAs SingletonOfNonAbstractModules
-
   }
 
   def `create single with inject eagerly`: Unit = {
@@ -516,7 +513,6 @@ class AirframeTest extends AirSpec {
   }
 
   def `throw MISSING_SESSION`: Unit = {
-
     warn("Running MISSING_SESSION test")
     val caught = intercept[MISSING_SESSION] {
       Session.findSession(Surface.of[Test], new Test {})

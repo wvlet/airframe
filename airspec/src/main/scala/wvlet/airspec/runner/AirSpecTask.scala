@@ -31,7 +31,6 @@ private[airspec] class AirSpecTask(
     classLoader: ClassLoader
 ) extends sbt.testing.Task
     with LogSupport {
-
   override def tags(): Array[String] = Array.empty
 
   /**

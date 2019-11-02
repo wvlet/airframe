@@ -14,7 +14,6 @@
 package wvlet.airframe.http
 
 object Automaton {
-
   def empty[Node, Token]: Automaton[Node, Token] = new Automaton(Set.empty, Set.empty)
 
   case class Edge[Node, Token](src: Node, token: Token, dest: Node)
@@ -106,7 +105,6 @@ object Automaton {
       init: Node,
       defaultToken: Token
   ) {
-
     val initStateId = nodeTable(init)
 
     // (currentStateId, tokenId) -> (nextState, nextStateId)
@@ -143,5 +141,4 @@ object Automaton {
         }
     }
   }
-
 }

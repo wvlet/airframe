@@ -37,7 +37,6 @@ class MapBindingTest extends AirSpec {
 }
 
 object MapBindingTest {
-
   trait Handler {
     def handle: String
   }

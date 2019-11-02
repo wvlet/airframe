@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   *
   */
 object Log_01_LogSupport extends App {
-
   import wvlet.log.LogSupport
 
   val name = "airframe-log"

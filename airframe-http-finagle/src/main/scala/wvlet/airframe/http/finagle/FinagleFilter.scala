@@ -28,7 +28,6 @@ class FinagleRouter(
     controllerProvider: ControllerProvider,
     responseHandler: ResponseHandler[Request, Response]
 ) extends SimpleFilter[Request, Response] {
-
   private val dispatcher =
     HttpRequestDispatcher.newDispatcher(config.router, controllerProvider, FinagleBackend, responseHandler)
 

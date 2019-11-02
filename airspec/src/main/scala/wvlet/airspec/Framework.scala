@@ -40,7 +40,6 @@ class Framework extends sbt.testing.Framework {
 }
 
 object Framework {
-
   private[airspec] object AirSpecClassFingerPrint extends SubclassFingerprint {
     override def isModule: Boolean                  = false
     override def superclassName(): String           = "wvlet.airspec.AirSpec"
@@ -52,5 +51,4 @@ object Framework {
     override def superclassName(): String           = "wvlet.airspec.AirSpec"
     override def requireNoArgConstructor(): Boolean = false
   }
-
 }

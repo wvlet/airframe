@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
 import wvlet.airframe._
 
 object LazyStartTest {
-
   type F1 = AtomicBoolean
   type F2 = AtomicBoolean
 

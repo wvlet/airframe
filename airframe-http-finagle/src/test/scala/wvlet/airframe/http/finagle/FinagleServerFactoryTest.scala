@@ -26,7 +26,6 @@ import wvlet.log.io.IOUtil
   *
   */
 class FinagleServerFactoryTest extends AirSpec {
-
   def `start multiple FinagleServers`: Unit = {
     val p1 = IOUtil.unusedPort
     val p2 = IOUtil.unusedPort

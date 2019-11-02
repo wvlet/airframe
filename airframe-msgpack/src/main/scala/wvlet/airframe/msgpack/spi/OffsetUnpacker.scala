@@ -29,7 +29,6 @@ import scala.collection.mutable
   * Read a message pack data from a given offset in the buffer. The last read byte length can be checked by calling [[ReadCursor.lastReadLength]] method.
   */
 object OffsetUnpacker {
-
   def peekNextFormat(cursor: ReadCursor): MessageFormat = {
     val b  = cursor.peekByte
     val mf = MessageFormat.of(b)

@@ -133,7 +133,6 @@ class BufferPackerImpl(bufferPacker: MessageBufferPacker) extends PackerImpl(buf
 }
 
 object PackerImpl {
-
   def timeStampExtBytes(epochSecond: Long, nanoAdjustment: Int): Array[Byte] = {
     val buf    = ByteArrayBuffer.newBuffer(15)
     val cursor = WriteCursor(buf, 0)
@@ -167,5 +166,4 @@ object PackerImpl {
         b.build()
     }
   }
-
 }

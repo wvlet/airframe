@@ -29,7 +29,6 @@ trait RouteMatcher {
 }
 
 object RouteMatcher extends LogSupport {
-
   def build(routes: Seq[Route]): RouteMatcher = {
     new RouteMatcherByHttpMethodTypes(routes)
   }
@@ -205,5 +204,4 @@ object RouteMatcher extends LogSupport {
     // Convert the NFA into DFA to uniquely determine the next state in the automation.
     g.toDFA(Init, defaultToken = anyToken)
   }
-
 }

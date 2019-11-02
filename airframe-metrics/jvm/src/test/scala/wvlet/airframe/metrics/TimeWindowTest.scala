@@ -24,7 +24,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class TimeWindowTest extends AirSpec {
-
   val t    = TimeWindow.withTimeZone("PDT").withOffset("2016-06-26 01:23:45-0700")
   val zone = t.zone
   debug(s"now: ${t.now}")
@@ -260,5 +259,4 @@ class TimeWindowTest extends AirSpec {
       TimeZone.setDefault(default)
     }
   }
-
 }

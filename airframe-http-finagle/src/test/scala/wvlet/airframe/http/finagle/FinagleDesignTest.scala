@@ -25,7 +25,6 @@ import wvlet.log.io.IOUtil
   *
   */
 class FinagleDesignTest extends AirSpec {
-
   trait MyTestServer {
     @Endpoint(path = "/hello")
     def hello: String = {
@@ -72,5 +71,4 @@ class FinagleDesignTest extends AirSpec {
       }
     }
   }
-
 }

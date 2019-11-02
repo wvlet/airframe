@@ -37,7 +37,6 @@ import scala.reflect.runtime.{universe => ru}
   * Command launcher
   */
 object Launcher extends LogSupport {
-
   /**
     * Create a new Launcher of the given type
     *
@@ -111,7 +110,6 @@ object Launcher extends LogSupport {
     * Create a launcher from a method in a class
     */
   private def newMethodLauncher(m: MethodSurface, command: command): CommandLauncher = {
-
     val parser       = new OptionParser(m)
     val defaultUsage = parser.schema.args.map(x => s"[${x.name}]").mkString(" ")
 
@@ -149,7 +147,6 @@ private[launcher] case class LauncherConfig(
 )
 
 class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
-
   def printHelp: Unit = {
     mainLauncher.printHelpInternal(config, List(mainLauncher))
   }
@@ -238,7 +235,6 @@ class CommandLauncher(
     private[launcher] val subCommands: Seq[CommandLauncher],
     defaultCommand: Option[LauncherInstance => Any]
 ) extends LogSupport {
-
   def name: String        = launcherInfo.name
   def description: String = launcherInfo.description
   def usage: String       = launcherInfo.usage

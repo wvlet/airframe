@@ -19,7 +19,6 @@ import DesignTest._
 import wvlet.airspec.AirSpec
 
 object DesignSerializationTest {
-
   def serialize(d: Design): Array[Byte] = {
     val b  = new ByteArrayOutputStream()
     val oo = new ObjectOutputStream(b)

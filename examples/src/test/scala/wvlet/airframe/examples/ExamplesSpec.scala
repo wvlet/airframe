@@ -21,7 +21,6 @@ import wvlet.log.io.Resource
   *
   */
 class ExamplesSpec extends AirSpec {
-
   private def runAll(packageName: String): Unit = {
     for {
       cl  <- Resource.findClasses(s"wvlet.airframe.examples.${packageName}", classOf[App]).sortBy(_.getSimpleName)
@@ -60,5 +59,4 @@ class ExamplesSpec extends AirSpec {
   def `surface examples`: Unit = {
     runAll("surface")
   }
-
 }

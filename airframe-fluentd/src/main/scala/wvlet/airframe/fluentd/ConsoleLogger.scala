@@ -21,7 +21,6 @@ import wvlet.log.{LogLevel, LogSupport}
 class ConsoleLogger(val tagPrefix: Option[String] = None, logLevel: LogLevel = LogLevel.INFO)
     extends MetricLogger
     with LogSupport {
-
   override def withTagPrefix(newTagPrefix: String): ConsoleLogger = {
     new ConsoleLogger(Some(newTagPrefix))
   }

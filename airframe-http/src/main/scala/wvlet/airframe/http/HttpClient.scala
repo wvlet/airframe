@@ -30,7 +30,6 @@ import scala.reflect.runtime.{universe => ru}
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
-
   /**
     * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry limit)
     *
@@ -217,7 +216,6 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
 }
 
 object HttpClient extends LogSupport {
-
   def defaultHttpClientRetry[Req: HttpRequestAdapter: ClassTag, Resp: HttpResponseAdapter]: RetryContext = {
     Retry
       .withBackOff(maxRetry = 10)
@@ -248,5 +246,4 @@ object HttpClient extends LogSupport {
   def urlEncode(s: String): String = {
     URLEncoder.encode(s, "UTF-8")
   }
-
 }

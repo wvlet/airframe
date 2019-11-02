@@ -20,7 +20,6 @@ import java.time.{DayOfWeek, ZonedDateTime}
   *
   */
 sealed abstract class TimeWindowUnit(val symbol: String, val secondsInUnit: Int) {
-
   /**
     * Truncate the given time to this unit
     */
@@ -29,7 +28,6 @@ sealed abstract class TimeWindowUnit(val symbol: String, val secondsInUnit: Int)
 }
 
 object TimeWindowUnit {
-
   private val unitTable: Map[String, TimeWindowUnit] = Map(
     "s" -> TimeWindowUnit.Second,
     "m" -> TimeWindowUnit.Minute,

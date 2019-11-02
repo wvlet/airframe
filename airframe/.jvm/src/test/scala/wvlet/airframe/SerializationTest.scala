@@ -17,7 +17,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object SerializationTest extends LogSupport {
-
   case class A1(v: Int = 0)
   case class App(a1: A1) extends LogSupport
 
@@ -36,7 +35,6 @@ object SerializationTest extends LogSupport {
 import DesignSerializationTest._
 
 class SerializationTest extends AirSpec {
-
   def `serialize provider`: Unit = {
     import wvlet.airframe.SerializationTest._
     val b  = serialize(d)

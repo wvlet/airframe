@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
 case class SampleResponse(id: Int, name: String)
 
 trait TestMessagePackApi {
-
   @Endpoint(path = "/v1/hello")
   def hello: SampleResponse = {
     SampleResponse(1, "leo")
@@ -33,7 +32,6 @@ trait TestMessagePackApi {
   *
   */
 class MessagePackResponseTest extends AirSpec {
-
   def `support Accept: application/x-msgpack`: Unit = {
     newFinagleServerDesign(name = "msgpack-test-server", router = Router.of[TestMessagePackApi]).build[FinagleServer] {
       server =>
@@ -51,5 +49,4 @@ class MessagePackResponseTest extends AirSpec {
         }
     }
   }
-
 }

@@ -26,7 +26,6 @@ import scala.util.{Failure, Success, Try}
   * Helper class to overwrite config objects using Java Properties
   */
 object PropertiesConfig extends LogSupport {
-
   case class Prefix(prefix: String, tag: Option[String]) {
     override def toString = tag match {
       case Some(t) => s"${prefix}@${t}"
@@ -129,5 +128,4 @@ object PropertiesConfig extends LogSupport {
 
     Config(config.env, newConfigs.toMap)
   }
-
 }

@@ -19,7 +19,6 @@ import java.util.logging.Level
   * log level definitions
   */
 object LogLevel {
-
   case object OFF   extends LogLevel(0, Level.OFF, "off")
   case object ERROR extends LogLevel(1, Level.SEVERE, "error")
   case object WARN  extends LogLevel(2, Level.WARNING, "warn")

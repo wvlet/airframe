@@ -32,7 +32,6 @@ class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleSe
       ),
       finagleService
     ) {
-
   def clearSession: Unit = {
     recordStore.clearSession
   }
@@ -57,7 +56,6 @@ class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleSe
 }
 
 object HttpRecorderServer {
-
   def newRecordingService(recordStore: HttpRecordStore, destClient: Service[Request, Response]): FinagleService = {
     new RecordingFilter(recordStore) andThen destClient
   }

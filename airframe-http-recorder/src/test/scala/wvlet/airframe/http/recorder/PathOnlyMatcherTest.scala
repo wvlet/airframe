@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class PathOnlyMatcherTest extends AirSpec {
-
   protected override def design: Design = {
     val config = HttpRecorderConfig(requestMatcher = HttpRequestMatcher.PathOnlyMatcher)
     Design.newDesign
@@ -53,5 +52,4 @@ class PathOnlyMatcherTest extends AirSpec {
     client.get[String]("/hello") shouldBe "hello"
     client.get[String]("/hello-hello") shouldBe "hello-hello"
   }
-
 }

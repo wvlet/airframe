@@ -21,7 +21,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class TimeParserTest extends AirSpec {
-
   private def parse(str: String, expected: String): Unit = {
     val z   = TimeParser.parse(str, UTC)
     val ans = ZonedDateTime.parse(expected)
@@ -35,7 +34,6 @@ class TimeParserTest extends AirSpec {
   }
 
   def `parse date time`: Unit = {
-
     // Time with time zone
     parse("2017-01-01 23:01:23-0700", "2017-01-01T23:01:23-07:00")
     parse("2017-01-01 23:01:23-07:00", "2017-01-01T23:01:23-07:00")
@@ -58,5 +56,4 @@ class TimeParserTest extends AirSpec {
     parse("2016-12-01 08:00:01", "2016-12-01T08:00:01Z")
     parse("2016-12-01 08:00:01", "2016-12-01T08:00:01Z")
   }
-
 }

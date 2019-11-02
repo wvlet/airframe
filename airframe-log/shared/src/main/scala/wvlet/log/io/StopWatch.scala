@@ -286,7 +286,6 @@ trait TimeReport extends Ordered[TimeReport] {
 }
 
 class StopWatch {
-
   object State extends Enumeration {
     val RUNNING, STOPPED = Value
   }

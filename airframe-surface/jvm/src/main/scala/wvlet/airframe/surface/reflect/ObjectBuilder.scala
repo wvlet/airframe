@@ -35,7 +35,6 @@ import scala.language.existentials
   *
   */
 object ObjectBuilder extends LogSupport {
-
   def apply(s: Surface): ObjectBuilder = {
     new SimpleObjectBuilder(s)
   }
@@ -55,7 +54,6 @@ object ObjectBuilder extends LogSupport {
 }
 
 trait GenericBuilder {
-
   def set(path: String, value: Any): Unit = set(Path(path), value)
   def set(path: Path, value: Any): Unit
 
@@ -68,13 +66,10 @@ trait GenericBuilder {
   * @author leo
   */
 trait ObjectBuilder extends GenericBuilder {
-
   def build: Any
-
 }
 
 trait StandardBuilder extends GenericBuilder with LogSupport {
-
   import ObjectBuilder._
 
   protected val holder = collection.mutable.Map.empty[String, BuilderElement]

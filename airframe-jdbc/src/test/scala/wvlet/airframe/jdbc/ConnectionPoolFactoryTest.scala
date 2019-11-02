@@ -68,7 +68,6 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
 
     pool.executeUpdate("drop table if exists test")
   }
-
 }
 
 /**

@@ -54,5 +54,4 @@ class ConfigOverrideTest extends AirSpec {
     appConfig.coordinatorAddress shouldBe "mylocalhost:8081"
     appConfig.name shouldBe "myapp"
   }
-
 }

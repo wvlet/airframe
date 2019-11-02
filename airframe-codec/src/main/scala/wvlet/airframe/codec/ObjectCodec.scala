@@ -75,7 +75,6 @@ class ParamListCodec(
   }
 
   private def getParamDefaultValue(p: Parameter): Any = {
-
     def returnZero: Any = {
       if (p.isRequired) {
         // If the parameter has @required annotation, we can't
@@ -184,7 +183,6 @@ case class ObjectCodec[A](surface: Surface, paramCodec: Seq[MessageCodec[_]])
     extends MessageCodec[A]
     with PackAsMapSupport[A]
     with LogSupport {
-
   private val paramListCodec = new ParamListCodec(surface.name, surface.params.toIndexedSeq, paramCodec)
 
   override def pack(p: Packer, v: A): Unit = {

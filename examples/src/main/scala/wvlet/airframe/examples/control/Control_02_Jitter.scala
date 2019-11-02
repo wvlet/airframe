@@ -20,7 +20,6 @@ import scala.concurrent.TimeoutException
   * retry interval timings. See also https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
   */
 object Control_02_Jitter {
-
   import wvlet.airframe.control.Retry
 
   Retry
@@ -32,5 +31,4 @@ object Control_02_Jitter {
     .run {
       // body
     }
-
 }

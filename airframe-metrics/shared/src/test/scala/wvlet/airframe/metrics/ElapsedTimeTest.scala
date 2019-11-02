@@ -194,5 +194,4 @@ class ElapsedTimeTest extends AirSpec {
   }
 
   def `support rounding`: Unit = {}
-
 }

@@ -5,7 +5,6 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, 
 import wvlet.log.io.IOUtil
 
 object SerializationTest {
-
   trait A extends LogSupport {
     debug("new A")
     def hello = debug("hello")
@@ -16,7 +15,6 @@ object SerializationTest {
   *
   */
 class SerializationTest extends Spec {
-
   import SerializationTest._
 
   def `logger should be serializable`: Unit = {

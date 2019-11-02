@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   * This pattern is useful if you do not want to include the dependency to Airframe to some classes.
   */
 object DI_02_ConstructorInjection extends App {
-
   import wvlet.airframe._
 
   case class MyAppConfig(port: Int = 8080)
@@ -46,5 +45,4 @@ object DI_02_ConstructorInjection extends App {
   d2.build[MyApp] { app =>
     app.run // Shows MyApp with MyAppConfig(10010)
   }
-
 }

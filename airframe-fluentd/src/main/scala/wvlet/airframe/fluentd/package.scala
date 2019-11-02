@@ -19,7 +19,6 @@ import wvlet.log.LogLevel
   *
   */
 package object fluentd {
-
   type TDLogger = MetricLogger
 
   /**
@@ -43,7 +42,6 @@ package object fluentd {
       fileBackupDir: String = null,
       errorHandler: ErrorHandler = null
   ): Design = {
-
     newDesign
       .bind[MetricLogger].toInstance(
         Fluentd.newFluentdLogger(
@@ -83,7 +81,6 @@ package object fluentd {
       fileBackupDir: String = null,
       errorHandler: ErrorHandler = null
   ): Design = {
-
     newDesign
       .bind[MetricLogger].toInstance(
         Fluentd.newTDLogger(
@@ -112,5 +109,4 @@ package object fluentd {
     newDesign
       .bind[MetricLogger].toInstance(new ConsoleLogger(logLevel = LogLevel.DEBUG))
   }
-
 }

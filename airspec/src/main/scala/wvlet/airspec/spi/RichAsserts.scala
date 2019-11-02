@@ -83,7 +83,6 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
   protected def empty   = EmptyTarget
 
   implicit protected class ShouldBe(val value: Any) {
-
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {
       AssertionFailure(s"${pp(value)} didn't match with ${pp(expected)}", code)
     }

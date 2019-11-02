@@ -38,7 +38,6 @@ import scala.collection.mutable.WeakHashMap
   * @author leo
   */
 object CName {
-
   private val cnameTable = newCacheMap[String, CName]
 
   def apply(name: String): CName = {
@@ -121,7 +120,6 @@ object CName {
       naturalNameTable.getOrElseUpdate(varName, translate(varName))
     }
   }
-
 }
 
 /**
@@ -175,5 +173,4 @@ class CName(val canonicalName: String, val naturalName: String) extends Comparab
     }
     sb.toString
   }
-
 }

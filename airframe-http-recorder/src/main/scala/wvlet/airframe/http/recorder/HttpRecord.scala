@@ -38,7 +38,6 @@ case class HttpRecord(
     responseBody: String,
     createdAt: Instant
 ) {
-
   def summary: String = {
     s"${method}(${responseCode}) ${destHost}${path}: ${responseBody.substring(0, 30.min(responseBody.size))} ..."
   }

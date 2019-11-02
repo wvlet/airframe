@@ -19,7 +19,6 @@ import wvlet.log.LogSupport
   *
   */
 object Path extends LogSupport {
-
   def root: Path    = Root
   def current: Path = Current
 
@@ -64,7 +63,6 @@ object Path extends LogSupport {
     override def iterator         = Iterator.empty
     override def /(child: String) = new RelativePath(None, child)
   }
-
 }
 
 /**

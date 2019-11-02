@@ -147,7 +147,6 @@ object FinagleServer extends LogSupport {
   * A factory to create new finagle server
   */
 trait FinagleServerFactory extends AutoCloseable with LogSupport {
-
   private var createdServers = List.empty[FinagleServer]
 
   protected val controllerProvider = bind[ControllerProvider]

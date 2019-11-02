@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class AirSpec_02_ReuseTests extends AirSpec {
-
   // A template for reusable test cases
   class Fixture[A](data: Seq[A]) extends AirSpec {
     override protected def beforeAll: Unit = {

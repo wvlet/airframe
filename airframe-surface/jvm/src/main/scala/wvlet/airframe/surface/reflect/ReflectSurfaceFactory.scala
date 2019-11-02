@@ -26,7 +26,6 @@ import scala.reflect.runtime.{universe => ru}
   *
   */
 object ReflectSurfaceFactory extends LogSupport {
-
   import ru._
 
   private type TypeName = String

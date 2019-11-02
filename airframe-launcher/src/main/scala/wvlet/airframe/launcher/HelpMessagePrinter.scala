@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
   * Interface for printing help messages
   */
 trait HelpMessagePrinter {
-
   def render(
       commandName: String,
       arguments: Seq[CLArgItem],
@@ -31,11 +30,9 @@ trait HelpMessagePrinter {
       globalOptions: Seq[CLOption],
       subCommands: Seq[CommandLauncher]
   ): String
-
 }
 
 object HelpMessagePrinter extends LogSupport {
-
   /**
     * Teh default help message printer in this format:
     * {{{
@@ -163,5 +160,4 @@ object HelpMessagePrinter extends LogSupport {
     }
     s.mkString("\n")
   }
-
 }

@@ -19,7 +19,6 @@ import wvlet.airframe.codec.MessageCodec
   *
   */
 object Codec_02_ObjectCodec {
-
   case class A(
       port: Int,
       name: String,
@@ -29,5 +28,4 @@ object Codec_02_ObjectCodec {
   val codec = MessageCodec.of[A]
   val a     = codec.unpackJson("""{"port":8080, "name":"app", "timeout":0.1}""")
   // a = A(8080, "app", 0.1)
-
 }

@@ -48,7 +48,6 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
 }
 
 object HttpFilter {
-
   /**
     * A base class for generating filters for Finagle or other HTTP server backend
     * @tparam Req
@@ -116,7 +115,6 @@ object HttpFilter {
       }
     }
   }
-
 }
 
 /***

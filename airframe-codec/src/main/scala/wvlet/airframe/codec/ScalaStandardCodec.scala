@@ -42,7 +42,6 @@ object ScalaStandardCodec {
   }
 
   case class TupleCodec(elementCodec: Seq[MessageCodec[_]]) extends MessageCodec[Product] {
-
     override def pack(p: Packer, v: Product): Unit = {
       val arity = v.productArity
       p.packArrayHeader(arity)

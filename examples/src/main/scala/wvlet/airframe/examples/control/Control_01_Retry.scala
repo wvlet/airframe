@@ -19,7 +19,6 @@ import scala.concurrent.TimeoutException
   *
   */
 object Control_01_Retry extends App {
-
   import wvlet.airframe.control.Retry
 
   Retry
@@ -31,5 +30,4 @@ object Control_01_Retry extends App {
     .run {
       // body
     }
-
 }

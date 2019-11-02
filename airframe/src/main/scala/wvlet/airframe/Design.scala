@@ -298,7 +298,6 @@ class Design private[airframe] (
 }
 
 object Design {
-
   /**
     * Empty design.
     * Using Vector as a binding holder for performance and serialization reason

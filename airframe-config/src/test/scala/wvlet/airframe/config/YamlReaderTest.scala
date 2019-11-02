@@ -23,7 +23,6 @@ case class DB(accountId: Int, database: String, table: Seq[String])
   *
   */
 class YamlReaderTest extends AirSpec {
-
   val yml = Resource.find("myconfig.yml").map(_.getPath).getOrElse {
     fail("myconfig.yml is not found")
   }

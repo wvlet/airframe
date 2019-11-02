@@ -20,7 +20,6 @@ import scala.util.parsing.combinator.RegexParsers
   * Tokenize single string representations of command line arguments into Array[String]
   */
 object CommandLineTokenizer extends RegexParsers with LogSupport {
-
   private def unquote(s: String): String = s.substring(1, s.length() - 1)
 
   def stringLiteral: Parser[String] =

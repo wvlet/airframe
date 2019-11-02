@@ -302,7 +302,6 @@ object Value {
     sb.append(HEX_TABLE((ch >> 4) & 0x0f))
     sb.append(HEX_TABLE(ch & 0x0f))
   }
-
 }
 
 object ValueFactory {

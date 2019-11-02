@@ -78,7 +78,6 @@ sealed trait Expression extends TreeNode[Expression] with Product {
     }
     productIterator.foreach(recursiveTraverse)
   }
-
 }
 
 trait LeafExpression extends Expression {

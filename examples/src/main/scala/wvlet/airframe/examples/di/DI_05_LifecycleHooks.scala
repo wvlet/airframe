@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
   * An example of adding lifecycle hooks to the injected service
   */
 object DI_05_LifecycleHooks extends App {
-
   import wvlet.airframe._
 
   trait MyApp extends LogSupport {

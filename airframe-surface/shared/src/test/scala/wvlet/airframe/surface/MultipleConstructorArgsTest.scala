@@ -14,11 +14,9 @@
 package wvlet.airframe.surface
 
 object MultipleConstructorArgsTest {
-
   case class MultiC(a: Int)(implicit val s: String) {
     def msg: String = s"${a}:${s}"
   }
-
 }
 
 import MultipleConstructorArgsTest._
@@ -26,7 +24,6 @@ class MultipleConstructorArgsTest extends SurfaceSpec {
   scalaJsSupport
 
   def `support muliple constructor args`: Unit = {
-
     val s: Surface = Surface.of[MultiC]
     assert(s.objectFactory.nonEmpty)
 

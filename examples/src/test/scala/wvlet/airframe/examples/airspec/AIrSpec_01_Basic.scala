@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
   *
   */
 object AirSpec_01_Basic extends AirSpec {
-
   def testWithAssertion: Unit = {
     assert(1 == 1)
     assert("hello" == "hello")

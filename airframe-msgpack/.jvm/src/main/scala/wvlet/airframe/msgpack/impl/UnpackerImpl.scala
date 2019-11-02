@@ -178,7 +178,6 @@ class UnpackerImpl(unpacker: MessageUnpacker) extends Unpacker {
 }
 
 object UnpackerImpl {
-
   private[impl] val conversionTable = {
     import org.msgpack.{core => v8}
     val m = Map.newBuilder[v8.MessageFormat, MessageFormat]

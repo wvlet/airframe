@@ -22,7 +22,6 @@ import wvlet.airframe.surface.Surface
   *
   */
 class StandardCodecTest extends CodecSpec {
-
   def `support File`: Unit = {
     val codec          = MessageCodec.of[File]
     def check(v: File) = checkCodec(codec, v)

@@ -22,7 +22,6 @@ import wvlet.log.LogSupport
   *
   */
 object Control_03_CustomRetry extends LogSupport {
-
   val withRetry =
     Retry
       .withJitter()

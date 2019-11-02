@@ -23,7 +23,6 @@ object SurfaceJVMTest {
 
 import SurfaceJVMTest._
 class SurfaceJVMTest extends SurfaceSpec {
-
   def `resolve ParSeq`: Unit = {
     pendingUntil("ParSeq is not available in Scala 2.13")
     //import scala.collection.parallel.ParSeq

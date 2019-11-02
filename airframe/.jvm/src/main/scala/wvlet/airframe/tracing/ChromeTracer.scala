@@ -146,7 +146,6 @@ class ChromeTracer(s: OutputStream) extends Tracer {
 }
 
 object ChromeTracer {
-
   /**
     * Create a chrome tracing format tracer to save the data to the given file
     *
@@ -172,5 +171,4 @@ object ChromeTracer {
     def toJson: String =
       s"""{"name":"${name}","cat":"${cat}","ph":"${ph}","ts":${ts},"pid":${pid},"tid":${tid},"args":${args}}"""
   }
-
 }

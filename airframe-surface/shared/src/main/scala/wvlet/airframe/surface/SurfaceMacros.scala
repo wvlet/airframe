@@ -20,7 +20,6 @@ import scala.reflect.macros.{blackbox => sm}
   *
   */
 private[surface] object SurfaceMacros {
-
   def surfaceOf[A: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
     val targetType = implicitly[c.WeakTypeTag[A]].tpe
@@ -55,7 +54,6 @@ private[surface] object SurfaceMacros {
   }
 
   private[surface] class SurfaceGenerator[C <: sm.Context](val c: C) {
-
     import c.universe._
 
     private val seen       = scala.collection.mutable.Set[Type]()
@@ -363,7 +361,6 @@ private[surface] object SurfaceMacros {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index            = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
-
           // Find the default argument of the method parameter
           val defaultValue =
             companion.flatMap { x =>
@@ -610,5 +607,4 @@ private[surface] object SurfaceMacros {
       mod
     }
   }
-
 }

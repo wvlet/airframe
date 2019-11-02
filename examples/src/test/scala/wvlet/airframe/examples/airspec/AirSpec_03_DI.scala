@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 object AirSpec_03_DI extends AirSpec {
-
   case class Config(port: Int)
   class MyService(val config: Config)
 

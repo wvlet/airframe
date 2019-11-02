@@ -209,5 +209,4 @@ class ShouldBeTest extends AirSpec {
     checkEqual(a, null)
     checkNotEqual("a", null)
   }
-
 }

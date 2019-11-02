@@ -14,7 +14,6 @@
 package wvlet.airframe.config
 
 object ConfigProviderTest {
-
   case class ConfigA(id: Int, fullName: String)
 
   trait MyApp {
@@ -28,7 +27,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class ConfigProviderTest extends AirSpec {
-
   def `provide config objects with Airframe`: Unit = {
     pending
     val config =

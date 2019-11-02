@@ -19,14 +19,12 @@ import wvlet.log.LogSupport
   * To switch the implementation, override the binding in the design
   */
 object DI_08_OverrideBinding extends App {
-
   import wvlet.airframe._
 
   trait DB extends LogSupport {
     def query(sql: String): Unit = {
       info(s"Execute: ${sql}")
     }
-
   }
 
   trait MockDB extends DB {

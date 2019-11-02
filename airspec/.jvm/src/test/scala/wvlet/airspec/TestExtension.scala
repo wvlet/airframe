@@ -52,7 +52,6 @@ trait CustomSpec extends AirSpec with LogSupport {
 }
 
 class MyServerSpec extends CustomSpec {
-
   // MyServer will be shared by the all test cases
   def test1(server: MyServer): Unit = {
     debug(s"run test1")
@@ -74,7 +73,6 @@ class MyServerSpec extends CustomSpec {
 }
 
 class MyServer2Spec extends CustomSpec {
-
   protected override def localDesign: Design = {
     Design.newDesign
       .bind[MyServerConfig].toInstance(MyServerConfig("B"))

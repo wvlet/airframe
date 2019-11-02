@@ -27,7 +27,6 @@ trait HttpRequestMatcher {
 }
 
 object HttpRequestMatcher {
-
   // Http headers to ignore for request hashing purposes
   def defaultExcludeHeaderPrefixes: Seq[String] = Seq(
     "date",           // unstable header
@@ -46,7 +45,6 @@ object HttpRequestMatcher {
   class DefaultHttpRequestMatcher(excludeHeaderPrefixes: Seq[String] = defaultExcludeHeaderPrefixes)
       extends HttpRequestMatcher
       with LogSupport {
-
     private val excludeHeaderPrefixesLowerCase: Seq[String] = excludeHeaderPrefixes.map(_.toLowerCase(Locale.ENGLISH))
 
     def computeHash(request: Request): Int = {

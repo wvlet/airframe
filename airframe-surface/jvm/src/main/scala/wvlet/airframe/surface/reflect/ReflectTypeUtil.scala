@@ -25,7 +25,6 @@ import scala.language.existentials
   *
   */
 object ReflectTypeUtil extends LogSupport {
-
   @inline def cls[A](obj: A): Class[_] = {
     if (obj == null) {
       classOf[AnyRef]
@@ -197,5 +196,4 @@ object ReflectTypeUtil extends LogSupport {
       case _                       => classOf[Any]
     }
   }
-
 }

@@ -58,5 +58,4 @@ private[airspec] object Compat extends CompatApi with LogSupport {
     }
     name
   }
-
 }

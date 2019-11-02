@@ -40,7 +40,6 @@ class ValueTypeTest extends AirSpec {
   }
 
   def `lookup ValueType from a byte value`: Unit = {
-
     def check(b: Byte, tpe: ValueType): Unit = {
       MessageFormat.of(b).valueType shouldBe tpe
     }

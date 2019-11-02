@@ -7,7 +7,6 @@ import wvlet.log.JSConsoleLogHandler.JSLogColorPalette
 
 class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandler.DEFAULT_COLOR_PALETTE)
     extends jl.Handler {
-
   override def publish(record: jl.LogRecord): Unit = {
     record match {
       case r: LogRecord =>
@@ -38,7 +37,6 @@ class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandl
 }
 
 object JSConsoleLogHandler {
-
   val DEFAULT_COLOR_PALETTE: JSLogColorPalette = new JSLogColorPalette()
 
   def apply(): JSConsoleLogHandler           = new JSConsoleLogHandler(DEFAULT_COLOR_PALETTE)

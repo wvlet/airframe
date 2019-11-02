@@ -27,7 +27,6 @@ import scala.collection.compat._
   *
   */
 class JDBCCodecTest extends AirSpec {
-
   protected def withQuery[U](sql: String)(body: ResultSet => U): U = {
     Class.forName("org.sqlite.JDBC")
     withResource(DriverManager.getConnection("jdbc:sqlite::memory:")) { conn =>

@@ -166,5 +166,4 @@ class MessageHolder {
   def setIncompatibleFormatException[A](codec: MessageCodec[A], message: String): Unit = {
     setError(new MessageCodecException(INVALID_DATA, codec, message))
   }
-
 }

@@ -38,5 +38,4 @@ class BindTest extends AirSpec {
       //
     }
   }
-
 }

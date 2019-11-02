@@ -23,7 +23,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class QuerySignatureTest extends AirSpec {
-
   def `Find input/output tables`: Unit = {
     SQLBenchmark.allQueries.foreach { sql =>
       val g = TableGraph.of(sql.sql)

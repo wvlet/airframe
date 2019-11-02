@@ -17,7 +17,6 @@ package wvlet.airframe.surface
 import wvlet.airframe.surface.tag._
 
 object ClassSurfaceTest {
-
   class A(val id: Int)(implicit val context: String)
 
   trait MyTag
@@ -27,7 +26,6 @@ object ClassSurfaceTest {
 import wvlet.airframe.surface.ClassSurfaceTest._
 
 class ClassSurfaceTest extends SurfaceSpec {
-
   def `support multiple param blocks`: Unit = {
     val a = check(Surface.of[A], "A")
     debug(a.params.mkString(", "))

@@ -23,7 +23,6 @@ import wvlet.log.LogSupport
   *
   */
 object Http_02_ObjectMapping extends App with LogSupport {
-
   import wvlet.airframe._
 
   case class ListRequest(name: String, page: Int)

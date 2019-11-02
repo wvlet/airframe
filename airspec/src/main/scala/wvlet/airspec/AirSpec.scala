@@ -139,5 +139,4 @@ private[airspec] object AirSpecSpi {
     }
     leafName.replaceAll("\\$", ".")
   }
-
 }

@@ -136,7 +136,6 @@ case class TimeWindow(start: ZonedDateTime, end: ZonedDateTime) {
 }
 
 object TimeWindow extends LogSupport {
-
   def withTimeZone(zoneName: String): TimeWindowBuilder = {
     import scala.jdk.CollectionConverters._
     // Add commonly used daylight saving times
@@ -157,7 +156,6 @@ object TimeWindow extends LogSupport {
 }
 
 class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime] = None) extends LogSupport {
-
   def withOffset(t: ZonedDateTime): TimeWindowBuilder = new TimeWindowBuilder(zone, Some(t))
   def withOffset(dateTimeStr: String): TimeWindowBuilder = {
     TimeParser
@@ -277,5 +275,4 @@ class TimeWindowBuilder(val zone: ZoneOffset, currentTime: Option[ZonedDateTime]
   def fromRange(startUnixTime: Long, endUnixTime: Long): TimeWindow = {
     TimeWindow(Instant.ofEpochSecond(startUnixTime).atZone(zone), Instant.ofEpochSecond(endUnixTime).atZone(zone))
   }
-
 }

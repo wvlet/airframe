@@ -24,7 +24,6 @@ import scala.util.{Success, Try}
   *
   */
 object JavaStandardCodec {
-
   val javaStandardCodecs: Map[Surface, MessageCodec[_]] = Map(
     Surface.of[File] -> FileCodec
   )
@@ -64,5 +63,4 @@ object JavaStandardCodec {
       }
     }
   }
-
 }

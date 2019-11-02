@@ -32,7 +32,6 @@ object RuntimeTaggedTypeTest {
   */
 import RuntimeTaggedTypeTest._
 class RuntimeTaggedTypeTest extends SurfaceSpec {
-
   def `pass sanity check`: Unit = {
     val e: Person @@ Employee = new Person(1, "leo").taggedWith[Employee]
     val e2: Person @@ Guest   = new Person(2, "yui")
@@ -82,5 +81,4 @@ class RuntimeTaggedTypeTest extends SurfaceSpec {
     assert(s.contains(RuntimeSurface.of[Seq[String] @@ Employee]))
     assert(s.contains(c))
   }
-
 }

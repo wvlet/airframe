@@ -146,7 +146,6 @@ class RoundTripTest extends AirSpec with PropertyCheck {
   }
 
   def `report overflow errors`: Unit = {
-
     val b1 = Seq(BigInteger.valueOf(Byte.MinValue.toLong - 1), BigInteger.valueOf(Byte.MaxValue.toLong + 1))
     val b2 = Seq(BigInteger.valueOf(Short.MinValue.toLong - 1), BigInteger.valueOf(Short.MaxValue.toLong + 1))
     val b3 = Seq(BigInteger.valueOf(Int.MinValue.toLong - 1), BigInteger.valueOf(Int.MaxValue.toLong + 1))
@@ -460,5 +459,4 @@ class RoundTripTest extends AirSpec with PropertyCheck {
       }
     }
   }
-
 }

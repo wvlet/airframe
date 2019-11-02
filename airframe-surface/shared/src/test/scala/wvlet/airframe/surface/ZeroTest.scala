@@ -87,7 +87,6 @@ class ZeroTest extends SurfaceSpec {
 }
 
 object ZeroTest {
-
   trait MyTag
   type MyA = String
 

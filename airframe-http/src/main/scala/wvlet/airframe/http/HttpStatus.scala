@@ -39,7 +39,6 @@ class HttpStatus(val code: Int) {
   * HTTP status code collection.
   */
 object HttpStatus {
-
   def isUnknownState(code: Int): Boolean  = code < 100 || code >= 600
   def isInformational(code: Int): Boolean = 100 <= code && code < 200
   def isSuccessful(code: Int): Boolean    = 200 <= code && code < 300

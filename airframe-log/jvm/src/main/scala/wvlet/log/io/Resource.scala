@@ -31,7 +31,6 @@ import scala.annotation.tailrec
   * Extend this trait to add support your class for reading resources
   */
 trait ResourceReader {
-
   def open[U](resourceFileName: String)(f: BufferedInputStream => U): U = {
     Resource.open(this.asInstanceOf[AnyRef].getClass, resourceFileName)(f)
   }
@@ -43,7 +42,6 @@ trait ResourceReader {
   * @author leo
   */
 object Resource {
-
   /**
     * Open a resource as a stream, then execute the code block using the stream
     *
@@ -74,7 +72,6 @@ object Resource {
   private def packagePath(packageName: String): String = {
     val packageAsPath: String = packageName.replaceAll("\\.", "/")
     if (packageAsPath.endsWith("/")) packageAsPath else packageAsPath + "/"
-
   }
 
   private def currentClassLoader = Thread.currentThread().getContextClassLoader
@@ -157,7 +154,6 @@ object Resource {
     *
     */
   abstract trait VirtualFile {
-
     /**
       * Gets the logical path of the file.
       * For example, if this VirtualFile' URL is "file:/somewhere/org/xerial/util/FileResource.java",
@@ -180,7 +176,6 @@ object Resource {
       * @return
       */
     def url: URL
-
   }
 
   /**
@@ -239,7 +234,6 @@ object Resource {
       }
     }
     b.result()
-
   }
 
   /**

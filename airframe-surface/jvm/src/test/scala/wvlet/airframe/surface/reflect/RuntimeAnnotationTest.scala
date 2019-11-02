@@ -19,7 +19,6 @@ import wvlet.airframe.surface.{Surface, SurfaceSpec}
 
 @Resource(name = "annot-test")
 class RuntimeAnnot(@Resource(name = "param A") a: String, c: Int) {
-
   @PreDestroy
   def b(@Resource(name = "b arg") arg: String): String = "hello"
 
@@ -65,5 +64,4 @@ class RuntimeAnnotationTest extends SurfaceSpec {
     val m = Surface.methodsOf[RuntimeAnnot].find(_.name == "noAnnot").get
     assert(m.annotations.isEmpty)
   }
-
 }

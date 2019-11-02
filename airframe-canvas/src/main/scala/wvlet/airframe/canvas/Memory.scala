@@ -18,7 +18,6 @@ import java.lang.ref.{PhantomReference, ReferenceQueue}
   *
   */
 sealed abstract class Memory {
-
   /**
     * Allocated memory address
     * @return

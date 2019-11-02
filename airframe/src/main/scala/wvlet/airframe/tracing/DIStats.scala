@@ -29,7 +29,6 @@ case class DIStatsReport(
     injectCount: Map[Surface, Long],
     unusedTypes: Seq[Surface]
 ) {
-
   override def toString: String = {
     val report = Seq.newBuilder[String]
 
@@ -57,7 +56,6 @@ case class DIStatsReport(
   * DI statistics
   */
 class DIStats extends LogSupport with Serializable {
-
   // This will holds the stat data while the session is active.
   // To avoid holding too many stats for applications that create many child sessions,
   // we will just store the aggregated stats.
@@ -115,5 +113,4 @@ class DIStats extends LogSupport with Serializable {
       unusedTypes = unusedBindings.result()
     )
   }
-
 }

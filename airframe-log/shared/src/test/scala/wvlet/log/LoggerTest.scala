@@ -215,7 +215,6 @@ class LoggerTest extends Spec {
       assert(l.getHandlers == Seq.empty)
       assert(p.getHandlers == Seq.empty)
       assert(r.getHandlers == Seq.empty)
-
     } finally {
       Logger.clearAllHandlers
       Logger.setDefaultFormatter(SourceCodeLogFormatter)

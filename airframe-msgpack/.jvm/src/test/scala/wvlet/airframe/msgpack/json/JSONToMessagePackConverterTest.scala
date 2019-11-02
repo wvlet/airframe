@@ -23,7 +23,6 @@ import wvlet.log.io.IOUtil
   *
   */
 class JSONToMessagePackConverterTest extends AirSpec {
-
   protected def msgpackToJson(msgpack: Array[Byte]): JSONValue = {
     val unpacker = MessagePack.newUnpacker(msgpack)
     try {
@@ -88,5 +87,4 @@ class JSONToMessagePackConverterTest extends AirSpec {
     val result    = msgpackToJson(msgpack)
     deepEqual(result, jsonValue)
   }
-
 }

@@ -23,7 +23,6 @@ import scala.collection.compat._
   *
   */
 object JDBCCodec extends LogSupport {
-
   def apply(rs: ResultSet): ResultSetCodec = new ResultSetCodec(rs)
 
   class ResultSetCodec(rs: ResultSet) {
@@ -446,5 +445,4 @@ object JDBCCodec extends LogSupport {
     }
     override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
   }
-
 }

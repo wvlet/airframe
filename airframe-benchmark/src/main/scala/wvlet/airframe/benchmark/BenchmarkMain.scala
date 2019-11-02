@@ -50,7 +50,6 @@ class BenchmarkMain(
     @option(prefix = "-wt", description = "warmup time (default: 0.1s)")
     warmupTime: ElapsedTime = ElapsedTime.parse("0.1s")
 ) extends LogSupport {
-
   @command(isDefault = true)
   def default: Unit = {
     info("Type --help to see the list of sub commands")
@@ -118,5 +117,4 @@ class BenchmarkMain(
   ): Unit = {
     JSONBenchmark.runAll(N = iteration, B = iteration)
   }
-
 }

@@ -111,7 +111,6 @@ private[airspec] class AirSpecTaskRunner(
       spec: AirSpecSpi,
       targetMethods: Seq[MethodSurface]
   ): Unit = {
-
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
     taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
 

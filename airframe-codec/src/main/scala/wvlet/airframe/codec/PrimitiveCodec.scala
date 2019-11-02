@@ -29,7 +29,6 @@ import scala.util.Try
   *
   */
 object PrimitiveCodec {
-
   val primitiveCodec: Map[Surface, MessageCodec[_]] = Map(
     Primitive.Int     -> IntCodec,
     Primitive.Long    -> LongCodec,

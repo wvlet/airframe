@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class SQLParserTest extends AirSpec {
-
   /**
     * sql 1 -> model 1 -> sql 2 -> model 2
     *
@@ -57,7 +56,6 @@ class SQLParserTest extends AirSpec {
         warn(s"signature didn't match:\n[original]\n${q.sql}\n\n${sig1}\n\n[printed]\n${printSql}\n\n${sig2}")
         throw e
     }
-
   }
 
   protected def roundtrip(s: Seq[TestQuery]): Unit = {

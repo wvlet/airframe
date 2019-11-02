@@ -18,9 +18,7 @@ import scala.reflect.macros.blackbox.Context
 import scala.reflect.macros.{blackbox => sm}
 
 private[wvlet] object AirframeMacros {
-
   private[wvlet] class BindHelper[C <: Context](val c: C) {
-
     import c.universe._
 
     def shouldGenerateTrait(t: c.Type): Boolean = {
@@ -813,5 +811,4 @@ private[wvlet] object AirframeMacros {
     val pos = c.enclosingPosition
     q"wvlet.airframe.SourceCode(${pos.source.path}, ${pos.source.file.name}, ${pos.line}, ${pos.column})"
   }
-
 }
