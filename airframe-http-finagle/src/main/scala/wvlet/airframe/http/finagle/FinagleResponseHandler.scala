@@ -23,12 +23,15 @@ import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
 import wvlet.airframe.http.{HttpStatus, ResponseHandler, SimpleHttpResponse}
 import wvlet.airframe.surface.{Primitive, Surface}
 import wvlet.log.LogSupport
+import wvlet.airframe._
 
 /**
   * Converting controller results into finagle http responses.
   */
 trait FinagleResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
   // Use Map codecs to create natural JSON responses
+  private val finagleServerConfig = bind[FinagleServerConfig]
+
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
 

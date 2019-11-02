@@ -19,16 +19,41 @@ import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.{Await, Future}
 import javax.annotation.PostConstruct
 import wvlet.airframe._
+import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airframe.http.{ControllerProvider, HttpServerException, ResponseHandler, Router}
+import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
 import scala.util.control.NonFatal
 
-case class FinagleServerConfig(name: String = "default", port: Int = IOUtil.unusedPort, router: Router = Router.empty)
+case class FinagleServerConfig(
+    name: String = "default",
+    port: Int = IOUtil.unusedPort,
+    router: Router = Router.empty,
+    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
+) {
+  def withName(name: String): this.type = {
+    this.copy(name = name)
+  }
+  def withPort(port: Int): this.type = {
+    this.copy(port = port)
+  }
+  def withRouter(router: Router): this.type = {
+    this.copy(router = router)
+  }
+  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): this.type = {
+    this.copy(customCodec = p)
+  }
+  def withCustomCodec(m: Map[Surface, MessageCodec[_]]): this.type = {
+    this.copy(customCodec = customCodec.orElse {
+      case s: Surface if m.contains(s) => m(s)
+    })
+  }
+}
 
 /**
   *
