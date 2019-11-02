@@ -18,7 +18,6 @@ import wvlet.log.LogSupport
 import scala.annotation.{switch, tailrec}
 
 object JSONToken {
-
   @inline final val LBracket = '{'
   @inline final val RBracket = '}'
   @inline final val Comma    = ','

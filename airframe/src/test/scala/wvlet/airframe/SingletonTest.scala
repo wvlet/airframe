@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 object SingletonTest {
-
   type TraitCounter = AtomicInteger
 
   // This doesn't tell about Singleton

@@ -26,7 +26,6 @@ case class QuerySignatureConfig(
   *
   */
 object QuerySignature extends LogSupport {
-
   def of(sql: String, config: QuerySignatureConfig = QuerySignatureConfig()): String = {
     val plan  = SQLParser.parse(sql)
     val g     = TableGraph.of(plan)

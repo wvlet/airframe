@@ -27,7 +27,6 @@ import scala.jdk.CollectionConverters._
   *
   */
 object Shell extends LogSupport {
-
   private def withAccessTo[U](f: Field)(body: => U): U = {
     val a = f.isAccessible
     try {
@@ -38,7 +37,6 @@ object Shell extends LogSupport {
       if (!a)
         f.setAccessible(a)
     }
-
   }
 
   /**
@@ -220,7 +218,6 @@ object Shell extends LogSupport {
   private val cmdPathCache = new WeakHashMap[String, Option[String]]
 
   def getCommand(name: String): String = {
-
     findCommand(name) match {
       case Some(cmd) => cmd
       case None      => throw new IllegalStateException("CommandTrait not found: %s".format(name))
@@ -274,7 +271,6 @@ object Shell extends LogSupport {
   def env(key: String): Option[String]     = Option(System.getenv(key))
 
   def findJavaHome: Option[String] = {
-
     // lookup environment variable JAVA_HOME first.
     // If JAVA_HOME is not defined, use java.home system property
     val e: Option[String] = env("JAVA_HOME") orElse sysProp("java.home")
@@ -297,7 +293,6 @@ object Shell extends LogSupport {
   }
 
   def findJavaCommand(javaCmdName: String = "java"): Option[String] = {
-
     def search: Option[String] = {
       def javaBin(java_home: String): String = java_home + "/bin/" + Shell.progName(javaCmdName)
 
@@ -368,5 +363,4 @@ object Shell extends LogSupport {
 
     cmdPathCache.getOrElseUpdate(javaCmdName, search)
   }
-
 }

@@ -29,7 +29,6 @@ case class UserRequest(id: Int, name: String)
 case class DeleteRequestBody(force: Boolean)
 
 trait FinagleClientTestApi extends LogSupport {
-
   @Endpoint(method = HttpMethod.GET, path = "/")
   def info: String = {
     "Ok"
@@ -96,14 +95,12 @@ trait FinagleClientTestApi extends LogSupport {
     r.setContentString("raw response")
     r
   }
-
 }
 
 /**
   *
   */
 class FinagleClientTest extends AirSpec {
-
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
     .bind[FinagleServerConfig].toInstance(
@@ -112,7 +109,6 @@ class FinagleClientTest extends AirSpec {
     .noLifeCycleLogging
 
   def `create client`: Unit = {
-
     def addRequestId(request: Request): Request = {
       request.headerMap.put("X-Request-Id", "10")
       request

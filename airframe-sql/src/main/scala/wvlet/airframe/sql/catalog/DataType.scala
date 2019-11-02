@@ -73,7 +73,6 @@ object DataType extends LogSupport {
 }
 
 object DataTypeParser extends RegexParsers with LogSupport {
-
   override def skipWhitespace = true
 
   private def typeName: Parser[String] = "[a-zA-Z]+".r
@@ -110,5 +109,4 @@ object DataTypeParser extends RegexParsers with LogSupport {
         None
     }
   }
-
 }

@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
   *
   */
 object Http_01_Interface extends App {
-
   case class User(id: String, name: String)
 
   trait MyApp extends LogSupport {
@@ -41,5 +40,4 @@ object Http_01_Interface extends App {
   // Wait server termination
   // server.waitServerTermination
   }
-
 }

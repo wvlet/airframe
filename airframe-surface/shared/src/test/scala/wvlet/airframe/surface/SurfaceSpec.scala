@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
 import scala.language.implicitConversions
 
 trait SurfaceSpec extends AirSpec with LogSupport {
-
   protected def check(body: => Surface, expectedName: String): Surface = {
     val surface = body
     debug(s"[${surface.getClass.getSimpleName}] $surface, ${surface.fullName}")
@@ -36,5 +35,4 @@ trait SurfaceSpec extends AirSpec with LogSupport {
     assert(s.objectFactory.isEmpty == true)
     s
   }
-
 }

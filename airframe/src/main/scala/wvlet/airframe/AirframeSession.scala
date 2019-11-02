@@ -274,7 +274,6 @@ private[airframe] class AirframeSession(
       seen: List[Surface],
       defaultValue: Option[() => Any] = None
   ): AnyRef = {
-
     stats.observe(tpe)
     tracer.onInjectStart(this, tpe)
 

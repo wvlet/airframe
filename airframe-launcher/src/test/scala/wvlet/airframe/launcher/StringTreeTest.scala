@@ -24,7 +24,6 @@ package wvlet.airframe.launcher
 import wvlet.airspec.AirSpec
 
 class StringTreeTest extends AirSpec {
-
   def `have nested values`: Unit = {
     val h  = StringTree.empty
     val h2 = h.set("a", "apple")

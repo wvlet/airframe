@@ -52,7 +52,6 @@ case class ElapsedTime(value: Double, unit: TimeUnit) extends Comparable[Elapsed
 }
 
 object ElapsedTime {
-
   def units = List(NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, HOURS, DAYS)
 
   private val PATTERN = Pattern.compile("^\\s*(\\d+(?:\\.\\d+)?)\\s*([a-zA-Z]+)\\s*$")
@@ -136,5 +135,4 @@ object ElapsedTime {
         throw new IllegalArgumentException("Unknown time unit: " + timeUnitString)
     }
   }
-
 }

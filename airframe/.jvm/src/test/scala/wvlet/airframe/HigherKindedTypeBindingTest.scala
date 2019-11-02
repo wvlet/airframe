@@ -21,7 +21,6 @@ import scala.language.higherKinds
 import scala.util.Success
 
 object TaglessFinalExample {
-
   trait Wrapper[F[_]] {
     def wrap[A](v: A): F[A]
   }
@@ -48,7 +47,6 @@ class HigherKindedTypeBindingTest extends AirSpec {
   import TaglessFinalExample._
 
   def `support higher-kinded type binding`: Unit = {
-
     warn("TODO: This currently works only for JVM. Need to fix SurfaceMacros for Scala.js")
     val s = Surface.of[WebApp[Future]]
     debug(s)

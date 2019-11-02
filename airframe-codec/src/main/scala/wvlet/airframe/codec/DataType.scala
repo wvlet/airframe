@@ -24,7 +24,6 @@ sealed trait DataType {
   *
   */
 object DataType {
-
   sealed abstract class PrimitiveType(val signature: String) extends DataType {
     def typeName                         = signature
     override def typeArgs: Seq[DataType] = Seq.empty
@@ -161,5 +160,4 @@ object DataType {
   //    }
   //    override def unpack(u: MessageUnpacker, v: MessageHolder): Unit = {}
   //  }
-
 }

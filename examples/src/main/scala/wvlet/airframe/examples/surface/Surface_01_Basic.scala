@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   *
   */
 object Surface_01_Basic extends App with LogSupport {
-
   case class MyConfig(port: Int = 8080, name: String)
 
   val surface = Surface.of[MyConfig]
@@ -39,5 +38,4 @@ object Surface_01_Basic extends App with LogSupport {
     f.newInstance(Seq(10010, "hello"))
   }
   info(obj) // Some(MyConfig(10010, hello))
-
 }

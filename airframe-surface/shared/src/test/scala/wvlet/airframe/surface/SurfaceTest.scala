@@ -18,7 +18,6 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object Examples {
-
   case class A(
       b: Boolean,
       bt: Byte,
@@ -45,7 +44,6 @@ object Examples {
 
   case class E(a: A)
   case class F(p0: Int = 10)
-
 }
 
 import wvlet.airframe.surface.Examples._

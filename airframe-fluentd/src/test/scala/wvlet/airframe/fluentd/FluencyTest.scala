@@ -68,7 +68,6 @@ trait MockFluentd extends LogSupport {
     socket.close()
     t.interrupt()
   }
-
 }
 
 case class FluencyMetric(id: Int, name: String) extends TaggedMetric {

@@ -85,5 +85,4 @@ class JSR250LifeCycleExecutorTest extends AirSpec {
     t.stoppedCallCount shouldBe 1
     t.parentDestoyHookIsCalled shouldBe true
   }
-
 }

@@ -64,5 +64,4 @@ trait CodecSpec extends AirSpec {
     r shouldBe defined
     v shouldBe r.get
   }
-
 }

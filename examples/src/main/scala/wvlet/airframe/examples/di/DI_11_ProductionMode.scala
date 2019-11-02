@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   *
   */
 object DI_11_ProductionMode extends App with LogSupport {
-
   import wvlet.airframe._
 
   trait MyService extends LogSupport {
@@ -44,5 +43,4 @@ object DI_11_ProductionMode extends App with LogSupport {
   d.build[MyApp] { app =>
     // MyService will not be initialized here
   }
-
 }

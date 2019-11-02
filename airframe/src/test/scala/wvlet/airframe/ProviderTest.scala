@@ -51,7 +51,6 @@ object ProviderExample extends Serializable {
   def provider3(d1: D1, d2: D2, d3: D3): App                 = App(d1, d2, d3)
   def provider4(d1: D1, d2: D2, d3: D3, d4: D4): App         = App(d1, d2, d3, d4)
   def provider5(d1: D1, d2: D2, d3: D3, d4: D4, d5: D5): App = App(d1, d2, d3, d4, d5)
-
 }
 
 import wvlet.airframe.ProviderExample._

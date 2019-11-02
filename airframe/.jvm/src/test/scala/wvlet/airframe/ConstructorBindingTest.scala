@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   * because we cannot extract constructor default parameters in Scala.js
   */
 class ConstructorBindingTest extends AirSpec {
-
   import ConstructorBindingTest._
 
   def `build objects using default constructor parameters`: Unit = {

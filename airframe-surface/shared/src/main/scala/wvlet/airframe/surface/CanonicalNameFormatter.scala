@@ -18,7 +18,6 @@ import java.util.Locale
   *
   */
 object CanonicalNameFormatter {
-
   def format(name: String): String = {
     name.toLowerCase(Locale.US).replaceAll("[ _\\.-]", "")
   }
@@ -28,5 +27,4 @@ object CanonicalNameFormatter {
       CanonicalNameFormatter.format(name)
     }
   }
-
 }

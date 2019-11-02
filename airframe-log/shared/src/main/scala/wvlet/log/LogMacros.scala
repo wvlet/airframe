@@ -25,9 +25,7 @@ import scala.reflect.macros.blackbox.Context
   *
   */
 private[log] object LogMacros {
-
   private class MacroHelper[C <: Context](val c: C) {
-
     import c.universe._
 
     val disabledLevels: Set[c.Tree] = {
@@ -184,5 +182,4 @@ private[log] object LogMacros {
     import c.universe._
     new MacroHelper[c.type](c).logMethodWithCause(q"wvlet.log.LogLevel.TRACE", message, cause)
   }
-
 }

@@ -60,5 +60,4 @@ class CollectionCodecTest extends CodecSpec {
     val msgpack = MessagePack.newBufferPacker.packString("""{"leo":1, "yui":2}""").toByteArray
     codec.unpackMsgPack(msgpack) shouldBe Some(Map("leo" -> 1, "yui" -> 2).asJava)
   }
-
 }

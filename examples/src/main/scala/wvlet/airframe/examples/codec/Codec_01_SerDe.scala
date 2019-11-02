@@ -19,7 +19,6 @@ import wvlet.log.LogSupport
   * Serialization/Deserialization example
   */
 object Codec_01_SerDe extends App with LogSupport {
-
   case class Person(id: Int, name: String)
 
   // Creating a codec for Person class

@@ -67,7 +67,6 @@ trait ConnectionPool extends LogSupport {
       }
     }
   }
-
 }
 
 trait ConnectionPoolFactoryService {
@@ -75,7 +74,6 @@ trait ConnectionPoolFactoryService {
 }
 
 trait ConnectionPoolFactory extends Guard with AutoCloseable with LogSupport {
-
   private var createdPools = List.empty[ConnectionPool]
 
   /**

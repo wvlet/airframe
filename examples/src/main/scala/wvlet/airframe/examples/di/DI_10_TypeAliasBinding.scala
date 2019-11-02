@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   * Airframe treats type aliases with different names as different types when binding dependencies.
   */
 object DI_10_TypeAliasBinding extends App {
-
   import wvlet.airframe._
 
   case class DbConfig(db: String)

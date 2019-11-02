@@ -27,7 +27,6 @@ import wvlet.log.LogFormatter.AppLogFormatter
 import scala.util.{Failure, Success, Try}
 
 object LogRotationHandler {
-
   /**
     * Encoding log string as UTF-8
     */
@@ -68,7 +67,6 @@ class LogRotationHandler(
 ) extends jl.Handler
     with AutoCloseable
     with Flushable {
-
   import LogRotationHandler._
 
   recoverTempFiles(fileName)
@@ -113,7 +111,6 @@ class LogRotationHandler(
 
   override def publish(record: jl.LogRecord): Unit = {
     if (isLoggable(record)) {
-
       Try(formatter.format(record)) match {
         case Success(message) =>
           Try(fileAppender.doAppend(s"${message}\n")) match {

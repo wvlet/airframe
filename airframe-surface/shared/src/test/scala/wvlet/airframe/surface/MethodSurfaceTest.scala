@@ -15,7 +15,6 @@
 package wvlet.airframe.surface
 
 object MethodExamples {
-
   class A {
     def hello: String                    = "hello"
     def arg2(i: Int, b: Boolean): String = "arg2"

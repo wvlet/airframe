@@ -30,7 +30,6 @@ class HttpParamExample extends LogSupport {
   *
   */
 class HttpParamTest extends AirSpec {
-
   protected override def design: Design = {
     val r = Router.add[HttpParamExample]
     newFinagleServerDesign(router = r)

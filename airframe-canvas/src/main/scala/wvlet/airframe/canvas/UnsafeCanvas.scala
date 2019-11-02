@@ -172,5 +172,4 @@ object UnsafeCanvas {
       )
     }
   }
-
 }

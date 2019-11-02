@@ -21,7 +21,6 @@ import wvlet.log.io.IOUtil._
   *
   */
 class LogRotationHandlerTest extends Spec {
-
   def `rotate log files`: Unit = {
     val l = Logger("wvlet.log.rotation")
     withTempFile(name = "log-rotation-test", dir = "target") { f =>
@@ -67,5 +66,4 @@ class LogRotationHandlerTest extends Spec {
       assert(f.length > 0 == true)
     }
   }
-
 }

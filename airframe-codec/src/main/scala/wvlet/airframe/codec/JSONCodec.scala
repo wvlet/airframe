@@ -21,7 +21,6 @@ import wvlet.airframe.msgpack.spi._
   * Codec for JSON String
   */
 object JSONCodec extends MessageCodec[String] {
-
   override def pack(p: Packer, json: String): Unit = {
     val msgpack = MessagePack.fromJSON(json)
     p.writePayload(msgpack)

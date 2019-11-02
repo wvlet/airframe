@@ -22,9 +22,7 @@ import wvlet.airspec.AirSpec
   *
   */
 class DesignTimeLifeCycleHookTest extends AirSpec {
-
   def `support design time bindings`: Unit = {
-
     val order              = new AtomicInteger(1)
     val initializedTime    = new AtomicInteger(0)
     val injectTime         = new AtomicInteger(0)

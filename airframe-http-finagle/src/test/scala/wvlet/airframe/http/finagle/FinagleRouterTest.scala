@@ -102,7 +102,6 @@ trait MyApi extends LogSupport {
   *
   */
 class FinagleRouterTest extends AirSpec {
-
   protected override def design: Design = {
     newFinagleServerDesign(router = Router.add[MyApi]).noLifeCycleLogging
       .bind[FinagleServer].toEagerSingleton
@@ -242,7 +241,6 @@ class FinagleRouterTest extends AirSpec {
         response.contentString shouldBe "1.0"
         response.statusCode shouldBe HttpStatus.Ok_200.code
       }
-
     }
 
     def `Raw string request` {

@@ -18,12 +18,10 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 object ArgProcessorTest {
-
   @command(description = "My command")
   case class Cmd(
       @option(prefix = "-h,--help", description = "show help messages", isHelp = true) help: Boolean = false
   ) {
-
     @command(isDefault = true)
     def usage: Unit = {
       println("Type --help to show the list of sub commands")
@@ -63,7 +61,6 @@ object ArgProcessorTest {
       @option(prefix = "-e", description = "Environment")
       env: String = "default-env"
   ) extends LogSupport {
-
     @command(description = "Start a proxy server")
     def proxy(
         @option(prefix = "-p,--port", description = "port number")
@@ -81,7 +78,6 @@ class ArgProcessorTest extends AirSpec {
   import ArgProcessorTest._
 
   def `should run the default command`: Unit = {
-
     val c = capture {
       Launcher.of[Cmd].execute("")
     }

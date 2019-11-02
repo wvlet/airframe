@@ -80,7 +80,6 @@ class JSONCodecTest extends AirSpec {
     val msgpack = codec.toMsgPack(v)
     codec.unpackMsgPack(msgpack) shouldBe Some(v)
   }
-
 }
 
 object JSONCodecTest {

@@ -23,7 +23,6 @@ import scala.util.Try
   *
   */
 package object reflect {
-
   private[reflect] def findAnnotation[T <: jl.annotation.Annotation: ClassTag](
       annot: Array[jl.annotation.Annotation]
   ): Option[T] = {

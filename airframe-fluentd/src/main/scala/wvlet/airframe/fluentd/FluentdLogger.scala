@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
 class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: Boolean, fluency: Fluency)
     extends MetricLogger
     with LogSupport {
-
   override def withTagPrefix(newTagPrefix: String): FluentdLogger = {
     new FluentdLogger(Some(newTagPrefix), useExtendedEventTime, fluency)
   }
@@ -62,5 +61,4 @@ class FluentdLogger(val tagPrefix: Option[String] = None, useExtendedEventTime: 
       k -> v.asInstanceOf[AnyRef]
     }).asJava
   }
-
 }

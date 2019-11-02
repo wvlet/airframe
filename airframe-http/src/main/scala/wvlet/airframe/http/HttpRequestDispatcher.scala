@@ -21,14 +21,12 @@ import wvlet.log.LogSupport
 import scala.language.higherKinds
 
 object HttpRequestDispatcher {
-
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       router: Router,
       controllerProvider: ControllerProvider,
       backend: HttpBackend[Req, Resp, F],
       responseHandler: ResponseHandler[Req, Resp]
   ): HttpFilter[Req, Resp, F] = {
-
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
       HttpRequestDispatcher.buildRouteFilters(router, backend.Identity, controllerProvider)
@@ -57,7 +55,6 @@ object HttpRequestDispatcher {
       parentFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
   ): Map[Route, RouteFilter[Req, Resp, F]] = {
-
     val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
       router.filterSurface
         .map(fs => controllerProvider.findController(fs))
@@ -96,7 +93,6 @@ object HttpRequestDispatcher {
       responseHandler: ResponseHandler[Req, Resp]
   ) extends HttpContext[Req, Resp, F]
       with LogSupport {
-
     override def apply(request: Req): F[Resp] = {
       val route = routeMatch.route
       val result = {
@@ -131,8 +127,6 @@ object HttpRequestDispatcher {
           // If the route returns non future value, convert it into Future response
           backend.toFuture(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
       }
-
     }
   }
-
 }

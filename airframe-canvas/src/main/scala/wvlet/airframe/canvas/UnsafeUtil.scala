@@ -18,7 +18,6 @@ import sun.misc.Unsafe
   *
   */
 private[canvas] object UnsafeUtil {
-
   // Fetch theUnsafe object for Oracle and OpenJDK
   private[canvas] val unsafe = {
     import java.lang.reflect.Field

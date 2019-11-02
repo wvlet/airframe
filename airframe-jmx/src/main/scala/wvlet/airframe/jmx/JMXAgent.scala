@@ -38,7 +38,6 @@ trait JMXMBeanServerService {
 }
 
 class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService with LogSupport {
-
   val serviceUrl: JMXServiceURL = {
     val url = JMXUtil.currentJMXRegistry match {
       case Some(jmxReg) =>
@@ -75,5 +74,4 @@ class JMXAgent(config: JMXConfig) extends JMXRegistry with JMXMBeanServerService
       connector.getMBeanServerConnection.getAttribute(new ObjectName(mbeanName), attrName)
     }
   }
-
 }

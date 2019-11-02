@@ -44,5 +44,4 @@ object Control {
       }
     }
   }
-
 }

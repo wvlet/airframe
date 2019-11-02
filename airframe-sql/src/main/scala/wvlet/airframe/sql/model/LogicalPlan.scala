@@ -228,7 +228,6 @@ object LogicalPlan {
       having: Option[Expression]
   ) extends UnaryRelation
       with Selection {
-
     override def sig(config: QuerySignatureConfig): String = {
       val proj = if (LogicalPlan.isSelectAll(selectItems)) "*" else s"${selectItems.length}"
       s"A[${proj},${groupingKeys.length}](${child.sig(config)})"
@@ -359,7 +358,6 @@ object LogicalPlan {
   }
   case class CreateSchema(schema: QName, ifNotExists: Boolean, properties: Option[Seq[SchemaProperty]]) extends DDL {
     override def sig(config: QuerySignatureConfig) = "CS"
-
   }
 
   case class DropSchema(schema: QName, ifExists: Boolean, cascade: Boolean) extends DDL {

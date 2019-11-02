@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class AirSpec_04_Session extends AirSpec {
-
   override protected def design: Design = {
     newDesign.bind[String].toInstance("hello")
   }

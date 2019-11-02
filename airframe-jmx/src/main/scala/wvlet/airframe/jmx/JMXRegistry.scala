@@ -24,7 +24,6 @@ import scala.util.{Failure, Try}
   *
   */
 trait JMXRegistry extends JMXMBeanServerService with LogSupport {
-
   private var registeredMBean = Set.empty[ObjectName]
 
   def register[A: ru.WeakTypeTag](obj: A): Unit = {
@@ -69,7 +68,6 @@ trait JMXRegistry extends JMXMBeanServerService with LogSupport {
 }
 
 object JMXRegistry {
-
   /*
    * Cleanup Scala-specific class names, which cannot be registered as JMX entries
    */
@@ -99,5 +97,4 @@ object JMXRegistry {
       name.substring(dotPos + 1)
     }
   }
-
 }

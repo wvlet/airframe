@@ -33,7 +33,6 @@ import wvlet.log.LogSupport
   * @author leo
   */
 class MethodCallBuilder(m: MethodSurface, owner: AnyRef) extends StandardBuilder with LogSupport {
-
   // Find the default arguments of the method
   protected def defaultValues =
     (for (p <- m.args; v <- findDefaultValue(p.name)) yield {

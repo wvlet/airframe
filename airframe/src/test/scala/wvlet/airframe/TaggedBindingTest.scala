@@ -17,7 +17,6 @@ import wvlet.airframe.surface.tag._
 import wvlet.airspec.AirSpec
 
 object TaggedBindingTest {
-
   case class Fruit(name: String)
 
   trait Apple

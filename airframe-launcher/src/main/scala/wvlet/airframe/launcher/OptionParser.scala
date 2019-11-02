@@ -36,7 +36,6 @@ import scala.util.matching.Regex.Match
   * Creates option parsers
   */
 object OptionParser extends LogSupport {
-
   def tokenize(line: String): Array[String] = CommandLineTokenizer.tokenize(line)
 
   def of[A: ru.WeakTypeTag]: OptionParser = {
@@ -119,7 +118,6 @@ object OptionParser extends LogSupport {
     * @param param
     */
   case class CLOption(path: Path, annot: option, override val param: Parameter) extends CLOptionItemBase(param) {
-
     // validate prefixes
     val prefixes: Seq[String] = splitPrefixes(annot.prefix())
     override def takesArgument: Boolean = {
@@ -149,12 +147,10 @@ object OptionParser extends LogSupport {
       } else {
         arg.name
       }
-
   }
 
   case class OptionParserResult(parseTree: StringTree, unusedArgument: Array[String], val showHelp: Boolean)
       extends LogSupport {
-
     override def toString: String = {
       s"OptionParserResult(${parseTree}, unused:[${unusedArgument.mkString(",")}], showHelp:${showHelp})"
     }
@@ -189,7 +185,6 @@ object OptionParser extends LogSupport {
   * @author leo
   */
 class OptionParser(val schema: OptionSchema) extends LogSupport {
-
   def this(m: MethodSurface) = this(new MethodOptionSchema(m))
 
   import OptionParser._
@@ -201,7 +196,6 @@ class OptionParser(val schema: OptionSchema) extends LogSupport {
     * @return parse result
     */
   def parse(args: Array[String]): OptionParserResult = {
-
     def findMatch[T](p: Regex, s: String): Option[Match] = p.findFirstMatchIn(s)
 
     def group(m: Match, group: Int): Option[String] = {

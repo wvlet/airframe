@@ -20,7 +20,6 @@ import wvlet.airframe.metrics.TimeWindow.withUTC
 import scala.annotation.tailrec
 
 case class TimeVector(x: Long, offset: Long, unit: TimeWindowUnit) {
-
   override def toString: String = toDurationString
 
   def toDurationString = {
@@ -128,5 +127,4 @@ object TimeVector {
     // Find the largest unit first from Year to Second
     loop(TimeWindowUnit.units.reverse)
   }
-
 }

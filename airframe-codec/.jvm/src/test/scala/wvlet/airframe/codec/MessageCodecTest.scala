@@ -70,7 +70,6 @@ class MessageCodecTest extends AirSpec {
     val json = MessageCodec.toJson(ExtractTest(1, "leo", true, 0.01, Seq(0, 1, 2), null))
     assert(json == """{"id":1,"name":"leo","flag":true,"number":0.01,"arr":[0,1,2],"nil":null}""")
   }
-
 }
 
 object MessageCodecTest {

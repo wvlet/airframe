@@ -29,7 +29,6 @@ import scala.collection.immutable.ListMap
 import scala.reflect.runtime.{universe => ru}
 
 object YamlReader extends LogSupport {
-
   def load[A: ru.TypeTag](resourcePath: String, env: String): A = {
     val map = loadMapOf[A](resourcePath)
     if (!map.contains(env)) {
@@ -87,7 +86,6 @@ object YamlReader extends LogSupport {
   * @param map
   */
 class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
-
   def toMsgpack: Array[Byte] = {
     val packer = MessagePack.newBufferPacker
     packer.packMapHeader(map.size)
@@ -150,5 +148,4 @@ class YamlReader(map: Map[AnyRef, AnyRef]) extends LogSupport {
     }
     packer
   }
-
 }

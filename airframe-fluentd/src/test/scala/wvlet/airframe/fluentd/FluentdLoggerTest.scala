@@ -21,7 +21,6 @@ import wvlet.log.LogLevel
   *
   */
 class FluentdLoggerTest extends AirSpec {
-
   def `should use Fluency as a Fluentd client`: Unit = {
     val d = fluentd
       .withFluentdLogger()
@@ -44,7 +43,6 @@ class FluentdLoggerTest extends AirSpec {
   }
 
   def `generate multiple loggers`: Unit = {
-
     val d =
       newDesign
         .bind[Logger1].toInstance(new ConsoleLogger(Some("l1"), LogLevel.DEBUG))
@@ -58,16 +56,13 @@ class FluentdLoggerTest extends AirSpec {
       f1.getLogger.emit("a", Map("value" -> 1))
       f2.getLogger.emit("a", Map("value" -> 1))
     }
-
   }
 }
 
 object FluentdLoggerTest {
-
   type Logger1 = MetricLogger
   type Logger2 = MetricLogger
 
   class LoggerFactory1(l1: Logger1) extends MetricLoggerFactory(l1)
   class LoggerFactory2(l2: Logger2) extends MetricLoggerFactory(l2)
-
 }

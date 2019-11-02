@@ -26,7 +26,6 @@ import scala.reflect.ClassTag
   * Utilities for parallel execution.
   */
 object Parallel extends LogSupport {
-
   val jmxStats = new ParallelExecutionStats()
 
   class ParallelExecutionStats(
@@ -41,7 +40,6 @@ object Parallel extends LogSupport {
   )
 
   private class ResultIterator[R](queue: LinkedBlockingQueue[Option[R]]) extends Iterator[R] {
-
     private var nextMessage: Option[R] = None
 
     override def hasNext: Boolean = {
@@ -65,7 +63,6 @@ object Parallel extends LogSupport {
   def run[T, R: ClassTag](source: Seq[T], parallelism: Int = Runtime.getRuntime.availableProcessors())(
       f: T => R
   ): Seq[R] = {
-
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.run (parallelism = ${parallelism})")
 
@@ -99,10 +96,8 @@ object Parallel extends LogSupport {
       }
 
       resultArray.toSeq
-
     } catch {
       case _: InterruptedException => throw new TimeoutException()
-
     } finally {
       // Cleanup
       executor.shutdown()
@@ -125,7 +120,6 @@ object Parallel extends LogSupport {
       parallelism: Int = Runtime.getRuntime.availableProcessors(),
       jmxAgent: Option[JMXAgent] = None
   )(f: T => R): Iterator[R] = {
-
     val executionId = UUID.randomUUID.toString
     trace(s"$executionId - Begin Parallel.iterate (parallelism = ${parallelism})")
 
@@ -158,10 +152,8 @@ object Parallel extends LogSupport {
               case _: InterruptedException => ()
             }
           }
-
         } catch {
           case _: InterruptedException => throw new TimeoutException()
-
         } finally {
           // Terminate
           resultQueue.put(None)
@@ -240,7 +232,6 @@ object Parallel extends LogSupport {
       f: T => R
   ) extends Runnable
       with LogSupport {
-
     val message: AtomicReference[T] = new AtomicReference[T]()
 
     override def run: Unit = {
@@ -270,7 +261,6 @@ object Parallel extends LogSupport {
       f: T => R
   ) extends Runnable
       with LogSupport {
-
     val message: AtomicReference[(T, Int)] = new AtomicReference[(T, Int)]()
 
     override def run: Unit = {
@@ -292,5 +282,4 @@ object Parallel extends LogSupport {
       }
     }
   }
-
 }

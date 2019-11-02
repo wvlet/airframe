@@ -24,7 +24,6 @@ import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 
 object CollectionCodec {
-
   object BaseSeqCodec {
     def pack[A](p: Packer, v: Seq[A], elementCodec: MessageCodec[A]): Unit = {
       // elements
@@ -43,7 +42,6 @@ object CollectionCodec {
         elementCodec: MessageCodec[A],
         newBuilder: => mutable.Builder[A, Seq[A]]
     ): Unit = {
-
       u.getNextValueType match {
         case ValueType.ARRAY =>
           // Read elements
@@ -221,5 +219,4 @@ object CollectionCodec {
       }
     }
   }
-
 }

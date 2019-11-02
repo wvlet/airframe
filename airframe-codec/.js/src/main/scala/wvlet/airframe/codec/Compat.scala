@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   *
   */
 object Compat {
-
   def codecFinder: CodecFinder                              = JSCodecFinger
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
 

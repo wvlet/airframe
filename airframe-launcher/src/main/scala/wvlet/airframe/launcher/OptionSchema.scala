@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
   * Schema of the command line options
   */
 sealed trait OptionSchema extends LogSupport {
-
   val options: Seq[CLOption]
   val args: Seq[CLArgItem] // must be sorted by arg.index in ascending order
 

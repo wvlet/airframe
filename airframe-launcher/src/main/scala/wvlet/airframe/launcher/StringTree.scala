@@ -36,7 +36,6 @@ import wvlet.airframe.surface.reflect.Path
   *
   */
 sealed trait StringTree {
-
   def +(e: (Path, StringTree)): StringTree = setNode(e._1, e._2)
   def ++(it: Iterable[(Path, StringTree)]): StringTree = it.foldLeft[StringTree](this) { (h, e) =>
     h.setNode(e._1, e._2)
@@ -109,7 +108,6 @@ sealed trait StringTree {
 }
 
 object StringTree extends LogSupport {
-
   import collection.immutable.{Map => IMap}
 
   def apply(elems: Iterable[(Path, StringTree)]): StringTree = EmptyNode.++(elems)
@@ -191,6 +189,5 @@ object StringTree extends LogSupport {
       }
 
     def dfs(path: Path) = elems.map(e => e.dfs(path)).reduce(_ ++ _)
-
   }
 }

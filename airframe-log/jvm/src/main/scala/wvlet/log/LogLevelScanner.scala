@@ -101,7 +101,6 @@ object LogLevelScanner {
     * @return updated last scanned millis
     */
   private[log] def scan(logLevelFileCandidates: List[String], lastScannedMillis: Option[Long]): Option[Long] = {
-
     @tailrec
     def findLogLevelFile(candidates: List[String]): Option[URL] = {
       if (candidates.isEmpty) {
@@ -156,7 +155,6 @@ object LogLevelScanner {
   private[log] object RUNNING  extends ScannerState
   private[log] object STOPPING extends ScannerState
   private[log] object STOPPED  extends ScannerState
-
 }
 
 case class LogLevelScannerConfig(

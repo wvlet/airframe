@@ -21,7 +21,6 @@ import scala.language.postfixOps
 import scala.util.{Failure, Success, Try}
 
 class ParallelTest extends AirSpec {
-
   def `run() in parallel with Seq`: Unit = {
     Parallel.jmxStats.startedTasks.set(0)
     Parallel.jmxStats.finishedTasks.set(0)

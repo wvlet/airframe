@@ -127,5 +127,4 @@ class HttpClientTest extends AirSpec {
       }
     }
   }
-
 }

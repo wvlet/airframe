@@ -6,7 +6,6 @@ import wvlet.airframe.surface.Surface
 import scala.reflect.runtime.{universe => ru}
 
 object MessageCodecFactory {
-
   type ObjectCodecFactory = Function2[Surface, Seq[MessageCodec[_]], MessageCodec[_]]
 
   def defaultObjectCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
@@ -44,7 +43,6 @@ class MessageCodecFactory(
     private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
       MessageCodecFactory.defaultObjectCodecFactory
 ) {
-
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
     new MessageCodecFactory(knownCodecs ++ additionalCodecs, objectCodecFactory)
   }

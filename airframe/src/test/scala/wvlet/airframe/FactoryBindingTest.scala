@@ -16,7 +16,6 @@ package wvlet.airframe
 import wvlet.airspec.AirSpec
 
 object FactoryBindingTest {
-
   case class MyConfig(a: Int)
   case class MyConfig2(b: Int)
   case class MyConfig3(b: Int = 0)

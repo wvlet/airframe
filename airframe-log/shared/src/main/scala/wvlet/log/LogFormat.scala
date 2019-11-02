@@ -35,7 +35,6 @@ trait LogFormatter extends Formatter {
 }
 
 object LogFormatter {
-
   import LogTimestampFormatter._
 
   def currentThreadName: String = Thread.currentThread().getName
@@ -202,5 +201,4 @@ object LogFormatter {
       }
     }
   }
-
 }

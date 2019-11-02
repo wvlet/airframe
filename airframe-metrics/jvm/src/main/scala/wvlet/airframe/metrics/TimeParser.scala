@@ -25,7 +25,6 @@ import scala.util.{Failure, Success, Try}
   * Time string to ZonedDateTime converter
   */
 object TimeParser extends LogSupport {
-
   val localDatePattern     = DateTimeFormatter.ofPattern("yyyy-MM-dd")
   val localDateTimePattern = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss[.SSS]")
 

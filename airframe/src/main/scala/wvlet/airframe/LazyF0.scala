@@ -28,7 +28,6 @@ object LazyF0 {
   * @tparam R
   */
 class LazyF0[+R](f: => R) extends Serializable with Cloneable {
-
   // Generates uuid to make sure the identity of this LazyF0 instance after serde
   private val uuid = UUID.randomUUID()
 

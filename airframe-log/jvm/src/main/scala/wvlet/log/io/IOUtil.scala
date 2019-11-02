@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets
   *
   */
 object IOUtil {
-
   def withResource[Resource <: AutoCloseable, U](resource: Resource)(body: Resource => U): U = {
     try {
       body(resource)
@@ -105,5 +104,4 @@ object IOUtil {
     }
     f(byteArray)
   }
-
 }

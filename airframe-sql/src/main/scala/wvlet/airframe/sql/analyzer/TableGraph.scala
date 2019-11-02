@@ -47,5 +47,4 @@ object TableGraph {
   case class TargetTable(name: String) extends Node {
     override def toString = s"!${name}"
   }
-
 }

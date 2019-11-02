@@ -21,7 +21,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class MetricsCodecTest extends AirSpec {
-
   def `support DataSize`: Unit = {
     val codec = MessageCodec.of[DataSize]
 
@@ -72,7 +71,5 @@ class MetricsCodecTest extends AirSpec {
       p.packInt(1000)
       codec.unpackMsgPack(p.toByteArray) shouldBe Some(ElapsedTime.succinctNanos(1000))
     }
-
   }
-
 }

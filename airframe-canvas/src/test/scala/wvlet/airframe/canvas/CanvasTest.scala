@@ -22,7 +22,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class CanvasTest extends AirSpec with PropertyCheck {
-
   protected def check[A](v: A, canvas: Canvas, writer: Canvas => Unit, reader: Canvas => A): Unit = {
     writer(canvas)
     val v2 = reader(canvas)
@@ -83,7 +82,6 @@ class CanvasTest extends AirSpec with PropertyCheck {
         check(v, c, _.writeBytes(offset, v), _.readBytes(offset, v.size))
       }
     }
-
   }
 
   val canvasSize = 64

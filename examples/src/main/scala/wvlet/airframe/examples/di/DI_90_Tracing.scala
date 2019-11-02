@@ -37,5 +37,4 @@ object DI_90_Tracing extends App {
   d.build[MyApp] { app =>
     //
   }
-
 }

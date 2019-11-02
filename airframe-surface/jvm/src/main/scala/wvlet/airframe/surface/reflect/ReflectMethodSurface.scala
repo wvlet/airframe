@@ -26,7 +26,6 @@ import scala.util.Try
 case class ReflectMethodSurface(mod: Int, owner: Surface, name: String, returnType: Surface, args: Seq[MethodParameter])
     extends MethodSurface
     with LogSupport {
-
   private def findActualMethod(cls: Class[_]): Option[jl.reflect.Method] = {
     // For `symbol-based method names`, we need to encode Scala method names into the bytecode format used in class files.
     val rawMethodName = scala.reflect.NameTransformer.encode(name)

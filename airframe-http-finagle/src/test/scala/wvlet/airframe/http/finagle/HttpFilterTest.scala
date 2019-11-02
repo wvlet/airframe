@@ -104,9 +104,7 @@ class ExceptionTestFilter extends FinagleFilter {
   *
   */
 class HttpFilterTest extends AirSpec {
-
   def `apply filter before the route`: Unit = {
-
     val router =
       Router
         .add[LogFilterExample]

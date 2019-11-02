@@ -22,7 +22,6 @@ import wvlet.airframe.sql.model.LogicalPlan.EmptyRelation
   *
   */
 object LogicalPlanPrinter extends LogSupport {
-
   def print(m: LogicalPlan): String = {
     val s = new StringWriter()
     val p = new PrintWriter(s)

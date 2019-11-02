@@ -24,7 +24,6 @@ import scala.util.matching.Regex
   */
 private[airspec] class AirSpecRunner(config: AirSpecConfig, val remoteArgs: Array[String], classLoader: ClassLoader)
     extends sbt.testing.Runner {
-
   private lazy val taskLogger = new AirSpecLogger()
 
   override def args: Array[String] = config.args

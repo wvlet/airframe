@@ -36,7 +36,6 @@ class SQLAnonymizer(dict: Map[Expression, Expression]) {
   *
   */
 object SQLAnonymizer extends LogSupport {
-
   def anonymize(sql: String): String = {
     val plan           = SQLParser.parse(sql)
     val dict           = new DictBuilder().add(plan).build

@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class DataTypeTest extends AirSpec {
-
   protected def parse(t: String, expected: DataType): Unit = {
     debug(s"parse ${t}")
     val parsed = DataType.parse(t)

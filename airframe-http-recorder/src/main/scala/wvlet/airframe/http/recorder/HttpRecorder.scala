@@ -89,7 +89,6 @@ case class HttpRecorderConfig(
   * are usually too heavy to use in an restricted environment (e.g., CI servers)
   */
 object HttpRecorder extends LogSupport {
-
   def config: HttpRecorderConfig = HttpRecorderConfig()
 
   def defaultExcludeHeaderFilterForRecording: (String, String) => Boolean = { (key: String, value: String) =>

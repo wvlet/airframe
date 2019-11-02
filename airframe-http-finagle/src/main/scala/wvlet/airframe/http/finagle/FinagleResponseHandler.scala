@@ -28,7 +28,6 @@ import wvlet.log.LogSupport
   * Converting controller results into finagle http responses.
   */
 trait FinagleResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
-
   // Use Map codecs to create natural JSON responses
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
@@ -147,7 +146,6 @@ trait FinagleResponseHandler extends ResponseHandler[Request, Response] with Log
 }
 
 object FinagleResponseHandler {
-
   def toJsonBufStream(reader: Reader[_], codec: MessageCodec[Any]): Reader[Buf] = {
     val reported = new AtomicBoolean(false)
 
@@ -178,5 +176,4 @@ object FinagleResponseHandler {
       Buf.ByteArray.Owned(msgpack)
     }
   }
-
 }

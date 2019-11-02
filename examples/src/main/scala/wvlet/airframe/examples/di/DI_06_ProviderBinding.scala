@@ -21,7 +21,6 @@ import wvlet.log.LogSupport
   * Provider binding is useful to build objects by using dependencies defined in Design.
   */
 object DI_06_ProviderBinding extends App {
-
   import wvlet.airframe._
 
   case class MyAppConfig(numThreads: Int = 5)

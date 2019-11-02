@@ -25,7 +25,6 @@ import wvlet.log.LogSupport
   * multiple times, shutdown hooks will be called only once per the resource.
   */
 object DI_12_ReusingService extends App {
-
   import wvlet.airframe._
 
   trait DB extends LogSupport {
@@ -80,5 +79,4 @@ object DI_12_ReusingService extends App {
     //
   }
   // db, httpClient will be closed only once
-
 }

@@ -17,7 +17,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object TracerTest extends LogSupport {
-
   trait D
   trait E
   trait F
@@ -43,14 +42,12 @@ object TracerTest extends LogSupport {
       .beforeShutdown(x => debug("befoer shutdown"))
       .onShutdown(x => debug("shutdown"))
   }
-
 }
 
 /**
   *
   */
 class TracerTest extends AirSpec {
-
   import TracerTest._
 
   def `should trace events`: Unit = {

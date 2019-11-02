@@ -28,7 +28,6 @@ import scala.util.{Failure, Success, Try}
   *
   */
 object JMXUtil extends LogSupport {
-
   implicit class WithReflection(className: String) {
     def invokeStaticMethod(methodName: String): Unit = {
       Try(Class.forName(className).getDeclaredMethod(methodName))

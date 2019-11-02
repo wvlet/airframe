@@ -19,7 +19,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class ServerAddressTest extends AirSpec {
-
   val examples = Seq(
     (ServerAddress("localhost:12345"), ServerAddress("localhost", 12345), "localhost:12345", "localhost:12345"),
     (

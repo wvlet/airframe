@@ -833,5 +833,4 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     val ifExists = Option(ctx.EXISTS()).map(x => true).getOrElse(false)
     DropView(viewName, ifExists)
   }
-
 }

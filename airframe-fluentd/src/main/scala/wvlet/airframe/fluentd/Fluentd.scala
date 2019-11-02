@@ -20,7 +20,6 @@ import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
   *
   */
 object Fluentd {
-
   /**
     * A design for using Fluency-backed FluentdClient
     *
@@ -73,7 +72,6 @@ object Fluentd {
       fileBackupDir: String = null,
       errorHandler: ErrorHandler = null
   ): FluentdLogger = {
-
     val builder = new FluencyBuilderForTreasureData()
     builder.setMaxBufferSize(maxBufferSize)
     builder.setFlushIntervalMillis(flushIntervalMillis)

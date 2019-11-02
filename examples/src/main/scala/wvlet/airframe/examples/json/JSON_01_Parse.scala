@@ -17,7 +17,6 @@ package wvlet.airframe.examples.json
   *
   */
 object JSON_01_Parse extends App {
-
   import wvlet.airframe.json.JSON
 
   val j    = JSON.parse("""{"id":1, "name":"leo"}""")

@@ -22,7 +22,6 @@ import scala.annotation.tailrec
 import scala.util.{Success, Try}
 
 object StreamMessagePackBuilder {
-
   def fromJSON(json: JSONSource): MsgPack = {
     val context = new StreamMessagePackBuilder
     JSONScanner.scanAny(json, context)

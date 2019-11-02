@@ -24,7 +24,6 @@ import scala.sys.ShutdownHookThread
   *
   */
 object AddShutdownHook extends LifeCycleEventHandler {
-
   private val shutdownHooks = new mutable.WeakHashMap[LifeCycleManager, ShutdownHookThread]()
 
   private def removeShutdownHooksFor(lifeCycleManager: LifeCycleManager): Unit = {

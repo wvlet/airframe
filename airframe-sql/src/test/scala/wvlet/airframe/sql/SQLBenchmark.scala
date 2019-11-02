@@ -22,7 +22,6 @@ import wvlet.log.io.{IOUtil, Resource}
   *
   */
 object SQLBenchmark {
-
   case class TestQuery(sql: String, path: Option[String]) {
     override def toString = s"${name}:\n${sql}"
     def name              = path.getOrElse(s"${sql.substring(0, 20.min(sql.length))}")
@@ -94,5 +93,4 @@ object SQLBenchmark {
   lazy val privateQueries: Seq[TestQuery] = {
     readSQLFromYaml(s"${RESOURCE_PATH}/private/examples.yml")
   }
-
 }

@@ -28,7 +28,6 @@ import scala.jdk.CollectionConverters._
   *
   */
 object TypeConverter extends LogSupport {
-
   import java.lang.{reflect => jr}
 
   import ReflectTypeUtil._
@@ -145,5 +144,4 @@ object TypeConverter extends LogSupport {
       pt.length == 1 && pt(0) == classOf[String]
     }
   }
-
 }

@@ -20,7 +20,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class JMXAgentTest extends AirSpec {
-
   def `find jmx registry`: Unit = {
     if (!JMXUtil.isAtLeastJava9) {
       val agent = JMXAgent.defaultAgent
@@ -33,5 +32,4 @@ class JMXAgentTest extends AirSpec {
       }
     }
   }
-
 }

@@ -187,11 +187,9 @@ class HttpRecordStore(val recorderConfig: HttpRecorderConfig, dropSession: Boole
   override def close(): Unit = {
     connectionPool.stop
   }
-
 }
 
 object HttpRecordStore {
-
   def encodeToBase64(content: Buf): String = {
     val buf = new Array[Byte](content.length)
     content.write(buf, 0)

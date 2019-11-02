@@ -26,7 +26,6 @@ import scala.util.{Failure, Success, Try}
   * Codec for java.time package
   */
 object JavaTimeCodec {
-
   val javaTimeCodecs = Map(
     Surface.of[Instant]       -> JavaInstantTimeCodec,
     Surface.of[ZonedDateTime] -> ZonedDateTimeCodec,

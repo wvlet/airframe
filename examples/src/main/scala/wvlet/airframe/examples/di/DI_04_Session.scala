@@ -17,7 +17,6 @@ package wvlet.airframe.examples.di
   * An example of manually creating a session
   */
 object DI_04_Session extends App {
-
   import wvlet.airframe._
 
   trait MyApp
@@ -36,5 +35,4 @@ object DI_04_Session extends App {
   d2.build[MyApp] { myapp =>
     //
   }
-
 }

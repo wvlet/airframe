@@ -43,11 +43,9 @@ class AssistedInjectionTest extends AirSpec {
         a3.service shouldBe "hello"
       }
   }
-
 }
 
 object AssistedInjectionTest extends LogSupport {
-
   type MyService = String
 
   trait NamedService {

@@ -16,10 +16,8 @@ package wvlet.airframe
 import wvlet.airspec.AirSpec
 
 object ImplicitArgTest {
-
   case class ImplA(a: String)(implicit val b: Int)
   case class ImplB(a: String)(implicit val b: Int)
-
 }
 
 /**
@@ -31,7 +29,6 @@ class ImplicitArgTest extends AirSpec {
   import ImplicitArgTest._
 
   def `support implicit args`: Unit = {
-
     val d = newDesign
       .bind[String].toInstance("hello")
       .bind[Int].toInstance(10)
@@ -49,5 +46,4 @@ class ImplicitArgTest extends AirSpec {
       b.b shouldBe 10
     }
   }
-
 }

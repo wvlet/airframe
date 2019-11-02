@@ -22,7 +22,6 @@ import scala.util.{Failure, Random, Success, Try}
   * Retry logic implementation helper
   */
 object Retry extends LogSupport {
-
   def retryableFailure(e: Throwable)    = Failed(isRetryable = true, e)
   def nonRetryableFailure(e: Throwable) = Failed(isRetryable = false, e)
 

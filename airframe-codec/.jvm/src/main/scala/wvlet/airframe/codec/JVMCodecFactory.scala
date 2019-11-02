@@ -22,7 +22,6 @@ import wvlet.airframe.surface.{EnumSurface, GenericSurface, Surface}
   *
   */
 object JVMCodecFactory extends CodecFinder {
-
   // TODO: Share the code with Scala.js
   def findCodec(
       factory: MessageCodecFactory,
@@ -56,5 +55,4 @@ object JVMCodecFactory extends CodecFinder {
     case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
       new StringUnapplyCodec(s)
   }
-
 }

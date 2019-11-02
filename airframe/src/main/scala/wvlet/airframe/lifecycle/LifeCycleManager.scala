@@ -82,7 +82,6 @@ class LifeCycleManager(
   def shutdown: Unit = {
     if (state.compareAndSet(STARTED, STOPPING) || state.compareAndSet(INIT, STOPPING)
         || state.compareAndSet(STARTING, STOPPING)) {
-
       tracer.beforeSessionShutdown(session)
       eventHandler.beforeShutdown(this)
       // Run shutdown hooks in the reverse registration order
@@ -212,7 +211,6 @@ class LifeCycleManager(
 }
 
 object LifeCycleManager {
-
   private[airframe] class LifeCycleHookHolder(private var holder: Vector[LifeCycleHook] = Vector.empty) {
     def list: Seq[LifeCycleHook] = holder
 

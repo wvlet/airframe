@@ -27,14 +27,12 @@ case class StdMethodParameter(
     private val defaultValue: Option[Any] = None,
     accessor: Option[Any => Any] = None
 ) extends MethodParameter {
-
   override def toString: String             = s"${name}:${surface.name}"
   def get(x: Any): Any                      = accessor.map(a => a(x)).getOrElse(null)
   override def getDefaultValue: Option[Any] = defaultValue
 }
 
 object Primitive {
-
   import java.{lang => jl}
 
   private[surface] val primitiveTable = {
@@ -171,7 +169,6 @@ class GenericSurface(
     val params: Seq[Parameter] = Seq.empty,
     override val objectFactory: Option[ObjectFactory] = None
 ) extends Surface {
-
   private def getClassName: String = {
     try {
       rawType.getSimpleName
@@ -220,7 +217,6 @@ class GenericSurface(
   * @param rawType
   */
 case class LazySurface(rawType: Class[_], fullName: String, typeArgs: Seq[Surface]) extends Surface {
-
   // Resolved the final type from the full surface name
   protected def ref: Surface = wvlet.airframe.surface.getCached(fullName)
 

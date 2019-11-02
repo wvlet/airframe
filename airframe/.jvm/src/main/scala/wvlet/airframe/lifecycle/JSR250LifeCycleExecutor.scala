@@ -32,7 +32,6 @@ class MethodCallHook(val injectee: Injectee, method: jl.reflect.Method) extends 
   * Support @PreDestroy and @PostConstruct
   */
 object JSR250LifeCycleExecutor extends LifeCycleEventHandler with LogSupport {
-
   private def findAnnotation[T <: jl.annotation.Annotation: ClassTag](
       annot: Array[jl.annotation.Annotation]
   ): Option[T] = {

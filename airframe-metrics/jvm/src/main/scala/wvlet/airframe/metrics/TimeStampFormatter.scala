@@ -70,5 +70,4 @@ object TimeStampFormatter {
     val timestamp = ZonedDateTime.ofInstant(Instant.ofEpochMilli(timeMillis), systemTimeZone)
     noSpaceTimestampFormat.format(timestamp)
   }
-
 }

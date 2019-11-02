@@ -24,7 +24,6 @@ package wvlet.airframe.msgpack.spi
   *
   */
 trait Buffer {
-
   def size: Int
 
   /**
@@ -45,7 +44,6 @@ trait Buffer {
 import java.{lang => jl}
 
 trait ReadBuffer extends Buffer {
-
   def readByte(position: Int): Byte
   def readShort(position: Int): Short
   def readInt(position: Int): Int

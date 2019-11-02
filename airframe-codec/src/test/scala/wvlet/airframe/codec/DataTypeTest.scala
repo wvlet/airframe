@@ -102,5 +102,4 @@ class DataTypeTest extends AirSpec {
     u.typeArgs shouldBe Seq(r1, r2)
     u.typeName shouldBe "union"
   }
-
 }

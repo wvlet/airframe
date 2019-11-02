@@ -22,7 +22,6 @@ import wvlet.airframe.surface.Surface
   * Standard codec collection
   */
 object StandardCodec {
-
   val javaClassCodec = Map(
     Surface.of[Throwable] -> ThrowableCodec,
     Surface.of[Exception] -> ThrowableCodec

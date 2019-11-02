@@ -29,7 +29,6 @@ package object config {
   import scala.reflect.runtime.{universe => ru}
 
   implicit class ConfigurableDesign(d: Design) {
-
     def showConfig: Design = {
       processConfig { c =>
         logger.info(c.printConfig)
@@ -123,5 +122,4 @@ package object config {
       overrideConfigParams(m.toMap, onUnusedProperties)
     }
   }
-
 }

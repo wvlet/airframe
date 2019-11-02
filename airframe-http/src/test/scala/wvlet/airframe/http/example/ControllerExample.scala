@@ -94,7 +94,6 @@ trait InvalidService {
 
 @Endpoint(path = "/v1")
 trait PrefixExample {
-
   @Endpoint(path = "/hello")
   def hello: String = {
     "hello"

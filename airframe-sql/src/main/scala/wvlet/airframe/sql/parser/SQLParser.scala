@@ -21,7 +21,6 @@ import wvlet.airframe.sql.model.LogicalPlan
   * SQL -> Token -> ANTLR parzse tree -> LogicalPlan
   */
 object SQLParser extends LogSupport {
-
   private def createLexerErrorListener = new BaseErrorListener {
     override def syntaxError(
         recognizer: Recognizer[_, _],

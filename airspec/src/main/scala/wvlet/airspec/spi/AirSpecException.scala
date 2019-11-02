@@ -62,5 +62,4 @@ object AirSpecException {
       case other               => Status.Error
     }
   }
-
 }

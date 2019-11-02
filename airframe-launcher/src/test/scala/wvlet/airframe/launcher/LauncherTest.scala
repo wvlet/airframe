@@ -27,7 +27,6 @@ import wvlet.airspec.AirSpec
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 class LauncherTest extends AirSpec {
-
   import LauncherTest._
   def `populate arguments in constructor`: Unit = {
     capture {
@@ -230,11 +229,9 @@ class LauncherTest extends AirSpec {
     f2.arg shouldBe defined
     f2.arg.get shouldBe "hello"
   }
-
 }
 
 object LauncherTest {
-
   private val logger = Logger.of[LauncherTest]
 
   /**
@@ -269,14 +266,12 @@ object LauncherTest {
       @option(prefix = "-l,--loglevel", description = "log level") loglevel: Option[LogLevel] = None,
       var started: Boolean = false
   ) extends LogSupport {
-
     trace("started GlobalOption command")
     started = true
   }
 
   class NestedOption(val g: GlobalOption) extends LogSupport {
     trace("started NestedOption command")
-
   }
 
   val DEFAULT_MESSAGE = "Type --help to display the list of commands"
@@ -339,5 +334,4 @@ object LauncherTest {
   class OptArg(@argument val arg: Option[String] = None)
 
   class ArrayOptWithDefault(@argument val files: Array[String] = Array("sample"))
-
 }

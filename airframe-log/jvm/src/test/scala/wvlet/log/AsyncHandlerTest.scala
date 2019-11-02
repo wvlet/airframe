@@ -10,7 +10,6 @@ import wvlet.log.io.Timer
   *
   */
 class AsyncHandlerTest extends Spec with Timer {
-
   def `start background thread`: Unit = {
     val buf = new BufferedLogHandler(BareFormatter)
     withResource(new AsyncHandler(buf)) { h =>

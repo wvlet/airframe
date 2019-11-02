@@ -176,5 +176,4 @@ object Router extends LogSupport {
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
   case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
-
 }

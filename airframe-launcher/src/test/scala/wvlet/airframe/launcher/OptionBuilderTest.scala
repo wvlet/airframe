@@ -16,7 +16,6 @@ package wvlet.airframe.launcher
 import wvlet.airspec.AirSpec
 
 object OptionBuilderTest {
-
   case class Opt1(
       @option(prefix = "-e")
       env: String = "default"

@@ -23,7 +23,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class SQLAnonymizerTest extends AirSpec {
-
   protected def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {
     val l = SQLParser.parse(q.sql)
     debug(q.sql)
@@ -60,5 +59,4 @@ class SQLAnonymizerTest extends AirSpec {
   def `anonymize TPC-DS`: Unit = {
     processQueries(SQLBenchmark.tpcDS)
   }
-
 }

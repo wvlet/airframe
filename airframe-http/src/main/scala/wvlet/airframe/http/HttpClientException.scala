@@ -59,7 +59,6 @@ case class HttpClientMaxRetryException(
   * Common classifiers for HTTP client responses and exceptions in order to retry HTTP requests.
   */
 object HttpClientException extends LogSupport {
-
   private def requestFailure[Resp](response: Resp)(implicit adapter: HttpResponseAdapter[Resp]): HttpClientException = {
     val status  = adapter.statusOf(response)
     val content = adapter.contentStringOf(response)
@@ -210,5 +209,4 @@ object HttpClientException extends LogSupport {
       // We canot retry when an unknown exception is thrown
       nonRetryableFailure(e)
   }
-
 }

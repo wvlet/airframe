@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets
   *
   */
 object JSONSource {
-
   def fromString(s: String): JSONSource                 = fromBytes(s.getBytes(StandardCharsets.UTF_8))
   def fromBytes(b: Array[Byte]): JSONSource             = fromBytes(b, 0, b.length)
   def fromBytes(b: Array[Byte], offset: Int, size: Int) = new JSONSource(b, offset, size)

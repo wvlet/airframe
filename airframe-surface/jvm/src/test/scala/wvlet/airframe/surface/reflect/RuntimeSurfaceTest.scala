@@ -19,7 +19,6 @@ import scala.concurrent.Future
 import scala.util.Try
 
 object RuntimeExamples {
-
   case class A(b: Boolean, bt: Byte, st: Short, i: Int, l: Long, f: Float, d: Double, str: String)
 
   case class B(a: A)
@@ -41,7 +40,6 @@ object RuntimeExamples {
   *
   */
 class RuntimeSurfaceTest extends SurfaceSpec {
-
   import RuntimeExamples._
 
   def `resolve types`: Unit = {
@@ -187,5 +185,4 @@ class RuntimeSurfaceTest extends SurfaceSpec {
     assert(a.params(4).get(a0) == 20L)
     assert(a.params(7).get(a0) == "hello")
   }
-
 }

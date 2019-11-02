@@ -20,7 +20,6 @@ import wvlet.log.LogSupport
 import scala.util.Random
 
 object ChildSessionTest {
-
   case class HttpRequest(path: String, userName: String)
   case class User(name: String)
   trait UserAuth {

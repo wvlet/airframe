@@ -50,5 +50,4 @@ class TimeVectorTest extends AirSpec {
 
     lst.foreach(x => check(x._1, x._2))
   }
-
 }

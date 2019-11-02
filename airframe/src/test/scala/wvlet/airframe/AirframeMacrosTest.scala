@@ -47,7 +47,6 @@ class AirframeMacrosTest extends AirSpec {
   scalaJsSupport
 
   def `build trait at compile time`: Unit = {
-
     val session = newDesign.newSession
     session.build[NonAbstractTrait]
     session.build[App1]
