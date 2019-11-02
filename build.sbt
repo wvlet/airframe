@@ -645,7 +645,7 @@ lazy val json =
 lazy val jsonJVM = json.jvm
 lazy val jsonJS  = json.js
 
-val JMH_VERSION = "1.21"
+val JMH_VERSION = "1.22"
 
 import xerial.sbt.pack.PackPlugin._
 
