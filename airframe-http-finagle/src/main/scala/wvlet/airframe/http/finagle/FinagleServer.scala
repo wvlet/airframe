@@ -34,7 +34,8 @@ case class FinagleServerConfig(
     name: String = "default",
     port: Int = IOUtil.unusedPort,
     router: Router = Router.empty,
-    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
+    customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty,
+    controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider
 ) {
   def withName(name: String): FinagleServerConfig = {
     this.copy(name = name)
@@ -53,6 +54,10 @@ case class FinagleServerConfig(
       case s: Surface if m.contains(s) => m(s)
     })
   }
+  def withControllerProvider(c: ControllerProvider): FinagleServerConfig = {
+    this.copy(controllerProvider = c)
+  }
+  def responseHandler: ResponseHandler[Request, Response] = new FinagleResponseHandler(customCodec)
 }
 
 /**
@@ -174,8 +179,7 @@ object FinagleServer extends LogSupport {
 trait FinagleServerFactory extends AutoCloseable with LogSupport {
   private var createdServers = List.empty[FinagleServer]
 
-  protected val controllerProvider = bind[ControllerProvider]
-  protected val responseHandler    = bind[ResponseHandler[Request, Response]]
+  private val session = bind[Session]
 
   /**
     * Override this method to customize finagle service filters
@@ -191,7 +195,7 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
   }
 
   def newFinagleServer(config: FinagleServerConfig): FinagleServer = {
-    val finagleRouter = new FinagleRouter(config, controllerProvider, responseHandler)
+    val finagleRouter = new FinagleRouter(session, config)
     val server =
       new FinagleServer(finagleConfig = config, finagleService = newService(finagleRouter), initServer = initServer)
 

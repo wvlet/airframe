@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.Session
 import wvlet.airframe.codec.{MISSING_PARAMETER, MessageCodecException}
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
@@ -44,6 +45,7 @@ trait Route {
   ): Any
 
   private[http] def callWithProvider[Req: HttpRequestAdapter](
+      session: Session,
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String]
@@ -90,11 +92,12 @@ case class ControllerRoute(
   }
 
   override private[http] def callWithProvider[Req: HttpRequestAdapter](
+      session: Session,
       controllerProvider: ControllerProvider,
       request: Req,
       params: Map[String, String]
   ): Option[Any] = {
-    controllerProvider.findController(controllerSurface).map { controller =>
+    controllerProvider.findController(session, controllerSurface).map { controller =>
       call(controller, request, params)
     }
   }

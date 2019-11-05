@@ -28,7 +28,7 @@ trait CodecFinder {
 }
 
 object CodecFinder {
-  case class OrElse(a: CodecFinder, b: CodecFinder) extends CodecFinder {
+  private[codec] case class OrElse(a: CodecFinder, b: CodecFinder) extends CodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
@@ -37,7 +37,7 @@ object CodecFinder {
     }
   }
 
-  def defaultCodecFinder = new CodecFinder {
+  object defaultCodecFinder extends CodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]

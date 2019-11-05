@@ -34,7 +34,6 @@ package object finagle {
     */
   def finagleBaseDesign: Design =
     httpDefaultDesign
-      .bind[ResponseHandler[http.Request, http.Response]].to[FinagleResponseHandler]
       .bind[FinagleService].toProvider { router: FinagleRouter =>
         FinagleServer.defaultService(router)
       }

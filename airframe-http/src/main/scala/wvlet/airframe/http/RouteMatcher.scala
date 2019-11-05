@@ -12,12 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.Session
 import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
-    route.callWithProvider(controllerProvider, request, params)
+  def call[Req: HttpRequestAdapter](
+      session: Session,
+      controllerProvider: ControllerProvider,
+      request: Req
+  ): Option[Any] = {
+    route.callWithProvider(session, controllerProvider, request, params)
   }
 }
 
@@ -64,7 +69,7 @@ object RouteMatcher extends LogSupport {
             throw new IllegalArgumentException(
               s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
             )
-          }
+        }
       )
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {

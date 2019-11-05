@@ -15,6 +15,7 @@ package wvlet.airframe.http
 
 import java.lang.reflect.InvocationTargetException
 
+import wvlet.airframe.Session
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.log.LogSupport
 
@@ -22,6 +23,7 @@ import scala.language.higherKinds
 
 object HttpRequestDispatcher {
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
+      session: Session,
       router: Router,
       controllerProvider: ControllerProvider,
       backend: HttpBackend[Req, Resp, F],
@@ -29,7 +31,7 @@ object HttpRequestDispatcher {
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildRouteFilters(router, backend.Identity, controllerProvider)
+      HttpRequestDispatcher.buildRouteFilters(session, router, backend.Identity, controllerProvider)
     }
 
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
@@ -51,13 +53,14 @@ object HttpRequestDispatcher {
     * Traverse the Router tree and build HttpFilter for each local Route
     */
   private[http] def buildRouteFilters[Req, Resp, F[_]](
+      session: Session,
       router: Router,
       parentFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
   ): Map[Route, RouteFilter[Req, Resp, F]] = {
     val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
       router.filterSurface
-        .map(fs => controllerProvider.findController(fs))
+        .map(fs => controllerProvider.findController(session, fs))
         .filter(_.isDefined)
         .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
 
@@ -70,14 +73,14 @@ object HttpRequestDispatcher {
 
     val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
     for (route <- router.localRoutes) {
-      val controllerOpt = controllerProvider.findController(route.controllerSurface)
+      val controllerOpt = controllerProvider.findController(session, route.controllerSurface)
       if (controllerOpt.isEmpty) {
         throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
       }
       m += (route -> RouteFilter(currentFilter, controllerOpt.get))
     }
     for (c <- router.children) {
-      m ++= buildRouteFilters(c, currentFilter, controllerProvider)
+      m ++= buildRouteFilters(session, c, currentFilter, controllerProvider)
     }
     m.result()
   }
