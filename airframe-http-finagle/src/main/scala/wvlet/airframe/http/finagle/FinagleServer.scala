@@ -30,6 +30,7 @@ import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
 import scala.annotation.tailrec
+import scala.concurrent.ExecutionException
 import scala.util.control.NonFatal
 
 case class FinagleServerConfig(
@@ -85,6 +86,9 @@ case class FinagleServerConfig(
   def withBeforeRoutingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
     this.copy(beforeRoutingFilter = filter)
   }
+  def noBeforeRoutingFilter: FinagleServerConfig = {
+    this.copy(beforeRoutingFilter = Filter.identity)
+  }
   def withFallbackService(service: Service[Request, Response]): FinagleServerConfig = {
     this.copy(fallbackService = service)
   }
@@ -114,7 +118,7 @@ case class FinagleServerConfig(
     service
   }
 
-  private[finagle] def newServer(session: Session): FinagleServer = {
+  def newFinagleServer(session: Session): FinagleServer = {
     new FinagleServer(finagleConfig = this, finagleService = newService(session))
   }
 }
@@ -181,6 +185,8 @@ object FinagleServer extends LogSupport {
             x match {
               case i: InvocationTargetException if i.getTargetException != null =>
                 getCause(i.getTargetException)
+              case e: ExecutionException if e.getCause != null =>
+                getCause(e.getCause)
               case _ =>
                 x
             }
@@ -233,7 +239,7 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
   private val session = bind[Session]
 
   def newFinagleServer(config: FinagleServerConfig): FinagleServer = {
-    val server = config.newServer(session)
+    val server = config.newFinagleServer(session)
     synchronized {
       createdServers = server :: createdServers
     }
