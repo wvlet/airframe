@@ -15,7 +15,9 @@ package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
 import com.twitter.finagle.http.{Request, Response, Status}
-import com.twitter.finagle.{Http, ListeningServer, Service, SimpleFilter}
+import com.twitter.finagle.stats.StatsReceiver
+import com.twitter.finagle.tracing.Tracer
+import com.twitter.finagle.{Filter, Http, ListeningServer, Service, SimpleFilter}
 import com.twitter.util.{Await, Future}
 import javax.annotation.PostConstruct
 import wvlet.airframe._
@@ -34,8 +36,16 @@ case class FinagleServerConfig(
     name: String = "default",
     port: Int = IOUtil.unusedPort,
     router: Router = Router.empty,
+    serverInitializer: Http.Server => Http.Server = identity,
     customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty,
-    controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider
+    controllerProvider: ControllerProvider = ControllerProvider.defaultControllerProvider,
+    tracer: Option[Tracer] = None,
+    statsReceiver: Option[StatsReceiver] = None,
+    // A top-level filter applied before routing requests
+    beforeRoutingFilter: Filter[Request, Response, Request, Response] =
+      FinagleServer.defaultRequestLogger andThen FinagleServer.defaultErrorFilter,
+    // Service called when no matching route is found
+    fallbackService: Service[Request, Response] = FinagleServer.notFound
 ) {
   def withName(name: String): FinagleServerConfig = {
     this.copy(name = name)
@@ -57,7 +67,56 @@ case class FinagleServerConfig(
   def withControllerProvider(c: ControllerProvider): FinagleServerConfig = {
     this.copy(controllerProvider = c)
   }
+  def withTracer(t: Tracer): FinagleServerConfig = {
+    this.copy(tracer = Some(t))
+  }
+  def noTracer: FinagleServerConfig = {
+    this.copy(tracer = None)
+  }
+  def withStatsReceiver(statsReceiver: StatsReceiver): FinagleServerConfig = {
+    this.copy(statsReceiver = Some(statsReceiver))
+  }
+  def noStatsReceiver: FinagleServerConfig = {
+    this.copy(statsReceiver = None)
+  }
+  def withServerInitializer(init: Http.Server => Http.Server): FinagleServerConfig = {
+    this.copy(serverInitializer = init)
+  }
+  def withBeforeRoutingFilter(filter: Filter[Request, Response, Request, Response]): FinagleServerConfig = {
+    this.copy(beforeRoutingFilter = filter)
+  }
+  def withFallbackService(service: Service[Request, Response]): FinagleServerConfig = {
+    this.copy(fallbackService = service)
+  }
+
   def responseHandler: ResponseHandler[Request, Response] = new FinagleResponseHandler(customCodec)
+
+  // Initialize Finagle server using this config
+  private[finagle] def initServer(server: Http.Server): Http.Server = {
+    var s = serverInitializer(server)
+    for (x <- tracer) {
+      s = s.withTracer(x)
+    }
+    for (x <- statsReceiver) {
+      s = s.withStatsReceiver(x)
+    }
+    s
+  }
+
+  private[finagle] def newService(session: Session): FinagleService = {
+    val finagleRouter = new FinagleRouter(session, this)
+
+    // Build Finagle filters
+    val service = beforeRoutingFilter andThen
+      finagleRouter andThen
+      fallbackService
+
+    service
+  }
+
+  private[finagle] def newServer(session: Session): FinagleServer = {
+    new FinagleServer(finagleConfig = this, finagleService = newService(session))
+  }
 }
 
 /**
@@ -65,21 +124,20 @@ case class FinagleServerConfig(
   */
 class FinagleServer(
     finagleConfig: FinagleServerConfig,
-    finagleService: FinagleService,
-    initServer: Http.Server => Http.Server = identity
+    finagleService: FinagleService
 ) extends LogSupport
     with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
 
-  def localAddress = s"localhost:${port}"
   def port: Int    = finagleConfig.port
+  def localAddress = s"localhost:${port}"
 
   @PostConstruct
   def start: Unit = {
     synchronized {
       if (server.isEmpty) {
         info(s"Starting ${finagleConfig.name} server at http://localhost:${finagleConfig.port}")
-        val customServer = initServer(Http.Server())
+        val customServer = finagleConfig.initServer(Http.Server())
         server = Some(customServer.serve(s":${finagleConfig.port}", finagleService))
       }
     }
@@ -111,7 +169,7 @@ object FinagleServer extends LogSupport {
 
   def defaultService(router: FinagleRouter): FinagleService = {
     FinagleServer.defaultRequestLogger andThen
-      FinagleServer.defaultErrorHandler andThen
+      FinagleServer.defaultErrorFilter andThen
       router andThen
       FinagleServer.notFound
   }
@@ -120,7 +178,7 @@ object FinagleServer extends LogSupport {
     * A simple error handler for wrapping exceptions as InternalServerError (500).
     * We do not return the exception as is because it may contain internal information.
     */
-  def defaultErrorHandler = new SimpleFilter[Request, Response] {
+  def defaultErrorFilter: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       service(request).rescue {
         case e: Throwable =>
@@ -153,7 +211,7 @@ object FinagleServer extends LogSupport {
   /**
     * Simple logger for logging http requests and responses to stderr
     */
-  def defaultRequestLogger = new SimpleFilter[Request, Response] {
+  def defaultRequestLogger: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
     override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
       logger.trace(request)
       service(request).map { response =>
@@ -181,24 +239,8 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
 
   private val session = bind[Session]
 
-  /**
-    * Override this method to customize finagle service filters
-    */
-  protected def newService(finagleRouter: FinagleRouter) = FinagleServer.defaultService(finagleRouter)
-
-  /**
-    * Override this method to customize Finagle Server configuration.
-    */
-  protected def initServer(server: Http.Server): Http.Server = {
-    // Do nothing by default
-    server
-  }
-
   def newFinagleServer(config: FinagleServerConfig): FinagleServer = {
-    val finagleRouter = new FinagleRouter(session, config)
-    val server =
-      new FinagleServer(finagleConfig = config, finagleService = newService(finagleRouter), initServer = initServer)
-
+    val server = config.newServer(session)
     synchronized {
       createdServers = server :: createdServers
     }
@@ -207,7 +249,12 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
   }
 
   def newFinagleServer(name: String, port: Int, router: Router): FinagleServer = {
-    newFinagleServer(FinagleServerConfig(name = name, port = port, router = router))
+    newFinagleServer(
+      FinagleServerConfig()
+        .withName(name)
+        .withPort(port)
+        .withRouter(router)
+    )
   }
 
   override def close(): Unit = {

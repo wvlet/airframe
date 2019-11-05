@@ -17,7 +17,7 @@ import com.twitter.finagle.http
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.util.Future
-import wvlet.airframe.Design
+import wvlet.airframe.{Design, Session}
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.log.io.IOUtil
 
@@ -33,9 +33,9 @@ package object finagle {
     * If you create your own FinagleServers, use this design.
     */
   def finagleBaseDesign: Design =
-    httpDefaultDesign
-      .bind[FinagleService].toProvider { router: FinagleRouter =>
-        FinagleServer.defaultService(router)
+    Design.newDesign
+      .bind[FinagleService].toProvider { (config: FinagleServerConfig, session: Session) =>
+        config.newService(session)
       }
 
   /**
@@ -52,7 +52,12 @@ package object finagle {
     */
   def newFinagleServerDesign(name: String = "default", port: Int = IOUtil.randomPort, router: Router): Design = {
     finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(FinagleServerConfig(name = name, port = port, router = router))
+      .bind[FinagleServerConfig].toInstance(
+        FinagleServerConfig()
+          .withName(name)
+          .withPort(port)
+          .withRouter(router)
+      )
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {

@@ -44,6 +44,8 @@ case class MessageCodecFactory(
     private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
       MessageCodecFactory.defaultObjectCodecFactory
 ) {
+  //def orElse(other: MessageCodecFactory): MessageCodecFactory = {}
+
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
     this.copy(knownCodecs = knownCodecs ++ additionalCodecs)
   }

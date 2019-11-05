@@ -24,7 +24,8 @@ import wvlet.airframe.http.{ControllerProvider, HttpContext, HttpRequestDispatch
   */
 abstract class FinagleFilter extends FinagleBackend.HttpFilterBase
 
-class FinagleRouter(session: Session, config: FinagleServerConfig) extends SimpleFilter[Request, Response] {
+class FinagleRouter(session: Session, private[finagle] val config: FinagleServerConfig)
+    extends SimpleFilter[Request, Response] {
   private val dispatcher =
     HttpRequestDispatcher.newDispatcher(
       session,

@@ -51,7 +51,18 @@ class FinagleServerFactoryTest extends AirSpec {
   def `allow customize services`: Unit = {
     val d2 =
       finagleDefaultDesign
-        .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
+        .bind[FinagleServerConfig].toInstance(
+          FinagleServerConfig()
+            .withFallbackService {
+              new Service[Request, Response] {
+                override def apply(request: Request): Future[Response] = {
+                  val r = Response(Status.Ok)
+                  r.contentString = "hello custom server"
+                  Future.value(r)
+                }
+              }
+            }
+        )
 
     d2.build[FinagleServer] { server =>
       withResource(Finagle.newSyncClient(s"localhost:${server.port}")) { client =>
@@ -63,41 +74,24 @@ class FinagleServerFactoryTest extends AirSpec {
   def `allow customize Finagle Http Server`: Unit = {
     val d =
       finagleDefaultDesign
-        .bind[FinagleServerFactory].to[CustomFinagleServerFactoryWithTracer]
+        .bind[FinagleServerConfig].toInstance(
+          FinagleServerConfig()
+            .withTracer(ConsoleTracer)
+            .withFallbackService(
+              new Service[Request, Response] {
+                override def apply(request: Request): Future[Response] = {
+                  val r = Response(Status.Ok)
+                  r.contentString = "hello custom server with tracer"
+                  Future.value(r)
+                }
+              }
+            )
+        )
 
     d.build[FinagleServer] { server =>
       withResource(Finagle.newSyncClient(server.localAddress)) { client =>
         client.send(Request("/v1")).contentString shouldBe "hello custom server with tracer"
       }
     }
-  }
-}
-
-trait CustomFinagleServerFactory extends FinagleServerFactory {
-  override protected def newService(finagleRouter: FinagleRouter): FinagleService = {
-    // You can customize service filter as you with
-    finagleRouter andThen new Service[Request, Response] {
-      override def apply(request: Request): Future[Response] = {
-        val r = Response(Status.Ok)
-        r.contentString = "hello custom server"
-        Future.value(r)
-      }
-    }
-  }
-}
-
-trait CustomFinagleServerFactoryWithTracer extends FinagleServerFactory {
-  override protected def newService(finagleRouter: FinagleRouter): FinagleService = {
-    // You can customize service filter as you with
-    finagleRouter andThen new Service[Request, Response] {
-      override def apply(request: Request): Future[Response] = {
-        val r = Response(Status.Ok)
-        r.contentString = "hello custom server with tracer"
-        Future.value(r)
-      }
-    }
-  }
-  override def initServer(server: Http.Server): Http.Server = {
-    server.withTracer(ConsoleTracer)
   }
 }
