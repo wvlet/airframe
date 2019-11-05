@@ -31,7 +31,7 @@ import wvlet.airframe._
 trait FinagleResponseHandler extends ResponseHandler[Request, Response] with LogSupport {
   // Use Map codecs to create natural JSON responses
   private val finagleServerConfig = bind[FinagleServerConfig]
-
+  finagleServerConfig.customCodec
   private[this] val mapCodecFactory =
     MessageCodecFactory.defaultFactory.withObjectMapCodec
 

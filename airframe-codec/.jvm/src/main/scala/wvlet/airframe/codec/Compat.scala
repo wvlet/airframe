@@ -12,7 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.surface.Surface
+import wvlet.airframe.codec.JavaStandardCodec.EnumCodec
+import wvlet.airframe.surface.reflect.ReflectTypeUtil
+import wvlet.airframe.surface.{EnumSurface, Surface}
 
 import scala.reflect.runtime.{universe => ru}
 
@@ -20,7 +22,23 @@ import scala.reflect.runtime.{universe => ru}
   *
   */
 object Compat {
-  def codecFinder: CodecFinder = JVMCodecFactory
+  def codecFinder: CodecFinder = {
+    CodecFinder.defaultCodecFinder orElse
+      JVMCodecFinder
+  }
+
+  object JVMCodecFinder extends CodecFinder {
+    override def findCodec(
+        factory: MessageCodecFactory,
+        seenSet: Set[Surface]
+    ): PartialFunction[Surface, MessageCodec[_]] = {
+      case EnumSurface(cl) =>
+        EnumCodec(cl)
+      case s if ReflectTypeUtil.hasStringUnapplyConstructor(s) =>
+        new StringUnapplyCodec(s)
+    }
+  }
+
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] =
     JavaTimeCodec.javaTimeCodecs ++ JavaStandardCodec.javaStandardCodecs
 

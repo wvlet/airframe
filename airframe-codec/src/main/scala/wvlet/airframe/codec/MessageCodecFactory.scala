@@ -6,6 +6,7 @@ import wvlet.airframe.surface.Surface
 import scala.reflect.runtime.{universe => ru}
 
 object MessageCodecFactory {
+  // Mapping (Object Surface, Seq[Object Parameter Surface]) => MessageCodec
   type ObjectCodecFactory = Function2[Surface, Seq[MessageCodec[_]], MessageCodec[_]]
 
   def defaultObjectCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
@@ -38,20 +39,19 @@ import wvlet.airframe.codec.MessageCodecFactory._
 /**
   *
   */
-class MessageCodecFactory(
+case class MessageCodecFactory(
     knownCodecs: Map[Surface, MessageCodec[_]],
     private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
       MessageCodecFactory.defaultObjectCodecFactory
 ) {
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    new MessageCodecFactory(knownCodecs ++ additionalCodecs, objectCodecFactory)
+    this.copy(knownCodecs = knownCodecs ++ additionalCodecs)
   }
-
   def withObjectMapCodec: MessageCodecFactory = {
-    new MessageCodecFactory(knownCodecs, MessageCodecFactory.objectMapCodecFactory)
+    this.copy(objectCodecFactory = MessageCodecFactory.objectMapCodecFactory)
   }
   def withObjectCodecFactory(f: ObjectCodecFactory): MessageCodecFactory = {
-    new MessageCodecFactory(knownCodecs, f)
+    this.copy(objectCodecFactory = f)
   }
 
   protected[this] var cache = Map.empty[Surface, MessageCodec[_]]
