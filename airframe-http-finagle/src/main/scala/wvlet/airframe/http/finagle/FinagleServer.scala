@@ -167,13 +167,6 @@ class FinagleServer(
 object FinagleServer extends LogSupport {
   type FinagleService = Service[Request, Response]
 
-  def defaultService(router: FinagleRouter): FinagleService = {
-    FinagleServer.defaultRequestLogger andThen
-      FinagleServer.defaultErrorFilter andThen
-      router andThen
-      FinagleServer.notFound
-  }
-
   /**
     * A simple error handler for wrapping exceptions as InternalServerError (500).
     * We do not return the exception as is because it may contain internal information.
