@@ -17,6 +17,7 @@ import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
 import scala.annotation.tailrec
+import scala.language.higherKinds
 import scala.language.experimental.macros
 
 /**

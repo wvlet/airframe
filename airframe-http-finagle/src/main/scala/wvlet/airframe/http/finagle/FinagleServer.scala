@@ -36,19 +36,19 @@ case class FinagleServerConfig(
     router: Router = Router.empty,
     customCodec: PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
 ) {
-  def withName(name: String): this.type = {
+  def withName(name: String): FinagleServerConfig = {
     this.copy(name = name)
   }
-  def withPort(port: Int): this.type = {
+  def withPort(port: Int): FinagleServerConfig = {
     this.copy(port = port)
   }
-  def withRouter(router: Router): this.type = {
+  def withRouter(router: Router): FinagleServerConfig = {
     this.copy(router = router)
   }
-  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): this.type = {
+  def withCustomCodec(p: PartialFunction[Surface, MessageCodec[_]]): FinagleServerConfig = {
     this.copy(customCodec = p)
   }
-  def withCustomCodec(m: Map[Surface, MessageCodec[_]]): this.type = {
+  def withCustomCodec(m: Map[Surface, MessageCodec[_]]): FinagleServerConfig = {
     this.copy(customCodec = customCodec.orElse {
       case s: Surface if m.contains(s) => m(s)
     })
