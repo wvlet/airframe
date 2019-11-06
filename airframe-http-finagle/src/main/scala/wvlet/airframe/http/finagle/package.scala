@@ -47,17 +47,21 @@ package object finagle {
         factory.newFinagleServer(config)
       }
 
+  def newFinagleServerDesign(config: FinagleServerConfig): Design = {
+    finagleDefaultDesign
+      .bind[FinagleServerConfig].toInstance(config)
+  }
+
   /**
     * Create a new design for FinagleServer using a random port (if not given)
     */
   def newFinagleServerDesign(name: String = "default", port: Int = IOUtil.randomPort, router: Router): Design = {
-    finagleDefaultDesign
-      .bind[FinagleServerConfig].toInstance(
-        FinagleServerConfig()
-          .withName(name)
-          .withPort(port)
-          .withRouter(router)
-      )
+    newFinagleServerDesign(
+      FinagleServerConfig()
+        .withName(name)
+        .withPort(port)
+        .withRouter(router)
+    )
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {

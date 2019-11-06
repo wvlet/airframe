@@ -121,6 +121,12 @@ case class FinagleServerConfig(
   def newFinagleServer(session: Session): FinagleServer = {
     new FinagleServer(finagleConfig = this, finagleService = newService(session))
   }
+
+  def start[U](body: FinagleServer => U): U = {
+    newFinagleServerDesign(this).run { server =>
+      body(server)
+    }
+  }
 }
 
 /**

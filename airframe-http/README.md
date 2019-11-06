@@ -57,7 +57,7 @@ trait MyApi {
     Future.value(ServerInfo("1.0", request.toRaw.userAgent))
   }
   
-  // It is also possible to return a custom HTTP responses
+  // It is also possible to return a custom HTTP responses 
   @EndPoint(method = HttpMethod.GET, path = "/custom_response")
   def customResponse: Response = {
     val response = Reponse()
@@ -80,6 +80,7 @@ GET  /v1/user/:name    returns {"name":"..."}
 POST /v1/user          returns {"name":"..."}
 GET  /v1/info          returns {"version":"1.0", "ua":"...."}
 GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
+...
 ```
 
 Mapping between JSON values and Scala objects will be handled automatically.
@@ -131,31 +132,39 @@ design.build[FinagleServer] { server =>
 
 ## Customizing Finagle
 
-It's possible to customize Finagle. For example, if you need to:
-- Customize Finagle filters, or
+To customize Finagle, use `Finagle.server.withXXX` methods. 
+
+For example, you can:
+- Add custom Tracer, StatsReceiver, etc.
+- Add more advanced configurations using `.withServerInitializer(...)`
+- Customize HTTP filters
 - Start multiple Finagle HTTP servers with different configurations
 
 See also the examples in [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
-
-### Adding Finagle Tracer
 
 To customize Finagle server, extend FinagleServerFactory and define your own 
 server factory:
 
 ```scala
-trait CustomFinagleServerFactory extends FinagleServerFactory {
-  override def initServer(server: Http.Server): Http.Server = {
-    // Enable tracer for Finagle
-    server.withTracer(ConsoleTracer)
-  }
-}
+import wvlet.airframe.http.finagle._
 
-val design = newFinagleServerDesign(name = "my server", port = 8080, router = router)
-    // Configure Finagle Server
-    .bind[FinagleServerFactory].to[CustomFinagleServerFactory]
+val router = Router.add[MyApi]
 
-design.build[FinagleServer] { server => 
-  // The customized server will start here
+val serverConfig = Finagle.server
+  .withName("my server")
+  .withRouter(router)
+  .withPort(8080)
+  // Enable tracer for Finagle
+  .withTracer(ConsoleTracer)
+  // Add your own Finagle specific customization here
+  .withServerInitializer{ x: Server => x }
+  .withStatsReceiver(...)
+  // Add a custom MessageCodec mapping
+  .withCustomCodec(Map(Surface.of[X] -> ...))
+
+newFinagleServerDesign(serverConfig)
+  .build[FinagleServer] { server:FinagleServer =>
+  // The customized server will start here  
 }
 ```
 
