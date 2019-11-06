@@ -5,6 +5,31 @@ title: Release Notes
 
 # Release Notes
 
+## 19.11.0
+
+**Major changes**:
+- airframe-http-finagle now supports builder patterns Finagle.server.withXXX or Finagle.client.withXXX to fully customize HTTP servers and clients. These methods are preferred over using FinagleServerConfig or FinagleClientConfig directly.
+- Added Scala.js support for airframe-codec. Now you can build http servers (Scala JVM) and client pages (Scala.js) that interact together through airframe-codec.
+
+Change log:  
+-  airframe-http: Support server customization with FinagleServerConfig ([#797](https://github.com/wvlet/airframe/issues/797)) [[7f525d0](https://github.com/wvlet/airframe/commit/7f525d0)]
+-  airframe-http: Use 201 (POST/PUT) and 204 (DELETE) status code for empty responses [[b63d4a9](https://github.com/wvlet/airframe/commit/b63d4a9)]
+-  airframe-http: Fix the client builder pattern and use no record expiration time by default ([#777](https://github.com/wvlet/airframe/issues/777)) [[8e96d95](https://github.com/wvlet/airframe/commit/8e96d95)]
+-  airframe-http-finagle: Update Finagle to 19.10.0 ([#765](https://github.com/wvlet/airframe/issues/765)) [[44d5e9d](https://github.com/wvlet/airframe/commit/44d5e9d)]
+-  airframe-config: Airframe DI integration for Config.overrideWithPropertiesFile() ([#798](https://github.com/wvlet/airframe/issues/798)) [[5d3d7ad](https://github.com/wvlet/airframe/commit/5d3d7ad)]
+-  airframe-codec: Scala.js support with Pure Scala packer/unpacker ([#789](https://github.com/wvlet/airframe/issues/789)) [[e565fea](https://github.com/wvlet/airframe/commit/e565fea)]
+-  airframe-codec: Add @required to mark must-have parameters ([#779](https://github.com/wvlet/airframe/issues/779)) [[b33ce25](https://github.com/wvlet/airframe/commit/b33ce25)]
+-  airframe-di: Deprecate runtime provider binding definitions ([#786](https://github.com/wvlet/airframe/issues/786)) [[45aab9b](https://github.com/wvlet/airframe/commit/45aab9b)]
+-  airframe-di: Support design.run[A,B](a:A=>B):B ([#785](https://github.com/wvlet/airframe/issues/785)) [[661cd6b](https://github.com/wvlet/airframe/commit/661cd6b)]
+-  airframe-jdbc: Do not shutdown ConnectionPoolFactory explicitly ([#773](https://github.com/wvlet/airframe/issues/773)) [[b87b18d](https://github.com/wvlet/airframe/commit/b87b18d)]
+
+internal changes:
+-  Update slf4j-jdk14 to 1.7.29 ([#792](https://github.com/wvlet/airframe/issues/792)) [[c34cef4](https://github.com/wvlet/airframe/commit/c34cef4)]
+-  Update sbt-scalafmt to 2.2.1 ([#783](https://github.com/wvlet/airframe/issues/783)) [[613daf2](https://github.com/wvlet/airframe/commit/613daf2)]
+-  Update scalafmt-core to 2.2.1 ([#780](https://github.com/wvlet/airframe/issues/780)) [[b090e83](https://github.com/wvlet/airframe/commit/b090e83)]
+-  Update scalafmt-core to 2.2.0 ([#776](https://github.com/wvlet/airframe/issues/776)) [[627b857](https://github.com/wvlet/airframe/commit/627b857)]
+-  Update sbt to 1.3.3 ([#774](https://github.com/wvlet/airframe/issues/774)) [[88890a8](https://github.com/wvlet/airframe/commit/88890a8)]
+
 ## 19.10.1
 -  airspec: Add inGitHubAction and inCI ([#762](https://github.com/wvlet/airframe/issues/762)) [[0765f11](https://github.com/wvlet/airframe/commit/0765f11)]
 -  airframe-control: Add retryableFailure(e).withExtraWaitMillis/Factor ([#761](https://github.com/wvlet/airframe/issues/761)) [[40b7a58](https://github.com/wvlet/airframe/commit/40b7a58)]
