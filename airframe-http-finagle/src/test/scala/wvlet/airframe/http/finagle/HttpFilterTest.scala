@@ -124,8 +124,6 @@ class HttpFilterTest extends AirSpec {
       .noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
-      val address = server.localAddress
-
       withResource(Finagle.client.noRetry.newClient(server.localAddress)) { client =>
         {
           val r = Await.result(client.sendSafe(Request("/auth")))

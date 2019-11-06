@@ -18,6 +18,7 @@ package wvlet.airframe.http.finagle
   */
 object Finagle {
   def client: FinagleClientConfig                           = FinagleClientConfig()
+  def server: FinagleServerConfig                           = FinagleServerConfig()
   def newClient(hostAndPort: String): FinagleClient         = client.newClient(hostAndPort)
   def newSyncClient(hostAndPort: String): FinagleSyncClient = client.newSyncClient(hostAndPort)
 }

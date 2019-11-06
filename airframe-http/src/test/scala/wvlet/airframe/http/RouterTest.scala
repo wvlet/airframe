@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.Session
 import wvlet.airframe.http.example.ControllerExample.User
 import wvlet.airframe.http.example._
 import wvlet.airframe.surface.Surface
@@ -120,13 +121,13 @@ class RouterTest extends AirSpec {
     r6 shouldNotBe defined
   }
 
-  def `call registered methods`: Unit = {
+  def `call registered methods`(session: Session): Unit = {
     val router = Router.of[ControllerExample]
 
     val s = new ControllerExample {}
 
     val serviceProvider = new ControllerProvider {
-      override def findController(serviceSurface: Surface): Option[Any] = {
+      override def findController(session: Session, serviceSurface: Surface): Option[Any] = {
         serviceSurface match {
           case sf if sf == Surface.of[ControllerExample] => Some(s)
           case _                                         => None
@@ -139,7 +140,7 @@ class RouterTest extends AirSpec {
         router
           .findRoute(request)
           .flatMap { m =>
-            m.call(serviceProvider, request)
+            m.call(session, serviceProvider, request)
           }
 
       ret shouldBe defined

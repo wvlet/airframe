@@ -158,7 +158,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r
   }
 
-  private val codecFactory  = MessageCodecFactory.defaultFactory.withObjectMapCodec
+  private val codecFactory  = MessageCodecFactory.defaultFactoryForJSON
   private val responseCodec = new HttpResponseCodec[Response]
 
   private def convert[A: ru.TypeTag](response: Future[Response]): Future[A] = {

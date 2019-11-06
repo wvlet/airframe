@@ -12,46 +12,12 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.codec.ScalaStandardCodec.TupleCodec
-import wvlet.airframe.surface.{GenericSurface, Surface}
-import wvlet.log.LogSupport
+import wvlet.airframe.surface.Surface
 
 /**
   *
   */
 object Compat {
-  def codecFinder: CodecFinder                              = JSCodecFinger
+  def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
-
-  object JSCodecFinger extends CodecFinder {
-    override def findCodec(
-        factory: MessageCodecFactory,
-        seenSet: Set[Surface]
-    ): PartialFunction[Surface, MessageCodec[_]] = {
-      case g: GenericSurface
-          if g.rawType.getName.startsWith("scala.Tuple") && classOf[Product].isAssignableFrom(g.rawType) =>
-        TupleCodec(g.typeArgs.map(factory.ofSurface(_, seenSet)))
-      case g: GenericSurface if classOf[IndexedSeq[_]].isAssignableFrom(g.rawType) =>
-        val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
-        new CollectionCodec.IndexedSeqCodec(g.typeArgs(0), elementSurface)
-      case g: GenericSurface if classOf[List[_]].isAssignableFrom(g.rawType) =>
-        val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
-        new CollectionCodec.ListCodec(g.typeArgs(0), elementSurface)
-      case g: GenericSurface if classOf[java.util.List[_]].isAssignableFrom(g.rawType) =>
-        val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
-        new CollectionCodec.JavaListCodec(elementSurface)
-      case g: GenericSurface if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
-        val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
-        new CollectionCodec.SeqCodec(g.typeArgs(0), elementSurface)
-      case g: GenericSurface if classOf[java.util.Map[_, _]].isAssignableFrom(g.rawType) =>
-        CollectionCodec.JavaMapCodec(
-          factory.ofSurface(g.typeArgs(0), seenSet),
-          factory.ofSurface(g.typeArgs(1), seenSet)
-        )
-      case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
-        CollectionCodec.MapCodec(factory.ofSurface(g.typeArgs(0), seenSet), factory.ofSurface(g.typeArgs(1), seenSet))
-//      case other =>
-//        throw new UnsupportedOperationException(s"MessageCodec for ${other} is not found")
-    }
-  }
 }

@@ -12,12 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.Session
 import wvlet.airframe.http.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req: HttpRequestAdapter](controllerProvider: ControllerProvider, request: Req): Option[Any] = {
-    route.callWithProvider(controllerProvider, request, params)
+  def call[Req: HttpRequestAdapter](
+      session: Session,
+      controllerProvider: ControllerProvider,
+      request: Req
+  ): Option[Any] = {
+    route.callWithProvider(session, controllerProvider, request, params)
   }
 }
 

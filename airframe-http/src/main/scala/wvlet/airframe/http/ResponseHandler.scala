@@ -11,15 +11,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.codec
+package wvlet.airframe.http
+
 import wvlet.airframe.surface.Surface
 
 /**
   *
   */
-trait CodecFinder {
-  def findCodec(
-      factory: MessageCodecFactory,
-      seenSet: Set[Surface] = Set.empty
-  ): PartialFunction[Surface, MessageCodec[_]]
+trait ResponseHandler[Req, Res] {
+  def toHttpResponse[A](request: Req, responseTypeSurface: Surface, a: A): Res
 }

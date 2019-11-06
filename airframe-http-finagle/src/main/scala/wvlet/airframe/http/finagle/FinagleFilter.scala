@@ -16,6 +16,7 @@ package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
+import wvlet.airframe.Session
 import wvlet.airframe.http.{ControllerProvider, HttpContext, HttpRequestDispatcher, ResponseHandler}
 
 /**
@@ -23,13 +24,16 @@ import wvlet.airframe.http.{ControllerProvider, HttpContext, HttpRequestDispatch
   */
 abstract class FinagleFilter extends FinagleBackend.HttpFilterBase
 
-class FinagleRouter(
-    config: FinagleServerConfig,
-    controllerProvider: ControllerProvider,
-    responseHandler: ResponseHandler[Request, Response]
-) extends SimpleFilter[Request, Response] {
+class FinagleRouter(session: Session, private[finagle] val config: FinagleServerConfig)
+    extends SimpleFilter[Request, Response] {
   private val dispatcher =
-    HttpRequestDispatcher.newDispatcher(config.router, controllerProvider, FinagleBackend, responseHandler)
+    HttpRequestDispatcher.newDispatcher(
+      session,
+      config.router,
+      config.controllerProvider,
+      FinagleBackend,
+      config.responseHandler
+    )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
     dispatcher.apply(request, new HttpContext[Request, Response, Future] {

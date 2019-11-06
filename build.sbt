@@ -14,6 +14,8 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
 val SLF4J_VERSION                   = "1.7.29"
 val JS_JAVA_LOGGING_VERSION         = "0.1.5"
+val FINAGLE_VERSION                 = "19.10.0"
+val FLUENCY_VERSION                 = "2.4.0"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
 // Publish only Scala 2.12 projects for snapshot releases
@@ -589,7 +591,6 @@ lazy val http =
     )
     .dependsOn(airframeJVM, airframeMacrosJVMRef, control, surfaceJVM, jsonJVM, codecJVM, airspecRefJVM % "test")
 
-val FINAGLE_VERSION = "19.10.0"
 lazy val finagle =
   project
     .in(file("airframe-http-finagle"))
@@ -691,9 +692,9 @@ lazy val fluentd =
       name := "airframe-fluentd",
       description := "Fluentd logger",
       libraryDependencies ++= Seq(
-        "org.komamitsu" % "fluency-core"         % "2.4.0",
-        "org.komamitsu" % "fluency-fluentd"      % "2.4.0",
-        "org.komamitsu" % "fluency-treasuredata" % "2.4.0" % "provided",
+        "org.komamitsu" % "fluency-core"         % FLUENCY_VERSION,
+        "org.komamitsu" % "fluency-fluentd"      % FLUENCY_VERSION,
+        "org.komamitsu" % "fluency-treasuredata" % FLUENCY_VERSION % "provided",
         // Redirecting slf4j log from Fluency to aiframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
