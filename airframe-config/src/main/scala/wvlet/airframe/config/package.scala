@@ -97,15 +97,9 @@ package object config {
         props: Map[String, Any],
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
     )(implicit sourceCode: SourceCode): Design = {
-      val prevConfig   = getConfig
-      val configHolder = currentConfig.overrideWith(props, onUnusedProperties)
-      val d2           = d.withConfig(configHolder)
-
-      // Override already bounded config instances
-      val d3 = configHolder.getAll.foldLeft(d2) { (d: Design, c: ConfigHolder) =>
-        d.bind(c.tpe)(sourceCode).toInstance(c.value)
+      overrideConfig { c =>
+        c.overrideWith(props, onUnusedProperties)
       }
-      d3
     }
 
     /**
@@ -115,11 +109,32 @@ package object config {
         props: Properties,
         onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
     ): Design = {
-      import scala.jdk.CollectionConverters._
-      val m = for (key <- props.propertyNames().asScala) yield {
-        key.toString -> props.get(key).asInstanceOf[Any]
+      overrideConfig { c =>
+        c.overrideWithProperties(props, onUnusedProperties)
       }
-      overrideConfigParams(m.toMap, onUnusedProperties)
+    }
+
+    /**
+      * Override a subset of the configuration parameters, registered to the design.
+      */
+    def overrideConfigWithPropertiesFile(
+        propertiesFile: String,
+        onUnusedProperties: Properties => Unit = REPORT_UNUSED_PROPERTIES
+    )(implicit sourceCode: SourceCode): Design = {
+      overrideConfig { c =>
+        c.overrideWithPropertiesFile(propertiesFile, onUnusedProperties)
+      }
+    }
+
+    private def overrideConfig(f: Config => Config)(implicit sourceCode: SourceCode): Design = {
+      val configHolder = f(currentConfig)
+      val d2           = d.withConfig(configHolder)
+
+      // Override already bounded config instances
+      val d3 = configHolder.getAll.foldLeft(d2) { (d: Design, c: ConfigHolder) =>
+        d.bind(c.tpe)(sourceCode).toInstance(c.value)
+      }
+      d3
     }
   }
 }
