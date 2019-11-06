@@ -22,12 +22,12 @@ import scala.reflect.runtime.{universe => ru}
   *
   */
 object Compat {
-  def codecFinder: CodecFinder = {
-    CodecFinder.defaultCodecFinder orElse
-      JVMCodecFinder
+  def messageCodecFinder: MessageCodecFinder = {
+    MessageCodecFinder.defaultMessageCodecFinder orElse
+      JVMMessageCodecFinder
   }
 
-  object JVMCodecFinder extends CodecFinder {
+  object JVMMessageCodecFinder extends MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]

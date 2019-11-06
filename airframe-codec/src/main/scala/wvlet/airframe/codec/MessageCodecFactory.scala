@@ -8,12 +8,12 @@ import scala.reflect.runtime.{universe => ru}
 /**
   *
   */
-case class MessageCodecFactory(codecFinder: CodecFinder = Compat.codecFinder, mapOutput: Boolean = false)
+case class MessageCodecFactory(codecFinder: MessageCodecFinder = Compat.messageCodecFinder, mapOutput: Boolean = false)
     extends LogSupport {
   private[this] var cache = Map.empty[Surface, MessageCodec[_]]
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    this.copy(codecFinder = codecFinder orElse CodecFinder.newCodecFinder(additionalCodecs))
+    this.copy(codecFinder = codecFinder orElse MessageCodecFinder.newCodecFinder(additionalCodecs))
   }
 
   // Generate a codec that outputs objects as Map type. This should be enabled for generating JSON data
@@ -90,7 +90,7 @@ object MessageCodecFactory {
     * Create a custom MessageCodecFactory from a partial mapping
     */
   def newFactory(pf: PartialFunction[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    new MessageCodecFactory(codecFinder = new CodecFinder {
+    new MessageCodecFactory(codecFinder = new MessageCodecFinder {
       override def findCodec(
           factory: MessageCodecFactory,
           seenSet: Set[Surface]

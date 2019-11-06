@@ -18,6 +18,6 @@ import wvlet.airframe.surface.Surface
   *
   */
 object Compat {
-  def codecFinder: CodecFinder                              = CodecFinder.defaultCodecFinder
+  def messageCodecFinder: MessageCodecFinder                = MessageCodecFinder.defaultMessageCodecFinder
   def platformSpecificCodecs: Map[Surface, MessageCodec[_]] = Map.empty
 }

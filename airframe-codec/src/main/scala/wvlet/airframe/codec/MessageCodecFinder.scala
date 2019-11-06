@@ -18,24 +18,24 @@ import wvlet.airframe.surface.{Alias, GenericSurface, Surface}
 /**
   *
   */
-trait CodecFinder {
+trait MessageCodecFinder {
   def findCodec(
       factory: MessageCodecFactory,
       seenSet: Set[Surface] = Set.empty
   ): PartialFunction[Surface, MessageCodec[_]]
 
-  def orElse(other: CodecFinder): CodecFinder = CodecFinder.OrElse(this, other)
+  def orElse(other: MessageCodecFinder): MessageCodecFinder = MessageCodecFinder.OrElse(this, other)
 }
 
-object CodecFinder {
-  object empty extends CodecFinder {
+object MessageCodecFinder {
+  object empty extends MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
     ): PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
   }
 
-  private[codec] case class OrElse(a: CodecFinder, b: CodecFinder) extends CodecFinder {
+  private[codec] case class OrElse(a: MessageCodecFinder, b: MessageCodecFinder) extends MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
@@ -44,7 +44,7 @@ object CodecFinder {
     }
   }
 
-  def newCodecFinder(codecTable: Map[Surface, MessageCodec[_]]): CodecFinder = new CodecFinder {
+  def newCodecFinder(codecTable: Map[Surface, MessageCodec[_]]): MessageCodecFinder = new MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
@@ -59,7 +59,7 @@ object CodecFinder {
       Compat.platformSpecificCodecs
   }
 
-  object defaultCodecFinder extends CodecFinder {
+  object defaultMessageCodecFinder extends MessageCodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
@@ -67,7 +67,7 @@ object CodecFinder {
       // Known codecs
       case s if defaultKnownCodecs.contains(s) =>
         defaultKnownCodecs(s)
-      // Known codecs for the alias
+      // Known codecs for the aliased type.
       case a: Alias if defaultKnownCodecs.contains(a.dealias) =>
         defaultKnownCodecs(a.dealias)
       // Option[X]
@@ -98,7 +98,7 @@ object CodecFinder {
           factory.ofSurface(g.typeArgs(0), seenSet),
           factory.ofSurface(g.typeArgs(1), seenSet)
         )
-      // Java collecitons (e.g., ArrayList[A], List[A], Queue[A], Set[A])
+      // Java collections (e.g., ArrayList[A], List[A], Queue[A], Set[A])
       case g: GenericSurface if classOf[java.util.Collection[_]].isAssignableFrom(g.rawType) =>
         val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
         CollectionCodec.JavaListCodec(elementSurface)
