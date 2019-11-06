@@ -20,7 +20,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-http-finagle" % (versio
 
 **MyApi.scala**
 ```scala
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Request,Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 

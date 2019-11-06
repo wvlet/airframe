@@ -12,59 +12,55 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
+import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.finagle.tracing.ConsoleTracer
-import com.twitter.finagle.{Http, Service}
-import com.twitter.util.{Await, Future}
+import com.twitter.util.Future
 import wvlet.airframe.control.Control._
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.finagle.FinagleServer.FinagleService
 import wvlet.airspec.AirSpec
-import wvlet.log.io.IOUtil
 
 /**
   *
   */
 class FinagleServerFactoryTest extends AirSpec {
   def `start multiple FinagleServers`: Unit = {
-    val p1 = IOUtil.unusedPort
-    val p2 = IOUtil.unusedPort
-
     val router1 = Router.add[MyApi]
     val router2 = Router.add[MyApi]
 
-    val serverConfig1 = FinagleServerConfig(name = "server1", port = p1, router = router1)
-    val serverConfig2 = FinagleServerConfig(name = "server2", port = p2, router = router2)
+    val serverConfig1 = Finagle.server
+      .withName("server1")
+      .withRouter(router1)
+    val serverConfig2 = Finagle.server
+      .withName("server2")
+      .withRouter(router2)
 
     finagleDefaultDesign.build[FinagleServerFactory] { factory =>
       val server1 = factory.newFinagleServer(serverConfig1)
       val server2 = factory.newFinagleServer(serverConfig2)
 
-      withResources(Finagle.newSyncClient(s"localhost:${p1}"), Finagle.newSyncClient(s"localhost:${p2}")) {
-        (client1, client2) =>
-          client1.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
-          client2.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
+      withResources(
+        Finagle.newSyncClient(s"localhost:${server1.port}"),
+        Finagle.newSyncClient(s"localhost:${server2.port}")
+      ) { (client1, client2) =>
+        client1.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
+        client2.send(Request("/v1/info")).contentString shouldBe "hello MyApi"
       }
     }
   }
 
   def `allow customize services`: Unit = {
-    val d2 =
-      finagleDefaultDesign
-        .bind[FinagleServerConfig].toInstance(
-          FinagleServerConfig()
-            .withFallbackService {
-              new Service[Request, Response] {
-                override def apply(request: Request): Future[Response] = {
-                  val r = Response(Status.Ok)
-                  r.contentString = "hello custom server"
-                  Future.value(r)
-                }
-              }
-            }
-        )
+    val d = Finagle.server.withFallbackService {
+      new Service[Request, Response] {
+        override def apply(request: Request): Future[Response] = {
+          val r = Response(Status.Ok)
+          r.contentString = "hello custom server"
+          Future.value(r)
+        }
+      }
+    }.design
 
-    d2.build[FinagleServer] { server =>
+    d.build[FinagleServer] { server =>
       withResource(Finagle.newSyncClient(s"localhost:${server.port}")) { client =>
         client.send(Request("/v1")).contentString shouldBe "hello custom server"
       }
@@ -72,26 +68,21 @@ class FinagleServerFactoryTest extends AirSpec {
   }
 
   def `allow customize Finagle Http Server`: Unit = {
-    val d =
-      finagleDefaultDesign
-        .bind[FinagleServerConfig].toInstance(
-          FinagleServerConfig()
-            .withTracer(ConsoleTracer)
-            .withFallbackService(
-              new Service[Request, Response] {
-                override def apply(request: Request): Future[Response] = {
-                  val r = Response(Status.Ok)
-                  r.contentString = "hello custom server with tracer"
-                  Future.value(r)
-                }
-              }
-            )
-        )
-
-    d.build[FinagleServer] { server =>
-      withResource(Finagle.newSyncClient(server.localAddress)) { client =>
-        client.send(Request("/v1")).contentString shouldBe "hello custom server with tracer"
+    Finagle.server
+      .withTracer(ConsoleTracer)
+      .withFallbackService(
+        new Service[Request, Response] {
+          override def apply(request: Request): Future[Response] = {
+            val r = Response(Status.Ok)
+            r.contentString = "hello custom server with tracer"
+            Future.value(r)
+          }
+        }
+      )
+      .start { server =>
+        withResource(Finagle.newSyncClient(server.localAddress)) { client =>
+          client.send(Request("/v1")).contentString shouldBe "hello custom server with tracer"
+        }
       }
-    }
   }
 }
