@@ -127,7 +127,7 @@ case class FinagleServerConfig(
   }
 
   def newFinagleServer(session: Session): FinagleServer = {
-    new FinagleServer(finagleConfig = this, finagleService = newService(session))
+    new FinagleServer(finagleConfig = this, newService(session))
   }
 
   def start[U](body: FinagleServer => U): U = {
@@ -140,10 +140,8 @@ case class FinagleServerConfig(
 /**
   *
   */
-class FinagleServer(
-    finagleConfig: FinagleServerConfig,
-    finagleService: FinagleService
-) extends LogSupport
+class FinagleServer(finagleConfig: FinagleServerConfig, finagleService: FinagleService)
+    extends LogSupport
     with AutoCloseable {
   protected[this] var server: Option[ListeningServer] = None
 
