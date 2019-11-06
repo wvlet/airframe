@@ -36,8 +36,6 @@ package object finagle {
     Design.newDesign
       .bind[FinagleService].toProvider { (config: FinagleServerConfig, session: Session) =>
         config.newService(session)
-      }.onShutdown { x =>
-        // do nothing
       }
 
   /**
