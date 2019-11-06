@@ -168,6 +168,10 @@ object Retry extends LogSupport {
       this.copy(maxRetry = newMaxRetry)
     }
 
+    def noRetry: RetryContext = {
+      this.copy(maxRetry = 0)
+    }
+
     def withBackOff(
         initialIntervalMillis: Int = 100,
         maxIntervalMillis: Int = 15000,
@@ -226,7 +230,7 @@ object Retry extends LogSupport {
       var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
-      while (result.isEmpty && retryContext.canContinue) {
+      do {
         val ret = Try(body)
         val resultClass = ret match {
           case Success(x) =>
@@ -251,7 +255,7 @@ object Retry extends LogSupport {
             // Non-retryable error. Exit the loop by throwing the exception
             throw cause
         }
-      }
+      } while (result.isEmpty && retryContext.canContinue)
 
       result match {
         case Some(a) =>
