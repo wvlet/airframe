@@ -104,7 +104,7 @@ class FinagleClientTest extends AirSpec {
   val r = Router.add[FinagleClientTestApi]
   val d = finagleDefaultDesign
     .bind[FinagleServerConfig].toInstance(
-      FinagleServerConfig(name = "test-server", port = IOUtil.randomPort, router = r)
+      FinagleServerConfig(name = "test-server", router = r)
     )
     .noLifeCycleLogging
 

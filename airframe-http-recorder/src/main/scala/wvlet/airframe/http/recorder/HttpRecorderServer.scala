@@ -17,7 +17,7 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.finagle.{FinagleServer, FinagleServerConfig}
+import wvlet.airframe.http.finagle.{Finagle, FinagleServer, FinagleServerConfig}
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
 
@@ -26,10 +26,9 @@ import wvlet.log.io.IOUtil
   */
 class HttpRecorderServer(recordStore: HttpRecordStore, finagleService: FinagleService)
     extends FinagleServer(
-      FinagleServerConfig(
-        s"[http-recorder] ${recordStore.recorderConfig.recorderName}",
-        recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort)
-      ),
+      Finagle.server
+        .withName(s"[http-recorder] ${recordStore.recorderConfig.recorderName}")
+        .withPort(recordStore.recorderConfig.port.getOrElse(IOUtil.unusedPort)),
       finagleService
     ) {
   def clearSession: Unit = {

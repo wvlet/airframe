@@ -20,7 +20,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-http-finagle" % (versio
 
 **MyApi.scala**
 ```scala
-import com.twitter.finagle.http.Request
+import com.twitter.finagle.http.{Request,Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 
@@ -50,14 +50,20 @@ trait MyApi {
     ServerInfo("1.0", request.toRaw.userAgent)
   }
 
+  // It is also possible to receive backend server specific Request type
+  @Endpoint(method = HttpMethod.GET, path = "/info2")
+  def getInfo(request: Request): ServerInfo = {
+    ServerInfo("1.0", request.userAgent)
+  }
+
   // Returning Future[X] is also possible.
   // This style is convenient when you need to call another service that returns Future response.
   @Endpoint(method = HttpMethod.GET, path = "/info_f")
   def getInfoFuture(request: HttpRequest[Request]): Future[ServerInfo] = {
     Future.value(ServerInfo("1.0", request.toRaw.userAgent))
   }
-  
-  // It is also possible to return a custom HTTP responses 
+
+  // It is also possible to return custom HTTP responses
   @EndPoint(method = HttpMethod.GET, path = "/custom_response")
   def customResponse: Response = {
     val response = Reponse()
@@ -79,6 +85,7 @@ This `MyApi` defines these http end points:
 GET  /v1/user/:name    returns {"name":"..."}
 POST /v1/user          returns {"name":"..."}
 GET  /v1/info          returns {"version":"1.0", "ua":"...."}
+GET  /v1/info2         returns {"version":"1.0", "ua":"...."}
 GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 ...
 ```
@@ -109,7 +116,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 ## Starting A Finagle HTTP Server
 
-To start a server, create a finagle server design with `newFinagleServerDesign(router, port)`:
+To start a server, create a finagle server configuration with Finagle.server, and 
 ```scala
 import wvlet.airframe._
 import wvlet.airframe.http.finagle._
@@ -119,38 +126,33 @@ import com.twitter.finagle.http.Request
 // You can add more routes by using `.add[X]` method.
 val router = Router.add[MyApi]
 
-val design = newFinagleServerDesign(port = 8080, router = router)
-
-design.build[FinagleServer] { server =>
-  // Finagle http server will start here
-
-  // To keep running the server, run `server.waitServerTermination`:
-  server.waitServerTermination
-}
+Finagle.server
+  .withPort(8080)
+  .withRouter(router)
+  .start { server =>
+    // Finagle http server will start here
+    // To keep running the server, run `server.waitServerTermination`:
+    server.waitServerTermination
+  }
 // The server will terminate here
 ```
 
 ## Customizing Finagle
 
-To customize Finagle, use `Finagle.server.withXXX` methods. 
+To customize Finagle, use `Finagle.server.withXXX` methods.
 
 For example, you can:
-- Add custom Tracer, StatsReceiver, etc.
-- Add more advanced configurations using `.withServerInitializer(...)`
 - Customize HTTP filters
 - Start multiple Finagle HTTP servers with different configurations
-
-See also the examples in [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
-
-To customize Finagle server, extend FinagleServerFactory and define your own 
-server factory:
+- Add custom Tracer, StatsReceiver, etc.
+- Add more advanced server configurations using `.withServerInitializer(...)`
 
 ```scala
 import wvlet.airframe.http.finagle._
 
 val router = Router.add[MyApi]
 
-val serverConfig = Finagle.server
+val server = Finagle.server
   .withName("my server")
   .withRouter(router)
   .withPort(8080)
@@ -162,29 +164,51 @@ val serverConfig = Finagle.server
   // Add a custom MessageCodec mapping
   .withCustomCodec(Map(Surface.of[X] -> ...))
 
-newFinagleServerDesign(serverConfig)
-  .build[FinagleServer] { server:FinagleServer =>
-  // The customized server will start here  
+server.start { server =>
+  // The customized server will start here
+  server.waitServerTermination  
 }
+```
+
+See also the examples in [here](https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala)
+
+## Integration with Airframe DI
+
+By calling `.design`, you can get a design for Airframe DI:
+
+```scala
+val design = Finagle.server
+ .withName("my-server")
+ .withRouter(router)
+ .withPort(8080)
+ .design
+
+design.build[FinagleServer] { server =>
+   // A server will start here
+}
+// The server will terminate after exiting the session
 ```
 
 
 ### Running Multiple Finagle Servers
 
-Create a FinagleServerFactory, and call `newFinagleServer(FinagleServerConfig)`:
+To run multiple HTTP servers, create a FinagleServerFactory and use `newFinagleServer(FinagleServerConfig)`:
 ```scala
 import wvlet.airframe.http.finagle._
 
 // Use a design for not starting the default server:
 finagleBaseDesign.build[FinagleServerFactory] { factory =>
- factory.newFinagleServer(FinagleServerConfig(name = "server1", port = 8080, router = router1))
- factory.newFinagleServer(FinagleServerConfig(name = "server2", port = 8081, router = router2))
+  val config1 = Finagle.server.withName("server1").withPort(8080).withRouter(router1)
+  val config2 = Finagle.server.withName("server2").withPort(8081).withRouter(router2)
+
+ factory.newFinagleServer(config1)
+ factory.newFinagleServer(config2)
  // Two finagle servers will start at port 8081 and 8081
 }
 // Two servers will be stopped after exiting the session
 ```
 
-### Shutting Down Finagle Server
+## Shutting Down Finagle Server
 
 Closing the current Airframe session will terminate the finagle server as well:
 

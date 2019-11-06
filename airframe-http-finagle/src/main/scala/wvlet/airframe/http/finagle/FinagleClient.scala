@@ -48,7 +48,7 @@ case class FinagleClientConfig(
   }
 
   def noRetry: FinagleClientConfig = {
-    this.copy(retryContext = retryContext.withMaxRetry(0))
+    this.copy(retryContext = retryContext.noRetry)
   }
 
   def withMaxRetry(maxRetry: Int): FinagleClientConfig = {

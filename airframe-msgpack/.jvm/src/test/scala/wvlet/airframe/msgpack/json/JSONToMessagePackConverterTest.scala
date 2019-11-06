@@ -75,8 +75,8 @@ class JSONToMessagePackConverterTest extends AirSpec {
     val jsonValue = JSON.parse(json)
     val msgpack   = MessagePack.fromJSON(json)
     val result    = msgpackToJson(msgpack)
-    info(result)
-    info(jsonValue.toJSON)
+    trace(result)
+    trace(jsonValue.toJSON)
     deepEqual(result, jsonValue)
   }
 
