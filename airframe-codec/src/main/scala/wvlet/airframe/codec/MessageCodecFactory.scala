@@ -1,90 +1,66 @@
 package wvlet.airframe.codec
 
-import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
 import wvlet.airframe.surface.Surface
+import wvlet.log.LogSupport
 
 import scala.reflect.runtime.{universe => ru}
-
-object MessageCodecFactory {
-  // Mapping (Object Surface, Seq[Object Parameter Surface]) => MessageCodec
-  type ObjectCodecFactory = Function2[Surface, Seq[MessageCodec[_]], MessageCodec[_]]
-
-  def defaultObjectCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
-    ObjectCodec(surface, paramCodec.toIndexedSeq)
-  }
-  def objectMapCodecFactory: ObjectCodecFactory = { (surface: Surface, paramCodec: Seq[MessageCodec[_]]) =>
-    ObjectMapCodec(surface, paramCodec.toIndexedSeq)
-  }
-
-  def defaultFactory: MessageCodecFactory =
-    new MessageCodecFactory(
-      StandardCodec.standardCodec ++
-        MetricsCodec.metricsCodec ++
-        Compat.platformSpecificCodecs
-    )
-
-  private[codec] def defaultFinder(
-      factory: MessageCodecFactory,
-      seenSet: Set[Surface]
-  ): PartialFunction[Surface, MessageCodec[_]] = {
-    case s if s.isOption =>
-      // Option type
-      val elementSurface = s.typeArgs(0)
-      OptionCodec(factory.ofSurface(elementSurface, seenSet))
-  }
-}
-
-import wvlet.airframe.codec.MessageCodecFactory._
 
 /**
   *
   */
-case class MessageCodecFactory(
-    knownCodecs: Map[Surface, MessageCodec[_]],
-    private[codec] val objectCodecFactory: MessageCodecFactory.ObjectCodecFactory =
-      MessageCodecFactory.defaultObjectCodecFactory
-) {
-  //def orElse(other: MessageCodecFactory): MessageCodecFactory = {}
+case class MessageCodecFactory(codecFinder: CodecFinder = Compat.codecFinder, mapOutput: Boolean = false)
+    extends LogSupport {
+  private[this] var cache = Map.empty[Surface, MessageCodec[_]]
 
   def withCodecs(additionalCodecs: Map[Surface, MessageCodec[_]]): MessageCodecFactory = {
-    this.copy(knownCodecs = knownCodecs ++ additionalCodecs)
-  }
-  def withObjectMapCodec: MessageCodecFactory = {
-    this.copy(objectCodecFactory = MessageCodecFactory.objectMapCodecFactory)
-  }
-  def withObjectCodecFactory(f: ObjectCodecFactory): MessageCodecFactory = {
-    this.copy(objectCodecFactory = f)
+    this.copy(codecFinder = codecFinder orElse CodecFinder.newCodecFinder(additionalCodecs))
   }
 
-  protected[this] var cache = Map.empty[Surface, MessageCodec[_]]
+  // Generate a codec that outputs objects as Map type. This should be enabled for generating JSON data
+  def withMapOutput: MessageCodecFactory = {
+    this.copy(mapOutput = true)
+  }
+  def noMapOutput: MessageCodecFactory = {
+    this.copy(mapOutput = false)
+  }
 
-  private val codecFinder: CodecFinder = Compat.codecFinder
+  @deprecated(message = "use withMapOutput ", since = "19.11.0")
+  def withObjectMapCodec: MessageCodecFactory = withMapOutput
+
+  def orElse(other: MessageCodecFactory): MessageCodecFactory = {
+    this.copy(codecFinder = codecFinder.orElse(other.codecFinder))
+  }
+
+  private def generateObjectSurface(seenSet: Set[Surface]): PartialFunction[Surface, MessageCodec[_]] = {
+    case surface: Surface =>
+      val codecs = for (p <- surface.params) yield {
+        ofSurface(p.surface, seenSet)
+      }
+      if (mapOutput) {
+        ObjectMapCodec(surface, codecs.toIndexedSeq)
+      } else {
+        ObjectCodec(surface, codecs.toIndexedSeq)
+      }
+  }
 
   protected[codec] def ofSurface(surface: Surface, seen: Set[Surface] = Set.empty): MessageCodec[_] = {
     // TODO Create a fast object codec with code generation (e.g., Scala macros)
 
-    if (knownCodecs.contains(surface)) {
-      knownCodecs(surface)
-    } else if (cache.contains(surface)) {
+    if (cache.contains(surface)) {
       cache(surface)
     } else if (seen.contains(surface)) {
       throw new IllegalArgumentException(s"Codec for recursive types is not supported: ${surface}")
     } else {
       val seenSet = seen + surface
-      //trace(s"Finding MessageCodec of ${surface.dealias}")
 
       val codec =
-        defaultFinder(this, seenSet)
-          .orElse(codecFinder.findCodec(this, seenSet))
-          .orElse[Surface, MessageCodec[_]] {
+        codecFinder
+          .findCodec(this, seenSet)
+          .orElse {
             // fallback
-            case other =>
-              val codecs = for (p <- other.params) yield {
-                ofSurface(p.surface, seenSet)
-              }
-              objectCodecFactory(other, codecs.toIndexedSeq)
+            generateObjectSurface(seenSet)
           }
-          .apply(surface.dealias)
+          .apply(surface)
 
       cache += surface -> codec
       codec
@@ -103,5 +79,24 @@ case class MessageCodecFactory(
   def toJson[A: ru.TypeTag](obj: A): String = {
     val codec = of[A]
     codec.toJson(obj)
+  }
+}
+
+object MessageCodecFactory {
+  val defaultFactory: MessageCodecFactory        = new MessageCodecFactory()
+  def defaultFactoryForJSON: MessageCodecFactory = defaultFactory.withMapOutput
+
+  /**
+    * Create a custom MessageCodecFactory from a partial mapping
+    */
+  def newFactory(pf: PartialFunction[Surface, MessageCodec[_]]): MessageCodecFactory = {
+    new MessageCodecFactory(codecFinder = new CodecFinder {
+      override def findCodec(
+          factory: MessageCodecFactory,
+          seenSet: Set[Surface]
+      ): PartialFunction[Surface, MessageCodec[_]] = {
+        pf
+      }
+    })
   }
 }

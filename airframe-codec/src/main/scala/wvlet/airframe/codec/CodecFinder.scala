@@ -12,8 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.codec
-import wvlet.airframe.codec.ScalaStandardCodec.TupleCodec
-import wvlet.airframe.surface.{GenericSurface, Surface}
+import wvlet.airframe.codec.ScalaStandardCodec.{OptionCodec, TupleCodec}
+import wvlet.airframe.surface.{Alias, GenericSurface, Surface}
 
 /**
   *
@@ -28,6 +28,13 @@ trait CodecFinder {
 }
 
 object CodecFinder {
+  object empty extends CodecFinder {
+    override def findCodec(
+        factory: MessageCodecFactory,
+        seenSet: Set[Surface]
+    ): PartialFunction[Surface, MessageCodec[_]] = PartialFunction.empty
+  }
+
   private[codec] case class OrElse(a: CodecFinder, b: CodecFinder) extends CodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
@@ -37,33 +44,65 @@ object CodecFinder {
     }
   }
 
+  def newCodecFinder(codecTable: Map[Surface, MessageCodec[_]]): CodecFinder = new CodecFinder {
+    override def findCodec(
+        factory: MessageCodecFactory,
+        seenSet: Set[Surface]
+    ): PartialFunction[Surface, MessageCodec[_]] = {
+      case s: Surface if codecTable.contains(s) => codecTable(s)
+    }
+  }
+
+  val defaultKnownCodecs: Map[Surface, MessageCodec[_]] = {
+    StandardCodec.standardCodec ++
+      MetricsCodec.metricsCodec ++
+      Compat.platformSpecificCodecs
+  }
+
   object defaultCodecFinder extends CodecFinder {
     override def findCodec(
         factory: MessageCodecFactory,
         seenSet: Set[Surface]
     ): PartialFunction[Surface, MessageCodec[_]] = {
+      // Known codecs
+      case s if defaultKnownCodecs.contains(s) =>
+        defaultKnownCodecs(s)
+      // Known codecs for the alias
+      case a: Alias if defaultKnownCodecs.contains(a.dealias) =>
+        defaultKnownCodecs(a.dealias)
+      // Option[X]
+      case o if o.isOption =>
+        val elementSurface = o.typeArgs(0)
+        OptionCodec(factory.ofSurface(elementSurface, seenSet))
+      // Tuple
       case g: GenericSurface
           if classOf[Product].isAssignableFrom(g.rawType) && g.rawType.getName.startsWith("scala.Tuple") =>
         TupleCodec(g.typeArgs.map(factory.ofSurface(_, seenSet)))
+      // Seq[A]
       case g: GenericSurface if classOf[Seq[_]].isAssignableFrom(g.rawType) =>
-        // Seq[A]
         val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
         g match {
+          // IndexedSeq[A]
           case g1: GenericSurface if classOf[IndexedSeq[_]].isAssignableFrom(g1.rawType) =>
             new CollectionCodec.IndexedSeqCodec(g1.typeArgs(0), elementSurface)
+          // List[A]
           case g1: GenericSurface if classOf[List[_]].isAssignableFrom(g1.rawType) =>
             new CollectionCodec.ListCodec(g1.typeArgs(0), elementSurface)
+          // Generic Seq[A]
           case _ =>
             new CollectionCodec.SeqCodec(g.typeArgs(0), elementSurface)
         }
+      // Map[A, B]
       case g: GenericSurface if classOf[Map[_, _]].isAssignableFrom(g.rawType) =>
         CollectionCodec.MapCodec(
           factory.ofSurface(g.typeArgs(0), seenSet),
           factory.ofSurface(g.typeArgs(1), seenSet)
         )
+      // Java collecitons (e.g., ArrayList[A], List[A], Queue[A], Set[A])
       case g: GenericSurface if classOf[java.util.Collection[_]].isAssignableFrom(g.rawType) =>
         val elementSurface = factory.ofSurface(g.typeArgs(0), seenSet)
         CollectionCodec.JavaListCodec(elementSurface)
+      // Java Map[A, B]
       case g: GenericSurface if classOf[java.util.Map[_, _]].isAssignableFrom(g.rawType) =>
         CollectionCodec.JavaMapCodec(
           factory.ofSurface(g.typeArgs(0), seenSet),
