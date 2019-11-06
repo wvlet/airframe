@@ -27,7 +27,7 @@ ga('send', 'pageview');
 <h2 id="defining-http-endpoints">Defining HTTP Endpoints</h2>
 
 <p><strong>MyApi.scala</strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">com.twitter.finagle.http.</span><span class="o">{</span><span class="nc">Request</span><span class="o">,</span><span class="nc">Response</span><span class="o">}</span>
 <span class="k">import</span> <span class="nn">com.twitter.util.Future</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.</span><span class="o">{</span><span class="nc">Endpoint</span><span class="o">,</span> <span class="nc">HttpMethod</span><span class="o">,</span> <span class="nc">HttpRequest</span><span class="o">}</span>
 
@@ -57,14 +57,20 @@ ga('send', 'pageview');
     <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="nv">request</span><span class="o">.</span><span class="py">toRaw</span><span class="o">.</span><span class="py">userAgent</span><span class="o">)</span>
   <span class="o">}</span>
 
+  <span class="c1">// It is also possible to receive backend server specific Request type
+</span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info2"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">getInfo</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">)</span><span class="k">:</span> <span class="kt">ServerInfo</span> <span class="o">=</span> <span class="o">{</span>
+    <span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="nv">request</span><span class="o">.</span><span class="py">userAgent</span><span class="o">)</span>
+  <span class="o">}</span>
+
   <span class="c1">// Returning Future[X] is also possible.
 </span>  <span class="c1">// This style is convenient when you need to call another service that returns Future response.
 </span>  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/info_f"</span><span class="o">)</span>
   <span class="k">def</span> <span class="nf">getInfoFuture</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">HttpRequest</span><span class="o">[</span><span class="kt">Request</span><span class="o">])</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">ServerInfo</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
     <span class="nv">Future</span><span class="o">.</span><span class="py">value</span><span class="o">(</span><span class="nc">ServerInfo</span><span class="o">(</span><span class="s">"1.0"</span><span class="o">,</span> <span class="nv">request</span><span class="o">.</span><span class="py">toRaw</span><span class="o">.</span><span class="py">userAgent</span><span class="o">))</span>
   <span class="o">}</span>
-  
-  <span class="c1">// It is also possible to return a custom HTTP responses 
+
+  <span class="c1">// It is also possible to return custom HTTP responses
 </span>  <span class="nd">@EndPoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/custom_response"</span><span class="o">)</span>
   <span class="k">def</span> <span class="nf">customResponse</span><span class="k">:</span> <span class="kt">Response</span> <span class="o">=</span> <span class="o">{</span>
     <span class="k">val</span> <span class="nv">response</span> <span class="k">=</span> <span class="nc">Reponse</span><span class="o">()</span>
@@ -85,6 +91,7 @@ ga('send', 'pageview');
 <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>GET  /v1/user/:name    returns {"name":"..."}
 POST /v1/user          returns {"name":"..."}
 GET  /v1/info          returns {"version":"1.0", "ua":"...."}
+GET  /v1/info2         returns {"version":"1.0", "ua":"...."}
 GET  /v1/info_f        returns {"version":"1.0", "ua":"...."}
 ...
 </code></pre></div></div>
@@ -137,7 +144,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 <h2 id="starting-a-finagle-http-server">Starting A Finagle HTTP Server</h2>
 
-<p>To start a server, create a finagle server design with <code class="highlighter-rouge">newFinagleServerDesign(router, port)</code>:</p>
+<p>To start a server, create a finagle server configuration with Finagle.server, and</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
 <span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 <span class="k">import</span> <span class="nn">com.twitter.finagle.http.Request</span>
@@ -146,14 +153,14 @@ without some transformations. With MessagePack, you can send the data to the cli
 // You can add more routes by using `.add[X]` method.
 </span><span class="k">val</span> <span class="nv">router</span> <span class="k">=</span> <span class="nv">Router</span><span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router</span><span class="o">)</span>
-
-<span class="nv">design</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
-  <span class="c1">// Finagle http server will start here
-</span>
-  <span class="c1">// To keep running the server, run `server.waitServerTermination`:
-</span>  <span class="nv">server</span><span class="o">.</span><span class="py">waitServerTermination</span>
-<span class="o">}</span>
+<span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span>
+  <span class="o">.</span><span class="py">withPort</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
+  <span class="o">.</span><span class="py">withRouter</span><span class="o">(</span><span class="n">router</span><span class="o">)</span>
+  <span class="o">.</span><span class="py">start</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+    <span class="c1">// Finagle http server will start here
+</span>    <span class="c1">// To keep running the server, run `server.waitServerTermination`:
+</span>    <span class="nv">server</span><span class="o">.</span><span class="py">waitServerTermination</span>
+  <span class="o">}</span>
 <span class="c1">// The server will terminate here
 </span></code></pre></div></div>
 
@@ -163,22 +170,17 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 <p>For example, you can:</p>
 <ul>
-  <li>Add custom Tracer, StatsReceiver, etc.</li>
-  <li>Add more advanced configurations using <code class="highlighter-rouge">.withServerInitializer(...)</code></li>
   <li>Customize HTTP filters</li>
   <li>Start multiple Finagle HTTP servers with different configurations</li>
+  <li>Add custom Tracer, StatsReceiver, etc.</li>
+  <li>Add more advanced server configurations using <code class="highlighter-rouge">.withServerInitializer(...)</code></li>
 </ul>
-
-<p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
-
-<p>To customize Finagle server, extend FinagleServerFactory and define your own 
-server factory:</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
 <span class="k">val</span> <span class="nv">router</span> <span class="k">=</span> <span class="nv">Router</span><span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">MyApi</span><span class="o">]</span>
 
-<span class="k">val</span> <span class="nv">serverConfig</span> <span class="k">=</span> <span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span>
+<span class="k">val</span> <span class="nv">server</span> <span class="k">=</span> <span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span>
   <span class="o">.</span><span class="py">withName</span><span class="o">(</span><span class="s">"my server"</span><span class="o">)</span>
   <span class="o">.</span><span class="py">withRouter</span><span class="o">(</span><span class="n">router</span><span class="o">)</span>
   <span class="o">.</span><span class="py">withPort</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
@@ -190,27 +192,48 @@ server factory:</p>
   <span class="c1">// Add a custom MessageCodec mapping
 </span>  <span class="o">.</span><span class="py">withCustomCodec</span><span class="o">(</span><span class="nc">Map</span><span class="o">(</span><span class="nv">Surface</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">X</span><span class="o">]</span> <span class="o">-&gt;</span> <span class="o">...))</span>
 
-<span class="nf">newFinagleServerDesign</span><span class="o">(</span><span class="n">serverConfig</span><span class="o">)</span>
-  <span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span><span class="k">:</span><span class="kt">FinagleServer</span> <span class="o">=&gt;</span>
-  <span class="c1">// The customized server will start here  
-</span><span class="o">}</span>
+<span class="nv">server</span><span class="o">.</span><span class="py">start</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+  <span class="c1">// The customized server will start here
+</span>  <span class="nv">server</span><span class="o">.</span><span class="py">waitServerTermination</span>  
+<span class="o">}</span>
 </code></pre></div></div>
+
+<p>See also the examples in <a href="https://github.com/wvlet/airframe/blob/master/airframe-http-finagle/src/test/scala/wvlet/airframe/http/finagle/FinagleServerFactoryTest.scala">here</a></p>
+
+<h2 id="integration-with-airframe-di">Integration with Airframe DI</h2>
+
+<p>By calling <code class="highlighter-rouge">.design</code>, you can get a design for Airframe DI:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">design</span> <span class="k">=</span> <span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span>
+ <span class="o">.</span><span class="py">withName</span><span class="o">(</span><span class="s">"my-server"</span><span class="o">)</span>
+ <span class="o">.</span><span class="py">withRouter</span><span class="o">(</span><span class="n">router</span><span class="o">)</span>
+ <span class="o">.</span><span class="py">withPort</span><span class="o">(</span><span class="mi">8080</span><span class="o">)</span>
+ <span class="o">.</span><span class="py">design</span>
+
+<span class="nv">design</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServer</span><span class="o">]</span> <span class="o">{</span> <span class="n">server</span> <span class="k">=&gt;</span>
+   <span class="c1">// A server will start here
+</span><span class="o">}</span>
+<span class="c1">// The server will terminate after exiting the session
+</span></code></pre></div></div>
 
 <h3 id="running-multiple-finagle-servers">Running Multiple Finagle Servers</h3>
 
-<p>Create a FinagleServerFactory, and call <code class="highlighter-rouge">newFinagleServer(FinagleServerConfig)</code>:</p>
+<p>To run multiple HTTP servers, create a FinagleServerFactory and use <code class="highlighter-rouge">newFinagleServer(FinagleServerConfig)</code>:</p>
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
 
 <span class="c1">// Use a design for not starting the default server:
 </span><span class="nv">finagleBaseDesign</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">FinagleServerFactory</span><span class="o">]</span> <span class="o">{</span> <span class="n">factory</span> <span class="k">=&gt;</span>
- <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server1"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8080</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router1</span><span class="o">))</span>
- <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="nc">FinagleServerConfig</span><span class="o">(</span><span class="n">name</span> <span class="k">=</span> <span class="s">"server2"</span><span class="o">,</span> <span class="n">port</span> <span class="k">=</span> <span class="mi">8081</span><span class="o">,</span> <span class="n">router</span> <span class="k">=</span> <span class="n">router2</span><span class="o">))</span>
+  <span class="k">val</span> <span class="nv">config1</span> <span class="k">=</span> <span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span><span class="o">.</span><span class="py">withName</span><span class="o">(</span><span class="s">"server1"</span><span class="o">).</span><span class="py">withPort</span><span class="o">(</span><span class="mi">8080</span><span class="o">).</span><span class="py">withRouter</span><span class="o">(</span><span class="n">router1</span><span class="o">)</span>
+  <span class="k">val</span> <span class="nv">config2</span> <span class="k">=</span> <span class="nv">Finagle</span><span class="o">.</span><span class="py">server</span><span class="o">.</span><span class="py">withName</span><span class="o">(</span><span class="s">"server2"</span><span class="o">).</span><span class="py">withPort</span><span class="o">(</span><span class="mi">8081</span><span class="o">).</span><span class="py">withRouter</span><span class="o">(</span><span class="n">router2</span><span class="o">)</span>
+
+ <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="n">config1</span><span class="o">)</span>
+ <span class="nv">factory</span><span class="o">.</span><span class="py">newFinagleServer</span><span class="o">(</span><span class="n">config2</span><span class="o">)</span>
  <span class="c1">// Two finagle servers will start at port 8081 and 8081
 </span><span class="o">}</span>
 <span class="c1">// Two servers will be stopped after exiting the session
 </span></code></pre></div></div>
 
-<h3 id="shutting-down-finagle-server">Shutting Down Finagle Server</h3>
+<h2 id="shutting-down-finagle-server">Shutting Down Finagle Server</h2>
 
 <p>Closing the current Airframe session will terminate the finagle server as well:</p>
 
