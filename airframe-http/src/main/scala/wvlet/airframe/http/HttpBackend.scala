@@ -14,6 +14,8 @@
 package wvlet.airframe.http
 
 import wvlet.airframe.http.HttpFilter.HttpFilterFactory
+
+import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
@@ -21,8 +23,14 @@ import scala.language.higherKinds
   */
 trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
   def toFuture[A](a: A): F[A]
+  // Convert Scala's Future into the this backend's Future
+  def toFuture[A](a: scala.concurrent.Future[A], e: ExecutionContext): F[A]
+  def toScalaFuture[A](a: F[A]): scala.concurrent.Future[A]
   def wrapException(e: Throwable): F[Resp]
   def isFutureType(x: Class[_]): Boolean
+  def isScalaFutureType(x: Class[_]): Boolean = {
+    classOf[scala.concurrent.Future[_]].isAssignableFrom(x)
+  }
   def isRawResponseType(x: Class[_]): Boolean
 
   def mapF[A, B](f: F[A], body: A => B): F[B]

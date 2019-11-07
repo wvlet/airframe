@@ -19,6 +19,7 @@ import wvlet.airframe.Session
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.log.LogSupport
 
+import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 object HttpRequestDispatcher {
@@ -115,8 +116,9 @@ object HttpRequestDispatcher {
           // Check the type of X
           val futureValueSurface = route.returnTypeSurface.typeArgs(0)
           futureValueSurface.rawType match {
-            // If X is Response type, return as is
+            // If X is the backend Response type, return as is:
             case valueCls if backend.isRawResponseType(valueCls) =>
+              // Use Finagle Future
               result.asInstanceOf[F[Resp]]
             case other =>
               // If X is other type, convert X into an HttpResponse
@@ -125,6 +127,26 @@ object HttpRequestDispatcher {
                   responseHandler.toHttpResponse(request, futureValueSurface, x)
                 }
               )
+          }
+        case cl: Class[_] if backend.isScalaFutureType(cl) =>
+          // Check the type of X
+          val futureValueSurface = route.returnTypeSurface.typeArgs(0)
+
+          // TODO: Is using global execution a right choice?
+          val ex = ExecutionContext.global
+          futureValueSurface.rawType match {
+            // If X is the backend Response type, return as is:
+            case valueCls if backend.isRawResponseType(valueCls) =>
+              // Convert Scala Future to Finagle Future
+              backend.toFuture(result.asInstanceOf[scala.concurrent.Future[Resp]], ex)
+            case other =>
+              // If X is other type, convert X into an HttpResponse
+              val scalaFuture = result
+                .asInstanceOf[scala.concurrent.Future[_]]
+                .map { x =>
+                  responseHandler.toHttpResponse(request, futureValueSurface, x)
+                }(ex)
+              backend.toFuture(scalaFuture, ex)
           }
         case _ =>
           // If the route returns non future value, convert it into Future response
