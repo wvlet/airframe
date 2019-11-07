@@ -16,7 +16,7 @@ package wvlet.airframe.http.finagle
 import java.lang.reflect.InvocationTargetException
 
 import com.twitter.concurrent.AsyncStream
-import com.twitter.finagle.http.{Method, Request}
+import com.twitter.finagle.http.{Method, Request, Response}
 import com.twitter.io.Buf.ByteArray
 import com.twitter.io.{Buf, Reader}
 import com.twitter.util.{Await, Future}
@@ -100,6 +100,13 @@ trait MyApi extends LogSupport {
   @Endpoint(path = "/v1/scala-future", method = HttpMethod.GET)
   def scalaFutureResponse: scala.concurrent.Future[String] = {
     scala.concurrent.Future.successful("Hello Scala Future")
+  }
+
+  @Endpoint(path = "/v1/scala-future2", method = HttpMethod.GET)
+  def scalaFutureResponse2: scala.concurrent.Future[Response] = {
+    val r = Response()
+    r.contentString = "Hello Scala Future"
+    scala.concurrent.Future.successful(r)
   }
 }
 
@@ -304,6 +311,12 @@ class FinagleRouterTest extends AirSpec {
 
     def `support scala.concurrent.Future[X]` : Unit = {
       val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future")))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "Hello Scala Future"
+    }
+
+    def `support scala.concurrent.Future[Response]` : Unit = {
+      val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future2")))
       result.statusCode shouldBe HttpStatus.Ok_200.code
       result.contentString shouldBe "Hello Scala Future"
     }
