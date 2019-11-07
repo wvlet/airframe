@@ -14,8 +14,12 @@
 package wvlet.airframe.http.finagle
 
 import com.twitter.finagle.http.{Request, Response}
-import com.twitter.util.Future
+import com.twitter.util.{Future, Promise, Return, Throw}
 import wvlet.airframe.http.{HttpBackend, HttpContext}
+
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
+import scala.{concurrent => sc}
 
 /**
   * Finagle-based implementation of HttpBackend
@@ -25,6 +29,23 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
     Future.exception(e)
   }
   override def toFuture[A](a: A): Future[A] = Future.value(a)
+  override def toScalaFuture[A](a: Future[A]): sc.Future[A] = {
+    val promise: sc.Promise[A] = sc.Promise()
+    a.respond {
+      case Return(value)    => promise.success(value)
+      case Throw(exception) => promise.failure(exception)
+    }
+    promise.future
+  }
+  override def toFuture[A](a: sc.Future[A], e: ExecutionContext): Future[A] = {
+    val promise: Promise[A] = Promise()
+    a.onComplete {
+      case Success(value)     => promise.setValue(value)
+      case Failure(exception) => promise.setException(exception)
+    }(e)
+    promise
+  }
+
   override def isFutureType(cl: Class[_]): Boolean = {
     classOf[Future[_]].isAssignableFrom(cl)
   }

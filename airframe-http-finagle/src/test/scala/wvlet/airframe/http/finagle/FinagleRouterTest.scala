@@ -96,6 +96,11 @@ trait MyApi extends LogSupport {
 
   @Endpoint(path = "/v1/delete", method = HttpMethod.DELETE)
   def emptyResponse: Unit = {}
+
+  @Endpoint(path = "/v1/scala-future", method = HttpMethod.GET)
+  def scalaFutureResponse: scala.concurrent.Future[String] = {
+    scala.concurrent.Future.successful("Hello Scala Future")
+  }
 }
 
 /**
@@ -295,6 +300,12 @@ class FinagleRouterTest extends AirSpec {
     def `return 204 for Unit response` = {
       val result = Await.result(client.send(Request(Method.Delete, "/v1/delete")))
       result.statusCode shouldBe HttpStatus.NoContent_204.code
+    }
+
+    def `support scala.concurrent.Future[X]` : Unit = {
+      val result = Await.result(client.send(Request(Method.Get, "/v1/scala-future")))
+      result.statusCode shouldBe HttpStatus.Ok_200.code
+      result.contentString shouldBe "Hello Scala Future"
     }
   }
 }
