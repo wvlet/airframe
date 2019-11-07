@@ -15,3 +15,5 @@ pgdata
 travis
 fixtures
 .airframe
+.bloop
+.metals
