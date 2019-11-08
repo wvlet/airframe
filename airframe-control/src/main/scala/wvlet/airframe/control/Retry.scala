@@ -239,7 +239,7 @@ object Retry extends LogSupport {
       */
     def noRetryLogging: RetryContext = {
       this.copy(beforeRetryAction = { x: RetryContext =>
-        })
+      })
     }
 
     /**
