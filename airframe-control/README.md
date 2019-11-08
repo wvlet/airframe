@@ -60,7 +60,7 @@ val r: String =
 ```
 
 
-To decide the number of backoff retries from an expected total wait time, use `withBaoundedBackoff`:
+To decide the number of backoff retries from an expected total wait time, use `withBoundedBackoff`:
 ```scala
 import wvlet.airframe.control.Retry
 
