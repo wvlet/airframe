@@ -4,7 +4,7 @@ airframe-control
 airframe-control is a library for writing control flow at ease.
 
 
-## Usage
+# Usage
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/)
 
@@ -13,7 +13,9 @@ __build.sbt__
 libraryDependencies += "org.wvlet.airframe" %% "airframe-control" % "(version)"
 ```
 
-### Control
+## Control
+
+Loan Pattern (open a resource and close):
 
 ```scala
 import wvlet.airframe.control.Control
@@ -31,8 +33,9 @@ Control.withResources(
 }
 ```
 
-### Retry
+## Retry
 
+### Exponential Backoff
 
 ```scala
 import wvlet.airframe.control.Retry
@@ -56,7 +59,56 @@ val r: String =
     }
 ```
 
-### Parallel
+
+To decide the number of backoff retries from an expected total wait time, use `withBaoundedBackoff`:
+```scala
+import wvlet.airframe.control.Retry
+
+Retry
+  .withBoundedBackoff(
+    initialIntervalMillis = 1000, 
+    maxTotalWaitMillis = 30000
+  )
+```
+
+
+### Jitter
+
+```scala
+import wvlet.airframe.control.Retry
+import java.util.concurrent.TimeoutException
+
+Retry
+  .withJitter(maxRetry = 3) // It will wait nextWaitMillis * rand() upon retry
+  .retryOn {
+    case e: TimeoutException =>
+      Retry.retryableFailure(e)
+  }
+  .run {
+    // body
+  }
+```
+
+### Adding Extra Wait
+
+```scala
+import wvlet.airframe.control.Retry
+import java.util.concurrent.TimeoutException
+
+Retry
+  .withJitter()
+  .retryOn {
+     case e: IllegalArgumentException =>
+       Retry.nonRetryableFailure(e)
+     case e: TimeoutException =>
+       Retry
+         .retryableFailure(e)
+         // Add extra wait millis
+         .withExtraWaitMillis(50)
+  }
+```
+
+## Parallel
 
 
 ```scala

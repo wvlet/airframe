@@ -43,6 +43,22 @@ class RetryTest extends AirSpec {
     count shouldBe 3
   }
 
+  def `support bounded backoff retry`: Unit = {
+    val maxWait = 50000
+    var r =
+      Retry
+        .withBoundedBackoff(initialIntervalMillis = 1000, maxTotalWaitMillis = maxWait)
+        .noRetryLogging
+
+    r = r.init()
+    var waitTotal = 0
+    while (r.canContinue) {
+      waitTotal += r.nextWaitMillis
+      r = r.nextRetry(new IllegalStateException())
+    }
+    waitTotal <= maxWait shouldBe true
+  }
+
   def `support jitter retry`: Unit = {
     var count = 0
 
