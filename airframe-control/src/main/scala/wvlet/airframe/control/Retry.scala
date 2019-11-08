@@ -34,6 +34,34 @@ object Retry extends LogSupport {
     defaultRetryContext.withMaxRetry(maxRetry).withBackOff(initialIntervalMillis, maxIntervalMillis, multiplier)
   }
 
+  def withBoundedBackoff(
+      initialIntervalMillis: Int = 100,
+      maxTotalWaitMillis: Int = 180000,
+      multiplier: Double = 1.5
+  ): RetryContext = {
+    require(initialIntervalMillis > 0, s"initialWaitMillis must be > 0: ${initialIntervalMillis}")
+
+    // S = totalWaitMillis = w * r^0 + w * r^1 + w * r^2 + ...  + w * r^n
+    // S = w * (1-r^n) / (1-r)
+    // r^n = 1 - S * (1-r)/w
+    // n * log(r) = log(1 - S * (1-r) / w)
+    val N = math.log(1 - (maxTotalWaitMillis * (1 - multiplier) / initialIntervalMillis)) / math.log(multiplier)
+
+    def total(n: Int) = initialIntervalMillis * (1 - math.pow(multiplier, n)) / (1 - multiplier)
+
+    var maxRetry = N.ceil.toInt
+    while (maxRetry > 0 && total(maxRetry) > maxTotalWaitMillis) {
+      maxRetry -= 1
+    }
+    var maxIntervalMillis = initialIntervalMillis * math.pow(multiplier, N).toInt
+    withBackOff(
+      maxRetry = maxRetry.max(0),
+      initialIntervalMillis = initialIntervalMillis,
+      maxIntervalMillis = maxIntervalMillis,
+      multiplier = multiplier
+    )
+  }
+
   def withJitter(
       maxRetry: Int = 3,
       initialIntervalMillis: Int = 100,
@@ -204,6 +232,14 @@ object Retry extends LogSupport {
 
     def beforeRetry[U](handler: RetryContext => U): RetryContext = {
       this.copy(beforeRetryAction = handler)
+    }
+
+    /**
+      * Clear the default beforeRetry action
+      */
+    def noRetryLogging: RetryContext = {
+      this.copy(beforeRetryAction = { x: RetryContext =>
+      })
     }
 
     /**
