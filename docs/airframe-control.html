@@ -10,7 +10,7 @@ ga('send', 'pageview');
 
 <p>airframe-control is a library for writing control flow at ease.</p>
 
-<h2 id="usage">Usage</h2>
+<h1 id="usage">Usage</h1>
 
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/badge.svg" alt="Maven Central" /></a></p>
 
@@ -18,7 +18,9 @@ ga('send', 'pageview');
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">libraryDependencies</span> <span class="o">+=</span> <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-control"</span> <span class="o">%</span> <span class="s">"(version)"</span>
 </code></pre></div></div>
 
-<h3 id="control">Control</h3>
+<h2 id="control">Control</h2>
+
+<p>Loan Pattern (open a resource and close):</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Control</span>
 
@@ -35,7 +37,9 @@ ga('send', 'pageview');
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="retry">Retry</h3>
+<h2 id="retry">Retry</h2>
+
+<h3 id="exponential-backoff">Exponential Backoff</h3>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
 <span class="k">import</span> <span class="nn">java.util.concurrent.TimeoutException</span>
@@ -58,7 +62,51 @@ ga('send', 'pageview');
     <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="parallel">Parallel</h3>
+<p>To decide the number of backoff retries from an expected total wait time, use <code class="highlighter-rouge">withBoundedBackoff</code>:</p>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
+
+<span class="nc">Retry</span>
+  <span class="o">.</span><span class="py">withBoundedBackoff</span><span class="o">(</span>
+    <span class="n">initialIntervalMillis</span> <span class="k">=</span> <span class="mi">1000</span><span class="o">,</span> 
+    <span class="n">maxTotalWaitMillis</span> <span class="k">=</span> <span class="mi">30000</span>
+  <span class="o">)</span>
+</code></pre></div></div>
+
+<h3 id="jitter">Jitter</h3>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.TimeoutException</span>
+
+<span class="nc">Retry</span>
+  <span class="o">.</span><span class="py">withJitter</span><span class="o">(</span><span class="n">maxRetry</span> <span class="k">=</span> <span class="mi">3</span><span class="o">)</span> <span class="c1">// It will wait nextWaitMillis * rand() upon retry
+</span>  <span class="o">.</span><span class="py">retryOn</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">TimeoutException</span> <span class="o">=&gt;</span>
+      <span class="nv">Retry</span><span class="o">.</span><span class="py">retryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+  <span class="o">}</span>
+  <span class="o">.</span><span class="py">run</span> <span class="o">{</span>
+    <span class="c1">// body
+</span>  <span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="adding-extra-wait">Adding Extra Wait</h3>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Retry</span>
+<span class="k">import</span> <span class="nn">java.util.concurrent.TimeoutException</span>
+
+<span class="nc">Retry</span>
+  <span class="o">.</span><span class="py">withJitter</span><span class="o">()</span>
+  <span class="o">.</span><span class="py">retryOn</span> <span class="o">{</span>
+     <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">IllegalArgumentException</span> <span class="o">=&gt;</span>
+       <span class="nv">Retry</span><span class="o">.</span><span class="py">nonRetryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+     <span class="k">case</span> <span class="n">e</span><span class="k">:</span> <span class="kt">TimeoutException</span> <span class="o">=&gt;</span>
+       <span class="nc">Retry</span>
+         <span class="o">.</span><span class="py">retryableFailure</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+         <span class="c1">// Add extra wait millis
+</span>         <span class="o">.</span><span class="py">withExtraWaitMillis</span><span class="o">(</span><span class="mi">50</span><span class="o">)</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="parallel">Parallel</h2>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe.control.Parallel</span>
 
