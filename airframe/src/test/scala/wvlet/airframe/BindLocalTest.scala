@@ -91,7 +91,7 @@ class BindLocalTest extends AirSpec {
       t.x2 shouldBe X(D1(1), D2(2))
       t.x3 shouldBe X(D1(1), D2(2), D3(3))
       t.x4 shouldBe X(D1(1), D2(2), D3(3), D4(4))
-      t.x4 shouldBe X(D1(1), D2(2), D3(3), D4(4), D5(5))
+      t.x5 shouldBe X(D1(1), D2(2), D3(3), D4(4), D5(5))
     }
   }
 }
