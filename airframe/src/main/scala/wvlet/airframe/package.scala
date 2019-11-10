@@ -26,7 +26,6 @@ import scala.language.implicitConversions
   *
   */
 package object airframe {
-
   /**
     * The entry point to create a new design beginning from a blanc design
     * <code>
@@ -85,6 +84,19 @@ package object airframe {
     * The lifecycle of the generated instaance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3](provider: => (D1, D2, D3) => A): A = macro bindLocal3Impl[A, D1, D2, D3]
+
+  /**
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4.
+    * The lifecycle of the generated instaance of A will be managed by the current session
+    */
+  def bindLocal[A, D1, D2, D3, D4](provider: => (D1, D2, D3, D4) => A): A = macro bindLocal4Impl[A, D1, D2, D3, D4]
+
+  /**
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4.
+    * The lifecycle of the generated instaance of A will be managed by the current session
+    */
+  def bindLocal[A, D1, D2, D3, D4, D5](provider: => (D1, D2, D3, D4, D5) => A): A =
+    macro bindLocal5Impl[A, D1, D2, D3, D4, D5]
 
   import scala.language.higherKinds
 
