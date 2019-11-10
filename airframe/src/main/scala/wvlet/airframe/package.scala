@@ -47,17 +47,17 @@ package object airframe {
     * @tparam A
     */
   def bind[A]: A = macro bindImpl[A]
-  @deprecated(message = "Use design.bind[A].toProvider(...) or in-trait bindLocal{...} instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) or in-trait bindLocal{...} instead", since = "19.11.0")
   def bind[A](provider: => A): A = macro bind0Impl[A]
-  @deprecated(message = "Use design.bind[A].toProvider(...) or in-trait bindLocal(D1 => A) instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) or in-trait bindLocal(D1 => A) instead", since = "19.11.0")
   def bind[A, D1](provider: D1 => A): A = macro bind1Impl[A, D1]
-  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.11.0")
   def bind[A, D1, D2](provider: (D1, D2) => A): A = macro bind2Impl[A, D1, D2]
-  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.11.0")
   def bind[A, D1, D2, D3](provider: (D1, D2, D3) => A): A = macro bind3Impl[A, D1, D2, D3]
-  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.11.0")
   def bind[A, D1, D2, D3, D4](provider: (D1, D2, D3, D4) => A): A = macro bind4Impl[A, D1, D2, D3, D4]
-  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.10.2")
+  @deprecated(message = "Use design.bind[A].toProvider(...) instead", since = "19.11.0")
   def bind[A, D1, D2, D3, D4, D5](provider: (D1, D2, D3, D4, D5) => A): A =
     macro bind5Impl[A, D1, D2, D3, D4, D5]
 
@@ -75,25 +75,25 @@ package object airframe {
 
   /**
     * Create a new instance of A using the provider function that receives dependencies of D1 and D2.
-    * The lifecycle of the generated instaance of A will be managed by the current session
+    * The lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2](provider: => (D1, D2) => A): A = macro bindLocal2Impl[A, D1, D2]
 
   /**
     * Create a new instance of A using the provider function that receives dependencies of D1, D2, and D3.
-    * The lifecycle of the generated instaance of A will be managed by the current session
+    * The lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3](provider: => (D1, D2, D3) => A): A = macro bindLocal3Impl[A, D1, D2, D3]
 
   /**
     * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4.
-    * The lifecycle of the generated instaance of A will be managed by the current session
+    * The lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3, D4](provider: => (D1, D2, D3, D4) => A): A = macro bindLocal4Impl[A, D1, D2, D3, D4]
 
   /**
-    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, and D4.
-    * The lifecycle of the generated instaance of A will be managed by the current session
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, D3, D4, and D5.
+    * The lifecycle of the generated instance of A will be managed by the current session
     */
   def bindLocal[A, D1, D2, D3, D4, D5](provider: => (D1, D2, D3, D4, D5) => A): A =
     macro bindLocal5Impl[A, D1, D2, D3, D4, D5]

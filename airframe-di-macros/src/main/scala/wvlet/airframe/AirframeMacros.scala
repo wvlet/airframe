@@ -799,24 +799,31 @@ private[wvlet] object AirframeMacros {
       """
   }
 
-  def bindLocal5Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag](
-    c: sm.Context
-)(provider: c.Tree): c.Tree = {
-  import c.universe._
+  def bindLocal5Impl[
+      A: c.WeakTypeTag,
+      D1: c.WeakTypeTag,
+      D2: c.WeakTypeTag,
+      D3: c.WeakTypeTag,
+      D4: c.WeakTypeTag,
+      D5: c.WeakTypeTag
+  ](
+      c: sm.Context
+  )(provider: c.Tree): c.Tree = {
+    import c.universe._
 
-  val a    = implicitly[c.WeakTypeTag[A]].tpe
-  val d1   = implicitly[c.WeakTypeTag[D1]].tpe
-  val d2   = implicitly[c.WeakTypeTag[D2]].tpe
-  val d3   = implicitly[c.WeakTypeTag[D3]].tpe
-  val d4   = implicitly[c.WeakTypeTag[D4]].tpe
-  val d5   = implicitly[c.WeakTypeTag[D5]].tpe
-  val h    = new BindHelper[c.type](c)
-  val dep1 = h.newInstanceBinder(d1)
-  val dep2 = h.newInstanceBinder(d2)
-  val dep3 = h.newInstanceBinder(d3)
-  val dep4 = h.newInstanceBinder(d4)
-  val dep5 = h.newInstanceBinder(d5)
-  q"""{
+    val a    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val d2   = implicitly[c.WeakTypeTag[D2]].tpe
+    val d3   = implicitly[c.WeakTypeTag[D3]].tpe
+    val d4   = implicitly[c.WeakTypeTag[D4]].tpe
+    val d5   = implicitly[c.WeakTypeTag[D5]].tpe
+    val h    = new BindHelper[c.type](c)
+    val dep1 = h.newInstanceBinder(d1)
+    val dep2 = h.newInstanceBinder(d2)
+    val dep3 = h.newInstanceBinder(d3)
+    val dep4 = h.newInstanceBinder(d4)
+    val dep5 = h.newInstanceBinder(d5)
+    q"""{
         val surface = ${h.surfaceOf(a)}
         val session = ${h.findSession}
         val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session), $dep2(session), $dep3(session), $dep4(session), $dep5(session)))
@@ -824,7 +831,7 @@ private[wvlet] object AirframeMacros {
         localSession.get[$a](surface)
       }
     """
-}
+  }
 
   def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
