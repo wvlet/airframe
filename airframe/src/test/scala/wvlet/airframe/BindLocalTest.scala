@@ -78,7 +78,7 @@ class BindLocalTest extends AirSpec {
     }
   }
 
-  def `support bindLocal((D1, D2, ...) => A)` : Unit = {
+  def `support bindLocal with dependencies`: Unit = {
     val d = newSilentDesign
       .bind[D1].toInstance(D1(1))
       .bind[D2].toInstance(D2(2))
@@ -97,11 +97,11 @@ class BindLocalTest extends AirSpec {
 }
 
 object BindLocalTest {
-  case class D1(v: Int = 0)
-  case class D2(v: Int = 0)
-  case class D3(v: Int = 0)
-  case class D4(v: Int = 0)
-  case class D5(v: Int = 0)
+  case class D1(v: Int)
+  case class D2(v: Int)
+  case class D3(v: Int)
+  case class D4(v: Int)
+  case class D5(v: Int)
 
-  case class X(d1: D1 = D1(), d2: D2 = D2(), d3: D3 = D3(), d4: D4 = D4(), d5: D5 = D5())
+  case class X(d1: D1 = D1(0), d2: D2 = D2(0), d3: D3 = D3(0), d4: D4 = D4(0), d5: D5 = D5(0))
 }
