@@ -698,6 +698,38 @@ private[wvlet] object AirframeMacros {
       """
   }
 
+  def bindLocal0Impl[A: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
+    import c.universe._
+
+    val a = implicitly[c.WeakTypeTag[A]].tpe
+    val h = new BindHelper[c.type](c)
+    q"""{
+          val surface = ${h.surfaceOf(a)}
+          val session = ${h.findSession}
+          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance(${provider})
+          val localSession = session.newSharedChildSession(newChildDesign)
+          localSession.get[$a](surface)
+        }
+      """
+  }
+
+  def bindLocal1Impl[A: c.WeakTypeTag, D1: c.WeakTypeTag](c: sm.Context)(provider: c.Tree): c.Tree = {
+    import c.universe._
+
+    val a    = implicitly[c.WeakTypeTag[A]].tpe
+    val d1   = implicitly[c.WeakTypeTag[D1]].tpe
+    val h    = new BindHelper[c.type](c)
+    val dep1 = h.newInstanceBinder(d1)
+    q"""{
+          val surface = ${h.surfaceOf(a)}
+          val session = ${h.findSession}
+          val newChildDesign = wvlet.airframe.newDesign.bind(surface).toLazyInstance($provider($dep1(session)))
+          val localSession = session.newSharedChildSession(newChildDesign)
+          localSession.get[$a](surface)
+        }
+      """
+  }
+
   def bindFactoryImpl[F: c.WeakTypeTag](c: sm.Context): c.Tree = {
     import c.universe._
 
