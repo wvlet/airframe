@@ -74,6 +74,18 @@ package object airframe {
     */
   def bindLocal[A, D1](provider: => D1 => A): A = macro bindLocal1Impl[A, D1]
 
+  /**
+    * Create a new instance of A using the provider function that receives dependencies of D1 and D2.
+    * The lifecycle of the generated instaance of A will be managed by the current session
+    */
+  def bindLocal[A, D1, D2](provider: => (D1, D2) => A): A = macro bindLocal2Impl[A, D1, D2]
+
+  /**
+    * Create a new instance of A using the provider function that receives dependencies of D1, D2, and D3.
+    * The lifecycle of the generated instaance of A will be managed by the current session
+    */
+  def bindLocal[A, D1, D2, D3](provider: => (D1, D2, D3) => A): A = macro bindLocal3Impl[A, D1, D2, D3]
+
   import scala.language.higherKinds
 
   def bindFactory[F <: Function1[_, _]]: F = macro bindFactoryImpl[F]

@@ -25,14 +25,14 @@ class BindLocalTest extends AirSpec {
 
   import BindLocalTest._
 
-  class X(counter: AtomicInteger) extends AutoCloseable {
+  class LocalX(counter: AtomicInteger) extends AutoCloseable {
     override def close(): Unit = {
       counter.incrementAndGet()
     }
   }
   trait App {
     val counter = bind[AtomicInteger]
-    val x       = bindLocal { new X(counter) }
+    val x       = bindLocal { new LocalX(counter) }
   }
 
   def `create a new local instance with a provider`: Unit = {
@@ -60,23 +60,48 @@ class BindLocalTest extends AirSpec {
     }
   }
 
-  trait D1Test {
-    val x = bindLocal { d1: D1 =>
-      X1(d1)
+  trait LocalProviderTest {
+    val x1 = bindLocal { d1: D1 =>
+      X(d1 = d1)
+    }
+    val x2 = bindLocal { (d1: D1, d2: D2) =>
+      X(d1 = d1, d2 = d2)
+    }
+    val x3 = bindLocal { (d1: D1, d2: D2, d3: D3) =>
+      X(d1 = d1, d2 = d2, d3 = d3)
+    }
+    val x4 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4) =>
+      X(d1 = d1, d2 = d2, d3 = d3, d4 = d4)
+    }
+    val x5 = bindLocal { (d1: D1, d2: D2, d3: D3, d4: D4, d5: D5) =>
+      X(d1 = d1, d2 = d2, d3 = d3, d4 = d4, d5 = d5)
     }
   }
 
-  def `support bindLocal(D1 => A)` : Unit = {
+  def `support bindLocal((D1, D2, ...) => A)` : Unit = {
     val d = newSilentDesign
       .bind[D1].toInstance(D1(1))
+      .bind[D2].toInstance(D2(2))
+      .bind[D3].toInstance(D3(3))
+      .bind[D4].toInstance(D4(4))
+      .bind[D5].toInstance(D5(5))
 
-    d.build[D1Test] { t =>
-      t.x shouldBe X1(D1(1))
+    d.build[LocalProviderTest] { t =>
+      t.x1 shouldBe X(D1(1))
+      t.x2 shouldBe X(D1(1), D2(2))
+      t.x3 shouldBe X(D1(1), D2(2), D3(3))
+      t.x4 shouldBe X(D1(1), D2(2), D3(3), D4(4))
+      t.x4 shouldBe X(D1(1), D2(2), D3(3), D4(4), D5(5))
     }
   }
 }
 
 object BindLocalTest {
   case class D1(v: Int = 0)
-  case class X1(d1: D1)
+  case class D2(v: Int = 0)
+  case class D3(v: Int = 0)
+  case class D4(v: Int = 0)
+  case class D5(v: Int = 0)
+
+  case class X(d1: D1 = D1(), d2: D2 = D2(), d3: D3 = D3(), d4: D4 = D4(), d5: D5 = D5())
 }
