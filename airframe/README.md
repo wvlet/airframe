@@ -176,11 +176,11 @@ val a = bind[A]          // Inject A as a singleton
 val pc: P = bind[P] // Inject a singleton of P(D1, D2, D3)
                     // This will also inject D1, D2 and D3 to P.
 
-// Create a local binding for creating a new instance
+// Local binding for creating a new instance with the given factory method
 val l1: P = bindLocal{ new P() }
 val l2: P = bindLocal{ d1:D1 => new P(d1) }
 
-// Factory bindings can be used to override a part of the dependencies
+// Factory bindings for partially overriding dependencies
 val f1: D1 => P = bindFactory[D1 => P] // A factory to use a given D1 to generate P
 val f2: (D1, D2) => P = bindFactory2[(D1, D2) => P] // A factory to use given D1 and D2
 ...
@@ -194,7 +194,7 @@ object BindingExample {
 By default all injections generates singleton objects that are alive until closing the current session.
 These singleton objects are managed inside the current session object.
 
-If you need to create a new instance for each binding, use `bindFactory[I => X]`.
+If you need to create a new instance for each binding, use `bindLocal{ ... }` or `bindFactory[I => X]`.
 
 ## Design
 
