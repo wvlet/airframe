@@ -60,7 +60,7 @@ val d = newDesign
   .bind[Y].to[YImpl]
 ```
 
-### Basic Usage
+## Basic Usage
 
 First, **bind** objects to your code with `bind[X]`:
 
@@ -108,7 +108,7 @@ __in-trait injection__:
 ### Constructor Injection
 
 Constructor injection is the most natural form of injection.
-When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by finding these dependencies from a _Design_.
+When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by looking up instances for these constructor arguments defined in the _Design_.
 
 ```scala
 import wvlet.airframe._
@@ -138,8 +138,8 @@ import wvlet.airframe._
 
 case class AppConfig(appName:String)
 
-// In-trait injection
 trait MyApp {
+  // In-trait injection
   val config = bind[AppConfig]
 }
 
@@ -153,18 +153,28 @@ d.build[MyApp] { app: MyApp =>
 // Session will be closed here
 ```
 
-Note that `bind[X]` works only inside Scala traits:
+Note that `bind[X]` syntax works only inside Scala traits:
 
-```Scala
+```scala
 // [DON'T DO THIS] You can't use bind[X] inside classes:
 class A {
   val a = bind[B] // [Error] class A can't find the current session
 }
 ```
 
+If you used the `bind[X]` syntax inside a class, MISSING_SESSION error will be thrown.
+
 ### Binding Types
 
-The following examples show the basic in-traint binding types available in Airframe:
+Airframe DI supports three types of in-trait bindings: `bind[X]`, `bindLocal{...}`, and `bindFactory`.
+
+- `bind[X]` will inject a singleton instance of X by default.
+- `bindLocal{ new X(...) }` will inject a new instance of X using the given code block. This is mostly used for ensuring [RIIA (Resource Initialization Is Acquisition)](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) by writing the resource initialization code to the closest place where the resource will be used. If you need to build an instance of `X` based on the other dependencies, use a provider fucntion with `bindLocal{ (d1:D1, d2:D2, ...) => new X(d1, d2, ...)}`. Dependenies of D1, D2, ... will be injected from the design.
+- `bidFactory[D1=>X]` will create a factory method to generate X from a given instance of D1. This is usedf for partially overriding the design (e.g., `D1`) for building `X`.
+
+The lifecycle (including calling onInject, onStart, onShutdown hooks) will be managed by the session of Airframe. To properly release the resources injected by bindings, define these lifecycle hooks in the design or implement [AutoCloseable](https://docs.oracle.com/javase/8/docs/api/java/lang/AutoCloseable.html) interface. When the session terminates, the `def close(): Unit` method of AutoCloseable will be called. See also [Design](#design) and [Life Cycle](#life-cycle) seections for more details.
+
+Here are several examples of in-trait binding types:
 
 ```scala
 import BindingExample._
@@ -176,7 +186,7 @@ val a = bind[A]          // Inject A as a singleton
 val pc: P = bind[P] // Inject a singleton of P(D1, D2, D3)
                     // This will also inject D1, D2 and D3 to P.
 
-// Local binding for creating a new instance with the given factory method
+// Local binding for creating a new instance using the given code block
 val l1: P = bindLocal{ new P() }
 val l2: P = bindLocal{ d1:D1 => new P(d1) }
 
@@ -191,10 +201,7 @@ object BindingExample {
 }
 ```
 
-By default all injections generates singleton objects that are alive until closing the current session.
-These singleton objects are managed inside the current session object.
-
-If you need to create a new instance for each binding, use `bindLocal{ ... }` or `bindFactory[I => X]`.
+By default all injections generates singleton objects that are alive until closing the current session. These singleton objects are managed inside the current session object.
 
 ## Design
 
@@ -223,8 +230,8 @@ val design: Design =
 
 If you define multiple bindings to the same type (e.g., P), the last binding will be used.
 
-
 ### Singleton Bindings
+
 If you only need singletons (e.g.,`X`) and how to construct `X` is clear from its definition, no need exists to specify `bind[X].toSingleton` in your design:
 
 ```scala
@@ -332,10 +339,10 @@ object MyServerService {
   val design = newDesign
     .bind[Server]
     .onInit{x:Server => ... }    // Called when the object is initialized
-    .onInject{x:Server => ... }  // Called when the object is injected 
+    .onInject{x:Server => ... }  // Called when the object is injected
     .onStart{x:Server => ... }   // Called when session.start is called
     .beforeShutdown{x:Server => ...}  // Called right before all shutdown hook is called
-                                      // Useful for adding pre-shutdown step 
+                                      // Useful for adding pre-shutdown step
     .onShutdown{x:Server => ... } // Called when session.shutdown is called
   )
 }
@@ -383,14 +390,14 @@ trait MyService {
     // Called when the object is initialized. The same behavior with onInit
   }
   
-  @PreDestroy 
+  @PreDestroy
   def stop {
-    // Called when session.shutdown is called. The same with onShutdown. 
+    // Called when session.shutdown is called. The same with onShutdown.
   }
 }
 ```
 
-These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class. 
+These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class.
 
 ### Finding The Current Session
 
@@ -420,7 +427,7 @@ trait MyApp {
 
 ### Child Sessions
 
-If you need to override a part of the design in a short term, you can use _child sessions_. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
+If you need to override a part of the design in a short term, you can use _child sessions_. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.).
 
 ___Usage Example___
 
@@ -469,14 +476,13 @@ When writing an application, these concerns below are often unrelated to the cor
 - How to configure services.
 - How to manage life cycle of service objects.
 
-Airframe allows separating these concerns into `Design`. For example, when writing service A and B in the following figure, you should be able to focus only direct dependencies. In this example DBClient and FluentdLogger are the direct dependencies of A and B. 
+Airframe allows separating these concerns into `Design`. For example, when writing service A and B in the following figure, you should be able to focus only direct dependencies. In this example DBClient and FluentdLogger are the direct dependencies of A and B.
 
 ![image](https://wvlet.org/airframe/img/airframe/build-service-objects.png)
 
-When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc. By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about there indirect dependencies (right): 
+When building objects A and B, we usually need to think about the other indirect dependencies like ConnectionPool, HttpClient, DB, etc. By injecting dependencies using `bind[X]` syntax (left), we can effectively forget about there indirect dependencies (right):
 
 ![image](https://wvlet.org/airframe/img/airframe/code-example.png)
-
 
 ## What's Next
 
