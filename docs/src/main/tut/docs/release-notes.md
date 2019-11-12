@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.11.1
+-  airframe-di: Add in-trait bindLocal ([#805](https://github.com/wvlet/airframe/issues/805)) [[22ce396](https://github.com/wvlet/airframe/commit/22ce396)]
+-  airframe-control: [#767](https://github.com/wvlet/airframe/issues/767) Add bounded backoff retry ([#803](https://github.com/wvlet/airframe/issues/803)) [[730617a](https://github.com/wvlet/airframe/commit/730617a)]
+-  airframe-http: [#796](https://github.com/wvlet/airframe/issues/796) Support returning Scala Future ([#802](https://github.com/wvlet/airframe/issues/802)) [[4135a57](https://github.com/wvlet/airframe/commit/4135a57)]
+-  airframe-http-finagle: Update finagle-core, finagle-http, ... to 19.11.0 ([#800](https://github.com/wvlet/airframe/issues/800)) [[681dbcd](https://github.com/wvlet/airframe/commit/681dbcd)]
+
 ## 19.11.0
 
 **Major changes**:
