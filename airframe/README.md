@@ -1,9 +1,9 @@
-Airframe DI
-===
+# Airframe DI
 
 Airframe DI is a new dependency injection library designed for Scala. Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
 Airframe DI has three major features:
+
 - **Bind**: Inject necessary objects to your service without hand wiring.
 - **Design**: Allow switching the application implementation at runtime.
 - **Session**: Initialize and terminate injected services with lifecycle management hooks (e.g., onStart, onShutdown).
@@ -23,7 +23,6 @@ In Scala we have various approaches for dependency injection, such as [cake patt
 
 - [DI Framework Comparison](https://wvlet.org/airframe/docs/comparison.html): Comparing Airframe with Google Guice, Macwire, Dagger2, etc.
 
-
 ## Quick Start
 
 [sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
@@ -34,22 +33,27 @@ In Scala we have various approaches for dependency injection, such as [cake patt
 [![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
 
 To use Airframe DI, add the following dependency to your **build.sbt**:
+
 ```scala
 libraryDependencies += "org.wvlet.airframe" %% "airframe" % "(version)"
 ```
 
 And import `wvlet.airframe._` in your Scala code:
+
 ```scala
 import wvlet.airframe._
 ```
 
 ### .scalafmt.conf
+
 If you are using [scalafmt](https://scalameta.org/scalafmt/) for code formatting, add the following option to your `.scalafmt.conf`:
-```
+
+```scala
 optIn.breaksInsideChains = true
 ```
 
-This option enables writing each binding in a single line:
+This option allows writing each binding in a single line:
+
 ```scala
 val d = newDesign
   .bind[X].toInstance(...)
@@ -59,6 +63,7 @@ val d = newDesign
 ### Basic Usage
 
 First, **bind** objects to your code with `bind[X]`:
+
 ```scala
 import wvlet.airframe._
 
@@ -71,6 +76,7 @@ trait App {
 ```
 
 Next, **design** the object bindings:
+
 ```scala
 val design: Design =
   newDesign
@@ -80,6 +86,7 @@ val design: Design =
 ```
 
 Then **build** an instance and use it:
+
 ```scala
 design.build[App]{ app =>
   // Do something with App
@@ -88,22 +95,20 @@ design.build[App]{ app =>
 
 Airframe builds an instance of `App` based on the binding rules specified in the *design* object. That means when writing applications, you only need to care about how to use objects (*bind*), rather than how to build them, because design objects already knows how to provide necessary objects to build your classes.
 
-This separation of object bindings and their design (assembly) is also useful for reducing code duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `design.build[App]`.
+This separation of object bindings and their design (assembly) will reduce duplications between production and test codes. For example, compare writing `new App(new X, new Y(...), new Z(...), ...)` in both of your main and test codes, and just calling `design.build[App]`.
 
-Airframe can integrate the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
-
+Airframe integrates the flexibility of Scala traits and dependency injection (DI). Mixing traits is far easier than calling object constructors. This is because traits can be combined in an arbitrary order. So you no longer need to remember the order of the constructor arguments.
 
 ## Bind
 
 In Airframe, you can use two types of dependency injections: __constructor injection__ or
 __in-trait injection__:
- 
 ![image](https://wvlet.org/airframe/img/airframe/injection-types.png)
- 
+
 ### Constructor Injection
+
 Constructor injection is the most natural form of injection.
-When `design.build[A]` is called, Airframe will find the primary constructor of `A` and 
-its arguments, then creates a new instance of `A` by finding dependencies from a _Design_.
+When `design.build[A]` is called, Airframe will find the primary constructor of `A` and its arguments, then creates a new instance of `A` by finding these dependencies from a _Design_.
 
 ```scala
 import wvlet.airframe._
@@ -125,7 +130,9 @@ d.build[MyApp]{ app: MyApp =>
 ```
 
 ### In-Trait Injection
+
 If you need to bind dependencies within Scala traits, use in-trait injection with `bind[X]` syntax:
+
 ```scala
 import wvlet.airframe._
 
@@ -147,6 +154,7 @@ d.build[MyApp] { app: MyApp =>
 ```
 
 Note that `bind[X]` works only inside Scala traits:
+
 ```Scala
 // [DON'T DO THIS] You can't use bind[X] inside classes:
 class A {
@@ -157,14 +165,20 @@ class A {
 ### Binding Types
 
 The following examples show the basic in-traint binding types available in Airframe:
-```scala
-val a = bind[A]          // Inject A as a singleton
 
+```scala
 import BindingExample._
 
-// Constructor binding
+// Basic binding
+val a = bind[A]          // Inject A as a singleton
+
+// Default constructor binding
 val pc: P = bind[P] // Inject a singleton of P(D1, D2, D3)
                     // This will also inject D1, D2 and D3 to P.
+
+// Create a local binding for creating a new instance
+val l1: P = bindLocal{ new P() }
+val l2: P = bindLocal{ d1:D1 => new P(d1) }
 
 // Factory bindings can be used to override a part of the dependencies
 val f1: D1 => P = bindFactory[D1 => P] // A factory to use a given D1 to generate P
@@ -233,7 +247,9 @@ val design: Design =
 ```
 
 ### Design is Immutable
+
 Design objects are immutable, so you can safely override bindings without modifying the original design:
+
 ```scala
 import wvlet.airframe._
 
@@ -248,11 +264,12 @@ newDesign.build[A] { x => ... } // -> x will be C
 ```
 
 Design supports `+` (add) operator to combine multiple designs at ease:
-```scala
-val newDesign = d1 + d2 // d2 will override the bindings in d1 
-```
-`+` operator is not commutative because of this override, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
 
+```scala
+val newDesign = d1 + d2 // d2 will override the bindings in d1
+```
+
+`+` operator is not commutative because of this override, so `d1 + d2` and `d2 + d1` will be different designs if there are some overlaps.
 
 ## Session
 
@@ -266,14 +283,15 @@ val a = session.build[A] {
 ```
 
 If you need a typed-return value, you can use `design.run[A, B](f: A=>B)`:
+
 ```scala
 val ret: Int = design.run { a: A =>
   // Do something with a and return a value
   1
 }
 ```
-This will build an instance of A from the design, and return the result.
 
+This will build an instance of A from the design, and return the result.
 
 Session manages the life cycle of your objects and holds instances of singletons. These instances can be discarded after `session.shutdown` is called:
 
@@ -291,12 +309,14 @@ finally {
 ```
 
 To simplify this session management, you can use `Design.build[A]` to start and shutdown a session automatically:
+
 ```scala
 design.build[P]{ p:P => // session.start will be called, and a new instance of P will be created
   // do something with P
 }
 // session.shutdown will be called here
 ```
+
 This pattern is useful since you usually need a single entry point for starting an application.
 
 ## Life Cycle
@@ -320,15 +340,15 @@ object MyServerService {
   )
 }
 ```
+
 These life cycle hooks except `onInject` will be called only once when the binding type is singleton.
 
 ### Eager Initialization of Singletons for Production
 
-In production, initializing singletons (by calling onStart) is preferred. To use production mode, 
-use `Design.withProductionMode`:
+In production, initializing singletons (by calling onStart) is preferred. To use production mode, use `Design.withProductionMode`:
 
 ```scala
-// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called) 
+// All singletons defined in the design will be initialized (i.e., onInit/onInject/onStart hooks will be called)
 design
   .withProductionMode
   .build[X]{ x =>
@@ -341,11 +361,13 @@ To initialize `X` eagerly, `X` must be found in the design or used in the other 
 ### Suppress Life Cycle Logging
 
 If you don't need to show Session start/terminate logs, use `Design.noLifeCycleLogging`:
+
 ```scala
 design
   .noLifeCycleLogging
   .build[X]{ x => ... }
 ```
+
 This will show lifecycle event logs only in debug level logs.
 
 ### Annotation-based life cycle hooks
@@ -396,7 +418,6 @@ trait MyApp {
 }
 ```
 
-
 ### Child Sessions
 
 If you need to override a part of the design in a short term, you can use _child sessions_. Child sessions are useful for managing request-scoped sessions (e.g., HTTP requests, database query contexts, etc.). 
@@ -432,6 +453,7 @@ newDesign.build[MyServer] { server =>
 ```
 
 When building an object `X` in a child session, it will follow these rules:
+
 - If `X` is defined in the child design, the child session will be used for `X`.
 - If `X` is not defined in the child design, Airframe tries to find a design for `X` in the parent (or an ancestor) session (owner session).
 - If `X` involves internal objects that are defined in a parent (e.g., `P1`) or an ancestor (e.g., `A1`), their owner sessions will be used
@@ -439,10 +461,10 @@ for instantiating `P1` and `A1`.
 - Lifecycle hooks for `X` will be registered to the owner sessions of the target objects.
 For example, if `X` is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.
 
-
 ## Designing Applications with Airframe
 
 When writing an application, these concerns below are often unrelated to the core applcation logic:
+
 - How to build service objects.
 - How to configure services.
 - How to manage life cycle of service objects.
