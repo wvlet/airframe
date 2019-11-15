@@ -8,7 +8,7 @@ technologies:
 ---
 # Airframe
 
-Airframe is a collection of [lightweight building blocks](docs/index.html) for kick starting your Scala applicaiton development.
+Airframe is a collection of [lightweight building blocks](docs/index.html) for kick starting your Scala application development.
 
 - [Documentation](docs)
 - [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
