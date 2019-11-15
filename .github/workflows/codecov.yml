@@ -19,6 +19,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-2.12-coverage-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-2.12-coverage-
       - name: Scala 2.12 test with coverage report
         run: ./sbt "; coverage; projectJVM/test; projectJVM/coverageReport; projectJVM/coverageAggregate"
       - uses: codecov/codecov-action@v1.0.2

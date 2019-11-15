@@ -36,5 +36,10 @@ jobs:
           --output $HOME/airframe-doc-deploy-key $GITHUB_WORKSPACE/.github/secrets/airframe-doc-deploy-key.gpg
           chmod 600 $HOME/airframe-doc-deploy-key
           cp $HOME/airframe-doc-deploy-key ~/.ssh/id_rsa
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-doc-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-doc-
       - name: Publish doc
         run: ./sbt docs/publishMicrosite

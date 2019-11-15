@@ -30,6 +30,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-2.12-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-2.12-
       - name: Scala 2.12 test
         run: ./sbt projectJVM/test
   test_2_13:
@@ -40,6 +45,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-2.13-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-2.13-
       - name: Scala 2.13 test
         run: ./sbt ++2.13.1 projectJVM2_13/test
   test_2_11:
@@ -50,6 +60,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-2.11-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-2.11-
       - name: Scala 2.11 test
         run: ./sbt ++2.11.12 projectJVM/test
   test_js:
@@ -60,5 +75,10 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/cache@v1
+        with:
+          path: ~/.cache
+          key: ${{ runner.os }}-scala-js-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-js-
       - name: Scala.js test
         run: ./sbt projectJS/test
