@@ -64,13 +64,28 @@ class ParamListCodec(
   }
 
   def packAsMap(p: Packer, obj: Any): Unit = {
-    val numParams = params.length
-    // Use array format [p1, p2, ....]
+    def hasValue(param: Parameter): Boolean = {
+      if (!param.surface.isOption) {
+        true
+      } else {
+        param.get(obj) match {
+          case None => false
+          case _    => true
+        }
+      }
+    }
+
+    // Count the number of non-None values
+    val numParams = params.count(hasValue)
+    // Use map format {k1:p1, k2:p2, ....}
     p.packMapHeader(numParams)
     for ((param, codec) <- params.zip(paramCodec)) {
-      val paramValue = param.get(obj)
-      p.packString(param.name)
-      codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
+      // If the parameter value is None of Option type, we can suppress its key-value output.
+      if (hasValue(param)) {
+        val paramValue = param.get(obj)
+        p.packString(param.name)
+        codec.asInstanceOf[MessageCodec[Any]].pack(p, paramValue)
+      }
     }
   }
 
