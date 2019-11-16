@@ -16,12 +16,10 @@ package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.model.QName
 
 object Catalog {
-
   case class TableSchema(columns: Seq[NamedType])
   case class DbTable(db: Option[String], name: String, schema: TableSchema)
 
   case class Catalog(databases: Seq[DbTable]) {
-
     def findTable(database: String, tableName: String): Option[DbTable] = {
       databases.find(x => x.db == Some(database) && x.name == tableName)
     }
@@ -37,5 +35,4 @@ object Catalog {
       }
     }
   }
-
 }

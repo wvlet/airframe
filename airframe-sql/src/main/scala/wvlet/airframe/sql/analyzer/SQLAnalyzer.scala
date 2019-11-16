@@ -27,7 +27,6 @@ case class TableNotFound(name: String)            extends AnalysisException(s"Ta
   *
   */
 object SQLAnalyzer extends LogSupport {
-
   type PlanRewriter  = PartialFunction[LogicalPlan, LogicalPlan]
   type Rule          = (AnalysisContext) => PlanRewriter
   type OptimizerRule = (OptimizerContext) => PlanRewriter
@@ -77,14 +76,12 @@ object SQLAnalyzer extends LogSupport {
   case class AnalysisContext(database: String, catalog: Catalog)
 
   case class OptimizerContext(inputAttributes: Set[Attribute])
-
 }
 
 /**
   * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
   */
 object TypeResolver extends LogSupport {
-
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */
@@ -129,11 +126,9 @@ object TypeResolver extends LogSupport {
       case _ => expr
     }
   }
-
 }
 
 object Optimizer extends LogSupport {
-
   def extractInputs(expressions: Seq[Expression]): Set[Attribute] = {
     val newAttributes: Seq[Attribute] = expressions.collect {
       case s: Attribute =>
@@ -160,5 +155,4 @@ object Optimizer extends LogSupport {
       case _ => relation
     }
   }
-
 }

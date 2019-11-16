@@ -19,5 +19,4 @@ package wvlet.airframe.sql.model
   */
 trait TreeNode[Elem <: TreeNode[Elem]] {
   def children: Seq[Elem]
-
 }

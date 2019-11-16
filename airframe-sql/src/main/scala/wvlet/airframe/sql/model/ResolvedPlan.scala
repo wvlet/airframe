@@ -22,7 +22,6 @@ import wvlet.airframe.sql.model.LogicalPlan.Relation
   *
   */
 case class TableScan(name: QName, table: DbTable, columns: Seq[String]) extends Relation with LeafPlan {
-
   /**
     * All child nodes of this plan node
     *

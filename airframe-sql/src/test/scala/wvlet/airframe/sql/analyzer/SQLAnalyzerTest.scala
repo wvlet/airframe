@@ -21,7 +21,6 @@ import wvlet.airspec.AirSpec
   *
   */
 class SQLAnalyzerTest extends AirSpec {
-
   val tbl =
     DbTable(
       Some("public"),
