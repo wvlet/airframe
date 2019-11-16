@@ -21,6 +21,8 @@ import wvlet.airframe.sql.model.LogicalPlan._
   * Print LogicalPlans As SQL statements
   */
 object SQLGenerator extends LogSupport {
+  import Expression._
+
   private def unknown(e: Any): String = {
     if (e != null) {
       warn(s"Unknown model: ${e} ${e.getClass.getSimpleName}")

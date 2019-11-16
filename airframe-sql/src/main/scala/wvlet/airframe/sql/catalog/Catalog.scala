@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.sql.catalog
 
-import wvlet.airframe.sql.model.QName
+import wvlet.airframe.sql.model.Expression.QName
 
 object Catalog {
   case class TableSchema(columns: Seq[NamedType])

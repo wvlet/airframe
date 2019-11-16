@@ -17,6 +17,7 @@ import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, OptimizerContex
 import wvlet.airframe.sql.catalog.Catalog.Catalog
 import wvlet.airframe.sql.model.LogicalPlan.{Project, Relation}
 import wvlet.airframe.sql.model._
+import wvlet.airframe.sql.model.Expression._
 import wvlet.airframe.sql.parser.SQLParser
 import wvlet.log.LogSupport
 
@@ -82,6 +83,7 @@ object SQLAnalyzer extends LogSupport {
   * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
   */
 object TypeResolver extends LogSupport {
+
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */

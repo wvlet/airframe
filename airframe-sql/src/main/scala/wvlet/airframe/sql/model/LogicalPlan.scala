@@ -167,6 +167,8 @@ trait SQLSig {
 }
 
 object LogicalPlan {
+  import Expression._
+
   private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {
       case AllColumns(x) => true

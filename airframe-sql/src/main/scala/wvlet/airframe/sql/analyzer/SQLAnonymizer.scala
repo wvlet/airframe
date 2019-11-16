@@ -67,6 +67,8 @@ object SQLAnonymizer extends LogSupport {
     b.build
   }
 
+  import Expression._
+
   private class DictBuilder {
     val m                  = Map.newBuilder[Expression, Expression]
     val identifierTable    = new SymbolTable("i")

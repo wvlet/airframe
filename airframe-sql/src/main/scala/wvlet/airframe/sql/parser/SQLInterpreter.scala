@@ -31,6 +31,7 @@ object SQLInterpreter {
   */
 class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   import SQLInterpreter._
+  import wvlet.airframe.sql.model.Expression._
 
   import scala.jdk.CollectionConverters._
 
