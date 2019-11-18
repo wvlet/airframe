@@ -5,6 +5,12 @@ title: Release Notes
 
 # Release Notes
 
+## 19.11.2
+-  airframe-codec: [#156](https://github.com/wvlet/airframe/issues/156) Suppress null value output for None:Option[X] ([#811](https://github.com/wvlet/airframe/issues/811)) [[6e8f70e](https://github.com/wvlet/airframe/commit/6e8f70e)]
+-  Update circe-parser to 0.11.2 ([#810](https://github.com/wvlet/airframe/issues/810)) [[6ccdbb5](https://github.com/wvlet/airframe/commit/6ccdbb5)]
+-  Fix typo in index.md ([#809](https://github.com/wvlet/airframe/issues/809)) [[1e2d1fc](https://github.com/wvlet/airframe/commit/1e2d1fc)]
+-  Use GitHub Action Cache ([#808](https://github.com/wvlet/airframe/issues/808)) [[574b5a9](https://github.com/wvlet/airframe/commit/574b5a9)]
+
 ## 19.11.1
 -  airframe-di: Add in-trait bindLocal ([#805](https://github.com/wvlet/airframe/issues/805)) [[22ce396](https://github.com/wvlet/airframe/commit/22ce396)]
 -  airframe-control: [#767](https://github.com/wvlet/airframe/issues/767) Add bounded backoff retry ([#803](https://github.com/wvlet/airframe/issues/803)) [[730617a](https://github.com/wvlet/airframe/commit/730617a)]
