@@ -153,13 +153,21 @@ d.build[MyApp] { app: MyApp =>
 // Session will be closed here
 ```
 
-Note that `bind[X]` syntax works only inside Scala traits:
+Note that `bind[X]` syntax works only inside Scala traits or classes that implement `wvlet.airframe.DISupport` trait:
 
 ```scala
+import wvlet.airframe._
+
 // [DON'T DO THIS] You can't use bind[X] inside classes:
 class A {
   val a = bind[B] // [Error] class A can't find the current session
 }
+
+// To use bind[X] inside classes, extends wvlet.airframe.DISupport 
+class A(val session:Session) extends DISupport {
+  val a = bind[B] // OK
+}
+
 ```
 
 If you used the `bind[X]` syntax inside a class, MISSING_SESSION error will be thrown.
