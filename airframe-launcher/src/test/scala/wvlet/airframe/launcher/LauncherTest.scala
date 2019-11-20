@@ -166,7 +166,8 @@ class LauncherTest extends AirSpec {
     }
     trace(s"box world --help:\n$help")
     help.contains("argMessage") shouldBe true
-    help.contains("--color  use color") shouldBe true
+    help.contains("--color") shouldBe true
+    help.contains("use color") shouldBe true
     help.contains("say world") shouldBe true
   }
 
