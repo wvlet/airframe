@@ -14,8 +14,8 @@
 package wvlet.airframe.codec
 
 import java.time.Instant
+import java.util.Base64
 
-import wvlet.airframe.codec.ScalaStandardCodec.OptionCodec
 import wvlet.airframe.codec.StandardCodec.ThrowableCodec
 import wvlet.airframe.json.JSON.JSONValue
 import wvlet.airframe.json.Json
@@ -330,6 +330,8 @@ object PrimitiveCodec {
         case ValueType.BINARY =>
           read {
             val len = u.unpackBinaryHeader
+            val b = u.readPayload(len)
+            Base64.getDecoder.
             new String(u.readPayload(len))
           }
         case _ =>
@@ -660,6 +662,9 @@ object PrimitiveCodec {
           val len = u.unpackBinaryHeader
           val b   = u.readPayload(len)
           v.setObject(b)
+        case ValueType.STRING =>
+          val arr: Array[Byte] = Base64.getDecoder.decode(u.unpackString)
+          v.setObject(arr)
         case _ =>
           // Set MessagePack binary
           val value = u.unpackValue
