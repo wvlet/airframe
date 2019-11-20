@@ -37,7 +37,6 @@ import scala.reflect.runtime.{universe => ru}
   * Command launcher
   */
 object Launcher extends LogSupport {
-
   /**
     * Create a new Launcher of the given type
     *
@@ -92,10 +91,11 @@ object Launcher extends LogSupport {
           case None      => false
         }
       }
-      .map { m =>
-        { li: LauncherInstance =>
-          m.call(li.instance)
-        }
+      .map {
+        m =>
+          { li: LauncherInstance =>
+            m.call(li.instance)
+          }
       }
 
     new CommandLauncher(
