@@ -14,8 +14,8 @@
 package wvlet.airframe
 
 /**
-  * Trait for embedding Session to a user trait
+  * A trait for embedding Session to user traits or classes
   */
-trait SessionHolder {
-  def airframeSession: Session
+trait DISupport {
+  def session: Session
 }

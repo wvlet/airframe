@@ -77,9 +77,9 @@ private[wvlet] object AirframeMacros {
     def newInstanceBinder(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q"""{
-             session : wvlet.airframe.Session =>
-             session.getOrElse(${surfaceOf(t)},
-              (new $t with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$t]
+             ss : wvlet.airframe.Session =>
+             ss.getOrElse(${surfaceOf(t)},
+              (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[$t]
              )
             }"""
       } else {
@@ -90,9 +90,9 @@ private[wvlet] object AirframeMacros {
     def createNewInstanceOf(t: c.Type): c.Tree = {
       if (shouldGenerateTrait(t)) {
         q"""{
-             session : wvlet.airframe.Session =>
-             session.createNewInstanceOf(${surfaceOf(t)},
-              (new $t with wvlet.airframe.SessionHolder { def airframeSession = session}).asInstanceOf[$t]
+             ss : wvlet.airframe.Session =>
+             ss.createNewInstanceOf(${surfaceOf(t)},
+              (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[$t]
              )
             }"""
       } else {
@@ -111,7 +111,7 @@ private[wvlet] object AirframeMacros {
         q""" {
            val s = ${surfaceOf(t)}
            wvlet.airframe.getOrElseUpdateTraitFactoryCache(s,
-             { session: wvlet.airframe.Session => (new $t with wvlet.airframe.SessionHolder { def airframeSession = session }).asInstanceOf[Any] }
+             { ss: wvlet.airframe.Session => (new $t with wvlet.airframe.DISupport { def session = ss }).asInstanceOf[Any] }
            )
            s
          }
