@@ -24,7 +24,6 @@ import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] extends LogSupport {
-
   /**
     * Converting the object into MessagePack (= Array[Byte])
     */

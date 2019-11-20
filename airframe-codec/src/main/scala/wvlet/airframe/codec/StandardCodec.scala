@@ -28,7 +28,7 @@ object StandardCodec {
   )
 
   val standardCodec
-    : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
+      : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
 
   object ThrowableCodec extends MessageCodec[Throwable] {
     override def pack(p: Packer, v: Throwable): Unit = {
