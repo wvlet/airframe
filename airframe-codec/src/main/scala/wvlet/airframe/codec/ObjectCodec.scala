@@ -92,7 +92,7 @@ class ParamListCodec(
   private def getParamDefaultValue(p: Parameter): Any = {
     def returnZero: Any = {
       if (p.isRequired) {
-        // If the parameter has @required annotation, we can't
+        // If the parameter has @required annotation, we can't use the Zero value
         throw new MessageCodecException(
           MISSING_PARAMETER,
           this,
