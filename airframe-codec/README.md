@@ -1,7 +1,7 @@
 airframe-codec
 ====
 
-airframe-codec is an [MessagePack](https://msgpack.org)-based schema-on-read data transcoder.
+airframe-codec is an [MessagePack](https://msgpack.org)-based schema-on-read data transcoder for Scala and Scala.js.
 
 With airframe-codec you can:
 - Encode Scala objects (e.g., case classes, collection, etc.) into MessagePack format, and decode it. Object serialization/deserialization.
@@ -36,14 +36,20 @@ val codec = MessageCodec.of[A]
 val a = A(1, "leo")
 val msgpack = codec.toMsgPack(a)
 
-// Read msgpack data as object
-codec.unpackMsgPack(msgpack) // Some(A(1, "leo"))
+// Read MsgPack data as object (exception-free)
+codec.unpackMsgPack(msgpack) // Some(A(1, "leo")) or None
+// MsgPack -> Object (MessageCodecException will be thrown when parsing is failed)
+codec.fromMsgPack(msgpack) // A(1, "leo")
 
 
 // Convert to JSON
 val json = codec.toJson(a)   //  {"id":1,"name":"leo"}
 
-codec.unpackJson(json)  // Some(A(1, "leo"))
+// Exception-free json parser
+codec.unpackJson(json)  // Some(A(1, "leo")) or None
+
+// JSON -> Object (MessageCodecException will be thrown when parsing is failed)
+codec.fromJson(json) // A(1, "leo")
 ```
 
 

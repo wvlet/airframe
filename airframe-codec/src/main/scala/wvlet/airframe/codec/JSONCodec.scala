@@ -64,7 +64,7 @@ object JSONCodec extends MessageCodec[String] {
     }
   }
 
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+  override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val json = u.unpackValue.toJson
     v.setString(json)
   }
@@ -80,7 +80,7 @@ object RawJsonCodec extends MessageCodec[Json] {
   override def pack(p: Packer, v: Json): Unit = {
     JSONCodec.pack(p, v)
   }
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+  override def unpack(u: Unpacker, v: MessageContext): Unit = {
     JSONCodec.unpack(u, v)
   }
 }
@@ -128,7 +128,7 @@ object JSONValueCodec extends MessageCodec[JSONValue] {
     }
   }
 
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+  override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val jsonValue = unpackJson(u)
     v.setObject(jsonValue)
   }

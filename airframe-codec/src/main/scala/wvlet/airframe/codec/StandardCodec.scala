@@ -28,7 +28,7 @@ object StandardCodec {
   )
 
   val standardCodec
-      : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
+    : Map[Surface, MessageCodec[_]] = PrimitiveCodec.primitiveCodec ++ PrimitiveCodec.primitiveArrayCodec ++ javaClassCodec
 
   object ThrowableCodec extends MessageCodec[Throwable] {
     override def pack(p: Packer, v: Throwable): Unit = {
@@ -65,6 +65,6 @@ object StandardCodec {
       }
     }
     // We do not support deserialization of generic Throwable classes
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
+    override def unpack(u: Unpacker, v: MessageContext): Unit = ???
   }
 }

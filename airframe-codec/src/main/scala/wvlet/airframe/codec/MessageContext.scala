@@ -18,7 +18,7 @@ import wvlet.airframe.codec.DataType._
 /**
   *
   */
-class MessageHolder {
+class MessageContext {
   private var dataType: DataType     = NIL
   private var value: Option[Any]     = None
   private var err: Option[Throwable] = None

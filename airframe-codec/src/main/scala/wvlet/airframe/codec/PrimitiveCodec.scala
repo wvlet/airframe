@@ -78,7 +78,7 @@ object PrimitiveCodec {
       p.packByte(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Byte): Unit = {
         try {
           v.setByte(body)
@@ -121,7 +121,7 @@ object PrimitiveCodec {
       p.packInt(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Char): Unit = {
         try {
           v.setChar(body)
@@ -167,7 +167,7 @@ object PrimitiveCodec {
       p.packShort(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Short): Unit = {
         try {
           v.setShort(body)
@@ -209,7 +209,7 @@ object PrimitiveCodec {
       p.packInt(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Int): Unit = {
         try {
           v.setInt(body)
@@ -252,7 +252,7 @@ object PrimitiveCodec {
       p.packLong(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Long): Unit = {
         try {
           v.setLong(body)
@@ -298,7 +298,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => String): Unit = {
         try {
           val s = body
@@ -345,7 +345,7 @@ object PrimitiveCodec {
       p.packBoolean(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Boolean): Unit = {
         try {
           val b = body
@@ -388,7 +388,7 @@ object PrimitiveCodec {
       p.packFloat(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Float): Unit = {
         try {
           v.setFloat(body)
@@ -427,7 +427,7 @@ object PrimitiveCodec {
       p.packDouble(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       def read(body: => Double): Unit = {
         try {
           v.setDouble(body)
@@ -467,7 +467,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Int]
       b.sizeHint(len)
@@ -493,7 +493,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Short]
       b.sizeHint(len)
@@ -524,7 +524,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Char]
       b.sizeHint(len)
@@ -555,7 +555,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Long]
       b.sizeHint(len)
@@ -581,7 +581,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Float]
       b.sizeHint(len)
@@ -607,7 +607,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Double]
       b.sizeHint(len)
@@ -632,7 +632,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[Boolean]
       b.sizeHint(len)
@@ -654,7 +654,7 @@ object PrimitiveCodec {
       p.packBinaryHeader(v.length)
       p.addPayload(v)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.BINARY =>
           val len = u.unpackBinaryHeader
@@ -707,7 +707,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Array.newBuilder[String]
       b.sizeHint(len)
@@ -731,7 +731,7 @@ object PrimitiveCodec {
       p.packValue(v)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       v.setObject(u.unpackValue)
     }
   }
@@ -802,7 +802,7 @@ object PrimitiveCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.NIL =>
           u.unpackNil
