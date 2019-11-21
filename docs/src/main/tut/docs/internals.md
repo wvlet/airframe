@@ -52,55 +52,62 @@ To create instances of `A` and `B` inside `App`, we need to pass the concrete in
 To do so, Airframe will pass a reference to the Session while building `App`, `A`, and `B`. A trick is inside the implementation of `build` and `bind`. Let's look at how `session.build[App]` will work when creating an instance of `App`.
 
 Here is the code for building an App:
+
 ```scala
 val app = session.build[App]
 ```
 
 Airframe expands this code into this form at compile-time:
+
 ```scala
-val app: App = {
-  // Extends SessionHolder to pass Session object
-  new App extends SessionHolder {
+val app: App = 
+{ ss: Session =>
+  // Extends DISupport to pass Session object
+  new App extends DISupport {
     // Inject a reference to the current session
-    def airframeSession = session
+    def session = ss
 
     // val a = bind[A] (original code inside App)
     // If type A is instantiatable trait (non abstract type)
     val a: A = {
-      // Trying to find a session (using SessionHolder.airframeSession).
+      // Trying to find a session (using DISupport.session).
       // If no session is found, MISSING_SESSION exception will be thrown
-      val session = wvlet.airframe.Session.findSession(this)
-      val binder: Session => A = (sesssion: Session =>
+      val ss1 = wvlet.airframe.Session.findSession(this)
+      val binder: Session => A = (ss2: Session =>
         // Register a code for instantiating A 
-        session.getOrElseUpdate(Surface.of[A],
-	  (new A with SessionHolder { def airframeSession = session }).asInstanceOf[A]
+        ss2.getOrElseUpdate(Surface.of[A],
+	  (new A with DISupport { def session = ss1 }).asInstanceOf[A]
         )
       )
       // Create an instance of A by injecting the current session
-      binder(session)
+      binder(ss1)
     }
   }
-}
+}.apply(session)
 ```
 
 To generate the above code, Airframe is using [Scala Macros](http://docs.scala-lang.org/overviews/macros/overview.html). You can find the actual macro definitions in [AirframeMacros.scala](https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala)
 
 When `bind[X]` is called, the active session must be found. So if you try to instantiate A without using `session.build[A]`, `MISSING_SESSION` runtime-error will be thrown:
-```
+
+```scala
 val a1 = new A // MISSING_SESSION error will be thrown at run-time
 
 val a2 = session.build[A] // This is OK
 ```
 
-In the above code, `A` will be instantiated with SessionHolder trait, which has `airframeSession` definition. `bind[B]` inside trait `A` will be expanded liks this similarly:
+In the above code, `A` will be instantiated with DISupport trait, which has `session` definition. `bind[B]` inside trait `A` will be expanded liks this similarly:
+
 ```scala
-new A extends SessionHolder {
+new A extends DISupport {
   // (original code) val b = bind[B]
-  val b: B = {
-    val session = findSession(this)
-    val binder = session..getOrElseUpdate(Surface.of[B], (session:Session => new B with SessionHolder { ... } ))
-    binder(session)
+  val b: B = { ss: Session =>
+    val ss = findSession(this)
+    // If the session already has an instance of B, return it. Otherwise, craete a new instance of B 
+    ss.getOrElse(Surface.of[B], (session:Session => new B with DISupport { ... } ))
   }
+  // Inject the current session to build B
+  .apply(session) 
 }
 ```
 
@@ -110,7 +117,8 @@ The above macro-generated code looks quite scarly at first glance.
 However, if you write similar code by yourself, you will end up doing almost the same thing with Session.
 
 For example, consider building `App` trait using a custom `B` instance:
-```
+
+```scala
 { 
   val myB = new B {}
   val myA = new A(b = myB) {}
@@ -121,7 +129,8 @@ For example, consider building `App` trait using a custom `B` instance:
 ```
 
 To manage life cycle of A and B, you eventually needs to store the object references somewhere like this:
-```
+
+```scala
 // Assume storing objects in a Map-backed session
 val session = Map[Class[_], AnyRef]()
 

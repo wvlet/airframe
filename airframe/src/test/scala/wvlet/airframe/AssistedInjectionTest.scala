@@ -54,15 +54,15 @@ object AssistedInjectionTest extends LogSupport {
   }
 
   trait NamedServiceProvider {
-    val provider = (givenName: String, session: Session) =>
-      new NamedService with SessionHolder {
-        override def airframeSession: Session = session
-        val name: String                      = givenName
+    val provider = (givenName: String, ss: Session) =>
+      new NamedService with DISupport {
+        override def session: Session = ss
+        val name: String              = givenName
       }
   }
 
-  def assistedInjector(serviceName: String, session: Session): NamedService = new NamedService with SessionHolder {
-    override def airframeSession: Session = session
-    val name: String                      = serviceName
+  def assistedInjector(serviceName: String, ss: Session): NamedService = new NamedService with DISupport {
+    override def session: Session = ss
+    val name: String              = serviceName
   }
 }

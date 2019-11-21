@@ -181,9 +181,9 @@ object Session extends LogSupport {
     trace(s"Checking a session for ${cl}")
 
     def findEmbeddedSession: Option[AnyRef => Session] = {
-      if (classOf[SessionHolder] isAssignableFrom (cl)) {
+      if (classOf[DISupport] isAssignableFrom (cl)) {
         Some({ obj: AnyRef =>
-          obj.asInstanceOf[SessionHolder].airframeSession
+          obj.asInstanceOf[DISupport].session
         })
       } else {
         None

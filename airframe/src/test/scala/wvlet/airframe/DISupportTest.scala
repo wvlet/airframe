@@ -13,9 +13,26 @@
  */
 package wvlet.airframe
 
+import wvlet.airspec.AirSpec
+
 /**
-  * Trait for embedding Session to a user trait
+  *
   */
-trait SessionHolder {
-  def airframeSession: Session
+class DISupportTest extends AirSpec {
+  scalaJsSupport
+
+  class A(val session: Session) extends DISupport {
+    private val s = bind[String]
+
+    def getString = s
+  }
+
+  def `support in-class bind`: Unit = {
+    val d = newSilentDesign
+      .bind[String].toInstance("hello")
+
+    d.build[A] { a =>
+      a.getString shouldBe "hello"
+    }
+  }
 }
