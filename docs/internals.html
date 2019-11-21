@@ -52,51 +52,58 @@ ga('send', 'pageview');
 <p>To do so, Airframe will pass a reference to the Session while building <code class="highlighter-rouge">App</code>, <code class="highlighter-rouge">A</code>, and <code class="highlighter-rouge">B</code>. A trick is inside the implementation of <code class="highlighter-rouge">build</code> and <code class="highlighter-rouge">bind</code>. Let’s look at how <code class="highlighter-rouge">session.build[App]</code> will work when creating an instance of <code class="highlighter-rouge">App</code>.</p>
 
 <p>Here is the code for building an App:</p>
+
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">app</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span>
 </code></pre></div></div>
 
 <p>Airframe expands this code into this form at compile-time:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">app</span><span class="k">:</span> <span class="kt">App</span> <span class="o">=</span> <span class="o">{</span>
-  <span class="c1">// Extends SessionHolder to pass Session object
-</span>  <span class="k">new</span> <span class="nc">App</span> <span class="k">extends</span> <span class="nc">SessionHolder</span> <span class="o">{</span>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">app</span><span class="k">:</span> <span class="kt">App</span> <span class="o">=</span> 
+<span class="o">{</span> <span class="n">ss</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span>
+  <span class="c1">// Extends DISupport to pass Session object
+</span>  <span class="k">new</span> <span class="nc">App</span> <span class="k">extends</span> <span class="nc">DISupport</span> <span class="o">{</span>
     <span class="c1">// Inject a reference to the current session
-</span>    <span class="k">def</span> <span class="nf">airframeSession</span> <span class="k">=</span> <span class="n">session</span>
+</span>    <span class="k">def</span> <span class="nf">session</span> <span class="k">=</span> <span class="n">ss</span>
 
     <span class="c1">// val a = bind[A] (original code inside App)
 </span>    <span class="c1">// If type A is instantiatable trait (non abstract type)
 </span>    <span class="k">val</span> <span class="nv">a</span><span class="k">:</span> <span class="kt">A</span> <span class="o">=</span> <span class="o">{</span>
-      <span class="c1">// Trying to find a session (using SessionHolder.airframeSession).
+      <span class="c1">// Trying to find a session (using DISupport.session).
 </span>      <span class="c1">// If no session is found, MISSING_SESSION exception will be thrown
-</span>      <span class="k">val</span> <span class="nv">session</span> <span class="k">=</span> <span class="nv">wvlet</span><span class="o">.</span><span class="py">airframe</span><span class="o">.</span><span class="py">Session</span><span class="o">.</span><span class="py">findSession</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
-      <span class="k">val</span> <span class="nv">binder</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span> <span class="n">A</span> <span class="k">=</span> <span class="o">(</span><span class="n">sesssion</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span>
+</span>      <span class="k">val</span> <span class="nv">ss1</span> <span class="k">=</span> <span class="nv">wvlet</span><span class="o">.</span><span class="py">airframe</span><span class="o">.</span><span class="py">Session</span><span class="o">.</span><span class="py">findSession</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
+      <span class="k">val</span> <span class="nv">binder</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span> <span class="n">A</span> <span class="k">=</span> <span class="o">(</span><span class="n">ss2</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span>
         <span class="c1">// Register a code for instantiating A 
-</span>        <span class="nv">session</span><span class="o">.</span><span class="py">getOrElseUpdate</span><span class="o">(</span><span class="nv">Surface</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">A</span><span class="o">],</span>
-	  <span class="o">(</span><span class="k">new</span> <span class="n">A</span> <span class="k">with</span> <span class="nc">SessionHolder</span> <span class="o">{</span> <span class="k">def</span> <span class="nf">airframeSession</span> <span class="k">=</span> <span class="n">session</span> <span class="o">}).</span><span class="py">asInstanceOf</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
+</span>        <span class="nv">ss2</span><span class="o">.</span><span class="py">getOrElseUpdate</span><span class="o">(</span><span class="nv">Surface</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">A</span><span class="o">],</span>
+	  <span class="o">(</span><span class="k">new</span> <span class="n">A</span> <span class="k">with</span> <span class="nc">DISupport</span> <span class="o">{</span> <span class="k">def</span> <span class="nf">session</span> <span class="k">=</span> <span class="n">ss1</span> <span class="o">}).</span><span class="py">asInstanceOf</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span>
         <span class="o">)</span>
       <span class="o">)</span>
       <span class="c1">// Create an instance of A by injecting the current session
-</span>      <span class="nf">binder</span><span class="o">(</span><span class="n">session</span><span class="o">)</span>
+</span>      <span class="nf">binder</span><span class="o">(</span><span class="n">ss1</span><span class="o">)</span>
     <span class="o">}</span>
   <span class="o">}</span>
-<span class="o">}</span>
+<span class="o">}.</span><span class="py">apply</span><span class="o">(</span><span class="n">session</span><span class="o">)</span>
 </code></pre></div></div>
 
 <p>To generate the above code, Airframe is using <a href="http://docs.scala-lang.org/overviews/macros/overview.html">Scala Macros</a>. You can find the actual macro definitions in <a href="https://github.com/wvlet/airframe/blob/master/airframe-macros/shared/src/main/scala/wvlet/airframe/AirframeMacros.scala">AirframeMacros.scala</a></p>
 
 <p>When <code class="highlighter-rouge">bind[X]</code> is called, the active session must be found. So if you try to instantiate A without using <code class="highlighter-rouge">session.build[A]</code>, <code class="highlighter-rouge">MISSING_SESSION</code> runtime-error will be thrown:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val a1 = new A // MISSING_SESSION error will be thrown at run-time
 
-val a2 = session.build[A] // This is OK
-</code></pre></div></div>
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">a1</span> <span class="k">=</span> <span class="k">new</span> <span class="n">A</span> <span class="c1">// MISSING_SESSION error will be thrown at run-time
+</span>
+<span class="k">val</span> <span class="nv">a2</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">build</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="c1">// This is OK
+</span></code></pre></div></div>
 
-<p>In the above code, <code class="highlighter-rouge">A</code> will be instantiated with SessionHolder trait, which has <code class="highlighter-rouge">airframeSession</code> definition. <code class="highlighter-rouge">bind[B]</code> inside trait <code class="highlighter-rouge">A</code> will be expanded liks this similarly:</p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">new</span> <span class="n">A</span> <span class="k">extends</span> <span class="nc">SessionHolder</span> <span class="o">{</span>
+<p>In the above code, <code class="highlighter-rouge">A</code> will be instantiated with DISupport trait, which has <code class="highlighter-rouge">session</code> definition. <code class="highlighter-rouge">bind[B]</code> inside trait <code class="highlighter-rouge">A</code> will be expanded liks this similarly:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">new</span> <span class="n">A</span> <span class="k">extends</span> <span class="nc">DISupport</span> <span class="o">{</span>
   <span class="c1">// (original code) val b = bind[B]
-</span>  <span class="k">val</span> <span class="nv">b</span><span class="k">:</span> <span class="kt">B</span> <span class="o">=</span> <span class="o">{</span>
-    <span class="k">val</span> <span class="nv">session</span> <span class="k">=</span> <span class="nf">findSession</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
-    <span class="k">val</span> <span class="nv">binder</span> <span class="k">=</span> <span class="n">session</span><span class="o">..</span><span class="py">getOrElseUpdate</span><span class="o">(</span><span class="nv">Surface</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">B</span><span class="o">],</span> <span class="o">(</span><span class="n">session</span><span class="k">:</span><span class="kt">Session</span> <span class="o">=&gt;</span> <span class="k">new</span> <span class="n">B</span> <span class="k">with</span> <span class="nc">SessionHolder</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span> <span class="o">))</span>
-    <span class="nf">binder</span><span class="o">(</span><span class="n">session</span><span class="o">)</span>
+</span>  <span class="k">val</span> <span class="nv">b</span><span class="k">:</span> <span class="kt">B</span> <span class="o">=</span> <span class="o">{</span> <span class="n">ss</span><span class="k">:</span> <span class="kt">Session</span> <span class="o">=&gt;</span>
+    <span class="k">val</span> <span class="nv">ss</span> <span class="k">=</span> <span class="nf">findSession</span><span class="o">(</span><span class="k">this</span><span class="o">)</span>
+    <span class="c1">// If the session already has an instance of B, return it. Otherwise, craete a new instance of B 
+</span>    <span class="nv">ss</span><span class="o">.</span><span class="py">getOrElse</span><span class="o">(</span><span class="nv">Surface</span><span class="o">.</span><span class="py">of</span><span class="o">[</span><span class="kt">B</span><span class="o">],</span> <span class="o">(</span><span class="n">session</span><span class="k">:</span><span class="kt">Session</span> <span class="o">=&gt;</span> <span class="k">new</span> <span class="n">B</span> <span class="k">with</span> <span class="nc">DISupport</span> <span class="o">{</span> <span class="o">...</span> <span class="o">}</span> <span class="o">))</span>
   <span class="o">}</span>
+  <span class="c1">// Inject the current session to build B
+</span>  <span class="o">.</span><span class="py">apply</span><span class="o">(</span><span class="n">session</span><span class="o">)</span> 
 <span class="o">}</span>
 </code></pre></div></div>
 
@@ -106,33 +113,35 @@ val a2 = session.build[A] // This is OK
 However, if you write similar code by yourself, you will end up doing almost the same thing with Session.</p>
 
 <p>For example, consider building <code class="highlighter-rouge">App</code> trait using a custom <code class="highlighter-rouge">B</code> instance:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>{ 
-  val myB = new B {}
-  val myA = new A(b = myB) {}
-  new App(a = myA)
-}
-// How can we find myA and myB after exiting the scope?
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">{</span> 
+  <span class="k">val</span> <span class="nv">myB</span> <span class="k">=</span> <span class="k">new</span> <span class="n">B</span> <span class="o">{}</span>
+  <span class="k">val</span> <span class="nv">myA</span> <span class="k">=</span> <span class="k">new</span> <span class="nf">A</span><span class="o">(</span><span class="n">b</span> <span class="k">=</span> <span class="n">myB</span><span class="o">)</span> <span class="o">{}</span>
+  <span class="k">new</span> <span class="nc">App</span><span class="o">(</span><span class="n">a</span> <span class="k">=</span> <span class="n">myA</span><span class="o">)</span>
+<span class="o">}</span>
+<span class="c1">// How can we find myA and myB after exiting the scope?
 // What if a and b hold resources (e.g., network connection, database connection, etc.), that need to be released later?
-</code></pre></div></div>
+</span></code></pre></div></div>
 
 <p>To manage life cycle of A and B, you eventually needs to store the object references somewhere like this:</p>
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>// Assume storing objects in a Map-backed session
-val session = Map[Class[_], AnyRef]()
 
-session += classOf[B] -&gt; new B {}
-session += classOf[A] -&gt; new A(b=session.get(classOf[B])) {}
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Assume storing objects in a Map-backed session
+</span><span class="k">val</span> <span class="nv">session</span> <span class="k">=</span> <span class="nc">Map</span><span class="o">[</span><span class="kt">Class</span><span class="o">[</span><span class="k">_</span><span class="o">]</span>, <span class="kt">AnyRef</span><span class="o">]()</span>
 
-val app = new App(a = session.get(classOf[A])) {}
-session += classOf[App] -&gt; app
+<span class="n">session</span> <span class="o">+=</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="n">B</span> <span class="o">{}</span>
+<span class="n">session</span> <span class="o">+=</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">A</span><span class="o">]</span> <span class="o">-&gt;</span> <span class="k">new</span> <span class="nf">A</span><span class="o">(</span><span class="n">b</span><span class="k">=</span><span class="nv">session</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">classOf</span><span class="o">[</span><span class="kt">B</span><span class="o">]))</span> <span class="o">{}</span>
 
-// At shutdown phase
-session.objects.foreach { x=&gt; 
-  x match {
-    case a:A =&gt; // release A
-    case b:B =&gt; // release B ...
-    case _ =&gt; ...
-  }
-}
+<span class="k">val</span> <span class="nv">app</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">App</span><span class="o">(</span><span class="n">a</span> <span class="k">=</span> <span class="nv">session</span><span class="o">.</span><span class="py">get</span><span class="o">(</span><span class="n">classOf</span><span class="o">[</span><span class="kt">A</span><span class="o">]))</span> <span class="o">{}</span>
+<span class="n">session</span> <span class="o">+=</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">App</span><span class="o">]</span> <span class="o">-&gt;</span> <span class="n">app</span>
+
+<span class="c1">// At shutdown phase
+</span><span class="nv">session</span><span class="o">.</span><span class="py">objects</span><span class="o">.</span><span class="py">foreach</span> <span class="o">{</span> <span class="n">x</span><span class="k">=&gt;</span> 
+  <span class="n">x</span> <span class="k">match</span> <span class="o">{</span>
+    <span class="k">case</span> <span class="n">a</span><span class="k">:</span><span class="kt">A</span> <span class="o">=&gt;</span> <span class="c1">// release A
+</span>    <span class="k">case</span> <span class="n">b</span><span class="k">:</span><span class="kt">B</span> <span class="o">=&gt;</span> <span class="c1">// release B ...
+</span>    <span class="k">case</span> <span class="k">_</span> <span class="k">=&gt;</span> <span class="o">...</span>
+  <span class="o">}</span>
+<span class="o">}</span>
 
 </code></pre></div></div>
 <p>As we have seen in the example of <a href="use-cases.html#service-mix-in">Service Mix-in</a>, if we need to manage hundreds of services,

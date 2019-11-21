@@ -153,12 +153,20 @@ When <code class="highlighter-rouge">design.build[A]</code> is called, Airframe 
 <span class="c1">// Session will be closed here
 </span></code></pre></div></div>
 
-<p>Note that <code class="highlighter-rouge">bind[X]</code> syntax works only inside Scala traits:</p>
+<p>Note that <code class="highlighter-rouge">bind[X]</code> syntax works only inside Scala traits or classes that implement <code class="highlighter-rouge">wvlet.airframe.DISupport</code> trait:</p>
 
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// [DON'T DO THIS] You can't use bind[X] inside classes:
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+
+<span class="c1">// [DON'T DO THIS] You can't use bind[X] inside classes:
 </span><span class="k">class</span> <span class="nc">A</span> <span class="o">{</span>
   <span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="c1">// [Error] class A can't find the current session
 </span><span class="o">}</span>
+
+<span class="c1">// To use bind[X] inside classes, extends wvlet.airframe.DISupport 
+</span><span class="k">class</span> <span class="nc">A</span><span class="o">(</span><span class="k">val</span> <span class="nv">session</span><span class="k">:</span><span class="kt">Session</span><span class="o">)</span> <span class="k">extends</span> <span class="nc">DISupport</span> <span class="o">{</span>
+  <span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="n">bind</span><span class="o">[</span><span class="kt">B</span><span class="o">]</span> <span class="c1">// OK
+</span><span class="o">}</span>
+
 </code></pre></div></div>
 
 <p>If you used the <code class="highlighter-rouge">bind[X]</code> syntax inside a class, MISSING_SESSION error will be thrown.</p>
