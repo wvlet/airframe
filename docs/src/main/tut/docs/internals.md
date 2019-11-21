@@ -101,11 +101,13 @@ In the above code, `A` will be instantiated with DISupport trait, which has `ses
 ```scala
 new A extends DISupport {
   // (original code) val b = bind[B]
-  val b: B = {
-    val session = findSession(this)
-    val binder = session..getOrElseUpdate(Surface.of[B], (session:Session => new B with DISupport { ... } ))
-    binder(session)
+  val b: B = { ss: Session =>
+    val ss = findSession(this)
+    // If the session already has an instance of B, return it. Otherwise, craete a new instance of B 
+    ss.getOrElse(Surface.of[B], (session:Session => new B with DISupport { ... } ))
   }
+  // Inject the current session to build B
+  .apply(session) 
 }
 ```
 
