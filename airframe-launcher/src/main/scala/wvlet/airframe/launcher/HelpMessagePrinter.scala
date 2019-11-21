@@ -15,7 +15,10 @@ package wvlet.airframe.launcher
 import java.io.{PrintWriter, StringWriter}
 
 import wvlet.airframe.launcher.OptionParser.{CLArgItem, CLOption}
+import wvlet.airframe.log.AnsiColorPalette
 import wvlet.log.LogSupport
+
+import scala.io.AnsiColor
 
 /**
   * Interface for printing help messages
@@ -32,7 +35,11 @@ trait HelpMessagePrinter {
   ): String
 }
 
-object HelpMessagePrinter extends LogSupport {
+object HelpMessagePrinter extends LogSupport with AnsiColorPalette {
+  private def withColor(color: String, msg: String): String = {
+    s"${color}${msg}${AnsiColor.RESET}"
+  }
+
   /**
     * Teh default help message printer in this format:
     * {{{
@@ -64,7 +71,7 @@ object HelpMessagePrinter extends LogSupport {
       val hasAnyOption = globalOptions.nonEmpty || options.nonEmpty
 
       // Print one-line command usage
-      s.print("usage: ")
+      s.print(s"${withColor(CYAN, "usage")}: ")
       s.println(oneLineUsage.getOrElse {
         val b = Seq.newBuilder[String]
         if (globalOptions.nonEmpty) {
@@ -72,13 +79,13 @@ object HelpMessagePrinter extends LogSupport {
         }
         b += commandName
         if (options.nonEmpty) {
-          b += "[options]"
+          b += s"[${withColor(CYAN, "options")}]"
         }
         if (arguments.nonEmpty) {
           b += arguments.map(x => s" [${x.name}]").mkString
         }
         if (subCommands.nonEmpty) {
-          b += "<command name>"
+          b += s"<${withColor(CYAN, "command name")}>"
         }
         b.result().mkString(" ")
       })
@@ -92,18 +99,18 @@ object HelpMessagePrinter extends LogSupport {
 
       // Print options
       if (globalOptions.nonEmpty) {
-        s.println("[global options]")
+        s.println(s"[${withColor(CYAN, "global options")}]")
         s.println(renderOptionList(globalOptions))
       }
 
       if (options.nonEmpty) {
-        s.println("[options]")
+        s.println(s"[${withColor(CYAN, "options")}]")
         s.println(renderOptionList(options))
       }
 
       if (subCommands.nonEmpty) {
         s.println("")
-        s.println("[commands]")
+        s.println(s"[${withColor(CYAN, "commands")}]")
         s.println(renderCommandList(subCommands))
       }
 
@@ -113,12 +120,12 @@ object HelpMessagePrinter extends LogSupport {
   }
 
   def renderCommandList(commandList: Seq[CommandLauncher]): String = {
-    val maxCommandNameLen = commandList.map(_.name.length).max
-    val format            = " %%-%ds\t%%s".format(math.max(10, maxCommandNameLen))
+    val maxCommandNameLen = commandList.map(x => x.name.length).max
+    val format            = s" %-${math.max(10, maxCommandNameLen)}s\t%s"
     // Show sub commend lists
     commandList
       .map { c =>
-        format.format(c.name, c.description)
+        format.format(c.name, withColor(BRIGHT_CYAN, c.description))
       }
       .mkString("\n")
   }
@@ -150,7 +157,7 @@ object HelpMessagePrinter extends LogSupport {
       }
 
     def genDescription(opt: CLOption): String = {
-      opt.annot.description()
+      withColor(BRIGHT_CYAN, opt.annot.description())
     }
 
     val s = for (x <- optDscr) yield {

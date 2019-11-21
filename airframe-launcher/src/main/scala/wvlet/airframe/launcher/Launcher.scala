@@ -45,7 +45,7 @@ object Launcher extends LogSupport {
     */
   def of[A: ru.WeakTypeTag]: Launcher = {
     val cl = newCommandLauncher(ReflectSurfaceFactory.of[A], name = "", description = "")
-    new Launcher(LauncherConfig(), cl)
+    Launcher(LauncherConfig(), cl)
   }
 
   def execute[A: ru.WeakTypeTag](argLine: String): A = execute(CommandLineTokenizer.tokenize(argLine))
@@ -132,45 +132,33 @@ object Launcher extends LogSupport {
   }
 }
 
-/**
-  * Using a mutable data structure for simplicity.
-  * This should be safe since this config is internal-only config holder
-  */
 private[launcher] case class LauncherConfig(
-    var withHelpOption: Boolean = true,
-    var helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
-    var codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
+    helpMessagePrinter: HelpMessagePrinter = HelpMessagePrinter.default,
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory,
     // command name -> default action
-    var defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
+    defaultCommand: LauncherInstance => Any = { li: LauncherInstance =>
       println("Type --help to see the usage")
     }
 )
 
-class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
+case class Launcher private[launcher] (config: LauncherConfig, private[launcher] val mainLauncher: CommandLauncher) {
   def printHelp: Unit = {
     mainLauncher.printHelpInternal(config, List(mainLauncher))
   }
 
   /**
     * Set a function to be used when there is no command is specified
-    *
-    * @param command
-    * @tparam U
-    * @return
     */
   def withDefaultCommand(newDefaultCommand: LauncherInstance => Any): Launcher = {
-    config.defaultCommand = newDefaultCommand
-    this
+    this.copy(config = config.copy(defaultCommand = newDefaultCommand))
   }
 
   def withHelpMessagePrinter(newHelpMessagePrinter: HelpMessagePrinter): Launcher = {
-    config.helpMessagePrinter = newHelpMessagePrinter
-    this
+    this.copy(config = config.copy(helpMessagePrinter = newHelpMessagePrinter))
   }
 
   def withCodecFactory(newCodecFactory: MessageCodecFactory): Launcher = {
-    config.codecFactory = newCodecFactory
-    this
+    this.copy(config = config.copy(codecFactory = newCodecFactory))
   }
 
   def execute(argLine: String): LauncherResult = execute(CommandLineTokenizer.tokenize(argLine))
@@ -181,24 +169,23 @@ class Launcher(config: LauncherConfig, private[launcher] val mainLauncher: Comma
   /**
     * Add a sub command module to the launcher
     *
-    * @param subCommandName
+    * @param name sub command name
     * @param description
-    * @tparam A
+    * @tparam M
     * @return
     */
-  def addModule[B: ru.TypeTag](name: String, description: String): Launcher = {
-    new Launcher(config, mainLauncher.addCommandModule[B](name, description))
+  def addModule[M: ru.TypeTag](name: String, description: String): Launcher = {
+    Launcher(config, mainLauncher.addCommandModule[M](name, description))
   }
 
   def add(l: Launcher, name: String, description: String): Launcher = {
-    new Launcher(config, mainLauncher.add(name, description, l.mainLauncher))
+    Launcher(config, mainLauncher.add(name, description, l.mainLauncher))
   }
 }
 
 /**
   * Command execution results
   *
-  * @param executedModule
   * @param result
   */
 case class LauncherResult(launcherStack: List[LauncherInstance], result: Option[Any]) {
@@ -321,7 +308,7 @@ class CommandLauncher(
     optionParser.schema match {
       case c: ClassOptionSchema =>
         val parseTree_mp = result.parseTree.toMsgPack
-        val codec        = launcherConfig.codecFactory.withObjectMapCodec.of(c.surface)
+        val codec        = launcherConfig.codecFactory.withMapOutput.of(c.surface)
         val h            = new MessageHolder
         codec.unpack(MessagePack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
