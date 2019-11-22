@@ -14,6 +14,7 @@
 package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
+import java.util.Base64
 
 import org.scalacheck.Gen
 import wvlet.airframe.msgpack.io.ByteArrayBuffer
@@ -127,7 +128,7 @@ class ValueTest extends AirSpec with PropertyCheck {
   def `have Binary`: Unit = {
     val b = newBinary(Array[Byte]('a', 'b', 'c', '\n', '\b', '\r', '\t', '\f', '\\', '"', 'd', 0x01))
     b.valueType shouldBe ValueType.BINARY
-    val json = """"abc\n\b\r\t\f\\\"d""" + "\\" + "u0001" + "\""
+    val json = "\"" + Base64.getEncoder.encodeToString(b.v) + "\""
     b.toJson shouldBe json
     b.toString shouldBe json
   }
@@ -135,7 +136,9 @@ class ValueTest extends AirSpec with PropertyCheck {
   def `have ext`: Unit = {
     val e = newExt(-1, Array[Byte]('a', 'b', 'c'))
     e.valueType shouldBe ValueType.EXTENSION
-    e.toString shouldBe """[-1,"61 62 63"]"""
+    val json = s"""[-1,"${Base64.getEncoder.encodeToString(e.v)}"]"""
+    e.toJson shouldBe json
+    e.toString shouldBe json
   }
 
   def `have map`: Unit = {
