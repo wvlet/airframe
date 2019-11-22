@@ -14,7 +14,6 @@
 package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util
 import java.util.Base64
