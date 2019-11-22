@@ -17,6 +17,7 @@ import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util
+import java.util.Base64
 
 import wvlet.airframe.msgpack.spi.MessageException._
 
@@ -164,7 +165,7 @@ object Value {
     override protected def toRawString: String = {
       synchronized {
         if (decodedStringCache == null) {
-          decodedStringCache = new String(v, StandardCharsets.UTF_8)
+          decodedStringCache = Base64.getEncoder.encodeToString(v)
         }
       }
       decodedStringCache

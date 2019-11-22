@@ -23,6 +23,8 @@ import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.surface.{ArraySurface, GenericSurface, Surface}
 import wvlet.airspec.spi.PropertyCheck
 
+import scala.util.Random
+
 /**
   *
   */
@@ -428,5 +430,16 @@ class PrimitiveCodecTest extends CodecSpec with PropertyCheck {
     val codec = MessageCodec.of[Seq[Any]]
     val seq   = codec.fromJson("[null, 1]")
     seq shouldBe Seq(null, 1)
+  }
+
+  case class BinaryData(data: Array[Byte])
+
+  def `encode binary with BASE64`: Unit = {
+    val data = new Array[Byte](40)
+    Random.nextBytes(data)
+    val codec = MessageCodec.of[BinaryData]
+    val json  = codec.toJson(BinaryData(data))
+    val x     = codec.fromJson(json)
+    x.data shouldBe data
   }
 }

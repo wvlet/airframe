@@ -41,7 +41,7 @@ object PrimitiveCodec {
     Primitive.Char    -> CharCodec,
     // MessagePack types
     Surface.of[Value]   -> ValueCodec,
-    Surface.of[MsgPack] -> ByteArrayCodec,
+    Surface.of[MsgPack] -> RawMsgPackCodec,
     // JSON types
     Surface.of[JSONValue] -> JSONValueCodec,
     Surface.of[Json]      -> RawJsonCodec,
@@ -330,9 +330,7 @@ object PrimitiveCodec {
         case ValueType.BINARY =>
           read {
             val len = u.unpackBinaryHeader
-            val b = u.readPayload(len)
-            Base64.getDecoder.
-            new String(u.readPayload(len))
+            Base64.getEncoder.encodeToString(u.readPayload(len))
           }
         case _ =>
           // Use JSON format for unknown types so that we can read arbitrary types as String value
@@ -663,8 +661,36 @@ object PrimitiveCodec {
           val b   = u.readPayload(len)
           v.setObject(b)
         case ValueType.STRING =>
-          val arr: Array[Byte] = Base64.getDecoder.decode(u.unpackString)
+          val strByteLen = u.unpackRawStringHeader
+          val strBinary  = u.readPayload(strByteLen)
+          val arr: Array[Byte] = try {
+            // Try decoding as base64
+            Base64.getDecoder.decode(strBinary)
+          } catch {
+            case e: IllegalArgumentException =>
+              // Raw string
+              strBinary
+          }
           v.setObject(arr)
+        case _ =>
+          // Set MessagePack binary
+          val value = u.unpackValue
+          v.setObject(value.toMsgpack)
+      }
+    }
+  }
+
+  object RawMsgPackCodec extends MessageCodec[MsgPack] {
+    override def pack(p: Packer, v: Array[Byte]): Unit = {
+      p.packBinaryHeader(v.length)
+      p.addPayload(v)
+    }
+    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+      u.getNextValueType match {
+        case ValueType.BINARY =>
+          val len = u.unpackBinaryHeader
+          val b   = u.readPayload(len)
+          v.setObject(b)
         case _ =>
           // Set MessagePack binary
           val value = u.unpackValue
