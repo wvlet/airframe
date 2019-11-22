@@ -27,7 +27,7 @@ jobs:
       - name: Build for Scala.js 0.6.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
-        run: SCALA_JS_VERSION=0.6.29 ./sbt "projectJS/publishSigned"
+        run: SCALA_JS_VERSION=0.6.31 ./sbt "projectJS/publishSigned"
       - name: Build for Scala.js 1.0.x
         env:
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
