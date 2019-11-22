@@ -13,13 +13,16 @@
  */
 package wvlet.airframe.codec
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+
 import wvlet.airframe.codec.PrimitiveCodec.ValueCodec
 import wvlet.airframe.msgpack.spi.Value.StringValue
 import wvlet.airframe.msgpack.spi.{MessagePack, MsgPack, Value, ValueFactory}
 
 object ValueCodecTest {
   case class ValueTest(v: Value)
-  case class RawMsgpackTest(msgpack: Array[Byte])
+  case class RawByteArrayTest(rawByteArray: Array[Byte])
   case class RawMsgpackTest2(msgpack: MsgPack)
 }
 
@@ -43,11 +46,22 @@ class ValueCodecTest extends CodecSpec {
     codec.unpackJson("""{"v":"hello msgpack"}""") shouldBe Some(ValueTest(StringValue("hello msgpack")))
   }
 
-  def `accept raw msgpack`: Unit = {
-    val codec = MessageCodec.of[RawMsgpackTest]
-    codec.unpackJson("""{"msgpack":"hello msgpack"}""") match {
+  def `support string to Array[Byte] conversion`: Unit = {
+    val codec = MessageCodec.of[RawByteArrayTest]
+    codec.unpackJson("""{"rawByteArray":"hello msgpack"}""") match {
       case Some(x) =>
-        MessagePack.newUnpacker(x.msgpack).unpackValue shouldBe StringValue("hello msgpack")
+        x.rawByteArray shouldBe "hello msgpack".getBytes(StandardCharsets.UTF_8)
+      case _ =>
+        fail("failed to parse msgpack")
+    }
+  }
+
+  def `support BASE64-encoded string to Array[Byte] conversion`: Unit = {
+    val base64 = Base64.getEncoder.encodeToString("hello msgpack".getBytes(StandardCharsets.UTF_8))
+    val codec  = MessageCodec.of[RawByteArrayTest]
+    codec.unpackJson(s"""{"rawByteArray":"${base64}"}""") match {
+      case Some(x) =>
+        x.rawByteArray shouldBe "hello msgpack".getBytes(StandardCharsets.UTF_8)
       case _ =>
         fail("failed to parse msgpack")
     }

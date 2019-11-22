@@ -14,9 +14,9 @@
 package wvlet.airframe.msgpack.spi
 
 import java.math.BigInteger
-import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.util
+import java.util.Base64
 
 import wvlet.airframe.msgpack.spi.MessageException._
 
@@ -161,10 +161,11 @@ object Value {
       packer.writePayload(v)
     }
 
+    // Produces Base64 encoded strings
     override protected def toRawString: String = {
       synchronized {
         if (decodedStringCache == null) {
-          decodedStringCache = new String(v, StandardCharsets.UTF_8)
+          decodedStringCache = Base64.getEncoder.encodeToString(v)
         }
       }
       decodedStringCache
@@ -182,13 +183,10 @@ object Value {
   }
 
   case class ExtensionValue(extType: Byte, v: Array[Byte]) extends Value {
+    // [extType(int),extBinary(base64)]
     override def toJson = {
-      val sb = Seq.newBuilder[String]
-      for (e <- v) {
-        // Binary to HEX
-        sb += Integer.toString(e.toInt, 16)
-      }
-      s"""[${extType.toInt.toString},"${sb.result.mkString(" ")}"]"""
+      val base64 = Base64.getEncoder.encodeToString(v)
+      s"""[${extType.toInt},"${base64}"]"""
     }
     override def valueType: ValueType = ValueType.EXTENSION
     override def writeTo(packer: Packer): Unit = {
