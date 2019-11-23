@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RouterMacros}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 

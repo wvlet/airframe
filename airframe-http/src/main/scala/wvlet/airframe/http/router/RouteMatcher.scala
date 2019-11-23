@@ -11,9 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
+
 import wvlet.airframe.Session
-import wvlet.airframe.http.Automaton.{DFA, NextNode}
+import Automaton.{DFA, NextNode}
+import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
@@ -111,7 +113,7 @@ object RouteMatcher extends LogSupport {
 
       foundRoute.map { r =>
         trace(s"Found a matching route: ${r.path} <= {${params.mkString(", ")}}")
-        RouteMatch(r, params.toMap)
+        router.RouteMatch(r, params.toMap)
       }
     }
   }

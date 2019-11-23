@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
+import wvlet.airframe.http.{HttpMethod, HttpRequest, HttpRequestAdapter}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
