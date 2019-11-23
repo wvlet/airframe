@@ -17,7 +17,8 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
-import wvlet.airframe.http.{ControllerProvider, HttpContext, HttpRequestDispatcher, ResponseHandler}
+import wvlet.airframe.http.router.HttpRequestDispatcher
+import wvlet.airframe.http.HttpContext
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation

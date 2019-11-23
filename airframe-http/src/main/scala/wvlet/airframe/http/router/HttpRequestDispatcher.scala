@@ -11,17 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.http
+package wvlet.airframe.http.router
 
 import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.Session
 import wvlet.airframe.http.Router.RouteFilter
+import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
+/**
+  *
+  */
 object HttpRequestDispatcher {
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
@@ -38,6 +42,7 @@ object HttpRequestDispatcher {
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
+          // Find a filter for the matched route
           val routeFilter = filterTable(routeMatch.route)
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, routeFilter.controller, responseHandler)

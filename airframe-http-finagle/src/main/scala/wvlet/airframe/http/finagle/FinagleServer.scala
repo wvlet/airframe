@@ -24,7 +24,8 @@ import wvlet.airframe._
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.{ControllerProvider, HttpServerException, ResponseHandler, Router}
+import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
+import wvlet.airframe.http.{HttpServerException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
