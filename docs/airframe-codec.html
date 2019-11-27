@@ -8,7 +8,7 @@ ga('create', 'UA-98364158-1' , 'auto');
 ga('send', 'pageview');
       </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Overview</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/airspec.html" class="">AirSpec Testing Framework</a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Modules</a> <ul class="sub_section"> <li><a href="/airframe/docs/airframe-canvas.html" class="">airframe-canvas</a></li> <li><a href="/airframe/docs/airframe-codec.html" class=" active ">airframe-codec</a></li> <li><a href="/airframe/docs/airframe-config.html" class="">airframe-config</a></li> <li><a href="/airframe/docs/airframe-control.html" class="">airframe-control</a></li> <li><a href="/airframe/docs/airframe-fluentd.html" class="">airframe-fluentd</a></li> <li><a href="/airframe/docs/airframe-http.html" class="">airframe-http</a></li> <li><a href="/airframe/docs/airframe-http-recorder.html" class="">airframe-http-recorder</a></li> <li><a href="/airframe/docs/airframe-jdbc.html" class="">airframe-jdbc</a></li> <li><a href="/airframe/docs/airframe-jmx.html" class="">airframe-jmx</a></li> <li><a href="/airframe/docs/airframe-json.html" class="">airframe-json</a></li> <li><a href="/airframe/docs/airframe-launcher.html" class="">airframe-launcher</a></li> <li><a href="/airframe/docs/airframe-log.html" class="">airframe-log</a></li> <li><a href="/airframe/docs/airframe-metrics.html" class="">airframe-metrics</a></li> <li><a href="/airframe/docs/airframe-msgpack.html" class="">airframe-msgpack</a></li> <li><a href="/airframe/docs/airframe-scalatest.html" class="">airframe-scalatest</a></li> <li><a href="/airframe/docs/airframe-surface.html" class="">airframe-surface</a></li> <li><a href="/airframe/docs/airframe-sql.html" class="">airframe-sql</a></li> <li><a href="/airframe/docs/airframe-tablet.html" class="">airframe-tablet</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-eye"></i><span>WATCH<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe"><i class="fa fa-star-o"></i><span>STARS<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h1 id="airframe-codec">airframe-codec</h1>
 
-<p>airframe-codec is an <a href="https://msgpack.org">MessagePack</a>-based schema-on-read data transcoder.</p>
+<p>airframe-codec is an <a href="https://msgpack.org">MessagePack</a>-based schema-on-read data transcoder for Scala and Scala.js.</p>
 
 <p>With airframe-codec you can:</p>
 <ul>
@@ -41,19 +41,113 @@ airframe-codec can convert it into integers if the target schema (e.g., objects)
 </span><span class="k">val</span> <span class="nv">a</span> <span class="k">=</span> <span class="nf">A</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="s">"leo"</span><span class="o">)</span>
 <span class="k">val</span> <span class="nv">msgpack</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toMsgPack</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>
 
-<span class="c1">// Read msgpack data as object
-</span><span class="nv">codec</span><span class="o">.</span><span class="py">unpackMsgPack</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span> <span class="c1">// Some(A(1, "leo"))
+<span class="c1">// Read MsgPack data as object (exception-free)
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">unpackMsgPack</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span> <span class="c1">// Some(A(1, "leo")) or None
+// MsgPack -&gt; Object (MessageCodecException will be thrown when parsing is failed)
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">fromMsgPack</span><span class="o">(</span><span class="n">msgpack</span><span class="o">)</span> <span class="c1">// A(1, "leo")
 </span>
 
 <span class="c1">// Convert to JSON
-</span><span class="k">val</span> <span class="nv">json</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toJson</span><span class="o">(</span><span class="n">a</span><span class="o">)</span>   <span class="c1">//  {"id":1,"name":"leo"}
+</span><span class="k">val</span> <span class="nv">json</span> <span class="k">=</span> <span class="nv">codec</span><span class="o">.</span><span class="py">toJson</span><span class="o">(</span><span class="n">a</span><span class="o">)</span> <span class="c1">// {"id":1,"name":"leo"}
 </span>
-<span class="nv">codec</span><span class="o">.</span><span class="py">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span>  <span class="c1">// Some(A(1, "leo"))
+<span class="c1">// Exception-free json parser
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">unpackJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span> <span class="c1">// Some(A(1, "leo")) or None
+</span>
+<span class="c1">// JSON -&gt; Object (MessageCodecException will be thrown when parsing is failed)
+</span><span class="nv">codec</span><span class="o">.</span><span class="py">fromJson</span><span class="o">(</span><span class="n">json</span><span class="o">)</span> <span class="c1">// A(1, "leo")
 </span></code></pre></div></div>
 
 <ul>
   <li>To create a custom codec, use MessageCodecFactory.</li>
 </ul>
+
+<h2 id="populating-missing-fields-with-zero-values">Populating missing fields with zero values</h2>
+
+<p>When mapping data into objects, if some parameter values are missing in the input data, airframe-codec will try to populate these missing parameters with the default values of the target types. This default parameter mapping is defined in <code class="highlighter-rouge">Zero.zeroOf[X]</code>. For example, if the target type is Int, <code class="highlighter-rouge">zeroOf[Int]</code> will be 0, and for String <code class="highlighter-rouge">zeroOf[String]</code> is <code class="highlighter-rouge">""</code> (empty string).</p>
+
+<p><strong><em>Default Values</em></strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>X: type</th>
+      <th>zeroOf[X]</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Int</td>
+      <td>0</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Long</td>
+      <td>0L</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>String</td>
+      <td>””</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Boolean</td>
+      <td>false</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Option[X]</td>
+      <td>None</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Float</td>
+      <td>0.0f</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Double</td>
+      <td>0.0</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Array[X]</td>
+      <td>empty array</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Seq[X]</td>
+      <td>Seq.empty</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>class A(p1:P1 = v1, …)</td>
+      <td>A(p1 = v1, …)</td>
+      <td>default parameter value</td>
+    </tr>
+    <tr>
+      <td>class A(P1, …)</td>
+      <td>A(zeroOf[P1], …)</td>
+      <td>zero value of each parameter</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="strict-mapping">Strict Mapping</h2>
+
+<p>If you need to ensure the presence of some parameter values, add <code class="highlighter-rouge">@requried</code> annotation to the target object parameters. If some necessary parameter is missing, MessageCodecException will be thrown:</p>
+
+<pre><code class="language-scals">import wvlet.airframe.surface.required
+
+case class Person(@required id:String, @requried name:String)
+
+val codec = MessageCodec.of[Person]
+
+// Throws MessageCodecException (MISSING_PARAMETER) exception as id value is not found
+codec.fromJson("""{"name":"Peter"}""")
+
+</code></pre>
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
