@@ -923,7 +923,7 @@ lazy val airspec =
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
-        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
+        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.1"
       )
     )
     .dependsOn(airspecDeps % internalScope)
