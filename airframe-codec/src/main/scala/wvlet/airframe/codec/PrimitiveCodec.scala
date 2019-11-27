@@ -685,7 +685,7 @@ object PrimitiveCodec {
       p.packBinaryHeader(v.length)
       p.addPayload(v)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.BINARY =>
           val len = u.unpackBinaryHeader
