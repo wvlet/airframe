@@ -21,12 +21,12 @@ import wvlet.airspec.AirSpec
   *
   */
 trait CodecSpec extends AirSpec {
-  protected def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageHolder = {
+  protected def roundtrip[A](surface: Surface, v: A, expectedType: DataType = DataType.ANY): MessageContext = {
     roundtrip[A](MessageCodec.ofSurface(surface).asInstanceOf[MessageCodec[A]], v, expectedType)
   }
 
-  protected def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
-    val h = new MessageHolder
+  protected def roundtrip[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageContext = {
+    val h = new MessageContext
     debug(s"Testing roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newBufferPacker
     codec.pack(packer, v)
@@ -43,8 +43,8 @@ trait CodecSpec extends AirSpec {
     h
   }
 
-  protected def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageHolder = {
-    val h = new MessageHolder
+  protected def roundtripStr[A](codec: MessageCodec[A], v: A, expectedType: DataType): MessageContext = {
+    val h = new MessageContext
     trace(s"Testing str based roundtrip of ${v} with ${codec}")
     val packer = MessagePack.newBufferPacker
     packer.packString(v.toString)

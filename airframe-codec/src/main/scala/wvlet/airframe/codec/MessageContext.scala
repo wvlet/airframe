@@ -16,9 +16,16 @@ package wvlet.airframe.codec
 import wvlet.airframe.codec.DataType._
 
 /**
+  * MessageContext is used for passing the parsing configuration and
+  * the last value read by codec.
+  *
+  * For efficiency, it holds several primitive type values as
+  * local variables to avoid the boxing overhead.
   *
   */
-class MessageHolder {
+case class MessageContext(
+    // For now, we have no specific configuration to add
+) {
   private var dataType: DataType     = NIL
   private var value: Option[Any]     = None
   private var err: Option[Throwable] = None

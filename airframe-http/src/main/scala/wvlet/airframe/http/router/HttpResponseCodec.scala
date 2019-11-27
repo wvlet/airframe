@@ -13,7 +13,7 @@
  */
 package wvlet.airframe.http.router
 
-import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageHolder}
+import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageContext}
 import wvlet.airframe.http.{HttpResponse, HttpResponseAdapter}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
@@ -40,5 +40,5 @@ class HttpResponseCodec[Resp: HttpResponseAdapter] extends MessageCodec[HttpResp
         }
     }
   }
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
+  override def unpack(u: Unpacker, v: MessageContext): Unit = ???
 }

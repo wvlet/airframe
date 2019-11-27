@@ -23,7 +23,7 @@ package wvlet.airframe.launcher
 
 import java.lang.reflect.InvocationTargetException
 
-import wvlet.airframe.codec.{MessageCodecFactory, MessageHolder, ParamListCodec}
+import wvlet.airframe.codec.{MessageCodecFactory, MessageContext, ParamListCodec}
 import wvlet.airframe.control.CommandLineTokenizer
 import wvlet.airframe.launcher.OptionParser.CLOption
 import wvlet.airframe.msgpack.spi.MessagePack
@@ -309,7 +309,7 @@ class CommandLauncher(
       case c: ClassOptionSchema =>
         val parseTree_mp = result.parseTree.toMsgPack
         val codec        = launcherConfig.codecFactory.withMapOutput.of(c.surface)
-        val h            = new MessageHolder
+        val h            = new MessageContext
         codec.unpack(MessagePack.newUnpacker(parseTree_mp), h)
         h.getError.map { e =>
           throw new IllegalArgumentException(s"Error occurered in launching ${c.surface}: ${e.getMessage}")

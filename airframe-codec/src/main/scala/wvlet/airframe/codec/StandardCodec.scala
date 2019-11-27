@@ -65,6 +65,6 @@ object StandardCodec {
       }
     }
     // We do not support deserialization of generic Throwable classes
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
+    override def unpack(u: Unpacker, v: MessageContext): Unit = ???
   }
 }
