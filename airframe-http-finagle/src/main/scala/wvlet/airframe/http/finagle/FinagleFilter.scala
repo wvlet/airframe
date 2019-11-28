@@ -18,7 +18,6 @@ import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
 import wvlet.airframe.http.router.HttpRequestDispatcher
-import wvlet.airframe.http.HttpContext
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation
@@ -37,10 +36,8 @@ class FinagleRouter(session: Session, private[finagle] val config: FinagleServer
     )
 
   override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
-    dispatcher.apply(request, new HttpContext[Request, Response, Future] {
-      override def apply(request: Request): Future[Response] = {
-        service(request)
-      }
+    dispatcher.apply(request, FinagleBackend.newContext { request: Request =>
+      service(request)
     })
   }
 }
