@@ -234,6 +234,16 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r.setContentString(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
+  override def postRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[http.Response] = {
+    val r = newRequest(HttpMethod.POST, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    send(r, requestFilter)
+  }
   override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -255,6 +265,16 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r.setContentString(toJson(resource))
     convert[Resource](send(r, requestFilter))
   }
+  override def putRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[http.Response] = {
+    val r = newRequest(HttpMethod.PUT, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    send(r, requestFilter)
+  }
   override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -271,6 +291,12 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       requestFilter: Request => Request = identity
   ): Future[OperationResponse] = {
     convert[OperationResponse](send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter))
+  }
+  override def deleteRaw(
+      resourcePath: String,
+      requestFilter: Request => Request = identity
+  ): Future[http.Response] = {
+    send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter)
   }
   override def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
@@ -292,6 +318,16 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
     r.setContentTypeJson()
     r.setContentString(toJson(resource))
     convert[Resource](send(r, requestFilter))
+  }
+  override def patchRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Request => Request = identity
+  ): Future[http.Response] = {
+    val r = newRequest(HttpMethod.PATCH, resourcePath)
+    r.setContentTypeJson()
+    r.setContentString(toJson(resource))
+    send(r, requestFilter)
   }
   override def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
