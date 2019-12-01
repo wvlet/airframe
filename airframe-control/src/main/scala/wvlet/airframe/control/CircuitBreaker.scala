@@ -40,7 +40,7 @@ case class CircuitBreaker(
     healthCheckPolicy: HealthCheckPolicy,
     resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-    private[this] var state: AtomicReference[CircuitBreakerState] = new AtomicReference[CircuitBreakerState](CLOSED)
+    private var state: AtomicReference[CircuitBreakerState] = new AtomicReference[CircuitBreakerState](CLOSED)
 ) {
 
   def open: this.type = {
