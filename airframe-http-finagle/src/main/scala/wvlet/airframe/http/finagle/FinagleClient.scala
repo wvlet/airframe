@@ -239,10 +239,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[http.Response] = {
-    val r = newRequest(HttpMethod.POST, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    send(r, requestFilter)
+    postOps[Resource, http.Response](resourcePath, resource, requestFilter)
   }
   override def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
@@ -270,10 +267,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[http.Response] = {
-    val r = newRequest(HttpMethod.PUT, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    send(r, requestFilter)
+    putOps[Resource, http.Response](resourcePath, resource, requestFilter)
   }
   override def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
@@ -296,7 +290,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resourcePath: String,
       requestFilter: Request => Request = identity
   ): Future[http.Response] = {
-    send(newRequest(HttpMethod.DELETE, resourcePath), requestFilter)
+    delete[http.Response](resourcePath, requestFilter)
   }
   override def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
@@ -324,10 +318,7 @@ class FinagleClient(address: ServerAddress, config: FinagleClientConfig)
       resource: Resource,
       requestFilter: Request => Request = identity
   ): Future[http.Response] = {
-    val r = newRequest(HttpMethod.PATCH, resourcePath)
-    r.setContentTypeJson()
-    r.setContentString(toJson(resource))
-    send(r, requestFilter)
+    patchOps[Resource, http.Response](resourcePath, resource, requestFilter)
   }
   override def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
