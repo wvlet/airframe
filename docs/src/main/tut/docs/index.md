@@ -49,8 +49,6 @@ Airframe has several modules for kick starting your application development in S
   - A simple base trait for using ScalaTest.
 - [airframe-sql](airframe-sql.html)
   - SQL parser
-- [airframe-tablet](airframe-tablet.html)
-  - Table-structured data (e.g., CSV, TSV, JDBC ResultSet) reader/writer.
 
 
 We also have developed sbt plugins for packaging and publishing your projects:
