@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicLong
   *
   */
 trait HealthCheckPolicy {
-
   def isAlive: Boolean = !isMarkedDead
   def isMarkedDead: Boolean
 
@@ -40,33 +39,32 @@ trait HealthCheckPolicy {
 }
 
 object HealthCheckPolicy {
-
   /**
     * A policy for marking the service dead upon consecutive failures
     */
-  def markDeadOnConsecutiveFailures(numFailures: Int): HealthCheckPolicy = new HealthCheckPolicy {
-    private val consecutiveFailures = new AtomicLong(0L)
+  def markDeadOnConsecutiveFailures(numFailures: Int): HealthCheckPolicy =
+    new HealthCheckPolicy {
+      private val consecutiveFailures = new AtomicLong(0L)
 
-    override def isMarkedDead: Boolean = consecutiveFailures.get() >= numFailures
+      override def isMarkedDead: Boolean = consecutiveFailures.get() >= numFailures
 
-    override def recordSuccess: Unit = {
-      consecutiveFailures.set(0)
+      override def recordSuccess: Unit = {
+        consecutiveFailures.set(0)
+      }
+
+      /**
+        * Called when request is failed.
+        * Returns delay
+        */
+      override def recordFailure: Unit = {
+        consecutiveFailures.incrementAndGet()
+      }
+
+      /**
+        * Called when the target service is recovered
+        */
+      override def recovered: Unit = {
+        consecutiveFailures.set(0)
+      }
     }
-
-    /**
-      * Called when request is failed.
-      * Returns delay
-      */
-    override def recordFailure: Unit = {
-      consecutiveFailures.incrementAndGet()
-    }
-
-    /**
-      * Called when the target service is recovered
-      */
-    override def recovered: Unit = {
-      consecutiveFailures.set(0)
-    }
-  }
-
 }
