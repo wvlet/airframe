@@ -9,7 +9,7 @@ val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.2"
-val MSGPACK_VERSION                 = "0.8.19"
+val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
 val SLF4J_VERSION                   = "1.7.29"

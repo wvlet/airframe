@@ -57,7 +57,7 @@ class TypedMetricLogger[T <: TaggedMetric](fluentdClient: MetricLogger, codec: M
 
 class MetricLoggerFactory(
     fluentdClient: MetricLogger,
-    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory.withObjectMapCodec
+    codecFactory: MessageCodecFactory = MessageCodecFactory.defaultFactory.withMapOutput
 ) extends LogSupport {
   def getLogger: MetricLogger = fluentdClient
   def getLoggerWithTagPrefix(tagPrefix: String): MetricLogger =
@@ -73,7 +73,7 @@ class MetricLoggerFactory(
       .getOrElseUpdate(
         Surface.of[T], {
           // Ensure to serialize as map type of MessagePack
-          val codec = codecFactory.withObjectMapCodec.of[T]
+          val codec = codecFactory.withMapOutput.of[T]
           new TypedMetricLogger[T](getLogger, codec)
         }
       ).asInstanceOf[TypedMetricLogger[T]]
@@ -84,7 +84,7 @@ class MetricLoggerFactory(
       .getOrElseUpdate(
         Surface.of[T], {
           // Ensure to serialize as map type of MessagePack
-          val codec = codecFactory.withObjectMapCodec.of[T]
+          val codec = codecFactory.withMapOutput.of[T]
           new TypedMetricLogger[T](getLoggerWithTagPrefix(tagPrefix), codec)
         }
       ).asInstanceOf[TypedMetricLogger[T]]
