@@ -23,15 +23,22 @@ trait HttpContext[Req, Resp, F[_]] {
   def apply(request: Req): F[Resp]
 
   // Prepare a thread-local context parameter holder
-  def withContextParam(body: => F[Resp]): F[Resp] = {
-    backend.withContextParam(body)
+  def withThreadLocalStore(body: => F[Resp]): F[Resp] = {
+    backend.withThreadLocalStore(body)
   }
 
-  def setContextParam[A](key: String, value: A): Unit = {
-    backend.setContextParam(key, value)
+  /**
+    * Set a thread local parameter
+    */
+  def setThreadLocal[A](key: String, value: A): Unit = {
+    backend.setThreadLocal(key, value)
   }
-  def getContextParam[A](key: String): Option[A] = {
-    backend.getContextParam(key)
+
+  /**
+    * Get a thread local parameter
+    */
+  def getThreadLocal[A](key: String): Option[A] = {
+    backend.getThreadLocal(key)
   }
 
   private[http] def prependFilter(
@@ -40,5 +47,3 @@ trait HttpContext[Req, Resp, F[_]] {
     backend.filterAndThenContext(filter, this)
   }
 }
-
-object HttpContext {}

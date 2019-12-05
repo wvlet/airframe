@@ -70,7 +70,7 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
 
   private val contextParamHolderKey = new Contexts.local.Key[AtomicReference[collection.mutable.Map[String, Any]]]
 
-  override def withContextParam(body: => Future[Response]): Future[Response] = {
+  override def withThreadLocalStore(body: => Future[Response]): Future[Response] = {
     val newParamHolder = collection.mutable.Map.empty[String, Any]
     Contexts.local
       .let(contextParamHolderKey, new AtomicReference[collection.mutable.Map[String, Any]](newParamHolder)) {
@@ -78,13 +78,13 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
       }
   }
 
-  override def setContextParam[A](key: String, value: A): Unit = {
+  override def setThreadLocal[A](key: String, value: A): Unit = {
     Contexts.local.get(contextParamHolderKey).foreach { ref =>
       ref.get().put(key, value)
     }
   }
 
-  override def getContextParam[A](key: String): Option[A] = {
+  override def getThreadLocal[A](key: String): Option[A] = {
     Contexts.local.get(contextParamHolderKey).flatMap { ref =>
       ref.get.get(key).asInstanceOf[Option[A]]
     }

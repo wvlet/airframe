@@ -13,23 +13,24 @@
  */
 package wvlet.airframe.http.finagle.filter
 
+import java.util.concurrent.TimeUnit
+
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
-import wvlet.airframe.http.{HttpContext, HttpFilter}
+import wvlet.airframe.http.HttpContext
 import wvlet.airframe.http.finagle.FinagleFilter
-import wvlet.airframe._
 
 import scala.util.control.NonFatal
 
-trait AccessLogger {
+trait HttpAccessLogOutput {
   def emit(log: Map[String, Any])
 }
 
 /**
   *
   */
-case class AccessLogFilter(
-    accessLogger: AccessLogger,
+case class HttpAccessLogger(
+    logOutput: HttpAccessLogOutput,
     requestLog: Request => Map[String, Any],
     responseLog: (Request, Response) => Map[String, Any],
     errorLog: (Request, Throwable) => Map[String, Any]
@@ -39,30 +40,26 @@ case class AccessLogFilter(
     m ++= requestLog(request)
     val currentNanoTime = System.nanoTime()
 
-    def nanosSince = System.nanoTime() - currentNanoTime
+    def millisSince = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - currentNanoTime)
 
     def reportError(e: Throwable): Future[Response] = {
-      val responseTimeNanos = nanosSince
-      m += "response_time_ns" -> responseTimeNanos
+      val responseTimeMillis = millisSince
+      m += "response_time_ms" -> responseTimeMillis
       m ++= errorLog(request, e)
-      accessLogger.emit(m.result())
+      logOutput.emit(m.result())
       Future.exception(e)
     }
     try {
-      // Prepare a placeholder to store the current user's account_id and user_id.
-      // This holder will be set by AuthenticationFilter or DataSetsAPI
-      context.withContextParam {
-        context(request)
-          .map { response =>
-            m += "response_time_ns" -> nanosSince
-            m ++= responseLog(request, response)
-            accessLogger.emit(m.result())
-            response
-          }.rescue {
-            case NonFatal(e: Throwable) =>
-              reportError(e)
-          }
-      }
+      context(request)
+        .map { response =>
+          m += "response_time_ms" -> millisSince
+          m ++= responseLog(request, response)
+          logOutput.emit(m.result())
+          response
+        }.rescue {
+          case NonFatal(e: Throwable) =>
+            reportError(e)
+        }
     } catch {
       // When an unknown internal error happens
       case e: Throwable =>
@@ -71,4 +68,4 @@ case class AccessLogFilter(
   }
 }
 
-object AccessLogFilter {}
+object HttpAccessLogger {}

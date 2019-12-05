@@ -46,13 +46,13 @@ trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
   def filterAndThenContext(filter: Filter, context: Context): Context
 
   // Prepare a thread-local holder for passing parameter values
-  def withContextParam(request: => F[Resp]): F[Resp]
+  def withThreadLocalStore(request: => F[Resp]): F[Resp]
 
   // Set a thread-local context parameter value
-  def setContextParam[A](key: String, value: A): Unit
+  def setThreadLocal[A](key: String, value: A): Unit
 
   // Get a thread-local context parameter
-  def getContextParam[A](key: String): Option[A]
+  def getThreadLocal[A](key: String): Option[A]
 
   // Create a new default context that process the given request
   def newContext(body: Req => F[Resp]): HttpContext[Req, Resp, F]
