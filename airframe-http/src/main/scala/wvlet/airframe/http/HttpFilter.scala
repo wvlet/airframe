@@ -61,6 +61,12 @@ object HttpFilter {
     type Filter  = HttpFilter[Req, Resp, F]
     type Context = HttpContext[Req, Resp, F]
 
+    def wrapException(e: Throwable): F[Resp]
+    def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
+
+    /**
+      * Implementations of HttpFilter must wrap an exception occurred in the filter.apply(request, context) with F[_]
+      */
     protected def rescue(body: => F[Resp]): F[Resp] = {
       try {
         body
@@ -68,8 +74,6 @@ object HttpFilter {
         case NonFatal(e) => wrapException(e)
       }
     }
-    def wrapException(e: Throwable): F[Resp]
-    def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
 
     abstract class HttpFilterBase extends Filter {
       override protected def wrapException(e: Throwable): F[Resp] = factory.wrapException(e)
@@ -95,13 +99,13 @@ object HttpFilter {
       */
     class SafeFilter(filter: Filter) extends HttpFilterBase with LogSupport {
       override def apply(request: Req, context: Context): F[Resp] = {
-        factory.rescue(filter.apply(request, context))
+        this.rescue(filter.apply(request, context))
       }
     }
 
     case class AndThen(prev: Filter, next: Filter) extends HttpFilterBase {
       override def apply(request: Req, context: Context): F[Resp] = {
-        rescue(prev.apply(request, next.andThen(context)))
+        this.rescue(prev.apply(request, next.andThen(context)))
       }
     }
   }
