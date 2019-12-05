@@ -43,9 +43,8 @@ object HttpRequestDispatcher {
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
-          val routeFilter = filterTable(routeMatch.route)
-          val context =
-            new HttpEndpointExecutionContext(backend, routeMatch, routeFilter.controller, responseHandler)
+          val routeFilter    = filterTable(routeMatch.route)
+          val context        = backend.newControllerContext(routeMatch, responseHandler, routeFilter.controller)
           val currentService = routeFilter.filter.andThen(context)
           currentService(request)
         case None =>
@@ -89,74 +88,5 @@ object HttpRequestDispatcher {
       m ++= buildRouteFilters(session, c, currentFilter, controllerProvider)
     }
     m.result()
-  }
-
-  /**
-    *  Call a controller method by mapping the request parameters to the method arguments.
-    *  This will be the last context after applying preceding filters
-    */
-  private class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
-      backend: HttpBackend[Req, Resp, F],
-      routeMatch: RouteMatch,
-      controller: Any,
-      responseHandler: ResponseHandler[Req, Resp]
-  ) extends HttpContext[Req, Resp, F]
-      with LogSupport {
-    override def apply(request: Req): F[Resp] = {
-      val route = routeMatch.route
-      val result = {
-        // Call the method in this controller
-        try {
-          route.call(controller, request, routeMatch.params)
-        } catch {
-          case e: InvocationTargetException =>
-            // Return the exception from the target method
-            throw e.getTargetException
-        }
-      }
-
-      route.returnTypeSurface.rawType match {
-        // When a return type is Future[X]
-        case cl: Class[_] if backend.isFutureType(cl) =>
-          // Check the type of X
-          val futureValueSurface = route.returnTypeSurface.typeArgs(0)
-          futureValueSurface.rawType match {
-            // If X is the backend Response type, return as is:
-            case valueCls if backend.isRawResponseType(valueCls) =>
-              // Use Finagle Future
-              result.asInstanceOf[F[Resp]]
-            case other =>
-              // If X is other type, convert X into an HttpResponse
-              backend.mapF(
-                result.asInstanceOf[F[_]], { x: Any =>
-                  responseHandler.toHttpResponse(request, futureValueSurface, x)
-                }
-              )
-          }
-        case cl: Class[_] if backend.isScalaFutureType(cl) =>
-          // Check the type of X
-          val futureValueSurface = route.returnTypeSurface.typeArgs(0)
-
-          // TODO: Is using global execution a right choice?
-          val ex = ExecutionContext.global
-          futureValueSurface.rawType match {
-            // If X is the backend Response type, return as is:
-            case valueCls if backend.isRawResponseType(valueCls) =>
-              // Convert Scala Future to Finagle Future
-              backend.toFuture(result.asInstanceOf[scala.concurrent.Future[Resp]], ex)
-            case other =>
-              // If X is other type, convert X into an HttpResponse
-              val scalaFuture = result
-                .asInstanceOf[scala.concurrent.Future[_]]
-                .map { x =>
-                  responseHandler.toHttpResponse(request, futureValueSurface, x)
-                }(ex)
-              backend.toFuture(scalaFuture, ex)
-          }
-        case _ =>
-          // If the route returns non future value, convert it into Future response
-          backend.toFuture(responseHandler.toHttpResponse(request, route.returnTypeSurface, result))
-      }
-    }
   }
 }

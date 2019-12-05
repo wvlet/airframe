@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.log.LogSupport
+
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
@@ -40,7 +42,7 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
   // Implementation to process the request. If this filter doesn't return any response, pass the request to the context(request)
   def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp]
 
-  // Add another filter:
+  // Add another filter
   def andThen(nextFilter: HttpFilter[Req, Resp, F]): HttpFilter[Req, Resp, F]
 
   // End the filter chain with the given HttpContext
@@ -48,6 +50,7 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
 }
 
 object HttpFilter {
+
   /**
     * A base class for generating filters for Finagle or other HTTP server backend
     * @tparam Req
@@ -58,6 +61,12 @@ object HttpFilter {
     type Filter  = HttpFilter[Req, Resp, F]
     type Context = HttpContext[Req, Resp, F]
 
+    def wrapException(e: Throwable): F[Resp]
+    def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
+
+    /**
+      * Implementations of HttpFilter must wrap an exception occurred in the filter.apply(request, context) with F[_]
+      */
     protected def rescue(body: => F[Resp]): F[Resp] = {
       try {
         body
@@ -65,8 +74,6 @@ object HttpFilter {
         case NonFatal(e) => wrapException(e)
       }
     }
-    def wrapException(e: Throwable): F[Resp]
-    def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
 
     abstract class HttpFilterBase extends Filter {
       override protected def wrapException(e: Throwable): F[Resp] = factory.wrapException(e)
@@ -74,7 +81,7 @@ object HttpFilter {
         AndThen(this, nextFilter)
       }
       override def andThen(context: Context): Context = {
-        AndThenHttpContext(this, context)
+        context.prependFilter(this)
       }
     }
 
@@ -83,11 +90,14 @@ object HttpFilter {
         this.rescue(context(request))
       }
       override def andThen(nextFilter: Filter): Filter = {
-        new WrappedFilter(nextFilter)
+        new SafeFilter(nextFilter)
       }
     }
 
-    class WrappedFilter(filter: Filter) extends HttpFilterBase {
+    /**
+      * Wraps the filter to properly return Future[Throwable] upon an error
+      */
+    class SafeFilter(filter: Filter) extends HttpFilterBase with LogSupport {
       override def apply(request: Req, context: Context): F[Resp] = {
         this.rescue(filter.apply(request, context))
       }
@@ -95,31 +105,8 @@ object HttpFilter {
 
     case class AndThen(prev: Filter, next: Filter) extends HttpFilterBase {
       override def apply(request: Req, context: Context): F[Resp] = {
-        rescue(prev.apply(request, next.andThen(context)))
-      }
-    }
-
-    case class AndThenHttpContext(filter: Filter, context: Context) extends Context {
-      override def apply(request: Req): F[Resp] = {
-        rescue {
-          filter.apply(request, new WrappedHttpContext(context))
-        }
-      }
-    }
-
-    private class WrappedHttpContext(context: Context) extends Context {
-      override def apply(request: Req): F[Resp] = {
-        rescue {
-          context.apply(request)
-        }
+        this.rescue(prev.apply(request, next.andThen(context)))
       }
     }
   }
-}
-
-/***
-  * Used for passing the subsequent actions to HttpFilter
-  */
-trait HttpContext[Req, Resp, F[_]] {
-  def apply(request: Req): F[Resp]
 }

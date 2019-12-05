@@ -30,6 +30,7 @@ import scala.reflect.runtime.{universe => ru}
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
+
   /**
     * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry limit)
     *

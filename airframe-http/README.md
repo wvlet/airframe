@@ -228,4 +228,86 @@ trait YourApi {
 }
 ```
 
+## Error Handling
+
+To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.
+
+```scala
+// This will return 403 http response to the client
+throw HttpServerException(request, HttpStatus.Forbidden_403, "Forbidden")
+```
+
+If the endpoint returns Future type, returning just `Future[Throwable]` (will produce 500 response code) or `Future[HttpServerException]` to customize the response code by yourself will also work.
+
+
+## Filters
+
+Router supports nesting HTTP request filters (e.g., authentication, logging) before processing the final `@EndPoint` method:
+
+```scala
+import wvlet.airframe._
+import wvlet.airframe.http._
+import wvlet.airframe.http.finagle._
+
+// Your endpoint definition
+class MyApp {
+  @Endpoint(method = HttpMethod.GET, path = "/user/:name")
+  def getUser(name: String): User = User(name)
+}
+
+// Implement FinagleFilter (or HttpFilter[Req, Resp, F])
+// to define a custom filter that will be applied before the endpoint processing.
+object LoggingFilter extends FinagleFilter with LogSupport {
+  def apply(request: Request, context: FinagleContext): Future[Response] = {
+    info(s"${request.path} is accessed")
+    // Call the child
+    context(request)
+  }
+}
+
+// Use .andThen[X] for nesting filters
+Router
+ .add[LoggingFilter]
+ .andThen[MyApp]
+```
+
+
+### Thread-Local Storage
+
+To pass data between filters and applications, you can use thread-local storage in the context:
+
+```scala
+object LoggingFilter extends FinagleFilter with LogSupport {
+  def apply(request: Request, context: FinagleContext): Future[Response] = {
+    context(request).map { response =>
+      // Read the thread-local parameter set in the context(request)
+      context.getThreadLocal[String]("user_id").map { uid =>
+        info(s"user_id: ${uid}")
+      }
+      response
+    }
+  }
+}
+
+object AuthFilter extends FinagleFilter {
+  def apply(request: Request, context: FinagleContext): Future[Response] = {
+    if(authorize(request)) {
+      request.getParam("user_id").map { uid =>
+        // Pass a thread-local parameter to the parent response handler
+        context.setThreadLocal("user_id", uid)
+      }
+    }
+    context(request)
+  }
+}
+
+
+Router
+  .add[LoggingFilter]
+  .andThen[AuthFilter]
+  .andThen[MyApp]
+```
+
+Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.
+
 

@@ -311,11 +311,10 @@ object Shell extends LogSupport {
             def listJDKIn(path: String) = {
               // TODO Oracle JVM (JRockit) support
               new File(path)
-                .listFiles().filter(
-                  x =>
-                    x.isDirectory
-                      && (x.getName.startsWith("jdk") || x.getName.startsWith("jre"))
-                      && hasJavaCommand(x.getAbsolutePath)
+                .listFiles().filter(x =>
+                  x.isDirectory
+                    && (x.getName.startsWith("jdk") || x.getName.startsWith("jre"))
+                    && hasJavaCommand(x.getAbsolutePath)
                 ).map(_.getAbsolutePath)
             }
             def latestJDK(jdkPath: Array[String]): Option[String] = {

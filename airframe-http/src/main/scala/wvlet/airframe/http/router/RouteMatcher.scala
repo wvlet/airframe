@@ -17,14 +17,16 @@ import wvlet.airframe.Session
 import Automaton.{DFA, NextNode}
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
+import scala.language.higherKinds
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
-  def call[Req: HttpRequestAdapter](
+  def call[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       controllerProvider: ControllerProvider,
-      request: Req
+      request: Req,
+      context: HttpContext[Req, Resp, F]
   ): Option[Any] = {
-    route.callWithProvider(session, controllerProvider, request, params)
+    route.callWithProvider(session, controllerProvider, request, params, context)
   }
 }
 
@@ -65,13 +67,12 @@ object RouteMatcher extends LogSupport {
     trace(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 
     dfa.nodeTable
-      .map(_._1).foreach(
-        state =>
-          if (state.size > 1 && state.forall(_.isTerminal)) {
-            throw new IllegalArgumentException(
-              s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
-            )
-          }
+      .map(_._1).foreach(state =>
+        if (state.size > 1 && state.forall(_.isTerminal)) {
+          throw new IllegalArgumentException(
+            s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
+          )
+        }
       )
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {

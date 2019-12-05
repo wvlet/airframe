@@ -24,6 +24,7 @@ import wvlet.log.LogSupport
 
 sealed trait Stage
 object Stage {
+
   /**
     * Initialize singletons lazily
     */
@@ -45,6 +46,7 @@ class SessionBuilder(
     addShutdownHook: Boolean = true,
     lifeCycleEventHandler: LifeCycleEventHandler = LifeCycleManager.defaultLifeCycleEventHandler
 ) extends LogSupport {
+
   /**
     * @param e
     * @return

@@ -19,6 +19,7 @@ import wvlet.airframe.http._
 import wvlet.airframe.surface.Surface
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.log.LogSupport
+import scala.language.higherKinds
 
 /**
   * A mapping from an HTTP endpoint to a corresponding method (or function)
@@ -39,17 +40,19 @@ trait Route {
   /**
     * Find a corresponding controller and call the matching methods
     */
-  def call[Req: HttpRequestAdapter](
+  def call[Req: HttpRequestAdapter, Resp, F[_]](
       controller: Any,
       request: Req,
-      params: Map[String, String]
+      params: Map[String, String],
+      context: HttpContext[Req, Resp, F]
   ): Any
 
-  private[http] def callWithProvider[Req: HttpRequestAdapter](
+  private[http] def callWithProvider[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       controllerProvider: ControllerProvider,
       request: Req,
-      params: Map[String, String]
+      params: Map[String, String],
+      context: HttpContext[Req, Resp, F]
   ): Option[Any]
 }
 
@@ -77,13 +80,14 @@ case class ControllerRoute(
   /**
     * Find a corresponding controller and call the matching methods
     */
-  override def call[Req: HttpRequestAdapter](
+  override def call[Req: HttpRequestAdapter, Resp, F[_]](
       controller: Any,
       request: Req,
-      params: Map[String, String]
+      params: Map[String, String],
+      context: HttpContext[Req, Resp, F]
   ): Any = {
     try {
-      val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, params)
+      val methodArgs = HttpRequestMapper.buildControllerMethodArgs(controller, methodSurface, request, context, params)
       methodSurface.call(controller, methodArgs: _*)
     } catch {
       case e: MessageCodecException[_] if e.errorCode == MISSING_PARAMETER =>
@@ -92,14 +96,15 @@ case class ControllerRoute(
     }
   }
 
-  override private[http] def callWithProvider[Req: HttpRequestAdapter](
+  override private[http] def callWithProvider[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       controllerProvider: ControllerProvider,
       request: Req,
-      params: Map[String, String]
+      params: Map[String, String],
+      context: HttpContext[Req, Resp, F]
   ): Option[Any] = {
     controllerProvider.findController(session, controllerSurface).map { controller =>
-      call(controller, request, params)
+      call(controller, request, params, context)
     }
   }
 }

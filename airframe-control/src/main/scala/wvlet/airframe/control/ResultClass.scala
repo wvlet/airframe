@@ -21,6 +21,7 @@ import wvlet.airframe.control.Retry.ExtraWait
 sealed trait ResultClass
 
 object ResultClass {
+
   /**
     * A label for the successful code execution result
     */

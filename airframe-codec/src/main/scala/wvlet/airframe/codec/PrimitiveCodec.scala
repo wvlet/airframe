@@ -663,14 +663,15 @@ object PrimitiveCodec {
         case ValueType.STRING =>
           val strByteLen = u.unpackRawStringHeader
           val strBinary  = u.readPayload(strByteLen)
-          val arr: Array[Byte] = try {
-            // Try decoding as base64
-            Base64.getDecoder.decode(strBinary)
-          } catch {
-            case e: IllegalArgumentException =>
-              // Raw string
-              strBinary
-          }
+          val arr: Array[Byte] =
+            try {
+              // Try decoding as base64
+              Base64.getDecoder.decode(strBinary)
+            } catch {
+              case e: IllegalArgumentException =>
+                // Raw string
+                strBinary
+            }
           v.setObject(arr)
         case _ =>
           // Set MessagePack binary

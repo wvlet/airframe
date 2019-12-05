@@ -13,9 +13,12 @@
  */
 package wvlet.airframe.http.finagle
 
+import java.util.concurrent.atomic.AtomicReference
+
+import com.twitter.finagle.context.Contexts
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.{Future, Promise, Return, Throw}
-import wvlet.airframe.http.{HttpBackend, HttpContext}
+import wvlet.airframe.http.{HttpBackend, HttpContext, HttpRequestAdapter}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -25,6 +28,8 @@ import scala.{concurrent => sc}
   * Finagle-based implementation of HttpBackend
   */
 object FinagleBackend extends HttpBackend[Request, Response, Future] {
+  override protected implicit val httpRequestAdapter: HttpRequestAdapter[Request] = FinagleHttpRequestAdapter
+
   override def wrapException(e: Throwable): Future[Response] = {
     Future.exception(e)
   }
@@ -61,5 +66,59 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
         body(request, context)
       }
     }
+  }
+
+  private val contextParamHolderKey = new Contexts.local.Key[AtomicReference[collection.mutable.Map[String, Any]]]
+
+  override def withThreadLocalStore(body: => Future[Response]): Future[Response] = {
+    val newParamHolder = collection.mutable.Map.empty[String, Any]
+    Contexts.local
+      .let(contextParamHolderKey, new AtomicReference[collection.mutable.Map[String, Any]](newParamHolder)) {
+        body
+      }
+  }
+
+  override def setThreadLocal[A](key: String, value: A): Unit = {
+    Contexts.local.get(contextParamHolderKey).foreach { ref =>
+      ref.get().put(key, value)
+    }
+  }
+
+  override def getThreadLocal[A](key: String): Option[A] = {
+    Contexts.local.get(contextParamHolderKey).flatMap { ref =>
+      ref.get.get(key).asInstanceOf[Option[A]]
+    }
+  }
+
+  override def newContext(body: Request => Future[Response]): HttpContext[Request, Response, Future] =
+    new HttpContext[Request, Response, Future] {
+      override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
+      override def apply(request: Request): Future[Response] = {
+        body(request)
+      }
+    }
+
+  override def filterAndThenContext(
+      filter: FinagleBackend.Filter,
+      context: FinagleBackend.Context
+  ): FinagleBackend.Context = new Context {
+    override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
+    override def apply(request: Request): Future[Response] = {
+      rescue {
+        filter.apply(request, new SafeHttpContext(context))
+      }
+    }
+  }
+
+  /**
+    * Wrapping Context execution with try-catch to return Future[Throwable] upon an error
+    */
+  private class SafeHttpContext(context: Context) extends Context {
+    override def apply(request: Request): Future[Response] = {
+      rescue {
+        context.apply(request)
+      }
+    }
+    override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
   }
 }

@@ -26,6 +26,7 @@ import scala.reflect.runtime.{universe => ru}
   * Session manages injected objects (e.g., Singleton)
   */
 trait Session extends AutoCloseable {
+
   /**
     * Name of the session (default: object hash code)
     */
@@ -141,6 +142,7 @@ trait Session extends AutoCloseable {
 }
 
 object Session extends LogSupport {
+
   /**
     * To provide an access to internal Session methods (e.g, get)
     *

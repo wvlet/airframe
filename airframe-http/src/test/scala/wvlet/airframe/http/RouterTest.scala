@@ -141,7 +141,7 @@ class RouterTest extends AirSpec {
         router
           .findRoute(request)
           .flatMap { m =>
-            m.call(session, serviceProvider, request)
+            m.call(session, serviceProvider, request, null)
           }
 
       ret shouldBe defined
