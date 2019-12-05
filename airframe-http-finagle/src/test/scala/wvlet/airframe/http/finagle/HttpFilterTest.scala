@@ -183,7 +183,7 @@ class HttpFilterTest extends AirSpec {
     val d = newFinagleServerDesign(name = "filter-error-test", router = router).noLifeCycleLogging
 
     d.build[FinagleServer] { server =>
-      IOUtil.withResource(Finagle.newSyncClient(server.localAddress)) { client =>
+      IOUtil.withResource(Finagle.client.noRetry.newSyncClient(server.localAddress)) { client =>
         val r = client.sendSafe(Request("/auth"))
         r.statusCode shouldBe Status.BadRequest.code
         r.contentString shouldBe "test-error"
