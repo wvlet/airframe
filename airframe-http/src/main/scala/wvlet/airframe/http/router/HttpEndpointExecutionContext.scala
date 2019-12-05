@@ -37,7 +37,7 @@ class HttpEndpointExecutionContextBase[Req: HttpRequestAdapter, Resp, F[_]](
     val result = {
       // Call the method in this controller
       try {
-        route.call(controller, request, routeMatch.params)
+        route.call(controller, request, routeMatch.params, this)
       } catch {
         case e: InvocationTargetException =>
           // Return the exception from the target method

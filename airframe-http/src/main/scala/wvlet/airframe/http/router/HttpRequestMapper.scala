@@ -15,12 +15,13 @@ package wvlet.airframe.http.router
 
 import wvlet.airframe.codec.PrimitiveCodec.StringCodec
 import wvlet.airframe.codec.{JSONCodec, MessageCodec, MessageCodecFactory}
-import wvlet.airframe.http.{HttpMethod, HttpRequest, HttpRequestAdapter}
+import wvlet.airframe.http.{HttpContext, HttpMethod, HttpRequest, HttpRequestAdapter}
 import wvlet.airframe.json.JSON
 import wvlet.airframe.msgpack.spi.MessagePack
 import wvlet.airframe.surface.reflect.ReflectMethodSurface
 import wvlet.airframe.surface.{OptionSurface, Zero}
 import wvlet.log.LogSupport
+import scala.language.higherKinds
 
 import scala.util.Try
 
@@ -30,12 +31,13 @@ import scala.util.Try
 object HttpRequestMapper extends LogSupport {
   private val stringMapCodec = MessageCodec.of[Map[String, String]]
 
-  def buildControllerMethodArgs[Req](
+  def buildControllerMethodArgs[Req, Resp, F[_]](
       // This instance is necessary to retrieve the default method argument values
       controller: Any,
       // The target method surface to call
       methodSurface: ReflectMethodSurface,
       request: Req,
+      context: HttpContext[Req, Resp, F],
       // Additional parameters
       params: Map[String, String]
   )(
@@ -55,6 +57,8 @@ object HttpRequestMapper extends LogSupport {
             adapter.httpRequestOf(request)
           case cl if adapter.requestType.isAssignableFrom(cl) =>
             request
+          case cl if classOf[HttpContext[Req, Resp, F]].isAssignableFrom(cl) =>
+            context
           case _ =>
             // Build from the string value in the request params
             val argCodec = MessageCodecFactory.defaultFactory.of(argSurface)
