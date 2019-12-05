@@ -252,6 +252,83 @@ without some transformations. With MessagePack, you can send the data to the cli
 <span class="o">}</span>
 </code></pre></div></div>
 
+<h2 id="error-handling">Error Handling</h2>
+
+<p>To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// This will return 403 http response to the client
+</span><span class="k">throw</span> <span class="nc">HttpServerException</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="nv">HttpStatus</span><span class="o">.</span><span class="py">Forbidden_403</span><span class="o">,</span> <span class="s">"Forbidden"</span><span class="o">)</span>
+</code></pre></div></div>
+
+<p>If the endpoint returns Future type, returning just <code class="highlighter-rouge">Future[Throwable]</code> (will produce 500 response code) or <code class="highlighter-rouge">Future[HttpServerException]</code> to customize the response code by yourself will also work.</p>
+
+<h2 id="filters">Filters</h2>
+
+<p>Router supports nesting HTTP request filters (e.g., authentication, logging) before processing the final <code class="highlighter-rouge">@EndPoint</code> method:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">import</span> <span class="nn">wvlet.airframe._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.http._</span>
+<span class="k">import</span> <span class="nn">wvlet.airframe.http.finagle._</span>
+
+<span class="c1">// Your endpoint definition
+</span><span class="k">class</span> <span class="nc">MyApp</span> <span class="o">{</span>
+  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">method</span> <span class="k">=</span> <span class="nv">HttpMethod</span><span class="o">.</span><span class="py">GET</span><span class="o">,</span> <span class="n">path</span> <span class="k">=</span> <span class="s">"/user/:name"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">getUser</span><span class="o">(</span><span class="n">name</span><span class="k">:</span> <span class="kt">String</span><span class="o">)</span><span class="k">:</span> <span class="kt">User</span> <span class="o">=</span> <span class="nc">User</span><span class="o">(</span><span class="n">name</span><span class="o">)</span>
+<span class="o">}</span>
+
+<span class="c1">// Implement FinagleFilter (or HttpFilter[Req, Resp, F])
+// to define a custom filter that will be applied before the endpoint processing.
+</span><span class="k">object</span> <span class="nc">LoggingFilter</span> <span class="k">extends</span> <span class="nc">FinagleFilter</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="nf">apply</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">,</span> <span class="n">context</span><span class="k">:</span> <span class="kt">FinagleContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Response</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nf">info</span><span class="o">(</span><span class="n">s</span><span class="s">"${request.path} is accessed"</span><span class="o">)</span>
+    <span class="c1">// Call the child
+</span>    <span class="nf">context</span><span class="o">(</span><span class="n">request</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// Use .andThen[X] for nesting filters
+</span><span class="nc">Router</span>
+ <span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">LoggingFilter</span><span class="o">]</span>
+ <span class="o">.</span><span class="py">andThen</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]</span>
+</code></pre></div></div>
+
+<h3 id="thread-local-storage">Thread-Local Storage</h3>
+
+<p>To pass data between filters and applications, you can use thread-local storage in the context:</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">object</span> <span class="nc">LoggingFilter</span> <span class="k">extends</span> <span class="nc">FinagleFilter</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="nf">apply</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">,</span> <span class="n">context</span><span class="k">:</span> <span class="kt">FinagleContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Response</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nf">context</span><span class="o">(</span><span class="n">request</span><span class="o">).</span><span class="py">map</span> <span class="o">{</span> <span class="n">response</span> <span class="k">=&gt;</span>
+      <span class="c1">// Read the thread-local parameter set in the context(request)
+</span>      <span class="nv">context</span><span class="o">.</span><span class="py">getThreadLocal</span><span class="o">[</span><span class="kt">String</span><span class="o">](</span><span class="s">"user_id"</span><span class="o">).</span><span class="py">map</span> <span class="o">{</span> <span class="n">uid</span> <span class="k">=&gt;</span>
+        <span class="nf">info</span><span class="o">(</span><span class="n">s</span><span class="s">"user_id: ${uid}"</span><span class="o">)</span>
+      <span class="o">}</span>
+      <span class="n">response</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="k">object</span> <span class="nc">AuthFilter</span> <span class="k">extends</span> <span class="nc">FinagleFilter</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="nf">apply</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">,</span> <span class="n">context</span><span class="k">:</span> <span class="kt">FinagleContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Response</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="nf">if</span><span class="o">(</span><span class="nf">authorize</span><span class="o">(</span><span class="n">request</span><span class="o">))</span> <span class="o">{</span>
+      <span class="nv">request</span><span class="o">.</span><span class="py">getParam</span><span class="o">(</span><span class="s">"user_id"</span><span class="o">).</span><span class="py">map</span> <span class="o">{</span> <span class="n">uid</span> <span class="k">=&gt;</span>
+        <span class="c1">// Pass a thread-local parameter to the parent response handler
+</span>        <span class="nv">context</span><span class="o">.</span><span class="py">setThreadLocal</span><span class="o">(</span><span class="s">"user_id"</span><span class="o">,</span> <span class="n">uid</span><span class="o">)</span>
+      <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="nf">context</span><span class="o">(</span><span class="n">request</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="nc">Router</span>
+  <span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">LoggingFilter</span><span class="o">]</span>
+  <span class="o">.</span><span class="py">andThen</span><span class="o">[</span><span class="kt">AuthFilter</span><span class="o">]</span>
+  <span class="o">.</span><span class="py">andThen</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]</span>
+</code></pre></div></div>
+
+<p>Using local variables inside filters will not work because the request processing will happen when Future[X] is evaluated, so we must use thead-local parmeter holder, which will be prepared for each request call.</p>
+
 </section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
 hljs.initHighlighting();
               </script><script>((window.gitter = {}).chat = {}).options = {
