@@ -37,6 +37,7 @@ import scala.reflect.runtime.{universe => ru}
   * Command launcher
   */
 object Launcher extends LogSupport {
+
   /**
     * Create a new Launcher of the given type
     *

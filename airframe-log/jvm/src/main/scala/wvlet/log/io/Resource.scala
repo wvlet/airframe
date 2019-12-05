@@ -42,6 +42,7 @@ trait ResourceReader {
   * @author leo
   */
 object Resource {
+
   /**
     * Open a resource as a stream, then execute the code block using the stream
     *
@@ -154,6 +155,7 @@ object Resource {
     *
     */
   abstract trait VirtualFile {
+
     /**
       * Gets the logical path of the file.
       * For example, if this VirtualFile' URL is "file:/somewhere/org/xerial/util/FileResource.java",

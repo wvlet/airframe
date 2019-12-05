@@ -171,14 +171,13 @@ object ReflectSurfaceFactory extends LogSupport {
 
     private def allMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
       t.members.sorted // Sort the members in the source code order
-        .filter(
-          x =>
-            x.isMethod &&
-              !x.isConstructor &&
-              !x.isImplementationArtifact
-              && !x.isImplicit
-            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-              && !x.isSynthetic
+        .filter(x =>
+          x.isMethod &&
+            !x.isConstructor &&
+            !x.isImplementationArtifact
+            && !x.isImplicit
+          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+            && !x.isSynthetic
         )
         .map(_.asMethod)
         .filter { x =>
@@ -550,9 +549,8 @@ object ReflectSurfaceFactory extends LogSupport {
           outer.orElse {
             val contextClass = getFirstParamTypeOfPrimaryConstructor(rawType)
             val msg = contextClass
-              .map(
-                x =>
-                  s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
+              .map(x =>
+                s" Call Surface.of[${rawType.getSimpleName}] or bind[${rawType.getSimpleName}].toXXX where `this` points to an instance of ${x}"
               ).getOrElse(
                 ""
               )

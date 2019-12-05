@@ -146,6 +146,7 @@ class ChromeTracer(s: OutputStream) extends Tracer {
 }
 
 object ChromeTracer {
+
   /**
     * Create a chrome tracing format tracer to save the data to the given file
     *

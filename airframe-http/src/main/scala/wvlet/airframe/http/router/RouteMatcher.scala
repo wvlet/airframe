@@ -67,13 +67,12 @@ object RouteMatcher extends LogSupport {
     trace(s"DFA for ${routes.size} ${targetMethod} requests:\n${dfa}")
 
     dfa.nodeTable
-      .map(_._1).foreach(
-        state =>
-          if (state.size > 1 && state.forall(_.isTerminal)) {
-            throw new IllegalArgumentException(
-              s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
-            )
-          }
+      .map(_._1).foreach(state =>
+        if (state.size > 1 && state.forall(_.isTerminal)) {
+          throw new IllegalArgumentException(
+            s"Found multiple matching routes: ${state.map(_.route).flatten.map(p => s"${p.path}").mkString(", ")} "
+          )
+        }
       )
 
     def findRoute[Req](request: Req)(implicit tp: HttpRequestAdapter[Req]): Option[RouteMatch] = {

@@ -20,6 +20,7 @@ import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
   *
   */
 object Fluentd {
+
   /**
     * A design for using Fluency-backed FluentdClient
     *

@@ -17,6 +17,7 @@ package wvlet.airframe.msgpack.spi
   *
   */
 trait MessageSource extends AutoCloseable {
+
   /**
     * Returns a next buffer to read.
     * <p>
