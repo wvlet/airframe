@@ -83,11 +83,13 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
       ref.get().put(key, value)
     }
   }
+
   override def getContextParam[A](key: String): Option[A] = {
     Contexts.local.get(contextParamHolderKey).flatMap { ref =>
       ref.get.get(key).asInstanceOf[Option[A]]
     }
   }
+
   override def newContext(body: Request => Future[Response]): HttpContext[Request, Response, Future] =
     new HttpContext[Request, Response, Future] {
       override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
@@ -95,17 +97,23 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
         body(request)
       }
     }
+
   override def filterAndThenContext(
       filter: FinagleBackend.Filter,
       context: FinagleBackend.Context
   ): FinagleBackend.Context = new Context {
     override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
     override def apply(request: Request): Future[Response] = {
-      filter.apply(request, new WrappedHttpContext(context))
+      rescue {
+        filter.apply(request, new SafeHttpContext(context))
+      }
     }
   }
 
-  private class WrappedHttpContext(context: Context) extends Context {
+  /**
+    * Wrapping Context execution with try-catch to return Future[Throwable] upon an error
+    */
+  private class SafeHttpContext(context: Context) extends Context {
     override def apply(request: Request): Future[Response] = {
       rescue {
         context.apply(request)

@@ -13,6 +13,8 @@
  */
 package wvlet.airframe.http
 
+import wvlet.log.LogSupport
+
 import scala.language.higherKinds
 import scala.util.control.NonFatal
 
@@ -48,7 +50,6 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
 }
 
 object HttpFilter {
-
   /**
     * A base class for generating filters for Finagle or other HTTP server backend
     * @tparam Req
@@ -84,13 +85,16 @@ object HttpFilter {
         this.rescue(context(request))
       }
       override def andThen(nextFilter: Filter): Filter = {
-        new WrappedFilter(nextFilter)
+        new SafeFilter(nextFilter)
       }
     }
 
-    class WrappedFilter(filter: Filter) extends HttpFilterBase {
+    /**
+      * Wraps the filter to properly return Future[Throwable] upon an error
+      */
+    class SafeFilter(filter: Filter) extends HttpFilterBase with LogSupport {
       override def apply(request: Req, context: Context): F[Resp] = {
-        this.rescue(filter.apply(request, context))
+        factory.rescue(filter.apply(request, context))
       }
     }
 
