@@ -21,7 +21,7 @@ trait HttpContext[Req, Resp, F[_]] {
   protected def backend: HttpBackend[Req, Resp, F]
 
   /**
-    * Process the http request and return the Future[Resp]. This will be the terminal of chained http filters.
+    * Process the preceding filters and get the resulting Future[Response]
     */
   def apply(request: Req): F[Resp]
 
@@ -43,17 +43,11 @@ trait HttpContext[Req, Resp, F[_]] {
   def getThreadLocal[A](key: String): Option[A] = {
     backend.getThreadLocal(key)
   }
-
-  private[http] def prependFilter(
-      filter: HttpFilter[Req, Resp, F]
-  ): HttpContext[Req, Resp, F] = {
-    new HttpContext.FilterAndThenContext[Req, Resp, F](backend, filter, this)
-  }
 }
 
 object HttpContext {
 
-  private class FilterAndThenContext[Req, Resp, F[_]](
+  private[http] class FilterAndThenContext[Req, Resp, F[_]](
       protected val backend: HttpBackend[Req, Resp, F],
       filter: HttpFilter[Req, Resp, F],
       context: HttpContext[Req, Resp, F]

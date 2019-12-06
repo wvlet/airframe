@@ -25,7 +25,7 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
   protected def backend: HttpBackend[Req, Resp, F]
 
   // Wrap an exception and returns F[Exception]
-  protected def wrapException(e: Throwable): F[Resp] = wrapException(e)
+  protected def wrapException(e: Throwable): F[Resp] = backend.wrapException(e)
 
   /**
     * Implementations of HttpFilter must wrap an exception occurred in the filter.apply(request, context) with F[_]
@@ -40,7 +40,9 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
     new HttpFilter.AndThen[Req, Resp, F](backend, this, nextFilter)
 
   // End the filter chain with the given HttpContext
-  def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F] = context.prependFilter(this)
+  def andThen(context: HttpContext[Req, Resp, F]): HttpContext[Req, Resp, F] = {
+    new HttpContext.FilterAndThenContext[Req, Resp, F](backend, this, context)
+  }
 }
 
 object HttpFilter {
@@ -49,13 +51,17 @@ object HttpFilter {
       baseBackend: HttpBackend[Req, Resp, F],
       body: (Req, HttpContext[Req, Resp, F]) => F[Resp]
   ): HttpFilter[Req, Resp, F] = new HttpFilter[Req, Resp, F] {
-    override protected def backend: HttpBackend[Req, Resp, F]                     = baseBackend
-    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = body(request, context)
+    override protected def backend: HttpBackend[Req, Resp, F] = baseBackend
+    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
+      rescue {
+        body(request, context)
+      }
+    }
   }
 
   def identity[Req, Resp, F[_]](backend: HttpBackend[Req, Resp, F]) = new Identity(backend)
 
-  private[http] class AndThen[Req, Resp, F[_]](
+  private class AndThen[Req, Resp, F[_]](
       protected val backend: HttpBackend[Req, Resp, F],
       prev: HttpFilter[Req, Resp, F],
       next: HttpFilter[Req, Resp, F]
@@ -69,18 +75,6 @@ object HttpFilter {
       extends HttpFilter[Req, Resp, F] {
     override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
       rescue(context(request))
-    }
-  }
-
-  /**
-    * Wraps the filter to properly return Future[Throwable] upon an error
-    */
-  private[http] class SafeFilter[Req, Resp, F[_]](
-      protected val backend: HttpBackend[Req, Resp, F],
-      filter: HttpFilter[Req, Resp, F]
-  ) extends HttpFilter[Req, Resp, F] {
-    override def apply(request: Req, context: HttpContext[Req, Resp, F]): F[Resp] = {
-      rescue(filter.apply(request, context))
     }
   }
 }
