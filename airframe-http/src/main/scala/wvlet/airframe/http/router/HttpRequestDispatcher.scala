@@ -13,21 +13,17 @@
  */
 package wvlet.airframe.http.router
 
-import java.lang.reflect.InvocationTargetException
-
 import wvlet.airframe.Session
-import wvlet.airframe.http.HttpFilter.Identity
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
-import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
-  *
+  * Create a filter for dispatching HTTP requests to controller methods with @Endpoint annotation
   */
-object HttpRequestDispatcher {
+object HttpRequestDispatcher extends LogSupport {
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       router: Router,
@@ -37,24 +33,24 @@ object HttpRequestDispatcher {
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildRouteFilters(session, router, HttpFilter.identity(backend), controllerProvider)
+      HttpRequestDispatcher.buildRouteFilters(session, router, backend.identityFilter, controllerProvider)
     }
 
-    HttpFilter.newFilter[Req, Resp, F](
-      backend, { (request: Req, context: HttpContext[Req, Resp, F]) =>
-        router.findRoute(request) match {
-          case Some(routeMatch) =>
-            // Find a filter for the matched route
-            val routeFilter    = filterTable(routeMatch.route)
-            val context        = backend.newControllerContext(routeMatch, responseHandler, routeFilter.controller)
-            val currentService = routeFilter.filter.andThen(context)
-            currentService(request)
-          case None =>
-            // No matching route is found
-            context.apply(request)
-        }
+    backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
+      router.findRoute(request) match {
+        case Some(routeMatch) =>
+          // Find a filter for the matched route
+          val routeFilter = filterTable(routeMatch.route)
+          // Create a new context for processing the matched route with the controller
+          val context =
+            new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller)
+          val currentService = routeFilter.filter.andThen(context)
+          currentService(request)
+        case None =>
+          // No matching route is found
+          context.apply(request)
       }
-    )
+    }
   }
 
   /**
@@ -92,4 +88,5 @@ object HttpRequestDispatcher {
     }
     m.result()
   }
+
 }

@@ -22,16 +22,18 @@ import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
-  *  Call a controller method by mapping the request parameters to the method arguments.
-  *  This will be the last context after applying preceding filters
+  *  Create the terminal request handler for processing a method with @EndPoint annotation.
+  *
+  *  This handler will call a controller method with the request parameters build from the method arguments.
   */
-class HttpEndpointExecutionContextBase[Req: HttpRequestAdapter, Resp, F[_]](
+class HttpEndpointExecutionContext[Req: HttpRequestAdapter, Resp, F[_]](
     protected val backend: HttpBackend[Req, Resp, F],
     routeMatch: RouteMatch,
-    controller: Any,
-    responseHandler: ResponseHandler[Req, Resp]
+    responseHandler: ResponseHandler[Req, Resp],
+    controller: Any
 ) extends HttpContext[Req, Resp, F]
     with LogSupport {
+
   override def apply(request: Req): F[Resp] = {
     val route = routeMatch.route
     val result = {

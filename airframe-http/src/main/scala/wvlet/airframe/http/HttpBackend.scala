@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.router.{HttpEndpointExecutionContextBase, ResponseHandler, RouteMatch}
-
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 import scala.util.control.NonFatal
@@ -55,6 +53,8 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
     HttpFilter.newFilter[Req, Resp, F](self, body)
   }
 
+  def identityFilter: Filter = HttpFilter.identity(self)
+
   // Prepare a thread-local holder for passing parameter values
   def withThreadLocalStore(request: => F[Resp]): F[Resp]
 
@@ -69,17 +69,8 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
     new HttpContext[Req, Resp, F] {
       override protected def backend: HttpBackend[Req, Resp, F] = self
       override def apply(request: Req): F[Resp] = {
-        body(request)
+        rescue(body(request))
       }
     }
-  }
-
-  // Create a new context for the matched route with its controller
-  def newControllerContext(
-      routeMatch: RouteMatch,
-      responseHandler: ResponseHandler[Req, Resp],
-      controller: Any
-  ): HttpEndpointExecutionContextBase[Req, Resp, F] = {
-    new HttpEndpointExecutionContextBase[Req, Resp, F](this, routeMatch, controller, responseHandler)
   }
 }

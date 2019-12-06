@@ -15,14 +15,17 @@ package wvlet.airframe.http
 import scala.language.higherKinds
 
 /***
-  * Used for passing the subsequent actions to HttpFilter
+  * Used for passing the subsequent actions to HttpFilter and for defining the leaf action of request processing chain.
   */
 trait HttpContext[Req, Resp, F[_]] {
   protected def backend: HttpBackend[Req, Resp, F]
 
+  /**
+    * Process the http request and return the Future[Resp]. This will be the terminal of chained http filters.
+    */
   def apply(request: Req): F[Resp]
 
-  // Prepare a thread-local context parameter holder
+  // Prepare a thread-local context parameter holder that can be used inside the body code block
   def withThreadLocalStore(body: => F[Resp]): F[Resp] = {
     backend.withThreadLocalStore(body)
   }
@@ -44,20 +47,20 @@ trait HttpContext[Req, Resp, F[_]] {
   private[http] def prependFilter(
       filter: HttpFilter[Req, Resp, F]
   ): HttpContext[Req, Resp, F] = {
-    HttpContext.FilterAndThenContext[Req, Resp, F](backend, filter, this)
+    new HttpContext.FilterAndThenContext[Req, Resp, F](backend, filter, this)
   }
 }
 
 object HttpContext {
 
-  private case class FilterAndThenContext[Req, Resp, F[_]](
-      backend: HttpBackend[Req, Resp, F],
+  private class FilterAndThenContext[Req, Resp, F[_]](
+      protected val backend: HttpBackend[Req, Resp, F],
       filter: HttpFilter[Req, Resp, F],
       context: HttpContext[Req, Resp, F]
   ) extends HttpContext[Req, Resp, F] {
     override def apply(request: Req): F[Resp] = {
       backend.rescue {
-        filter.apply(request, SafeHttpContext(backend, context))
+        filter.apply(request, new SafeHttpContext(backend, context))
       }
     }
   }
@@ -65,8 +68,8 @@ object HttpContext {
   /**
     * Wrapping Context execution with try-catch to return Future[Throwable] upon an error
     */
-  private case class SafeHttpContext[Req, Resp, F[_]](
-      backend: HttpBackend[Req, Resp, F],
+  private class SafeHttpContext[Req, Resp, F[_]](
+      protected val backend: HttpBackend[Req, Resp, F],
       context: HttpContext[Req, Resp, F]
   ) extends HttpContext[Req, Resp, F] {
     override def apply(request: Req): F[Resp] = {
