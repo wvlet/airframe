@@ -35,7 +35,12 @@ object HttpRequestDispatcher extends LogSupport {
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildMappingsFromRouteToFilter(session, router, backend.identityFilter, controllerProvider)
+      HttpRequestDispatcher.buildMappingsFromRouteToFilter(
+        session,
+        router,
+        backend.defaultFilter,
+        controllerProvider
+      )
     }
 
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>

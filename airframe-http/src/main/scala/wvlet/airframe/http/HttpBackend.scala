@@ -21,6 +21,7 @@ import scala.util.control.NonFatal
   * A base interface to implement http-server specific implementation
   */
 trait HttpBackend[Req, Resp, F[_]] { self =>
+
   type Filter  = HttpFilter[Req, Resp, F]
   type Context = HttpContext[Req, Resp, F]
 
@@ -49,11 +50,15 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
   // Map Future[A] into Future[B]
   def mapF[A, B](f: F[A], body: A => B): F[B]
 
+  // Create a new Filter for this backend
   def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter = {
     HttpFilter.newFilter[Req, Resp, F](self, body)
   }
+  // Create a new default filter just for processing preceding filters
+  def defaultFilter: Filter = HttpFilter.defaultFilter(self)
 
-  def identityFilter: Filter = HttpFilter.identity(self)
+  // Create a new default context that process the given request
+  def newContext(body: Req => F[Resp]): Context = HttpContext.newContext[Req, Resp, F](self, body)
 
   // Prepare a thread-local holder for passing parameter values
   def withThreadLocalStore(request: => F[Resp]): F[Resp]
@@ -64,13 +69,4 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
   // Get a thread-local context parameter
   def getThreadLocal[A](key: String): Option[A]
 
-  // Create a new default context that process the given request
-  def newContext(body: Req => F[Resp]): HttpContext[Req, Resp, F] = {
-    new HttpContext[Req, Resp, F] {
-      override protected def backend: HttpBackend[Req, Resp, F] = self
-      override def apply(request: Req): F[Resp] = {
-        rescue(body(request))
-      }
-    }
-  }
 }
