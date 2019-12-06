@@ -50,6 +50,17 @@ class StaticContentTest extends AirSpec {
       client.get[String]("/html/../hidden/secret.txt")
     }
     ex.status shouldBe HttpStatus.Forbidden_403
+
+    val ex2 = intercept[HttpClientException] {
+      client.get[String]("/html/dummy/../../hidden/secret.txt")
+    }
+    ex2.status shouldBe HttpStatus.Forbidden_403
+  }
+
+  def `support safe relative paths`(client: FinagleSyncClient): Unit = {
+    // OK
+    val html = client.get[String]("/html/asset/../index.html")
+    html.contains("Hello Airframe HTTP!") shouldBe true
   }
 
   def `set content-type`(client: FinagleSyncClient): Unit = {
