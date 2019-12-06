@@ -44,6 +44,36 @@ trait HttpContext[Req, Resp, F[_]] {
   private[http] def prependFilter(
       filter: HttpFilter[Req, Resp, F]
   ): HttpContext[Req, Resp, F] = {
-    backend.filterAndThenContext(filter, this)
+    HttpContext.FilterAndThenContext[Req, Resp, F](backend, filter, this)
   }
+}
+
+object HttpContext {
+
+  private case class FilterAndThenContext[Req, Resp, F[_]](
+      backend: HttpBackend[Req, Resp, F],
+      filter: HttpFilter[Req, Resp, F],
+      context: HttpContext[Req, Resp, F]
+  ) extends HttpContext[Req, Resp, F] {
+    override def apply(request: Req): F[Resp] = {
+      backend.rescue {
+        filter.apply(request, SafeHttpContext(backend, context))
+      }
+    }
+  }
+
+  /**
+    * Wrapping Context execution with try-catch to return Future[Throwable] upon an error
+    */
+  private case class SafeHttpContext[Req, Resp, F[_]](
+      backend: HttpBackend[Req, Resp, F],
+      context: HttpContext[Req, Resp, F]
+  ) extends HttpContext[Req, Resp, F] {
+    override def apply(request: Req): F[Resp] = {
+      backend.rescue {
+        context.apply(request)
+      }
+    }
+  }
+
 }

@@ -16,6 +16,7 @@ package wvlet.airframe.http.router
 import java.lang.reflect.InvocationTargetException
 
 import wvlet.airframe.Session
+import wvlet.airframe.http.HttpFilter.Identity
 import wvlet.airframe.http.Router.RouteFilter
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
@@ -36,22 +37,24 @@ object HttpRequestDispatcher {
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
     val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildRouteFilters(session, router, backend.Identity, controllerProvider)
+      HttpRequestDispatcher.buildRouteFilters(session, router, HttpFilter.identity(backend), controllerProvider)
     }
 
-    backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
-      router.findRoute(request) match {
-        case Some(routeMatch) =>
-          // Find a filter for the matched route
-          val routeFilter    = filterTable(routeMatch.route)
-          val context        = backend.newControllerContext(routeMatch, responseHandler, routeFilter.controller)
-          val currentService = routeFilter.filter.andThen(context)
-          currentService(request)
-        case None =>
-          // No matching route is found
-          context.apply(request)
+    HttpFilter.newFilter[Req, Resp, F](
+      backend, { (request: Req, context: HttpContext[Req, Resp, F]) =>
+        router.findRoute(request) match {
+          case Some(routeMatch) =>
+            // Find a filter for the matched route
+            val routeFilter    = filterTable(routeMatch.route)
+            val context        = backend.newControllerContext(routeMatch, responseHandler, routeFilter.controller)
+            val currentService = routeFilter.filter.andThen(context)
+            currentService(request)
+          case None =>
+            // No matching route is found
+            context.apply(request)
+        }
       }
-    }
+    )
   }
 
   /**

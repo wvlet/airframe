@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 import com.twitter.finagle.context.Contexts
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.{Future, Promise, Return, Throw}
-import wvlet.airframe.http.{HttpBackend, HttpContext, HttpRequestAdapter}
+import wvlet.airframe.http.{HttpBackend, HttpRequestAdapter}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -60,13 +60,6 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   override def mapF[A, B](f: Future[A], body: A => B): Future[B] = {
     f.map(body)
   }
-  override def newFilter(body: (Request, HttpContext[Request, Response, Future]) => Future[Response]): Filter = {
-    new HttpFilterBase {
-      override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
-        body(request, context)
-      }
-    }
-  }
 
   private val contextParamHolderKey = new Contexts.local.Key[AtomicReference[collection.mutable.Map[String, Any]]]
 
@@ -88,37 +81,5 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
     Contexts.local.get(contextParamHolderKey).flatMap { ref =>
       ref.get.get(key).asInstanceOf[Option[A]]
     }
-  }
-
-  override def newContext(body: Request => Future[Response]): HttpContext[Request, Response, Future] =
-    new HttpContext[Request, Response, Future] {
-      override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
-      override def apply(request: Request): Future[Response] = {
-        body(request)
-      }
-    }
-
-  override def filterAndThenContext(
-      filter: FinagleBackend.Filter,
-      context: FinagleBackend.Context
-  ): FinagleBackend.Context = new Context {
-    override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
-    override def apply(request: Request): Future[Response] = {
-      rescue {
-        filter.apply(request, new SafeHttpContext(context))
-      }
-    }
-  }
-
-  /**
-    * Wrapping Context execution with try-catch to return Future[Throwable] upon an error
-    */
-  private class SafeHttpContext(context: Context) extends Context {
-    override def apply(request: Request): Future[Response] = {
-      rescue {
-        context.apply(request)
-      }
-    }
-    override protected def backend: HttpBackend[Request, Response, Future] = FinagleBackend.this
   }
 }
