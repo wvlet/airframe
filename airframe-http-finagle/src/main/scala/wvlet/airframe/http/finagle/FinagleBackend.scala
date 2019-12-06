@@ -33,7 +33,7 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   override def wrapException(e: Throwable): Future[Response] = {
     Future.exception(e)
   }
-  override def newResponse(status:  HttpStatus, content:  String): Response = {
+  override def newResponse(status: HttpStatus, content: String): Response = {
     val r = Response(Status.fromCode(status.code))
     r.contentString = content
     r

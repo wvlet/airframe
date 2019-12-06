@@ -27,7 +27,7 @@ trait HttpBackend[Req, Resp, F[_]] { self =>
 
   protected implicit val httpRequestAdapter: HttpRequestAdapter[Req]
 
-  def newResponse(status:HttpStatus, content:String=""): Resp
+  def newResponse(status: HttpStatus, content: String = ""): Resp
 
   def toFuture[A](a: A): F[A]
   // Convert Scala's Future into the this backend's Future

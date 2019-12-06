@@ -12,22 +12,23 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
+import com.twitter.finagle.http.Response
 import wvlet.airframe.Design
-import wvlet.airframe.http.{Endpoint, HttpClientException, HttpStatus, Router, StaticContent}
+import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
-
 
 object StaticContentTest {
 
   trait StaticContentServer {
     @Endpoint(path = "/html/*path")
-    def staticContent(path:String) = StaticContent.fromResource(basePath=s"/wvlet/airframe/http/finagle/static", path)
+    def staticContent(path: String) =
+      StaticContent.fromResource(basePath = s"/wvlet/airframe/http/finagle/static", path)
   }
 }
 
 /**
- *
- */
+  *
+  */
 class StaticContentTest extends AirSpec {
 
   override protected def design: Design = {
@@ -37,9 +38,11 @@ class StaticContentTest extends AirSpec {
   }
 
   def `serve static contents from resources in classpath`(client: FinagleSyncClient): Unit = {
-    val html = client.get[String]("/html/index.html")
+    val res  = client.get[Response]("/html/index.html")
+    val html = res.contentString
     debug(html)
     html.contains("Hello Airframe HTTP!") shouldBe true
+    res.contentType shouldBe Some("text/html")
   }
 
   def `forbid accessing parent resources`(client: FinagleSyncClient): Unit = {
@@ -49,4 +52,17 @@ class StaticContentTest extends AirSpec {
     ex.status shouldBe HttpStatus.Forbidden_403
   }
 
+  def `set content-type`(client: FinagleSyncClient): Unit = {
+    def check(path: String, expectedContentType: String): Unit = {
+      val r = client.get[Response](path)
+      r.contentType shouldBe Some(expectedContentType)
+    }
+
+    check("/html/index.html", "text/html")
+    check("/html/asset/style.css", "text/css")
+    check("/html/data/sample.json", "application/json")
+    check("/html/asset/test.js", "application/javascript")
+
+    // TODO add more coverage
+  }
 }

@@ -34,7 +34,7 @@ package object finagle {
     */
   def finagleBaseDesign: Design =
     Design.newDesign
-      // Define binding here to avoid this will be initialized in a child session
+    // Define binding here to avoid this will be initialized in a child session
       .bind[FinagleServerFactory].toSingleton
       .bind[FinagleService].toProvider { (config: FinagleServerConfig, session: Session) =>
         config.newService(session)
@@ -67,15 +67,17 @@ package object finagle {
   }
 
   def finagleClientDesign: Design = {
-    Design
-      .newDesign
-      .bind[FinagleClient].toProvider{ server: FinagleServer => Finagle.client.newClient(server.localAddress) }
+    Design.newDesign
+      .bind[FinagleClient].toProvider { server: FinagleServer =>
+        Finagle.client.newClient(server.localAddress)
+      }
   }
 
   def finagleSyncClientDesign: Design = {
-    Design
-      .newDesign
-      .bind[FinagleSyncClient].toProvider{ server: FinagleServer => Finagle.client.newSyncClient(server.localAddress) }
+    Design.newDesign
+      .bind[FinagleSyncClient].toProvider { server: FinagleServer =>
+        Finagle.client.newSyncClient(server.localAddress)
+      }
   }
 
   implicit class FinagleHttpRequest(val raw: http.Request) extends HttpRequest[http.Request] {

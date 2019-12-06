@@ -18,25 +18,22 @@ import wvlet.log.io.{IOUtil, Resource}
 import scala.annotation.tailrec
 
 /**
- * Helper for returning static contents
- */
+  * Helper for returning static contents
+  */
 object StaticContent extends LogSupport {
 
-  private def isSafeRelativePath(path:String): Boolean = {
+  private def isSafeRelativePath(path: String): Boolean = {
     @tailrec
-    def loop(pos:Int, path:List[String]): Boolean = {
-      if(pos < 0) {
+    def loop(pos: Int, path: List[String]): Boolean = {
+      if (pos < 0) {
         false
-      }
-      else if(path.isEmpty) {
+      } else if (path.isEmpty) {
         true
-      }
-      else {
-        if(path.head == "..") {
-          loop(-1, path.tail)
-        }
-        else {
-          loop(pos+1, path.tail)
+      } else {
+        if (path.head == "..") {
+          loop(pos - 1, path.tail)
+        } else {
+          loop(pos + 1, path.tail)
         }
       }
     }
@@ -44,20 +41,46 @@ object StaticContent extends LogSupport {
     loop(0, path.split("/").toList)
   }
 
-  def fromResource(basePath:String, relativePath:String): SimpleHttpResponse = {
-    val resourcePath = s"${basePath}/${relativePath}"
-    if(!isSafeRelativePath(relativePath)) {
-      SimpleHttpResponse(HttpStatus.Forbidden_403)
-    }
-    else {
-      Resource.find(resourcePath).map { uri =>
-        val content = IOUtil.readAsString(uri)
-        // TODO resolve the content type from file suffix
-        // TODO: Read as binary
-        SimpleHttpResponse(HttpStatus.Ok_200, content)
-      }.getOrElse {
-        SimpleHttpResponse(HttpStatus.NotFound_404)
+  private def findContentType(filePath: String): String = {
+    val leaf = filePath.split("/").lastOption.getOrElse("")
+    val ext = {
+      val pos = leaf.indexOf(".")
+      if (pos > 0) {
+        leaf.substring(pos + 1)
+      } else {
+        ""
       }
+    }
+    ext match {
+      case "html" | "htm" => "text/html"
+      case "gif"          => "image/gif"
+      case "png"          => "image/png"
+      case "jpeg" | "jpg" => "image/jpeg"
+      case "css"          => "text/css"
+      case "gz"           => "application/gzip"
+      case "txt"          => "text/plain"
+      case "xml"          => "application/xml"
+      case "json"         => "application/json"
+      case "zip"          => "application/zip"
+      case "js"           => "application/javascript"
+      case _              => "application/octet-stream"
+    }
+  }
+
+  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse = {
+    val resourcePath = s"${basePath}/${relativePath}"
+    if (!isSafeRelativePath(relativePath)) {
+      SimpleHttpResponse(HttpStatus.Forbidden_403)
+    } else {
+      Resource
+        .find(resourcePath).map { uri =>
+          val mediaType = findContentType(relativePath)
+          val content   = IOUtil.readAsString(uri)
+          // TODO: Read as binary
+          SimpleHttpResponse(HttpStatus.Ok_200, content, contentType = Some(mediaType))
+        }.getOrElse {
+          SimpleHttpResponse(HttpStatus.NotFound_404)
+        }
     }
   }
 }
