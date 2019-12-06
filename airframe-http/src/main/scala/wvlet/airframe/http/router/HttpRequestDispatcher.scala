@@ -34,7 +34,7 @@ object HttpRequestDispatcher extends LogSupport {
       responseHandler: ResponseHandler[Req, Resp]
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
-    val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
+    val routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]] = {
       HttpRequestDispatcher.buildMappingsFromRouteToFilter(
         session,
         router,
@@ -47,7 +47,7 @@ object HttpRequestDispatcher extends LogSupport {
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
-          val routeFilter = filterTable(routeMatch.route)
+          val routeFilter = routeToFilterMappings(routeMatch.route)
           // Create a new context for processing the matched route with the controller
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller)
