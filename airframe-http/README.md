@@ -228,6 +228,18 @@ trait YourApi {
 }
 ```
 
+## Static Content
+
+To return static contents (e.g., html, image files, etc.), use `StaticContent.fromResource(resourceBasePath, relativePath)`. This method finds a file from your class paths (e.g., files in dependency jar files or resource files).
+
+```scala
+trait StaticContentServer {
+  @Endpoint(path="/content/*path")
+  def content(path:String) = StaticContent.fromResource(basePath = "/your/resource/package/path", path)
+}
+```
+
+
 ## Error Handling
 
 To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.

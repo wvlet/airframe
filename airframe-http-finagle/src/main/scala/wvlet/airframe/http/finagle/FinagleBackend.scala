@@ -16,9 +16,9 @@ package wvlet.airframe.http.finagle
 import java.util.concurrent.atomic.AtomicReference
 
 import com.twitter.finagle.context.Contexts
-import com.twitter.finagle.http.{Request, Response}
+import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.{Future, Promise, Return, Throw}
-import wvlet.airframe.http.{HttpBackend, HttpRequestAdapter}
+import wvlet.airframe.http.{HttpBackend, HttpRequestAdapter, HttpStatus}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -33,6 +33,12 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
   override def wrapException(e: Throwable): Future[Response] = {
     Future.exception(e)
   }
+  override def newResponse(status:  HttpStatus, content:  String): Response = {
+    val r = Response(Status.fromCode(status.code))
+    r.contentString = content
+    r
+  }
+
   override def toFuture[A](a: A): Future[A] = Future.value(a)
   override def toScalaFuture[A](a: Future[A]): sc.Future[A] = {
     val promise: sc.Promise[A] = sc.Promise()
