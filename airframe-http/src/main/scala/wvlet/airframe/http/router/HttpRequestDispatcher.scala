@@ -13,20 +13,19 @@
  */
 package wvlet.airframe.http.router
 
-import java.lang.reflect.InvocationTargetException
-
 import wvlet.airframe.Session
-import wvlet.airframe.http.Router.RouteFilter
 import wvlet.airframe.http._
 import wvlet.log.LogSupport
 
-import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
 
 /**
-  *
+  * Create a filter for dispatching HTTP requests to controller methods with @Endpoint annotation
   */
-object HttpRequestDispatcher {
+object HttpRequestDispatcher extends LogSupport {
+
+  private[router] case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
+
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       router: Router,
@@ -35,16 +34,23 @@ object HttpRequestDispatcher {
       responseHandler: ResponseHandler[Req, Resp]
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
-    val filterTable: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildRouteFilters(session, router, backend.Identity, controllerProvider)
+    val routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]] = {
+      HttpRequestDispatcher.buildMappingsFromRouteToFilter(
+        session,
+        router,
+        backend.defaultFilter,
+        controllerProvider
+      )
     }
 
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
-          val routeFilter    = filterTable(routeMatch.route)
-          val context        = backend.newControllerContext(routeMatch, responseHandler, routeFilter.controller)
+          val routeFilter = routeToFilterMappings(routeMatch.route)
+          // Create a new context for processing the matched route with the controller
+          val context =
+            new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller)
           val currentService = routeFilter.filter.andThen(context)
           currentService(request)
         case None =>
@@ -55,9 +61,9 @@ object HttpRequestDispatcher {
   }
 
   /**
-    * Traverse the Router tree and build HttpFilter for each local Route
+    * Traverse the Router tree and build mappings from local routes to HttpFilters
     */
-  private[http] def buildRouteFilters[Req, Resp, F[_]](
+  private[http] def buildMappingsFromRouteToFilter[Req, Resp, F[_]](
       session: Session,
       router: Router,
       parentFilter: HttpFilter[Req, Resp, F],
@@ -85,8 +91,9 @@ object HttpRequestDispatcher {
       m += (route -> RouteFilter(currentFilter, controllerOpt.get))
     }
     for (c <- router.children) {
-      m ++= buildRouteFilters(session, c, currentFilter, controllerProvider)
+      m ++= buildMappingsFromRouteToFilter(session, c, currentFilter, controllerProvider)
     }
     m.result()
   }
+
 }

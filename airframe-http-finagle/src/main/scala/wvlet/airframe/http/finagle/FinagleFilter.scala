@@ -17,12 +17,15 @@ import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.util.Future
 import wvlet.airframe.Session
+import wvlet.airframe.http.{HttpBackend, HttpFilter}
 import wvlet.airframe.http.router.HttpRequestDispatcher
 
 /**
   * An wrapper of HttpFilter for Finagle backend implementation
   */
-abstract class FinagleFilter extends FinagleBackend.HttpFilterBase
+abstract class FinagleFilter extends HttpFilter[Request, Response, Future] {
+  override def backend: HttpBackend[Request, Response, Future] = FinagleBackend
+}
 
 class FinagleRouter(session: Session, private[finagle] val config: FinagleServerConfig)
     extends SimpleFilter[Request, Response] {

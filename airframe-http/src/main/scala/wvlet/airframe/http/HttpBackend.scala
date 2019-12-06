@@ -13,16 +13,18 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpFilter.HttpFilterFactory
-import wvlet.airframe.http.router.{ControllerProvider, HttpEndpointExecutionContextBase, ResponseHandler, RouteMatch}
-
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
+import scala.util.control.NonFatal
 
 /**
   * A base interface to implement http-server specific implementation
   */
-trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
+trait HttpBackend[Req, Resp, F[_]] { self =>
+
+  type Filter  = HttpFilter[Req, Resp, F]
+  type Context = HttpContext[Req, Resp, F]
+
   protected implicit val httpRequestAdapter: HttpRequestAdapter[Req]
 
   def toFuture[A](a: A): F[A]
@@ -30,6 +32,14 @@ trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
   def toFuture[A](a: scala.concurrent.Future[A], e: ExecutionContext): F[A]
   def toScalaFuture[A](a: F[A]): scala.concurrent.Future[A]
   def wrapException(e: Throwable): F[Resp]
+  def rescue(body: => F[Resp]): F[Resp] = {
+    try {
+      body
+    } catch {
+      case NonFatal(e) => wrapException(e)
+    }
+  }
+
   def isFutureType(x: Class[_]): Boolean
   def isScalaFutureType(x: Class[_]): Boolean = {
     classOf[scala.concurrent.Future[_]].isAssignableFrom(x)
@@ -40,10 +50,15 @@ trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
   // Map Future[A] into Future[B]
   def mapF[A, B](f: F[A], body: A => B): F[B]
 
-  def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
+  // Create a new Filter for this backend
+  def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter = {
+    HttpFilter.newFilter[Req, Resp, F](self, body)
+  }
+  // Create a new default filter just for processing preceding filters
+  def defaultFilter: Filter = HttpFilter.defaultFilter(self)
 
-  // For chaining filters and contexts
-  def filterAndThenContext(filter: Filter, context: Context): Context
+  // Create a new default context that process the given request
+  def newContext(body: Req => F[Resp]): Context = HttpContext.newContext[Req, Resp, F](self, body)
 
   // Prepare a thread-local holder for passing parameter values
   def withThreadLocalStore(request: => F[Resp]): F[Resp]
@@ -54,12 +69,4 @@ trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
   // Get a thread-local context parameter
   def getThreadLocal[A](key: String): Option[A]
 
-  // Create a new default context that process the given request
-  def newContext(body: Req => F[Resp]): HttpContext[Req, Resp, F]
-  def newControllerContext(
-      routeMatch: RouteMatch,
-      responseHandler: ResponseHandler[Req, Resp],
-      controller: Any
-  ): HttpEndpointExecutionContextBase[Req, Resp, F] =
-    new HttpEndpointExecutionContextBase[Req, Resp, F](this, routeMatch, controller, responseHandler)
 }
