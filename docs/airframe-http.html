@@ -289,7 +289,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 <span class="c1">// Implement FinagleFilter (or HttpFilter[Req, Resp, F])
 // to define a custom filter that will be applied before the endpoint processing.
 </span><span class="k">object</span> <span class="nc">LoggingFilter</span> <span class="k">extends</span> <span class="nc">FinagleFilter</span> <span class="k">with</span> <span class="nc">LogSupport</span> <span class="o">{</span>
-  <span class="k">def</span> <span class="nf">apply</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">,</span> <span class="n">context</span><span class="k">:</span> <span class="kt">FinagleContext</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Response</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
+  <span class="k">def</span> <span class="nf">apply</span><span class="o">(</span><span class="n">request</span><span class="k">:</span> <span class="kt">Request</span><span class="o">,</span> <span class="n">context</span><span class="k">:</span> <span class="kt">Context</span><span class="o">)</span><span class="k">:</span> <span class="kt">Future</span><span class="o">[</span><span class="kt">Response</span><span class="o">]</span> <span class="k">=</span> <span class="o">{</span>
     <span class="nf">info</span><span class="o">(</span><span class="n">s</span><span class="s">"${request.path} is accessed"</span><span class="o">)</span>
     <span class="c1">// Call the child
 </span>    <span class="nf">context</span><span class="o">(</span><span class="n">request</span><span class="o">)</span>
@@ -298,7 +298,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 <span class="c1">// Use .andThen[X] for nesting filters
 </span><span class="nc">Router</span>
- <span class="o">.</span><span class="py">add</span><span class="o">[</span><span class="kt">LoggingFilter</span><span class="o">]</span>
+ <span class="o">.</span><span class="py">add</span><span class="o">(</span><span class="nc">LoggingFilter</span><span class="o">)</span>
  <span class="o">.</span><span class="py">andThen</span><span class="o">[</span><span class="kt">MyApp</span><span class="o">]</span>
 </code></pre></div></div>
 
