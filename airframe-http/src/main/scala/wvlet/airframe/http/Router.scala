@@ -45,6 +45,8 @@ case class Router(
 ) {
   def isEmpty = this eq Router.empty
 
+  def isLeafFilter = children.isEmpty && localRoutes.isEmpty
+
   // If this node has no operation (endspoints, filter, etc.)
   def hasNoOperation = surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty
 

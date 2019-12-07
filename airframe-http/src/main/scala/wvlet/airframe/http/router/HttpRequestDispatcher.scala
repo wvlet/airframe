@@ -26,6 +26,15 @@ object HttpRequestDispatcher extends LogSupport {
 
   private[router] case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
 
+  case class RoutingTable[Req, Resp, F[_]](
+      routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]],
+      leafFilter: Option[HttpFilter[Req, Resp, F]]
+  ) {
+    def findFilter(route: Route): RouteFilter[Req, Resp, F] = {
+      routeToFilterMappings(route)
+    }
+  }
+
   def newDispatcher[Req: HttpRequestAdapter, Resp, F[_]](
       session: Session,
       router: Router,
@@ -34,28 +43,26 @@ object HttpRequestDispatcher extends LogSupport {
       responseHandler: ResponseHandler[Req, Resp]
   ): HttpFilter[Req, Resp, F] = {
     // A table for Route -> matching HttpFilter
-    val routeToFilterMappings: Map[Route, RouteFilter[Req, Resp, F]] = {
-      HttpRequestDispatcher.buildMappingsFromRouteToFilter(
-        session,
-        router,
-        backend.defaultFilter,
-        controllerProvider
-      )
-    }
+    val routingTable = buildRoutingTable(session, router, backend.defaultFilter, controllerProvider)
 
     backend.newFilter { (request: Req, context: HttpContext[Req, Resp, F]) =>
       router.findRoute(request) match {
         case Some(routeMatch) =>
           // Find a filter for the matched route
-          val routeFilter = routeToFilterMappings(routeMatch.route)
+          val routeFilter = routingTable.findFilter(routeMatch.route)
           // Create a new context for processing the matched route with the controller
           val context =
             new HttpEndpointExecutionContext(backend, routeMatch, responseHandler, routeFilter.controller)
           val currentService = routeFilter.filter.andThen(context)
           currentService(request)
         case None =>
-          // No matching route is found
-          context.apply(request)
+          // If no matching route is found, use the leaf filter if exists
+          routingTable.leafFilter match {
+            case Some(f) =>
+              f.apply(request, context)
+            case None =>
+              context.apply(request)
+          }
       }
     }
   }
@@ -63,37 +70,58 @@ object HttpRequestDispatcher extends LogSupport {
   /**
     * Traverse the Router tree and build mappings from local routes to HttpFilters
     */
-  private[http] def buildMappingsFromRouteToFilter[Req, Resp, F[_]](
+  private[http] def buildRoutingTable[Req, Resp, F[_]](
       session: Session,
-      router: Router,
-      parentFilter: HttpFilter[Req, Resp, F],
+      rootRouter: Router,
+      baseFilter: HttpFilter[Req, Resp, F],
       controllerProvider: ControllerProvider
-  ): Map[Route, RouteFilter[Req, Resp, F]] = {
-    val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
-      router.filterSurface
-        .map(fs => controllerProvider.findController(session, fs))
-        .filter(_.isDefined)
-        .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
+  ): RoutingTable[Req, Resp, F] = {
 
-    val currentFilter: HttpFilter[Req, Resp, F] =
-      localFilterOpt
-        .map { l =>
-          parentFilter.andThen(l)
+    val leafFilters = Seq.newBuilder[HttpFilter[Req, Resp, F]]
+
+    def buildMappingsFromRouteToFilter(
+        router: Router,
+        parentFilter: HttpFilter[Req, Resp, F]
+    ): Map[Route, RouteFilter[Req, Resp, F]] = {
+      val localFilterOpt: Option[HttpFilter[Req, Resp, F]] =
+        router.filterSurface
+          .map(fs => controllerProvider.findController(session, fs))
+          .filter(_.isDefined)
+          .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
+
+      val currentFilter: HttpFilter[Req, Resp, F] =
+        localFilterOpt
+          .map { l =>
+            parentFilter.andThen(l)
+          }
+          .getOrElse(parentFilter)
+
+      val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
+      for (route <- router.localRoutes) {
+        val controllerOpt = controllerProvider.findController(session, route.controllerSurface)
+        if (controllerOpt.isEmpty) {
+          throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
         }
-        .getOrElse(parentFilter)
-
-    val m = Map.newBuilder[Route, RouteFilter[Req, Resp, F]]
-    for (route <- router.localRoutes) {
-      val controllerOpt = controllerProvider.findController(session, route.controllerSurface)
-      if (controllerOpt.isEmpty) {
-        throw new IllegalStateException(s"Missing controller. Add ${route.controllerSurface} to the design")
+        m += (route -> RouteFilter(currentFilter, controllerOpt.get))
       }
-      m += (route -> RouteFilter(currentFilter, controllerOpt.get))
+      for (c <- router.children) {
+        m ++= buildMappingsFromRouteToFilter(c, currentFilter)
+      }
+      if (router.isLeafFilter) {
+        leafFilters += currentFilter
+      }
+
+      m.result()
     }
-    for (c <- router.children) {
-      m ++= buildMappingsFromRouteToFilter(session, c, currentFilter, controllerProvider)
+
+    val mappings = buildMappingsFromRouteToFilter(rootRouter, baseFilter)
+
+    val lf = leafFilters.result()
+    if (lf.size > 1) {
+      warn(s"Multiple leaf filters are found in the router. Using the first one: ${lf.head}")
     }
-    m.result()
+
+    RoutingTable(mappings, lf.headOption)
   }
 
 }
