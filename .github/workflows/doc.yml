@@ -39,7 +39,10 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-doc-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-doc-
+          key: ${{ runner.os }}-doc-${{ hashFiles('build.sbt') }}-${{ hashFiles('docs/src/**') }}
+          restore-keys: |
+            ${{ runner.os }}-doc-${{ hashFiles('build.sbt') }}-${{ hashFiles('docs/src/**') }}
+            ${{ runner.os }}-doc-${{ hashFiles('build.sbt') }}-
+            ${{ runner.os }}-doc-
       - name: Publish doc
-        run: ./sbt docs/publishMicrosite
+        run: ./sbt "; docs/makeMicrosite; docs/publishMicrosite"
