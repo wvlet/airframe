@@ -27,6 +27,7 @@ trait HttpFilter[Req, Resp, F[_]] extends HttpFilterType { self =>
   type Context = HttpContext[Req, Resp, F]
 
   protected def backend: HttpBackend[Req, Resp, F]
+  protected def toFuture[A](v: A): F[A] = backend.toFuture(v)
 
   // Implementation to process the request. If this filter doesn't return any response, pass the request to the context(request)
   def apply(request: Req, context: Context): F[Resp]
