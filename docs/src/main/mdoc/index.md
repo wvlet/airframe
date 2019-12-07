@@ -17,6 +17,7 @@ Airframe is a collection of [lightweight building blocks](docs/index.html) for k
 - [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
 
 ## Blog Articles
+- [AirSpec: AirSpec: Writing Tests As Plain Functions In Scala](https://medium.com/airframe/airspec-bbc8d4369157)
 - [Airframe HTTP: Building Low-Friction Web Services Over Finagle](https://medium.com/@taroleo/airframe-http-a-minimalist-approach-for-building-web-services-in-scala-743ba41af7f)
   - airframe-http, airframe-http-finagle
 - [Demystifying Dependency Injection with Airframe](https://medium.com/@taroleo/demystifying-dependency-injection-with-airframe-9b637034a78a)
