@@ -113,9 +113,37 @@ object SimpleHttpRequest {
 
 case class SimpleHttpResponse(
     override val status: HttpStatus,
-    override val contentString: String = "",
+    private val contentStr: String = "",
+    private val content: Array[Byte] = Array.empty,
     override val contentType: Option[String] = None
 ) extends HttpResponse[SimpleHttpResponse] {
+
+  override def contentString: String = {
+    if(contentStr.nonEmpty) {
+      contentStr
+    }
+    else {
+      if(content.nonEmpty) {
+        new String(content, StandardCharsets.UTF_8)
+      }
+      else {
+        ""
+      }
+    }
+  }
+
+  def getContentBytes: Array[Byte] = {
+      if(contentStr.nonEmpty) {
+        contentStr.getBytes(StandardCharsets.UTF_8)
+      }
+      else if(content.nonEmpty) {
+        content
+      }
+      else {
+        Array.emptyByteArray
+      }
+  }
+
   override protected def adapter: HttpResponseAdapter[SimpleHttpResponse] = SimpleHttpResponseAdapter
   override def toRaw: SimpleHttpResponse                                  = this
 }
@@ -124,8 +152,7 @@ object SimpleHttpResponse {
   implicit object SimpleHttpResponseAdapter extends HttpResponseAdapter[SimpleHttpResponse] {
     override def statusCodeOf(resp: SimpleHttpResponse): Int       = resp.status.code
     override def contentStringOf(resp: SimpleHttpResponse): String = resp.contentString
-    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte] =
-      resp.contentString.getBytes(StandardCharsets.UTF_8)
+    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte] = resp.getContentBytes
     override def contentTypeOf(resp: SimpleHttpResponse): Option[String]                    = resp.contentType
     override def httpResponseOf(resp: SimpleHttpResponse): HttpResponse[SimpleHttpResponse] = resp
   }

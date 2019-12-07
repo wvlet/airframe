@@ -14,8 +14,10 @@
 package wvlet.airframe.http.finagle
 import com.twitter.finagle.http.Response
 import wvlet.airframe.Design
+import wvlet.airframe.control.Control
 import wvlet.airframe.http._
 import wvlet.airspec.AirSpec
+import wvlet.log.io.{IOUtil, Resource}
 
 object StaticContentTest {
 
@@ -73,7 +75,19 @@ class StaticContentTest extends AirSpec {
     check("/html/asset/style.css", "text/css")
     check("/html/data/sample.json", "application/json")
     check("/html/asset/test.js", "application/javascript")
+    check("/html/asset/airframe_icon_small.png", "image/png")
 
     // TODO add more coverage
+  }
+
+  def `read binary file`(client:FinagleSyncClient): Unit = {
+    val resp = client.get[Response]("/html/asset/airframe_icon_small.png")
+    val img = resp.contentBytes
+    val imgUrl = Resource.find("/wvlet/airframe/http/finagle/static/asset/airframe_icon_small.png").get
+    Control.withResource(imgUrl.openStream()) { in =>
+      IOUtil.readFully(in) { bytes =>
+        img shouldBe bytes
+      }
+    }
   }
 }

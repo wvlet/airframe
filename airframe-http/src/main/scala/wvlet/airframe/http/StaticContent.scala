@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.http
+import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
 
@@ -75,9 +76,12 @@ object StaticContent extends LogSupport {
       Resource
         .find(resourcePath).map { uri =>
           val mediaType = findContentType(relativePath)
-          val content   = IOUtil.readAsString(uri)
-          // TODO: Read as binary
-          SimpleHttpResponse(HttpStatus.Ok_200, content, contentType = Some(mediaType))
+         // Read the resource file as binary
+         Control.withResource(uri.openStream()) { in =>
+           IOUtil.readFully(in) { content =>
+             SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
+           }
+         }
         }.getOrElse {
           SimpleHttpResponse(HttpStatus.NotFound_404)
         }

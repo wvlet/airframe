@@ -109,7 +109,7 @@ class FinagleResponseHandler(customCodec: PartialFunction[Surface, MessageCodec[
       case r: SimpleHttpResponse =>
         val resp = newResponse(request, responseSurface)
         resp.statusCode = r.statusCode
-        resp.contentString = r.contentString
+        resp.content = ByteArray.Owned(r.getContentBytes)
         r.contentType.map { c =>
           resp.contentType = c
         }
