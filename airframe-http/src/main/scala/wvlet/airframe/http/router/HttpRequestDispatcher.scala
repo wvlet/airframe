@@ -88,6 +88,7 @@ object HttpRequestDispatcher extends LogSupport {
           .map(fs => controllerProvider.findController(session, fs))
           .filter(_.isDefined)
           .map(_.get.asInstanceOf[HttpFilter[Req, Resp, F]])
+          .orElse(router.filterInstance.asInstanceOf[Option[HttpFilter[Req, Resp, F]]])
 
       val currentFilter: HttpFilter[Req, Resp, F] =
         localFilterOpt
