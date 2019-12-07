@@ -5,6 +5,30 @@ title: Release Notes
 
 # Release Notes
 
+## 19.12.0
+-  airframe-di: Support in-class bind[X] for classes with DISupport trait ([#816](https://github.com/wvlet/airframe/issues/816)) [[c3ce56b](https://github.com/wvlet/airframe/commit/c3ce56b)]
+-  airframe-http: Add CORS filter and filter-instance support ([#846](https://github.com/wvlet/airframe/issues/846)) [[58245b2](https://github.com/wvlet/airframe/commit/58245b2)]
+-  airframe-http: Support leaf filters without `@Endpoint` mapping ([#844](https://github.com/wvlet/airframe/issues/844)) [[d342530](https://github.com/wvlet/airframe/commit/d342530)]
+-  airframe-http: Support StaticContent ([#843](https://github.com/wvlet/airframe/issues/843)) [[d415025](https://github.com/wvlet/airframe/commit/d415025)]
+-  airframe-http: Add thread-local context parameter support ([#829](https://github.com/wvlet/airframe/issues/829)) [[25e312e](https://github.com/wvlet/airframe/commit/25e312e)]
+-  airframe-http-client: Add raw response methods to HttpClient ([#831](https://github.com/wvlet/airframe/issues/831)) [[6390bb3](https://github.com/wvlet/airframe/commit/6390bb3)]
+-  airframe-fluentd: Fix warnings in airframe-fluentd ([#833](https://github.com/wvlet/airframe/issues/833)) [[856a644](https://github.com/wvlet/airframe/commit/856a644)]
+-  airframe-codec: Support Base64 encoded binary ([#819](https://github.com/wvlet/airframe/issues/819)) [[f60af4e](https://github.com/wvlet/airframe/commit/f60af4e)]
+-  airframe-codec: Rename MessageHolder -> MessageContext ([#817](https://github.com/wvlet/airframe/issues/817)) [[33c10c6](https://github.com/wvlet/airframe/commit/33c10c6)]
+-  airframe-launcher: [#523](https://github.com/wvlet/airframe/issues/523) Add coloring to the help message ([#815](https://github.com/wvlet/airframe/issues/815)) [[74eb427](https://github.com/wvlet/airframe/commit/74eb427)]
+
+internal changes:
+
+-  airframe-msgpack: Update msgpack-core to 0.8.20 ([#830](https://github.com/wvlet/airframe/issues/830)) [[2db9289](https://github.com/wvlet/airframe/commit/2db9289)]
+-  airframe-http: Move the internal routing code to wvlet.airframe.http.router package ([#824](https://github.com/wvlet/airframe/issues/824)) [[58cbb90](https://github.com/wvlet/airframe/commit/58cbb90)]
+-  airframe-http: Simplify HttpFilter hierarchy ([#842](https://github.com/wvlet/airframe/issues/842)) [[cb4b595](https://github.com/wvlet/airframe/commit/cb4b595)]
+-  Update sbt-scoverage to 1.6.1 ([#814](https://github.com/wvlet/airframe/issues/814)) [[39ad0e1](https://github.com/wvlet/airframe/commit/39ad0e1)]
+-  Update scalajs-java-time to 0.2.6 ([#825](https://github.com/wvlet/airframe/issues/825)) [[6cf66a0](https://github.com/wvlet/airframe/commit/6cf66a0)]
+-  Update scalajs-java-logging to 0.1.6 ([#823](https://github.com/wvlet/airframe/issues/823)) [[e8eb636](https://github.com/wvlet/airframe/commit/e8eb636)]
+-  Upgrade Scala.js to 0.6.31 ([#820](https://github.com/wvlet/airframe/issues/820)) [[4d259c2](https://github.com/wvlet/airframe/commit/4d259c2)]
+-  Update sbt-sonatype to 3.8.1 ([#818](https://github.com/wvlet/airframe/issues/818)) [[0c73d84](https://github.com/wvlet/airframe/commit/0c73d84)]
+-  Update sbt to 1.3.4 ([#826](https://github.com/wvlet/airframe/issues/826)) [[7610c99](https://github.com/wvlet/airframe/commit/7610c99)]
+
 ## 19.11.2
 -  airframe-codec: [#156](https://github.com/wvlet/airframe/issues/156) Suppress null value output for None:Option[X] ([#811](https://github.com/wvlet/airframe/issues/811)) [[6e8f70e](https://github.com/wvlet/airframe/commit/6e8f70e)]
 -  internal: Use GitHub Action cache ([#808](https://github.com/wvlet/airframe/issues/808)) [[574b5a9](https://github.com/wvlet/airframe/commit/574b5a9)]
