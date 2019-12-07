@@ -1,3 +1,4 @@
+import microsites.MicrositeEditButton
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_11 = "2.11.12"
@@ -237,6 +238,8 @@ lazy val docs =
       micrositeDescription := "Lightweight Building Blocks for Scala",
       micrositeAuthor := "Taro L. Saito",
       micrositeOrganizationHomepage := "https://github.com/wvlet",
+      //micrositeCompilingDocsTool := WithMdoc,
+      micrositeTheme := "pattern",
       micrositeHighlightTheme := "ocean",
       micrositeGithubOwner := "wvlet",
       micrositeGithubRepo := "airframe",
@@ -256,15 +259,16 @@ lazy val docs =
         "gray-dark"       -> "#453E46",
         "gray"            -> "#534F54"
       ),
-      resourceGenerators in Tut += Def.task {
-        // Copy source docs since Tut accepts only a single source directory
-        val sourceDir = (sourceDirectory in Compile).value / "tut"
-        IO.copyDirectory(sourceDir, tutSourceDirectory.value)
+      // Generate documentation sources from airframe-xxx/README.md
+      mdocIn := (managedSourceDirectories in Compile).value.head,
+      resourceGenerators in Compile += Def.task {
+        // Copy source docs since Mdoc accepts only a single source directory
+        val sourceDir = baseDirectory.value / "src" / "main" / "mdoc"
+        IO.copyDirectory(sourceDir, mdocIn.value)
 
         // Generate airframe-xxx.md files from airframe-xxx/README.md
-        generateModuleDoc(tutSourceDirectory.value, streams.value.log)
+        generateModuleDoc(mdocIn.value, streams.value.log)
       }.taskValue,
-      tutSourceDirectory := (managedResourceDirectories in Tut).value.head,
       watchSources += new sbt.internal.io.Source(
         sourceDirectory.value,
         new FileFilter {

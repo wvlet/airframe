@@ -16,13 +16,22 @@ pre {
     line-height: 1.4em;
 }
 
-#page-content-wrapper section pre {
+.docs #page-content-wrapper section pre {
     margin-top: 0px;
 }
 
-#page-content-wrapper section pre .hljs {
+.docs #page-content-wrapper section pre .hljs {
     margin-top: 0px;
     padding: 10px;
+}
+
+.docs #page-content-wrapper section pre {
+    background-color: #121225;
+    color: #cccccc;
+}
+
+.edit-button {
+
 }
 
 .jumbotron {
@@ -38,18 +47,22 @@ pre {
     font-size: 32px;
 }
 
-#wrapper {
-    max-width: 1300px;
+.docs #wrapper {
+    max-width: 1800px;
     margin-left: auto;
     margin-right: auto;
 }
 
-#sidebar-wrapper {
+.docs #sidebar-wrapper {
     left: initial;
 }
 
-.icon-wrapper, .text-center, .hidden-xs, #sidebar li {
+.icon-wrapper, .text-center, .hidden-xs, #sidebar li, .edit-button {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
 }
 
 body {
@@ -57,7 +70,7 @@ body {
     line-height: 1.4;
 }
 
-code, kbd, pre, samp, table td {
+code, kbd, pre, samp {
     font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
 }
 
@@ -70,9 +83,13 @@ td code {
 }
 
 
-table td {
-    font-size: 12px;
-    white-space: nowrap;
+table td, table th {
+    font-size: 13px;
+}
+
+table th {
+    font-weight: bold;
+    background: #eef0ee;
 }
 
 
@@ -150,7 +167,3 @@ pre .hljs {
     font-weight: bold;
 }
 
-#page-content-wrapper section pre {
-    background-color: #121225;
-    color: #cccccc;
-}
