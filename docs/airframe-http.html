@@ -252,6 +252,16 @@ without some transformations. With MessagePack, you can send the data to the cli
 <span class="o">}</span>
 </code></pre></div></div>
 
+<h2 id="static-content">Static Content</h2>
+
+<p>To return static contents (e.g., html, image files, etc.), use <code class="highlighter-rouge">StaticContent.fromResource(resourceBasePath, relativePath)</code>. This method finds a file from your class paths (e.g., files in dependency jar files or resource files).</p>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">trait</span> <span class="nc">StaticContentServer</span> <span class="o">{</span>
+  <span class="nd">@Endpoint</span><span class="o">(</span><span class="n">path</span><span class="o">=</span><span class="s">"/content/*path"</span><span class="o">)</span>
+  <span class="k">def</span> <span class="nf">content</span><span class="o">(</span><span class="n">path</span><span class="k">:</span><span class="kt">String</span><span class="o">)</span> <span class="k">=</span> <span class="nv">StaticContent</span><span class="o">.</span><span class="py">fromResource</span><span class="o">(</span><span class="n">basePath</span> <span class="k">=</span> <span class="s">"/your/resource/package/path"</span><span class="o">,</span> <span class="n">path</span><span class="o">)</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
 <h2 id="error-handling">Error Handling</h2>
 
 <p>To handle errors that happens during the request processing, return HttpServerException with a custom HttpStatus code.</p>
