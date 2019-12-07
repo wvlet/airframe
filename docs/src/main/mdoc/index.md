@@ -32,5 +32,8 @@ Airframe is a collection of [lightweight building blocks](docs/index.html) for k
 - [Introdution of Airframe in Japanese](https://medium.com/@taroleo/airframe-c5d044a97ec)
 
 ## Presentations
+- [Airframe Meetup #3 2019-10-23](https://www.slideshare.net/taroleo/airframe-meetup-3-2019-updates-airspec)
+- [Airframe Meetup #2 2019-07-09](https://www.slideshare.net/taroleo/airframe-http-airframe-meetup-2-tokyo-20190709)
+- [How to Use Scala At Work - Airframe In Action At Arm Treasure Data](https://www.slideshare.net/taroleo/how-to-use-scala-at-work-airframe-in-action-at-arm-treasure-data). Presentation at Scala Matsuri 2019
 - [Airframe Meetup #1. 2018-10-23 @ Arm Treasure Data (Tokyo Office)](https://www.slideshare.net/taroleo/airframe-meetup-1-20181023-arm-treasure-data-tokyo-office)
 - [Airframe: Lightweight Building-Blocks for Scala @ TD Tech Talk at Tokyo, 2018](https://www.slideshare.net/taroleo/airframe-lightweight-building-blocks-for-scala-td-tech-talk-20181014)
