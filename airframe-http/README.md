@@ -270,7 +270,7 @@ class MyApp {
 // Implement FinagleFilter (or HttpFilter[Req, Resp, F])
 // to define a custom filter that will be applied before the endpoint processing.
 object LoggingFilter extends FinagleFilter with LogSupport {
-  def apply(request: Request, context: FinagleContext): Future[Response] = {
+  def apply(request: Request, context: Context): Future[Response] = {
     info(s"${request.path} is accessed")
     // Call the child
     context(request)
@@ -279,7 +279,7 @@ object LoggingFilter extends FinagleFilter with LogSupport {
 
 // Use .andThen[X] for nesting filters
 Router
- .add[LoggingFilter]
+ .add(LoggingFilter)
  .andThen[MyApp]
 ```
 

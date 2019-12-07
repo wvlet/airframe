@@ -15,10 +15,12 @@ package wvlet.airframe.http.finagle
 
 import java.util.concurrent.atomic.AtomicReference
 
+import com.twitter.finagle.Service
 import com.twitter.finagle.context.Contexts
 import com.twitter.finagle.http.{Request, Response, Status}
 import com.twitter.util.{Future, Promise, Return, Throw}
 import wvlet.airframe.http.{HttpBackend, HttpRequestAdapter, HttpStatus}
+import wvlet.log.LogSupport
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -37,6 +39,16 @@ object FinagleBackend extends HttpBackend[Request, Response, Future] {
     val r = Response(Status.fromCode(status.code))
     r.contentString = content
     r
+  }
+
+  def wrapFilter(filter: com.twitter.finagle.Filter[Request, Response, Request, Response]): FinagleFilter = {
+    new FinagleFilter with LogSupport {
+      override def apply(request: Request, context: Context): Future[Response] = {
+        filter(request, Service.mk { req: Request =>
+          context(req)
+        })
+      }
+    }
   }
 
   override def toFuture[A](a: A): Future[A] = Future.value(a)
