@@ -119,29 +119,25 @@ case class SimpleHttpResponse(
 ) extends HttpResponse[SimpleHttpResponse] {
 
   override def contentString: String = {
-    if(contentStr.nonEmpty) {
+    if (contentStr.nonEmpty) {
       contentStr
-    }
-    else {
-      if(content.nonEmpty) {
+    } else {
+      if (content.nonEmpty) {
         new String(content, StandardCharsets.UTF_8)
-      }
-      else {
+      } else {
         ""
       }
     }
   }
 
   def getContentBytes: Array[Byte] = {
-      if(contentStr.nonEmpty) {
-        contentStr.getBytes(StandardCharsets.UTF_8)
-      }
-      else if(content.nonEmpty) {
-        content
-      }
-      else {
-        Array.emptyByteArray
-      }
+    if (contentStr.nonEmpty) {
+      contentStr.getBytes(StandardCharsets.UTF_8)
+    } else if (content.nonEmpty) {
+      content
+    } else {
+      Array.emptyByteArray
+    }
   }
 
   override protected def adapter: HttpResponseAdapter[SimpleHttpResponse] = SimpleHttpResponseAdapter
@@ -150,9 +146,9 @@ case class SimpleHttpResponse(
 
 object SimpleHttpResponse {
   implicit object SimpleHttpResponseAdapter extends HttpResponseAdapter[SimpleHttpResponse] {
-    override def statusCodeOf(resp: SimpleHttpResponse): Int       = resp.status.code
-    override def contentStringOf(resp: SimpleHttpResponse): String = resp.contentString
-    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte] = resp.getContentBytes
+    override def statusCodeOf(resp: SimpleHttpResponse): Int                                = resp.status.code
+    override def contentStringOf(resp: SimpleHttpResponse): String                          = resp.contentString
+    override def contentBytesOf(resp: SimpleHttpResponse): Array[Byte]                      = resp.getContentBytes
     override def contentTypeOf(resp: SimpleHttpResponse): Option[String]                    = resp.contentType
     override def httpResponseOf(resp: SimpleHttpResponse): HttpResponse[SimpleHttpResponse] = resp
   }

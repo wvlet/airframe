@@ -76,12 +76,12 @@ object StaticContent extends LogSupport {
       Resource
         .find(resourcePath).map { uri =>
           val mediaType = findContentType(relativePath)
-         // Read the resource file as binary
-         Control.withResource(uri.openStream()) { in =>
-           IOUtil.readFully(in) { content =>
-             SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
-           }
-         }
+          // Read the resource file as binary
+          Control.withResource(uri.openStream()) { in =>
+            IOUtil.readFully(in) { content =>
+              SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
+            }
+          }
         }.getOrElse {
           SimpleHttpResponse(HttpStatus.NotFound_404)
         }

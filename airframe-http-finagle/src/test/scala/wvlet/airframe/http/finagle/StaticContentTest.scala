@@ -80,9 +80,9 @@ class StaticContentTest extends AirSpec {
     // TODO add more coverage
   }
 
-  def `read binary file`(client:FinagleSyncClient): Unit = {
-    val resp = client.get[Response]("/html/asset/airframe_icon_small.png")
-    val img = resp.contentBytes
+  def `read binary file`(client: FinagleSyncClient): Unit = {
+    val resp   = client.get[Response]("/html/asset/airframe_icon_small.png")
+    val img    = resp.contentBytes
     val imgUrl = Resource.find("/wvlet/airframe/http/finagle/static/asset/airframe_icon_small.png").get
     Control.withResource(imgUrl.openStream()) { in =>
       IOUtil.readFully(in) { bytes =>
