@@ -20,5 +20,5 @@ object CorsFilter {
   def apply(policy: Policy) = FinagleBackend.wrapFilter(new Cors.HttpFilter(policy))
 
   // CORS filter that allows all cross-origin requests. Do not use this in production.
-  def unsafePermissibleFilter = apply(Cors.UnsafePermissivePolicy)
+  def unsafePermissiveFilter = apply(Cors.UnsafePermissivePolicy)
 }

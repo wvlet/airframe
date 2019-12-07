@@ -12,33 +12,43 @@
  * limitations under the License.
  */
 package wvlet.airframe.http.finagle
+import com.twitter.finagle.{Service, SimpleFilter}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.util.Future
 import wvlet.airframe.Design
 import wvlet.airframe.http.Router
-import wvlet.airframe.http.finagle.CorsFilterTest.{LogFilter, SimpleFilter}
+import wvlet.airframe.http.finagle.CorsFilterTest.{CheckFilter, LogFilter, SimpleFilter}
 import wvlet.airframe.http.finagle.filter.CorsFilter
 import wvlet.airspec.AirSpec
 import wvlet.log.LogSupport
 
 object CorsFilterTest {
 
+  // Test SimpleFilter of Finagle
+  object CheckFilter extends SimpleFilter[Request, Response] with LogSupport {
+    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+      info(s"checking request: ${request}")
+      service(request)
+    }
+  }
+
   object LogFilter extends FinagleFilter with LogSupport {
     override def apply(
         request: Request,
         context: LogFilter.Context
     ): Future[Response] = {
-      debug(s"request: ${request}")
+      info(s"logging request: ${request}")
       context(request)
     }
   }
 
-  object SimpleFilter extends FinagleFilter {
+  object SimpleFilter extends FinagleFilter with LogSupport {
     override def apply(
         request: Request,
         context: SimpleFilter.Context
     ): Future[Response] = {
       toFuture {
+        info(s"handling request: ${request}")
         val r = Response()
         r.contentString = request.headerMap.mkString(", ")
         r
@@ -55,7 +65,8 @@ class CorsFilterTest extends AirSpec {
   override protected def design: Design = {
     val r = Router
       .add(LogFilter)
-      .andThen(CorsFilter.unsafePermissibleFilter)
+      .andThen(FinagleBackend.wrapFilter(CheckFilter))
+      .andThen(CorsFilter.unsafePermissiveFilter)
       .andThen(SimpleFilter)
 
     debug(r)
