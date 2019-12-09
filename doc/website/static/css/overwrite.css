@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
+/*
 p {
     margin-top: 12px;
     margin-bottom: 12px;
@@ -57,7 +58,6 @@ pre {
     left: initial;
 }
 
-/*
 .icon-wrapper, .text-center, .hidden-xs, #sidebar li, .edit-button {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -66,15 +66,18 @@ h1, h2, h3, h4, h5, h6 {
     font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
 }
 
-body {
-    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
-    line-height: 1.4;
-}
 
+.mainContainer {
+    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
+    line-height: 1.3;
+}
+ */
+
+/*
 code, kbd, pre, samp {
     font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
 }
-*/
+
 
 td code {
     font-size: 11px;
@@ -93,9 +96,15 @@ table th {
     background: #eef0ee;
 }
 
+*/
 
 pre .hljs {
     padding: 10px;
+}
+
+.hljs {
+    padding: 10px;
+    background-color: #333333;
 }
 
 
@@ -129,6 +138,7 @@ pre .hljs {
 }
 
 /* Ocean Yellow */
+.hljs-subst,
 .hljs-attribute {
     color: #f1ce88;
 }

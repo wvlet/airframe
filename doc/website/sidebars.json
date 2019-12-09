@@ -1,19 +1,13 @@
 {
   "docs": {
-    "Docusaurus": [
-      ""
+    "References": [
+      "release-notes",
+      "index"
     ],
-    "First Category": [
-      "doc2"
-    ],
-    "Second Category": [
-      "doc3"
-    ]
-  },
-  "docs-other": {
-    "First Category": [
-      "doc4",
-      "doc5"
+    "Modules": [
+      "airspec",
+      "airframe-di",
+      "airframe-codec"
     ]
   }
 }

@@ -52,10 +52,8 @@ const siteConfig = {
 
     // For no header links in the top nav bar -> headerLinks: [],
     headerLinks: [
-        {doc: 'index', label: 'Docs'},
-        //{doc: 'doc4', label: 'API'},
-        {page: 'help', label: 'Help'},
-        {blog: true, label: 'Blog'},
+        {href: '/airframe/docs/', label: 'Docs'},
+        {href: 'https://github.com/wvlet/airframe/', label: 'GitHub'},
     ],
 
     // If you have users set above, you add it here:
@@ -75,19 +73,20 @@ const siteConfig = {
     /* Custom fonts for website */
     /*
     fonts: {
-      myFont: [
-        "Times New Roman",
-        "Serif"
-      ],
-      myOtherFont: [
-        "-apple-system",
-        "system-ui"
-      ]
+        myFont: [
+            "Georgia",
+            "goudy old style", "'minion pro", "'bell mt", "'Hiragino Kaku Gothic ProN", "serif",
+            "ヒラギノ角ゴ ProN W3", "メイリオ", "Meiryo"
+        ],
+        myOtherFont: [
+            "-apple-system",
+            "system-ui"
+        ]
     },
     */
 
     // This copyright info is used in /core/Footer.js and blog RSS/Atom feeds.
-    copyright: `Copyright © ${new Date().getFullYear()} Your Name or Your Company Name`,
+    copyright: `Copyright © ${new Date().getFullYear()} wvlet.org`,
 
     highlight: {
         // Highlight.js theme to use for syntax highlighting in code blocks.
@@ -103,8 +102,8 @@ const siteConfig = {
     cleanUrl: true,
 
     // Open Graph and Twitter card images.
-    ogImage: 'img/undraw_online.svg',
-    twitterImage: 'img/undraw_tweetstorm.svg',
+    ogImage: 'https://wvlet.org/airframe/img/poster.png',
+    twitterImage: 'https://wvlet.org/airframe/img/poster.png',
 
     // For sites with a sizable amount of content, set collapsible to true.
     // Expand/collapse the links and subcategories under categories.

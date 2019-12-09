@@ -1,7 +1,10 @@
 ---
+id: release-notes
 layout: docs
 title: Release Notes
 ---
+
+Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
 ## 19.12.0
 -  airframe-di: Support in-class bind[X] for classes with DISupport trait ([#816](https://github.com/wvlet/airframe/issues/816)) [[c3ce56b](https://github.com/wvlet/airframe/commit/c3ce56b)]
