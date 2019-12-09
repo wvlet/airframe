@@ -62,13 +62,18 @@ pre {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
-}
 */
 
 article p img {
     display: inline;
+}
+
+.headerTitleWithLogo {
+    font-weight: normal;
+}
+
+.mainContainer h1, .mainContainer h2, .mainContainer h3, .mainContainer h4, .mainContainer h5, .mainContainer h6 {
+    color: #332F34;
 }
 
 .mainContainer {
@@ -78,6 +83,16 @@ article p img {
     color: #534F54;
 }
 
+table th {
+    font-weight: bold;
+    background: #eef0ee;
+}
+
+td code {
+    background: transparent;
+    padding: unset;
+}
+
 
 /*
 code, kbd, pre, samp {
@@ -85,9 +100,6 @@ code, kbd, pre, samp {
 }
 
 
-td code {
-    font-size: 11px;
-}
 
 .sidebar-nav > li a.active {
     background-color: #345F76;
@@ -95,11 +107,6 @@ td code {
 
 table td, table th {
     font-size: 13px;
-}
-
-table th {
-    font-weight: bold;
-    background: #eef0ee;
 }
 
 */

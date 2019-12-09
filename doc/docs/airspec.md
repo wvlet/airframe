@@ -137,24 +137,24 @@ class `Test properties of Seq[X]` extends AirSpec {
 
 AirSpec supports basic assertions listed below:
 
-|__syntax__               | __meaning__ |
+|syntax               | meaning |
 |-------------------------|----------|
-|__assert(x == y)__         | check x equals to y |
-|__assertEquals(a, b, delta)__ | check the equality of Float (or Double) values by allowing some delta difference |
-|__intercept[E] { ... }__   | Catch an exception of type `E` to check an expected exception is thrown |
-|__x shouldBe y__           | check x == y. This supports matching collections like Seq, Array (with deepEqual) |
-|__x shouldNotBe y__        | check x != y |
-|__x shouldNotBe null__     | shouldBe, shouldNotBe supports null check|
-|__x shouldBe defined__     | check x.isDefined == true, when x is Option or Seq |
-|__x shouldBe empty__       | check x.isEmpty == true, when x is Option or Seq |
-|__x shouldBeTheSameInstanceAs y__ | check x eq y; x and y are the same object instance |
-|__x shouldNotBeTheSameInstanceAs y__ | check x ne y; x and y should not be the same instance |
-|__fail("reason")__         | fail the test if this code path should not be reached  |
-|__ignore("reason")__       | ignore this test execution.  |
-|__cancel("reason")__       | cancel the test (e.g., due to set up failure) |
-|__pending__                | pending the test execution (e.g., when hitting an unknown issue) |
-|__pendingUntil("reason")__ | pending until fixing some blocking issues|
-|__skip("reason")__         | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
+|`assert(x == y)`         | check x equals to y |
+|`assertEquals(a, b, delta)` | check the equality of Float (or Double) values by allowing some delta difference |
+|`intercept[E] { ... }`   | Catch an exception of type `E` to check an expected exception is thrown |
+|`x shouldBe y`           | check x == y. This supports matching collections like Seq, Array (with deepEqual) |
+|`x shouldNotBe y`        | check x != y |
+|`x shouldNotBe null`     | shouldBe, shouldNotBe supports null check|
+|`x shouldBe defined`     | check x.isDefined == true, when x is Option or Seq |
+|`x shouldBe empty`       | check x.isEmpty == true, when x is Option or Seq |
+|`x shouldBeTheSameInstanceAs y` | check x eq y; x and y are the same object instance |
+|`x shouldNotBeTheSameInstanceAs y` | check x ne y; x and y should not be the same instance |
+|`fail("reason")`         | fail the test if this code path should not be reached  |
+|`ignore("reason")`       | ignore this test execution.  |
+|`cancel("reason")`       | cancel the test (e.g., due to set up failure) |
+|`pending`                | pending the test execution (e.g., when hitting an unknown issue) |
+|`pendingUntil("reason")` | pending until fixing some blocking issues|
+|`skip("reason")`         | Skipping unnecessary tests (e.g., tests that cannot be supported in Scala.js) |
 
 Tests in AirSpec are just regular functions in Scala. AirSpec is designed to use pure Scala syntax as much as possible so as not to introduce any complex DSLs, which are usually hard to remember.
 
