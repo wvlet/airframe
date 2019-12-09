@@ -65,13 +65,19 @@ pre {
 h1, h2, h3, h4, h5, h6 {
     font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
 }
+*/
 
+article p img {
+    display: inline;
+}
 
 .mainContainer {
     font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
-    line-height: 1.3;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #534F54;
 }
- */
+
 
 /*
 code, kbd, pre, samp {

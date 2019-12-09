@@ -1,8 +1,9 @@
 {
   "docs": {
     "References": [
-      "release-notes",
-      "index"
+      "index",
+      "articles",
+      "release-notes"
     ],
     "Modules": [
       "airspec",
