@@ -6,7 +6,7 @@ title: Lightweight Building Blocks for Scala
 Airframe is a collection of [lightweight building blocks](docs/index.html) for kick starting your Scala application development.
 
 - [Documentation](docs)
-- [Release Notes](https://wvlet.org/airframe/docs/release-notes.html)
+- [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 
 - [AirSpec: A Functional Testing Library](https://wvlet.org/airframe/docs/airspec.html)
@@ -17,7 +17,7 @@ Airframe has several modules for kick starting your application development in S
 <p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px"></p>
 </center>
 
-- [airframe](airframe.html)
+- [airframe](airframe-di.md)
   - Scala-friendly dependency injection library.
 - [airspec](airspec.html)
   - A functional testing framework for Scala.

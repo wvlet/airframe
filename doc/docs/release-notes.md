@@ -3,8 +3,6 @@ layout: docs
 title: Release Notes
 ---
 
-# Release Notes
-
 ## 19.12.0
 -  airframe-di: Support in-class bind[X] for classes with DISupport trait ([#816](https://github.com/wvlet/airframe/issues/816)) [[c3ce56b](https://github.com/wvlet/airframe/commit/c3ce56b)]
 -  airframe-http: Add CORS filter and filter-instance support ([#846](https://github.com/wvlet/airframe/issues/846)) [[58245b2](https://github.com/wvlet/airframe/commit/58245b2)]
