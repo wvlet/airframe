@@ -57,6 +57,7 @@ pre {
     left: initial;
 }
 
+/*
 .icon-wrapper, .text-center, .hidden-xs, #sidebar li, .edit-button {
     font-family: Roboto, Arial, "Helvetica Neue", Helvetica, sans-serif;
 }
@@ -73,6 +74,7 @@ body {
 code, kbd, pre, samp {
     font-family: 'Roboto Mono', Menlo, Consolas, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, sans-serif;
 }
+*/
 
 td code {
     font-size: 11px;

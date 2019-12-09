@@ -1,4 +1,3 @@
-import microsites.MicrositeEditButton
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_11 = "2.11.12"
@@ -225,41 +224,15 @@ lazy val projectJS =
 
 lazy val docs =
   project
-    .in(file("docs"))
+    .in(file("doc"))
     .settings(
-      name := "docs",
+      name := "airframe-docs",
       publishArtifact := false,
       publish := {},
       publishLocal := {},
       // Necessary for publishMicrosite
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
-      micrositeName := "Airframe",
-      micrositeDescription := "Lightweight Building Blocks for Scala",
-      micrositeAuthor := "Taro L. Saito",
-      micrositeOrganizationHomepage := "https://github.com/wvlet",
-      //micrositeCompilingDocsTool := WithMdoc,
-      micrositeTheme := "pattern",
-      micrositeHighlightTheme := "ocean",
-      micrositeGithubOwner := "wvlet",
-      micrositeGithubRepo := "airframe",
-      micrositeUrl := "https://wvlet.org",
-      micrositeBaseUrl := "airframe",
-      micrositeAnalyticsToken := "UA-98364158-1",
-      micrositeDocumentationUrl := "docs",
-      micrositeGitterChannel := true,
-      micrositeGitterChannelUrl := "wvlet/airframe",
-      // Configuration for using GitHub4s. This is slow and didn't work well on CI
-      //micrositePushSiteWith := GitHub4s,
-      //micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
-      micrositePalette ++= Map(
-        "brand-primary"   -> "#2582AA",
-        "brand-secondary" -> "#143F56",
-        "brand-tertiary"  -> "#042F46",
-        "gray-dark"       -> "#453E46",
-        "gray"            -> "#534F54"
-      ),
-      // Generate documentation sources from airframe-xxx/README.md
       mdocIn := (managedSourceDirectories in Compile).value.head,
       resourceGenerators in Compile += Def.task {
         // Copy source docs since Mdoc accepts only a single source directory
@@ -277,7 +250,7 @@ lazy val docs =
         NothingFilter
       )
     )
-    .enablePlugins(MicrositesPlugin)
+    .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
   val baseDir = file(".")
@@ -298,7 +271,6 @@ def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
       val originalReadme = IO.read(f)
       val content =
         s"""---
-           |layout: docs
            |title: ${moduleName}
            |---
            |${originalReadme}""".stripMargin
