@@ -3,12 +3,13 @@
     "References": [
       "index",
       "articles",
-      "release-notes"
+      "release-notes",
+      "logos"
     ],
     "Frameworks": [
-      "airspec",
       "airframe-di",
-      "airframe-http"
+      "airframe-http",
+      "airspec"
     ],
     "Airframe Modules": [
       "airframe-benchmark",
