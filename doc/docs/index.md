@@ -12,20 +12,21 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Presentations and Articles](articles.md)
 
+## Usage Guides
 
-## Usage Guide
+Scala is a quite powerful programming language. One of the benefits of Scala is it can utilize libraries in Java ecosystem. Existing libraries for Java, however, are not always the best choices if you are primarily writing code in Scala. For example, some libraries have performance overhead for converting Java collections into Scala collections, and their interfaces might not be well-suited to using them from Scala, etc.
 
-Airframe has several modules that can be a quick replacement of commonly used Java libraries (e.g., slf4j, Guice, Jackson, etc.) to provide the same functionality in Scala. If you are familiar with these libraries, 
+Airframe has several modules that can replace commonly-used Java libraries to provide the same functionality in Scala. For example, you may have used libraries like slf4j, Google Guice, Jackson, etc. If you are familiar with these libraries, you will be surprised how Airframe can simplify your code compared to using these libraries designed for Java.
 
-
+In the following sections, we will see several examples of Airframe modules that will enrich your application development experience in Scala.
 
 ### Logging
 
 For adding application logging, use [airframe-log](airframe-log.md).
 
-slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. [airframe-log](airframe-log.md) is a new logging library designed for Scala, which is configurable  programatically and supports logging source code locations, etc.
+slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. [airframe-log](airframe-log.md) is a new logging library designed for Scala, which is programatically configurable and supports showing the source code locations. Seeing the line number where the debug message is produced will significantly save your time for debugging your applications.
 
-To start logging, just extend `wvlet.log.LogSupport` and use `trace/debug/info/warn/error` logging methods. airframe-log uses Scala Macros to remove the performance overhead for generating debug log messages unless you specify `Logger.setDefaultLogLevel(LogLevel.DEBUG)`:
+To start logging with airframe-log, just extend `wvlet.log.LogSupport` and use `trace/debug/info/warn/error` logging methods. airframe-log uses Scala Macros to remove the performance overhead for generating debug log messages unless you set `Logger.setDefaultLogLevel(LogLevel.DEBUG)`:
 
 ```scala
 import wvlet.log.LogSupport
@@ -38,15 +39,15 @@ class MyApp extends LogSupport {
 }
 ```
 
-For more background, see: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc) 
+For more background, see also: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc) 
 
 ### Object Serialization 
 
-If you need to store object data to disks, or send them to remote nodes, use [airframe-codec](airframe-codec.md), which is a [MessagePack](https://msgpack.org) based schema-on-read data serialization library.
+If you need to store object data to disks, or send them to remote machines (e.g., Spark applications), use [airframe-codec](airframe-codec.md), which is a [MessagePack](https://msgpack.org)-based schema-on-read data serialization library.
 
 [Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add `@JSONProperty` annotation and configure ObjectMapper.
 
-[airframe-codec](airframe-codec.md) simplifies this process so that you can use case classes in Scala as is, and for producing compact binaries of your data, it also supports [MessagePack](https://msgpack.org) format as well as JSON. 
+[airframe-codec](airframe-codec.md) simplifies this process so that you can use case classes in Scala without any annotations. For producing compact binaries of your data, it also supports [MessagePack](https://msgpack.org) format as well as JSON. 
 
 ```scala
 case class Person(id:Int, name:String)
@@ -66,9 +67,7 @@ codec.fromMsgPack(msgpack) // Person(1, "Ann")
 
 #### Schema-On-Read Conversion
 
-![schema](img/airframe-codec/schema-on-read.png)
-
-[airframe-codec](airframe-codec.md) adjust input data types according to the target object types.
+[airframe-codec](airframe-codec.md) adjusts input data types according to the target object types.
 This schema-on-read data conversion is quite powerful for mapping various types of input data (e.g., CSV, JSON, etc.) into Scala case classes.
 
 ```scala
@@ -78,10 +77,32 @@ val json = """{"id":"2", "name":"Bob"}"""
 codec.fromJson(json) // Person(2, "Bob") 
 ```
 
-- [airframe-json](airframe-json.md)
-  - Pure-Scala JSON parser.
-- [airframe-msgpack](airframe-msgpack.md)
-  - Pure-scala MessagePack reader and writer
+![schema](img/airframe-codec/schema-on-read.png)
+
+### Querying JSON and MessagePack Data 
+
+[airframe-codec](airframe-codec.md) can be used for extracting data from JSON and MessagePack data. For example, if you have the following JSON data:
+
+```json
+[
+  {"id":1, "name":"xxx", "address":["aaa", "bbb", ...]},
+  {"id":2, "name":"yyy", "address":["ccc", "ddd", ...]}
+]
+```
+
+You can extract only the names and the addresses from this JSON as follows: 
+
+```scala
+case class AddressQuery(name:String, address:Seq[String])
+
+MessageCodec.of[Seq[AddressQuery]].fromJson(json)
+// This extracts:
+//   Seq(AddressQuery("xxx", Seq("aaa","bbb")), AddressQuery("yyy", Seq["ccc","ddd"]))
+``` 
+
+### Building Web Servers and Clients
+
+
 
 
 ### Dependency Injection
@@ -102,7 +123,8 @@ codec.fromJson(json) // Person(2, "Bob")
 
 
 
-## Usage
+
+## build.sbt
 
 Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
 
@@ -172,17 +194,22 @@ Airframe has several modules for kick starting your application development in S
   - Reusable JDBC connection pool.
 - [airframe-jmx](airframe-jmx.md)
   - Enable runtime application monitoring through JMX.
+- [airframe-json](airframe-json.md)
+  - Pure-Scala JSON parser.
 - [airframe-launcher](airframe-launcher.md)
   - Command line parser and launcher.
 - [airframe-metrics](airframe-metrics.md)
   - Human-readable representation of times, time ranges, and data sizes.
+- [airframe-msgpack](airframe-msgpack.md)
+  - Pure-scala MessagePack reader and writer
 - [airframe-surface](airframe-surface.md)
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
-- [airframe-spec](airframe-spec.md)
+- [airframe-spec](airspec.md)
   - A simple base trait for using ScalaTest.
 - [airframe-sql](airframe-sql.md)
   - SQL parser
 
+### Companion sbt plugins
 
 We also have developed sbt plugins for packaging and publishing your projects:
 
@@ -193,5 +220,4 @@ We also have developed sbt plugins for packaging and publishing your projects:
 - [sbt-sonatype](https://github.com/xerial/sbt-sonatype)
   - A sbt plugin for publishing Scala/Java projects to the Maven central.
   - Enables [a single command release](https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin) of your project.
-
 
