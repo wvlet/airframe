@@ -233,8 +233,7 @@ lazy val docs =
       publishLocal := {},
       // Necessary for publishMicrosite
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
-      ghpagesNoJekyll := false,
-      mdocIn := baseDirectory.value / "docs",
+      ghpagesNoJekyll := false
 //      mdocIn := (managedSourceDirectories in Compile).value.head,
 //      resourceGenerators in Compile += Def.task {
 //        // Copy source docs since Mdoc accepts only a single source directory
