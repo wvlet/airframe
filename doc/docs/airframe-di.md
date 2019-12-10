@@ -28,12 +28,7 @@ In Scala we have various approaches for dependency injection, such as [cake patt
 
 ## Quick Start
 
-[sindex-badge]: https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
-[sindex-link]: https://index.scala-lang.org/wvlet/airframe
-[central-badge]: https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central
-[central-link]: https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-
-[![scala-index][sindex-badge]][sindex-link] [![maven central][central-badge]][central-link]
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22) [![scala-index](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange)](https://index.scala-lang.org/wvlet/airframe)
 
 To use Airframe DI, add the following dependency to your **build.sbt**:
 
@@ -382,6 +377,32 @@ for instantiating `P1` and `A1`.
 For example, if `X` is already started (onStart is called) in the parent session (= owner session), this hook will not be called again in the child session.
 
 
+### Finding The Current Session
+
+You may need to find the current session to manage lifecycles of manually created instances.
+In this case, you can bind Airframe's Session with `bind[Session]` and register newly created instances to the session:
+
+```scala
+import wvlet.airframe._
+
+class MyDB(name:String) {
+  private val conn = newConnection(name)
+    .onShutdown{ x => x.close() }
+}
+
+trait MyApp {
+  private val session = bind[Session]
+
+  def openDB(name:String): MyDB = {
+    val db = new MyDB(name)
+     // Adding MyDB instance to the current session so that
+     // MyDB connection can be closed when the session terminates.
+    session.register(db)
+    db
+  }
+}
+```
+
 ## Life Cycle
 
 __Update since version 19.9.0__: If objects injected by DI implements `def close(): Unit` function of `java.lang.AutoCloseable` interface, airframe will call the close method upon the session shutdown. To override this behavior, define your own `onShutdown` hook or use `@PreDestory` annotation.
@@ -454,32 +475,6 @@ trait MyService {
 ```
 
 These annotation are not supported in Scala.js, because it has no run-time reflection to read annotations in a class.
-
-### Finding The Current Session
-
-You may need to find the current session to manage lifecycles of manually created instances.
-In this case, you can bind Airframe's Session with `bind[Session]` and register newly created instances to the session:
-
-```scala
-import wvlet.airframe._
-
-class MyDB(name:String) {
-  private val conn = newConnection(name)
-    .onShutdown{ x => x.close() }
-}
-
-trait MyApp {
-  private val session = bind[Session]
-
-  def openDB(name:String): MyDB = {
-    val db = new MyDB(name)
-     // Adding MyDB instance to the current session so that
-     // MyDB connection can be closed when the session terminates.
-    session.register(db)
-    db
-  }
-}
-```
 
 
 ## Designing Applications with Airframe

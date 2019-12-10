@@ -4,16 +4,16 @@ layout: docs
 title: Overview
 ---
 
-Airframe is a collection of [lightweight building blocks](docs/index.html) for kick starting your Scala application development.
+Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.
 
 - [Release Notes](release-notes.md)
-- [Articles](articles.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
+- [Articles](articles.md)
 
 
 ## Usage
 
-Include as many dependencies as you need into your `libraryDependencies` in __build.sbt__ file.
+Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
 
 [![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
 ) [![airframe](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
@@ -30,7 +30,7 @@ libraryDependencies ++= Seq(
   "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
   "org.wvlet.airframe" %% "airframe-config"        % AIRFRAME_VERSION, // YAML-based configuration
   "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution
-  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP REST API router
+  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP REST API
   "org.wvlet.airframe" %% "airframe-http-finagle"  % AIRFRAME_VERSION, // HTTP server (Finagle backend)
   "org.wvlet.airframe" %% "airframe-http-recorder" % AIRFRAME_VERSION, // HTTP recorder and replayer
   "org.wvlet.airframe" %% "airframe-jmx"           % AIRFRAME_VERSION, // JMX monitoring

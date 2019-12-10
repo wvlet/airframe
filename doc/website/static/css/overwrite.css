@@ -72,6 +72,15 @@ article p img {
     font-weight: normal;
 }
 
+.nav-home img {
+    max-width: unset;
+}
+
+.imageAlignTop .blockImage {
+    max-width: 600px;
+    vertical-align: center;
+}
+
 .mainContainer h1, .mainContainer h2, .mainContainer h3, .mainContainer h4, .mainContainer h5, .mainContainer h6 {
     color: #332F34;
 }
@@ -81,6 +90,10 @@ article p img {
     font-size: 15px;
     line-height: 1.4;
     color: #534F54;
+}
+
+.mainContainer a {
+    color: #1e909f;
 }
 
 table th {
@@ -93,6 +106,13 @@ td code {
     padding: unset;
 }
 
+.nav-footer {
+    background: #07405b;
+}
+
+.button {
+    text-transform: unset;
+}
 
 /*
 code, kbd, pre, samp {
@@ -110,7 +130,6 @@ table td, table th {
 }
 
 */
-
 pre .hljs {
     padding: 10px;
 }

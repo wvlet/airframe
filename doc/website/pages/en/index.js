@@ -46,6 +46,9 @@ class HomeSplash extends React.Component {
             <div className="section promoSection">
                 <div className="promoRow">
                     <div className="pluginRowBlock">{props.children}</div>
+                    <a className="github-button" href="https://github.com/wvlet/airframe"
+                       data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large"
+                       data-show-count="true" aria-label="Star wvlet/airframe on GitHub">Star</a>
                 </div>
             </div>
         );
@@ -60,11 +63,11 @@ class HomeSplash extends React.Component {
 
         return (
             <SplashContainer>
-                <Logo img_src={`${baseUrl}img/undraw_monitor.svg`}/>
+                <Logo img_src={`${baseUrl}img/logos/airframe_icon.png`}/>
                 <div className="inner">
                     <ProjectTitle siteConfig={siteConfig}/>
                     <PromoSection>
-                        <Button href={docUrl('index.html')}>Documentation</Button>
+                        <Button href='./docs'>Get Started</Button>
                         <Button href="https://github.com/wvlet/airframe/">GitHub</Button>
                     </PromoSection>
                 </div>
@@ -100,47 +103,45 @@ class Index extends React.Component {
             </div>
         );
 
+        const DesignedForScala = () => (
+            <Block id="scala-support">
+                {[
+                    {
+                        content:
+                            'To make your landing page more attractive, use illustrations! Check out ',
+                        image: 'https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png',
+                        imageAlign: 'top',
+                        title: 'Essential Libraries for Scala',
+                    },
+                    {
+                        content:
+                            'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependencies and avoid dependency hell, almost all components are written from scratch so that ' +
+                            'to exclude third-party libraries such as Google Guice, Guava, slf4j, etc.',
+                        image: 'img/scala-logo-red-spiral-dark.png',
+                        imageAlign: 'top',
+                        title: 'Designed for Scala',
+                    },
+                    {
+                        content:
+                            'Airframe uses MessagePack-based schema-on-read codec. This provides fast and compact object serialization for efficient HTTP server-client communication.',
+                        image: 'img/msgpack.png',
+                        imageAlign: 'top',
+                        title: 'Powered By MessagePack',
+                    },
+                ]}
+            </Block>
+        );
+
+        const MessagePackBased = () => (
+            <Block id="msgpack">
+                {[]}
+            </Block>
+        );
+
+
         const TryOut = () => (
             <Block id="try">
-                {[
-                    {
-                        content:
-                            'To make your landing page more attractive, use illustrations! Check out ' +
-                            '[**unDraw**](https://undraw.co/) which provides you with customizable illustrations which are free to use. ' +
-                            'The illustrations you see on this page are from unDraw.',
-                        image: 'https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png',
-                        imageAlign: 'left',
-                        title: 'Useful Library Collection for Scala',
-                    },
-                ]}
-            </Block>
-        );
-
-        const Description = () => (
-            <Block background="dark">
-                {[
-                    {
-                        content:
-                            'This is another description of how this project is useful',
-                        image: `${baseUrl}img / undraw_note_list.svg`,
-                        imageAlign: 'right',
-                        title: 'Description',
-                    },
-                ]}
-            </Block>
-        );
-
-        const LearnHow = () => (
-            <Block background="light">
-                {[
-                    {
-                        content:
-                            'Each new Docusaurus project has **randomly-generated** theme colors.',
-                        image: `${baseUrl}img / undraw_youtube_tutorial.svg`,
-                        imageAlign: 'right',
-                        title: 'Randomly Generated Theme Colors',
-                    },
-                ]}
+                {[]}
             </Block>
         );
 
@@ -148,40 +149,24 @@ class Index extends React.Component {
             <Block layout="fourColumn">
                 {[
                     {
-                        content: 'Application Logging',
-                        image: `${baseUrl}img / undraw_react.svg`,
+                        content: 'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependencies and dependency hell, almost all components are written from scratch in Scala so that ' +
+                            'to exclude third-party libraries such as Google Guice, Guava, slf4j, etc.',
+                        image: `${baseUrl}img/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
-                        title: 'airframe-log',
+                        title: 'Designed for Scala',
                     },
                     {
-                        content: 'Retry, CircuitBreaker, RateControl',
-                        image: `${baseUrl}img / undraw_react.svg`,
+                        content:
+                            'Airframe uses MessagePack-based schema-on-read codec. This provides fast and compact object serialization for efficient HTTP server-client communication, and resolves type differences between integers and strings automatically',
+                        image: `${baseUrl}img/msgpack.png`,
                         imageAlign: 'top',
-                        title: 'airframe-control',
+                        title: 'Schema-On-Read Data Transfer with MessagePack',
                     },
                     {
-                        content: 'Command Line Application Launcher',
-                        image: `${baseUrl}img / undraw_operating_system.svg`,
+                        content: 'Airframe supports',
+                        image: `${baseUrl}img/airframe-log/demo.png`,
                         imageAlign: 'top',
-                        title: 'airframe-launcher',
-                    },
-                    {
-                        content: 'Dependency Injection',
-                        image: `${baseUrl}img / undraw_operating_system.svg`,
-                        imageAlign: 'top',
-                        title: 'airframe-di',
-                    },
-                    {
-                        content: 'Application Configuration',
-                        image: `${baseUrl}img / undraw_operating_system.svg`,
-                        imageAlign: 'top',
-                        title: 'airframe-config',
-                    },
-                    {
-                        content: 'Web Server',
-                        image: `${baseUrl}img / undraw_operating_system.svg`,
-                        imageAlign: 'top',
-                        title: 'airframe-html',
+                        title: 'Colorful Source Code Logging',
                     },
                 ]}
             </Block>
@@ -221,11 +206,10 @@ class Index extends React.Component {
                 <HomeSplash siteConfig={siteConfig} language={language}/>
                 <div className="mainContainer">
                     <Features/>
-                    <FeatureCallout/>
+                    <DesignedForScala/>
+                    <MessagePackBased/>
                     <TryOut/>
-                    <LearnHow/>
-                    <Description/>
-                    <Showcase/>
+
                 </div>
             </div>
         );
