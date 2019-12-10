@@ -1,9 +1,8 @@
 ---
+id: di-comparison
 layout: docs
 title: DI Framework Comparison
 ---
-
-# DI Framework Comparison
 
 There are two types of dependency injection approaches; **runtime** and **compile-time** (static) DIs.
 

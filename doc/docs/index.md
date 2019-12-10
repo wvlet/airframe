@@ -4,11 +4,54 @@ layout: docs
 title: Overview
 ---
 
+<img style = "float: right; padding: 10px;" width="150px" src="img/logos/airframe_icon_small.png"/>
+
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.
 
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Articles](articles.md)
+
+
+## Guide for Java Library Users
+
+Airframe has several modules that can be a better replacement of commonly used Java libraries (e.g., Guice, Jackson, etc.) to provide the same functionality in Scala.    
+
+### Logging
+
+- [airframe-log](airframe-log.md)
+
+slf4j and log4j are commonly used logging libraries in Java ecosystem, but they are not fully utilizing the strength of Scala for enhancing log messages. 
+[airframe-log](airframe-log.md) is a new logging library designed for Scala, which can be programatically configured and supports logging source code locations, etc.
+
+See also the blog article for more background: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc) 
+
+### Object Serialization 
+
+[Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between data objects. To configure mapping data objects, you need to add `@JSONProperty` annotation and configure ObjectMapper.
+
+
+
+- [airframe-codec](airframe-codec.md)
+  - [MessagePack](https://msgpack.org) based Schema-on-Read data transcoder, which can be used for object serialization and deserialization. 
+- [airframe-json](airframe-json.md)
+  - Pure-Scala JSON parser.
+- [airframe-msgpack](airframe-msgpack.md)
+  - Pure-scala MessagePack reader and writer
+
+
+
+### Dependency Injection
+
+
+- [DI Library Comparison](comparison.md)
+
+### Google Guava
+
+
+
+
+
 
 
 ## Usage
@@ -60,14 +103,13 @@ libraryDependencies ++= Seq(
 
 Airframe has several modules for kick starting your application development in Scala.
 
+
 - [airframe](airframe-di.md)
   - Scala-friendly dependency injection library.
 - [airspec](airspec.md)
   - A functional testing framework for Scala.
 - [ariframe-canvas](airframe-canvas.md)
   - Off-heap memory buffer
-- [airframe-codec](airframe-codec.md)
-  - [MessagePack](https://msgpack.org) based Schema-on-Read data transcoder, which can be used for object serialization and deserialization. 
 - [airframe-config](airframe-config.md)
   - YAML-based configuration reader & provider.
 - [airframe-control](airframe-control.md)
@@ -82,16 +124,10 @@ Airframe has several modules for kick starting your application development in S
   - Reusable JDBC connection pool.
 - [airframe-jmx](airframe-jmx.md)
   - Enable runtime application monitoring through JMX.
-- [airframe-json](airframe-json.md)
-  - Pure-Scala JSON parser.
-- [airframe-log](airframe-log.md)
-  - Light-weight handy logging library.
 - [airframe-launcher](airframe-launcher.md)
   - Command line parser and launcher.
 - [airframe-metrics](airframe-metrics.md)
   - Human-readable representation of times, time ranges, and data sizes.
-- [airframe-msgpack](airframe-msgpack.md)
-  - Pure-scala MessagePack reader and writer
 - [airframe-surface](airframe-surface.md)
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
 - [airframe-spec](airframe-spec.md)

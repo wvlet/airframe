@@ -77,7 +77,7 @@ article p img {
 }
 
 .imageAlignTop .blockImage {
-    max-width: 450px;
+    max-width: 350px;
     vertical-align: center;
 }
 
@@ -91,8 +91,12 @@ article p img {
     color: white;
 }
 
-.homeSplashFade h1, .homeSplashFade h2, .homeSplashFade .button {
+.homeSplashFade h1, .homeSplashFade h2, .homeSplashFade h3, .homeSplashFade .button {
     color: white;
+}
+
+.homeSplashFade .projectTitle {
+    font-size: 250%;
 }
 
 .homeSplashFade .button {
@@ -104,8 +108,10 @@ article p img {
 }
 
 .mainContainer {
-    font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
-    font-size: 15px;
+    /*
+font-family: Georgia, 'goudy old style', 'minion pro', 'bell mt', 'Hiragino Kaku Gothic ProN', serif, "ヒラギノ角ゴ ProN W3", "メイリオ", Meiryo;
+    font-size: 17px;
+         */
     line-height: 1.4;
     color: #534F54;
 }

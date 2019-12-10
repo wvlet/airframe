@@ -29,12 +29,6 @@ class HomeSplash extends React.Component {
             </div>
         );
 
-        const Logo = props => (
-            <div className="projectLogo">
-                <img src={props.img_src} alt="Project Logo"/>
-            </div>
-        );
-
         const ProjectTitle = () => (
             <h2 className="projectTitle">
                 {siteConfig.title}
@@ -45,10 +39,9 @@ class HomeSplash extends React.Component {
         const PromoSection = props => (
             <div className="section promoSection">
                 <div className="promoRow">
-                    <div className="pluginRowBlock">{props.children}</div>
-                    <a className="github-button" href="https://github.com/wvlet/airframe"
-                       data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large"
-                       data-show-count="true" aria-label="Star wvlet/airframe on GitHub">Star</a>
+                    <div className="pluginRowBlock">
+                        {props.children}
+                    </div>
                 </div>
             </div>
         );
@@ -65,9 +58,14 @@ class HomeSplash extends React.Component {
             <SplashContainer>
                 <div className="inner">
                     <ProjectTitle siteConfig={siteConfig}/>
+
                     <PromoSection>
                         <Button href='./docs'>Get Started</Button>
                         <Button href="https://github.com/wvlet/airframe/">GitHub</Button>
+
+                        <a className="github-button" href="https://github.com/wvlet/airframe"
+                           data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large"
+                           data-show-count="true" aria-label="Star wvlet/airframe on GitHub">Star</a>
                     </PromoSection>
                 </div>
             </SplashContainer>
@@ -79,6 +77,13 @@ class Index extends React.Component {
     render() {
         const {config: siteConfig, language = ''} = this.props;
         const {baseUrl} = siteConfig;
+
+        const Logo = props => (
+            <div className="projectLogo">
+
+            </div>
+        );
+
 
         const Block = props => (
             <Container
@@ -94,68 +99,40 @@ class Index extends React.Component {
         );
 
         const FeatureCallout = () => (
-            <div
-                className="productShowcaseSection paddingBottom"
-                style={{textAlign: 'center'}}>
-                <h2>Feature Callout</h2>
-                <MarkdownBlock>These are features of this project</MarkdownBlock>
-            </div>
+            <Container
+                padding={['bottom', 'top']}
+                background="light"
+                className="twoColumn">
+                <div>
+                    <img width='200px' src={`${baseUrl}img/logos/airframe-logo-tr.png`} alt="Project Logo"/>
+                </div>
+            </Container>
         );
 
-        const DesignedForScala = () => (
-            <Block id="scala-support">
-                {[
-                    {
-                        content:
-                            'To make your landing page more attractive, use illustrations! Check out ',
-                        image: 'https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png',
-                        imageAlign: 'top',
-                        title: 'Essential Libraries for Scala',
-                    },
-                    {
-                        content:
-                            'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependencies and avoid dependency hell, almost all components are written from scratch so that ' +
-                            'to exclude third-party libraries such as Google Guice, Guava, slf4j, etc.',
-                        image: 'img/scala-logo-red-spiral-dark.png',
-                        imageAlign: 'top',
-                        title: 'Designed for Scala',
-                    },
-                    {
-                        content:
-                            'Airframe uses MessagePack-based schema-on-read codec. This provides fast and compact object serialization for efficient HTTP server-client communication.',
-                        image: 'img/msgpack.png',
-                        imageAlign: 'top',
-                        title: 'Powered By MessagePack',
-                    },
-                ]}
-            </Block>
-        );
-
-        const Features = () => (
+        const Features = ({background = 'light'}) => (
             <Block layout="threeColumn">
                 {[
                     {
-                        content: 'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependency hell, almost all components are written from scratch in Scala. ' +
-                            'No longer need to worry about excluding third-party libraries, such as Jackson, Google Guava, Guice, slf4j, log4j, etc.',
+                        content: 'Airframe can be a replacement of commonly-used Java libraries, such as Jackson, Google Guava, Guice, slf4j, log4j, etc. To minimize the dependency hell, almost all components are written from scratch in Scala. Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js.  ',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala',
                     },
                     {
                         content:
-                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec). This provides fast and compact object serialization for efficient HTTP server-client communication, and automatically resolves differences between data types (e.g., integers and strings.)',
+                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec) for fast and compact object serialization. It can be used for efficient HTTP server-client communication, and automatically resolves differences between data types (e.g., integers and strings.). Serialization with [JSON](docs/airframe-json) is also supported. ',
                         image: `${baseUrl}img/features/msgpack.png`,
                         imageAlign: 'top',
                         title: 'MessagePack Serialization',
                     },
                     {
-                        content: 'With [dependency injection (DI)](docs/airframe-di) of Airframe, building services with hundreds of module classes becomes manageable. Airframe DI will build complex objects on your behalf and properly start and shutdown your services in FILO order.',
+                        content: 'With [dependency injection (DI)](docs/airframe-di) of Airframe, building services with hundreds of module classes becomes easy an manageable. Airframe DI will build complex objects on your behalf by following [your custom design](docs/airframe-di#design) and properly [start and shutdown your services in FILO order](docs/airframe-di#life-cycle).',
                         image: `${baseUrl}img/features/di.png`,
                         imageAlign: 'top',
                         title: 'Dependency Injection'
                     },
                     {
-                        content: 'Logging is an essential tool for debugging applications. [airframe-log](docs/airframe-log) helps showing your logs with fancy ANSI colors enriched with the source code locations.',
+                        content: 'Logging is an essential tool for debugging applications. [airframe-log](docs/airframe-log) helps displaying logs with fancy ANSI colors enriched with the source code locations.',
                         image: `${baseUrl}img/airframe-log/demo.png`,
                         imageAlign: 'top',
                         title: 'Colorful Source Code Logging',
@@ -167,7 +144,7 @@ class Index extends React.Component {
                         title: 'Application Config Flow',
                     },
                     {
-                        content: 'How to parse command line options? [airframe-launcher](docs/airframe-launcher) is a handly command line parser that can map command line arguments into corresponding Scala functions.',
+                        content: 'Need a way to parse command line options? [airframe-launcher](docs/airframe-launcher) is a handy command line parser that can be used to call Scala functions from the command line arguments.',
                         image: `${baseUrl}/img/features/launcher.png`,
                         imageAlign: 'top',
                         title: 'Command-Line Parser'
@@ -176,16 +153,16 @@ class Index extends React.Component {
                         content: '[AirSpec](docs/airspec) is a simple unit testing framework for Scala and Scala.js. You can uses public functions in your classes as test cases. No need to remember complex DSLs to start writing tests in Scala.',
                         image: `${baseUrl}/img/features/airspec.png`,
                         imageAlign: 'top',
-                        title: 'AirSpec: Testing Framework'
+                        title: 'Simple Testing Framework'
                     },
                     {
-                        content: 'Retrying HTTP requests for API calls is an essential technique in the microservice era. [airframe-control](docs/airframe-control) provides essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
+                        content: 'Retrying HTTP requests for API calls is an essential technique for connecting micro-services. [airframe-control](docs/airframe-control) provides essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
                         image: `${baseUrl}/img/features/undraw_online_transactions_02ka.svg`,
                         imageAlign: 'top',
                         title: 'Retry, Rate Control'
                     },
                     {
-                        content: "[airframe-http](docs/airframe-http) is a web framework for using Scala as an IDL for defining web applications. Built-in JSON/MessagePack-based data transfer and Twitter's [Finagle](https://twitter.github.io/finagle/guide/)-based server implementation are available to quickly create microservice APIs.",
+                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to quickly create microservice API servers.",
                         image: `${baseUrl}/img/features/finagle.png`,
                         imageAlign: 'top',
                         title: 'Web Service IDL in Scala'
@@ -211,35 +188,6 @@ class Index extends React.Component {
                 ]}
             </Block>
         );
-
-        const Showcase = () => {
-            if ((siteConfig.users || []).length === 0) {
-                return null;
-            }
-
-            const showcase = siteConfig.users
-                .filter(user => user.pinned)
-                .map(user => (
-                    <a href={user.infoLink} key={user.infoLink}>
-                        <img src={user.image} alt={user.caption} title={user.caption}/>
-                    </a>
-                ));
-
-            const pageUrl = page => baseUrl + (language ? `${language} / ` : '') + page;
-
-            return (
-                <div className="productShowcaseSection paddingBottom">
-                    <h2>Who is Using This?</h2>
-                    <p>This project is used by all these people</p>
-                    <div className="logos">{showcase}</div>
-                    <div className="more-users">
-                        <a className="button" href={pageUrl('users.html')}>
-                            More {siteConfig.title} Users
-                        </a>
-                    </div>
-                </div>
-            );
-        };
 
         return (
             <div>
