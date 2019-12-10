@@ -691,12 +691,12 @@ val testDesign =
   d.bind[Config].toInstance(new Config("localhost", randomPort))
 ```
 
-Airframe has a submodule called [airframe-config](airframe-config.html), which is useful for 
+Airframe has a submodule called [airframe-config](airframe-config.md), which is useful for 
 configuring your applications with YAML files.
 
 ### Managing Resources
 
-Airframe makes easier managing resources (e.g., network or database connections, thread managers, etc.) For example, if you are writing an application that requires an access to a database service. You need to establish a connection, and also need to properly close the connection after the application terminates. Airframe support such resource management using [Life Cycle](lifecicle.html) triggers (onInit, onStart, onShutdown):
+Airframe makes easier managing resources (e.g., network or database connections, thread managers, etc.) For example, if you are writing an application that requires an access to a database service. You need to establish a connection, and also need to properly close the connection after the application terminates. Airframe support such resource management using [Life Cycle](#life-cycle) triggers (onInit, onStart, onShutdown):
 
 ```scala
 import wvlet.airframe._
@@ -1034,7 +1034,7 @@ session.objects.foreach { x=>
 }
 
 ```
-As we have seen in the example of [Service Mix-in](use-cases.html#service-mix-in), if we need to manage hundreds of services,
+As we have seen in the example of [Service Mix-in](#service-mix-in), if we need to manage hundreds of services,
 manually writing such object management functions will be cumbersome. Airframe helps you to oraganize building service objects. 
 
 

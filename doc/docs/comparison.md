@@ -58,12 +58,12 @@ The chart below shows major features supported in selected DI frameworks. For co
 | Auto-wiring           |   ✓     |    ✓   |    ✓   |   (Manual wiring) |
 | Compile-time dependency check    |    |   |  ✓  |  ✓  |
 | Dynamic-type binding  |   ✓    | ✓   |     |  ✓ (using [implicit parameters](https://gist.github.com/gvolpe/1454db0ed9476ed0189dcc016fd758aa#the-fp-way-2))    |
-| [Constructor injection](index.html#constructor-injection) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
-| [In-trait injection](index.html#in-trait-injection) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
-| [Life-cycle management](index.html#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |
-| [Lazy/eager initialization switch](index.html#life-cycle)  |  ✓     |  ✓ (with [Stage](https://github.com/google/guice/wiki/Bootstrap))    |  (lazy only) |  (lazy only)  |
-| [Multi-bindings](bindings.html#multi-binding) |✓ (Just Scala) | ✓ |✓ (Just Scala) |✓ (Just Scala)
-| [Tagged type/alias bindings](bindings.html)   |✓ | limited (Need to define new annotations) |✓|✓ (manual binding) |
+| [Constructor injection](airframe-di.md#bind) |   ✓    | ✓ (Require `@Inject` annotation)  | ✓     | ✓ (manual argument passing)  |
+| [In-trait injection](airframe-di.md#bind) (mix-in support)  |   ✓    |    (Java has no trait)    | ✓       | ✓ (manual override)  |
+| [Life-cycle management](airframe-di.md#life-cycle) (On start/inject/shutdown hooks) |   ✓    | (Need an extension like [airlift](https://github.com/airlift/airlift/tree/master/bootstrap/src/main/java/io/airlift/bootstrap)) | limited (inject interceptor using reflection)| (Need to use IO Monad library like [Cats Effect](https://typelevel.org/cats-effect/)) |
+| [Lazy/eager initialization switch](airframe-di.md#life-cycle)  |  ✓     |  ✓ (with [Stage](https://github.com/google/guice/wiki/Bootstrap))    |  (lazy only) |  (lazy only)  |
+| [Multi-bindings](airframe-di.md#multi-binding) |✓ (Just Scala) | ✓ |✓ (Just Scala) |✓ (Just Scala)
+| [Tagged type/alias bindings](airframe-di.md#advanced-binding-types)   |✓ | limited (Need to define new annotations) |✓|✓ (manual binding) |
 | [Generic type bindings](http://wvlet.org/airframe/docs/bindings.html#generic-type-binding) | ✓ |  (Type erasure) |  | ✓ (manual binding) |
 | Provider bindings | ✓ | ✓ (Need to define special provider classes) | ✓ (wireWith) | limited (Need to use `implicits`) |
 | Scala.js support | ✓ |    | limited (reflection-based interceptor cannot be used) | ✓ |

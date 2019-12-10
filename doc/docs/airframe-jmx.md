@@ -10,7 +10,7 @@ JMX already provides various JVM metrics (e.g., heap memory usage, GC statistics
 
  * [Monitoring Java application through DataDog](http://docs.datadoghq.com/integrations/java/)
 
-For analyzing application behavior for longer ranges (5 minute or more), we recommend using [Treasure Data](treasuredata.com) along with DataDog:
+For analyzing application behavior for longer ranges (5 minute or more), we recommend using [Treasure Data](https://treasuredata.com) along with DataDog:
 ```
 JMX -> fluentd -> DataDog   (For real-time monitoring)
                -> Treasure Data -> Presto SQL (Doing metric-driven actions with SQL queries)

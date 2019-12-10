@@ -680,7 +680,7 @@ internal changes:
  - airframe-tablet: Using json4s-native instead of play-json for Scala 2.13.0-M3 support
 
 ## 0.37
- - [airframe-tablet](airframe-tablet.html) Add play-json based JSONCodec to enable transformation between JSON <-> MessagePack <-> Object.
+ - airframe-tablet: Add play-json based JSONCodec to enable transformation between JSON <-> MessagePack <-> Object.
  - Temporarily remove Scala 2.13.0-M2 build. Now preparing 2.13.0-M3 build in [#143](https://github.com/wvlet/airframe/pull/143)
 
 ## 0.36
@@ -697,7 +697,7 @@ internal changes:
  - The release versions will be like `0.34` as usual and available from Maven central.
 
 ## 0.33
- - Add [airframe-jdbc](airframe-jdbc.html), a reusable JDBC connection pool implementation.  
+ - Add [airframe-jdbc](airframe-jdbc.md), a reusable JDBC connection pool implementation.  
 
 ## 0.32
  - Fix ObjectCodec for map type value [#131](https://github.com/wvlet/airframe/pull/131)
@@ -727,7 +727,7 @@ internal changes:
  - Upgrade to Scala 2.12.4 and sbt 1.0.3. 
 
 ## 0.24
- - Add [airframe-metrics](airframe-metrics.html)
+ - Add [airframe-metrics](airframe-metrics.md)
 
 ## 0.23
  - Moved to `org.wvlet.airframe` organization because Airframe will have more modules in future.
