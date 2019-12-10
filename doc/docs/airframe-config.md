@@ -1,6 +1,6 @@
 ---
 id: airframe-config
-title: airframe-config: Application Config
+title: airframe-config: Application Config Flow
 ---
 
 *airframe-config* enables configuring your Scala applications in a simple flow:

@@ -45,7 +45,7 @@ For more background, see also: [Airframe Log: A Modern Logging Library for Scala
 
 If you need to store object data to disks, or send them to remote machines (e.g., Spark applications), use [airframe-codec](airframe-codec.md), which is a [MessagePack](https://msgpack.org)-based schema-on-read data serialization library.
 
-[Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add `@JSONProperty` annotation and configure ObjectMapper.
+[Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add `@JSONProperty` annotation and configure ObjectMapper. 
 
 [airframe-codec](airframe-codec.md) simplifies this process so that you can use case classes in Scala without any annotations. For producing compact binaries of your data, it also supports [MessagePack](https://msgpack.org) format as well as JSON. 
 
@@ -65,6 +65,9 @@ codec.fromJson(json)       // Person(1, "Ann")
 codec.fromMsgPack(msgpack) // Person(1, "Ann")
 ```
 
+
+Internally, airframe-codec uses [airframe-surface](airframe-surface.md) to extract type information from Scala classes.  
+
 #### Schema-On-Read Conversion
 
 [airframe-codec](airframe-codec.md) adjusts input data types according to the target object types.
@@ -79,7 +82,7 @@ codec.fromJson(json) // Person(2, "Bob")
 
 Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:
 
-![schema](img/airframe-codec/schema-on-read.png)
+![schema](../img/airframe-codec/schema-on-read.png)
 
 ### Querying JSON and MessagePack Data 
 
@@ -105,8 +108,11 @@ MessageCodec.of[Seq[AddressQuery]].fromJson(json)
 
 ### Web Servers and Clients
 
+There are tons of web frameworks for developing web services in Java and Scala. We have designed [airframe-http](airframe-http.md) so that we can minimize the learning cost in developing REST API servers and clients in Scala. 
 
+airframe-http defines REST API by using regular Scala functions with `@Endpoint` annotation for specifying HTTP method types and request paths. Mapping from HTTP requests with JSON (or MessagePack) body contents into Scala functions are automatically handled in the framework, so you don't need to worry about manipulating JSON requests and respones.
 
+Here is an example REST API definition written in airframe-http:
 
 ```scala
 // Model classes
@@ -126,31 +132,70 @@ trait MyApp {
 }
 ```
 
+Other than `@Endpoint` annotations, this is the same with regular Scala class definition.
+
+A client code to access this API is also simple like this:
+
 ```scala
 // Accessing the server using an http client
 client.get[ServerInfo]("/v1/info")      // ServerInfo("1.0")
 client.post("/v1/user", User(1, "Ann")) // User(1, "Ann")
 ```
 
+Mapping from HTTP responses to case classes is handled by [airframe-codec](airframe-codec.md).
 
 ### Dependency Injection
 
+Dependency injection ([Wikipedia](https://en.wikipedia.org/wiki/Dependency_injection)) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.
 
-- [DI Library Comparison](comparison.md)
+When developing applications with many module classes and configuration objects, defining modules to use and injecting these modules by framework is quite helpful in terms of reliability and testability. 
 
-### Google Guava
+For more details, see:
 
+- [Airframe DI](airframe-di.md)
+- [DI Framework Comparison](comparison.md)
 
 
 ### Retry and Rate Control
 
+[airframe-control](airframe-control.md) provides a basic retry mechanism like [failsafe](https://github.com/jhalterman/failsafe) library in Java.
+
 
 ### Command-Line Parser
 
+Handling command-line options is not trivial when you need to support a lot of options, nested commands, data type conversions (e.g., string to Int/Double/Boolean conversions, accepting `Option[_]` types for missing parameters), etc. 
 
+[airframe-launcher](airframe-launcher.md) is a command line parser library that can instanciate command classes with `@option` and `@command` annotaions:
 
+```scala
+class MyApp(@option(prefix = "-h,--help", description = "display help messages", isHelp = true) 
+            help: Boolean = false,
+            @option(prefix = "-p", description = "port number") 
+            port: Int = 8080) {
 
+   @command(isDefault = true)
+   def default: Unit = {
+     println(s"Hello airframe. port:${port}")
+   }
+}
 
+Launcher.execute[MyApp]("-p 1000")
+```
+
+This also helps generating help message of your applications:
+
+```scala
+Launcher.execute[MyApp]("--help")
+```
+
+This command will show:
+```
+usage: myapp [options]
+
+[options]
+ -p [PORT]   port number
+ -h, --help  show help messages
+```
 
 ## build.sbt
 
@@ -197,7 +242,7 @@ libraryDependencies ++= Seq(
 ```
 
 
-## Airframe Modules
+## List of Airframe Modules
 
 Airframe has several modules for kick starting your application development in Scala.
 
@@ -208,6 +253,8 @@ Airframe has several modules for kick starting your application development in S
   - A functional testing framework for Scala.
 - [ariframe-canvas](airframe-canvas.md)
   - Off-heap memory buffer
+- [airframe-condec](airframe-codec.md)
+  - MessagePack-based object serializer 
 - [airframe-config](airframe-config.md)
   - YAML-based configuration reader & provider.
 - [airframe-control](airframe-control.md)
