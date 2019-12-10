@@ -1,5 +1,5 @@
 ---
-id: airframe-launcher:
+id: airframe-launcher
 title: airframe-launcher: Command-Line Program Launcher
 ---
 

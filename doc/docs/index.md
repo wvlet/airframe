@@ -62,41 +62,41 @@ Airframe has several modules for kick starting your application development in S
 
 - [airframe](airframe-di.md)
   - Scala-friendly dependency injection library.
-- [airspec](airspec.html)
+- [airspec](airspec.md)
   - A functional testing framework for Scala.
-- [ariframe-canvas](airframe-canvas.html)
+- [ariframe-canvas](airframe-canvas.md)
   - Off-heap memory buffer
-- [airframe-codec](airframe-codec.html)
+- [airframe-codec](airframe-codec.md)
   - [MessagePack](https://msgpack.org) based Schema-on-Read data transcoder, which can be used for object serialization and deserialization. 
-- [airframe-config](airframe-config.html)
+- [airframe-config](airframe-config.md)
   - YAML-based configuration reader & provider.
-- [airframe-control](airframe-control.html)
+- [airframe-control](airframe-control.md)
   - Utilities for controlling code flows with loan pattern, retry logic, parallelization, etc.
-- [airframe-fluentd](airframe-fluentd.html)
+- [airframe-fluentd](airframe-fluentd.md)
   - MetricLogger for sending logs to [fluentd](https://www.fluentd.org) or [Treasure Data](https://www.treasuredata.com)
-- [airframe-http](airframe-http.html)
+- [airframe-http](airframe-http.md)
   - A light-weight HTTP server builder, based on Finagle
-- [airframe-http-recorder](airframe-http-recorder.html)
+- [airframe-http-recorder](airframe-http-recorder.md)
   - A handly HTTP recorder and replayer for HTTP server development
-- [airframe-jdbc](airframe-jdbc.html)
+- [airframe-jdbc](airframe-jdbc.md)
   - Reusable JDBC connection pool.
-- [airframe-jmx](airframe-jmx.html)
+- [airframe-jmx](airframe-jmx.md)
   - Enable runtime application monitoring through JMX.
-- [airframe-json](airframe-json.html)
+- [airframe-json](airframe-json.md)
   - Pure-Scala JSON parser.
-- [airframe-log](airframe-log.html)
+- [airframe-log](airframe-log.md)
   - Light-weight handy logging library.
-- [airframe-launcher](airframe-launcher.html)
+- [airframe-launcher](airframe-launcher.md)
   - Command line parser and launcher.
-- [airframe-metrics](airframe-metrics.html)
+- [airframe-metrics](airframe-metrics.md)
   - Human-readable representation of times, time ranges, and data sizes.
-- [airframe-msgpack](airframe-msgpack.html)
+- [airframe-msgpack](airframe-msgpack.md)
   - Pure-scala MessagePack reader and writer
-- [airframe-surface](airframe-surface.html)
+- [airframe-surface](airframe-surface.md)
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
-- [airframe-spec](airframe-spec.html)
+- [airframe-spec](airframe-spec.md)
   - A simple base trait for using ScalaTest.
-- [airframe-sql](airframe-sql.html)
+- [airframe-sql](airframe-sql.md)
   - SQL parser
 
 

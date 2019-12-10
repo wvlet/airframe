@@ -132,41 +132,64 @@ class Index extends React.Component {
             </Block>
         );
 
-        const MessagePackBased = () => (
-            <Block id="msgpack">
-                {[]}
-            </Block>
-        );
-
-
-        const TryOut = () => (
-            <Block id="try">
-                {[]}
-            </Block>
-        );
-
         const Features = () => (
-            <Block layout="fourColumn">
+            <Block layout="threeColumn">
                 {[
                     {
-                        content: 'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependencies and dependency hell, almost all components are written from scratch in Scala so that ' +
-                            'to exclude third-party libraries such as Google Guice, Guava, slf4j, etc.',
+                        content: 'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependency hell, almost all components are written from scratch in Scala. ' +
+                            'No longer need to worry about excluding third-party libraries, such as Jackson, Google Guava, Guice, slf4j, log4j, etc.',
                         image: `${baseUrl}img/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala',
                     },
                     {
                         content:
-                            'Airframe uses MessagePack-based schema-on-read codec. This provides fast and compact object serialization for efficient HTTP server-client communication, and resolves type differences between integers and strings automatically',
+                            'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec). This provides fast and compact object serialization for efficient HTTP server-client communication, and automatically resolves differences between data types (e.g., integers and strings.)',
                         image: `${baseUrl}img/msgpack.png`,
                         imageAlign: 'top',
-                        title: 'Schema-On-Read Data Transfer with MessagePack',
+                        title: 'MessagePack Serialization',
                     },
                     {
-                        content: 'Airframe supports',
+                        content: 'With [dependency injection (DI)](docs/airframe-di) of Airframe, building services with hundreds of module classes becomes manageable. Airframe DI will build complex objects on your behalf and properly start and shutdown your services in FILO order.',
+                        image: `${baseUrl}img/features/di.png`,
+                        imageAlign: 'top',
+                        title: 'Dependency Injection'
+                    },
+                    {
+                        content: 'Logging is an essential tool for debugging applications. [airframe-log](docs/airframe-log) helps showing your logs with fancy ANSI colors enriched with the source code locations.',
                         image: `${baseUrl}img/airframe-log/demo.png`,
                         imageAlign: 'top',
                         title: 'Colorful Source Code Logging',
+                    },
+                    {
+                        content: '[airframe-config](docs/airframe-config) supports YAML-based application configurations and provides immutable objects that can be injected through DI.',
+                        image: `${baseUrl}img/immutable_config.png`,
+                        imageAlign: 'top',
+                        title: 'Immutable Config Objects',
+                    },
+                    {
+                        content: 'How to parse command line options? [airframe-launcher](docs/airframe-launcher) is a handly command line parser that can map command line arguments into corresponding Scala functions.',
+                        image: `${baseUrl}/img/features/launcher.png`,
+                        imageAlign: 'top',
+                        title: 'Command-Line Parser'
+                    },
+                    {
+                        content: '[AirSpec](docs/airspec) is a simple unit testing framework for Scala and Scala.js. You can uses public functions in your classes as test cases. No need to remember complex DSLs to start writing tests in Scala.',
+                        image: `${baseUrl}/img/features/airspec.png`,
+                        imageAlign: 'top',
+                        title: 'AirSpec: Testing Framework'
+                    },
+                    {
+                        content: 'Retrying HTTP requests for API calls is an essential technique in the microservice era. [airframe-control](docs/airframe-control) provides essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
+                        image: `${baseUrl}/img/features/undraw_online_transactions_02ka.svg`,
+                        imageAlign: 'top',
+                        title: 'Retry, Rate Control'
+                    },
+                    {
+                        content: "[airframe-http](docs/airframe-http) is a web framework for using Scala as an IDL for defining web applications. Built-in JSON/MessagePack-based data transfer and Twitter's [Finagle](https://twitter.github.io/finagle/guide/)-based server implementation are available to quickly create microservice APIs.",
+                        image: `${baseUrl}/img/features/finagle.png`,
+                        imageAlign: 'top',
+                        title: 'Web Services IDL in Scala'
                     },
                 ]}
             </Block>
@@ -206,10 +229,6 @@ class Index extends React.Component {
                 <HomeSplash siteConfig={siteConfig} language={language}/>
                 <div className="mainContainer">
                     <Features/>
-                    <DesignedForScala/>
-                    <MessagePackBased/>
-                    <TryOut/>
-
                 </div>
             </div>
         );

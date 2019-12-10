@@ -77,8 +77,12 @@ article p img {
 }
 
 .imageAlignTop .blockImage {
-    max-width: 600px;
+    max-width: 450px;
     vertical-align: center;
+}
+
+.blockContent {
+    text-align: left;
 }
 
 .mainContainer h1, .mainContainer h2, .mainContainer h3, .mainContainer h4, .mainContainer h5, .mainContainer h6 {
