@@ -180,7 +180,7 @@ class Index extends React.Component {
                         title: 'Fluentd Logging',
                     },
                     {
-                        content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",
+                        content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for measuring elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",
                         image: `${baseUrl}/img/features//undraw_time_management_30iu.svg`,
                         imageAlign: 'top',
                         title: 'Time Series Data Management',
