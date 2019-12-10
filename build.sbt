@@ -227,28 +227,30 @@ lazy val docs =
     .in(file("doc"))
     .settings(
       name := "airframe-docs",
+      moduleName := "airframe-docs",
       publishArtifact := false,
       publish := {},
       publishLocal := {},
       // Necessary for publishMicrosite
       git.remoteRepo := "git@github.com:wvlet/airframe.git",
       ghpagesNoJekyll := false,
-      mdocIn := (managedSourceDirectories in Compile).value.head,
-      resourceGenerators in Compile += Def.task {
-        // Copy source docs since Mdoc accepts only a single source directory
-        val sourceDir = baseDirectory.value / "src" / "main" / "mdoc"
-        IO.copyDirectory(sourceDir, mdocIn.value)
-
-        // Generate airframe-xxx.md files from airframe-xxx/README.md
-        generateModuleDoc(mdocIn.value, streams.value.log)
-      }.taskValue,
-      watchSources += new sbt.internal.io.Source(
-        sourceDirectory.value,
-        new FileFilter {
-          def accept(f: File) = !f.isDirectory
-        },
-        NothingFilter
-      )
+      mdocIn := baseDirectory.value / "docs"
+//      mdocIn := (managedSourceDirectories in Compile).value.head,
+//      resourceGenerators in Compile += Def.task {
+//        // Copy source docs since Mdoc accepts only a single source directory
+//        val sourceDir = baseDirectory.value / "src" / "main" / "mdoc"
+//        IO.copyDirectory(sourceDir, mdocIn.value)
+//
+//        // Generate airframe-xxx.md files from airframe-xxx/README.md
+//        generateModuleDoc(mdocIn.value, streams.value.log)
+//      }.taskValue,
+//      watchSources += new sbt.internal.io.Source(
+//        sourceDirectory.value,
+//        new FileFilter {
+//          def accept(f: File) = !f.isDirectory
+//        },
+//        NothingFilter
+//      )
     )
     .enablePlugins(MdocPlugin, DocusaurusPlugin)
 

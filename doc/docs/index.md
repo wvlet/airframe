@@ -4,7 +4,7 @@ layout: docs
 title: Overview
 ---
 
-<img style = "float: right; padding: 10px;" width="150px" src="img/logos/airframe_icon_small.png"/>
+<img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/>
 
 Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.
 
@@ -253,7 +253,7 @@ Airframe has several modules for kick starting your application development in S
   - A functional testing framework for Scala.
 - [ariframe-canvas](airframe-canvas.md)
   - Off-heap memory buffer
-- [airframe-condec](airframe-codec.md)
+- [airframe-codec](airframe-codec.md)
   - MessagePack-based object serializer 
 - [airframe-config](airframe-config.md)
   - YAML-based configuration reader & provider.
@@ -279,8 +279,6 @@ Airframe has several modules for kick starting your application development in S
   - Pure-scala MessagePack reader and writer
 - [airframe-surface](airframe-surface.md)
   - Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that. 
-- [airframe-spec](airspec.md)
-  - A simple base trait for using ScalaTest.
 - [airframe-sql](airframe-sql.md)
   - SQL parser
 
