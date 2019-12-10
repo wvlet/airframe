@@ -85,6 +85,20 @@ article p img {
     text-align: left;
 }
 
+.homeSplashFade {
+    background-attachment: scroll;
+    background: url(../img/jumbotron_pattern.png) no-repeat center;
+    color: white;
+}
+
+.homeSplashFade h1, .homeSplashFade h2, .homeSplashFade .button {
+    color: white;
+}
+
+.homeSplashFade .button {
+    border: 1px solid white;
+}
+
 .mainContainer h1, .mainContainer h2, .mainContainer h3, .mainContainer h4, .mainContainer h5, .mainContainer h6 {
     color: #332F34;
 }

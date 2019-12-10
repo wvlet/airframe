@@ -63,7 +63,6 @@ class HomeSplash extends React.Component {
 
         return (
             <SplashContainer>
-                <Logo img_src={`${baseUrl}img/logos/airframe_icon.png`}/>
                 <div className="inner">
                     <ProjectTitle siteConfig={siteConfig}/>
                     <PromoSection>
@@ -138,14 +137,14 @@ class Index extends React.Component {
                     {
                         content: 'Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js. To minimize dependency hell, almost all components are written from scratch in Scala. ' +
                             'No longer need to worry about excluding third-party libraries, such as Jackson, Google Guava, Guice, slf4j, log4j, etc.',
-                        image: `${baseUrl}img/scala-logo-red-spiral-dark.png`,
+                        image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala',
                     },
                     {
                         content:
                             'Airframe uses [MessagePack-based schema-on-read codec](docs/airframe-codec). This provides fast and compact object serialization for efficient HTTP server-client communication, and automatically resolves differences between data types (e.g., integers and strings.)',
-                        image: `${baseUrl}img/msgpack.png`,
+                        image: `${baseUrl}img/features/msgpack.png`,
                         imageAlign: 'top',
                         title: 'MessagePack Serialization',
                     },
@@ -162,10 +161,10 @@ class Index extends React.Component {
                         title: 'Colorful Source Code Logging',
                     },
                     {
-                        content: '[airframe-config](docs/airframe-config) supports YAML-based application configurations and provides immutable objects that can be injected through DI.',
+                        content: '[airframe-config](docs/airframe-config) supports YAML-based application configurations and provides immutable config objects that can be injected through DI. Partially overriding configutations is also supported.',
                         image: `${baseUrl}img/immutable_config.png`,
                         imageAlign: 'top',
-                        title: 'Immutable Config Objects',
+                        title: 'Application Config Flow',
                     },
                     {
                         content: 'How to parse command line options? [airframe-launcher](docs/airframe-launcher) is a handly command line parser that can map command line arguments into corresponding Scala functions.',
@@ -189,7 +188,7 @@ class Index extends React.Component {
                         content: "[airframe-http](docs/airframe-http) is a web framework for using Scala as an IDL for defining web applications. Built-in JSON/MessagePack-based data transfer and Twitter's [Finagle](https://twitter.github.io/finagle/guide/)-based server implementation are available to quickly create microservice APIs.",
                         image: `${baseUrl}/img/features/finagle.png`,
                         imageAlign: 'top',
-                        title: 'Web Services IDL in Scala'
+                        title: 'Web Service IDL in Scala'
                     },
                     {
                         content: "",
@@ -198,7 +197,7 @@ class Index extends React.Component {
                         title: 'HTTP Client',
                     },
                     {
-                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd`,
+                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd. You can use your own case classes for ensuring type-safe logging.`,
                         image: `${baseUrl}/img/features/Fluentd_square.svg`,
                         imageAlign: 'top',
                         title: 'Fluentd Logging',
