@@ -10,35 +10,78 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 
 - [Release Notes](release-notes.md)
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
-- [Articles](articles.md)
+- [Presentations and Articles](articles.md)
 
 
-## Guide for Java Library Users
+## Usage Guide
 
-Airframe has several modules that can be a better replacement of commonly used Java libraries (e.g., Guice, Jackson, etc.) to provide the same functionality in Scala.    
+Airframe has several modules that can be a quick replacement of commonly used Java libraries (e.g., slf4j, Guice, Jackson, etc.) to provide the same functionality in Scala. If you are familiar with these libraries, 
+
+
 
 ### Logging
 
-- [airframe-log](airframe-log.md)
+For adding application logging, use [airframe-log](airframe-log.md).
 
-slf4j and log4j are commonly used logging libraries in Java ecosystem, but they are not fully utilizing the strength of Scala for enhancing log messages. 
-[airframe-log](airframe-log.md) is a new logging library designed for Scala, which can be programatically configured and supports logging source code locations, etc.
+slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. [airframe-log](airframe-log.md) is a new logging library designed for Scala, which is configurable  programatically and supports logging source code locations, etc.
 
-See also the blog article for more background: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc) 
+To start logging, just extend `wvlet.log.LogSupport` and use `trace/debug/info/warn/error` logging methods. airframe-log uses Scala Macros to remove the performance overhead for generating debug log messages unless you specify `Logger.setDefaultLogLevel(LogLevel.DEBUG)`:
+
+```scala
+import wvlet.log.LogSupport
+
+class MyApp extends LogSupport {
+  info("Hello airframe-log!")
+  
+  // If the log level is INFO, this will produce no message and has no performance overhead.
+  debug("debug log message")
+}
+```
+
+For more background, see: [Airframe Log: A Modern Logging Library for Scala](https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc) 
 
 ### Object Serialization 
 
-[Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between data objects. To configure mapping data objects, you need to add `@JSONProperty` annotation and configure ObjectMapper.
+If you need to store object data to disks, or send them to remote nodes, use [airframe-codec](airframe-codec.md), which is a [MessagePack](https://msgpack.org) based schema-on-read data serialization library.
 
+[Jackson](https://github.com/FasterXML/jackson) is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add `@JSONProperty` annotation and configure ObjectMapper.
 
+[airframe-codec](airframe-codec.md) simplifies this process so that you can use case classes in Scala as is, and for producing compact binaries of your data, it also supports [MessagePack](https://msgpack.org) format as well as JSON. 
 
-- [airframe-codec](airframe-codec.md)
-  - [MessagePack](https://msgpack.org) based Schema-on-Read data transcoder, which can be used for object serialization and deserialization. 
+```scala
+case class Person(id:Int, name:String)
+
+// Create a codec for serializing your model classes
+val codec = MessageCodec.of[Person]
+
+// Serialize in JSON or MessagePack
+val a = Person(1, "Ann")
+val json = codec.toJson()       // {"id":1,"name":"Ann"}
+val msgpack = codec.toMsgPack() // MessagePack ArrayValue: [1,"name"]
+
+// Deserialize from JSON or MessagePack
+codec.fromJson(json)       // Person(1, "Ann")
+codec.fromMsgPack(msgpack) // Person(1, "Ann")
+```
+
+#### Schema-On-Read Conversion
+
+![schema](img/airframe-codec/schema-on-read.png)
+
+[airframe-codec](airframe-codec.md) adjust input data types according to the target object types.
+This schema-on-read data conversion is quite powerful for mapping various types of input data (e.g., CSV, JSON, etc.) into Scala case classes.
+
+```scala
+val json = """{"id":"2", "name":"Bob"}"""
+
+// "2" (String) value will be converted to 2 (Int)   
+codec.fromJson(json) // Person(2, "Bob") 
+```
+
 - [airframe-json](airframe-json.md)
   - Pure-Scala JSON parser.
 - [airframe-msgpack](airframe-msgpack.md)
   - Pure-scala MessagePack reader and writer
-
 
 
 ### Dependency Injection
@@ -49,6 +92,11 @@ See also the blog article for more background: [Airframe Log: A Modern Logging L
 ### Google Guava
 
 
+
+### Retry and Rate Control
+
+
+### Command-Line Parser
 
 
 
