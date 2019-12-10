@@ -45,7 +45,7 @@ const siteConfig = {
 
     // Used for publishing and more
     projectName: 'airframe',
-    organizationName: 'wvlet.org',
+    organizationName: 'wvlet',
     // For top-level user or org sites, the organization is still the same.
     // e.g., for the https://JoelMarcey.github.io site, it would be set like...
     //   organizationName: 'JoelMarcey'
@@ -120,6 +120,7 @@ const siteConfig = {
     repoUrl: 'https://github.com/wvlet/airframe',
 
     customDocsPath: "doc/target/mdoc"
+
 };
 
 module.exports = siteConfig;
