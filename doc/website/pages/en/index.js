@@ -191,6 +191,24 @@ class Index extends React.Component {
                         imageAlign: 'top',
                         title: 'Web Services IDL in Scala'
                     },
+                    {
+                        content: "",
+                        image: `${baseUrl}/img/features/client.svg`,
+                        imageAlign: 'top',
+                        title: 'HTTP Client',
+                    },
+                    {
+                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd`,
+                        image: `${baseUrl}/img/features/Fluentd_square.svg`,
+                        imageAlign: 'top',
+                        title: 'Fluentd Logging',
+                    },
+                    {
+                        content: "",
+                        image: `${baseUrl}/img/features/client.svg`,
+                        imageAlign: 'top',
+                        title: 'HTTP Client',
+                    },
                 ]}
             </Block>
         );
