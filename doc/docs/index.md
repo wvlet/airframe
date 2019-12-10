@@ -77,6 +77,8 @@ val json = """{"id":"2", "name":"Bob"}"""
 codec.fromJson(json) // Person(2, "Bob") 
 ```
 
+Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:
+
 ![schema](img/airframe-codec/schema-on-read.png)
 
 ### Querying JSON and MessagePack Data 
@@ -90,19 +92,45 @@ codec.fromJson(json) // Person(2, "Bob")
 ]
 ```
 
-You can extract only the names and the addresses from this JSON as follows: 
+You can extract only the ids and the addresses from this JSON by defining a case class matching
+a pattern you want to extract: 
 
 ```scala
-case class AddressQuery(name:String, address:Seq[String])
+case class AddressQuery(id:Int, address:Seq[String])
 
 MessageCodec.of[Seq[AddressQuery]].fromJson(json)
-// This extracts:
-//   Seq(AddressQuery("xxx", Seq("aaa","bbb")), AddressQuery("yyy", Seq["ccc","ddd"]))
+// This code extracts:
+//   Seq(AddressQuery(1, Seq("aaa","bbb")), AddressQuery(2, Seq["ccc","ddd"]))
 ``` 
 
-### Building Web Servers and Clients
+### Web Servers and Clients
 
 
+
+
+```scala
+// Model classes
+case class ServerInfo(version:String)
+case class User(id:String, name:String)
+
+// Web server definition
+trait MyApp {
+  @Endpoint(method = HttpMethod.GET, path = "/v1/info")
+  def serverInfo: ServerInfo = ServerInfo(version = "1.0")
+
+  @Endpoint(method = HttpMethod.POST, path = "/v1/user")
+  def addUser(user:User): User = {
+     // Add the given user to a database
+     user
+  }
+}
+```
+
+```scala
+// Accessing the server using an http client
+client.get[ServerInfo]("/v1/info")      // ServerInfo("1.0")
+client.post("/v1/user", User(1, "Ann")) // User(1, "Ann")
+```
 
 
 ### Dependency Injection

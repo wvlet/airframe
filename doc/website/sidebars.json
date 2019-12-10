@@ -5,16 +5,18 @@
       "articles",
       "release-notes"
     ],
-    "Airframe Modules": [
+    "Frameworks": [
       "airspec",
       "airframe-di",
+      "airframe-http"
+    ],
+    "Airframe Modules": [
       "airframe-benchmark",
       "airframe-canvas",
       "airframe-codec",
       "airframe-config",
       "airframe-control",
       "airframe-fluentd",
-      "airframe-http",
       "airframe-http-recorder",
       "airframe-jdbc",
       "airframe-jmx",

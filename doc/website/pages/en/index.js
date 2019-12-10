@@ -156,34 +156,34 @@ class Index extends React.Component {
                         title: 'Simple Testing Framework'
                     },
                     {
-                        content: 'Retrying HTTP requests for API calls is an essential technique for connecting micro-services. [airframe-control](docs/airframe-control) provides essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
-                        image: `${baseUrl}/img/features/undraw_online_transactions_02ka.svg`,
+                        content: 'Retrying HTTP requests for API calls is an essential technique for connecting microservices. [airframe-control](docs/airframe-control) provides essential tools for making your requests reliable with exponential backoff retry, jitter, circuit-breaker, rate control, etc.',
+                        image: `${baseUrl}/img/features/undraw_process_e90d.svg`,
                         imageAlign: 'top',
                         title: 'Retry, Rate Control'
                     },
                     {
-                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to quickly create microservice API servers.",
+                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to support building microservice API servers and clients at ease",
                         image: `${baseUrl}/img/features/finagle.png`,
                         imageAlign: 'top',
                         title: 'Web Service IDL in Scala'
                     },
                     {
-                        content: "",
-                        image: `${baseUrl}/img/features/client.svg`,
+                        content: "Developing web applications needs efficient HTTP clients and mock servers even if the network is disconnected. With [airframe-http-recorder](docs/airframe-http-recorder) you can record real server responses and replay them for running unit tests even if the servers are offline.",
+                        image: `${baseUrl}/img/features/undraw_server_down_s4lk.svg`,
                         imageAlign: 'top',
-                        title: 'HTTP Client',
+                        title: 'HTTP Client and Recorders',
                     },
                     {
-                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd. You can use your own case classes for ensuring type-safe logging.`,
+                        content: `[airframe-fluentd](docs/airframe-fluentd) supports logging your metrics to fluentd. Collecting metrics is much easier with the type-safe logging of airframe-fluentd.`,
                         image: `${baseUrl}/img/features/Fluentd_square.svg`,
                         imageAlign: 'top',
                         title: 'Fluentd Logging',
                     },
                     {
-                        content: "",
-                        image: `${baseUrl}/img/features/client.svg`,
+                        content: "[airframe-metrics](docs/airframe-metrics) provides human-friendly time range selectors (e.g., -1d, -1w) and data units for elapsed time (e.g., 0.1s, 1.5h) and data sizes (e.g., GB, PB.)",
+                        image: `${baseUrl}/img/features//undraw_time_management_30iu.svg`,
                         imageAlign: 'top',
-                        title: 'HTTP Client',
+                        title: 'Time Series Data Management',
                     },
                 ]}
             </Block>

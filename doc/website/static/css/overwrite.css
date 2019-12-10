@@ -89,6 +89,7 @@ article p img {
     background-attachment: scroll;
     background: url(../img/jumbotron_pattern.png) no-repeat center;
     color: white;
+    background-color: #00394f;
 }
 
 .homeSplashFade h1, .homeSplashFade h2, .homeSplashFade h3, .homeSplashFade .button {
