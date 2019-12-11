@@ -113,7 +113,7 @@ class Index extends React.Component {
             <Block layout="threeColumn">
                 {[
                     {
-                        content: 'Airframe has redesigned everything for Scala to be a replacement of the commonly-used libraries in Java world, such as Jackson, Google Guava, Guice, slf4j, etc. This is useful for minimizing the dependency hell of these libraries. Airframe also supports Scala.js as most of the components are purely written in Scala.',
+                        content: 'If you need a Scala-version of [slf4](http://slf4j.org/) (logging), [Jackson](https://github.com/FasterXML/jackson) (JSON-based serialization), [Guice](https://github.com/google/guice) (dependency injection), etc., Airframe will be a right choice for you. Airframe has redesigned these Java-based ecosystem in order to maximize the power of Scala, and supports Scala 2.11, 2.12, 2.13, and Scala.js as well.',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala',
