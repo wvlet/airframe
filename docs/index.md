@@ -282,7 +282,7 @@ Airframe has several modules for kick starting your application development in S
 - [airframe-sql](airframe-sql.md)
   - SQL parser
 
-### Companion sbt plugins
+## Companion sbt plugins
 
 We also have developed sbt plugins for packaging and publishing your projects:
 
