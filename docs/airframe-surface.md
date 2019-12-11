@@ -1,5 +1,5 @@
 ---
-id: airframe_surface
+id: airframe-surface
 title: airframe-surface: Object Shape Inspector
 ---
 
