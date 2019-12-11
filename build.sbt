@@ -224,7 +224,7 @@ lazy val projectJS =
 
 lazy val docs =
   project
-    .in(file("doc"))
+    .in(file("airframe-docs"))
     .settings(
       name := "airframe-docs",
       moduleName := "airframe-docs",

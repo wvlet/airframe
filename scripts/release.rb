@@ -2,7 +2,7 @@
 
 require 'fileutils'
 PREFIX = 'https://github.com/wvlet/airframe'
-RELEASE_NOTES_FILE = "doc/docs/release-notes.md"
+RELEASE_NOTES_FILE = "docs/release-notes.md"
 
 current_branch = `git rev-parse --abbrev-ref HEAD`.strip
 abort("release.rb must run on master branch. The current branch is #{current_branch}") if current_branch != "master"
