@@ -234,35 +234,6 @@ lazy val docs =
     )
     .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
-def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
-  val baseDir = file(".")
-  val readmeFiles =
-    baseDir
-      .listFiles()
-      .filter(x => x.isDirectory && (x.name.startsWith("airframe") || x.name.startsWith("airspec")))
-      .map(x => x / "README.md")
-      .filter(_.exists())
-
-  logger.info("Generating module doc files")
-  readmeFiles.flatMap { f =>
-    f.relativeTo(baseDir).map { x =>
-      val moduleName     = x.getParent
-      val targetFileName = targetDir / "docs" / s"${moduleName}.md"
-      logger.info(s"${targetFileName.relativeTo(baseDir).getOrElse(targetFileName.getName)}")
-
-      val originalReadme = IO.read(f)
-      val content =
-        s"""---
-           |title: ${moduleName}
-           |---
-           |${originalReadme}""".stripMargin
-
-      IO.write(targetFileName, content)
-      targetFileName
-    }
-  }
-}
-
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
     Seq("org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0")
