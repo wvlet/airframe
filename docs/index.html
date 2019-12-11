@@ -1,179 +1,311 @@
-<html><head><title>Airframe: Airframe Overview</title><meta charset="utf-8" /><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="Taro L. Saito" /><meta name="description" content="Lightweight Building Blocks for Scala" /><meta name="og:image" content="/airframe/img/poster.png" /><meta name="image" property="og:image" content="/airframe/img/poster.png" /><meta name="og:title" content="Airframe: Airframe Overview" /><meta name="title" property="og:title" content="Airframe: Airframe Overview" /><meta name="og:site_name" content="Airframe" /><meta name="og:url" content="" /><meta name="og:type" content="website" /><meta name="og:description" content="Lightweight Building Blocks for Scala" /><link rel="icon" type="image/png" href="/airframe/img/favicon.png" /><meta name="twitter:title" content="Airframe: Airframe Overview" /><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png" /><meta name="twitter:description" content="Lightweight Building Blocks for Scala" /><meta name="twitter:card" content="summary_large_image" /><link rel="icon" type="image/png" sizes="16x16" href="/airframe/img/favicon16x16.png" /><link rel="icon" type="image/png" sizes="24x24" href="/airframe/img/favicon24x24.png" /><link rel="icon" type="image/png" sizes="32x32" href="/airframe/img/favicon32x32.png" /><link rel="icon" type="image/png" sizes="48x48" href="/airframe/img/favicon48x48.png" /><link rel="icon" type="image/png" sizes="57x57" href="/airframe/img/favicon57x57.png" /><link rel="icon" type="image/png" sizes="60x60" href="/airframe/img/favicon60x60.png" /><link rel="icon" type="image/png" sizes="64x64" href="/airframe/img/favicon64x64.png" /><link rel="icon" type="image/png" sizes="70x70" href="/airframe/img/favicon70x70.png" /><link rel="icon" type="image/png" sizes="72x72" href="/airframe/img/favicon72x72.png" /><link rel="icon" type="image/png" sizes="76x76" href="/airframe/img/favicon76x76.png" /><link rel="icon" type="image/png" sizes="96x96" href="/airframe/img/favicon96x96.png" /><link rel="icon" type="image/png" sizes="114x114" href="/airframe/img/favicon114x114.png" /><link rel="icon" type="image/png" sizes="120x120" href="/airframe/img/favicon120x120.png" /><link rel="icon" type="image/png" sizes="128x128" href="/airframe/img/favicon128x128.png" /><link rel="icon" type="image/png" sizes="144x144" href="/airframe/img/favicon144x144.png" /><link rel="icon" type="image/png" sizes="150x150" href="/airframe/img/favicon150x150.png" /><link rel="icon" type="image/png" sizes="152x152" href="/airframe/img/favicon152x152.png" /><link rel="icon" type="image/png" sizes="196x196" href="/airframe/img/favicon196x196.png" /><link rel="icon" type="image/png" sizes="310x310" href="/airframe/img/favicon310x310.png" /><link rel="icon" type="image/png" sizes="310x150" href="/airframe/img/favicon310x150.png" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" /><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" /><link rel="stylesheet" href="/airframe/highlight/styles/ocean.css" /><link rel="stylesheet" href="/airframe/css/pattern-style.css" /><link rel="stylesheet" href="/airframe/css/solarized-dark.css" /><link rel="stylesheet" href="/airframe/css/overwrite.css" /><script async="async">
-(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Overview · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="&lt;img style = &quot;float: right; padding: 10px;&quot; width=&quot;150px&quot; src=&quot;../img/logos/airframe_icon_small.png&quot;/&gt;"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Overview · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="&lt;img style = &quot;float: right; padding: 10px;&quot; width=&quot;150px&quot; src=&quot;../img/logos/airframe_icon_small.png&quot;/&gt;"/><meta property="og:image" content="https://wvlet.org/airframe/https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/airframe/js/scrollSpy.js"></script><link rel="stylesheet" href="/airframe/css/main.css"/><script src="/airframe/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/airframe/"><img class="logo" src="/airframe/img/favicon.ico" alt="Airframe"/><h2 class="headerTitleWithLogo">Airframe</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class=""><a href="/airframe/docs/" target="_self">Docs</a></li><li class=""><a href="https://github.com/wvlet/airframe/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Resources</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Resources</h3><ul class=""><li class="navListItem navListItemActive"><a class="navItem" href="/airframe/docs/">Overview</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/articles">Articles</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/release-notes">Release Notes</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/logos">Logos</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Frameworks</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-di">airframe-di: Dependency Injection</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http">airframe-http: Web Service IDL</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airspec">AirSpec: Testing Framework</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Core Modules</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-codec">airframe-codec: Schema-On-Read Object Serializer</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-config">airframe-config: Application Config Flow</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-control">airframe-control: Retry/Rate Control</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-log">airframe-log: Application Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-metrics">airframe-metrics: Human-Friendly Measures for Time and Data Size</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Utilities</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-benchmark">airframe-benchmark: JMH Benchmark</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-canvas">airframe-canvas: Off-Heap Memory Manager</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-fluentd">airframe-fluentd: Fluentd Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http-recorder">airframe-http-recorder: Web Request/Response Recorder</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jdbc">airframe-jdbc: JDBC Connection Pool</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jmx">airframe-jmx: JMX Application Monitor</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-json">airframe-json: Pure-Scala JSON Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-launcher">airframe-launcher: Command-Line Program Launcher</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-msgpack">airframe-msgpack: Pure-Scala MessagePack Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-sql">airframe-sql: SQL Parser</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
 
-ga('create', 'UA-98364158-1' , 'auto');
-ga('send', 'pageview');
-      </script></head><body class="docs"><div id="wrapper"><div id="sidebar-wrapper"><ul id="sidebar" class="sidebar-nav"><li class="sidebar-brand"><a href="/airframe/" class="brand"><div class="brand-wrapper"><span>Airframe</span></div></a></li> <li><a href="/airframe/docs/index.html" class=" active ">Airframe Overview</a></li> <li><a href="/airframe/docs/release-notes.html" class="">Release Notes</a></li> <li><a href="/airframe/docs/airframe.html" class="">Airframe DI</a> <ul class="sub-section"> <li><a href="/airframe/docs/airframe.html#bind" class="">Bind</a></li> <li><a href="/airframe/docs/airframe.html#design" class="">Design</a></li> <li><a href="/airframe/docs/airframe.html#session" class="">Session</a></li> <li><a href="/airframe/docs/airframe.html#life-cycle" class="">Life Cycle</a></li> <li><a href="/airframe/docs/use-cases.html" class="">Use Cases</a></li> <li><a href="/airframe/docs/bindings.html" class="">Advanced Binding Types</a></li> <li><a href="/airframe/docs/debug.html" class="">Debugging DI</a></li> <li><a href="/airframe/docs/comparison.html" class="">DI Framework Comparison</a></li> <li><a href="/airframe/docs/internals.html" class="">Airframe Internals</a></li></ul></li> <li><a href="/airframe/docs/airspec.html" class="">AirSpec Testing Framework</a></li> <li><a href="/airframe/docs/index.html" class="">Airframe Modules</a> <ul class="sub-section"> <li><a href="/airframe/docs/airframe-canvas.html" class="">airframe-canvas</a></li> <li><a href="/airframe/docs/airframe-codec.html" class="">airframe-codec</a></li> <li><a href="/airframe/docs/airframe-config.html" class="">airframe-config</a></li> <li><a href="/airframe/docs/airframe-control.html" class="">airframe-control</a></li> <li><a href="/airframe/docs/airframe-fluentd.html" class="">airframe-fluentd</a></li> <li><a href="/airframe/docs/airframe-http.html" class="">airframe-http</a></li> <li><a href="/airframe/docs/airframe-http-recorder.html" class="">airframe-http-recorder</a></li> <li><a href="/airframe/docs/airframe-jdbc.html" class="">airframe-jdbc</a></li> <li><a href="/airframe/docs/airframe-jmx.html" class="">airframe-jmx</a></li> <li><a href="/airframe/docs/airframe-json.html" class="">airframe-json</a></li> <li><a href="/airframe/docs/airframe-launcher.html" class="">airframe-launcher</a></li> <li><a href="/airframe/docs/airframe-log.html" class="">airframe-log</a></li> <li><a href="/airframe/docs/airframe-metrics.html" class="">airframe-metrics</a></li> <li><a href="/airframe/docs/airframe-msgpack.html" class="">airframe-msgpack</a></li> <li><a href="/airframe/docs/airframe-scalatest.html" class="">airframe-scalatest</a></li> <li><a href="/airframe/docs/airframe-surface.html" class="">airframe-surface</a></li> <li><a href="/airframe/docs/airframe-sql.html" class="">airframe-sql</a></li></ul></li></ul></div><div id="page-content-wrapper"><div class="nav"><div class="container-fluid"><div class="row"><div class="col-lg-12"><div class="action-menu pull-left clearfix"><a href="#menu-toggle" id="menu-toggle"><i class="fa fa-bars" aria-hidden="true"></i></a></div><ul class="pull-right"><li id="gh-eyes-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe" target="_blank" rel="noopener noreferrer"><i class="fa fa-eye"></i><span>Watchers<span id="eyes" class="label label-default">--</span></span></a></li><li id="gh-stars-item" class="hidden-xs"><a href="https://github.com/wvlet/airframe" target="_blank" rel="noopener noreferrer"><i class="fa fa-star-o"></i><span>Stars<span id="stars" class="label label-default">--</span></span></a></li><li><a href="#" onclick="shareSiteTwitter('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-twitter"></i></a></li><li><a href="#" onclick="shareSiteFacebook('Airframe Lightweight Building Blocks for Scala');"><i class="fa fa-facebook"></i></a></li><li><a href="#" onclick="shareSiteGoogle();"><i class="fa fa-google-plus"></i></a></li></ul></div></div></div></div><div id="content" data-github-owner="wvlet" data-github-repo="airframe"><div class="content-wrapper"><section><h2 id="airframe-overview">Airframe Overview</h2>
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
 
-<p>Airframe has several modules for kick starting your application development in Scala.</p>
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
 
-<center>
-<p><img src="https://github.com/wvlet/airframe/raw/master/logos/airframe-overview.png" alt="logo" width="800px" /></p>
-</center>
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
 
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Overview</h1></header><article><div><span><p><img style = "float: right; padding: 10px;" width="150px" src="../img/logos/airframe_icon_small.png"/></p>
+<p>Airframe is a collection of essential building blocks for writing full-fledged applications in Scala and Scala.js.</p>
 <ul>
-  <li><a href="airframe.html">airframe</a>
-    <ul>
-      <li>Scala-friendly dependency injection library.</li>
-    </ul>
-  </li>
-  <li><a href="airspec.html">airspec</a>
-    <ul>
-      <li>A functional testing framework for Scala.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-canvas.html">ariframe-canvas</a>
-    <ul>
-      <li>Off-heap memory buffer</li>
-    </ul>
-  </li>
-  <li><a href="airframe-codec.html">airframe-codec</a>
-    <ul>
-      <li><a href="https://msgpack.org">MessagePack</a> based Schema-on-Read data transcoder, which can be used for object serialization and deserialization.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-config.html">airframe-config</a>
-    <ul>
-      <li>YAML-based configuration reader &amp; provider.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-control.html">airframe-control</a>
-    <ul>
-      <li>Utilities for controlling code flows with loan pattern, retry logic, parallelization, etc.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-fluentd.html">airframe-fluentd</a>
-    <ul>
-      <li>MetricLogger for sending logs to <a href="https://www.fluentd.org">fluentd</a> or <a href="https://www.treasuredata.com">Treasure Data</a></li>
-    </ul>
-  </li>
-  <li><a href="airframe-http.html">airframe-http</a>
-    <ul>
-      <li>A light-weight HTTP server builder, based on Finagle</li>
-    </ul>
-  </li>
-  <li><a href="airframe-http-recorder.html">airframe-http-recorder</a>
-    <ul>
-      <li>A handly HTTP recorder and replayer for HTTP server development</li>
-    </ul>
-  </li>
-  <li><a href="airframe-jdbc.html">airframe-jdbc</a>
-    <ul>
-      <li>Reusable JDBC connection pool.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-jmx.html">airframe-jmx</a>
-    <ul>
-      <li>Enable runtime application monitoring through JMX.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-json.html">airframe-json</a>
-    <ul>
-      <li>Pure-Scala JSON parser.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-log.html">airframe-log</a>
-    <ul>
-      <li>Light-weight handy logging library.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-launcher.html">airframe-launcher</a>
-    <ul>
-      <li>Command line parser and launcher.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-metrics.html">airframe-metrics</a>
-    <ul>
-      <li>Human-readable representation of times, time ranges, and data sizes.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-msgpack.html">airframe-msgpack</a>
-    <ul>
-      <li>Pure-scala MessagePack reader and writer</li>
-    </ul>
-  </li>
-  <li><a href="airframe-surface.html">airframe-surface</a>
-    <ul>
-      <li>Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-spec.html">airframe-spec</a>
-    <ul>
-      <li>A simple base trait for using ScalaTest.</li>
-    </ul>
-  </li>
-  <li><a href="airframe-sql.html">airframe-sql</a>
-    <ul>
-      <li>SQL parser</li>
-    </ul>
-  </li>
+<li><a href="/airframe/docs/release-notes">Release Notes</a></li>
+<li><a href="https://github.com/wvlet/airframe">Source Code (GitHub)</a></li>
+<li><a href="/airframe/docs/articles">Presentations and Articles</a></li>
 </ul>
+<h2><a class="anchor" aria-hidden="true" id="usage-guides"></a><a href="#usage-guides" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage Guides</h2>
+<p>Scala is a quite powerful programming language. One of the benefits of Scala is it can utilize libraries in Java ecosystem. Existing libraries for Java, however, are not always the best choices if you are primarily writing code in Scala. For example, some libraries have performance overhead for converting Java collections into Scala collections, and their interfaces might not be well-suited to using them from Scala, etc.</p>
+<p>Airframe has several modules that can replace commonly-used Java libraries to provide the same functionality in Scala. For example, you may have used libraries like slf4j, Google Guice, Jackson, etc. If you are familiar with these libraries, you will be surprised how Airframe can simplify your code compared to using these libraries designed for Java.</p>
+<p>In the following sections, we will see several examples of Airframe modules that will enrich your application development experience in Scala.</p>
+<h3><a class="anchor" aria-hidden="true" id="logging"></a><a href="#logging" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Logging</h3>
+<p>For adding application logging, use <a href="/airframe/docs/airframe-log">airframe-log</a>.</p>
+<p>slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. <a href="/airframe/docs/airframe-log">airframe-log</a> is a new logging library designed for Scala, which is programatically configurable and supports showing the source code locations. Seeing the line number where the debug message is produced will significantly save your time for debugging your applications.</p>
+<p>To start logging with airframe-log, just extend <code>wvlet.log.LogSupport</code> and use <code>trace/debug/info/warn/error</code> logging methods. airframe-log uses Scala Macros to remove the performance overhead for generating debug log messages unless you set <code>Logger.setDefaultLogLevel(LogLevel.DEBUG)</code>:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.log.<span class="hljs-type">LogSupport</span>
 
-<p>We also have developed sbt plugins for packaging and publishing your projects:</p>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">LogSupport</span> </span>{
+  info(<span class="hljs-string">"Hello airframe-log!"</span>)
+  
+  <span class="hljs-comment">// If the log level is INFO, this will produce no message and has no performance overhead.</span>
+  debug(<span class="hljs-string">"debug log message"</span>)
+}
+</code></pre>
+<p>For more background, see also: <a href="https://medium.com/airframe/airframe-log-a-modern-logging-library-for-scala-56fbc2f950bc">Airframe Log: A Modern Logging Library for Scala</a></p>
+<h3><a class="anchor" aria-hidden="true" id="object-serialization"></a><a href="#object-serialization" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Object Serialization</h3>
+<p>If you need to store object data to disks, or send them to remote machines (e.g., Spark applications), use <a href="/airframe/docs/airframe-codec">airframe-codec</a>, which is a <a href="https://msgpack.org">MessagePack</a>-based schema-on-read data serialization library.</p>
+<p><a href="https://github.com/FasterXML/jackson">Jackson</a> is a JSON-based data serialization library and supports mapping between JSON and classes. To control the mapping to objects, you need to add <code>@JSONProperty</code> annotation and configure ObjectMapper.</p>
+<p><a href="/airframe/docs/airframe-codec">airframe-codec</a> simplifies this process so that you can use case classes in Scala without any annotations. For producing compact binaries of your data, it also supports <a href="https://msgpack.org">MessagePack</a> format as well as JSON.</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Person</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, name:<span class="hljs-type">String</span></span>)</span>
 
+<span class="hljs-comment">// Create a codec for serializing your model classes</span>
+<span class="hljs-keyword">val</span> codec = <span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Person</span>]
+
+<span class="hljs-comment">// Serialize in JSON or MessagePack</span>
+<span class="hljs-keyword">val</span> a = <span class="hljs-type">Person</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)
+<span class="hljs-keyword">val</span> json = codec.toJson()       <span class="hljs-comment">// {"id":1,"name":"Ann"}</span>
+<span class="hljs-keyword">val</span> msgpack = codec.toMsgPack() <span class="hljs-comment">// MessagePack ArrayValue: [1,"name"]</span>
+
+<span class="hljs-comment">// Deserialize from JSON or MessagePack</span>
+codec.fromJson(json)       <span class="hljs-comment">// Person(1, "Ann")</span>
+codec.fromMsgPack(msgpack) <span class="hljs-comment">// Person(1, "Ann")</span>
+</code></pre>
+<p>Internally, airframe-codec uses <a href="/airframe/docs/airframe_surface">airframe-surface</a> to extract type information from Scala classes.</p>
+<h4><a class="anchor" aria-hidden="true" id="schema-on-read-conversion"></a><a href="#schema-on-read-conversion" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Schema-On-Read Conversion</h4>
+<p><a href="/airframe/docs/airframe-codec">airframe-codec</a> adjusts input data types according to the target object types.
+This schema-on-read data conversion is quite powerful for mapping various types of input data (e.g., CSV, JSON, etc.) into Scala case classes.</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> json = <span class="hljs-string">""</span><span class="hljs-string">"{"</span><span class="hljs-string">id":"</span><span class="hljs-number">2</span><span class="hljs-string">", "</span><span class="hljs-string">name":"</span><span class="hljs-type">Bob</span><span class="hljs-string">"}"</span><span class="hljs-string">""</span>
+
+<span class="hljs-comment">// "2" (String) value will be converted to 2 (Int)   </span>
+codec.fromJson(json) <span class="hljs-comment">// Person(2, "Bob") </span>
+</code></pre>
+<p>Mapping between MessagePack and objects can be performed by combining codecs for individual parameter types:</p>
+<p><img src="../img/airframe-codec/schema-on-read.png" alt="schema"></p>
+<h3><a class="anchor" aria-hidden="true" id="querying-json-and-messagepack-data"></a><a href="#querying-json-and-messagepack-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Querying JSON and MessagePack Data</h3>
+<p><a href="/airframe/docs/airframe-codec">airframe-codec</a> can be used for extracting data from JSON and MessagePack data. For example, if you have the following JSON data:</p>
+<pre><code class="hljs css language-json">[
+  {<span class="hljs-attr">"id"</span>:<span class="hljs-number">1</span>, <span class="hljs-attr">"name"</span>:<span class="hljs-string">"xxx"</span>, <span class="hljs-attr">"address"</span>:[<span class="hljs-string">"aaa"</span>, <span class="hljs-string">"bbb"</span>, ...]},
+  {<span class="hljs-attr">"id"</span>:<span class="hljs-number">2</span>, <span class="hljs-attr">"name"</span>:<span class="hljs-string">"yyy"</span>, <span class="hljs-attr">"address"</span>:[<span class="hljs-string">"ccc"</span>, <span class="hljs-string">"ddd"</span>, ...]}
+]
+</code></pre>
+<p>You can extract only the ids and the addresses from this JSON by defining a case class matching
+a pattern you want to extract:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">AddressQuery</span>(<span class="hljs-params">id:<span class="hljs-type">Int</span>, address:<span class="hljs-type">Seq</span>[<span class="hljs-type">String</span>]</span>)</span>
+
+<span class="hljs-type">MessageCodec</span>.of[<span class="hljs-type">Seq</span>[<span class="hljs-type">AddressQuery</span>]].fromJson(json)
+<span class="hljs-comment">// This code extracts:</span>
+<span class="hljs-comment">//   Seq(AddressQuery(1, Seq("aaa","bbb")), AddressQuery(2, Seq["ccc","ddd"]))</span>
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="web-servers-and-clients"></a><a href="#web-servers-and-clients" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Web Servers and Clients</h3>
+<p>There are tons of web frameworks for developing web services in Java and Scala. We have designed <a href="/airframe/docs/airframe-http">airframe-http</a> so that we can minimize the learning cost in developing REST API servers and clients in Scala.</p>
+<p>airframe-http defines REST API by using regular Scala functions with <code>@Endpoint</code> annotation for specifying HTTP method types and request paths. Mapping from HTTP requests with JSON (or MessagePack) body contents into Scala functions are automatically handled in the framework, so you don't need to worry about manipulating JSON requests and respones.</p>
+<p>Here is an example REST API definition written in airframe-http:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-comment">// Model classes</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServerInfo</span>(<span class="hljs-params">version:<span class="hljs-type">String</span></span>)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">User</span>(<span class="hljs-params">id:<span class="hljs-type">String</span>, name:<span class="hljs-type">String</span></span>)</span>
+
+<span class="hljs-comment">// Web server definition</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">MyApp</span> </span>{
+  <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">GET</span>, path = <span class="hljs-string">"/v1/info"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">serverInfo</span></span>: <span class="hljs-type">ServerInfo</span> = <span class="hljs-type">ServerInfo</span>(version = <span class="hljs-string">"1.0"</span>)
+
+  <span class="hljs-meta">@Endpoint</span>(method = <span class="hljs-type">HttpMethod</span>.<span class="hljs-type">POST</span>, path = <span class="hljs-string">"/v1/user"</span>)
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">addUser</span></span>(user:<span class="hljs-type">User</span>): <span class="hljs-type">User</span> = {
+     <span class="hljs-comment">// Add the given user to a database</span>
+     user
+  }
+}
+</code></pre>
+<p>Other than <code>@Endpoint</code> annotations, this is the same with regular Scala class definition.</p>
+<p>A client code to access this API is also simple like this:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-comment">// Accessing the server using an http client</span>
+client.get[<span class="hljs-type">ServerInfo</span>](<span class="hljs-string">"/v1/info"</span>)      <span class="hljs-comment">// ServerInfo("1.0")</span>
+client.post(<span class="hljs-string">"/v1/user"</span>, <span class="hljs-type">User</span>(<span class="hljs-number">1</span>, <span class="hljs-string">"Ann"</span>)) <span class="hljs-comment">// User(1, "Ann")</span>
+</code></pre>
+<p>Mapping from HTTP responses to case classes is handled by <a href="/airframe/docs/airframe-codec">airframe-codec</a>.</p>
+<h3><a class="anchor" aria-hidden="true" id="dependency-injection"></a><a href="#dependency-injection" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Dependency Injection</h3>
+<p>Dependency injection (<a href="https://en.wikipedia.org/wiki/Dependency_injection">Wikipedia</a>) is a design pattern for simplifying object instantiation; Instead of manually passing all necessary objects (dependencies) into the constructor argument, DI framework builds the object on your behalf.</p>
+<p>When developing applications with many module classes and configuration objects, defining modules to use and injecting these modules by framework is quite helpful in terms of reliability and testability.</p>
+<p>For more details, see:</p>
 <ul>
-  <li><a href="https://github.com/xerial/sbt-pack">sbt-pack</a>
-    <ul>
-      <li>A sbt plugin for creating a distributable package or <a href="https://github.com/xerial/sbt-pack#building-a-docker-image-file-with-sbt-pack">docker image</a>
-of your program.</li>
-    </ul>
-  </li>
-  <li><a href="https://github.com/xerial/sbt-sonatype">sbt-sonatype</a>
-    <ul>
-      <li>A sbt plugin for publishing Scala/Java projects to the Maven central.</li>
-      <li>Enables <a href="https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin">a single command release</a> of your project.</li>
-    </ul>
-  </li>
+<li><a href="/airframe/docs/airframe-di">Airframe DI</a></li>
+<li><a href="/airframe/docs/di-comparison">DI Framework Comparison</a></li>
 </ul>
+<h3><a class="anchor" aria-hidden="true" id="retry-and-rate-control"></a><a href="#retry-and-rate-control" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Retry and Rate Control</h3>
+<p><a href="/airframe/docs/airframe-control">airframe-control</a> provides a basic retry mechanism like <a href="https://github.com/jhalterman/failsafe">failsafe</a> library in Java.</p>
+<h3><a class="anchor" aria-hidden="true" id="command-line-parser"></a><a href="#command-line-parser" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Command-Line Parser</h3>
+<p>Handling command-line options is not trivial when you need to support a lot of options, nested commands, data type conversions (e.g., string to Int/Double/Boolean conversions, accepting <code>Option[_]</code> types for missing parameters), etc.</p>
+<p><a href="/airframe/docs/airframe-launcher">airframe-launcher</a> is a command line parser library that can instanciate command classes with <code>@option</code> and <code>@command</code> annotaions:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyApp</span>(<span class="hljs-params">@option(prefix = "-h,--help", description = "display help messages", isHelp = true</span>) </span>
+            help: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">false</span>,
+            <span class="hljs-meta">@option</span>(prefix = <span class="hljs-string">"-p"</span>, description = <span class="hljs-string">"port number"</span>) 
+            port: <span class="hljs-type">Int</span> = <span class="hljs-number">8080</span>) {
 
-<h2 id="usage">Usage</h2>
+   <span class="hljs-meta">@command</span>(isDefault = <span class="hljs-literal">true</span>)
+   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">default</span></span>: <span class="hljs-type">Unit</span> = {
+     println(<span class="hljs-string">s"Hello airframe. port:<span class="hljs-subst">${port}</span>"</span>)
+   }
+}
 
-<p>Include as many dependencies as you need into your <code class="highlighter-rouge">libraryDependencies</code> in <strong>build.sbt</strong> file.</p>
+<span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"-p 1000"</span>)
+</code></pre>
+<p>This also helps generating help message of your applications:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-type">Launcher</span>.execute[<span class="hljs-type">MyApp</span>](<span class="hljs-string">"--help"</span>)
+</code></pre>
+<p>This command will show:</p>
+<pre><code class="hljs"><span class="hljs-attribute">usage</span>: myapp [options]
 
-<p><a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="scala-index" /></a> <a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central" /></a> <a href="https://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-scaladoc_2.12"><img src="https://javadoc-badge.appspot.com/org.wvlet.airframe/airframe-scaladoc_2.12.svg?label=scaladoc" alt="Scaladoc" /></a></p>
-
-<ul>
-  <li><a href="release-notes.html">Release Notes</a></li>
-</ul>
-
+<span class="routeros">[options]
+ -p [PORT]  <span class="hljs-built_in"> port </span>number
+ -h, --help  show help messages
+</span></code></pre>
+<h2><a class="anchor" aria-hidden="true" id="buildsbt"></a><a href="#buildsbt" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>build.sbt</h2>
+<p>Airframe is a collection of essential libraries. Add necessary modules for your applications to your <code>libraryDependencies</code> setting in <strong>build.sbt</strong> file.</p>
+<p><a href="https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22"><img src="https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central" alt="maven central"></a> <a href="https://index.scala-lang.org/wvlet/airframe"><img src="https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange" alt="airframe"></a></p>
 <p><strong>build.sbt</strong></p>
-<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">val</span> <span class="nv">AIRFRAME_VERSION</span><span class="o">=</span><span class="s">"(version)"</span>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">val</span> <span class="hljs-type">AIRFRAME_VERSION</span>=<span class="hljs-string">"(version)"</span>
 
-<span class="k">#</span> <span class="nc">For</span> <span class="nc">Scala</span> <span class="mf">2.12</span><span class="o">,</span> <span class="n">and</span> <span class="mf">2.13</span>
-<span class="n">libraryDependencies</span> <span class="o">++=</span> <span class="nc">Seq</span><span class="o">(</span>
-  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe"</span>               <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Dependency injection
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-codec"</span>         <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// MessagePack-based schema-on-read codec
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-config"</span>        <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// YAML-based configuration
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-control"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Library for retryable execution
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http"</span>          <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// HTTP REST API router
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-finagle"</span>  <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// HTTP server (Finagle backend)
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-http-recorder"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// HTTP recorder and replayer
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jmx"</span>           <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// JMX monitoring
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-jdbc"</span>          <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// JDBC connection pool
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-json"</span>          <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Pure Scala JSON parser
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-launcher"</span>      <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Command-line program launcher
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-log"</span>           <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Logging
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-metrics"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Metrics units
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-msgpack"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Pure-Scala MessagePack
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%</span> <span class="s">"airframe-surface"</span>       <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Object surface inspector
-</span><span class="o">)</span>
+# <span class="hljs-type">For</span> <span class="hljs-type">Scala</span> <span class="hljs-number">2.12</span>, and <span class="hljs-number">2.13</span>
+libraryDependencies ++= <span class="hljs-type">Seq</span>(
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe"</span>               % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-codec"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-config"</span>        % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// YAML-based configuration</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-control"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Library for retryable execution</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP REST API</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-finagle"</span>  % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP server (Finagle backend)</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-http-recorder"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// HTTP recorder and replayer</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-jmx"</span>           % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// JMX monitoring</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-jdbc"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// JDBC connection pool</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-json"</span>          % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure Scala JSON parser</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-launcher"</span>      % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Command-line program launcher</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-log"</span>           % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Logging</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-metrics"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Metrics units</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-msgpack"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure-Scala MessagePack</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-surface"</span>       % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
+)
 
-<span class="k">#</span> <span class="nc">For</span> <span class="nv">Scala</span><span class="o">.</span><span class="py">js</span><span class="o">,</span> <span class="n">the</span> <span class="n">following</span> <span class="n">libraries</span> <span class="n">can</span> <span class="n">be</span> <span class="n">used</span><span class="k">:</span>
-<span class="kt">libraryDependencies</span> <span class="kt">++=</span> <span class="kt">Seq</span><span class="o">(</span>
-  <span class="err">"</span><span class="kt">org.wvlet.airframe</span><span class="err">"</span> <span class="kt">%%%</span> <span class="err">"</span><span class="kt">airframe</span><span class="err">"</span>         <span class="kt">%</span> <span class="kt">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Dependency injection
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-codec"</span>   <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// MessagePack-based schema-on-read codec
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-json"</span>    <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Pure Scala JSON parser
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-log"</span>     <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Logging
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-msgpack"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Pure-Scala MessagePack
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-metrics"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Metrics units
-</span>  <span class="s">"org.wvlet.airframe"</span> <span class="o">%%%</span> <span class="s">"airframe-surface"</span> <span class="o">%</span> <span class="nc">AIRFRAME_VERSION</span><span class="o">,</span> <span class="c1">// Object surface inspector
-</span><span class="o">)</span>
-</code></pre></div></div>
-
-</section></div></div></div></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script><script src="/airframe/highlight/highlight.pack.js"></script><script>hljs.configure({languages:['scala','java','bash']});
-hljs.initHighlightingOnLoad();
-              </script><script>console.info('\x57\x65\x62\x73\x69\x74\x65\x20\x62\x75\x69\x6c\x74\x20\x77\x69\x74\x68\x3a\x0a\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x5f\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x5f\x20\x5f\x5f\x0a\x20\x20\x20\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x5f\x20\x20\x2f\x20\x2f\x5f\x20\x20\x20\x20\x20\x20\x5f\x5f\x5f\x5f\x20\x5f\x5f\x5f\x20\x20\x28\x5f\x29\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x28\x5f\x29\x20\x2f\x5f\x5f\x5f\x5f\x20\x20\x5f\x5f\x5f\x5f\x5f\x0a\x20\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x60\x5f\x5f\x20\x5c\x2f\x20\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x5f\x2f\x20\x5f\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x20\x2f\x20\x5f\x5f\x2f\x20\x5f\x20\x5c\x2f\x20\x5f\x5f\x5f\x2f\x0a\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x5f\x2f\x20\x2f\x20\x2f\x5f\x2f\x5f\x5f\x5f\x5f\x5f\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x20\x2f\x5f\x5f\x2f\x20\x2f\x20\x20\x2f\x20\x2f\x5f\x2f\x20\x28\x5f\x5f\x20\x20\x29\x20\x2f\x20\x2f\x5f\x2f\x20\x20\x5f\x5f\x28\x5f\x5f\x20\x20\x29\x0a\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2e\x5f\x5f\x5f\x2f\x5c\x5f\x5f\x2f\x20\x20\x20\x20\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x20\x2f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x2f\x20\x20\x20\x5c\x5f\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x5f\x2f\x5c\x5f\x5f\x2f\x5c\x5f\x5f\x5f\x2f\x5f\x5f\x5f\x5f\x2f\x0a\x0a\x68\x74\x74\x70\x73\x3a\x2f\x2f\x34\x37\x64\x65\x67\x2e\x67\x69\x74\x68\x75\x62\x2e\x69\x6f\x2f\x73\x62\x74\x2d\x6d\x69\x63\x72\x6f\x73\x69\x74\x65\x73')</script><script>((window.gitter = {}).chat = {}).options = {
-room: 'wvlet/airframe'};</script><script src="https://sidecar.gitter.im/dist/sidecar.v1.js"></script><script src="/airframe/js/main.js"></script></body></html>
+# <span class="hljs-type">For</span> <span class="hljs-type">Scala</span>.js, the following libraries can be used:
+libraryDependencies ++= <span class="hljs-type">Seq</span>(
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe"</span>         % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Dependency injection</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-codec"</span>   % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// MessagePack-based schema-on-read codec</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-json"</span>    % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure Scala JSON parser</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-log"</span>     % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Logging</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-msgpack"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Pure-Scala MessagePack</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-metrics"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Metrics units</span>
+  <span class="hljs-string">"org.wvlet.airframe"</span> %%% <span class="hljs-string">"airframe-surface"</span> % <span class="hljs-type">AIRFRAME_VERSION</span>, <span class="hljs-comment">// Object surface inspector</span>
+)
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="list-of-airframe-modules"></a><a href="#list-of-airframe-modules" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>List of Airframe Modules</h2>
+<p>Airframe has several modules for kick starting your application development in Scala.</p>
+<ul>
+<li><a href="/airframe/docs/airframe-di">airframe</a>
+<ul>
+<li>Scala-friendly dependency injection library.</li>
+</ul></li>
+<li><a href="/airframe/docs/airspec">airspec</a>
+<ul>
+<li>A functional testing framework for Scala.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-canvas">ariframe-canvas</a>
+<ul>
+<li>Off-heap memory buffer</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-codec">airframe-codec</a>
+<ul>
+<li>MessagePack-based object serializer</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-config">airframe-config</a>
+<ul>
+<li>YAML-based configuration reader &amp; provider.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-control">airframe-control</a>
+<ul>
+<li>Utilities for controlling code flows with loan pattern, retry logic, parallelization, etc.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-fluentd">airframe-fluentd</a>
+<ul>
+<li>MetricLogger for sending logs to <a href="https://www.fluentd.org">fluentd</a> or <a href="https://www.treasuredata.com">Treasure Data</a></li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-http">airframe-http</a>
+<ul>
+<li>A light-weight HTTP server builder, based on Finagle</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-http-recorder">airframe-http-recorder</a>
+<ul>
+<li>A handly HTTP recorder and replayer for HTTP server development</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-jdbc">airframe-jdbc</a>
+<ul>
+<li>Reusable JDBC connection pool.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-jmx">airframe-jmx</a>
+<ul>
+<li>Enable runtime application monitoring through JMX.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-json">airframe-json</a>
+<ul>
+<li>Pure-Scala JSON parser.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-launcher">airframe-launcher</a>
+<ul>
+<li>Command line parser and launcher.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-metrics">airframe-metrics</a>
+<ul>
+<li>Human-readable representation of times, time ranges, and data sizes.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-msgpack">airframe-msgpack</a>
+<ul>
+<li>Pure-scala MessagePack reader and writer</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe_surface">airframe-surface</a>
+<ul>
+<li>Object shape inspector. What parameters are defined in an object? Surface gives you an answer for that.</li>
+</ul></li>
+<li><a href="/airframe/docs/airframe-sql">airframe-sql</a>
+<ul>
+<li>SQL parser</li>
+</ul></li>
+</ul>
+<h3><a class="anchor" aria-hidden="true" id="companion-sbt-plugins"></a><a href="#companion-sbt-plugins" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Companion sbt plugins</h3>
+<p>We also have developed sbt plugins for packaging and publishing your projects:</p>
+<ul>
+<li><p><a href="https://github.com/xerial/sbt-pack">sbt-pack</a></p>
+<ul>
+<li>A sbt plugin for creating a distributable package or <a href="https://github.com/xerial/sbt-pack#building-a-docker-image-file-with-sbt-pack">docker image</a>
+of your program.</li>
+</ul></li>
+<li><p><a href="https://github.com/xerial/sbt-sonatype">sbt-sonatype</a></p>
+<ul>
+<li>A sbt plugin for publishing Scala/Java projects to the Maven central.</li>
+<li>Enables <a href="https://github.com/xerial/sbt-sonatype#using-with-sbt-release-plugin">a single command release</a> of your project.</li>
+</ul></li>
+</ul>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-next button" href="/airframe/docs/articles"><span>Articles</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#usage-guides">Usage Guides</a><ul class="toc-headings"><li><a href="#logging">Logging</a></li><li><a href="#object-serialization">Object Serialization</a></li><li><a href="#querying-json-and-messagepack-data">Querying JSON and MessagePack Data</a></li><li><a href="#web-servers-and-clients">Web Servers and Clients</a></li><li><a href="#dependency-injection">Dependency Injection</a></li><li><a href="#retry-and-rate-control">Retry and Rate Control</a></li><li><a href="#command-line-parser">Command-Line Parser</a></li></ul></li><li><a href="#buildsbt">build.sbt</a></li><li><a href="#list-of-airframe-modules">List of Airframe Modules</a><ul class="toc-headings"><li><a href="#companion-sbt-plugins">Companion sbt plugins</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>
