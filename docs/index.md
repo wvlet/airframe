@@ -246,7 +246,6 @@ libraryDependencies ++= Seq(
 
 Airframe has several modules for kick starting your application development in Scala.
 
-
 - [airframe](airframe-di.md)
   - Scala-friendly dependency injection library.
 - [airspec](airspec.md)
