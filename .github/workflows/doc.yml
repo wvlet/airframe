@@ -32,9 +32,9 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-mdoc-${{ hashFiles('docs/**') }}
+          key: ${{ runner.os }}-mdocs-${{ hashFiles('docs/**') }}
           restore-keys: |
-            ${{ runner.os }}-mdoc-${{ hashFiles('docs/**') }}-
-            ${{ runner.os }}-mdoc-
+            ${{ runner.os }}-mdocs-${{ hashFiles('docs/**') }}-
+            ${{ runner.os }}-mdocs-
       - name: Publish doc
         run: ./sbt docs/docusaurusPublishGhpages

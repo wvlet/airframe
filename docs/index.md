@@ -22,7 +22,7 @@ In the following sections, we will see several examples of Airframe modules that
 
 ### Logging
 
-For adding application logging, use [airframe-log](airframe-log.md).
+For adding application logging, use [airframe-log](airframe-log.md) library.
 
 slf4j and log4j are commonly used logging libraries in Java, but they are not fully utilizing the strength of Scala for enhancing log messages. [airframe-log](airframe-log.md) is a new logging library designed for Scala, which is programatically configurable and supports showing the source code locations. Seeing the line number where the debug message is produced will significantly save your time for debugging your applications.
 

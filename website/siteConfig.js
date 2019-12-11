@@ -119,7 +119,7 @@ const siteConfig = {
     // template. For example, if you need your repo's URL...
     repoUrl: 'https://github.com/wvlet/airframe',
 
-    customDocsPath: "doc/target/mdoc",
+    customDocsPath: "airframe-docs/target/mdoc",
 
     gaTrackingId: 'UA-98364158-1',
 };
