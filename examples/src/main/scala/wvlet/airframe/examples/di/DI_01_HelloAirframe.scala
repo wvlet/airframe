@@ -26,7 +26,7 @@ object DI_01_HelloAirframe extends App {
     // Bind a configuration
     private val config = bind[MyAppConfig]
 
-    def run = {
+    def run: Unit = {
       info(s"Hello ${config.name}!")
     }
   }

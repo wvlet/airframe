@@ -1,4 +1,3 @@
-import microsites.MicrositeEditButton
 import sbtcrossproject.{CrossType, crossProject}
 
 val SCALA_2_11 = "2.11.12"
@@ -225,89 +224,15 @@ lazy val projectJS =
 
 lazy val docs =
   project
-    .in(file("docs"))
+    .in(file("airframe-docs"))
     .settings(
-      name := "docs",
+      name := "airframe-docs",
+      moduleName := "airframe-docs",
       publishArtifact := false,
       publish := {},
-      publishLocal := {},
-      // Necessary for publishMicrosite
-      git.remoteRepo := "git@github.com:wvlet/airframe.git",
-      ghpagesNoJekyll := false,
-      micrositeName := "Airframe",
-      micrositeDescription := "Lightweight Building Blocks for Scala",
-      micrositeAuthor := "Taro L. Saito",
-      micrositeOrganizationHomepage := "https://github.com/wvlet",
-      //micrositeCompilingDocsTool := WithMdoc,
-      micrositeTheme := "pattern",
-      micrositeHighlightTheme := "ocean",
-      micrositeGithubOwner := "wvlet",
-      micrositeGithubRepo := "airframe",
-      micrositeUrl := "https://wvlet.org",
-      micrositeBaseUrl := "airframe",
-      micrositeAnalyticsToken := "UA-98364158-1",
-      micrositeDocumentationUrl := "docs",
-      micrositeGitterChannel := true,
-      micrositeGitterChannelUrl := "wvlet/airframe",
-      // Configuration for using GitHub4s. This is slow and didn't work well on CI
-      //micrositePushSiteWith := GitHub4s,
-      //micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
-      micrositePalette ++= Map(
-        "brand-primary"   -> "#2582AA",
-        "brand-secondary" -> "#143F56",
-        "brand-tertiary"  -> "#042F46",
-        "gray-dark"       -> "#453E46",
-        "gray"            -> "#534F54"
-      ),
-      // Generate documentation sources from airframe-xxx/README.md
-      mdocIn := (managedSourceDirectories in Compile).value.head,
-      resourceGenerators in Compile += Def.task {
-        // Copy source docs since Mdoc accepts only a single source directory
-        val sourceDir = baseDirectory.value / "src" / "main" / "mdoc"
-        IO.copyDirectory(sourceDir, mdocIn.value)
-
-        // Generate airframe-xxx.md files from airframe-xxx/README.md
-        generateModuleDoc(mdocIn.value, streams.value.log)
-      }.taskValue,
-      watchSources += new sbt.internal.io.Source(
-        sourceDirectory.value,
-        new FileFilter {
-          def accept(f: File) = !f.isDirectory
-        },
-        NothingFilter
-      )
+      publishLocal := {}
     )
-    .enablePlugins(MicrositesPlugin)
-
-def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
-  val baseDir = file(".")
-  val readmeFiles =
-    baseDir
-      .listFiles()
-      .filter(x => x.isDirectory && (x.name.startsWith("airframe") || x.name.startsWith("airspec")))
-      .map(x => x / "README.md")
-      .filter(_.exists())
-
-  logger.info("Generating module doc files")
-  readmeFiles.flatMap { f =>
-    f.relativeTo(baseDir).map { x =>
-      val moduleName     = x.getParent
-      val targetFileName = targetDir / "docs" / s"${moduleName}.md"
-      logger.info(s"${targetFileName.relativeTo(baseDir).getOrElse(targetFileName.getName)}")
-
-      val originalReadme = IO.read(f)
-      val content =
-        s"""---
-           |layout: docs
-           |title: ${moduleName}
-           |---
-           |${originalReadme}""".stripMargin
-
-      IO.write(targetFileName, content)
-      targetFileName
-    }
-  }
-}
+    .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
