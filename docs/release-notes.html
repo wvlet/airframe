@@ -1,0 +1,1094 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Release Notes · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   "/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Release Notes · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   "/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
+              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+              })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+              ga('create', 'UA-98364158-1', 'auto');
+              ga('send', 'pageview');
+            </script><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/airframe/js/scrollSpy.js"></script><link rel="stylesheet" href="/airframe/css/main.css"/><script src="/airframe/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/airframe/"><img class="logo" src="/airframe/img/favicon.ico" alt="Airframe"/><h2 class="headerTitleWithLogo">Airframe</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class=""><a href="/airframe/docs/" target="_self">Docs</a></li><li class=""><a href="https://github.com/wvlet/airframe/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Resources</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Resources</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/">Overview</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/articles">Articles</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/airframe/docs/release-notes">Release Notes</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/logos">Logos</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Frameworks</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-di">airframe-di: Dependency Injection</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http">airframe-http: Web Service IDL</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airspec">AirSpec: Testing Framework</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Core Modules</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-codec">airframe-codec: Schema-On-Read Object Serializer</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-config">airframe-config: Application Config Flow</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-control">airframe-control: Retry/Rate Control</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-log">airframe-log: Application Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-metrics">airframe-metrics: Human-Friendly Measures for Time and Data Size</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Utilities</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-benchmark">airframe-benchmark: JMH Benchmark</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-canvas">airframe-canvas: Off-Heap Memory Manager</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-fluentd">airframe-fluentd: Fluentd Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http-recorder">airframe-http-recorder: Web Request/Response Recorder</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jdbc">airframe-jdbc: JDBC Connection Pool</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jmx">airframe-jmx: JMX Application Monitor</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-json">airframe-json: Pure-Scala JSON Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-launcher">airframe-launcher: Command-Line Program Launcher</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-msgpack">airframe-msgpack: Pure-Scala MessagePack Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-sql">airframe-sql: SQL Parser</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">Release Notes</h1></header><article><div><span><p>Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.</p>
+<h2><a class="anchor" aria-hidden="true" id="19120"></a><a href="#19120" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.12.0</h2>
+<ul>
+<li>airframe-di: Support in-class bind[X] for classes with DISupport trait (<a href="https://github.com/wvlet/airframe/issues/816">#816</a>) [<a href="https://github.com/wvlet/airframe/commit/c3ce56b">c3ce56b</a>]</li>
+<li>airframe-http: Add CORS filter and filter-instance support (<a href="https://github.com/wvlet/airframe/issues/846">#846</a>) [<a href="https://github.com/wvlet/airframe/commit/58245b2">58245b2</a>]</li>
+<li>airframe-http: Support leaf filters without <code>@Endpoint</code> mapping (<a href="https://github.com/wvlet/airframe/issues/844">#844</a>) [<a href="https://github.com/wvlet/airframe/commit/d342530">d342530</a>]</li>
+<li>airframe-http: Support StaticContent (<a href="https://github.com/wvlet/airframe/issues/843">#843</a>) [<a href="https://github.com/wvlet/airframe/commit/d415025">d415025</a>]</li>
+<li>airframe-http: Add thread-local context parameter support (<a href="https://github.com/wvlet/airframe/issues/829">#829</a>) [<a href="https://github.com/wvlet/airframe/commit/25e312e">25e312e</a>]</li>
+<li>airframe-http-client: Add raw response methods to HttpClient (<a href="https://github.com/wvlet/airframe/issues/831">#831</a>) [<a href="https://github.com/wvlet/airframe/commit/6390bb3">6390bb3</a>]</li>
+<li>airframe-fluentd: Fix warnings in airframe-fluentd (<a href="https://github.com/wvlet/airframe/issues/833">#833</a>) [<a href="https://github.com/wvlet/airframe/commit/856a644">856a644</a>]</li>
+<li>airframe-codec: Support Base64 encoded binary (<a href="https://github.com/wvlet/airframe/issues/819">#819</a>) [<a href="https://github.com/wvlet/airframe/commit/f60af4e">f60af4e</a>]</li>
+<li>airframe-codec: Rename MessageHolder -&gt; MessageContext (<a href="https://github.com/wvlet/airframe/issues/817">#817</a>) [<a href="https://github.com/wvlet/airframe/commit/33c10c6">33c10c6</a>]</li>
+<li>airframe-launcher: <a href="https://github.com/wvlet/airframe/issues/523">#523</a> Add coloring to the help message (<a href="https://github.com/wvlet/airframe/issues/815">#815</a>) [<a href="https://github.com/wvlet/airframe/commit/74eb427">74eb427</a>]</li>
+</ul>
+<p>internal changes:</p>
+<ul>
+<li>airframe-msgpack: Update msgpack-core to 0.8.20 (<a href="https://github.com/wvlet/airframe/issues/830">#830</a>) [<a href="https://github.com/wvlet/airframe/commit/2db9289">2db9289</a>]</li>
+<li>airframe-http: Move the internal routing code to wvlet.airframe.http.router package (<a href="https://github.com/wvlet/airframe/issues/824">#824</a>) [<a href="https://github.com/wvlet/airframe/commit/58cbb90">58cbb90</a>]</li>
+<li>airframe-http: Simplify HttpFilter hierarchy (<a href="https://github.com/wvlet/airframe/issues/842">#842</a>) [<a href="https://github.com/wvlet/airframe/commit/cb4b595">cb4b595</a>]</li>
+<li>Update sbt-scoverage to 1.6.1 (<a href="https://github.com/wvlet/airframe/issues/814">#814</a>) [<a href="https://github.com/wvlet/airframe/commit/39ad0e1">39ad0e1</a>]</li>
+<li>Update scalajs-java-time to 0.2.6 (<a href="https://github.com/wvlet/airframe/issues/825">#825</a>) [<a href="https://github.com/wvlet/airframe/commit/6cf66a0">6cf66a0</a>]</li>
+<li>Update scalajs-java-logging to 0.1.6 (<a href="https://github.com/wvlet/airframe/issues/823">#823</a>) [<a href="https://github.com/wvlet/airframe/commit/e8eb636">e8eb636</a>]</li>
+<li>Upgrade Scala.js to 0.6.31 (<a href="https://github.com/wvlet/airframe/issues/820">#820</a>) [<a href="https://github.com/wvlet/airframe/commit/4d259c2">4d259c2</a>]</li>
+<li>Update sbt-sonatype to 3.8.1 (<a href="https://github.com/wvlet/airframe/issues/818">#818</a>) [<a href="https://github.com/wvlet/airframe/commit/0c73d84">0c73d84</a>]</li>
+<li>Update sbt to 1.3.4 (<a href="https://github.com/wvlet/airframe/issues/826">#826</a>) [<a href="https://github.com/wvlet/airframe/commit/7610c99">7610c99</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19112"></a><a href="#19112" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.11.2</h2>
+<ul>
+<li>airframe-codec: <a href="https://github.com/wvlet/airframe/issues/156">#156</a> Suppress null value output for None:Option[X] (<a href="https://github.com/wvlet/airframe/issues/811">#811</a>) [<a href="https://github.com/wvlet/airframe/commit/6e8f70e">6e8f70e</a>]</li>
+<li>internal: Use GitHub Action cache (<a href="https://github.com/wvlet/airframe/issues/808">#808</a>) [<a href="https://github.com/wvlet/airframe/commit/574b5a9">574b5a9</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19111"></a><a href="#19111" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.11.1</h2>
+<ul>
+<li>airframe-di: Add in-trait bindLocal (<a href="https://github.com/wvlet/airframe/issues/805">#805</a>) [<a href="https://github.com/wvlet/airframe/commit/22ce396">22ce396</a>]</li>
+<li>airframe-control: <a href="https://github.com/wvlet/airframe/issues/767">#767</a> Add bounded backoff retry (<a href="https://github.com/wvlet/airframe/issues/803">#803</a>) [<a href="https://github.com/wvlet/airframe/commit/730617a">730617a</a>]</li>
+<li>airframe-http: <a href="https://github.com/wvlet/airframe/issues/796">#796</a> Support returning Scala Future (<a href="https://github.com/wvlet/airframe/issues/802">#802</a>) [<a href="https://github.com/wvlet/airframe/commit/4135a57">4135a57</a>]</li>
+<li>airframe-http-finagle: Update finagle-core, finagle-http, ... to 19.11.0 (<a href="https://github.com/wvlet/airframe/issues/800">#800</a>) [<a href="https://github.com/wvlet/airframe/commit/681dbcd">681dbcd</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19110"></a><a href="#19110" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.11.0</h2>
+<p><strong>Major changes</strong>:</p>
+<ul>
+<li>airframe-http-finagle now supports builder patterns Finagle.server.withXXX or Finagle.client.withXXX to fully customize HTTP servers and clients. These methods are preferred over using FinagleServerConfig or FinagleClientConfig directly.</li>
+<li>Added Scala.js support for airframe-codec. Now you can build http servers (Scala JVM) and client pages (Scala.js) that interact together through airframe-codec.</li>
+</ul>
+<p>Change log:</p>
+<ul>
+<li>airframe-http: Support server customization with FinagleServerConfig (<a href="https://github.com/wvlet/airframe/issues/797">#797</a>) [<a href="https://github.com/wvlet/airframe/commit/7f525d0">7f525d0</a>]</li>
+<li>airframe-http: Use 201 (POST/PUT) and 204 (DELETE) status code for empty responses [<a href="https://github.com/wvlet/airframe/commit/b63d4a9">b63d4a9</a>]</li>
+<li>airframe-http: Fix the client builder pattern and use no record expiration time by default (<a href="https://github.com/wvlet/airframe/issues/777">#777</a>) [<a href="https://github.com/wvlet/airframe/commit/8e96d95">8e96d95</a>]</li>
+<li>airframe-http-finagle: Update Finagle to 19.10.0 (<a href="https://github.com/wvlet/airframe/issues/765">#765</a>) [<a href="https://github.com/wvlet/airframe/commit/44d5e9d">44d5e9d</a>]</li>
+<li>airframe-config: Airframe DI integration for Config.overrideWithPropertiesFile() (<a href="https://github.com/wvlet/airframe/issues/798">#798</a>) [<a href="https://github.com/wvlet/airframe/commit/5d3d7ad">5d3d7ad</a>]</li>
+<li>airframe-codec: Scala.js support with Pure Scala packer/unpacker (<a href="https://github.com/wvlet/airframe/issues/789">#789</a>) [<a href="https://github.com/wvlet/airframe/commit/e565fea">e565fea</a>]</li>
+<li>airframe-codec: Add @required to mark must-have parameters (<a href="https://github.com/wvlet/airframe/issues/779">#779</a>) [<a href="https://github.com/wvlet/airframe/commit/b33ce25">b33ce25</a>]</li>
+<li>airframe-di: Deprecate runtime provider binding definitions (<a href="https://github.com/wvlet/airframe/issues/786">#786</a>) [<a href="https://github.com/wvlet/airframe/commit/45aab9b">45aab9b</a>]</li>
+<li>airframe-di: Support design.run<a href="a:A=&gt;B">A,B</a>:B (<a href="https://github.com/wvlet/airframe/issues/785">#785</a>) [<a href="https://github.com/wvlet/airframe/commit/661cd6b">661cd6b</a>]</li>
+<li>airframe-jdbc: Do not shutdown ConnectionPoolFactory explicitly (<a href="https://github.com/wvlet/airframe/issues/773">#773</a>) [<a href="https://github.com/wvlet/airframe/commit/b87b18d">b87b18d</a>]</li>
+</ul>
+<p>internal changes:</p>
+<ul>
+<li>Update slf4j-jdk14 to 1.7.29 (<a href="https://github.com/wvlet/airframe/issues/792">#792</a>) [<a href="https://github.com/wvlet/airframe/commit/c34cef4">c34cef4</a>]</li>
+<li>Update sbt-scalafmt to 2.2.1 (<a href="https://github.com/wvlet/airframe/issues/783">#783</a>) [<a href="https://github.com/wvlet/airframe/commit/613daf2">613daf2</a>]</li>
+<li>Update scalafmt-core to 2.2.1 (<a href="https://github.com/wvlet/airframe/issues/780">#780</a>) [<a href="https://github.com/wvlet/airframe/commit/b090e83">b090e83</a>]</li>
+<li>Update scalafmt-core to 2.2.0 (<a href="https://github.com/wvlet/airframe/issues/776">#776</a>) [<a href="https://github.com/wvlet/airframe/commit/627b857">627b857</a>]</li>
+<li>Update sbt to 1.3.3 (<a href="https://github.com/wvlet/airframe/issues/774">#774</a>) [<a href="https://github.com/wvlet/airframe/commit/88890a8">88890a8</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19101"></a><a href="#19101" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.10.1</h2>
+<ul>
+<li>airspec: Add inGitHubAction and inCI (<a href="https://github.com/wvlet/airframe/issues/762">#762</a>) [<a href="https://github.com/wvlet/airframe/commit/0765f11">0765f11</a>]</li>
+<li>airframe-control: Add retryableFailure(e).withExtraWaitMillis/Factor (<a href="https://github.com/wvlet/airframe/issues/761">#761</a>) [<a href="https://github.com/wvlet/airframe/commit/40b7a58">40b7a58</a>]</li>
+<li>airframe-http-finagle: Add Finagle.client builder (<a href="https://github.com/wvlet/airframe/issues/760">#760</a>) [<a href="https://github.com/wvlet/airframe/commit/48f44cb">48f44cb</a>]</li>
+<li>airframe-control: Use this.copy for RetryContext (<a href="https://github.com/wvlet/airframe/issues/759">#759</a>) [<a href="https://github.com/wvlet/airframe/commit/4251c84">4251c84</a>]</li>
+<li>airframe-http: Support patch, patchOps, deleteOps methods (<a href="https://github.com/wvlet/airframe/issues/755">#755</a>) [<a href="https://github.com/wvlet/airframe/commit/7603f16">7603f16</a>]</li>
+<li>Internal changes
+<ul>
+<li>Add javacOptions to generate Java8 compatible binary (<a href="https://github.com/wvlet/airframe/issues/764">#764</a>) [<a href="https://github.com/wvlet/airframe/commit/bc399d1">bc399d1</a>]</li>
+<li>Update sbt-microsites to 0.9.7 (<a href="https://github.com/wvlet/airframe/issues/752">#752</a>) [<a href="https://github.com/wvlet/airframe/commit/a2e2ce5">a2e2ce5</a>]</li>
+<li>Use jdk11 for all builds (<a href="https://github.com/wvlet/airframe/issues/751">#751</a>) [<a href="https://github.com/wvlet/airframe/commit/2f69218">2f69218</a>]</li>
+</ul></li>
+<li>Enhancement of GitHub Actions configuration
+<ul>
+<li>Do not run CI tests if no source code has changed (<a href="https://github.com/wvlet/airframe/issues/756">#756</a>) [<a href="https://github.com/wvlet/airframe/commit/7d367b9">7d367b9</a>]</li>
+<li>Update test.yml [<a href="https://github.com/wvlet/airframe/commit/bbffdae">bbffdae</a>]</li>
+<li>Enable codecov for PRs (<a href="https://github.com/wvlet/airframe/issues/753">#753</a>) [<a href="https://github.com/wvlet/airframe/commit/4eee198">4eee198</a>]</li>
+<li>Upload code coverage report [<a href="https://github.com/wvlet/airframe/commit/cedce6b">cedce6b</a>]</li>
+<li>Fix doc update on GitHub Actions (<a href="https://github.com/wvlet/airframe/issues/750">#750</a>) [<a href="https://github.com/wvlet/airframe/commit/0f75cbc">0f75cbc</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19100"></a><a href="#19100" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.10.0</h2>
+<ul>
+<li>This is a maintenance release for migrating to GitHub Atcions. There is no feature change. (<a href="https://github.com/wvlet/airframe/issues/749">#749</a>) [<a href="https://github.com/wvlet/airframe/commit/74f84b5">74f84b5</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1999"></a><a href="#1999" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.9</h2>
+<ul>
+<li>This version is only for internal changes.</li>
+<li>From this release, airfarme will use GitHub actions.</li>
+<li>Update scalafmt-core to 2.1.0 (<a href="https://github.com/wvlet/airframe/issues/747">#747</a>) [<a href="https://github.com/wvlet/airframe/commit/c851834">c851834</a>]</li>
+<li>Migrate to GitHub Actions (<a href="https://github.com/wvlet/airframe/issues/744">#744</a>) [<a href="https://github.com/wvlet/airframe/commit/f543442">f543442</a>]</li>
+<li>Update sbt-scalafmt to 2.0.6 (<a href="https://github.com/wvlet/airframe/issues/745">#745</a>) [<a href="https://github.com/wvlet/airframe/commit/daa7e8f">daa7e8f</a>]</li>
+<li>Update sbt-sonatype to 3.8 (<a href="https://github.com/wvlet/airframe/issues/746">#746</a>) [<a href="https://github.com/wvlet/airframe/commit/a6e8db0">a6e8db0</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1998"></a><a href="#1998" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.8</h2>
+<ul>
+<li>airframe-metrics: Add TimeVector.succinctTimeVector (<a href="https://github.com/wvlet/airframe/issues/736">#736</a>) [<a href="https://github.com/wvlet/airframe/commit/9598d81">9598d81</a>]</li>
+<li>airspec: Upgrade to scalacheck 1.14.2 (<a href="https://github.com/wvlet/airframe/issues/743">#743</a>) [<a href="https://github.com/wvlet/airframe/commit/a14a333">a14a333</a>]</li>
+<li>airframe-jdbc: Update HikariCP to 3.4.1 (<a href="https://github.com/wvlet/airframe/issues/737">#737</a>) [<a href="https://github.com/wvlet/airframe/commit/081bb14">081bb14</a>]</li>
+<li>internal changes
+<ul>
+<li>Update sbt-microsites to 0.9.6 (<a href="https://github.com/wvlet/airframe/issues/742">#742</a>) [<a href="https://github.com/wvlet/airframe/commit/587ef94">587ef94</a>]</li>
+<li>Upgrade to sbt 1.3.2 (<a href="https://github.com/wvlet/airframe/issues/740">#740</a>) [<a href="https://github.com/wvlet/airframe/commit/f73a11d">f73a11d</a>]</li>
+<li>Use jdk11 in Travis by default (<a href="https://github.com/wvlet/airframe/issues/735">#735</a>) [<a href="https://github.com/wvlet/airframe/commit/00e1c0c">00e1c0c</a>]</li>
+<li>Upgrade to Scala 2.13.1 (<a href="https://github.com/wvlet/airframe/issues/733">#733</a>) [<a href="https://github.com/wvlet/airframe/commit/220ef74">220ef74</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1997"></a><a href="#1997" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.7</h2>
+<ul>
+<li>Add support for Scala.js 1.0.0-M8 (<a href="https://github.com/wvlet/airframe/issues/732">#732</a>) [<a href="https://github.com/wvlet/airframe/commit/48a58e5">48a58e5</a>]</li>
+<li>airspec: Show the deatailed reason of MISSING_DEPENDENCY (<a href="https://github.com/wvlet/airframe/issues/729">#729</a>) [<a href="https://github.com/wvlet/airframe/commit/1c24971">1c24971</a>]</li>
+<li>airframe-msgpack: Optimize JSON-&gt;MsgPack stream conversion (<a href="https://github.com/wvlet/airframe/issues/725">#725</a>) [<a href="https://github.com/wvlet/airframe/commit/6a07fb4">6a07fb4</a>]</li>
+<li>internal changes:
+<ul>
+<li>Refactor DesignOptions using copy method (<a href="https://github.com/wvlet/airframe/issues/731">#731</a>) [<a href="https://github.com/wvlet/airframe/commit/1f4fb14">1f4fb14</a>]</li>
+<li>Update sbt-scalajs, scalajs-compiler, ... to 0.6.29 (<a href="https://github.com/wvlet/airframe/issues/730">#730</a>) [<a href="https://github.com/wvlet/airframe/commit/22b5188">22b5188</a>]</li>
+<li>Update HikariCP to 3.4.0 (<a href="https://github.com/wvlet/airframe/issues/727">#727</a>) [<a href="https://github.com/wvlet/airframe/commit/2e0f2d1">2e0f2d1</a>]</li>
+<li>Update sbt-scalafmt to 2.0.5 (<a href="https://github.com/wvlet/airframe/issues/728">#728</a>) [<a href="https://github.com/wvlet/airframe/commit/d577f9f">d577f9f</a>]</li>
+<li>Update sbt-pgp to 2.0.0 (<a href="https://github.com/wvlet/airframe/issues/726">#726</a>) [<a href="https://github.com/wvlet/airframe/commit/f8a2d2d">f8a2d2d</a>]</li>
+<li>airframe-http: refactoring HTTP request mapper (<a href="https://github.com/wvlet/airframe/issues/724">#724</a>) [<a href="https://github.com/wvlet/airframe/commit/d992e0f">d992e0f</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1996"></a><a href="#1996" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.6</h2>
+<ul>
+<li>airframe-codc: Fix AnyCodec to proceed cursor when Nil is found (<a href="https://github.com/wvlet/airframe/issues/722">#722</a>) [<a href="https://github.com/wvlet/airframe/commit/3d82c26">3d82c26</a>]</li>
+<li>airframe-msgpack: Add MessagePack.fromJSON(JSONSource) (<a href="https://github.com/wvlet/airframe/issues/721">#721</a>) [<a href="https://github.com/wvlet/airframe/commit/584ccbf">584ccbf</a>]</li>
+<li>airframe-config: Use left-aligned config display (<a href="https://github.com/wvlet/airframe/issues/719">#719</a>) [<a href="https://github.com/wvlet/airframe/commit/2a20752">2a20752</a>]</li>
+<li>internal: Use .cache folder for coursier (<a href="https://github.com/wvlet/airframe/issues/720">#720</a>) [<a href="https://github.com/wvlet/airframe/commit/cb4fca7">cb4fca7</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1995"></a><a href="#1995" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.5</h2>
+<ul>
+<li>airspec: Deprecate configure(design) (<a href="https://github.com/wvlet/airframe/issues/714">#714</a>) [<a href="https://github.com/wvlet/airframe/commit/9277263">9277263</a>]</li>
+<li>airspec: Isolate spec loggers (<a href="https://github.com/wvlet/airframe/issues/718">#718</a>) [<a href="https://github.com/wvlet/airframe/commit/7ea85f8">7ea85f8</a>]</li>
+<li>airframe-di: Fix duplicated Closeable hook registration (<a href="https://github.com/wvlet/airframe/issues/704">#704</a>) [<a href="https://github.com/wvlet/airframe/commit/0ca5da2">0ca5da2</a>]</li>
+<li>airframe-config: Add @secret annotation (<a href="https://github.com/wvlet/airframe/issues/710">#710</a>) [<a href="https://github.com/wvlet/airframe/commit/c82008f">c82008f</a>]</li>
+<li>airframe-http-recorder: Add PathOnlyMatcher (<a href="https://github.com/wvlet/airframe/issues/711">#711</a>) [<a href="https://github.com/wvlet/airframe/commit/e92536c">e92536c</a>]</li>
+<li>airframe-http-recorder: Add name config (<a href="https://github.com/wvlet/airframe/issues/709">#709</a>) [<a href="https://github.com/wvlet/airframe/commit/26d3cba">26d3cba</a>]</li>
+<li>airframe-http: Remove redundant Router nesting (<a href="https://github.com/wvlet/airframe/issues/708">#708</a>) [<a href="https://github.com/wvlet/airframe/commit/cdc410c">cdc410c</a>]</li>
+<li>airframe-http-finagle: Update finagle-core, finagle-http, ... to 19.9.0 (<a href="https://github.com/wvlet/airframe/issues/694">#694</a>) [<a href="https://github.com/wvlet/airframe/commit/c587c86">c587c86</a>]-  airframe-http-finagle: Add finagleBaseDesign for using FinagleServerFactory (<a href="https://github.com/wvlet/airframe/issues/707">#707</a>) [<a href="https://github.com/wvlet/airframe/commit/ea8d56b">ea8d56b</a>]</li>
+<li>airframe-http-finagle: Fix FinagleServer lifecycle (<a href="https://github.com/wvlet/airframe/issues/703">#703</a>) [<a href="https://github.com/wvlet/airframe/commit/ce9ef85">ce9ef85</a>]</li>
+<li>airframe-jdbc: Update postgresql to 42.2.8 (<a href="https://github.com/wvlet/airframe/issues/717">#717</a>) [<a href="https://github.com/wvlet/airframe/commit/43e63f7">43e63f7</a>]</li>
+<li>Internal Changes:
+<ul>
+<li>Upgrade to Scala 2.12.10 (<a href="https://github.com/wvlet/airframe/issues/715">#715</a>) [<a href="https://github.com/wvlet/airframe/commit/c23d1ce">c23d1ce</a>]</li>
+<li>Update sbt-sonatype to 3.7 (<a href="https://github.com/wvlet/airframe/issues/700">#700</a>) [<a href="https://github.com/wvlet/airframe/commit/e6e3e5d">e6e3e5d</a>]</li>
+<li>Use JDK11 for code-format task on CI (<a href="https://github.com/wvlet/airframe/issues/712">#712</a>) [<a href="https://github.com/wvlet/airframe/commit/a4288eb">a4288eb</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1994"></a><a href="#1994" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.4</h2>
+<ul>
+<li>airframe-http-finagle: Support streaming JSON/MsgPack responses for Reader[X] (<a href="https://github.com/wvlet/airframe/issues/691">#691</a>) [<a href="https://github.com/wvlet/airframe/commit/4ebe0ec">4ebe0ec</a>]</li>
+<li>airframe-http-finagle: Support Reader[Buf] stream response (<a href="https://github.com/wvlet/airframe/issues/690">#690</a>) [<a href="https://github.com/wvlet/airframe/commit/fb237f7">fb237f7</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1993"></a><a href="#1993" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.3</h2>
+<ul>
+<li>Deprecate airframe-tablet (<a href="https://github.com/wvlet/airframe/issues/684">#684</a>) [<a href="https://github.com/wvlet/airframe/commit/6d2bb77">6d2bb77</a>]</li>
+<li>airframe-jdbc:
+<ul>
+<li>Update HikariCP to 3.3.1 (<a href="https://github.com/wvlet/airframe/issues/683">#683</a>) [<a href="https://github.com/wvlet/airframe/commit/9434e6b">9434e6b</a>]</li>
+<li>Update sqlite-jdbc to 3.28.0 (<a href="https://github.com/wvlet/airframe/issues/682">#682</a>) [<a href="https://github.com/wvlet/airframe/commit/8d907d6">8d907d6</a>]</li>
+<li>Update postgresql to 42.2.6 (<a href="https://github.com/wvlet/airframe/issues/673">#673</a>) [<a href="https://github.com/wvlet/airframe/commit/86234f9">86234f9</a>]</li>
+</ul></li>
+<li>airframe-fluentd
+<ul>
+<li>Update fluency-core, fluency-fluentd, ... to 2.4.0 (<a href="https://github.com/wvlet/airframe/issues/681">#681</a>) [<a href="https://github.com/wvlet/airframe/commit/bc1e5bc">bc1e5bc</a>]</li>
+</ul></li>
+<li>airframe-codec
+<ul>
+<li>Update msgpack-core to 0.8.18 (<a href="https://github.com/wvlet/airframe/issues/671">#671</a>) [<a href="https://github.com/wvlet/airframe/commit/3fbaecc">3fbaecc</a>]</li>
+</ul></li>
+<li>airframe-di</li>
+<li>Update javax.annotation-api to 1.3.2 (<a href="https://github.com/wvlet/airframe/issues/669">#669</a>) [<a href="https://github.com/wvlet/airframe/commit/1ca65c4">1ca65c4</a>]</li>
+<li>airframe-config
+<ul>
+<li>Use airframe-codec instead of airframe-tablet for mapping Yaml to Objects</li>
+<li>Update snakeyaml to 1.25 (<a href="https://github.com/wvlet/airframe/issues/679">#679</a>) [<a href="https://github.com/wvlet/airframe/commit/81ae0a9">81ae0a9</a>]</li>
+</ul></li>
+<li>internal changes:
+<ul>
+<li>Upgrade to sbt-sonatype 3.6 [<a href="https://github.com/wvlet/airframe/commit/5bc29f0">5bc29f0</a>]</li>
+<li>Upgrade to sbt 1.3.0 (<a href="https://github.com/wvlet/airframe/issues/662">#662</a>) [<a href="https://github.com/wvlet/airframe/commit/f6463e9">f6463e9</a>]</li>
+<li>Update scala-collection-compat to 2.1.2 (<a href="https://github.com/wvlet/airframe/issues/674">#674</a>) [<a href="https://github.com/wvlet/airframe/commit/2f1286d">2f1286d</a>]</li>
+<li>Update sbt-scalajs-crossproject to 0.6.1 (<a href="https://github.com/wvlet/airframe/issues/672">#672</a>) [<a href="https://github.com/wvlet/airframe/commit/8ff4256">8ff4256</a>]</li>
+<li>Update slf4j-jdk14 to 1.7.28 (<a href="https://github.com/wvlet/airframe/issues/677">#677</a>) [<a href="https://github.com/wvlet/airframe/commit/6111025">6111025</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1992"></a><a href="#1992" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.2</h2>
+<ul>
+<li>airframe-di: Fixes <a href="https://github.com/wvlet/airframe/issues/658">#658</a>. Do not remove shutdown hook thread while it is running (<a href="https://github.com/wvlet/airframe/issues/661">#661</a>) [<a href="https://github.com/wvlet/airframe/commit/60f35d3">60f35d3</a>]</li>
+<li>internal changes for Travis CI builds:
+<ul>
+<li>Add sonatypeDropAll before the release [<a href="https://github.com/wvlet/airframe/commit/5de0594">5de0594</a>]</li>
+<li>[doc] Support doc only release [<a href="https://github.com/wvlet/airframe/commit/25073d2">25073d2</a>]</li>
+<li>Split publish tasks (<a href="https://github.com/wvlet/airframe/issues/659">#659</a>) [<a href="https://github.com/wvlet/airframe/commit/1d72f22">1d72f22</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1991"></a><a href="#1991" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.1</h2>
+<ul>
+<li>airframe-di:
+<ul>
+<li>Fix an issue in 19.9.0 which closes Sessions unexpectedly by calling Session.close().</li>
+<li>Move lifecycle related code to wvlet.airframe.lifecycle (<a href="https://github.com/wvlet/airframe/issues/657">#657</a>) [<a href="https://github.com/wvlet/airframe/commit/a51927c">a51927c</a>]</li>
+<li>Deprecate LifeCycle trait as it confuses the owner of the resource when traits are mixed into other classes</li>
+</ul></li>
+<li>airframe-http-recorder: Reduce unecessary warning messages for in-memory recorders.</li>
+<li>internal: Revert to the previous release script [<a href="https://github.com/wvlet/airframe/commit/3f802b7">3f802b7</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1990"></a><a href="#1990" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.9.0</h2>
+<ul>
+<li>airframe-di: <a href="https://github.com/wvlet/airframe/issues/651">#651</a> Support design-time lifecycle hooks (<a href="https://github.com/wvlet/airframe/issues/655">#655</a>) [<a href="https://github.com/wvlet/airframe/commit/de526a5">de526a5</a>]</li>
+<li>airframe-di: Ensure running all shutdown hooks (<a href="https://github.com/wvlet/airframe/issues/653">#653</a>) [<a href="https://github.com/wvlet/airframe/commit/56cf14a">56cf14a</a>]</li>
+<li>airframe-di: Automatically register shutdown hooks for Closeable resources (<a href="https://github.com/wvlet/airframe/issues/645">#645</a>) [<a href="https://github.com/wvlet/airframe/commit/937342b">937342b</a>]</li>
+<li>~airframe-di: Add interfaces to define LifeCycle hooks~ (<a href="https://github.com/wvlet/airframe/issues/656">#656</a>) [<a href="https://github.com/wvlet/airframe/commit/cf161ec">cf161ec</a>]</li>
+<li>airframe-http: Fix Option[X] arg binding (<a href="https://github.com/wvlet/airframe/issues/642">#642</a>) [<a href="https://github.com/wvlet/airframe/commit/9e9e509">9e9e509</a>]</li>
+<li>airframe-http-finagle: Upgrade to Finagle 19.8.0 (<a href="https://github.com/wvlet/airframe/issues/652">#652</a>) [<a href="https://github.com/wvlet/airframe/commit/e30d400">e30d400</a>]</li>
+<li>airframe-msgpack: Add a stream json-msgpack converter (<a href="https://github.com/wvlet/airframe/issues/643">#643</a>) [<a href="https://github.com/wvlet/airframe/commit/b20fd4e">b20fd4e</a>]</li>
+<li>internal changes:
+<ul>
+<li>Release only Scala 2.12 projects for snapshots [<a href="https://github.com/wvlet/airframe/commit/b2a8d92">b2a8d92</a>]</li>
+<li>Upgrade to sbt 1.3.0-RC5 (<a href="https://github.com/wvlet/airframe/issues/647">#647</a>) [<a href="https://github.com/wvlet/airframe/commit/ff4d209">ff4d209</a>]</li>
+<li>Add note on airspec and aiframe-log integration [<a href="https://github.com/wvlet/airframe/commit/61af200">61af200</a>]</li>
+<li>Use scalafmt 2.0.1 syntax (<a href="https://github.com/wvlet/airframe/issues/654">#654</a>) [<a href="https://github.com/wvlet/airframe/commit/46eb9a1">46eb9a1</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="19810"></a><a href="#19810" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.10</h2>
+<ul>
+<li>airspec: synchonize logger cleanup to stabilize tests [<a href="https://github.com/wvlet/airframe/commit/121ef76">121ef76</a>]</li>
+<li>airframe-http-recorder: Avoid unnecessary db update [<a href="https://github.com/wvlet/airframe/commit/6353233">6353233</a>]</li>
+<li>airframe-http-client: use a consistent header customization order <a href="https://github.com/wvlet/airframe/issues/638">#638</a> (<a href="https://github.com/wvlet/airframe/issues/639">#639</a>) [<a href="https://github.com/wvlet/airframe/commit/576b9c9">576b9c9</a>]</li>
+<li>airframe-http-finagle: Make FinagleServer start/stop idempotent (<a href="https://github.com/wvlet/airframe/issues/637">#637</a>) [<a href="https://github.com/wvlet/airframe/commit/bc39b75">bc39b75</a>]</li>
+<li>airframe-surface: Support inner classes (<a href="https://github.com/wvlet/airframe/issues/635">#635</a>) [<a href="https://github.com/wvlet/airframe/commit/112a3f9">112a3f9</a>]</li>
+<li>airframe-di: Fix <a href="https://github.com/wvlet/airframe/issues/632">#632</a> to run inherited lifecycle hooks (<a href="https://github.com/wvlet/airframe/issues/633">#633</a>) [<a href="https://github.com/wvlet/airframe/commit/c9ccafe">c9ccafe</a>]</li>
+<li>internal changes:
+<ul>
+<li>Use a black theme for source code [<a href="https://github.com/wvlet/airframe/commit/c40b9c7">c40b9c7</a>]</li>
+<li>Update AirSpec doc [<a href="https://github.com/wvlet/airframe/commit/7d67f5e">7d67f5e</a>]</li>
+<li>Skip benchmark test on Travis CI [<a href="https://github.com/wvlet/airframe/commit/a55acb5">a55acb5</a>]</li>
+<li>Fix Fluency tests (<a href="https://github.com/wvlet/airframe/issues/636">#636</a>) [<a href="https://github.com/wvlet/airframe/commit/7df550b">7df550b</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1989"></a><a href="#1989" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.9</h2>
+<ul>
+<li>airspec: Support AirSpec.design, localDesign (<a href="https://github.com/wvlet/airframe/issues/631">#631</a>) [<a href="https://github.com/wvlet/airframe/commit/dfd7a86">dfd7a86</a>]
+<ul>
+<li>This also fixes an issue in finding test methods defined in sub classes.</li>
+</ul></li>
+<li>internal: Run tests in parallel (<a href="https://github.com/wvlet/airframe/issues/629">#629</a>) [<a href="https://github.com/wvlet/airframe/commit/779f80d">779f80d</a>]</li>
+<li>internal: Upgrade to sbt 1.3.0-RC4 (<a href="https://github.com/wvlet/airframe/issues/628">#628</a>) [<a href="https://github.com/wvlet/airframe/commit/5a0807b">5a0807b</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1988"></a><a href="#1988" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.8</h2>
+<ul>
+<li>airframe-http-recorder: Fix exclude flag behavior (<a href="https://github.com/wvlet/airframe/issues/627">#627</a>) [<a href="https://github.com/wvlet/airframe/commit/c73d8a7">c73d8a7</a>]</li>
+<li>airframe-http-client: Add HOST header if missing (<a href="https://github.com/wvlet/airframe/issues/626">#626</a>) [<a href="https://github.com/wvlet/airframe/commit/7d1c91e">7d1c91e</a>]</li>
+<li>airframe-di: Fix design option override (<a href="https://github.com/wvlet/airframe/issues/625">#625</a>) [<a href="https://github.com/wvlet/airframe/commit/576fab7">576fab7</a>]</li>
+<li>airspec: Support skipping the whole spec (<a href="https://github.com/wvlet/airframe/issues/624">#624</a>) [<a href="https://github.com/wvlet/airframe/commit/f7d5f59">f7d5f59</a>]</li>
+<li>airframe-http-finagle: Add sendRaw(request) (<a href="https://github.com/wvlet/airframe/issues/623">#623</a>) [<a href="https://github.com/wvlet/airframe/commit/c54da5e">c54da5e</a>]</li>
+<li>airspec: Add inCicleCI (<a href="https://github.com/wvlet/airframe/issues/622">#622</a>) [<a href="https://github.com/wvlet/airframe/commit/972f9bf">972f9bf</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1987"></a><a href="#1987" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.7</h2>
+<ul>
+<li>airframe-http-recorder: Store records to .airframe folder (<a href="https://github.com/wvlet/airframe/issues/619">#619</a>) [<a href="https://github.com/wvlet/airframe/commit/e22b5ed">e22b5ed</a>]</li>
+<li>airframe-http-recorder: Support custom http request matchers (<a href="https://github.com/wvlet/airframe/issues/618">#618</a>) [<a href="https://github.com/wvlet/airframe/commit/37aea23">37aea23</a>]</li>
+<li>Upgrade to sbt-dyvner 4.0.0 (<a href="https://github.com/wvlet/airframe/issues/617">#617</a>) [<a href="https://github.com/wvlet/airframe/commit/02fee65">02fee65</a>]</li>
+<li>Upgrade scalafmt to 2.0.1 (<a href="https://github.com/wvlet/airframe/issues/616">#616</a>) [<a href="https://github.com/wvlet/airframe/commit/4112e95">4112e95</a>]</li>
+<li>airspec: Add airspec-light project settings (<a href="https://github.com/wvlet/airframe/issues/615">#615</a>) [<a href="https://github.com/wvlet/airframe/commit/34e56f6">34e56f6</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1986"></a><a href="#1986" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.6</h2>
+<ul>
+<li>airspec
+<ul>
+<li>Fix shouldNotBe null error message [<a href="https://github.com/wvlet/airframe/commit/c869db1">c869db1</a>]</li>
+<li><a href="https://github.com/wvlet/airframe/issues/612">#612</a>: Fixes java.lang.ClassNotFoundException: scala.reflect.api.Trees (<a href="https://github.com/wvlet/airframe/issues/613">#613</a>) [<a href="https://github.com/wvlet/airframe/commit/06b70d8">06b70d8</a>]</li>
+<li><a href="https://github.com/wvlet/airframe/issues/610">#610</a>: Avoid registering JVM shutdown hooks in airspec sessions (<a href="https://github.com/wvlet/airframe/issues/611">#611</a>) [<a href="https://github.com/wvlet/airframe/commit/44b84d3">44b84d3</a>]</li>
+</ul></li>
+<li>internal: Upgrade to sbt 1.3.0-RC3 with turbo mode (<a href="https://github.com/wvlet/airframe/issues/614">#614</a>) [<a href="https://github.com/wvlet/airframe/commit/59d9d48">59d9d48</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1985"></a><a href="#1985" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.5</h2>
+<ul>
+<li>airspec: Fix log message duplication issue (<a href="https://github.com/wvlet/airframe/issues/609">#609</a>) [<a href="https://github.com/wvlet/airframe/commit/4536123">4536123</a>]</li>
+<li>airspec: Support shouldBe null (<a href="https://github.com/wvlet/airframe/issues/607">#607</a>) [<a href="https://github.com/wvlet/airframe/commit/78c87dd">78c87dd</a>]</li>
+<li>airframe-log: Handle InstanceAlreadyExistsException at logger JMX mbeam registration (<a href="https://github.com/wvlet/airframe/issues/608">#608</a>) [<a href="https://github.com/wvlet/airframe/commit/bd13110">bd13110</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1984"></a><a href="#1984" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.4</h2>
+<ul>
+<li>AirSpec is renamed to a simple package <code>wvlet.airspec</code>.
+<ul>
+<li>airspec: Rename to wvlet.airspec (<a href="https://github.com/wvlet/airframe/issues/605">#605</a>) [<a href="https://github.com/wvlet/airframe/commit/6d6ff91">6d6ff91</a>]</li>
+<li>airspec: Add optional PropertyBased testing [<a href="https://github.com/wvlet/airframe/commit/9fbe8ca">9fbe8ca</a>]</li>
+<li>airspec: <a href="https://github.com/wvlet/airframe/issues/597">#597</a>: Add AirSpecContext to run nested tests (<a href="https://github.com/wvlet/airframe/issues/602">#602</a>) [<a href="https://github.com/wvlet/airframe/commit/a41211a">a41211a</a>]</li>
+<li>Make airspec an all-in-jar (<a href="https://github.com/wvlet/airframe/issues/601">#601</a>) [<a href="https://github.com/wvlet/airframe/commit/18d3970">18d3970</a>]</li>
+<li>airspec: Add assertEquals(a, b, delta) [<a href="https://github.com/wvlet/airframe/commit/2ca677a">2ca677a</a>]</li>
+<li>airspec: Add inTravisCI checker [<a href="https://github.com/wvlet/airframe/commit/9302a70">9302a70</a>]</li>
+<li>airspec: Return Nothing for asserts throwing exceptions [<a href="https://github.com/wvlet/airframe/commit/7fb68e2">7fb68e2</a>]</li>
+<li>Migrated all airframe module tests from ScalaTest to AirSpec</li>
+</ul></li>
+<li>airframe-surface: disable createObjectFactry for abstract classes in Scala.js [<a href="https://github.com/wvlet/airframe/commit/45b22ac">45b22ac</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1983"></a><a href="#1983" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.3</h2>
+<ul>
+<li>AirSpec:
+<ul>
+<li>airspec is now a standalone project without any cyclic dependencies to airframe module (<a href="https://github.com/wvlet/airframe/issues/592">#592</a>) [<a href="https://github.com/wvlet/airframe/commit/d0db028">d0db028</a>]</li>
+<li>Support shouldBe matchers (<a href="https://github.com/wvlet/airframe/issues/590">#590</a>) [<a href="https://github.com/wvlet/airframe/commit/0caf159">0caf159</a>]</li>
+<li>Always use ANSI color logs for Travis CI (<a href="https://github.com/wvlet/airframe/issues/596">#596</a>) [<a href="https://github.com/wvlet/airframe/commit/1c791fd">1c791fd</a>]</li>
+</ul></li>
+<li>internal chaange: airframe-control: Use AirSpec for test cases (<a href="https://github.com/wvlet/airframe/issues/594">#594</a>) [<a href="https://github.com/wvlet/airframe/commit/d08c603">d08c603</a>]</li>
+<li>Upgrade to Scala.js 0.6.28 (<a href="https://github.com/wvlet/airframe/issues/593">#593</a>) [<a href="https://github.com/wvlet/airframe/commit/00e88ab">00e88ab</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1982"></a><a href="#1982" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.2</h2>
+<ul>
+<li>airspec: Use airframe-log for AirSpec logging for improving the log messages (<a href="https://github.com/wvlet/airframe/issues/584">#584</a>) [<a href="https://github.com/wvlet/airframe/commit/857ae2c">857ae2c</a>]</li>
+<li>internal: Migrate test cases of airframe-log/surface to airspec</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1981"></a><a href="#1981" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.1</h2>
+<ul>
+<li><strong>AirSpec</strong>: Added a new function-based testing library for Scala and Scala.js <a href="https://github.com/wvlet/airframe/pull/580">#580</a>
+<ul>
+<li>source code: <a href="https://github.com/wvlet/airframe/tree/master/airspec">https://github.com/wvlet/airframe/tree/master/airspec</a></li>
+</ul></li>
+<li>airframe-scalatest: Rename airframe-spec to airframe-scalatest [<a href="https://github.com/wvlet/airframe/commit/51f8922">51f8922</a>]</li>
+<li>airframe-surfaace: Support symbolic method names in Scala.js [<a href="https://github.com/wvlet/airframe/commit/57d67fe">57d67fe</a>]</li>
+<li>airframe-surface: Sort methodSurface based on the source code order [<a href="https://github.com/wvlet/airframe/commit/bdf1a86">bdf1a86</a>]</li>
+<li>Handle ClassNotFound issue of sbt-1.3.x by cleaning-up all custom LogHandlers [<a href="https://github.com/wvlet/airframe/commit/e70ab0d">e70ab0d</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1980"></a><a href="#1980" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.8.0</h2>
+<ul>
+<li>airframe-http-recorder: Support binary requests and responses (<a href="https://github.com/wvlet/airframe/issues/579">#579</a>) [<a href="https://github.com/wvlet/airframe/commit/a0c5894">a0c5894</a>]</li>
+<li>airframe-http-recorder: Support custom recording  (<a href="https://github.com/wvlet/airframe/issues/578">#578</a>) [<a href="https://github.com/wvlet/airframe/commit/d9b8ed2">d9b8ed2</a>]</li>
+<li>airframe-json: Throw IntegerOverflow exceptions for too big numbers (<a href="https://github.com/wvlet/airframe/issues/575">#575</a>) [<a href="https://github.com/wvlet/airframe/commit/0e541ee">0e541ee</a>]</li>
+<li>airframe-benchmark: Aggregate benchmark programs (msgpack-benchmark, json-benchmark) into one project (<a href="https://github.com/wvlet/airframe/issues/573">#573</a>) [<a href="https://github.com/wvlet/airframe/commit/67656ba">67656ba</a>]</li>
+<li><a href="https://github.com/wvlet/airframe/issues/475">#475</a>: Use Scala 2.13 compatible collection syntaxes (<a href="https://github.com/wvlet/airframe/issues/572">#572</a>) [<a href="https://github.com/wvlet/airframe/commit/6f20a16">6f20a16</a>]</li>
+<li>airframe-json: Use exhaustive match for JSONValue.value (<a href="https://github.com/wvlet/airframe/issues/571">#571</a>) [<a href="https://github.com/wvlet/airframe/commit/f138d74">f138d74</a>]</li>
+<li>airframe-http: Support Router.add[Filter], andThen[Filter] (<a href="https://github.com/wvlet/airframe/issues/570">#570</a>) [<a href="https://github.com/wvlet/airframe/commit/8335c39">8335c39</a>]</li>
+<li>airframe-http: Wrap exceptions with Future for each filter and context (<a href="https://github.com/wvlet/airframe/issues/569">#569</a>) [<a href="https://github.com/wvlet/airframe/commit/1324385">1324385</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1976"></a><a href="#1976" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.6</h2>
+<ul>
+<li>airframe-http-recorder: <a href="https://github.com/wvlet/airframe/issues/559">#559</a> Support expiration (<a href="https://github.com/wvlet/airframe/issues/567">#567</a>) [<a href="https://github.com/wvlet/airframe/commit/32a0224">32a0224</a>]</li>
+<li>airframe-http: Allow setting FinagleServer name (<a href="https://github.com/wvlet/airframe/issues/566">#566</a>) [<a href="https://github.com/wvlet/airframe/commit/3f810f1">3f810f1</a>]</li>
+<li>airframe-http: Return the last failed response with HttpClientException (<a href="https://github.com/wvlet/airframe/issues/565">#565</a>) [<a href="https://github.com/wvlet/airframe/commit/2099555">2099555</a>]</li>
+<li>airframe-http-recorder: Exclude unnecessary request headers from records (<a href="https://github.com/wvlet/airframe/issues/563">#563</a>) [<a href="https://github.com/wvlet/airframe/commit/2246316">2246316</a>]</li>
+<li>airframe-http-recorder: Exclude Date header from request hash (<a href="https://github.com/wvlet/airframe/issues/562">#562</a>) [<a href="https://github.com/wvlet/airframe/commit/8b75221">8b75221</a>]</li>
+<li>airframe-http-recorder: Use case-insensitive request hashing (<a href="https://github.com/wvlet/airframe/issues/561">#561</a>) [<a href="https://github.com/wvlet/airframe/commit/20467a6">20467a6</a>]</li>
+<li>airframe-http-recorder: Add createRecorderProxy (<a href="https://github.com/wvlet/airframe/issues/557">#557</a>) [<a href="https://github.com/wvlet/airframe/commit/bbba4db">bbba4db</a>]</li>
+<li>Rename airframe-macros to airframe-di-macros (<a href="https://github.com/wvlet/airframe/issues/560">#560</a>) [<a href="https://github.com/wvlet/airframe/commit/9a6e871">9a6e871</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1975"></a><a href="#1975" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.5</h2>
+<ul>
+<li>airframe-http: Support reading raw response as is (<a href="https://github.com/wvlet/airframe/issues/553">#553</a>) [<a href="https://github.com/wvlet/airframe/commit/1ccedae">1ccedae</a>]</li>
+<li>airframe-http-client: Add getResource for GET with query strings (<a href="https://github.com/wvlet/airframe/issues/552">#552</a>) [<a href="https://github.com/wvlet/airframe/commit/fd5849c">fd5849c</a>]</li>
+<li>airframe-http-client: Support customizing http requests <a href="https://github.com/wvlet/airframe/issues/550">#550</a> (<a href="https://github.com/wvlet/airframe/issues/551">#551</a>) [<a href="https://github.com/wvlet/airframe/commit/1542beb">1542beb</a>]</li>
+<li>airframe-http: Add HttpFilter support to Router (<a href="https://github.com/wvlet/airframe/issues/540">#540</a>) [<a href="https://github.com/wvlet/airframe/commit/1cb7096">1cb7096</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1974"></a><a href="#1974" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.4</h2>
+<ul>
+<li>airframe-log: GraalVM support (<a href="https://github.com/wvlet/airframe/issues/549">#549</a>) [<a href="https://github.com/wvlet/airframe/commit/df8b408">df8b408</a>]</li>
+<li>airframe-http: Fix over routing in airframe-http (<a href="https://github.com/wvlet/airframe/issues/547">#547</a>) [<a href="https://github.com/wvlet/airframe/commit/4eb6245">4eb6245</a>]</li>
+<li>airframe-config: Allow reading config files from classpath, and add more examples (<a href="https://github.com/wvlet/airframe/issues/544">#544</a>) [<a href="https://github.com/wvlet/airframe/commit/697b04e">697b04e</a>]</li>
+<li>airframe-json: Reuse StringBuilder <a href="https://github.com/wvlet/airframe/issues/381">#381</a> (<a href="https://github.com/wvlet/airframe/issues/546">#546</a>) [<a href="https://github.com/wvlet/airframe/commit/04bd01f">04bd01f</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1973"></a><a href="#1973" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.3</h2>
+<ul>
+<li>airframe-metrics: Add TimeWindow.howMany(unit), minutesDiff, etc. (<a href="https://github.com/wvlet/airframe/issues/545">#545</a>) [<a href="https://github.com/wvlet/airframe/commit/77f7be9">77f7be9</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1972"></a><a href="#1972" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.2</h2>
+<ul>
+<li>Use map type MessagePack for ObjectCodec (<a href="https://github.com/wvlet/airframe/issues/541">#541</a>) [<a href="https://github.com/wvlet/airframe/commit/0ffbcf1">0ffbcf1</a>]</li>
+<li>Fixed compile errors (<a href="https://github.com/wvlet/airframe/issues/543">#543</a>) [<a href="https://github.com/wvlet/airframe/commit/e480e94">e480e94</a>]</li>
+<li>Fix typo <code>%%</code> -&gt; <code>%</code> (<a href="https://github.com/wvlet/airframe/issues/542">#542</a>) [<a href="https://github.com/wvlet/airframe/commit/0f6d1f9">0f6d1f9</a>]</li>
+<li>airframe-json: Seq[JSONValue].value (<a href="https://github.com/wvlet/airframe/issues/539">#539</a>) [<a href="https://github.com/wvlet/airframe/commit/b86f1f8">b86f1f8</a>]</li>
+<li>airframe-json: DSL for JSON extraction (<a href="https://github.com/wvlet/airframe/issues/538">#538</a>) [<a href="https://github.com/wvlet/airframe/commit/21a6204">21a6204</a>]</li>
+<li>Workaround for sbt 1.3.0-RC2 class loader issue for JMX test (<a href="https://github.com/wvlet/airframe/issues/537">#537</a>) [<a href="https://github.com/wvlet/airframe/commit/a031ea7">a031ea7</a>]</li>
+<li>AnyCodec (<a href="https://github.com/wvlet/airframe/issues/536">#536</a>) [<a href="https://github.com/wvlet/airframe/commit/5cb1944">5cb1944</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1971"></a><a href="#1971" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.1</h2>
+<ul>
+<li>airframe-http: Fix routing when common token is present in the path (<a href="https://github.com/wvlet/airframe/issues/535">#535</a>) [<a href="https://github.com/wvlet/airframe/commit/abdea65">abdea65</a>]</li>
+<li>Add example of programmable http-recorder (<a href="https://github.com/wvlet/airframe/issues/532">#532</a>) [<a href="https://github.com/wvlet/airframe/commit/cbab375">cbab375</a>]</li>
+<li>fix type annotation syntax (<a href="https://github.com/wvlet/airframe/issues/534">#534</a>) [<a href="https://github.com/wvlet/airframe/commit/1b3daa1">1b3daa1</a>]</li>
+<li>remove unused string interpolations (<a href="https://github.com/wvlet/airframe/issues/533">#533</a>) [<a href="https://github.com/wvlet/airframe/commit/a2267ac">a2267ac</a>]</li>
+<li>airframe-http-finagle: Upgrade to Finagle 19.6.0 to support chunked reader [<a href="https://github.com/wvlet/airframe/commit/61a0316">61a0316</a>]</li>
+<li>airframe-http-client: Add requestFilter [<a href="https://github.com/wvlet/airframe/commit/c32ba1e">c32ba1e</a>]</li>
+<li>airframe-di: Show binding line numbers (<a href="https://github.com/wvlet/airframe/issues/530">#530</a>) [<a href="https://github.com/wvlet/airframe/commit/a136907">a136907</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1970"></a><a href="#1970" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.7.0</h2>
+<ul>
+<li>airframe-http-recorder: Programmable HTTP mock server (<a href="https://github.com/wvlet/airframe/issues/529">#529</a>) [<a href="https://github.com/wvlet/airframe/commit/f33cdba">f33cdba</a>]</li>
+<li>HTTP support in http-recorder (<a href="https://github.com/wvlet/airframe/issues/527">#527</a>) [<a href="https://github.com/wvlet/airframe/commit/4365522">4365522</a>]</li>
+<li>airframe-control: Add Retry.retryable/nonRetryableFailure method (<a href="https://github.com/wvlet/airframe/issues/524">#524</a>) [<a href="https://github.com/wvlet/airframe/commit/4a7744b">4a7744b</a>]</li>
+<li>airframe-codec: Add convenient methods to convert JSON &lt;-&gt; Scala object (<a href="https://github.com/wvlet/airframe/issues/519">#519</a>) [<a href="https://github.com/wvlet/airframe/commit/0c6bd55">0c6bd55</a>]</li>
+<li>airframe-codec: <a href="https://github.com/wvlet/airframe/issues/513">#513</a>: Handle empty inputs at unpackJson and unpackMsgPack (<a href="https://github.com/wvlet/airframe/issues/514">#514</a>) [<a href="https://github.com/wvlet/airframe/commit/99d9cc6">99d9cc6</a>]</li>
+<li>internal: Upgrade to sbt-1.3.0-RC2 (<a href="https://github.com/wvlet/airframe/issues/510">#510</a>) [<a href="https://github.com/wvlet/airframe/commit/3583430">3583430</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1961"></a><a href="#1961" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.6.1</h2>
+<ul>
+<li>Upgrade to Scala 2.13.0 (<a href="https://github.com/wvlet/airframe/issues/508">#508</a>) [<a href="https://github.com/wvlet/airframe/commit/8f6729d">8f6729d</a>]</li>
+<li>airframe-fluentd: Bump to Fluency 2.3.2 (<a href="https://github.com/wvlet/airframe/issues/507">#507</a>) [<a href="https://github.com/wvlet/airframe/commit/1339ec5">1339ec5</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1960"></a><a href="#1960" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.6.0</h2>
+<ul>
+<li>surface: Use context class loader to fix <a href="https://github.com/sbt/sbt/issues/4760">sbt/sbt#4760</a> (<a href="https://github.com/wvlet/airframe/issues/506">#506</a>) [<a href="https://github.com/wvlet/airframe/commit/f5d9dd8">f5d9dd8</a>]</li>
+<li>metrics: Support exact start dates in TimeWindow (<a href="https://github.com/wvlet/airframe/issues/505">#505</a>) [<a href="https://github.com/wvlet/airframe/commit/23a91b9">23a91b9</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1952"></a><a href="#1952" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.5.2</h2>
+<ul>
+<li>Upgrade to Scala 2.13.0-RC3 (<a href="https://github.com/wvlet/airframe/issues/503">#503</a>) [<a href="https://github.com/wvlet/airframe/commit/4c54d79">4c54d79</a>]</li>
+<li>Add more airframe examples (<a href="https://github.com/wvlet/airframe/issues/502">#502</a>) [<a href="https://github.com/wvlet/airframe/commit/2b4b06a">2b4b06a</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1951"></a><a href="#1951" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.5.1</h2>
+<ul>
+<li>Support Scala 2.13.0-RC2 (<a href="https://github.com/wvlet/airframe/issues/500">#500</a>) [<a href="https://github.com/wvlet/airframe/commit/7c3b329">7c3b329</a>]</li>
+<li>Recover Scala 2.11 build as Spark 2.4.x still uses this Scala version for a while. (<a href="https://github.com/wvlet/airframe/issues/498">#498</a>) [<a href="https://github.com/wvlet/airframe/commit/30561c7">30561c7</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1950"></a><a href="#1950" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.5.0</h2>
+<ul>
+<li>The first release of the new Reiwa era!</li>
+<li>From this version, we will no longer support Scala 2.11. This is because Spark 2.4.2 now uses Scala 2.12 by default, and Spark has been the only reason for us to keep maintaining Airframe releases for Scala 2.11. (<a href="https://github.com/wvlet/airframe/issues/496">#496</a>) [<a href="https://github.com/wvlet/airframe/commit/4e37be8">4e37be8</a>]</li>
+<li>Add more <a href="https://github.com/wvlet/airframe/tree/master/examples/src/main/scala/wvlet/airframe/examples/di">Airframe DI code examples</a> (<a href="https://github.com/wvlet/airframe/issues/495">#495</a>) [<a href="https://github.com/wvlet/airframe/commit/8d3b311">8d3b311</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1942"></a><a href="#1942" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.4.2</h2>
+<ul>
+<li>airframe-http: Add HttpClient (<a href="https://github.com/wvlet/airframe/issues/482">#482</a>) [<a href="https://github.com/wvlet/airframe/commit/4bb9463">4bb9463</a>]</li>
+<li>airframe-control: Simplified Retry interface so that it can be used as an independent module.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1941"></a><a href="#1941" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.4.1</h2>
+<ul>
+<li>Add Scala 2.13.0-RC1 support. (<a href="https://github.com/wvlet/airframe/issues/487">#487</a>) [<a href="https://github.com/wvlet/airframe/commit/3eb68a8">3eb68a8</a>]</li>
+<li>airframe: Support DI tracing and coverage stats (<a href="https://github.com/wvlet/airframe/issues/486">#486</a>) [<a href="https://github.com/wvlet/airframe/commit/143c629">143c629</a>]</li>
+<li>airframe-control: Add trace logs and JMX monitoring to Parallel (<a href="https://github.com/wvlet/airframe/issues/481">#481</a>) [<a href="https://github.com/wvlet/airframe/commit/29141a5">29141a5</a>]</li>
+<li>airframe-codec: Support JSONValue, Json (raw json string)  (<a href="https://github.com/wvlet/airframe/issues/484">#484</a>) [<a href="https://github.com/wvlet/airframe/commit/70022a4">70022a4</a>]</li>
+<li>Add airframe code [examples (<a href="https://github.com/wvlet/airframe/issues/485">#485</a>) [<a href="https://github.com/wvlet/airframe/commit/2e585b9">2e585b9</a>]</li>
+<li>internal: Replace fluentd-standalone to MockFluentd (<a href="https://github.com/wvlet/airframe/issues/488">#488</a>) [<a href="https://github.com/wvlet/airframe/commit/fd7d075">fd7d075</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1940"></a><a href="#1940" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.4.0</h2>
+<ul>
+<li>airframe-http: Fix shared http path prefix match (<a href="https://github.com/wvlet/airframe/issues/483">#483</a>) [<a href="https://github.com/wvlet/airframe/commit/a0cb0b0">a0cb0b0</a>]</li>
+<li>airframe-http: NFA-based fast HTTP route mapping (<a href="https://github.com/wvlet/airframe/issues/469">#469</a>) [<a href="https://github.com/wvlet/airframe/commit/27d2193">27d2193</a>]</li>
+<li>airframe-jmx: Fix JMX methods extraction (<a href="https://github.com/wvlet/airframe/issues/480">#480</a>) [<a href="https://github.com/wvlet/airframe/commit/6c9e628">6c9e628</a>]</li>
+<li>airframe-codec: Make hasNext idempotent as a workaround for <a href="https://github.com/scala/bug/issues/11453">https://github.com/scala/bug/issues/11453</a> (<a href="https://github.com/wvlet/airframe/issues/471">#471</a>) [<a href="https://github.com/wvlet/airframe/commit/6c542eb">6c542eb</a>]</li>
+<li>internal: Remove Stream[X] usage for Scala 2.13.0 compatibility (<a href="https://github.com/wvlet/airframe/issues/477">#477</a>) [<a href="https://github.com/wvlet/airframe/commit/d92426f">d92426f</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1937"></a><a href="#1937" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.7</h2>
+<ul>
+<li>airframe-jmx: Add the default JMXAgent(<a href="https://github.com/wvlet/airframe/issues/465">#465</a>) [<a href="https://github.com/wvlet/airframe/commit/f9937e5">f9937e5</a>]</li>
+<li>airframe-jmx: Fix the registration of Scala-specific class names (<a href="https://github.com/wvlet/airframe/issues/461">#461</a>) [<a href="https://github.com/wvlet/airframe/commit/f853bf0">f853bf0</a>]</li>
+<li>airframe-http: Remove the unnecessary finatra dependency (<a href="https://github.com/wvlet/airframe/issues/464">#464</a>) [<a href="https://github.com/wvlet/airframe/commit/681b006">681b006</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1936"></a><a href="#1936" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.6</h2>
+<ul>
+<li>airframe-json: Add JSON.parseAny(json) (<a href="https://github.com/wvlet/airframe/issues/458">#458</a>) [<a href="https://github.com/wvlet/airframe/commit/bce0589">bce0589</a>]</li>
+<li>airframe-http: Support Router.add[X].add[Y]... syntax (<a href="https://github.com/wvlet/airframe/issues/456">#456</a>) [<a href="https://github.com/wvlet/airframe/commit/0ec6430">0ec6430</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1935"></a><a href="#1935" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.5</h2>
+<ul>
+<li>airframe-http: Accept: application/x-msgpack response support (<a href="https://github.com/wvlet/airframe/issues/448">#448</a>) [<a href="https://github.com/wvlet/airframe/commit/ccb55b7">ccb55b7</a>]</li>
+<li>airframe-http: Support non-JSON content body (<a href="https://github.com/wvlet/airframe/issues/446">#446</a>) [<a href="https://github.com/wvlet/airframe/commit/f351916">f351916</a>]</li>
+<li>airframe-http: Show the cause of an exception upon an internal server error (<a href="https://github.com/wvlet/airframe/issues/447">#447</a>) [<a href="https://github.com/wvlet/airframe/commit/52a6b02">52a6b02</a>]</li>
+<li>airframe-http-finagle: Upgrade to Finagle 19.2.0 (<a href="https://github.com/wvlet/airframe/issues/442">#442</a>) [<a href="https://github.com/wvlet/airframe/commit/f6d3941">f6d3941</a>]</li>
+<li>airframe-codec: Support MsgPack type (= Array[Byte]) codec (<a href="https://github.com/wvlet/airframe/issues/441">#441</a>) [<a href="https://github.com/wvlet/airframe/commit/5923aac">5923aac</a>]</li>
+<li>airframe-codec: <a href="https://github.com/wvlet/airframe/issues/437">#437</a> Case-insensitive enum mapping (<a href="https://github.com/wvlet/airframe/issues/439">#439</a>) [<a href="https://github.com/wvlet/airframe/commit/5b26e5a">5b26e5a</a>]</li>
+<li>airframe-jdbc: Upgrade sqlite-jdbc to 3.27.2 for upsert support (<a href="https://github.com/wvlet/airframe/issues/445">#445</a>) [<a href="https://github.com/wvlet/airframe/commit/b7f3a57">b7f3a57</a>]</li>
+<li>airframe-surface: Add Zero.register(surface, A) (<a href="https://github.com/wvlet/airframe/issues/440">#440</a>) [<a href="https://github.com/wvlet/airframe/commit/f16002f">f16002f</a>]</li>
+<li>airframe-launcher: Fixes <a href="https://github.com/wvlet/airframe/issues/435">#435</a>. Hide the default command from the help message (<a href="https://github.com/wvlet/airframe/issues/438">#438</a>) [<a href="https://github.com/wvlet/airframe/commit/bcdd154">bcdd154</a>]</li>
+<li>airframe-msgpack: Add a msgpack benchmark using JMH (<a href="https://github.com/wvlet/airframe/issues/437">#437</a>) [<a href="https://github.com/wvlet/airframe/commit/e5f8526">e5f8526</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1934"></a><a href="#1934" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.4</h2>
+<ul>
+<li>airframe-http-finagle: Fixes <a href="https://github.com/wvlet/airframe/issues/432">#432</a>: Router should be given from FinagleServerConfig (<a href="https://github.com/wvlet/airframe/issues/433">#433</a>) [<a href="https://github.com/wvlet/airframe/commit/a6a0687">a6a0687</a>]</li>
+<li>airframe-sql: Embed table names into query signatures (<a href="https://github.com/wvlet/airframe/issues/431">#431</a>) [<a href="https://github.com/wvlet/airframe/commit/37e8f7a">37e8f7a</a>]</li>
+<li>airframe-control: Implicit classes for parallel map syntax sugar (<a href="https://github.com/wvlet/airframe/issues/429">#429</a>) [<a href="https://github.com/wvlet/airframe/commit/09dd9d8">09dd9d8</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1933"></a><a href="#1933" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.3</h2>
+<ul>
+<li>airframe-http-finagle: Support adding tracing to FinagleServer (<a href="https://github.com/wvlet/airframe/issues/430">#430</a>) [<a href="https://github.com/wvlet/airframe/commit/1ab7281">1ab7281</a>]
+<ul>
+<li>Since this version <code>Router</code> needs to be included in <code>FinagleServerConfig(port, router)</code> instead of using <code>bind[Router]</code></li>
+</ul></li>
+<li>airframe-fluentd: Upgrade to Fluency 2.1.0 and disable SSL by default (<a href="https://github.com/wvlet/airframe/issues/428">#428</a>) [<a href="https://github.com/wvlet/airframe/commit/bb3498e">bb3498e</a>]</li>
+<li>airframe-sql: A new module for SQL parsier and logical query plan models</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1932"></a><a href="#1932" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.2</h2>
+<ul>
+<li>airframe: Fix compilation error of bind[X].toInstance when using scope-local objects (<a href="https://github.com/wvlet/airframe/issues/423">#423</a>) [<a href="https://github.com/wvlet/airframe/commit/4840a93">4840a93</a>]</li>
+<li>airframe-json: Fix StackOverflowError when parsing large arrays of JSONObjects (<a href="https://github.com/wvlet/airframe/issues/421">#421</a>) [<a href="https://github.com/wvlet/airframe/commit/1ef5a02">1ef5a02</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1931"></a><a href="#1931" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.1</h2>
+<ul>
+<li>airframe-http: Allow more flexible http path routing (<a href="https://github.com/wvlet/airframe/issues/418">#418</a>) [<a href="https://github.com/wvlet/airframe/commit/76b7995">76b7995</a>]</li>
+<li>Add airframe overview illustration [<a href="https://github.com/wvlet/airframe/commit/3cbdb45">3cbdb45</a>]</li>
+<li>Add README for modules (<a href="https://github.com/wvlet/airframe/issues/416">#416</a>) [<a href="https://github.com/wvlet/airframe/commit/93e1b89">93e1b89</a>]</li>
+<li>Move launcher annotations to Java src folder to reduce compiler warnings [<a href="https://github.com/wvlet/airframe/commit/ce58f6e">ce58f6e</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1930"></a><a href="#1930" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.3.0</h2>
+<ul>
+<li><a href="https://github.com/wvlet/airframe/issues/413">#413</a>: Add a workaround for bind[X].toInstance(...) compilation error [<a href="https://github.com/wvlet/airframe/commit/9d0da31">9d0da31</a>]</li>
+<li>Fixes <a href="https://github.com/wvlet/airframe/issues/373">#373</a> Resolve build[X] compilation error in Scala 2.12 [<a href="https://github.com/wvlet/airframe/commit/31c929c">31c929c</a>]</li>
+<li>Support reading String as JSON array or map (<a href="https://github.com/wvlet/airframe/issues/411">#411</a>) [<a href="https://github.com/wvlet/airframe/commit/b5e4956">b5e4956</a>]</li>
+<li>Add ResultSetCodec.toJsonSeq (<a href="https://github.com/wvlet/airframe/issues/409">#409</a>) [<a href="https://github.com/wvlet/airframe/commit/61c9627">61c9627</a>]</li>
+<li>airframe-control: Add a simple library Parallel for parallel execution (<a href="https://github.com/wvlet/airframe/issues/406">#406</a>) [<a href="https://github.com/wvlet/airframe/commit/e04166e">e04166e</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1921"></a><a href="#1921" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.2.1</h2>
+<ul>
+<li>airframe-fluentd: Fluency 2.0 based Fluentd interface (<a href="https://github.com/wvlet/airframe/issues/404">#404</a>) [<a href="https://github.com/wvlet/airframe/commit/bd9d75e">bd9d75e</a>]</li>
+<li>airframe-codec: Add MessageCodec.toJson (<a href="https://github.com/wvlet/airframe/issues/405">#405</a>) [<a href="https://github.com/wvlet/airframe/commit/8fbdcab">8fbdcab</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="1920"></a><a href="#1920" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>19.2.0</h2>
+<ul>
+<li>From this version, we will use <code>YY.MM.(patch)</code> version numbers.</li>
+<li>Add codecs for airframe-metrics (<a href="https://github.com/wvlet/airframe/issues/403">#403</a>) [<a href="https://github.com/wvlet/airframe/commit/112d2f6">112d2f6</a>]</li>
+<li>Add MessageCodec.unpackJson (<a href="https://github.com/wvlet/airframe/issues/402">#402</a>) [<a href="https://github.com/wvlet/airframe/commit/cc0f9b3">cc0f9b3</a>]</li>
+<li>Add Design.empty (<a href="https://github.com/wvlet/airframe/issues/398">#398</a>) [<a href="https://github.com/wvlet/airframe/commit/bbeaa06">bbeaa06</a>]</li>
+<li>Use @command(isDefault=true) instead of @defaultCommand (<a href="https://github.com/wvlet/airframe/issues/397">#397</a>) [<a href="https://github.com/wvlet/airframe/commit/55439e5">55439e5</a>]</li>
+<li>Add translucent background logo [<a href="https://github.com/wvlet/airframe/commit/e2b0ac2">e2b0ac2</a>]</li>
+<li>Add codecs for converting JDBC ResultSets to msgpack (<a href="https://github.com/wvlet/airframe/issues/391">#391</a>) [<a href="https://github.com/wvlet/airframe/commit/9d0f29b">9d0f29b</a>]</li>
+<li>Add ServerAddress for passing host and port data (<a href="https://github.com/wvlet/airframe/issues/390">#390</a>) [<a href="https://github.com/wvlet/airframe/commit/3b7e083">3b7e083</a>]</li>
+<li>Upgrade to scala.js 0.26 (<a href="https://github.com/wvlet/airframe/issues/388">#388</a>) [<a href="https://github.com/wvlet/airframe/commit/a415c71">a415c71</a>]</li>
+<li>Add airframe-http-recorder (<a href="https://github.com/wvlet/airframe/issues/380">#380</a>) [<a href="https://github.com/wvlet/airframe/commit/d34702f">d34702f</a>]</li>
+<li>Upgrade Finagle to 19.1.0 (<a href="https://github.com/wvlet/airframe/issues/379">#379</a>) [<a href="https://github.com/wvlet/airframe/commit/a211073">a211073</a>]</li>
+<li>Add airframe-canvas, an off-heap memory buffer library (<a href="https://github.com/wvlet/airframe/issues/367">#367</a>) [<a href="https://github.com/wvlet/airframe/commit/e55a3f4">e55a3f4</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="080"></a><a href="#080" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.80</h2>
+<ul>
+<li>Add ArrayJSONCodec to parse JSON array string (<a href="https://github.com/wvlet/airframe/issues/375">#375</a>) [<a href="https://github.com/wvlet/airframe/commit/8c624a7">8c624a7</a>]</li>
+<li>Get ConfigHolders directly from Design (<a href="https://github.com/wvlet/airframe/issues/374">#374</a>) [<a href="https://github.com/wvlet/airframe/commit/da4d3ba">da4d3ba</a>]</li>
+<li>Not ignore resource closing exception in withResource (<a href="https://github.com/wvlet/airframe/issues/371">#371</a>) [<a href="https://github.com/wvlet/airframe/commit/129868a">129868a</a>]</li>
+<li>airframe-stream is moved to wvlet/msgframe (<a href="https://github.com/wvlet/airframe/issues/365">#365</a>) [<a href="https://github.com/wvlet/airframe/commit/d150ae8">d150ae8</a>]</li>
+<li>Fixes <a href="https://github.com/wvlet/airframe/issues/362">#362</a>: Set Option[Boolean] with --(option) in airframe-launcher (<a href="https://github.com/wvlet/airframe/issues/364">#364</a>) [<a href="https://github.com/wvlet/airframe/commit/f383c5e">f383c5e</a>]</li>
+<li>Change airframe-control to a Scala JVM project (<a href="https://github.com/wvlet/airframe/issues/363">#363</a>) [<a href="https://github.com/wvlet/airframe/commit/5d6632d">5d6632d</a>]</li>
+<li>Set the code coverage test threshold to 80% overall, 5% diff (<a href="https://github.com/wvlet/airframe/issues/361">#361</a>) [<a href="https://github.com/wvlet/airframe/commit/0519d4b">0519d4b</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="079"></a><a href="#079" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.79</h2>
+<ul>
+<li>Enhance loan pattern for AutoCloseable (<a href="https://github.com/wvlet/airframe/issues/359">#359</a>) [<a href="https://github.com/wvlet/airframe/commit/f971934">f971934</a>]</li>
+<li>Add name conversion functionallity to CName (<a href="https://github.com/wvlet/airframe/issues/360">#360</a>) [<a href="https://github.com/wvlet/airframe/commit/366caca">366caca</a>]</li>
+<li>Allows using bindFactory outside of wvlet.airframe package (<a href="https://github.com/wvlet/airframe/issues/358">#358</a>) [<a href="https://github.com/wvlet/airframe/commit/d8836e4">d8836e4</a>]</li>
+<li>Upgrade to Scala 2.11.12 (<a href="https://github.com/wvlet/airframe/issues/356">#356</a>) [<a href="https://github.com/wvlet/airframe/commit/bc6b172">bc6b172</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="078"></a><a href="#078" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.78</h2>
+<ul>
+<li>Add close() to Unpacker interface (<a href="https://github.com/wvlet/airframe/issues/348">#348</a>) [<a href="https://github.com/wvlet/airframe/commit/88c3749">88c3749</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="077"></a><a href="#077" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.77</h2>
+<ul>
+<li>airframe-launcher: Fix array argument mapping (<a href="https://github.com/wvlet/airframe/issues/342">#342</a>) [<a href="https://github.com/wvlet/airframe/commit/00145b6">00145b6</a>]</li>
+<li>Upgrade to Scala 2.12.8 (<a href="https://github.com/wvlet/airframe/issues/341">#341</a>) [<a href="https://github.com/wvlet/airframe/commit/b5b6f9e">b5b6f9e</a>]</li>
+<li>internal: Enhance SQL parser</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="076"></a><a href="#076" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.76</h2>
+<p>[airframe DI]</p>
+<ul>
+<li>Support creating <a href="https://wvlet.org/airframe/docs/#child-sessions">child sessions</a> with <code>session.withChildSession</code>. <a href="https://github.com/wvlet/airframe/issues/321">#321</a></li>
+<li>Improve Design.+ performance by checking Design duplicates right before building a new Session (<a href="https://github.com/wvlet/airframe/issues/334">#334</a>) [<a href="https://github.com/wvlet/airframe/commit/3e13659">3e13659</a>]</li>
+<li>Add session id to logs [<a href="https://github.com/wvlet/airframe/commit/0cbd9cc">0cbd9cc</a>]</li>
+<li>Improved the debug log message by showing session hierarchy and injection behavior [<a href="https://github.com/wvlet/airframe/commit/05c014d">05c014d</a>]</li>
+<li>[internal] Do not register shutdown hooks for child sessions to avoid closing loggers [<a href="https://github.com/wvlet/airframe/commit/a6460cd">a6460cd</a>]</li>
+</ul>
+<p>[airframe-launcher]</p>
+<ul>
+<li>[bug] Fix in getting the default values of method arguments. (<a href="https://github.com/wvlet/airframe/issues/339">#339</a>) [<a href="https://github.com/wvlet/airframe/commit/438f2cc">438f2cc</a>]</li>
+</ul>
+<p>[airframe-log]</p>
+<ul>
+<li>Show logs during shutdown hooks by using a custom LogManager so as not to close logger during shutdown hooks [<a href="https://github.com/wvlet/airframe/commit/4dffce2">4dffce2</a>]</li>
+<li>Show  millisec in log timestamps (<a href="https://github.com/wvlet/airframe/issues/335">#335</a>) [<a href="https://github.com/wvlet/airframe/commit/7b6ec05">7b6ec05</a>]</li>
+</ul>
+<p>[misc.]</p>
+<ul>
+<li>[airframe-config] <a href="https://github.com/wvlet/airframe/issues/268">#268</a>: Allow hyphens in key names (<a href="https://github.com/wvlet/airframe/issues/333">#333</a>) [<a href="https://github.com/wvlet/airframe/commit/c237b84">c237b84</a>]</li>
+<li>[airframe-jdbc] <a href="https://github.com/wvlet/airframe/issues/133">#133</a>: Add DbConfig helper (<a href="https://github.com/wvlet/airframe/issues/332">#332</a>) [<a href="https://github.com/wvlet/airframe/commit/d274448">d274448</a>]</li>
+<li>[airframe-codec] BinaryValue encoding was missing (<a href="https://github.com/wvlet/airframe/issues/331">#331</a>) [<a href="https://github.com/wvlet/airframe/commit/4eb8899">4eb8899</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="075"></a><a href="#075" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.75</h2>
+<ul>
+<li>airframe-di: Fix a bug the default values in a constructor are registered as singletons [<a href="https://github.com/wvlet/airframe/commit/40d97ca">40d97ca</a>]</li>
+<li>airframe-control: Allow passing retry context (<a href="https://github.com/wvlet/airframe/issues/327">#327</a>) [<a href="https://github.com/wvlet/airframe/commit/afb34b9">afb34b9</a>]</li>
+<li>[internal] Upgrade to sbt 1.2.7 (<a href="https://github.com/wvlet/airframe/issues/325">#325</a>) [<a href="https://github.com/wvlet/airframe/commit/b6ebaf1">b6ebaf1</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="074"></a><a href="#074" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.74</h2>
+<ul>
+<li>Airframe now has its brand logo!</li>
+</ul>
+<p>
+<img src="https://github.com/wvlet/airframe/raw/master/logos/airframe_icon_small.png" alt="logo" width="150px">
+</p>
+<ul>
+<li>airframe-launcher: Fix sub method command help message [<a href="https://github.com/wvlet/airframe/commit/3b22d74">3b22d74</a>]</li>
+<li>Deprecate in-trait bindInstance[X] (<a href="https://github.com/wvlet/airframe/issues/317">#317</a>) [<a href="https://github.com/wvlet/airframe/commit/1f15aef">1f15aef</a>]</li>
+<li>Deprecate in-trait bindSingleton[X] now that bind[X] binds singletons by default (<a href="https://github.com/wvlet/airframe/issues/300">#300</a>) [<a href="https://github.com/wvlet/airframe/commit/fe75bb0">fe75bb0</a>]</li>
+<li>airframe-http: Register a trait factory when Route.of[A] is called (<a href="https://github.com/wvlet/airframe/issues/307">#307</a>) [<a href="https://github.com/wvlet/airframe/commit/2cf505b">2cf505b</a>]</li>
+<li>airframe-surface: Rename surface.of[X] -&gt; Surface.of[X] (<a href="https://github.com/wvlet/airframe/issues/306">#306</a>) [<a href="https://github.com/wvlet/airframe/commit/cea2cbb">cea2cbb</a>]</li>
+<li>airframe-codec is now a pure-Scala SPI (<a href="https://github.com/wvlet/airframe/issues/302">#302</a>) [<a href="https://github.com/wvlet/airframe/commit/7677d26">7677d26</a>]</li>
+<li>airframe-codec: Scala.js support  (<a href="https://github.com/wvlet/airframe/issues/303">#303</a>) [<a href="https://github.com/wvlet/airframe/commit/ff7bd97">ff7bd97</a>]</li>
+<li>Internal changes:
+<ul>
+<li>airframe-macros is now a pure Scala project (<a href="https://github.com/wvlet/airframe/issues/319">#319</a>) [<a href="https://github.com/wvlet/airframe/commit/43ec5d5">43ec5d5</a>]</li>
+<li>Add an aggregated project for Scala community-build (<a href="https://github.com/wvlet/airframe/issues/316">#316</a>) [<a href="https://github.com/wvlet/airframe/commit/fa78beb">fa78beb</a>]</li>
+<li>Upgrade to sbt-microsites 0.7.26 [<a href="https://github.com/wvlet/airframe/commit/40f0b7f">40f0b7f</a>]</li>
+<li>Fix twitter icon card [<a href="https://github.com/wvlet/airframe/commit/0217f54">0217f54</a>]</li>
+<li>Update logos [<a href="https://github.com/wvlet/airframe/commit/e295e8e">e295e8e</a>]</li>
+<li>Add a workaround: Surface.of[A] throws InternalError on REPL (<a href="https://github.com/wvlet/airframe/issues/308">#308</a>) [<a href="https://github.com/wvlet/airframe/commit/1be3796">1be3796</a>]</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="073"></a><a href="#073" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.73</h2>
+<ul>
+<li>airfarme-opts is redesigned as <a href="https://wvlet.org/airframe/docs/airframe-launcher.html">airframe-launcher</a> Option parser v2 (<a href="https://github.com/wvlet/airframe/issues/295">#295</a>) [<a href="https://github.com/wvlet/airframe/commit/a270128">a270128</a>]</li>
+<li>Support netsted offset in time window (<a href="https://github.com/wvlet/airframe/issues/296">#296</a>) [<a href="https://github.com/wvlet/airframe/commit/0c6e218">0c6e218</a>]</li>
+<li>Add untruncate notation <code>)</code> to offset of time window [<a href="https://github.com/wvlet/airframe/commit/3d479be">3d479be</a>]</li>
+<li>Add wvlet.airframe.log.init for using default log configurations (<a href="https://github.com/wvlet/airframe/issues/291">#291</a>) [<a href="https://github.com/wvlet/airframe/commit/a08d15d">a08d15d</a>]</li>
+<li>Use fluentd-standalone 1.2.6.1, which supports Scala 2.13.0-M5 (<a href="https://github.com/wvlet/airframe/issues/289">#289</a>) [<a href="https://github.com/wvlet/airframe/commit/ed7012b">ed7012b</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="072"></a><a href="#072" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.72</h2>
+<ul>
+<li>Support Scala 2.13.0-M5 (<a href="https://github.com/wvlet/airframe/issues/232">#232</a>) [<a href="https://github.com/wvlet/airframe/commit/c31a4da">c31a4da</a>]
+<ul>
+<li>Notice: Due to a <a href="https://github.com/scala/bug/issues/11192">bug</a> of Scala 2.13.0-M5, serialization of Design objects may not work when using sbt with Scala 2.13.0-M5. Using <code>fork in Test := true</code> is a workaround.</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="071"></a><a href="#071" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.71</h2>
+<ul>
+<li>Added <a href="https://wvlet.org/airframe/docs/airframe-fluentd.html">airframe-fluentd</a> for sending object-based metrics to Fluentd. (<a href="https://github.com/wvlet/airframe/issues/286">#286</a>) [<a href="https://github.com/wvlet/airframe/commit/28a70c3">28a70c3</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="070"></a><a href="#070" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.70</h2>
+<ul>
+<li>airframe-control: Add a shell command launcher (<a href="https://github.com/wvlet/airframe/issues/287">#287</a>) [<a href="https://github.com/wvlet/airframe/commit/1339caf">1339caf</a>]</li>
+<li>Upgrade to sbt 1.2.6 (<a href="https://github.com/wvlet/airframe/issues/285">#285</a>) [<a href="https://github.com/wvlet/airframe/commit/614dba6">614dba6</a>]</li>
+<li>Fix typos in docs</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="069"></a><a href="#069" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.69</h2>
+<ul>
+<li>surface: <a href="https://github.com/wvlet/airframe/issues/270">#270</a>: Move wvlet.surface -&gt; wvlet.airframe.surface (<a href="https://github.com/wvlet/airframe/issues/272">#272</a>) [<a href="https://github.com/wvlet/airframe/commit/5ca3143">5ca3143</a>]</li>
+<li>docs: Add note on scalafmt [<a href="https://github.com/wvlet/airframe/commit/6867642">6867642</a>]</li>
+<li>docs: Add <a href="https://wvlet.org/airframe/docs/airframe-launcher.html">airframe-opts</a> docs [<a href="https://github.com/wvlet/airframe/commit/dd4ecb4">dd4ecb4</a>]</li>
+<li>internal: Enable using ctrl+c in sbt console [<a href="https://github.com/wvlet/airframe/commit/143053b">143053b</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="068"></a><a href="#068" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.68</h2>
+<ul>
+<li>Support JDK11 (<a href="https://github.com/wvlet/airframe/issues/265">#265</a>) [<a href="https://github.com/wvlet/airframe/commit/7e8799d">7e8799d</a>]</li>
+<li>Use openjdk because we will mostly use this free JDK versions (<a href="https://github.com/wvlet/airframe/issues/266">#266</a>) [<a href="https://github.com/wvlet/airframe/commit/fd7f641">fd7f641</a>]</li>
+<li>Upgrade to Scala 2.12.7 for Travis builds [<a href="https://github.com/wvlet/airframe/commit/ce10f55">ce10f55</a>]</li>
+<li>Remove snapshot repo resolver to speedup dependency download (<a href="https://github.com/wvlet/airframe/issues/267">#267</a>) [<a href="https://github.com/wvlet/airframe/commit/247fa28">247fa28</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="067"></a><a href="#067" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.67</h2>
+<ul>
+<li>Add bindFactory[A =&gt; B] (<a href="https://github.com/wvlet/airframe/issues/262">#262</a>) [<a href="https://github.com/wvlet/airframe/commit/a38375f">a38375f</a>]</li>
+<li>Usage: <a href="https://wvlet.org/airframe/docs/use-cases.html#factory-binding">Factory Binding</a></li>
+<li>Simplified the implementation of AirframeSession</li>
+<li>Fixes typo, misspelled methods, etc. Thanks <a href="https://github.com/seratch">Kazuhiro Sera</a>
+<ul>
+<li>Fix <a href="https://github.com/wvlet/airframe/issues/256">#256</a> by limiting the visibility of Design.blanc (<a href="https://github.com/wvlet/airframe/issues/259">#259</a>) [<a href="https://github.com/wvlet/airframe/commit/f0ce25a">f0ce25a</a>]</li>
+<li>Fix typo, misspelling words, unnecessary imports (<a href="https://github.com/wvlet/airframe/issues/258">#258</a>) [<a href="https://github.com/wvlet/airframe/commit/b22f4cf">b22f4cf</a>]</li>
+<li>Fix typo in http,finagle modules (<a href="https://github.com/wvlet/airframe/issues/254">#254</a>) [<a href="https://github.com/wvlet/airframe/commit/b008335">b008335</a>]</li>
+<li>Use the deprecated annotation with proper attributes (<a href="https://github.com/wvlet/airframe/issues/257">#257</a>) [<a href="https://github.com/wvlet/airframe/commit/0843f79">0843f79</a>]</li>
+</ul></li>
+<li>Bump sbt from 1.2.1 to 1.2.3 (<a href="https://github.com/wvlet/airframe/issues/255">#255</a>) [<a href="https://github.com/wvlet/airframe/commit/428a284">428a284</a>]</li>
+<li>Add links to Medium blogs [<a href="https://github.com/wvlet/airframe/commit/4d13933">4d13933</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="066"></a><a href="#066" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.66</h2>
+<ul>
+<li>Add Finagle startup helper (<a href="https://github.com/wvlet/airframe/issues/252">#252</a>) [<a href="https://github.com/wvlet/airframe/commit/d3b4767">d3b4767</a>]
+<ul>
+<li>Add airframe-http-finagle examples (<a href="https://github.com/wvlet/airframe/issues/253">#254</a>) [<a href="https://github.com/wvlet/airframe/commit/4698ba5">4698ba5</a>]</li>
+</ul></li>
+<li><a href="https://github.com/wvlet/airframe/issues/249">#249</a>: Do not create factories for path-dependent types (<a href="https://github.com/wvlet/airframe/issues/250">#250</a>) [<a href="https://github.com/wvlet/airframe/commit/d2433bb">d2433bb</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="065"></a><a href="#065" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.65</h2>
+<ul>
+<li>Seamless integration with airframe-config and Design: <a href="https://wvlet.org/airframe/docs/airframe-config.html#using-with-airframe">https://wvlet.org/airframe/docs/airframe-config.html#using-with-airframe</a>
+<ul>
+<li><code>import wvlet.airframe.config._</code> to use newly added binding methods: <code>bindConfig[X]</code>, <code>bindConfigFromYaml[X](yamlFile)</code>, etc. (<a href="https://github.com/wvlet/airframe/issues/248">#248</a>) [<a href="https://github.com/wvlet/airframe/commit/379332b">379332b</a>]</li>
+<li>Deprecated airframe-bootstrap</li>
+</ul></li>
+<li>Allow setting log levels using wvlet.logger JMX MBean (<a href="https://github.com/wvlet/airframe/issues/247">#247</a>) [<a href="https://github.com/wvlet/airframe/commit/962d6c2">962d6c2</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="064"></a><a href="#064" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.64</h2>
+<ul>
+<li>Support higher kinded types more naturally (<a href="https://github.com/wvlet/airframe/issues/244">#244</a>) [<a href="https://github.com/wvlet/airframe/commit/e21baef">e21baef</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="063"></a><a href="#063" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.63</h2>
+<ul>
+<li>Support higher-kinded type bindings. (<a href="https://github.com/wvlet/airframe/issues/242">#242</a>) [<a href="https://github.com/wvlet/airframe/commit/cfe35ed">cfe35ed</a>]</li>
+<li>Upgrade to scala.js 0.6.25 (<a href="https://github.com/wvlet/airframe/issues/243">#243</a>) [<a href="https://github.com/wvlet/airframe/commit/fc91387">fc91387</a>]</li>
+<li>Change withoutLifeCycleLogging -&gt; noLifeCycleLogging [<a href="https://github.com/wvlet/airframe/commit/501b88b">501b88b</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="062"></a><a href="#062" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.62</h2>
+<ul>
+<li>Add unpackBytes for compatibility (<a href="https://github.com/wvlet/airframe/issues/240">#240</a>) [<a href="https://github.com/wvlet/airframe/commit/ecd8367">ecd8367</a>]</li>
+<li>Truncate to duration unit when the exact date is given to the offset (<a href="https://github.com/wvlet/airframe/issues/239">#239</a>) [<a href="https://github.com/wvlet/airframe/commit/68d497e">68d497e</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="061"></a><a href="#061" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.61</h2>
+<ul>
+<li>Support bind[Design] to reference the original design (<a href="https://github.com/wvlet/airframe/issues/237">#237</a>) [<a href="https://github.com/wvlet/airframe/commit/7d362c9">7d362c9</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="060"></a><a href="#060" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.60</h2>
+<ul>
+<li>Added Design.withoutLifeCycleLogging, Design.withProductionMode, Design.withLazyMode
+<ul>
+<li><a href="https://github.com/wvlet/airframe/issues/233">#233</a>: Allow disabling LifeCycleLogger (<a href="https://github.com/wvlet/airframe/issues/234">#234</a>) [<a href="https://github.com/wvlet/airframe/commit/4d2c80a">4d2c80a</a>]</li>
+</ul></li>
+<li>Support Future[X] return type in http-finagle (<a href="https://github.com/wvlet/airframe/issues/230">#230</a>) [<a href="https://github.com/wvlet/airframe/commit/3642cc6">3642cc6</a>]</li>
+<li>Upgrade to scalafmt 1.5.1 (<a href="https://github.com/wvlet/airframe/issues/231">#231</a>) [<a href="https://github.com/wvlet/airframe/commit/da84852">da84852</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="059"></a><a href="#059" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.59</h2>
+<ul>
+<li>Do not escape forward slashes in JSONStrings (<a href="https://github.com/wvlet/airframe/issues/229">#229</a>) [<a href="https://github.com/wvlet/airframe/commit/66f77f6">66f77f6</a>]</li>
+<li>Fix a bug when reading None in OptionCodec (<a href="https://github.com/wvlet/airframe/issues/228">#228</a>) [<a href="https://github.com/wvlet/airframe/commit/cda0d36">cda0d36</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="058"></a><a href="#058" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.58</h2>
+<ul>
+<li>use canonical names for arguments of method surface on MethodCallBuilder (<a href="https://github.com/wvlet/airframe/issues/227">#227</a>) [<a href="https://github.com/wvlet/airframe/commit/33cad91">33cad91</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="057"></a><a href="#057" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.57</h2>
+<ul>
+<li>Move wvlet.config to wvlet.airframe.config (<a href="https://github.com/wvlet/airframe/issues/226">#226</a>) [<a href="https://github.com/wvlet/airframe/commit/e103a89">e103a89</a>]</li>
+<li>Allow setting object codec factory for generating natural JSON responses (<a href="https://github.com/wvlet/airframe/issues/224">#224</a>) [<a href="https://github.com/wvlet/airframe/commit/0b42960">0b42960</a>]</li>
+<li>Use private[this] to optimize json parsing (<a href="https://github.com/wvlet/airframe/issues/225">#225</a>) [<a href="https://github.com/wvlet/airframe/commit/8432af8">8432af8</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="056"></a><a href="#056" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.56</h2>
+<ul>
+<li>airframe-http-finagle enhancement (<a href="https://github.com/wvlet/airframe/issues/223">#223</a>) [<a href="https://github.com/wvlet/airframe/commit/6d8b361">6d8b361</a>]</li>
+<li>Support quarter (q) duration (<a href="https://github.com/wvlet/airframe/issues/220">#220</a>) [<a href="https://github.com/wvlet/airframe/commit/fa56875">fa56875</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="055"></a><a href="#055" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.55</h2>
+<ul>
+<li>airframe-http: Add rest mapping (<a href="https://github.com/wvlet/airframe/issues/207">#207</a>) [<a href="https://github.com/wvlet/airframe/commit/43bcb0a">43bcb0a</a>]
+<ul>
+<li>Support HTTPRequest binding, request body to custom class binding</li>
+</ul></li>
+<li>airframe-json performance optimization (<a href="https://github.com/wvlet/airframe/issues/214">#214</a>) [<a href="https://github.com/wvlet/airframe/commit/7b83bea">7b83bea</a>]
+<ul>
+<li>Optimize JSON object builder (<a href="https://github.com/wvlet/airframe/issues/216">#216</a>) [<a href="https://github.com/wvlet/airframe/commit/ac3ba86">ac3ba86</a>]</li>
+</ul></li>
+<li>Drop jdk9 build for time saving [<a href="https://github.com/wvlet/airframe/commit/dc96c00">dc96c00</a>]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="054"></a><a href="#054" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.54</h2>
+<ul>
+<li>Add airframe-json. A fast JSON parser for Scala and Scala.js. This also supports JSON pull parsing.
+<ul>
+<li>Optimize number parser (<a href="https://github.com/wvlet/airframe/issues/213">#213</a>) (<a href="https://github.com/wvlet/airframe/commit/fd89e62">fd89e62</a>)</li>
+<li>JSON parse performance improvement (<a href="https://github.com/wvlet/airframe/issues/212">#212</a>) (<a href="https://github.com/wvlet/airframe/commit/897ca38">897ca38</a>)</li>
+<li>Use airframe-json for JSONCodec (<a href="https://github.com/wvlet/airframe/issues/211">#211</a>) (<a href="https://github.com/wvlet/airframe/commit/61b9ba7">61b9ba7</a>)</li>
+<li>Add airframe-json (<a href="https://github.com/wvlet/airframe/issues/208">#208</a>) (<a href="https://github.com/wvlet/airframe/commit/6aab1fb">6aab1fb</a>)</li>
+</ul></li>
+<li>Add release automation script (<a href="https://github.com/wvlet/airframe/commit/eeb4d2b">eeb4d2b</a>)</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="053"></a><a href="#053" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.53</h2>
+<ul>
+<li>Publish Scala 2.12 only jvm projects (<a href="https://github.com/wvlet/airframe/commit/97550b2">97550b2</a>)</li>
+<li>Add Simple HTTP REST framework (<a href="https://github.com/wvlet/airframe/issues/206">#206</a>) (<a href="https://github.com/wvlet/airframe/commit/1467934">1467934</a>)</li>
+<li>Bump sbt version to 1.2.1, also upgrading sbt plugins (<a href="https://github.com/wvlet/airframe/issues/205">#205</a>) (<a href="https://github.com/wvlet/airframe/commit/e5d2e1a">e5d2e1a</a>)</li>
+<li>Upgrade to sbt 1.2.0 (<a href="https://github.com/wvlet/airframe/issues/202">#202</a>) (<a href="https://github.com/wvlet/airframe/commit/382eda6">382eda6</a>)</li>
+<li>Upgrade sbt plugins (<a href="https://github.com/wvlet/airframe/issues/201">#201</a>) (<a href="https://github.com/wvlet/airframe/commit/7bfe82b">7bfe82b</a>)</li>
+<li><a href="https://github.com/wvlet/airframe/issues/198">#198</a>: Show global options as well to help messages (<a href="https://github.com/wvlet/airframe/issues/199">#199</a>) (<a href="https://github.com/wvlet/airframe/commit/16c2b66">16c2b66</a>)</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="052"></a><a href="#052" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.52</h2>
+<ul>
+<li>Support Scala 2.13.0-M4</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="051"></a><a href="#051" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.51</h2>
+<ul>
+<li>airframe-log: Add Logger.clearAllHandlers (#195)</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="050"></a><a href="#050" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.50</h2>
+<ul>
+<li>airframe-control: Add a code for retrying code execution</li>
+<li>airframe-stream: Add a simple SQL parser/interpreter for stream processing <a href="https://github.com/wvlet/airframe/projects/1">https://github.com/wvlet/airframe/projects/1</a></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="049"></a><a href="#049" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.49</h2>
+<ul>
+<li><strong>Important</strong>: <code>bind[X]</code>, <code>bind[X].to[Y]</code>, etc. now use singleton bindings by default. This is because most of the use cases expect binding
+the same objects to traits. If you need to explicitly instantiate objects for each binding, use <code>bindInstance[X]</code> or <code>bind[X].toInstanceOf[Y]</code>.</li>
+<li>Add a handy method to start a session and build an object: <code>Design.build[A]{ a =&gt; ... }</code>.</li>
+<li>Support eager singleton initialization with <code>Design.buildProduction[A]</code> and <code>Design.withProductionSession</code>.</li>
+<li>(internal) Upgrade to sbt 1.1.6, Scala.js 0.6.23, scalajs-java-logging 0.1.4</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="048"></a><a href="#048" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.48</h2>
+<ul>
+<li>Java 9/10 support</li>
+<li>airframe-msgpack. Fixes a bug in encoding Timestamp (Instant) values</li>
+<li>airframe DI: Enhanced warning/error messages upon missing dependencies.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="047"></a><a href="#047" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.47</h2>
+<ul>
+<li>airframe-msgpack: Add a pure Scala <a href="https://msgpack.org">MessagePack</a> implementation</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="046"></a><a href="#046" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.46</h2>
+<ul>
+<li>Add airframe-bootstrap to define application modules that can be configured with airframe-config and DI</li>
+<li>Upgrade to Scala 2.12.6</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="045"></a><a href="#045" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.45</h2>
+<ul>
+<li>airframe-codec: Support <code>List[X]</code> coding</li>
+<li>airframe-surface: Support <code>Parameter.getDefaultValue</code> and <code>Parameter.get(obj)</code> in Scala.js</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="044"></a><a href="#044" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.44</h2>
+<ul>
+<li>airframe-metrics: Require minus sign to represent last time ranges (e.g., -7d, -1h, etc.)</li>
+<li>airframe: Enable <code>bind[Session]</code> binding to retrieve the current session</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="043"></a><a href="#043" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.43</h2>
+<ul>
+<li>airframe-log: Set a default log handler (JSConsoleLogHandler) for Scala.js for convenience</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="042"></a><a href="#042" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.42</h2>
+<ul>
+<li>airframe-log: Add an option to totally disable logging code generation.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="041"></a><a href="#041" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.41</h2>
+<ul>
+<li>Fix a singleton binding bug: If <code>bind[A].toSingletonOf[B]</code> is used and A is non-abstract trait, A was used instead of B.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="040"></a><a href="#040" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.40</h2>
+<ul>
+<li>airframe-launcher: Fixes <a href="https://github.com/wvlet/airframe/issues/147">#147</a> when reading the default values of nested options</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="039"></a><a href="#039" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.39</h2>
+<ul>
+<li>Add a unified scaladoc for all modules</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="038"></a><a href="#038" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.38</h2>
+<ul>
+<li>airframe-tablet: Using json4s-native instead of play-json for Scala 2.13.0-M3 support</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="037"></a><a href="#037" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.37</h2>
+<ul>
+<li>airframe-tablet: Add play-json based JSONCodec to enable transformation between JSON &lt;-&gt; MessagePack &lt;-&gt; Object.</li>
+<li>Temporarily remove Scala 2.13.0-M2 build. Now preparing 2.13.0-M3 build in <a href="https://github.com/wvlet/airframe/pull/143">#143</a></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="036"></a><a href="#036" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.36</h2>
+<ul>
+<li>Fixes Logger.scanLoglevels to use given log level files appropriately <a href="https://github.com/wvlet/airframe/pull/141">#141</a></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="035"></a><a href="#035" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.35</h2>
+<ul>
+<li>Minor fixes to project structures and build scripts.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="034"></a><a href="#034" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.34</h2>
+<ul>
+<li>No major change in terms of features, API.</li>
+<li>Airframe now uses <a href="https://github.com/dwijnand/sbt-dynver">sbt-dnyver</a> for auto versioning.</li>
+<li>For each commit in the master branch, you can find a snapshot version from <a href="https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/">https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/</a>
+<ul>
+<li>For example, <a href="https://oss.sonatype.org/content/repositories/snapshots/org/wvlet/airframe/airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT/">airframe-log_2.12/0.33.1+12-682c4e07-SNAPSHOT</a>, means that this version is based on the version <code>0.33.1</code> and <code>12</code> commits away from the previous version tag, and using git revision <code>682c4e07</code>.</li>
+</ul></li>
+<li>The release versions will be like <code>0.34</code> as usual and available from Maven central.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="033"></a><a href="#033" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.33</h2>
+<ul>
+<li>Add <a href="/airframe/docs/airframe-jdbc">airframe-jdbc</a>, a reusable JDBC connection pool implementation.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="032"></a><a href="#032" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.32</h2>
+<ul>
+<li>Fix ObjectCodec for map type value <a href="https://github.com/wvlet/airframe/pull/131">#131</a></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="031"></a><a href="#031" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.31</h2>
+<ul>
+<li>Support recursive types</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="030"></a><a href="#030" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.30</h2>
+<ul>
+<li><em>airframe-metrics</em>: Add support for Scala.js (DataSize, ElapsedTime)</li>
+<li>Add ElapsedTime for succinct duration representation</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="029"></a><a href="#029" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.29</h2>
+<ul>
+<li>Add airframe-codec, a <a href="https://msgpack.org">MessgePack</a>-based schema-on-read data transcoder.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="028"></a><a href="#028" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.28</h2>
+<ul>
+<li>Add support for Scala 2.13.0-M2</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="027"></a><a href="#027" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.27</h2>
+<ul>
+<li>aiframe-config: Fixes nested case class binding <a href="https://github.com/wvlet/airframe/issues/110">#108</a></li>
+<li>Dropped support of Scala.js + Scala 2.11 combination. Scala.js libraries will support only Scala 2.12 (or higher) in upcoming releases</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="026"></a><a href="#026" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.26</h2>
+<ul>
+<li>Add an initial version of <a href="https://github.com/wvlet/airframe/tree/master/tablet">airframe-tablet</a>, a <a href="https://msgpack.org">MessagePack</a> based data transcoder</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="025"></a><a href="#025" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.25</h2>
+<ul>
+<li><strong>airframe-log</strong> Upgrade the internal log rotation library to logback-core 1.2.3</li>
+<li>Upgrade to Scala 2.12.4 and sbt 1.0.3.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="024"></a><a href="#024" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.24</h2>
+<ul>
+<li>Add <a href="/airframe/docs/airframe-metrics">airframe-metrics</a></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="023"></a><a href="#023" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.23</h2>
+<ul>
+<li>Moved to <code>org.wvlet.airframe</code> organization because Airframe will have more modules in future.</li>
+<li>Added airframe-spec (a common library for testing airframe modules)</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="022"></a><a href="#022" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.22</h2>
+<ul>
+<li>Add Logger.clearAllHandlers to clean-up existing log handlers set by third-party libraries</li>
+<li>Apply scalafmt code style</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="021"></a><a href="#021" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.21</h2>
+<ul>
+<li>Add <a href="https://github.com/wvlet/airframe/tree/master/airframe-opts">airframe-launcher</a> command line parser.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="020"></a><a href="#020" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.20</h2>
+<ul>
+<li>Migrated <a href="https://github.com/wvlet/airframe/tree/master/airframe-log">airframe-log</a> from <a href="https://github.com/wvlet/log">wvlet-log</a> because
+these are often commonly used.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="019"></a><a href="#019" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.19</h2>
+<ul>
+<li>Add <a href="https://github.com/wvlet/airframe/tree/master/airframe-jmx">airframe-jmx</a> to expose object parameters through JMX</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="018"></a><a href="#018" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.18</h2>
+<ul>
+<li>Add beforeShutdown, onInject lifecycle hooks</li>
+<li>Support <code>@PostConstruct</code> and <code>@PreDestroy</code> JSR-250 annotations (Scala.js is not supported)</li>
+<li>Fix to call onInit, onStart only once for singletons</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="017"></a><a href="#017" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.17</h2>
+<ul>
+<li>Upgrade to Scala 2.12.3, Scala.js 0.6.19</li>
+<li>Add Design.add</li>
+<li>Fix a bug, onStart lifecycle hook is not called when a session is already started</li>
+<li>Fix to use default constructor argument values for constructor bindings
+<ul>
+<li>Note: Scala.js does not support default parameter binding yet</li>
+</ul></li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="016"></a><a href="#016" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.16</h2>
+<ul>
+<li>Support reading Map type values in YamlReader (airframe config)</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="015"></a><a href="#015" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.15</h2>
+<ul>
+<li>Surface will be generated by using runtime-type information. This improves the compilation speed in Scala JVM projects.
+<ul>
+<li>Scala.js version still uses compile-time surface generation</li>
+</ul></li>
+<li>Interface change: <code>Surface.of[X]</code> to <code>surface.of[X]</code>.
+<ul>
+<li>This is for providing different implementations of Surface for ScalaJVM and Scala.js.</li>
+</ul></li>
+<li>Fixed an issue when tagged type is used inside constructor parameters.</li>
+<li>Fixed an issue that lifecycle hooks are wrongly called when debug level logging is used.</li>
+<li>Merged wvlet-config as airframe-config. This module is useful for creating configuration objects from YAML file.</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="014"></a><a href="#014" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.14</h2>
+<ul>
+<li><a href="https://github.com/wvlet/airframe/tree/master/surface">Surface</a> is now a part of Airframe</li>
+<li>Added RuntimeSurface for the convenience of creating Surface from runtime-type information (reflect.universe.Type)</li>
+<li>Added ObjectBuilder to build objects from Surface information</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="013"></a><a href="#013" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.13</h2>
+<ul>
+<li>Add tagged binding support</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="012"></a><a href="#012" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.12</h2>
+<ul>
+<li>Airframe is now refrection-free.
+<ul>
+<li>Using a reflection free <a href="https://github.com/wvlet/surface">Surface</a> instead of <a href="https://github.com/wvlet/object-schema">ObjectSchema</a></li>
+<li>Cyclic dependencies now can be found at compile-time thanks to Surface</li>
+</ul></li>
+<li>Initial Scala.js support</li>
+<li>Split Travis build process for the matrix of Scala 2.12/2.11, ScalaJVM/JS</li>
+<li>Add shortcut for life cycle events: bind[X].onInit/onStart/onShutdown</li>
+<li>Deprecated tagged type binding. Instead you can use type alias bind[(type alias)].</li>
+<li>Deprecated @PreDestroy, @PostConstruct lifecycle binding because it complicates the order of life cycle hooks when mixed in</li>
+<li>Deprecated passing Session as a class parameter or method return value.</li>
+<li>Simplified Scala macro codes</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="010"></a><a href="#010" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.10</h2>
+<ul>
+<li>Session now implements AutoClosable</li>
+<li>Add Design.withSession{ session =&gt; ... } to close Session at ease</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="09"></a><a href="#09" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.9</h2>
+<ul>
+<li>Add Scala 2.12 support</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="08"></a><a href="#08" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.8</h2>
+<ul>
+<li>Split the project into two sub projects: airframe and airframe-macro. However, you only need airframe.jar for using Airframe.</li>
+<li>Improved the performance by replacing run-time code generation to compile-time code generation #25</li>
+<li>Upgrade to wvlet-log 1.0</li>
+<li>Upgrade wvlet-obj 0.26 (support type aliases)</li>
+<li>Allow binding to type aliases</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="07"></a><a href="#07" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.7</h2>
+<ul>
+<li>Fix lifecycle management of objects generated by bindSingleton</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="06"></a><a href="#06" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.6</h2>
+<ul>
+<li>Add bindSingleton[X]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="05"></a><a href="#05" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.5</h2>
+<ul>
+<li>Fix a bug in FILO order init/shutdown when objects are singleton</li>
+<li>Add toProvider/toSingletonProvider/toEagerSingletonProvider</li>
+<li>Add Design.remove[X]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="04"></a><a href="#04" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.4</h2>
+<ul>
+<li>Improved binding performance</li>
+<li>Fix FIFO lifecycle hook executor</li>
+<li>Improved injection logging</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="03"></a><a href="#03" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.3</h2>
+<ul>
+<li>Support bind(ObjectType).toXXX</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="02"></a><a href="#02" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.2</h2>
+<ul>
+<li>Add lifecycle manager</li>
+<li>Reorganize Session, Design classes</li>
+<li>Test coverage improvement</li>
+<li>Deprecated Design.build[X]. Use Design.newSession.build[X]</li>
+</ul>
+<h2><a class="anchor" aria-hidden="true" id="01"></a><a href="#01" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>0.1</h2>
+<ul>
+<li>Migrated from wvlet-inject</li>
+</ul>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/articles"><span class="arrow-prev">← </span><span>Articles</span></a><a class="docs-next button" href="/airframe/docs/logos"><span>Logos</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#19120">19.12.0</a></li><li><a href="#19112">19.11.2</a></li><li><a href="#19111">19.11.1</a></li><li><a href="#19110">19.11.0</a></li><li><a href="#19101">19.10.1</a></li><li><a href="#19100">19.10.0</a></li><li><a href="#1999">19.9.9</a></li><li><a href="#1998">19.9.8</a></li><li><a href="#1997">19.9.7</a></li><li><a href="#1996">19.9.6</a></li><li><a href="#1995">19.9.5</a></li><li><a href="#1994">19.9.4</a></li><li><a href="#1993">19.9.3</a></li><li><a href="#1992">19.9.2</a></li><li><a href="#1991">19.9.1</a></li><li><a href="#1990">19.9.0</a></li><li><a href="#19810">19.8.10</a></li><li><a href="#1989">19.8.9</a></li><li><a href="#1988">19.8.8</a></li><li><a href="#1987">19.8.7</a></li><li><a href="#1986">19.8.6</a></li><li><a href="#1985">19.8.5</a></li><li><a href="#1984">19.8.4</a></li><li><a href="#1983">19.8.3</a></li><li><a href="#1982">19.8.2</a></li><li><a href="#1981">19.8.1</a></li><li><a href="#1980">19.8.0</a></li><li><a href="#1976">19.7.6</a></li><li><a href="#1975">19.7.5</a></li><li><a href="#1974">19.7.4</a></li><li><a href="#1973">19.7.3</a></li><li><a href="#1972">19.7.2</a></li><li><a href="#1971">19.7.1</a></li><li><a href="#1970">19.7.0</a></li><li><a href="#1961">19.6.1</a></li><li><a href="#1960">19.6.0</a></li><li><a href="#1952">19.5.2</a></li><li><a href="#1951">19.5.1</a></li><li><a href="#1950">19.5.0</a></li><li><a href="#1942">19.4.2</a></li><li><a href="#1941">19.4.1</a></li><li><a href="#1940">19.4.0</a></li><li><a href="#1937">19.3.7</a></li><li><a href="#1936">19.3.6</a></li><li><a href="#1935">19.3.5</a></li><li><a href="#1934">19.3.4</a></li><li><a href="#1933">19.3.3</a></li><li><a href="#1932">19.3.2</a></li><li><a href="#1931">19.3.1</a></li><li><a href="#1930">19.3.0</a></li><li><a href="#1921">19.2.1</a></li><li><a href="#1920">19.2.0</a></li><li><a href="#080">0.80</a></li><li><a href="#079">0.79</a></li><li><a href="#078">0.78</a></li><li><a href="#077">0.77</a></li><li><a href="#076">0.76</a></li><li><a href="#075">0.75</a></li><li><a href="#074">0.74</a></li><li><a href="#073">0.73</a></li><li><a href="#072">0.72</a></li><li><a href="#071">0.71</a></li><li><a href="#070">0.70</a></li><li><a href="#069">0.69</a></li><li><a href="#068">0.68</a></li><li><a href="#067">0.67</a></li><li><a href="#066">0.66</a></li><li><a href="#065">0.65</a></li><li><a href="#064">0.64</a></li><li><a href="#063">0.63</a></li><li><a href="#062">0.62</a></li><li><a href="#061">0.61</a></li><li><a href="#060">0.60</a></li><li><a href="#059">0.59</a></li><li><a href="#058">0.58</a></li><li><a href="#057">0.57</a></li><li><a href="#056">0.56</a></li><li><a href="#055">0.55</a></li><li><a href="#054">0.54</a></li><li><a href="#053">0.53</a></li><li><a href="#052">0.52</a></li><li><a href="#051">0.51</a></li><li><a href="#050">0.50</a></li><li><a href="#049">0.49</a></li><li><a href="#048">0.48</a></li><li><a href="#047">0.47</a></li><li><a href="#046">0.46</a></li><li><a href="#045">0.45</a></li><li><a href="#044">0.44</a></li><li><a href="#043">0.43</a></li><li><a href="#042">0.42</a></li><li><a href="#041">0.41</a></li><li><a href="#040">0.40</a></li><li><a href="#039">0.39</a></li><li><a href="#038">0.38</a></li><li><a href="#037">0.37</a></li><li><a href="#036">0.36</a></li><li><a href="#035">0.35</a></li><li><a href="#034">0.34</a></li><li><a href="#033">0.33</a></li><li><a href="#032">0.32</a></li><li><a href="#031">0.31</a></li><li><a href="#030">0.30</a></li><li><a href="#029">0.29</a></li><li><a href="#028">0.28</a></li><li><a href="#027">0.27</a></li><li><a href="#026">0.26</a></li><li><a href="#025">0.25</a></li><li><a href="#024">0.24</a></li><li><a href="#023">0.23</a></li><li><a href="#022">0.22</a></li><li><a href="#021">0.21</a></li><li><a href="#020">0.20</a></li><li><a href="#019">0.19</a></li><li><a href="#018">0.18</a></li><li><a href="#017">0.17</a></li><li><a href="#016">0.16</a></li><li><a href="#015">0.15</a></li><li><a href="#014">0.14</a></li><li><a href="#013">0.13</a></li><li><a href="#012">0.12</a></li><li><a href="#010">0.10</a></li><li><a href="#09">0.9</a></li><li><a href="#08">0.8</a></li><li><a href="#07">0.7</a></li><li><a href="#06">0.6</a></li><li><a href="#05">0.5</a></li><li><a href="#04">0.4</a></li><li><a href="#03">0.3</a></li><li><a href="#02">0.2</a></li><li><a href="#01">0.1</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>

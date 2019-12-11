@@ -1,0 +1,192 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-config: Application Config Flow · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="*airframe-config* enables configuring your Scala applications in a simple flow:"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-config: Application Config Flow · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="*airframe-config* enables configuring your Scala applications in a simple flow:"/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
+              (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+              m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+              })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+              ga('create', 'UA-98364158-1', 'auto');
+              ga('send', 'pageview');
+            </script><script type="text/javascript" src="https://buttons.github.io/buttons.js"></script><script src="/airframe/js/scrollSpy.js"></script><link rel="stylesheet" href="/airframe/css/main.css"/><script src="/airframe/js/codetabs.js"></script></head><body class="sideNavVisible separateOnPageNav"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/airframe/"><img class="logo" src="/airframe/img/favicon.ico" alt="Airframe"/><h2 class="headerTitleWithLogo">Airframe</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class=""><a href="/airframe/docs/" target="_self">Docs</a></li><li class=""><a href="https://github.com/wvlet/airframe/" target="_self">GitHub</a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>Core Modules</span></h2><div class="tocToggler" id="tocToggler"><i class="icon-toc"></i></div></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">Resources</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/">Overview</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/articles">Articles</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/release-notes">Release Notes</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/logos">Logos</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Frameworks</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-di">airframe-di: Dependency Injection</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http">airframe-http: Web Service IDL</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airspec">AirSpec: Testing Framework</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Core Modules</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-codec">airframe-codec: Schema-On-Read Object Serializer</a></li><li class="navListItem navListItemActive"><a class="navItem" href="/airframe/docs/airframe-config">airframe-config: Application Config Flow</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-control">airframe-control: Retry/Rate Control</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-log">airframe-log: Application Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-metrics">airframe-metrics: Human-Friendly Measures for Time and Data Size</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">Utilities</h3><ul class=""><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-benchmark">airframe-benchmark: JMH Benchmark</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-canvas">airframe-canvas: Off-Heap Memory Manager</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-fluentd">airframe-fluentd: Fluentd Logger</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-http-recorder">airframe-http-recorder: Web Request/Response Recorder</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jdbc">airframe-jdbc: JDBC Connection Pool</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-jmx">airframe-jmx: JMX Application Monitor</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-json">airframe-json: Pure-Scala JSON Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-launcher">airframe-launcher: Command-Line Program Launcher</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-msgpack">airframe-msgpack: Pure-Scala MessagePack Parser</a></li><li class="navListItem"><a class="navItem" href="/airframe/docs/airframe-sql">airframe-sql: SQL Parser</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-config: Application Config Flow</h1></header><article><div><span><p><em>airframe-config</em> enables configuring your Scala applications in a simple flow:</p>
+<ol>
+<li>Write config classes of your application.</li>
+<li>Read YAML files to populate the config objects.</li>
+<li>(optional) Override the configuration with Properties.</li>
+<li>Read the configuration with <code>config.of[X]</code> or bind it with Airframe DI.</li>
+</ol>
+<p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-config_2.12/badge.svg" alt="Maven Central"></a></p>
+<pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-config"</span> % <span class="hljs-string">"(version)"</span>
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="detailed-application-configuration-flow"></a><a href="#detailed-application-configuration-flow" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Detailed application configuration flow</h2>
+<p>Here is the details of the application configuration flow:</p>
+<ol>
+<li>The application specifies an environment (e.g., <code>test</code>, <code>staging</code>, <code>production</code>, etc) and configuration file paths.</li>
+<li>Read a configuration file (YAML) from the paths specified in <code>configpaths</code>.
+<ul>
+<li>The first found YAML file in the config paths will be used.</li>
+<li><code>config.registerFromYaml[A](yaml file)</code> will create an object <code>A</code> from the YAML data.</li>
+<li>If the YAML file does not contain data for the target environment, it searches for <code>default</code> environment instead.
+<ul>
+<li>If <code>default</code> environment is also not found, the provided default object will be used (optional).</li>
+</ul></li>
+</ul></li>
+<li>(optional) Provide additional configurations (e.g., confidential information such as password, apikey, etc.)
+<ul>
+<li>Read these configurations in a secure manner and create a <code>Properties</code> object.</li>
+<li>Override your configurations with <code>config.overrideWithProperties(Properties)</code>.</li>
+</ul></li>
+<li>Get the configuration with <code>config.of[A]</code></li>
+</ol>
+<h2><a class="anchor" aria-hidden="true" id="example"></a><a href="#example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Example</h2>
+<p><strong>config/access-log.yml</strong>:</p>
+<pre><code class="hljs"><span class="hljs-keyword">default</span>:
+  <span class="hljs-keyword">file</span>: <span class="hljs-built_in">log</span>/<span class="hljs-keyword">access</span>.<span class="hljs-built_in">log</span>
+  max_files: <span class="hljs-number">50</span>
+</code></pre>
+<p><strong>config/db-log.yml</strong>:</p>
+<pre><code class="hljs"><span class="hljs-keyword">default</span>:
+  <span class="hljs-keyword">file</span>: <span class="hljs-built_in">log</span>/db.<span class="hljs-built_in">log</span>
+</code></pre>
+<p><strong>config/server.yml</strong></p>
+<pre><code class="hljs"><span class="hljs-attr">default:</span> <span class="hljs-meta">&amp;default</span>
+  <span class="hljs-attr">host:</span> <span class="hljs-string">localhost</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">8080</span>
+
+<span class="hljs-comment"># Override the port number for development</span>
+<span class="hljs-attr">development:</span>
+  <span class="hljs-string">&lt;&lt;:</span> <span class="hljs-meta">*default</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">9000</span>
+</code></pre>
+<p><strong>config.properties</strong>:</p>
+<pre><code class="hljs"># [prefix](@[tag])?.[param]=(<span class="hljs-keyword">value</span>)
+<span class="hljs-keyword">log</span>@<span class="hljs-keyword">access</span>.file=/<span class="hljs-type">path</span>/<span class="hljs-keyword">to</span>/<span class="hljs-keyword">access</span>.<span class="hljs-keyword">log</span>
+<span class="hljs-keyword">log</span>@db.file=/<span class="hljs-type">path</span>/<span class="hljs-keyword">to</span>/db.<span class="hljs-keyword">log</span>
+<span class="hljs-keyword">log</span>@db.<span class="hljs-keyword">log</span>.max_files=<span class="hljs-number">250</span>
+<span class="hljs-keyword">server</span>.host=mydomain.com
+<span class="hljs-keyword">server</span>.<span class="hljs-keyword">password</span>=xxxxxyyyyyy
+</code></pre>
+<p><strong>Scala code</strong>:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.config.<span class="hljs-type">Config</span>
+<span class="hljs-keyword">import</span> wvlet.airframe.surface.tag.@@
+
+<span class="hljs-comment">// Configuration classes can have default values</span>
+<span class="hljs-comment">// Configuration class name convention: xxxxConfig (xxxx will be the prefix for properties file)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">LogConfig</span>(<span class="hljs-params">file:<span class="hljs-type">String</span>, maxFiles:<span class="hljs-type">Int</span>=100, maxSize:<span class="hljs-type">Int</span>=10485760</span>)</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServerConfig</span>(<span class="hljs-params">host:<span class="hljs-type">String</span>, port:<span class="hljs-type">Int</span>, password:<span class="hljs-type">String</span></span>)</span>
+
+<span class="hljs-comment">// To use the same configuration class for different purposes, use type tag (@@ Tag)</span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Access</span></span>
+<span class="hljs-class"><span class="hljs-keyword">trait</span> <span class="hljs-title">Db</span></span>
+
+<span class="hljs-keyword">val</span> config = 
+  <span class="hljs-type">Config</span>(env=<span class="hljs-string">"development"</span>, configPaths=<span class="hljs-type">Seq</span>(<span class="hljs-string">"./config"</span>))
+    .registerFromYaml[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Access</span>](<span class="hljs-string">"access-log.yml"</span>)
+    .registerFromYaml[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Db</span>](<span class="hljs-string">"db-log.yml"</span>)
+    .registerFromYaml[<span class="hljs-type">ServerConfig</span>](<span class="hljs-string">"server.yml"</span>)
+    .overrideWithPropertiesFile(<span class="hljs-string">"config.properties"</span>)
+    
+<span class="hljs-keyword">val</span> accessLogConfig = config.of[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Access</span>]
+<span class="hljs-comment">// LogConfig("/path/to/access.log",50,104857600)</span>
+
+<span class="hljs-keyword">val</span> dbLogConfig = config.of[<span class="hljs-type">LogConfig</span> @@ <span class="hljs-type">Db</span>]
+<span class="hljs-comment">// LogConfig("/path/to/db.log",250,104857600)</span>
+
+<span class="hljs-keyword">val</span> serverConfig = config.of[<span class="hljs-type">ServerConfig</span>]
+<span class="hljs-comment">// ServerConfig(host="mydomain.com",port=9000,password="xxxxxyyyyyy")</span>
+
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="show-configuration-changes"></a><a href="#show-configuration-changes" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Show configuration changes</h3>
+<p>To see the effective configurations, use <code>Config.getConfigChanges</code> method:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">for</span>(change &lt;- config.getConfigChanges) {
+  println(<span class="hljs-string">s"[<span class="hljs-subst">${change.key}</span>] default:<span class="hljs-subst">${change.default}</span>, current:<span class="hljs-subst">${change.current}</span>"</span>)
+}
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="using-with-airframe"></a><a href="#using-with-airframe" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with Airframe</h2>
+<p>Since Airframe 0.65, binding configurations to design becomes easier.
+By importing <code>wvlet.airframe.config._</code>, you can bind configurations to design objects.</p>
+<p>Example:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
+<span class="hljs-comment">// Import config._ to use bindConfigXXX methods</span>
+<span class="hljs-keyword">import</span> wvlet.airframe.config._
+
+<span class="hljs-comment">// Load "production" configurations from Yaml files</span>
+<span class="hljs-keyword">val</span> design = 
+  newDesign
+    <span class="hljs-comment">// Set an environment to use</span>
+    .withConfigEnv(env = <span class="hljs-string">"production"</span>, defaultEnv = <span class="hljs-string">"default"</span>)
+    <span class="hljs-comment">// Load configs from YAML files</span>
+    .bindConfigFromYaml[<span class="hljs-type">LogConfig</span>](<span class="hljs-string">"access-log.yml"</span>)  
+    .bindConfigFromYaml[<span class="hljs-type">ServerConfig</span>](<span class="hljs-string">"server.yml"</span>)
+    <span class="hljs-comment">// Bind other designs</span>
+    .bind[<span class="hljs-type">X</span>].toInstance(...)
+    .bind[<span class="hljs-type">Y</span>].toProvider{ ... }
+
+<span class="hljs-comment">// If you need to override some config parameters, prepare Map[String, Any] objects:</span>
+<span class="hljs-keyword">val</span> properties = <span class="hljs-type">Map</span>(
+  <span class="hljs-string">"server.host"</span> -&gt; <span class="hljs-string">"xxx.xxx.xxx"</span> 
+)
+
+<span class="hljs-comment">// Override config with property values</span>
+<span class="hljs-keyword">val</span> finalDesign = 
+  design.overrideConfigParams(properties) 
+
+finalDesign.build[<span class="hljs-type">X</span>] { x =&gt;
+  <span class="hljs-comment">// ... start the application </span>
+}
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-codec"><span class="arrow-prev">← </span><span>airframe-codec: Schema-On-Read Object Serializer</span></a><a class="docs-next button" href="/airframe/docs/airframe-control"><span>airframe-control: Retry/Rate Control</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#detailed-application-configuration-flow">Detailed application configuration flow</a></li><li><a href="#example">Example</a><ul class="toc-headings"><li><a href="#show-configuration-changes">Show configuration changes</a></li></ul></li><li><a href="#using-with-airframe">Using with Airframe</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>
