@@ -14,13 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-ruby@v1
-        with:
-          ruby-version: '2.x'
-      - name: Install Jekyll
-        run: |
-          gem install sass
-          gem install jekyll -v 4.0.0
       - name: Setup Git
         run: |
           git config --global user.email "leo@xerial.org"
@@ -45,4 +38,4 @@ jobs:
             ${{ runner.os }}-mdoc-${{ hashFiles('build.sbt') }}-
             ${{ runner.os }}-mdoc-
       - name: Publish doc
-        run: ./sbt docs/publishMicrosite
+        run: ./sbt docs/docusaurusPublishGhpages
