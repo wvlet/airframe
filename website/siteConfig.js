@@ -102,8 +102,8 @@ const siteConfig = {
     cleanUrl: true,
 
     // Open Graph and Twitter card images.
-    ogImage: 'https://wvlet.org/airframe/img/poster.png',
-    twitterImage: 'https://wvlet.org/airframe/img/poster.png',
+    ogImage: 'img/poster.png',
+    twitterImage: 'img/poster.png',
 
     // For sites with a sizable amount of content, set collapsible to true.
     // Expand/collapse the links and subcategories under categories.
