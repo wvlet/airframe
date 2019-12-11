@@ -113,7 +113,7 @@ class Index extends React.Component {
             <Block layout="threeColumn">
                 {[
                     {
-                        content: 'Airframe can be a replacement of commonly-used Java libraries, such as Jackson, Google Guava, Guice, slf4j, log4j, etc. To minimize the dependency hell, almost all components are written from scratch in Scala. Airframe supports Scala 2.11, 2.12, 2.13, and Scala.js.  ',
+                        content: 'Airframe has redesigned everything for Scala and can be a replacement of the commonly-used libraries in Java, such as Jackson, Google Guava, Guice, slf4j, etc. This is useful for minimizing the dependency hell of these libraries. Airframe also supports Scala.js as most of the components are written purely in Scala.',
                         image: `${baseUrl}img/features/scala-logo-red-spiral-dark.png`,
                         imageAlign: 'top',
                         title: 'Designed for Scala',
@@ -126,7 +126,7 @@ class Index extends React.Component {
                         title: 'MessagePack Serialization',
                     },
                     {
-                        content: 'With [dependency injection (DI)](docs/airframe) of Airframe, building services with hundreds of module classes becomes easy an manageable. Airframe DI will build complex objects on your behalf by following [your custom design](docs/airframe#design) and properly [start and shutdown your services in FILO order](docs/airframe#life-cycle).',
+                        content: 'With [dependency injection (DI)](docs/airframe) of Airframe, building services with hundreds of module classes becomes easy and manageable. Airframe DI will build complex objects on your behalf by following [your custom design](docs/airframe#design) and properly [start and shutdown your services in FILO order](docs/airframe#life-cycle).',
                         image: `${baseUrl}img/features/di.png`,
                         imageAlign: 'top',
                         title: 'Dependency Injection'
@@ -162,7 +162,7 @@ class Index extends React.Component {
                         title: 'Retry, Rate Control'
                     },
                     {
-                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to support building microservice API servers and clients at ease",
+                        content: "[airframe-http](docs/airframe-http) allows building web services by using Scala as an IDL (Interface Definition Language). Airframe provides a ready-to use web server implementation based on [Twitter Finagle](https://twitter.github.io/finagle/guide/) and built-in JSON/MessagePack-based REST API call mapping to crate microservice API servers and clients at ease",
                         image: `${baseUrl}/img/features/finagle.png`,
                         imageAlign: 'top',
                         title: 'Web Service IDL in Scala'
