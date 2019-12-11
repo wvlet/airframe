@@ -152,7 +152,7 @@ When developing applications with many module classes and configuration objects,
 
 For more details, see:
 
-- [Airframe DI](airframe-di.md)
+- [Airframe DI](airframe.md)
 - [DI Framework Comparison](comparison.md)
 
 
@@ -246,7 +246,7 @@ libraryDependencies ++= Seq(
 
 Airframe has several modules for kick starting your application development in Scala.
 
-- [airframe](airframe-di.md)
+- [airframe](airframe.md)
   - Scala-friendly dependency injection library.
 - [airspec](airspec.md)
   - A functional testing framework for Scala.

@@ -1,5 +1,5 @@
 ---
-id: airframe-di
+id: airframe
 layout: docs
 title: airframe-di: Dependency Injection
 ---

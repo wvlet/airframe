@@ -126,7 +126,7 @@ class Index extends React.Component {
                         title: 'MessagePack Serialization',
                     },
                     {
-                        content: 'With [dependency injection (DI)](docs/airframe-di) of Airframe, building services with hundreds of module classes becomes easy an manageable. Airframe DI will build complex objects on your behalf by following [your custom design](docs/airframe-di#design) and properly [start and shutdown your services in FILO order](docs/airframe-di#life-cycle).',
+                        content: 'With [dependency injection (DI)](docs/airframe) of Airframe, building services with hundreds of module classes becomes easy an manageable. Airframe DI will build complex objects on your behalf by following [your custom design](docs/airframe-di#design) and properly [start and shutdown your services in FILO order](docs/airframe#life-cycle).',
                         image: `${baseUrl}img/features/di.png`,
                         imageAlign: 'top',
                         title: 'Dependency Injection'

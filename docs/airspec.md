@@ -19,7 +19,7 @@ AirSpec has nice properties for writing tests in Scala:
   - No annotation (like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
 - Testing with simple assertions: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
-- Lifecycle management with [Airframe DI](airframe-di.md):
+- Lifecycle management with [Airframe DI](airframe.md):
   - The arguments of test methods can be used to inject necessary services for running your tests. 
   - The lifecycle (e.g., start and shutdown) of the injected services can be managed by Airframe DI.
 - Nesting and reusing test cases with `context.run(spec)`
