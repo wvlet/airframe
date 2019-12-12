@@ -22,6 +22,7 @@ import wvlet.airspec.AirSpec
   *
   */
 class SQLParserTest extends AirSpec {
+
   /**
     * sql 1 -> model 1 -> sql 2 -> model 2
     *

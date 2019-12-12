@@ -2,7 +2,7 @@
 
 require 'fileutils'
 PREFIX = 'https://github.com/wvlet/airframe'
-RELEASE_NOTES_FILE = "docs/src/main/tut/docs/release-notes.md"
+RELEASE_NOTES_FILE = "docs/release-notes.md"
 
 current_branch = `git rev-parse --abbrev-ref HEAD`.strip
 abort("release.rb must run on master branch. The current branch is #{current_branch}") if current_branch != "master"
@@ -21,7 +21,7 @@ else
 end
 default_version = "#{now.year-2000}.#{now.month}.#{patch}"
 print "next version (default: #{default_version})? "
-next_version = STDIN.gets.chomp 
+next_version = STDIN.gets.chomp
 
 next_version = default_version if next_version.empty?
 
@@ -32,7 +32,7 @@ new_release_notes = []
 new_release_notes <<= "\#\# #{next_version}\n"
 new_release_notes <<= logs.split(/\n/)
   .reject{|line| line.include?("#{last_version} release notes")}
-  .map{|x| 
+  .map{|x|
     rev = x[0..6]
     "- #{x[8..-1]} [[#{rev}](#{PREFIX}/commit/#{rev})]\n"
   }
@@ -40,10 +40,10 @@ new_release_notes <<= logs.split(/\n/)
 release_notes = []
 notes = File.readlines(RELEASE_NOTES_FILE)
 
-release_notes <<= notes[0..6]
+release_notes <<= notes[0..7]
 release_notes <<= new_release_notes
 release_notes <<= "\n"
-release_notes <<= notes[7..-1]
+release_notes <<= notes[8..-1]
 
 TMP_RELEASE_NOTES_FILE = 'target/release_notes.md'
 File.delete(TMP_RELEASE_NOTES_FILE) if File.exists?(TMP_RELEASE_NOTES_FILE)

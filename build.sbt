@@ -9,7 +9,7 @@ val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.3"
-val MSGPACK_VERSION                 = "0.8.19"
+val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
 val SLF4J_VERSION                   = "1.7.29"
@@ -224,86 +224,15 @@ lazy val projectJS =
 
 lazy val docs =
   project
-    .in(file("docs"))
+    .in(file("airframe-docs"))
     .settings(
-      name := "docs",
+      name := "airframe-docs",
+      moduleName := "airframe-docs",
       publishArtifact := false,
       publish := {},
-      publishLocal := {},
-      // Necessary for publishMicrosite
-      git.remoteRepo := "git@github.com:wvlet/airframe.git",
-      ghpagesNoJekyll := false,
-      micrositeName := "Airframe",
-      micrositeDescription := "Lightweight Building Blocks for Scala",
-      micrositeAuthor := "Taro L. Saito",
-      micrositeOrganizationHomepage := "https://github.com/wvlet",
-      micrositeHighlightTheme := "ocean",
-      micrositeGithubOwner := "wvlet",
-      micrositeGithubRepo := "airframe",
-      micrositeUrl := "https://wvlet.org",
-      micrositeBaseUrl := "airframe",
-      micrositeAnalyticsToken := "UA-98364158-1",
-      micrositeDocumentationUrl := "docs",
-      micrositeGitterChannel := true,
-      micrositeGitterChannelUrl := "wvlet/airframe",
-      // Configuration for using GitHub4s. This is slow and didn't work well on CI
-      //micrositePushSiteWith := GitHub4s,
-      //micrositeGithubToken := sys.env.get("GITHUB_TOKEN"),
-      micrositePalette ++= Map(
-        "brand-primary"   -> "#2582AA",
-        "brand-secondary" -> "#143F56",
-        "brand-tertiary"  -> "#042F46",
-        "gray-dark"       -> "#453E46",
-        "gray"            -> "#534F54"
-      ),
-      resourceGenerators in Tut += Def.task {
-        // Copy source docs since Tut accepts only a single source directory
-        val sourceDir = (sourceDirectory in Compile).value / "tut"
-        IO.copyDirectory(sourceDir, tutSourceDirectory.value)
-
-        // Generate airframe-xxx.md files from airframe-xxx/README.md
-        generateModuleDoc(tutSourceDirectory.value, streams.value.log)
-      }.taskValue,
-      tutSourceDirectory := (managedResourceDirectories in Tut).value.head,
-      watchSources += new sbt.internal.io.Source(
-        sourceDirectory.value,
-        new FileFilter {
-          def accept(f: File) = !f.isDirectory
-        },
-        NothingFilter
-      )
+      publishLocal := {}
     )
-    .enablePlugins(MicrositesPlugin)
-
-def generateModuleDoc(targetDir: File, logger: Logger): Seq[File] = {
-  val baseDir = file(".")
-  val readmeFiles =
-    baseDir
-      .listFiles()
-      .filter(x => x.isDirectory && (x.name.startsWith("airframe") || x.name.startsWith("airspec")))
-      .map(x => x / "README.md")
-      .filter(_.exists())
-
-  logger.info("Generating module doc files")
-  readmeFiles.flatMap { f =>
-    f.relativeTo(baseDir).map { x =>
-      val moduleName     = x.getParent
-      val targetFileName = targetDir / "docs" / s"${moduleName}.md"
-      logger.info(s"${targetFileName.relativeTo(baseDir).getOrElse(targetFileName.getName)}")
-
-      val originalReadme = IO.read(f)
-      val content =
-        s"""---
-           |layout: docs
-           |title: ${moduleName}
-           |---
-           |${originalReadme}""".stripMargin
-
-      IO.write(targetFileName, content)
-      targetFileName
-    }
-  }
-}
+    .enablePlugins(MdocPlugin, DocusaurusPlugin)
 
 def parallelCollection(scalaVersion: String) = {
   if (scalaVersion.startsWith("2.13.")) {
@@ -532,7 +461,7 @@ lazy val msgpack =
     )
     .jsSettings(
       jsBuildSettings,
-      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.5"
+      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.6"
     )
     .dependsOn(log, json, airspecRef % "test")
 
@@ -571,7 +500,7 @@ lazy val jdbc =
       description := "JDBC connection pool service",
       libraryDependencies ++= Seq(
         "org.xerial"     % "sqlite-jdbc" % SQLITE_JDBC_VERSION,
-        "org.postgresql" % "postgresql"  % "42.2.8",
+        "org.postgresql" % "postgresql"  % "42.2.9",
         "com.zaxxer"     % "HikariCP"    % "3.4.1",
         // For routing slf4j log to airframe-log
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
@@ -923,7 +852,7 @@ lazy val airspec =
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
-        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.0"
+        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.1"
       )
     )
     .dependsOn(airspecDeps % internalScope)

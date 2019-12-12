@@ -13,27 +13,62 @@
  */
 package wvlet.airframe.http
 
-import wvlet.airframe.http.HttpFilter.HttpFilterFactory
-
 import scala.concurrent.ExecutionContext
 import scala.language.higherKinds
+import scala.util.control.NonFatal
 
 /**
   * A base interface to implement http-server specific implementation
   */
-trait HttpBackend[Req, Resp, F[_]] extends HttpFilterFactory[Req, Resp, F] {
+trait HttpBackend[Req, Resp, F[_]] { self =>
+
+  type Filter  = HttpFilter[Req, Resp, F]
+  type Context = HttpContext[Req, Resp, F]
+
+  protected implicit val httpRequestAdapter: HttpRequestAdapter[Req]
+
+  def newResponse(status: HttpStatus, content: String = ""): Resp
+
   def toFuture[A](a: A): F[A]
   // Convert Scala's Future into the this backend's Future
   def toFuture[A](a: scala.concurrent.Future[A], e: ExecutionContext): F[A]
   def toScalaFuture[A](a: F[A]): scala.concurrent.Future[A]
   def wrapException(e: Throwable): F[Resp]
+  def rescue(body: => F[Resp]): F[Resp] = {
+    try {
+      body
+    } catch {
+      case NonFatal(e) => wrapException(e)
+    }
+  }
+
   def isFutureType(x: Class[_]): Boolean
   def isScalaFutureType(x: Class[_]): Boolean = {
     classOf[scala.concurrent.Future[_]].isAssignableFrom(x)
   }
+  // Returns true if the given class is the natively supported response type in this backend
   def isRawResponseType(x: Class[_]): Boolean
 
+  // Map Future[A] into Future[B]
   def mapF[A, B](f: F[A], body: A => B): F[B]
 
-  def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter
+  // Create a new Filter for this backend
+  def newFilter(body: (Req, HttpContext[Req, Resp, F]) => F[Resp]): Filter = {
+    HttpFilter.newFilter[Req, Resp, F](self, body)
+  }
+  // Create a new default filter just for processing preceding filters
+  def defaultFilter: Filter = HttpFilter.defaultFilter(self)
+
+  // Create a new default context that process the given request
+  def newContext(body: Req => F[Resp]): Context = HttpContext.newContext[Req, Resp, F](self, body)
+
+  // Prepare a thread-local holder for passing parameter values
+  def withThreadLocalStore(request: => F[Resp]): F[Resp]
+
+  // Set a thread-local context parameter value
+  def setThreadLocal[A](key: String, value: A): Unit
+
+  // Get a thread-local context parameter
+  def getThreadLocal[A](key: String): Option[A]
+
 }

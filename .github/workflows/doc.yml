@@ -5,8 +5,8 @@ on:
     branches:
       - master
     paths:
-      - '**/*.md'
       - 'docs/**'
+      - 'website/**'
 
 jobs:
   doc:
@@ -14,13 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/setup-ruby@v1
-        with:
-          ruby-version: '2.x'
-      - name: Install Jekyll
-        run: |
-          gem install sass
-          gem install jekyll -v 3.8.5
       - name: Setup Git
         run: |
           git config --global user.email "leo@xerial.org"
@@ -39,7 +32,9 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-doc-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-doc-
+          key: ${{ runner.os }}-mdocs-${{ hashFiles('docs/**') }}
+          restore-keys: |
+            ${{ runner.os }}-mdocs-${{ hashFiles('docs/**') }}-
+            ${{ runner.os }}-mdocs-
       - name: Publish doc
-        run: ./sbt docs/publishMicrosite
+        run: ./sbt docs/docusaurusPublishGhpages

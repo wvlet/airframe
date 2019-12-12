@@ -20,6 +20,7 @@ import org.komamitsu.fluency.treasuredata.FluencyBuilderForTreasureData
   *
   */
 object Fluentd {
+
   /**
     * A design for using Fluency-backed FluentdClient
     *
@@ -45,7 +46,7 @@ object Fluentd {
     // We need to extract this code probably because of a bug of Scala compiler.
     val builder = new FluencyBuilderForFluentd()
     builder.setMaxBufferSize(maxBufferSize)
-    builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setFlushAttemptIntervalMillis(flushIntervalMillis)
     builder.setBufferChunkRetentionSize(bufferChunkRetentionSize)
     builder.setBufferChunkRetentionTimeMillis(bufferChunkRetentionTimeMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)
@@ -74,7 +75,7 @@ object Fluentd {
   ): FluentdLogger = {
     val builder = new FluencyBuilderForTreasureData()
     builder.setMaxBufferSize(maxBufferSize)
-    builder.setFlushIntervalMillis(flushIntervalMillis)
+    builder.setFlushAttemptIntervalMillis(flushIntervalMillis)
     builder.setBufferChunkRetentionSize(bufferChunkRetentionSize)
     builder.setBufferChunkRetentionTimeMillis(bufferChunkRetentionTimeMillis)
     builder.setJvmHeapBufferMode(jvmHeapBufferMode)

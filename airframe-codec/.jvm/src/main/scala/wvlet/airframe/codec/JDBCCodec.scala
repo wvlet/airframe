@@ -336,7 +336,7 @@ object JDBCCodec extends LogSupport {
       // Store string representation of java.sql.Date
       p.packString(v.toString)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           v.setObject(java.sql.Date.valueOf(u.unpackString))
@@ -356,7 +356,7 @@ object JDBCCodec extends LogSupport {
     override def pack(p: Packer, v: Time): Unit = {
       p.packString(v.toString)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           v.setObject(java.sql.Time.valueOf(u.unpackString))
@@ -375,7 +375,7 @@ object JDBCCodec extends LogSupport {
     override def pack(p: Packer, v: Timestamp): Unit = {
       p.packString(v.toString)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           v.setObject(java.sql.Timestamp.valueOf(u.unpackString))
@@ -394,7 +394,7 @@ object JDBCCodec extends LogSupport {
     override def pack(p: Packer, v: java.math.BigDecimal): Unit = {
       p.packString(v.toString)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           val s = u.unpackString
@@ -443,6 +443,6 @@ object JDBCCodec extends LogSupport {
           throw new UnsupportedOperationException(s"Reading array type of ${arr.getClass} is not supported: ${arr}")
       }
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
+    override def unpack(u: Unpacker, v: MessageContext): Unit = ???
   }
 }

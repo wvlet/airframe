@@ -24,7 +24,8 @@ import wvlet.airframe._
 import wvlet.airframe.codec.MessageCodec
 import wvlet.airframe.control.MultipleExceptions
 import wvlet.airframe.http.finagle.FinagleServer.FinagleService
-import wvlet.airframe.http.{ControllerProvider, HttpServerException, ResponseHandler, Router}
+import wvlet.airframe.http.router.{ControllerProvider, ResponseHandler}
+import wvlet.airframe.http.{HttpServerException, Router}
 import wvlet.airframe.surface.Surface
 import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil
@@ -114,9 +115,11 @@ case class FinagleServerConfig(
     val finagleRouter = new FinagleRouter(session, this)
 
     // Build Finagle filters
-    val service = beforeRoutingFilter andThen
-      finagleRouter andThen
-      fallbackService
+    val service =
+      FinagleServer.threadLocalStorageFilter andThen
+        beforeRoutingFilter andThen
+        finagleRouter andThen
+        fallbackService
 
     service
   }
@@ -215,6 +218,14 @@ object FinagleServer extends LogSupport {
             case _ =>
               Future.value(Response(Status.InternalServerError))
           }
+      }
+    }
+  }
+
+  def threadLocalStorageFilter: SimpleFilter[Request, Response] = new SimpleFilter[Request, Response] {
+    override def apply(request: Request, service: Service[Request, Response]): Future[Response] = {
+      FinagleBackend.withThreadLocalStore {
+        service(request)
       }
     }
   }

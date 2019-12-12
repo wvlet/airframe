@@ -43,7 +43,7 @@ object JavaTimeCodec {
       p.writePayload(extData, 0, cursor.lastWrittenBytes)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       Try {
         u.getNextFormat.getValueType match {
           case ValueType.STRING =>
@@ -72,7 +72,7 @@ object JavaTimeCodec {
       p.packString(v.toString)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val zonedDateTimeStr = u.unpackString
       Try(ZonedDateTime.parse(zonedDateTimeStr)) match {
         case Success(zd) =>
@@ -91,7 +91,7 @@ object JavaTimeCodec {
       // Use Instant for encoding
       JavaInstantTimeCodec.pack(p, v.toInstant)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       JavaInstantTimeCodec.unpack(u, v)
       if (!v.isNull) {
         v.setObject(Date.from(v.getLastValue.asInstanceOf[Instant]))

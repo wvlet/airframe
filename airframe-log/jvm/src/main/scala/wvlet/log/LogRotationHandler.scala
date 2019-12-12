@@ -27,6 +27,7 @@ import wvlet.log.LogFormatter.AppLogFormatter
 import scala.util.{Failure, Success, Try}
 
 object LogRotationHandler {
+
   /**
     * Encoding log string as UTF-8
     */

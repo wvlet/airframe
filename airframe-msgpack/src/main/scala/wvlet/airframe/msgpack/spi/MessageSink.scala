@@ -22,6 +22,7 @@ import java.io.{Flushable, IOException}
   * use buffer pools, or use memory-mapped files.
   */
 trait MessageSink extends AutoCloseable with Flushable {
+
   /**
     * Allocates the next buffer for writing MessagePack data.
     * <p>

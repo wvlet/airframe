@@ -24,6 +24,7 @@ import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 trait MessageCodec[A] extends LogSupport {
+
   /**
     * Converting the object into MessagePack (= Array[Byte])
     */
@@ -35,7 +36,7 @@ trait MessageCodec[A] extends LogSupport {
     */
   def unpack(msgpack: MsgPack): A = {
     val unpacker = MessagePack.newUnpacker(msgpack)
-    val v        = new MessageHolder
+    val v        = new MessageContext
     try {
       unpack(unpacker, v)
     } catch {
@@ -54,7 +55,7 @@ trait MessageCodec[A] extends LogSupport {
   }
 
   def pack(p: Packer, v: A): Unit
-  def unpack(u: Unpacker, v: MessageHolder): Unit
+  def unpack(u: Unpacker, v: MessageContext): Unit
 
   // TODO add specialized methods for primitive values
   // def unpackInt(u:MessageUnpacker) : Int
@@ -101,7 +102,7 @@ trait MessageCodec[A] extends LogSupport {
   def unpackMsgPack(msgpack: Array[Byte]): Option[A] = unpackMsgPack(msgpack, 0, msgpack.length)
   def unpackMsgPack(msgpack: Array[Byte], offset: Int, len: Int): Option[A] = {
     val unpacker = MessagePack.newUnpacker(msgpack, offset, len)
-    val v        = new MessageHolder
+    val v        = new MessageContext
     try {
       unpack(unpacker, v)
       if (v.isNull) {
@@ -130,7 +131,7 @@ trait MessageCodec[A] extends LogSupport {
   def fromJson(json: String): A = {
     val msgpack  = MessagePack.fromJSON(json)
     val unpacker = MessagePack.newUnpacker(msgpack)
-    val v        = new MessageHolder
+    val v        = new MessageContext
     unpack(unpacker, v)
     if (v.hasError) {
       throw v.getError.get
@@ -150,7 +151,7 @@ trait MessageValueCodec[A] extends MessageCodec[A] {
     p.packValue(packValue(v))
   }
 
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+  override def unpack(u: Unpacker, v: MessageContext): Unit = {
     val vl = u.unpackValue
     Try(unpackValue(vl)) match {
       case Success(x) =>

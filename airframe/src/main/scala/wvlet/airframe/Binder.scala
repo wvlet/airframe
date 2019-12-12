@@ -100,6 +100,7 @@ import wvlet.airframe.Binder._
   *
   */
 class Binder[A](val design: Design, val from: Surface, val sourceCode: SourceCode) extends LogSupport {
+
   /**
     * Bind a singleton instance of B to A
     *

@@ -37,7 +37,7 @@ object CollectionCodec {
 
     def unpack[A](
         u: Unpacker,
-        v: MessageHolder,
+        v: MessageContext,
         surface: Surface,
         elementCodec: MessageCodec[A],
         newBuilder: => mutable.Builder[A, Seq[A]]
@@ -80,7 +80,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, Seq.newBuilder[A])
     }
   }
@@ -90,7 +90,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, IndexedSeq.newBuilder[A])
     }
   }
@@ -109,7 +109,7 @@ object CollectionCodec {
       BaseSeqCodec.pack(p, v, elementCodec)
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       BaseSeqCodec.unpack(u, v, surface, elementCodec, List.newBuilder[A])
     }
   }
@@ -124,7 +124,7 @@ object CollectionCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val len = u.unpackArrayHeader
       val b   = Seq.newBuilder[Any]
       b.sizeHint(len)
@@ -144,7 +144,7 @@ object CollectionCodec {
         valueCodec.pack(p, v)
       }
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextFormat.getValueType match {
         case ValueType.MAP =>
           val len = u.unpackMapHeader
@@ -187,7 +187,7 @@ object CollectionCodec {
         valueCodec.pack(p, v)
       }
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.MAP =>
           val len = u.unpackMapHeader

@@ -19,6 +19,7 @@ import wvlet.log.LogSupport
   *
   */
 object JSON extends LogSupport {
+
   /**
     * Parse JSON object or array
     */

@@ -30,6 +30,7 @@ import scala.reflect.runtime.{universe => ru}
   * @tparam Resp
   */
 trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
+
   /**
     * Send an HTTP request and get the response. It will throw an exception for non successful responses (after reaching the max retry limit)
     *
@@ -72,6 +73,11 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resource: Resource,
       requestFilter: Req => Req = identity
   ): F[Resource]
+  def postRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resp]
   def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -82,6 +88,11 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resource: Resource,
       requestFilter: Req => Req = identity
   ): F[Resource]
+  def putRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resp]
   def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -91,6 +102,10 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resourcePath: String,
       requestFilter: Req => Req = identity
   ): F[OperationResponse]
+  def deleteRaw(
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): F[Resp]
   def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -101,6 +116,11 @@ trait HttpClient[F[_], Req, Resp] extends AutoCloseable {
       resource: Resource,
       requestFilter: Req => Req = identity
   ): F[Resource]
+  def patchRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): F[Resp]
   def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -158,6 +178,13 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
   ): Resource = {
     awaitF(asyncClient.post[Resource](resourcePath, resource, requestFilter))
   }
+  def postRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resp = {
+    awaitF(asyncClient.postRaw[Resource](resourcePath, resource, requestFilter))
+  }
   def postOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -173,6 +200,13 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
   ): Resource = {
     awaitF(asyncClient.put[Resource](resourcePath, resource, requestFilter))
   }
+  def putRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resp = {
+    awaitF(asyncClient.putRaw[Resource](resourcePath, resource, requestFilter))
+  }
   def putOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
       resource: Resource,
@@ -186,6 +220,12 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
       requestFilter: Req => Req = identity
   ): OperationResponse = {
     awaitF(asyncClient.delete[OperationResponse](resourcePath, requestFilter))
+  }
+  def deleteRaw(
+      resourcePath: String,
+      requestFilter: Req => Req = identity
+  ): Resp = {
+    awaitF(asyncClient.deleteRaw(resourcePath, requestFilter))
   }
   def deleteOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,
@@ -201,6 +241,13 @@ class HttpSyncClient[F[_], Req, Resp](asyncClient: HttpClient[F, Req, Resp]) ext
       requestFilter: Req => Req = identity
   ): Resource = {
     awaitF(asyncClient.patch[Resource](resourcePath, resource, requestFilter))
+  }
+  def patchRaw[Resource: ru.TypeTag](
+      resourcePath: String,
+      resource: Resource,
+      requestFilter: Req => Req = identity
+  ): Resp = {
+    awaitF(asyncClient.patchRaw[Resource](resourcePath, resource, requestFilter))
   }
   def patchOps[Resource: ru.TypeTag, OperationResponse: ru.TypeTag](
       resourcePath: String,

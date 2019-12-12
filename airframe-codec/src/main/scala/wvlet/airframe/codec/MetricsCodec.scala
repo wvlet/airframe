@@ -29,7 +29,7 @@ object MetricsCodec {
     override def pack(p: Packer, v: DataSize): Unit = {
       p.packString(v.toString())
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           v.setObject(DataSize(u.unpackString))
@@ -49,7 +49,7 @@ object MetricsCodec {
       p.packString(v.toString())
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       u.getNextValueType match {
         case ValueType.STRING =>
           v.setObject(ElapsedTime(u.unpackString))

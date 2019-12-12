@@ -28,7 +28,7 @@ object ScalaStandardCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val f = u.getNextFormat
       f.getValueType match {
         case ValueType.NIL =>
@@ -50,7 +50,7 @@ object ScalaStandardCodec {
       }
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val numElems = u.unpackArrayHeader
       if (numElems != elementCodec.size) {
         u.skipValue(numElems)
