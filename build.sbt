@@ -8,7 +8,7 @@ val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 
 val SCALATEST_VERSION               = "3.0.8"
-val SCALACHECK_VERSION              = "1.14.2"
+val SCALACHECK_VERSION              = "1.14.3"
 val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
@@ -56,7 +56,7 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.2"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3"
   )
 )
 
