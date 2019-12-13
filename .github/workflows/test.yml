@@ -81,4 +81,5 @@ jobs:
           key: ${{ runner.os }}-scala-js-${{ hashFiles('**/*.sbt') }}
           restore-keys: ${{ runner.os }}-scala-js-
       - name: Scala.js test
-        run: ./sbt projectJS/test
+        # A workaround for Scala.js linker error
+        run: ./sbt "; airspecJS/test:fastOptJS; projectJS/test"
