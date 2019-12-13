@@ -20,6 +20,7 @@ import java.time.{DayOfWeek, ZonedDateTime}
   *
   */
 sealed abstract class TimeWindowUnit(val symbol: String, val secondsInUnit: Int) {
+
   /**
     * Truncate the given time to this unit
     */

@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.launcher
-import wvlet.airframe.codec.{MessageCodec, MessageHolder}
+import wvlet.airframe.codec.{MessageCodec, MessageContext}
 import wvlet.airframe.msgpack.spi.{Packer, Unpacker}
 
 /**
@@ -41,5 +41,5 @@ object StringTreeCodec extends MessageCodec[StringTree] {
     }
   }
 
-  override def unpack(u: Unpacker, v: MessageHolder): Unit = ???
+  override def unpack(u: Unpacker, v: MessageContext): Unit = ???
 }

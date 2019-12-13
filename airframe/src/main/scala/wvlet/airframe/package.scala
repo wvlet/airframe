@@ -26,6 +26,7 @@ import scala.language.implicitConversions
   *
   */
 package object airframe {
+
   /**
     * The entry point to create a new design beginning from a blanc design
     * <code>

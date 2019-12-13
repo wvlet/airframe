@@ -67,6 +67,7 @@ class InOutTableFinder {
   *
   */
 object InOutTableFinder {
+
   /**
     * A holder for remembering the target output table to connect it with the inner table inputs.
     */

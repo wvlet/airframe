@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.http
 
+import wvlet.airframe.http.router.{ControllerRoute, Route, RouteMatch, RouteMatcher, RouterMacros}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.log.LogSupport
 
@@ -40,12 +41,15 @@ case class Router(
     surface: Option[Surface] = None,
     children: Seq[Router] = Seq.empty,
     localRoutes: Seq[Route] = Seq.empty,
-    filterSurface: Option[Surface] = None
+    filterSurface: Option[Surface] = None,
+    filterInstance: Option[HttpFilterType] = None
 ) {
   def isEmpty = this eq Router.empty
 
+  def isLeafFilter = children.isEmpty && localRoutes.isEmpty
+
   // If this node has no operation (endspoints, filter, etc.)
-  def hasNoOperation = surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty
+  def hasNoOperation = surface.isEmpty && filterSurface.isEmpty && localRoutes.isEmpty && filterInstance.isEmpty
 
   def routes: Seq[Route] = {
     localRoutes ++ children.flatMap(_.routes)
@@ -56,8 +60,12 @@ case class Router(
   private def printNode(indentLevel: Int): String = {
     val s = Seq.newBuilder[String]
 
-    val ws   = " " * (indentLevel * 2)
-    val name = surface.orElse(filterSurface).getOrElse(f"${hashCode()}%x")
+    val ws = " " * (indentLevel * 2)
+    val name =
+      surface
+        .orElse(filterSurface)
+        .orElse(filterInstance.map(_.getClass.getSimpleName))
+        .getOrElse(f"${hashCode()}%x")
     s += s"${ws}- Router[${name}]"
 
     for (r <- localRoutes) {
@@ -80,12 +88,14 @@ case class Router(
     */
   def add[Controller]: Router = macro RouterMacros.add[Controller]
 
+  def andThen(filter: HttpFilterType): Router = andThen(Router(filterInstance = Some(filter)))
+
   def andThen(next: Router): Router = {
     this.children.size match {
       case 0 =>
         this.addChild(next)
       case 1 =>
-        new Router(surface, Seq(children(0).andThen(next)), localRoutes, filterSurface)
+        this.copy(children = Seq(children(0).andThen(next)))
       case _ =>
         throw new IllegalStateException(s"The router ${this.toString} already has multiple child routers")
     }
@@ -100,11 +110,11 @@ case class Router(
     * @return
     */
   def addChild(childRouter: Router): Router = {
-    new Router(surface, children :+ childRouter, localRoutes, filterSurface)
+    this.copy(children = children :+ childRouter)
   }
 
   def withFilter(newFilterSurface: Surface): Router = {
-    new Router(surface, children, localRoutes, Some(newFilterSurface))
+    this.copy(filterSurface = Some(newFilterSurface))
   }
 
   /**
@@ -176,5 +186,7 @@ object Router extends LogSupport {
   def of[Controller]: Router = macro RouterMacros.of[Controller]
   def add[Controller]: Router = macro RouterMacros.of[Controller]
 
-  case class RouteFilter[Req, Resp, F[_]](filter: HttpFilter[Req, Resp, F], controller: Any)
+  def add(filter: HttpFilterType) = {
+    new Router(filterInstance = Some(filter))
+  }
 }

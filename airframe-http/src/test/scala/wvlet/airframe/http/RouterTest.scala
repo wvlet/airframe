@@ -16,6 +16,7 @@ package wvlet.airframe.http
 import wvlet.airframe.Session
 import wvlet.airframe.http.example.ControllerExample.User
 import wvlet.airframe.http.example._
+import wvlet.airframe.http.router.{ControllerProvider, RouteMatcher}
 import wvlet.airframe.surface.Surface
 import wvlet.airspec.AirSpec
 
@@ -140,7 +141,7 @@ class RouterTest extends AirSpec {
         router
           .findRoute(request)
           .flatMap { m =>
-            m.call(session, serviceProvider, request)
+            m.call(session, serviceProvider, request, null)
           }
 
       ret shouldBe defined

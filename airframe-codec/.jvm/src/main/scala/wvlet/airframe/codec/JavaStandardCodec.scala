@@ -32,7 +32,7 @@ object JavaStandardCodec {
     override def pack(p: Packer, v: File): Unit = {
       p.packString(v.getPath)
     }
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val path = u.unpackString
       v.setObject(new File(path))
     }
@@ -54,7 +54,7 @@ object JavaStandardCodec {
       p.packString(v.asInstanceOf[Enum[_]].name())
     }
 
-    override def unpack(u: Unpacker, v: MessageHolder): Unit = {
+    override def unpack(u: Unpacker, v: MessageContext): Unit = {
       val name = u.unpackString
       enumTable.get(CName.toCanonicalName(name)) match {
         case Some(enum) => v.setObject(enum)

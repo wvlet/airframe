@@ -69,14 +69,13 @@ private[surface] object SurfaceMacros {
 
     private def allMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
       t.members.sorted // Sort the members in the source code order
-        .filter(
-          x =>
-            x.isMethod &&
-              !x.isConstructor &&
-              !x.isImplementationArtifact
-              && !x.isImplicit
-            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-              && !x.isSynthetic
+        .filter(x =>
+          x.isMethod &&
+            !x.isConstructor &&
+            !x.isImplementationArtifact
+            && !x.isImplicit
+          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+            && !x.isSynthetic
         )
         .map(_.asMethod)
         .filter { x =>

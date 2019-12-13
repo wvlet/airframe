@@ -1,0 +1,35 @@
+{
+  "docs": {
+    "Resources": [
+      "index",
+      "articles",
+      "release-notes",
+      "logos"
+    ],
+    "Frameworks": [
+      "airframe",
+      "airframe-http",
+      "airspec"
+    ],
+    "Core Modules": [
+      "airframe-codec",
+      "airframe-config",
+      "airframe-control",
+      "airframe-log",
+      "airframe-metrics",
+      "airframe-surface"
+    ],
+    "Utilities": [
+      "airframe-benchmark",
+      "airframe-canvas",
+      "airframe-fluentd",
+      "airframe-http-recorder",
+      "airframe-jdbc",
+      "airframe-jmx",
+      "airframe-json",
+      "airframe-launcher",
+      "airframe-msgpack",
+      "airframe-sql"
+    ]
+  }
+}

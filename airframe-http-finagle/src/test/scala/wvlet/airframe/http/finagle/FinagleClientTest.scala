@@ -158,12 +158,15 @@ class FinagleClientTest extends AirSpec {
 
         client.post[User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
         client.postOps[User, User]("/user", User(2, "yui", "N/A"), addRequestId) shouldBe User(2, "yui", "10")
+        client.postRaw[User]("/user", User(2, "yui", "N/A"), addRequestId).contentString shouldBe """{"id":2,"name":"yui","requestId":"10"}"""
 
         client.put[User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
         client.putOps[User, User]("/user", User(10, "aina", "N/A"), addRequestId) shouldBe User(10, "aina", "10")
+        client.putRaw[User]("/user", User(10, "aina", "N/A"), addRequestId).contentString shouldBe """{"id":10,"name":"aina","requestId":"10"}"""
 
         client.patch[User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
         client.patchOps[User, User]("/user", User(20, "joy", "N/A"), addRequestId) shouldBe User(20, "joy", "10")
+        client.patchRaw[User]("/user", User(20, "joy", "N/A"), addRequestId).contentString shouldBe """{"id":20,"name":"joy","requestId":"10"}"""
 
         client.delete[User]("/user/1", addRequestId) shouldBe User(1, "xxx", "10")
         client.deleteOps[DeleteRequestBody, User]("/user/1", DeleteRequestBody(true), addRequestId) shouldBe User(
@@ -171,6 +174,7 @@ class FinagleClientTest extends AirSpec {
           "xxx",
           "10"
         )
+        client.deleteRaw("/user/1", addRequestId).contentString shouldBe """{"id":1,"name":"xxx","requestId":"10"}"""
       }
     }
   }
