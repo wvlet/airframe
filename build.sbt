@@ -14,7 +14,7 @@ val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
 val SLF4J_VERSION                   = "1.7.29"
 val JS_JAVA_LOGGING_VERSION         = "0.1.6"
-val FINAGLE_VERSION                 = "19.11.0"
+val FINAGLE_VERSION                 = "19.12.0"
 val FLUENCY_VERSION                 = "2.4.0"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 

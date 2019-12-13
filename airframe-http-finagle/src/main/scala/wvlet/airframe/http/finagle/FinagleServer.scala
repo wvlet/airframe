@@ -263,7 +263,7 @@ trait FinagleServerFactory extends AutoCloseable with LogSupport {
 
   /**
     * Override this method to customize Finagle Server configuration.
-    * @deprecated(description = "Use FinagleServerConfig.withServerInitializer", since = "19.11.0")
+    * @deprecated(description = "Use FinagleServerConfig.withServerInitializer", since = "19.12.0")
     */
   protected def initServer(server: Http.Server): Http.Server = {
     // Do nothing by default
