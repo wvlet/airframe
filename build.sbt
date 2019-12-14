@@ -644,9 +644,7 @@ lazy val sql =
       antlr4GenVisitor in Antlr4 := true,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
-        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
-        // Include Spark just as a reference implementation
-        "org.apache.spark" %% "spark-sql" % "2.4.0" % "test"
+        "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
