@@ -12,6 +12,16 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Presentations and Articles](articles.md)
 
+## Frameworks
+
+Airframe has three core frameworks:
+
+- [airframe-di: Dependency Injection](airframe.md)
+- [airframe-http: Web Service Framework](airframe-http.md)
+- [AirSpec: Testing Framework](airspec.md)
+
+and the other [useful utility modules](#list-of-airframe-modules) like [airframe-codec: Schema-On-Read Serializer](airframe-codec.md), [airframe-config](airframe-config.md), etc.
+
 ## build.sbt
 
 Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
