@@ -6,6 +6,14 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 19.12.1
+
+-  Upgrade Scala.js to 1.0.0-RC2 ([#821](https://github.com/wvlet/airframe/issues/821)) [[6b458dc](https://github.com/wvlet/airframe/commit/6b458dc)]
+-  Updated the documentation site using Docusaurus ([#851](https://github.com/wvlet/airframe/issues/851)) [[59d090f](https://github.com/wvlet/airframe/commit/59d090f)]
+-  airframe-http: Update finagle-core, finagle-http, ... to 19.12.0 ([#855](https://github.com/wvlet/airframe/issues/855)) [[3bcff69](https://github.com/wvlet/airframe/commit/3bcff69)]
+-  airframe-jdbc: Update postgresql to 42.2.9 ([#848](https://github.com/wvlet/airframe/issues/848)) [[d3d79fe](https://github.com/wvlet/airframe/commit/d3d79fe)]
+-  intenal: Update sbt to 1.3.5 ([#856](https://github.com/wvlet/airframe/issues/856)) [[9cbe696](https://github.com/wvlet/airframe/commit/9cbe696)]
+
 ## 19.12.0
 -  airframe-di: Support in-class bind[X] for classes with DISupport trait ([#816](https://github.com/wvlet/airframe/issues/816)) [[c3ce56b](https://github.com/wvlet/airframe/commit/c3ce56b)]
 -  airframe-http: Add CORS filter and filter-instance support ([#846](https://github.com/wvlet/airframe/issues/846)) [[58245b2](https://github.com/wvlet/airframe/commit/58245b2)]
