@@ -12,6 +12,51 @@ Airframe is a collection of essential building blocks for writing full-fledged a
 - [Source Code (GitHub)](https://github.com/wvlet/airframe)
 - [Presentations and Articles](articles.md)
 
+## build.sbt
+
+Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
+
+[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
+) [![airframe](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
+)](https://index.scala-lang.org/wvlet/airframe)
+
+
+**build.sbt**
+```scala
+val AIRFRAME_VERSION="(version)"
+
+# For Scala 2.12, and 2.13
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
+  "org.wvlet.airframe" %% "airframe-config"        % AIRFRAME_VERSION, // YAML-based configuration
+  "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution
+  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP REST API
+  "org.wvlet.airframe" %% "airframe-http-finagle"  % AIRFRAME_VERSION, // HTTP server (Finagle backend)
+  "org.wvlet.airframe" %% "airframe-http-recorder" % AIRFRAME_VERSION, // HTTP recorder and replayer
+  "org.wvlet.airframe" %% "airframe-jmx"           % AIRFRAME_VERSION, // JMX monitoring
+  "org.wvlet.airframe" %% "airframe-jdbc"          % AIRFRAME_VERSION, // JDBC connection pool
+  "org.wvlet.airframe" %% "airframe-json"          % AIRFRAME_VERSION, // Pure Scala JSON parser
+  "org.wvlet.airframe" %% "airframe-launcher"      % AIRFRAME_VERSION, // Command-line program launcher
+  "org.wvlet.airframe" %% "airframe-log"           % AIRFRAME_VERSION, // Logging
+  "org.wvlet.airframe" %% "airframe-metrics"       % AIRFRAME_VERSION, // Metrics units
+  "org.wvlet.airframe" %% "airframe-msgpack"       % AIRFRAME_VERSION, // Pure-Scala MessagePack
+  "org.wvlet.airframe" %% "airframe-surface"       % AIRFRAME_VERSION, // Object surface inspector
+)
+
+# For Scala.js, the following libraries can be used:
+libraryDependencies ++= Seq(
+  "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
+  "org.wvlet.airframe" %%% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
+  "org.wvlet.airframe" %%% "airframe-json"    % AIRFRAME_VERSION, // Pure Scala JSON parser
+  "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
+  "org.wvlet.airframe" %%% "airframe-msgpack" % AIRFRAME_VERSION, // Pure-Scala MessagePack
+  "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
+  "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
+)
+```
+
+
 ## Usage Guides
 
 Scala is a quite powerful programming language. One of the benefits of Scala is it can utilize libraries in Java ecosystem. Existing libraries for Java, however, are not always the best choices if you are primarily writing code in Scala. For example, some libraries have performance overhead for converting Java collections into Scala collections, and their interfaces might not be well-suited to using them from Scala, etc.
@@ -195,50 +240,6 @@ usage: myapp [options]
 [options]
  -p [PORT]   port number
  -h, --help  show help messages
-```
-
-## build.sbt
-
-Airframe is a collection of essential libraries. Add necessary modules for your applications to your `libraryDependencies` setting in __build.sbt__ file.
-
-[![maven central](https://img.shields.io/maven-central/v/org.wvlet.airframe/airframe_2.12.svg?label=maven%20central)](https://search.maven.org/search?q=g:%22org.wvlet.airframe%22%20AND%20a:%22airframe_2.12%22
-) [![airframe](https://index.scala-lang.org/wvlet/airframe/airframe/latest.svg?color=orange
-)](https://index.scala-lang.org/wvlet/airframe) 
-
-
-**build.sbt**
-```scala
-val AIRFRAME_VERSION="(version)"
-
-# For Scala 2.12, and 2.13
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %% "airframe"               % AIRFRAME_VERSION, // Dependency injection
-  "org.wvlet.airframe" %% "airframe-codec"         % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
-  "org.wvlet.airframe" %% "airframe-config"        % AIRFRAME_VERSION, // YAML-based configuration
-  "org.wvlet.airframe" %% "airframe-control"       % AIRFRAME_VERSION, // Library for retryable execution
-  "org.wvlet.airframe" %% "airframe-http"          % AIRFRAME_VERSION, // HTTP REST API
-  "org.wvlet.airframe" %% "airframe-http-finagle"  % AIRFRAME_VERSION, // HTTP server (Finagle backend)
-  "org.wvlet.airframe" %% "airframe-http-recorder" % AIRFRAME_VERSION, // HTTP recorder and replayer
-  "org.wvlet.airframe" %% "airframe-jmx"           % AIRFRAME_VERSION, // JMX monitoring
-  "org.wvlet.airframe" %% "airframe-jdbc"          % AIRFRAME_VERSION, // JDBC connection pool
-  "org.wvlet.airframe" %% "airframe-json"          % AIRFRAME_VERSION, // Pure Scala JSON parser
-  "org.wvlet.airframe" %% "airframe-launcher"      % AIRFRAME_VERSION, // Command-line program launcher
-  "org.wvlet.airframe" %% "airframe-log"           % AIRFRAME_VERSION, // Logging
-  "org.wvlet.airframe" %% "airframe-metrics"       % AIRFRAME_VERSION, // Metrics units
-  "org.wvlet.airframe" %% "airframe-msgpack"       % AIRFRAME_VERSION, // Pure-Scala MessagePack
-  "org.wvlet.airframe" %% "airframe-surface"       % AIRFRAME_VERSION, // Object surface inspector
-)
-
-# For Scala.js, the following libraries can be used:
-libraryDependencies ++= Seq(
-  "org.wvlet.airframe" %%% "airframe"         % AIRFRAME_VERSION, // Dependency injection
-  "org.wvlet.airframe" %%% "airframe-codec"   % AIRFRAME_VERSION, // MessagePack-based schema-on-read codec
-  "org.wvlet.airframe" %%% "airframe-json"    % AIRFRAME_VERSION, // Pure Scala JSON parser
-  "org.wvlet.airframe" %%% "airframe-log"     % AIRFRAME_VERSION, // Logging
-  "org.wvlet.airframe" %%% "airframe-msgpack" % AIRFRAME_VERSION, // Pure-Scala MessagePack
-  "org.wvlet.airframe" %%% "airframe-metrics" % AIRFRAME_VERSION, // Metrics units
-  "org.wvlet.airframe" %%% "airframe-surface" % AIRFRAME_VERSION, // Object surface inspector
-)
 ```
 
 
