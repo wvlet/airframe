@@ -27,11 +27,10 @@ The basic usage is creating a new connection pool factory with `ConnectionPool.n
 
 
 ```scala
-import wvlet.airframe._
 import wvlet.airframe.jdbc._
 
 
-// Create a new connection pool. The created pool will be closed automatically
+// Create a new connection pool. The created pool will be closed when closing this factory.
 val factory = ConnectionPool.newFactory
 
 val dbConfig = DbConfig.ofSQLite(path = "mydb.sqlite")
@@ -46,7 +45,7 @@ connectionPool.updateWith("insert into test values(?, ?)") { ps =>
 }
 
 // Read ResultSet
-connectionPoo.executeQuery("select * from test") { rs =>
+connectionPool.executeQuery("select * from test") { rs =>
   // Traverse the query ResultSet here
   while (rs.next()) {
     val id   = rs.getInt("id")
@@ -54,7 +53,13 @@ connectionPoo.executeQuery("select * from test") { rs =>
     println(s"read (${id}, ${name})")
   }
 }
+
+// Close the created connection pools
+factory.close()
+
 ```
+
+
 
 ### Using with Airframe DI
 ```scala
