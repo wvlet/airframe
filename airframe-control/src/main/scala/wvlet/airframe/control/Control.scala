@@ -12,6 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
+import sun.jvm.hotspot.CommandProcessor.NonBootFilter
+
+import scala.util.control.NonFatal
 
 /**
   *
@@ -33,14 +36,31 @@ object Control {
     try {
       body(resource1, resource2)
     } finally {
-      try {
-        if (resource1 != null) {
-          resource1.close()
+      closeResources(resource1, resource2)
+    }
+  }
+
+  case class MultipleExceptions(causes: List[Throwable]) extends Exception(causes.head) {
+    override def getMessage: String = {
+      s"Multiple exception occurred:\n${causes.map(x => s"  - ${x.getMessage}").mkString("\n")}"
+    }
+  }
+
+  def closeResources[R <: AutoCloseable](resources: R*): Unit = {
+    if (resources != null) {
+      var exceptionList = List.empty[Throwable]
+      resources.map { x =>
+        try {
+          if (x != null) {
+            x.close()
+          }
+        } catch {
+          case NonFatal(e) =>
+            exceptionList = e :: exceptionList
         }
-      } finally {
-        if (resource2 != null) {
-          resource2.close()
-        }
+      }
+      if (exceptionList.nonEmpty) {
+        throw MultipleExceptions(exceptionList)
       }
     }
   }

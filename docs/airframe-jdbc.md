@@ -9,6 +9,7 @@ Currently we are supporting these databases:
 
 - **sqlite**: SQLite
 - **postgres**: PostgreSQL (e.g., [AWS RDS](https://aws.amazon.com/rds/))
+- Generic JDBC drivers
 
 Adding a new connection pool type would be easy. Your contributions are welcome.
 
