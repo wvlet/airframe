@@ -12,8 +12,6 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
-import sun.jvm.hotspot.CommandProcessor.NonBootFilter
-
 import scala.util.control.NonFatal
 
 /**
@@ -37,12 +35,6 @@ object Control {
       body(resource1, resource2)
     } finally {
       closeResources(resource1, resource2)
-    }
-  }
-
-  case class MultipleExceptions(causes: List[Throwable]) extends Exception(causes.head) {
-    override def getMessage: String = {
-      s"Multiple exception occurred:\n${causes.map(x => s"  - ${x.getMessage}").mkString("\n")}"
     }
   }
 
