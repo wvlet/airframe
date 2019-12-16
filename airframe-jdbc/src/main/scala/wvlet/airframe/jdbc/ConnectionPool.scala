@@ -27,6 +27,8 @@ object ConnectionPool {
     }
     pool
   }
+
+  def newFactory: ConnectionPoolFactory = new ConnectionPoolFactory()
 }
 
 trait ConnectionPool extends LogSupport with AutoCloseable {

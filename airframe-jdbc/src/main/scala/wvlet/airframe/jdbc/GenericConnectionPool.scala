@@ -49,7 +49,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
     )
 
     info(s"jdbc URL: ${connectionPoolConfig.getJdbcUrl}")
-    new HikariDataSource(connectionPoolConfig)
+    new HikariDataSource(config.connectionPool.hikariConfig(connectionPoolConfig))
   }
 
   override def withConnection[U](body: Connection => U): U = {

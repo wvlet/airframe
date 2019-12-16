@@ -13,6 +13,7 @@
  */
 package wvlet.airframe.jdbc
 
+import com.zaxxer.hikari.HikariConfig
 import wvlet.airframe.config.secret
 
 /**
@@ -93,6 +94,10 @@ case class DbConfig(
     this.copy(connectionPool = connectionPoolConfig)
   }
 
+  def withHikariConfig(configFilter: HikariConfig => HikariConfig): DbConfig = {
+    this.copy(connectionPool = connectionPool.withHikariConfig(configFilter))
+  }
+
   def withSQLiteConfig(dbFilePath: String): DbConfig = {
     this.copy(`type` = "sqlite", host = None, database = dbFilePath)
   }
@@ -111,8 +116,13 @@ case class PostgreSQLConfig(
 
 case class ConnectionPoolConfig(
     maxPoolSize: Int = 10,
-    autoCommit: Boolean = true
-)
+    autoCommit: Boolean = true,
+    hikariConfig: HikariConfig => HikariConfig = identity
+) {
+  def withHikariConfig(configFilter: HikariConfig => HikariConfig): ConnectionPoolConfig = {
+    this.copy(hikariConfig = configFilter)
+  }
+}
 
 object DbConfig {
   def of(dbType: String): DbConfig     = DbConfig(`type` = dbType)
