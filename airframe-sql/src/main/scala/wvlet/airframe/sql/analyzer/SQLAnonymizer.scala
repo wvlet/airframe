@@ -88,7 +88,8 @@ object SQLAnonymizer extends LogSupport {
         case q: QName =>
           m += q -> QName(q.parts.map(qnameTable.lookup))
         case u: UnresolvedAttribute =>
-          m += u -> UnresolvedAttribute(u.name.split(".").toSeq.map(qnameTable.lookup).mkString("."))
+          val v = UnresolvedAttribute(u.name.split("\\.").toSeq.map(qnameTable.lookup).mkString("."))
+          m += u -> v
       }
       this
     }

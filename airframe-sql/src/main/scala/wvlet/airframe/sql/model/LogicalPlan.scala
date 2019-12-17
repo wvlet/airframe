@@ -202,7 +202,7 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"V[${rows.length}]"
     }
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = (0 until rows.size).map(x => UnresolvedAttribute(s"i${x}"))
   }
 
   case class TableRef(name: QName) extends Relation with LeafPlan {
@@ -325,8 +325,8 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
-    override def inputAttributes: Seq[Attribute]  = ???
-    override def outputAttributes: Seq[Attribute] = ???
+    override def inputAttributes: Seq[Attribute]  = left.inputAttributes ++ right.inputAttributes
+    override def outputAttributes: Seq[Attribute] = inputAttributes
   }
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)
@@ -377,13 +377,13 @@ object LogicalPlan {
 
   case class Unnest(columns: Seq[Expression], withOrdinality: Boolean) extends Relation {
     override def children: Seq[LogicalPlan]                = Seq.empty
-    override def inputAttributes: Seq[Attribute]           = ??? // TODO
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def inputAttributes: Seq[Attribute]           = Seq.empty // TODO
+    override def outputAttributes: Seq[Attribute]          = Seq.empty // TODO
     override def sig(config: QuerySignatureConfig): String = s"Un[${columns.length}]"
   }
   case class Lateral(query: Relation) extends UnaryRelation {
     override def child: Relation                           = query
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def outputAttributes: Seq[Attribute]          = query.outputAttributes // TODO
     override def sig(config: QuerySignatureConfig): String = s"Lt(${query.sig(config)})"
   }
   case class LateralView(
@@ -392,7 +392,7 @@ object LogicalPlan {
       tableAlias: Identifier,
       columnAliases: Seq[Identifier]
   ) extends UnaryRelation {
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def outputAttributes: Seq[Attribute]          = columnAliases.map(x => UnresolvedAttribute(x.value))
     override def sig(config: QuerySignatureConfig): String = s"LV(${child.sig(config)})"
   }
 
