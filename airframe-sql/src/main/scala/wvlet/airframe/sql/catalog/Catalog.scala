@@ -16,17 +16,37 @@ package wvlet.airframe.sql.catalog
 import wvlet.airframe.sql.model.Expression.QName
 
 object Catalog {
-  case class TableSchema(columns: Seq[NamedType])
-  case class DbTable(db: Option[String], name: String, schema: TableSchema)
+
+  def schema: TableSchema                      = TableSchema(Seq.empty)
+  def table(db: String, name: String): DbTable = DbTable(db, name, TableSchema(Seq.empty))
+
+  def withTable(tbl: DbTable): Catalog = Catalog(Seq(tbl))
+
+  case class TableSchema(columns: Seq[NamedType]) {
+    def addColumn(name: String, dataType: DataType): TableSchema =
+      this.copy(columns = columns :+ NamedType(name, dataType))
+  }
+
+  case class DbTable(db: String = "default", name: String, schema: TableSchema) {
+    def fullName: String = s"${db}.${name}"
+
+    def addColumn(name: String, dataType: DataType) = this.copy(schema = schema.addColumn(name, dataType))
+
+    def withDatabase(db: String)        = this.copy(db = db)
+    def withName(name: String)          = this.copy(name = name)
+    def withSchema(schema: TableSchema) = this.copy(schema = schema)
+  }
 
   case class Catalog(databases: Seq[DbTable]) {
+    def addTable(tbl: DbTable): Catalog = Catalog(databases :+ tbl)
+
     def findTable(database: String, tableName: String): Option[DbTable] = {
-      databases.find(x => x.db == Some(database) && x.name == tableName)
+      databases.find(x => x.db == database && x.name == tableName)
     }
 
     def findFromQName(contextDatabase: String, qname: QName): Option[DbTable] = {
       qname.parts match {
-        case connetor :: db :: tbl =>
+        case connector :: db :: tbl =>
           findTable(db, tbl.mkString("."))
         case db :: tbl =>
           findTable(db, tbl.mkString("."))

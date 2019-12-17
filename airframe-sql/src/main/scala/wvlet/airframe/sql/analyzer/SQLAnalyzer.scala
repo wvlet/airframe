@@ -79,57 +79,6 @@ object SQLAnalyzer extends LogSupport {
   case class OptimizerContext(inputAttributes: Set[Attribute])
 }
 
-/**
-  * Resolve untyped [[LogicalPlan]]s and [[Expression]]s into typed ones.
-  */
-object TypeResolver extends LogSupport {
-
-  /**
-    * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
-    */
-  def resolveTableRef(context: AnalysisContext): PlanRewriter = {
-    case plan @ LogicalPlan.TableRef(qname) =>
-      context.catalog.findFromQName(context.database, qname) match {
-        case Some(dbTable) =>
-          warn(s"Found ${dbTable}")
-          TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
-        case None =>
-          throw new TableNotFound(qname.toString)
-      }
-  }
-
-  def resolveColumns(context: AnalysisContext): PlanRewriter = {
-    case p @ Project(child, columns) =>
-      val inputAttributes = child.inputAttributes
-      val resolvedColumns = Seq.newBuilder[Attribute]
-      columns.map {
-        case a: AllColumns =>
-          // TODO check (prefix).* to resolve attributes
-          resolvedColumns ++= inputAttributes
-        case SingleColumn(expr, alias) =>
-          val resolvedExpr = resolveExpression(expr, inputAttributes)
-          resolvedColumns += SingleColumn(resolvedExpr, alias)
-        case other =>
-          resolvedColumns += other
-      }
-
-      Project(child, resolvedColumns.result())
-  }
-
-  /**
-    * Resolve untyped expressions
-    */
-  def resolveExpression(expr: Expression, inputAttributes: Seq[Attribute]): Expression = {
-    expr match {
-      case i: Identifier =>
-        inputAttributes
-          .find(attr => attr.name == i.value)
-          .getOrElse(i)
-      case _ => expr
-    }
-  }
-}
-
 object Optimizer extends LogSupport {
   def extractInputs(expressions: Seq[Expression]): Set[Attribute] = {
     val newAttributes: Seq[Attribute] = expressions.collect {

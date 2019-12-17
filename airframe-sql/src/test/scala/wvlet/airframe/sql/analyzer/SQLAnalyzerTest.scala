@@ -13,31 +13,57 @@
  */
 package wvlet.airframe.sql.analyzer
 
-import wvlet.airframe.sql.catalog.Catalog.{Catalog, DbTable, TableSchema}
-import wvlet.airframe.sql.catalog.{DataType, NamedType}
+import wvlet.airframe.sql.catalog.{Catalog, DataType}
 import wvlet.airspec.AirSpec
 
 /**
   *
   */
 class SQLAnalyzerTest extends AirSpec {
-  val tbl =
-    DbTable(
-      Some("public"),
-      "a",
-      TableSchema(
-        Seq(
-          NamedType("id", DataType.LongType),
-          NamedType("name", DataType.StringType),
-          NamedType("address", DataType.StringType)
-        )
-      )
-    )
+  val tbl1 =
+    Catalog
+      .table("public", "a")
+      .addColumn("id", DataType.LongType)
+      .addColumn("name", DataType.StringType)
+      .addColumn("address", DataType.StringType)
+
+  val tbl2 =
+    Catalog
+      .table("public", "b")
+      .addColumn("id", DataType.LongType)
+      .addColumn("phone", DataType.StringType)
 
   val catalog =
-    Catalog(Seq(tbl))
+    Catalog
+      .withTable(tbl1)
+      .addTable(tbl2)
 
   def `resolve input/output types`: Unit = {
-    SQLAnalyzer.analyze("select id, name from a", "public", catalog)
+    val plan = SQLAnalyzer.analyze("select id, name from a", "public", catalog)
+    plan.resolved shouldBe true
+    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string"
   }
+
+  def `resolve select *` : Unit = {
+    val plan = SQLAnalyzer.analyze("select * from a", "public", catalog)
+    plan.resolved shouldBe true
+    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string"
+  }
+
+  def `resolve select with alias`: Unit = {
+    val plan = SQLAnalyzer.analyze("select id as person_id from a", "public", catalog)
+    plan.resolved shouldBe true
+    plan.outputAttributes.mkString(",") shouldBe "person_id:long"
+  }
+
+  def `resolve join attributes`: Unit = {
+    val plan = SQLAnalyzer.analyze(
+      "select a.id, a.name, a.address, b.phone as person_id from a, b where a.id = b.id",
+      "public",
+      catalog
+    )
+    plan.resolved shouldBe true
+    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string,phone:string"
+  }
+
 }
