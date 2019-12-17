@@ -11,8 +11,8 @@ Currently we are supporting these databases:
 - **postgres**: PostgreSQL (e.g., [AWS RDS](https://aws.amazon.com/rds/))
 - Generic JDBC drivers
 
-airframe-jdbc is an wrapper of [HikariCP](https://github.com/brettwooldridge/HikariCP)
-jdbc connection pools. 
+airframe-jdbc is wrapping [HikariCP](https://github.com/brettwooldridge/HikariCP)
+jdbc connection pool for Scala.
 
 ## Usage
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jdbc_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-jdbc_2.12/)
@@ -37,7 +37,7 @@ val dbConfig = DbConfig.ofSQLite(path = "mydb.sqlite")
 val connectionPool = factory(dbConfig)
 
 // Create a new database
-connectionPool.executeUpdate("craete table if not exists test(id int, name text)")
+connectionPool.executeUpdate("create table if not exists test(id int, name text)")
 // Update the database with prepared statement
 connectionPool.updateWith("insert into test values(?, ?)") { ps =>
   ps.setInt(1, 1)
