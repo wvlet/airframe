@@ -642,6 +642,7 @@ lazy val sql =
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
+      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
