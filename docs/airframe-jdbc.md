@@ -59,23 +59,6 @@ factory.close()
 
 ```
 
-
-
-### Using with Airframe DI
-```scala
-
-val d = newDesign
-  .bind[DbConfig].toInstance(DbConfig(...))
-  .bind[ConnectionPool].toProvider { (f:ConnectionPoolFactory, dbConfig:DbConfig) => f.newConnectionPool(dbConfig) }
-
-d.build[ConnectionPool] { connectionPool =>
-  // You can make queries using the connection pool
-  connectionPool.executeQuery("select ...")
-}
-// Connection pools will be closed here
-
-```
-
 ### Using PostgreSQL
 
 For using RDS, configure DbConfig as follows:
@@ -113,6 +96,23 @@ DbConfig().withHikariConfig { c: HikariConfig =>
 ```
 
 The basic configurations (e.g., jdbc driver name, host, port, user, password, etc.) are already set, so you don't need to add them in withHikariConfig. 
+
+
+
+## Using with Airframe DI
+```scala
+
+val d = newDesign
+  .bind[DbConfig].toInstance(DbConfig(...))
+  .bind[ConnectionPool].toProvider { (f:ConnectionPoolFactory, dbConfig:DbConfig) => f.newConnectionPool(dbConfig) }
+
+d.build[ConnectionPool] { connectionPool =>
+  // You can make queries using the connection pool
+  connectionPool.executeQuery("select ...")
+}
+// Connection pools will be closed here
+
+```
 
 ### Creating Multiple Connection Pools
 
