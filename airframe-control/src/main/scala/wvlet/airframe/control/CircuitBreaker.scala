@@ -30,9 +30,7 @@ object CircuitBreaker {
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
-  case class CircuitBreakerOpenException()
-
-  private[control] def DO_NOTHING: () => Unit = {}
+  case class CircuitBreakerOpenException() extends Exception
 }
 
 import CircuitBreaker._
@@ -43,7 +41,6 @@ case class CircuitBreaker(
     healthCheckPolicy: HealthCheckPolicy,
     resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-    fallback: () => Unit = DO_NOTHING,
     private val state: AtomicReference[CircuitBreakerState] =
       new AtomicReference[CircuitBreakerState](CircuitBreaker.CLOSED)
 ) {
@@ -71,9 +68,9 @@ case class CircuitBreaker(
     state.get() == CLOSED
   }
 
-  def run[A](body: => A): Unit = {
+  def run[A](body: => A): A = {
     if (!isConnected) {
-      fallback()
+      throw CircuitBreakerOpenException()
     } else {
       val result = Try(body)
       val resultClass = result match {
@@ -85,16 +82,17 @@ case class CircuitBreaker(
       }
       resultClass match {
         case Succeeded =>
-          healthCheckPolicy.recovered
           state.get() match {
-            case HALF_OPEN | CLOSED =>
-              open
+            case OPEN | HALF_OPEN =>
+              healthCheckPolicy.recovered
+              close
             case _ =>
           }
           healthCheckPolicy.recordSuccess
           result.get
         case Failed(retryable, cause, extraWait) =>
           healthCheckPolicy.recordFailure
+          throw cause
       }
     }
   }
