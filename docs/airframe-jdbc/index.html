@@ -69,8 +69,8 @@
 <li><strong>postgres</strong>: PostgreSQL (e.g., <a href="https://aws.amazon.com/rds/">AWS RDS</a>)</li>
 <li>Generic JDBC drivers</li>
 </ul>
-<p>airframe-jdbc is an wrapper of <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a>
-jdbc connection pools.</p>
+<p>airframe-jdbc is wrapping <a href="https://github.com/brettwooldridge/HikariCP">HikariCP</a>
+jdbc connection pool for Scala.</p>
 <h2><a class="anchor" aria-hidden="true" id="usage"></a><a href="#usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage</h2>
 <p><a href="http://central.maven.org/maven2/org/wvlet/airframe/airframe-jdbc_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jdbc_2.12/badge.svg" alt="Maven Central"></a></p>
 <p><strong>build.sbt</strong></p>
@@ -87,7 +87,7 @@ jdbc connection pools.</p>
 <span class="hljs-keyword">val</span> connectionPool = factory(dbConfig)
 
 <span class="hljs-comment">// Create a new database</span>
-connectionPool.executeUpdate(<span class="hljs-string">"craete table if not exists test(id int, name text)"</span>)
+connectionPool.executeUpdate(<span class="hljs-string">"create table if not exists test(id int, name text)"</span>)
 <span class="hljs-comment">// Update the database with prepared statement</span>
 connectionPool.updateWith(<span class="hljs-string">"insert into test values(?, ?)"</span>) { ps =&gt;
   ps.setInt(<span class="hljs-number">1</span>, <span class="hljs-number">1</span>)
@@ -106,19 +106,6 @@ connectionPool.executeQuery(<span class="hljs-string">"select * from test"</span
 
 <span class="hljs-comment">// Close the created connection pools</span>
 factory.close()
-
-</code></pre>
-<h3><a class="anchor" aria-hidden="true" id="using-with-airframe-di"></a><a href="#using-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with Airframe DI</h3>
-<pre><code class="hljs css language-scala">
-<span class="hljs-keyword">val</span> d = newDesign
-  .bind[<span class="hljs-type">DbConfig</span>].toInstance(<span class="hljs-type">DbConfig</span>(...))
-  .bind[<span class="hljs-type">ConnectionPool</span>].toProvider { (f:<span class="hljs-type">ConnectionPoolFactory</span>, dbConfig:<span class="hljs-type">DbConfig</span>) =&gt; f.newConnectionPool(dbConfig) }
-
-d.build[<span class="hljs-type">ConnectionPool</span>] { connectionPool =&gt;
-  <span class="hljs-comment">// You can make queries using the connection pool</span>
-  connectionPool.executeQuery(<span class="hljs-string">"select ..."</span>)
-}
-<span class="hljs-comment">// Connection pools will be closed here</span>
 
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="using-postgresql"></a><a href="#using-postgresql" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using PostgreSQL</h3>
@@ -148,6 +135,19 @@ d.build[<span class="hljs-type">ConnectionPool</span>] { connectionPool =&gt;
 }
 </code></pre>
 <p>The basic configurations (e.g., jdbc driver name, host, port, user, password, etc.) are already set, so you don't need to add them in withHikariConfig.</p>
+<h2><a class="anchor" aria-hidden="true" id="using-with-airframe-di"></a><a href="#using-with-airframe-di" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using with Airframe DI</h2>
+<pre><code class="hljs css language-scala">
+<span class="hljs-keyword">val</span> d = newDesign
+  .bind[<span class="hljs-type">DbConfig</span>].toInstance(<span class="hljs-type">DbConfig</span>(...))
+  .bind[<span class="hljs-type">ConnectionPool</span>].toProvider { (f:<span class="hljs-type">ConnectionPoolFactory</span>, dbConfig:<span class="hljs-type">DbConfig</span>) =&gt; f.newConnectionPool(dbConfig) }
+
+d.build[<span class="hljs-type">ConnectionPool</span>] { connectionPool =&gt;
+  <span class="hljs-comment">// You can make queries using the connection pool</span>
+  connectionPool.executeQuery(<span class="hljs-string">"select ..."</span>)
+}
+<span class="hljs-comment">// Connection pools will be closed here</span>
+
+</code></pre>
 <h3><a class="anchor" aria-hidden="true" id="creating-multiple-connection-pools"></a><a href="#creating-multiple-connection-pools" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Creating Multiple Connection Pools</h3>
 <p>You can create multiple connection pools with different configurations by using type aliases to DbConfig:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe._
@@ -169,4 +169,4 @@ d.build[<span class="hljs-type">ConnectionPool</span>] { connectionPool =&gt;
   .bind[<span class="hljs-type">MyDb1Config</span>].toInstance(<span class="hljs-type">DbConfig</span>.ofSQLite(path=<span class="hljs-string">"mydb.sqlite"</span>))
   .bind[<span class="hljs-type">MyDb2Config</span>].toInstance(<span class="hljs-type">DbConfig</span>.ofPostgreSQL(database=<span class="hljs-string">"mydatabase"</span>))
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-http-recorder"><span class="arrow-prev">← </span><span>airframe-http-recorder: Web Request/Response Recorder</span></a><a class="docs-next button" href="/airframe/docs/airframe-jmx"><span>airframe-jmx: JMX Application Monitor</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#using-with-airframe-di">Using with Airframe DI</a></li><li><a href="#using-postgresql">Using PostgreSQL</a></li><li><a href="#configure-hikaricp-connection-pool">Configure HikariCP Connection Pool</a></li><li><a href="#creating-multiple-connection-pools">Creating Multiple Connection Pools</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-http-recorder"><span class="arrow-prev">← </span><span>airframe-http-recorder: Web Request/Response Recorder</span></a><a class="docs-next button" href="/airframe/docs/airframe-jmx"><span>airframe-jmx: JMX Application Monitor</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#usage">Usage</a><ul class="toc-headings"><li><a href="#using-postgresql">Using PostgreSQL</a></li><li><a href="#configure-hikaricp-connection-pool">Configure HikariCP Connection Pool</a></li></ul></li><li><a href="#using-with-airframe-di">Using with Airframe DI</a><ul class="toc-headings"><li><a href="#creating-multiple-connection-pools">Creating Multiple Connection Pools</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>
