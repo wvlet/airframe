@@ -35,6 +35,26 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
   def config: DbConfig
 
   def withConnection[U](body: Connection => U): U
+  def withTransaction[U](body: Connection => U): U = {
+    withConnection { conn =>
+      conn.setAutoCommit(false)
+      var failed = false
+      try {
+        body(conn)
+      } catch {
+        case e: Throwable =>
+          // Need to set the failed flag first because the rollback might fail
+          failed = true
+          conn.rollback()
+          throw e
+      } finally {
+        if (failed == false) {
+          conn.commit()
+        }
+      }
+    }
+  }
+
   def stop: Unit
 
   override def close(): Unit = stop
@@ -79,4 +99,5 @@ trait ConnectionPool extends LogSupport with AutoCloseable {
       }
     }
   }
+
 }

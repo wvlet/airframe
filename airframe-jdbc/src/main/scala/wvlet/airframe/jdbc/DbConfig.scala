@@ -38,6 +38,15 @@ case class DbConfig(
     s"DbConfig(${`type`},${host},$database,$port,$user,xxxxxx,${jdbcDriverName},${connectionPool})"
   }
 
+  def jdbcUrl: String = {
+    `type` match {
+      case "sqlite" =>
+        s"jdbc:sqlite:${database}"
+      case _ =>
+        s"jdbc:${`type`}://${host.getOrElse("localhost")}${port.map(p => s":${port}").getOrElse("")}/${database}"
+    }
+  }
+
   def withHost(host: String): DbConfig = {
     this.copy(host = Some(host))
   }
@@ -78,6 +87,7 @@ case class DbConfig(
         `type` match {
           case "sqlite"     => "org.sqlite.JDBC"
           case "postgresql" => "org.postgresql.Driver"
+          case "mysql"      => "com.mysql.jdbc.Driver"
           case other =>
             throw new IllegalArgumentException(
               s"Unknown database type: ${other}. Specify jdbc driver name explicitly with withDriver(...)"
@@ -119,6 +129,8 @@ case class ConnectionPoolConfig(
     autoCommit: Boolean = true,
     hikariConfig: HikariConfig => HikariConfig = identity
 ) {
+  override def toString: String = s"ConnectionPoolConfig(${maxPoolSize},${autoCommit})"
+
   def withHikariConfig(configFilter: HikariConfig => HikariConfig): ConnectionPoolConfig = {
     this.copy(hikariConfig = configFilter)
   }

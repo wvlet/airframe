@@ -33,7 +33,7 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
       }
     }
 
-    val jdbcUrl = s"jdbc:sqlite:${config.database}"
+    val jdbcUrl = config.jdbcUrl
     info(s"Opening ${jdbcUrl}")
     // We need to explicitly load sqlite-jdbc to cope with SBT's peculiar class loader
     Class.forName(config.jdbcDriverName)
@@ -54,7 +54,7 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
   }
 
   def stop: Unit = {
-    info(s"Closing connection pool for ${config}")
+    info(s"Closing the connection pool for ${config.jdbcUrl}")
     conn.close()
   }
 }
