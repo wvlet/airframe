@@ -11,8 +11,8 @@ Currently we are supporting these databases:
 - **postgres**: PostgreSQL (e.g., [AWS RDS](https://aws.amazon.com/rds/))
 - Generic JDBC drivers
 
-airframe-jdbc is an wrapper of [HikariCP](https://github.com/brettwooldridge/HikariCP)
-jdbc connection pools. 
+airframe-jdbc is wrapping [HikariCP](https://github.com/brettwooldridge/HikariCP)
+jdbc connection pool for Scala.
 
 ## Usage
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-jdbc_2.12/badge.svg)](http://central.maven.org/maven2/org/wvlet/airframe/airframe-jdbc_2.12/)
@@ -37,7 +37,7 @@ val dbConfig = DbConfig.ofSQLite(path = "mydb.sqlite")
 val connectionPool = factory(dbConfig)
 
 // Create a new database
-connectionPool.executeUpdate("craete table if not exists test(id int, name text)")
+connectionPool.executeUpdate("create table if not exists test(id int, name text)")
 // Update the database with prepared statement
 connectionPool.updateWith("insert into test values(?, ?)") { ps =>
   ps.setInt(1, 1)
@@ -56,23 +56,6 @@ connectionPool.executeQuery("select * from test") { rs =>
 
 // Close the created connection pools
 factory.close()
-
-```
-
-
-
-### Using with Airframe DI
-```scala
-
-val d = newDesign
-  .bind[DbConfig].toInstance(DbConfig(...))
-  .bind[ConnectionPool].toProvider { (f:ConnectionPoolFactory, dbConfig:DbConfig) => f.newConnectionPool(dbConfig) }
-
-d.build[ConnectionPool] { connectionPool =>
-  // You can make queries using the connection pool
-  connectionPool.executeQuery("select ...")
-}
-// Connection pools will be closed here
 
 ```
 
@@ -113,6 +96,23 @@ DbConfig().withHikariConfig { c: HikariConfig =>
 ```
 
 The basic configurations (e.g., jdbc driver name, host, port, user, password, etc.) are already set, so you don't need to add them in withHikariConfig. 
+
+
+
+## Using with Airframe DI
+```scala
+
+val d = newDesign
+  .bind[DbConfig].toInstance(DbConfig(...))
+  .bind[ConnectionPool].toProvider { (f:ConnectionPoolFactory, dbConfig:DbConfig) => f.newConnectionPool(dbConfig) }
+
+d.build[ConnectionPool] { connectionPool =>
+  // You can make queries using the connection pool
+  connectionPool.executeQuery("select ...")
+}
+// Connection pools will be closed here
+
+```
 
 ### Creating Multiple Connection Pools
 

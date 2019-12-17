@@ -44,9 +44,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
       throw new IllegalArgumentException(s"missing jdbc host: ${config}")
     }
 
-    connectionPoolConfig.setJdbcUrl(
-      s"jdbc:${config.`type`}://${config.host.get}:${config.jdbcPort}/${config.database}"
-    )
+    connectionPoolConfig.setJdbcUrl(config.jdbcUrl)
 
     info(s"jdbc URL: ${connectionPoolConfig.getJdbcUrl}")
     new HikariDataSource(config.connectionPool.hikariConfig(connectionPoolConfig))
@@ -63,7 +61,7 @@ class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
   }
 
   override def stop: Unit = {
-    info(s"Closing connection pool for ${config}")
+    info(s"Closing the connection pool for ${config.jdbcUrl}")
     dataSource.close()
   }
 }
