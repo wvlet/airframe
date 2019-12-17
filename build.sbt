@@ -647,7 +647,7 @@ lazy val sql =
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         // Include Spark just as a reference implementation
-        "org.apache.spark" %% "spark-sql" % "2.4.4" % "test"
+        "org.apache.spark" %% "spark-sql" % "2.4.4" % "test",
         // Include Presto as a reference implementation
         "io.prestosql" % "presto-main" % "326" % "test"
       )
