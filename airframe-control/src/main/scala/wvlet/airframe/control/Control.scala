@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.control
+import scala.util.control.NonFatal
 
 /**
   *
@@ -33,14 +34,25 @@ object Control {
     try {
       body(resource1, resource2)
     } finally {
-      try {
-        if (resource1 != null) {
-          resource1.close()
+      closeResources(resource1, resource2)
+    }
+  }
+
+  def closeResources[R <: AutoCloseable](resources: R*): Unit = {
+    if (resources != null) {
+      var exceptionList = List.empty[Throwable]
+      resources.map { x =>
+        try {
+          if (x != null) {
+            x.close()
+          }
+        } catch {
+          case NonFatal(e) =>
+            exceptionList = e :: exceptionList
         }
-      } finally {
-        if (resource2 != null) {
-          resource2.close()
-        }
+      }
+      if (exceptionList.nonEmpty) {
+        throw MultipleExceptions(exceptionList)
       }
     }
   }

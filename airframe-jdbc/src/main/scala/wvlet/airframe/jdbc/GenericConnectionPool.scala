@@ -12,50 +12,47 @@
  * limitations under the License.
  */
 package wvlet.airframe.jdbc
-
 import java.sql.Connection
 
 import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 
-case class PostgreSQLConfig(
-    maxPoolSize: Int = 10,
-    autoCommit: Boolean = true, // Enable auto-commit
-    // SSL configuration for using RDS
-    useSSL: Boolean = true,
-    sslFactory: String = "org.postgresql.ssl.NonValidatingFactory"
-)
-
 /**
   *
   */
-class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLConfig = PostgreSQLConfig())
-    extends ConnectionPool {
-  private val dataSource: HikariDataSource = {
+class GenericConnectionPool(val config: DbConfig) extends ConnectionPool {
+
+  protected val dataSource: HikariDataSource = {
     val connectionPoolConfig = new HikariConfig
 
     // Set default JDBC parameters
-    connectionPoolConfig.setMaximumPoolSize(pgConfig.maxPoolSize) // HikariCP default = 10
-    connectionPoolConfig.setAutoCommit(pgConfig.autoCommit)       // Enable auto-commit
+    connectionPoolConfig.setMaximumPoolSize(config.connectionPool.maxPoolSize) // HikariCP default = 10
+    connectionPoolConfig.setAutoCommit(config.connectionPool.autoCommit)       // Enable auto-commit
 
-    connectionPoolConfig.setDriverClassName("org.postgresql.Driver")
+    connectionPoolConfig.setDriverClassName(config.jdbcDriverName)
     config.user.foreach(u => connectionPoolConfig.setUsername(u))
     config.password.foreach(p => connectionPoolConfig.setPassword(p))
-    if (pgConfig.useSSL) {
-      connectionPoolConfig.addDataSourceProperty("ssl", "true")
-      connectionPoolConfig.addDataSourceProperty("sslfactory", pgConfig.sslFactory)
+
+    config.`type` match {
+      case "postgresql" =>
+        if (config.postgres.useSSL) {
+          connectionPoolConfig.addDataSourceProperty("ssl", "true")
+          connectionPoolConfig.addDataSourceProperty("sslfactory", config.postgres.sslFactory)
+        }
     }
+
     if (config.host.isEmpty) {
-      throw new IllegalArgumentException(s"missing postgres jdbc host: ${config}")
+      throw new IllegalArgumentException(s"missing jdbc host: ${config}")
     }
+
     connectionPoolConfig.setJdbcUrl(
-      s"jdbc:postgresql://${config.host.get}:${config.port.getOrElse(5432)}/${config.database}"
+      s"jdbc:${config.`type`}://${config.host.get}:${config.jdbcPort}/${config.database}"
     )
 
     info(s"jdbc URL: ${connectionPoolConfig.getJdbcUrl}")
-    new HikariDataSource(connectionPoolConfig)
+    new HikariDataSource(config.connectionPool.hikariConfig(connectionPoolConfig))
   }
 
-  def withConnection[U](body: Connection => U): U = {
+  override def withConnection[U](body: Connection => U): U = {
     val conn = dataSource.getConnection
     try {
       body(conn)
@@ -65,7 +62,7 @@ class PostgreSQLConnectionPool(val config: DbConfig, val pgConfig: PostgreSQLCon
     }
   }
 
-  def stop: Unit = {
+  override def stop: Unit = {
     info(s"Closing connection pool for ${config}")
     dataSource.close()
   }

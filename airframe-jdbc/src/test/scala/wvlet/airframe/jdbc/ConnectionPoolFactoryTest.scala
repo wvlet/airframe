@@ -25,7 +25,10 @@ object ConnectionPoolFactoryTest {
 
 import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
 
-trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
+trait TestConnection extends LogSupport {
+
+  lazy val connectionPoolFactory = bind[ConnectionPoolFactory]
+
   lazy val pool1 = bind { c: MyDbConfig1 =>
     connectionPoolFactory.newConnectionPool(c)
   }
@@ -33,7 +36,7 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
     connectionPoolFactory.newConnectionPool(c)
   }
   lazy val pgPool = bind { c: MyDbConfig3 =>
-    connectionPoolFactory.newConnectionPool(c, PostgreSQLConfig(useSSL = false))
+    connectionPoolFactory.newConnectionPool(c.withPostgreSQLConfig(PostgreSQLConfig(useSSL = false)))
   }
 
   def test(pool: ConnectionPool): Unit = {
@@ -84,8 +87,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
   def `use multiple SQLite configs`: Unit = {
     if (!inTravisCI) pending
 
-    d.withSession { session =>
-      val t = session.build[TestConnection]
+    d.build[TestConnection] { t =>
       t.test(t.pool1)
       t.test(t.pool2)
     }
@@ -94,16 +96,14 @@ class ConnectionPoolFactoryTest extends AirSpec {
   def `use PostgreSQL connection pool`: Unit = {
     if (!inTravisCI) pending
 
-    d.withSession { session =>
-      val t = session.build[TestConnection]
+    d.build[TestConnection] { t =>
       t.test(t.pgPool)
     }
   }
 
   def `report error for unknown db type`: Unit = {
     intercept[IllegalArgumentException] {
-      d.withSession { session =>
-        val f = session.build[ConnectionPoolFactory]
+      d.build[ConnectionPoolFactory] { f =>
         f.newConnectionPool(DbConfig.of("superdb"))
       }
     }
@@ -111,8 +111,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
 
   def `report error for missing postgresql host`: Unit = {
     intercept[IllegalArgumentException] {
-      d.withSession { session =>
-        val f = session.build[ConnectionPoolFactory]
+      d.build[ConnectionPoolFactory] { f =>
         f.newConnectionPool(DbConfig.of("postgresql"))
       }
     }

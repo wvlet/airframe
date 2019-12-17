@@ -506,7 +506,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, config, airspecRefJVM % "test")
 
 lazy val http =
   project
