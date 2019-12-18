@@ -18,21 +18,17 @@ import wvlet.airframe.sql.catalog.DataType.{ArrayType, DecimalType}
 
 import scala.util.parsing.combinator.RegexParsers
 
-/**
-  *
-  */
-case class Table(name: String, schema: Seq[NamedType])
-case class DbTable(db: String, table: String, schema: Seq[NamedType])
-case class NamedType(name: String, dataType: DataType) {
-  def typeName: String = s"${name}:${dataType}"
-}
-
 abstract class DataType(val typeName: String) {
   def baseTypeName: String      = typeName
   override def toString: String = typeName
 }
 
+case class NamedType(name: String, dataType: DataType) {
+  def typeName: String = s"${name}:${dataType}"
+}
+
 object DataType extends LogSupport {
+  case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
   case object NullType    extends DataType("null")
   case object BooleanType extends DataType("boolean")
@@ -42,7 +38,7 @@ object DataType extends LogSupport {
   case class DecimalType(precision: Int, scale: Int) extends DataType(s"decimal(${precision},${scale})") {
     override def baseTypeName: String = "decimal"
   }
-  case object JSONType                     extends DataType("json")
+  case object JsonType                     extends DataType("json")
   case object BinaryType                   extends DataType("binary")
   case object TimestampType                extends DataType("timestamp")
   case class ArrayType(elemType: DataType) extends DataType(s"array[${elemType.typeName}]")
@@ -52,13 +48,14 @@ object DataType extends LogSupport {
 
   def primitiveTypeOf(dataType: String): DataType = {
     dataType match {
+      case "?"                                        => UnknownType
       case "any"                                      => AnyType
       case "null"                                     => NullType
       case "string"                                   => StringType
       case "byte" | "char" | "short" | "int" | "long" => LongType
       case "float" | "double"                         => DoubleType
       case "boolean"                                  => BooleanType
-      case "json"                                     => JSONType
+      case "json"                                     => JsonType
       case "binary"                                   => BinaryType
       case "timestamp"                                => TimestampType
       case _ =>

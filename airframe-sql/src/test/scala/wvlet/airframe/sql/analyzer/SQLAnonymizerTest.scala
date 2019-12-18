@@ -26,10 +26,10 @@ class SQLAnonymizerTest extends AirSpec {
   protected def process(q: TestQuery, dict: Map[Expression, Expression]): Unit = {
     val l = SQLParser.parse(q.sql)
     debug(q.sql)
-    trace(l.printPlan)
+    trace(l.pp)
 
     val anonymizedPlan = SQLAnonymizer.anonymize(l, dict)
-    debug(anonymizedPlan.printPlan)
+    debug(anonymizedPlan.pp)
     val anonymizedSQL = SQLGenerator.print(anonymizedPlan)
     debug(anonymizedSQL)
     val sig = QuerySignature.of(anonymizedSQL)
