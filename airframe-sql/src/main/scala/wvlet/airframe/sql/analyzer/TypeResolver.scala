@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.sql.analyzer.SQLAnalyzer.{AnalysisContext, PlanRewriter}
-import wvlet.airframe.sql.model.Expression.{AllColumns, Identifier, SingleColumn}
-import wvlet.airframe.sql.model.LogicalPlan.Project
+import wvlet.airframe.sql.analyzer.SQLAnalyzer.{PlanRewriter, Rule}
+import wvlet.airframe.sql.model.Expression._
+import wvlet.airframe.sql.model.LogicalPlan.{Filter, Project, Relation}
 import wvlet.airframe.sql.model._
 import wvlet.log.LogSupport
 
@@ -23,21 +23,35 @@ import wvlet.log.LogSupport
   */
 object TypeResolver extends LogSupport {
 
+  val typerRules: List[Rule] =
+    // First resolve all input table types
+    TypeResolver.resolveTableRef _ ::
+      TypeResolver.resolveRelation _ ::
+      TypeResolver.resolveColumns _ ::
+      Nil
+
   /**
     * Resolve TableRefs with concrete TableScans using the table schema in the catalog.
     */
-  def resolveTableRef(context: AnalysisContext): PlanRewriter = {
+  def resolveTableRef(context: AnalyzerContext): PlanRewriter = {
     case plan @ LogicalPlan.TableRef(qname) =>
       context.catalog.findFromQName(context.database, qname) match {
         case Some(dbTable) =>
-          debug(s"Found ${dbTable}")
+          trace(s"Found ${dbTable}")
           TableScan(qname, dbTable, dbTable.schema.columns.map(_.name))
         case None =>
-          throw new TableNotFound(qname.toString)
+          throw TableNotFound(qname.toString)
       }
   }
 
-  def resolveColumns(context: AnalysisContext): PlanRewriter = {
+  def resolveRelation(context: AnalyzerContext): PlanRewriter = {
+    case filter @ Filter(child, filterExpr) =>
+      filter.transformExpressions { case x: Expression => resolveExpression(x, filter.inputAttributes) }
+    case r: Relation =>
+      r.transformExpressions { case x: Expression => resolveExpression(x, r.inputAttributes) }
+  }
+
+  def resolveColumns(context: AnalyzerContext): PlanRewriter = {
     case p @ Project(child, columns) =>
       val inputAttributes = child.outputAttributes
       val resolvedColumns = Seq.newBuilder[Attribute]
@@ -70,7 +84,13 @@ object TypeResolver extends LogSupport {
         inputAttributes
           .find(attr => attr.name == i.value)
           .getOrElse(i)
-      case _ => expr
+      case u @ UnresolvedAttribute(name) =>
+        val attrName = QName(name).parts.last
+        inputAttributes
+          .find(attr => attr.name == attrName)
+          .getOrElse(u)
+      case _ =>
+        expr
     }
   }
 }

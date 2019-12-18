@@ -40,7 +40,7 @@ object LogicalPlanPrinter extends LogSupport {
         val inputAttr  = m.inputAttributes.mkString(", ")
         val outputAttr = m.outputAttributes.mkString(", ")
         val attr       = m.expressions.map(_.toString)
-        val prefix     = s"${ws}[${m.modelName}] (${inputAttr}): (${outputAttr})"
+        val prefix     = s"${ws}[${m.modelName}](${inputAttr}) => (${outputAttr})"
         attr.length match {
           case 0 =>
             out.println(prefix)

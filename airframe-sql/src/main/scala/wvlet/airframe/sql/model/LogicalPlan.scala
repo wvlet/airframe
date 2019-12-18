@@ -150,7 +150,7 @@ trait UnaryPlan extends LogicalPlan {
   def child: LogicalPlan
   override def children: Seq[LogicalPlan] = child :: Nil
 
-  override def inputAttributes: Seq[Attribute] = child.inputAttributes
+  override def inputAttributes: Seq[Attribute] = child.outputAttributes
 }
 
 trait BinaryPlan extends LogicalPlan {
@@ -325,7 +325,7 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
-    override def inputAttributes: Seq[Attribute]  = left.inputAttributes ++ right.inputAttributes
+    override def inputAttributes: Seq[Attribute]  = left.outputAttributes ++ right.outputAttributes
     override def outputAttributes: Seq[Attribute] = inputAttributes
   }
   sealed abstract class JoinType(val symbol: String)
