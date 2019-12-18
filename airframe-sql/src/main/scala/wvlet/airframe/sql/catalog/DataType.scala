@@ -28,6 +28,7 @@ case class NamedType(name: String, dataType: DataType) {
 }
 
 object DataType extends LogSupport {
+  case object UnknownType extends DataType("?")
   case object AnyType     extends DataType("any")
   case object NullType    extends DataType("null")
   case object BooleanType extends DataType("boolean")
@@ -47,6 +48,7 @@ object DataType extends LogSupport {
 
   def primitiveTypeOf(dataType: String): DataType = {
     dataType match {
+      case "?"                                        => UnknownType
       case "any"                                      => AnyType
       case "null"                                     => NullType
       case "string"                                   => StringType
