@@ -37,10 +37,10 @@ object Optimizer extends LogSupport {
 
   def pruneColumns(context: AnalyzerContext): PlanRewriter = {
     case p @ Project(child, selectItems) =>
-      val newContext = context.withAttributes(selectItems.toSeq)
+      val newContext = context.withAttributes(selectItems)
       Project(pruneRelationColumns(child, newContext), selectItems)
     case r: Relation =>
-      pruneRelationColumns(r, context)
+      pruneRelationColumns(r, context.withAttributes(r.outputAttributes))
   }
 
   def pruneRelationColumns(relation: Relation, context: AnalyzerContext): Relation = {

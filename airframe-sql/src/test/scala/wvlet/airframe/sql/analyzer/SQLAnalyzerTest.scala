@@ -63,7 +63,7 @@ class SQLAnalyzerTest extends AirSpec {
       catalog
     )
     plan.resolved shouldBe true
-    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string,phone:string"
+    plan.outputAttributes.mkString(",") shouldBe "id:long,name:string,address:string,person_id:string"
   }
 
 }
