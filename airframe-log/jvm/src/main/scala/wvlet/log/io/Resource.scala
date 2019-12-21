@@ -303,7 +303,7 @@ object Resource {
     * @return
     */
   def listResources(packageName: String): Seq[VirtualFile] =
-    listResources(packageName, { f: String =>
+    listResources(packageName, { (f: String) =>
       true
     })
 
@@ -361,7 +361,7 @@ object Resource {
       toSearch: Class[A],
       classLoader: ClassLoader = Thread.currentThread.getContextClassLoader
   ): Seq[Class[A]] = {
-    val classFileList = listResources(packageName, { f: String =>
+    val classFileList = listResources(packageName, { (f: String) =>
       f.endsWith(".class")
     }, classLoader)
 

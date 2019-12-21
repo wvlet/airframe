@@ -257,7 +257,7 @@ trait TimeReport extends Ordered[TimeReport] {
       unitIndex >= 0 && (unitIndex < symbol.length),
       s"unitIndex must be between 0 to 2: $unitIndex, digits:$digits"
     )
-    val v   = time * math.pow(10, unitIndex * 3)
+    val v   = time * math.pow(10.toDouble, unitIndex.toDouble * 3)
     val str = f"$v%.3f ${symbol(unitIndex)}sec."
     f"$str%-11s"
   }
@@ -290,7 +290,7 @@ class StopWatch {
     val RUNNING, STOPPED = Value
   }
 
-  private var lastSystemTime: Double         = System.nanoTime
+  private var lastSystemTime: Double         = System.nanoTime.toDouble
   private var elapsedTimeAccumulated: Double = 0L
   private var state                          = State.RUNNING
 
@@ -317,7 +317,7 @@ class StopWatch {
     * beginning from this method call.
     */
   def reset: Unit = {
-    lastSystemTime = System.nanoTime()
+    lastSystemTime = System.nanoTime().toDouble
     elapsedTimeAccumulated = 0L
   }
 
@@ -335,7 +335,7 @@ class StopWatch {
     val now  = System.nanoTime()
     val diff = now - lastSystemTime
     elapsedTimeAccumulated += diff
-    lastSystemTime = now
+    lastSystemTime = now.toDouble
 
     state = State.STOPPED
     diff / NANO_UNIT
@@ -349,7 +349,7 @@ class StopWatch {
       return
     }
 
-    lastSystemTime = System.nanoTime()
+    lastSystemTime = System.nanoTime().toDouble
     state = State.RUNNING
   }
 
