@@ -7,7 +7,7 @@ val SCALA_3_DOTTY = "0.21.0-RC1"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
-val dottySupport        = SCALA_3_DOTTY :: targetScalaVersions
+val untilDotty          = SCALA_3_DOTTY :: targetScalaVersions
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.3"
@@ -433,7 +433,7 @@ lazy val log: sbtcrossproject.CrossProject =
       libraryDependencies ++= logDependencies(scalaVersion.value, isDotty = isDotty.value)
     )
     .jvmSettings(
-      crossScalaVersions := dottySupport,
+      crossScalaVersions := untilDotty,
       libraryDependencies ++= logJVMDependencies,
       runTestSequentially
     )

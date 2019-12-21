@@ -1,5 +1,7 @@
 package wvlet.log
 
+import scala.quoted._
+
 trait LoggingMethods extends Serializable {
 
   protected def error(message: Any): Unit                   = {}
