@@ -164,6 +164,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   codecJS,
   msgpackJS,
   jsonJS,
+  widgetJS,
   airspecJS
 )
 
@@ -655,6 +656,24 @@ lazy val sql =
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
+
+lazy val widget =
+  crossProject(JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-widget"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-widget",
+      description := "UI Widget library for Scala.js",
+      libraryDependencies ++= Seq(
+        "org.scala-lang.modules" %%% "scala-xml"   % "2.0.0-M1",
+        "org.scala-js"           %%% "scalajs-dom" % "0.9.7"
+      )
+    )
+    .jsSettings(jsBuildSettings)
+    .dependsOn(log, airspecRef % "test")
+
+lazy val widgetJS = widget.js
 
 lazy val examples =
   project
