@@ -1,11 +1,13 @@
 import sbtcrossproject.{CrossType, crossProject}
 
-val SCALA_2_11 = "2.11.12"
-val SCALA_2_12 = "2.12.10"
-val SCALA_2_13 = "2.13.1"
+val SCALA_2_11    = "2.11.12"
+val SCALA_2_12    = "2.12.10"
+val SCALA_2_13    = "2.13.1"
+val SCALA_3_DOTTY = "0.21.0-RC1"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
+val dottySupport        = SCALA_3_DOTTY :: targetScalaVersions
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.3"
@@ -56,7 +58,7 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3"
+    ("org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3").withDottyCompat(scalaVersion.value)
   )
 )
 
@@ -151,6 +153,11 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   sql,
   benchmark,
   examples
+)
+
+// Projects that support dotty (Scala 3)
+lazy val dottyProjects: Seq[ProjectReference] = Seq(
+  logJVM
 )
 
 // Scala.js build (only for Scala 2.12)
@@ -385,11 +392,16 @@ lazy val launcher =
     )
     .dependsOn(surfaceJVM, control, codecJVM, airspecRefJVM % "test")
 
-val logDependencies = { scalaVersion: String =>
-  Seq(
-    "org.scala-lang" % "scala-reflect" % scalaVersion % "provided"
-  )
+def logDependencies(scalaVersion: String, isDotty: Boolean = false) = {
+  if (isDotty) {
+    Seq.empty
+  } else {
+    Seq(
+      "org.scala-lang" % "scala-reflect" % scalaVersion % "provided"
+    )
+  }
 }
+
 val logJVMDependencies = Seq(
   "ch.qos.logback" % "logback-core" % "1.2.3"
 )
@@ -402,9 +414,10 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      libraryDependencies ++= logDependencies(scalaVersion.value)
+      libraryDependencies ++= logDependencies(scalaVersion.value, isDotty = isDotty.value)
     )
     .jvmSettings(
+      crossScalaVersions := dottySupport,
       libraryDependencies ++= logJVMDependencies,
       runTestSequentially
     )
@@ -414,7 +427,8 @@ lazy val log: sbtcrossproject.CrossProject =
         "org.scala-js" %%% "scalajs-java-logging" % JS_JAVA_LOGGING_VERSION
       )
     )
-    .dependsOn(airspecRef % "test")
+// TODO: Removed until airframe-log/DI/airspec can be supported in Dotty
+//    .dependsOn(airspecRef % "test")
 
 lazy val logJVM = log.jvm
 lazy val logJS  = log.js
@@ -756,7 +770,7 @@ lazy val airspecLog =
       airspecBuildSettings,
       name := "airspec-log",
       description := "airframe-log for AirSpec",
-      libraryDependencies ++= logDependencies(scalaVersion.value)
+      libraryDependencies ++= logDependencies(scalaVersion.value, isDotty.value)
     )
     .jvmSettings(
       airspecJVMBuildSettings,
@@ -899,7 +913,7 @@ lazy val airspecRef =
       name := "airspec-ref",
       description := "A project for referncing airspec for internal testing",
       libraryDependencies ++= Seq(
-        "org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION
+        ("org.scalacheck" %%% "scalacheck" % SCALACHECK_VERSION).withDottyCompat(scalaVersion.value)
       )
     )
     .dependsOn(airspec, airspecDeps)

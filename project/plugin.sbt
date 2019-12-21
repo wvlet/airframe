@@ -21,4 +21,7 @@ addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
 addSbtPlugin("pl.project13.scala" % "sbt-jmh"  % "0.3.7")
 addSbtPlugin("org.xerial.sbt"     % "sbt-pack" % "0.12")
 
+// For Dotty support
+addSbtPlugin("ch.epfl.lamp" % "sbt-dotty" % "0.3.4")
+
 scalacOptions ++= Seq("-deprecation", "-feature")
