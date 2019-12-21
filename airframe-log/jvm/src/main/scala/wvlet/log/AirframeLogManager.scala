@@ -18,7 +18,7 @@ object AirframeLogManager {
   private[log] var instance: Option[AirframeLogManager] = None
 
   private[wvlet] def resetFinally: Unit = {
-    instance.map(_.reset0)
+    instance.map(_.reset0())
     instance = None
   }
 }

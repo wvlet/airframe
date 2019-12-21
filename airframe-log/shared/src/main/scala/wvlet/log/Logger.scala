@@ -33,8 +33,8 @@ class Logger(
       * If wrapped is null, _log method will find or create the logger instance.
       */
     @transient private[log] var wrapped: jl.Logger
-) extends Serializable {
-  import LogMacros._
+) extends Serializable
+    with PublicLogMethods {
 
   private def _log = {
     if (wrapped == null) {
@@ -42,21 +42,6 @@ class Logger(
     }
     wrapped
   }
-
-  def error(message: Any): Unit = macro errorLogMethod
-  def error(message: Any, cause: Throwable): Unit = macro errorLogMethodWithCause
-
-  def warn(message: Any): Unit = macro warnLogMethod
-  def warn(message: Any, cause: Throwable): Unit = macro warnLogMethodWithCause
-
-  def info(message: Any): Unit = macro infoLogMethod
-  def info(message: Any, cause: Throwable): Unit = macro infoLogMethodWithCause
-
-  def debug(message: Any): Unit = macro debugLogMethod
-  def debug(message: Any, cause: Throwable): Unit = macro debugLogMethodWithCause
-
-  def trace(message: Any): Unit = macro traceLogMethod
-  def trace(message: Any, cause: Throwable): Unit = macro traceLogMethodWithCause
 
   def getName = name
 
