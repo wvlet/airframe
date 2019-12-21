@@ -1,4 +1,6 @@
-import wvlet.log
+package wvlet.log
+
+import scala.language.experimental.macros
 
 trait PublicLogMethods {
   import LogMacros._

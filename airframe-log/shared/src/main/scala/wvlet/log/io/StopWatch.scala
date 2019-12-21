@@ -199,7 +199,7 @@ trait TimeReport extends Ordered[TimeReport] {
     for (i <- 0 until repeat) {
       s.resume
       try {
-        body
+        body()
       } finally {
         val intervalTime = s.stop
         timeReport += intervalTime

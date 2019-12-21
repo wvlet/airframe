@@ -14,7 +14,6 @@
 
 package wvlet.log
 
-import wvlet.log.LogLevel
 import scala.language.experimental.macros
 
 trait LoggingMethods extends Serializable {

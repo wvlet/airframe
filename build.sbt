@@ -414,8 +414,8 @@ lazy val log: sbtcrossproject.CrossProject =
     .settings(
       name := "airframe-log",
       description := "Fancy logger for Scala",
-      sourceDirectories in Compile := {
-        val x: Seq[File] = scalaBinaryVersion.value match {
+      unmanagedSourceDirectories in Compile ++= {
+        scalaBinaryVersion.value match {
           case v if v.startsWith("2.") =>
             Seq(
               baseDirectory.value / "src" / "main" / "scala-2.x",
@@ -429,7 +429,6 @@ lazy val log: sbtcrossproject.CrossProject =
           case _ =>
             Seq.empty
         }
-        x ++ (sourceDirectories in Compile).value
       },
       libraryDependencies ++= logDependencies(scalaVersion.value, isDotty = isDotty.value)
     )
