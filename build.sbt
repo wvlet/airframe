@@ -732,6 +732,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
 )
 
 val airspecJSBuildSettings = Seq[Setting[_]](
+  crossScalaVersions := exceptScala2_11,
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
@@ -852,6 +853,7 @@ lazy val airspec =
       )
     )
     .jsSettings(
+      crossScalaVersions := exceptScala2_11,
       mappings in (Compile, packageBin) ++= mappings
         .in(airspecDepsJS, Compile, packageBin).value.filter(x => x._2 != "JS_DEPENDENCIES"),
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
