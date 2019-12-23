@@ -6,6 +6,13 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 19.12.4
+-  Publish Scala.js binaries for Scala 2.13 ([#870](https://github.com/wvlet/airframe/issues/870)) [[23b94cd](https://github.com/wvlet/airframe/commit/23b94cd)]
+-  airframe-jdbc: Add transaction call support ([#861](https://github.com/wvlet/airframe/issues/861)) [[c48154f](https://github.com/wvlet/airframe/commit/c48154f)]
+-  airframe-jdbc: Support standalone usage of JDBC connection pools without DI ([#858](https://github.com/wvlet/airframe/issues/858)) [[405e3e0](https://github.com/wvlet/airframe/commit/405e3e0)]
+-  airframe-sql: SQL typer ([#494](https://github.com/wvlet/airframe/issues/494)) [[ede9f23](https://github.com/wvlet/airframe/commit/ede9f23)]
+-  internal: Update slf4j-jdk14 to 1.7.30 ([#859](https://github.com/wvlet/airframe/issues/859)) [[5af0887](https://github.com/wvlet/airframe/commit/5af0887)]
+
 ## 19.12.3
 -  Upgrade Scala.js to 1.0.0-RC2 ([#821](https://github.com/wvlet/airframe/issues/821)) [[6b458dc](https://github.com/wvlet/airframe/commit/6b458dc)]
 -  Updated the documentation site using Docusaurus ([#851](https://github.com/wvlet/airframe/issues/851)) [[59d090f](https://github.com/wvlet/airframe/commit/59d090f)]
