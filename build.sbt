@@ -6,6 +6,7 @@ val SCALA_2_13 = "2.13.1"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
+val exceptScala2_11     = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
 val SCALACHECK_VERSION              = "1.14.3"
@@ -67,6 +68,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
+  crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
@@ -153,7 +155,7 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   examples
 )
 
-// Scala.js build (only for Scala 2.12)
+// Scala.js build (only for Scala 2.12 + 2.13)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
@@ -218,7 +220,7 @@ lazy val projectJS =
   project
     .settings(
       noPublish,
-      crossScalaVersions := Seq(SCALA_2_12)
+      crossScalaVersions := exceptScala2_11
     )
     .aggregate(jsProjects: _*)
 
