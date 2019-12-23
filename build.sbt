@@ -218,7 +218,7 @@ lazy val projectJS =
   project
     .settings(
       noPublish,
-      crossScalaVersions := Seq(SCALA_2_12)
+      crossScalaVersions := Seq(SCALA_2_12, SCALA_2_13)
     )
     .aggregate(jsProjects: _*)
 
