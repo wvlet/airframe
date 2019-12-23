@@ -1,5 +1,5 @@
 ---
-id: di-comparison
+id: comparison
 layout: docs
 title: DI Framework Comparison
 ---
