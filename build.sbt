@@ -136,6 +136,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   http,
   jsonJVM,
+  rxJVM,
   airspecJVM
 )
 
@@ -164,6 +165,7 @@ lazy val jsProjects: Seq[ProjectReference] = Seq(
   codecJS,
   msgpackJS,
   jsonJS,
+  rxJS,
   widgetJS,
   airspecJS
 )
@@ -295,7 +297,7 @@ lazy val airframeMacros =
     )
     .jsSettings(jsBuildSettings)
 
-lazy val airframeMacrosJVM = airframeMacros.jvm
+laAzy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 // To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
@@ -657,6 +659,21 @@ lazy val sql =
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
 
+lazy val rx =
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-rx"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rx",
+      description := "Reactive operators for Scala and Scala.js"
+    )
+    .jsSettings(jsBuildSettings)
+    .dependsOn(airspecRef % "test")
+
+lazy val rxJVM = rx.jvm
+lazy val rxJS  = rx.js
+
 lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
@@ -667,11 +684,11 @@ lazy val widget =
       description := "UI Widget library for Scala.js",
       libraryDependencies ++= Seq(
         "org.scala-lang.modules" %%% "scala-xml"   % "2.0.0-M1",
-        "org.scala-js"           %%% "scalajs-dom" % "0.9.7"
+        "org.scala-js"           %%% "scalajs-dom" % "0.9.8"
       )
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(log, airspecRef % "test")
+    .dependsOn(log, rx, airspecRef % "test")
 
 lazy val widgetJS = widget.js
 
