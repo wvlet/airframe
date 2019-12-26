@@ -295,7 +295,7 @@ lazy val airframeMacros =
     )
     .jsSettings(jsBuildSettings)
 
-laAzy val airframeMacrosJVM = airframeMacros.jvm
+lazy val airframeMacrosJVM = airframeMacros.jvm
 lazy val airframeMacrosJS  = airframeMacros.js
 
 // To use airframe in other airframe modules, we need to reference airframeMacros project using the internal scope
