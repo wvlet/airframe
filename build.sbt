@@ -669,7 +669,7 @@ lazy val rx =
       description := "Reactive operators for Scala and Scala.js"
     )
     .jsSettings(jsBuildSettings)
-    .dependsOn(airspecRef % "test")
+    .dependsOn(log, airspecRef % "test")
 
 lazy val rxJVM = rx.jvm
 lazy val rxJS  = rx.js

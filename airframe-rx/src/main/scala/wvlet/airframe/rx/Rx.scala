@@ -13,10 +13,12 @@
  */
 package wvlet.airframe.rx
 
+import wvlet.log.LogSupport
+
 /**
   *
   */
-trait Rx[A] {
+trait Rx[A] extends LogSupport {
   import Rx._
 
   private[rx] def addDownstream[B](rx: Rx[B]): Rx[B]
@@ -30,7 +32,9 @@ trait Rx[A] {
   def parents: Seq[Rx[_]]
 
   def subscribe[U](subscriber: A => U): Unit = {
-    addSubscriber(Subscriber(subscriber))
+    val s = Subscriber(subscriber)
+    debug(s"Add subscriber: ${s} to ${this}")
+    addSubscriber(s)
     // Update downstream
     parents.map { p =>
       p.addDownstream(this)
@@ -71,9 +75,12 @@ object Rx {
   }
   case class MapOp[A, B](input: Rx[A], f: A => B) extends UnaryRx[B]
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B]) extends UnaryRx[B]
-  case class NamedOp[A](input: Rx[A], name:String) extends UnaryRx[A]
+  case class NamedOp[A](input: Rx[A], name:String) extends UnaryRx[A] {
+    override def toString: String = s"${name}:${input}"
+  }
 
   class RxVar[A](private[rx] var currentValue: A) extends RxBase[A] {
+    override def toString: String = s"RxVar(${currentValue})"
     override def parents: Seq[Rx[_]] = Seq.empty
 
     def :=(newValue: A): Unit = update(newValue)
