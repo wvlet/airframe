@@ -7,6 +7,6 @@ class RxTest extends AirSpec {
     val rx = v.map(x => s"count: ${x}").withName("sample rx")
 
     rx.subscribe(x => logger.info(x))
-    v.update(2)
+    v := 2
   }
 }
