@@ -16,9 +16,15 @@ package wvlet.airframe.rx
 /**
   *
   */
-trait Subscriber[A] {}
+trait Subscriber[A] {
+  def apply(v: A): Unit
+}
 
 object Subscriber {
 
-  def apply[A, U](subscriber: A => U): Subscriber[A] = new Subscriber[A] {}
+  def apply[A, U](subscriber: A => U): Subscriber[A] = new Subscriber[A] {
+    override def apply(v: A): Unit = {
+      subscriber(v)
+    }
+  }
 }
