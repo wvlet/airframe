@@ -8,7 +8,7 @@
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and    
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 package wvlet.airframe.rx
@@ -21,6 +21,8 @@ import wvlet.log.LogSupport
 trait Rx[A] extends LogSupport {
   import Rx._
 
+  // TODO: Having mutable states to Rx operators is not ideal as it make difficult reusing operators
+  //
   private[rx] def addDownstream[B](rx: Rx[B]): Rx[B]
   private[rx] def addSubscriber(s: Subscriber[A]): Unit
 
@@ -40,8 +42,7 @@ trait Rx[A] extends LogSupport {
       p.addDownstream(this)
     }
   }
-
-  def propergateUpdate(newValue: A): Unit
+  //def propergateUpdate(newValue: A): Unit
 }
 
 object Rx {
