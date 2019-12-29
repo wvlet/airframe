@@ -25,27 +25,44 @@ import scala.util.{Failure, Success, Try}
   *
   */
 object CircuitBreaker {
+
+  def apply(): CircuitBreaker = CircuitBreaker()
+
   sealed trait CircuitBreakerState
   case object OPEN      extends CircuitBreakerState
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
-  private[control] def DO_NOTHING: () => Unit = {}
-  case class CircuitBreakerOpenException() extends Exception
+  private def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>
+    throw CircuitBreakerOpenException(ctx)
+  }
+
+  case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
 }
 
 import CircuitBreaker._
 
+trait CircuitBreakerContext {
+  def name: String
+  def state: CircuitBreakerState
+  def lastFailure: Option[Throwable]
+}
+
 case class CircuitBreaker(
     // The name of circuit
     name: String,
+    lastFailure: Option[Throwable] = None,
     healthCheckPolicy: HealthCheckPolicy,
     resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-    fallback: () => Unit = DO_NOTHING,
-    private val state: AtomicReference[CircuitBreakerState] =
+    onOpen: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
+    onStateChange: CircuitBreakerContext => Unit,
+    private val currentState: AtomicReference[CircuitBreakerState] =
       new AtomicReference[CircuitBreakerState](CircuitBreaker.CLOSED)
-) {
+) extends CircuitBreakerContext {
+
+  def state: CircuitBreakerState = currentState.get()
+
   def withName(name: String): CircuitBreaker = {
     this.copy(name = name)
   }
@@ -54,25 +71,25 @@ case class CircuitBreaker(
   }
 
   def open: this.type = {
-    state.set(OPEN)
+    currentState.set(OPEN)
     this
   }
   def halfOpen: this.type = {
-    state.set(HALF_OPEN)
+    currentState.set(HALF_OPEN)
     this
   }
   def close: this.type = {
-    state.set(CLOSED)
+    currentState.set(CLOSED)
     this
   }
 
   def isConnected: Boolean = {
-    state.get() == CLOSED
+    currentState.get() == CLOSED
   }
 
   def run[A](body: => A): Unit = {
     if (!isConnected) {
-      throw CircuitBreakerOpenException()
+      onOpen(this)
     } else {
       val result = Try(body)
       val resultClass = result match {
@@ -85,7 +102,7 @@ case class CircuitBreaker(
       resultClass match {
         case Succeeded =>
           healthCheckPolicy.recovered
-          state.get() match {
+          currentState.get() match {
             case HALF_OPEN | CLOSED =>
               healthCheckPolicy.recovered
               close
