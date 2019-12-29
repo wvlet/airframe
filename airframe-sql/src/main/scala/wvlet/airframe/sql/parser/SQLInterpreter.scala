@@ -31,6 +31,7 @@ object SQLInterpreter {
   */
 class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   import SQLInterpreter._
+  import wvlet.airframe.sql.model.Expression._
 
   import scala.jdk.CollectionConverters._
 
@@ -177,9 +178,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
 
   override def visitQuerySpecification(ctx: QuerySpecificationContext): LogicalPlan = {
     val filter: Option[Expression] = {
-      if (ctx.where == null)
+      if (ctx.where == null) {
         None
-      else {
+      } else {
         Option(ctx.where)
           .map(visit(_))
           .collectFirst { case e: Expression => e }
@@ -197,9 +198,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
         EmptyRelation
     }
 
-    val selectItem: Seq[SelectItem] = ctx
+    val selectItem: Seq[Attribute] = ctx
       .selectItem().asScala.map { x =>
-        visit(x).asInstanceOf[SelectItem]
+        visit(x).asInstanceOf[Attribute]
       }.toSeq
 
     val withAggregation = {
@@ -279,7 +280,7 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
       case l: LateralContext =>
         Lateral(visitQuery(l.query()))
       case t: TableNameContext =>
-        Table(QName(t.qualifiedName().getText))
+        TableRef(QName(t.qualifiedName().getText))
       case other =>
         throw unknown(other)
     }
@@ -317,9 +318,9 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
     j
   }
 
-  override def visitTableName(ctx: TableNameContext): Table = {
+  override def visitTableName(ctx: TableNameContext): TableRef = {
     val tableName = visitQualifiedName(ctx.qualifiedName())
-    Table(tableName)
+    TableRef(tableName)
   }
 
   override def visitQualifiedName(ctx: QualifiedNameContext): QName = {
@@ -327,16 +328,16 @@ class SQLInterpreter extends SqlBaseBaseVisitor[Any] with LogSupport {
   }
 
   override def visitDereference(ctx: DereferenceContext): Attribute = {
-    UnresolvedAttribute(Seq(ctx.base.getText, ctx.fieldName.getText))
+    UnresolvedAttribute(s"${ctx.base.getText}.${ctx.fieldName.getText}")
   }
 
-  override def visitSelectAll(ctx: SelectAllContext): SelectItem = {
+  override def visitSelectAll(ctx: SelectAllContext): Attribute = {
     // TODO parse qName
     ctx.qualifiedName()
     AllColumns(None)
   }
 
-  override def visitSelectSingle(ctx: SelectSingleContext): SelectItem = {
+  override def visitSelectSingle(ctx: SelectSingleContext): Attribute = {
     val alias = Option(ctx.AS()).map(x => expression(ctx.identifier()))
     SingleColumn(expression(ctx.expression()), alias)
   }

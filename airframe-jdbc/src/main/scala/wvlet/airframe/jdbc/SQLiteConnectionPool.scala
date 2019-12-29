@@ -19,7 +19,7 @@ import java.sql.{Connection, DriverManager}
 import wvlet.log.Guard
 
 /**
-  *
+  * SQLite doesn't work well with HikariCP, so creating a simple one here
   */
 class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Guard {
   private var conn: Connection = newConnection
@@ -33,10 +33,10 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
       }
     }
 
-    val jdbcUrl = s"jdbc:sqlite:${config.database}"
+    val jdbcUrl = config.jdbcUrl
     info(s"Opening ${jdbcUrl}")
     // We need to explicitly load sqlite-jdbc to cope with SBT's peculiar class loader
-    Class.forName("org.sqlite.JDBC")
+    Class.forName(config.jdbcDriverName)
     val conn = DriverManager.getConnection(jdbcUrl)
     conn.setAutoCommit(true)
     conn
@@ -54,7 +54,7 @@ class SQLiteConnectionPool(val config: DbConfig) extends ConnectionPool with Gua
   }
 
   def stop: Unit = {
-    info(s"Closing connection pool for ${config}")
+    info(s"Closing the connection pool for ${config.jdbcUrl}")
     conn.close()
   }
 }

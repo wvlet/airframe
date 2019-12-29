@@ -13,8 +13,6 @@
  */
 package wvlet.airframe.lifecycle
 
-import java.util.concurrent.atomic.AtomicInteger
-
 import wvlet.log.AirframeLogManager
 
 import scala.collection.mutable

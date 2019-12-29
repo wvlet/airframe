@@ -67,6 +67,8 @@ object SQLAnonymizer extends LogSupport {
     b.build
   }
 
+  import Expression._
+
   private class DictBuilder {
     val m                  = Map.newBuilder[Expression, Expression]
     val identifierTable    = new SymbolTable("i")
@@ -86,7 +88,8 @@ object SQLAnonymizer extends LogSupport {
         case q: QName =>
           m += q -> QName(q.parts.map(qnameTable.lookup))
         case u: UnresolvedAttribute =>
-          m += u -> UnresolvedAttribute(u.parts.map(qnameTable.lookup))
+          val v = UnresolvedAttribute(u.name.split("\\.").toSeq.map(qnameTable.lookup).mkString("."))
+          m += u -> v
       }
       this
     }

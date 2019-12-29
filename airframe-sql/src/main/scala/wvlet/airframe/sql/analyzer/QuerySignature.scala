@@ -13,7 +13,7 @@
  */
 
 package wvlet.airframe.sql.analyzer
-import wvlet.airframe.sql.model.LogicalPlan.Table
+import wvlet.airframe.sql.model.LogicalPlan.TableRef
 import wvlet.log.LogSupport
 import wvlet.airframe.sql.model.SQLSig
 import wvlet.airframe.sql.parser.SQLParser

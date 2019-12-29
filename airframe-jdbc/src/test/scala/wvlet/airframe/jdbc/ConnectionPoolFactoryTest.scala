@@ -13,8 +13,11 @@
  */
 package wvlet.airframe.jdbc
 
+import java.sql.SQLException
+
 import wvlet.log.LogSupport
 import wvlet.airframe._
+import wvlet.airframe.control.Control
 import wvlet.airspec.AirSpec
 
 object ConnectionPoolFactoryTest {
@@ -25,15 +28,16 @@ object ConnectionPoolFactoryTest {
 
 import wvlet.airframe.jdbc.ConnectionPoolFactoryTest._
 
-trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
-  lazy val pool1 = bind { c: MyDbConfig1 =>
+trait TestConnection extends LogSupport {
+
+  lazy val pool1 = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig1) =>
     connectionPoolFactory.newConnectionPool(c)
   }
-  lazy val pool2 = bind { c: MyDbConfig2 =>
+  lazy val pool2 = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig2) =>
     connectionPoolFactory.newConnectionPool(c)
   }
-  lazy val pgPool = bind { c: MyDbConfig3 =>
-    connectionPoolFactory.newConnectionPool(c, PostgreSQLConfig(useSSL = false))
+  lazy val pgPool = bind { (connectionPoolFactory: ConnectionPoolFactory, c: MyDbConfig3) =>
+    connectionPoolFactory.newConnectionPool(c.withPostgreSQLConfig(PostgreSQLConfig(useSSL = false)))
   }
 
   def test(pool: ConnectionPool): Unit = {
@@ -45,11 +49,6 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
         val name = rs.getString("name")
         logger.debug(s"read (${id}, ${name})")
       }
-    }
-
-    // Reconnection test for SQLite
-    if (pool.config.`type` == "sqlite") {
-      pool.stop
     }
 
     pool.updateWith("insert into test values(?, ?)") { ps =>
@@ -67,6 +66,26 @@ trait TestConnection extends ConnectionPoolFactoryService with LogSupport {
     }
 
     pool.executeUpdate("drop table if exists test")
+
+    pool.withTransaction { conn =>
+      Control.withResource(conn.createStatement()) { stmt =>
+        // trying to drop non-existing table
+        stmt.execute("create table if not exists test2(id int)")
+      }
+    }
+
+    try {
+      pool.withTransaction { conn =>
+        Control.withResource(conn.createStatement()) { stmt =>
+          // trying to drop non-existing table
+          stmt.execute("drop table test_abort")
+        }
+      }
+      assert(false, "cannot reach here")
+    } catch {
+      case e: SQLException =>
+      // OK
+    }
   }
 }
 
@@ -82,10 +101,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
     .noLifeCycleLogging
 
   def `use multiple SQLite configs`: Unit = {
-    if (!inTravisCI) pending
-
-    d.withSession { session =>
-      val t = session.build[TestConnection]
+    d.build[TestConnection] { t =>
       t.test(t.pool1)
       t.test(t.pool2)
     }
@@ -94,16 +110,14 @@ class ConnectionPoolFactoryTest extends AirSpec {
   def `use PostgreSQL connection pool`: Unit = {
     if (!inTravisCI) pending
 
-    d.withSession { session =>
-      val t = session.build[TestConnection]
+    d.build[TestConnection] { t =>
       t.test(t.pgPool)
     }
   }
 
   def `report error for unknown db type`: Unit = {
     intercept[IllegalArgumentException] {
-      d.withSession { session =>
-        val f = session.build[ConnectionPoolFactory]
+      d.build[ConnectionPoolFactory] { f =>
         f.newConnectionPool(DbConfig.of("superdb"))
       }
     }
@@ -111,8 +125,7 @@ class ConnectionPoolFactoryTest extends AirSpec {
 
   def `report error for missing postgresql host`: Unit = {
     intercept[IllegalArgumentException] {
-      d.withSession { session =>
-        val f = session.build[ConnectionPoolFactory]
+      d.build[ConnectionPoolFactory] { f =>
         f.newConnectionPool(DbConfig.of("postgresql"))
       }
     }

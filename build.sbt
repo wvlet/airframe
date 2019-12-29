@@ -6,15 +6,16 @@ val SCALA_2_13 = "2.13.1"
 
 val untilScala2_12      = SCALA_2_12 :: SCALA_2_11 :: Nil
 val targetScalaVersions = SCALA_2_13 :: untilScala2_12
+val exceptScala2_11     = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
-val SCALACHECK_VERSION              = "1.14.2"
+val SCALACHECK_VERSION              = "1.14.3"
 val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.28.0"
-val SLF4J_VERSION                   = "1.7.29"
+val SLF4J_VERSION                   = "1.7.30"
 val JS_JAVA_LOGGING_VERSION         = "0.1.6"
-val FINAGLE_VERSION                 = "19.11.0"
+val FINAGLE_VERSION                 = "19.12.0"
 val FLUENCY_VERSION                 = "2.4.0"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
 
@@ -56,7 +57,7 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.2"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3"
   )
 )
 
@@ -67,6 +68,7 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildSettings = Seq[Setting[_]](
+  crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
   // Workaround for ' JSCom has been closed' issue
   //parallelExecution in ThisBuild := false
@@ -153,7 +155,7 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
   examples
 )
 
-// Scala.js build (only for Scala 2.12)
+// Scala.js build (only for Scala 2.12 + 2.13)
 lazy val jsProjects: Seq[ProjectReference] = Seq(
   airframeJS,
   surfaceJS,
@@ -218,7 +220,7 @@ lazy val projectJS =
   project
     .settings(
       noPublish,
-      crossScalaVersions := Seq(SCALA_2_12)
+      crossScalaVersions := exceptScala2_11
     )
     .aggregate(jsProjects: _*)
 
@@ -506,7 +508,7 @@ lazy val jdbc =
         "org.slf4j" % "slf4j-jdk14" % SLF4J_VERSION
       )
     )
-    .dependsOn(airframeJVM, airframeMacrosJVMRef, airspecRefJVM % "test")
+    .dependsOn(airframeJVM, airframeMacrosJVMRef, control, config, airspecRefJVM % "test")
 
 lazy val http =
   project
@@ -642,11 +644,14 @@ lazy val sql =
       antlr4PackageName in Antlr4 := Some("wvlet.airframe.sql.parser"),
       antlr4GenListener in Antlr4 := true,
       antlr4GenVisitor in Antlr4 := true,
+      crossScalaVersions := untilScala2_12,
       libraryDependencies ++= Seq(
         // For parsing DataType strings
         "org.scala-lang.modules" %% "scala-parser-combinators" % SCALA_PARSER_COMBINATOR_VERSION,
         // Include Spark just as a reference implementation
-        "org.apache.spark" %% "spark-sql" % "2.4.0" % "test"
+        "org.apache.spark" %% "spark-sql" % "2.4.4" % "test",
+        // Include Presto as a reference implementation
+        "io.prestosql" % "presto-main" % "326" % "test"
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")

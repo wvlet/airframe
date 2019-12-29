@@ -66,7 +66,7 @@ class ControlTest extends AirSpec {
       }
     }
 
-    intercept[SecondException] {
+    val m = intercept[MultipleExceptions] {
       Control.withResources(
         new AutoCloseable {
           override def close(): Unit = throw new FirstException()
@@ -78,5 +78,7 @@ class ControlTest extends AirSpec {
         // do nothing
       }
     }
+    m.causes.exists(_.getClass == classOf[FirstException]) shouldBe true
+    m.causes.exists(_.getClass == classOf[SecondException]) shouldBe true
   }
 }

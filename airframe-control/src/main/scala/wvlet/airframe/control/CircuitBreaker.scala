@@ -30,9 +30,8 @@ object CircuitBreaker {
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
-  case class CircuitBreakerOpenException()
-
   private[control] def DO_NOTHING: () => Unit = {}
+  case class CircuitBreakerOpenException() extends Exception
 }
 
 import CircuitBreaker._
@@ -73,7 +72,7 @@ case class CircuitBreaker(
 
   def run[A](body: => A): Unit = {
     if (!isConnected) {
-      fallback()
+      throw CircuitBreakerOpenException()
     } else {
       val result = Try(body)
       val resultClass = result match {
@@ -88,13 +87,15 @@ case class CircuitBreaker(
           healthCheckPolicy.recovered
           state.get() match {
             case HALF_OPEN | CLOSED =>
-              open
+              healthCheckPolicy.recovered
+              close
             case _ =>
           }
           healthCheckPolicy.recordSuccess
           result.get
         case Failed(retryable, cause, extraWait) =>
           healthCheckPolicy.recordFailure
+          throw cause
       }
     }
   }

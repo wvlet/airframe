@@ -15,17 +15,49 @@ package wvlet.airframe.jdbc
 
 import java.sql.{Connection, PreparedStatement, ResultSet}
 
-import wvlet.airframe._
+import wvlet.log.LogSupport
 import wvlet.log.io.IOUtil.withResource
-import wvlet.log.{Guard, LogSupport}
 
-import scala.util.{Failure, Success, Try}
+object ConnectionPool {
+  def apply(config: DbConfig): ConnectionPool = {
+    val pool: ConnectionPool = config.`type` match {
+      case "sqlite" => new SQLiteConnectionPool(config)
+      case other =>
+        new GenericConnectionPool(config)
+    }
+    pool
+  }
 
-trait ConnectionPool extends LogSupport {
+  def newFactory: ConnectionPoolFactory = new ConnectionPoolFactory()
+}
+
+trait ConnectionPool extends LogSupport with AutoCloseable {
   def config: DbConfig
 
   def withConnection[U](body: Connection => U): U
+  def withTransaction[U](body: Connection => U): U = {
+    withConnection { conn =>
+      conn.setAutoCommit(false)
+      var failed = false
+      try {
+        body(conn)
+      } catch {
+        case e: Throwable =>
+          // Need to set the failed flag first because the rollback might fail
+          failed = true
+          conn.rollback()
+          throw e
+      } finally {
+        if (failed == false) {
+          conn.commit()
+        }
+      }
+    }
+  }
+
   def stop: Unit
+
+  override def close(): Unit = stop
 
   def executeQuery[U](sql: String)(handler: ResultSet => U): U = {
     withConnection { conn =>
@@ -67,53 +99,5 @@ trait ConnectionPool extends LogSupport {
       }
     }
   }
-}
 
-trait ConnectionPoolFactoryService {
-  val connectionPoolFactory = bind[ConnectionPoolFactory]
-}
-
-trait ConnectionPoolFactory extends Guard with AutoCloseable with LogSupport {
-  private var createdPools = List.empty[ConnectionPool]
-
-  /**
-    * Use this method to add a precisely configured connection pool
-    * @param pool
-    * @return
-    */
-  def addConnectionPool(pool: ConnectionPool): ConnectionPool = {
-    guard {
-      // Register the generated pool to the list
-      createdPools = pool :: createdPools
-    }
-    pool
-  }
-
-  /**
-    *
-    * @param config
-    * @param pgConfig
-    * @return
-    */
-  def newConnectionPool(config: DbConfig, pgConfig: PostgreSQLConfig = PostgreSQLConfig()): ConnectionPool = {
-    val pool: ConnectionPool = config.`type` match {
-      case "postgresql" => new PostgreSQLConnectionPool(config, pgConfig)
-      case "sqlite"     => new SQLiteConnectionPool(config)
-      case other =>
-        throw new IllegalArgumentException(s"Unsupported database type ${other}")
-    }
-    addConnectionPool(pool)
-  }
-
-  override def close: Unit = {
-    guard {
-      createdPools.foreach { x =>
-        Try(x.stop) match {
-          case Success(u) => // OK
-          case Failure(e) => warn(e)
-        }
-      }
-      createdPools = List.empty
-    }
-  }
 }

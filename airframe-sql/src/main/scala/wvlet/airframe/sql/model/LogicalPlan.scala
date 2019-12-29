@@ -20,7 +20,7 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     if (n.endsWith("$")) n.substring(0, n.length - 1) else n
   }
 
-  def printPlan: String = {
+  def pp: String = {
     LogicalPlanPrinter.print(this)
   }
 
@@ -51,7 +51,41 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     }.toSeq
   }
 
-  def transformExpressions(rule: PartialFunction[Expression, Expression]): this.type = {
+  def mapChildren(f: LogicalPlan => LogicalPlan): LogicalPlan = {
+    var changed = false
+    def recursiveTransform(arg: Any): AnyRef = arg match {
+      case e: Expression => e
+      case l: LogicalPlan => {
+        val newPlan = f(l)
+        if (!newPlan.eq(l)) {
+          changed = true
+        }
+        newPlan
+      }
+      case Some(x)       => Some(recursiveTransform(x))
+      case s: Seq[_]     => s.map(recursiveTransform _)
+      case other: AnyRef => other
+      case null          => null
+    }
+
+    val newArgs = productIterator.map(recursiveTransform).toArray[AnyRef]
+    if (changed) {
+      copyInstance(newArgs)
+    } else {
+      this
+    }
+  }
+
+  def transform(rule: PartialFunction[LogicalPlan, LogicalPlan]): LogicalPlan = {
+    val newNode: LogicalPlan = rule.applyOrElse(this, identity[LogicalPlan])
+    if (newNode.eq(this)) {
+      mapChildren(_.transform(rule))
+    } else {
+      newNode.mapChildren(_.transform(rule))
+    }
+  }
+
+  def transformExpressions(rule: PartialFunction[Expression, Expression]): LogicalPlan = {
     def recursiveTransform(arg: Any): AnyRef = arg match {
       case e: Expression  => e.transformExpression(rule)
       case l: LogicalPlan => l.transformExpressions(rule)
@@ -97,8 +131,14 @@ trait LogicalPlan extends TreeNode[LogicalPlan] with Product with SQLSig {
     productIterator.foreach(recursiveTraverse)
   }
 
+  // Input attributes (column names) of the relation
   def inputAttributes: Seq[Attribute]
+  // Output attributes (column names) of the relation
   def outputAttributes: Seq[Attribute]
+
+  // True if all input attributes are resolved.
+  lazy val resolved: Boolean    = expressions.forall(_.resolved) && resolvedChildren
+  def resolvedChildren: Boolean = children.forall(_.resolved)
 }
 
 trait LeafPlan extends LogicalPlan {
@@ -110,7 +150,7 @@ trait UnaryPlan extends LogicalPlan {
   def child: LogicalPlan
   override def children: Seq[LogicalPlan] = child :: Nil
 
-  override def inputAttributes: Seq[Attribute] = child.inputAttributes
+  override def inputAttributes: Seq[Attribute] = child.outputAttributes
 }
 
 trait BinaryPlan extends LogicalPlan {
@@ -127,7 +167,9 @@ trait SQLSig {
 }
 
 object LogicalPlan {
-  private def isSelectAll(selectItems: Seq[SelectItem]): Boolean = {
+  import Expression._
+
+  private def isSelectAll(selectItems: Seq[Attribute]): Boolean = {
     selectItems.exists {
       case AllColumns(x) => true
       case _             => false
@@ -135,7 +177,7 @@ object LogicalPlan {
   }
 
   // Relational operator
-  sealed trait Relation extends LogicalPlan with SQLSig
+  trait Relation extends LogicalPlan with SQLSig
 
   // A relation that takes a single input relation
   sealed trait UnaryRelation extends Relation with UnaryPlan {
@@ -160,10 +202,10 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"V[${rows.length}]"
     }
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = (0 until rows.size).map(x => UnresolvedAttribute(s"i${x}"))
   }
 
-  case class Table(name: QName) extends Relation with LeafPlan {
+  case class TableRef(name: QName) extends Relation with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = {
       if (config.embedTableNames) {
         name.toString
@@ -172,6 +214,7 @@ object LogicalPlan {
       }
     }
     override def outputAttributes: Seq[Attribute] = Nil
+    override lazy val resolved: Boolean           = false
   }
   case class RawSQL(sql: String) extends Relation with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = "Q"
@@ -208,22 +251,24 @@ object LogicalPlan {
 
 // This node can be a pivot node for generating a SELECT statament
   sealed trait Selection extends UnaryRelation {
-    def selectItems: Seq[SelectItem]
+    def selectItems: Seq[Attribute]
   }
 
-  case class Project(child: Relation, selectItems: Seq[SelectItem]) extends UnaryRelation with Selection {
+  case class Project(child: Relation, selectItems: Seq[Attribute]) extends UnaryRelation with Selection {
     override def sig(config: QuerySignatureConfig): String = {
       val proj = if (LogicalPlan.isSelectAll(selectItems)) "*" else s"${selectItems.length}"
       s"P[${proj}](${child.sig(config)})"
     }
 
     // TODO
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = {
+      selectItems
+    }
   }
 
   case class Aggregate(
       child: Relation,
-      selectItems: Seq[SelectItem],
+      selectItems: Seq[Attribute],
       groupingKeys: Seq[GroupingKey],
       having: Option[Expression]
   ) extends UnaryRelation
@@ -236,8 +281,7 @@ object LogicalPlan {
     override def toString =
       s"Aggregate[${groupingKeys.mkString(",")}](Select[${selectItems.mkString(", ")}(${child})"
 
-    // TODO
-    override def outputAttributes: Seq[Attribute] = ???
+    override def outputAttributes: Seq[Attribute] = selectItems
   }
 
   case class Query(withQuery: With, body: Relation) extends Relation {
@@ -281,8 +325,8 @@ object LogicalPlan {
     override def sig(config: QuerySignatureConfig): String = {
       s"${joinType.symbol}(${left.sig(config)},${right.sig(config)})"
     }
-    override def inputAttributes: Seq[Attribute]  = ???
-    override def outputAttributes: Seq[Attribute] = ???
+    override def inputAttributes: Seq[Attribute]  = left.outputAttributes ++ right.outputAttributes
+    override def outputAttributes: Seq[Attribute] = inputAttributes
   }
   sealed abstract class JoinType(val symbol: String)
 // Exact match (= equi join)
@@ -333,13 +377,13 @@ object LogicalPlan {
 
   case class Unnest(columns: Seq[Expression], withOrdinality: Boolean) extends Relation {
     override def children: Seq[LogicalPlan]                = Seq.empty
-    override def inputAttributes: Seq[Attribute]           = ??? // TODO
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def inputAttributes: Seq[Attribute]           = Seq.empty // TODO
+    override def outputAttributes: Seq[Attribute]          = Seq.empty // TODO
     override def sig(config: QuerySignatureConfig): String = s"Un[${columns.length}]"
   }
   case class Lateral(query: Relation) extends UnaryRelation {
     override def child: Relation                           = query
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def outputAttributes: Seq[Attribute]          = query.outputAttributes // TODO
     override def sig(config: QuerySignatureConfig): String = s"Lt(${query.sig(config)})"
   }
   case class LateralView(
@@ -348,7 +392,7 @@ object LogicalPlan {
       tableAlias: Identifier,
       columnAliases: Seq[Identifier]
   ) extends UnaryRelation {
-    override def outputAttributes: Seq[Attribute]          = ??? // TODO
+    override def outputAttributes: Seq[Attribute]          = columnAliases.map(x => UnresolvedAttribute(x.value))
     override def sig(config: QuerySignatureConfig): String = s"LV(${child.sig(config)})"
   }
 
@@ -369,7 +413,7 @@ object LogicalPlan {
   }
   case class CreateTable(table: QName, ifNotExists: Boolean, tableElems: Seq[TableElement]) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"CT(${Table(table).sig(config)})"
+      s"CT(${TableRef(table).sig(config)})"
     }
   }
 
@@ -379,13 +423,13 @@ object LogicalPlan {
       columnAliases: Option[Seq[Identifier]],
       query: Relation
   ) extends DDL {
-    override def sig(config: QuerySignatureConfig) = s"CT(${Table(table).sig(config)},${query.sig(config)})"
+    override def sig(config: QuerySignatureConfig) = s"CT(${TableRef(table).sig(config)},${query.sig(config)})"
     override def inputAttributes: Seq[Attribute]   = query.inputAttributes
     override def outputAttributes: Seq[Attribute]  = Nil
   }
   case class DropTable(table: QName, ifExists: Boolean) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"DT(${Table(table).sig(config)})"
+      s"DT(${TableRef(table).sig(config)})"
     }
   }
   trait Update extends LogicalPlan with SQLSig
@@ -395,14 +439,15 @@ object LogicalPlan {
       with UnaryRelation {
     override def child: Relation = query
     override def sig(config: QuerySignatureConfig): String = {
-      s"I(${Table(table).sig(config)},${query.sig(config)})"
+      s"I(${TableRef(table).sig(config)},${query.sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = query.inputAttributes
     override def outputAttributes: Seq[Attribute] = Nil
   }
+
   case class Delete(table: QName, where: Option[Expression]) extends Update with LeafPlan {
     override def sig(config: QuerySignatureConfig): String = {
-      s"D(${Table(table).sig(config)})"
+      s"D(${TableRef(table).sig(config)})"
     }
     override def inputAttributes: Seq[Attribute]  = Nil
     override def outputAttributes: Seq[Attribute] = Nil
@@ -410,7 +455,7 @@ object LogicalPlan {
 
   case class RenameTable(table: QName, renameTo: QName) extends DDL {
     override def sig(config: QuerySignatureConfig): String = {
-      s"RT(${Table(table).sig(config)})"
+      s"RT(${TableRef(table).sig(config)})"
     }
   }
   case class RenameColumn(table: QName, column: Identifier, renameTo: Identifier) extends DDL {

@@ -13,6 +13,9 @@
  */
 package wvlet.airframe.jdbc
 
+import com.zaxxer.hikari.HikariConfig
+import wvlet.airframe.config.secret
+
 /**
   *
   */
@@ -21,22 +24,122 @@ case class DbConfig(
     `type`: String = "sqlite",
     host: Option[String] = None,
     database: String = "log/sample.db",
-    port: Option[Int] = None,
+    private val port: Option[Int] = None,
     user: Option[String] = None,
-    password: Option[String] = None
+    @secret password: Option[String] = None,
+    private val driver: Option[String] = None,
+    connectionPool: ConnectionPoolConfig = ConnectionPoolConfig(),
+    // DBMS specific configurations will be added here so that we can describe
+    // these configurations in the same YAML file
+    postgres: PostgreSQLConfig = PostgreSQLConfig()
 ) {
-  override def toString = s"DbConfig(${`type`},${host},$database,$port,$user,xxxxxx)"
+  override def toString = {
+    // TODO: pretty print
+    s"DbConfig(${`type`},${host},$database,$port,$user,xxxxxx,${jdbcDriverName},${connectionPool})"
+  }
+
+  def jdbcUrl: String = {
+    `type` match {
+      case "sqlite" =>
+        s"jdbc:sqlite:${database}"
+      case _ =>
+        s"jdbc:${`type`}://${host.getOrElse("localhost")}${port.map(p => s":${port}").getOrElse("")}/${database}"
+    }
+  }
+
+  def withHost(host: String): DbConfig = {
+    this.copy(host = Some(host))
+  }
+
+  def withDatabase(database: String): DbConfig = {
+    this.copy(database = database)
+  }
+
+  def withPort(port: Int): DbConfig = {
+    this.copy(port = Some(port))
+  }
+
+  def jdbcPort: Int = {
+    port.getOrElse {
+      `type` match {
+        case "postgresql" => 5432
+        case "mysql"      => 3306
+        case other =>
+          throw new IllegalArgumentException(
+            s"Unknown jdbc port for ${other}. Specify jdbc port number with withPort(...)"
+          )
+      }
+    }
+  }
 
   def withUser(user: String): DbConfig =
-    DbConfig(`type`, host, database, port, Option(user), password)
+    this.copy(user = Option(user))
 
   def withPassword(password: String): DbConfig =
-    DbConfig(`type`, host, database, port, user, Option(password))
+    this.copy(password = Some(password))
+
+  def jdbcDriverName: String = {
+    driver match {
+      case Some(x) =>
+        // Use custom driver name
+        x
+      case _ =>
+        `type` match {
+          case "sqlite"     => "org.sqlite.JDBC"
+          case "postgresql" => "org.postgresql.Driver"
+          case "mysql"      => "com.mysql.jdbc.Driver"
+          case other =>
+            throw new IllegalArgumentException(
+              s"Unknown database type: ${other}. Specify jdbc driver name explicitly with withDriver(...)"
+            )
+        }
+    }
+  }
+
+  def withDriver(driverClassName: String): DbConfig = {
+    this.copy(driver = Some(driverClassName))
+  }
+
+  def withConnectionPoolConfig(connectionPoolConfig: ConnectionPoolConfig): DbConfig = {
+    this.copy(connectionPool = connectionPoolConfig)
+  }
+
+  def withHikariConfig(configFilter: HikariConfig => HikariConfig): DbConfig = {
+    this.copy(connectionPool = connectionPool.withHikariConfig(configFilter))
+  }
+
+  def withSQLiteConfig(dbFilePath: String): DbConfig = {
+    this.copy(`type` = "sqlite", host = None, database = dbFilePath)
+  }
+
+  // Add PostgreSQL-specific configuration
+  def withPostgreSQLConfig(postgresConfig: PostgreSQLConfig): DbConfig = {
+    this.copy(`type` = "postgresql", postgres = postgresConfig)
+  }
+}
+
+case class PostgreSQLConfig(
+    // SSL configuration for using RDS
+    useSSL: Boolean = true,
+    sslFactory: String = "org.postgresql.ssl.NonValidatingFactory"
+)
+
+case class ConnectionPoolConfig(
+    maxPoolSize: Int = 10,
+    autoCommit: Boolean = true,
+    hikariConfig: HikariConfig => HikariConfig = identity
+) {
+  override def toString: String = s"ConnectionPoolConfig(${maxPoolSize},${autoCommit})"
+
+  def withHikariConfig(configFilter: HikariConfig => HikariConfig): ConnectionPoolConfig = {
+    this.copy(hikariConfig = configFilter)
+  }
 }
 
 object DbConfig {
   def of(dbType: String): DbConfig     = DbConfig(`type` = dbType)
-  def ofSQLite(path: String): DbConfig = DbConfig("sqlite", None, database = path, None, None, None)
+  def ofSQLite(path: String): DbConfig = DbConfig().withSQLiteConfig(path)
   def ofPostgreSQL(host: String = "localhost", port: Int = 5432, database: String): DbConfig =
-    DbConfig("postgresql", host = Option(host), database = database, port = Some(port))
+    DbConfig(host = Option(host), database = database, port = Some(port))
+      .withPostgreSQLConfig(PostgreSQLConfig())
 }

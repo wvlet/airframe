@@ -15,6 +15,8 @@ package wvlet.airframe.control
 
 import java.util.concurrent.atomic.AtomicLong
 
+import wvlet.airframe.control.util.ExponentialMovingAverage
+
 /**
   *
   */
@@ -39,6 +41,7 @@ trait HealthCheckPolicy {
 }
 
 object HealthCheckPolicy {
+
   /**
     * A policy for marking the service dead upon consecutive failures
     */
@@ -65,6 +68,36 @@ object HealthCheckPolicy {
         */
       override def recovered: Unit = {
         consecutiveFailures.set(0)
+      }
+    }
+
+  def markDeadOnRecentFailureRate(failureRate: Double, timeWindowMillis: Long): HealthCheckPolicy =
+    new HealthCheckPolicy {
+      private val failureRateEMA = new ExponentialMovingAverage(timeWindowMillis)
+
+      override def isMarkedDead: Boolean = {
+        failureRateEMA.last > failureRate
+      }
+
+      /**
+        * Called when a request succeeds
+        */
+      override def recordSuccess: Unit = {
+        failureRateEMA.update(System.currentTimeMillis(), 0)
+      }
+
+      /**
+        * Called when request is failed.
+        */
+      override def recordFailure: Unit = {
+        failureRateEMA.update(System.currentTimeMillis(), 1)
+      }
+
+      /**
+        * Called when the target service is recovered
+        */
+      override def recovered: Unit = {
+        failureRateEMA.reset()
       }
     }
 }
