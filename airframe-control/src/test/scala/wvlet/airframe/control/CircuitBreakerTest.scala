@@ -9,5 +9,4 @@ class CircuitBreakerTest extends AirSpec {
     val cb = CircuitBreaker()
     cb.state shouldBe CircuitBreaker.CLOSED
   }
-
 }

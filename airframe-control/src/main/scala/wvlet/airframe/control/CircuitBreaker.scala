@@ -26,7 +26,7 @@ import scala.util.{Failure, Success, Try}
   */
 object CircuitBreaker {
 
-  def apply(): CircuitBreaker = CircuitBreaker()
+  def apply(): CircuitBreaker = new CircuitBreaker("circuit-breaker")
 
   sealed trait CircuitBreakerState
   case object OPEN      extends CircuitBreakerState
