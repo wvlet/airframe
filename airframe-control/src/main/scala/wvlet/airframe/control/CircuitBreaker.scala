@@ -21,41 +21,21 @@ import wvlet.airframe.control.Retry.RetryableFailure
 import scala.util.{Failure, Success, Try}
 import wvlet.log.LogSupport
 
-case class CircuitBreakerConfig(
-    name: String = "default",
-    healthCheckPolicy: HealthCheckPolicy = HealthCheckPolicy.markDeadOnConsecutiveFailures(3),
-    resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-    errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-    onOpen: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
-    onStateChange: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange
-) {
-  def withName(name: String): CircuitBreakerConfig = {
-    this.copy(name = name)
-  }
-  def withHealthCheckPolicy(healthCheckPolicy: HealthCheckPolicy): CircuitBreakerConfig = {
-    this.copy(healthCheckPolicy = healthCheckPolicy)
-  }
-}
+/**
+  * Thrown when the circuit breaker is open
+  */
+case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
 
 /**
   *
   */
 object CircuitBreaker extends LogSupport {
-
-  /**
-    * Thrown when the circuit breaker is open
-    */
-  case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
-
-  def default: CircuitBreakerConfig = CircuitBreakerConfig()
-  def apply(config: CircuitBreakerConfig): CircuitBreaker = {
-    new CircuitBreaker(config = config)
-  }
-
   sealed trait CircuitBreakerState
   case object OPEN      extends CircuitBreakerState
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
+
+  def default: CircuitBreaker = new CircuitBreaker()
 
   private[control] def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>
     throw CircuitBreakerOpenException(ctx)
@@ -68,6 +48,9 @@ object CircuitBreaker extends LogSupport {
 
 import CircuitBreaker._
 
+/**
+  * A safe interface for accessing CircuitBreaker states when handling events.
+  */
 trait CircuitBreakerContext {
   def name: String
   def state: CircuitBreakerState
@@ -75,62 +58,111 @@ trait CircuitBreakerContext {
 }
 
 case class CircuitBreaker(
-    // The name of circuit
-    config: CircuitBreakerConfig,
-    lastFailure: Option[Throwable] = None,
+    name: String = "default",
+    healthCheckPolicy: HealthCheckPolicy = HealthCheckPolicy.markDeadOnConsecutiveFailures(3),
+    resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
+    errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
+    onOpenHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
+    onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
+    var lastFailure: Option[Throwable] = None,
     private val currentState: AtomicReference[CircuitBreakerState] = new AtomicReference(CircuitBreaker.CLOSED)
 ) extends CircuitBreakerContext {
-
-  def name: String               = config.name
   def state: CircuitBreakerState = currentState.get()
 
-  def open: this.type = {
-    currentState.set(OPEN)
-    config.onStateChange(this)
-    this
+  def withName(name: String): CircuitBreaker = {
+    this.copy(name = name)
   }
-  def halfOpen: this.type = {
-    currentState.set(HALF_OPEN)
-    config.onStateChange(this)
-    this
+  def withHealthCheckPolicy(healthCheckPolicy: HealthCheckPolicy): CircuitBreaker = {
+    this.copy(healthCheckPolicy = healthCheckPolicy)
   }
-  def close: this.type = {
+  def withResultClassifier(resultClassifier: Any => ResultClass): CircuitBreaker = {
+    this.copy(resultClassifier = resultClassifier)
+  }
+  def withErrorClassifier(errorClassifier: Throwable => ResultClass): CircuitBreaker = {
+    this.copy(errorClassifier = errorClassifier)
+  }
+
+  /**
+    * Set an event listner that monitors CircuitBreaker state changes
+    */
+  def onStateChange(listener: CircuitBreakerContext => Unit): CircuitBreaker = {
+    this.copy(onStateChangeListener = listener)
+  }
+
+  /**
+    * Defines the action when trying to use the open circuit. The default
+    * behavior is to throw CircuitBreakerOpenException
+    */
+  def onOpen(handler: CircuitBreakerContext => Unit): CircuitBreaker = {
+    this.copy(onOpenHandler = handler)
+  }
+
+  /**
+    * Reset the lastFailure and close the circuit
+    */
+  def reset: Unit = {
+    lastFailure = None
     currentState.set(CLOSED)
-    config.onStateChange(this)
+  }
+
+  def setState(newState: CircuitBreakerState): this.type = {
+    currentState.set(newState)
+    onStateChangeListener(this)
     this
   }
+
+  def open: this.type     = setState(OPEN)
+  def halfOpen: this.type = setState(HALF_OPEN)
+  def close: this.type    = setState(CLOSED)
 
   def isConnected: Boolean = {
     currentState.get() == CLOSED
   }
 
-  def run[A](body: => A): Unit = {
+  /**
+    * If the connection is open, perform the specified action. The
+    * default behavior is throwing CircuitBreakerOpenException
+    */
+  def verifyConnection: Unit = {
     if (!isConnected) {
-      config.onOpen(this)
-    } else {
-      val result = Try(body)
-      val resultClass = result match {
-        case Success(x) => config.resultClassifier(x)
-        case Failure(RetryableFailure(e)) =>
-          ResultClass.retryableFailure(e)
-        case Failure(e) =>
-          config.errorClassifier(e)
-      }
-      resultClass match {
-        case Succeeded =>
-          config.healthCheckPolicy.recovered
-          currentState.get() match {
-            case HALF_OPEN | CLOSED =>
-              config.healthCheckPolicy.recovered
-              close
-            case _ =>
-          }
-          config.healthCheckPolicy.recordSuccess
-          result.get
-        case Failed(retryable, cause, extraWait) =>
-          config.healthCheckPolicy.recordFailure
-          throw cause
-      }
+      onOpenHandler(this)
+    }
+  }
+
+  def recordSuccess: Unit = {
+    healthCheckPolicy.recovered
+    currentState.get() match {
+      case HALF_OPEN | CLOSED =>
+        healthCheckPolicy.recovered
+        close
+      case _ =>
+    }
+    healthCheckPolicy.recordSuccess
+  }
+
+  def recordFailure(e: Throwable): Unit = {
+    lastFailure = Some(e)
+    healthCheckPolicy.recordFailure
+  }
+
+  def run[A](body: => A): Unit = {
+    verifyConnection
+
+    val result = Try(body)
+    val resultClass = result match {
+      case Success(x) => resultClassifier(x)
+      case Failure(RetryableFailure(e)) =>
+        ResultClass.retryableFailure(e)
+      case Failure(e) =>
+        errorClassifier(e)
+    }
+    resultClass match {
+      case Succeeded =>
+        recordSuccess
+        result.get
+      case Failed(retryable, cause, extraWait) =>
+        recordFailure(cause)
+        throw cause
     }
   }
 }

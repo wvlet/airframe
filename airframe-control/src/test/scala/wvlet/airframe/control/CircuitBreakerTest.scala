@@ -21,4 +21,22 @@ class CircuitBreakerTest extends AirSpec {
     cb.state shouldBe CircuitBreaker.CLOSED
     cb.isConnected shouldBe true
   }
+
+  def `support standalone usage`: Unit = {
+    val cb = CircuitBreaker.default
+
+    cb.verifyConnection
+    try {
+      cb.recordSuccess
+    } catch {
+      case e: Throwable =>
+        cb.recordFailure(e)
+    }
+
+    // Capture the open exception
+    intercept[CircuitBreakerOpenException] {
+      cb.open
+      cb.verifyConnection
+    }
+  }
 }
