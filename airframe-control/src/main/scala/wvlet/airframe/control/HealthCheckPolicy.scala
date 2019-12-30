@@ -16,6 +16,7 @@ package wvlet.airframe.control
 import java.util.concurrent.atomic.AtomicLong
 
 import wvlet.airframe.control.util.ExponentialMovingAverage
+import wvlet.log.LogSupport
 
 /**
   *
@@ -40,7 +41,7 @@ trait HealthCheckPolicy {
   def recovered: Unit
 }
 
-object HealthCheckPolicy {
+object HealthCheckPolicy extends LogSupport {
 
   /**
     * A policy for marking the service dead upon consecutive failures
@@ -100,4 +101,53 @@ object HealthCheckPolicy {
         failureRateEMA.reset()
       }
     }
+
+  def markDeadOnFailureThreshold(numFailures: Int, numExecutions: Int) = {
+    require(numExecutions > 0, s"numExecusions ${numExecutions} should be larger than 0")
+    require(
+      numFailures <= numExecutions,
+      s"numFailures ${numFailures} should be less than numExections(${numExecutions})"
+    )
+
+    new HealthCheckPolicy {
+      private val arraySize = (numExecutions + 64 - 1) / 64
+      // Circular bit vector of execution hisory 0 (success) or 1 (failure)
+      private val executionHistory     = Array.fill[Long](arraySize)(0L)
+      private var executionCount: Long = 0
+
+      override def isMarkedDead: Boolean = {
+        if (executionCount < numExecutions) {
+          false
+        } else {
+          val failureCount = executionHistory.sum { x =>
+            java.lang.Long.bitCount(x).toInt
+          }
+          failureCount >= numFailures
+        }
+      }
+
+      private def setAndMove(v: Boolean): Unit = {
+        val i    = (executionCount % numExecutions).toInt
+        val mask = 1L << (63 - i % 64)
+        if (v == true) {
+          executionHistory(i / 64) |= mask
+        } else {
+          executionHistory(i / 64) &= ~mask
+        }
+        executionCount += 1
+        if (executionCount < 0) {
+          // Reset upon overflow
+          executionCount = numExecutions
+        }
+      }
+
+      override def recordSuccess: Unit = setAndMove(false)
+      override def recordFailure: Unit = setAndMove(true)
+      override def recovered: Unit = {
+        // (0 until numExecutions).foreach { i =>
+        //   executionHistory(i) = true
+        // }
+      }
+    }
+  }
 }

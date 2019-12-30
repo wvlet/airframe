@@ -1,6 +1,7 @@
 package wvlet.airframe.control
 
 import wvlet.airspec._
+import java.util.concurrent.TimeoutException
 
 class CircuitBreakerTest extends AirSpec {
 
@@ -38,5 +39,29 @@ class CircuitBreakerTest extends AirSpec {
       cb.open
       cb.verifyConnection
     }
+  }
+
+  def `support failure threshold`: Unit = {
+    val cb = CircuitBreaker.withFailureThreshold(2, 5)
+    cb.isConnected shouldBe true
+    val e = new TimeoutException()
+    cb.recordSuccess
+    cb.isConnected shouldBe true
+    cb.recordSuccess
+    cb.isConnected shouldBe true
+    cb.recordFailure(e)
+    cb.isConnected shouldBe true
+    cb.recordFailure(e)
+    cb.isConnected shouldBe true
+    cb.recordSuccess
+    cb.isConnected shouldBe false
+    cb.recordSuccess
+    cb.isConnected shouldBe false
+    cb.recordSuccess
+    cb.isConnected shouldBe false
+    cb.recordSuccess
+    cb.isConnected shouldBe true
+    cb.recordSuccess
+    cb.isConnected shouldBe true
   }
 }

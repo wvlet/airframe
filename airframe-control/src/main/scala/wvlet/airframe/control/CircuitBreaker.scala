@@ -36,13 +36,16 @@ object CircuitBreaker extends LogSupport {
   case object CLOSED    extends CircuitBreakerState
 
   def default: CircuitBreaker = new CircuitBreaker()
+  def withFailureThreshold(numFailures: Int, numExecutions: Int = 10): CircuitBreaker = {
+    default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnFailureThreshold(numFailures, numExecutions))
+  }
 
   private[control] def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>
     throw CircuitBreakerOpenException(ctx)
   }
 
   private[control] def reportStateChange = { ctx: CircuitBreakerContext =>
-    info(s"CircuitBreaker(namd:${ctx.name}) state is changed to ${ctx.state}")
+    info(s"CircuitBreaker(name:${ctx.name}) state is changed to ${ctx.state}")
   }
 }
 
@@ -69,17 +72,17 @@ case class CircuitBreaker(
 ) extends CircuitBreakerContext {
   def state: CircuitBreakerState = currentState.get()
 
-  def withName(name: String): CircuitBreaker = {
-    this.copy(name = name)
+  def withName(newName: String): CircuitBreaker = {
+    this.copy(name = newName)
   }
-  def withHealthCheckPolicy(healthCheckPolicy: HealthCheckPolicy): CircuitBreaker = {
-    this.copy(healthCheckPolicy = healthCheckPolicy)
+  def withHealthCheckPolicy(newHealthCheckPolicy: HealthCheckPolicy): CircuitBreaker = {
+    this.copy(healthCheckPolicy = newHealthCheckPolicy)
   }
-  def withResultClassifier(resultClassifier: Any => ResultClass): CircuitBreaker = {
-    this.copy(resultClassifier = resultClassifier)
+  def withResultClassifier(newResultClassifier: Any => ResultClass): CircuitBreaker = {
+    this.copy(resultClassifier = newResultClassifier)
   }
-  def withErrorClassifier(errorClassifier: Throwable => ResultClass): CircuitBreaker = {
-    this.copy(errorClassifier = errorClassifier)
+  def withErrorClassifier(newErrorClassifier: Throwable => ResultClass): CircuitBreaker = {
+    this.copy(errorClassifier = newErrorClassifier)
   }
 
   /**
@@ -116,7 +119,7 @@ case class CircuitBreaker(
   def close: this.type    = setState(CLOSED)
 
   def isConnected: Boolean = {
-    currentState.get() == CLOSED
+    currentState.get() == CLOSED && !healthCheckPolicy.isMarkedDead
   }
 
   /**
@@ -124,6 +127,10 @@ case class CircuitBreaker(
     * default behavior is throwing CircuitBreakerOpenException
     */
   def verifyConnection: Unit = {
+    if (healthCheckPolicy.isMarkedDead) {
+      open
+    }
+
     if (!isConnected) {
       onOpenHandler(this)
     }
@@ -132,7 +139,7 @@ case class CircuitBreaker(
   def recordSuccess: Unit = {
     healthCheckPolicy.recovered
     currentState.get() match {
-      case HALF_OPEN | CLOSED =>
+      case HALF_OPEN =>
         healthCheckPolicy.recovered
         close
       case _ =>
