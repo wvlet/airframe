@@ -39,6 +39,8 @@ Control.withResources(
 
 ### Exponential Backoff
 
+Exponential backoff will multiply the waiting time before the retry attempt. The default multiplier is 1.5. For example, if the initial waiting time is 1 second, the next waiting time will be 1 x 1.5 = 1.5 second, and the next one will be 1.5 * 1.5 = 2.25 seconds, and so on.
+
 ```scala
 import wvlet.airframe.control.Retry
 import java.util.concurrent.TimeoutException
@@ -47,7 +49,8 @@ import java.util.concurrent.TimeoutException
 val r: String =
   Retry
     .withBackOff(maxRetry = 3)
-    .retryOn { 
+    // Classify the retryable or non-retryable error type. All exceptions will be retried by default.
+    .retryOn {
        case e: TimeoutException => Retry.retryableFailure(e)
     }
     .run {
@@ -61,35 +64,8 @@ val r: String =
     }
 ```
 
+To classify error types within `retryOn` method, use `Retry.retryableFailure(Throwable)` or `Retry.nonRetryableFailure(Throwable)`.
 
-To decide the number of backoff retries from an expected total wait time, use `withBoundedBackoff`:
-```scala
-import wvlet.airframe.control.Retry
-
-Retry
-  .withBoundedBackoff(
-    initialIntervalMillis = 1000, 
-    maxTotalWaitMillis = 30000
-  )
-```
-
-
-### Jitter
-
-```scala
-import wvlet.airframe.control.Retry
-import java.util.concurrent.TimeoutException
-
-Retry
-  .withJitter(maxRetry = 3) // It will wait nextWaitMillis * rand() upon retry
-  .retryOn {
-    case e: TimeoutException =>
-      Retry.retryableFailure(e)
-  }
-  .run {
-    // body
-  }
-```
 
 ### Adding Extra Wait
 
@@ -110,7 +86,62 @@ Retry
   }
 ```
 
+### Bounded Time Backoff
+
+To decide the number of backoff retries from an expected total wait time, use `withBoundedBackoff`:
+```scala
+import wvlet.airframe.control.Retry
+
+Retry
+  .withBoundedBackoff(
+    initialIntervalMillis = 1000,
+    maxTotalWaitMillis = 30000
+  )
+```
+
+### Jitter
+
+Jitter is useful to add randomness between retry intervals if there are multiple tasks that are using the same retry interval. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. The base waiting time will be multiplied similarly to the backoff.
+
+By adding such a randomness, we can avoid causing unexpected correlation between retried calls under exponentilal backoff. This will cause resource contention or overload as mutliple players will call the same service almost in the same timing.
+
+```scala
+import wvlet.airframe.control.Retry
+import java.util.concurrent.TimeoutException
+
+Retry
+  .withJitter(maxRetry = 3) // It will wait nextWaitMillis * rand() upon retry
+  .retryOn {
+    case e: TimeoutException =>
+      Retry.retryableFailure(e)
+  }
+  .run {
+    // body
+  }
+```
+
+## CircuitBreaker
+
+CircuitBreaker is used to avoid excessive calls to a remote service when the service is unavailable, and provides the capability to fail-fast the application so that we can avoid adding an extra waiting time before getting any response from the struggling service.
+
+CircuitBreaker is useful for:
+- Adding a safety around remote API calls
+- Protecting the system from too many exceptions of the same type.
+
+
+```scala
+import wvlet.airframe.control.CircuitBreaker
+
+val cb = CircuitBreaker
+  .withFailureThreshold(3, 10) // Open the circuit when observing 3 failures out of 10 executions
+  .run {
+    // body
+  }
+```
+
 ## Parallel
+
+Parallel is a library for ensuring using a fixed number of threads (= parallelism) for running tasks.
 
 
 ```scala

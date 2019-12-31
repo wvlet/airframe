@@ -22,7 +22,7 @@ import scala.util.{Failure, Success, Try}
 import wvlet.log.LogSupport
 
 /**
-  * Thrown when the circuit breaker is open
+  * An exception thrown when the circuit breaker is open
   */
 case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
 
@@ -36,8 +36,21 @@ object CircuitBreaker extends LogSupport {
   case object CLOSED    extends CircuitBreakerState
 
   def default: CircuitBreaker = new CircuitBreaker()
+  def newCircuitBreaker(name:String): CircuitBreaker = new CircuitBreaker().withName(name)
+
+  /**
+    * Create a CircuitBreaker that will be open after observing numFailures out of numExecutions.a
+    */
   def withFailureThreshold(numFailures: Int, numExecutions: Int = 10): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnFailureThreshold(numFailures, numExecutions))
+  }
+
+  def withFailureRate(failureRate:Double, timeWindowMillis: Int = 60000): CircuitBreaker = {
+    default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnRecentFailureRate(failureRate, timeWindowMillis))
+  }
+
+  def withConsecutiveFailures(numFailures: Int): CircuitBreaker = {
+    default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnConsecutiveFailures(numFailures))
   }
 
   private[control] def throwOpenException: CircuitBreakerContext => Unit = { ctx: CircuitBreakerContext =>
@@ -123,8 +136,9 @@ case class CircuitBreaker(
   }
 
   /**
+    *  This method is only for standalone usage.
     * If the connection is open, perform the specified action. The
-    * default behavior is throwing CircuitBreakerOpenException
+    * default behavior is fail-fast, i.e., throwing CircuitBreakerOpenException
     */
   def verifyConnection: Unit = {
     if (healthCheckPolicy.isMarkedDead) {
@@ -136,6 +150,9 @@ case class CircuitBreaker(
     }
   }
 
+  /**
+    * A method for reporting success to CircuitBreaker for the standalone usage.
+    */
   def recordSuccess: Unit = {
     healthCheckPolicy.recovered
     currentState.get() match {
@@ -147,6 +164,9 @@ case class CircuitBreaker(
     healthCheckPolicy.recordSuccess
   }
 
+  /**
+    * A method for reporting failure to CircuitBreaker for the standalone usage.
+    */
   def recordFailure(e: Throwable): Unit = {
     lastFailure = Some(e)
     healthCheckPolicy.recordFailure

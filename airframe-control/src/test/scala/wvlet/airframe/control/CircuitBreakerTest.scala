@@ -43,24 +43,42 @@ class CircuitBreakerTest extends AirSpec {
 
   def `support failure threshold`: Unit = {
     val cb = CircuitBreaker.withFailureThreshold(2, 5)
+    val e  = new TimeoutException()
     cb.isConnected shouldBe true
-    val e = new TimeoutException()
+
+    // 0/0
     cb.recordSuccess
     cb.isConnected shouldBe true
+
+    // 0/1
     cb.recordSuccess
     cb.isConnected shouldBe true
+
+    // 1/2
     cb.recordFailure(e)
     cb.isConnected shouldBe true
+
+    // 2/3
     cb.recordFailure(e)
     cb.isConnected shouldBe true
+
+    // 2/4
     cb.recordSuccess
     cb.isConnected shouldBe false
+
+    // 2/5 -> open the circuit breaker
     cb.recordSuccess
     cb.isConnected shouldBe false
+
+    // 2/5
     cb.recordSuccess
     cb.isConnected shouldBe false
+
+    // 2/5
     cb.recordSuccess
     cb.isConnected shouldBe true
+
+    // 1/5
     cb.recordSuccess
     cb.isConnected shouldBe true
   }
