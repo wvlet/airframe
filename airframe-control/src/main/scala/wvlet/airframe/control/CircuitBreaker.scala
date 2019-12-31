@@ -26,17 +26,19 @@ import wvlet.log.LogSupport
   */
 case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
 
+sealed trait CircuitBreakerState
+
 /**
   *
   */
 object CircuitBreaker extends LogSupport {
-  sealed trait CircuitBreakerState
+
   case object OPEN      extends CircuitBreakerState
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
-  def default: CircuitBreaker = new CircuitBreaker()
-  def newCircuitBreaker(name:String): CircuitBreaker = new CircuitBreaker().withName(name)
+  def default: CircuitBreaker                         = new CircuitBreaker()
+  def newCircuitBreaker(name: String): CircuitBreaker = new CircuitBreaker().withName(name)
 
   /**
     * Create a CircuitBreaker that will be open after observing numFailures out of numExecutions.a
@@ -45,7 +47,7 @@ object CircuitBreaker extends LogSupport {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnFailureThreshold(numFailures, numExecutions))
   }
 
-  def withFailureRate(failureRate:Double, timeWindowMillis: Int = 60000): CircuitBreaker = {
+  def withFailureRate(failureRate: Double, timeWindowMillis: Int = 60000): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnRecentFailureRate(failureRate, timeWindowMillis))
   }
 
