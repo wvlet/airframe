@@ -22,7 +22,7 @@ import scala.util.{Failure, Success, Try}
 import wvlet.log.LogSupport
 import wvlet.airframe.control.Retry.RetryPolicy
 import wvlet.airframe.control.Retry.RetryPolicyConfig
-import wvlet.airframe.control.Retry.ExponentialBackOff
+import wvlet.airframe.control.Retry.Jitter
 
 /**
   * An exception thrown when the circuit breaker is open
@@ -86,7 +86,7 @@ case class CircuitBreaker(
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
     onOpenHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
-    delayAfterMarkedDead: RetryPolicy = new ExponentialBackOff(new RetryPolicyConfig()),
+    delayAfterMarkedDead: RetryPolicy = new Jitter(new RetryPolicyConfig()),
     private var nextProvingTimeMillis: Long = Long.MaxValue,
     private var provingWaitTimeMillis: Long = 0L,
     var lastFailure: Option[Throwable] = None,
@@ -106,6 +106,9 @@ case class CircuitBreaker(
   }
   def withErrorClassifier(newErrorClassifier: Throwable => ResultClass): CircuitBreaker = {
     this.copy(errorClassifier = newErrorClassifier)
+  }
+  def withDelayAfterMarkedDead(retryPolicy: RetryPolicy): CircuitBreaker = {
+    this.copy(delayAfterMarkedDead = retryPolicy)
   }
 
   /**
@@ -130,6 +133,7 @@ case class CircuitBreaker(
     lastFailure = None
     currentState.set(CLOSED)
     nextProvingTimeMillis = Long.MaxValue
+    provingWaitTimeMillis = 0L
   }
 
   def setState(newState: CircuitBreakerState): this.type = {
@@ -179,6 +183,7 @@ case class CircuitBreaker(
       case CLOSED if isDead =>
         open
       case OPEN if !isDead =>
+        // Service is not marked dead, so try proving at HALF_OPEN state
         halfOpen
       case _ =>
     }
@@ -191,10 +196,10 @@ case class CircuitBreaker(
     lastFailure = Some(e)
     healthCheckPolicy.recordFailure
     if (healthCheckPolicy.isMarkedDead) {
-      provingWaitTimeMillis = delayAfterMarkedDead.nextWait(
-        provingWaitTimeMillis.max(delayAfterMarkedDead.retryPolicyConfig.initialIntervalMillis).toInt
-      )
-      nextProvingTimeMillis = System.currentTimeMillis() + provingWaitTimeMillis
+      val baseWaitMillis = provingWaitTimeMillis.max(delayAfterMarkedDead.retryPolicyConfig.initialIntervalMillis).toInt
+      val nextWaitMillis = delayAfterMarkedDead.nextWait(baseWaitMillis)
+      provingWaitTimeMillis = delayAfterMarkedDead.updateBaseWait(baseWaitMillis)
+      nextProvingTimeMillis = System.currentTimeMillis() + nextWaitMillis
       close
     }
   }

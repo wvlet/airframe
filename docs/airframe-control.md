@@ -3,8 +3,9 @@ id: airframe-control
 title: airframe-control: Retry/Rate Control
 ---
 
-airframe-control is a library for writing control flow at ease.
+airframe-control is a library for writing control flows at ease.
 
+- [Source Code at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-control)
 
 # Usage
 
@@ -101,9 +102,7 @@ Retry
 
 ### Jitter
 
-Jitter is useful to add randomness between retry intervals if there are multiple tasks that are using the same retry interval. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. The base waiting time will be multiplied similarly to the backoff.
-
-By adding such a randomness, we can avoid causing unexpected correlation between retried calls under exponentilal backoff. This will cause resource contention or overload as mutliple players will call the same service almost in the same timing.
+Jitter is useful to add randomness between retry intervals if there are multiple tasks that are using the same retry interval. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. The base waiting time will be multiplied similarly to the backoff. By adding such a randomness, we can avoid causing unexpected correlation between retried calls. With exponentilal backoff, API calls retried at the same timing will cause resource contention or overload of the target service.
 
 ```scala
 import wvlet.airframe.control.Retry
@@ -131,8 +130,9 @@ CircuitBreaker is useful for:
 
 CircuitBreaker has tree states: CLOSED, OPEN, and HALF_OPEN.
 
-- __CLOSED__: This is the default state and all execution is allowed. 
--
+- __CLOSED__: This is the default state and all execution is allowed. If the target service becomes unhealthy (markedDead), the states will transit to OPEN state.
+- __OPEN__: Connection is broken, and no execution will be allowed. In this state, all executions will throw CircuitBreakerOpenException to do fail-fast. After a certain time is passed, this state will move to HALF_OPEN state.
+- __HALF_OPEN__: This state will perform _probing_ to the target service. That is, an execution is allowed at HALF_OPEN state and if it succeeds the state moves to CLOSED. If the request fails, it will go back to OPEN state again. The delay time will be computed by RetryPolicy. The default is the exponential backoff with jittering.
 
 ```scala
 import wvlet.airframe.control.CircuitBreaker

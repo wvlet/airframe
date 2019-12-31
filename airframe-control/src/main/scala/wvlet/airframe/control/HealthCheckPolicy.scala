@@ -144,10 +144,9 @@ object HealthCheckPolicy extends LogSupport {
 
       override def recordSuccess: Unit = setAndMove(false)
       override def recordFailure: Unit = setAndMove(true)
+
       override def recovered: Unit = {
-        // (0 until numExecutions).foreach { i =>
-        //   executionHistory(i) = true
-        // }
+        executionCount = 0
       }
     }
   }
