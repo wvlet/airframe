@@ -20,6 +20,9 @@ import wvlet.airframe.control.Retry.RetryableFailure
 
 import scala.util.{Failure, Success, Try}
 import wvlet.log.LogSupport
+import wvlet.airframe.control.Retry.RetryPolicy
+import wvlet.airframe.control.Retry.RetryPolicyConfig
+import wvlet.airframe.control.Retry.ExponentialBackOff
 
 /**
   * An exception thrown when the circuit breaker is open
@@ -33,7 +36,8 @@ sealed trait CircuitBreakerState
   */
 object CircuitBreaker extends LogSupport {
 
-  case object OPEN      extends CircuitBreakerState
+  case object OPEN extends CircuitBreakerState
+  // Proving state
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
@@ -60,7 +64,7 @@ object CircuitBreaker extends LogSupport {
   }
 
   private[control] def reportStateChange = { ctx: CircuitBreakerContext =>
-    info(s"CircuitBreaker(name:${ctx.name}) state is changed to ${ctx.state}")
+    info(s"CircuitBreaker(name:${ctx.name}) is changed to ${ctx.state}")
   }
 }
 
@@ -82,9 +86,13 @@ case class CircuitBreaker(
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
     onOpenHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
+    delayAfterMarkedDead: RetryPolicy = new ExponentialBackOff(new RetryPolicyConfig()),
+    private var nextProvingTimeMillis: Long = Long.MaxValue,
+    private var provingWaitTimeMillis: Long = 0L,
     var lastFailure: Option[Throwable] = None,
     private val currentState: AtomicReference[CircuitBreakerState] = new AtomicReference(CircuitBreaker.CLOSED)
-) extends CircuitBreakerContext {
+) extends CircuitBreakerContext
+    with LogSupport {
   def state: CircuitBreakerState = currentState.get()
 
   def withName(newName: String): CircuitBreaker = {
@@ -121,11 +129,14 @@ case class CircuitBreaker(
   def reset: Unit = {
     lastFailure = None
     currentState.set(CLOSED)
+    nextProvingTimeMillis = Long.MaxValue
   }
 
   def setState(newState: CircuitBreakerState): this.type = {
-    currentState.set(newState)
-    onStateChangeListener(this)
+    if (currentState.get() != newState) {
+      currentState.set(newState)
+      onStateChangeListener(this)
+    }
     this
   }
 
@@ -134,7 +145,8 @@ case class CircuitBreaker(
   def close: this.type    = setState(CLOSED)
 
   def isConnected: Boolean = {
-    currentState.get() == CLOSED && !healthCheckPolicy.isMarkedDead
+    val s = currentState.get()
+    s == CLOSED || s == HALF_OPEN
   }
 
   /**
@@ -143,12 +155,13 @@ case class CircuitBreaker(
     * default behavior is fail-fast, i.e., throwing CircuitBreakerOpenException
     */
   def verifyConnection: Unit = {
-    if (healthCheckPolicy.isMarkedDead) {
-      open
-    }
-
     if (!isConnected) {
-      onOpenHandler(this)
+      val currentTime = System.currentTimeMillis()
+      if (currentTime > nextProvingTimeMillis) {
+        halfOpen
+      } else {
+        onOpenHandler(this)
+      }
     }
   }
 
@@ -156,14 +169,19 @@ case class CircuitBreaker(
     * A method for reporting success to CircuitBreaker for the standalone usage.
     */
   def recordSuccess: Unit = {
-    healthCheckPolicy.recovered
+    healthCheckPolicy.recordSuccess
+    val isDead = healthCheckPolicy.isMarkedDead
     currentState.get() match {
       case HALF_OPEN =>
+        // Probe request succeeds, so move to CLOSED state
         healthCheckPolicy.recovered
         close
+      case CLOSED if isDead =>
+        open
+      case OPEN if !isDead =>
+        halfOpen
       case _ =>
     }
-    healthCheckPolicy.recordSuccess
   }
 
   /**
@@ -172,6 +190,13 @@ case class CircuitBreaker(
   def recordFailure(e: Throwable): Unit = {
     lastFailure = Some(e)
     healthCheckPolicy.recordFailure
+    if (healthCheckPolicy.isMarkedDead) {
+      provingWaitTimeMillis = delayAfterMarkedDead.nextWait(
+        provingWaitTimeMillis.max(delayAfterMarkedDead.retryPolicyConfig.initialIntervalMillis).toInt
+      )
+      nextProvingTimeMillis = System.currentTimeMillis() + provingWaitTimeMillis
+      close
+    }
   }
 
   def run[A](body: => A): Unit = {

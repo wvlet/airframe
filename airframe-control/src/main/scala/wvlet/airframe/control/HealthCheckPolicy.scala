@@ -115,13 +115,14 @@ object HealthCheckPolicy extends LogSupport {
       private val executionHistory: Array[Long] = Array.fill[Long](arraySize)(0L)
       private var executionCount: Long          = 0
 
+      private def failureCount = {
+        executionHistory.map { java.lang.Long.bitCount(_) }.sum
+      }
+
       override def isMarkedDead: Boolean = {
         if (executionCount < numExecutions) {
           false
         } else {
-          val failureCount = executionHistory.map {
-            java.lang.Long.bitCount(_)
-          }.sum
           failureCount >= numFailures
         }
       }

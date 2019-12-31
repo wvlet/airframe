@@ -16,7 +16,7 @@ class CircuitBreakerTest extends AirSpec {
 
     cb.halfOpen
     cb.state shouldBe CircuitBreaker.HALF_OPEN
-    cb.isConnected shouldBe false
+    cb.isConnected shouldBe true 
 
     cb.close
     cb.state shouldBe CircuitBreaker.CLOSED

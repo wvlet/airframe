@@ -129,6 +129,11 @@ CircuitBreaker is useful for:
 - Protecting the system from too many exceptions of the same type.
 
 
+CircuitBreaker has tree states: CLOSED, OPEN, and HALF_OPEN.
+
+- __CLOSED__: This is the default state and all execution is allowed. 
+-
+
 ```scala
 import wvlet.airframe.control.CircuitBreaker
 
