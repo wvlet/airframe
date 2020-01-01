@@ -86,7 +86,7 @@ case class CircuitBreaker(
     errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
     onOpenHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
-    delayAfterMarkedDead: RetryPolicy = new Jitter(new RetryPolicyConfig()),
+    delayAfterMarkedDead: RetryPolicy = new Jitter(new RetryPolicyConfig(initialIntervalMillis = 30000)), // 30 seconds
     private var nextProvingTimeMillis: Long = Long.MaxValue,
     private var provingWaitTimeMillis: Long = 0L,
     var lastFailure: Option[Throwable] = None,
