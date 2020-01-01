@@ -82,7 +82,7 @@ private[airspec] class AirSpecTaskRunner(
     }
   }
 
-  def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+  private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
     val selectedMethods =
       config.pattern match {
         case Some(regex) =>
