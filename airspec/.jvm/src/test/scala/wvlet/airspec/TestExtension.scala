@@ -91,6 +91,6 @@ class MyServer2Spec extends CustomSpec {
   }
 
   override protected def afterAll: Unit = {
-    assert(serverLaunchCounter.get() == testMethods.size)
+    assert(serverLaunchCounter.get() == testDefinitions.size)
   }
 }

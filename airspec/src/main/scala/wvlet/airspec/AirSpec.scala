@@ -37,6 +37,7 @@ private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, name: String, design
 }
 
 private[airspec] trait AirSpecSpi {
+  private[airspec] var _localTestDefs: Seq[AirSpecDef] = Seq.empty
 
   protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
     new AirSpecTestBuilder(this, name, design)
@@ -49,8 +50,8 @@ private[airspec] trait AirSpecSpi {
    * If we don't need to support Scala.js, we will just use RuntimeSurface to get a list of test methods.
    */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
-  private[airspec] def testMethods: Seq[MethodSurface] = {
-    AirSpecSpi.collectTestMethods(_methodSurfaces)
+  private[airspec] def testDefinitions: Seq[AirSpecDef] = {
+    AirSpecSpi.collectTestMethods(_methodSurfaces) ++ _localTestDefs
   }
 
   private[airspec] var specName: String = {
@@ -102,8 +103,8 @@ private[airspec] trait AirSpecSpi {
 }
 
 private[airspec] object AirSpecSpi {
-  private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[MethodSurface] = {
-    methodSurfaces.filter(m => m.isPublic)
+  private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[AirSpecDef] = {
+    methodSurfaces.filter(m => m.isPublic).map(x => MethodAirSpecDef(x))
   }
 
   /**

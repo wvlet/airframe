@@ -1,17 +1,16 @@
-package wvlet.airspec.runner
+package wvlet.airspec
 
 import wvlet.airframe._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.surface.MethodSurface
-import wvlet.airspec.AirSpecSpi
 import wvlet.airspec.spi.{AirSpecContext, MissingTestDependency}
 
-sealed trait AirSpecDef {
+private[airspec] sealed trait AirSpecDef {
   def name: String
   def run(context: AirSpecContext, session: Session): Any
 }
 
-case class MethodAirSpecDef(methodSurface: MethodSurface) extends AirSpecDef {
+private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) extends AirSpecDef {
   override def name: String = methodSurface.name
 
   override def run(context: AirSpecContext, session: Session): Any = {
@@ -36,7 +35,7 @@ case class MethodAirSpecDef(methodSurface: MethodSurface) extends AirSpecDef {
   }
 }
 
-case class AirSpecDefF0[R](name: String, design: Design, body: LazyF0[R]) extends AirSpecDef {
+private[airspec] case class AirSpecDefF0[R](name: String, design: Design, body: LazyF0[R]) extends AirSpecDef {
   override def run(context: AirSpecContext, session: Session): Any = {
     body.eval
   }

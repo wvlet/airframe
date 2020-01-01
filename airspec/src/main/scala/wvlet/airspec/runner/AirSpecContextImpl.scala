@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import wvlet.airframe.Session
 import wvlet.airframe.surface.{MethodSurface, Surface}
-import wvlet.airspec.AirSpecSpi
+import wvlet.airspec.{AirSpecSpi, AirSpecDef}
 import wvlet.airspec.spi.AirSpecContext
 import wvlet.log.LogSupport
 
@@ -32,8 +32,8 @@ private[airspec] class AirSpecContextImpl(
     val currentSession: Session
 ) extends AirSpecContext
     with LogSupport {
-  override protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi = {
-    taskExecutor.run(Some(this), spec, testMethods)
+  override protected def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi = {
+    taskExecutor.run(Some(this), spec, testDefs)
     spec
   }
   override protected def newSpec(specSurface: Surface): AirSpecSpi = {
