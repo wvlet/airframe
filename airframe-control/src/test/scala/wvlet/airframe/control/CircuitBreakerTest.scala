@@ -109,7 +109,7 @@ class CircuitBreakerTest extends AirSpec {
   }
 
   def `support failure rate health checker`: Unit = {
-    val cb = CircuitBreaker.withFailureRate(0.01)
+    val cb = CircuitBreaker.withFailureRate(0.01, timeWindowMillis = 1000)
     val e  = new TimeoutException()
     cb.isConnected shouldBe true
 
@@ -120,16 +120,18 @@ class CircuitBreakerTest extends AirSpec {
     // 1/2
     Thread.sleep(200)
     cb.recordFailure(e)
-    cb.isConnected shouldBe true
+    cb.isConnected shouldBe false
 
     // 1/3
     Thread.sleep(200)
     cb.recordFailure(e)
-    cb.isConnected shouldBe true
-
-    // 1/4
-    Thread.sleep(200)
-    cb.recordFailure(e)
     cb.isConnected shouldBe false
+
+    // Force probing
+    cb.halfOpen
+
+    // The state should be recovered after the successful request
+    cb.recordSuccess
+    cb.isConnected shouldBe true
   }
 }

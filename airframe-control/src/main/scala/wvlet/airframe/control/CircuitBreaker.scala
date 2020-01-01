@@ -134,6 +134,7 @@ case class CircuitBreaker(
     currentState.set(CLOSED)
     nextProvingTimeMillis = Long.MaxValue
     provingWaitTimeMillis = 0L
+    healthCheckPolicy.recovered
   }
 
   def setState(newState: CircuitBreakerState): this.type = {
