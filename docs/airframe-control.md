@@ -40,7 +40,7 @@ Control.withResources(
 
 ### Exponential Backoff
 
-Exponential backoff will multiply the waiting time before the retry attempt. The default multiplier is 1.5. For example, if the initial waiting time is 1 second, the next waiting time will be 1 x 1.5 = 1.5 second, and the next one will be 1.5 * 1.5 = 2.25 seconds, and so on.
+Exponential backoff will multiply the waiting time for each retry attempt. The default multiplier is 1.5. For example, if the initial waiting time is 1 second, the next waiting time will be 1 x 1.5 = 1.5 second, and the next waiting time will be 1.5 * 1.5 = 2.25 seconds, and so on.
 
 ```scala
 import wvlet.airframe.control.Retry
@@ -102,7 +102,7 @@ Retry
 
 ### Jitter
 
-Jitter is useful to add randomness between retry intervals if there are multiple tasks that are using the same retry interval. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. The base waiting time will be multiplied similarly to the backoff and API calls retried at the same timing will cause resource contention or overload of the target service. Jitter will add randomness to avoid such unexpected correlations between retried requests.
+Jitter is useful to add randomness between the retry intervals especially if there are multiple tasks using the same retry pattern. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. Then, the base waiting time will be multiplied as the exponential backoff. This randomness will avoid having multiple API calls that will be retried at the same timing will, which often causes resource contention or overload of the target service. Jitter will add randomness to avoid such unexpected correlations between retried requests.
 
 ```scala
 import wvlet.airframe.control.Retry
