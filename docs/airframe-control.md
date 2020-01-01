@@ -102,7 +102,7 @@ Retry
 
 ### Jitter
 
-Jitter is useful to add randomness between the retry intervals especially if there are multiple tasks using the same retry pattern. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time from the value within [0, 10] range to add some random factor. Then, the base waiting time will be multiplied as the exponential backoff. This randomness will avoid having multiple API calls that will be retried at the same timing will, which often causes resource contention or overload of the target service. Jitter will add randomness to avoid such unexpected correlations between retried requests.
+Jitter is useful to add randomness between the retry intervals especially if there are multiple tasks using the same retry pattern. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time between [0, 10] to add some random factor. Then, the base waiting time will be multiplied as in the exponential backoff. This randomness will avoid having multiple API calls that will be retried at the same timing, which often cause resource contention or overload of the target service. With Jittering you can avoid such unexpected correlations between retried requests.
 
 ```scala
 import wvlet.airframe.control.Retry
@@ -179,7 +179,7 @@ val result = source.parallel.withParallelism(4).map { i =>
 
 You can monitor metrics of parallel execution via JMX using [airframe-jmx](https://github.com/wvlet/airframe/tree/master/airframe-jmx).
 
-```
+```scala
 JMXAgent.defaultAgent.register[Parallel.ParallelExecutionStats](Parallel.jmxStats)
 ```
 
