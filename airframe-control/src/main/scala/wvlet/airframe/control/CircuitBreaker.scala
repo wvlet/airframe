@@ -25,7 +25,7 @@ import wvlet.airframe.control.Retry.RetryPolicyConfig
 import wvlet.airframe.control.Retry.Jitter
 
 /**
-  * An exception thrown when the circuit breaker is open
+  * An exception thrown when the circuit breaker is open.
   */
 case class CircuitBreakerOpenException(context: CircuitBreakerContext) extends Exception
 
@@ -36,8 +36,7 @@ sealed trait CircuitBreakerState
   */
 object CircuitBreaker extends LogSupport {
 
-  case object OPEN extends CircuitBreakerState
-  // Proving state
+  case object OPEN      extends CircuitBreakerState
   case object HALF_OPEN extends CircuitBreakerState
   case object CLOSED    extends CircuitBreakerState
 
@@ -45,16 +44,24 @@ object CircuitBreaker extends LogSupport {
   def newCircuitBreaker(name: String): CircuitBreaker = new CircuitBreaker().withName(name)
 
   /**
-    * Create a CircuitBreaker that will be open after observing numFailures out of numExecutions.a
+    * Create a CircuitBreaker that will be open after observing numFailures out of numExecutions.
     */
   def withFailureThreshold(numFailures: Int, numExecutions: Int = 10): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnFailureThreshold(numFailures, numExecutions))
   }
 
+  /**
+    * Create a CircuitBreaker that will be open if the failure rate in a time window exceeds the given threshold.
+    * The failure rate will be decayed exponentially as time goes.
+    */
   def withFailureRate(failureRate: Double, timeWindowMillis: Int = 60000): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnRecentFailureRate(failureRate, timeWindowMillis))
   }
 
+  /**
+    * Create a CircuitBreaker that will be open if the number of consecutive failrues excceeds the given threshold.
+    *
+    */
   def withConsecutiveFailures(numFailures: Int): CircuitBreaker = {
     default.withHealthCheckPolicy(HealthCheckPolicy.markDeadOnConsecutiveFailures(numFailures))
   }
@@ -95,18 +102,39 @@ case class CircuitBreaker(
     with LogSupport {
   def state: CircuitBreakerState = currentState.get()
 
+  /**
+    * Set the name of this CircuitBreaker
+    */
   def withName(newName: String): CircuitBreaker = {
     this.copy(name = newName)
   }
+
+  /**
+    * Set a health check policy, which will be used to determine the state of the target service.
+    */
   def withHealthCheckPolicy(newHealthCheckPolicy: HealthCheckPolicy): CircuitBreaker = {
     this.copy(healthCheckPolicy = newHealthCheckPolicy)
   }
+
+  /**
+    * Set a classifier to determine whether the execution result of the code block is successful or not.
+    */
   def withResultClassifier(newResultClassifier: Any => ResultClass): CircuitBreaker = {
     this.copy(resultClassifier = newResultClassifier)
   }
+
+  /**
+    * Set a classifier to determine whether the exception happend in the code block can be ignoreable (Successful) or not for
+    * the accessing the target service.
+    */
   def withErrorClassifier(newErrorClassifier: Throwable => ResultClass): CircuitBreaker = {
     this.copy(errorClassifier = newErrorClassifier)
   }
+
+  /**
+    * Set a delay policy until moving the state from OPEN to HALF_OPEN (probing) state.
+    * The default is Jittered-exponential backoff delay with the initial interval of 30 seconds.
+    */
   def withDelayAfterMarkedDead(retryPolicy: RetryPolicy): CircuitBreaker = {
     this.copy(delayAfterMarkedDead = retryPolicy)
   }
@@ -137,6 +165,9 @@ case class CircuitBreaker(
     healthCheckPolicy.recovered
   }
 
+  /**
+    * Force setting the current state.
+    */
   def setState(newState: CircuitBreakerState): this.type = {
     if (currentState.get() != newState) {
       currentState.set(newState)
@@ -149,13 +180,17 @@ case class CircuitBreaker(
   def halfOpen: this.type = setState(HALF_OPEN)
   def close: this.type    = setState(CLOSED)
 
+  /**
+    * Returns true when the circuit can execute the code ( OPEN or HALF_OPEN state)
+    */
   def isConnected: Boolean = {
     val s = currentState.get()
     s == CLOSED || s == HALF_OPEN
   }
 
   /**
-    *  This method is only for standalone usage.
+    * Note: Use this method only for the standalone mode. Generally, using CircuiteBreaker.run is sufficient.
+    *
     * If the connection is open, perform the specified action. The
     * default behavior is fail-fast, i.e., throwing CircuitBreakerOpenException
     */
@@ -171,7 +206,9 @@ case class CircuitBreaker(
   }
 
   /**
-    * A method for reporting success to CircuitBreaker for the standalone usage.
+    * Note: Use this method only for the standalone mode. Generally, using CircuitBreaker.run is sufficient.
+    *
+    * This method reports a successful state to the CircuitBreaker.
     */
   def recordSuccess: Unit = {
     healthCheckPolicy.recordSuccess
@@ -191,7 +228,9 @@ case class CircuitBreaker(
   }
 
   /**
-    * A method for reporting failure to CircuitBreaker for the standalone usage.
+    * Note: Use this method only for the standalone mode. Generally, using CircuitBreaker.run is sufficient.
+    *
+    * This method reports a failure state to the CircuitBreaker.
     */
   def recordFailure(e: Throwable): Unit = {
     lastFailure = Some(e)
@@ -205,6 +244,20 @@ case class CircuitBreaker(
     }
   }
 
+  /**
+    * Execute the body block through the CircuitBreaker.
+    *
+    * If the state is OPEN, this will throw CircuitBreakerOpenException (fail-fast). The state will move to HALF_OPEN state
+    * after a cetain amount of delay, determined by the delayAfterMarkedDead policy.
+    *
+    * If the state is HALF_OPEN, this method allows running the code block once, and if the result is successful,
+    * the state will move to CLOSED. If not, the state will be OPEN again.
+    *
+    * If the state is CLOSED, the code block will be executed normally. If the result is marked failure or nonRetryable exception
+    * is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determins the target service is dead,
+    * the circuit will shift to OPEN state to block the future execution.
+    *
+    */
   def run[A](body: => A): Unit = {
     verifyConnection
 
