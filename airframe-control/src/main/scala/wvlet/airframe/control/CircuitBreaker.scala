@@ -200,7 +200,7 @@ case class CircuitBreaker(
       val nextWaitMillis = delayAfterMarkedDead.nextWait(baseWaitMillis)
       provingWaitTimeMillis = delayAfterMarkedDead.updateBaseWait(baseWaitMillis)
       nextProvingTimeMillis = System.currentTimeMillis() + nextWaitMillis
-      close
+      open
     }
   }
 
