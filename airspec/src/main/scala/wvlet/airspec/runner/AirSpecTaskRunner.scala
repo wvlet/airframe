@@ -94,7 +94,7 @@ private[airspec] class AirSpecTaskRunner(
             regex.findFirstIn(fullName).isDefined
           }
         case None =>
-          testDefs  
+          testDefs
       }
 
     if (selectedMethods.nonEmpty) {
@@ -133,7 +133,7 @@ private[airspec] class AirSpecTaskRunner(
         for (m <- targetTestDefs) {
           spec.callBefore
           // Configure the test-local design
-          val childDesign = spec.callLocalDesign
+          val childDesign = spec.callLocalDesign + m.design
 
           val startTimeNanos = System.nanoTime()
           // Create a test-method local child session
@@ -146,6 +146,7 @@ private[airspec] class AirSpecTaskRunner(
                 testName = m.name,
                 currentSession = childSession
               )
+            // Wrap the execution with Try[_] to report the test result to the event handler
             Try {
               try {
                 m.run(context, childSession)

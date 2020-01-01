@@ -31,13 +31,24 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
   */
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
-private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, name: String, design: Design) extends wvlet.log.LogSupport {
+private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, val name: String, val design: Design)
+    extends wvlet.log.LogSupport {
+  def addLocalTestDef(specDef: AirSpecDef) {
+    spec.addLocalTestDef(specDef)
+  }
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
+  def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
+  def apply[D1, D2, D3, R](body: (D1, D2, D3) => R): Unit = macro AirSpecMacros.test3Impl[D1, D2, D3, R]
 }
 
 private[airspec] trait AirSpecSpi {
-  private[airspec] var _localTestDefs: Seq[AirSpecDef] = Seq.empty
+  private var _localTestDefs: List[AirSpecDef] = List.empty
+  private[airspec] def addLocalTestDef(specDef: AirSpecDef) {
+    synchronized {
+      _localTestDefs = specDef :: _localTestDefs
+    }
+  }
 
   protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
     new AirSpecTestBuilder(this, name, design)
@@ -51,7 +62,7 @@ private[airspec] trait AirSpecSpi {
    */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
   private[airspec] def testDefinitions: Seq[AirSpecDef] = {
-    AirSpecSpi.collectTestMethods(_methodSurfaces) ++ _localTestDefs
+    AirSpecSpi.collectTestMethods(_methodSurfaces) ++ _localTestDefs.reverse
   }
 
   private[airspec] var specName: String = {
