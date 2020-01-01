@@ -60,4 +60,22 @@ private[airspec] object AirSpecMacros {
         }
     """
   }
+
+  def test0Impl[R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val r = implicitly[c.WeakTypeTag[R]].tpe
+    q"""{
+
+    }"""
+  }
+
+  def test1Impl[D1: c.WeakTypeTag, R: c.WeakTypeTag](c: sm.Context)(body: c.Tree): c.Tree = {
+    import c.universe._
+    val d1 = implicitly[c.WeakTypeTag[D1]].tpe
+    val r  = implicitly[c.WeakTypeTag[R]].tpe
+    q"""{
+
+    }"""
+  }
+
 }

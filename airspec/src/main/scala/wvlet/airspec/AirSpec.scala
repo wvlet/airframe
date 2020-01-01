@@ -31,7 +31,16 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
   */
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
+private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, name: String, design: Design) extends wvlet.log.LogSupport {
+  def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
+  def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
+}
+
 private[airspec] trait AirSpecSpi {
+
+  protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
+    new AirSpecTestBuilder(this, name, design)
+
   /*
    * Design note: Ideally we should list test methods just by using the name of classes implementing AirSpecSpi without
    * instantiating test instances. However, this was impossible in Scala.js, which has only limited reflection support.
