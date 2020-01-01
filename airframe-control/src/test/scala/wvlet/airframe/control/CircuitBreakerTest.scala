@@ -134,4 +134,20 @@ class CircuitBreakerTest extends AirSpec {
     cb.recordSuccess
     cb.isConnected shouldBe true
   }
+
+  def `run code with circuit`: Unit = {
+    val cb = CircuitBreaker.withFailureThreshold(1, 2)
+
+    cb.run {}
+
+    intercept[TimeoutException] {
+      cb.run {
+        throw new TimeoutException()
+      }
+    }
+
+    intercept[CircuitBreakerOpenException] {
+      cb.run {}
+    }
+  }
 }
