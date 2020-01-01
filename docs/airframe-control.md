@@ -3,7 +3,8 @@ id: airframe-control
 title: airframe-control: Retry/Rate Control
 ---
 
-airframe-control is a library for writing control flows at ease.
+airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls.
+For example, airframe-control has exponential back-off retry, jittering, circuit breaker, parallel task execution support, etc.
 
 - [Source Code at GitHub](https://github.com/wvlet/airframe/tree/master/airframe-control)
 
@@ -18,7 +19,7 @@ libraryDependencies += "org.wvlet.airframe" %% "airframe-control" % "(version)"
 
 ## Control
 
-Loan Pattern (open a resource and close):
+This provides a handy Loan Pattern syntax for preperly open and close resources:
 
 ```scala
 import wvlet.airframe.control.Control
@@ -130,9 +131,9 @@ CircuitBreaker is useful for:
 
 CircuitBreaker has tree states: CLOSED, OPEN, and HALF_OPEN.
 
-- __CLOSED__: This is the default state and all execution is allowed. If the target service becomes unhealthy (markedDead), the states will transit to OPEN state.
-- __OPEN__: Connection is broken, and no execution will be allowed. In this state, all executions will throw CircuitBreakerOpenException to do fail-fast. After a certain time is passed, this state will move to HALF_OPEN state.
-- __HALF_OPEN__: This state will perform _probing_ to the target service. That is, an execution is allowed at HALF_OPEN state and if it succeeds the state moves to CLOSED. If the request fails, it will go back to OPEN state again. The delay time will be computed by RetryPolicy. The default is the exponential backoff (30 seconds initial wait) with jittering.
+- __CLOSED__: This is the default state where all executions are allowed. If the target service becomes unhealthy (markedDead), the states will transit to OPEN state.
+- __OPEN__: The connection to the target service is broken in this state, and no execution will be allowed. In this state, all executions will throw CircuitBreakerOpenException to perform fail-fast so that we can quickly return the control to the caller. After a certain amount of time is passed specified by delayAfterMarkedDead policy, this state will shift to HALF_OPEN state.
+- __HALF_OPEN__: This state will perform a _probing_ to the target service. That means, an execution to the target service is allowed once, and if the request succeeds the state will move to CLOSED state. If the request fails, it will go back to OPEN state again. The delay interval time will be computed by some retry policy. The default delay policy is an exponential backoff (30 seconds initial wait) with jittering.
 
 ```scala
 import wvlet.airframe.control.CircuitBreaker
