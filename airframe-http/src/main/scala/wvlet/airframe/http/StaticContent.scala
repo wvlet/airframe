@@ -15,6 +15,8 @@ package wvlet.airframe.http
 import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
+import java.net.URL
+import java.io.File
 
 import scala.annotation.tailrec
 
@@ -22,6 +24,26 @@ import scala.annotation.tailrec
   * Helper for returning static contents
   */
 object StaticContent extends LogSupport {
+
+  sealed trait ResourceType {
+    def find(relativePath: String): Option[URL]
+  }
+
+  case class FileResource(basePath: String) extends ResourceType {
+    override def find(relativePath: String): Option[URL] = {
+      val f = new File(s"${basePath}/${relativePath}")
+      if (f.exists()) {
+        Some(f.toURI.toURL)
+      } else {
+        None
+      }
+    }
+  }
+  case class ClasspathResource(basePath: String) extends ResourceType {
+    override def find(relativePath: String): Option[URL] = {
+      Resource.find(s"${basePath}/${relativePath}")
+    }
+  }
 
   private def isSafeRelativePath(path: String): Boolean = {
     @tailrec
@@ -68,13 +90,27 @@ object StaticContent extends LogSupport {
     }
   }
 
-  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse = {
-    val resourcePath = s"${basePath}/${relativePath}"
+  def fromResource(basePaths: List[String], relativePath: String): SimpleHttpResponse = {
     if (!isSafeRelativePath(relativePath)) {
       SimpleHttpResponse(HttpStatus.Forbidden_403)
     } else {
-      Resource
-        .find(resourcePath).map { uri =>
+
+      @tailrec
+      def find(lst: List[String]): Option[URL] = {
+        if (lst.isEmpty) {
+          None
+        } else {
+          val basePath     = lst.head
+          val resourcePath = s"${basePath}/${relativePath}"
+          Resource.find(resourcePath) match {
+            case s @ Some(x) => s
+            case _           => find(lst.tail)
+          }
+        }
+      }
+
+      find(basePaths)
+        .map { uri =>
           val mediaType = findContentType(relativePath)
           // Read the resource file as binary
           Control.withResource(uri.openStream()) { in =>
@@ -86,5 +122,18 @@ object StaticContent extends LogSupport {
           SimpleHttpResponse(HttpStatus.NotFound_404)
         }
     }
+  }
+
+  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse =
+    fromResource(List(basePath), relativePath)
+}
+
+import StaticContent._
+case class StaticContent(resourcePath: List[ResourceType] = List.empty) {
+  def addFileDir(basePath: String): StaticContent = {
+    this.copy(resourcePath = FileResource(basePath) :: resourcePath)
+  }
+  def addResourcePath(basePath: String): StaticContent = {
+    this.copy(resourcePath = ClasspathResource(basePath) :: resourcePath)
   }
 }

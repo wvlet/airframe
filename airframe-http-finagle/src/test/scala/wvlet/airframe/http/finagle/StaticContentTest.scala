@@ -25,6 +25,14 @@ object StaticContentTest {
     @Endpoint(path = "/html/*path")
     def staticContent(path: String) =
       StaticContent.fromResource(basePath = s"/wvlet/airframe/http/finagle/static", path)
+
+    @Endpoint(path = "/html2/*path")
+    def staticContent2(path: String) = {
+      StaticContent.fromResource(
+        basePaths = List("/wvlet/airframe/http/finagle/static", "/wvlet/airframe/http/finagle/static2"),
+        path
+      )
+    }
   }
 }
 
@@ -89,5 +97,10 @@ class StaticContentTest extends AirSpec {
         img shouldBe bytes
       }
     }
+  }
+
+  def `read from an alternative static content path`(client: FinagleSyncClient): Unit = {
+    val html = client.get[String]("/html2/index2.html")
+    html.contains("static2") shouldBe true
   }
 }
