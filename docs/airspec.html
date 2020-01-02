@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>AirSpec: Testing Framework · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js. "/><meta name="docsearch:language" content="en"/><meta property="og:title" content="AirSpec: Testing Framework · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js. "/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>AirSpec: Testing Framework · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="AirSpec: Testing Framework · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -65,34 +65,35 @@
         </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">AirSpec: Testing Framework</h1></header><article><div><span><p><a href="https://github.com/wvlet/airframe/tree/master/airspec">AirSpec</a> is a new functional testing framework for Scala and Scala.js.</p>
 <ul>
 <li><a href="https://github.com/wvlet/airframe/tree/master/airspec">GitHub: AirSpec</a></li>
-<li><a href="#background--motivation">Motivation and Background</a></li>
+<li><a href="#background--motivation">Background and Motivation</a></li>
 </ul>
 <p>AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.</p>
-<p>AirSpec has nice properties for writing tests in Scala:</p>
+<h2><a class="anchor" aria-hidden="true" id="features"></a><a href="#features" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Features</h2>
 <ul>
-<li>Simple usage: <code>import wvlet.airspec._</code> and extend <code>AirSpec</code> trait.</li>
-<li>Tests can be defined using plain Scala classes and methods.
+<li>Simple to use: Just <code>import wvlet.airspec._</code> and extend <code>AirSpec</code> trait.</li>
+<li>Tests can be defined with plain Scala methods or <code>test(...)</code> functions.
 <ul>
 <li>Public methods in a class extending <code>AirSpec</code> trait will be your test cases.</li>
 <li>No annotation (like ones in <a href="https://junit.org/junit5/docs/current/user-guide/">JUnit5</a>) is necessary.</li>
 </ul></li>
-<li>Testing with simple assertions: <code>assert(cond)</code>, <code>x shouldBe y</code>, etc.
+<li>Support basic assertion syntaxes: <code>assert(cond)</code>, <code>x shouldBe y</code>, etc.
 <ul>
 <li>No need to learn other complex DSLs.</li>
 </ul></li>
+<li>Nesting and reusing test cases with <code>test(...)</code> or <code>context.run(spec)</code></li>
 <li>Lifecycle management with <a href="/airframe/docs/airframe">Airframe DI</a>:
 <ul>
-<li>The arguments of test methods can be used to inject necessary services for running your tests.</li>
-<li>The lifecycle (e.g., start and shutdown) of the injected services can be managed by Airframe DI.</li>
+<li>DI will inject the arguments of test methods based on your custom Design.</li>
+<li>The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.</li>
 </ul></li>
-<li>Nesting and reusing test cases with <code>context.run(spec)</code></li>
 <li>Handy keyword search for <em>sbt</em>: <code>&gt; testOnly -- (a pattern for class or method names)</code></li>
 <li>Property-based testing integrated with <a href="https://www.scalacheck.org/">ScalaCheck</a></li>
 <li>Scala 2.11, 2.12, 2.13, and Scala.js support</li>
 </ul>
 <p>AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
-For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):</p>
+For providing better testing experience, we are planning to add more features (e.g., better reporting, power assertions):</p>
 <ul>
+<li><a href="https://github.com/wvlet/airframe/issues/839">Milestone: Airframe 20</a></li>
 <li><a href="https://github.com/wvlet/airframe/issues/606">Milestone: AirSpec 19</a></li>
 </ul>
 <p>To start using AirSpec, read <a href="#quick-start">Quick Start</a>.</p>
@@ -122,15 +123,31 @@ All <strong>public methods</strong> in the class will be executed as test cases:
 
   <span class="hljs-comment">// Catch an exception</span>
   <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">emptySeqHeadShouldFail</span></span>: <span class="hljs-type">Unit</span> = {
-    intercept[<span class="hljs-type">NoSuchElementException</span>]{
+    intercept[<span class="hljs-type">NoSuchElementException</span>] {
       <span class="hljs-type">Seq</span>.empty.head
     }
   }
 }
 </code></pre>
 <p>If you need to define utility methods in a class, use private or protected scope.</p>
+<p>AirSpec also suppots <code>test(...) { ... }</code> syntax:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
+
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
+  test(<span class="hljs-string">"empty Seq size should be 0"</span>) {
+    assert(<span class="hljs-type">Seq</span>.empty.size == <span class="hljs-number">0</span>)
+  }
+
+  test(<span class="hljs-string">"Seq.empty.head should fail"</span>) {
+    intercept[<span class="hljs-type">NoSuchElementException</span>] {
+      <span class="hljs-type">Seq</span>.empty.head
+    }
+  }
+}
+</code></pre>
+<p>This <code>test</code> syntax is useful for writing nested tests or customizing the design of DI for each test.</p>
 <h3><a class="anchor" aria-hidden="true" id="scalajs"></a><a href="#scalajs" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Scala.js</h3>
-<p>To use AirSpec in Scala.js, <code>scalaJsSupport</code> must be called inside your spec classes:</p>
+<p><code>test(...)</code> function works in Scala.js, however, to run public methods as tests in Scala.js, <code>scalaJsSupport</code> must be called inside your spec classes:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ScalaJSSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
@@ -218,7 +235,7 @@ Internally this will generate <code>MethodSurface</code>s (airframe-surface), so
     <span class="hljs-comment">// For Arrays, shouldBe checks the equality with deep equals</span>
     <span class="hljs-type">Array</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldBe <span class="hljs-type">Array</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
 
-    <span class="hljs-comment">// Collection checker </span>
+    <span class="hljs-comment">// Collection checker</span>
     <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>) shouldBe defined
     <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>) shouldNotBe empty
     <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>) shouldBe <span class="hljs-type">Seq</span>(<span class="hljs-number">1</span>, <span class="hljs-number">2</span>)
@@ -245,7 +262,7 @@ Internally this will generate <code>MethodSurface</code>s (airframe-surface), so
 
 # sbt<span class="hljs-symbol">'s</span> <span class="hljs-keyword">default</span> test functionalities:
 &gt; testQuick                              # <span class="hljs-type">Run</span> only previously failed test specs
-&gt; testOnly (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span>)                  <span class="hljs-title">#</span> <span class="hljs-title">Run</span> <span class="hljs-title">tests</span> <span class="hljs-title">only</span> <span class="hljs-title">in</span> <span class="hljs-title">specific</span> <span class="hljs-title">classes</span> <span class="hljs-title">matching</span> <span class="hljs-title">a</span> <span class="hljs-title">pattern</span> (<span class="hljs-params">wildcard is supported</span>) </span>
+&gt; testOnly (<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">name</span>)                  <span class="hljs-title">#</span> <span class="hljs-title">Run</span> <span class="hljs-title">tests</span> <span class="hljs-title">only</span> <span class="hljs-title">in</span> <span class="hljs-title">specific</span> <span class="hljs-title">classes</span> <span class="hljs-title">matching</span> <span class="hljs-title">a</span> <span class="hljs-title">pattern</span> (<span class="hljs-params">wildcard is supported</span>)</span>
 </code></pre>
 <p><code>pattern</code> is used for partial matching with test names. It also supports wildcard (<code>*</code>) and regular expressions (experimental).
 Basically AirSpec will find matches from the list of all <code>(test class full name):(test function name)</code> strings.
@@ -264,7 +281,7 @@ If you prefer sequential test execution, set <code>parallelExecution in Test</co
 
 <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyTest</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
   info(<span class="hljs-string">s"info log"</span>)
-  debug(<span class="hljs-string">s"debug log"</span>) <span class="hljs-comment">// Will not be shown by default </span>
+  debug(<span class="hljs-string">s"debug log"</span>) <span class="hljs-comment">// Will not be shown by default</span>
   trace(<span class="hljs-string">s"trace log"</span>) <span class="hljs-comment">// To show this level of log, trace log level must be set</span>
 }
 </code></pre>
@@ -273,10 +290,9 @@ If you prefer sequential test execution, set <code>parallelExecution in Test</co
 <p>To change the log level for your packages and classes, add <em>log-test.properties</em> file to your test resource folder <code>src/test/resources</code>. For multi-module projects, put this file under <code>(project folder)/src/test/resources</code> folder.</p>
 <p>This is an example of changing log levels of your packages and classes:</p>
 <p><strong>src/test/resources/log-test.properties</strong></p>
-<pre><code class="hljs"># <span class="hljs-keyword">Log</span> <span class="hljs-keyword">level</span> <span class="hljs-keyword">configuration</span> examples
-# <span class="hljs-keyword">Show</span> <span class="hljs-keyword">debug</span> logs <span class="hljs-keyword">of</span> <span class="hljs-keyword">all</span> classes <span class="hljs-keyword">in</span> org.mydomain.myapp package 
-org.mydomain.myapp=<span class="hljs-keyword">debug</span>
-# <span class="hljs-keyword">Show</span>  
+<pre><code class="hljs css language-ruby"><span class="hljs-comment"># Show debug logs of all classes under org.mydomain.myapp package</span>
+org.mydomain.myapp=debug
+<span class="hljs-comment"># Show all logs including trace-level logs</span>
 org.mydomain.myapp.MyTest=trace
 </code></pre>
 <p>As you modify this property file, a background thread automatically reads this log file and refreshes the log level accordingly.</p>
@@ -288,7 +304,10 @@ This is useful for sharing objects initialized only once at the beginning with t
 <p>AirSpec manages two types of sessions: <em>global</em> and <em>local</em>:</p>
 <ul>
 <li>For each AirSpec instance, a single global session will be created.</li>
-<li>For each test method in the AirSpec instance, a local (child) session that inherits the global session will be created.</li>
+<li>For each test method in the AirSpec instance, a local (child) session that inherits the global session will be created.
+<ul>
+<li>It is possible to override the local design by using <code>test(..., design = ...)</code> function.</li>
+</ul></li>
 </ul>
 <p>To configure the design of objects that will be created in each session,
 override <code>protected def design:Design</code> or <code>protected def localDesign: Design</code> methods in AirSpec.</p>
@@ -355,8 +374,23 @@ override <code>protected def design:Design</code> or <code>protected def localDe
 [info]  - test2 <span class="hljs-number">403.41</span>us
 [info] <span class="hljs-type">Passed</span>: <span class="hljs-type">Total</span> <span class="hljs-number">2</span>, <span class="hljs-type">Failed</span> <span class="hljs-number">0</span>, <span class="hljs-type">Errors</span> <span class="hljs-number">0</span>, <span class="hljs-type">Passed</span> <span class="hljs-number">2</span>
 </code></pre>
+<p>It is also possible to reuse the same injected instance by nesting <code>test</code> methods:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">ServiceSpec</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">AirSpec</span> </span>{
+  <span class="hljs-keyword">override</span> <span class="hljs-keyword">protected</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">design</span></span>: <span class="hljs-type">Design</span> = ...
+  test(<span class="hljs-string">"server test"</span>) { service:<span class="hljs-type">Service</span> =&gt;
+    test(<span class="hljs-string">"test 1"</span>) {
+      info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+    }
+
+    test(<span class="hljs-string">"test 2"</span>) {
+     info(<span class="hljs-string">s"server id: <span class="hljs-subst">${service.hashCode}</span>"</span>)
+    }
+  }
+}
+
+</code></pre>
 <h3><a class="anchor" aria-hidden="true" id="overriding-design-at-test-methods"></a><a href="#overriding-design-at-test-methods" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Overriding Design At Test Methods</h3>
-<p>If you need a partially different design in a test method, pass Airframe <code>Session</code> to the test method arguments, and call <code>session.withChildSession(additional_design)</code>:</p>
+<p>If you need to partially override a design in a test method, use <code>test(..., design = ...)</code> to provide a custom child design:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airspec._
 <span class="hljs-keyword">import</span> wvlet.airframe._
 
@@ -366,23 +400,20 @@ override <code>protected def design:Design</code> or <code>protected def localDe
     newDesign
       .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello"</span>)
   }
- 
+
   <span class="hljs-comment">// Pass Session to override the design</span>
-  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">overrideDesign</span></span>(session: <span class="hljs-type">Session</span>, s: <span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
+  <span class="hljs-function"><span class="hljs-keyword">def</span> `<span class="hljs-title">before</span> <span class="hljs-title">overriding</span> <span class="hljs-title">the</span> <span class="hljs-title">design</span>`</span>(s:<span class="hljs-type">String</span>): <span class="hljs-type">Unit</span> = {
     s shouldBe <span class="hljs-string">"hello"</span>
-  
+
     <span class="hljs-comment">// Override a design</span>
-    <span class="hljs-keyword">val</span> d = newDesign
+    <span class="hljs-keyword">val</span> childDesign = newDesign
       .bind[<span class="hljs-type">String</span>].toInstance(<span class="hljs-string">"hello child"</span>)
-   
-    <span class="hljs-comment">// Create a new child session</span>
-    session.withChildSession(d) { childSession =&gt;
-      <span class="hljs-keyword">val</span> cs = childSession.build[<span class="hljs-type">String</span>]
+
+    test(<span class="hljs-string">"override the design"</span>, design = childDesign) { cs: <span class="hljs-type">String</span> =&gt;
       cs shouldBe <span class="hljs-string">"hello child"</span>
     }
   }
 }
-
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="pro-tips"></a><a href="#pro-tips" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Pro Tips</h3>
 <p>Designs of Airframe DI are useful for defining modules of your application.
@@ -498,4 +529,4 @@ libraryDependencies += <span class="hljs-string">"org.scalacheck"</span> %% <spa
 <p>And also, if we define tests by using functions, it becomes possible to <strong>pass test dependencies through function arguments</strong>. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it is not always ideal as we need to properly initialize and clean-up these variables for each test method by using setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using <a href="https://wvlet.org/airframe/docs/airframe.html">Airframe DI</a>, which has a strong support of life-cycle management, we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.</p>
 <p>AirSpec was born with these ideas in mind by leveraging Airframe modules like Airframe Surface and DI. After implementing basic features of AirSpec, we've successfully <strong>migrated all of the test cases in 20+ Airframe modules into AirSpec</strong>, which were originally written in ScalaTest. Rewriting test cases was almost straightforward as AirSpec has handy <code>shouldBe</code> syntax and property testing support with ScalaCheck.</p>
 <p>In the following sections, we will see how to write tests in a Scala-friendly style with AirSpec.</p>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-http"><span class="arrow-prev">← </span><span>airframe-http: Web Service IDL</span></a><a class="docs-next button" href="/airframe/docs/airframe-codec"><span>airframe-codec: Schema-On-Read Object Serializer</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#quick-start">Quick Start</a></li><li><a href="#writing-unit-tests">Writing Unit Tests</a><ul class="toc-headings"><li><a href="#scalajs">Scala.js</a></li></ul></li><li><a href="#writing-specs-in-natural-languages">Writing Specs In Natural Languages</a></li><li><a href="#assertions-in-airspec">Assertions in AirSpec</a><ul class="toc-headings"><li><a href="#examples">Examples</a></li></ul></li><li><a href="#running-tests-in-sbt">Running Tests in sbt</a><ul class="toc-headings"><li><a href="#disable-parallel-test-execution">Disable Parallel Test Execution</a></li></ul></li><li><a href="#logging-your-tests">Logging Your Tests</a><ul class="toc-headings"><li><a href="#changing-log-levels">Changing Log Levels</a></li></ul></li><li><a href="#dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</a><ul class="toc-headings"><li><a href="#global-and-local-sessions">Global and Local Sessions</a></li><li><a href="#session-lifecycle">Session LifeCycle</a></li></ul></li><li><a href="#di-example">DI Example</a><ul class="toc-headings"><li><a href="#overriding-design-at-test-methods">Overriding Design At Test Methods</a></li><li><a href="#pro-tips">Pro Tips</a></li></ul></li><li><a href="#reusing-test-classes">Reusing Test Classes</a></li><li><a href="#property-based-testing-with-scalacheck">Property Based Testing with ScalaCheck</a></li><li><a href="#background--motivation">Background &amp; Motivation</a><ul class="toc-headings"><li><a href="#airspec-writing-tests-as-plain-functions-in-scala">AirSpec: Writing Tests As Plain Functions In Scala</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2019 wvlet.org</section></footer></div></body></html>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-http"><span class="arrow-prev">← </span><span>airframe-http: Web Service IDL</span></a><a class="docs-next button" href="/airframe/docs/airframe-codec"><span>airframe-codec: Schema-On-Read Object Serializer</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#features">Features</a></li><li><a href="#quick-start">Quick Start</a></li><li><a href="#writing-unit-tests">Writing Unit Tests</a><ul class="toc-headings"><li><a href="#scalajs">Scala.js</a></li></ul></li><li><a href="#writing-specs-in-natural-languages">Writing Specs In Natural Languages</a></li><li><a href="#assertions-in-airspec">Assertions in AirSpec</a><ul class="toc-headings"><li><a href="#examples">Examples</a></li></ul></li><li><a href="#running-tests-in-sbt">Running Tests in sbt</a><ul class="toc-headings"><li><a href="#disable-parallel-test-execution">Disable Parallel Test Execution</a></li></ul></li><li><a href="#logging-your-tests">Logging Your Tests</a><ul class="toc-headings"><li><a href="#changing-log-levels">Changing Log Levels</a></li></ul></li><li><a href="#dependency-injection-with-airframe-di">Dependency Injection with Airframe DI</a><ul class="toc-headings"><li><a href="#global-and-local-sessions">Global and Local Sessions</a></li><li><a href="#session-lifecycle">Session LifeCycle</a></li></ul></li><li><a href="#di-example">DI Example</a><ul class="toc-headings"><li><a href="#overriding-design-at-test-methods">Overriding Design At Test Methods</a></li><li><a href="#pro-tips">Pro Tips</a></li></ul></li><li><a href="#reusing-test-classes">Reusing Test Classes</a></li><li><a href="#property-based-testing-with-scalacheck">Property Based Testing with ScalaCheck</a></li><li><a href="#background--motivation">Background &amp; Motivation</a><ul class="toc-headings"><li><a href="#airspec-writing-tests-as-plain-functions-in-scala">AirSpec: Writing Tests As Plain Functions In Scala</a></li></ul></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div></body></html>
