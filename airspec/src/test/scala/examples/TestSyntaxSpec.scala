@@ -36,4 +36,20 @@ class TestSyntaxSpec extends AirSpec {
     s shouldBe "world"
   }
 
+  test("nested tests") {
+    test("test1") {
+      info("hello test1")
+    }
+
+    test("test2") {
+      info("hello test2")
+      test("test A") {
+        info("further nesting")
+      }
+      test("test B") {
+        info("hello")
+      }
+    }
+  }
+
 }

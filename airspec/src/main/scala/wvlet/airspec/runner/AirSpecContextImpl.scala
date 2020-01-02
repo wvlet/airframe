@@ -32,10 +32,14 @@ private[airspec] class AirSpecContextImpl(
     val currentSession: Session
 ) extends AirSpecContext
     with LogSupport {
-  override protected def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi = {
+  override protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi = {
     taskExecutor.run(Some(this), spec, testDefs)
     spec
   }
+  override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
+    taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true)
+  }
+
   override protected def newSpec(specSurface: Surface): AirSpecSpi = {
     val spec: AirSpecSpi = currentSession.get(specSurface)
     // When the spec instance is an anonymous class, we need to find the real class name from the specSurface

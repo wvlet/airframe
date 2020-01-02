@@ -15,7 +15,7 @@ package wvlet.airspec.runner
 
 import sbt.testing._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
-import wvlet.airframe.Design
+import wvlet.airframe.{Design, Session}
 import wvlet.airframe.surface.MethodSurface
 import wvlet.airspec.AirSpecDef
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
@@ -131,48 +131,77 @@ private[airspec] class AirSpecTaskRunner(
 
       globalSession.start {
         for (m <- targetTestDefs) {
-          spec.callBefore
-          // Configure the test-local design
-          val childDesign = spec.callLocalDesign + m.design
-
-          val startTimeNanos = System.nanoTime()
-          // Create a test-method local child session
-          val result = globalSession.withChildSession(childDesign) { childSession =>
-            val context =
-              new AirSpecContextImpl(
-                this,
-                parentContext = parentContext,
-                currentSpec = spec,
-                testName = m.name,
-                currentSession = childSession
-              )
-            // Wrap the execution with Try[_] to report the test result to the event handler
-            Try {
-              try {
-                m.run(context, childSession)
-              } finally {
-                spec.callAfter
-              }
-            }
-          }
-          // Report the test result
-          val durationNanos = System.nanoTime() - startTimeNanos
-
-          val (status, throwableOpt) = result match {
-            case Success(x) =>
-              (Status.Success, new OptionalThrowable())
-            case Failure(ex) =>
-              val status = AirSpecException.classifyException(ex)
-              (status, new OptionalThrowable(compat.findCause(ex)))
-          }
-
-          val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
-          taskLogger.logEvent(e, indentLevel = indentLevel)
-          eventHandler.handle(e)
+          runSingle(parentContext, globalSession, spec, m, isLocal = false)
         }
       }
     } finally {
       spec.callAfterAll
     }
   }
+
+  private var displayedContext = Set.empty[String]
+
+  private[airspec] def runSingle(
+      parentContext: Option[AirSpecContext],
+      globalSession: Session,
+      spec: AirSpecSpi,
+      m: AirSpecDef,
+      isLocal: Boolean
+  ): Unit = {
+
+    val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
+    if (isLocal) {
+      parentContext.map { ctx =>
+        val name = s"${ctx.fullSpecName}.${ctx.testName}"
+        synchronized {
+          if (!displayedContext.contains(name)) {
+            taskLogger.logTestName(ctx.testName, indentLevel = (indentLevel - 1).max(0))
+            displayedContext += name
+          }
+        }
+      }
+    }
+
+    spec.callBefore
+    // Configure the test-local design
+    val childDesign = spec.callLocalDesign + m.design
+
+    val startTimeNanos = System.nanoTime()
+    // Create a test-method local child session
+    val result = globalSession.withChildSession(childDesign) { childSession =>
+      val context =
+        new AirSpecContextImpl(
+          this,
+          parentContext = parentContext,
+          currentSpec = spec,
+          testName = m.name,
+          currentSession = childSession
+        )
+      spec.pushContext(context)
+      // Wrap the execution with Try[_] to report the test result to the event handler
+      Try {
+        try {
+          m.run(context, childSession)
+        } finally {
+          spec.callAfter
+          spec.popContext
+        }
+      }
+    }
+    // Report the test result
+    val durationNanos = System.nanoTime() - startTimeNanos
+
+    val (status, throwableOpt) = result match {
+      case Success(x) =>
+        (Status.Success, new OptionalThrowable())
+      case Failure(ex) =>
+        val status = AirSpecException.classifyException(ex)
+        (status, new OptionalThrowable(compat.findCause(ex)))
+    }
+
+    val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+    taskLogger.logEvent(e, indentLevel = indentLevel)
+    eventHandler.handle(e)
+  }
+
 }

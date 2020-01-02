@@ -69,7 +69,8 @@ trait AirSpecContext {
     */
   def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
-  protected def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi
+  protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi
+  protected[airspec] def runSingle(testDef:AirSpecDef): Unit
   protected def newSpec(specSurface: Surface): AirSpecSpi
 }
 

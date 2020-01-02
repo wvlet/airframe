@@ -14,7 +14,7 @@
 package wvlet.airspec
 
 import wvlet.airframe.Design
-import wvlet.airspec.spi.{Asserts, RichAsserts}
+import wvlet.airspec.spi.{Asserts, RichAsserts, AirSpecContext}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec
 
@@ -31,7 +31,7 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
   */
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
-private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, val name: String, val design: Design)
+private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design)
     extends wvlet.log.LogSupport {
   def addLocalTestDef(specDef: AirSpecDef) {
     spec.addLocalTestDef(specDef)
@@ -43,10 +43,30 @@ private[airspec] class AirSpecTestBuilder(spec: AirSpecSpi, val name: String, va
 }
 
 private[airspec] trait AirSpecSpi {
+  private[airspec] var _currentContext: List[AirSpecContext] = List.empty
+  private[airspec] def pushContext(ctx: AirSpecContext): Unit = {
+    synchronized {
+      _currentContext = ctx :: _currentContext
+    }
+  }
+  private[airspec] def popContext: Unit = {
+    synchronized {
+      if(_currentContext.nonEmpty) {
+        _currentContext = _currentContext.tail
+      }
+    }
+  }
+
+
   private var _localTestDefs: List[AirSpecDef] = List.empty
   private[airspec] def addLocalTestDef(specDef: AirSpecDef) {
     synchronized {
-      _localTestDefs = specDef :: _localTestDefs
+      _currentContext match {
+        case Nil =>
+          _localTestDefs = specDef :: _localTestDefs
+        case ctx :: _ =>
+          ctx.runSingle(specDef)
+      }
     }
   }
 

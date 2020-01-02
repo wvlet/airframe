@@ -81,6 +81,10 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     info(s"${indent(indentLevel)}${withColor(BRIGHT_GREEN, specName)}${withColor(GRAY, ":")}")
   }
 
+  def logTestName(testName: String, indentLevel: Int): Unit = {
+    info(s"${indent(indentLevel)}${withColor(GRAY, " -")} ${withColor(GREEN, testName)}")
+  }
+
   def logEvent(e: AirSpecEvent, indentLevel: Int = 0): Unit = {
     val (baseColor, showStackTraces) = e.status match {
       case Status.Success                  => (GREEN, false)
