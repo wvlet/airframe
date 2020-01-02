@@ -15,6 +15,8 @@ package wvlet.airframe.http
 import wvlet.airframe.control.Control
 import wvlet.log.LogSupport
 import wvlet.log.io.{IOUtil, Resource}
+import java.net.URL
+import java.io.File
 
 import scala.annotation.tailrec
 
@@ -22,6 +24,26 @@ import scala.annotation.tailrec
   * Helper for returning static contents
   */
 object StaticContent extends LogSupport {
+
+  trait ResourceType {
+    def find(relativePath: String): Option[URL]
+  }
+
+  case class FileResource(basePath: String) extends ResourceType {
+    override def find(relativePath: String): Option[URL] = {
+      val f = new File(s"${basePath}/${relativePath}")
+      if (f.exists()) {
+        Some(f.toURI.toURL)
+      } else {
+        None
+      }
+    }
+  }
+  case class ClasspathResource(basePath: String) extends ResourceType {
+    override def find(relativePath: String): Option[URL] = {
+      Resource.find(s"${basePath}/${relativePath}")
+    }
+  }
 
   private def isSafeRelativePath(path: String): Boolean = {
     @tailrec
@@ -69,16 +91,69 @@ object StaticContent extends LogSupport {
   }
 
   def fromResource(basePath: String, relativePath: String): SimpleHttpResponse = {
-    val resourcePath = s"${basePath}/${relativePath}"
+    StaticContent().fromResource(basePath).apply(relativePath)
+  }
+
+  def fromResource(basePaths: List[String], relativePath: String): SimpleHttpResponse = {
+    val sc = basePaths.foldLeft(StaticContent()) { (sc, x) =>
+      sc.fromResource(x)
+    }
+    sc.apply(relativePath)
+  }
+
+  def fromDirectory(dirPath: String, relativePath: String): SimpleHttpResponse = {
+    StaticContent().fromDirectory(dirPath).apply(relativePath)
+  }
+
+  def fromDirectory(dirPaths: List[String], relativePath: String): SimpleHttpResponse = {
+    val sc = dirPaths.foldLeft(StaticContent()) { (sc, x) =>
+      sc.fromDirectory(x)
+    }
+    sc.apply(relativePath)
+  }
+
+  def fromResource(basePath: String): StaticContent  = StaticContent().fromResource(basePath)
+  def fromDirectory(basePath: String): StaticContent = StaticContent().fromResource(basePath)
+}
+
+import StaticContent._
+
+case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) {
+  def fromDirectory(basePath: String): StaticContent = {
+    this.copy(resourcePaths = FileResource(basePath) :: resourcePaths)
+  }
+  def fromResource(basePath: String): StaticContent = {
+    this.copy(resourcePaths = ClasspathResource(basePath) :: resourcePaths)
+  }
+
+  def find(relativePath: String): Option[URL] = {
+    @tailrec
+    def loop(lst: List[ResourceType]): Option[URL] = {
+      lst match {
+        case Nil => None
+        case resource :: tail =>
+          resource.find(relativePath) match {
+            case url @ Some(x) =>
+              url
+            case None =>
+              loop(tail)
+          }
+      }
+    }
+    loop(resourcePaths)
+  }
+
+  def apply(relativePath: String): SimpleHttpResponse = {
     if (!isSafeRelativePath(relativePath)) {
       SimpleHttpResponse(HttpStatus.Forbidden_403)
     } else {
-      Resource
-        .find(resourcePath).map { uri =>
+      find(relativePath)
+        .map { uri =>
           val mediaType = findContentType(relativePath)
           // Read the resource file as binary
           Control.withResource(uri.openStream()) { in =>
             IOUtil.readFully(in) { content =>
+              // TODO cache control (e.g., max-age, last-updated)
               SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
             }
           }

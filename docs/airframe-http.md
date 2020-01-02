@@ -23,9 +23,9 @@ import com.twitter.finagle.http.{Request,Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 
-
 object MyApi {
   case class User(name: String)
+
   case class NewUserRequest(name:String)
   case class ServerInfo(version:String, ua:Option[String])
 }
@@ -94,7 +94,7 @@ Mapping between JSON values and Scala objects will be handled automatically.
 ### Path Parameter Types
 
 
- pattern | description|  example |   input example | binding | 
+ pattern | description|  example |   input example | binding |
 ---------|------------|----------|-------------|-------|
  :arg  | single match | /v1/user/:id  |  /v1/user/1 | id = 1 |
  *arg  | tail match | /v1/entry/*key  | /v1/entry/config/version | key = config/version |
@@ -115,7 +115,7 @@ without some transformations. With MessagePack, you can send the data to the cli
 
 ## Starting A Finagle HTTP Server
 
-To start a server, create a finagle server configuration with Finagle.server, and 
+To start a server, create a finagle server configuration with Finagle.server, and
 ```scala
 import wvlet.airframe._
 import wvlet.airframe.http.finagle._
@@ -165,7 +165,7 @@ val server = Finagle.server
 
 server.start { server =>
   // The customized server will start here
-  server.waitServerTermination  
+  server.waitServerTermination
 }
 ```
 
@@ -238,6 +238,16 @@ trait StaticContentServer {
 }
 ```
 
+You can also add multiple resource paths or local directories to the search paths:
+
+```scala
+val sc = StaticContent
+  .fromResource("/resource/path1")
+  .fromResource("/resource/path2")
+  .fromDirecotry("/path/to/directory")
+
+sc(path) // Create an HTTP response
+```
 
 ## Error Handling
 
