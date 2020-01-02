@@ -192,7 +192,11 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def nonObject(x: ru.Symbol): Boolean = {
-      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+      !x.isImplementationArtifact &&
+      !x.isSynthetic &&
+      //!x.isAbstract &&
+      x.fullName != "scala.Any" &&
+      x.fullName != "java.lang.Object"
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {

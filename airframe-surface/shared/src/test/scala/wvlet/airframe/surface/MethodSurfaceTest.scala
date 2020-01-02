@@ -15,6 +15,7 @@
 package wvlet.airframe.surface
 
 object MethodExamples {
+
   class A {
     def hello: String                    = "hello"
     def arg2(i: Int, b: Boolean): String = "arg2"
@@ -24,6 +25,11 @@ object MethodExamples {
     final def helloFinal: String         = "hello"
   }
   type MyA = A
+
+  trait P {
+    def helloParent: String = "parent"
+  }
+  class B extends P
 }
 
 import MethodExamples._
@@ -80,5 +86,10 @@ class MethodSurfaceTest extends SurfaceSpec {
 
     val m2 = Surface.methodsOf[MyA]
     debug(m2)
+  }
+
+  def `inherit parent methods`: Unit = {
+    val m = Surface.methodsOf[B]
+    m.find(_.name == "helloParent") shouldBe defined
   }
 }

@@ -89,7 +89,11 @@ private[surface] object SurfaceMacros {
     }
 
     private def nonObject(x: c.Symbol): Boolean = {
-      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+      !x.isImplementationArtifact &&
+      !x.isSynthetic &&
+      //!x.isAbstract &&
+      x.fullName != "scala.Any" &&
+      x.fullName != "java.lang.Object"
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
