@@ -33,14 +33,50 @@ trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
 private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design)
     extends wvlet.log.LogSupport {
-  def addLocalTestDef(specDef: AirSpecDef) {
-    spec.addLocalTestDef(specDef)
-  }
-
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
   def apply[D1, D2, D3, R](body: (D1, D2, D3) => R): Unit = macro AirSpecMacros.test3Impl[D1, D2, D3, R]
+}
+
+object AirSpecTestBuilder extends wvlet.log.LogSupport {
+  implicit class Helper(val v: AirSpecTestBuilder) extends AnyVal {
+
+    def addF0[R](r: Surface, body: wvlet.airframe.LazyF0[R]): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, body))
+    }
+    def addF1[D1, R](d1: Surface, r: Surface, body: D1 => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF1(v.name, v.design, d1, r, body))
+    }
+    def addF2[D1, D2, R](d1: Surface, d2: Surface, r: Surface, body: (D1, D2) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, r, body))
+    }
+    def addF3[D1, D2, D3, R](d1: Surface, d2: Surface, d3: Surface, r: Surface, body: (D1, D2, D3) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF3(v.name, v.design, d1, d2, d3, r, body))
+    }
+    def addF4[D1, D2, D3, D4, R](
+        d1: Surface,
+        d2: Surface,
+        d3: Surface,
+        d4: Surface,
+        r: Surface,
+        body: (D1, D2, D3, D4) => R
+    ): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF4(v.name, v.design, d1, d2, d3, d4, r, body))
+    }
+    def addF5[D1, D2, D3, D4, D5, R](
+        d1: Surface,
+        d2: Surface,
+        d3: Surface,
+        d4: Surface,
+        d5: Surface,
+        r: Surface,
+        body: (D1, D2, D3, D4, D5) => R
+    ): Unit = {
+      logger.warn(s"Add F5")
+      v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, r, body))
+    }
+  }
 }
 
 private[airspec] trait AirSpecSpi {
@@ -70,6 +106,9 @@ private[airspec] trait AirSpecSpi {
     }
   }
 
+  /**
+    * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body method.
+    */
   protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
     new AirSpecTestBuilder(this, name, design)
 

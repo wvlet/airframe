@@ -47,13 +47,13 @@ private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) exten
   }
 }
 
-case class AirSpecDefF0[R](name: String, design: Design, returnType: Surface, body: LazyF0[R]) extends AirSpecDef {
+private[airspec] case class AirSpecDefF0[R](name: String, design: Design, returnType: Surface, body: LazyF0[R]) extends AirSpecDef {
   override def run(context: AirSpecContext, session: Session): Any = {
     body.eval
   }
 }
 
-case class AirSpecDefF1[D1, R](
+private[airspec] case class AirSpecDefF1[D1, R](
     name: String,
     design: Design,
     dep1Type: Surface,
@@ -67,7 +67,7 @@ case class AirSpecDefF1[D1, R](
   }
 }
 
-case class AirSpecDefF2[D1, D2, R](
+private[airspec] case class AirSpecDefF2[D1, D2, R](
     name: String,
     design: Design,
     dep1Type: Surface,
@@ -83,7 +83,7 @@ case class AirSpecDefF2[D1, D2, R](
   }
 }
 
-case class AirSpecDefF3[D1, D2, D3, R](
+private[airspec] case class AirSpecDefF3[D1, D2, D3, R](
     name: String,
     design: Design,
     dep1Type: Surface,
@@ -98,5 +98,47 @@ case class AirSpecDefF3[D1, D2, D3, R](
     val arg2: D2 = resolveArg(context, session, dep2Type).asInstanceOf[D2]
     val arg3: D3 = resolveArg(context, session, dep3Type).asInstanceOf[D3]
     body(arg1, arg2, arg3)
+  }
+}
+
+private[airspec] case class AirSpecDefF4[D1, D2, D3, D4, R](
+    name: String,
+    design: Design,
+    dep1Type: Surface,
+    dep2Type: Surface,
+    dep3Type: Surface,
+    dep4Type: Surface,
+    returnType: Surface,
+    body: (D1, D2, D3, D4) => R
+) extends AirSpecDef {
+
+  override def run(context: AirSpecContext, session: Session): Any = {
+    val arg1: D1 = resolveArg(context, session, dep1Type).asInstanceOf[D1]
+    val arg2: D2 = resolveArg(context, session, dep2Type).asInstanceOf[D2]
+    val arg3: D3 = resolveArg(context, session, dep3Type).asInstanceOf[D3]
+    val arg4: D4 = resolveArg(context, session, dep4Type).asInstanceOf[D4]
+    body(arg1, arg2, arg3, arg4)
+  }
+}
+
+private[airspec] case class AirSpecDefF5[D1, D2, D3, D4, D5, R](
+    name: String,
+    design: Design,
+    dep1Type: Surface,
+    dep2Type: Surface,
+    dep3Type: Surface,
+    dep4Type: Surface,
+    dep5Type: Surface,
+    returnType: Surface,
+    body: (D1, D2, D3, D4, D5) => R
+) extends AirSpecDef {
+
+  override def run(context: AirSpecContext, session: Session): Any = {
+    val arg1: D1 = resolveArg(context, session, dep1Type).asInstanceOf[D1]
+    val arg2: D2 = resolveArg(context, session, dep2Type).asInstanceOf[D2]
+    val arg3: D3 = resolveArg(context, session, dep3Type).asInstanceOf[D3]
+    val arg4: D4 = resolveArg(context, session, dep4Type).asInstanceOf[D4]
+    val arg5: D5 = resolveArg(context, session, dep5Type).asInstanceOf[D5]
+    body(arg1, arg2, arg3, arg4, arg5)
   }
 }

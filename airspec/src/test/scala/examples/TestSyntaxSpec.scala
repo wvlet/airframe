@@ -35,6 +35,19 @@ class TestSyntaxSpec extends AirSpec {
     m shouldBe "hello 10 true"
   }
 
+  test("4 arg method") { (s: String, i: Int, b: Boolean, ss: Session) =>
+    val m = s"${s} ${i} ${b}"
+    debug(s"${m}")
+    m shouldBe "hello 10 true"
+  }
+
+  test("5 arg method") { (s: String, i: Int, b: Boolean, ss: Session, ctx: spi.AirSpecContext) =>
+    val m = s"${s} ${i} ${b}"
+    info(s"${m}: ${ctx.specName}")
+    ctx.specName shouldBe "5 arg method"
+    m shouldBe "hello 10 true"
+  }
+
   test("local design override", design = newDesign.bind[String].toInstance("world")) { s: String =>
     debug(s"arg: ${s}")
     s shouldBe "world"
