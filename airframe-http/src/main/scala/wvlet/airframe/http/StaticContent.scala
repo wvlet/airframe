@@ -25,7 +25,7 @@ import scala.annotation.tailrec
   */
 object StaticContent extends LogSupport {
 
-  sealed trait ResourceType {
+  trait ResourceType {
     def find(relativePath: String): Option[URL]
   }
 
@@ -90,31 +90,70 @@ object StaticContent extends LogSupport {
     }
   }
 
+  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse = {
+    StaticContent().fromResource(basePath).apply(relativePath)
+  }
+
   def fromResource(basePaths: List[String], relativePath: String): SimpleHttpResponse = {
+    val sc = basePaths.foldLeft(StaticContent()) { (sc, x) =>
+      sc.fromResource(x)
+    }
+    sc.apply(relativePath)
+  }
+
+  def fromDirectory(dirPath: String, relativePath: String): SimpleHttpResponse = {
+    StaticContent().fromDirectory(dirPath).apply(relativePath)
+  }
+
+  def fromDirectory(dirPaths: List[String], relativePath: String): SimpleHttpResponse = {
+    val sc = dirPaths.foldLeft(StaticContent()) { (sc, x) =>
+      sc.fromDirectory(x)
+    }
+    sc.apply(relativePath)
+  }
+
+  def fromResource(basePath: String): StaticContent  = StaticContent().fromResource(basePath)
+  def fromDirectory(basePath: String): StaticContent = StaticContent().fromResource(basePath)
+}
+
+import StaticContent._
+
+case class StaticContent(resourcePaths: List[ResourceType] = List.empty) {
+  def fromDirectory(basePath: String): StaticContent = {
+    this.copy(resourcePaths = FileResource(basePath) :: resourcePaths)
+  }
+  def fromResource(basePath: String): StaticContent = {
+    this.copy(resourcePaths = ClasspathResource(basePath) :: resourcePaths)
+  }
+
+  def find(relativePath: String): Option[URL] = {
+    @tailrec
+    def loop(lst: List[ResourceType]): Option[URL] = {
+      lst match {
+        case Nil => None
+        case resource :: tail =>
+          resource.find(relativePath) match {
+            case url @ Some(x) =>
+              url
+            case None =>
+              loop(tail)
+          }
+      }
+    }
+    loop(resourcePaths)
+  }
+
+  def apply(relativePath: String): SimpleHttpResponse = {
     if (!isSafeRelativePath(relativePath)) {
       SimpleHttpResponse(HttpStatus.Forbidden_403)
     } else {
-
-      @tailrec
-      def find(lst: List[String]): Option[URL] = {
-        if (lst.isEmpty) {
-          None
-        } else {
-          val basePath     = lst.head
-          val resourcePath = s"${basePath}/${relativePath}"
-          Resource.find(resourcePath) match {
-            case s @ Some(x) => s
-            case _           => find(lst.tail)
-          }
-        }
-      }
-
-      find(basePaths)
+      find(relativePath)
         .map { uri =>
           val mediaType = findContentType(relativePath)
           // Read the resource file as binary
           Control.withResource(uri.openStream()) { in =>
             IOUtil.readFully(in) { content =>
+              // TODO cache control (e.g., max-age, last-updated)
               SimpleHttpResponse(HttpStatus.Ok_200, content = content, contentType = Some(mediaType))
             }
           }
@@ -122,18 +161,5 @@ object StaticContent extends LogSupport {
           SimpleHttpResponse(HttpStatus.NotFound_404)
         }
     }
-  }
-
-  def fromResource(basePath: String, relativePath: String): SimpleHttpResponse =
-    fromResource(List(basePath), relativePath)
-}
-
-import StaticContent._
-case class StaticContent(resourcePath: List[ResourceType] = List.empty) {
-  def addFileDir(basePath: String): StaticContent = {
-    this.copy(resourcePath = FileResource(basePath) :: resourcePath)
-  }
-  def addResourcePath(basePath: String): StaticContent = {
-    this.copy(resourcePath = ClasspathResource(basePath) :: resourcePath)
   }
 }
