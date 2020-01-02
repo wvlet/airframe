@@ -129,9 +129,10 @@ private[airspec] class AirSpecTaskRunner(
           .map(_.currentSession.newChildSession(d))
           .getOrElse { d.newSessionBuilder.noShutdownHook.build } // Do not register JVM shutdown hooks
 
+      val localDesign = spec.callLocalDesign
       globalSession.start {
         for (m <- targetTestDefs) {
-          runSingle(parentContext, globalSession, spec, m, isLocal = false)
+          runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign)
         }
       }
     } finally {
@@ -146,7 +147,8 @@ private[airspec] class AirSpecTaskRunner(
       globalSession: Session,
       spec: AirSpecSpi,
       m: AirSpecDef,
-      isLocal: Boolean
+      isLocal: Boolean,
+      design: Design
   ): Unit = {
 
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
@@ -164,7 +166,7 @@ private[airspec] class AirSpecTaskRunner(
 
     spec.callBefore
     // Configure the test-local design
-    val childDesign = spec.callLocalDesign + m.design
+    val childDesign = design + m.design
 
     val startTimeNanos = System.nanoTime()
     // Create a test-method local child session

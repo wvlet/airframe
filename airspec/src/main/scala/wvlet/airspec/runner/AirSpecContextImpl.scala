@@ -37,7 +37,7 @@ private[airspec] class AirSpecContextImpl(
     spec
   }
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
-    taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true)
+    taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
   }
 
   override protected def newSpec(specSurface: Surface): AirSpecSpi = {
