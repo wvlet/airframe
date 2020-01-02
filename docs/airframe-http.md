@@ -246,7 +246,7 @@ val sc = StaticContent
   .fromResource("/resource/path2")
   .fromDirecotry("/path/to/directory")
 
-sc.apply(path) // Create a http response
+sc(path) // Create an HTTP response
 ```
 
 ## Error Handling
