@@ -14,6 +14,10 @@ class TestSyntaxSpec extends AirSpec {
     debug("hello AirSpec test()")
   }
 
+  test("test pending") {
+    pending
+  }
+
   test("one arg method") { s: String =>
     debug(s"received arg: ${s}")
     s shouldBe "hello"

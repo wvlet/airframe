@@ -36,6 +36,7 @@ private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String
   def addLocalTestDef(specDef: AirSpecDef) {
     spec.addLocalTestDef(specDef)
   }
+
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
@@ -51,12 +52,11 @@ private[airspec] trait AirSpecSpi {
   }
   private[airspec] def popContext: Unit = {
     synchronized {
-      if(_currentContext.nonEmpty) {
+      if (_currentContext.nonEmpty) {
         _currentContext = _currentContext.tail
       }
     }
   }
-
 
   private var _localTestDefs: List[AirSpecDef] = List.empty
   private[airspec] def addLocalTestDef(specDef: AirSpecDef) {
