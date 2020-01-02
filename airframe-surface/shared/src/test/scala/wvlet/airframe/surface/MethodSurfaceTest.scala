@@ -30,6 +30,14 @@ object MethodExamples {
     def helloParent: String = "parent"
   }
   class B extends P
+
+  import scala.reflect.ClassTag
+  trait G {
+    def generic[E <: Throwable: ClassTag](arg: String): E = {
+      new Throwable().asInstanceOf[E]
+    }
+  }
+  trait C extends G
 }
 
 import MethodExamples._
@@ -91,5 +99,10 @@ class MethodSurfaceTest extends SurfaceSpec {
   def `inherit parent methods`: Unit = {
     val m = Surface.methodsOf[B]
     m.find(_.name == "helloParent") shouldBe defined
+  }
+
+  def `support generic methods`: Unit = {
+    val m = Surface.methodsOf[C]
+    m.find(_.name == "generic") shouldBe defined
   }
 }

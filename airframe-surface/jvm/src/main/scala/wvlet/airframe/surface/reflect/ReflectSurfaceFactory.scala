@@ -175,6 +175,7 @@ object ReflectSurfaceFactory extends LogSupport {
           x.isMethod &&
             !x.isConstructor &&
             !x.isImplementationArtifact
+            && !x.isMacro
             && !x.isImplicit
           // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
             && !x.isSynthetic
@@ -448,8 +449,15 @@ object ReflectSurfaceFactory extends LogSupport {
       }
 
       for (params <- constructor.paramLists) yield {
-        val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
-        var index            = 1
+        val concreteArgTypes = params.map { p =>
+          try {
+            p.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs)
+          } catch {
+            case e: Throwable =>
+              p.typeSignature
+          }
+        }
+        var index = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
           index += 1
           MethodArg(p, t)
