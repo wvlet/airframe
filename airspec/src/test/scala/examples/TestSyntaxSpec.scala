@@ -43,8 +43,8 @@ class TestSyntaxSpec extends AirSpec {
 
   test("5 arg method") { (s: String, i: Int, b: Boolean, ss: Session, ctx: spi.AirSpecContext) =>
     val m = s"${s} ${i} ${b}"
-    info(s"${m}: ${ctx.specName}")
-    ctx.specName shouldBe "5 arg method"
+    debug(s"${m}: ${ctx.testName}")
+    ctx.testName shouldBe "5 arg method"
     m shouldBe "hello 10 true"
   }
 

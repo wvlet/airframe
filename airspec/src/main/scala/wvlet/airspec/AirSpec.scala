@@ -37,6 +37,8 @@ private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
   def apply[D1, D2, D3, R](body: (D1, D2, D3) => R): Unit = macro AirSpecMacros.test3Impl[D1, D2, D3, R]
+  def apply[D1, D2, D3, D4, R](body: (D1, D2, D3, D4) => R): Unit = macro AirSpecMacros.test4Impl[D1, D2, D3, D4, R]
+  def apply[D1, D2, D3, D4, D5, R](body: (D1, D2, D3, D4, D5) => R): Unit = macro AirSpecMacros.test5Impl[D1, D2, D3, D4, D5, R]
 }
 
 object AirSpecTestBuilder extends wvlet.log.LogSupport {
@@ -73,7 +75,6 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
         r: Surface,
         body: (D1, D2, D3, D4, D5) => R
     ): Unit = {
-      logger.warn(s"Add F5")
       v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, r, body))
     }
   }
