@@ -11,43 +11,43 @@ class TestSyntaxSpec extends AirSpec {
       .bind[Boolean].toInstance(true)
 
   test("support test syntax") {
-    info("hello AirSpec test()")
+    debug("hello AirSpec test()")
   }
 
   test("one arg method") { s: String =>
-    info(s"received arg: ${s}")
+    debug(s"received arg: ${s}")
     s shouldBe "hello"
   }
 
   test("two arg method") { (s: String, i: Int) =>
     val m = s"${s} ${i}"
-    info(s"${m}")
+    debug(s"${m}")
     m shouldBe "hello 10"
   }
 
   test("three arg method") { (s: String, i: Int, b: Boolean) =>
     val m = s"${s} ${i} ${b}"
-    info(s"${m}")
+    debug(s"${m}")
     m shouldBe "hello 10 true"
   }
 
   test("local design override", design = newDesign.bind[String].toInstance("world")) { s: String =>
-    info(s"arg: ${s}")
+    debug(s"arg: ${s}")
     s shouldBe "world"
   }
 
   test("nested tests") {
     test("test1") {
-      info("hello test1")
+      debug("hello test1")
     }
 
     test("test2") {
-      info("hello test2")
+      debug("hello test2")
       test("test A") {
-        info("further nesting")
+        debug("further nesting")
       }
       test("test B") {
-        info("hello")
+        debug("hello")
       }
     }
   }
