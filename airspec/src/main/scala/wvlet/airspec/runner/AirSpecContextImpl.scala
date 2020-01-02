@@ -20,6 +20,7 @@ import wvlet.airspec.spi.AirSpecContext
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
   *
@@ -32,11 +33,19 @@ private[airspec] class AirSpecContextImpl(
     val currentSession: Session
 ) extends AirSpecContext
     with LogSupport {
+  private val childTaskCount = new AtomicInteger(0)
+
+  override def hasChildTask: Boolean = {
+    childTaskCount.get > 0
+  }
+
   override protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi = {
+    childTaskCount.incrementAndGet()
     taskExecutor.run(Some(this), spec, testDefs)
     spec
   }
   override protected[airspec] def runSingle(testDef: AirSpecDef): Unit = {
+    childTaskCount.incrementAndGet()
     taskExecutor.runSingle(Some(this), currentSession, currentSpec, testDef, isLocal = true, design = testDef.design)
   }
 

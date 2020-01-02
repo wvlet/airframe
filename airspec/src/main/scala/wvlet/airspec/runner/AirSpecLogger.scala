@@ -85,7 +85,7 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     info(s"${indent(indentLevel)}${withColor(GRAY, " -")} ${withColor(GREEN, testName)}")
   }
 
-  def logEvent(e: AirSpecEvent, indentLevel: Int = 0): Unit = {
+  def logEvent(e: AirSpecEvent, indentLevel: Int = 0, showTestName: Boolean = true): Unit = {
     val (baseColor, showStackTraces) = e.status match {
       case Status.Success                  => (GREEN, false)
       case Status.Failure                  => (RED, false) // Do not show the stack trace for assertion failures
@@ -108,7 +108,11 @@ private[airspec] class AirSpecLogger() extends AnsiColorPalette {
     }
 
     val prefix = {
-      s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName)} ${elapsedTime}"
+      if (showTestName) {
+        s"${withColor(GRAY, " -")} ${withColor(baseColor, e.fullyQualifiedName)} ${elapsedTime}"
+      } else {
+        s"${withColor(GRAY, " <")} ${elapsedTime}"
+      }
     }
     val tail = e.status match {
       case Status.Success => ""

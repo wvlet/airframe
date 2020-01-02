@@ -154,6 +154,8 @@ private[airspec] class AirSpecTaskRunner(
     val ctxName = parentContext.map(ctx => s"${ctx.fullSpecName}.${ctx.testName}").getOrElse("N/A")
 
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
+
+    // Show the inner test name
     if (isLocal) {
       parentContext.map { ctx =>
         synchronized {
@@ -170,6 +172,9 @@ private[airspec] class AirSpecTaskRunner(
     val childDesign = design + m.design
 
     val startTimeNanos = System.nanoTime()
+
+    var hadChildTask = false
+
     // Create a test-method local child session
     val result = globalSession.withChildSession(childDesign) { childSession =>
       val context =
@@ -188,6 +193,9 @@ private[airspec] class AirSpecTaskRunner(
         } finally {
           spec.callAfter
           spec.popContext
+
+          // If the test method had any child task, update the flag
+          hadChildTask |= context.hasChildTask
         }
       }
     }
@@ -203,7 +211,7 @@ private[airspec] class AirSpecTaskRunner(
     }
 
     val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
-    taskLogger.logEvent(e, indentLevel = indentLevel)
+    taskLogger.logEvent(e, indentLevel = indentLevel, showTestName = !hadChildTask)
     eventHandler.handle(e)
   }
 

@@ -28,6 +28,8 @@ import scala.language.experimental.macros
   *
   */
 trait AirSpecContext {
+  def hasChildTask: Boolean
+
   def currentSpec: AirSpecSpi
   def parentContext: Option[AirSpecContext]
 
