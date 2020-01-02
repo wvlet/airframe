@@ -23,9 +23,9 @@ import com.twitter.finagle.http.{Request,Response}
 import com.twitter.util.Future
 import wvlet.airframe.http.{Endpoint, HttpMethod, HttpRequest}
 
-
 object MyApi {
   case class User(name: String)
+
   case class NewUserRequest(name:String)
   case class ServerInfo(version:String, ua:Option[String])
 }

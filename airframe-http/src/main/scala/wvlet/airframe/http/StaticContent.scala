@@ -118,7 +118,7 @@ object StaticContent extends LogSupport {
 
 import StaticContent._
 
-case class StaticContent(resourcePaths: List[ResourceType] = List.empty) {
+case class StaticContent(resourcePaths: List[StaticContent.ResourceType] = List.empty) {
   def fromDirectory(basePath: String): StaticContent = {
     this.copy(resourcePaths = FileResource(basePath) :: resourcePaths)
   }
