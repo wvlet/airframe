@@ -15,8 +15,9 @@ package wvlet.airspec.runner
 
 import sbt.testing._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
-import wvlet.airframe.Design
+import wvlet.airframe.{Design, Session}
 import wvlet.airframe.surface.MethodSurface
+import wvlet.airspec.AirSpecDef
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException, AirSpecFailureBase, MissingTestDependency}
 import wvlet.log.LogSupport
@@ -61,7 +62,7 @@ private[airspec] class AirSpecTaskRunner(
 
         testObj match {
           case Some(spec: AirSpecSpi) =>
-            run(parentContext = None, spec, spec.testMethods)
+            run(parentContext = None, spec, spec.testDefinitions)
           case _ =>
             taskLogger.logSpecName(leafName, indentLevel = 0)
             throw new IllegalStateException(
@@ -82,18 +83,18 @@ private[airspec] class AirSpecTaskRunner(
     }
   }
 
-  def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testMethods: Seq[MethodSurface]): Unit = {
+  private[airspec] def run(parentContext: Option[AirSpecContext], spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): Unit = {
     val selectedMethods =
       config.pattern match {
         case Some(regex) =>
           // Find matching methods
-          testMethods.filter { m =>
+          testDefs.filter { m =>
             // Concatenate (parent class name)? + class name + method name for handy search
             val fullName = s"${specName(parentContext, spec)}.${m.name}"
             regex.findFirstIn(fullName).isDefined
           }
         case None =>
-          testMethods
+          testDefs
       }
 
     if (selectedMethods.nonEmpty) {
@@ -109,7 +110,7 @@ private[airspec] class AirSpecTaskRunner(
   private def runSpec(
       parentContext: Option[AirSpecContext],
       spec: AirSpecSpi,
-      targetMethods: Seq[MethodSurface]
+      targetTestDefs: Seq[AirSpecDef]
   ): Unit = {
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
     taskLogger.logSpecName(spec.leafSpecName, indentLevel = indentLevel)
@@ -128,66 +129,90 @@ private[airspec] class AirSpecTaskRunner(
           .map(_.currentSession.newChildSession(d))
           .getOrElse { d.newSessionBuilder.noShutdownHook.build } // Do not register JVM shutdown hooks
 
+      val localDesign = spec.callLocalDesign
       globalSession.start {
-        for (m <- targetMethods) {
-          spec.callBefore
-          // Configure the test-local design
-          val childDesign = spec.callLocalDesign
-
-          val startTimeNanos = System.nanoTime()
-          // Create a test-method local child session
-          val result = globalSession.withChildSession(childDesign) { childSession =>
-            val context =
-              new AirSpecContextImpl(
-                this,
-                parentContext = parentContext,
-                currentSpec = spec,
-                testName = m.name,
-                currentSession = childSession
-              )
-            Try {
-              try {
-                // Build a list of method arguments
-                val args: Seq[Any] = for (p <- m.args) yield {
-                  try {
-                    p.surface.rawType match {
-                      case cls if classOf[AirSpecContext].isAssignableFrom(cls) =>
-                        context
-                      case _ =>
-                        childSession.getInstanceOf(p.surface)
-                    }
-                  } catch {
-                    case e @ MISSING_DEPENDENCY(stack, _) =>
-                      throw MissingTestDependency(
-                        s"Failed to call ${spec.leafSpecName}.`${m.name}`. Missing dependency for ${p.name}:${p.surface}:\n${e.getMessage}"
-                      )
-                  }
-                }
-                // Call the test method
-                m.call(spec, args: _*)
-              } finally {
-                spec.callAfter
-              }
-            }
-          }
-          // Report the test result
-          val durationNanos = System.nanoTime() - startTimeNanos
-
-          val (status, throwableOpt) = result match {
-            case Success(x) =>
-              (Status.Success, new OptionalThrowable())
-            case Failure(ex) =>
-              val status = AirSpecException.classifyException(ex)
-              (status, new OptionalThrowable(compat.findCause(ex)))
-          }
-
-          val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
-          taskLogger.logEvent(e, indentLevel = indentLevel)
-          eventHandler.handle(e)
+        for (m <- targetTestDefs) {
+          runSingle(parentContext, globalSession, spec, m, isLocal = false, design = localDesign)
         }
       }
     } finally {
       spec.callAfterAll
     }
   }
+
+  private var displayedContext = Set.empty[String]
+
+  private[airspec] def runSingle(
+      parentContext: Option[AirSpecContext],
+      globalSession: Session,
+      spec: AirSpecSpi,
+      m: AirSpecDef,
+      isLocal: Boolean,
+      design: Design
+  ): Unit = {
+
+    val ctxName = parentContext.map(ctx => s"${ctx.fullSpecName}.${ctx.testName}").getOrElse("N/A")
+
+    val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
+
+    // Show the inner test name
+    if (isLocal) {
+      parentContext.map { ctx =>
+        synchronized {
+          if (!displayedContext.contains(ctxName)) {
+            taskLogger.logTestName(ctx.testName, indentLevel = (indentLevel - 1).max(0))
+            displayedContext += ctxName
+          }
+        }
+      }
+    }
+
+    spec.callBefore
+    // Configure the test-local design
+    val childDesign = design + m.design
+
+    val startTimeNanos = System.nanoTime()
+
+    var hadChildTask = false
+
+    // Create a test-method local child session
+    val result = globalSession.withChildSession(childDesign) { childSession =>
+      val context =
+        new AirSpecContextImpl(
+          this,
+          parentContext = parentContext,
+          currentSpec = spec,
+          testName = m.name,
+          currentSession = childSession
+        )
+      spec.pushContext(context)
+      // Wrap the execution with Try[_] to report the test result to the event handler
+      Try {
+        try {
+          m.run(context, childSession)
+        } finally {
+          spec.callAfter
+          spec.popContext
+
+          // If the test method had any child task, update the flag
+          hadChildTask |= context.hasChildTask
+        }
+      }
+    }
+    // Report the test result
+    val durationNanos = System.nanoTime() - startTimeNanos
+
+    val (status, throwableOpt) = result match {
+      case Success(x) =>
+        (Status.Success, new OptionalThrowable())
+      case Failure(ex) =>
+        val status = AirSpecException.classifyException(ex)
+        (status, new OptionalThrowable(compat.findCause(ex)))
+    }
+
+    val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
+    taskLogger.logEvent(e, indentLevel = indentLevel, showTestName = !hadChildTask)
+    eventHandler.handle(e)
+  }
+
 }

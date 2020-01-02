@@ -4,36 +4,36 @@ layout: docs
 title: AirSpec: Testing Framework
 ---
 
-[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js. 
+[AirSpec](https://github.com/wvlet/airframe/tree/master/airspec) is a new functional testing framework for Scala and Scala.js.
 
 - [GitHub: AirSpec](https://github.com/wvlet/airframe/tree/master/airspec)
-- [Motivation and Background](#background--motivation)
+- [Background and Motivation](#background--motivation)
 
 AirSpec uses pure Scala functions for writing test cases. This style requires no extra learning cost if you already know Scala. For advanced users, dependency injection to test cases and property-based testing are supported optionally.
 
-AirSpec has nice properties for writing tests in Scala:
+## Features
 
-- Simple usage: `import wvlet.airspec._` and extend `AirSpec` trait.
-- Tests can be defined using plain Scala classes and methods.
+- Simple to use: Just `import wvlet.airspec._` and extend `AirSpec` trait.
+- Tests can be defined with plain Scala methods or `test(...)` functions.
   - Public methods in a class extending `AirSpec` trait will be your test cases.
   - No annotation (like ones in [JUnit5](https://junit.org/junit5/docs/current/user-guide/)) is necessary.
-- Testing with simple assertions: `assert(cond)`, `x shouldBe y`, etc.
+- Support basic assertion syntaxes: `assert(cond)`, `x shouldBe y`, etc.
   - No need to learn other complex DSLs.
+- Nesting and reusing test cases with `test(...)` or `context.run(spec)`
 - Lifecycle management with [Airframe DI](airframe.md):
-  - The arguments of test methods can be used to inject necessary services for running your tests. 
-  - The lifecycle (e.g., start and shutdown) of the injected services can be managed by Airframe DI.
-- Nesting and reusing test cases with `context.run(spec)`
+  - DI will inject the arguments of test methods based on your custom Design.
+  - The lifecycle (e.g., start and shutdown) of the injected services will be properly managed.
 - Handy keyword search for _sbt_: `> testOnly -- (a pattern for class or method names)`
 - Property-based testing integrated with [ScalaCheck](https://www.scalacheck.org/)
 - Scala 2.11, 2.12, 2.13, and Scala.js support
 
 AirSpec is already feature complete and ready to use in production. Actually, all modules of Airframe, including AirSpec, are tested by using AirSpec.
-For providing better testing experience, we are now planning to add more features (e.g., better reporting, power assertions):
+For providing better testing experience, we are planning to add more features (e.g., better reporting, power assertions):
+
+- [Milestone: Airframe 20](https://github.com/wvlet/airframe/issues/839)
 - [Milestone: AirSpec 19](https://github.com/wvlet/airframe/issues/606)
 
-
 To start using AirSpec, read [Quick Start](#quick-start).
-
 
 ## Quick Start
 
@@ -57,7 +57,7 @@ libraryDependencies += "org.wvlet.airframe" %%% "airspec" % "(version)" % "test"
 testFrameworks += new TestFramework("wvlet.airspec.Framework")
 ```
 
-## Writing Unit Tests 
+## Writing Unit Tests
 
 In AirSpec test cases are defined as functions in a class (or an object) extending `AirSpec`.
 All __public methods__ in the class will be executed as test cases:
@@ -73,7 +73,7 @@ class MyTest extends AirSpec {
 
   // Catch an exception
   def emptySeqHeadShouldFail: Unit = {
-    intercept[NoSuchElementException]{
+    intercept[NoSuchElementException] {
       Seq.empty.head
     }
   }
@@ -82,10 +82,31 @@ class MyTest extends AirSpec {
 
 If you need to define utility methods in a class, use private or protected scope.
 
+
+AirSpec also suppots `test(...) { ... }` syntax:
+
+```scala
+import wvlet.airspec._
+
+class MyTest extends AirSpec {
+  test("empty Seq size should be 0") {
+    assert(Seq.empty.size == 0)
+  }
+
+  test("Seq.empty.head should fail") {
+    intercept[NoSuchElementException] {
+      Seq.empty.head
+    }
+  }
+}
+```
+
+This `test` syntax is useful for writing nested tests or customizing the design of DI for each test.
+
 ### Scala.js
 
-To use AirSpec in Scala.js, `scalaJsSupport` must be called inside your spec classes:
- 
+`test(...)` function works in Scala.js, however, to run public methods as tests in Scala.js, `scalaJsSupport` must be called inside your spec classes:
+
 ```scala
 import wvlet.airspec._
 
@@ -186,7 +207,7 @@ class MyTest extends AirSpec {
     // For Arrays, shouldBe checks the equality with deep equals
     Array(1, 2) shouldBe Array(1, 2)
 
-    // Collection checker 
+    // Collection checker
     Seq(1) shouldBe defined
     Seq(1) shouldNotBe empty
     Seq(1, 2) shouldBe Seq(1, 2)
@@ -216,7 +237,7 @@ $ sbt
 
 # sbt's default test functionalities:
 > testQuick                              # Run only previously failed test specs
-> testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported) 
+> testOnly (class name)                  # Run tests only in specific classes matching a pattern (wildcard is supported)
 ```
 
 `pattern` is used for partial matching with test names. It also supports wildcard (`*`) and regular expressions (experimental).
@@ -245,7 +266,7 @@ package org.mydomain.myapp
 
 class MyTest extends AirSpec {
   info(s"info log")
-  debug(s"debug log") // Will not be shown by default 
+  debug(s"debug log") // Will not be shown by default
   trace(s"trace log") // To show this level of log, trace log level must be set
 }
 ```
@@ -259,11 +280,11 @@ To change the log level for your packages and classes, add _log-test.properties_
 This is an example of changing log levels of your packages and classes:
 
 __src/test/resources/log-test.properties__
-```
-# Log level configuration examples
-# Show debug logs of all classes in org.mydomain.myapp package 
+
+```ruby
+# Show debug logs of all classes under org.mydomain.myapp package
 org.mydomain.myapp=debug
-# Show  
+# Show all logs including trace-level logs
 org.mydomain.myapp.MyTest=trace
 ```
 
@@ -281,6 +302,7 @@ This is useful for sharing objects initialized only once at the beginning with t
 AirSpec manages two types of sessions: _global_ and _local_:
 - For each AirSpec instance, a single global session will be created.
 - For each test method in the AirSpec instance, a local (child) session that inherits the global session will be created.
+  - It is possible to override the local design by using `test(..., design = ...)` function.
 
 To configure the design of objects that will be created in each session,
 override `protected def design:Design` or `protected def localDesign: Design` methods in AirSpec.
@@ -346,9 +368,27 @@ This test shares the same Service instance between two test methods `test1` and 
 [info] Passed: Total 2, Failed 0, Errors 0, Passed 2
 ```
 
+It is also possible to reuse the same injected instance by nesting `test` methods:
+
+```scala
+class ServiceSpec extends AirSpec {
+  override protected def design: Design = ...
+  test("server test") { service:Service =>
+    test("test 1") {
+      info(s"server id: ${service.hashCode}")
+    }
+
+    test("test 2") {
+     info(s"server id: ${service.hashCode}")
+    }
+  }
+}
+
+```
+
 ### Overriding Design At Test Methods
 
-If you need a partially different design in a test method, pass Airframe `Session` to the test method arguments, and call `session.withChildSession(additional_design)`:
+If you need to partially override a design in a test method, use `test(..., design = ...)` to provide a custom child design:
 
 ```scala
 import wvlet.airspec._
@@ -360,23 +400,20 @@ class OverrideTest extends AirSpec {
     newDesign
       .bind[String].toInstance("hello")
   }
- 
+
   // Pass Session to override the design
-  def overrideDesign(session: Session, s: String): Unit = {
+  def `before overriding the design`(s:String): Unit = {
     s shouldBe "hello"
-  
+
     // Override a design
-    val d = newDesign
+    val childDesign = newDesign
       .bind[String].toInstance("hello child")
-   
-    // Create a new child session
-    session.withChildSession(d) { childSession =>
-      val cs = childSession.build[String]
+
+    test("override the design", design = childDesign) { cs: String =>
       cs shouldBe "hello child"
     }
   }
 }
-
 ```
 
 ### Pro Tips
@@ -488,8 +525,6 @@ class PropertyBasedTest extends AirSpec with PropertyCheck {
 }
 ```
 
-
-
 ## Background & Motivation
 
 In Scala there are several rich testing frameworks like [ScalaTests](http://www.scalatest.org/), [Specs2](https://etorreborre.github.io/specs2/), [uTest](https://github.com/lihaoyi/utest), etc. We also have a simple testing framework like [minitest](https://github.com/monix/minitest). In 2019, Scala community has started an experiment to creating a nano-testing framework [nanotest-strawman](https://github.com/scala/nanotest-strawman) based on minitest so that Scala users can have [some standards for writing tests in Scala](https://github.com/scala/scala-dev/issues/641) without introducing third-party dependencies.
@@ -510,7 +545,7 @@ So where is a middle ground in-between these two extremes? We usually don't want
 
 Why can't we __use plain Scala functions to define tests__? ScalaTest already has [RefSpec](http://www.scalatest.org/user_guide/selecting_a_style) to write tests in Scala functions. Unfortunately, however, its support is limited only to Scala JVM as Scala.js does not support runtime reflections to list function names. Scala.js is powerful for developing web applications in Scala, so we don't want to drop it, and the lack of runtime reflection in Scala.js is probably a reason why existing testing frameworks needed to develop their own DSLs like `test(....) {  test body } `.
 
-Now listing functions in Scala.js is totally possible by using [airframe-surface](https://wvlet.org/airframe/docs/airframe-surface.html), which is a library to inspect parameters and methods in a class by using reflection (in Scala JVM) or Scala macros (in Scala.js). So it was a good timing for us to develop a new testing framework, which has more Scala-friendly syntax. 
+Now listing functions in Scala.js is totally possible by using [airframe-surface](https://wvlet.org/airframe/docs/airframe-surface.html), which is a library to inspect parameters and methods in a class by using reflection (in Scala JVM) or Scala macros (in Scala.js). So it was a good timing for us to develop a new testing framework, which has more Scala-friendly syntax.
 
 And also, if we define tests by using functions, it becomes possible to __pass test dependencies through function arguments__. Using local variables in a test class has been the best practice of setting up testing environments (e.g., database, servers, etc.), but it is not always ideal as we need to properly initialize and clean-up these variables for each test method by using setUp/tearDown (or before/after) methods. If we can simply pass these service instances to function arguments using [Airframe DI](https://wvlet.org/airframe/docs/airframe.html), which has a strong support of life-cycle management, we no longer need to write such setUp/tearDown steps for configuring testing environments. Once we define a production-quality service with proper lifecycle management hooks (using Airframe design and onStart/onShutdown hooks), we should be able to reuse these lifecycle management code even in test cases.
 

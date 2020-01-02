@@ -14,7 +14,7 @@
 package wvlet.airspec
 
 import wvlet.airframe.Design
-import wvlet.airspec.spi.{Asserts, RichAsserts}
+import wvlet.airspec.spi.{Asserts, RichAsserts, AirSpecContext}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec
 
@@ -31,7 +31,89 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
   */
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
+private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design)
+    extends wvlet.log.LogSupport {
+  def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
+  def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
+  def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]
+  def apply[D1, D2, D3, R](body: (D1, D2, D3) => R): Unit = macro AirSpecMacros.test3Impl[D1, D2, D3, R]
+  def apply[D1, D2, D3, D4, R](body: (D1, D2, D3, D4) => R): Unit = macro AirSpecMacros.test4Impl[D1, D2, D3, D4, R]
+  def apply[D1, D2, D3, D4, D5, R](body: (D1, D2, D3, D4, D5) => R): Unit =
+    macro AirSpecMacros.test5Impl[D1, D2, D3, D4, D5, R]
+}
+
+object AirSpecTestBuilder extends wvlet.log.LogSupport {
+  implicit class Helper(val v: AirSpecTestBuilder) extends AnyVal {
+
+    def addF0[R](r: Surface, body: wvlet.airframe.LazyF0[R]): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF0(v.name, v.design, r, body))
+    }
+    def addF1[D1, R](d1: Surface, r: Surface, body: D1 => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF1(v.name, v.design, d1, r, body))
+    }
+    def addF2[D1, D2, R](d1: Surface, d2: Surface, r: Surface, body: (D1, D2) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF2(v.name, v.design, d1, d2, r, body))
+    }
+    def addF3[D1, D2, D3, R](d1: Surface, d2: Surface, d3: Surface, r: Surface, body: (D1, D2, D3) => R): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF3(v.name, v.design, d1, d2, d3, r, body))
+    }
+    def addF4[D1, D2, D3, D4, R](
+        d1: Surface,
+        d2: Surface,
+        d3: Surface,
+        d4: Surface,
+        r: Surface,
+        body: (D1, D2, D3, D4) => R
+    ): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF4(v.name, v.design, d1, d2, d3, d4, r, body))
+    }
+    def addF5[D1, D2, D3, D4, D5, R](
+        d1: Surface,
+        d2: Surface,
+        d3: Surface,
+        d4: Surface,
+        d5: Surface,
+        r: Surface,
+        body: (D1, D2, D3, D4, D5) => R
+    ): Unit = {
+      v.spec.addLocalTestDef(AirSpecDefF5(v.name, v.design, d1, d2, d3, d4, d5, r, body))
+    }
+  }
+}
+
 private[airspec] trait AirSpecSpi {
+  private[airspec] var _currentContext: List[AirSpecContext] = List.empty
+  private[airspec] def pushContext(ctx: AirSpecContext): Unit = {
+    synchronized {
+      _currentContext = ctx :: _currentContext
+    }
+  }
+  private[airspec] def popContext: Unit = {
+    synchronized {
+      if (_currentContext.nonEmpty) {
+        _currentContext = _currentContext.tail
+      }
+    }
+  }
+
+  private var _localTestDefs: List[AirSpecDef] = List.empty
+  private[airspec] def addLocalTestDef(specDef: AirSpecDef) {
+    synchronized {
+      _currentContext match {
+        case Nil =>
+          _localTestDefs = specDef :: _localTestDefs
+        case ctx :: _ =>
+          ctx.runSingle(specDef)
+      }
+    }
+  }
+
+  /**
+    * Register a new test. If a custom Design is provided, it will be used to populate the arguments of the test body method.
+    */
+  protected def test(name: String, design: Design = Design.empty): AirSpecTestBuilder =
+    new AirSpecTestBuilder(this, name, design)
+
   /*
    * Design note: Ideally we should list test methods just by using the name of classes implementing AirSpecSpi without
    * instantiating test instances. However, this was impossible in Scala.js, which has only limited reflection support.
@@ -40,8 +122,8 @@ private[airspec] trait AirSpecSpi {
    * If we don't need to support Scala.js, we will just use RuntimeSurface to get a list of test methods.
    */
   protected var _methodSurfaces: Seq[MethodSurface] = compat.methodSurfacesOf(this.getClass)
-  private[airspec] def testMethods: Seq[MethodSurface] = {
-    AirSpecSpi.collectTestMethods(_methodSurfaces)
+  private[airspec] def testDefinitions: Seq[AirSpecDef] = {
+    AirSpecSpi.collectTestMethods(_methodSurfaces) ++ _localTestDefs.reverse
   }
 
   private[airspec] var specName: String = {
@@ -93,8 +175,8 @@ private[airspec] trait AirSpecSpi {
 }
 
 private[airspec] object AirSpecSpi {
-  private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[MethodSurface] = {
-    methodSurfaces.filter(m => m.isPublic)
+  private[airspec] def collectTestMethods(methodSurfaces: Seq[MethodSurface]): Seq[AirSpecDef] = {
+    methodSurfaces.filter(m => m.isPublic).map(x => MethodAirSpecDef(x))
   }
 
   /**

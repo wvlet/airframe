@@ -15,6 +15,7 @@ package wvlet.airframe.config
 
 import wvlet.airspec.AirSpec
 import wvlet.log.io.Resource
+import java.io.FileNotFoundException
 
 case class MyConfig(id: Int, fullName: String, port: Int = 8989)
 case class DB(accountId: Int, database: String, table: Seq[String])
@@ -23,16 +24,18 @@ case class DB(accountId: Int, database: String, table: Seq[String])
   *
   */
 class YamlReaderTest extends AirSpec {
-  val yml = Resource.find("myconfig.yml").map(_.getPath).getOrElse {
-    fail("myconfig.yml is not found")
-  }
-  val listYml = Resource.find("list.yml").map(_.getPath).getOrElse {
-    fail("list.yml is not found")
+
+  private def findFile(name: String): String = {
+    Resource.find(name) match {
+      case Some(x) => x.getPath
+      case None =>
+        throw new FileNotFoundException(s"${name} is not found")
+    }
   }
 
-  val classesYml = Resource.find("classes.yml").map(_.getPath).getOrElse {
-    fail("classes.yml is not found")
-  }
+  val yml: String        = findFile("myconfig.yml")
+  val listYml: String    = findFile("list.yml")
+  val classesYml: String = findFile("classes.yml")
 
   def `parse yaml file`: Unit = {
     val m = YamlReader.loadYaml(yml)

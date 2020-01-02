@@ -15,7 +15,7 @@ package wvlet.airspec.spi
 
 import wvlet.airframe.Session
 import wvlet.airframe.surface.{MethodSurface, Surface}
-import wvlet.airspec.{AirSpecBase, AirSpecMacros, AirSpecSpi}
+import wvlet.airspec.{AirSpecBase, AirSpecDef, AirSpecMacros, AirSpecSpi}
 
 import scala.language.experimental.macros
 
@@ -28,6 +28,8 @@ import scala.language.experimental.macros
   *
   */
 trait AirSpecContext {
+  def hasChildTask: Boolean
+
   def currentSpec: AirSpecSpi
   def parentContext: Option[AirSpecContext]
 
@@ -69,7 +71,8 @@ trait AirSpecContext {
     */
   def run[A <: AirSpecBase](spec: A): A = macro AirSpecMacros.runSpecImpl[A]
 
-  protected def runInternal(spec: AirSpecSpi, testMethods: Seq[MethodSurface]): AirSpecSpi
+  protected[airspec] def runInternal(spec: AirSpecSpi, testDefs: Seq[AirSpecDef]): AirSpecSpi
+  protected[airspec] def runSingle(testDef: AirSpecDef): Unit
   protected def newSpec(specSurface: Surface): AirSpecSpi
 }
 
