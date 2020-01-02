@@ -47,7 +47,8 @@ private[airspec] case class MethodAirSpecDef(methodSurface: MethodSurface) exten
   }
 }
 
-private[airspec] case class AirSpecDefF0[R](name: String, design: Design, returnType: Surface, body: LazyF0[R]) extends AirSpecDef {
+private[airspec] case class AirSpecDefF0[R](name: String, design: Design, returnType: Surface, body: LazyF0[R])
+    extends AirSpecDef {
   override def run(context: AirSpecContext, session: Session): Any = {
     body.eval
   }

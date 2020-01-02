@@ -140,7 +140,14 @@ private[airspec] object AirSpecMacros {
     }"""
   }
 
-  def test5Impl[D1: c.WeakTypeTag, D2: c.WeakTypeTag, D3: c.WeakTypeTag, D4: c.WeakTypeTag, D5: c.WeakTypeTag, R: c.WeakTypeTag](
+  def test5Impl[
+      D1: c.WeakTypeTag,
+      D2: c.WeakTypeTag,
+      D3: c.WeakTypeTag,
+      D4: c.WeakTypeTag,
+      D5: c.WeakTypeTag,
+      R: c.WeakTypeTag
+  ](
       c: sm.Context
   )(body: c.Tree): c.Tree = {
     import c.universe._
