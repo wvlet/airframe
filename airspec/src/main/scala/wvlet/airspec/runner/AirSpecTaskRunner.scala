@@ -151,14 +151,15 @@ private[airspec] class AirSpecTaskRunner(
       design: Design
   ): Unit = {
 
+    val ctxName = parentContext.map(ctx => s"${ctx.fullSpecName}.${ctx.testName}").getOrElse("N/A")
+
     val indentLevel = parentContext.map(_.indentLevel + 1).getOrElse(0)
     if (isLocal) {
       parentContext.map { ctx =>
-        val name = s"${ctx.fullSpecName}.${ctx.testName}"
         synchronized {
-          if (!displayedContext.contains(name)) {
+          if (!displayedContext.contains(ctxName)) {
             taskLogger.logTestName(ctx.testName, indentLevel = (indentLevel - 1).max(0))
-            displayedContext += name
+            displayedContext += ctxName
           }
         }
       }
