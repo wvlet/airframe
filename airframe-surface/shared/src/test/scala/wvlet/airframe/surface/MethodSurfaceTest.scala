@@ -68,21 +68,9 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(arg2.isProtected == false)
     assert(arg2.isStatic == false)
 
-    val pro = m.find(_.name == "helloProtected").get
-    assert(pro.isAbstract == false)
-    assert(pro.isProtected == true)
-    assert(pro.isPublic == false)
-    assert(pro.isPrivate == false)
-    assert(pro.isFinal == false)
-    assert(pro.isStatic == false)
-
-    val pri = m.find(_.name == "helloPrivate").get
-    assert(pri.isAbstract == false)
-    assert(pri.isProtected == false)
-    assert(pri.isPublic == false)
-    assert(pri.isPrivate == true)
-    assert(pri.isFinal == false)
-    assert(pri.isStatic == false)
+    // Hide protected/private methods
+    m.find(_.name == "helloProtected") shouldBe empty
+    m.find(_.name == "helloPrivate") shouldBe empty
 
     val f = m.find(_.name == "helloFinal").get
     assert(f.isAbstract == false)
