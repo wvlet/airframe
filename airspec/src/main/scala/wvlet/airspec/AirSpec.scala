@@ -14,9 +14,9 @@
 package wvlet.airspec
 
 import wvlet.airframe.Design
-import wvlet.airspec.spi.{Asserts, RichAsserts, AirSpecContext}
 import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec
+import wvlet.airspec.spi.{AirSpecContext, Asserts, RichAsserts}
 
 import scala.language.experimental.macros
 import scala.reflect.macros.{blackbox => sm}
@@ -31,8 +31,7 @@ trait AirSpec extends AirSpecBase with Asserts with RichAsserts
   */
 trait AirSpecBase extends AirSpecSpi with PlatformAirSpec
 
-private[airspec] class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design)
-    extends wvlet.log.LogSupport {
+class AirSpecTestBuilder(val spec: AirSpecSpi, val name: String, val design: Design) extends wvlet.log.LogSupport {
   def apply[R](body: => R): Unit = macro AirSpecMacros.test0Impl[R]
   def apply[D1, R](body: D1 => R): Unit = macro AirSpecMacros.test1Impl[D1, R]
   def apply[D1, D2, R](body: (D1, D2) => R): Unit = macro AirSpecMacros.test2Impl[D1, D2, R]

@@ -17,7 +17,7 @@ package wvlet.airframe.surface
 import java.{lang => jl}
 
 import scala.reflect.ClassTag
-import scala.util.Try
+import scala.util.{Try, Success, Failure}
 
 /**
   *
@@ -81,9 +81,15 @@ package object reflect {
     def annotations: Array[jl.annotation.Annotation] = {
       Try {
         val cl = m.owner.rawType
-        val mt = cl.getDeclaredMethod(m.name, m.args.map(_.surface.rawType): _*)
+        val mt = cl.getMethod(m.name, m.args.map(_.surface.rawType): _*)
         mt.getDeclaredAnnotations
-      }.getOrElse(Array.empty)
+      } match {
+        case Success(annot) =>
+          annot
+        case Failure(e) =>
+          //logger.warn(e)
+          Array.empty
+      }
     }
 
     def findAnnotationOf[T <: jl.annotation.Annotation: ClassTag]: Option[T] = {

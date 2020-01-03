@@ -14,12 +14,9 @@
 package wvlet.airspec.runner
 
 import sbt.testing._
-import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airframe.{Design, Session}
-import wvlet.airframe.surface.MethodSurface
-import wvlet.airspec.AirSpecDef
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
-import wvlet.airspec.spi.{AirSpecContext, AirSpecException, AirSpecFailureBase, MissingTestDependency}
+import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
 import wvlet.log.LogSupport
 
 import scala.util.{Failure, Success, Try}

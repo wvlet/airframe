@@ -17,6 +17,7 @@ fixtures
 .metals
 null
 .DS_Store
+*.log
 
 node_modules
 

@@ -15,6 +15,7 @@
 package wvlet.airframe.surface
 
 object MethodExamples {
+
   class A {
     def hello: String                    = "hello"
     def arg2(i: Int, b: Boolean): String = "arg2"
@@ -24,9 +25,22 @@ object MethodExamples {
     final def helloFinal: String         = "hello"
   }
   type MyA = A
+
+  trait P {
+    def helloParent: String = "parent"
+  }
+  class B extends P
+
+  import scala.reflect.ClassTag
+  trait G {
+    def generic[E: ClassTag](arg: String): E = {
+      new Throwable().asInstanceOf[E]
+    }
+  }
+  class C extends G
 }
 
-import MethodExamples._
+import wvlet.airframe.surface.MethodExamples._
 
 /**
   *
@@ -54,21 +68,9 @@ class MethodSurfaceTest extends SurfaceSpec {
     assert(arg2.isProtected == false)
     assert(arg2.isStatic == false)
 
-    val pro = m.find(_.name == "helloProtected").get
-    assert(pro.isAbstract == false)
-    assert(pro.isProtected == true)
-    assert(pro.isPublic == false)
-    assert(pro.isPrivate == false)
-    assert(pro.isFinal == false)
-    assert(pro.isStatic == false)
-
-    val pri = m.find(_.name == "helloPrivate").get
-    assert(pri.isAbstract == false)
-    assert(pri.isProtected == false)
-    assert(pri.isPublic == false)
-    assert(pri.isPrivate == true)
-    assert(pri.isFinal == false)
-    assert(pri.isStatic == false)
+    // Hide protected/private methods
+    m.find(_.name == "helloProtected") shouldBe empty
+    m.find(_.name == "helloPrivate") shouldBe empty
 
     val f = m.find(_.name == "helloFinal").get
     assert(f.isAbstract == false)
@@ -80,5 +82,15 @@ class MethodSurfaceTest extends SurfaceSpec {
 
     val m2 = Surface.methodsOf[MyA]
     debug(m2)
+  }
+
+  def `inherit parent methods`: Unit = {
+    val m = Surface.methodsOf[B]
+    m.find(_.name == "helloParent") shouldBe defined
+  }
+
+  def `support generic methods`: Unit = {
+    val m = Surface.methodsOf[C]
+    m.find(_.name == "generic") shouldBe defined
   }
 }

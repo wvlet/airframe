@@ -68,19 +68,26 @@ private[surface] object SurfaceMacros {
     }
 
     private def allMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members.sorted // Sort the members in the source code order
+      // Sort the members in the source code order
+      t.members.sorted
         .filter(x =>
-          x.isMethod &&
+          nonObject(x.owner) &&
+            x.isMethod &&
+            x.isPublic &&
             !x.isConstructor &&
-            !x.isImplementationArtifact
-            && !x.isImplicit
-          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-            && !x.isSynthetic
+            !x.isImplementationArtifact &&
+            !x.isMacro &&
+            !x.isImplicit &&
+            !x.isAbstract &&
+            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+            !x.isSynthetic
         )
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
-          !x.isAccessor && !name.startsWith("$") && name != "<init>"
+          !x.isAccessor &&
+          !name.startsWith("$") &&
+          name != "<init>"
         }
     }
 
@@ -89,7 +96,11 @@ private[surface] object SurfaceMacros {
     }
 
     private def nonObject(x: c.Symbol): Boolean = {
-      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+      !x.isImplementationArtifact &&
+      !x.isSynthetic &&
+      //!x.isAbstract &&
+      x.fullName != "scala.Any" &&
+      x.fullName != "java.lang.Object"
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: c.Type): Boolean = {
@@ -128,25 +139,31 @@ private[surface] object SurfaceMacros {
         methodSeen += targetType
         val localMethods = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-            localMethodsOf(t.dealias)
+            localMethodsOf(t.dealias).toSeq.distinct
           case t @ RefinedType(List(_, baseType), decls) =>
-            localMethodsOf(baseType) ++ localMethodsOf(t)
+            (localMethodsOf(baseType) ++ localMethodsOf(t)).toSeq.distinct
           case _ => Seq.empty
         }
 
         val result = {
-          val list = for (m <- localMethods) yield {
-            val mod        = modifierBitMaskOf(m)
-            val owner      = surfaceOf(targetType)
-            val name       = m.name.decodedName.toString
-            val ret        = surfaceOf(m.returnType)
-            val methodArgs = methodArgsOf(targetType, m).flatten
-            val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
-            // Generate code for supporting ClassMethodSurface.call(instance, args)
-            val methodCaller = createMethodCaller(targetType, m, methodArgs)
-            q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+          val lst = IndexedSeq.newBuilder[c.Tree]
+          for (m <- localMethods) {
+            try {
+              val mod        = modifierBitMaskOf(m)
+              val owner      = surfaceOf(targetType)
+              val name       = m.name.decodedName.toString
+              val ret        = surfaceOf(m.returnType)
+              val methodArgs = methodArgsOf(targetType, m).flatten
+              val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              // Generate code for supporting ClassMethodSurface.call(instance, args)
+              val methodCaller = createMethodCaller(targetType, m, methodArgs)
+              lst += q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+            } catch {
+              case e: Throwable =>
+                c.warning(c.enclosingPosition, s"${e.getMessage}")
+            }
           }
-          q"IndexedSeq(..$list)"
+          q"IndexedSeq(..${lst.result()})"
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
@@ -356,7 +373,14 @@ private[surface] object SurfaceMacros {
           Some(comp)
       }
 
-      val ret = for (params <- constructor.paramLists) yield {
+      // Exclude implicit ClassTag arguments
+      val filteredParamLists = constructor.paramLists.map { params =>
+        params.filter { x =>
+          !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[")
+        }
+      }
+
+      val ret = for (params <- filteredParamLists) yield {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index            = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
@@ -446,7 +470,8 @@ private[surface] object SurfaceMacros {
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (targetType.typeSymbol.isAbstract || isAbstract(targetType) || isPathDependentType(targetType)) {
+      val ts = targetType.typeSymbol
+      if (ts.isAbstract || ts.isModuleClass || isAbstract(targetType) || isPathDependentType(targetType)) {
         None
       } else {
         findPrimaryConstructorOf(targetType).map { primaryConstructor =>

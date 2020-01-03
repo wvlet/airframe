@@ -183,7 +183,7 @@ class SurfaceTest extends SurfaceSpec {
 
   def `resolve generic abstract type`: Unit = {
     val d = check(Surface.of[D[_]], "D[_]")
-    assert(d.typeArgs.length == 1)
+    d.typeArgs.length shouldBe 1
     check(Surface.of[Map[_, _]], "Map[_,_]")
   }
 

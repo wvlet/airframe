@@ -66,16 +66,16 @@ trait Asserts { this: AirSpecSpi =>
   }
 
   protected def intercept[E <: Throwable: ClassTag](block: => Unit)(implicit code: SourceCode): E = {
-    val E = implicitly[ClassTag[E]]
+    val tpe = implicitly[ClassTag[E]]
 
     try {
       block
-      val name = E.runtimeClass.getName
+      val name = tpe.runtimeClass.getName
       throw InterceptException(s"Expected a ${name} to be thrown", code)
     } catch {
       case ex: InterceptException =>
         throw new AssertionFailure(ex.message, code)
-      case ex: Throwable if E.runtimeClass.isInstance(ex) =>
+      case ex: Throwable if tpe.runtimeClass.isInstance(ex) =>
         ex.asInstanceOf[E]
     }
   }

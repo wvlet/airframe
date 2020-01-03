@@ -13,14 +13,15 @@
  */
 package wvlet.airspec.runner
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import wvlet.airframe.Session
-import wvlet.airframe.surface.{MethodSurface, Surface}
-import wvlet.airspec.{AirSpecSpi, AirSpecDef}
+import wvlet.airframe.surface.Surface
 import wvlet.airspec.spi.AirSpecContext
+import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.log.LogSupport
 
 import scala.language.experimental.macros
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
   *

@@ -16,8 +16,8 @@ package wvlet.airframe.surface.reflect
 import java.lang.reflect.{Constructor, InvocationTargetException}
 import java.util.concurrent.ConcurrentHashMap
 
-import wvlet.log.LogSupport
 import wvlet.airframe.surface._
+import wvlet.log.LogSupport
 
 import scala.jdk.CollectionConverters._
 import scala.reflect.runtime.{universe => ru}
@@ -165,24 +165,38 @@ object ReflectSurfaceFactory extends LogSupport {
 
   private type SurfaceMatcher = PartialFunction[ru.Type, Surface]
 
+//  private def printMethod(x: ru.Symbol): Unit = {
+//    val owner = x.owner
+//    info(
+//      s"${x}\t: public: ${x.isPublic}, abstract: ${x.isAbstract}, owner: ${owner}, owner.abstract ${owner.isAbstract}".stripMargin
+//    )
+//  }
+
   private class SurfaceFinder extends LogSupport {
     private val seen       = scala.collection.mutable.Set[ru.Type]()
     private val methodSeen = scala.collection.mutable.Set[ru.Type]()
 
     private def allMethodsOf(t: ru.Type): Iterable[MethodSymbol] = {
-      t.members.sorted // Sort the members in the source code order
+      // Sort the members in the source code order
+      t.members.sorted
         .filter(x =>
-          x.isMethod &&
+          nonObject(x.owner) &&
+            x.isMethod &&
+            x.isPublic &&
             !x.isConstructor &&
-            !x.isImplementationArtifact
-            && !x.isImplicit
-          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-            && !x.isSynthetic
+            !x.isImplementationArtifact &&
+            !x.isMacro &&
+            !x.isImplicit &&
+            !x.isAbstract &&
+            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+            !x.isSynthetic
         )
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
-          !x.isAccessor && !name.startsWith("$") && name != "<init>"
+          !x.isAccessor &&
+          !name.startsWith("$") &&
+          name != "<init>"
         }
     }
 
@@ -192,7 +206,11 @@ object ReflectSurfaceFactory extends LogSupport {
     }
 
     private def nonObject(x: ru.Symbol): Boolean = {
-      !x.isImplementationArtifact && !x.isSynthetic && !x.isAbstract && x.fullName != "scala.Any" && x.fullName != "java.lang.Object"
+      !x.isImplementationArtifact &&
+      !x.isSynthetic &&
+      //!x.isAbstract &&
+      x.fullName != "scala.Any" &&
+      x.fullName != "java.lang.Object"
     }
 
     private def isOwnedByTargetClass(m: MethodSymbol, t: ru.Type): Boolean = {
@@ -210,20 +228,27 @@ object ReflectSurfaceFactory extends LogSupport {
         val methodSurfaces = {
           val localMethods = targetType match {
             case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-              localMethodsOf(t.dealias)
+              localMethodsOf(t.dealias).toSeq.distinct
             case t @ RefinedType(List(_, baseType), decls: MemberScope) =>
-              localMethodsOf(baseType) ++ localMethodsOf(t)
+              (localMethodsOf(baseType) ++ localMethodsOf(t)).toSeq.distinct
             case _ => Seq.empty
           }
-          val list = for (m <- localMethods) yield {
-            val mod   = modifierBitMaskOf(m)
-            val owner = surfaceOf(targetType)
-            val name  = m.name.decodedName.toString
-            val ret   = surfaceOf(m.returnType)
-            val args  = methodParametersOf(targetType, m)
-            ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
+
+          val lst = IndexedSeq.newBuilder[MethodSurface]
+          for (m <- localMethods) {
+            try {
+              val mod   = modifierBitMaskOf(m)
+              val owner = surfaceOf(targetType)
+              val name  = m.name.decodedName.toString
+              val ret   = surfaceOf(m.returnType)
+              val args  = methodParametersOf(targetType, m)
+              lst += ReflectMethodSurface(mod, owner, name, ret, args.toIndexedSeq)
+            } catch {
+              case e: Throwable =>
+                warn(s"Failed to create MethodSurface for ${m}", e)
+            }
           }
-          list.toIndexedSeq
+          lst.result()
         }
         methodSurfaceCache += name -> methodSurfaces
         methodSurfaces
@@ -291,8 +316,8 @@ object ReflectSurfaceFactory extends LogSupport {
         tupleFactory orElse
         javaUtilFactory orElse
         enumFactory orElse
-        genericSurfaceWithConstructorFactory orElse
         existentialTypeFactory orElse
+        genericSurfaceWithConstructorFactory orElse
         genericSurfaceFactory
 
     private def primitiveTypeFactory: SurfaceMatcher = {
@@ -444,8 +469,15 @@ object ReflectSurfaceFactory extends LogSupport {
       }
 
       for (params <- constructor.paramLists) yield {
-        val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
-        var index            = 1
+        val concreteArgTypes = params.map { p =>
+          try {
+            p.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs)
+          } catch {
+            case e: Throwable =>
+              p.typeSignature
+          }
+        }
+        var index = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
           index += 1
           MethodArg(p, t)
