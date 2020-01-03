@@ -14,9 +14,10 @@
 package wvlet.airframe.http.router
 
 import wvlet.airframe.Session
-import Automaton.{DFA, NextNode}
 import wvlet.airframe.http._
+import wvlet.airframe.http.router.Automaton.{DFA, NextNode}
 import wvlet.log.LogSupport
+
 import scala.language.higherKinds
 
 case class RouteMatch(route: Route, params: Map[String, String]) {
@@ -87,29 +88,39 @@ object RouteMatcher extends LogSupport {
 
       // Traverse the path components and transit the DFA state
       while (toContinue && pathIndex < pc.length) {
-        val token = pc(pathIndex)
-        pathIndex += 1
-        dfa.nextNode(currentState, token) match {
-          case Some(NextNode(actions, nextStateId)) =>
-            trace(s"path index:${pathIndex}/${pc.length}, transition: ${currentState} -> ${token} -> ${nextStateId}")
-            currentState = nextStateId
-            // Update variable bindings here
-            actions.foreach { action =>
-              params = action.updateMatch(params, token)
-            }
 
-            // Try to find a match at the last path component
-            if (pathIndex == pc.length) {
-              actions.find(_.isTerminal).map { matchedAction =>
-                foundRoute = matchedAction.route
-                // Continue the matching for PathSequenceMapping
-                toContinue = false
+        def loop(token: String) {
+          pathIndex += 1
+          dfa.nextNode(currentState, token) match {
+            case Some(NextNode(actions, nextStateId)) =>
+              trace(s"path index:${pathIndex}/${pc.length}, transition: ${currentState} -> ${token} -> ${nextStateId}")
+              currentState = nextStateId
+              // Update variable bindings here
+              actions.foreach { action =>
+                params = action.updateMatch(params, token)
               }
-            }
-          case None =>
-            // Dead-end in the DFA
-            toContinue = false
+
+              // Try to find a match at the last path component
+              if (pathIndex >= pc.length) {
+                toContinue = false
+                actions
+                  .find(_.isTerminal)
+                  .map { matchedAction =>
+                    foundRoute = matchedAction.route
+                  }
+                  .getOrElse {
+                    // Try empty token shift
+                    loop("")
+                  }
+              }
+            case None =>
+              // Dead-end in the DFA
+              toContinue = false
+          }
         }
+
+        val token = pc(pathIndex)
+        loop(token)
       }
 
       foundRoute.map { r =>
@@ -167,7 +178,7 @@ object RouteMatcher extends LogSupport {
   private val anyToken: String = "<*>"
 
   private[http] def buildPathDFA(routes: Seq[Route]): DFA[Set[PathMapping], String] = {
-    // Convert http path pattens (Route) to mapping operations (List[PathMapping])
+    // Convert http path patterns (Route) to mapping operations (List[PathMapping])
     def toPathMapping(r: Route, pathIndex: Int): List[PathMapping] = {
       if (pathIndex >= r.pathComponents.length) {
         Nil
@@ -175,7 +186,8 @@ object RouteMatcher extends LogSupport {
         val isTerminal = pathIndex == r.pathComponents.length - 1
         r.pathComponents(pathIndex) match {
           case x if x.startsWith(":") =>
-            VariableMapping(pathIndex, x.substring(1), if (isTerminal) Some(r) else None) :: toPathMapping(
+            val varName = x.substring(1)
+            VariableMapping(pathIndex, varName, if (isTerminal) Some(r) else None) :: toPathMapping(
               r,
               pathIndex + 1
             )
@@ -183,7 +195,8 @@ object RouteMatcher extends LogSupport {
             if (!isTerminal) {
               throw new IllegalArgumentException(s"${r.path} cannot have '*' in the middle of the path")
             }
-            PathSequenceMapping(pathIndex, x.substring(1), Some(r)) :: toPathMapping(r, pathIndex + 1)
+            val varName = x.substring(1)
+            PathSequenceMapping(pathIndex, varName, Some(r)) :: toPathMapping(r, pathIndex + 1)
           case x =>
             ConstantPathMapping(pathIndex, x, if (isTerminal) Some(r) else None) :: toPathMapping(r, pathIndex + 1)
         }
