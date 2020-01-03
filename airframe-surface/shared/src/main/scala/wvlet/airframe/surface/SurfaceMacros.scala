@@ -166,8 +166,6 @@ private[surface] object SurfaceMacros {
           q"IndexedSeq(..${lst.result()})"
         }
 
-        //println(s"========\n${result}")
-
         val fullName = fullTypeNameOf(targetType.dealias)
         val expr     = q"wvlet.airframe.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
         methodMemo += targetType -> expr
@@ -530,9 +528,6 @@ private[surface] object SurfaceMacros {
     private val existentialTypeFactory: SurfaceFactory = {
       case t @ ExistentialType(quantified, underlying) =>
         surfaceOf(underlying)
-      case t @ TypeRef(NoPrefix, symbol, args) if symbol.isAbstract =>
-        val name = symbol.asType.name.decodedName.toString
-        q"wvlet.airframe.surface.Alias(${name}, ${name}, wvlet.airframe.surface.ExistentialType)"
     }
 
     private def newGenericSurfaceOf(t: c.Type): c.Tree = {
@@ -571,8 +566,8 @@ private[surface] object SurfaceMacros {
         tupleFactory orElse
         javaUtilFactory orElse
         enumFactory orElse
-        existentialTypeFactory orElse
         genericSurfaceWithConstructorFactory orElse
+        existentialTypeFactory orElse
         genericSurfaceFactory
 
     def surfaceOf(t: c.Type): c.Tree = {
