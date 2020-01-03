@@ -1,7 +1,6 @@
 package wvlet.airframe.http
 
 import wvlet.airspec._
-import wvlet.airframe.surface.Surface
 
 object InheritedEndpointTest extends AirSpec {
 

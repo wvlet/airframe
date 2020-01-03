@@ -68,19 +68,25 @@ private[surface] object SurfaceMacros {
     }
 
     private def allMethodsOf(t: c.Type): Iterable[MethodSymbol] = {
-      t.members.sorted // Sort the members in the source code order
+      // Sort the members in the source code order
+      t.members.sorted
         .filter(x =>
-          x.isMethod &&
+          nonObject(x.owner) &&
+            x.isMethod &&
             !x.isConstructor &&
-            !x.isImplementationArtifact
-            && !x.isImplicit
-          // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
-            && !x.isSynthetic
+            !x.isImplementationArtifact &&
+            !x.isMacro &&
+            !x.isImplicit &&
+            !x.isAbstract &&
+            // synthetic is used for functions returning default values of method arguments (e.g., ping$default$1)
+            !x.isSynthetic
         )
         .map(_.asMethod)
         .filter { x =>
           val name = x.name.decodedName.toString
-          !x.isAccessor && !name.startsWith("$") && name != "<init>"
+          !x.isAccessor &&
+          !name.startsWith("$") &&
+          name != "<init>"
         }
     }
 
@@ -139,18 +145,24 @@ private[surface] object SurfaceMacros {
         }
 
         val result = {
-          val list = for (m <- localMethods) yield {
-            val mod        = modifierBitMaskOf(m)
-            val owner      = surfaceOf(targetType)
-            val name       = m.name.decodedName.toString
-            val ret        = surfaceOf(m.returnType)
-            val methodArgs = methodArgsOf(targetType, m).flatten
-            val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
-            // Generate code for supporting ClassMethodSurface.call(instance, args)
-            val methodCaller = createMethodCaller(targetType, m, methodArgs)
-            q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+          val lst = IndexedSeq.newBuilder[c.Tree]
+          for (m <- localMethods) {
+            try {
+              val mod        = modifierBitMaskOf(m)
+              val owner      = surfaceOf(targetType)
+              val name       = m.name.decodedName.toString
+              val ret        = surfaceOf(m.returnType)
+              val methodArgs = methodArgsOf(targetType, m).flatten
+              val args       = methodParametersOf(m.owner.typeSignature, m, methodArgs)
+              // Generate code for supporting ClassMethodSurface.call(instance, args)
+              val methodCaller = createMethodCaller(targetType, m, methodArgs)
+              lst += q"wvlet.airframe.surface.ClassMethodSurface(${mod}, ${owner}, ${name}, ${ret}, ${args}.toIndexedSeq, ${methodCaller})"
+            } catch {
+              case e: Throwable =>
+                c.warning(c.enclosingPosition, s"${e.getMessage}")
+            }
           }
-          q"IndexedSeq(..$list)"
+          q"IndexedSeq(..${lst.result().distinct})"
         }
 
         val fullName = fullTypeNameOf(targetType.dealias)
