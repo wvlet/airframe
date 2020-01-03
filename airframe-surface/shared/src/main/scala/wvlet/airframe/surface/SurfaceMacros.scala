@@ -73,6 +73,7 @@ private[surface] object SurfaceMacros {
         .filter(x =>
           nonObject(x.owner) &&
             x.isMethod &&
+            x.isPublic &&
             !x.isConstructor &&
             !x.isImplementationArtifact &&
             !x.isMacro &&
@@ -138,9 +139,9 @@ private[surface] object SurfaceMacros {
         methodSeen += targetType
         val localMethods = targetType match {
           case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-            localMethodsOf(t.dealias)
+            localMethodsOf(t.dealias).toSeq.distinct
           case t @ RefinedType(List(_, baseType), decls) =>
-            localMethodsOf(baseType) ++ localMethodsOf(t)
+            (localMethodsOf(baseType) ++ localMethodsOf(t)).toSeq.distinct
           case _ => Seq.empty
         }
 
@@ -162,8 +163,10 @@ private[surface] object SurfaceMacros {
                 c.warning(c.enclosingPosition, s"${e.getMessage}")
             }
           }
-          q"IndexedSeq(..${lst.result().distinct})"
+          q"IndexedSeq(..${lst.result()})"
         }
+
+        //println(s"========\n${result}")
 
         val fullName = fullTypeNameOf(targetType.dealias)
         val expr     = q"wvlet.airframe.surface.methodSurfaceCache.getOrElseUpdate(${fullName}, ${result})"
@@ -372,7 +375,14 @@ private[surface] object SurfaceMacros {
           Some(comp)
       }
 
-      val ret = for (params <- constructor.paramLists) yield {
+      // Exclude implicit ClassTag arguments
+      val filteredParamLists = constructor.paramLists.map { params =>
+        params.filter { x =>
+          !x.typeSignature.toString.startsWith("scala.reflect.ClassTag[")
+        }
+      }
+
+      val ret = for (params <- filteredParamLists) yield {
         val concreteArgTypes = params.map(_.typeSignature.substituteTypes(classTypeParams, targetType.typeArgs))
         var index            = 1
         for ((p, t) <- params.zip(concreteArgTypes)) yield {
@@ -462,7 +472,8 @@ private[surface] object SurfaceMacros {
     }
 
     def createObjectFactoryOf(targetType: c.Type): Option[c.Tree] = {
-      if (targetType.typeSymbol.isAbstract || isAbstract(targetType) || isPathDependentType(targetType)) {
+      val ts = targetType.typeSymbol
+      if (ts.isAbstract || ts.isModuleClass || isAbstract(targetType) || isPathDependentType(targetType)) {
         None
       } else {
         findPrimaryConstructorOf(targetType).map { primaryConstructor =>
@@ -519,6 +530,9 @@ private[surface] object SurfaceMacros {
     private val existentialTypeFactory: SurfaceFactory = {
       case t @ ExistentialType(quantified, underlying) =>
         surfaceOf(underlying)
+      case t @ TypeRef(NoPrefix, symbol, args) if symbol.isAbstract =>
+        val name = symbol.asType.name.decodedName.toString
+        q"wvlet.airframe.surface.Alias(${name}, ${name}, wvlet.airframe.surface.ExistentialType)"
     }
 
     private def newGenericSurfaceOf(t: c.Type): c.Tree = {
@@ -557,8 +571,8 @@ private[surface] object SurfaceMacros {
         tupleFactory orElse
         javaUtilFactory orElse
         enumFactory orElse
-        genericSurfaceWithConstructorFactory orElse
         existentialTypeFactory orElse
+        genericSurfaceWithConstructorFactory orElse
         genericSurfaceFactory
 
     def surfaceOf(t: c.Type): c.Tree = {

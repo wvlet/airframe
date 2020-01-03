@@ -79,8 +79,8 @@ trait RichAsserts extends LogSupport { this: AirSpecSpi =>
     override def flip: OptionTarget = DefinedTarget
   }
 
-  protected def defined = DefinedTarget
-  protected def empty   = EmptyTarget
+  protected def defined: OptionTarget = DefinedTarget
+  protected def empty: OptionTarget   = EmptyTarget
 
   implicit protected class ShouldBe(val value: Any) {
     protected def matchFailure(expected: Any, code: SourceCode): AssertionFailure = {

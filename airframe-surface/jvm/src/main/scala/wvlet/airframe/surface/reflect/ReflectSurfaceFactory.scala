@@ -182,6 +182,7 @@ object ReflectSurfaceFactory extends LogSupport {
         .filter(x =>
           nonObject(x.owner) &&
             x.isMethod &&
+            x.isPublic &&
             !x.isConstructor &&
             !x.isImplementationArtifact &&
             !x.isMacro &&
@@ -227,9 +228,9 @@ object ReflectSurfaceFactory extends LogSupport {
         val methodSurfaces = {
           val localMethods = targetType match {
             case t @ TypeRef(prefix, typeSymbol, typeArgs) =>
-              localMethodsOf(t.dealias)
+              localMethodsOf(t.dealias).toSeq.distinct
             case t @ RefinedType(List(_, baseType), decls: MemberScope) =>
-              localMethodsOf(baseType) ++ localMethodsOf(t)
+              (localMethodsOf(baseType) ++ localMethodsOf(t)).toSeq.distinct
             case _ => Seq.empty
           }
 
@@ -247,7 +248,7 @@ object ReflectSurfaceFactory extends LogSupport {
                 warn(s"Failed to create MethodSurface for ${m}", e)
             }
           }
-          lst.result().distinct
+          lst.result()
         }
         methodSurfaceCache += name -> methodSurfaces
         methodSurfaces
@@ -315,8 +316,8 @@ object ReflectSurfaceFactory extends LogSupport {
         tupleFactory orElse
         javaUtilFactory orElse
         enumFactory orElse
-        genericSurfaceWithConstructorFactory orElse
         existentialTypeFactory orElse
+        genericSurfaceWithConstructorFactory orElse
         genericSurfaceFactory
 
     private def primitiveTypeFactory: SurfaceMatcher = {

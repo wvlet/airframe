@@ -33,14 +33,14 @@ object MethodExamples {
 
   import scala.reflect.ClassTag
   trait G {
-    def generic[E <: Throwable: ClassTag](arg: String): E = {
+    def generic[E: ClassTag](arg: String): E = {
       new Throwable().asInstanceOf[E]
     }
   }
-  trait C extends G
+  class C extends G
 }
 
-import MethodExamples._
+import wvlet.airframe.surface.MethodExamples._
 
 /**
   *

@@ -26,6 +26,7 @@ class ContextTest extends AirSpec {
   trait TestFixture extends AirSpec {
     var callCountA = 0
     var callCountB = 0
+
     def testA(context: AirSpecContext): Unit = {
       callCountA += 1
       context.testName shouldBe "testA"
@@ -34,6 +35,7 @@ class ContextTest extends AirSpec {
       callCountB += 1
       context.testName shouldBe "testB"
     }
+
     def testFixtureName(context: AirSpecContext): Unit = {
       if (isScalaJS) {
         pendingUntil("Getting class names in Scala.js is unstable")
