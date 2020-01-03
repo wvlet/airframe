@@ -57,6 +57,22 @@ s.objectFactory.map{ f =>
 
 ```
 
+## Surface.methodsOf[X]
+
+Extract the public method definitions of a given class:
+
+```scala
+class A {
+  def hello(name:String): String = s"hello ${name}"
+}
+
+val methods = Surface.methodsOf[A]
+val h = methods.head
+h.name // "hello"
+h.returnType // Surface.of[String]
+h.args(0).surface // Surface.of[String]
+```
+
 ### Type alias
 
 ```scala
