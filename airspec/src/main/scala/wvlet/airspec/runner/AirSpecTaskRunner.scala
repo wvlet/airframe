@@ -15,11 +15,13 @@ package wvlet.airspec.runner
 
 import sbt.testing._
 import wvlet.airframe.{Design, Session}
+import wvlet.airspec.{AirSpecDef, AirSpecSpi}
 import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
 import wvlet.log.LogSupport
 
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -216,6 +218,115 @@ private[airspec] class AirSpecTaskRunner(
     val e = AirSpecEvent(taskDef, m.name, status, throwableOpt, durationNanos)
     taskLogger.logEvent(e, indentLevel = indentLevel, showTestName = !hadChildTask)
     eventHandler.handle(e)
+  }
+
+}
+
+private[airspec] object AirSpecTaskRunner {
+
+  private implicit val ec = scala.concurrent.ExecutionContext.Implicits.global
+
+//  def wrap[In, Resource, Out](
+//      f: Future[In],
+//      init: In => Resource,
+//      process: Resource => Out,
+//      after: Resource => Unit
+//  ): Future[Out] = {
+//    f.map { in =>
+//        init(in)
+//      }
+//      .map { resource =>
+//        process(resource)
+//      }
+//      .map { out =>
+//        after
+//        out
+//      }
+//      .recover {
+//        case NonFatal(e) =>
+//          after
+//          Future.failed(e)
+//      }
+//  }
+
+
+
+
+  def runSingle(
+      context: Option[AirSpecContext],
+      m: AirSpecDef,
+      spec: AirSpecSpi,
+      session: Session,
+      design: Design
+  ): Future[Any] = {
+
+    Future(spec.callBefore)
+      .map { u =>
+        // Configure the test-local design
+        val childDesign = design + m.design
+        val startTimeNanos = System.nanoTime()
+        var hadChildTask = false
+
+        // Create a test-method local child session
+        val childSession = session.newChildSession(childDesign)
+
+        val childContext = new AirSpecContextImpl(
+          this,
+          parentContext = context,
+          currentSpec = spec,
+          testName = m.name,
+          currentSession = childSession
+        )
+        spec.pushContext(childContext)
+        childContext
+      }
+      .flatMap { childContext =>
+        m.run(childContext, childContext.currentSession) match {
+          case f: scala.concurrent.Future[_] =>
+            f
+          case result =>
+            Future.successful(result)
+        }
+      }
+      .map { result =>
+        spec.callAfter
+        spec.popContext
+      }
+
+
+
+
+        val result = session.withChildSession(childDesign) { childSession =>
+          val childContext =
+            new AirSpecContextImpl(
+              this,
+              parentContext = context,
+              currentSpec = spec,
+              testName = m.name,
+              currentSession = childSession
+            )
+          spec.pushContext(childContext)
+          // Wrap the execution with Try[_] to report the test result to the event handler
+          Try {
+            implicit val ec = scala.concurrent.ExecutionContext.global
+
+            try {
+              m.run(context, childSession) match {
+                case f: scala.concurrent.Future[_] =>
+                  Compat.await(f)
+                case _ =>
+              }
+            } finally {
+              spec.callAfter
+              spec.popContext
+              // If the test method had any child task, update the flag
+              hadChildTask |= context.hasChildTask
+            }
+          }
+        }
+
+      }
+
   }
 
 }

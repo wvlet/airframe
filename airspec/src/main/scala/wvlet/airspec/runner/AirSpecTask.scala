@@ -52,8 +52,7 @@ private[airspec] class AirSpecTask(
     *
     * This is to support JavaScripts asynchronous nature.
     *
-    * When running in a JavaScript environment, only this method will be
-    * called.
+    * When running in a JavaScript environment, only this method will be called.
     */
   def execute(
       eventHandler: EventHandler,
