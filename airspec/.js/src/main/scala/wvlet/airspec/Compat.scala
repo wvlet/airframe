@@ -30,9 +30,10 @@ private[airspec] object Compat extends CompatApi with LogSupport {
 
   private[airspec] def await[A](f: Future[A]): A = {
     f.value match {
-      case Some(v) => v.get
+      case Some(x) =>
+        x.get
       case _ =>
-        throw new IllegalStateException("Scala.js cannot support async test")
+        throw new IllegalStateException("Scala.js cannot support Await.result")
     }
   }
 
