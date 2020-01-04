@@ -19,6 +19,7 @@ import wvlet.airspec.runner.AirSpecRunner.AirSpecConfig
 import wvlet.airspec.spi.{AirSpecContext, AirSpecException}
 import wvlet.log.LogSupport
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -185,12 +186,17 @@ private[airspec] class AirSpecTaskRunner(
       spec.pushContext(context)
       // Wrap the execution with Try[_] to report the test result to the event handler
       Try {
+        implicit val ec = scala.concurrent.ExecutionContext.global
+
         try {
-          m.run(context, childSession)
+          m.run(context, childSession) match {
+            case f: scala.concurrent.Future[_] =>
+              Compat.await(f)
+            case _ =>
+          }
         } finally {
           spec.callAfter
           spec.popContext
-
           // If the test method had any child task, update the flag
           hadChildTask |= context.hasChildTask
         }

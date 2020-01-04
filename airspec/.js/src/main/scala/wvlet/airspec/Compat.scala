@@ -18,11 +18,24 @@ import wvlet.airframe.surface.MethodSurface
 import wvlet.log.LogFormatter.SourceCodeLogFormatter
 import wvlet.log.{ConsoleLogHandler, LogSupport, Logger}
 
+import scala.concurrent.Future
+
 /**
   *
   */
 private[airspec] object Compat extends CompatApi with LogSupport {
   override def isScalaJs = true
+
+  private implicit val defaultExecutionContext = scala.concurrent.ExecutionContext.global
+
+  private[airspec] def await[A](f: Future[A]): A = {
+    f.value match {
+      case Some(v) => v.get
+      case _ =>
+        throw new IllegalStateException("Scala.js cannot support async test")
+    }
+  }
+
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val clsOpt = Reflect.lookupLoadableModuleClass(fullyQualifiedName + "$", classLoader)
     clsOpt.map {

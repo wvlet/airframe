@@ -23,11 +23,19 @@ import scala.util.{Failure, Success, Try}
 import wvlet.airframe.surface.reflect.{ReflectSurfaceFactory, ReflectTypeUtil}
 import wvlet.airspec.spi.AirSpecException
 
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+
 /**
   *
   */
 private[airspec] object Compat extends CompatApi {
   override def isScalaJs = false
+
+  private[airspec] def await[A](f: Future[A]): A = {
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Await.result(f, Duration.Inf)
+  }
 
   private[airspec] def findCompanionObjectOf(fullyQualifiedName: String, classLoader: ClassLoader): Option[Any] = {
     val cls = classLoader.loadClass(fullyQualifiedName)

@@ -81,6 +81,7 @@ object AirSpecTestBuilder extends wvlet.log.LogSupport {
 }
 
 private[airspec] trait AirSpecSpi {
+
   private[airspec] var _currentContext: List[AirSpecContext] = List.empty
   private[airspec] def pushContext(ctx: AirSpecContext): Unit = {
     synchronized {
