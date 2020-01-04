@@ -12,7 +12,7 @@ addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALA_JS_VERSION)
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.0.0")
 
 // Documentation
-addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.1.0")
+addSbtPlugin("org.scalameta" % "sbt-mdoc" % "2.1.1")
 
 // For generating Lexer/Parser from ANTLR4 grammar (.g4)
 addSbtPlugin("com.simplytyped" % "sbt-antlr4" % "0.8.2")
