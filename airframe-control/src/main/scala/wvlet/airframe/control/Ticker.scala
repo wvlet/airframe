@@ -17,7 +17,7 @@ package wvlet.airframe.control
   * Ticker is for measuring the elapsed time.
   */
 trait Ticker {
-  // Retrun the number of nanoseconds elapsed
+  // Return the number of nanoseconds elapsed
   def read: Long
 }
 
