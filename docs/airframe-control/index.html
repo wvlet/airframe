@@ -97,10 +97,13 @@ For example, airframe-control has exponential back-off retry, jittering, circuit
 <span class="hljs-comment">// Backoff retry</span>
 <span class="hljs-keyword">val</span> r: <span class="hljs-type">String</span> =
   <span class="hljs-type">Retry</span>
+    <span class="hljs-comment">// Retry up to 3 times. The default initial waiting time is 100ms</span>
     .withBackOff(maxRetry = <span class="hljs-number">3</span>)
-    <span class="hljs-comment">// Classify the retryable or non-retryable error type. All exceptions will be retried by default.</span>
+    <span class="hljs-comment">// Classify the retryable or non-retryable error type. </span>
+    <span class="hljs-comment">// All exceptions will be retried by default.</span>
     .retryOn {
        <span class="hljs-keyword">case</span> e: <span class="hljs-type">TimeoutException</span> =&gt; <span class="hljs-type">Retry</span>.retryableFailure(e)
+       <span class="hljs-keyword">case</span> other =&gt; <span class="hljs-type">Retry</span>.nonRetryableFailure(other)
     }
     .run {
       logger.info(<span class="hljs-string">"hello retry"</span>)
