@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-control: Retry/Rate Control · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-control is a library for writing control flow at ease."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-control: Retry/Rate Control · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-control is a library for writing control flow at ease."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>airframe-control: Retry/Rate Control · Airframe</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="airframe-control: Retry/Rate Control · Airframe"/><meta property="og:type" content="website"/><meta property="og:url" content="https://wvlet.org/airframe/"/><meta property="og:description" content="airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls."/><meta property="og:image" content="https://wvlet.org/airframe/img/poster.png"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://wvlet.org/airframe/img/poster.png"/><link rel="shortcut icon" href="/airframe/img/favicon.ico"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -62,14 +62,18 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-control: Retry/Rate Control</h1></header><article><div><span><p>airframe-control is a library for writing control flow at ease.</p>
+        </script></nav></div><div class="container mainContainer docsContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 id="__docusaurus" class="postHeaderTitle">airframe-control: Retry/Rate Control</h1></header><article><div><span><p>airframe-control is a colleciton of libraries to manage control flows, that are especially useul for making remote API calls.
+For example, airframe-control has exponential back-off retry, jittering, circuit breaker, parallel task execution support, etc.</p>
+<ul>
+<li><a href="https://github.com/wvlet/airframe/tree/master/airframe-control">Source Code at GitHub</a></li>
+</ul>
 <h1><a class="anchor" aria-hidden="true" id="usage"></a><a href="#usage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage</h1>
 <p><a href="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/"><img src="https://maven-badges.herokuapp.com/maven-central/org.wvlet.airframe/airframe-control_2.12/badge.svg" alt="Maven Central"></a></p>
 <p><strong>build.sbt</strong></p>
 <pre><code class="hljs css language-scala">libraryDependencies += <span class="hljs-string">"org.wvlet.airframe"</span> %% <span class="hljs-string">"airframe-control"</span> % <span class="hljs-string">"(version)"</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="control"></a><a href="#control" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Control</h2>
-<p>Loan Pattern (open a resource and close):</p>
+<p>This provides a handy Loan Pattern syntax for preperly open and close resources:</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Control</span>
 
 <span class="hljs-comment">// Loan pattern</span>
@@ -86,6 +90,7 @@
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="retry"></a><a href="#retry" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Retry</h2>
 <h3><a class="anchor" aria-hidden="true" id="exponential-backoff"></a><a href="#exponential-backoff" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Exponential Backoff</h3>
+<p>Exponential backoff will multiply the waiting time for each retry attempt. The default multiplier is 1.5. For example, if the initial waiting time is 1 second, the next waiting time will be 1 x 1.5 = 1.5 second, and the next waiting time will be 1.5 * 1.5 = 2.25 seconds, and so on.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
 <span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">TimeoutException</span>
 
@@ -93,7 +98,8 @@
 <span class="hljs-keyword">val</span> r: <span class="hljs-type">String</span> =
   <span class="hljs-type">Retry</span>
     .withBackOff(maxRetry = <span class="hljs-number">3</span>)
-    .retryOn { 
+    <span class="hljs-comment">// Classify the retryable or non-retryable error type. All exceptions will be retried by default.</span>
+    .retryOn {
        <span class="hljs-keyword">case</span> e: <span class="hljs-type">TimeoutException</span> =&gt; <span class="hljs-type">Retry</span>.retryableFailure(e)
     }
     .run {
@@ -106,29 +112,7 @@
       }
     }
 </code></pre>
-<p>To decide the number of backoff retries from an expected total wait time, use <code>withBoundedBackoff</code>:</p>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
-
-<span class="hljs-type">Retry</span>
-  .withBoundedBackoff(
-    initialIntervalMillis = <span class="hljs-number">1000</span>, 
-    maxTotalWaitMillis = <span class="hljs-number">30000</span>
-  )
-</code></pre>
-<h3><a class="anchor" aria-hidden="true" id="jitter"></a><a href="#jitter" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Jitter</h3>
-<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
-<span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">TimeoutException</span>
-
-<span class="hljs-type">Retry</span>
-  .withJitter(maxRetry = <span class="hljs-number">3</span>) <span class="hljs-comment">// It will wait nextWaitMillis * rand() upon retry</span>
-  .retryOn {
-    <span class="hljs-keyword">case</span> e: <span class="hljs-type">TimeoutException</span> =&gt;
-      <span class="hljs-type">Retry</span>.retryableFailure(e)
-  }
-  .run {
-    <span class="hljs-comment">// body</span>
-  }
-</code></pre>
+<p>To classify error types within <code>retryOn</code> method, use <code>Retry.retryableFailure(Throwable)</code> or <code>Retry.nonRetryableFailure(Throwable)</code>.</p>
 <h3><a class="anchor" aria-hidden="true" id="adding-extra-wait"></a><a href="#adding-extra-wait" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Adding Extra Wait</h3>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
 <span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">TimeoutException</span>
@@ -145,7 +129,54 @@
          .withExtraWaitMillis(<span class="hljs-number">50</span>)
   }
 </code></pre>
+<h3><a class="anchor" aria-hidden="true" id="bounded-time-backoff"></a><a href="#bounded-time-backoff" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Bounded Time Backoff</h3>
+<p>To decide the number of backoff retries from an expected total wait time, use <code>withBoundedBackoff</code>:</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
+
+<span class="hljs-type">Retry</span>
+  .withBoundedBackoff(
+    initialIntervalMillis = <span class="hljs-number">1000</span>,
+    maxTotalWaitMillis = <span class="hljs-number">30000</span>
+  )
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="jitter"></a><a href="#jitter" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Jitter</h3>
+<p>Jitter is useful to add randomness between the retry intervals especially if there are multiple tasks using the same retry pattern. For example, if the base waiting time is 10 seconds, Jitter will pick a next waiting time between [0, 10] to add some random factor. Then, the base waiting time will be multiplied as in the exponential backoff. This randomness will avoid having multiple API calls that will be retried at the same timing, which often cause resource contention or overload of the target service. With Jittering you can avoid such unexpected correlations between retried requests.</p>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Retry</span>
+<span class="hljs-keyword">import</span> java.util.concurrent.<span class="hljs-type">TimeoutException</span>
+
+<span class="hljs-type">Retry</span>
+  .withJitter(maxRetry = <span class="hljs-number">3</span>) <span class="hljs-comment">// It will wait nextWaitMillis * rand() upon retry</span>
+  .retryOn {
+    <span class="hljs-keyword">case</span> e: <span class="hljs-type">TimeoutException</span> =&gt;
+      <span class="hljs-type">Retry</span>.retryableFailure(e)
+  }
+  .run {
+    <span class="hljs-comment">// body</span>
+  }
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="circuitbreaker"></a><a href="#circuitbreaker" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>CircuitBreaker</h2>
+<p>CircuitBreaker is used to avoid excessive calls to a remote service when the service is unavailable, and provides the capability to fail-fast the application so that we can avoid adding an extra waiting time before getting any response from the struggling service.</p>
+<p>CircuitBreaker is useful for:</p>
+<ul>
+<li>Adding a safety around remote API calls</li>
+<li>Protecting the system from too many exceptions of the same type.</li>
+</ul>
+<p>CircuitBreaker has tree states: CLOSED, OPEN, and HALF_OPEN.</p>
+<ul>
+<li><strong>CLOSED</strong>: This is the default state where all executions are allowed. If the target service becomes unhealthy (markedDead), the states will transit to OPEN state.</li>
+<li><strong>OPEN</strong>: The connection to the target service is broken in this state, and no execution will be allowed. In this state, all executions will throw CircuitBreakerOpenException to perform fail-fast so that we can quickly return the control to the caller. After a certain amount of time is passed specified by delayAfterMarkedDead policy, this state will shift to HALF_OPEN state.</li>
+<li><strong>HALF_OPEN</strong>: This state will perform a <em>probing</em> to the target service. That means, an execution to the target service is allowed once, and if the request succeeds the state will move to CLOSED state. If the request fails, it will go back to OPEN state again. The delay interval time will be computed by some retry policy. The default delay policy is an exponential backoff (30 seconds initial wait) with jittering.</li>
+</ul>
+<pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">CircuitBreaker</span>
+
+<span class="hljs-keyword">val</span> cb = <span class="hljs-type">CircuitBreaker</span>
+  .withFailureThreshold(<span class="hljs-number">3</span>, <span class="hljs-number">10</span>) <span class="hljs-comment">// Open the circuit when observing 3 failures out of 10 executions</span>
+  .run {
+    <span class="hljs-comment">// body</span>
+  }
+</code></pre>
 <h2><a class="anchor" aria-hidden="true" id="parallel"></a><a href="#parallel" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Parallel</h2>
+<p>Parallel is a library for ensuring using a fixed number of threads (= parallelism) for running tasks.</p>
 <pre><code class="hljs css language-scala"><span class="hljs-keyword">import</span> wvlet.airframe.control.<span class="hljs-type">Parallel</span>
 
 <span class="hljs-comment">// Simply run a given function for each element of the source collection</span>
@@ -170,6 +201,6 @@
 }
 </code></pre>
 <p>You can monitor metrics of parallel execution via JMX using <a href="https://github.com/wvlet/airframe/tree/master/airframe-jmx">airframe-jmx</a>.</p>
-<pre><code class="hljs">JMXAgent.defaultAgent.register[<span class="hljs-string">Parallel.ParallelExecutionStats</span>](<span class="hljs-link">Parallel.jmxStats</span>)
+<pre><code class="hljs css language-scala"><span class="hljs-type">JMXAgent</span>.defaultAgent.register[<span class="hljs-type">Parallel</span>.<span class="hljs-type">ParallelExecutionStats</span>](<span class="hljs-type">Parallel</span>.jmxStats)
 </code></pre>
-</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-config"><span class="arrow-prev">← </span><span>airframe-config: Application Config Flow</span></a><a class="docs-next button" href="/airframe/docs/airframe-log"><span>airframe-log: Application Logger</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#control">Control</a></li><li><a href="#retry">Retry</a><ul class="toc-headings"><li><a href="#exponential-backoff">Exponential Backoff</a></li><li><a href="#jitter">Jitter</a></li><li><a href="#adding-extra-wait">Adding Extra Wait</a></li></ul></li><li><a href="#parallel">Parallel</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div></body></html>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/airframe/docs/airframe-config"><span class="arrow-prev">← </span><span>airframe-config: Application Config Flow</span></a><a class="docs-next button" href="/airframe/docs/airframe-log"><span>airframe-log: Application Logger</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#control">Control</a></li><li><a href="#retry">Retry</a><ul class="toc-headings"><li><a href="#exponential-backoff">Exponential Backoff</a></li><li><a href="#adding-extra-wait">Adding Extra Wait</a></li><li><a href="#bounded-time-backoff">Bounded Time Backoff</a></li><li><a href="#jitter">Jitter</a></li></ul></li><li><a href="#circuitbreaker">CircuitBreaker</a></li><li><a href="#parallel">Parallel</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/airframe/" class="nav-home"><img src="/airframe/img/favicon.ico" alt="Airframe" width="66" height="66"/></a><div><h5>Docs</h5><a href="/airframe/docs/en/index.html">Documentation</a></div><div><h5>Community</h5><a href="https://gitter.im/wvlet/airframe">Gitter Chat</a></div><div><h5>More</h5><a href="https://github.com/wvlet/airframe/">GitHub</a><a class="github-button" href="https://github.com/wvlet/airframe" data-icon="octicon-star" data-count-href="/wvlet/airframe/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a></div></section><a href="https://wvlet.org/airframe/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/airframe/img/logos/airframe-badge-dark.png" alt="airframe logo"/></a><section class="copyright">Copyright © 2020 wvlet.org</section></footer></div></body></html>
