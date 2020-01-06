@@ -50,10 +50,13 @@ import java.util.concurrent.TimeoutException
 // Backoff retry
 val r: String =
   Retry
+    // Retry up to 3 times. The default initial waiting time is 100ms
     .withBackOff(maxRetry = 3)
-    // Classify the retryable or non-retryable error type. All exceptions will be retried by default.
+    // Classify the retryable or non-retryable error type. 
+    // All exceptions will be retried by default.
     .retryOn {
        case e: TimeoutException => Retry.retryableFailure(e)
+       case other => Retry.nonRetryableFailure(other)
     }
     .run {
       logger.info("hello retry")
