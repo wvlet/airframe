@@ -12,19 +12,34 @@
  * limitations under the License.
  */
 package wvlet.airframe.widget.rx
-import wvlet.log.LogSupport
+
 import org.scalajs.dom
 import wvlet.airframe.widget.dom.VirtualDOM
+import wvlet.airframe.widget.ui.components.Elem
 
 /**
   *
   */
-trait RxElement extends LogSupport {
+trait RxComponent {
+  def apply(elems: RxElement*): RxElement = Elem(body(elems.map(_.body): _*))
+  def apply(elem: String): RxElement      = Elem(body(scala.xml.Text(elem)))
+
+  def body(content: xml.Node*): xml.Node
+}
+
+trait RxNode {
+  def appendTo(parent: dom.Element): dom.Element
+}
+
+/**
+  *
+  */
+trait RxElement extends RxNode {
   def body: xml.Node
 
-  def render: dom.Element = {
-    val elem = dom.document.createElement("div")
-    VirtualDOM.mount(elem, body)
-    elem
+  override def appendTo(parent: dom.Element): dom.Element = {
+    val node = body
+    VirtualDOM.mount(parent, node)
+    parent
   }
 }

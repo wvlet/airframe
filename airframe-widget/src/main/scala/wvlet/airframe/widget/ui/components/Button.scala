@@ -11,7 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.ui
+package wvlet.airframe.widget.ui.components
+
 import wvlet.airframe.widget.rx.RxElement
 
 /**

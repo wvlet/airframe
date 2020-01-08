@@ -14,6 +14,7 @@
 package wvlet.airframe.widget.ui
 import org.scalajs.dom
 import org.scalajs.dom.document
+import wvlet.airframe.widget.ui.components.{Button, Container, Layout}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -42,8 +43,34 @@ object Gallery extends LogSupport {
 
     val layout = dom.document.createElement("div")
     layout.textContent = "Hello Airframe Widget!"
-    layout.appendChild(Button.default("Default").render)
-    layout.appendChild(Button.primary("Primary").render)
+    val buttonGallery = Container.of(
+      Button.default("Default"),
+      Button.primary("Primary"),
+      Button.secondary("Secondary"),
+      Button.success("Success"),
+      Button.danger("Danger"),
+      Button.warning("warning"),
+      Button.info("Info"),
+      Button.light("light"),
+      Button.dark("dark"),
+      Button.link("link")
+    )
+
+    val gridGallery = Container.of {
+      Layout.row(
+        Layout.colSm { "One of three columns" },
+        Layout.colSm { "One of three columns" },
+        Layout.colSm { "One of three columns" }
+      )
+    }
+
+    val gallery = Container.of(
+      buttonGallery,
+      gridGallery
+    )
+
+    gallery.appendTo(layout)
+    //layout.appendChild(gallery.render)
 
     main.appendChild(layout)
   }
