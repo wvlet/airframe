@@ -113,7 +113,7 @@ object StaticContent extends LogSupport {
   }
 
   def fromResource(basePath: String): StaticContent  = StaticContent().fromResource(basePath)
-  def fromDirectory(basePath: String): StaticContent = StaticContent().fromResource(basePath)
+  def fromDirectory(basePath: String): StaticContent = StaticContent().fromDirectory(basePath)
 }
 
 import StaticContent._
