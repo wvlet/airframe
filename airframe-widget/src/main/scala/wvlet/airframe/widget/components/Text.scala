@@ -11,30 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.ui.components
-import wvlet.airframe.widget.rx.{RxComponent, RxElement}
+package wvlet.airframe.widget.components
+import wvlet.airframe.widget.RxElement
 
 import scala.xml.Node
 
 /**
   *
   */
-case class Container(style: String = "container") extends RxComponent {
-  override def body(content: xml.Node*): xml.Node = <div class={style}>
-    {content}
-  </div>
-}
-
-case class Elem(elem: xml.Node) extends RxElement {
-  override def body: Node = elem
-}
-
-object Container {
-  def of(elems: RxElement*): RxElement = {
-    new Container().apply(elems: _*)
-  }
-
-  def apply(nodes: xml.Node*): RxElement = {
-    new Container().apply(nodes.map(x => Elem(x)): _*)
-  }
+case class Text(text: String) extends RxElement {
+  override def body: Node = scala.xml.Text(text)
 }

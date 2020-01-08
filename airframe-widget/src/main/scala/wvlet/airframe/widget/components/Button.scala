@@ -11,20 +11,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.ui.components
-
-import wvlet.airframe.widget.rx.RxElement
+package wvlet.airframe.widget.components
+import org.scalajs.dom
+import wvlet.airframe.widget.RxElement
 
 /**
   *
   */
-case class Button(name: String, cls: Seq[String] = Seq("btn")) extends RxElement {
-  def body                        = <button type="button" class={cls.mkString(" ")}>{name}</button>
+case class Button(
+    name: String,
+    cls: Seq[String] = Seq.empty,
+    onClickHandler: dom.MouseEvent => Any = { x =>
+    },
+    private var disabled: Boolean = false
+) extends RxElement {
   def addClass(className: String) = this.copy(cls = cls :+ className)
+
+  private def classes = "btn" +: cls
+
+  def small: Button = this.copy(cls = cls :+ "btn-sm")
+
+  def isActive: Boolean   = !disabled
+  def isDisabled: Boolean = disabled
+
+  def active: Button = {
+    disabled = false
+    this
+  }
+  def disable: Button = {
+    disabled = true
+    this
+  }
+
+  def body: xml.Node = {
+    if (disabled) {
+      <button type="button" class={classes.mkString(" ")} disabled="true">{name}</button>
+    } else {
+      <button type="button" class={classes.mkString(" ")}>{name}</button>
+    }
+  }
+
+  def onClick(handler: dom.MouseEvent => Unit): Button = {
+    this.copy(onClickHandler = handler)
+  }
 }
 
 object Button {
-  def default(name: String)   = Button(name).addClass("btn-light")
   def primary(name: String)   = Button(name).addClass("btn-primary")
   def secondary(name: String) = Button(name).addClass("btn-secondary")
   def success(name: String)   = Button(name).addClass("btn-success")

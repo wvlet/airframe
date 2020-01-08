@@ -11,22 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.dom
-import scala.xml.Elem
+package wvlet.airframe.widget
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Node => DomNode}
 import wvlet.airframe.rx.{Cancelable, Rx}
-import scala.scalajs.js
 
+import scala.scalajs.js
 import scala.xml.{Node => XmlNode, _}
 
 /**
-  * Building virtual DOM.
+  * Building reactive DOM from XmlNode.
   *
   * This code is based on monadic-html:
   * https://github.com/OlivierBlanvillain/monadic-html/blob/master/monadic-html/src/main/scala/mhtml/mount.scala
   */
-object VirtualDOM {
+object RxDOM {
 
   def mount(parent: DomNode, child: XmlNode): Unit = {
     mountNode(parent, child, None)

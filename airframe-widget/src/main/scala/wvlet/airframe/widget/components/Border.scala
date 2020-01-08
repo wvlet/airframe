@@ -11,22 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.ui.components
-import wvlet.airframe.widget.rx.RxComponent
+package wvlet.airframe.widget.components
+import wvlet.airframe.widget.{RxComponent, RxElement}
 
 import scala.xml.Node
 
 /**
   *
   */
-object Layout {
-  def row: RxComponent = new RxComponent {
-    override def body(content: Node*): Node =
-      <div class="row">{content}</div>
-  }
+case class Border() extends RxComponent {
+  override def body(content: Node*): Node =
+    <span class="border">{content}</span>
+}
 
-  def colSm: RxComponent = new RxComponent {
-    override def body(content: Node*): Node =
-      <div class="col-sm">{content}</div>
+object Border {
+  def apply(elems: RxElement*): RxElement = {
+    new Border().apply(elems: _*)
   }
 }
