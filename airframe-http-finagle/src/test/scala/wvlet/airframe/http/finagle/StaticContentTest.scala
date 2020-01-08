@@ -38,6 +38,14 @@ object StaticContentTest {
     def fileContent(path: String) = {
       StaticContent.fromDirectory("./airframe-http-finagle/src/test/resources/wvlet/airframe/http/finagle/static", path)
     }
+
+    @Endpoint(path = "/html4/*path")
+    def fileContent2(path: String) = {
+      StaticContent
+        .fromDirectory("./airframe-http-finagle/src/test/resources/wvlet/airframe/http/finagle/static")
+        .apply(path)
+    }
+
   }
 }
 
@@ -112,5 +120,8 @@ class StaticContentTest extends AirSpec {
   def `read from a directory`(client: FinagleSyncClient): Unit = {
     val html = client.get[String]("/html3/index.html")
     html.contains("Hello Airframe HTTP!") shouldBe true
+
+    val html2 = client.get[String]("/html4/index.html")
+    html2.contains("Hello Airframe HTTP!") shouldBe true
   }
 }
