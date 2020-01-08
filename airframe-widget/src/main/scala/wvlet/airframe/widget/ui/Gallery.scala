@@ -42,6 +42,8 @@ object Gallery extends LogSupport {
 
     val layout = dom.document.createElement("div")
     layout.textContent = "Hello Airframe Widget!"
+    layout.appendChild(Button.default("Default").render)
+    layout.appendChild(Button.primary("Primary").render)
 
     main.appendChild(layout)
   }
