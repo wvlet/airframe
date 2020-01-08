@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.widget.rx
 import wvlet.log.LogSupport
-import scala.xml
+import org.scalajs.dom
+import wvlet.airframe.widget.dom.VirtualDOM
 
 /**
   *
@@ -23,7 +24,7 @@ trait RxElement extends LogSupport {
 
   def render: dom.Element = {
     val elem = dom.document.createElement("div")
-    mount(elem, body)
+    VirtualDOM.mount(elem, body)
     elem
   }
 }

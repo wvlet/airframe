@@ -28,6 +28,10 @@ import scala.xml.{Node => XmlNode, _}
   */
 object VirtualDOM {
 
+  def mount(parent: DomNode, child: XmlNode): Unit = {
+    mountNode(parent, child, None)
+  }
+
   def mountNode(parent: DomNode, child: XmlNode, startPoint: Option[DomNode]): Cancelable = {
     child match {
       case e @ Elem(_, label, metadata, scope, _, _*) =>
