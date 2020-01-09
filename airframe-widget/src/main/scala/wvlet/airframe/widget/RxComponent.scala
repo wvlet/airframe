@@ -16,7 +16,7 @@ package wvlet.airframe.widget
 import org.scalajs.dom
 import wvlet.airframe.widget.components.{Elem, Text}
 
-import scala.xml.{Attribute, Node}
+import scala.xml.{Attribute, MetaData, Node}
 
 /**
   *
@@ -46,8 +46,14 @@ trait RxElement {
   }
 }
 
-case class RxComponentBuilder(tag: String, primaryClass: Option[String] = None, otherClasses: Seq[String] = Seq.empty) {
+case class RxComponentBuilder(
+    tag: String,
+    primaryClass: Option[String] = None,
+    otherClasses: Seq[String] = Seq.empty,
+    roles: Seq[String] = Seq.empty
+) {
   def withClasses(classes: String*) = this.copy(otherClasses = otherClasses ++ classes)
+  def withRoles(newRoles: String*)  = this.copy(roles = roles ++ newRoles)
 
   def withBorder: RxComponentBuilder        = withClasses("border")
   def withRoundedCorner: RxComponentBuilder = withClasses("rounded")
@@ -66,6 +72,8 @@ case class RxComponentBuilder(tag: String, primaryClass: Option[String] = None, 
   def withFixedBottom = withClasses("fixed-bottom")
   def withSticyTop    = withClasses("sticky-top")
 
+  def withAlertLink = withClasses("alert-link")
+
   def apply(content: String): RxElement = apply(Text(content))
 
   def apply(elems: RxElement*): RxElement =
@@ -75,12 +83,18 @@ case class RxComponentBuilder(tag: String, primaryClass: Option[String] = None, 
         primaryClass.foreach(classes += _)
         classes ++= otherClasses
 
-        val cls = Attribute.apply(null, "class", classes.result().mkString(" "), scala.xml.Null)
+        var metadata: MetaData = Attribute.apply(null, "class", classes.result().mkString(" "), scala.xml.Null)
+        if (roles.nonEmpty) {
+          metadata = metadata.append(
+            Attribute.apply(null, "role", "", scala.xml.Null)
+          )
+        }
+
         val elem = scala.xml
           .Elem(
             prefix = null,
             label = tag,
-            attributes = cls,
+            attributes = metadata,
             scope = scala.xml.TopScope,
             minimizeEmpty = true,
             child = elems.map(_.body): _*

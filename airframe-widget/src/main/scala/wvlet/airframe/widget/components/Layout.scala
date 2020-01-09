@@ -26,6 +26,23 @@ object Layout {
   def h4: RxComponentBuilder = RxComponentBuilder(tag = "h4")
   def h5: RxComponentBuilder = RxComponentBuilder(tag = "h5")
 
+  private def newAlert(style: String): RxComponentBuilder =
+    RxComponentBuilder(
+      tag = "div",
+      primaryClass = Some("alert"),
+      otherClasses = Seq(style),
+      roles = Seq("alert")
+    )
+
+  def alertPrimary: RxComponentBuilder   = newAlert("alert-primary")
+  def alertSecondary: RxComponentBuilder = newAlert("alert-secondary")
+  def alertSuccess: RxComponentBuilder   = newAlert("alert-success")
+  def alertDanger: RxComponentBuilder    = newAlert("alert-danger")
+  def alertWarning: RxComponentBuilder   = newAlert("alert-warning")
+  def alertInfo                          = newAlert("alert-info")
+  def alertLight                         = newAlert("alert-light")
+  def alertDark                          = newAlert("alert-dark")
+
   def row: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = Some("row"))
 
   def colSm: RxComponent = new RxComponent {

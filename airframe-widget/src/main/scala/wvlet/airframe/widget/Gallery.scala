@@ -45,12 +45,13 @@ object Gallery extends LogSupport {
 
   def gallery = Container.of(
     buttonGallery,
+    alertGallery,
     gridGallery
   )
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
     Container.of(
-      Layout.h3(title),
+      Layout.h4(title),
       Layout.row.withBorder.withRoundedCorner(
         Layout.colSm(main),
         Layout.colSm(Layout.scalaCode(code))
@@ -71,24 +72,70 @@ object Gallery extends LogSupport {
       Button.link("Link")
     )
 
-    val buttonCode = """import wvlet.airframe.widget._
-                  |
-                  |Button.primary("Primary")
-                  |Button.secondary("Secondary")
-                  |Button.success("Success")
-                  |Button.danger("Danger")
-                  |Button.warning("warning")
-                  |Button.info("Info")
-                  |Button.light("Light")
-                  |Button.dark("Dark")
-                  |Button.link("Link")""".stripMargin
-
     val disabledButtons = buttons.map(_.disable)
 
     Container.of(
-      demo("Buttons", Container.ofList(buttons), buttonCode),
-      demo("Disabled Buttons", Container.ofList(disabledButtons), buttonCode)
+      demo(
+        "Buttons",
+        Container.ofList(buttons),
+        """import wvlet.airframe.widget._
+          |
+          |Button.primary("Primary")
+          |Button.secondary("Secondary")
+          |Button.success("Success")
+          |Button.danger("Danger")
+          |Button.warning("warning")
+          |Button.info("Info")
+          |Button.light("Light")
+          |Button.dark("Dark")
+          |Button.link("Link")""".stripMargin
+      ),
+      demo(
+        "Disabled Buttons",
+        Container.ofList(disabledButtons),
+        """import wvlet.airframe.widget._
+          |
+          |Button.primary("Primary").disable
+          |Button.secondary("Secondary").disable
+          |Button.success("Success").disable
+          |Button.danger("Danger").disable
+          |Button.warning("warning").disable
+          |Button.info("Info").disable
+          |Button.light("Light").disable
+          |Button.dark("Dark").disable
+          |Button.link("Link").disable""".stripMargin
+      )
     )
+  }
+
+  def alertGallery = Container.of {
+    demo(
+      "Alerts",
+      Container.of(
+        Layout.alertPrimary("A simple alert!"),
+        Layout.alertSecondary("A simple alert!"),
+        Layout.alertSuccess("A simple alert!"),
+        Layout.alertDanger("A simple alert!"),
+        Layout.alertWarning("A simple alert!"),
+        Layout.alertInfo("A simple alert!"),
+        Layout.alertInfo("A simple alert!"),
+        Layout.alertLight("A simple alert!"),
+        Layout.alertDark("A simple alert!")
+      ),
+      """import wvlet.airframe.widget._
+        |
+        |Layout.alertPrimary("A simple alert!")
+        |Layout.alertSecondary("A simple alert!")
+        |Layout.alertSuccess("A simple alert!")
+        |Layout.alertDanger("A simple alert!")
+        |Layout.alertWarning("A simple alert!")
+        |Layout.alertInfo("A simple alert!")
+        |Layout.alertInfo("A simple alert!")
+        |Layout.alertLight("A simple alert!")
+        |Layout.alertDark("A simple alert!")
+        |""".stripMargin
+    )
+
   }
 
   def gridGallery = Container.of {
