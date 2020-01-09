@@ -97,7 +97,6 @@ object RxDOM {
 
       case Some(x: Any) =>
         mountMetadata(parent, scope, m, x)
-
       case r: Rx[_] =>
         val rx: Rx[_] = r
         var c1        = Cancelable.empty

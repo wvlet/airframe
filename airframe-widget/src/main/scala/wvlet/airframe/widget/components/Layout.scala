@@ -20,6 +20,11 @@ import scala.xml.Node
   *
   */
 object Layout {
+  def div(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
+
+  def container: RxComponentBuilder      = div("container")
+  def containerFluid: RxComponentBuilder = div("container-fluid")
+
   def h1: RxComponentBuilder = RxComponentBuilder(tag = "h1")
   def h2: RxComponentBuilder = RxComponentBuilder(tag = "h2")
   def h3: RxComponentBuilder = RxComponentBuilder(tag = "h3")
@@ -41,15 +46,23 @@ object Layout {
   def alertLight                         = newAlert("alert-light")
   def alertDark                          = newAlert("alert-dark")
 
-  def row: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = "row")
+  def row: RxComponentBuilder   = div("row")
+  def col: RxComponentBuilder   = div("col")
+  def col1: RxComponentBuilder  = div("col-1")
+  def col2: RxComponentBuilder  = div("col-2")
+  def col3: RxComponentBuilder  = div("col-3")
+  def col4: RxComponentBuilder  = div("col-4")
+  def col5: RxComponentBuilder  = div("col-5")
+  def col6: RxComponentBuilder  = div("col-6")
+  def col7: RxComponentBuilder  = div("col-7")
+  def col8: RxComponentBuilder  = div("col-8")
+  def col9: RxComponentBuilder  = div("col-9")
+  def col10: RxComponentBuilder = div("col-10")
+  def col11: RxComponentBuilder = div("col-11")
+  def col12: RxComponentBuilder = div("col-12")
+  def colSm: RxComponentBuilder = div("col-sm")
 
-  def col: RxComponentBuilder   = RxComponentBuilder(tag = "div", primaryClass = "col")
-  def colSm: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = "col-sm")
-
-  def figure: RxComponent = new RxComponent {
-    override def body(content: Node*): Node =
-      <figure class="figure">{content}</figure>
-  }
+  def figure: RxComponentBuilder = RxComponentBuilder(tag = "figure", primaryClass = "figure")
 
   def code(codeStr: String): RxElement = new RxElement {
     override def body: Node = <code>{codeStr}</code>

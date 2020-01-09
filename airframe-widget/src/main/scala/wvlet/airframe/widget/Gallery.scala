@@ -18,6 +18,7 @@ import wvlet.airframe.widget.components.{Button, Container, Layout, Modal}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import scala.xml.Node
 
 /**
   *
@@ -40,7 +41,30 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    main.appendChild(gallery.render)
+    val content = galleryFrame {
+      gallery
+    }
+
+    main.appendChild(content.render)
+  }
+
+  def galleryFrame = new RxComponent {
+    override def body(content: Node*): Node =
+      <div class="container">
+        <div class="row">
+          <div class="col-2" style="flex: 0 0 240px;">
+            <nav class="nav flex-column">
+              <a class="nav-link active" href="#">Active</a>
+              <a class="nav-link" href="#">Link</a>
+              <a class="nav-link" href="#">Link</a>
+              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </nav>
+          </div>
+          <div class="col-10">
+            {content}
+          </div>
+        </div>
+      </div>
   }
 
   def gallery = Container.of(
@@ -51,7 +75,7 @@ object Gallery extends LogSupport {
   )
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
-    Container.of(
+    Layout.container(
       Layout.h4(title),
       Layout.row.withBorder.withRoundedCorner(
         Layout.col(main),
@@ -119,7 +143,6 @@ object Gallery extends LogSupport {
         Layout.alertDanger("A simple alert!"),
         Layout.alertWarning("A simple alert!"),
         Layout.alertInfo("A simple alert!"),
-        Layout.alertInfo("A simple alert!"),
         Layout.alertLight("A simple alert!"),
         Layout.alertDark("A simple alert!")
       ),
@@ -131,7 +154,6 @@ object Gallery extends LogSupport {
         |Layout.alertDanger("A simple alert!")
         |Layout.alertWarning("A simple alert!")
         |Layout.alertInfo("A simple alert!")
-        |Layout.alertInfo("A simple alert!")
         |Layout.alertLight("A simple alert!")
         |Layout.alertDark("A simple alert!")
         |""".stripMargin
@@ -139,7 +161,12 @@ object Gallery extends LogSupport {
   }
 
   def modalGallery = Container.of(
-    demo("Modal", new Modal(title = "Modal Demo").apply("Modal body text goes here"), "src")
+    demo(
+      "Modal",
+      new Modal(title = "Modal Demo").apply("Modal body text goes here"),
+      """new Modal(title = "Modal Demo")
+        |  .apply("Modal body text goes here")""".stripMargin
+    )
   )
 
   def gridGallery = Container.of {
