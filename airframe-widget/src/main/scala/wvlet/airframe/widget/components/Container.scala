@@ -18,7 +18,7 @@ import wvlet.airframe.widget.{RxComponent, RxElement}
   *
   */
 case class Container(style: String = "container") extends RxComponent {
-  override def body(content: xml.Node*): xml.Node = <div class={style}>
+  override def render(content: xml.Node*): xml.Node = <div class={style}>
     {content}
   </div>
 }
@@ -31,6 +31,6 @@ object Container {
   def ofList(elems: Seq[RxElement]): RxElement = of(elems: _*)
 
   def apply(nodes: xml.Node*): RxElement = {
-    Elem(new Container().body(nodes: _*))
+    Elem(new Container().render(nodes: _*))
   }
 }

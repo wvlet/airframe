@@ -45,11 +45,11 @@ object Gallery extends LogSupport {
       gallery
     }
 
-    main.appendChild(content.render)
+    main.appendChild(content.toDOM)
   }
 
   def galleryFrame = new RxComponent {
-    override def body(content: Node*): Node =
+    override def render(content: Node*): Node =
       <div class="container">
         <div class="row">
           <div class="col-2" style="flex: 0 0 240px;">
@@ -58,6 +58,7 @@ object Gallery extends LogSupport {
               <a class="nav-link" href="#">Link</a>
               <a class="nav-link" href="#">Link</a>
               <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+              {Button.primary("Hello!").render}
             </nav>
           </div>
           <div class="col-10">

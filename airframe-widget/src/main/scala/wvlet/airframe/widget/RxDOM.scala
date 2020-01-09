@@ -155,8 +155,8 @@ object RxDOM {
             }
       }
       m match {
-        case m: PrefixedAttribute => set(s"${m.pre}:${m.key}", Some(m.pre))
-        case _                    => set(m.key, None)
+        case m: PrefixedAttribute[_] => set(s"${m.pre}:${m.key}", Some(m.pre))
+        case _                       => set(m.key, None)
       }
     }
 

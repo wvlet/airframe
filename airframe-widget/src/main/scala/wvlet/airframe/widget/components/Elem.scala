@@ -20,5 +20,5 @@ import scala.xml.Node
   *
   */
 case class Elem(elem: xml.Node) extends RxElement {
-  override def body: Node = elem
+  override def render: Node = elem
 }

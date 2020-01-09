@@ -683,8 +683,8 @@ lazy val widget =
       name := "airframe-widget",
       description := "UI Widget library for Scala.js",
       libraryDependencies ++= Seq(
-        "org.scala-lang.modules" %%% "scala-xml"   % "2.0.0-M1",
-        "org.scala-js"           %%% "scalajs-dom" % "0.9.8"
+//        "org.scala-lang.modules" %%% "scala-xml"   % "2.0.0-M1",
+        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
       )
     )
     .jsSettings(jsBuildSettings)

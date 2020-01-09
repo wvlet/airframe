@@ -25,6 +25,9 @@ object Layout {
   def container: RxComponentBuilder      = div("container")
   def containerFluid: RxComponentBuilder = div("container-fluid")
 
+  def flexbox: RxComponentBuilder       = div("d-flex")
+  def inlineFlexbox: RxComponentBuilder = div("d-inline-flex")
+
   def h1: RxComponentBuilder = RxComponentBuilder(tag = "h1")
   def h2: RxComponentBuilder = RxComponentBuilder(tag = "h2")
   def h3: RxComponentBuilder = RxComponentBuilder(tag = "h3")
@@ -65,15 +68,15 @@ object Layout {
   def figure: RxComponentBuilder = RxComponentBuilder(tag = "figure", primaryClass = "figure")
 
   def code(codeStr: String): RxElement = new RxElement {
-    override def body: Node = <code>{codeStr}</code>
+    override def render: Node = <code>{codeStr}</code>
   }
 
   def codeBlock: RxComponent = new RxComponent {
-    override def body(content: Node*): Node =
+    override def render(content: Node*): Node =
       <pre><code>{content}</code></pre>
   }
 
   def scalaCode: RxComponent = new RxComponent {
-    override def body(content: Node*): Node = <pre><code class="language-scala">{content}</code></pre>
+    override def render(content: Node*): Node = <pre><code class="language-scala rounded">{content}</code></pre>
   }
 }

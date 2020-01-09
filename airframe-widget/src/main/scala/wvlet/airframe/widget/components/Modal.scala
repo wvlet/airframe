@@ -17,7 +17,7 @@ import wvlet.airframe.widget.RxComponent
 import scala.xml.Node
 
 case class Modal(title: String) extends RxComponent {
-  override def body(content: Node*): Node =
+  override def render(content: Node*): Node =
     <div class="modal" style="display: block; position: relative;" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">

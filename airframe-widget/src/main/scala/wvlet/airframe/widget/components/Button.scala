@@ -21,7 +21,7 @@ import wvlet.airframe.widget.RxElement
 case class Button(
     name: String,
     cls: Seq[String] = Seq.empty,
-    onClickHandler: dom.MouseEvent => Any = { x =>
+    onClickHandler: (dom.Event, dom.Element) => Unit = { (ev, elem) =>
     },
     private var disabled: Boolean = false
 ) extends RxElement {
@@ -43,20 +43,23 @@ case class Button(
     this
   }
 
-  def body: xml.Node = {
+  def render: xml.Node = {
     if (disabled) {
       <button type="button" class={classes.mkString(" ")} disabled="true">{name}</button>
     } else {
-      <button type="button" class={classes.mkString(" ")}>{name}</button>
+      <button></button>
     }
   }
 
-  def onClick(handler: dom.MouseEvent => Unit): Button = {
+  def onClick(handler: (dom.Event, dom.Element) => Unit): Button = {
     this.copy(onClickHandler = handler)
   }
+
 }
 
 object Button {
+  def test = <button onclick={() => println("clicked!")}>Clicked</button>
+
   def primary(name: String)   = Button(name).addClass("btn-primary")
   def secondary(name: String) = Button(name).addClass("btn-secondary")
   def success(name: String)   = Button(name).addClass("btn-success")

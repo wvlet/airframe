@@ -16,32 +16,32 @@ package wvlet.airframe.widget
 import org.scalajs.dom
 import wvlet.airframe.widget.components.{Elem, Text}
 
-import scala.xml.{Attribute, MetaData, Node}
+import scala.xml.{MetaData, Node, UnprefixedAttribute}
 
 /**
   *
   */
 trait RxComponent {
-  def apply(elems: RxElement*): RxElement = Elem(body(elems.map(_.body): _*))
-  def apply(elem: String): RxElement      = Elem(body(scala.xml.Text(elem)))
+  def apply(elems: RxElement*): RxElement = Elem(render(elems.map(_.render): _*))
+  def apply(elem: String): RxElement      = Elem(render(scala.xml.Text(elem)))
 
-  def body(content: xml.Node*): xml.Node
+  def render(content: xml.Node*): xml.Node
 }
 
 /**
   *
   */
 trait RxElement {
-  def body: xml.Node
+  def render: xml.Node
 
   def appendTo(parent: dom.Element): dom.Element = {
-    RxDOM.mount(parent, body)
+    RxDOM.mount(parent, render)
     parent
   }
 
-  def render: dom.Element = {
+  def toDOM: dom.Element = {
     val node = dom.document.createElement("div")
-    RxDOM.mount(node, body)
+    RxDOM.mount(node, render)
     node
   }
 }
@@ -87,21 +87,21 @@ case class RxComponentBuilder(
 
   def apply(elems: RxElement*): RxElement =
     new RxComponent {
-      override def body(content: Node*): Node = {
+      override def render(content: Node*): Node = {
         var attrs: MetaData = scala.xml.Null
         attributes.foreach {
           case (key, values) =>
-            attrs = attrs.append(Attribute.apply(null, key, values.mkString(" "), scala.xml.Null))
+            attrs = attrs.append(UnprefixedAttribute(key, values.mkString(" "), scala.xml.Null))
         }
 
         val elem = scala.xml
           .Elem(
             prefix = null,
             label = tag,
-            attributes = attrs,
+            attributes1 = attrs,
             scope = scala.xml.TopScope,
             minimizeEmpty = true,
-            child = elems.map(_.body): _*
+            child = elems.map(_.render): _*
           )
         elem
       }
