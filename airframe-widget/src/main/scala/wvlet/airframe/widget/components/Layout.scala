@@ -26,13 +26,11 @@ object Layout {
   def h4: RxComponentBuilder = RxComponentBuilder(tag = "h4")
   def h5: RxComponentBuilder = RxComponentBuilder(tag = "h5")
 
-  private def newAlert(style: String): RxComponentBuilder =
-    RxComponentBuilder(
-      tag = "div",
-      primaryClass = Some("alert"),
-      otherClasses = Seq(style),
-      roles = Seq("alert")
-    )
+  private def newAlert(style: String): RxComponentBuilder = {
+    RxComponentBuilder(tag = "div")
+      .withClasses("alert", style)
+      .withRoles("alert")
+  }
 
   def alertPrimary: RxComponentBuilder   = newAlert("alert-primary")
   def alertSecondary: RxComponentBuilder = newAlert("alert-secondary")
@@ -43,12 +41,10 @@ object Layout {
   def alertLight                         = newAlert("alert-light")
   def alertDark                          = newAlert("alert-dark")
 
-  def row: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = Some("row"))
+  def row: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = "row")
 
-  def colSm: RxComponent = new RxComponent {
-    override def body(content: Node*): Node =
-      <div class="col-sm">{content}</div>
-  }
+  def col: RxComponentBuilder   = RxComponentBuilder(tag = "div", primaryClass = "col")
+  def colSm: RxComponentBuilder = RxComponentBuilder(tag = "div", primaryClass = "col-sm")
 
   def figure: RxComponent = new RxComponent {
     override def body(content: Node*): Node =

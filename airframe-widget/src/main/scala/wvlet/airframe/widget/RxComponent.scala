@@ -46,14 +46,23 @@ trait RxElement {
   }
 }
 
+object RxComponentBuilder {
+  def apply(tag: String)                       = new RxComponentBuilder(tag)
+  def apply(tag: String, primaryClass: String) = new RxComponentBuilder(tag, Map("class" -> Seq(primaryClass)))
+}
+
 case class RxComponentBuilder(
     tag: String,
-    primaryClass: Option[String] = None,
-    otherClasses: Seq[String] = Seq.empty,
+    attributes: Map[String, Seq[String]] = Map.empty,
     roles: Seq[String] = Seq.empty
 ) {
-  def withClasses(classes: String*) = this.copy(otherClasses = otherClasses ++ classes)
-  def withRoles(newRoles: String*)  = this.copy(roles = roles ++ newRoles)
+
+  def addAttribute(attrName: String, value: String*) = this.copy(
+    attributes = attributes + (attrName -> (attributes.getOrElse("class", Seq.empty) ++ value))
+  )
+
+  def withClasses(classes: String*) = addAttribute("class", classes: _*)
+  def withRoles(newRoles: String*)  = addAttribute("role", newRoles: _*)
 
   def withBorder: RxComponentBuilder        = withClasses("border")
   def withRoundedCorner: RxComponentBuilder = withClasses("rounded")
@@ -70,7 +79,7 @@ case class RxComponentBuilder(
 
   def withFixedTop    = withClasses("fixed-top")
   def withFixedBottom = withClasses("fixed-bottom")
-  def withSticyTop    = withClasses("sticky-top")
+  def withStickyTop   = withClasses("sticky-top")
 
   def withAlertLink = withClasses("alert-link")
 
@@ -79,22 +88,17 @@ case class RxComponentBuilder(
   def apply(elems: RxElement*): RxElement =
     new RxComponent {
       override def body(content: Node*): Node = {
-        val classes = Seq.newBuilder[String]
-        primaryClass.foreach(classes += _)
-        classes ++= otherClasses
-
-        var metadata: MetaData = Attribute.apply(null, "class", classes.result().mkString(" "), scala.xml.Null)
-        if (roles.nonEmpty) {
-          metadata = metadata.append(
-            Attribute.apply(null, "role", "", scala.xml.Null)
-          )
+        var attrs: MetaData = scala.xml.Null
+        attributes.foreach {
+          case (key, values) =>
+            attrs = attrs.append(Attribute.apply(null, key, values.mkString(" "), scala.xml.Null))
         }
 
         val elem = scala.xml
           .Elem(
             prefix = null,
             label = tag,
-            attributes = metadata,
+            attributes = attrs,
             scope = scala.xml.TopScope,
             minimizeEmpty = true,
             child = elems.map(_.body): _*

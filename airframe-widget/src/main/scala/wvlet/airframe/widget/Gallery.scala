@@ -14,7 +14,7 @@
 package wvlet.airframe.widget
 import org.scalajs.dom
 import org.scalajs.dom.document
-import wvlet.airframe.widget.components.{Button, Container, Layout}
+import wvlet.airframe.widget.components.{Button, Container, Layout, Modal}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -46,6 +46,7 @@ object Gallery extends LogSupport {
   def gallery = Container.of(
     buttonGallery,
     alertGallery,
+    modalGallery,
     gridGallery
   )
 
@@ -53,8 +54,8 @@ object Gallery extends LogSupport {
     Container.of(
       Layout.h4(title),
       Layout.row.withBorder.withRoundedCorner(
-        Layout.colSm(main),
-        Layout.colSm(Layout.scalaCode(code))
+        Layout.col(main),
+        Layout.col(Layout.scalaCode(code))
       )
     )
   }
@@ -135,8 +136,11 @@ object Gallery extends LogSupport {
         |Layout.alertDark("A simple alert!")
         |""".stripMargin
     )
-
   }
+
+  def modalGallery = Container.of(
+    demo("Modal", new Modal(title = "Modal Demo").apply("Modal body text goes here"), "src")
+  )
 
   def gridGallery = Container.of {
     Layout.row(
