@@ -21,7 +21,7 @@ import wvlet.airframe.widget.RxElement
 case class Button(
     name: String,
     cls: Seq[String] = Seq.empty,
-    onClickHandler: (dom.Event, dom.Element) => Unit = { (ev, elem) =>
+    onClickHandler: dom.MouseEvent => Unit = { ev =>
     },
     private var disabled: Boolean = false
 ) extends RxElement {
@@ -47,11 +47,11 @@ case class Button(
     if (disabled) {
       <button type="button" class={classes.mkString(" ")} disabled="true">{name}</button>
     } else {
-      <button></button>
+      <button type="button" class={classes.mkString(" ")} onclick={onClickHandler}>{name}</button>
     }
   }
 
-  def onClick(handler: (dom.Event, dom.Element) => Unit): Button = {
+  def onClick(handler: dom.MouseEvent => Unit): Button = {
     this.copy(onClickHandler = handler)
   }
 

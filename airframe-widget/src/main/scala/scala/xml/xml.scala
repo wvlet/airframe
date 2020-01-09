@@ -183,7 +183,7 @@ sealed trait MetaData {
   /**
     * returns a copy of this MetaData item with next field set to argument.
     */
-  def copy(next: MetaData): MetaData
+  def newCopy(next: MetaData): MetaData
 }
 
 object MetaData {
@@ -199,7 +199,7 @@ object MetaData {
   @tailrec
   def concatenate(attribs: MetaData, new_tail: MetaData): MetaData =
     if (attribs eq Null) new_tail
-    else concatenate(attribs.next, attribs copy new_tail)
+    else concatenate(attribs.next, attribs newCopy new_tail)
 
   /**
     * returns normalized MetaData, with all duplicates removed and namespace prefixes resolved to
@@ -210,7 +210,7 @@ object MetaData {
       lazy val key = getUniversalKey(md, scope)
       if (md eq Null) normalized_attribs
       else if ((md.value eq null) || set(key)) iterate(md.next, normalized_attribs, set)
-      else md copy iterate(md.next, normalized_attribs, set + key)
+      else md newCopy iterate(md.next, normalized_attribs, set + key)
     }
     iterate(attribs, Null, Set())
   }
@@ -236,7 +236,7 @@ case object Null extends MetaData {
   def key   = null
   def value = null
 
-  def copy(next: MetaData) = next
+  def newCopy(next: MetaData) = next
 }
 
 final case class PrefixedAttribute[T: XmlAttributeEmbeddable](
@@ -244,26 +244,29 @@ final case class PrefixedAttribute[T: XmlAttributeEmbeddable](
     key: String,
     expr: T,
     next: MetaData
-)(implicit ev: XmlAttributeEmbeddable[T])
-    extends MetaData {
-  val value: Node = expr match { case n: Node => n; case _ => new Atom(expr) }
+) extends MetaData {
 
-  def copy(next: MetaData) = this.copy(next = next)
+  val value: Node = expr match {
+    case n: Node => n
+    case _       => new Atom(expr)
+  }
+
+  def newCopy(newNext: MetaData) = this.copy(next = newNext)
 
 }
 
-final case class UnprefixedAttribute[T](
+final case class UnprefixedAttribute[T: XmlAttributeEmbeddable](
     key: String,
     expr: T,
     next: MetaData
-)(implicit ev: XmlAttributeEmbeddable[T])
-    extends MetaData {
+) extends MetaData {
   val value: Node =
     expr match {
-      case n: Node => n; case _ => new Atom(expr)
+      case n: Node => n
+      case _       => new Atom(expr)
     }
 
-  def copy(next: MetaData) = this.copy(next = next)
+  def newCopy(newNext: MetaData) = this.copy(next = newNext)
 }
 
 /** Evidence that T can be embedded in xml attribute position. */
@@ -273,7 +276,7 @@ The following types are supported:
 - String
 - Boolean (false → remove attribute, true → empty attribute)
 - () => Unit, T => Unit event handler. Note: The return type needs to be Unit!
-- mhtml.Var[T], mhtml.Rx[T] where T is XmlAttributeEmbeddable
+- Var[T], Rx[T] where T is XmlAttributeEmbeddable
 - Option[T] where T is XmlAttributeEmbeddable (None → remove from the DOM)
 """
 )
@@ -296,7 +299,7 @@ object XmlAttributeEmbeddable {
 The following types are supported:
 - String, Int, Long, Double, Float, Char (converted with .toString)
 - xml.Node, Seq[xml.Node]
-- mhtml.Var[T], mhtml.Rx[T] where T is XmlElementEmbeddable
+- Var[T], Rx[T] where T is XmlElementEmbeddable
 - Option[T] where T is XmlElementEmbeddable (None → remove from the DOM)
 """
 )

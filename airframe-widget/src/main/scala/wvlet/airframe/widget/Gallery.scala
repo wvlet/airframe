@@ -58,7 +58,13 @@ object Gallery extends LogSupport {
               <a class="nav-link" href="#">Link</a>
               <a class="nav-link" href="#">Link</a>
               <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-              {Button.primary("Hello!").render}
+              {
+        Button
+          .primary("Hello!")
+          .onClick { e: dom.MouseEvent =>
+            logger.info("clicked!")
+          }.render
+      }
             </nav>
           </div>
           <div class="col-10">
