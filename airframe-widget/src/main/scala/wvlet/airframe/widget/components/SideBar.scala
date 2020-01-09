@@ -21,7 +21,7 @@ import scala.xml.Node
   */
 class SideBar extends RxComponent {
   override def render(content: Node*): Node =
-    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+    <nav class="col-2 d-md-block sidebar">
       <div class="sidebar-sticky">
         {content}
       </div>

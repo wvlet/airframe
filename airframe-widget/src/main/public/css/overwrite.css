@@ -16,6 +16,10 @@ pre .hljs {
     padding: 10px;
 }
 
+.navbar-dark {
+    background-color: #07405b;
+}
+
 .hljs {
     padding: 10px;
     background-color: #333333;
