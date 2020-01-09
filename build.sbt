@@ -666,7 +666,8 @@ lazy val rx =
     .settings(buildSettings)
     .settings(
       name := "airframe-rx",
-      description := "Reactive operators for Scala and Scala.js"
+      description := "Reactive operators for Scala and Scala.js",
+      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
     )
     .jsSettings(jsBuildSettings)
     .dependsOn(log, airspecRef % "test")

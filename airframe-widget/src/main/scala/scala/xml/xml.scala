@@ -321,9 +321,6 @@ object XmlElementEmbeddable {
   @inline implicit def rxElementEmbeddable[C[x] <: Rx[x], T: XE]: XE[C[T]]         = null
 }
 
-@implicitNotFound("""EntityRef are not supported, use Strings instead: <p>{"<"}</p>""")
-trait XmlEntityRefEmbeddable
-
 /** Internal structure used by scalac to create literals */
 class NodeBuffer extends Seq[Node] {
   private val underlying: mutable.ArrayBuffer[Node] = mutable.ArrayBuffer.empty

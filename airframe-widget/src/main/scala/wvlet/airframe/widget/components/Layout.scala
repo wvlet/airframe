@@ -34,6 +34,8 @@ object Layout {
   def h4: RxComponentBuilder = RxComponentBuilder(tag = "h4")
   def h5: RxComponentBuilder = RxComponentBuilder(tag = "h5")
 
+  def p: RxComponentBuilder = RxComponentBuilder(tag = "p")
+
   private def newAlert(style: String): RxComponentBuilder = {
     RxComponentBuilder(tag = "div")
       .withClasses("alert", style)
