@@ -37,10 +37,12 @@ private[airframe] object CodeExpr {
         .map { i =>
           source.lineToString(i)
         }.mkString("\n")
+
+      println(s"${startLine}-${endLine}")
       lines.trim
     }
 
-    val codeStr: String = showRaw(expr) // treeLine(expr)
+    val codeStr: String = treeLine(expr)
     q"new wvlet.airframe.rx.CodeExpr(${expr}, ${codeStr})"
   }
 }
