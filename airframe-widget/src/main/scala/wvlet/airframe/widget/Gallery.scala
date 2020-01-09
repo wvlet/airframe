@@ -50,28 +50,92 @@ object Gallery extends LogSupport {
 
   def galleryFrame = new RxComponent {
     override def render(content: Node*): Node =
-      <div class="container">
-        <div class="row">
-          <div class="col-2" style="flex: 0 0 240px;">
-            <nav class="nav flex-column">
-              <a class="nav-link active" href="#">Active</a>
-              <a class="nav-link" href="#">Link</a>
-              <a class="nav-link" href="#">Link</a>
-              <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-              {
-        Button
-          .primary("Hello!")
-          .onClick { e: dom.MouseEvent =>
-            logger.info("clicked!")
-          }.render
+      <div>
+        {
+        NavBar
+          .fixedTop("Airframe").render {
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item active">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Link</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+              </li>
+            </ul>
+            <form class="form-inline mt-2 mt-md-0">
+              <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search"/>
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+          </div>
+          }
       }
-            </nav>
-          </div>
-          <div class="col-10">
+
+      <div class="container-fluid">
+        <div class="row">
+          {
+        SideBar.sticky.render {
+          <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link active" href="#">
+                  <span data-feather="home"></span>
+                  Dashboard <span class="sr-only">(current)</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="file"></span>
+                  Orders
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="shopping-cart"></span>
+                  Products
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="users"></span>
+                  Customers
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="bar-chart-2"></span>
+                  Reports
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">
+                  <span data-feather="layers"></span>
+                  Integrations
+                </a>
+              </li>
+              <li>
+                {
+            Button
+              .primary("Hello!")
+              .onClick { e: dom.MouseEvent =>
+                logger.info("clicked!")
+              }.render
+          }
+              </li>
+            </ul>
+        }
+      }
+          <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+              <h2>Airframe Widget Gallery</h2>
+            </div>
             {content}
-          </div>
+          </main>
         </div>
       </div>
+    </div>
   }
 
   def gallery = Container.of(
