@@ -25,6 +25,13 @@ pre .hljs {
     background-color: #333333;
 }
 
+a {
+    color: #1e909f;
+}
+
+.navbar .navbar-collapse ul {
+    padding-left: 10px;
+}
 
 .hljs-comment,
 .hljs-quote {

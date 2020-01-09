@@ -41,9 +41,7 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    val content = galleryFrame {
-      gallery
-    }
+    val content = galleryFrame(gallery: _*)
 
     main.appendChild(content.toDOM)
   }
@@ -73,7 +71,7 @@ object Gallery extends LogSupport {
         <div class="container-fluid">
           <div class="row">
             {
-        SideBar.sticky.render {
+        SideBar.sticky.render(
           <ul class="nav flex-column">
                 <li class="nav-item">
                   <a class="nav-link active" href="#">
@@ -111,27 +109,20 @@ object Gallery extends LogSupport {
                     Integrations
                   </a>
                 </li>
-                <li class="nav-item"> {
-            Button
-              .primary("Hello!")
-              .onClick { e: dom.MouseEvent =>
-                logger.info("clicked!")
-              }.render
-          }
-                </li>
               </ul>
-        }
+        )
       }
-            <main role="main" class="col-md-10 ml-sm-auto col-lg-10 px-4">
+
+            <main role="main" class="col-md-10 ml-md-auto">
               <h2>Airframe Widget Gallery</h2>
-              {content}
+            {content}
             </main>
-          </div>
         </div>
       </div>
+    </div>
   }
 
-  def gallery = Container.of(
+  def gallery = Seq(
     browserGallery,
     buttonGallery,
     alertGallery,
@@ -140,7 +131,7 @@ object Gallery extends LogSupport {
   )
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
-    Layout.container(
+    Layout.containerFluid(
       Layout.h4(title),
       Layout.row.withBorder.withRoundedCorner(
         Layout.col(main),
@@ -150,7 +141,7 @@ object Gallery extends LogSupport {
   }
 
   def buttonGallery = {
-    def buttons = Seq(
+    def buttons: Seq[Button] = Seq(
       Button.primary("Primary"),
       Button.secondary("Secondary"),
       Button.success("Success"),
@@ -164,44 +155,42 @@ object Gallery extends LogSupport {
 
     val disabledButtons = buttons.map(_.disable)
 
-    Container.of(
-      demo(
-        "Buttons",
-        Container.ofList(buttons),
-        """import wvlet.airframe.widget._
-          |
-          |Button.primary("Primary")
-          |Button.secondary("Secondary")
-          |Button.success("Success")
-          |Button.danger("Danger")
-          |Button.warning("warning")
-          |Button.info("Info")
-          |Button.light("Light")
-          |Button.dark("Dark")
-          |Button.link("Link")""".stripMargin
-      ),
-      demo(
-        "Disabled Buttons",
-        Container.ofList(disabledButtons),
-        """import wvlet.airframe.widget._
-          |
-          |Button.primary("Primary").disable
-          |Button.secondary("Secondary").disable
-          |Button.success("Success").disable
-          |Button.danger("Danger").disable
-          |Button.warning("warning").disable
-          |Button.info("Info").disable
-          |Button.light("Light").disable
-          |Button.dark("Dark").disable
-          |Button.link("Link").disable""".stripMargin
-      )
+    demo(
+      "Buttons",
+      Layout.list(buttons: _*),
+      """import wvlet.airframe.widget._
+        |
+        |Button.primary("Primary")
+        |Button.secondary("Secondary")
+        |Button.success("Success")
+        |Button.danger("Danger")
+        |Button.warning("warning")
+        |Button.info("Info")
+        |Button.light("Light")
+        |Button.dark("Dark")
+        |Button.link("Link")""".stripMargin
     )
+//      demo(
+//        "Disabled Buttons",
+//        Container.ofList(disabledButtons),
+//        """import wvlet.airframe.widget._
+//          |
+//          |Button.primary("Primary").disable
+//          |Button.secondary("Secondary").disable
+//          |Button.success("Success").disable
+//          |Button.danger("Danger").disable
+//          |Button.warning("warning").disable
+//          |Button.info("Info").disable
+//          |Button.light("Light").disable
+//          |Button.dark("Dark").disable
+//          |Button.link("Link").disable""".stripMargin
+//      )
   }
 
   def alertGallery = Container.of {
     demo(
       "Alerts",
-      Container.of(
+      Layout.list(
         Layout.alertPrimary("A simple alert!"),
         Layout.alertSecondary("A simple alert!"),
         Layout.alertSuccess("A simple alert!"),
@@ -243,10 +232,10 @@ object Gallery extends LogSupport {
         Layout.colSm { "One of three columns" }
       ),
       """Layout.row(
-        |Layout.colSm { "One of three columns" },
-        |Layout.colSm { "One of three columns" },
-        |Layout.colSm { "One of three columns" }
-        |""".stripMargin
+        |  Layout.colSm { "One of three columns" },
+        |  Layout.colSm { "One of three columns" },
+        |  Layout.colSm { "One of three columns" }
+        |)""".stripMargin
     )
 
   def browserGallery =

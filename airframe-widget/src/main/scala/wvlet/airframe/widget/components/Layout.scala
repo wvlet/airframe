@@ -20,13 +20,16 @@ import scala.xml.Node
   *
   */
 object Layout {
-  def div(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
+  def list(elems: RxElement*) = div.apply(elems: _*)
 
-  def container: RxComponentBuilder      = div("container")
-  def containerFluid: RxComponentBuilder = div("container-fluid")
+  def div: RxComponentBuilder     = RxComponentBuilder(tag = "div")
+  def divOf(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
 
-  def flexbox: RxComponentBuilder       = div("d-flex")
-  def inlineFlexbox: RxComponentBuilder = div("d-inline-flex")
+  def container: RxComponentBuilder      = divOf("container")
+  def containerFluid: RxComponentBuilder = divOf("container-fluid")
+
+  def flexbox: RxComponentBuilder       = divOf("d-flex")
+  def inlineFlexbox: RxComponentBuilder = divOf("d-inline-flex")
 
   def h1: RxComponentBuilder = RxComponentBuilder(tag = "h1")
   def h2: RxComponentBuilder = RxComponentBuilder(tag = "h2")
@@ -51,21 +54,21 @@ object Layout {
   def alertLight                         = newAlert("alert-light")
   def alertDark                          = newAlert("alert-dark")
 
-  def row: RxComponentBuilder   = div("row")
-  def col: RxComponentBuilder   = div("col")
-  def col1: RxComponentBuilder  = div("col-1")
-  def col2: RxComponentBuilder  = div("col-2")
-  def col3: RxComponentBuilder  = div("col-3")
-  def col4: RxComponentBuilder  = div("col-4")
-  def col5: RxComponentBuilder  = div("col-5")
-  def col6: RxComponentBuilder  = div("col-6")
-  def col7: RxComponentBuilder  = div("col-7")
-  def col8: RxComponentBuilder  = div("col-8")
-  def col9: RxComponentBuilder  = div("col-9")
-  def col10: RxComponentBuilder = div("col-10")
-  def col11: RxComponentBuilder = div("col-11")
-  def col12: RxComponentBuilder = div("col-12")
-  def colSm: RxComponentBuilder = div("col-sm")
+  def row: RxComponentBuilder   = divOf("row")
+  def col: RxComponentBuilder   = divOf("col")
+  def col1: RxComponentBuilder  = divOf("col-1")
+  def col2: RxComponentBuilder  = divOf("col-2")
+  def col3: RxComponentBuilder  = divOf("col-3")
+  def col4: RxComponentBuilder  = divOf("col-4")
+  def col5: RxComponentBuilder  = divOf("col-5")
+  def col6: RxComponentBuilder  = divOf("col-6")
+  def col7: RxComponentBuilder  = divOf("col-7")
+  def col8: RxComponentBuilder  = divOf("col-8")
+  def col9: RxComponentBuilder  = divOf("col-9")
+  def col10: RxComponentBuilder = divOf("col-10")
+  def col11: RxComponentBuilder = divOf("col-11")
+  def col12: RxComponentBuilder = divOf("col-12")
+  def colSm: RxComponentBuilder = divOf("col-sm")
 
   def figure: RxComponentBuilder = RxComponentBuilder(tag = "figure", primaryClass = "figure")
 
