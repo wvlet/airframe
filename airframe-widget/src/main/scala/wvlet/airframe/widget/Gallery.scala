@@ -14,8 +14,7 @@
 package wvlet.airframe.widget
 import org.scalajs.dom
 import org.scalajs.dom.document
-import wvlet.airframe.rx.CodeExpr
-import wvlet.airframe.widget.components.{Browser, Button, Container, Layout, Modal}
+import wvlet.airframe.widget.components._
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -82,16 +81,6 @@ object Gallery extends LogSupport {
     modalGallery,
     gridGallery
   )
-
-  def demo[A <: RxElement](title: String, expr: CodeExpr[A]): RxElement = {
-    Layout.container(
-      Layout.h4(title),
-      Layout.row.withBorder.withRoundedCorner(
-        Layout.col(expr.expr),
-        Layout.col(Layout.scalaCode(expr.sourceCode))
-      )
-    )
-  }
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
     Layout.container(
@@ -189,16 +178,24 @@ object Gallery extends LogSupport {
   )
 
   def gridGallery =
-    demo("Grid", CodeExpr {
+    demo(
+      "Grid",
       Layout.row(
         Layout.colSm { "One of three columns" },
         Layout.colSm { "One of three columns" },
         Layout.colSm { "One of three columns" }
-      )
-    })
+      ),
+      """Layout.row(
+        |Layout.colSm { "One of three columns" },
+        |Layout.colSm { "One of three columns" },
+        |Layout.colSm { "One of three columns" }
+        |""".stripMargin
+    )
 
   def browserGallery =
-    demo("Browser Info", CodeExpr {
-      Layout.p(s"browser url: ${Browser.url}")
-    })
+    demo(
+      "Browser Info",
+      Layout.p(s"browser url: ${Browser.url}"),
+      """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
+    )
 }
