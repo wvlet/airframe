@@ -11,9 +11,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget
+package wvlet.airframe.rx.widget
+
 import org.scalajs.dom
-import wvlet.airframe.widget.components.Elem
+import wvlet.airframe.rx.widget.ui.Elem
+
+import scala.xml
 
 /**
   *

@@ -11,14 +11,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.components
-import wvlet.airframe.widget.RxElement
+package wvlet.airframe.rx.widget.ui
+import wvlet.airframe.rx.widget.RxComponent
 
 import scala.xml.Node
 
 /**
   *
   */
-case class Elem(elem: xml.Node) extends RxElement {
-  override def render: Node = elem
+class SideBar extends RxComponent {
+  override def render(content: Node*): Node =
+    <nav class="collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light">
+      <div class="sidebar-sticky">
+        {content}
+      </div>
+    </nav>
+}
+
+object SideBar {
+
+  def sticky = new SideBar()
 }

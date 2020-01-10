@@ -11,10 +11,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget
+package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
-import wvlet.airframe.widget.components._
+import wvlet.airframe.rx.widget.ui._
+import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -158,7 +159,7 @@ object Gallery extends LogSupport {
     demo(
       "Buttons",
       Layout.list(buttons: _*),
-      """import wvlet.airframe.widget._
+      """import wvlet.airframe.rx.widget._
         |
         |Button.primary("Primary")
         |Button.secondary("Secondary")
@@ -173,7 +174,7 @@ object Gallery extends LogSupport {
 //      demo(
 //        "Disabled Buttons",
 //        Container.ofList(disabledButtons),
-//        """import wvlet.airframe.widget._
+//        """import wvlet.airframe.rx.widget._
 //          |
 //          |Button.primary("Primary").disable
 //          |Button.secondary("Secondary").disable
@@ -200,7 +201,7 @@ object Gallery extends LogSupport {
         Layout.alertLight("A simple alert!"),
         Layout.alertDark("A simple alert!")
       ),
-      """import wvlet.airframe.widget._
+      """import wvlet.airframe.rx.widget._
         |
         |Layout.alertPrimary("A simple alert!")
         |Layout.alertSecondary("A simple alert!")

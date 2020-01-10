@@ -11,8 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.components
-import wvlet.airframe.widget.{RxComponent, RxComponentBuilder, RxElement}
+package wvlet.airframe.rx.widget.ui
+import wvlet.airframe.rx.widget.{RxComponent, RxComponentBuilder, RxElement}
 
 import scala.xml.Node
 

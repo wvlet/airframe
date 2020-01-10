@@ -678,13 +678,12 @@ lazy val rxJS  = rx.js
 lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
-    .in(file("airframe-widget"))
+    .in(file("airframe-rx-widget"))
     .settings(buildSettings)
     .settings(
-      name := "airframe-widget",
-      description := "UI Widget library for Scala.js",
+      name := "airframe-rx-widget",
+      description := "Reactive Widget library for Scala.js",
       libraryDependencies ++= Seq(
-//        "org.scala-lang.modules" %%% "scala-xml"   % "2.0.0-M1",
         "org.scala-js" %%% "scalajs-dom" % "0.9.8"
       )
     )

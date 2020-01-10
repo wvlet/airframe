@@ -11,10 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget
+package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
-import wvlet.airframe.widget.components.{Elem, Text}
+import wvlet.airframe.rx.widget.ui.{Elem, Text}
 
 import scala.xml.{MetaData, Node, UnprefixedAttribute}
 

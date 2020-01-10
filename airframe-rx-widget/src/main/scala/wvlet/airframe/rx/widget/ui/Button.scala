@@ -11,9 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget.components
+package wvlet.airframe.rx.widget.ui
 import org.scalajs.dom
-import wvlet.airframe.widget.RxElement
+import wvlet.airframe.rx.widget.RxElement
 
 /**
   *

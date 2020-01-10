@@ -11,13 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.widget
+package wvlet.airframe.rx.widget
 import org.scalajs.dom
-import org.scalajs.dom.raw.{Node => DomNode}
+import org.scalajs.dom.{Node => DomNode}
 import wvlet.airframe.rx.{Cancelable, Rx}
 
 import scala.scalajs.js
-import scala.xml.{Node => XmlNode, _}
+import scala.xml._
+import scala.xml.{Node => XmlNode}
 
 /**
   * Building reactive DOM from XmlNode.
