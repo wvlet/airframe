@@ -61,7 +61,7 @@ final case class Comment(commentText: String) extends Node
   *
   *  @author Burak Emir
   */
-abstract class SpecialNode extends Node {
+sealed abstract class SpecialNode extends Node {
 
   /** always empty */
   final override def attributes = Null
@@ -221,6 +221,7 @@ object MetaData {
   def getUniversalKey(attrib: MetaData, scope: NamespaceBinding) = attrib match {
     case prefixed: PrefixedAttribute[_]     => scope.getURI(prefixed.pre) + prefixed.key
     case unprefixed: UnprefixedAttribute[_] => unprefixed.key
+    case other                              => other.key
   }
 
   /**

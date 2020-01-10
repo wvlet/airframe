@@ -51,7 +51,7 @@ object Gallery extends LogSupport {
       <div>
         {
         NavBar
-          .fixedTop("Airframe").render(
+          .fixedTop("Airframe").render {
             <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav mr-auto">
               <li class="nav-item active">
@@ -65,7 +65,7 @@ object Gallery extends LogSupport {
               </li>
             </ul>
           </div>
-          )
+          }
       }
 
         <div class="container-fluid">

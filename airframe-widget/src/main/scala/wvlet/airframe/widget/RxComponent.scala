@@ -24,6 +24,7 @@ import scala.xml.{MetaData, Node, UnprefixedAttribute}
 trait RxComponent {
   def apply(elems: RxElement*): RxElement = Elem(render(elems.map(_.render): _*))
   def apply(elem: String): RxElement      = Elem(render(scala.xml.Text(elem)))
+  //def apply(elem: xml.Node): RxElement    = Elem(render(elem))
 
   def render(content: xml.Node*): xml.Node
 }
