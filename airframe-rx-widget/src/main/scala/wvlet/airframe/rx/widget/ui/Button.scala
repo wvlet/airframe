@@ -20,16 +20,12 @@ import wvlet.airframe.rx.widget.RxElement
   */
 case class Button(
     name: String,
-    cls: Seq[String] = Seq.empty,
     onClickHandler: dom.MouseEvent => Unit = { ev =>
     },
     private var disabled: Boolean = false
 ) extends RxElement {
-  def addClass(className: String) = this.copy(cls = cls :+ className)
 
-  private def classes = "btn" +: cls
-
-  def small: Button = this.copy(cls = cls :+ "btn-sm")
+  def small: Button = addClass("btn-sm")
 
   def isActive: Boolean   = !disabled
   def isDisabled: Boolean = disabled
@@ -44,10 +40,10 @@ case class Button(
   }
 
   def render: xml.Node = {
-    if (disabled) {
-      <button type="button" class={classes.mkString(" ")} disabled="true">{name}</button>
+    if (isActive) {
+      <button type="button" onclick={onClickHandler}>{name}</button>
     } else {
-      <button type="button" class={classes.mkString(" ")} onclick={onClickHandler}>{name}</button>
+      <button type="button" disabled="true">{name}</button>
     }
   }
 

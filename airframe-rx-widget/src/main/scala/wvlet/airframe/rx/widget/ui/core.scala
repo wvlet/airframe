@@ -12,25 +12,17 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.{RxComponent, RxElement}
+import wvlet.airframe.rx.widget.RxElement
+
+import scala.xml.Node
 
 /**
   *
   */
-case class Container(style: String = "container") extends RxComponent {
-  override def render(content: xml.Node*): xml.Node = <div class={style}>
-    {content}
-  </div>
+case class Elem(nodeBuilder: () => xml.Node) extends RxElement {
+  override def render: Node = nodeBuilder()
 }
 
-object Container {
-  def of(elems: RxElement*): RxElement = {
-    new Container().apply(elems: _*)
-  }
-
-  def ofList(elems: Seq[RxElement]): RxElement = of(elems: _*)
-
-  def apply(nodes: xml.Node*): RxElement = {
-    Elem(new Container().render(nodes: _*))
-  }
+case class Text(text: String) extends RxElement {
+  override def render: Node = scala.xml.Text(text)
 }

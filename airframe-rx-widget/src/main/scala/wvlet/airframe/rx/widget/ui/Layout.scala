@@ -25,12 +25,6 @@ object Layout {
   def div: RxComponentBuilder     = RxComponentBuilder(tag = "div")
   def divOf(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
 
-  def container: RxComponentBuilder      = divOf("container")
-  def containerFluid: RxComponentBuilder = divOf("container-fluid")
-
-  def flexbox: RxComponentBuilder       = divOf("d-flex")
-  def inlineFlexbox: RxComponentBuilder = divOf("d-inline-flex")
-
   def h1: RxComponentBuilder = RxComponentBuilder(tag = "h1")
   def h2: RxComponentBuilder = RxComponentBuilder(tag = "h2")
   def h3: RxComponentBuilder = RxComponentBuilder(tag = "h3")
@@ -38,39 +32,6 @@ object Layout {
   def h5: RxComponentBuilder = RxComponentBuilder(tag = "h5")
 
   def p: RxComponentBuilder = RxComponentBuilder(tag = "p")
-
-  private def newAlert(style: String): RxComponentBuilder = {
-    RxComponentBuilder(tag = "div")
-      .withClasses("alert", style)
-      .withRoles("alert")
-  }
-
-  def alertPrimary: RxComponentBuilder   = newAlert("alert-primary")
-  def alertSecondary: RxComponentBuilder = newAlert("alert-secondary")
-  def alertSuccess: RxComponentBuilder   = newAlert("alert-success")
-  def alertDanger: RxComponentBuilder    = newAlert("alert-danger")
-  def alertWarning: RxComponentBuilder   = newAlert("alert-warning")
-  def alertInfo                          = newAlert("alert-info")
-  def alertLight                         = newAlert("alert-light")
-  def alertDark                          = newAlert("alert-dark")
-
-  def row: RxComponentBuilder   = divOf("row")
-  def col: RxComponentBuilder   = divOf("col")
-  def col1: RxComponentBuilder  = divOf("col-1")
-  def col2: RxComponentBuilder  = divOf("col-2")
-  def col3: RxComponentBuilder  = divOf("col-3")
-  def col4: RxComponentBuilder  = divOf("col-4")
-  def col5: RxComponentBuilder  = divOf("col-5")
-  def col6: RxComponentBuilder  = divOf("col-6")
-  def col7: RxComponentBuilder  = divOf("col-7")
-  def col8: RxComponentBuilder  = divOf("col-8")
-  def col9: RxComponentBuilder  = divOf("col-9")
-  def col10: RxComponentBuilder = divOf("col-10")
-  def col11: RxComponentBuilder = divOf("col-11")
-  def col12: RxComponentBuilder = divOf("col-12")
-  def colSm: RxComponentBuilder = divOf("col-sm")
-
-  def figure: RxComponentBuilder = RxComponentBuilder(tag = "figure", primaryClass = "figure")
 
   def code(codeStr: String): RxElement = new RxElement {
     override def render: Node = <code>{codeStr}</code>

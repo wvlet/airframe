@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
+import wvlet.airframe.rx.widget.RxDOM.{addAttribute, mount}
 import wvlet.airframe.rx.{Cancelable, Rx}
 
 import scala.scalajs.js
@@ -23,63 +24,81 @@ import scala.xml.{Node => XmlNode}
 /**
   * Building reactive DOM from XmlNode.
   *
+  * It will also set event listener to the mounting DOM node (parent) if
+  * XML attributes contain a Scala function
+  *
   * This code is based on monadic-html:
   * https://github.com/OlivierBlanvillain/monadic-html/blob/master/monadic-html/src/main/scala/mhtml/mount.scala
   */
-object RxDOM {
+private[widget] object RxDOM {
 
-  def mount(parent: DomNode, child: XmlNode): Unit = {
-    mountNode(parent, child, None)
+  def mount(elem: RxElement): Cancelable = {
+    val node = dom.document.createElement("div")
+    mountTo(node, elem)
   }
 
-  def mountNode(parent: DomNode, child: XmlNode, startPoint: Option[DomNode]): Cancelable = {
-    child match {
+  def mountTo(parent: dom.Node, elem: RxElement): Cancelable = {
+    mount(parent, Some(elem), elem.render)
+  }
+
+  private def mount(
+      parent: dom.Node,
+      currentElement: Option[RxElement],
+      currentNode: xml.Node,
+      startPoint: Option[dom.Node] = None
+  ): Cancelable = {
+    currentNode match {
       case e @ Elem(_, label, metadata, scope, _, _*) =>
-        val elemNode = Option(e.namespace) match {
+        val domNode = Option(e.namespace) match {
           case Some(ns) => dom.document.createElementNS(ns, label)
           case None     => dom.document.createElement(label)
         }
         val cancelMetadata = metadata.map { m =>
-          mountMetadata(elemNode, scope, m, m.value)
+          addAttribute(domNode, currentElement, scope, m)
         }
-        val cancelChild = e.child.map(c => mountNode(elemNode, c, None))
-        parent.mountHere(elemNode, startPoint)
+        val cancelChild = e.child.map { c =>
+          mount(domNode, None, c)
+        }
+        parent.mountHere(domNode, None)
         Cancelable { () =>
           cancelMetadata.foreach(_.cancel); cancelChild.foreach(_.cancel)
         }
-
       case EntityRef(entityName) =>
-        val node = dom.document.createTextNode("").asInstanceOf[dom.Element]
-        node.innerHTML = s"&$entityName;"
-        parent.mountHere(node, startPoint)
+        val domNode = dom.document.createTextNode("").asInstanceOf[dom.Element]
+        domNode.innerHTML = s"&$entityName;"
+        parent.mountHere(domNode, startPoint)
         Cancelable.empty
-
       case Comment(text) =>
         parent.mountHere(dom.document.createComment(text), startPoint)
         Cancelable.empty
-
       case Group(nodes) =>
-        val cancels = nodes.map(n => mountNode(parent, n, startPoint))
+        val cancels = nodes.map(n => mount(parent, None, n, startPoint))
         Cancelable(() => cancels.foreach(_.cancel))
-
       case a: Atom[_] =>
         a.data match {
-          case n: XmlNode => mountNode(parent, n, startPoint)
+          case n: XmlNode =>
+            mount(parent, None, n)
           case rx: Rx[_] =>
             val (start, end) = parent.createMountSection()
             var c1           = Cancelable.empty
+            // Remove the previous node from the DOM
             val c2 = rx.run { v =>
               parent.cleanMountSection(start, end)
               c1.cancel
-              c1 = mountNode(parent, new Atom(v), Some(start))
+              c1 = mount(parent, None, new Atom(v), Some(start))
             }
             Cancelable { () =>
               c1.cancel; c2.cancel
             }
-          case elem: RxElement => mountNode(parent, elem.render, startPoint)
-          case Some(x)         => mountNode(parent, new Atom(x), startPoint)
-          case None            => Cancelable.empty
-          case seq: Seq[_]     => mountNode(parent, new Group(seq.map(new Atom(_))), startPoint)
+          case elem: RxElement => {
+            mount(parent, None, elem.render, startPoint)
+          }
+          case Some(x) =>
+            mount(parent, currentElement, new Atom(x), startPoint)
+          case None =>
+            Cancelable.empty
+          case seq: Seq[_] =>
+            mount(parent, None, new Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
             val content = primitive.toString
             if (!content.isEmpty)
@@ -89,49 +108,39 @@ object RxDOM {
     }
   }
 
-  private val onMountAtt   = "airframe-onmount"
-  private val onUnmountAtt = "airframe-onunmount"
-
-  private def mountMetadata(parent: DomNode, scope: NamespaceBinding, m: MetaData, v: Any): Cancelable =
-    v match {
-      case a: Atom[_] =>
-        mountMetadata(parent, scope, m, a.data)
-
-      case Some(x: Any) =>
-        mountMetadata(parent, scope, m, x)
-      case r: Rx[_] =>
-        val rx: Rx[_] = r
-        var c1        = Cancelable.empty
-        val c2 = rx.run { value =>
-          c1.cancel
-          c1 = mountMetadata(parent, scope, m, value)
-        }
-        Cancelable { () =>
-          c1.cancel; c2.cancel
-        }
-
-      case f: Function0[Unit @unchecked] =>
-        if (m.key == onMountAtt) {
-          f(); Cancelable.empty
-        } else if (m.key == onUnmountAtt) {
-          Cancelable(f)
-        } else {
+  private def addAttribute(
+      parent: dom.Node,
+      // Current element
+      elem: Option[RxElement],
+      scope: NamespaceBinding,
+      m: MetaData
+  ): Cancelable = {
+    def traverse(v: Any): Cancelable = {
+      v match {
+        case a: Atom[_] => traverse(a.data)
+        case Some(x)    => traverse(x)
+        case rx: Rx[_] =>
+          var c1 = Cancelable.empty
+          val c2 = rx.run { value =>
+            c1.cancel
+            c1 = traverse(value)
+          }
+          Cancelable { () =>
+            c1.cancel; c2.cancel
+          }
+        case f: Function0[Unit @unchecked] =>
           parent.setEventListener(m.key, (_: dom.Event) => f())
-        }
-
-      case f: Function1[DomNode @unchecked, Unit @unchecked] =>
-        if (m.key == onMountAtt) {
-          f(parent); Cancelable.empty
-        } else if (m.key == onUnmountAtt) {
-          Cancelable(() => f(parent))
-        } else {
+        case f: Function1[DomNode @unchecked, Unit @unchecked] =>
           parent.setEventListener(m.key, f)
-        }
-
-      case _ =>
-        parent.setMetadata(scope, m, v)
-        Cancelable.empty
+        case _ =>
+          // TODO enrich attributes using config of RxElement
+          parent.setMetadata(scope, m, v)
+          Cancelable.empty
+      }
     }
+
+    traverse(m.value)
+  }
 
   private implicit class RichDomNode(node: DomNode) {
     def setEventListener[A](key: String, listener: A => Unit): Cancelable = {

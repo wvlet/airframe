@@ -21,6 +21,8 @@ import wvlet.log.{LogLevel, LogSupport, Logger}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import scala.xml.Node
 
+import wvlet.airframe.rx.widget.ui.bootstrap._
+
 /**
   *
   */
@@ -44,7 +46,7 @@ object Gallery extends LogSupport {
     }
     val content = galleryFrame(gallery: _*)
 
-    main.appendChild(content.toDOM)
+    content.mountTo(main)
   }
 
   def galleryFrame = new RxComponent {
@@ -132,11 +134,11 @@ object Gallery extends LogSupport {
   )
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
-    Layout.containerFluid(
+    containerFluid(
       Layout.h4(title),
-      Layout.row.withBorder.withRoundedCorner(
-        Layout.col(main),
-        Layout.col(Layout.scalaCode(code))
+      row.withBorder.withRoundedCorner(
+        col(main),
+        col(Layout.scalaCode(code))
       )
     )
   }
@@ -188,61 +190,55 @@ object Gallery extends LogSupport {
 //      )
   }
 
-  def alertGallery = Container.of {
-    demo(
-      "Alerts",
-      Layout.list(
-        Layout.alertPrimary("A simple alert!"),
-        Layout.alertSecondary("A simple alert!"),
-        Layout.alertSuccess("A simple alert!"),
-        Layout.alertDanger("A simple alert!"),
-        Layout.alertWarning("A simple alert!"),
-        Layout.alertInfo("A simple alert!"),
-        Layout.alertLight("A simple alert!"),
-        Layout.alertDark("A simple alert!")
-      ),
-      """import wvlet.airframe.rx.widget._
+  def alertGallery = demo(
+    "Alerts",
+    Layout.list(
+      alertPrimary("A simple alert!"),
+      alertSecondary("A simple alert!"),
+      alertSuccess("A simple alert!"),
+      alertDanger("A simple alert!"),
+      alertWarning("A simple alert!"),
+      alertInfo("A simple alert!"),
+      alertLight("A simple alert!"),
+      alertDark("A simple alert!")
+    ),
+    """import wvlet.airframe.rx.widget.ui.bootstrap._
         |
-        |Layout.alertPrimary("A simple alert!")
-        |Layout.alertSecondary("A simple alert!")
-        |Layout.alertSuccess("A simple alert!")
-        |Layout.alertDanger("A simple alert!")
-        |Layout.alertWarning("A simple alert!")
-        |Layout.alertInfo("A simple alert!")
-        |Layout.alertLight("A simple alert!")
-        |Layout.alertDark("A simple alert!")
+        |Bootstrap.alertPrimary("A simple alert!")
+        |Bootstrap.alertSecondary("A simple alert!")
+        |Bootstrap.alertSuccess("A simple alert!")
+        |Bootstrap.alertDanger("A simple alert!")
+        |Bootstrap.alertWarning("A simple alert!")
+        |Bootstrap.alertInfo("A simple alert!")
+        |Bootstrap.alertLight("A simple alert!")
+        |Bootstrap.alertDark("A simple alert!")
         |""".stripMargin
-    )
-  }
-
-  def modalGallery = Container.of(
-    demo(
-      "Modal",
-      new Modal(title = "Modal Demo").apply("Modal body text goes here"),
-      """new Modal(title = "Modal Demo")
-        |  .apply("Modal body text goes here")""".stripMargin
-    )
   )
 
-  def gridGallery =
-    demo(
-      "Grid",
-      Layout.row(
-        Layout.colSm { "One of three columns" },
-        Layout.colSm { "One of three columns" },
-        Layout.colSm { "One of three columns" }
-      ),
-      """Layout.row(
+  def modalGallery = demo(
+    "Modal",
+    new Modal(title = "Modal Demo").apply("Modal body text goes here"),
+    """new Modal(title = "Modal Demo")
+        |  .apply("Modal body text goes here")""".stripMargin
+  )
+
+  def gridGallery = demo(
+    "Grid",
+    row(
+      colSm { "One of three columns" },
+      colSm { "One of three columns" },
+      colSm { "One of three columns" }
+    ),
+    """Layout.row(
         |  Layout.colSm { "One of three columns" },
         |  Layout.colSm { "One of three columns" },
         |  Layout.colSm { "One of three columns" }
         |)""".stripMargin
-    )
+  )
 
-  def browserGallery =
-    demo(
-      "Browser Info",
-      Layout.p(s"browser url: ${Browser.url}"),
-      """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
-    )
+  def browserGallery = demo(
+    "Browser Info",
+    Layout.p(s"browser url: ${Browser.url}"),
+    """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
+  )
 }
