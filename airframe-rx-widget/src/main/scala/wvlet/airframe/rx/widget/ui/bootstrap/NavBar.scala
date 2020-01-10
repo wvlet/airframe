@@ -22,7 +22,7 @@ import scala.xml.Node
   */
 class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {
-  override def render(content: Node*): Node =
+  override def render(content: Node): Node =
     <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="min-height: 42px; padding: 4px 8px;">
       <a class="navbar-brand" href="#">
         <img class="d-inline-block align-top" src={iconFile} alt={title} width={iconWidth.toString} hight={

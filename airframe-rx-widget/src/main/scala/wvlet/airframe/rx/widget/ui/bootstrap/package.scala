@@ -56,21 +56,6 @@ package object bootstrap {
   def col12: RxComponentBuilder = divOf("col-12")
   def colSm: RxComponentBuilder = divOf("col-sm")
 
-  private def newAlert(style: String): RxComponentBuilder = {
-    RxComponentBuilder(tag = "div")
-      .withClasses("alert", style)
-      .withRoles("alert")
-  }
-
-  def alertPrimary: RxComponentBuilder   = newAlert("alert-primary")
-  def alertSecondary: RxComponentBuilder = newAlert("alert-secondary")
-  def alertSuccess: RxComponentBuilder   = newAlert("alert-success")
-  def alertDanger: RxComponentBuilder    = newAlert("alert-danger")
-  def alertWarning: RxComponentBuilder   = newAlert("alert-warning")
-  def alertInfo                          = newAlert("alert-info")
-  def alertLight                         = newAlert("alert-light")
-  def alertDark                          = newAlert("alert-dark")
-
   def container: RxComponentBuilder      = divOf("container")
   def containerFluid: RxComponentBuilder = divOf("container-fluid")
 

@@ -17,8 +17,11 @@ import wvlet.airframe.rx.widget.RxComponent
 
 import scala.xml.Node
 
-case class Modal(title: String) extends RxComponent {
-  override def render(content: Node*): Node =
+case class Modal(title: String, footer: xml.Node = <div></div>) extends RxComponent {
+
+  def withFooter(footer: xml.Node) = this.copy(footer = footer)
+
+  override def render(content: Node): Node =
     <div class="modal" style="display: block; position: relative;" tabindex="-1" role="dialog">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -32,8 +35,7 @@ case class Modal(title: String) extends RxComponent {
             {content}
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            {footer}
           </div>
         </div>
       </div>
@@ -43,4 +45,7 @@ case class Modal(title: String) extends RxComponent {
 /**
   *
   */
-object Modal {}
+object Modal {
+
+  def default(title: String) = Modal(title)
+}

@@ -41,17 +41,16 @@ trait RxWidget {
 
   /**
     * Add an extra CSS style
-    * @param styleName
-    * @param value
     */
-  def addStyle(styleName: String, value: String): this.type = updateConfig(config.addStyle(styleName, value))
+  def addStyle(styleValue: String): this.type = updateConfig(config.addStyle(styleValue))
 }
 
 trait RxComponent extends RxWidget {
-  def render(content: xml.Node*): xml.Node
+  def render(content: xml.Node): xml.Node
 
-  def apply(elems: RxElement*): RxElement = Elem(() => render(elems.map(_.render): _*))
+  def apply(elems: RxElement*): RxElement = Elem(() => render(xml.Group(elems.map(_.render))))
   def apply(elem: String): RxElement      = Elem(() => render(scala.xml.Text(elem)))
+  def apply(elem: xml.Node): RxElement    = Elem(() => render(elem))
 }
 
 trait RxElement extends RxWidget {
@@ -93,8 +92,8 @@ case class RxWidgetConfig(
     this.copy(attributes = attributes + (attrName -> (attributes.getOrElse(attrName, Seq.empty[String]) :+ attrValue)))
   }
 
-  def addStyle(styleName: String, value: String): RxWidgetConfig = {
-    appendAttribute("style", s"${styleName}: ${value};")
+  def addStyle(styleString: String): RxWidgetConfig = {
+    appendAttribute("style", styleString)
   }
 
   def addClass(className: String): RxWidgetConfig = {

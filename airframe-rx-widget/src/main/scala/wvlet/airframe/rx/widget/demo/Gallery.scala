@@ -19,8 +19,6 @@ import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import scala.xml.Node
-
 import wvlet.airframe.rx.widget.ui.bootstrap._
 
 /**
@@ -50,79 +48,79 @@ object Gallery extends LogSupport {
   }
 
   def galleryFrame = new RxComponent {
-    override def render(content: Node*): Node =
+    override def render(content: xml.Node): xml.Node =
       <div>
         {
         NavBar
-          .fixedTop("Airframe").render {
+          .fixedTop("Airframe") {
             <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item active">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Link</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-              </li>
-            </ul>
-          </div>
+              <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                  <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="#">Link</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+                </li>
+              </ul>
+            </div>
           }
       }
 
         <div class="container-fluid">
           <div class="row">
             {
-        SideBar.sticky.render(
+        SideBar.sticky {
           <ul class="nav flex-column">
-                <li class="nav-item">
-                  <a class="nav-link active" href="#">
-                    <span data-feather="home"></span>
-                    Dashboard <span class="sr-only">(current)</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <span data-feather="file"></span>
-                    Orders
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <span data-feather="shopping-cart"></span>
-                    Products
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <span data-feather="users"></span>
-                    Customers
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <span data-feather="bar-chart-2"></span>
-                    Reports
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <span data-feather="layers"></span>
-                    Integrations
-                  </a>
-                </li>
-              </ul>
-        )
+            <li class="nav-item">
+              <a class="nav-link active" href="#">
+                <span data-feather="home"></span>
+                Dashboard <span class="sr-only">(current)</span>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="file"></span>
+                Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="shopping-cart"></span>
+                Products
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="users"></span>
+                Customers
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="bar-chart-2"></span>
+                Reports
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="layers"></span>
+                Integrations
+              </a>
+            </li>
+          </ul>
+        }
       }
 
             <main role="main" class="col-md-10 ml-md-auto">
               <h2>Airframe Widget Gallery</h2>
-            {content}
+              {content}
             </main>
+          </div>
         </div>
       </div>
-    </div>
   }
 
   def gallery = Seq(
@@ -160,8 +158,8 @@ object Gallery extends LogSupport {
 
     demo(
       "Buttons",
-      Layout.list(buttons: _*),
-      """import wvlet.airframe.rx.widget._
+      Layout.of(buttons: _*),
+      """import wvlet.airframe.rx.widget.ui.bootstrap._
         |
         |Button.primary("Primary")
         |Button.secondary("Secondary")
@@ -192,34 +190,56 @@ object Gallery extends LogSupport {
 
   def alertGallery = demo(
     "Alerts",
-    Layout.list(
-      alertPrimary("A simple alert!"),
-      alertSecondary("A simple alert!"),
-      alertSuccess("A simple alert!"),
-      alertDanger("A simple alert!"),
-      alertWarning("A simple alert!"),
-      alertInfo("A simple alert!"),
-      alertLight("A simple alert!"),
-      alertDark("A simple alert!")
+    Layout.of(
+      Alert.primary("A simple alert!"),
+      Alert.secondary("A simple alert!"),
+      Alert.success("A simple alert!"),
+      Alert.danger("A simple alert!"),
+      Alert.warning("A simple alert!"),
+      Alert.info("A simple alert!"),
+      Alert.light("A simple alert!"),
+      Alert.dark("A simple alert!")
     ),
     """import wvlet.airframe.rx.widget.ui.bootstrap._
         |
-        |Bootstrap.alertPrimary("A simple alert!")
-        |Bootstrap.alertSecondary("A simple alert!")
-        |Bootstrap.alertSuccess("A simple alert!")
-        |Bootstrap.alertDanger("A simple alert!")
-        |Bootstrap.alertWarning("A simple alert!")
-        |Bootstrap.alertInfo("A simple alert!")
-        |Bootstrap.alertLight("A simple alert!")
-        |Bootstrap.alertDark("A simple alert!")
+        |Alert.primary("A simple alert!")
+        |Alert.secondary("A simple alert!")
+        |Alert.success("A simple alert!")
+        |Alert.danger("A simple alert!")
+        |Alert.warning("A simple alert!")
+        |Alert.info("A simple alert!")
+        |Alert.light("A simple alert!")
+        |Alert.dark("A simple alert!")
         |""".stripMargin
   )
 
   def modalGallery = demo(
     "Modal",
-    new Modal(title = "Modal Demo").apply("Modal body text goes here"),
-    """new Modal(title = "Modal Demo")
-        |  .apply("Modal body text goes here")""".stripMargin
+    Modal
+      .default(title = "ModalDemo")
+      .addStyle("display: block")
+      .addStyle("position: relative")
+      .withFooter(
+        <div>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      ).apply(
+        <b>Modal body text goes here</b>
+      ),
+    """Modal
+      |  .default(title = "ModalDemo")
+      |  .addStyle("display: block")
+      |  .addStyle("position: relative") {
+      |  .withFooter(
+      |    <div>
+      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      |      <button type="button" class="btn btn-primary">Save changes</button>
+      |     </div>
+      |  ).apply(
+      |    <b>Modal body text goes here</b>
+      |  )
+      |""".stripMargin
   )
 
   def gridGallery = demo(
@@ -229,10 +249,10 @@ object Gallery extends LogSupport {
       colSm { "One of three columns" },
       colSm { "One of three columns" }
     ),
-    """Layout.row(
-        |  Layout.colSm { "One of three columns" },
-        |  Layout.colSm { "One of three columns" },
-        |  Layout.colSm { "One of three columns" }
+    """row(
+        |  col { "One of three columns" },
+        |  col { "One of three columns" },
+        |  col { "One of three columns" }
         |)""".stripMargin
   )
 

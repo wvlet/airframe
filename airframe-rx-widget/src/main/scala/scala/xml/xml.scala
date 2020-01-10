@@ -14,6 +14,7 @@
 package scala.xml
 
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.widget.{RxElement, RxWidget}
 
 import scala.collection.mutable
 import scala.annotation.{implicitNotFound, tailrec}
@@ -319,6 +320,7 @@ object XmlElementEmbeddable {
   @inline implicit def optionElementEmbeddable[C[x] <: Option[x], T: XE]: XE[C[T]] = null
   @inline implicit def seqElementEmbeddable[C[x] <: Seq[x], T <: Node]: XE[C[T]]   = null
   @inline implicit def rxElementEmbeddable[C[x] <: Rx[x], T: XE]: XE[C[T]]         = null
+  @inline implicit def rxElementEmbeddable: XE[RxElement]                          = null
 }
 
 /** Internal structure used by scalac to create literals */

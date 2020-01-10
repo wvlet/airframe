@@ -20,8 +20,7 @@ import scala.xml.Node
   *
   */
 object Layout {
-  def list(elems: RxElement*) = div.apply(elems: _*)
-
+  def of                          = div
   def div: RxComponentBuilder     = RxComponentBuilder(tag = "div")
   def divOf(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
 
@@ -38,11 +37,11 @@ object Layout {
   }
 
   def codeBlock: RxComponent = new RxComponent {
-    override def render(content: Node*): Node =
+    override def render(content: Node): Node =
       <pre><code>{content}</code></pre>
   }
 
   def scalaCode: RxComponent = new RxComponent {
-    override def render(content: Node*): Node = <pre><code class="language-scala rounded">{content}</code></pre>
+    override def render(content: Node): Node = <pre><code class="language-scala rounded">{content}</code></pre>
   }
 }
