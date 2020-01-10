@@ -75,9 +75,10 @@ object RxDOM {
             Cancelable { () =>
               c1.cancel; c2.cancel
             }
-          case Some(x)     => mountNode(parent, new Atom(x), startPoint)
-          case None        => Cancelable.empty
-          case seq: Seq[_] => mountNode(parent, new Group(seq.map(new Atom(_))), startPoint)
+          case elem: RxElement => mountNode(parent, elem.render, startPoint)
+          case Some(x)         => mountNode(parent, new Atom(x), startPoint)
+          case None            => Cancelable.empty
+          case seq: Seq[_]     => mountNode(parent, new Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
             val content = primitive.toString
             if (!content.isEmpty)

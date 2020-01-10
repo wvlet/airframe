@@ -32,7 +32,6 @@ sealed trait Node {
   def namespace: String                 = getNamespace(this.prefix)
   def getNamespace(pre: String): String = if (scope eq null) null else scope.getURI(pre)
   def attributes: MetaData              = Null
-
 }
 
 /** A hack to group XML nodes in one node. */
