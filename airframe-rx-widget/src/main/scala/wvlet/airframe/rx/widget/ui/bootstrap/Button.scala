@@ -43,9 +43,9 @@ case class Button(
 
   def render: xml.Node = {
     if (isActive) {
-      <button type="button" onclick={onClickHandler}>{name}</button>
+      <button type="button" class="btn" onclick={onClickHandler}>{name}</button>
     } else {
-      <button type="button" disabled="true">{name}</button>
+      <button type="button" class="btn" disabled="true">{name}</button>
     }
   }
 

@@ -70,8 +70,7 @@ publishTo in ThisBuild := sonatypePublishToBundle.value
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
-  // Workaround for ' JSCom has been closed' issue
-  //parallelExecution in ThisBuild := false
+//    Compile / parallelExecution := false
 )
 
 val noPublish = Seq(
@@ -97,7 +96,7 @@ lazy val root =
       }
     }
     //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjectsCore ++ jsProjectsSub): _*)
 
 // Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
@@ -157,17 +156,21 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
 )
 
 // Scala.js build (only for Scala 2.12 + 2.13)
-lazy val jsProjects: Seq[ProjectReference] = Seq(
-  airframeJS,
-  surfaceJS,
+lazy val jsProjectsCore: Seq[ProjectReference] = Seq(
   logJS,
+  surfaceJS,
+  airframeJS,
   metricsJS,
-  codecJS,
-  msgpackJS,
-  jsonJS,
-  rxJS,
-  widgetJS,
   airspecJS
+)
+
+// A workaround for https://github.com/scala-js/scala-js/issues/3921
+lazy val jsProjectsSub: Seq[ProjectReference] = Seq(
+  jsonJS,
+  msgpackJS,
+  codecJS,
+  rxJS,
+  widgetJS
 )
 
 lazy val airspecProjects: Seq[ProjectReference] = Seq(
@@ -225,7 +228,23 @@ lazy val projectJS =
       noPublish,
       crossScalaVersions := exceptScala2_11
     )
-    .aggregate(jsProjects: _*)
+    .aggregate(projectJSCore, projectJSSub)
+
+lazy val projectJSCore =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := exceptScala2_11
+    )
+    .aggregate(jsProjectsCore: _*)
+
+lazy val projectJSSub =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := exceptScala2_11
+    )
+    .aggregate(jsProjectsSub: _*)
 
 lazy val docs =
   project
