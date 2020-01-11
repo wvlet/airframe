@@ -56,10 +56,13 @@ a {
 .hljs-builtin-name,
 .hljs-literal,
 .hljs-type,
-.hljs-params,
 .hljs-meta,
 .hljs-link {
     color: #99b2e8;
+}
+
+.hljs-params {
+    color: #f2b9d9;
 }
 
 /* Ocean Yellow */

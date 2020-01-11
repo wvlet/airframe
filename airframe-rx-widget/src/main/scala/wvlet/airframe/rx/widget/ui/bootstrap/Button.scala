@@ -56,8 +56,6 @@ case class Button(
 }
 
 object Button extends LogSupport {
-  def test = <button onclick={() => println("clicked!")}>Clicked</button>
-
   def primary(name: String)   = Button(name).addClass("btn-primary")
   def secondary(name: String) = Button(name).addClass("btn-secondary")
   def success(name: String)   = Button(name).addClass("btn-success")
