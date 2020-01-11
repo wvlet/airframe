@@ -84,12 +84,17 @@ object Gallery extends LogSupport {
               <a class="nav-link" href="#">
                 Integrations
               </a>
+            ),
+            NavBar.navItem(
+              Button
+                .primary("Click Me!")
+                .onClick(e => logger.info("Clicked"))
             )
           )
         }
 
           <main role="main" class="col-md-10 ml-md-auto">
-            <h2>Airframe Widget Gallery</h2>
+            <h2>Airframe RxWidget Gallery</h2>
             {content}
           </main>
         </div>
@@ -99,12 +104,73 @@ object Gallery extends LogSupport {
   }
 
   def gallery = Seq(
+    componentGallery,
+    elementGallery,
     browserGallery,
     buttonGallery,
     alertGallery,
     modalGallery,
     gridGallery
   )
+
+  def componentGallery = {
+    Layout.of(
+      <div>
+        <h4>RxComponent</h4>
+        <p>RxComponent is a unit to define a reactive widget that can enclose the other components or elements.</p>
+        {
+        Layout.scalaCode {
+          s"""import scala.xml
+             |import wvlet.airframe.rx.widget._
+             |
+             |class MyComponent extends RxComponent {
+             |  def render(content: xml.Node): xml.Node =
+             |    <div class="main">
+             |      <h2>Hello Airframe Rx Widget!</h2>
+             |      {content}
+             |    </div>
+             |}
+             |""".stripMargin
+        }
+      }
+      <p>Here is a handy-syntax to define a new component:</p>
+        {
+        Layout.scalaCode {
+          """// Short-hand notation for defining a new RxComponent at ease
+            |RxComponent { content =>
+            |  <div class="main">
+            |    <h2>Hello Airframe Rx Widget!</h2>
+            |    {content}
+            |  </div>
+            |}
+            |""".stripMargin
+        }
+      }
+      </div>
+    )
+  }
+
+  def elementGallery = {
+    Layout.of(
+      <div>
+      <h4>RxElement</h4>
+      {
+        Layout.scalaCode(
+          s"""import wvlet.airframe.rx.widget._
+           |
+           |class MyButton(name:String) extends RxElement {
+           |  def render: xml.Node = <button class="button">{name}</button>
+           |}
+           |
+           |// Short-hand notation
+           |def newButton(name:String): RxElement =
+           |  RxElement{ <button class="button">{name}</button> }
+           |""".stripMargin
+        )
+      }
+      </div>
+    )
+  }
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
     containerFluid(
@@ -210,7 +276,7 @@ object Gallery extends LogSupport {
       |    <div>
       |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       |      <button type="button" class="btn btn-primary">Save changes</button>
-      |     </div>
+      |    </div>
       |  ).apply(
       |    <b>Modal body text goes here</b>
       |  )

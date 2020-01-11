@@ -21,7 +21,7 @@ import wvlet.airframe.rx.widget.RxElement
   */
 case class Button(
     name: String,
-    onClickHandler: dom.MouseEvent => Unit = { ev =>
+    private val onClickHandler: dom.MouseEvent => Unit = { ev =>
     },
     private var disabled: Boolean = false
 ) extends RxElement {

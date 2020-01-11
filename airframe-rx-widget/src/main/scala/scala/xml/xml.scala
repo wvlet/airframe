@@ -300,6 +300,7 @@ object XmlAttributeEmbeddable {
 The following types are supported:
 - String, Int, Long, Double, Float, Char (converted with .toString)
 - xml.Node, Seq[xml.Node]
+- RxElement
 - Var[T], Rx[T] where T is XmlElementEmbeddable
 - Option[T] where T is XmlElementEmbeddable (None → remove from the DOM)
 """
