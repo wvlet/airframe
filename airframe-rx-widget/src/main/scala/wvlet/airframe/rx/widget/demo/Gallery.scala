@@ -67,22 +67,22 @@ object Gallery extends LogSupport {
           NavBar.sideBarSticky(
             NavBar.navItemActive(
               <a class="nav-link active" href="#">
-                Dashboard <span class="sr-only">(current)</span>
+                Components <span class="sr-only">(current)</span>
               </a>
             ),
             NavBar.navItem(
               <a class="nav-link" href="#">
-                Orders
+                Layout
               </a>
             ),
             NavBar.navItem(
               <a class="nav-link" href="#">
-                Products
+                Gallery
               </a>
             ),
             NavBar.navItem(
               <a class="nav-link" href="#">
-                Integrations
+                Reactive
               </a>
             ),
             NavBar.navItem(
@@ -117,7 +117,7 @@ object Gallery extends LogSupport {
     Layout.of(
       <div>
         <h4>RxComponent</h4>
-        <p>RxComponent is a unit to define a reactive widget that can enclose the other components or elements.</p>
+        <p>RxComponent is the unit of a reactive widget that can enclose other components or elements.</p>
         {
         Layout.scalaCode {
           s"""import scala.xml

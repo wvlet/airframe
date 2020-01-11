@@ -50,15 +50,11 @@ trait RxWidget {
 trait RxComponent extends RxWidget {
   def render(content: xml.Node): xml.Node
 
-  def apply(elems: RxElement*): RxElement = Elem(() => render(xml.Group(elems.map(_.render))))
-  def apply(elem: String): RxElement      = Elem(() => render(scala.xml.Text(elem)))
-  def apply(elem: xml.Node): RxElement    = Elem(() => render(elem))
+  def apply(elems: RxElement*): RxElement =
+    Elem(() => render(xml.Group(elems.map(x => new scala.xml.Atom(LazyElement(x))))))
+  def apply(elem: String): RxElement   = Elem(() => render(scala.xml.Text(elem)))
+  def apply(elem: xml.Node): RxElement = Elem(() => render(elem))
 
-  private def renderInternal(content: xml.Node): xml.Node = {
-    val xml = render(content)
-    // TODO enrich node with config
-    xml
-  }
 }
 
 object RxComponent {
@@ -79,6 +75,11 @@ object RxComponent {
     elem
   }
 }
+
+/**
+  * A placeholder for rendering elements lazily
+  */
+private[widget] case class LazyElement(elem: RxElement)
 
 /**
   * Base trait of reactive element that can produce a single DOM element

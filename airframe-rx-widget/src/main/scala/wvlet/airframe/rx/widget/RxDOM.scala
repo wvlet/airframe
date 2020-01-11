@@ -57,9 +57,6 @@ private[widget] object RxDOM extends LogSupport {
         }
 
         // Enrich attributes using the config of RxElement
-        if (label == "button") {
-          //debug(s"config: ${currentElement}, parent:${parent}")
-        }
         currentElement.foreach { x =>
           val htmlNode = domNode.asInstanceOf[dom.html.Html]
           for ((attrName, value) <- x.getConfig.attributes) {
@@ -121,6 +118,8 @@ private[widget] object RxDOM extends LogSupport {
             mount(parent, currentElement, new Atom(x), startPoint)
           case None =>
             Cancelable.empty
+          case LazyElement(elem) =>
+            mount(parent, Some(elem), elem.render, startPoint)
           case seq: Seq[_] =>
             mount(parent, None, new Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
