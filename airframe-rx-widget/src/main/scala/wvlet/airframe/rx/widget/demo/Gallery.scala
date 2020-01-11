@@ -168,6 +168,7 @@ object Gallery extends LogSupport {
            |""".stripMargin
         )
       }
+        {Button.primary("hello")}
       </div>
     )
   }

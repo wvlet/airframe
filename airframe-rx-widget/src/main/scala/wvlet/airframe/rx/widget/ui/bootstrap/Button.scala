@@ -15,6 +15,7 @@ package wvlet.airframe.rx.widget.ui.bootstrap
 
 import org.scalajs.dom
 import wvlet.airframe.rx.widget.RxElement
+import wvlet.log.LogSupport
 
 /**
   *
@@ -54,10 +55,14 @@ case class Button(
 
 }
 
-object Button {
+object Button extends LogSupport {
   def test = <button onclick={() => println("clicked!")}>Clicked</button>
 
-  def primary(name: String)   = Button(name).addClass("btn-primary")
+  def primary(name: String) = {
+    val b = Button(name).addClass("btn-primary")
+    debug(b.config)
+    b
+  }
   def secondary(name: String) = Button(name).addClass("btn-secondary")
   def success(name: String)   = Button(name).addClass("btn-success")
   def danger(name: String)    = Button(name).addClass("btn-danger")

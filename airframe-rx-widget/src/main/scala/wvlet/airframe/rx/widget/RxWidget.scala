@@ -53,6 +53,12 @@ trait RxComponent extends RxWidget {
   def apply(elems: RxElement*): RxElement = Elem(() => render(xml.Group(elems.map(_.render))))
   def apply(elem: String): RxElement      = Elem(() => render(scala.xml.Text(elem)))
   def apply(elem: xml.Node): RxElement    = Elem(() => render(elem))
+
+  private def renderInternal(content: xml.Node): xml.Node = {
+    val xml = render(content)
+    // TODO enrich node with config
+    xml
+  }
 }
 
 object RxComponent {
@@ -108,6 +114,8 @@ case class RxWidgetConfig(
 
   def withId(id: String): RxWidgetConfig = this.copy(id = Some(id))
 
+  def getAttributes(attrName: String): Option[Seq[String]] = attributes.get(attrName)
+
   def setAttribute(attrName: String, attrValue: String): RxWidgetConfig = {
     this.copy(attributes = attributes + (attrName -> Seq(attrValue)))
   }
@@ -121,6 +129,7 @@ case class RxWidgetConfig(
   }
 
   def addStyle(styleString: String): RxWidgetConfig = {
+    val v = if (styleString.trim.endsWith(";")) styleString else s"${styleString};"
     appendAttribute("style", styleString)
   }
 

@@ -15,6 +15,7 @@ package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
 import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.log.LogSupport
 
 import scala.scalajs.js
 import scala.xml._
@@ -28,7 +29,7 @@ import scala.xml._
   * This code is based on monadic-html:
   * https://github.com/OlivierBlanvillain/monadic-html/blob/master/monadic-html/src/main/scala/mhtml/mount.scala
   */
-private[widget] object RxDOM {
+private[widget] object RxDOM extends LogSupport {
 
   def mount(elem: RxElement): Cancelable = {
     val node = dom.document.createElement("div")
@@ -54,6 +55,31 @@ private[widget] object RxDOM {
         val cancelMetadata = metadata.map { m =>
           addAttribute(domNode, currentElement, scope, m)
         }
+
+        // Enrich attributes using the config of RxElement
+        if (label == "button") {
+          //debug(s"config: ${currentElement}, parent:${parent}")
+        }
+        currentElement.foreach { x =>
+          val htmlNode = domNode.asInstanceOf[dom.html.Html]
+          for ((attrName, value) <- x.getConfig.attributes) {
+            attrName match {
+              case "style" =>
+                val css = htmlNode.style.cssText
+                htmlNode.style = s"${css} ${value.mkString(" ")}"
+              case "class" =>
+                value.foreach { cl =>
+                  htmlNode.classList.add(cl)
+                }
+              case attr if domNode.hasAttribute(attrName) =>
+                val attrNode = htmlNode.getAttributeNode(attrName)
+                htmlNode.setAttribute(attrName, s"${attrNode.value} ${value.mkString(" ")}")
+              case _ =>
+                htmlNode.setAttribute(attrName, value.mkString(" "))
+            }
+          }
+        }
+
         val cancelChild = e.child.map { c =>
           mount(domNode, None, c)
         }
@@ -89,7 +115,7 @@ private[widget] object RxDOM {
               c1.cancel; c2.cancel
             }
           case elem: RxElement => {
-            mount(parent, None, elem.render, startPoint)
+            mount(parent, Some(elem), elem.render, startPoint)
           }
           case Some(x) =>
             mount(parent, currentElement, new Atom(x), startPoint)
@@ -131,7 +157,6 @@ private[widget] object RxDOM {
         case f: Function1[DomNode @unchecked, Unit @unchecked] =>
           parent.setEventListener(m.key, f)
         case _ =>
-          // TODO enrich attributes using config of RxElement
           parent.setMetadata(scope, m, v)
           Cancelable.empty
       }
@@ -149,19 +174,25 @@ private[widget] object RxDOM {
 
     def setMetadata(scope: NamespaceBinding, m: MetaData, v: Any): Unit = {
       val htmlNode = node.asInstanceOf[dom.html.Html]
-      def set(key: String, prefix: Option[String]): Unit = v match {
-        case null | None | false => htmlNode.removeAttribute(key)
-        case _ =>
-          val value = v match {
-            case true => ""
-            case _    => v.toString
-          }
-          if (key == "style") htmlNode.style.cssText = value
-          else
-            prefix.map(p => scope.getURI(p)) match {
-              case Some(ns) => htmlNode.setAttributeNS(ns, key, value)
-              case None     => htmlNode.setAttribute(key, value)
+      def set(key: String, prefix: Option[String]): Unit = {
+        v match {
+          case null | None | false =>
+            htmlNode.removeAttribute(key)
+          case _ =>
+            val value = v match {
+              case true => ""
+              case _    => v.toString
             }
+            key match {
+              case "style" =>
+                htmlNode.style.cssText = value
+              case _ =>
+                prefix.map(p => scope.getURI(p)) match {
+                  case Some(ns) => htmlNode.setAttributeNS(ns, key, value)
+                  case None     => htmlNode.setAttribute(key, value)
+                }
+            }
+        }
       }
       m match {
         case m: PrefixedAttribute[_] => set(s"${m.pre}:${m.key}", Some(m.pre))
