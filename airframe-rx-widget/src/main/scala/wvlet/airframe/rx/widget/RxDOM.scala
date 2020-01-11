@@ -14,15 +14,13 @@
 package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
-import wvlet.airframe.rx.widget.RxDOM.{addAttribute, mount}
 import wvlet.airframe.rx.{Cancelable, Rx}
 
 import scala.scalajs.js
 import scala.xml._
-import scala.xml.{Node => XmlNode}
 
 /**
-  * Building reactive DOM from XmlNode.
+  * Building reactive DOM from xml.Node.
   *
   * It will also set event listener to the mounting DOM node (parent) if
   * XML attributes contain a Scala function
@@ -76,7 +74,7 @@ private[widget] object RxDOM {
         Cancelable(() => cancels.foreach(_.cancel))
       case a: Atom[_] =>
         a.data match {
-          case n: XmlNode =>
+          case n: xml.Node =>
             mount(parent, None, n)
           case rx: Rx[_] =>
             val (start, end) = parent.createMountSection()
@@ -176,7 +174,7 @@ private[widget] object RxDOM {
     // `.insertBefore` things are reversed: at the position of the `}`
     // character in our binding example, we insert the start point, and at `{`
     // goes the end.
-    def createMountSection(): (DomNode, DomNode) = {
+    def createMountSection(): (dom.Node, dom.Node) = {
       val start = dom.document.createTextNode("")
       val end   = dom.document.createTextNode("")
       node.appendChild(end)
@@ -187,14 +185,14 @@ private[widget] object RxDOM {
     // Elements are then "inserted before" the start point, such that
     // inserting List(a, b) looks as follows: `}` → `a}` → `ab}`. Note that a
     // reference to the start point is sufficient here. */
-    def mountHere(child: DomNode, start: Option[DomNode]): Unit = {
+    def mountHere(child: dom.Node, start: Option[dom.Node]): Unit = {
       start.fold(node.appendChild(child))(point => node.insertBefore(child, point)); ()
     }
 
     // Cleaning stuff is equally simple, `cleanMountSection` takes a references
     // to start and end point, and (tail recursively) deletes nodes at the
     // left of the start point until it reaches end of the mounting section. */
-    def cleanMountSection(start: DomNode, end: DomNode): Unit = {
+    def cleanMountSection(start: dom.Node, end: dom.Node): Unit = {
       val next = start.previousSibling
       if (next != end) {
         node.removeChild(next)

@@ -13,14 +13,14 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.airframe.rx.widget.RxComponent
+import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 
 import scala.xml.Node
 
 /**
   *
   */
-class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
+case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {
   override def render(content: Node): Node =
     <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="min-height: 42px; padding: 4px 8px;">
@@ -40,5 +40,41 @@ class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int
 object NavBar {
 
   def fixedTop(title: String) = new NavBar(title)
+
+  def item: RxComponent = RxComponent { content =>
+    <li class="nav-item active">
+      <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+    </li>
+  }
+
+  def navList: RxComponent = RxComponent { content =>
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto">
+        {content}
+      </ul>
+    </div>
+  }
+
+  def navItemActive   = navItemCustom(active = true)
+  def navItemDisabled = navItemCustom(disabled = true)
+  def navItem         = navItemCustom()
+
+  private def navItemCustom(active: Boolean = false, disabled: Boolean = false) = RxComponent { content =>
+    val itemStyle = s"nav-item${if (active) " active" else ""}"
+    val linkStyle = s"nav-link${if (disabled) " disabled" else ""}"
+    <li class={itemStyle}>
+      <a class={linkStyle} href="#">{content}</a>
+    </li>
+  }
+
+  def sideBarSticky = RxComponent { content =>
+    <nav class="collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          {content}
+        </ul>
+      </div>
+    </nav>
+  }
 
 }

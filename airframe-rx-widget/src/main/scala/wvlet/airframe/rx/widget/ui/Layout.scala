@@ -12,36 +12,35 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.{RxComponent, RxComponentBuilder, RxElement}
-
-import scala.xml.Node
+import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 
 /**
   *
   */
 object Layout {
-  def of                          = div
-  def div: RxComponentBuilder     = RxComponentBuilder(tag = "div")
-  def divOf(primaryClass: String) = RxComponentBuilder(tag = "div", primaryClass = primaryClass)
-
-  def h1: RxComponentBuilder = RxComponentBuilder(tag = "h1")
-  def h2: RxComponentBuilder = RxComponentBuilder(tag = "h2")
-  def h3: RxComponentBuilder = RxComponentBuilder(tag = "h3")
-  def h4: RxComponentBuilder = RxComponentBuilder(tag = "h4")
-  def h5: RxComponentBuilder = RxComponentBuilder(tag = "h5")
-
-  def p: RxComponentBuilder = RxComponentBuilder(tag = "p")
-
-  def code(codeStr: String): RxElement = new RxElement {
-    override def render: Node = <code>{codeStr}</code>
+  def of: RxComponent  = div
+  def div: RxComponent = RxComponent.ofTag("div")
+  def divOf(primaryClass: String): RxComponent = RxComponent { content =>
+    <div class={primaryClass}>{content}</div>
   }
 
-  def codeBlock: RxComponent = new RxComponent {
-    override def render(content: Node): Node =
-      <pre><code>{content}</code></pre>
+  def h1: RxComponent = RxComponent.ofTag(tag = "h1")
+  def h2: RxComponent = RxComponent.ofTag(tag = "h2")
+  def h3: RxComponent = RxComponent.ofTag(tag = "h3")
+  def h4: RxComponent = RxComponent.ofTag(tag = "h4")
+  def h5: RxComponent = RxComponent.ofTag(tag = "h5")
+
+  def p: RxComponent = RxComponent.ofTag(tag = "p")
+
+  def code(codeStr: String): RxElement = RxElement {
+    <code>{codeStr}</code>
   }
 
-  def scalaCode: RxComponent = new RxComponent {
-    override def render(content: Node): Node = <pre><code class="language-scala rounded">{content}</code></pre>
+  def codeBlock: RxComponent = RxComponent { content =>
+    <pre><code>{content}</code></pre>
+  }
+
+  def scalaCode: RxComponent = RxComponent { content =>
+    <pre><code class="language-scala rounded">{content}</code></pre>
   }
 }

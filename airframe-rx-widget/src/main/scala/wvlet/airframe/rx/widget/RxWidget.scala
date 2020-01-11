@@ -15,10 +15,9 @@ package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
 import wvlet.airframe.rx.Cancelable
-import wvlet.airframe.rx.widget.ui.{Elem, Text}
+import wvlet.airframe.rx.widget.ui.Elem
 
-import scala.xml
-import scala.xml.{MetaData, Node}
+import scala.xml.Node
 
 trait RxWidget {
   protected var config: RxWidgetConfig = new RxWidgetConfig()
@@ -45,6 +44,9 @@ trait RxWidget {
   def addStyle(styleValue: String): this.type = updateConfig(config.addStyle(styleValue))
 }
 
+/**
+  * Base trait of reactive component that can take a content value and produce a DOM element
+  */
 trait RxComponent extends RxWidget {
   def render(content: xml.Node): xml.Node
 
@@ -53,6 +55,28 @@ trait RxComponent extends RxWidget {
   def apply(elem: xml.Node): RxElement    = Elem(() => render(elem))
 }
 
+object RxComponent {
+
+  def apply(f: xml.Node => xml.Node): RxComponent = new RxComponent {
+    override def render(content: Node): Node = f(content)
+  }
+
+  def ofTag(tag: String): RxComponent = RxComponent { content =>
+    val elem = scala.xml.Elem(
+      prefix = null,
+      label = tag,
+      attributes1 = xml.Null,
+      scope = scala.xml.TopScope,
+      minimizeEmpty = true,
+      child = content
+    )
+    elem
+  }
+}
+
+/**
+  * Base trait of reactive element that can produce a single DOM element
+  */
 trait RxElement extends RxWidget {
   def render: xml.Node
 
@@ -62,6 +86,10 @@ trait RxElement extends RxWidget {
   def mountTo(parent: dom.Node): Cancelable = {
     RxDOM.mountTo(parent, this)
   }
+}
+
+object RxElement {
+  def apply(node: xml.Node): RxElement = new RxElement { override def render: Node = node }
 }
 
 /**
@@ -98,47 +126,5 @@ case class RxWidgetConfig(
 
   def addClass(className: String): RxWidgetConfig = {
     appendAttribute("class", className)
-  }
-}
-
-object RxComponentBuilder {
-  def apply(tag: String)                       = new RxComponentBuilder(tag)
-  def apply(tag: String, primaryClass: String) = new RxComponentBuilder(tag, Map("class" -> Seq(primaryClass)))
-}
-
-case class RxComponentBuilder(
-    tag: String,
-    attributes: Map[String, Seq[String]] = Map.empty,
-    roles: Seq[String] = Seq.empty
-) {
-
-  def addAttribute(attrName: String, value: String*) = this.copy(
-    attributes = attributes + (attrName -> (attributes.getOrElse("class", Seq.empty) ++ value))
-  )
-
-  def withClasses(classes: String*) = addAttribute("class", classes: _*)
-  def withRoles(newRoles: String*)  = addAttribute("role", newRoles: _*)
-
-  def apply(content: String): RxElement = apply(ui.Text(content))
-
-  def apply(elems: RxElement*): RxElement = new RxElement {
-    override def render: Node = {
-      var attrs: MetaData = scala.xml.Null
-      attributes.foreach {
-        case (key, values) =>
-          attrs = attrs.append(xml.UnprefixedAttribute(key, values.mkString(" "), scala.xml.Null))
-      }
-
-      val elem = scala.xml
-        .Elem(
-          prefix = null,
-          label = tag,
-          attributes1 = attrs,
-          scope = scala.xml.TopScope,
-          minimizeEmpty = true,
-          child = elems.map(_.render): _*
-        )
-      elem
-    }
   }
 }

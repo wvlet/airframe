@@ -12,24 +12,23 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
-import wvlet.airframe.rx.widget.RxComponentBuilder
+import wvlet.airframe.rx.widget.RxComponent
 
 /**
   *
   */
 object Alert {
-  private def newAlert(style: String): RxComponentBuilder = {
-    RxComponentBuilder(tag = "div")
-      .withClasses("alert", style)
-      .withRoles("alert")
+  private def newAlert(style: String) = RxComponent { content =>
+    val cls = s"alert ${style}"
+    <div role="alert" class={cls}>{content}</div>
   }
 
-  def primary: RxComponentBuilder   = newAlert("alert-primary")
-  def secondary: RxComponentBuilder = newAlert("alert-secondary")
-  def success: RxComponentBuilder   = newAlert("alert-success")
-  def danger: RxComponentBuilder    = newAlert("alert-danger")
-  def warning: RxComponentBuilder   = newAlert("alert-warning")
-  def info: RxComponentBuilder      = newAlert("alert-info")
-  def light: RxComponentBuilder     = newAlert("alert-light")
-  def dark: RxComponentBuilder      = newAlert("alert-dark")
+  def primary   = newAlert("alert-primary")
+  def secondary = newAlert("alert-secondary")
+  def success   = newAlert("alert-success")
+  def danger    = newAlert("alert-danger")
+  def warning   = newAlert("alert-warning")
+  def info      = newAlert("alert-info")
+  def light     = newAlert("alert-light")
+  def dark      = newAlert("alert-dark")
 }
