@@ -18,8 +18,9 @@ import wvlet.airframe.rx.widget.{RxComponent, RxElement}
   *
   */
 object Layout {
-  def of: RxComponent  = div
-  def div: RxComponent = RxComponent.ofTag("div")
+  def of: RxComponent          = div
+  def of(list: Seq[RxElement]) = div(list: _*)
+  def div: RxComponent         = RxComponent.ofTag("div")
   def divOf(primaryClass: String): RxComponent = RxComponent { content =>
     <div class={primaryClass}>{content}</div>
   }

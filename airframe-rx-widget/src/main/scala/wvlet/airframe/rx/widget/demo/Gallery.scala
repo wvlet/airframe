@@ -15,11 +15,11 @@ package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.widget.ui._
+import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 import wvlet.log.{LogLevel, LogSupport, Logger}
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
-import wvlet.airframe.rx.widget.ui.bootstrap._
 
 /**
   *
@@ -108,6 +108,7 @@ object Gallery extends LogSupport {
     elementGallery,
     browserGallery,
     buttonGallery,
+    buttonDisabledGallery,
     alertGallery,
     modalGallery,
     gridGallery
@@ -183,21 +184,19 @@ object Gallery extends LogSupport {
     )
   }
 
+  def buttons: Seq[Button] = Seq(
+    Button.primary("Primary"),
+    Button.secondary("Secondary"),
+    Button.success("Success"),
+    Button.danger("Danger"),
+    Button.warning("warning"),
+    Button.info("Info"),
+    Button.light("Light"),
+    Button.dark("Dark"),
+    Button.link("Link")
+  )
+
   def buttonGallery = {
-    def buttons: Seq[Button] = Seq(
-      Button.primary("Primary"),
-      Button.secondary("Secondary"),
-      Button.success("Success"),
-      Button.danger("Danger"),
-      Button.warning("warning"),
-      Button.info("Info"),
-      Button.light("Light"),
-      Button.dark("Dark"),
-      Button.link("Link")
-    )
-
-    val disabledButtons = buttons.map(_.disable)
-
     demo(
       "Buttons",
       Layout.of(buttons: _*),
@@ -213,21 +212,25 @@ object Gallery extends LogSupport {
         |Button.dark("Dark")
         |Button.link("Link")""".stripMargin
     )
-//      demo(
-//        "Disabled Buttons",
-//        Container.ofList(disabledButtons),
-//        """import wvlet.airframe.rx.widget._
-//          |
-//          |Button.primary("Primary").disable
-//          |Button.secondary("Secondary").disable
-//          |Button.success("Success").disable
-//          |Button.danger("Danger").disable
-//          |Button.warning("warning").disable
-//          |Button.info("Info").disable
-//          |Button.light("Light").disable
-//          |Button.dark("Dark").disable
-//          |Button.link("Link").disable""".stripMargin
-//      )
+  }
+
+  def buttonDisabledGallery = {
+    val disabledButtons = buttons.map(_.disable)
+    demo(
+      "Buttons (disabled)",
+      Layout.of(disabledButtons),
+      """import wvlet.airframe.rx.widget.ui.bootstrap._
+        |
+        |Button.primary("Primary").disable
+        |Button.secondary("Secondary").disable
+        |Button.success("Success").disable
+        |Button.danger("Danger").disable
+        |Button.warning("warning").disable
+        |Button.info("Info").disable
+        |Button.light("Light").disable
+        |Button.dark("Dark").disable
+        |Button.link("Link").disable""".stripMargin
+    )
   }
 
   def alertGallery = demo(
