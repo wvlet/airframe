@@ -353,6 +353,11 @@ private[airframe] class AirframeSession(
 
     val result =
       obj.getOrElse {
+        // strict mode
+        if (design.designOptions.disableImplicitInstanceGeneration.contains(true)) {
+          throw new MISSING_DEPENDENCY(seen, sourceCode)
+        }
+
         trace(s"[${name}] No binding is found for ${tpe}. Building the instance. create = ${create}")
         if (create) {
           // Create a new instance for bindFactory[X] or building X using its default value
