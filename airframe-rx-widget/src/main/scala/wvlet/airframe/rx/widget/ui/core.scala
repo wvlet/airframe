@@ -26,3 +26,7 @@ case class Elem(nodeBuilder: () => xml.Node) extends RxElement {
 case class Text(text: String) extends RxElement {
   override def render: Node = scala.xml.Text(text)
 }
+
+case class DomElement(node: org.scalajs.dom.Node) extends RxElement {
+  override def render: Node = new scala.xml.Atom(node)
+}

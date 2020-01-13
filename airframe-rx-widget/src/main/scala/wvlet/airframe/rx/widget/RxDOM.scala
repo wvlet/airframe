@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
+import wvlet.airframe.rx.widget.ui.DomElement
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
@@ -40,6 +41,28 @@ private[widget] object RxDOM extends LogSupport {
     mount(parent, Some(elem.getConfig), elem.render)
   }
 
+  private def applyConfig(domNode: dom.Node, config: RxWidgetConfig): dom.Node = {
+    // Enrich attributes using the config of RxElement
+    val htmlNode = domNode.asInstanceOf[dom.html.Html]
+    for ((attrName, value) <- config.attributes) {
+      attrName match {
+        case "style" =>
+          val css = htmlNode.style.cssText
+          htmlNode.style = s"${css} ${value.mkString(" ")}"
+        case "class" =>
+          value.foreach { cl =>
+            htmlNode.classList.add(cl)
+          }
+        case attr if htmlNode.hasAttribute(attrName) =>
+          val attrNode = htmlNode.getAttributeNode(attrName)
+          htmlNode.setAttribute(attrName, s"${attrNode.value} ${value.mkString(" ")}")
+        case _ =>
+          htmlNode.setAttribute(attrName, value.mkString(" "))
+      }
+    }
+    htmlNode
+  }
+
   private def mount(
       parent: dom.Node,
       config: Option[RxWidgetConfig],
@@ -55,26 +78,8 @@ private[widget] object RxDOM extends LogSupport {
         val cancelMetadata = metadata.map { m =>
           addAttribute(domNode, scope, m)
         }
-
-        // Enrich attributes using the config of RxElement
         config.foreach { x =>
-          val htmlNode = domNode.asInstanceOf[dom.html.Html]
-          for ((attrName, value) <- x.attributes) {
-            attrName match {
-              case "style" =>
-                val css = htmlNode.style.cssText
-                htmlNode.style = s"${css} ${value.mkString(" ")}"
-              case "class" =>
-                value.foreach { cl =>
-                  htmlNode.classList.add(cl)
-                }
-              case attr if domNode.hasAttribute(attrName) =>
-                val attrNode = htmlNode.getAttributeNode(attrName)
-                htmlNode.setAttribute(attrName, s"${attrNode.value} ${value.mkString(" ")}")
-              case _ =>
-                htmlNode.setAttribute(attrName, value.mkString(" "))
-            }
-          }
+          applyConfig(domNode, x)
         }
 
         val cancelChild = e.child.map { c =>
@@ -120,6 +125,11 @@ private[widget] object RxDOM extends LogSupport {
             Cancelable.empty
           case LazyElement(elem) =>
             mount(parent, Some(elem.getConfig), elem.render, startPoint)
+          case DomElement(node) =>
+            config
+              .map(x => applyConfig(node, x))
+              .foreach(x => parent.mountHere(x, startPoint))
+            Cancelable.empty
           case NodeWithConfig(node, config) =>
             mount(parent, Some(config), node, startPoint)
           case seq: Seq[_] =>
