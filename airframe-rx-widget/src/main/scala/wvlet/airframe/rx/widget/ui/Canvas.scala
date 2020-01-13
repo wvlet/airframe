@@ -12,14 +12,13 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.RxElement
 import org.scalajs.dom
 import org.scalajs.dom.html
-import org.scalajs.dom.html.Canvas
+import wvlet.airframe.rx.widget.RxElement
 
 import scala.xml.Node
 
-case class Canvas(canvas: html.Canvas, renderer: dom.CanvasRenderingContext2D) extends RxElement {
+case class Canvas2D(canvas: html.Canvas, context: dom.CanvasRenderingContext2D) extends RxElement {
   override def render: Node = new xml.Atom(canvas)
 }
 
@@ -28,19 +27,14 @@ case class Canvas(canvas: html.Canvas, renderer: dom.CanvasRenderingContext2D) e
   */
 object Canvas {
 
-  def new2DCanvas(width: Int = 100, height: Int = 100): Canvas = {
+  def new2DCanvas(width: Int = 100, height: Int = 100): Canvas2D = {
     val canvas = dom.document.createElement("canvas").asInstanceOf[html.Canvas]
     canvas.width = width
     canvas.height = height
     val renderer = canvas.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-    Canvas(canvas, renderer)
+    Canvas2D(canvas, renderer)
   }
 
-  def newCanvas(width: Int = 100, height: Int = 100): Canvas = {
-    val c = new2DCanvas(width = width, height = height)
-    c.renderer.fillStyle = "#99ccff"
-    c.renderer.fillRect(0, 0, c.canvas.width, c.canvas.height)
-    c
-  }
+  def newCanvas(width: Int = 100, height: Int = 100): Canvas2D = new2DCanvas(width = width, height = height)
 
 }

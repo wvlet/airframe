@@ -312,14 +312,23 @@ object Gallery extends LogSupport {
     "Canvas", {
       val c = Canvas.newCanvas(150, 50)
       import c._
-      renderer.fillStyle = "#336699"
-      renderer.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      context.fillStyle = "#336699"
+      context.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      context.strokeStyle = "#CCCCFF"
+      context.beginPath()
+      context.arc(25, 25, 15, 0, 2 * math.Pi)
+      context.stroke()
       c
     },
     """val c = Canvas.newCanvas(150, 50)
       |import c._
-      |renderer.fillStyle = "#99ccff"
-      |renderer.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      |context.fillStyle = "#99ccff"
+      |context.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      |
+      |context.strokeStyle = "#CCCCFF"
+      |context.beginPath()
+      |context.arc(25, 25, 15, 0, 2 * math.Pi)
+      |context.stroke()
       |""".stripMargin
   )
 }
