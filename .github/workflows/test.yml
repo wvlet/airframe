@@ -75,6 +75,11 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Node.js setup
+        run: npm install jsdom@10.0.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
@@ -82,7 +87,7 @@ jobs:
           restore-keys: ${{ runner.os }}-scala-js-
       - name: Scala.js test
         # A workaround for Scala.js linker error
-        run: ./sbt "; airspecJS/test:fastOptJS; projectJS/test"
+        run: ./sbt "; projectJSCore/test; projectJSSub/test"
   test_js_2_13:
     name: Scala.js with Scala 2.13
     runs-on: ubuntu-latest
@@ -91,11 +96,16 @@ jobs:
       - uses: olafurpg/setup-scala@v5
         with:
           java-version: adopt@1.11
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '10.x'
+      - name: Node.js setup
+        run: npm install jsdom@10.0.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
-          key: ${{ runner.os }}-scala-js-${{ hashFiles('**/*.sbt') }}
-          restore-keys: ${{ runner.os }}-scala-js-
+          key: ${{ runner.os }}-scala-js_2.13-${{ hashFiles('**/*.sbt') }}
+          restore-keys: ${{ runner.os }}-scala-js_2.13-
       - name: Scala.js test
         # A workaround for Scala.js linker error
-        run: ./sbt ++2.13.1 "; airspecJS/test:fastOptJS; projectJS/test"
+        run: ./sbt ++2.13.1 "; projectJSCore/test; projectJSSub/test"

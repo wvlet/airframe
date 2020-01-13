@@ -70,8 +70,7 @@ publishTo in ThisBuild := sonatypePublishToBundle.value
 val jsBuildSettings = Seq[Setting[_]](
   crossScalaVersions := exceptScala2_11,
   coverageEnabled := false
-  // Workaround for ' JSCom has been closed' issue
-  //parallelExecution in ThisBuild := false
+//    Compile / parallelExecution := false
 )
 
 val noPublish = Seq(
@@ -97,7 +96,7 @@ lazy val root =
       }
     }
     //    .aggregate(scaladoc)
-    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjects): _*)
+    .aggregate((jvmProjects ++ jvmProjects2_12 ++ jsProjectsCore ++ jsProjectsSub): _*)
 
 // Removed as running scaladoc hits https://github.com/sbt/zinc/issues/622
 //lazy val scaladoc =
@@ -136,6 +135,7 @@ lazy val communityBuildProjects: Seq[ProjectReference] = Seq(
   msgpackJVM,
   http,
   jsonJVM,
+  rxJVM,
   airspecJVM
 )
 
@@ -156,15 +156,21 @@ lazy val jvmProjects2_12: Seq[ProjectReference] = Seq(
 )
 
 // Scala.js build (only for Scala 2.12 + 2.13)
-lazy val jsProjects: Seq[ProjectReference] = Seq(
-  airframeJS,
-  surfaceJS,
+lazy val jsProjectsCore: Seq[ProjectReference] = Seq(
   logJS,
+  surfaceJS,
+  airframeJS,
   metricsJS,
-  codecJS,
-  msgpackJS,
-  jsonJS,
   airspecJS
+)
+
+// A workaround for https://github.com/scala-js/scala-js/issues/3921
+lazy val jsProjectsSub: Seq[ProjectReference] = Seq(
+  jsonJS,
+  msgpackJS,
+  codecJS,
+  rxJS,
+  widgetJS
 )
 
 lazy val airspecProjects: Seq[ProjectReference] = Seq(
@@ -222,7 +228,23 @@ lazy val projectJS =
       noPublish,
       crossScalaVersions := exceptScala2_11
     )
-    .aggregate(jsProjects: _*)
+    .aggregate(projectJSCore, projectJSSub)
+
+lazy val projectJSCore =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := exceptScala2_11
+    )
+    .aggregate(jsProjectsCore: _*)
+
+lazy val projectJSSub =
+  project
+    .settings(
+      noPublish,
+      crossScalaVersions := exceptScala2_11
+    )
+    .aggregate(jsProjectsSub: _*)
 
 lazy val docs =
   project
@@ -655,6 +677,42 @@ lazy val sql =
       )
     )
     .dependsOn(msgpackJVM, surfaceJVM, config, launcher, airspecRefJVM % "test")
+
+lazy val rx =
+  crossProject(JVMPlatform, JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-rx"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rx",
+      description := "Reactive operators for Scala and Scala.js",
+      libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
+    )
+    .jsSettings(jsBuildSettings)
+    .dependsOn(log, airspecRef % "test")
+
+lazy val rxJVM = rx.jvm
+lazy val rxJS  = rx.js
+
+lazy val widget =
+  crossProject(JSPlatform)
+    .crossType(CrossType.Pure)
+    .in(file("airframe-rx-widget"))
+    .settings(buildSettings)
+    .settings(
+      name := "airframe-rx-widget",
+      description := "Reactive Widget library for Scala.js",
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+      )
+    )
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+    )
+    .dependsOn(log, rx, airspecRef % "test")
+
+lazy val widgetJS = widget.js
 
 lazy val examples =
   project

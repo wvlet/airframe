@@ -1,0 +1,108 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+pre .hljs {
+    padding: 10px;
+}
+
+.navbar-dark {
+    background-color: #07405b;
+}
+
+.hljs {
+    padding: 10px;
+    background-color: #333333;
+}
+
+a {
+    color: #1e909f;
+}
+
+.navbar .navbar-collapse ul {
+    padding-left: 10px;
+}
+
+.hljs-comment,
+.hljs-quote {
+    color: #f1c2a2;
+}
+
+/* Ocean Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+    color: #d04754;
+}
+
+/* Ocean Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-meta,
+.hljs-link {
+    color: #99b2e8;
+}
+
+.hljs-params {
+    color: #f2b9d9;
+}
+
+/* Ocean Yellow */
+.hljs-subst,
+.hljs-attribute {
+    color: #f1ce88;
+}
+
+/* Ocean Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+    color: #f5b2a8;
+}
+
+/* Ocean Blue */
+.hljs-title,
+.hljs-section {
+    color: #21c5d2;
+}
+
+/* Ocean Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+    color: #c192bd;
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    color: #c8cdd6;
+    padding: 0.5em;
+}
+
+.hljs-emphasis {
+    font-style: italic;
+}
+
+.hljs-strong {
+    font-weight: bold;
+}
+
