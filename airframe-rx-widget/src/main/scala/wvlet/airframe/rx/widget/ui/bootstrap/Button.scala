@@ -22,8 +22,6 @@ import wvlet.log.LogSupport
   */
 case class Button(
     name: String,
-    private val onClickHandler: dom.MouseEvent => Unit = { ev =>
-    },
     private var disabled: Boolean = false
 ) extends RxElement {
 
@@ -43,14 +41,18 @@ case class Button(
 
   def render: xml.Node = {
     if (isActive) {
-      <button type="button" class="btn" onclick={onClickHandler}>{name}</button>
+      <button type="button" class="btn" onclick={
+        config.onClickHandler.getOrElse { x: dom.MouseEvent =>
+        }
+      }>{name}</button>
     } else {
       <button type="button" class="btn" disabled="true">{name}</button>
     }
   }
 
   def onClick(handler: dom.MouseEvent => Unit): Button = {
-    this.copy(onClickHandler = handler)
+    updateConfig(config.onClick(handler))
+    this
   }
 
 }

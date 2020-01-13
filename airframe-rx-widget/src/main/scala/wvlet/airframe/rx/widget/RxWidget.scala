@@ -21,7 +21,7 @@ import wvlet.log.LogSupport
 import scala.xml.Node
 
 trait RxWidget {
-  protected var config: RxWidgetConfig = new RxWidgetConfig()
+  protected var config: RxWidgetConfig = RxWidgetConfig()
 
   private[widget] def getConfig = config
 

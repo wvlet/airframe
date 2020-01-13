@@ -1,8 +1,8 @@
 package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
-import wvlet.airframe.rx.widget.ui.{Canvas, DomElement, Layout}
 import wvlet.airframe.rx.widget.ui.bootstrap._
+import wvlet.airframe.rx.widget.ui.{DomElement, Layout}
 import wvlet.airspec._
 
 object RxWidgetTest {}
@@ -12,8 +12,7 @@ class RxWidgetTest extends AirSpec {
   private def render(elem: RxElement): String = {
     val node = dom.document.createElement("div")
     RxDOM.mountTo(node, elem)
-    val body = node.childNodes(0)
-    val html = DOMRenderer.renderToHTML(body)
+    val html = node.innerHTML
     debug(html)
     html
   }
@@ -25,7 +24,6 @@ class RxWidgetTest extends AirSpec {
       )
     )
     val html = render(elem)
-    debug(html)
     html.contains("btn btn-primary") shouldBe true
   }
 
@@ -34,8 +32,13 @@ class RxWidgetTest extends AirSpec {
       DomElement(dom.document.createElement("main"))
     )
     val html = render(elem)
-    debug(html)
     html.contains("<main>") shouldBe true
+  }
+
+  test("render buttons with click action") {
+    val elem = Button.primary("my button").onClick(e => debug("clicked"))
+    val html = render(elem)
+    html.contains("btn btn-primary") shouldBe true
   }
 
 }

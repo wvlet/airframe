@@ -309,8 +309,17 @@ object Gallery extends LogSupport {
   )
 
   def canvasGallery = demo(
-    "Canvas",
-    Canvas.newCanvas(100, 100),
-    """Canvas.newCanvas(...)"""
+    "Canvas", {
+      val c = Canvas.newCanvas(150, 50)
+      import c._
+      renderer.fillStyle = "#336699"
+      renderer.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      c
+    },
+    """val c = Canvas.newCanvas(150, 50)
+      |import c._
+      |renderer.fillStyle = "#99ccff"
+      |renderer.fillRect(0, 0, c.canvas.width, c.canvas.height)
+      |""".stripMargin
   )
 }
