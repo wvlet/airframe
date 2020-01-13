@@ -33,6 +33,14 @@ class DisableImplicitInstanceCreationTest extends AirSpec {
     }
   }
 
+  def `disable implicit instance creation with production mode`: Unit = {
+    val d = Design.newDesign.bind[Component].toSingleton.disableImplicitInstanceCreation.withProductionMode
+    intercept[MISSING_DEPENDENCY] {
+      d.withSession { _ =>
+      }
+    }
+  }
+
   def `enable implicit instance creation`: Unit = {
     val d = Design.newDesign.bind[Component].toSingleton
     d.build[Component] { c =>
