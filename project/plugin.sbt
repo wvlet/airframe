@@ -7,6 +7,7 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
 val SCALA_JS_VERSION = sys.env.getOrElse("SCALA_JS_VERSION", "1.0.0-RC2")
 
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALA_JS_VERSION)
+libraryDependencies += "org.scala-js" %% "scalajs-env-jsdom-nodejs" % SCALA_JS_VERSION
 
 // For setting explicit versions for each commit
 addSbtPlugin("com.dwijnand" % "sbt-dynver" % "4.0.0")
