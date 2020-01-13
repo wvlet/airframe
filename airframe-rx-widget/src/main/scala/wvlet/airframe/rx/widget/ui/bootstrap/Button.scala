@@ -52,7 +52,6 @@ case class Button(
 
   def onClick(handler: dom.MouseEvent => Unit): Button = {
     updateConfig(config.onClick(handler))
-    this
   }
 
 }

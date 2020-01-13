@@ -14,25 +14,35 @@
 package scala.xml
 
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.widget.{RxElement, RxWidget}
+import wvlet.airframe.rx.widget.RxElement
 
-import scala.collection.mutable
 import scala.annotation.{implicitNotFound, tailrec}
+import scala.collection.mutable
 import scala.language.higherKinds
 
-// XML Nodes ------------------------------------------------------------------
-
-// Nodes are now implemented as an idiomatic sealed hierarchy of case classes.
-// `Atom` was kept as a class for source compatibility (even if it's not used
-// directly in scalac paser). `NoteSeq` disappeared, `Node <:!< Seq[Node]`...
-
-/** Trait representing XML tree. */
+/**
+  * Data models for Scala XML literal.
+  *
+  * This class provides alternative XML literal bindings for scala-xml, so if you are using
+  * library that depends on scala-xml, it might cause an error.
+  *
+  * This code is implemented based on monadic-html.
+  *
+  */
+/**
+  * XML Node tree
+  */
 sealed trait Node {
-  def scope: NamespaceBinding           = TopScope
-  def prefix: String                    = null
-  def namespace: String                 = getNamespace(this.prefix)
-  def getNamespace(pre: String): String = if (scope eq null) null else scope.getURI(pre)
-  def attributes: MetaData              = Null
+  def scope: NamespaceBinding = TopScope
+  def prefix: String          = null
+  def namespace: String       = getNamespace(this.prefix)
+  def getNamespace(pre: String): String =
+    if (scope eq null) {
+      null
+    } else {
+      scope.getURI(pre)
+    }
+  def attributes: MetaData = Null
 }
 
 /** A hack to group XML nodes in one node. */

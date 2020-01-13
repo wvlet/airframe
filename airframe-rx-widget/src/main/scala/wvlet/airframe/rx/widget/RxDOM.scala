@@ -14,7 +14,6 @@
 package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
-import wvlet.airframe.rx.widget.ui.{Canvas, DomElement}
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
@@ -138,7 +137,7 @@ private[widget] object RxDOM extends LogSupport {
             }
             Cancelable.merge(lst)
           case seq: Seq[_] =>
-            mount(parent, None, new Group(seq.map(new Atom(_))), startPoint)
+            mount(parent, None, Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
             val content = primitive.toString
             if (!content.isEmpty)
