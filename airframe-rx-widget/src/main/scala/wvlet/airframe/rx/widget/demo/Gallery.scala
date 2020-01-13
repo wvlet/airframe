@@ -106,6 +106,7 @@ object Gallery extends LogSupport {
   def gallery = Seq(
     componentGallery,
     elementGallery,
+    canvasGallery,
     browserGallery,
     buttonGallery,
     buttonDisabledGallery,
@@ -305,5 +306,11 @@ object Gallery extends LogSupport {
     "Browser Info",
     Layout.p(s"browser url: ${Browser.url}"),
     """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
+  )
+
+  def canvasGallery = demo(
+    "Canvas",
+    Canvas.newCanvas(100, 100),
+    """Canvas.newCanvas(...)"""
   )
 }

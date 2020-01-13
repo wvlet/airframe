@@ -11,22 +11,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.RxElement
+package wvlet.airframe.rx.widget
 
-import scala.xml.Node
+import org.scalajs.dom
+import wvlet.log.LogSupport
 
 /**
   *
   */
-case class Elem(nodeBuilder: () => xml.Node) extends RxElement {
-  override def render: xml.Node = nodeBuilder()
-}
-
-case class Text(text: String) extends RxElement {
-  override def render: xml.Node = scala.xml.Text(text)
-}
-
-case class DomElement(node: org.scalajs.dom.Node) extends RxElement {
-  override def render: xml.Node = new scala.xml.Atom(node)
+object DOMRenderer extends LogSupport {
+  def renderToHTML(node: dom.Node): String = {
+    node match {
+      case e: dom.Element =>
+        e.innerHTML
+      case _ =>
+        node.innerText
+    }
+  }
 }

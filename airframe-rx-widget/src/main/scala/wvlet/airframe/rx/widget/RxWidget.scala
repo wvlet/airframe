@@ -56,20 +56,17 @@ trait RxComponent extends RxWidget with LogSupport {
       case 1 =>
         Elem(() => render(new scala.xml.Atom(LazyElement(elems.head))))
       case other =>
-        Elem(() => render(xml.Group(elems.map(x => new scala.xml.Atom(LazyElement(x))))))
+        Elem(() => render(new scala.xml.Atom(LazyElementSeq(elems.toSeq))))
     }
   }
   def apply(elem: String): RxElement =
-    Elem(() => new scala.xml.Atom(render(scala.xml.Text(elem))))
-  def apply(elem: xml.Node): RxElement = Elem(() => new scala.xml.Atom(renderInternal(elem)))
+    Elem(() => render(new scala.xml.Atom(scala.xml.Text(elem))))
+  def apply(elem: xml.Node): RxElement = Elem(() => render(new scala.xml.Atom(LazyNode(elem))))
 
   private[widget] def renderInternal(elem: xml.Node): xml.Node = {
     val node = render(elem)
     val enriched = node match {
       case e @ xml.Elem(_, label, metadta, scope, _, _*) =>
-        if (e.label == "button") {
-          info(s"here")
-        }
         e
       case other => other
     }
@@ -100,7 +97,8 @@ object RxComponent {
   * A placeholder for rendering elements lazily
   */
 private[widget] case class LazyElement(elem: RxElement)
-private[widget] case class NodeWithConfig(node: xml.Node, config: RxWidgetConfig)
+private[widget] case class LazyElementSeq(elems: Seq[RxElement])
+private[widget] case class LazyNode(node: xml.Node)
 
 /**
   * Base trait of reactive element that can produce a single DOM element

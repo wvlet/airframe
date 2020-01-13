@@ -26,4 +26,10 @@ object Cancelable {
   def apply(canceller: () => Unit): Cancelable = new Cancelable {
     override def cancel: Unit = canceller()
   }
+
+  def merge(lst: Seq[Cancelable]): Cancelable = {
+    Cancelable.apply { () =>
+      lst.foreach(_.cancel)
+    }
+  }
 }

@@ -14,7 +14,7 @@
 package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import org.scalajs.dom.{Node => DomNode}
-import wvlet.airframe.rx.widget.ui.DomElement
+import wvlet.airframe.rx.widget.ui.{Canvas, DomElement}
 import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
@@ -104,6 +104,11 @@ private[widget] object RxDOM extends LogSupport {
         a.data match {
           case n: xml.Node =>
             mount(parent, None, n)
+          case node: dom.Node =>
+            config
+              .map(x => applyConfig(node, x))
+            parent.mountHere(node, startPoint)
+            Cancelable.empty
           case rx: Rx[_] =>
             val (start, end) = parent.createMountSection()
             var c1           = Cancelable.empty
@@ -123,15 +128,15 @@ private[widget] object RxDOM extends LogSupport {
             mount(parent, config, new Atom(x), startPoint)
           case None =>
             Cancelable.empty
+          case LazyNode(node) =>
+            mount(parent, config, node, startPoint)
           case LazyElement(elem) =>
             mount(parent, Some(elem.getConfig), elem.render, startPoint)
-          case DomElement(node) =>
-            config
-              .map(x => applyConfig(node, x))
-              .foreach(x => parent.mountHere(x, startPoint))
-            Cancelable.empty
-          case NodeWithConfig(node, config) =>
-            mount(parent, Some(config), node, startPoint)
+          case LazyElementSeq(elems) =>
+            val lst = elems.map { elem =>
+              mount(parent, Some(elem.getConfig), elem.render, startPoint)
+            }
+            Cancelable.merge(lst)
           case seq: Seq[_] =>
             mount(parent, None, new Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
