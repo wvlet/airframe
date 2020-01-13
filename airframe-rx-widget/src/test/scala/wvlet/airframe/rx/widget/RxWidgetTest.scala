@@ -1,14 +1,13 @@
 package wvlet.airframe.rx.widget
 
-import wvlet.airspec._
+import org.scalajs.dom
 import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
-import org.scalajs.dom
+import wvlet.airspec._
 
 object RxWidgetTest {}
 
 class RxWidgetTest extends AirSpec {
-  import RxWidgetTest._
 
   test("render nested components") {
     val elem = Layout.of(
@@ -16,8 +15,9 @@ class RxWidgetTest extends AirSpec {
         Button.primary("click me")
       )
     )
-    val dom = RxDOM.mount(elem)
-    info(dom)
+    val node = dom.document.createElement("div")
+    RxDOM.mountTo(node, elem)
+    info(node.childNodes)
   }
 
 }

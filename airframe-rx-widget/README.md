@@ -8,6 +8,8 @@ Reactive Widget Library for Scala.js
 ### Developing Scala.js Widgets
 
 ```
+$ npm install jsdom@10.0.0
+
 $ ./sbt 
 > ~widgetJS/fastOptJS
 ```

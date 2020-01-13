@@ -1,12 +1,13 @@
 package wvlet.airspec
 
-import wvlet.airframe._
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
-import wvlet.airframe.surface.{Surface, MethodSurface}
+import wvlet.airframe._
+import wvlet.airframe.surface.{MethodSurface, Surface}
 import wvlet.airspec.spi.{AirSpecContext, MissingTestDependency}
 
 private[airspec] sealed trait AirSpecDef {
   def name: String
+
   def design: Design
   def run(context: AirSpecContext, session: Session): Any
 
