@@ -706,7 +706,10 @@ lazy val widget =
         "org.scala-js" %%% "scalajs-dom" % "0.9.8"
       )
     )
-    .jsSettings(jsBuildSettings)
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+    )
     .dependsOn(log, rx, airspecRef % "test")
 
 lazy val widgetJS = widget.js

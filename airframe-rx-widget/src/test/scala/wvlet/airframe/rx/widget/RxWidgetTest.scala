@@ -3,6 +3,7 @@ package wvlet.airframe.rx.widget
 import wvlet.airspec._
 import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
+import org.scalajs.dom
 
 object RxWidgetTest {}
 
