@@ -19,6 +19,9 @@ import wvlet.airspec.AirSpec
 object DisableImplicitInstanceCreationTest {
   case class Component(config: Config)
   case class Config(value: String = "test")
+
+  case class Component2(config: Config2)
+  case class Config2(value: String)
 }
 
 class DisableImplicitInstanceCreationTest extends AirSpec {
@@ -45,6 +48,17 @@ class DisableImplicitInstanceCreationTest extends AirSpec {
     val d = Design.newDesign.bind[Component].toSingleton
     d.build[Component] { c =>
       assert(c.config.value == "test")
+    }
+  }
+
+  // Even if Airframe provide automatic singleton binding as safe-default behavior,
+  // a runtime exception can occur at unexpected timing in this case.
+  def `missing dependency`: Unit = {
+    val d = Design.newDesign.withProductionMode
+    d.withSession { session =>
+      intercept[MISSING_DEPENDENCY] {
+        session.build[Component2]
+      }
     }
   }
 }
