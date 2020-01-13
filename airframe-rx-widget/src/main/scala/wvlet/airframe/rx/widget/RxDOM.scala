@@ -174,7 +174,7 @@ private[widget] object RxDOM extends LogSupport {
     traverse(m.value)
   }
 
-  private implicit class RichDomNode(node: DomNode) {
+  private implicit class RichDomNode(node: dom.Node) {
     def setEventListener[A](key: String, listener: A => Unit): Cancelable = {
       val dyn = node.asInstanceOf[js.Dynamic]
       dyn.updateDynamic(key)(listener)
