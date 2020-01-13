@@ -708,7 +708,7 @@ lazy val widget =
     )
     .jsSettings(
       jsBuildSettings,
-      jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
     )
     .dependsOn(log, rx, airspecRef % "test")
 
