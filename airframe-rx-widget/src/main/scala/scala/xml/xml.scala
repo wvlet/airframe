@@ -36,7 +36,9 @@ sealed trait Node {
 }
 
 /** A hack to group XML nodes in one node. */
-final case class Group(nodes: Seq[Node]) extends Node
+final case class Group(nodes: Seq[Node]) extends Node {
+  override def toString = s"Group(${nodes.mkString(",")})"
+}
 
 /** XML element. */
 final case class Elem(
@@ -112,7 +114,9 @@ object Utility {
 final case class Text(text: String) extends Atom[String](text)
 
 /** XML leaf container for any data of type `A`. */
-class Atom[+A](val data: A) extends Node
+class Atom[+A](val data: A) extends Node {
+  override def toString = s"Atom(${data})"
+}
 
 // Scopes ---------------------------------------------------------------------
 

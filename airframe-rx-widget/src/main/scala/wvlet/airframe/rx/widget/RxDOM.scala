@@ -119,11 +119,6 @@ private[widget] object RxDOM extends LogSupport {
           case None =>
             Cancelable.empty
           case LazyElement(elem) =>
-            elem match {
-              case b: ui.bootstrap.Button =>
-                debug(s"button: ${elem}, ${elem.getConfig}")
-              case _ =>
-            }
             mount(parent, Some(elem.getConfig), elem.render, startPoint)
           case NodeWithConfig(node, config) =>
             mount(parent, Some(config), node, startPoint)

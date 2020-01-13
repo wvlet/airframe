@@ -51,8 +51,14 @@ trait RxWidget {
 trait RxComponent extends RxWidget with LogSupport {
   def render(content: xml.Node): xml.Node
 
-  def apply(elems: RxElement*): RxElement =
-    Elem(() => render(xml.Group(elems.map(x => new scala.xml.Atom(LazyElement(x))))))
+  def apply(elems: RxElement*): RxElement = {
+    elems.length match {
+      case 1 =>
+        Elem(() => render(new scala.xml.Atom(LazyElement(elems.head))))
+      case other =>
+        Elem(() => render(xml.Group(elems.map(x => new scala.xml.Atom(LazyElement(x))))))
+    }
+  }
   def apply(elem: String): RxElement =
     Elem(() => new scala.xml.Atom(render(scala.xml.Text(elem))))
   def apply(elem: xml.Node): RxElement = Elem(() => new scala.xml.Atom(renderInternal(elem)))
