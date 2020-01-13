@@ -16,6 +16,7 @@ package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import wvlet.airframe.rx.Cancelable
 import wvlet.airframe.rx.widget.ui.Elem
+import wvlet.log.LogSupport
 
 import scala.xml.Node
 
@@ -47,14 +48,27 @@ trait RxWidget {
 /**
   * Base trait of reactive component that can take a content value and produce a DOM element
   */
-trait RxComponent extends RxWidget {
+trait RxComponent extends RxWidget with LogSupport {
   def render(content: xml.Node): xml.Node
 
   def apply(elems: RxElement*): RxElement =
     Elem(() => render(xml.Group(elems.map(x => new scala.xml.Atom(LazyElement(x))))))
-  def apply(elem: String): RxElement   = Elem(() => render(scala.xml.Text(elem)))
-  def apply(elem: xml.Node): RxElement = Elem(() => render(elem))
+  def apply(elem: String): RxElement =
+    Elem(() => new scala.xml.Atom(render(scala.xml.Text(elem))))
+  def apply(elem: xml.Node): RxElement = Elem(() => new scala.xml.Atom(renderInternal(elem)))
 
+  private[widget] def renderInternal(elem: xml.Node): xml.Node = {
+    val node = render(elem)
+    val enriched = node match {
+      case e @ xml.Elem(_, label, metadta, scope, _, _*) =>
+        if (e.label == "button") {
+          info(s"here")
+        }
+        e
+      case other => other
+    }
+    enriched
+  }
 }
 
 object RxComponent {
@@ -80,6 +94,7 @@ object RxComponent {
   * A placeholder for rendering elements lazily
   */
 private[widget] case class LazyElement(elem: RxElement)
+private[widget] case class NodeWithConfig(node: xml.Node, config: RxWidgetConfig)
 
 /**
   * Base trait of reactive element that can produce a single DOM element

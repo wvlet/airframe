@@ -37,12 +37,12 @@ private[widget] object RxDOM extends LogSupport {
   }
 
   def mountTo(parent: dom.Node, elem: RxElement): Cancelable = {
-    mount(parent, Some(elem), elem.render)
+    mount(parent, Some(elem.getConfig), elem.render)
   }
 
   private def mount(
       parent: dom.Node,
-      currentElement: Option[RxElement],
+      config: Option[RxWidgetConfig],
       currentNode: xml.Node,
       startPoint: Option[dom.Node] = None
   ): Cancelable = {
@@ -53,13 +53,13 @@ private[widget] object RxDOM extends LogSupport {
           case None     => dom.document.createElement(label)
         }
         val cancelMetadata = metadata.map { m =>
-          addAttribute(domNode, currentElement, scope, m)
+          addAttribute(domNode, scope, m)
         }
 
         // Enrich attributes using the config of RxElement
-        currentElement.foreach { x =>
+        config.foreach { x =>
           val htmlNode = domNode.asInstanceOf[dom.html.Html]
-          for ((attrName, value) <- x.getConfig.attributes) {
+          for ((attrName, value) <- x.attributes) {
             attrName match {
               case "style" =>
                 val css = htmlNode.style.cssText
@@ -112,14 +112,21 @@ private[widget] object RxDOM extends LogSupport {
               c1.cancel; c2.cancel
             }
           case elem: RxElement => {
-            mount(parent, Some(elem), elem.render, startPoint)
+            mount(parent, Some(elem.getConfig), elem.render, startPoint)
           }
           case Some(x) =>
-            mount(parent, currentElement, new Atom(x), startPoint)
+            mount(parent, config, new Atom(x), startPoint)
           case None =>
             Cancelable.empty
           case LazyElement(elem) =>
-            mount(parent, Some(elem), elem.render, startPoint)
+            elem match {
+              case b: ui.bootstrap.Button =>
+                debug(s"button: ${elem}, ${elem.getConfig}")
+              case _ =>
+            }
+            mount(parent, Some(elem.getConfig), elem.render, startPoint)
+          case NodeWithConfig(node, config) =>
+            mount(parent, Some(config), node, startPoint)
           case seq: Seq[_] =>
             mount(parent, None, new Group(seq.map(new Atom(_))), startPoint)
           case primitive =>
@@ -133,8 +140,6 @@ private[widget] object RxDOM extends LogSupport {
 
   private def addAttribute(
       parent: dom.Node,
-      // Current element
-      elem: Option[RxElement],
       scope: NamespaceBinding,
       m: MetaData
   ): Cancelable = {
