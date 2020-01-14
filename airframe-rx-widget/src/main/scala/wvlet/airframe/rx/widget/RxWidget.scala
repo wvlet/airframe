@@ -14,8 +14,8 @@
 package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
-import wvlet.airframe.rx.Cancelable
 import wvlet.airframe.rx.widget.ui.Elem
+import wvlet.airframe.rx.{Cancelable, Rx}
 import wvlet.log.LogSupport
 
 import scala.xml.Node
@@ -62,6 +62,10 @@ trait RxComponent extends RxWidget with LogSupport {
   def apply(elem: String): RxElement =
     Elem(() => render(new scala.xml.Atom(scala.xml.Text(elem))))
   def apply(elem: xml.Node): RxElement = Elem(() => render(new scala.xml.Atom(LazyNode(elem))))
+
+  def apply[A](rx: Rx[A]): RxElement = {
+    Elem(() => render(new scala.xml.Atom(rx)))
+  }
 
   private[widget] def renderInternal(elem: xml.Node): xml.Node = {
     val node = render(elem)

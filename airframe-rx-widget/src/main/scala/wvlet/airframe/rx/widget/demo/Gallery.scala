@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.widget.ui._
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airframe.rx.widget.{RxComponent, RxElement}
@@ -106,6 +107,7 @@ object Gallery extends LogSupport {
   def gallery = Seq(
     componentGallery,
     elementGallery,
+    reactiveTest,
     canvasGallery,
     browserGallery,
     buttonGallery,
@@ -330,4 +332,37 @@ object Gallery extends LogSupport {
       |context.stroke()
       |""".stripMargin
   )
+
+  def reactiveTest = {
+    val v = Rx.variable(1)
+    demo(
+      "Rx",
+      Layout.div(
+        <div>
+          <p> {
+          v.map(x => s"count: ${x}")
+        }
+            {
+          Button
+            .primary("add")
+            .onClick { e: dom.Event =>
+              v.update(_ + 1)
+            }
+        }
+          </p>
+          </div>
+      ),
+      """val v = Rx(1)
+        |
+        |<p>
+        |  { v.map(x => s"count: ${x}") }
+        |  {
+        |   Button
+        |    .primary("add")
+        |    .onClick { e: dom.Event => v.set(_ + 1) }
+        |  }
+        |</p>
+        |""".stripMargin
+    )
+  }
 }
