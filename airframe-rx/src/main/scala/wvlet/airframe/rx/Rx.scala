@@ -106,9 +106,14 @@ object Rx extends LogSupport {
 
     def get: A = currentValue
     def foreach[U](f: A => U): Cancelable = {
+      val s = Subscriber(f)
+      // Register a subscriber for propagating future changes
       subscribers += Subscriber(f)
       f(currentValue)
-      Cancelable.empty
+      Cancelable { () =>
+        // Unsubscribe if cancelled
+        subscribers -= s
+      }
     }
     def :=(newValue: A): Unit = update { x: A =>
       newValue
