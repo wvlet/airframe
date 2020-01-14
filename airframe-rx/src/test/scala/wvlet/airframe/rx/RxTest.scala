@@ -12,7 +12,7 @@ class RxTest extends AirSpec {
     val rx: Rx[String] = v.map(x => s"count: ${x}").withName("sample rx")
     val updateCount    = new AtomicInteger(0)
     val value          = new AtomicReference[String]()
-    rx.subscribe { x: String =>
+    val subscription = rx.subscribe { x: String =>
       updateCount.incrementAndGet()
       value.set(x)
     }
@@ -22,6 +22,13 @@ class RxTest extends AirSpec {
 
     // Propagate changes
     v := 2
+    updateCount.get() shouldBe 2
+    value.get() shouldBe s"count: 2"
+
+    // If we cancel the subscription, it will no longer propagate the change
+    subscription.cancel
+
+    v := 3
     updateCount.get() shouldBe 2
     value.get() shouldBe s"count: 2"
   }
