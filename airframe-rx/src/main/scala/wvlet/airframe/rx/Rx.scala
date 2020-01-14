@@ -118,7 +118,9 @@ object Rx extends LogSupport {
         subscribers -= s
       }
     }
-    def :=(newValue: A): Unit = update { x: A =>
+
+    def :=(newValue: A): Unit = set(newValue)
+    def set(newValue: A): Unit = update { x: A =>
       newValue
     }
 

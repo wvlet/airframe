@@ -25,6 +25,11 @@ class RxTest extends AirSpec {
     updateCount.get() shouldBe 2
     value.get() shouldBe s"count: 2"
 
+    // If the value is unchanged, it should not propergate update
+    v := 2
+    updateCount.get() shouldBe 2
+    value.get() shouldBe s"count: 2"
+
     // If we cancel the subscription, it will no longer propagate the change
     subscription.cancel
 
