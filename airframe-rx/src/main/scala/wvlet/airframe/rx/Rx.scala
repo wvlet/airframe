@@ -26,7 +26,10 @@ trait Rx[A] extends LogSupport {
   def map[B](f: A => B): Rx[B]         = MapOp[A, B](this, f)
   def flatMap[B](f: A => Rx[B]): Rx[B] = FlatMapOp(this, f)
 
-  def withName(name: String): Rx[A] = NamedOp(this, name)
+  def withName(name: String): Rx[A] = this match {
+    case NamedOp(p, oldName) => NamedOp(p, name)
+    case _                   => NamedOp(this, name)
+  }
 
   def parents: Seq[Rx[_]]
 
