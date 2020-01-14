@@ -77,9 +77,9 @@ jobs:
           java-version: adopt@1.11
       - uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '12.x'
       - name: Node.js setup
-        run: npm install jsdom@10.0.0
+        run: npm install jsdom@16.0.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
@@ -98,9 +98,9 @@ jobs:
           java-version: adopt@1.11
       - uses: actions/setup-node@v1
         with:
-          node-version: '10.x'
+          node-version: '12.x'
       - name: Node.js setup
-        run: npm install jsdom@10.0.0
+        run: npm install jsdom@16.0.0
       - uses: actions/cache@v1
         with:
           path: ~/.cache
