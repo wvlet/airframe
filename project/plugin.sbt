@@ -10,7 +10,7 @@ addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALA_JS_VERSION)
 
 libraryDependencies ++= (
   if (SCALA_JS_VERSION.startsWith("1.0.0")) {
-    // This plugin is available since Scala.js 1.0.0. 
+    // This plugin is available since Scala.js 1.0.0.
     // 1.0.0-RC3 has a hotfx for jsdom.createVritualConsole is not found error
     Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0-RC3")
   } else {
