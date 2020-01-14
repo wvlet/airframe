@@ -337,10 +337,10 @@ object Gallery extends LogSupport {
     demo(
       "Rx",
       Layout.div(
-        v.map(x => <p>count: {x}</p>),
-        Button.primary("add").onClick { e: dom.Event =>
-          v.update()
-        }
+        v.map(x => <p>count: {x}</p>)
+//        Button.primary("add").onClick { e: dom.Event =>
+//          v.map(x => x + 1)
+//        }
       ),
       """
         |val v = Rx.variable(1)

@@ -698,6 +698,7 @@ lazy val widget =
   crossProject(JSPlatform)
     .crossType(CrossType.Pure)
     .in(file("airframe-rx-widget"))
+    //    .enablePlugins(ScalaJSBundlerPlugin)
     .settings(buildSettings)
     .settings(
       name := "airframe-rx-widget",
@@ -709,6 +710,7 @@ lazy val widget =
     .jsSettings(
       jsBuildSettings,
       jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
+//      npmDependencies in Test += "node" -> "12.14.1"
     )
     .dependsOn(log, rx, airspecRef % "test")
 

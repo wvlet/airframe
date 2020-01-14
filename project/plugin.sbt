@@ -7,6 +7,7 @@ addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
 // For Scala.js
 val SCALA_JS_VERSION = sys.env.getOrElse("SCALA_JS_VERSION", "1.0.0-RC2")
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALA_JS_VERSION)
+//addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.16.0")
 
 libraryDependencies ++= (
   if (SCALA_JS_VERSION.startsWith("1.0.0")) {

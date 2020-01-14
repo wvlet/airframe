@@ -36,20 +36,20 @@ trait Rx[A] extends LogSupport {
   // TODO: Move this as outside method to make Rx objects immutable
   def subscribe[U](subscriber: A => U): Unit = {
     val s = Subscriber(subscriber)
-    debug(s"Add subscriber: ${s} to ${this}")
+    info(s"Add subscriber: ${s} to ${this}")
     addSubscriber(s)
     // Update downstream
     parents.map { p =>
       p.addDownstream(this)
     }
   }
-  //def propergateUpdate(newValue: A): Unit
+  def propagateUpdate[I](newValue: I): Unit
 
   def run(effect: A => Unit): Cancelable = Rx.run(this)(effect)
 
 }
 
-object Rx {
+object Rx extends LogSupport {
   def of[A](v: A): Rx[A]          = SingleOp(v)
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
   def apply[A](v: A): RxVar[A]    = new RxVar(v)
@@ -82,6 +82,9 @@ object Rx {
     private[rx] override def addDownstream[B](rx: Rx[B]): Rx[B] = {
       synchronized {
         downStream += rx
+        parents.map { p =>
+          p.addDownstream(this)
+        }
         rx
       }
     }
@@ -89,6 +92,15 @@ object Rx {
     private[rx] override def addSubscriber(s: Subscriber[A]): Unit = {
       synchronized {
         subscribers = s :: subscribers
+      }
+    }
+    override def propagateUpdate[I](newValue: I): Unit = {
+      subscribers.map { s =>
+        info(s"received subscription: ${newValue}, ${this}")
+      }
+      downStream.map { x =>
+        info(s"propagate ${newValue} to :${x}")
+        x.propagateUpdate(newValue)
       }
     }
 
@@ -102,7 +114,7 @@ object Rx {
   case class SingleOp[A](v: A) extends RxBase[A] {
     override def parents: Seq[Rx[_]] = Seq.empty
   }
-  case class MapOp[A, B](input: Rx[A], f: A => B)         extends UnaryRx[A, B]
+  case class MapOp[A, B](input: Rx[A], f: A => B)         extends UnaryRx[A, B] {}
   case class FlatMapOp[A, B](input: Rx[A], f: A => Rx[B]) extends UnaryRx[A, B]
   case class NamedOp[A](input: Rx[A], name: String) extends UnaryRx[A, A] {
     override def toString: String = s"${name}:${input}"
@@ -113,7 +125,7 @@ object Rx {
     override def parents: Seq[Rx[_]] = Seq.empty
 
     def foreach(f: A => Unit): Cancelable = {
-      // TODO
+      f(currentValue)
       Cancelable.empty
     }
     def :=(newValue: A): Unit = update(newValue)
@@ -123,11 +135,9 @@ object Rx {
         subscribers.map { s =>
           s(newValue)
         }
-        downStream.map { x =>
-          //x.propergateUpdate()
-        }
+        info(s"here: ${newValue}")
+        propagateUpdate(newValue)
       }
     }
-    //override private[rx] def propagateUpdate(x: A): Unit = {}
   }
 }

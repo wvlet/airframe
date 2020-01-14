@@ -1,6 +1,7 @@
 package wvlet.airframe.rx.widget
 
 import org.scalajs.dom
+import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airframe.rx.widget.ui.{DomElement, Layout}
 import wvlet.airspec._
@@ -9,12 +10,16 @@ object RxWidgetTest {}
 
 class RxWidgetTest extends AirSpec {
 
-  private def render(elem: RxElement): String = {
-    val node = dom.document.createElement("div")
+  private def renderTo(node: dom.Element, elem: RxElement): String = {
     RxDOM.mountTo(node, elem)
     val html = node.innerHTML
     debug(html)
     html
+  }
+
+  private def render(elem: RxElement): String = {
+    val node = dom.document.createElement("div")
+    renderTo(node, elem)
   }
 
   test("render nested components") {
@@ -39,6 +44,18 @@ class RxWidgetTest extends AirSpec {
     val elem = Button.primary("my button").onClick(e => debug("clicked"))
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
+  }
+
+  test("Apply Rx variable change") {
+    val node = dom.document.createElement("div")
+    val v    = Rx.variable(1)
+    val elem = Layout.div(v.map(x => x.toString))
+    info(elem)
+
+    val html = renderTo(node, elem)
+    info(html)
+    v.update(2)
+    info(node.innerHTML)
   }
 
 }
