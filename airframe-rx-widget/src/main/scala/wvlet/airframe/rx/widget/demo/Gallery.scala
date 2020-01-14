@@ -107,6 +107,7 @@ object Gallery extends LogSupport {
   def gallery = Seq(
     componentGallery,
     elementGallery,
+    reactiveTest,
     canvasGallery,
     browserGallery,
     buttonGallery,
@@ -337,14 +338,30 @@ object Gallery extends LogSupport {
     demo(
       "Rx",
       Layout.div(
-        v.map(x => <p>count: {x}</p>)
-//        Button.primary("add").onClick { e: dom.Event =>
-//          v.map(x => x + 1)
-//        }
+        <div>
+          <p> {
+          v.map(x => s"count: ${x}")
+        }
+            {
+          Button
+            .primary("add")
+            .onClick { e: dom.Event =>
+              v.update(_ + 1)
+            }
+        }
+          </p>
+          </div>
       ),
-      """
-        |val v = Rx.variable(1)
+      """val v = Rx(1)
         |
+        |<p>
+        |  { v.map(x => s"count: ${x}") }
+        |  {
+        |   Button
+        |    .primary("add")
+        |    .onClick { e: dom.Event => v.set(_ + 1) }
+        |  }
+        |</p>
         |""".stripMargin
     )
   }

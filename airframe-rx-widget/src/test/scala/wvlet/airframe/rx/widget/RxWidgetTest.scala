@@ -49,13 +49,11 @@ class RxWidgetTest extends AirSpec {
   test("Apply Rx variable change") {
     val node = dom.document.createElement("div")
     val v    = Rx.variable(1)
-    val elem = Layout.div(v.map(x => x.toString))
-    info(elem)
-
+    val elem = Layout.div(v.map(x => x))
     val html = renderTo(node, elem)
-    info(html)
-    v.update(2)
-    info(node.innerHTML)
+    html shouldBe "<div>1</div>"
+    v := 2
+    node.innerHTML shouldBe "<div>2</div>"
   }
 
 }

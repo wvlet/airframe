@@ -110,12 +110,9 @@ private[widget] object RxDOM extends LogSupport {
             Cancelable.empty
           case rx: Rx[_] =>
             val (start, end) = parent.createMountSection()
-            rx.subscribe { x =>
-              info(s"new value: ${x}")
-            }
-            var c1 = Cancelable.empty
-            // Remove the previous node from the DOM
-            val c2 = rx.run { v =>
+            var c1           = Cancelable.empty
+            val c2 = rx.subscribe { v =>
+              // Remove the previous node from the DOM
               parent.cleanMountSection(start, end)
               c1.cancel
               c1 = mount(parent, None, new Atom(v), Some(start))

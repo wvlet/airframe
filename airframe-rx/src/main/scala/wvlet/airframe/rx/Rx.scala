@@ -15,36 +15,32 @@ package wvlet.airframe.rx
 
 import wvlet.log.LogSupport
 
+import scala.collection.mutable.ArrayBuffer
+
 /**
   *
   */
 trait Rx[A] extends LogSupport {
   import Rx._
 
-  // TODO: Having mutable states to Rx operators is not ideal as it make difficult reusing operators
-  //
-  private[rx] def addDownstream[B](rx: Rx[B]): Rx[B]
-  private[rx] def addSubscriber(s: Subscriber[A]): Unit
-
   def map[B](f: A => B): Rx[B]         = MapOp[A, B](this, f)
   def flatMap[B](f: A => Rx[B]): Rx[B] = FlatMapOp(this, f)
-  def withName(name: String): Rx[A]    = NamedOp(this, name)
 
-  // The parent operators of this Rx[A]
+  def withName(name: String): Rx[A] = NamedOp(this, name)
+
   def parents: Seq[Rx[_]]
 
-  // TODO: Move this as outside method to make Rx objects immutable
-  def subscribe[U](subscriber: A => U): Unit = {
-    val s = Subscriber(subscriber)
-    info(s"Add subscriber: ${s} to ${this}")
-    addSubscriber(s)
-    // Update downstream
-    parents.map { p =>
-      p.addDownstream(this)
-    }
+  /**
+    * Subscribe any change in the upstream, and if a change is detected,
+    *  the given suscriber code will be executed.
+    *
+    * @param subscriber
+    * @tparam U
+    * @return
+    */
+  def subscribe[U](subscriber: A => U): Cancelable = {
+    Rx.run(this)(subscriber)
   }
-  def propagateUpdate[I](newValue: I): Unit
-
   def run(effect: A => Unit): Cancelable = Rx.run(this)(effect)
 
 }
@@ -54,7 +50,18 @@ object Rx extends LogSupport {
   def variable[A](v: A): RxVar[A] = Rx.apply(v)
   def apply[A](v: A): RxVar[A]    = new RxVar(v)
 
-  private def run[A](rx: Rx[A])(effect: A => Unit): Cancelable = {
+  /**
+    * Build a executable chain of Rx operators, and the resulting chain
+    * will be registered to the root node (e.g. RxVar). If the root value changes,
+    * the effect code block will be executed.
+    *
+    * @param rx
+    * @param effect
+    * @tparam A
+    * @tparam U
+    * @return
+    */
+  private def run[A, U](rx: Rx[A])(effect: A => U): Cancelable = {
     rx match {
       case MapOp(in, f) =>
         run(in)(x => effect(f.asInstanceOf[Any => A](x)))
@@ -75,36 +82,7 @@ object Rx extends LogSupport {
     }
   }
 
-  private[rx] abstract class RxBase[A] extends Rx[A] {
-    private[rx] var downStream: Set[Rx[_]]           = Set.empty
-    private[rx] var subscribers: List[Subscriber[A]] = List.empty
-
-    private[rx] override def addDownstream[B](rx: Rx[B]): Rx[B] = {
-      synchronized {
-        downStream += rx
-        parents.map { p =>
-          p.addDownstream(this)
-        }
-        rx
-      }
-    }
-
-    private[rx] override def addSubscriber(s: Subscriber[A]): Unit = {
-      synchronized {
-        subscribers = s :: subscribers
-      }
-    }
-    override def propagateUpdate[I](newValue: I): Unit = {
-      subscribers.map { s =>
-        info(s"received subscription: ${newValue}, ${this}")
-      }
-      downStream.map { x =>
-        info(s"propagate ${newValue} to :${x}")
-        x.propagateUpdate(newValue)
-      }
-    }
-
-  }
+  private[rx] abstract class RxBase[A] extends Rx[A] {}
 
   abstract class UnaryRx[I, A] extends RxBase[A] {
     def input: Rx[I]
@@ -120,23 +98,33 @@ object Rx extends LogSupport {
     override def toString: String = s"${name}:${input}"
   }
 
-  case class RxVar[A](private[rx] var currentValue: A) extends RxBase[A] {
+  case class RxVar[A](private var currentValue: A) extends RxBase[A] {
     override def toString: String    = s"RxVar(${currentValue})"
     override def parents: Seq[Rx[_]] = Seq.empty
 
-    def foreach(f: A => Unit): Cancelable = {
+    private var subscribers: ArrayBuffer[Subscriber[A]] = ArrayBuffer.empty
+
+    def get: A = currentValue
+    def foreach[U](f: A => U): Cancelable = {
+      subscribers += Subscriber(f)
       f(currentValue)
       Cancelable.empty
     }
-    def :=(newValue: A): Unit = update(newValue)
-    def update(newValue: A): Unit = {
+    def :=(newValue: A): Unit = update { x: A =>
+      newValue
+    }
+
+    /**
+      * Updates the variable and trigger the recalculation of the subscribers
+      * currentValue => newValue
+      */
+    def update(updater: A => A): Unit = {
+      val newValue = updater(currentValue)
       if (currentValue != newValue) {
         currentValue = newValue
         subscribers.map { s =>
           s(newValue)
         }
-        info(s"here: ${newValue}")
-        propagateUpdate(newValue)
       }
     }
   }
