@@ -6,6 +6,31 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.1.0
+Happy new year! In this release, we added new components: airframe-rx and airframe-rx-widget for building reactive web user-interface with Scala.js.
+In addition, AirSpec testing framework supports `test("...", design="...")` syntax for easily nesting test cases and modifying designs for each test case. 
+airframe-control now has CircuitBreaker to control connections to remote services with fail-fast behavior.   
+
+Changes:
+-  airframe-rx-widget: Support RxVar subscription ([#890](https://github.com/wvlet/airframe/issues/890)) [[19b00f4](https://github.com/wvlet/airframe/commit/19b00f4)]
+-  airframe-rx-widget: Use the latest nodejs and jsdom ([#889](https://github.com/wvlet/airframe/issues/889)) [[baf4729](https://github.com/wvlet/airframe/commit/baf4729)]
+-  airframe-rx-widget: Update scalajs-env-jsdom-nodejs to 1.0.0-RC3 ([#888](https://github.com/wvlet/airframe/issues/888)) [[3345235](https://github.com/wvlet/airframe/commit/3345235)]
+-  airframe-rx-widget: Scala.js UI widget collection ([#883](https://github.com/wvlet/airframe/issues/883)) [[00496b0](https://github.com/wvlet/airframe/commit/00496b0)]
+
+-  airspec: Add test(...) syntax ([#876](https://github.com/wvlet/airframe/issues/876)) [[00d8ba9](https://github.com/wvlet/airframe/commit/00d8ba9)]
+-  airframe-control: Add CircuitBreaker ([#763](https://github.com/wvlet/airframe/issues/763)) [[e55521b](https://github.com/wvlet/airframe/commit/e55521b)]
+-  airframe-http: [#864](https://github.com/wvlet/airframe/issues/864) Support empty strings for /*path endpoint ([#879](https://github.com/wvlet/airframe/issues/879)) [[552e30f](https://github.com/wvlet/airframe/commit/552e30f)]
+-  airframe-http: [#865](https://github.com/wvlet/airframe/issues/865) Support multiple static content paths ([#877](https://github.com/wvlet/airframe/issues/877)) [[9a1f50f](https://github.com/wvlet/airframe/commit/9a1f50f)]
+-  airframe-http: Fix static content directory path ([#882](https://github.com/wvlet/airframe/issues/882)) [[5412a31](https://github.com/wvlet/airframe/commit/5412a31)]
+-  airframe-http: [#863](https://github.com/wvlet/airframe/issues/863) Find inherited endpoints ([#878](https://github.com/wvlet/airframe/issues/878)) [[db7f792](https://github.com/wvlet/airframe/commit/db7f792)]
+
+Intennal changes:
+-  Update presto-main to 328 ([#885](https://github.com/wvlet/airframe/issues/885)) [[9add1aa](https://github.com/wvlet/airframe/commit/9add1aa)]
+-  Update HikariCP to 3.4.2 ([#884](https://github.com/wvlet/airframe/issues/884)) [[9f3fc0c](https://github.com/wvlet/airframe/commit/9f3fc0c)]
+-  Update sbt-mdoc to 2.1.1 ([#881](https://github.com/wvlet/airframe/issues/881)) [[bcb26ea](https://github.com/wvlet/airframe/commit/bcb26ea)]
+-  Update sbt to 1.3.6 ([#873](https://github.com/wvlet/airframe/issues/873)) [[20e64f3](https://github.com/wvlet/airframe/commit/20e64f3)]
+-  Update sqlite-jdbc to 3.30.1 ([#871](https://github.com/wvlet/airframe/issues/871)) [[0007f44](https://github.com/wvlet/airframe/commit/0007f44)]
+
 ## 19.12.4
 -  Publish Scala.js binaries for Scala 2.13 ([#870](https://github.com/wvlet/airframe/issues/870)) [[23b94cd](https://github.com/wvlet/airframe/commit/23b94cd)]
 -  airframe-jdbc: Add transaction call support ([#861](https://github.com/wvlet/airframe/issues/861)) [[c48154f](https://github.com/wvlet/airframe/commit/c48154f)]
