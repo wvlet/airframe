@@ -332,10 +332,10 @@ object XmlElementEmbeddable {
   @inline implicit def charElementEmbeddable: XE[Char]                             = null
   @inline implicit def stringElementEmbeddable: XE[String]                         = null
   @inline implicit def nodeElementEmbeddable[T <: Node]: XE[T]                     = null
-  @inline implicit def optionElementEmbeddable[C[x] <: Option[x], T: XE]: XE[C[T]] = null
-  @inline implicit def seqElementEmbeddable[C[x] <: Seq[x], T <: Node]: XE[C[T]]   = null
-  @inline implicit def rxElementEmbeddable[C[x] <: Rx[x], T: XE]: XE[C[T]]         = null
   @inline implicit def rxWidgetElementEmbeddable[T <: RxElement]: XE[T]            = null
+  @inline implicit def optionElementEmbeddable[C[x] <: Option[x], T: XE]: XE[C[T]] = null
+  @inline implicit def rxEmbeddable[C[x] <: Rx[x], T: XE]: XE[C[T]]                = null
+  @inline implicit def seqElementEmbeddable[C[x] <: Seq[x], T: XE]: XE[C[T]]       = null
 }
 
 /** Internal structure used by scalac to create literals */
