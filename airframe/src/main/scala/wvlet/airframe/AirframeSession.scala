@@ -355,7 +355,7 @@ private[airframe] class AirframeSession(
       obj.getOrElse {
         // strict mode
         if (design.designOptions.defaultInstanceInjection.contains(false)) {
-          throw new MISSING_DEPENDENCY(seen, sourceCode)
+          throw new MISSING_DEPENDENCY(tpe :: seen, sourceCode)
         }
 
         trace(s"[${name}] No binding is found for ${tpe}. Building the instance. create = ${create}")
