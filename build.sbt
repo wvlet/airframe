@@ -67,10 +67,14 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 // We need to define this globally as a workaround for https://github.com/sbt/sbt/pull/3760
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
-val jsBuildSettings = Seq[Setting[_]](
-  crossScalaVersions := exceptScala2_11,
-  coverageEnabled := false
-//    Compile / parallelExecution := false
+val jsBuildCommonSettings: Seq[Setting[_]] = Seq[Setting[_]](
+  coverageEnabled := false,
+  turbo := false,
+  Global / concurrentRestrictions += Tags.limit(ScalaJSTags.Link, 1)
+)
+
+val jsBuildSettings: Seq[Setting[_]] = jsBuildCommonSettings ++ Seq[Setting[_]](
+  crossScalaVersions := exceptScala2_11
 )
 
 val noPublish = Seq(
@@ -791,7 +795,7 @@ val airspecJVMBuildSettings = Seq[Setting[_]](
   }
 )
 
-val airspecJSBuildSettings = Seq[Setting[_]](
+val airspecJSBuildSettings: Seq[Setting[_]] = jsBuildCommonSettings ++ Seq[Setting[_]](
   unmanagedSourceDirectories in Compile ++= {
     val baseDir = (ThisBuild / baseDirectory).value.getAbsoluteFile
     val sv      = scalaBinaryVersion.value
