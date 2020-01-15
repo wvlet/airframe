@@ -59,11 +59,8 @@ private[widget] object RxDOM extends LogSupport {
           htmlNode.setAttribute(attrName, value.mkString(" "))
       }
     }
-    for (onClickHandler <- config.onClickHandler) {
-      htmlNode.setEventListener("onClick", onClickHandler)
-    }
-    for (onEventHandler <- config.onEventHandler) {
-      htmlNode.setEventListener("onEvent", onEventHandler)
+    for ((eventType, handler) <- config.onEventHandler) {
+      htmlNode.setEventListener(eventType, handler.asInstanceOf[dom.Event => Unit])
     }
     htmlNode
   }
