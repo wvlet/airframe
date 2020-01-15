@@ -56,4 +56,22 @@ class RxWidgetTest extends AirSpec {
     node.innerHTML shouldBe "<div>2</div>"
   }
 
+  test("Update the local dom element upon Rx variable change") {
+    val node = dom.document.createElement("div")
+    val v    = Rx.variable("Home")
+    val content = Layout.div(
+      v.map { selected =>
+        <ul>{
+          Seq("Home", "Blog").map { page =>
+            <li class={if (page == selected) Some("active") else None}>{page}</li>
+          }
+        }</ul>
+      }
+    )
+    val html = renderTo(node, content)
+    html shouldBe """<div><ul><li class="active">Home</li><li>Blog</li></ul></div>"""
+    v := "Blog"
+    node.innerHTML shouldBe """<div><ul><li>Home</li><li class="active">Blog</li></ul></div>"""
+  }
+
 }

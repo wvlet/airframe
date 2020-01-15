@@ -84,7 +84,7 @@ private[widget] object RxDOM extends LogSupport {
         val cancelChild = e.child.map { c =>
           mount(domNode, None, c)
         }
-        parent.mountHere(domNode, None)
+        parent.mountHere(domNode, startPoint)
         Cancelable { () =>
           cancelMetadata.foreach(_.cancel); cancelChild.foreach(_.cancel)
         }
@@ -102,7 +102,7 @@ private[widget] object RxDOM extends LogSupport {
       case a: Atom[_] =>
         a.data match {
           case n: xml.Node =>
-            mount(parent, None, n)
+            mount(parent, None, n, startPoint)
           case node: dom.Node =>
             config
               .map(x => applyConfig(node, x))
