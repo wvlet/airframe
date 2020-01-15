@@ -16,6 +16,7 @@ package wvlet.airframe.control
 import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
 
+import scala.reflect.ClassTag
 import scala.util.{Failure, Random, Success, Try}
 
 /**
@@ -254,15 +255,15 @@ object Retry extends LogSupport {
       })
     }
 
-    def run[A](body: => A): A = {
+    def run[A: ClassTag](body: => A): A = {
       runInternal(None)(body)
     }
 
-    def runWithContext[A](context: Any)(body: => A): A = {
+    def runWithContext[A: ClassTag](context: Any)(body: => A): A = {
       runInternal(Option(context))(body)
     }
 
-    protected def runInternal[A](context: Option[Any])(body: => A): A = {
+    protected def runInternal[A: ClassTag](context: Option[Any])(body: => A): A = {
       var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
@@ -270,7 +271,7 @@ object Retry extends LogSupport {
         val ret = Try(body)
         val resultClass = ret match {
           case Success(x) =>
-            // Test whether the code block execution is successeded or failed
+            // Test whether the code block execution is succeeded or failed
             resultClassifier(x)
           case Failure(RetryableFailure(e)) =>
             ResultClass.retryableFailure(e)
@@ -279,9 +280,14 @@ object Retry extends LogSupport {
         }
 
         resultClass match {
-          case ResultClass.Succeeded =>
+          case ResultClass.Succeeded(x) =>
             // OK. Exit the loop
-            result = Some(ret.get)
+            val clazz = implicitly[ClassTag[A]].runtimeClass
+            if (clazz.isInstance(x)) {
+              result = Some(x.asInstanceOf[A])
+            } else {
+              ResultClass.nonRetryableFailure(new ClassCastException(s"${x} is not an instance of ${resultClass}"))
+            }
           case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
             // Retryable error
             retryContext = retryContext.withExtraWait(extraWait).nextRetry(cause)
