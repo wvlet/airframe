@@ -6,6 +6,12 @@ title: Release Notes
 
 Airframe uses YY.MM.patch versioning scheme, so the version numbers match with the release year and month.   
 
+## 20.1.1
+-  airframe-log: Fix warning log message color ([#896](https://github.com/wvlet/airframe/issues/896)) [[a1f6e1d](https://github.com/wvlet/airframe/commit/a1f6e1d)]
+-  airframe-rx: Support generic event handlers ([#893](https://github.com/wvlet/airframe/issues/893)) [[774687c](https://github.com/wvlet/airframe/commit/774687c)]
+-  airframe-rx-widget: Support embedding Seq of Rx[A], RxElement inside XML literal ([#892](https://github.com/wvlet/airframe/issues/892)) [[7a8fd0c](https://github.com/wvlet/airframe/commit/7a8fd0c)]
+-  airframe-rx-widget: Fix mounting point of Rx element ([#891](https://github.com/wvlet/airframe/issues/891)) [[09170d1](https://github.com/wvlet/airframe/commit/09170d1)]
+
 ## 20.1.0
 Happy new year! In this release, we added new components: airframe-rx and airframe-rx-widget for building reactive web user-interface with Scala.js.
 In addition, AirSpec testing framework supports `test("...", design="...")` syntax for easily nesting test cases and modifying designs for each test case. 
