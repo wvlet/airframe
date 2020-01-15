@@ -188,7 +188,7 @@ case class CircuitBreaker(
 
   /**
     * Set a fallback handler which process the exception happened in the code block.
-    * The default is just throw the exception as it is.
+    * The default is just throwing the exception as it is.
     */
   def withFallbackHandler(handler: Throwable => Any): CircuitBreaker = {
     this.copy(fallbackHandler = handler)
@@ -331,7 +331,7 @@ case class CircuitBreaker(
       case ResultClass.Succeeded(x) =>
         recordSuccess
         val clazz = implicitly[ClassTag[A]].runtimeClass
-        if (clazz.isInstance(x)) {
+        if (clazz.isAssignableFrom(x.getClass)) {
           x.asInstanceOf[A]
         } else {
           throw new ClassCastException(s"${x} is not an instance of ${resultClass}")
@@ -345,7 +345,7 @@ case class CircuitBreaker(
         }
         val x     = fallbackHandler(cause)
         val clazz = implicitly[ClassTag[A]].runtimeClass
-        if (clazz.isInstance(x)) {
+        if (clazz.isAssignableFrom(x.getClass)) {
           x.asInstanceOf[A]
         } else {
           throw new ClassCastException(s"${x} is not an instance of ${resultClass}")

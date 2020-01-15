@@ -283,7 +283,7 @@ object Retry extends LogSupport {
           case ResultClass.Succeeded(x) =>
             // OK. Exit the loop
             val clazz = implicitly[ClassTag[A]].runtimeClass
-            if (clazz.isInstance(x)) {
+            if (clazz.isAssignableFrom(x.getClass)) {
               result = Some(x.asInstanceOf[A])
             } else {
               ResultClass.nonRetryableFailure(new ClassCastException(s"${x} is not an instance of ${resultClass}"))
