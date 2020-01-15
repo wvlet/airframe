@@ -119,7 +119,9 @@ trait RxElement extends RxWidget {
 }
 
 object RxElement {
-  def apply(node: xml.Node): RxElement = new RxElement { override def render: Node = node }
+  def apply(node: xml.Node): RxElement  = new RxElement { override def render: Node = node               }
+  def apply(elem: RxElement): RxElement = new RxElement { override def render: Node = new xml.Atom(elem) }
+  def apply[A](rx: Rx[A]): RxElement    = new RxElement { override def render: Node = new xml.Atom(rx)   }
 }
 
 /**
