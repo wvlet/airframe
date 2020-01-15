@@ -13,7 +13,6 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import org.scalajs.dom
 import wvlet.airframe.rx.widget.RxElement
 import wvlet.log.LogSupport
 
@@ -41,19 +40,11 @@ case class Button(
 
   def render: xml.Node = {
     if (isActive) {
-      <button type="button" class="btn" onclick={
-        config.onClickHandler.getOrElse { x: dom.MouseEvent =>
-        }
-      }>{name}</button>
+      <button type="button" class="btn">{name}</button>
     } else {
       <button type="button" class="btn" disabled="true">{name}</button>
     }
   }
-
-  def onClick(handler: dom.MouseEvent => Unit): Button = {
-    updateConfig(config.onClick(handler))
-  }
-
 }
 
 object Button extends LogSupport {

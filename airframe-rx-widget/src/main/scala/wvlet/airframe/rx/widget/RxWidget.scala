@@ -43,6 +43,9 @@ trait RxWidget {
     * Add an extra CSS style
     */
   def addStyle(styleValue: String): this.type = updateConfig(config.addStyle(styleValue))
+
+  def onClick[U](handler: dom.MouseEvent => U): this.type = updateConfig(config.onClick(handler))
+
 }
 
 /**
@@ -119,7 +122,9 @@ trait RxElement extends RxWidget {
 }
 
 object RxElement {
-  def apply(node: xml.Node): RxElement = new RxElement { override def render: Node = node }
+  def apply(node: xml.Node): RxElement  = new RxElement { override def render: Node = node               }
+  def apply(elem: RxElement): RxElement = new RxElement { override def render: Node = new xml.Atom(elem) }
+  def apply[A](rx: Rx[A]): RxElement    = new RxElement { override def render: Node = new xml.Atom(rx)   }
 }
 
 /**
@@ -128,13 +133,13 @@ object RxElement {
 case class RxWidgetConfig(
     id: Option[String] = None,
     attributes: Map[String, Seq[String]] = Map.empty,
-    onClickHandler: Option[dom.MouseEvent => Unit] = None,
-    onEventHandler: Option[dom.Event => Unit] = None
+    onEventHandler: Map[String, Function1[_, _]] = Map.empty
 ) {
 
   // TODO: Add all event types https://www.w3schools.com/jsref/dom_obj_event.asp
-  def onClick(handler: dom.MouseEvent => Unit) = this.copy(onClickHandler = Some(handler))
-  def onEvent(handler: dom.Event => Unit)      = this.copy(onEventHandler = Some(handler))
+  def onClick[U](handler: dom.MouseEvent => U): RxWidgetConfig = onEvent("onClick", handler)
+  def onEvent[E <: dom.Event, U](eventType: String, handler: E => U): RxWidgetConfig =
+    this.copy(onEventHandler = onEventHandler + (eventType -> handler))
 
   def withId(id: String): RxWidgetConfig = this.copy(id = Some(id))
 
