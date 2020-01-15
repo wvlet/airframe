@@ -354,7 +354,7 @@ private[airframe] class AirframeSession(
     val result =
       obj.getOrElse {
         // strict mode
-        if (design.designOptions.disableImplicitInstanceGeneration.contains(true)) {
+        if (design.designOptions.defaultInstanceInjection.contains(false)) {
           throw new MISSING_DEPENDENCY(seen, sourceCode)
         }
 

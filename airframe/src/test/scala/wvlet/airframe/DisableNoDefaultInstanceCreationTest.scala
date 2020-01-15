@@ -16,20 +16,17 @@ package wvlet.airframe
 import wvlet.airframe.AirframeException.MISSING_DEPENDENCY
 import wvlet.airspec.AirSpec
 
-object DisableImplicitInstanceCreationTest {
+object DisableNoDefaultInstanceCreationTest {
   case class Component(config: Config)
   case class Config(value: String = "test")
-
-  case class Component2(config: Config2)
-  case class Config2(value: String)
 }
 
-class DisableImplicitInstanceCreationTest extends AirSpec {
-  import DisableImplicitInstanceCreationTest._
+class DisableNoDefaultInstanceCreationTest extends AirSpec {
+  import DisableNoDefaultInstanceCreationTest._
   scalaJsSupport
 
   def `disable implicit instance creation`: Unit = {
-    val d = Design.newDesign.bind[Component].toSingleton.disableImplicitInstanceCreation
+    val d = Design.newDesign.bind[Component].toSingleton.noDefaultInstanceInjection
     intercept[MISSING_DEPENDENCY] {
       d.build[Component] { _ =>
       }
@@ -37,7 +34,7 @@ class DisableImplicitInstanceCreationTest extends AirSpec {
   }
 
   def `disable implicit instance creation with production mode`: Unit = {
-    val d = Design.newDesign.bind[Component].toSingleton.disableImplicitInstanceCreation.withProductionMode
+    val d = Design.newDesign.bind[Component].toSingleton.noDefaultInstanceInjection.withProductionMode
     intercept[MISSING_DEPENDENCY] {
       d.withSession { _ =>
       }
@@ -48,17 +45,6 @@ class DisableImplicitInstanceCreationTest extends AirSpec {
     val d = Design.newDesign.bind[Component].toSingleton
     d.build[Component] { c =>
       assert(c.config.value == "test")
-    }
-  }
-
-  // Even if Airframe provide automatic singleton binding as safe-default behavior,
-  // a runtime exception can occur at unexpected timing in this case.
-  def `missing dependency`: Unit = {
-    val d = Design.newDesign.withProductionMode
-    d.withSession { session =>
-      intercept[MISSING_DEPENDENCY] {
-        session.build[Component2]
-      }
     }
   }
 }
