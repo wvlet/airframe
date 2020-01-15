@@ -16,7 +16,6 @@ Changes:
 -  airframe-rx-widget: Use the latest nodejs and jsdom ([#889](https://github.com/wvlet/airframe/issues/889)) [[baf4729](https://github.com/wvlet/airframe/commit/baf4729)]
 -  airframe-rx-widget: Update scalajs-env-jsdom-nodejs to 1.0.0-RC3 ([#888](https://github.com/wvlet/airframe/issues/888)) [[3345235](https://github.com/wvlet/airframe/commit/3345235)]
 -  airframe-rx-widget: Scala.js UI widget collection ([#883](https://github.com/wvlet/airframe/issues/883)) [[00496b0](https://github.com/wvlet/airframe/commit/00496b0)]
-
 -  airspec: Add test(...) syntax ([#876](https://github.com/wvlet/airframe/issues/876)) [[00d8ba9](https://github.com/wvlet/airframe/commit/00d8ba9)]
 -  airframe-control: Add CircuitBreaker ([#763](https://github.com/wvlet/airframe/issues/763)) [[e55521b](https://github.com/wvlet/airframe/commit/e55521b)]
 -  airframe-http: [#864](https://github.com/wvlet/airframe/issues/864) Support empty strings for /*path endpoint ([#879](https://github.com/wvlet/airframe/issues/879)) [[552e30f](https://github.com/wvlet/airframe/commit/552e30f)]
