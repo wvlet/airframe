@@ -1,9 +1,10 @@
 package wvlet.log
 
-import scala.scalajs.js.Dynamic.global
 import java.util.{logging => jl}
 
 import wvlet.log.JSConsoleLogHandler.JSLogColorPalette
+
+import scala.scalajs.js.Dynamic.global
 
 class JSConsoleLogHandler(logColorPalette: JSLogColorPalette = JSConsoleLogHandler.DEFAULT_COLOR_PALETTE)
     extends jl.Handler {
@@ -55,7 +56,7 @@ object JSConsoleLogHandler {
   ) {
     def cssOf(l: LogLevel): String = l match {
       case LogLevel.ERROR => s"color:${error}"
-      case LogLevel.WARN  => s"color:${debug}"
+      case LogLevel.WARN  => s"color:${warn}"
       case LogLevel.INFO  => s"color:${info}"
       case LogLevel.DEBUG => s"color:${debug}"
       case LogLevel.TRACE => s"color:${trace}"
