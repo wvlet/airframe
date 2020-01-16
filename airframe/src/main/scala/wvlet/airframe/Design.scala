@@ -29,6 +29,7 @@ import wvlet.airframe.lifecycle.LifeCycleHookType
 case class DesignOptions(
     enabledLifeCycleLogging: Option[Boolean] = None,
     stage: Option[Stage] = None,
+    defaultInstanceInjection: Option[Boolean] = None,
     options: Map[String, Any] = Map.empty
 ) extends Serializable {
   def +(other: DesignOptions): DesignOptions = {
@@ -36,6 +37,7 @@ case class DesignOptions(
     new DesignOptions(
       other.enabledLifeCycleLogging.orElse(this.enabledLifeCycleLogging),
       other.stage.orElse(this.stage),
+      other.defaultInstanceInjection.orElse(this.defaultInstanceInjection),
       defaultOptionMerger(options, other.options)
     )
   }
@@ -66,6 +68,10 @@ case class DesignOptions(
 
   def withLazyMode: DesignOptions = {
     this.copy(stage = Some(Stage.DEVELOPMENT))
+  }
+
+  def noDefaultInstanceInjection: DesignOptions = {
+    this.copy(defaultInstanceInjection = Some(false))
   }
 
   private[airframe] def withOption[A](key: String, value: A): DesignOptions = {
@@ -187,6 +193,10 @@ class Design private[airframe] (
 
   def noLifeCycleLogging: Design = {
     new Design(designOptions.noLifecycleLogging, binding, hooks)
+  }
+
+  def noDefaultInstanceInjection: Design = {
+    new Design(designOptions.noDefaultInstanceInjection, binding, hooks)
   }
 
   /**
