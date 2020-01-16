@@ -333,7 +333,7 @@ case class CircuitBreaker(
         result.get
       case ResultClass.Failed(retryable, cause, _) =>
         recordFailure(cause)
-        if(retryable) {
+        if (retryable) {
           // If the error is retryable, rethrow as it is then the caller (maybe Retryer) should handle it.
           throw cause
         } else {
