@@ -135,7 +135,7 @@ case class CircuitBreaker(
     name: String = "default",
     healthCheckPolicy: HealthCheckPolicy = HealthCheckPolicy.markDeadOnConsecutiveFailures(3),
     resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-    errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
+    errorClassifier: Throwable => ResultClass.Failed = ResultClass.ALWAYS_RETRY,
     onOpenFailureHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
     fallbackHandler: Throwable => Any = t => throw t,
@@ -174,7 +174,7 @@ case class CircuitBreaker(
     * Set a classifier to determine whether the exception happened in the code block can be ignoreable or not for
     * the accessing the target service.
     */
-  def withErrorClassifier(newErrorClassifier: Throwable => ResultClass): CircuitBreaker = {
+  def withErrorClassifier(newErrorClassifier: Throwable => ResultClass.Failed): CircuitBreaker = {
     this.copy(errorClassifier = newErrorClassifier)
   }
 
@@ -328,27 +328,23 @@ case class CircuitBreaker(
     }
 
     resultClass match {
-      case ResultClass.Succeeded(x) =>
+      case ResultClass.Succeeded =>
         recordSuccess
-        val clazz = implicitly[ClassTag[A]].runtimeClass
-        if (clazz.isAssignableFrom(x.getClass)) {
-          x.asInstanceOf[A]
-        } else {
-          throw new ClassCastException(s"${x} is not an instance of ${resultClass}")
-        }
+        result.get
       case ResultClass.Failed(retryable, cause, _) =>
-        if (!retryable) {
-          recordFailure(cause)
+        recordFailure(cause)
+        if(retryable) {
+          // If the error is retryable, rethrow as it is then the caller (maybe Retryer) should handle it.
+          throw cause
         } else {
-          // TODO should record as success in this case?
-          recordSuccess
-        }
-        val x     = fallbackHandler(cause)
-        val clazz = implicitly[ClassTag[A]].runtimeClass
-        if (clazz.isAssignableFrom(x.getClass)) {
-          x.asInstanceOf[A]
-        } else {
-          throw new ClassCastException(s"${x} is not an instance of ${resultClass}")
+          // If the error is not retryable, apply fallbackHandler
+          val x     = fallbackHandler(cause)
+          val clazz = implicitly[ClassTag[A]].runtimeClass
+          if (clazz.isAssignableFrom(x.getClass)) {
+            x.asInstanceOf[A]
+          } else {
+            throw new ClassCastException(s"${x} is not an instance of ${resultClass}")
+          }
         }
     }
   }

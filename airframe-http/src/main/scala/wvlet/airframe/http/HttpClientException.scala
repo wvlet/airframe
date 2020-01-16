@@ -81,7 +81,7 @@ object HttpClientException extends LogSupport {
     val status = adapter.statusOf(response)
     status match {
       case s if s.isSuccessful =>
-        Succeeded(response)
+        Succeeded
       case s if s.isServerError =>
         // We should retry on any server side errors
         val f = retryableFailure(requestFailure(response))

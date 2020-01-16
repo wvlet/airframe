@@ -16,7 +16,6 @@ package wvlet.airframe.control
 import wvlet.airframe.control.ResultClass.Failed
 import wvlet.log.LogSupport
 
-import scala.reflect.ClassTag
 import scala.util.{Failure, Random, Success, Try}
 
 /**
@@ -103,7 +102,7 @@ object Retry extends LogSupport {
     )
   }
 
-  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
+  private def RETHROW_ALL: Throwable => ResultClass.Failed = { e: Throwable =>
     throw e
   }
 
@@ -145,7 +144,7 @@ object Retry extends LogSupport {
       baseWaitMillis: Int,
       extraWaitMillis: Int,
       resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-      errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
+      errorClassifier: Throwable => ResultClass.Failed = ResultClass.ALWAYS_RETRY,
       beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
   ) {
     def init(context: Option[Any] = None): RetryContext = {
@@ -227,7 +226,7 @@ object Retry extends LogSupport {
       * Set a detailed error handler upon Exception. If the given exception is not retryable,
       * just rethrow the exception. Otherwise, consume the exception.
       */
-    def withErrorClassifier(errorClassifier: Throwable => ResultClass): RetryContext = {
+    def withErrorClassifier(errorClassifier: Throwable => ResultClass.Failed): RetryContext = {
       this.copy(errorClassifier = errorClassifier)
     }
 
@@ -249,21 +248,21 @@ object Retry extends LogSupport {
       * @param errorClassifier
       * @return
       */
-    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass]): RetryContext = {
+    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass.Failed]): RetryContext = {
       this.copy(errorClassifier = { e: Throwable =>
         errorClassifier.applyOrElse(e, RETHROW_ALL)
       })
     }
 
-    def run[A: ClassTag](body: => A): A = {
+    def run[A](body: => A): A = {
       runInternal(None)(body)
     }
 
-    def runWithContext[A: ClassTag](context: Any)(body: => A): A = {
+    def runWithContext[A](context: Any)(body: => A): A = {
       runInternal(Option(context))(body)
     }
 
-    protected def runInternal[A: ClassTag](context: Option[Any])(body: => A): A = {
+    protected def runInternal[A](context: Option[Any])(body: => A): A = {
       var result: Option[A]          = None
       var retryContext: RetryContext = init(context)
 
@@ -280,14 +279,9 @@ object Retry extends LogSupport {
         }
 
         resultClass match {
-          case ResultClass.Succeeded(x) =>
+          case ResultClass.Succeeded =>
             // OK. Exit the loop
-            val clazz = implicitly[ClassTag[A]].runtimeClass
-            if (clazz.isAssignableFrom(x.getClass)) {
-              result = Some(x.asInstanceOf[A])
-            } else {
-              ResultClass.nonRetryableFailure(new ClassCastException(s"${x} is not an instance of ${resultClass}"))
-            }
+            result = Some(ret.get)
           case ResultClass.Failed(isRetryable, cause, extraWait) if isRetryable =>
             // Retryable error
             retryContext = retryContext.withExtraWait(extraWait).nextRetry(cause)

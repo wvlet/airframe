@@ -25,7 +25,7 @@ object ResultClass {
   /**
     * A label for the successful code execution result
     */
-  case class Succeeded(value: Any) extends ResultClass
+  case object Succeeded extends ResultClass
 
   /**
     * A label for the failed code execution result
@@ -44,10 +44,10 @@ object ResultClass {
   def nonRetryableFailure(e: Throwable): Failed = Retry.nonRetryableFailure(e)
 
   def ALWAYS_SUCCEED: Any => ResultClass = { x: Any =>
-    Succeeded(x)
+    Succeeded
   }
 
-  def ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
+  def ALWAYS_RETRY: Throwable => ResultClass.Failed = { e: Throwable =>
     retryableFailure(e)
   }
 }

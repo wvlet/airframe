@@ -57,7 +57,7 @@ class FinagleRetryFilter(retry: RetryContext, timer: Timer = DefaultTimer)
       }
 
       classifier match {
-        case ResultClass.Succeeded(x) =>
+        case ResultClass.Succeeded =>
           rep
         case ResultClass.Failed(isRetryable, cause, extraWait) => {
           if (!retryContext.canContinue) {
