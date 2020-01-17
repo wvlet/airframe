@@ -102,7 +102,7 @@ object Retry extends LogSupport {
     )
   }
 
-  private def RETHROW_ALL: Throwable => ResultClass = { e: Throwable =>
+  private def RETHROW_ALL: Throwable => ResultClass.Failed = { e: Throwable =>
     throw e
   }
 
@@ -144,7 +144,7 @@ object Retry extends LogSupport {
       baseWaitMillis: Int,
       extraWaitMillis: Int,
       resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-      errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
+      errorClassifier: Throwable => ResultClass.Failed = ResultClass.ALWAYS_RETRY,
       beforeRetryAction: RetryContext => Any = REPORT_RETRY_COUNT
   ) {
     def init(context: Option[Any] = None): RetryContext = {
@@ -226,7 +226,7 @@ object Retry extends LogSupport {
       * Set a detailed error handler upon Exception. If the given exception is not retryable,
       * just rethrow the exception. Otherwise, consume the exception.
       */
-    def withErrorClassifier(errorClassifier: Throwable => ResultClass): RetryContext = {
+    def withErrorClassifier(errorClassifier: Throwable => ResultClass.Failed): RetryContext = {
       this.copy(errorClassifier = errorClassifier)
     }
 
@@ -248,7 +248,7 @@ object Retry extends LogSupport {
       * @param errorClassifier
       * @return
       */
-    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass]): RetryContext = {
+    def retryOn(errorClassifier: PartialFunction[Throwable, ResultClass.Failed]): RetryContext = {
       this.copy(errorClassifier = { e: Throwable =>
         errorClassifier.applyOrElse(e, RETHROW_ALL)
       })
@@ -270,7 +270,7 @@ object Retry extends LogSupport {
         val ret = Try(body)
         val resultClass = ret match {
           case Success(x) =>
-            // Test whether the code block execution is successeded or failed
+            // Test whether the code block execution is succeeded or failed
             resultClassifier(x)
           case Failure(RetryableFailure(e)) =>
             ResultClass.retryableFailure(e)

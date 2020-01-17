@@ -47,7 +47,7 @@ object ResultClass {
     Succeeded
   }
 
-  def ALWAYS_RETRY: Throwable => ResultClass = { e: Throwable =>
+  def ALWAYS_RETRY: Throwable => ResultClass.Failed = { e: Throwable =>
     retryableFailure(e)
   }
 }

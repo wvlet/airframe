@@ -13,16 +13,13 @@
  */
 package wvlet.airframe.control
 
-import java.util.concurrent.atomic.AtomicReference
-
-import wvlet.airframe.control.ResultClass.{Failed, Succeeded}
-import wvlet.airframe.control.Retry.RetryableFailure
+import java.util.concurrent.atomic.{AtomicInteger, AtomicLong, AtomicReference}
 
 import scala.util.{Failure, Success, Try}
 import wvlet.log.LogSupport
-import wvlet.airframe.control.Retry.RetryPolicy
-import wvlet.airframe.control.Retry.RetryPolicyConfig
-import wvlet.airframe.control.Retry.Jitter
+import wvlet.airframe.control.Retry.{Jitter, RetryPolicy, RetryPolicyConfig, RetryableFailure}
+
+import scala.reflect.ClassTag
 
 /**
   * An exception thrown when the circuit breaker is open.
@@ -86,14 +83,64 @@ trait CircuitBreakerContext {
   def lastFailure: Option[Throwable]
 }
 
+trait CircuitBreakerRecoveryPolicy {
+
+  /**
+    * Called when a request succeeds
+    */
+  def recordSuccess: Unit
+
+  /**
+    * Called when request is failed.
+    */
+  def recordFailure: Unit
+
+  /**
+    * Called when this policy is needed to reset.
+    */
+  def reset: Unit
+
+  /**
+    * Check if CircuitBreaker can recover from HALF_OPEN to CLOSE.
+    */
+  def canRecover: Boolean
+}
+
+object CircuitBreakerRecoveryPolicy {
+  def recoverImmediately = new CircuitBreakerRecoveryPolicy() {
+    override def recordSuccess: Unit = {}
+    override def recordFailure: Unit = {}
+    override def reset: Unit         = {}
+    override def canRecover: Boolean = true
+  }
+
+  def recoverAfterConsecutiveSuccesses(numberOfSuccess: Int) = new CircuitBreakerRecoveryPolicy() {
+    private val counter              = new AtomicInteger(0)
+    override def recordSuccess: Unit = counter.incrementAndGet()
+    override def recordFailure: Unit = counter.set(0)
+    override def reset: Unit         = counter.set(0)
+    override def canRecover: Boolean = counter.get() >= numberOfSuccess
+  }
+
+  def recoverAfterWait(elapsedTimeMillis: Int) = new CircuitBreakerRecoveryPolicy() {
+    private val timestamp            = new AtomicLong(Long.MaxValue)
+    override def recordSuccess: Unit = timestamp.compareAndSet(Long.MaxValue, System.currentTimeMillis())
+    override def recordFailure: Unit = timestamp.set(Long.MaxValue)
+    override def reset: Unit         = timestamp.set(Long.MaxValue)
+    override def canRecover: Boolean = timestamp.get() <= System.currentTimeMillis() - elapsedTimeMillis
+  }
+}
+
 case class CircuitBreaker(
     name: String = "default",
     healthCheckPolicy: HealthCheckPolicy = HealthCheckPolicy.markDeadOnConsecutiveFailures(3),
     resultClassifier: Any => ResultClass = ResultClass.ALWAYS_SUCCEED,
-    errorClassifier: Throwable => ResultClass = ResultClass.ALWAYS_RETRY,
-    onOpenHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
+    errorClassifier: Throwable => ResultClass.Failed = ResultClass.ALWAYS_RETRY,
+    onOpenFailureHandler: CircuitBreakerContext => Unit = CircuitBreaker.throwOpenException,
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
+    fallbackHandler: Throwable => Any = t => throw t,
     delayAfterMarkedDead: RetryPolicy = new Jitter(new RetryPolicyConfig(initialIntervalMillis = 30000)), // 30 seconds
+    recoveryPolicy: CircuitBreakerRecoveryPolicy = CircuitBreakerRecoveryPolicy.recoverImmediately,
     private var nextProvingTimeMillis: Long = Long.MaxValue,
     private var provingWaitTimeMillis: Long = 0L,
     var lastFailure: Option[Throwable] = None,
@@ -124,10 +171,10 @@ case class CircuitBreaker(
   }
 
   /**
-    * Set a classifier to determine whether the exception happend in the code block can be ignoreable (Successful) or not for
+    * Set a classifier to determine whether the exception happened in the code block can be ignoreable or not for
     * the accessing the target service.
     */
-  def withErrorClassifier(newErrorClassifier: Throwable => ResultClass): CircuitBreaker = {
+  def withErrorClassifier(newErrorClassifier: Throwable => ResultClass.Failed): CircuitBreaker = {
     this.copy(errorClassifier = newErrorClassifier)
   }
 
@@ -140,7 +187,15 @@ case class CircuitBreaker(
   }
 
   /**
-    * Set an event listner that monitors CircuitBreaker state changes
+    * Set a fallback handler which process the exception happened in the code block.
+    * The default is just throwing the exception as it is.
+    */
+  def withFallbackHandler(handler: Throwable => Any): CircuitBreaker = {
+    this.copy(fallbackHandler = handler)
+  }
+
+  /**
+    * Set an event listener that monitors CircuitBreaker state changes
     */
   def onStateChange(listener: CircuitBreakerContext => Unit): CircuitBreaker = {
     this.copy(onStateChangeListener = listener)
@@ -150,8 +205,8 @@ case class CircuitBreaker(
     * Defines the action when trying to use the open circuit. The default
     * behavior is to throw CircuitBreakerOpenException
     */
-  def onOpen(handler: CircuitBreakerContext => Unit): CircuitBreaker = {
-    this.copy(onOpenHandler = handler)
+  def onOpenFailure(handler: CircuitBreakerContext => Unit): CircuitBreaker = {
+    this.copy(onOpenFailureHandler = handler)
   }
 
   /**
@@ -163,6 +218,7 @@ case class CircuitBreaker(
     nextProvingTimeMillis = Long.MaxValue
     provingWaitTimeMillis = 0L
     healthCheckPolicy.recovered
+    recoveryPolicy.reset
   }
 
   /**
@@ -200,7 +256,7 @@ case class CircuitBreaker(
       if (currentTime > nextProvingTimeMillis) {
         halfOpen
       } else {
-        onOpenHandler(this)
+        onOpenFailureHandler(this)
       }
     }
   }
@@ -212,9 +268,10 @@ case class CircuitBreaker(
     */
   def recordSuccess: Unit = {
     healthCheckPolicy.recordSuccess
+    recoveryPolicy.recordSuccess
     val isDead = healthCheckPolicy.isMarkedDead
     currentState.get() match {
-      case HALF_OPEN =>
+      case HALF_OPEN if (recoveryPolicy.canRecover) =>
         // Probe request succeeds, so move to CLOSED state
         healthCheckPolicy.recovered
         close
@@ -235,6 +292,7 @@ case class CircuitBreaker(
   def recordFailure(e: Throwable): Unit = {
     lastFailure = Some(e)
     healthCheckPolicy.recordFailure
+    recoveryPolicy.recordFailure
     if (healthCheckPolicy.isMarkedDead) {
       val baseWaitMillis = provingWaitTimeMillis.max(delayAfterMarkedDead.retryPolicyConfig.initialIntervalMillis).toInt
       val nextWaitMillis = delayAfterMarkedDead.nextWait(baseWaitMillis)
@@ -248,34 +306,48 @@ case class CircuitBreaker(
     * Execute the body block through the CircuitBreaker.
     *
     * If the state is OPEN, this will throw CircuitBreakerOpenException (fail-fast). The state will move to HALF_OPEN state
-    * after a cetain amount of delay, determined by the delayAfterMarkedDead policy.
+    * after a certain amount of delay, determined by the delayAfterMarkedDead policy.
     *
     * If the state is HALF_OPEN, this method allows running the code block once, and if the result is successful,
     * the state will move to CLOSED. If not, the state will be OPEN again.
     *
     * If the state is CLOSED, the code block will be executed normally. If the result is marked failure or nonRetryable exception
-    * is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determins the target service is dead,
+    * is thrown, it will report to the failure to the HealthCheckPolicy. If this policy determines the target service is dead,
     * the circuit will shift to OPEN state to block the future execution.
     *
     */
-  def run[A](body: => A): Unit = {
+  def run[A: ClassTag](body: => A): A = {
     verifyConnection
 
     val result = Try(body)
+
     val resultClass = result match {
-      case Success(x) => resultClassifier(x)
-      case Failure(RetryableFailure(e)) =>
-        ResultClass.retryableFailure(e)
-      case Failure(e) =>
-        errorClassifier(e)
+      case Success(x)                   => resultClassifier(x)
+      case Failure(RetryableFailure(e)) => ResultClass.retryableFailure(e)
+      case Failure(e)                   => errorClassifier(e)
     }
+
     resultClass match {
-      case Succeeded =>
+      case ResultClass.Succeeded =>
         recordSuccess
         result.get
-      case Failed(retryable, cause, extraWait) =>
+      case ResultClass.Failed(retryable, cause, _) =>
         recordFailure(cause)
-        throw cause
+        if (retryable) {
+          // If the error is retryable, rethrow as it is then the caller (maybe Retryer) should handle it.
+          throw cause
+        } else {
+          // If the error is not retryable, apply fallbackHandler
+          val x     = fallbackHandler(cause)
+          val clazz = implicitly[ClassTag[A]].runtimeClass
+          if (clazz.isAssignableFrom(x.getClass)) {
+            x.asInstanceOf[A]
+          } else {
+            throw new ClassCastException(
+              s"The fallback handler is returning ${x}, which is not an instance of ${clazz.getName}"
+            )
+          }
+        }
     }
   }
 }
