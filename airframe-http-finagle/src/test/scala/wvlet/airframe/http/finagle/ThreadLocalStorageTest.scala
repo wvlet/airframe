@@ -62,13 +62,15 @@ class ThreadLocalStorageTest extends AirSpec {
       }
   }
 
-  def `read thread-local data set at the leaf filter`(client: FinagleSyncClient): Unit = {
-    val resp = client.get[String]("/get")
-    resp shouldBe "hello tls"
-  }
+  test("tls test") { client: FinagleSyncClient =>
+    test("read thread-local data set at the leaf filter") {
+      val resp = client.get[String]("/get")
+      resp shouldBe "hello tls"
+    }
 
-  def `read thread-local data set by the parent filter`(client: FinagleSyncClient): Unit = {
-    val resp = client.get[String]("/read")
-    resp shouldBe "xxxyyy"
+    test("read thread-local data set by the parent filter") {
+      val resp = client.get[String]("/read")
+      resp shouldBe "xxxyyy"
+    }
   }
 }
