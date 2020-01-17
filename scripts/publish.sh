@@ -20,8 +20,8 @@ if [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_BRANCH" == "master" -o "$
          ;;
        publish-js)
          # Publish a release version
-         SCALA_JS_VERSION=0.6.29 ./sbt "projectJS/publishSigned"
-         SCALA_JS_VERSION=1.0.0-M8 ./sbt "; projectJS/publishSigned; sonatypeBundleRelease"
+         SCALAJS_VERSION=0.6.31 ./sbt "projectJS/publishSigned"
+         SCALAJS_VERSION=1.0.0-RC2 ./sbt "; projectJS/publishSigned; sonatypeBundleRelease"
          ;;
      esac
   fi

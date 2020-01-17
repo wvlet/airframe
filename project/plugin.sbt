@@ -5,12 +5,12 @@ addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.3.0")
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.1")
 
 // For Scala.js
-val SCALA_JS_VERSION = sys.env.getOrElse("SCALA_JS_VERSION", "1.0.0-RC2")
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALA_JS_VERSION)
+val SCALAJS_VERSION = sys.env.getOrElse("SCALAJS_VERSION", "1.0.0-RC2")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % SCALAJS_VERSION)
 //addSbtPlugin("ch.epfl.scala" % "sbt-scalajs-bundler" % "0.16.0")
 
 libraryDependencies ++= (
-  if (SCALA_JS_VERSION.startsWith("1.0.0")) {
+  if (SCALAJS_VERSION.startsWith("1.0.0")) {
     // This plugin is available since Scala.js 1.0.0.
     // 1.0.0-RC3 has a hotfx for jsdom.createVritualConsole is not found error
     Seq("org.scala-js" %% "scalajs-env-jsdom-nodejs" % "1.0.0-RC3")
