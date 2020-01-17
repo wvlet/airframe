@@ -107,14 +107,14 @@ trait CircuitBreakerRecoveryPolicy {
 }
 
 object CircuitBreakerRecoveryPolicy {
-  def immediateRecoveryPolicy = new CircuitBreakerRecoveryPolicy() {
+  def recoverImmediately = new CircuitBreakerRecoveryPolicy() {
     override def recordSuccess: Unit = {}
     override def recordFailure: Unit = {}
     override def reset: Unit         = {}
     override def canRecover: Boolean = true
   }
 
-  def consequentSuccessRecoveryPolicy(numberOfSuccess: Int) = new CircuitBreakerRecoveryPolicy() {
+  def recoverAfterConsecutiveSuccesses(numberOfSuccess: Int) = new CircuitBreakerRecoveryPolicy() {
     private val counter              = new AtomicInteger(0)
     override def recordSuccess: Unit = counter.incrementAndGet()
     override def recordFailure: Unit = counter.set(0)
@@ -122,7 +122,7 @@ object CircuitBreakerRecoveryPolicy {
     override def canRecover: Boolean = counter.get() >= numberOfSuccess
   }
 
-  def elapsedTimeRecoveryPolicy(elapsedTimeMillis: Int) = new CircuitBreakerRecoveryPolicy() {
+  def recoverAfterWait(elapsedTimeMillis: Int) = new CircuitBreakerRecoveryPolicy() {
     private val timestamp            = new AtomicLong(Long.MaxValue)
     override def recordSuccess: Unit = timestamp.compareAndSet(Long.MaxValue, System.currentTimeMillis())
     override def recordFailure: Unit = timestamp.set(Long.MaxValue)
@@ -140,7 +140,7 @@ case class CircuitBreaker(
     onStateChangeListener: CircuitBreakerContext => Unit = CircuitBreaker.reportStateChange,
     fallbackHandler: Throwable => Any = t => throw t,
     delayAfterMarkedDead: RetryPolicy = new Jitter(new RetryPolicyConfig(initialIntervalMillis = 30000)), // 30 seconds
-    recoveryPolicy: CircuitBreakerRecoveryPolicy = CircuitBreakerRecoveryPolicy.immediateRecoveryPolicy,
+    recoveryPolicy: CircuitBreakerRecoveryPolicy = CircuitBreakerRecoveryPolicy.recoverImmediately,
     private var nextProvingTimeMillis: Long = Long.MaxValue,
     private var provingWaitTimeMillis: Long = 0L,
     var lastFailure: Option[Throwable] = None,
@@ -343,7 +343,9 @@ case class CircuitBreaker(
           if (clazz.isAssignableFrom(x.getClass)) {
             x.asInstanceOf[A]
           } else {
-            throw new ClassCastException(s"${x} is not an instance of ${resultClass}")
+            throw new ClassCastException(
+              s"The fallback handler is returning ${x}, which is not an instance of ${clazz.getName}"
+            )
           }
         }
     }
