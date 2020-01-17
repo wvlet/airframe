@@ -9,12 +9,12 @@ val targetScalaVersions = SCALA_2_13 :: untilScala2_12
 val exceptScala2_11     = SCALA_2_13 :: SCALA_2_12 :: Nil
 
 val SCALATEST_VERSION               = "3.0.8"
-val SCALACHECK_VERSION              = "1.14.3"
+val SCALACHECK_VERSION              = "1.15.0-SNAPSHOT"
 val MSGPACK_VERSION                 = "0.8.20"
 val SCALA_PARSER_COMBINATOR_VERSION = "1.1.2"
 val SQLITE_JDBC_VERSION             = "3.30.1"
 val SLF4J_VERSION                   = "1.7.30"
-val JS_JAVA_LOGGING_VERSION         = "0.1.6"
+val JS_JAVA_LOGGING_VERSION         = "0.1.7-SNAPSHOT"
 val FINAGLE_VERSION                 = "19.12.0"
 val FLUENCY_VERSION                 = "2.4.0"
 val airSpecFramework                = new TestFramework("wvlet.airspec.Framework")
@@ -57,7 +57,7 @@ val buildSettings = Seq[Setting[_]](
   scalacOptions ++= Seq("-feature", "-deprecation"), // ,"-Ytyper-debug"),
   testFrameworks += airSpecFramework,
   libraryDependencies ++= Seq(
-    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3"
+    "org.scala-lang.modules" %%% "scala-collection-compat" % "2.1.3+19-2badce8d-SNAPSHOT"
   )
 )
 
@@ -68,9 +68,9 @@ val runTestSequentially = Seq[Setting[_]](parallelExecution in Test := false)
 publishTo in ThisBuild := sonatypePublishToBundle.value
 
 val jsBuildCommonSettings: Seq[Setting[_]] = Seq[Setting[_]](
-  coverageEnabled := false,
-  turbo := false,
-  Global / concurrentRestrictions += Tags.limit(ScalaJSTags.Link, 1)
+  coverageEnabled := false
+  //turbo := false,
+  //Global / concurrentRestrictions += Tags.limit(ScalaJSTags.Link, 1)
 )
 
 val jsBuildSettings: Seq[Setting[_]] = jsBuildCommonSettings ++ Seq[Setting[_]](
@@ -489,7 +489,7 @@ lazy val msgpack =
     )
     .jsSettings(
       jsBuildSettings,
-      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.6"
+      libraryDependencies += "org.scala-js" %%% "scalajs-java-time" % "0.2.7-SNAPSHOT"
     )
     .dependsOn(log, json, airspecRef % "test")
 
@@ -708,7 +708,7 @@ lazy val widget =
       name := "airframe-rx-widget",
       description := "Reactive Widget library for Scala.js",
       libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+        "org.scala-js" %%% "scalajs-dom" % "0.9.9-SNAPSHOT"
       )
     )
     .jsSettings(
@@ -921,7 +921,7 @@ lazy val airspec =
       mappings in (Compile, packageSrc) ++= mappings.in(airspecDepsJS, Compile, packageSrc).value,
       libraryDependencies ++= Seq(
         "org.scala-js"       %% "scalajs-test-interface"  % scalaJSVersion,
-        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.1"
+        "org.portable-scala" %%% "portable-scala-reflect" % "0.1.2-SNAPSHOT"
       )
     )
     .dependsOn(airspecDeps % internalScope)
