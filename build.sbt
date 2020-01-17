@@ -87,7 +87,7 @@ lazy val root =
     .settings(noPublish)
     .settings {
       sonatypeSessionName := {
-        if (sys.env.isDefinedAt("SCALA_JS_VERSION")) {
+        if (sys.env.isDefinedAt("SCALAJS_VERSION")) {
           // Use a different session for Scala.js projects
           s"${sonatypeSessionName.value} for Scala.js"
         } else {
