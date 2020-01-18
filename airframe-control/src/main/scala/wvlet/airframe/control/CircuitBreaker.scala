@@ -202,6 +202,14 @@ case class CircuitBreaker(
   }
 
   /**
+    * Set a recovery policiy which determine if ths circuit breaker can recover from HALF_OPEN to CLOSED.
+    * The default policy recovers immediately if health check is once successful.
+    */
+  def withRecoveryPolicy(recoveryPolicy: CircuitBreakerRecoveryPolicy): CircuitBreaker = {
+    this.copy(recoveryPolicy = recoveryPolicy)
+  }
+
+  /**
     * Defines the action when trying to use the open circuit. The default
     * behavior is to throw CircuitBreakerOpenException
     */
