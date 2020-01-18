@@ -79,6 +79,7 @@ object html {
   def attributeOf(name: String): HtmlAttribute = new HtmlAttribute(name)
 
   def div: HtmlElement  = tag("div")
+  def img: HtmlElement  = tag("img")
   def th: HtmlElement   = tag("th")
   def td: HtmlElement   = tag("td")
   def tr: HtmlElement   = tag("tr")
