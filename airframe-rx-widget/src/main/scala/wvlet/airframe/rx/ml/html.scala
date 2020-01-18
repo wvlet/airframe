@@ -18,6 +18,7 @@ import scala.language.implicitConversions
 
 import org.scalajs.dom
 import scala.annotation.implicitNotFound
+import org.scalajs.dom.raw.HTMLElement
 
 /**
   *
@@ -33,7 +34,7 @@ object html {
   trait HtmlNode
 
   trait ElementModifier {
-    def applyTo(elem: dom.Element): dom.Element
+    def applyTo(elem: dom.Node): dom.Node
     def when(cond: => Boolean): ElementModifier = {
       if (cond) this else ElementModifier.empty
     }
@@ -44,7 +45,7 @@ object html {
 
   object ElementModifier {
     object empty extends ElementModifier {
-      def applyTo(elem: dom.Element) = elem
+      def applyTo(elem: dom.Node) = elem
     }
 
   }
@@ -58,8 +59,8 @@ object html {
       }
     }
 
-    def toDOM: dom.Element = {
-      var elem = dom.document.createElement(name)
+    def toDOM: dom.Node = {
+      var elem: dom.Node = dom.document.createElement(name)
       for (g <- modifiers; m <- g) {
         elem = m.applyTo(elem)
       }
@@ -67,8 +68,8 @@ object html {
     }
   }
 
-  private def elementFilter(f: dom.Element => dom.Element): ElementModifier = new ElementModifier {
-    def applyTo(elem: dom.Element): dom.Element = f(elem)
+  private def elementFilter(f: dom.Node => dom.Node): ElementModifier = new ElementModifier {
+    def applyTo(elem: dom.Node): dom.Node = f(elem)
   }
 
   class HtmlAttribute(name: String) {
@@ -76,6 +77,7 @@ object html {
   }
 
   def tag(name: String): HtmlElement           = new HtmlElement(name)
+  def attr(name: String): HtmlAttribute        = new HtmlAttribute(name)
   def attributeOf(name: String): HtmlAttribute = new HtmlAttribute(name)
 
   def div: HtmlElement  = tag("div")
@@ -100,19 +102,40 @@ object html {
   trait Embeddable[X]
   object Embeddable {
     type EE[A] = Embeddable[A]
-    @inline implicit def embedNil: EE[Nil.type]  = null
-    @inline implicit def embedString: EE[String] = null
+    @inline implicit def embedNil: EE[Nil.type]     = null
+    @inline implicit def embedString: EE[String]    = null
+    @inline implicit def embedElem: EE[HtmlElement] = null
   }
 
   class Atom(v: Any) extends ElementModifier {
-    def applyTo(elem: org.scalajs.dom.Element): org.scalajs.dom.Element = {
+    def applyTo(elem: org.scalajs.dom.Node): org.scalajs.dom.Node = {
       // TODO
+      v match {
+        case s: String =>
+          val textNode = dom.document.createTextNode(s)
+          elem.appendChild(textNode)
+        case other =>
+          throw new IllegalArgumentException(s"unsuppoted: ${other}")
+      }
+    }
+  }
+
+  class ChildElementAdder(child: HtmlElement) extends ElementModifier {
+    def applyTo(elem: org.scalajs.dom.Node): org.scalajs.dom.Node = {
+      // TODO
+      val childDOM = child.toDOM
+      elem.appendChild(childDOM)
       elem
     }
   }
 
   implicit def convertToHtmlElement[A: Embeddable](v: A): ElementModifier = {
-    new Atom(v)
+    v match {
+      case e: HtmlElement =>
+        new ChildElementAdder(e)
+      case other =>
+        new Atom(v)
+    }
   }
 
 }

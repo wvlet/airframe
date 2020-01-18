@@ -18,8 +18,8 @@ import org.scalajs.dom
   *
   */
 package object ml {
-  type Node        = dom.Node
-  type HtmlElement = dom.html.Element
-  type SvgElement  = dom.svg.Element
+  //type Node = dom.Node
+  //type HtmlElement = dom.html.Element
+  //type SvgElement = dom.svg.Element
 
 }
