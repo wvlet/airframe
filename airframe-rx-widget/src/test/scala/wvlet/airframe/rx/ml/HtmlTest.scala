@@ -5,10 +5,10 @@ import wvlet.airspec._
 class HtmlTest extends AirSpec {
 
   def render(node: html.HtmlElement): String = {
-    val txt = node.toDOM match {
-      case elem: dom.Element =>
+    val txt = node.renderDOM match {
+      case (elem: dom.Element, c) =>
         elem.outerHTML
-      case other =>
+      case (other, c) =>
         other.innerText
     }
     info(txt)
@@ -18,16 +18,16 @@ class HtmlTest extends AirSpec {
   import html._
 
   test("create div") {
-    val d = div(_class("link"), a(_src("hello")), "hello html!")
+    val d = div(cls("link"), a(src("hello")), "hello html!")
     render(d)
   }
 
   test("create component") {
     def d(content: ElementModifier*) = {
-      div(_class("main"), div(_class("container"), content))
+      div(cls("main"), div(cls("container"), content))
     }
 
-    val x = d(_id("c1"), "hello RxComponent")
+    val x = d(id("c1"), "hello RxComponent")
     render(x)
   }
 

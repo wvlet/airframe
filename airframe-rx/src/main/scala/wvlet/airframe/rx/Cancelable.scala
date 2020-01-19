@@ -28,8 +28,12 @@ object Cancelable {
   }
 
   def merge(lst: Seq[Cancelable]): Cancelable = {
-    Cancelable.apply { () =>
-      lst.foreach(_.cancel)
+    lst.size match {
+      case 1 => lst.head
+      case _ =>
+        Cancelable.apply { () =>
+          lst.foreach(_.cancel)
+        }
     }
   }
 }

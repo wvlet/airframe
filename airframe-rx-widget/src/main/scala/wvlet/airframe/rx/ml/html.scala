@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.ml
 
 import org.scalajs.dom
+import wvlet.airframe.rx.Cancelable
 import wvlet.log.LogSupport
 
 import scala.annotation.implicitNotFound
@@ -33,7 +34,6 @@ object html {
   trait HtmlNode
 
   trait ElementModifier {
-    def applyTo(elem: dom.Node): dom.Node
     def when(cond: => Boolean): ElementModifier = {
       if (cond) this else ElementModifier.empty
     }
@@ -43,14 +43,12 @@ object html {
   }
 
   object ElementModifier {
-    object empty extends ElementModifier {
-      def applyTo(elem: dom.Node) = elem
-    }
-
+    object empty extends ElementModifier
   }
 
-  class HtmlElement(name: String, modifiers: List[Seq[ElementModifier]] = List.empty) extends HtmlNode {
-    //def ::(xs: ElementModifier*): HtmlElement = apply(xs:_*)
+  class HtmlElement(val name: String, val modifiers: List[Seq[ElementModifier]] = List.empty)
+      extends HtmlNode
+      with ElementModifier {
 
     def apply(xs: ElementModifier*): HtmlElement = {
       if (xs.isEmpty) {
@@ -60,38 +58,18 @@ object html {
       }
     }
 
-    def toDOM: dom.Node = {
-      var elem: dom.Node = dom.document.createElement(name)
-      for (g <- modifiers.reverse; m <- g) {
-        elem = m.applyTo(elem)
-      }
-      elem
+    def renderDOM: (dom.Node, Cancelable) = {
+      DOMRenderer.render(this)
     }
   }
 
   private def elementFilter(f: dom.Node => dom.Node): ElementModifier = new ElementModifier {
     def applyTo(elem: dom.Node): dom.Node = f(elem)
   }
+  case class AttributeModifier(name: String, v: Any) extends ElementModifier
 
   class HtmlAttribute(name: String) extends LogSupport {
-    def apply[V](v: V): ElementModifier = elementFilter { x =>
-      x match {
-        case e: dom.raw.HTMLElement =>
-          name match {
-            case "style" =>
-              val prev = e.style.cssText
-              if (prev.isEmpty) {
-                e.style.cssText = s"${prev} ${v}"
-              }
-            case _ =>
-              // TODO check v type
-              e.setAttribute(name, v.toString)
-          }
-        case _ =>
-          warn(x)
-      }
-      x
-    }
+    def apply[V](v: V): ElementModifier = AttributeModifier(name, v)
   }
 
   def tag(name: String): HtmlElement           = new HtmlElement(name)
@@ -109,11 +87,12 @@ object html {
   def pre: HtmlElement  = tag("pre")
   def svg: HtmlElement  = tag("svg")
 
-  def _src: HtmlAttribute   = attributeOf("src")
-  def _href: HtmlAttribute  = attributeOf("href")
+  def src: HtmlAttribute    = attributeOf("src")
+  def href: HtmlAttribute   = attributeOf("href")
   def _class: HtmlAttribute = attributeOf("class")
-  def _style: HtmlAttribute = attributeOf("style")
-  def _id: HtmlAttribute    = attributeOf("id")
+  def cls: HtmlAttribute    = attributeOf("class")
+  def style: HtmlAttribute  = attributeOf("style")
+  def id: HtmlAttribute     = attributeOf("id")
   //def onClick[U](handler: => U) =
 
   @implicitNotFound(msg = "unsupported type")
@@ -127,43 +106,10 @@ object html {
     @inline implicit def embedSeq[C[x] <: Seq[x], T: EE]: EE[C[T]] = null
   }
 
-  class Atom(v: Any) extends ElementModifier {
-    def applyTo(elem: dom.Node): dom.Node = {
-      // TODO
-      def traverse(x: Any) {
-        x match {
-          case e: ElementModifier =>
-            e.applyTo(elem)
-          case s: String =>
-            val textNode = dom.document.createTextNode(s)
-            elem.appendChild(textNode)
-          case s: Seq[_] =>
-            for (el <- s) {
-              traverse(el)
-            }
-          case other =>
-            throw new IllegalArgumentException(s"unsupported: ${other}")
-        }
-      }
-
-      traverse(v)
-      elem
-    }
-  }
-
-  class ChildElementAdder(child: HtmlElement) extends ElementModifier {
-    def applyTo(elem: dom.Node): dom.Node = {
-      // TODO
-      val childDOM = child.toDOM
-      elem.appendChild(childDOM)
-      elem
-    }
-  }
+  class Atom(val v: Any) extends ElementModifier
 
   implicit def convertToHtmlElement[A: Embeddable](v: A): ElementModifier = {
     v match {
-      case e: HtmlElement =>
-        new ChildElementAdder(e)
       case other =>
         new Atom(v)
     }
