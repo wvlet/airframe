@@ -5,11 +5,11 @@ import org.scalajs.dom
 
 class HtmlTest extends AirSpec {
 
-  def render(node: html.HtmlElement): String = {
+  def render(node: html.HtmlElement): Unit = {
     val txt = node.toDOM match {
       case elem: dom.Element =>
-        elem.innerHTML
-      case other: dom.Node =>
+        elem.outerHTML
+      case other =>
         other.innerText
     }
     info(txt)
@@ -18,7 +18,7 @@ class HtmlTest extends AirSpec {
 
   test("create div") {
     import html._
-    val d = div(_class("link"), a(_src("hello")), "hello html!")
+    val d = div(_class("link"), a(_src("hello")))("hello html!")
     render(d)
   }
 

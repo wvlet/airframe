@@ -61,7 +61,7 @@ object html {
 
     def toDOM: dom.Node = {
       var elem: dom.Node = dom.document.createElement(name)
-      for (g <- modifiers; m <- g) {
+      for (g <- modifiers.reverse; m <- g) {
         elem = m.applyTo(elem)
       }
       elem
@@ -108,12 +108,13 @@ object html {
   }
 
   class Atom(v: Any) extends ElementModifier {
-    def applyTo(elem: org.scalajs.dom.Node): org.scalajs.dom.Node = {
+    def applyTo(elem: dom.Node): dom.Node = {
       // TODO
       v match {
         case s: String =>
           val textNode = dom.document.createTextNode(s)
           elem.appendChild(textNode)
+          elem
         case other =>
           throw new IllegalArgumentException(s"unsuppoted: ${other}")
       }
@@ -121,7 +122,7 @@ object html {
   }
 
   class ChildElementAdder(child: HtmlElement) extends ElementModifier {
-    def applyTo(elem: org.scalajs.dom.Node): org.scalajs.dom.Node = {
+    def applyTo(elem: dom.Node): dom.Node = {
       // TODO
       val childDOM = child.toDOM
       elem.appendChild(childDOM)
