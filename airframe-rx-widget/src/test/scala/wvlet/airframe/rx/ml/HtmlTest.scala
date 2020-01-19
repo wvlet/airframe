@@ -18,7 +18,7 @@ class HtmlTest extends AirSpec {
   import html._
 
   test("create div") {
-    val d = div(_class("link"), a(_src("hello")))("hello html!")
+    val d = div(_class("link"), a(_src("hello")), "hello html!")
     render(d)
   }
 

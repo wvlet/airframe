@@ -50,6 +50,8 @@ object html {
   }
 
   class HtmlElement(name: String, modifiers: List[Seq[ElementModifier]] = List.empty) extends HtmlNode {
+    //def ::(xs: ElementModifier*): HtmlElement = apply(xs:_*)
+
     def apply(xs: ElementModifier*): HtmlElement = {
       if (xs.isEmpty) {
         this
@@ -82,7 +84,6 @@ object html {
                 e.style.cssText = s"${prev} ${v}"
               }
             case _ =>
-              warn(s"here: ${e}")
               // TODO check v type
               e.setAttribute(name, v.toString)
           }
@@ -129,14 +130,24 @@ object html {
   class Atom(v: Any) extends ElementModifier {
     def applyTo(elem: dom.Node): dom.Node = {
       // TODO
-      v match {
-        case s: String =>
-          val textNode = dom.document.createTextNode(s)
-          elem.appendChild(textNode)
-          elem
-        case other =>
-          throw new IllegalArgumentException(s"unsupported: ${other}")
+      def traverse(x: Any) {
+        x match {
+          case e: ElementModifier =>
+            e.applyTo(elem)
+          case s: String =>
+            val textNode = dom.document.createTextNode(s)
+            elem.appendChild(textNode)
+          case s: Seq[_] =>
+            for (el <- s) {
+              traverse(el)
+            }
+          case other =>
+            throw new IllegalArgumentException(s"unsupported: ${other}")
+        }
       }
+
+      traverse(v)
+      elem
     }
   }
 
