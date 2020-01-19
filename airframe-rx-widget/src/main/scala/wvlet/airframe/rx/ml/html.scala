@@ -13,12 +13,11 @@
  */
 package wvlet.airframe.rx.ml
 
-import scala.language.higherKinds
-import scala.language.implicitConversions
-
 import org.scalajs.dom
+import wvlet.log.LogSupport
+
 import scala.annotation.implicitNotFound
-import org.scalajs.dom.raw.HTMLElement
+import scala.language.{higherKinds, implicitConversions}
 
 /**
   *
@@ -72,8 +71,26 @@ object html {
     def applyTo(elem: dom.Node): dom.Node = f(elem)
   }
 
-  class HtmlAttribute(name: String) {
-    def apply[V](v: V): ElementModifier = elementFilter(x => x)
+  class HtmlAttribute(name: String) extends LogSupport {
+    def apply[V](v: V): ElementModifier = elementFilter { x =>
+      x match {
+        case e: dom.raw.HTMLElement =>
+          name match {
+            case "style" =>
+              val prev = e.style.cssText
+              if (prev.isEmpty) {
+                e.style.cssText = s"${prev} ${v}"
+              }
+            case _ =>
+              warn(s"here: ${e}")
+              // TODO check v type
+              e.setAttribute(name, v.toString)
+          }
+        case _ =>
+          warn(x)
+      }
+      x
+    }
   }
 
   def tag(name: String): HtmlElement           = new HtmlElement(name)
@@ -102,9 +119,11 @@ object html {
   trait Embeddable[X]
   object Embeddable {
     type EE[A] = Embeddable[A]
-    @inline implicit def embedNil: EE[Nil.type]     = null
-    @inline implicit def embedString: EE[String]    = null
-    @inline implicit def embedElem: EE[HtmlElement] = null
+    @inline implicit def embedNil: EE[Nil.type]                    = null
+    @inline implicit def embedString: EE[String]                   = null
+    @inline implicit def embedElem: EE[HtmlElement]                = null
+    @inline implicit def embedMod: EE[ElementModifier]             = null
+    @inline implicit def embedSeq[C[x] <: Seq[x], T: EE]: EE[C[T]] = null
   }
 
   class Atom(v: Any) extends ElementModifier {
@@ -116,7 +135,7 @@ object html {
           elem.appendChild(textNode)
           elem
         case other =>
-          throw new IllegalArgumentException(s"unsuppoted: ${other}")
+          throw new IllegalArgumentException(s"unsupported: ${other}")
       }
     }
   }
