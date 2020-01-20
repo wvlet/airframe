@@ -20,12 +20,14 @@ import wvlet.airspec.AirSpec
 object AirframeBootstrapTest {
   case class AppConfig(name: String)
   case class App2Config(name: String)
+  case class DBConfig(host: String, private val port: Option[Int] = None)
 
   import wvlet.airframe._
 
   val module1 =
     newDesign
       .bindConfig(AppConfig("hello"))
+      .bindConfig(DBConfig("localhost"))
       .bind[String].toInstance("world")
 
   val module2 =
