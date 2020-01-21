@@ -44,24 +44,29 @@ package object html {
     object empty extends HtmlNode
   }
 
-  case class HtmlAttribute(name: String, v: Any) extends HtmlNode
+  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml) extends HtmlNode
 
   class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
-    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v)
-    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = apply(v)
-    def empty: HtmlNode                               = apply(None)
+    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
+    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
+    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
   }
 
-  class HtmlElement(val name: String, val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode {
+  case class HtmlElement(
+      name: String,
+      modifiers: List[Seq[HtmlNode]] = List.empty,
+      namespace: Namespace = Namespace.xhtml
+  ) extends HtmlNode {
     def apply(xs: HtmlNode*): HtmlElement = {
       if (xs.isEmpty) {
         this
       } else {
-        new HtmlElement(name = name, modifiers = xs :: modifiers)
+        HtmlElement(name = name, modifiers = xs :: modifiers, namespace = namespace)
       }
     }
   }
 
+  // TODO embed namespace properly to DOM
   case class Namespace(uri: String)
 
   object Namespace {
