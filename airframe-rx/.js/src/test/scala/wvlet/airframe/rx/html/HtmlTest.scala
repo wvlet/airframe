@@ -16,15 +16,17 @@ package wvlet.airframe.rx.html
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airspec._
-import wvlet.airframe.rx.html.tags._
+import wvlet.airframe.rx.html.all._
 
 class HtmlTest extends AirSpec {
 
   def render(node: HtmlElement): String = {
     val txt = DOMRenderer.render(node) match {
       case (elem: dom.Element, c) =>
+        c.cancel
         elem.outerHTML
       case (other, c) =>
+        c.cancel
         other.innerText
     }
     info(txt)
@@ -33,6 +35,10 @@ class HtmlTest extends AirSpec {
 
   test("create div") {
     val d = div(cls("link"), a(src("hello")), "hello html!")
+    render(d)
+  }
+  test("create div with attrs") {
+    val d = div(cls -> "main", a(src -> "hello"))
     render(d)
   }
 
@@ -78,6 +84,20 @@ class HtmlTest extends AirSpec {
       Rx.variable("rx_var")
     )
 
+    render(d)
+  }
+
+  test("add onclick") {
+    val d = button("hello", onclick { e: dom.MouseEvent =>
+      println("clicked")
+    })
+    render(d)
+  }
+
+  test("add onclick without arg") {
+    val d = button("hello", onclick { () =>
+      println("clicked")
+    })
     render(d)
   }
 

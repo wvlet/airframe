@@ -22,6 +22,15 @@ import scala.language.implicitConversions
   */
 package object html {
 
+  object tags       extends Tags
+  object tags_extra extends Tags
+  object attrs      extends Attrs
+
+  object all extends Tags with Attrs
+
+  object svgTags  extends SvgTags
+  object svgAttrs extends SvgAttrs
+
   trait HtmlNode {
     def when(cond: => Boolean): HtmlNode = {
       if (cond) this else HtmlNode.empty
@@ -35,32 +44,41 @@ package object html {
     object empty extends HtmlNode
   }
 
-  case class HtmlAttribute(name: String, v: Any) extends HtmlNode
+  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml) extends HtmlNode
 
-  class HtmlAttributeOf(name: String) {
-    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v)
+  class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
+    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
+    def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
+    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
   }
 
-  class HtmlElement(val name: String, val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode {
+  case class HtmlElement(
+      name: String,
+      modifiers: List[Seq[HtmlNode]] = List.empty,
+      namespace: Namespace = Namespace.xhtml
+  ) extends HtmlNode {
     def apply(xs: HtmlNode*): HtmlElement = {
       if (xs.isEmpty) {
         this
       } else {
-        new HtmlElement(name = name, modifiers = xs :: modifiers)
+        HtmlElement(name = name, modifiers = xs :: modifiers, namespace = namespace)
       }
     }
   }
 
+  // TODO embed namespace properly to DOM
   case class Namespace(uri: String)
 
   object Namespace {
     val xhtml: Namespace = Namespace("http://www.w3.org/1999/xhtml")
     val svg: Namespace   = Namespace("http://www.w3.org/2000/svg")
+    val svgXLink         = Namespace("http://www.w3.org/1999/xlink")
   }
 
-  def tag(name: String): HtmlElement             = new HtmlElement(name)
-  def attr(name: String): HtmlAttributeOf        = new HtmlAttributeOf(name)
-  def attributeOf(name: String): HtmlAttributeOf = new HtmlAttributeOf(name)
+  def tag(name: String): HtmlElement                            = new HtmlElement(name)
+  def attr(name: String): HtmlAttributeOf                       = new HtmlAttributeOf(name)
+  def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
+  def attributeOf(name: String): HtmlAttributeOf                = attr(name)
 
   @implicitNotFound(msg = "Unsupported type as an attribute value")
   trait EmbeddableAttribute[X]
