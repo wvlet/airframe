@@ -11,21 +11,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.rx.widget
+package wvlet.airframe.rx.html
 
 import org.scalajs.dom
-import wvlet.log.LogSupport
 
 /**
   *
   */
-object DOMRenderer extends LogSupport {
-  def renderToHTML(node: dom.Node): String = {
-    node match {
-      case e: dom.Element =>
-        e.innerHTML
-      case _ =>
-        node.innerText
-    }
-  }
+object events {
+  def onClick(f: () => Unit)             = attributeOf("onClick")(f)
+  def onClick(f: dom.MouseEvent => Unit) = attributeOf("onClick")(f)
 }

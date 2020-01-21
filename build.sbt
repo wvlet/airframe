@@ -688,7 +688,13 @@ lazy val rx =
       description := "Reactive operators for Scala and Scala.js",
       libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value % "provided"
     )
-    .jsSettings(jsBuildSettings)
+    .jsSettings(
+      jsBuildSettings,
+      jsEnv in Test := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv(),
+      libraryDependencies ++= Seq(
+        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
+      )
+    )
     .dependsOn(log, airspecRef % "test")
 
 lazy val rxJVM = rx.jvm
@@ -702,10 +708,7 @@ lazy val widget =
     .settings(buildSettings)
     .settings(
       name := "airframe-rx-widget",
-      description := "Reactive Widget library for Scala.js",
-      libraryDependencies ++= Seq(
-        "org.scala-js" %%% "scalajs-dom" % "0.9.8"
-      )
+      description := "Reactive Widget library for Scala.js"
     )
     .jsSettings(
       jsBuildSettings,

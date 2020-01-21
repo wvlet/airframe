@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
+import scala.util.Try
 
 /**
   *
@@ -27,9 +28,23 @@ object Cancelable {
     override def cancel: Unit = canceller()
   }
 
+  def merge(c1: Cancelable, c2: Cancelable): Cancelable = {
+    Cancelable { () =>
+      try {
+        c1.cancel
+      } finally {
+        c2.cancel
+      }
+    }
+  }
+
   def merge(lst: Seq[Cancelable]): Cancelable = {
-    Cancelable.apply { () =>
-      lst.foreach(_.cancel)
+    lst.size match {
+      case 1 => lst.head
+      case _ =>
+        Cancelable { () =>
+          lst.map(c => Try(c.cancel))
+        }
     }
   }
 }
