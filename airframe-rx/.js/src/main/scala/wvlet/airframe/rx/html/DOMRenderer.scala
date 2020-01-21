@@ -11,18 +11,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.rx.ml
-
-import org.scalajs.dom
-import wvlet.airframe.rx.ml.html.{Atom, AttributeModifier, ElementModifier, HtmlElement}
+package wvlet.airframe.rx.html
 import wvlet.airframe.rx.{Cancelable, Rx}
 
 import scala.scalajs.js
+import org.scalajs.dom
 
 /**
   *
   */
 object DOMRenderer {
+
+  def renderToHtml(node: dom.Node): String = {
+    node match {
+      case e: dom.Element =>
+        e.outerHTML
+      case _ =>
+        node.innerText
+    }
+  }
 
   def render(e: HtmlElement): (dom.Node, Cancelable) = {
     val node: dom.Node = dom.document.createElement(e.name)
@@ -32,11 +39,11 @@ object DOMRenderer {
     (node, Cancelable.merge(cancelables))
   }
 
-  def renderTo(node: dom.Node, mod: ElementModifier): Cancelable = {
+  def renderTo(node: dom.Node, mod: HtmlNode): Cancelable = {
 
     def traverse(v: Any): Cancelable = {
       v match {
-        case ElementModifier.empty =>
+        case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
           // TODO renderer
@@ -52,10 +59,14 @@ object DOMRenderer {
           Cancelable { () =>
             c1.cancel; c2.cancel
           }
-        case AttributeModifier(name, value) =>
+        case HtmlAttribute(name, value) =>
           addAttribute(node, name, value)
-        case a: Atom =>
+        case a: Embed =>
           a.v match {
+            case i: Int =>
+              val textNode = dom.document.createTextNode(i.toString)
+              node.appendChild(textNode)
+              Cancelable.empty
             case s: String =>
               val textNode = dom.document.createTextNode(s)
               node.appendChild(textNode)

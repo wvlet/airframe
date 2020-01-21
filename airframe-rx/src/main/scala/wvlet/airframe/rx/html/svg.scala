@@ -11,15 +11,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package wvlet.airframe.rx
-import org.scalajs.dom
+package wvlet.airframe.rx.html
 
 /**
   *
   */
-package object ml {
-  //type Node = dom.Node
-  //type HtmlElement = dom.html.Element
-  //type SvgElement = dom.svg.Element
-
-}
+object svg {}
