@@ -14,6 +14,7 @@
 package wvlet.airframe.rx.html
 
 import org.scalajs.dom
+import wvlet.airframe.rx.Rx
 import wvlet.airspec._
 import wvlet.airframe.rx.html.tags._
 
@@ -60,6 +61,24 @@ class HtmlTest extends AirSpec {
     )
 
     render(t)
+  }
+
+  test("embed values") {
+    val d = div(
+      1,
+      10L,
+      1.toShort,
+      'a',
+      true,
+      false,
+      None,
+      Option("hello"),
+      1.234f,
+      1.234,
+      Rx.variable("rx_var")
+    )
+
+    render(d)
   }
 
 }

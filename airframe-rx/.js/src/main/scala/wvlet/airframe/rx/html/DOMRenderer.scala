@@ -16,11 +16,12 @@ import wvlet.airframe.rx.{Cancelable, Rx}
 
 import scala.scalajs.js
 import org.scalajs.dom
+import wvlet.log.LogSupport
 
 /**
   *
   */
-object DOMRenderer {
+object DOMRenderer extends LogSupport {
 
   def renderToHtml(node: dom.Node): String = {
     node match {
@@ -39,52 +40,77 @@ object DOMRenderer {
     (node, Cancelable.merge(cancelables))
   }
 
-  def renderTo(node: dom.Node, mod: HtmlNode): Cancelable = {
+  private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
 
-    def traverse(v: Any): Cancelable = {
+  def renderTo(node: dom.Node, htmlNode: HtmlNode): Cancelable = {
+
+    def traverse(v: Any, anchor: Option[dom.Node]): Cancelable = {
       v match {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
           // TODO renderer
           val (childDOM, c1) = render(e)
-          node.appendChild(childDOM)
+          node.mountHere(childDOM, anchor)
           c1
         case rx: Rx[_] =>
-          var c1 = Cancelable.empty
-          val c2 = rx.run { value =>
+          val (start, end) = node.createMountSection()
+          var c1           = Cancelable.empty
+          val c2 = rx.subscribe { value =>
+            // Remove the previous binding from the DOM
+            node.clearMountSection(start, end)
+            // Cancel the previous binding
             c1.cancel
-            c1 = traverse(value)
+            c1 = traverse(value, Some(start))
           }
-          Cancelable { () =>
-            c1.cancel; c2.cancel
-          }
+          Cancelable.merge(c1, c2)
         case HtmlAttribute(name, value) =>
           addAttribute(node, name, value)
         case a: Embed =>
-          a.v match {
-            case i: Int =>
-              val textNode = dom.document.createTextNode(i.toString)
-              node.appendChild(textNode)
-              Cancelable.empty
-            case s: String =>
-              val textNode = dom.document.createTextNode(s)
-              node.appendChild(textNode)
-              Cancelable.empty
-            case s: Seq[_] =>
-              val cancelables = for (el <- s) yield {
-                traverse(el)
-              }
-              Cancelable.merge(cancelables)
-            case other =>
-              throw new IllegalArgumentException(s"unsupported: ${other}")
+          traverse(a.v, anchor)
+        case s: String =>
+          val textNode = newTextNode(s)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case v: Int =>
+          val textNode = newTextNode(v.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case v: Long =>
+          val textNode = newTextNode(v.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case v: Float =>
+          val textNode = newTextNode(v.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case v: Double =>
+          val textNode = newTextNode(v.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case v: Char =>
+          val textNode = newTextNode(v.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case b: Boolean =>
+          val textNode = newTextNode(b.toString)
+          node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case None =>
+          Cancelable.empty
+        case Some(x) =>
+          traverse(x, anchor)
+        case s: Seq[_] =>
+          val cancelables = for (el <- s) yield {
+            traverse(el, anchor)
           }
-        case _ =>
-          throw new IllegalArgumentException(s"unsupported: ${mod}")
+          Cancelable.merge(cancelables)
+        case other =>
+          throw new IllegalArgumentException(s"unsupported: ${other}")
       }
     }
 
-    traverse(mod)
+    traverse(htmlNode, anchor = None)
   }
 
   private def addAttribute(node: dom.Node, name: String, value: Any): Cancelable = {
@@ -100,12 +126,11 @@ object DOMRenderer {
         case rx: Rx[_] =>
           var c1 = Cancelable.empty
           val c2 = rx.run { value =>
+            // Cancel the previous binding
             c1.cancel
             c1 = traverse(value)
           }
-          Cancelable { () =>
-            c1.cancel; c2.cancel
-          }
+          Cancelable.merge(c1, c2)
         case f: Function0[Unit @unchecked] =>
           node.setEventListener(name, (_: dom.Event) => f())
         case f: Function1[dom.Node @unchecked, Unit @unchecked] =>
@@ -139,6 +164,31 @@ object DOMRenderer {
       val dyn = node.asInstanceOf[js.Dynamic]
       dyn.updateDynamic(key)(listener)
       Cancelable(() => dyn.updateDynamic(key)(null))
+    }
+
+    /**
+      * Create a two text nodes for embedding an Rx element.
+      *
+      * This is a workaround for that DOM API only expose `.insertBefore`
+      */
+    def createMountSection(): (dom.Node, dom.Node) = {
+      val start = newTextNode("")
+      val end   = newTextNode("")
+      node.appendChild(end)
+      node.appendChild(start)
+      (start, end)
+    }
+
+    def mountHere(child: dom.Node, start: Option[dom.Node]): Unit = {
+      start.fold(node.appendChild(child))(point => node.insertBefore(child, point)); ()
+    }
+
+    def clearMountSection(start: dom.Node, end: dom.Node): Unit = {
+      val next = start.previousSibling
+      if (next != end) {
+        node.removeChild(next)
+        clearMountSection(start, end)
+      }
     }
   }
 }

@@ -36,6 +36,5 @@ object tags {
   def cls: HtmlAttributeOf    = attributeOf("class")
   def style: HtmlAttributeOf  = attributeOf("style")
   def id: HtmlAttributeOf     = attributeOf("id")
-  //def onClick[U](handler: => U) =
 
 }
