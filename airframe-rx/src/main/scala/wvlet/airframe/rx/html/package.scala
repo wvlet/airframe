@@ -14,6 +14,9 @@
 package wvlet.airframe.rx
 import scala.annotation.implicitNotFound
 
+import scala.language.higherKinds
+import scala.language.implicitConversions
+
 /**
   *
   */
