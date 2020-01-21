@@ -38,7 +38,7 @@ package object html {
   case class HtmlAttribute(name: String, v: Any) extends HtmlNode
 
   class HtmlAttributeOf(name: String) {
-    def apply[V](v: V): HtmlNode = HtmlAttribute(name, v)
+    def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v)
   }
 
   class HtmlElement(val name: String, val modifiers: List[Seq[HtmlNode]] = List.empty) extends HtmlNode {
@@ -100,7 +100,7 @@ package object html {
     * Holder for embedding various types as tag contents
     * @param v
     */
-  case class Embed(v: Any) extends HtmlNode
+  private[html] case class Embedded(v: Any) extends HtmlNode
 
-  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embed(v)
+  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
 }

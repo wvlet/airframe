@@ -19,6 +19,6 @@ import org.scalajs.dom
   *
   */
 object events {
-  def onClick[U](f: => U)                = attributeOf("onClick")(f)
-  def onClick[U](f: dom.MouseEvent => U) = attributeOf("onClick")(f)
+  def onClick(f: () => Unit)             = attributeOf("onClick")(f)
+  def onClick(f: dom.MouseEvent => Unit) = attributeOf("onClick")(f)
 }

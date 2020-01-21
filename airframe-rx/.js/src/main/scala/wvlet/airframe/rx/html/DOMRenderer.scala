@@ -66,7 +66,7 @@ object DOMRenderer extends LogSupport {
           Cancelable.merge(c1, c2)
         case HtmlAttribute(name, value) =>
           addAttribute(node, name, value)
-        case a: Embed =>
+        case a: Embedded =>
           traverse(a.v, anchor)
         case s: String =>
           val textNode = newTextNode(s)
