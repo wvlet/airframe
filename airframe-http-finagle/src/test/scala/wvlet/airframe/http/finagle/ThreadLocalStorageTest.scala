@@ -24,20 +24,32 @@ import wvlet.airspec.AirSpec
   */
 class ThreadLocalStorageTest extends AirSpec {
   class MyApp {
-    @Endpoint(path = "/")
+    @Endpoint(path = "/get")
     def get(context: FinagleContext): Unit = {
       context.setThreadLocal("mydata", "hello tls")
+    }
+
+    @Endpoint(path = "/read")
+    def read(context: FinagleContext): String = {
+      context.getThreadLocal[String]("client_id").getOrElse("unknown")
     }
   }
 
   class TLSReaderFilter extends FinagleFilter {
     override def apply(request: Request, context: HttpContext[Request, Response, Future]): Future[Response] = {
+      context.setThreadLocal[String]("client_id", "xxxyyy")
+
       context(request).map { x =>
         // Read TLS set by the child MyApp service
         val mydata = context.getThreadLocal("mydata")
-        val r      = Response()
-        r.contentString = mydata.getOrElse("N/A")
-        r
+
+        if (request.path == "/get") {
+          val r = Response()
+          r.contentString = mydata.getOrElse("N/A")
+          r
+        } else {
+          x
+        }
       }
     }
   }
@@ -50,8 +62,15 @@ class ThreadLocalStorageTest extends AirSpec {
       }
   }
 
-  def `store data to thread-local storage`(client: FinagleSyncClient): Unit = {
-    val resp = client.get[String]("/")
-    resp shouldBe "hello tls"
+  test("tls test") { client: FinagleSyncClient =>
+    test("read thread-local data set at the leaf filter") {
+      val resp = client.get[String]("/get")
+      resp shouldBe "hello tls"
+    }
+
+    test("read thread-local data set by the parent filter") {
+      val resp = client.get[String]("/read")
+      resp shouldBe "xxxyyy"
+    }
   }
 }
