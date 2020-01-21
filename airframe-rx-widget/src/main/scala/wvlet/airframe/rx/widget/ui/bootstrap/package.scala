@@ -12,34 +12,35 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.RxComponent
+import wvlet.airframe.rx.html.RxComponent
 import wvlet.airframe.rx.widget.ui.Layout.divOf
+import wvlet.airframe.rx.html.all._
 
 /**
   * Twitter Bootstrap extensions
   */
 package object bootstrap {
   implicit class RichRxComponent(val x: RxComponent) extends AnyVal {
-    def withBorder: RxComponent        = x.addClass("border")
-    def withRoundedCorner: RxComponent = x.addClass("rounded")
-    def withShadow: RxComponent        = x.addClass("shadow-sm")
-
-    def withOverflowAuto   = x.addClass("overflow-auto")
-    def withOverflowHidden = x.addClass("overflow-hidden")
-
-    def withPositionStatic   = x.addClass("position-static")
-    def withPositionRelative = x.addClass("position-relative")
-    def withPositionAbsolute = x.addClass("position-absolute")
-    def withPositionFixed    = x.addClass("position-fixed")
-    def withPositionSticky   = x.addClass("position-sticky")
-
-    def withFixedTop    = x.addClass("fixed-top")
-    def withFixedBottom = x.addClass("fixed-bottom")
-    def withStickyTop   = x.addClass("sticky-top")
-
-    def withAlertLink = x.addClass("alert-link")
-
-    def screenReadersOnly = x.addClass("sr-only")
+    def withBorder        = x(_class -> "border")
+    def withRoundedCorner = x(_class -> "rounded")
+//    def withShadow: RxComponent        = x(_class -> "shadow-sm")
+//
+//    def withOverflowAuto   = x(_class -> "overflow-auto")
+//    def withOverflowHidden = x(_class -> "overflow-hidden")
+//
+//    def withPositionStatic   = x(_class -> "position-static")
+//    def withPositionRelative = x(_class -> "position-relative")
+//    def withPositionAbsolute = x(_class -> "position-absolute")
+//    def withPositionFixed    = x(_class -> "position-fixed")
+//    def withPositionSticky   = x(_class -> "position-sticky")
+//
+//    def withFixedTop    = x(_class -> "fixed-top")
+//    def withFixedBottom = x(_class -> "fixed-bottom")
+//    def withStickyTop   = x(_class -> "sticky-top")
+//
+//    def withAlertLink = x(_class -> "alert-link")
+//
+//    def screenReadersOnly = x(_class -> "sr-only")
   }
 
   def row: RxComponent   = divOf("row")
@@ -65,6 +66,6 @@ package object bootstrap {
   def inlineFlexbox: RxComponent = divOf("d-inline-flex")
 
   def figure: RxComponent = RxComponent { content =>
-    <figure class="figure">{content}</figure>
+    figure(cls -> "figure", content)
   }
 }

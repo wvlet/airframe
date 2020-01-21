@@ -13,28 +13,35 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.airframe.rx.widget.{RxComponent, RxElement}
-
-import scala.xml.Node
+import wvlet.airframe.rx.html.{HtmlElement, HtmlNode, RxComponent}
+import wvlet.airframe.rx.html.all._
 
 /**
   *
   */
 case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {
-  override def render(content: Node): Node =
-    <nav class="navbar navbar-expand-md navbar-dark fixed-top" style="min-height: 42px; padding: 4px 8px;">
-      <a class="navbar-brand" href="#">
-        <img class="d-inline-block align-top" src={iconFile} alt={title} width={iconWidth.toString} hight={
-      iconHeight.toString
-    }/>
-        {title}
-      </a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      {content}
-    </nav>
+  override def render(content: HtmlElement): HtmlElement =
+    nav(
+      cls   -> "navbar navbar-expand-md navbar-dark fixed-top",
+      style -> "min-height: 42px; padding: 4px 8px;",
+      a(
+        cls  -> "navbar-brand",
+        href -> "#",
+        img(cls -> "d-inline-block align-top", src -> iconFile, alt -> title, width -> iconWidth, height -> iconHeight),
+        { title }
+      ),
+      button(
+        cls            -> "navbar-toggler",
+        tpe            -> "button",
+        data("toggle") -> "collapse",
+        data("target") -> "#navbarCollapse",
+        aria.controls  -> "navbarCollapse",
+        aria.expanded  -> "false",
+        aria.label     -> "Toggle navigation",
+        span(cls -> "navbar-toggler-icon")
+      ) { content }
+    )
 }
 
 object NavBar {
@@ -42,17 +49,11 @@ object NavBar {
   def fixedTop(title: String) = new NavBar(title)
 
   def item: RxComponent = RxComponent { content =>
-    <li class="nav-item active">
-      <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-    </li>
+    li(_class -> "nav-item active", a(_class -> "nav-link", href -> "#", "Home ", span(_class -> "sr-only", "current")))
   }
 
   def navList: RxComponent = RxComponent { content =>
-    <div class="collapse navbar-collapse" id="navbarCollapse">
-      <ul class="navbar-nav mr-auto">
-        {content}
-      </ul>
-    </div>
+    div(_class -> "collapse navbar-collapse", id -> "navbarCollapse", ul(_class -> "navbar-nav mr-auto", content))
   }
 
   def navItemActive   = navItemCustom(active = true)
@@ -62,19 +63,14 @@ object NavBar {
   private def navItemCustom(active: Boolean = false, disabled: Boolean = false) = RxComponent { content =>
     val itemStyle = s"nav-item${if (active) " active" else ""}"
     val linkStyle = s"nav-link${if (disabled) " disabled" else ""}"
-    <li class={itemStyle}>
-      <a class={linkStyle} href="#">{content}</a>
-    </li>
+    li(_class -> itemStyle, a(_class -> linkStyle, href -> "#", content))
   }
 
   def sideBarSticky = RxComponent { content =>
-    <nav class="collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light">
-      <div class="sidebar-sticky">
-        <ul class="nav flex-column">
-          {content}
-        </ul>
-      </div>
-    </nav>
+    nav(
+      _class -> "collapse navbar-collapse col-md-2 d-none d-md-block sidebar bg-light",
+      div(_class -> "sidebar-sticky", ul(_class -> "nav flex-column", content))
+    )
   }
 
 }

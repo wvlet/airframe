@@ -66,6 +66,9 @@ object DOMRenderer extends LogSupport {
           Cancelable.merge(c1, c2)
         case HtmlAttribute(name, value, ns) =>
           addAttribute(node, name, value)
+        case n: dom.Node =>
+          node.mountHere(n, anchor)
+          Cancelable.empty
         case a: Embedded =>
           traverse(a.v, anchor)
         case s: String =>

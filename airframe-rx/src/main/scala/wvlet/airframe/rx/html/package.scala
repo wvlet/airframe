@@ -86,6 +86,8 @@ package object html {
     type EA[A] = EmbeddableAttribute[A]
     @inline implicit def embedNone: EA[None.type]                        = null
     @inline implicit def embedBoolean: EA[Boolean]                       = null
+    @inline implicit def embedInt: EA[Int]                               = null
+    @inline implicit def embedLong: EA[Long]                             = null
     @inline implicit def embedString: EA[String]                         = null
     @inline implicit def embedF0: EA[() => Unit]                         = null
     @inline implicit def embedF1[I]: EA[I => Unit]                       = null
@@ -118,7 +120,7 @@ package object html {
     * Holder for embedding various types as tag contents
     * @param v
     */
-  private[html] case class Embedded(v: Any) extends HtmlNode
+  case class Embedded(v: Any) extends HtmlNode
 
   implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
 }

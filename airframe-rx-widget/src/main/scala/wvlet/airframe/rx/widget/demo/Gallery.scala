@@ -15,10 +15,12 @@ package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
+import wvlet.airframe.rx.html.RxComponent
 import wvlet.airframe.rx.widget.ui._
 import wvlet.airframe.rx.widget.ui.bootstrap._
-import wvlet.airframe.rx.widget.{RxComponent, RxElement}
 import wvlet.log.{LogLevel, LogSupport, Logger}
+import wvlet.airframe.rx.html._
+import wvlet.airframe.rx.html.all._
 
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
@@ -49,59 +51,35 @@ object Gallery extends LogSupport {
   }
 
   def galleryFrame = RxComponent { content =>
-    <div>
-      {
+    div(
       NavBar
         .fixedTop("Airframe") {
-          NavBar.navList(
+          NavBar.navList.apply(
             NavBar.navItemActive("Home"),
             NavBar.navItem("Link"),
             NavBar.navItemDisabled("Disabled")
           )
-        }
-    }
-
-      {
+        },
       containerFluid(
-        <div class="row">
-          {
+        row(
           NavBar.sideBarSticky(
             NavBar.navItemActive(
-              <a class="nav-link active" href="#">
-                Components <span class="sr-only">(current)</span>
-              </a>
+              a(_class -> "nav-link active", href -> "#", "Components ", span(_class -> "sr-only"), "(current)")
             ),
-            NavBar.navItem(
-              <a class="nav-link" href="#">
-                Layout
-              </a>
-            ),
-            NavBar.navItem(
-              <a class="nav-link" href="#">
-                Gallery
-              </a>
-            ),
-            NavBar.navItem(
-              <a class="nav-link" href="#">
-                Reactive
-              </a>
-            ),
+            NavBar.navItem(a(_class -> "nav-link", href -> "#", "Layout")),
+            NavBar.navItem(a(_class -> "nav-link", href -> "#", "Gallery")),
+            NavBar.navItem(a(_class -> "nav-link", href -> "#", "Reactive")),
             NavBar.navItem(
               Button
-                .primary("Click Me!")
-                .onClick(e => logger.info("Clicked"))
+                .primary("Click Me!")(onclick -> { () =>
+                  logger.info("Clicked")
+                })
             )
-          )
-        }
-
-          <main role="main" class="col-md-10 ml-md-auto">
-            <h2>Airframe RxWidget Gallery</h2>
-            {content}
-          </main>
-        </div>
+          ),
+          main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
+        )
       )
-    }
-    </div>
+    )
   }
 
   def gallery = Seq(
@@ -118,39 +96,33 @@ object Gallery extends LogSupport {
   )
 
   def componentGallery = {
-    Layout.of(
-      <div>
-        <h4>RxComponent</h4>
-        <p>RxComponent is the unit of a reactive widget that can enclose other components or elements.</p>
-        {
-        Layout.scalaCode {
-          s"""import scala.xml
-             |import wvlet.airframe.rx.widget._
-             |
-             |class MyComponent extends RxComponent {
-             |  def render(content: xml.Node): xml.Node =
-             |    <div class="main">
-             |      <h2>Hello Airframe Rx Widget!</h2>
-             |      {content}
-             |    </div>
-             |}
-             |""".stripMargin
-        }
+    div(
+      h4("RxComponent"),
+      p("RxComponent is the unit of a reactive widget that can enclose other components or elements."),
+      Layout.scalaCode {
+        s"""import scala.xml
+           |import wvlet.airframe.rx.widget._
+           |
+           |class MyComponent extends RxComponent {
+           |  def render(content: xml.Node): xml.Node =
+           |    <div class="main">
+           |      <h2>Hello Airframe Rx Widget!</h2>
+           |      {content}
+           |    </div>
+           |}
+           |""".stripMargin
+      },
+      p("Here is a handy-syntax to define a new component:"),
+      Layout.scalaCode {
+        """// Short-hand notation for defining a new RxComponent at ease
+          |RxComponent { content =>
+          |  <div class="main">
+          |    <h2>Hello Airframe Rx Widget!</h2>
+          |    {content}
+          |  </div>
+          |}
+          |""".stripMargin
       }
-      <p>Here is a handy-syntax to define a new component:</p>
-        {
-        Layout.scalaCode {
-          """// Short-hand notation for defining a new RxComponent at ease
-            |RxComponent { content =>
-            |  <div class="main">
-            |    <h2>Hello Airframe Rx Widget!</h2>
-            |    {content}
-            |  </div>
-            |}
-            |""".stripMargin
-        }
-      }
-      </div>
     )
   }
 
@@ -178,8 +150,8 @@ object Gallery extends LogSupport {
 
   def demo(title: String, main: RxElement, code: String): RxElement = {
     containerFluid(
-      Layout.h4(title),
-      row.withBorder.withRoundedCorner(
+      h4(title),
+      row( // .withBorder.withRoundedCorner(
         col(main),
         col(Layout.scalaCode(code))
       )
@@ -260,52 +232,52 @@ object Gallery extends LogSupport {
         |""".stripMargin
   )
 
-  def modalGallery = demo(
-    "Modal",
-    Modal
-      .default(title = "ModalDemo")
-      .addStyle("display: block")
-      .addStyle("position: relative")
-      .withFooter(
-        <div>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-      ).apply(
-        <b>Modal body text goes here</b>
-      ),
-    """Modal
-      |  .default(title = "ModalDemo")
-      |  .addStyle("display: block")
-      |  .addStyle("position: relative") {
-      |  .withFooter(
-      |    <div>
-      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-      |      <button type="button" class="btn btn-primary">Save changes</button>
-      |    </div>
-      |  ).apply(
-      |    <b>Modal body text goes here</b>
-      |  )
-      |""".stripMargin
-  )
-
-  def gridGallery = demo(
-    "Grid",
-    row(
-      col { "One of three columns" },
-      col { "One of three columns" },
-      col { "One of three columns" }
-    ),
-    """row(
-        |  col { "One of three columns" },
-        |  col { "One of three columns" },
-        |  col { "One of three columns" }
-        |)""".stripMargin
-  )
-
+//  def modalGallery = demo(
+//    "Modal",
+//    Modal
+//      .default(title = "ModalDemo")
+//      .addStyle("display: block")
+//      .addStyle("position: relative")
+//      .withFooter(
+//        <div>
+//          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+//          <button type="button" class="btn btn-primary">Save changes</button>
+//        </div>
+//      ).apply(
+//        <b>Modal body text goes here</b>
+//      ),
+//    """Modal
+//      |  .default(title = "ModalDemo")
+//      |  .addStyle("display: block")
+//      |  .addStyle("position: relative") {
+//      |  .withFooter(
+//      |    <div>
+//      |      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+//      |      <button type="button" class="btn btn-primary">Save changes</button>
+//      |    </div>
+//      |  ).apply(
+//      |    <b>Modal body text goes here</b>
+//      |  )
+//      |""".stripMargin
+//  )
+//
+//  def gridGallery = demo(
+//    "Grid",
+//    row(
+//      col { "One of three columns" },
+//      col { "One of three columns" },
+//      col { "One of three columns" }
+//    ),
+//    """row(
+//        |  col { "One of three columns" },
+//        |  col { "One of three columns" },
+//        |  col { "One of three columns" }
+//        |)""".stripMargin
+//  )
+//
   def browserGallery = demo(
     "Browser Info",
-    Layout.p(s"browser url: ${Browser.url}"),
+    p(s"browser url: ${Browser.url}"),
     """Layout.p(s"browser url: ${Browser.url}")""".stripMargin
   )
 
@@ -337,20 +309,10 @@ object Gallery extends LogSupport {
     val v = Rx.variable(1)
     demo(
       "Rx",
-      Layout.div(
-        <div>
-          <p> {
-          v.map(x => s"count: ${x}")
-        }
-            {
-          Button
-            .primary("add")
-            .onClick { e: dom.Event =>
-              v.update(_ + 1)
-            }
-        }
-          </p>
-          </div>
+      p(
+        v.map(x => s"count: ${x}"),
+        Button
+          .primary("add")(onclick { e: dom.Event =>         v.update(_ + 1)) })
       ),
       """val v = Rx(1)
         |

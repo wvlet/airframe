@@ -12,7 +12,8 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
-import wvlet.airframe.rx.widget.RxComponent
+import wvlet.airframe.rx.html.RxComponent
+import wvlet.airframe.rx.html.all._
 
 /**
   *
@@ -20,7 +21,7 @@ import wvlet.airframe.rx.widget.RxComponent
 object Alert {
   private def newAlert(style: String) = RxComponent { content =>
     val cls = s"alert ${style}"
-    <div role="alert" class={cls}>{content}</div>
+    div(role -> "alert", _class -> cls, content)
   }
 
   def primary   = newAlert("alert-primary")

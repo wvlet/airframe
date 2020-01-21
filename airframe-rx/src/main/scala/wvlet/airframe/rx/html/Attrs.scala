@@ -45,6 +45,7 @@ trait GlobalAttrs {
     * Shorthand for the `class` attribute
     */
   lazy val cls             = `class`
+  lazy val _class          = `class`
   lazy val contenteditable = attr("contenteditable") // Specifies whether the content of an element is editable or not
   lazy val contextmenu     = attr("contextmenu") // Specifies a context menu for an element. The context menu appears when a user right-clicks on the element
 
@@ -69,14 +70,9 @@ trait GlobalAttrs {
     *
     * MDN
     */
-  object data extends DataAttribute(List("data"))
+  //object data extends DataAttribute(List("data"))
 
-  class DataAttribute(sections: List[String]) extends Dynamic {
-    def selectDynamic(s: String)            = new DataAttribute(s :: sections)
-    def apply[V: EmbeddableAttribute](v: V) = attr(sections.reverse.mkString("-"))(v)
-  }
-
-  def data_(suffix: String) = attr("data-" + suffix)
+  def data(suffix: String) = attr("data-" + suffix)
 
   /**
     * Specifies the text direction for the content in an element. The valid values are:
@@ -744,7 +740,7 @@ trait InputAttrs extends GlobalAttrs {
     * The `height` attribute specifies the height of an `input` element of
     * `type` "image".
     */
-  lazy val heightA = attr("height") // TODO: Conflicts with "height" in Styles -
+  lazy val height = attr("height") // TODO: Conflicts with "height" in Styles -
   /**
     * The list attribute refers to a <datalist> element that contains the options
     * for an input element the presents a select list.
@@ -915,7 +911,8 @@ trait InputAttrs extends GlobalAttrs {
   /**
     * Shorthand for the `type` attribute
     */
-  lazy val tpe = `type`
+  lazy val tpe   = `type`
+  lazy val _type = tpe
 
   /**
     * The initial value of the control. This attribute is optional except when
@@ -929,7 +926,7 @@ trait InputAttrs extends GlobalAttrs {
     * The `width` attribute specifies the width of an `input` element of
     * `type` "image".
     */
-  lazy val widthA = attr("width") // TODO: Conflicts with "width" in Styles
+  lazy val width = attr("width") // TODO: Conflicts with "width" in Styles
 }
 
 /**

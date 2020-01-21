@@ -12,36 +12,24 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.{RxComponent, RxElement}
+import wvlet.airframe.rx.html.{Embedded, RxComponent, RxElement}
+import wvlet.airframe.rx.html.all._
 
 /**
   *
   */
 object Layout {
-  def of: RxComponent          = div
-  def of(list: Seq[RxElement]) = div(list: _*)
-  def div: RxComponent         = RxComponent.ofTag("div")
+  def of                   = div()
+  def of(list: RxElement*) = div(Embedded(list.toSeq))
   def divOf(primaryClass: String): RxComponent = RxComponent { content =>
-    <div class={primaryClass}>{content}</div>
-  }
-
-  def h1: RxComponent = RxComponent.ofTag(tag = "h1")
-  def h2: RxComponent = RxComponent.ofTag(tag = "h2")
-  def h3: RxComponent = RxComponent.ofTag(tag = "h3")
-  def h4: RxComponent = RxComponent.ofTag(tag = "h4")
-  def h5: RxComponent = RxComponent.ofTag(tag = "h5")
-
-  def p: RxComponent = RxComponent.ofTag(tag = "p")
-
-  def code(codeStr: String): RxElement = RxElement {
-    <code>{codeStr}</code>
+    div(_class -> primaryClass, content)
   }
 
   def codeBlock: RxComponent = RxComponent { content =>
-    <pre><code>{content}</code></pre>
+    pre(code(content))
   }
 
   def scalaCode: RxComponent = RxComponent { content =>
-    <pre><code class="language-scala rounded">{content}</code></pre>
+    pre(code(_class -> "language-scala rounded"), content)
   }
 }
