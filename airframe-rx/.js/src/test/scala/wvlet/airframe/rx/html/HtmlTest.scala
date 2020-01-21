@@ -23,8 +23,10 @@ class HtmlTest extends AirSpec {
   def render(node: HtmlElement): String = {
     val txt = DOMRenderer.render(node) match {
       case (elem: dom.Element, c) =>
+        c.cancel
         elem.outerHTML
       case (other, c) =>
+        c.cancel
         other.innerText
     }
     info(txt)
@@ -82,6 +84,20 @@ class HtmlTest extends AirSpec {
       Rx.variable("rx_var")
     )
 
+    render(d)
+  }
+
+  test("add onclick") {
+    val d = button("hello", onclick { e: dom.MouseEvent =>
+      println("clicked")
+    })
+    render(d)
+  }
+
+  test("add onclick without arg") {
+    val d = button("hello", onclick { () =>
+      println("clicked")
+    })
     render(d)
   }
 
