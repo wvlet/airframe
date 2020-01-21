@@ -54,7 +54,7 @@ object Gallery extends LogSupport {
     div(
       NavBar
         .fixedTop("Airframe") {
-          NavBar.navList.apply(
+          NavBar.navList(
             NavBar.navItemActive("Home"),
             NavBar.navItem("Link"),
             NavBar.navItemDisabled("Disabled")
@@ -70,10 +70,9 @@ object Gallery extends LogSupport {
             NavBar.navItem(a(_class -> "nav-link", href -> "#", "Gallery")),
             NavBar.navItem(a(_class -> "nav-link", href -> "#", "Reactive")),
             NavBar.navItem(
-              Button
-                .primary("Click Me!")(onclick -> { () =>
-                  logger.info("Clicked")
-                })
+              button("Click Me!", cls -> "btn btn-primary", onclick -> { () =>
+                logger.info("Clicked")
+              })
             )
           ),
           main(role -> "main", _class -> "col-md-10 ml-md-auto", h2("Airframe RxWidget Gallery"), content)
@@ -90,9 +89,9 @@ object Gallery extends LogSupport {
     browserGallery,
     buttonGallery,
     buttonDisabledGallery,
-    alertGallery,
-    modalGallery,
-    gridGallery
+    alertGallery
+    //modalGallery,
+    //gridGallery
   )
 
   def componentGallery = {
@@ -127,12 +126,10 @@ object Gallery extends LogSupport {
   }
 
   def elementGallery = {
-    Layout.of(
-      <div>
-      <h4>RxElement</h4>
-      {
-        Layout.scalaCode(
-          s"""import wvlet.airframe.rx.widget._
+    div(
+      h4("RxElement"),
+      Layout.scalaCode(
+        s"""import wvlet.airframe.rx.widget._
            |
            |class MyButton(name:String) extends RxElement {
            |  def render: xml.Node = <button class="button">{name}</button>
@@ -142,9 +139,7 @@ object Gallery extends LogSupport {
            |def newButton(name:String): RxElement =
            |  RxElement{ <button class="button">{name}</button> }
            |""".stripMargin
-        )
-      }
-      </div>
+      )
     )
   }
 
@@ -312,7 +307,9 @@ object Gallery extends LogSupport {
       p(
         v.map(x => s"count: ${x}"),
         Button
-          .primary("add")(onclick { e: dom.Event =>         v.update(_ + 1)) })
+          .primary("add")(onclick { e: dom.Event =>
+            v.update(_ + 1)
+          })
       ),
       """val v = Rx(1)
         |

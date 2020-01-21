@@ -16,11 +16,8 @@ package wvlet.airframe.rx.html
 import org.scalajs.dom
 import wvlet.airframe.rx.{Cancelable, Rx}
 
-case class Elem(body: () => HtmlNode) extends RxElement {
-  override def render: HtmlNode = Embedded(body)
-}
-case class ElemSeq(body: () => Seq[HtmlNode]) extends RxElement {
-  override def render: HtmlNode = Embedded(body)
+case class Elem(body: () => Embedded) extends RxElement {
+  override def render: HtmlNode = body()
 }
 
 /**
@@ -34,14 +31,14 @@ private[html] case class LazyElementSeq(elems: Seq[RxElement])
   */
 trait RxComponent {
   def render(content: HtmlNode): HtmlNode
-  def apply(elem: RxElement): RxElement = {
-    apply(Embedded(LazyElement(elem)))
-  }
-  def apply(elems: HtmlNode*): RxElement = {
+  def apply(elems: RxElement*): RxElement = {
     elems.size match {
-      case 1     => Elem(() => elems.head)
-      case other => ElemSeq(() => elems.toSeq)
+      case 1     => Elem(() => Embedded(elems.head))
+      case other => Elem(() => Embedded(elems.toSeq))
     }
+  }
+  def apply(elem: HtmlNode): RxElement = {
+    Elem(() => Embedded(elem))
   }
 }
 

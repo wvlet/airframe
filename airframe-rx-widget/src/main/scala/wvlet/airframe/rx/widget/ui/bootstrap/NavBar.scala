@@ -21,7 +21,7 @@ import wvlet.airframe.rx.html.all._
   */
 case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {
-  override def render(content: HtmlElement): HtmlElement =
+  override def render(content: HtmlNode): HtmlNode =
     nav(
       cls   -> "navbar navbar-expand-md navbar-dark fixed-top",
       style -> "min-height: 42px; padding: 4px 8px;",
@@ -46,7 +46,7 @@ case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth
 
 object NavBar {
 
-  def fixedTop(title: String) = new NavBar(title)
+  def fixedTop(title: String): RxComponent = new NavBar(title)
 
   def item: RxComponent = RxComponent { content =>
     li(_class -> "nav-item active", a(_class -> "nav-link", href -> "#", "Home ", span(_class -> "sr-only", "current")))
