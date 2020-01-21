@@ -16,7 +16,7 @@ package wvlet.airframe.rx.html
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airspec._
-import wvlet.airframe.rx.html.tags._
+import wvlet.airframe.rx.html.all._
 
 class HtmlTest extends AirSpec {
 
@@ -33,6 +33,10 @@ class HtmlTest extends AirSpec {
 
   test("create div") {
     val d = div(cls("link"), a(src("hello")), "hello html!")
+    render(d)
+  }
+  test("create div with attrs") {
+    val d = div(cls -> "main", a(src -> "hello"))
     render(d)
   }
 
