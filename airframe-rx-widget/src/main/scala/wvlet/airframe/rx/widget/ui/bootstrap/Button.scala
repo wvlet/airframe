@@ -13,7 +13,8 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.airframe.rx.widget.RxElement
+import wvlet.airframe.rx.html._
+import wvlet.airframe.rx.html.all._
 import wvlet.log.LogSupport
 
 /**
@@ -21,40 +22,35 @@ import wvlet.log.LogSupport
   */
 case class Button(
     name: String,
-    private var disabled: Boolean = false
+    private val primaryClass: String = "btn-primary",
+    private var _disabled: Boolean = false
 ) extends RxElement {
 
-  def small: Button = addClass("btn-sm")
-
-  def isActive: Boolean   = !disabled
-  def isDisabled: Boolean = disabled
+  def isActive: Boolean   = !_disabled
+  def isDisabled: Boolean = _disabled
 
   def active: Button = {
-    disabled = false
+    _disabled = false
     this
   }
   def disable: Button = {
-    disabled = true
+    _disabled = true
     this
   }
 
-  def render: xml.Node = {
-    if (isActive) {
-      <button type="button" class="btn">{name}</button>
-    } else {
-      <button type="button" class="btn" disabled="true">{name}</button>
-    }
+  def render: RxElement = {
+    button(tpe -> "button", cls -> s"btn ${primaryClass}", disabled.when(_disabled), name)
   }
 }
 
 object Button extends LogSupport {
-  def primary(name: String)   = Button(name).addClass("btn-primary")
-  def secondary(name: String) = Button(name).addClass("btn-secondary")
-  def success(name: String)   = Button(name).addClass("btn-success")
-  def danger(name: String)    = Button(name).addClass("btn-danger")
-  def warning(name: String)   = Button(name).addClass("btn-warning")
-  def info(name: String)      = Button(name).addClass("btn-info")
-  def light(name: String)     = Button(name).addClass("btn-light")
-  def dark(name: String)      = Button(name).addClass("btn-dark")
-  def link(name: String)      = Button(name).addClass("btn-link")
+  def primary(name: String)   = Button(name)
+  def secondary(name: String) = Button(name, "btn-secondary")
+  def success(name: String)   = Button(name, "btn-success")
+  def danger(name: String)    = Button(name, "btn-danger")
+  def warning(name: String)   = Button(name, "btn-warning")
+  def info(name: String)      = Button(name, "btn-info")
+  def light(name: String)     = Button(name, "btn-light")
+  def dark(name: String)      = Button(name, "btn-dark")
+  def link(name: String)      = Button(name, "btn-link")
 }

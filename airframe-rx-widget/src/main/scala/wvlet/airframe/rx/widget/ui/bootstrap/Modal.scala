@@ -13,33 +13,40 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.airframe.rx.widget.RxComponent
+import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{EntityRef, RxComponent, RxElement}
 
-import scala.xml.Node
+case class Modal(title: String, footer: RxElement = div()) extends RxComponent {
 
-case class Modal(title: String, footer: xml.Node = <div></div>) extends RxComponent {
+  def withFooter(footer: RxElement): Modal = this.copy(footer = footer)
 
-  def withFooter(footer: xml.Node) = this.copy(footer = footer)
-
-  override def render(content: Node): Node =
-    <div class="modal" style="display: block; position: relative;" tabindex="-1" role="dialog">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{title}</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            {content}
-          </div>
-          <div class="modal-footer">
-            {footer}
-          </div>
-        </div>
-      </div>
-    </div>
+  override def render(content: RxElement): RxElement =
+    div(
+      _class   -> "modal",
+      style    -> "display: block; position: relative;",
+      tabindex -> "-1",
+      role     -> "dialog",
+      div(
+        _class -> "modal-dialog",
+        role   -> "document",
+        div(
+          _class -> "modal-content",
+          div(
+            _class -> "modal-header",
+            h5(_class -> "modal-title", title),
+            button(
+              _type           -> "button",
+              _class          -> "close",
+              data("dismiss") -> "modal",
+              aria.label      -> "Close",
+              span(aria.hidden -> "true", EntityRef("times"))
+            )
+          ),
+          div(_class -> "modal-body", content),
+          div(_class -> "modal-footer", footer)
+        )
+      )
+    )
 }
 
 /**

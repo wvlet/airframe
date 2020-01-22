@@ -45,6 +45,7 @@ trait GlobalAttrs {
     * Shorthand for the `class` attribute
     */
   lazy val cls             = `class`
+  lazy val _class          = `class`
   lazy val contenteditable = attr("contenteditable") // Specifies whether the content of an element is editable or not
   lazy val contextmenu     = attr("contextmenu") // Specifies a context menu for an element. The context menu appears when a user right-clicks on the element
 
@@ -69,14 +70,9 @@ trait GlobalAttrs {
     *
     * MDN
     */
-  object data extends DataAttribute(List("data"))
+  //object data extends DataAttribute(List("data"))
 
-  class DataAttribute(sections: List[String]) extends Dynamic {
-    def selectDynamic(s: String)            = new DataAttribute(s :: sections)
-    def apply[V: EmbeddableAttribute](v: V) = attr(sections.reverse.mkString("-"))(v)
-  }
-
-  def data_(suffix: String) = attr("data-" + suffix)
+  def data(suffix: String) = attr("data-" + suffix)
 
   /**
     * Specifies the text direction for the content in an element. The valid values are:
@@ -93,7 +89,7 @@ trait GlobalAttrs {
   /**
     * A Boolean attribute that specifies whether an element is draggable or not
     */
-  lazy val draggable = attr("draggable").empty
+  lazy val draggable = attr("draggable").noValue
 
   /**
     * Specifies whether the dragged data is copied, moved, or linked, when dropped
@@ -104,7 +100,7 @@ trait GlobalAttrs {
     * Specifies that an element is not yet, or is no longer, relevant and
     * consequently hidden from view of the user.
     */
-  lazy val hidden = attr("hidden").empty
+  lazy val hidden = attr("hidden").noValue
 
   /**
     * This attribute defines a unique identifier (ID) which must be unique in
@@ -134,7 +130,7 @@ trait GlobalAttrs {
     *
     * MDN
     */
-  lazy val spellcheck = attr("spellcheck").empty
+  lazy val spellcheck = attr("spellcheck").noValue
 
   /**
     * This attribute contains CSS styling declarations to be applied to the
@@ -178,7 +174,7 @@ trait GlobalAttrs {
   /**
     * Specifies whether the content of an element should be translated or not
     */
-  lazy val translate = attr("translate").empty
+  lazy val translate = attr("translate").noValue
 }
 
 trait SharedEventAttrs {
@@ -499,7 +495,7 @@ trait FormEventAttrs {
   /**
     * Indicates a selected option in an option list of a <select> element.
     */
-  lazy val selected = attr("selected").empty
+  lazy val selected = attr("selected").noValue
 }
 
 /**
@@ -679,7 +675,7 @@ trait InputAttrs extends GlobalAttrs {
     *
     * MDN
     */
-  lazy val autofocus = attr("autofocus").empty
+  lazy val autofocus = attr("autofocus").noValue
 
   /**
     * When the value of the type attribute is radio or checkbox, the presence of
@@ -688,7 +684,7 @@ trait InputAttrs extends GlobalAttrs {
     *
     * MDN
     */
-  lazy val checked = attr("checked").empty
+  lazy val checked = attr("checked").noValue
 
   /**
     * The `enctype` attribute provides the encoding type of the form when it is
@@ -744,7 +740,7 @@ trait InputAttrs extends GlobalAttrs {
     * The `height` attribute specifies the height of an `input` element of
     * `type` "image".
     */
-  lazy val heightA = attr("height") // TODO: Conflicts with "height" in Styles -
+  lazy val height = attr("height") // TODO: Conflicts with "height" in Styles -
   /**
     * The list attribute refers to a <datalist> element that contains the options
     * for an input element the presents a select list.
@@ -769,7 +765,7 @@ trait InputAttrs extends GlobalAttrs {
     * It can also be provided to the <select> element to allow selecting more than one
     * option.
     */
-  lazy val multiple = attr("multiple").empty
+  lazy val multiple = attr("multiple").noValue
 
   /**
     * The minimum allowed length for the input field. This attribute forces the input control
@@ -841,7 +837,7 @@ trait InputAttrs extends GlobalAttrs {
     *
     * MDN
     */
-  lazy val readonly = attr("readonly").empty
+  lazy val readonly = attr("readonly").noValue
 
   /**
     * This attribute specifies that the user must fill in a value before
@@ -851,7 +847,7 @@ trait InputAttrs extends GlobalAttrs {
     *
     * MDN
     */
-  lazy val required = attr("required").empty
+  lazy val required = attr("required").noValue
 
   /**
     * The initial size of the control. This value is in pixels unless the value
@@ -915,7 +911,8 @@ trait InputAttrs extends GlobalAttrs {
   /**
     * Shorthand for the `type` attribute
     */
-  lazy val tpe = `type`
+  lazy val tpe   = `type`
+  lazy val _type = tpe
 
   /**
     * The initial value of the control. This attribute is optional except when
@@ -929,7 +926,7 @@ trait InputAttrs extends GlobalAttrs {
     * The `width` attribute specifies the width of an `input` element of
     * `type` "image".
     */
-  lazy val widthA = attr("width") // TODO: Conflicts with "width" in Styles
+  lazy val width = attr("width") // TODO: Conflicts with "width" in Styles
 }
 
 /**
@@ -1021,7 +1018,7 @@ trait Attrs
     *
     * MDN
     */
-  lazy val disabled = attr("disabled").empty
+  lazy val disabled = attr("disabled").noValue
 
   /**
     * Describes elements which belongs to this one. Used on labels and output
@@ -1138,7 +1135,7 @@ trait Attrs
     *
     * MDN
     */
-  lazy val defer = attr("defer").empty
+  lazy val defer = attr("defer").noValue
 
   /**
     * ARIA is a set of special accessibility attributes which can be added

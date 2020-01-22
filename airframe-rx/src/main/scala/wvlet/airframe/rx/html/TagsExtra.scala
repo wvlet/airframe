@@ -44,6 +44,11 @@ trait TagsExtra {
   // Not supported in HTML5. Use CSS instead.
   def big: HtmlElement = tag("big")
 
+  // Specifies column properties for each column within a <colgroup> element
+  lazy val col: HtmlElement = tag("col")
+  // Specifies a group of one or more columns in a table for formatting
+  lazy val colgroup: HtmlElement = tag("colgroup")
+
   // Links the given content with a machine-readable translation
   def data: HtmlElement = tag("data")
   // Specifies a list of pre-defined options for input controls
@@ -66,6 +71,9 @@ trait TagsExtra {
 
   // Represents the progress of a task
   def progress: HtmlElement = tag("progress")
+
+  // Defines a ruby annotation (for East Asian typography)
+  lazy val ruby: HtmlElement = tag("ruby")
 
   // Defines sample output from a computer program
   def samp: HtmlElement = tag("samp")

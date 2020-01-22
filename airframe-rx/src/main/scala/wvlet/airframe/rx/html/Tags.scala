@@ -42,11 +42,7 @@ trait Tags {
   lazy val cite: HtmlElement = tag("cite")
   // Defines a piece of computer code
   lazy val code: HtmlElement = tag("code")
-  // Specifies column properties for each column within a <colgroup> element
-  lazy val col: HtmlElement = tag("col")
-  // Specifies a group of one or more columns in a table for formatting
-  lazy val colgroup: HtmlElement = tag("colgroup")
-  lazy val dd: HtmlElement       = tag("dd")
+  lazy val dd: HtmlElement   = tag("dd")
   // Defines text that has been deleted from a document
   lazy val del: HtmlElement = tag("del")
   // Defines additional details that the user can view or hide
@@ -148,8 +144,6 @@ trait Tags {
   lazy val rp: HtmlElement = tag("rp")
   // Defines an explanation/pronunciation of characters (for East Asian typography)
   lazy val rt: HtmlElement = tag("rt")
-  // Defines a ruby annotation (for East Asian typography)
-  lazy val ruby: HtmlElement = tag("ruby")
   // Defines text that is no longer correct
   lazy val s: HtmlElement = tag("s")
   // Defines a client-side script

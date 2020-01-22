@@ -12,10 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx
-import scala.annotation.implicitNotFound
 
-import scala.language.higherKinds
-import scala.language.implicitConversions
+import wvlet.log.LogSupport
+
+import scala.annotation.implicitNotFound
+import scala.language.{higherKinds, implicitConversions}
 
 /**
   *
@@ -40,31 +41,24 @@ package object html {
     }
   }
 
+  // HtmlNode -> Element -> HtmlElement
+  //          -> HtmlAttribute
+
   object HtmlNode {
     object empty extends HtmlNode
   }
 
-  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml) extends HtmlNode
+  case class HtmlAttribute(name: String, v: Any, ns: Namespace = Namespace.xhtml, append: Boolean = false)
+      extends HtmlNode
 
   class HtmlAttributeOf(name: String, namespace: Namespace = Namespace.xhtml) {
     def apply[V: EmbeddableAttribute](v: V): HtmlNode = HtmlAttribute(name, v, namespace)
     def ->[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace)
-    def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
+    def +=[V: EmbeddableAttribute](v: V): HtmlNode    = HtmlAttribute(name, v, namespace, append = true)
+    def noValue: HtmlNode                             = HtmlAttribute(name, true, namespace)
   }
 
-  case class HtmlElement(
-      name: String,
-      modifiers: List[Seq[HtmlNode]] = List.empty,
-      namespace: Namespace = Namespace.xhtml
-  ) extends HtmlNode {
-    def apply(xs: HtmlNode*): HtmlElement = {
-      if (xs.isEmpty) {
-        this
-      } else {
-        HtmlElement(name = name, modifiers = xs :: modifiers, namespace = namespace)
-      }
-    }
-  }
+  case class EntityRef(ref: String) extends HtmlNode
 
   // TODO embed namespace properly to DOM
   case class Namespace(uri: String)
@@ -76,6 +70,7 @@ package object html {
   }
 
   def tag(name: String): HtmlElement                            = new HtmlElement(name)
+  def tagOf(name: String, namespace: Namespace)                 = new HtmlElement(name, namespace)
   def attr(name: String): HtmlAttributeOf                       = new HtmlAttributeOf(name)
   def attr(name: String, namespace: Namespace): HtmlAttributeOf = new HtmlAttributeOf(name, namespace)
   def attributeOf(name: String): HtmlAttributeOf                = attr(name)
@@ -86,6 +81,8 @@ package object html {
     type EA[A] = EmbeddableAttribute[A]
     @inline implicit def embedNone: EA[None.type]                        = null
     @inline implicit def embedBoolean: EA[Boolean]                       = null
+    @inline implicit def embedInt: EA[Int]                               = null
+    @inline implicit def embedLong: EA[Long]                             = null
     @inline implicit def embedString: EA[String]                         = null
     @inline implicit def embedF0: EA[() => Unit]                         = null
     @inline implicit def embedF1[I]: EA[I => Unit]                       = null
@@ -118,7 +115,12 @@ package object html {
     * Holder for embedding various types as tag contents
     * @param v
     */
-  private[html] case class Embedded(v: Any) extends HtmlNode
+  case class Embedded(v: Any) extends RxElement with LogSupport {
+    override def render: RxElement = {
+      warn(s"render is called for ${v}")
+      ???
+    }
+  }
 
-  implicit def embedAsNode[A: EmbeddableNode](v: A): HtmlNode = Embedded(v)
+  implicit def embedAsNode[A: EmbeddableNode](v: A): RxElement = Embedded(v)
 }

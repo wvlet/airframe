@@ -22,6 +22,8 @@ package wvlet.airframe.rx.html
   */
 trait SvgTags {
 
+  private def tag(name: String) = tagOf(name, namespace = Namespace.svg)
+
   /**
     * The altGlyph element allows sophisticated selection of the glyphs used to
     * render its child character data.

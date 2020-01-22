@@ -96,7 +96,7 @@ private[airspec] trait AirSpecSpi {
   }
 
   private var _localTestDefs: List[AirSpecDef] = List.empty
-  private[airspec] def addLocalTestDef(specDef: AirSpecDef) {
+  private[airspec] def addLocalTestDef(specDef: AirSpecDef): Unit = {
     synchronized {
       _currentContext match {
         case Nil =>

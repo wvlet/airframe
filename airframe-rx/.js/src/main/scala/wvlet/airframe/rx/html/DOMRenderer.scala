@@ -12,11 +12,11 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.html
+import org.scalajs.dom
 import wvlet.airframe.rx.{Cancelable, Rx}
+import wvlet.log.LogSupport
 
 import scala.scalajs.js
-import org.scalajs.dom
-import wvlet.log.LogSupport
 
 /**
   *
@@ -32,12 +32,35 @@ object DOMRenderer extends LogSupport {
     }
   }
 
-  def render(e: HtmlElement): (dom.Node, Cancelable) = {
-    val node: dom.Node = dom.document.createElement(e.name)
-    val cancelables = for (g <- e.modifiers.reverse; m <- g) yield {
-      renderTo(node, m)
+  private def createNode(e: HtmlElement): dom.Node = {
+    val elem = e.namespace match {
+      case Namespace.xhtml => dom.document.createElement(e.name)
+      case _               => dom.document.createElementNS(e.namespace.uri, e.name)
     }
-    (node, Cancelable.merge(cancelables))
+    elem
+  }
+
+  def render(e: RxElement): (dom.Node, Cancelable) = {
+
+    def traverse(v: Any): (dom.Node, Cancelable) = {
+      v match {
+        case h: HtmlElement =>
+          val node: dom.Node = createNode(h)
+          val cancelable     = h.traverseModifiers(m => renderTo(node, m))
+          (node, cancelable)
+        case l: LazyRxElement[_] =>
+          traverse(l.render)
+        case Embedded(v) =>
+          traverse(v)
+        case r: RxElement =>
+          traverse(r.render)
+        case d: dom.Node =>
+          (d, Cancelable.empty)
+        case other =>
+          throw new IllegalArgumentException(s"unsupported top level element: ${other}")
+      }
+    }
+    traverse(e)
   }
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)
@@ -49,10 +72,10 @@ object DOMRenderer extends LogSupport {
         case HtmlNode.empty =>
           Cancelable.empty
         case e: HtmlElement =>
-          // TODO renderer
-          val (childDOM, c1) = render(e)
-          node.mountHere(childDOM, anchor)
-          c1
+          val elem = createNode(e)
+          val c    = e.traverseModifiers(m => renderTo(elem, m))
+          node.mountHere(elem, anchor)
+          c
         case rx: Rx[_] =>
           val (start, end) = node.createMountSection()
           var c1           = Cancelable.empty
@@ -64,13 +87,26 @@ object DOMRenderer extends LogSupport {
             c1 = traverse(value, Some(start))
           }
           Cancelable.merge(c1, c2)
-        case HtmlAttribute(name, value, ns) =>
-          addAttribute(node, name, value)
-        case a: Embedded =>
-          traverse(a.v, anchor)
+        case a: HtmlAttribute =>
+          addAttribute(node, a)
+        case n: dom.Node =>
+          node.mountHere(n, anchor)
+          Cancelable.empty
+        case e: Embedded =>
+          traverse(e.v, anchor)
+        case rx: RxElement =>
+          val (elem, c1) = render(rx.render)
+          val c2         = rx.traverseModifiers(m => renderTo(elem, m))
+          node.mountHere(elem, anchor)
+          Cancelable.merge(c1, c2)
         case s: String =>
           val textNode = newTextNode(s)
           node.mountHere(textNode, anchor)
+          Cancelable.empty
+        case EntityRef(entityName) =>
+          val domNode = dom.document.createTextNode("").asInstanceOf[dom.Element]
+          domNode.innerHTML = s"&${entityName};"
+          node.mountHere(domNode, anchor)
           Cancelable.empty
         case v: Int =>
           val textNode = newTextNode(v.toString)
@@ -106,20 +142,20 @@ object DOMRenderer extends LogSupport {
           }
           Cancelable.merge(cancelables)
         case other =>
-          throw new IllegalArgumentException(s"unsupported: ${other}")
+          throw new IllegalArgumentException(s"unsupported class ${other}")
       }
     }
 
     traverse(htmlNode, anchor = None)
   }
 
-  private def addAttribute(node: dom.Node, name: String, value: Any): Cancelable = {
+  private def addAttribute(node: dom.Node, a: HtmlAttribute): Cancelable = {
     val htmlNode = node.asInstanceOf[dom.html.Html]
 
     def traverse(v: Any): Cancelable = {
       v match {
         case null | None | false =>
-          htmlNode.removeAttribute(name)
+          htmlNode.removeAttribute(a.name)
           Cancelable.empty
         case Some(x) =>
           traverse(x)
@@ -132,15 +168,15 @@ object DOMRenderer extends LogSupport {
           }
           Cancelable.merge(c1, c2)
         case f: Function0[Unit @unchecked] =>
-          node.setEventListener(name, (_: dom.Event) => f())
+          node.setEventListener(a.name, (_: dom.Event) => f())
         case f: Function1[dom.Node @unchecked, Unit @unchecked] =>
-          node.setEventListener(name, f)
+          node.setEventListener(a.name, f)
         case _ =>
           val value = v match {
             case true => ""
             case _    => v.toString
           }
-          name match {
+          a.name match {
             case "style" =>
               val prev = htmlNode.style.cssText
               if (prev.isEmpty) {
@@ -150,13 +186,23 @@ object DOMRenderer extends LogSupport {
               }
               Cancelable.empty
             case _ =>
-              htmlNode.setAttribute(name, value)
+              val newAttrValue = if (a.append && htmlNode.hasAttribute(a.name)) {
+                s"${htmlNode.getAttribute(a.name)} ${value}"
+              } else {
+                value
+              }
+              a.ns match {
+                case Namespace.xhtml =>
+                  htmlNode.setAttribute(a.name, newAttrValue)
+                case ns =>
+                  htmlNode.setAttributeNS(ns.uri, a.name, newAttrValue)
+              }
               Cancelable.empty
           }
       }
     }
 
-    traverse(value)
+    traverse(a.v)
   }
 
   private implicit class RichDomNode(node: dom.Node) {

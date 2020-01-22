@@ -12,59 +12,58 @@
  * limitations under the License.
  */
 package wvlet.airframe.rx.widget.ui
-import wvlet.airframe.rx.widget.RxComponent
+import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{RxElement, tags}
 import wvlet.airframe.rx.widget.ui.Layout.divOf
 
 /**
   * Twitter Bootstrap extensions
   */
 package object bootstrap {
-  implicit class RichRxComponent(val x: RxComponent) extends AnyVal {
-    def withBorder: RxComponent        = x.addClass("border")
-    def withRoundedCorner: RxComponent = x.addClass("rounded")
-    def withShadow: RxComponent        = x.addClass("shadow-sm")
+  implicit class RichRxComponent(val x: RxElement) extends AnyVal {
+    def withBorder        = x(_class += "border")
+    def withRoundedCorner = x(_class += "rounded")
+    def withShadow        = x(_class += "shadow-sm")
 
-    def withOverflowAuto   = x.addClass("overflow-auto")
-    def withOverflowHidden = x.addClass("overflow-hidden")
+    def withOverflowAuto   = x(_class += "overflow-auto")
+    def withOverflowHidden = x(_class += "overflow-hidden")
 
-    def withPositionStatic   = x.addClass("position-static")
-    def withPositionRelative = x.addClass("position-relative")
-    def withPositionAbsolute = x.addClass("position-absolute")
-    def withPositionFixed    = x.addClass("position-fixed")
-    def withPositionSticky   = x.addClass("position-sticky")
+    def withPositionStatic   = x(_class += "position-static")
+    def withPositionRelative = x(_class += "position-relative")
+    def withPositionAbsolute = x(_class += "position-absolute")
+    def withPositionFixed    = x(_class += "position-fiOxed")
+    def withPositionSticky   = x(_class += "position-sticky")
 
-    def withFixedTop    = x.addClass("fixed-top")
-    def withFixedBottom = x.addClass("fixed-bottom")
-    def withStickyTop   = x.addClass("sticky-top")
+    def withFixedTop    = x(_class += "fixed-top")
+    def withFixedBottom = x(_class += "fixed-bottom")
+    def withStickyTop   = x(_class += "sticky-top")
 
-    def withAlertLink = x.addClass("alert-link")
+    def withAlertLink = x(_class += "alert-link")
 
-    def screenReadersOnly = x.addClass("sr-only")
+    def screenReadersOnly = x(_class += "sr-only")
   }
 
-  def row: RxComponent   = divOf("row")
-  def col: RxComponent   = divOf("col")
-  def col1: RxComponent  = divOf("col-1")
-  def col2: RxComponent  = divOf("col-2")
-  def col3: RxComponent  = divOf("col-3")
-  def col4: RxComponent  = divOf("col-4")
-  def col5: RxComponent  = divOf("col-5")
-  def col6: RxComponent  = divOf("col-6")
-  def col7: RxComponent  = divOf("col-7")
-  def col8: RxComponent  = divOf("col-8")
-  def col9: RxComponent  = divOf("col-9")
-  def col10: RxComponent = divOf("col-10")
-  def col11: RxComponent = divOf("col-11")
-  def col12: RxComponent = divOf("col-12")
-  def colSm: RxComponent = divOf("col-sm")
+  def row: RxElement   = divOf("row")
+  def col: RxElement   = divOf("col")
+  def col1: RxElement  = divOf("col-1")
+  def col2: RxElement  = divOf("col-2")
+  def col3: RxElement  = divOf("col-3")
+  def col4: RxElement  = divOf("col-4")
+  def col5: RxElement  = divOf("col-5")
+  def col6: RxElement  = divOf("col-6")
+  def col7: RxElement  = divOf("col-7")
+  def col8: RxElement  = divOf("col-8")
+  def col9: RxElement  = divOf("col-9")
+  def col10: RxElement = divOf("col-10")
+  def col11: RxElement = divOf("col-11")
+  def col12: RxElement = divOf("col-12")
+  def colSm: RxElement = divOf("col-sm")
 
-  def container: RxComponent      = divOf("container")
-  def containerFluid: RxComponent = divOf("container-fluid")
+  def container: RxElement      = divOf("container")
+  def containerFluid: RxElement = divOf("container-fluid")
 
-  def flexbox: RxComponent       = divOf("d-flex")
-  def inlineFlexbox: RxComponent = divOf("d-inline-flex")
+  def flexbox: RxElement       = divOf("d-flex")
+  def inlineFlexbox: RxElement = divOf("d-inline-flex")
 
-  def figure: RxComponent = RxComponent { content =>
-    <figure class="figure">{content}</figure>
-  }
+  def figure: RxElement = tags.figure(cls -> "figure")
 }
