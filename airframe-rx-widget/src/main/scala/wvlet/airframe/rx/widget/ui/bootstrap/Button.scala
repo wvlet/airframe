@@ -13,9 +13,9 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.log.LogSupport
 import wvlet.airframe.rx.html._
 import wvlet.airframe.rx.html.all._
+import wvlet.log.LogSupport
 
 /**
   *
@@ -43,13 +43,13 @@ case class Button(
 }
 
 object Button extends LogSupport {
-  def primary(name: String)   = button(name, cls -> "btn-primary")
-  def secondary(name: String) = button(name, cls -> "btn-secondary")
-  def success(name: String)   = button(name, cls -> "btn-success")
-  def danger(name: String)    = button(name, cls -> "btn-danger")
-  def warning(name: String)   = button(name, cls -> "btn-warning")
-  def info(name: String)      = button(name, cls -> "btn-info")
-  def light(name: String)     = button(name, cls -> "btn-light")
-  def dark(name: String)      = button(name, cls -> "btn-dark")
-  def link(name: String)      = button(name, cls -> "btn-link")
+  def primary(name: String)   = button(name, cls -> "btn btn-primary")
+  def secondary(name: String) = button(name, cls -> "btn btn-secondary")
+  def success(name: String)   = button(name, cls -> "btn btn-success")
+  def danger(name: String)    = button(name, cls -> "btn btn-danger")
+  def warning(name: String)   = button(name, cls -> "btn btn-warning")
+  def info(name: String)      = button(name, cls -> "btn btn-info")
+  def light(name: String)     = button(name, cls -> "btn btn-light")
+  def dark(name: String)      = button(name, cls -> "btn btn-dark")
+  def link(name: String)      = button(name, cls -> "btn btn-link")
 }

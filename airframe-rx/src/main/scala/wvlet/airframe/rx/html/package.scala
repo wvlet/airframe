@@ -13,9 +13,7 @@
  */
 package wvlet.airframe.rx
 import scala.annotation.implicitNotFound
-
-import scala.language.higherKinds
-import scala.language.implicitConversions
+import scala.language.{higherKinds, implicitConversions}
 
 /**
   *
@@ -40,6 +38,9 @@ package object html {
     }
   }
 
+  // HtmlNode -> Element -> HtmlElement
+  //          -> HtmlAttribute
+
   object HtmlNode {
     object empty extends HtmlNode
   }
@@ -52,11 +53,13 @@ package object html {
     def empty: HtmlNode                               = HtmlAttribute(name, None, namespace)
   }
 
+  trait Element extends HtmlNode
+
   case class HtmlElement(
       name: String,
       modifiers: List[Seq[HtmlNode]] = List.empty,
       namespace: Namespace = Namespace.xhtml
-  ) extends HtmlNode {
+  ) extends Element {
     def apply(xs: HtmlNode*): HtmlElement = {
       if (xs.isEmpty) {
         this

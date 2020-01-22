@@ -17,7 +17,7 @@ import org.scalajs.dom
 import wvlet.airframe.rx.{Cancelable, Rx}
 
 case class Elem(body: () => Embedded) extends RxElement {
-  override def render: HtmlNode = body()
+  override def render: Element = body()
 }
 
 /**
@@ -30,35 +30,35 @@ private[html] case class LazyElementSeq(elems: Seq[RxElement])
   *
   */
 trait RxComponent {
-  def render(content: HtmlNode): HtmlNode
+  def render(content: HtmlNode): Element
 
-  def apply(elems: HtmlNode*): RxElement = {
+  def apply(elems: HtmlNode*): Element = {
     elems.size match {
       case 1     => Elem(() => Embedded(elems.head))
       case other => Elem(() => Embedded(elems.toSeq))
     }
   }
-  def apply[A: EmbeddableNode](elem: A): HtmlNode = {
+  def apply[A: EmbeddableNode](elem: A): Element = {
     Elem(() => Embedded(elem))
   }
 }
 
 object RxComponent {
   def ofTag(name: String): RxComponent = new RxComponent { content =>
-    override def render(content: HtmlNode): HtmlNode = {
+    override def render(content: HtmlNode): Element = {
       tag(name)(content)
     }
   }
 
-  def apply(f: HtmlNode => HtmlNode): RxComponent = new RxComponent {
-    override def render(content: HtmlNode): HtmlNode = {
+  def apply(f: HtmlNode => Element): RxComponent = new RxComponent {
+    override def render(content: HtmlNode): Element = {
       f(content)
     }
   }
 }
 
-trait RxElement extends HtmlNode {
-  def render: HtmlNode
+trait RxElement extends Element {
+  def render: Element
 
   def mountTo(parent: dom.Node): Cancelable = {
     DOMRenderer.renderTo(parent, render)
@@ -67,12 +67,12 @@ trait RxElement extends HtmlNode {
 
 object RxElement {
   def apply(a: HtmlElement): RxElement = new RxElement {
-    override def render: HtmlNode = a
+    override def render: Element = a
   }
   def apply(a: RxElement): RxElement = new RxElement {
-    override def render: HtmlNode = Embedded(a)
+    override def render: Element = Embedded(a)
   }
   def apply[A](a: Rx[A]): RxElement = new RxElement {
-    override def render: HtmlNode = Embedded(a)
+    override def render: Element = Embedded(a)
   }
 }

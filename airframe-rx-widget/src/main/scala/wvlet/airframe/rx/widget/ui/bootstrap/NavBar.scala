@@ -13,15 +13,15 @@
  */
 package wvlet.airframe.rx.widget.ui.bootstrap
 
-import wvlet.airframe.rx.html.{HtmlElement, HtmlNode, RxComponent}
 import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{Element, HtmlNode, RxComponent}
 
 /**
   *
   */
 case class NavBar(title: String, iconFile: String = "img/favicon.ico", iconWidth: Int = 32, iconHeight: Int = 32)
     extends RxComponent {
-  override def render(content: HtmlNode): HtmlNode =
+  override def render(content: HtmlNode): Element =
     nav(
       cls   -> "navbar navbar-expand-md navbar-dark fixed-top",
       style -> "min-height: 42px; padding: 4px 8px;",

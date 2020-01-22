@@ -32,12 +32,18 @@ object DOMRenderer extends LogSupport {
     }
   }
 
-  def render(e: HtmlElement): (dom.Node, Cancelable) = {
-    val node: dom.Node = dom.document.createElement(e.name)
-    val cancelables = for (g <- e.modifiers.reverse; m <- g) yield {
-      renderTo(node, m)
+  def render(e: Element): (dom.Node, Cancelable) = {
+    e match {
+      case h: HtmlElement =>
+        val node: dom.Node = dom.document.createElement(h.name)
+        val cancelables = for (g <- h.modifiers.reverse; m <- g) yield {
+          renderTo(node, m)
+        }
+        (node, Cancelable.merge(cancelables))
+      case Embedded(v) =>
+      case _ =>
+        throw new IllegalArgumentException(s"unsuppored: ${e}")
     }
-    (node, Cancelable.merge(cancelables))
   }
 
   private def newTextNode(s: String): dom.Text = dom.document.createTextNode(s)

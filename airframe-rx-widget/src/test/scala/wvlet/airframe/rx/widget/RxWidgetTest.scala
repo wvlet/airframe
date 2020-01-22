@@ -3,7 +3,7 @@ package wvlet.airframe.rx.widget
 import org.scalajs.dom
 import wvlet.airframe.rx.Rx
 import wvlet.airframe.rx.html.all._
-import wvlet.airframe.rx.html.{DOMRenderer, Embedded, HtmlElement}
+import wvlet.airframe.rx.html.{DOMRenderer, Element, Embedded, HtmlElement, RxComponent}
 import wvlet.airframe.rx.widget.ui.Layout
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.airspec._
@@ -16,7 +16,7 @@ class RxWidgetTest extends AirSpec {
     DOMRenderer.renderTo(node, elem)
   }
 
-  private def render(elem: HtmlElement): String = {
+  private def render(elem: Element): String = {
     val (dom, c) = DOMRenderer.render(elem)
     val html = dom match {
       case x: org.scalajs.dom.Element =>
@@ -36,6 +36,16 @@ class RxWidgetTest extends AirSpec {
     )
     val html = render(elem)
     html.contains("btn btn-primary") shouldBe true
+  }
+
+  test("reuse component") {
+    val myCode: RxComponent = RxComponent { content =>
+      pre(code(content))
+    }
+
+    val node: Element = myCode("import wvlet")
+    val html          = render(node)
+    html shouldBe "<pre><code>import wvlet</code></pre>"
   }
 
   test("render nested DOM element") {

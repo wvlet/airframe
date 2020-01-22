@@ -15,8 +15,8 @@ package wvlet.airframe.rx.widget.demo
 import org.scalajs.dom
 import org.scalajs.dom.document
 import wvlet.airframe.rx.Rx
-import wvlet.airframe.rx.html.{RxComponent, _}
 import wvlet.airframe.rx.html.all._
+import wvlet.airframe.rx.html.{RxComponent, _}
 import wvlet.airframe.rx.widget.ui._
 import wvlet.airframe.rx.widget.ui.bootstrap._
 import wvlet.log.{LogLevel, LogSupport, Logger}
@@ -44,8 +44,8 @@ object Gallery extends LogSupport {
         document.body.appendChild(elem)
       case other => other
     }
-    val content: RxElement = galleryFrame(gallery: _*)
-    content.mountTo(main)
+    val content: Element = galleryFrame(gallery: _*)
+    DOMRenderer.renderTo(main, content)
   }
 
   def galleryFrame = RxComponent { content =>
