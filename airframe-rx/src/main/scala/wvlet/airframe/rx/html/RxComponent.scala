@@ -25,10 +25,6 @@ trait RxComponent {
       case other => LazyRxElement(() => render(Embedded(elems.toSeq)))
     }
   }
-
-  def apply[A: EmbeddableNode](elem: A): RxElement = {
-    LazyRxElement(() => render(Embedded(elem)))
-  }
 }
 
 object RxComponent {
